@@ -2,26 +2,34 @@ import React from 'react'
 import ReactDOM from 'react-dom'
 import { BrowserRouter as Router, Route, Switch } from 'react-router-dom'
 import registerServiceWorker from './lib/registerServiceWorker'
+import { Web3Provider } from 'react-web3';
 
-import './styles/index.css'
+import './styles/application.css'
+
+// views
+import Profile from './components/views/Profile'
+import Milestones from './components/views/Milestones'
+import Milestone from './components/views/Milestone'
+import Causes from './components/views/Causes'
+import Cause from './components/views/Cause'
+import NotFound from './components/views/NotFound'
 
 // components
-import App from './App'
-import Profile from './Profile'
-import Milestones from './Milestones'
-import Milestone from './Milestone'
-import Causes from './Causes'
-import Cause from './Cause'
-import NotFound from './NotFound'
-import MainMenu from './MainMenu'
+import MainMenu from './components/MainMenu'
+
+/**
+  Note: 
+  This structure will evolve, perhaps to different files. But for now it's ok.
+
+  The App waits for Web3 to be injected, see https://github.com/coopermaruyama/react-web3
+**/
 
 ReactDOM.render(
-  <Router>
-    <div>
-      <MainMenu/>
+  <Web3Provider>
+    <Router>
+      <div>
+        <MainMenu/>    
 
-      <div className="container-fluid">
-      
         {/* Routes are defined here */}
         <Switch>
           <Route exact path="/" component={Causes}/>
@@ -32,10 +40,10 @@ ReactDOM.render(
           <Route exact path="/profile" component={Profile}/>
           <Route component={NotFound}/>
         </Switch>
-        
+
       </div>
-    </div>
-  </Router>
+    </Router>
+  </Web3Provider>
   ,document.getElementById('root')
 )
 

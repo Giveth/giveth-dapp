@@ -1,5 +1,9 @@
 import React, { Component } from 'react'
 
+/**
+  Shows details of an individual cause
+**/
+
 class Cause extends Component {
   render() {
     return (

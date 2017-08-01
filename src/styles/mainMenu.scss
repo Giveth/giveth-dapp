@@ -1,0 +1,11 @@
+#main-menu {
+  background-color: black; 
+
+  a {
+    color: white;
+
+    &:hover {
+      color: darken(white, 30§%);
+    }
+  }
+}
