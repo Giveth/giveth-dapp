@@ -20,5 +20,5 @@ All dependencies can be found in package.json, however here are the most importa
 - React Router
 
 ## Where are the config files?
-This project is setup using Create React App. It just works :-)
-If required, this project can be 'ejected' by running `npm run eject`. Note that there's no way back!
+This project is setup using [Create React App](https://github.com/facebookincubator/create-react-app). It can do almost everything (config via package.json) and best, it just works! :-)
+If required you can 'eject' the project by running `npm run eject`. Note that there's no way back!
