@@ -15,6 +15,8 @@
 ## Dependencies
 - Bootstrap 4 (loaded via CDN)
 - Sass
+
+All dependencies can be found in package.json, however here are the most important ones:
 - React Router
 
 ## Where are the config files?

@@ -13,12 +13,18 @@ import Milestone from './Milestone'
 import Causes from './Causes'
 import Cause from './Cause'
 import NotFound from './NotFound'
+import MainMenu from './MainMenu'
 
 ReactDOM.render(
-    <Router>
-      <div> 
+  <Router>
+    <div>
+      <MainMenu/>
+
+      <div className="container-fluid">
+      
+        {/* Routes are defined here */}
         <Switch>
-          <Route exact path="/" component={App}/>
+          <Route exact path="/" component={Causes}/>
           <Route exact path="/causes" component={Causes}/>
           <Route exact path="/causes/:id" component={Cause}/>
           <Route exact path="/causes/:id/milestones" component={Milestones}/>
@@ -26,8 +32,10 @@ ReactDOM.render(
           <Route exact path="/profile" component={Profile}/>
           <Route component={NotFound}/>
         </Switch>
+        
       </div>
-    </Router>
+    </div>
+  </Router>
   ,document.getElementById('root')
 )
 
