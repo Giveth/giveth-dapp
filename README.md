@@ -13,7 +13,8 @@
 - Don't like port 3010? Change it in `.env`
 
 ## Dependencies
-- Bootstrap 4 (loaded via CDN)
+- Bootstrap 4 (via CDN)
+- Font Awesome (via CDN)
 - Sass
 
 All dependencies can be found in package.json, however here are the most important ones:

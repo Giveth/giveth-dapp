@@ -2,6 +2,8 @@ import React from 'react'
 import ReactDOM from 'react-dom'
 import { BrowserRouter as Router, Route, Switch } from 'react-router-dom'
 import registerServiceWorker from './lib/registerServiceWorker'
+import feathersClient from './lib/feathersClient'
+
 import { Web3Provider } from 'react-web3';
 
 import './styles/application.css'
@@ -48,3 +50,4 @@ ReactDOM.render(
 )
 
 registerServiceWorker()
+console.log(feathersClient)

@@ -9,7 +9,10 @@ class JoinGivethCommunity extends Component {
         <center>
           <h3>Together we will save the world</h3>
 
-          <a className="btn btn-success btn-lg" href="https://giveth.slack.com/" target="_blank" rel="noopener noreferrer">Join Giveth</a>
+          <a className="btn btn-success btn-lg" href="https://giveth.slack.com/" target="_blank" rel="noopener noreferrer">
+            <i className="fa fa-slack"></i>
+            &nbsp;Join Giveth
+          </a>
 
         </center>
       </div>
