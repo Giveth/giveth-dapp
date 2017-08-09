@@ -1,6 +1,12 @@
 import React, { Component } from 'react'
+import { Link } from 'react-router-dom'
+
 
 import '../styles/joinGivethCommunity.css'
+
+/**
+  The join Giveth community top-bar
+**/
 
 class JoinGivethCommunity extends Component {
   render() {
@@ -13,6 +19,10 @@ class JoinGivethCommunity extends Component {
             <i className="fa fa-slack"></i>
             &nbsp;Join Giveth
           </a>
+          
+          &nbsp;
+
+          <Link className="btn btn-outline-primary btn-lg" to="/">Create Campaign</Link>      
 
         </center>
       </div>

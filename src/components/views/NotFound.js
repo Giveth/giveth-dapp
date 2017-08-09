@@ -1,5 +1,9 @@
 import React, { Component } from 'react'
 
+/**
+  Route not found page
+**/
+
 class NoValidRoute extends Component {
   render() {
     return (

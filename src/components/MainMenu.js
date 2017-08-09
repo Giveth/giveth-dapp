@@ -3,10 +3,14 @@ import { Link } from 'react-router-dom'
 
 import '../styles/mainMenu.css'
 
+/**
+  The main top menu
+**/
+
 class MainMenu extends Component {
   render() {
     return (
-      <nav id="main-menu" className="navbar navbar-toggleable-md">
+      <nav id="main-menu" className="navbar navbar-toggleable-md fixed-top">
         <button className="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
           <span className="navbar-toggler-icon"></span>
         </button>
@@ -17,9 +21,15 @@ class MainMenu extends Component {
             <li className="nav-item active">
               <Link className="nav-link" to="/">Causes</Link>
             </li>
+            <li className="nav-item active">
+              <Link className="nav-link" to="/">Campaigns</Link>
+            </li>            
+            <li className="nav-item">
+              <Link className="nav-link" to="/profile">Dashboard</Link>
+            </li>
             <li className="nav-item">
               <Link className="nav-link" to="/profile">Profile</Link>
-            </li>
+            </li>            
           </ul>
 
           <form className="form-inline my-2 my-lg-0">
