@@ -23,3 +23,7 @@ All dependencies can be found in package.json, however here are the most importa
 ## Where are the config files?
 This project is setup using [Create React App](https://github.com/facebookincubator/create-react-app). It can do almost everything (config via package.json) and best, it just works! :-)
 If required you can 'eject' the project by running `npm run eject`. Note that there's no way back!
+
+## You don't use Redux?
+Nope. We use container architecture instead. So persistent data is loaded in containers, for example `Application.js`, and passed on as props to its children.
+As long as a container is rendered the data is persistent.

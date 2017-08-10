@@ -4,7 +4,7 @@ import React, { Component } from 'react'
   Shows details of an individual milestone
 **/
 
-class Milestone extends Component {
+class ViewMilestone extends Component {
   render() {
     return (
       <center>
@@ -14,4 +14,4 @@ class Milestone extends Component {
   } 
 }
 
-export default Milestone
+export default ViewMilestone

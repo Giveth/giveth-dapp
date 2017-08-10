@@ -1,7 +1,7 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
 import registerServiceWorker from './lib/registerServiceWorker'
-import feathersClient from './lib/feathersClient'
+import { feathersClient } from './lib/feathersClient'
 
 import './styles/application.css'
 

@@ -1,15 +1,16 @@
 import React, { Component } from 'react'
 import { BrowserRouter as Router, Route, Switch } from 'react-router-dom'
 
-import feathersClient from '../lib/feathersClient'
+import { feathersClient, socket } from '../lib/feathersClient'
 
 // views
 import Profile from './../components/views/Profile'
 import Milestones from './../components/views/Milestones'
-import Milestone from './../components/views/Milestone'
+import ViewMilestone from './../components/views/ViewMilestone'
 import Causes from './../components/views/Causes'
-import Cause from './../components/views/Cause'
+import ViewCause from './../components/views/ViewCause'
 import NotFound from './../components/views/NotFound'
+import EditCause from './../components/views/EditCause'
 
 // components
 import MainMenu from './../components/MainMenu'
@@ -28,7 +29,8 @@ class Application extends Component {
       milestones: [],
       causes: [],
       campaignsData: [],
-      page: 1
+      page: 1,
+      currentUser: "KJkjiquwekn98"
     }
 
     this.causesService = feathersClient.service('/causes')
@@ -38,7 +40,7 @@ class Application extends Component {
   getCauses(){
     const self = this
 
-    feathersClient.emit('causes::find', {}, (error, data) => {
+    socket.emit('causes::find', {}, (error, data) => {
       if(data){
         // console.info('Found all causes', data);
         self.setState({ causes: data })
@@ -59,6 +61,18 @@ class Application extends Component {
       self.setState({ causes: causes })
     })
 
+    // when a new cause is removed, remove it from the UI
+    this.causesService.on("removed", cause => {
+      console.log('remove cause: ', cause)
+      let causes = self.state.causes
+      
+      causes.data = causes.data.filter(function(c){
+        return c._id !== cause._id
+      })
+      causes.total--
+      self.setState({ causes: causes })
+    })    
+
   }
 
   render(){
@@ -70,11 +84,13 @@ class Application extends Component {
 
           {/* Routes are defined here. Persistent data is set as props on components */}
           <Switch>
-            <Route exact path="/" component={props => <Causes causes={this.state.causes} />} />
-            <Route exact path="/causes" component={props => <Causes causes={this.state.causes} />} />
-            <Route exact path="/causes/:id" component={Cause}/>
+            <Route exact path="/" component={props => <Causes causes={this.state.causes} currentUser={this.state.currentUser}/>} />
+            <Route exact path="/causes" component={props => <Causes causes={this.state.causes} currentUser={this.state.currentUser} />} />
+            <Route exact path="/causes/new" component={props => <EditCause isNew="true" currentUser={this.state.currentUser} />} />                        
+            <Route exact path="/causes/:id" component={ViewCause}/>
+            <Route exact path="/causes/:id/edit" component={EditCause}/>            
             <Route exact path="/causes/:id/milestones" component={Milestones}/>
-            <Route exact path="/causes/:id/milestones/:id" component={Milestone}/>          
+            <Route exact path="/causes/:id/milestones/:id" component={ViewMilestone}/>          
             <Route exact path="/profile" component={Profile}/>
             <Route component={NotFound}/>
           </Switch>

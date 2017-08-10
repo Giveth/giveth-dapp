@@ -22,7 +22,7 @@ class JoinGivethCommunity extends Component {
           
           &nbsp;
 
-          <Link className="btn btn-outline-primary btn-lg" to="/">Create Campaign</Link>      
+          <Link className="btn btn-outline-primary btn-lg" to="/causes/new">Create a Causes</Link>      
 
         </center>
       </div>
