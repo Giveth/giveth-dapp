@@ -11,8 +11,6 @@ import { feathersClient, socket } from '../lib/feathersClient'
 
 class loadAndWatchFeatherJSResource {
   constructor(service, callback){
-    console.log(service)
-
     this.service = service
     this.data = []
     this.limit = 10
@@ -24,31 +22,26 @@ class loadAndWatchFeatherJSResource {
   }  
 
   getResource(){
-    const self = this
-
     socket.emit(this.service + '::find', {}, (error, data) => {
       if(data){
-        console.info('Found all ' + self.service , data);
-        self.data = data
-        self.callback(data)
+        console.info('Found all ' + this.service , data);
+        this.data = data
+        this.callback(data)
       }
     });
   }    
 
   watchResource(){
-    const self = this
-
-    console.log('start watching resource')
-
+    console.log('start watching resource ' + this.service)
 
     // when a new object is added to the server, add it to the data store
     socket.on(this.service + " created", object => {
       console.log('created object: ', object)      
       
-      self.data.data.push(object)
-      self.data.total++
+      this.data.data.push(object)
+      this.data.total++
 
-      self.callback(self.data)
+      this.callback(this.data)
     })
 
 
@@ -56,13 +49,9 @@ class loadAndWatchFeatherJSResource {
     socket.on(this.service + " removed", object => {
       console.log('removed object: ', object)      
       
-      self.data.data = self.data.data.filter(function(o){
-        return o._id !== object._id
-      })
-
-      self.data.total--
-
-      self.callback(self.data)      
+      this.data.data = this.data.data.filter((o) => o._id !== object._id)
+      this.data.total--
+      this.callback(this.data)      
     })  
 
 
@@ -70,12 +59,8 @@ class loadAndWatchFeatherJSResource {
     socket.on(this.service + " updated", object => {
       console.log('updated object: ', object)
 
-      self.data.data = self.data.data.map(function(o){
-        if(o._id === object._id) { o = object }
-        return o;
-      })
-
-      self.callback(self.data)            
+      this.data.data = this.data.data.map((o) => o._id === object._id ? object : o)
+      this.callback(this.data)            
     })      
   }
 }

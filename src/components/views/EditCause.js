@@ -1,6 +1,7 @@
 import React, { Component } from 'react'
 import { Form, Input, File, Textarea } from 'formsy-react-components';
 import { socket } from '../../lib/feathersClient'
+
 /**
  * Create or edit a cause
  *
@@ -30,29 +31,26 @@ class EditCause extends Component {
   }
 
   componentDidMount() {
-    const self = this
-
     if(!this.props.isNew) {
       socket.emit('causes::find', {_id: this.props.match.params.id}, (error, resp) => {      
-        self.setState({
+        this.setState({
           id: this.props.match.params.id,
           title: resp.data[0].title,
           description: resp.data[0].description,
           image: resp.data[0].image,
           videoUrl: resp.data[0].videoUrl,
           isLoading: false
-        }, self.focusFirstInput())  
+        }, this.focusFirstInput())  
       })  
     } else {
       this.setState({
         isLoading: false
-      }, self.focusFirstInput())
+      }, this.focusFirstInput())
     }
   }
 
   focusFirstInput(){
-    const self = this
-    setTimeout(() => self.refs.title.element.focus(), 0)
+    setTimeout(() => this.refs.title.element.focus(), 0)
   }
 
   mapInputs(inputs) {
@@ -64,21 +62,13 @@ class EditCause extends Component {
 
   loadAndPreviewImage() {
     const reader = new FileReader()  
-    const self = this
 
-    reader.onload = (e) => {
-      self.setState({ image: e.target.result }) 
-    }
+    reader.onload = (e) => this.setState({ image: e.target.result })
 
     reader.readAsDataURL(this.refs.imagePreview.element.files[0])
   }
 
   submit(model) {    
-    // const socketMethod = this.props.isNew ? 'causes::create' : 'causes::update'
-    const self = this
-
-    // console.log('socketMethod', socketMethod)
-
     const constructedModel = {
       title: model.title,
       description: model.description,
@@ -86,8 +76,8 @@ class EditCause extends Component {
     }
 
     const afterEmit = () => {
-      self.setState({ isSaving: false })
-      self.props.history.push('/causes')      
+      this.setState({ isSaving: false })
+      this.props.history.push('/causes')      
     }
 
     this.setState({ isSaving: true })

@@ -34,12 +34,7 @@ class Application extends Component {
   }
  
   componentWillMount(){
-    const self = this
-
-    const resource = new loadAndWatchFeatherJSResource('causes', (data) =>{
-      self.setState({ causes: data })
-      console.log('got callback from causes', data)
-    })    
+    const resource = new loadAndWatchFeatherJSResource('causes', (data) => this.setState({ causes: data }))   
   }
 
   render(){
