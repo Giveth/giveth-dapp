@@ -121,7 +121,7 @@ class EditCause extends Component {
                 { !isLoading &&
                   <div>
                     { isNew &&
-                      <h1>Create a new cause</h1>
+                      <h1>Start a new cause!</h1>
                     }
 
                     { !isNew &&

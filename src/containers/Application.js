@@ -29,7 +29,7 @@ class Application extends Component {
     this.state = {
       milestones: [],
       causes: [],
-      campaignsData: [],
+      campaigns: [],
       currentUser: "KJkjiquwekn98",
       isLoading: true
     }
@@ -38,6 +38,12 @@ class Application extends Component {
   componentWillMount(){
     new loadAndWatchFeatherJSResource('causes', (data) => 
       this.setState({ causes: data, isLoading: false }))   
+
+    new loadAndWatchFeatherJSResource('milestones', (data) => 
+      this.setState({ milestones: data, isLoading: false }))   
+
+    new loadAndWatchFeatherJSResource('campaigns', (data) => 
+      this.setState({ campaigns: data, isLoading: false }))         
   }
 
   render(){
@@ -56,13 +62,16 @@ class Application extends Component {
               {/* Routes are defined here. Persistent data is set as props on components */}
               <Switch>
                 <Route exact path="/" component={props => <Causes causes={this.state.causes} currentUser={this.state.currentUser} {...props}/>} />
+                
                 <Route exact path="/causes" component={props => <Causes causes={this.state.causes} currentUser={this.state.currentUser} {...props}/>} />
                 <Route exact path="/causes/new" component={props => <EditCause isNew="true" currentUser={this.state.currentUser} {...props}/>} />                        
                 <Route exact path="/causes/:id" component={ViewCause}/>
                 <Route exact path="/causes/:id/edit" component={EditCause}/>            
                 <Route exact path="/causes/:id/milestones" component={Milestones}/>
                 <Route exact path="/causes/:id/milestones/:id" component={ViewMilestone}/>          
+                
                 <Route exact path="/profile" component={Profile}/>
+                
                 <Route component={NotFound}/>
               </Switch>
             </div>

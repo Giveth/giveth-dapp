@@ -29,7 +29,7 @@ class Causes extends Component {
           <div className="row">
             { this.props.causes.data && this.props.causes.data.map((cause, index) =>
               <div className="col-md-6 card-container" key={index}>
-                <div className="card card-outline-primary" id={cause._id}>
+                <div className="card" id={cause._id}>
                   <img className="card-img-top" src={cause.image} alt=""/>
                   <div className="card-block">
                     <Link to={`/causes/${ cause._id }`}>
