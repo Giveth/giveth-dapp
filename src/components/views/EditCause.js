@@ -95,7 +95,7 @@ class EditCause extends Component {
 
   render(){
 
-    const { isNew, cause } = this.props
+    const { isNew } = this.props
     let { isLoading, isSaving, title, description, image } = this.state
 
     return(
@@ -154,7 +154,7 @@ class EditCause extends Component {
                       </div>
 
                       <div id="image-preview">
-                        <img src={image} width="500px" />
+                        <img src={image} width="500px" alt=""/>
                       </div>
 
                       <div className="form-group">

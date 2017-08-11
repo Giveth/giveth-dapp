@@ -1,4 +1,4 @@
-import { feathersClient, socket } from '../lib/feathersClient'
+import { socket } from '../lib/feathersClient'
 
 /**
  * Loads and watches a FeatherJS resource
@@ -13,7 +13,7 @@ class loadAndWatchFeatherJSResource {
   constructor(service, callback){
     this.service = service
     this.data = []
-    this.limit = 10
+    this.limit = 20
     this.page = 1
     this.callback = callback
 
@@ -22,7 +22,7 @@ class loadAndWatchFeatherJSResource {
   }  
 
   getResource(){
-    socket.emit(this.service + '::find', {}, (error, data) => {
+    socket.emit(this.service + '::find', { $limit: this.limit}, (error, data) => {
       if(data){
         console.info('Found all ' + this.service , data);
         this.data = data

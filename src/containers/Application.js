@@ -34,7 +34,7 @@ class Application extends Component {
   }
  
   componentWillMount(){
-    const resource = new loadAndWatchFeatherJSResource('causes', (data) => this.setState({ causes: data }))   
+    new loadAndWatchFeatherJSResource('causes', (data) => this.setState({ causes: data }))   
   }
 
   render(){
