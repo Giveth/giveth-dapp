@@ -63,7 +63,7 @@ class Application extends Component {
 
     // when a new cause is removed, remove it from the UI
     this.causesService.on("removed", cause => {
-      console.log('remove cause: ', cause)
+      console.log('removed cause: ', cause)
       let causes = self.state.causes
       
       causes.data = causes.data.filter(function(c){
@@ -71,7 +71,21 @@ class Application extends Component {
       })
       causes.total--
       self.setState({ causes: causes })
-    })    
+    })  
+
+    // when a new cause is updated, update it in the UI
+    this.causesService.on("updated", cause => {
+      console.log('updated cause: ', cause)
+      let causes = self.state.causes
+
+      causes.data = causes.data.map(function(c){
+        if(c._id === cause._id) { c = cause }
+        return c;
+      })
+      
+      self.setState({ causes: causes })
+    })  
+
 
   }
 
