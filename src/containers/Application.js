@@ -2,6 +2,7 @@ import React, { Component } from 'react'
 import { BrowserRouter as Router, Route, Switch } from 'react-router-dom'
 
 import loadAndWatchFeatherJSResource from '../lib/loadAndWatchFeatherJSResource'
+import Web3Monitor from '../lib/Web3Monitor';
 
 // views
 import Profile from './../components/views/Profile'
@@ -30,6 +31,8 @@ class Application extends Component {
       milestones: [],
       causes: [],
       campaigns: [],
+      web3: undefined,
+      accounts: [],
       currentUser: "KJkjiquwekn98",
       isLoading: true
     }
@@ -37,13 +40,21 @@ class Application extends Component {
  
   componentWillMount(){
     new loadAndWatchFeatherJSResource('causes', (data) => 
-      this.setState({ causes: data, isLoading: false }))   
+      this.setState({ causes: data, isLoading: false }));
 
     new loadAndWatchFeatherJSResource('milestones', (data) => 
-      this.setState({ milestones: data, isLoading: false }))   
+      this.setState({ milestones: data, isLoading: false }));
 
     new loadAndWatchFeatherJSResource('campaigns', (data) => 
-      this.setState({ campaigns: data, isLoading: false }))         
+      this.setState({ campaigns: data, isLoading: false }));
+
+    new Web3Monitor(({web3, accounts}) => {
+      this.setState({
+        web3,
+        accounts,
+        currentUser: (accounts.length > 0) ? accounts[0].address : undefined,
+      })
+    })
   }
 
   render(){
