@@ -33,7 +33,7 @@ class Causes extends Component {
                   <img className="card-img-top" src={cause.image} alt=""/>
                   <div className="card-block">
                     <Link to={`/causes/${ cause._id }`}>
-                      <h4 className="card-title">{cause.name}</h4>
+                      <h4 className="card-title">{cause.title}</h4>
                     </Link>
                     <p className="card-text">{cause.description}</p>
                     <a className="btn btn-link" onClick={()=>this.removeCause(cause._id)}>

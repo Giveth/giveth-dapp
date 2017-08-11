@@ -1,7 +1,6 @@
 import React, { Component } from 'react'
 import { Form, Input, File, Textarea } from 'formsy-react-components';
 import { socket } from '../../lib/feathersClient'
-
 /**
  * Create or edit a cause
  *
@@ -26,6 +25,8 @@ class EditCause extends Component {
       image: '',
       videoUrl: '',      
     }
+
+    this.submit = this.submit.bind(this)
   }
 
   componentDidMount() {
@@ -73,19 +74,34 @@ class EditCause extends Component {
   }
 
   submit(model) {    
-    const socketMethod = this.props.isNew ? 'causes::create' : 'causes::update'
+    // const socketMethod = this.props.isNew ? 'causes::create' : 'causes::update'
+    const self = this
+
+    // console.log('socketMethod', socketMethod)
+
+    const constructedModel = {
+      title: model.title,
+      description: model.description,
+      image: this.state.image      
+    }
+
+    const afterEmit = () => {
+      self.setState({ isSaving: false })
+      self.props.history.push('/causes')      
+    }
 
     this.setState({ isSaving: true })
 
-    socket.emit(socketMethod, {
-      title: model.title,
-      description: model.description,
-      image: this.state.image
-    }, ()=> {
-      this.setState({ isSaving: false })
-      this.props.history.push('/causes')
-    })
+    if(this.props.isNew){
+      socket.emit('causes::create', constructedModel, afterEmit)
+    } else {
+      socket.emit('causes::update', this.state.id, constructedModel, afterEmit)
+    }
   } 
+
+  goBack(){
+    this.props.history.push('/causes')
+  }
 
   render(){
 
@@ -111,7 +127,7 @@ class EditCause extends Component {
                       <h1>Edit cause {title}</h1>
                     }
 
-                    <Form onSubmit={this.submit.bind(this)} mapping={this.mapInputs} layout='vertical'>
+                    <Form onSubmit={this.submit} mapping={this.mapInputs} layout='vertical'>
                       <div className="form-group">
                         <Input
                           name="title"
