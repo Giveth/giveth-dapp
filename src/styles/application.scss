@@ -1,5 +1,16 @@
 // Global classes are defined here
 
+// views
+@import 'causesView.scss';
+@import 'editCausesView.scss';
+
+// components
+@import 'loader.scss';
+@import 'mainMenu.scss';
+
+// misc
+@import 'quill-overrides.scss';
+
 body {
   margin: 0;
   padding: 0;

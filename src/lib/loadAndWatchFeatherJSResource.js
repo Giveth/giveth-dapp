@@ -13,7 +13,7 @@ class loadAndWatchFeatherJSResource {
   constructor(service, callback){
     this.service = service
     this.data = []
-    this.limit = 20
+    this.limit = 50
     this.page = 1
     this.callback = callback
 
@@ -24,7 +24,7 @@ class loadAndWatchFeatherJSResource {
   getResource(){
     socket.emit(this.service + '::find', { $limit: this.limit}, (error, data) => {
       if(data){
-        console.info('Found all ' + this.service , data);
+        console.info('Found all ' + this.service + "with limit " + this.limit, data);
         this.data = data
         this.callback(data)
       }

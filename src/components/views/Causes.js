@@ -35,7 +35,7 @@ class Causes extends Component {
                     <Link to={`/causes/${ cause._id }`}>
                       <h4 className="card-title">{cause.title}</h4>
                     </Link>
-                    <p className="card-text">{cause.description}</p>
+                    <div className="card-text" dangerouslySetInnerHTML={{__html: cause.description}}></div>
                     <a className="btn btn-link" onClick={()=>this.removeCause(cause._id)}>
                       <i className="fa fa-trash"></i>
                     </a>

@@ -1,0 +1,10 @@
+$height: 400px;
+
+.ql-container {
+  min-height: $height;
+
+  .ql-editor {
+    font-size: 1rem;
+    min-height: $height;
+  }
+}

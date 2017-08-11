@@ -1,6 +1,8 @@
 import React, { Component } from 'react'
 import { Form, Input, File, Textarea } from 'formsy-react-components';
 import { socket } from '../../lib/feathersClient'
+import Loader from '../Loader'
+import QuillFormsy from '../QuillFormsy';
 
 /**
  * Create or edit a cause
@@ -24,11 +26,12 @@ class EditCause extends Component {
       title: '',
       description: '',
       image: '',
-      videoUrl: '',      
+      videoUrl: '',  
     }
 
     this.submit = this.submit.bind(this)
-  }
+    this.handleChange = this.handleChange.bind(this)
+  }  
 
   componentDidMount() {
     if(!this.props.isNew) {
@@ -68,6 +71,15 @@ class EditCause extends Component {
     reader.readAsDataURL(this.refs.imagePreview.element.files[0])
   }
 
+  handleChange(value) {
+    console.log('change')
+    this.setState({ description: value })
+  }  
+
+  isValid() {
+    this.state.description.length > 0 && this.state.title.length > 10 && this.state.image.length > 0
+  }
+
   submit(model) {    
     const constructedModel = {
       title: model.title,
@@ -94,7 +106,6 @@ class EditCause extends Component {
   }
 
   render(){
-
     const { isNew } = this.props
     let { isLoading, isSaving, title, description, image } = this.state
 
@@ -104,7 +115,7 @@ class EditCause extends Component {
             <div className="row">
               <div className="col-md-8 offset-md-2">
                 { isLoading && 
-                  <center>Loading...</center>
+                  <Loader className="fixed"/>
                 }
                 
                 { !isLoading &&
@@ -137,20 +148,18 @@ class EditCause extends Component {
                       </div>
 
                       <div className="form-group">
-                        <Textarea
-                          rows={10}
-                          cols={40}
+                        <QuillFormsy 
                           name="description"
                           label="Description"
-                          value={description}                      
-                          placeholder="This field requires 10 characters."
-                          help="Make this cause appealing to support."
-                          validations="minLength:10"
+                          value={description}
+                          placeholder="Describe your cause..."
+                          validations="minLength:10"  
+                          help="Describe your cause."   
                           validationErrors={{
                               minLength: 'Please provide at least 10 characters.'
-                          }}
-                          required
-                        />     
+                          }}                    
+                          required                                        
+                        />
                       </div>
 
                       <div id="image-preview">
@@ -158,9 +167,9 @@ class EditCause extends Component {
                       </div>
 
                       <div className="form-group">
+                        <label>Add a picture</label>
                         <File
                           name="picture"
-                          label="Add a picture"
                           onChange={()=>this.loadAndPreviewImage()}
                           ref="imagePreview"
                           required

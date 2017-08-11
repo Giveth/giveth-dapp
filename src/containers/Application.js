@@ -14,6 +14,7 @@ import EditCause from './../components/views/EditCause'
 
 // components
 import MainMenu from './../components/MainMenu'
+import Loader from './../components/Loader'
 
 /**
  * This container holds the application and its routes.
@@ -29,12 +30,14 @@ class Application extends Component {
       milestones: [],
       causes: [],
       campaignsData: [],
-      currentUser: "KJkjiquwekn98"
+      currentUser: "KJkjiquwekn98",
+      isLoading: true
     }
   }
  
   componentWillMount(){
-    new loadAndWatchFeatherJSResource('causes', (data) => this.setState({ causes: data }))   
+    new loadAndWatchFeatherJSResource('causes', (data) => 
+      this.setState({ causes: data, isLoading: false }))   
   }
 
   render(){
@@ -44,18 +47,26 @@ class Application extends Component {
         <div>
           <MainMenu/>    
 
-          {/* Routes are defined here. Persistent data is set as props on components */}
-          <Switch>
-            <Route exact path="/" component={props => <Causes causes={this.state.causes} currentUser={this.state.currentUser} {...props}/>} />
-            <Route exact path="/causes" component={props => <Causes causes={this.state.causes} currentUser={this.state.currentUser} {...props}/>} />
-            <Route exact path="/causes/new" component={props => <EditCause isNew="true" currentUser={this.state.currentUser} {...props}/>} />                        
-            <Route exact path="/causes/:id" component={ViewCause}/>
-            <Route exact path="/causes/:id/edit" component={EditCause}/>            
-            <Route exact path="/causes/:id/milestones" component={Milestones}/>
-            <Route exact path="/causes/:id/milestones/:id" component={ViewMilestone}/>          
-            <Route exact path="/profile" component={Profile}/>
-            <Route component={NotFound}/>
-          </Switch>
+          { this.state.isLoading && 
+            <Loader className="fixed"/>
+          }
+
+          { !this.state.isLoading &&
+            <div>
+              {/* Routes are defined here. Persistent data is set as props on components */}
+              <Switch>
+                <Route exact path="/" component={props => <Causes causes={this.state.causes} currentUser={this.state.currentUser} {...props}/>} />
+                <Route exact path="/causes" component={props => <Causes causes={this.state.causes} currentUser={this.state.currentUser} {...props}/>} />
+                <Route exact path="/causes/new" component={props => <EditCause isNew="true" currentUser={this.state.currentUser} {...props}/>} />                        
+                <Route exact path="/causes/:id" component={ViewCause}/>
+                <Route exact path="/causes/:id/edit" component={EditCause}/>            
+                <Route exact path="/causes/:id/milestones" component={Milestones}/>
+                <Route exact path="/causes/:id/milestones/:id" component={ViewMilestone}/>          
+                <Route exact path="/profile" component={Profile}/>
+                <Route component={NotFound}/>
+              </Switch>
+            </div>
+          }
 
         </div>
       </Router>
