@@ -22,8 +22,8 @@ class JoinGivethCommunity extends Component {
           
           &nbsp;
 
-          <Link className="btn btn-outline-primary btn-lg" to="/causes/new">Create a Causes</Link>      
-
+          <Link className="btn btn-outline-primary btn-lg" to="/causes/new">Create a Cause</Link>      
+          <Link className="btn btn-outline-primary btn-lg" to="/campaigns/new">Start a Campaign</Link>      
         </center>
       </div>
     )

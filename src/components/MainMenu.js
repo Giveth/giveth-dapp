@@ -22,7 +22,7 @@ class MainMenu extends Component {
               <Link className="nav-link" to="/">Causes</Link>
             </li>
             <li className="nav-item active">
-              <Link className="nav-link" to="/">Campaigns</Link>
+              <Link className="nav-link" to="/campaigns">Campaigns</Link>
             </li>            
             <li className="nav-item">
               <Link className="nav-link" to="/profile">Dashboard</Link>

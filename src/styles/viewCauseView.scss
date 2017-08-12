@@ -8,6 +8,11 @@
   iframe,
   img {
     width: 100%;
-    min-height: 300px;    
+    min-height: 300px; 
+
+    &.cause-header-image {
+      margin: 30px 0;
+      border-radius: 3px;
+    }   
   }
 }

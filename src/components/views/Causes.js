@@ -9,15 +9,8 @@ import { Link } from 'react-router-dom'
 
 class Causes extends Component {
 
-  componentWillMount() {
-    console.log('Causes', this.props)
-  }
-
   removeCause(id){
-    console.log('click', id);
-    socket.emit("causes::remove", id, { cascade: true }, (error, cause) => {
-      console.log('Remove a cause', cause);
-    })
+    socket.emit("causes::remove", id, { cascade: true })
   }
 
   render() {
@@ -27,7 +20,7 @@ class Causes extends Component {
 
         <div className="container-fluid page-layout">
           <div className="row">
-            { this.props.causes.data && this.props.causes.data.map((cause, index) =>
+            { this.props.causes.data && this.props.causes.data.length > 0 && this.props.causes.data.map((cause, index) =>
               <div className="col-md-6 card-container" key={index}>
                 <div className="card" id={cause._id}>
                   <img className="card-img-top" src={cause.image} alt=""/>
@@ -46,6 +39,10 @@ class Causes extends Component {
                 </div>
               </div>
             )}
+
+            { this.props.causes.data && this.props.causes.data.length === 0 &&
+              <center>There are no causes yet!</center>
+            }
           </div>
         </div>
       </div>

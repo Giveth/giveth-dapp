@@ -27,6 +27,8 @@ class loadAndWatchFeatherJSResource {
         console.info('Found all ' + this.service + "with limit " + this.limit, data);
         this.data = data
         this.callback(data)
+      } else {
+        this.callback(null, true)
       }
     });
   }    

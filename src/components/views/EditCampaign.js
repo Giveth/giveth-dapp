@@ -5,18 +5,18 @@ import Loader from '../Loader'
 import QuillFormsy from '../QuillFormsy';
 
 /**
- * Create or edit a cause
+ * Create or edit a campaign
  *
  *  @props
  *    isNew (bool):  
  *      If set, component will load an empty model.
- *      If not set, component expects an id param and will load a cause object from backend
+ *      If not set, component expects an id param and will load a campaign object from backend
  *    
  *  @params
- *    id (string): an id of a cause object
+ *    id (string): an id of a campaign object
  */
 
-class EditCause extends Component {
+class EditCampaign extends Component {
   constructor() {
     super()
 
@@ -26,8 +26,9 @@ class EditCause extends Component {
       title: '',
       description: '',
       image: '',
-      videoUrl: '',  
-      ownerAddress: null      
+      videoUrl: '',
+      ownerAddress: null,
+      milestones: []
     }
 
     this.submit = this.submit.bind(this)
@@ -36,14 +37,15 @@ class EditCause extends Component {
 
   componentDidMount() {
     if(!this.props.isNew) {
-      socket.emit('causes::find', {_id: this.props.match.params.id}, (error, resp) => {      
+      socket.emit('campaigns::find', {_id: this.props.match.params.id}, (error, resp) => {      
         this.setState({
           id: this.props.match.params.id,
           title: resp.data[0].title,
           description: resp.data[0].description,
           image: resp.data[0].image,
           videoUrl: resp.data[0].videoUrl,
-          ownerAddress: resp.data[0].ownerAddress,          
+          ownerAddress: resp.data[0].ownerAddress,
+          milestones: resp.data[0].milestones,          
           isLoading: false
         }, this.focusFirstInput())  
       })  
@@ -92,20 +94,20 @@ class EditCause extends Component {
 
     const afterEmit = () => {
       this.setState({ isSaving: false })
-      this.props.history.push('/causes')      
+      this.props.history.push('/campaigns')      
     }
 
     this.setState({ isSaving: true })
 
     if(this.props.isNew){
-      socket.emit('causes::create', constructedModel, afterEmit)
+      socket.emit('campaigns::create', constructedModel, afterEmit)
     } else {
-      socket.emit('causes::update', this.state.id, constructedModel, afterEmit)
+      socket.emit('campaigns::update', this.state.id, constructedModel, afterEmit)
     }
   } 
 
   goBack(){
-    this.props.history.push('/causes')
+    this.props.history.push('/campaigns')
   }
 
   render(){
@@ -113,7 +115,7 @@ class EditCause extends Component {
     let { isLoading, isSaving, title, description, image } = this.state
 
     return(
-        <div id="edit-cause-view">
+        <div id="edit-campaign-view">
           <div className="container-fluid page-layout">
             <div className="row">
               <div className="col-md-8 offset-md-2">
@@ -124,11 +126,11 @@ class EditCause extends Component {
                 { !isLoading &&
                   <div>
                     { isNew &&
-                      <h1>Start a new cause!</h1>
+                      <h1>Start a new campaign!</h1>
                     }
 
                     { !isNew &&
-                      <h1>Edit cause {title}</h1>
+                      <h1>Edit campaign {title}</h1>
                     }
 
                     <Form onSubmit={this.submit} mapping={this.mapInputs} layout='vertical'>
@@ -155,9 +157,9 @@ class EditCause extends Component {
                           name="description"
                           label="Description"
                           value={description}
-                          placeholder="Describe your cause..."
+                          placeholder="Describe your campaign..."
                           validations="minLength:10"  
-                          help="Describe your cause."   
+                          help="Describe your campaign."   
                           validationErrors={{
                               minLength: 'Please provide at least 10 characters.'
                           }}                    
@@ -180,7 +182,7 @@ class EditCause extends Component {
                       </div>
 
                       <button className="btn btn-success" formNoValidate={true} type="submit" disabled={isSaving || !this.isValid()}>
-                        {isSaving ? "Saving..." : "Save cause"}
+                        {isSaving ? "Saving..." : "Save campaign"}
                       </button>
                                      
                     </Form>
@@ -195,4 +197,4 @@ class EditCause extends Component {
   }
 }
 
-export default EditCause
+export default EditCampaign

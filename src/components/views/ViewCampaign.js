@@ -3,10 +3,10 @@ import { socket } from '../../lib/feathersClient'
 import Loader from '../Loader'
 
 /**
-  Shows details of an individual cause
+  Shows details of an individual campaign
 **/
 
-class ViewCause extends Component {
+class ViewCampaign extends Component {
   constructor() {
     super()
 
@@ -24,7 +24,7 @@ class ViewCause extends Component {
   }  
 
   componentDidMount() {
-    socket.emit('causes::find', {_id: this.props.match.params.id}, (error, resp) => {      
+    socket.emit('campaigns::find', {_id: this.props.match.params.id}, (error, resp) => {      
       this.setState({
         title: resp.data[0].title,
         description: resp.data[0].description,
@@ -43,7 +43,7 @@ class ViewCause extends Component {
     let { isLoading, title, description, image } = this.state
 
     return (
-      <div id="view-cause-view">
+      <div id="view-campaign-view">
         <div className="container-fluid page-layout">
           <div className="row">
             <div className="col-md-8 offset-md-2">
@@ -54,8 +54,8 @@ class ViewCause extends Component {
               { !isLoading &&
                 <div>
                   <p>Cause</p>
-                  <h1 className="cause-title">{title}</h1>
-                  <img className="cause-header-image" src={image} alt=""/>
+                  <h1 className="campaign-title">{title}</h1>
+                  <img className="campaign-header-image" src={image} alt=""/>
                   <div dangerouslySetInnerHTML={{__html: description}}></div>
                 </div>
               }
@@ -67,4 +67,4 @@ class ViewCause extends Component {
   } 
 }
 
-export default ViewCause
+export default ViewCampaign

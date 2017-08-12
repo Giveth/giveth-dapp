@@ -8,9 +8,14 @@ import Profile from './../components/views/Profile'
 import Milestones from './../components/views/Milestones'
 import ViewMilestone from './../components/views/ViewMilestone'
 import Causes from './../components/views/Causes'
+import EditCause from './../components/views/EditCause'
 import ViewCause from './../components/views/ViewCause'
 import NotFound from './../components/views/NotFound'
-import EditCause from './../components/views/EditCause'
+
+import Campaigns from './../components/views/Campaigns'
+import EditCampaign from './../components/views/EditCampaign'
+import ViewCampaign from './../components/views/ViewCampaign'
+
 
 // components
 import MainMenu from './../components/MainMenu'
@@ -31,19 +36,38 @@ class Application extends Component {
       causes: [],
       campaigns: [],
       currentUser: "KJkjiquwekn98",
-      isLoading: true
+      isLoading: true,
+      hasError: false
     }
   }
  
   componentWillMount(){
-    new loadAndWatchFeatherJSResource('causes', (data) => 
-      this.setState({ causes: data, isLoading: false }))   
-
-    new loadAndWatchFeatherJSResource('milestones', (data) => 
-      this.setState({ milestones: data, isLoading: false }))   
-
-    new loadAndWatchFeatherJSResource('campaigns', (data) => 
-      this.setState({ campaigns: data, isLoading: false }))         
+    // Load causes and campaigns. When we receive first data, we finish loading.
+    Promise.all([
+      new Promise((resolve, reject) => {
+        new loadAndWatchFeatherJSResource('causes', (resp, err) => {
+          if(resp) {
+            this.setState({ causes: resp })
+            resolve()
+          } else {
+            reject()
+          }
+        })
+      })
+    ,
+      new Promise((resolve, reject) => {
+        new loadAndWatchFeatherJSResource('campaigns', (resp, err) => {
+          if(resp) {
+            this.setState({ campaigns: resp })
+            resolve()
+          } else {
+            reject()
+          }
+        })
+      })        
+    ]).then(() => this.setState({ isLoading: false, hasError: false }))
+      .catch(() => this.setState({ isLoading: false, hasError: true }))
+    
   }
 
   render(){
@@ -57,7 +81,7 @@ class Application extends Component {
             <Loader className="fixed"/>
           }
 
-          { !this.state.isLoading &&
+          { !this.state.isLoading && !this.state.hasError &&
             <div>
               {/* Routes are defined here. Persistent data is set as props on components */}
               <Switch>
@@ -69,12 +93,24 @@ class Application extends Component {
                 <Route exact path="/causes/:id/edit" component={EditCause}/>            
                 <Route exact path="/causes/:id/milestones" component={Milestones}/>
                 <Route exact path="/causes/:id/milestones/:id" component={ViewMilestone}/>          
+
+                <Route exact path="/campaigns" component={props => <Campaigns campaigns={this.state.campaigns} currentUser={this.state.currentUser} {...props}/>} />
+                <Route exact path="/campaigns/new" component={props => <EditCampaign isNew="true" currentUser={this.state.currentUser} {...props}/>} />                        
+                <Route exact path="/campaigns/:id" component={ViewCampaign}/>
+                <Route exact path="/campaigns/:id/edit" component={EditCampaign}/>                 
                 
                 <Route exact path="/profile" component={Profile}/>
                 
                 <Route component={NotFound}/>
               </Switch>
             </div>
+          }
+
+          { !this.state.isLoading && this.state.hasError &&
+            <center>
+              <h2>Oops, something went wrong...</h2>
+              <p>The Giveth dapp could not load for some reason. Please try again...</p>
+            </center>
           }
 
         </div>
