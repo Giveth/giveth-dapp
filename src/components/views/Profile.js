@@ -10,6 +10,9 @@ class Profile extends Component {
       <div id="profile-view" className="container-fluid page-layout">
         <center>
           <h1>Profile</h1>
+          {this.props.currentUser &&
+          <h2>Welcome {this.props.currentUser}!</h2>
+          }
         </center>
       </div>
     )

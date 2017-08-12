@@ -81,7 +81,7 @@ class Application extends Component {
                 <Route exact path="/causes/:id/milestones" component={Milestones}/>
                 <Route exact path="/causes/:id/milestones/:id" component={ViewMilestone}/>          
                 
-                <Route exact path="/profile" component={Profile}/>
+                <Route exact path="/profile" component={props => <Profile currentUser={this.state.currentUser} {...props}/>} />
                 
                 <Route component={NotFound}/>
               </Switch>
