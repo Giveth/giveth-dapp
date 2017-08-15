@@ -2,6 +2,7 @@ import React, { Component } from 'react'
 import { BrowserRouter as Router, Route, Switch } from 'react-router-dom'
 
 import loadAndWatchFeatherJSResource from '../lib/loadAndWatchFeatherJSResource'
+import Web3Monitor from '../lib/Web3Monitor';
 
 // views
 import Profile from './../components/views/Profile'
@@ -35,6 +36,8 @@ class Application extends Component {
       milestones: [],
       causes: [],
       campaigns: [],
+      web3: undefined,
+      accounts: [],
       currentUser: "KJkjiquwekn98",
       isLoading: true,
       hasError: false
@@ -69,13 +72,21 @@ class Application extends Component {
             reject()
           }
         })
-      })        
+      })       
     ]).then(() => this.setState({ isLoading: false, hasError: false }))
       .catch((e) => {
         console.log('error loading', e)
         this.setState({ isLoading: false, hasError: true })
       })
     
+    // QUESTION: Should rendering with for this to load?
+    new Web3Monitor(({web3, accounts}) => {
+      this.setState({
+        web3,
+        accounts,
+        currentUser: (accounts.length > 0) ? accounts[0].address : undefined,
+      })
+    })
   }
 
   render(){
@@ -107,7 +118,7 @@ class Application extends Component {
                 <Route exact path="/campaigns/:id" component={ViewCampaign}/>
                 <Route exact path="/campaigns/:id/edit" component={EditCampaign}/>                 
                 
-                <Route exact path="/profile" component={Profile}/>
+                <Route exact path="/profile" component={props => <Profile currentUser={this.state.currentUser} {...props}/>} />
                 
                 <Route component={NotFound}/>
               </Switch>

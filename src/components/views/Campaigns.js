@@ -1,6 +1,6 @@
 import React, { Component } from 'react'
 import JoinGivethCommunity from '../JoinGivethCommunity'
-import { socket } from '../../lib/feathersClient'
+import { socket, feathersClient } from '../../lib/feathersClient'
 import { Link } from 'react-router-dom'
 
 /**
@@ -10,7 +10,8 @@ import { Link } from 'react-router-dom'
 class Campaigns extends Component {
   
   removeCampaign(id){
-    socket.emit("campaigns::remove", id, { cascade: true })
+    const campaigns = feathersClient.service('/campaigns');
+    campaigns.remove(id).then(campaign => console.log('Remove a campaign', campaign));    
   }
 
   render() {

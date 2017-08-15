@@ -9,6 +9,7 @@
 
 # Issues?
 - You need to use Node > v6
+- You need to use npm 4.x, or npm >= 5.3, or yarn to correctly install the dependencies
 - Don't use NPM? All commands can be used using Yarn.
 - Don't like port 3010? Change it in `.env`
 

@@ -1,6 +1,6 @@
 import React, { Component } from 'react'
 import JoinGivethCommunity from '../JoinGivethCommunity'
-import { socket } from '../../lib/feathersClient'
+import { socket, feathersClient } from '../../lib/feathersClient'
 import { Link } from 'react-router-dom'
 
 /**
@@ -10,7 +10,8 @@ import { Link } from 'react-router-dom'
 class Causes extends Component {
 
   removeCause(id){
-    socket.emit("causes::remove", id, { cascade: true })
+    const causes = feathersClient.service('/causes');
+    causes.remove(id).then(cause => console.log('Remove a cause', cause));
   }
 
   render() {
@@ -34,7 +35,7 @@ class Causes extends Component {
                     </a>
                     <Link className="btn btn-link" to={`/causes/${ cause._id }/edit`}>
                       <i className="fa fa-edit"></i>
-                    </Link>                    
+                    </Link>
                   </div>
                 </div>
               </div>
@@ -47,7 +48,7 @@ class Causes extends Component {
         </div>
       </div>
     )
-  } 
+  }
 }
 
 export default Causes

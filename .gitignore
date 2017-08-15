@@ -24,3 +24,5 @@ src/**/*.css
 
 *.sublime-project
 *.sublime-workspace
+.idea
+*.iml
