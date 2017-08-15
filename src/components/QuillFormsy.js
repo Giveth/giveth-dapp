@@ -50,7 +50,7 @@ const QuillFormsy = createReactClass({
           value={this.getValue()}
           name="description"
           tabIndex={2}
-          placeholder="Describe your cause..."
+          placeholder={this.props.placeholder}
           onChange={this.changeValue} 
           />  
         <span>{errorMessage}</span>

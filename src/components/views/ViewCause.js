@@ -46,7 +46,7 @@ class ViewCause extends Component {
       <div id="view-cause-view">
         <div className="container-fluid page-layout">
           <div className="row">
-            <div className="col-md-8 offset-md-2">
+            <div className="col-md-8 m-auto">
               { isLoading && 
                 <Loader className="fixed"/>
               }

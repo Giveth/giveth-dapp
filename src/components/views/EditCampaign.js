@@ -2,7 +2,9 @@ import React, { Component } from 'react'
 import { Form, Input, File, Select } from 'formsy-react-components';
 import { socket } from '../../lib/feathersClient'
 import Loader from '../Loader'
-import QuillFormsy from '../QuillFormsy';
+import QuillFormsy from '../QuillFormsy'
+import Milestone from '../Milestone'
+import EditMilestone from '../EditMilestone'
 
 
 /**
@@ -20,6 +22,20 @@ import QuillFormsy from '../QuillFormsy';
 class EditCampaign extends Component {
   constructor() {
     super()
+
+    // TO DO: perhaps move all models to seperate files.
+    this.milestone = {
+      title: 'milestone',
+      description: 'some milestone',
+      image: '',
+      ownerAddress: null,
+      reviewerAddress: null,
+      recipientAddress: null,
+      donationsReceived: 0,
+      donationsGiven: 0,
+      completionDeadline: new Date(),
+      completionStatus: 'pending'
+    }
 
     this.state = {
       isLoading: true,
@@ -135,19 +151,33 @@ class EditCampaign extends Component {
     }
   } 
 
+  addMilestone(){
+    let milestones = this.state.milestones
+    milestones.push(this.milestone)
+    console.log('milestones', milestones)
+    this.setState({ milestones: milestones }) 
+  }
+
+  removeMilestone(milestone){
+    this.setState({ milestones: this.state.milestones.filter((m) => {
+        return m !== milestone
+      })
+    })
+  }
+
   goBack(){
     this.props.history.push('/campaigns')
   }
 
   render(){
     const { isNew } = this.props
-    let { isLoading, isSaving, title, description, image, causes, causesOptions } = this.state
+    let { isLoading, isSaving, title, description, image, causes, causesOptions, milestones } = this.state
 
     return(
         <div id="edit-campaign-view">
           <div className="container-fluid page-layout">
             <div className="row">
-              <div className="col-md-8 offset-md-2">
+              <div className="col-md-8 m-auto">
                 { isLoading && 
                   <Loader className="fixed"/>
                 }
@@ -221,6 +251,33 @@ class EditCampaign extends Component {
                         />
                       </div>
 
+                      <div className="form-group">
+                        <label>Milestones</label>
+                        <div className="row">
+                          <div className="col-md-12">
+
+                            { isNew &&
+                              <div id="accordion" role="tablist">
+                                {milestones.length > 0 && milestones.map((m, i) => 
+                                  <EditMilestone model={m} isNew={true} removeMilestone={()=>this.removeMilestone(m)} key={i} />
+                                )}                              
+                              </div>
+                            }
+                            
+                            { !isNew && 
+                              <div id="accordion" role="tablist">
+                                {milestones.length > 0 && milestones.map((m, i) => 
+                                  <Milestone model={m} removeMilestone={()=>this.removeMilestone(m)} key={i} />
+                                )}
+                              </div>
+                            }
+                          </div>                            
+                        </div>
+
+                        <div className="card card-outline">
+                          <a className="btn btn-primary btn-sm" onClick={()=>this.addMilestone()}>Add milestone</a>
+                        </div>
+                      </div>
 
                       <button className="btn btn-success" formNoValidate={true} type="submit" disabled={isSaving || !this.isValid()}>
                         {isSaving ? "Saving..." : "Save campaign"}

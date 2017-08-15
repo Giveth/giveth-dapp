@@ -110,13 +110,14 @@ class Application extends Component {
                 <Route exact path="/dacs/new" component={props => <EditCause isNew="true" currentUser={this.state.currentUser} {...props}/>} />                        
                 <Route exact path="/dacs/:id" component={ViewCause}/>
                 <Route exact path="/dacs/:id/edit" component={EditCause}/>            
-                <Route exact path="/dacs/:id/milestones" component={Milestones}/>
-                <Route exact path="/dacs/:id/milestones/:id" component={ViewMilestone}/>          
 
                 <Route exact path="/campaigns" component={props => <Campaigns campaigns={this.state.campaigns} currentUser={this.state.currentUser} {...props}/>} />
                 <Route exact path="/campaigns/new" component={props => <EditCampaign isNew="true" currentUser={this.state.currentUser} {...props}/>} />                        
                 <Route exact path="/campaigns/:id" component={ViewCampaign}/>
-                <Route exact path="/campaigns/:id/edit" component={EditCampaign}/>                 
+                <Route exact path="/campaigns/:id/edit" component={EditCampaign}/>    
+                <Route exact path="/campaigns/:id/milestones" component={Milestones}/>
+                <Route exact path="/campaigns/:id/milestones/:id" component={ViewMilestone}/>          
+                             
                 
                 <Route exact path="/profile" component={props => <Profile currentUser={this.state.currentUser} {...props}/>} />
                 
