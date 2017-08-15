@@ -13,7 +13,7 @@ class loadAndWatchFeatherJSResource {
   constructor(service, callback){
     this.service = service
     this.data = []
-    this.limit = 50
+    this.limit = 10
     this.page = 1
     this.callback = callback
 

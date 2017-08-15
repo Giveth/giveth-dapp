@@ -1,8 +1,9 @@
 import React, { Component } from 'react'
-import { Form, Input, File } from 'formsy-react-components';
+import { Form, Input, File, Select } from 'formsy-react-components';
 import { socket } from '../../lib/feathersClient'
 import Loader from '../Loader'
 import QuillFormsy from '../QuillFormsy';
+
 
 /**
  * Create or edit a campaign
@@ -28,42 +29,74 @@ class EditCampaign extends Component {
       image: '',
       videoUrl: '',
       ownerAddress: null,
-      milestones: []
+      milestones: [],
+      causes: [],
+      causesOptions: [],
+      hasError: false
     }
 
     this.submit = this.submit.bind(this)
-    this.handleChange = this.handleChange.bind(this)
-  }  
+  } 
+
 
   componentDidMount() {
-    if(!this.props.isNew) {
-      socket.emit('campaigns::find', {_id: this.props.match.params.id}, (error, resp) => {      
-        this.setState({
-          id: this.props.match.params.id,
-          title: resp.data[0].title,
-          description: resp.data[0].description,
-          image: resp.data[0].image,
-          videoUrl: resp.data[0].videoUrl,
-          ownerAddress: resp.data[0].ownerAddress,
-          milestones: resp.data[0].milestones,          
-          isLoading: false
-        }, this.focusFirstInput())  
-      })  
-    } else {
-      this.setState({
-        isLoading: false
-      }, this.focusFirstInput())
-    }
+    Promise.all([
+      // load a single campaigns (when editing)
+      new Promise((resolve, reject) => {
+        if(!this.props.isNew) {
+          socket.emit('campaigns::find', {_id: this.props.match.params.id}, (error, resp) => {   
+            console.log(resp) 
+            if(resp) {  
+              this.setState({
+                id: this.props.match.params.id,
+                title: resp.data[0].title,
+                description: resp.data[0].description,
+                image: resp.data[0].image,
+                videoUrl: resp.data[0].videoUrl,
+                ownerAddress: resp.data[0].ownerAddress,
+                milestones: resp.data[0].milestones,        
+                causes: resp.data[0].causes  
+              }, resolve())  
+            } else {
+              reject()
+            }
+          })  
+        } else {
+          resolve()
+        }
+      })
+    ,
+      // load all causes. 
+      // TO DO: this needs to be replaced by something like http://react-autosuggest.js.org/
+      new Promise((resolve, reject) => {
+        socket.emit('causes::find', { $select: [ 'title', '_id' ] }, (err, resp) => {    
+          if(resp){
+            this.setState({ 
+              causesOptions: resp.data.map((c) =>  { return { label: c.title, value: c._id } }),
+              hasError: false
+            }, resolve())
+          } else {
+            this.setState({ hasError: true }, reject())
+          }
+        })
+      })
+
+    ]).then(() => this.setState({ isLoading: false, hasError: false }), this.focusFirstInput())
+      .catch((e) => {
+        console.log('error loading', e)
+        this.setState({ isLoading: false, hasError: true })        
+      })
   }
 
   focusFirstInput(){
-    setTimeout(() => this.refs.title.element.focus(), 0)
+    setTimeout(() => this.refs.title.element.focus(), 500)
   }
 
   mapInputs(inputs) {
     return {
       'title': inputs.title,
-      'description': inputs.description
+      'description': inputs.description,
+      'causes': inputs.causes
     }
   }  
 
@@ -75,11 +108,6 @@ class EditCampaign extends Component {
     reader.readAsDataURL(this.refs.imagePreview.element.files[0])
   }
 
-  handleChange(value) {
-    console.log('change')
-    this.setState({ description: value })
-  }  
-
   isValid() {
     return true
     return this.state.description.length > 0 && this.state.title.length > 10 && this.state.image.length > 0
@@ -89,7 +117,8 @@ class EditCampaign extends Component {
     const constructedModel = {
       title: model.title,
       description: model.description,
-      image: this.state.image      
+      image: this.state.image,
+      causes: [ model.causes ]
     }
 
     const afterEmit = () => {
@@ -112,7 +141,7 @@ class EditCampaign extends Component {
 
   render(){
     const { isNew } = this.props
-    let { isLoading, isSaving, title, description, image } = this.state
+    let { isLoading, isSaving, title, description, image, causes, causesOptions } = this.state
 
     return(
         <div id="edit-campaign-view">
@@ -180,6 +209,18 @@ class EditCampaign extends Component {
                           required
                         />
                       </div>
+
+                      {/* TO DO: This needs to be replaced by something like http://react-autosuggest.js.org/ */}
+                      <div className="form-group">
+                        <Select
+                          name="causes"
+                          label="Which cause does this campaign solve?"
+                          options={causesOptions}
+                          value={causes[0]}
+                          required
+                        />
+                      </div>
+
 
                       <button className="btn btn-success" formNoValidate={true} type="submit" disabled={isSaving || !this.isValid()}>
                         {isSaving ? "Saving..." : "Save campaign"}

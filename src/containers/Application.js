@@ -43,6 +43,11 @@ class Application extends Component {
  
   componentWillMount(){
     // Load causes and campaigns. When we receive first data, we finish loading.
+    // This setup is a little ugly, because the callback is being called 
+    // again and again by loadAndWatchFeatherJSResource whenever data changes.
+    // Yet the promise will be resolved the first time.
+    // But he, it works! ;-)
+
     Promise.all([
       new Promise((resolve, reject) => {
         new loadAndWatchFeatherJSResource('causes', (resp, err) => {
@@ -66,7 +71,10 @@ class Application extends Component {
         })
       })        
     ]).then(() => this.setState({ isLoading: false, hasError: false }))
-      .catch(() => this.setState({ isLoading: false, hasError: true }))
+      .catch((e) => {
+        console.log('error loading', e)
+        this.setState({ isLoading: false, hasError: true })
+      })
     
   }
 
