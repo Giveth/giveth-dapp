@@ -106,12 +106,12 @@ class Application extends Component {
               <Switch>
                 <Route exact path="/" component={props => <Causes causes={this.state.causes} currentUser={this.state.currentUser} {...props}/>} />
                 
-                <Route exact path="/causes" component={props => <Causes causes={this.state.causes} currentUser={this.state.currentUser} {...props}/>} />
-                <Route exact path="/causes/new" component={props => <EditCause isNew="true" currentUser={this.state.currentUser} {...props}/>} />                        
-                <Route exact path="/causes/:id" component={ViewCause}/>
-                <Route exact path="/causes/:id/edit" component={EditCause}/>            
-                <Route exact path="/causes/:id/milestones" component={Milestones}/>
-                <Route exact path="/causes/:id/milestones/:id" component={ViewMilestone}/>          
+                <Route exact path="/dacs" component={props => <Causes causes={this.state.causes} currentUser={this.state.currentUser} {...props}/>} />
+                <Route exact path="/dacs/new" component={props => <EditCause isNew="true" currentUser={this.state.currentUser} {...props}/>} />                        
+                <Route exact path="/dacs/:id" component={ViewCause}/>
+                <Route exact path="/dacs/:id/edit" component={EditCause}/>            
+                <Route exact path="/dacs/:id/milestones" component={Milestones}/>
+                <Route exact path="/dacs/:id/milestones/:id" component={ViewMilestone}/>          
 
                 <Route exact path="/campaigns" component={props => <Campaigns campaigns={this.state.campaigns} currentUser={this.state.currentUser} {...props}/>} />
                 <Route exact path="/campaigns/new" component={props => <EditCampaign isNew="true" currentUser={this.state.currentUser} {...props}/>} />                        

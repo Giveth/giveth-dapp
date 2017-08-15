@@ -19,7 +19,7 @@ class MainMenu extends Component {
         <div className="collapse navbar-collapse" id="navbarSupportedContent">
           <ul className="navbar-nav mr-auto">
             <li className="nav-item active">
-              <Link className="nav-link" to="/">Causes</Link>
+              <Link className="nav-link" to="/">DACs</Link>
             </li>
             <li className="nav-item active">
               <Link className="nav-link" to="/campaigns">Campaigns</Link>

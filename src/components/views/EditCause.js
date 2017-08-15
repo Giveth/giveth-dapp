@@ -31,7 +31,6 @@ class EditCause extends Component {
     }
 
     this.submit = this.submit.bind(this)
-    this.handleChange = this.handleChange.bind(this)
   }  
 
   componentDidMount() {
@@ -73,11 +72,6 @@ class EditCause extends Component {
     reader.readAsDataURL(this.refs.imagePreview.element.files[0])
   }
 
-  handleChange(value) {
-    console.log('change')
-    this.setState({ description: value })
-  }  
-
   isValid() {
     return true
     return this.state.description.length > 0 && this.state.title.length > 10 && this.state.image.length > 0
@@ -92,7 +86,7 @@ class EditCause extends Component {
 
     const afterEmit = () => {
       this.setState({ isSaving: false })
-      this.props.history.push('/causes')      
+      this.props.history.push('/dacs')      
     }
 
     this.setState({ isSaving: true })

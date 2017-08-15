@@ -53,7 +53,7 @@ class ViewCause extends Component {
               
               { !isLoading &&
                 <div>
-                  <p>Cause</p>
+                  <p>Democratic Autonomous Charity</p>
                   <h1 className="cause-title">{title}</h1>
                   <img className="cause-header-image" src={image} alt=""/>
                   <div dangerouslySetInnerHTML={{__html: description}}></div>

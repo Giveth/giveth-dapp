@@ -1,6 +1,6 @@
 import React, { Component } from 'react'
 import JoinGivethCommunity from '../JoinGivethCommunity'
-import { socket, feathersClient } from '../../lib/feathersClient'
+import { feathersClient } from '../../lib/feathersClient'
 import { Link } from 'react-router-dom'
 
 /**
@@ -26,14 +26,14 @@ class Causes extends Component {
                 <div className="card" id={cause._id}>
                   <img className="card-img-top" src={cause.image} alt=""/>
                   <div className="card-block">
-                    <Link to={`/causes/${ cause._id }`}>
+                    <Link to={`/dacs/${ cause._id }`}>
                       <h4 className="card-title">{cause.title}</h4>
                     </Link>
                     <div className="card-text" dangerouslySetInnerHTML={{__html: cause.description}}></div>
                     <a className="btn btn-link" onClick={()=>this.removeCause(cause._id)}>
                       <i className="fa fa-trash"></i>
                     </a>
-                    <Link className="btn btn-link" to={`/causes/${ cause._id }/edit`}>
+                    <Link className="btn btn-link" to={`/dacs/${ cause._id }/edit`}>
                       <i className="fa fa-edit"></i>
                     </Link>
                   </div>
@@ -42,7 +42,7 @@ class Causes extends Component {
             )}
 
             { this.props.causes.data && this.props.causes.data.length === 0 &&
-              <center>There are no causes yet!</center>
+              <center>There are no DACs yet!</center>
             }
           </div>
         </div>

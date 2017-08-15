@@ -1,6 +1,6 @@
 import React, { Component } from 'react'
 import JoinGivethCommunity from '../JoinGivethCommunity'
-import { socket, feathersClient } from '../../lib/feathersClient'
+import { feathersClient } from '../../lib/feathersClient'
 import { Link } from 'react-router-dom'
 
 /**
