@@ -5,6 +5,7 @@ import Loader from '../Loader'
 import QuillFormsy from '../QuillFormsy'
 import Milestone from '../Milestone'
 import EditMilestone from '../EditMilestone'
+import FormsyImageUploader from './../FormsyImageUploader'
 
 
 /**
@@ -52,6 +53,7 @@ class EditCampaign extends Component {
     }
 
     this.submit = this.submit.bind(this)
+    this.setImage = this.setImage.bind(this)    
   } 
 
 
@@ -116,12 +118,8 @@ class EditCampaign extends Component {
     }
   }  
 
-  loadAndPreviewImage() {
-    const reader = new FileReader()  
-
-    reader.onload = (e) => this.setState({ image: e.target.result })
-
-    reader.readAsDataURL(this.refs.imagePreview.element.files[0])
+  setImage(image) {
+    this.setState({ image: image })
   }
 
   isValid() {
@@ -170,7 +168,7 @@ class EditCampaign extends Component {
   }
 
   render(){
-    const { isNew } = this.props
+    const { isNew, currentUser } = this.props
     let { isLoading, isSaving, title, description, image, causes, causesOptions, milestones } = this.state
 
     return(
@@ -226,19 +224,7 @@ class EditCampaign extends Component {
                         />
                       </div>
 
-                      <div id="image-preview">
-                        <img src={image} width="500px" alt=""/>
-                      </div>
-
-                      <div className="form-group">
-                        <label>Add a picture</label>
-                        <File
-                          name="picture"
-                          onChange={()=>this.loadAndPreviewImage()}
-                          ref="imagePreview"
-                          required
-                        />
-                      </div>
+                      <FormsyImageUploader setImage={this.setImage}/>
 
                       {/* TO DO: This needs to be replaced by something like http://react-autosuggest.js.org/ */}
                       <div className="form-group">
@@ -259,7 +245,13 @@ class EditCampaign extends Component {
                             { isNew &&
                               <div id="accordion" role="tablist">
                                 {milestones.length > 0 && milestones.map((m, i) => 
-                                  <EditMilestone model={m} isNew={true} removeMilestone={()=>this.removeMilestone(m)} key={i} />
+                                  <EditMilestone 
+                                    model={m} 
+                                    isNew={true} 
+                                    removeMilestone={()=>this.removeMilestone(m)} 
+                                    currentUser={currentUser} 
+                                    key={i} 
+                                  />
                                 )}                              
                               </div>
                             }

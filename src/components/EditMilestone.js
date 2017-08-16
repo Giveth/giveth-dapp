@@ -3,6 +3,7 @@ import { Form, Input, File } from 'formsy-react-components';
 import { socket } from '../lib/feathersClient'
 import Loader from './Loader'
 import QuillFormsy from './QuillFormsy'
+import FormsyImageUploader from './FormsyImageUploader'
 
 
 /**
@@ -29,9 +30,9 @@ class EditMilestone extends Component {
       description: '',
       image: '',
       videoUrl: '',
-      ownerAddress: null,
-      reviewerAddress: null,      
-      recipientAddress: null,
+      ownerAddress: '',
+      reviewerAddress: '',      
+      recipientAddress: '',
       donationsReceived: 0,
       donationsGiven: 0,      
       completionDeadline: new Date(),
@@ -41,6 +42,7 @@ class EditMilestone extends Component {
     }
 
     this.submit = this.submit.bind(this)
+    this.setImage = this.setImage.bind(this)
   } 
 
 
@@ -85,6 +87,10 @@ class EditMilestone extends Component {
     setTimeout(() => this.refs.title.element.focus(), 500)
   }
 
+  setImage(image) {
+    this.setState({ image: image })
+  }
+
   mapInputs(inputs) {
     return {
       'title': inputs.title,
@@ -95,13 +101,6 @@ class EditMilestone extends Component {
     }
   }  
 
-  loadAndPreviewImage() {
-    const reader = new FileReader()  
-
-    reader.onload = (e) => this.setState({ image: e.target.result })
-
-    reader.readAsDataURL(this.refs.imagePreview.element.files[0])
-  }
 
   isValid() {
     return true
@@ -115,7 +114,8 @@ class EditMilestone extends Component {
       reviewerAddress: model.reviewerAddress,
       recipientAddress: model.recipientAddress,
       completionDeadline: model.completionDeadline,
-      image: this.state.image            
+      image: this.state.image,
+      ownerAddress: this.props.currentUser          
     }
 
     const afterEmit = () => {
@@ -152,7 +152,7 @@ class EditMilestone extends Component {
 
   render(){
     const { isNew } = this.props
-    let { id, isLoading, isSaving, title, description, image } = this.state
+    let { id, isLoading, isSaving, title, description, image, recipientAddress, reviewerAddress, completionDeadline } = this.state
 
     return(
       <div className="card">
@@ -175,7 +175,8 @@ class EditMilestone extends Component {
             </div>
 
             <div id={id} className="collapse show" role="tabpanel" aria-labelledby="headingOne" data-parent={'#' + id}>
-              <div className="card-body">            
+              <div className="card-body"> 
+
                 <Form onSubmit={this.submit} mapping={this.mapInputs} layout='vertical'>
                   <div className="form-group">
                     <Input
@@ -210,19 +211,52 @@ class EditMilestone extends Component {
                     />
                   </div>
 
-                  <div id="image-preview">
-                    <img src={image} width="500px" alt=""/>
-                  </div>
+                  <FormsyImageUploader setImage={this.setImage}/>
 
-                  <div className="form-group">
-                    <label>Add a picture</label>
-                    <File
-                      name="picture"
-                      onChange={()=>this.loadAndPreviewImage()}
-                      ref="imagePreview"
-                      required
-                    />
-                  </div>
+                  <Input
+                    name="reviewerAddress"
+                    id="title-input"
+                    label="Reviewer Address"
+                    type="text"
+                    value={reviewerAddress}
+                    placeholder="Who will review this milestone?"
+                    help="Enter an Ethereum address."
+                    validations="minLength:10"
+                    validationErrors={{
+                        minLength: 'Please provide at least 10 characters.'
+                    }}                    
+                    required
+                  />    
+
+                  <Input
+                    name="recipientAddress"
+                    id="title-input"
+                    label="Recipient Address"
+                    type="text"
+                    value={recipientAddress}
+                    placeholder="Where will the money go?"
+                    help="Enter an Ethereum address."
+                    validations="minLength:10"
+                    validationErrors={{
+                        minLength: 'Please provide at least 10 characters.'
+                    }}                    
+                    required
+                  />   
+
+                  <Input
+                    name="completionDeadline"
+                    id="title-input"
+                    label="Recipient Address"
+                    type="text"
+                    value={completionDeadline}
+                    placeholder="When will the milestone be completed?"
+                    help="Enter a date."
+                    validations="minLength:10"
+                    validationErrors={{
+                        minLength: 'Please provide at least 10 characters.'
+                    }}                    
+                    required
+                  />                                                    
 
                   <button className="btn btn-success" formNoValidate={true} type="submit" disabled={isSaving || !this.isValid()}>
                     {isSaving ? "Saving..." : "Save milestone"}

@@ -3,6 +3,7 @@ import { Form, Input, File } from 'formsy-react-components';
 import { socket } from '../../lib/feathersClient'
 import Loader from '../Loader'
 import QuillFormsy from '../QuillFormsy';
+import FormsyImageUploader from './../FormsyImageUploader'
 
 /**
  * Create or edit a cause
@@ -31,6 +32,7 @@ class EditCause extends Component {
     }
 
     this.submit = this.submit.bind(this)
+    this.setImage = this.setImage.bind(this)        
   }  
 
   componentDidMount() {
@@ -62,14 +64,10 @@ class EditCause extends Component {
       'title': inputs.title,
       'description': inputs.description
     }
-  }  
+  }
 
-  loadAndPreviewImage() {
-    const reader = new FileReader()  
-
-    reader.onload = (e) => this.setState({ image: e.target.result })
-
-    reader.readAsDataURL(this.refs.imagePreview.element.files[0])
+  setImage(image) {
+    this.setState({ image: image })
   }
 
   isValid() {
@@ -159,19 +157,7 @@ class EditCause extends Component {
                         />
                       </div>
 
-                      <div id="image-preview">
-                        <img src={image} width="500px" alt=""/>
-                      </div>
-
-                      <div className="form-group">
-                        <label>Add a picture</label>
-                        <File
-                          name="picture"
-                          onChange={()=>this.loadAndPreviewImage()}
-                          ref="imagePreview"
-                          required
-                        />
-                      </div>
+                      <FormsyImageUploader setImage={this.setImage}/>
 
                       <button className="btn btn-success" formNoValidate={true} type="submit" disabled={isSaving || !this.isValid()}>
                         {isSaving ? "Saving..." : "Save cause"}

@@ -38,7 +38,7 @@ class Application extends Component {
       campaigns: [],
       web3: undefined,
       accounts: [],
-      currentUser: "KJkjiquwekn98",
+      currentUser: '',
       isLoading: true,
       hasError: false
     }
