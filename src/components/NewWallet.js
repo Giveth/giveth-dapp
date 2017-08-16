@@ -1,6 +1,7 @@
 import React, {Component} from 'react';
 import {Form, Input} from 'formsy-react-components';
 import GivethWallet from '../lib/GivethWallet';
+import BackupWallet from "./BackupWallet";
 
 /**
 
@@ -15,6 +16,7 @@ class NewWallet extends Component {
     this.state = {
       error: undefined,
       validForm: false,
+      wallet: undefined,
     };
 
     this.submit = this.submit.bind(this);
@@ -38,6 +40,7 @@ class NewWallet extends Component {
     GivethWallet.createWallet(password)
     .then(wallet => {
       this.props.walletCreated(wallet);
+      this.setState({wallet});
     })
     .catch((error) => {
       if (typeof error === 'object') {
@@ -62,7 +65,13 @@ class NewWallet extends Component {
   }
 
   render() {
-    const {error} = this.state;
+    const {wallet, error} = this.state;
+
+    if (wallet) {
+      return (
+        <BackupWallet wallet={wallet} />
+      )
+    }
 
     return (
       <div>

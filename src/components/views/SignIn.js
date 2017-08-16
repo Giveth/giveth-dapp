@@ -1,6 +1,5 @@
 import React, {Component} from 'react'
 import NewWallet from "../NewWallet";
-import BackupWallet from "../BackupWallet";
 
 /**
  SignIn Page
@@ -10,12 +9,9 @@ class SignIn extends Component {
   constructor() {
     super();
 
-    this.state = {
-      backupWallet: false,
-    };
+    this.state = {};
 
     this.submit = this.submit.bind(this);
-    this.walletCreated = this.walletCreated.bind(this);
   }
 
   componentDidMount() {
@@ -24,13 +20,6 @@ class SignIn extends Component {
 
   focusFirstInput() {
     setTimeout(() => this.refs.password.element.focus(), 0)
-  }
-
-  walletCreated(wallet) {
-    this.props.setWallet(wallet);
-    this.setState({
-      backupWallet: true,
-    })
   }
 
   mapInputs(inputs) {
@@ -54,8 +43,6 @@ class SignIn extends Component {
   }
 
   render() {
-    const {backupWallet} = this.state;
-
     return (
       <div id="signin-view" className="container-fluid page-layout">
         <div className="row">
@@ -63,12 +50,7 @@ class SignIn extends Component {
             <div>
               <h1>Register!</h1>
 
-              { backupWallet &&
-                <BackupWallet wallet={this.props.wallet} />
-              }
-              { !backupWallet &&
-                <NewWallet walletCreated={this.walletCreated}/>
-              }
+              <NewWallet walletCreated={this.props.handleWalletChange} />
               {/*<Form onSubmit={this.submit} mapping={this.mapInputs} layout='vertical'>*/}
               {/*<div className="form-group">*/}
               {/*<Input*/}
