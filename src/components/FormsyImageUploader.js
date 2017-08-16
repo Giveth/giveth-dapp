@@ -22,6 +22,10 @@ class FormsyImageUploader extends Component {
     }
   }
 
+  componentWillMount(){
+    this.setState({ image: this.props.previewImage || '' })
+  }
+
   loadAndPreviewImage() {
     const reader = new FileReader()  
     reader.onload = (e) => {
@@ -32,7 +36,8 @@ class FormsyImageUploader extends Component {
     ImageTools.resize(this.refs.imagePreview.element.files[0], {
       width: 800,
       height: 600
-    }, (blob, didItResize) => reader.readAsDataURL(blob))
+    }, (blob, didItResize) => 
+      reader.readAsDataURL(didItResize ? blob : this.refs.imagePreview.element.files[0]) )
   }
 
   render(){

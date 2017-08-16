@@ -79,7 +79,8 @@ class EditCause extends Component {
     const constructedModel = {
       title: model.title,
       description: model.description,
-      image: this.state.image      
+      image: this.state.image,
+      ownerAddress: this.props.currentUser      
     }
 
     const afterEmit = () => {
@@ -116,11 +117,11 @@ class EditCause extends Component {
                 { !isLoading &&
                   <div>
                     { isNew &&
-                      <h1>Start a new cause!</h1>
+                      <h1>Start a Democratic Autonomous Charity!</h1>
                     }
 
                     { !isNew &&
-                      <h1>Edit cause {title}</h1>
+                      <h1>Edit DAC {title}</h1>
                     }
 
                     <Form onSubmit={this.submit} mapping={this.mapInputs} layout='vertical'>
@@ -133,7 +134,7 @@ class EditCause extends Component {
                           type="text"
                           value={title}
                           placeholder="E.g. Climate change."
-                          help="Describe your cause in 1 scentence."
+                          help="Describe your DAC in 1 scentence."
                           validations="minLength:10"
                           validationErrors={{
                               minLength: 'Please provide at least 10 characters.'
@@ -145,7 +146,7 @@ class EditCause extends Component {
                       <div className="form-group">
                         <QuillFormsy 
                           name="description"
-                          label="Description"
+                          label="What cause are you solving?"
                           value={description}
                           placeholder="Describe your cause..."
                           validations="minLength:10"  

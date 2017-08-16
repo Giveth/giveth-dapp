@@ -1,8 +1,14 @@
 /* Resizes an image
  *
  *  @params
- *    width (number): max width of image
- *    height (number): max height of image
+ *    file (blob): image file
+ *    options: (object)
+ *      width (number): max width of image
+ *      height (number): max height of image
+ *
+ *  @returns
+ *    blob (blob): Resized blob object
+ *    didItResize (bool): true if resized
  *
  * Credits:
  * https://gist.githubusercontent.com/dcollien/312bce1270a5f511bf4a/raw/9bb680a9d30f0df8046a78f7335abfaf5c026135/ImageTools.es6
@@ -39,9 +45,6 @@ export default class ImageTools {
                 height: 480
             };
         }
-
-        let maxWidth  = maxDimensions.width;
-        let maxHeight = maxDimensions.height;
 
         if (!ImageTools.isSupported() || !file.type.match(/image.*/)) {
             callback(file, false);

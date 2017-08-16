@@ -3,8 +3,8 @@ import { Form, Input, Select } from 'formsy-react-components';
 import { socket } from '../../lib/feathersClient'
 import Loader from '../Loader'
 import QuillFormsy from '../QuillFormsy'
-import Milestone from '../Milestone'
-import EditMilestone from '../EditMilestone'
+// import Milestone from '../Milestone'
+// import EditMilestone from '../EditMilestone'
 import FormsyImageUploader from './../FormsyImageUploader'
 
 
@@ -24,20 +24,6 @@ class EditCampaign extends Component {
   constructor() {
     super()
 
-    // TO DO: perhaps move all models to seperate files.
-    this.milestone = {
-      title: 'milestone',
-      description: 'some milestone',
-      image: '',
-      ownerAddress: null,
-      reviewerAddress: null,
-      recipientAddress: null,
-      donationsReceived: 0,
-      donationsGiven: 0,
-      completionDeadline: new Date(),
-      completionStatus: 'pending'
-    }
-
     this.state = {
       isLoading: true,
       isSaving: false,
@@ -53,8 +39,8 @@ class EditCampaign extends Component {
     }
 
     this.submit = this.submit.bind(this)
-    this.setImage = this.setImage.bind(this)    
-  } 
+    this.setImage = this.setImage.bind(this)  
+  }
 
 
   componentDidMount() {
@@ -94,7 +80,7 @@ class EditCampaign extends Component {
               hasError: false
             }, resolve())
           } else {
-            this.setState({ hasError: true }, reject())
+            reject()
           }
         })
       })
@@ -132,7 +118,8 @@ class EditCampaign extends Component {
       title: model.title,
       description: model.description,
       image: this.state.image,
-      causes: [ model.causes ]
+      causes: [ model.causes ],
+      ownerAddress: this.props.currentUser            
     }
 
     const afterEmit = () => {
@@ -149,19 +136,16 @@ class EditCampaign extends Component {
     }
   } 
 
-  addMilestone(){
-    let milestones = this.state.milestones
-    milestones.push(this.milestone)
-    console.log('milestones', milestones)
-    this.setState({ milestones: milestones }) 
-  }
+  // addMilestone(){
+  //   this.setState({ milestones: [...this.state.milestones, new MilestoneModel] }) 
+  // }
 
-  removeMilestone(milestone){
-    this.setState({ milestones: this.state.milestones.filter((m) => {
-        return m !== milestone
-      })
-    })
-  }
+  // removeMilestone(milestone){
+  //   console.log('milestones', this.state.milestones)
+  //   console.log('removing milestone', milestone)
+
+  //   this.setState({ milestones: this.state.milestones.filter((m) => m.id !== milestone.id) })
+  // }
 
   goBack(){
     this.props.history.push('/campaigns')
@@ -169,7 +153,7 @@ class EditCampaign extends Component {
 
   render(){
     const { isNew, currentUser } = this.props
-    let { isLoading, isSaving, title, description, causes, causesOptions, milestones } = this.state
+    let { isLoading, isSaving, title, description, image, causes, causesOptions, milestones } = this.state
 
     return(
         <div id="edit-campaign-view">
@@ -237,6 +221,7 @@ class EditCampaign extends Component {
                         />
                       </div>
 
+                      {/*
                       <div className="form-group">
                         <label>Milestones</label>
                         <div className="row">
@@ -259,17 +244,19 @@ class EditCampaign extends Component {
                             { !isNew && 
                               <div id="accordion" role="tablist">
                                 {milestones.length > 0 && milestones.map((m, i) => 
-                                  <Milestone model={m} removeMilestone={()=>this.removeMilestone(m)} key={i} />
+                                  <Milestone model={m} key={i} />
                                 )}
                               </div>
                             }
                           </div>                            
                         </div>
+                      
 
                         <div className="card card-outline">
                           <a className="btn btn-primary btn-sm" onClick={()=>this.addMilestone()}>Add milestone</a>
                         </div>
                       </div>
+                      */}
 
                       <button className="btn btn-success" formNoValidate={true} type="submit" disabled={isSaving || !this.isValid()}>
                         {isSaving ? "Saving..." : "Save campaign"}

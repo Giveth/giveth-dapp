@@ -1,4 +1,5 @@
 import React, { Component } from 'react'
+import { Link } from 'react-router-dom'
 
 /**
   A single milestone
@@ -14,19 +15,18 @@ class Milestone extends Component {
 
     return(
       <div className="card">
-        <div className="card-header">
-          <a data-toggle="collapse" href="#collapse-area" aria-expanded="true" aria-controls="collapse-area">
-            <h5 className="card-title">{model.title}</h5>
+        <img className="card-img-top" src={model.image} alt=""/>
+        <div className="card-body">
+          <Link to={`/campaigns/${ model.campaignId }/milestones/${ model._id}`}>
+            <h4 className="card-title">{model.title}</h4>
+          </Link>
+          <div className="card-text" dangerouslySetInnerHTML={{__html: model.description}}></div>
+          <a className="btn btn-link" onClick={removeMilestone}>
+            <i className="fa fa-trash"></i>
           </a>
-        </div>
-
-        <div id="collapse-area" class="collapse show" role="tabpanel" aria-labelledby="headingOne" data-parent="#accordion">
-          <div className="card-body">
-            <div className="card-text">{model.description}</div>
-            <a className="btn btn-link" onClick={removeMilestone}>
-              <i className="fa fa-trash"></i>
-            </a>                                  
-          </div>
+          <Link className="btn btn-link" to={`/campaigns/${ model.campaignId }/milestones/${ model._id}/edit`}>
+            <i className="fa fa-edit"></i>
+          </Link>
         </div>
       </div>
     )

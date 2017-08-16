@@ -10,19 +10,21 @@ import { socket } from '../lib/feathersClient'
  */
 
 class loadAndWatchFeatherJSResource {
-  constructor(service, callback){
+  constructor(service, query, callback){
     this.service = service
     this.data = []
     this.limit = 10
     this.page = 1
     this.callback = callback
 
+    this.query = Object.assign({}, query, { $limit: this.limit})
+
     this.getResource()
     this.watchResource()
   }  
 
   getResource(){
-    socket.emit(this.service + '::find', { $limit: this.limit}, (error, data) => {
+    socket.emit(this.service + '::find', this.query, (error, data) => {
       if(data){
         console.info('Found all ' + this.service + "with limit " + this.limit, data);
         this.data = data
