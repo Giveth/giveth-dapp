@@ -36,20 +36,20 @@ class Web3Monitor {
     return new Promise((resolve) => {
 
       window.addEventListener('load', function () {
-        const {web3} = window;
+        let {web3} = window;
 
         // Checking if Web3 has been injected by the browser (Mist/MetaMask)
         if (typeof web3 !== 'undefined') {
           // Use Mist/MetaMask's provider
-          window.web3 = new Web3(web3.currentProvider);
+          web3 = new Web3(web3.currentProvider);
         } else {
           // fallback - use your fallback strategy (local node / hosted node + in-dapp id mgmt / fail)
-          window.web3 = new Web3(new Web3.providers.HttpProvider("http://localhost:8545"));
+          web3 = new Web3(new Web3.providers.HttpProvider("http://localhost:8545"));
         }
 
         if (!web3.isConnected()) {
           // TODO setup giveth node and use that
-          window.web3 = new Web3(new Web3.providers.HttpProvider("https://giveth.psdev.io:8545"));
+          web3 = new Web3(new Web3.providers.HttpProvider("https://giveth.psdev.io:8545"));
         }
 
         web3.eth.getTransactionReceiptMined = getTransactionReceiptMined;
