@@ -11,6 +11,7 @@ import Causes from './../components/views/Causes'
 import EditCause from './../components/views/EditCause'
 import ViewCause from './../components/views/ViewCause'
 import NotFound from './../components/views/NotFound'
+import WalletDemo from './../components/views/WalletDemo'
 
 import Campaigns from './../components/views/Campaigns'
 import EditCampaign from './../components/views/EditCampaign'
@@ -122,7 +123,9 @@ class Application extends Component {
                              
                 
                 <Route exact path="/profile" component={props => <Profile currentUser={this.state.currentUser} {...props}/>} />
-                
+
+                <Route exact path="/wallet" component={props => <WalletDemo currentUser={this.state.currentUser} {...props}/>} />
+
                 <Route component={NotFound}/>
               </Switch>
             </div>

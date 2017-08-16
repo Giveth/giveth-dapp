@@ -28,6 +28,9 @@ class MainMenu extends Component {
             <li className="nav-item">
               <NavLink className="nav-link" to="/profile" activeClassName="active">Profile</NavLink>
             </li>            
+            <li className="nav-item">
+              <Link className="nav-link" to="/wallet">Wallet Demo</Link>
+            </li>
           </ul>
 
           <form className="form-inline my-2 my-lg-0">
