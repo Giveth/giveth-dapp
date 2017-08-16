@@ -6,6 +6,8 @@ import Web3Monitor from '../lib/Web3Monitor';
 
 // views
 import Profile from './../components/views/Profile'
+import SignIn from './../components/views/SignIn'
+
 import ViewMilestone from './../components/views/ViewMilestone'
 import Causes from './../components/views/Causes'
 import EditCause from './../components/views/EditCause'
@@ -41,8 +43,11 @@ class Application extends Component {
       accounts: [],
       currentUser: '',
       isLoading: true,
-      hasError: false
-    }
+      hasError: false,
+      wallet: undefined,
+    };
+
+    this.setWallet = this.setWallet.bind(this);
   }
  
   componentWillMount(){
@@ -90,6 +95,10 @@ class Application extends Component {
     })
   }
 
+  setWallet(wallet) {
+    this.setState({wallet});
+  }
+
   render(){
 
     return(
@@ -121,7 +130,7 @@ class Application extends Component {
                 <Route exact path="/campaigns/:id/milestones/:milestoneId" component={props => <ViewMilestone currentUser={this.state.currentUser} {...props} />}/>          
                 <Route exact path="/campaigns/:id/milestones/:milestoneId/edit" component={props => <EditMilestone currentUser={this.state.currentUser} {...props} />}/>       
                              
-                
+                <Route exact path="/signin" component={props => <SignIn wallet={this.state.wallet} setWallet={this.setWallet} {...props}/>} />
                 <Route exact path="/profile" component={props => <Profile currentUser={this.state.currentUser} {...props}/>} />
 
                 <Route exact path="/wallet" component={props => <WalletDemo currentUser={this.state.currentUser} {...props}/>} />

@@ -33,6 +33,9 @@ class MainMenu extends Component {
             </li>
           </ul>
 
+          <div className="navbar-right">
+            <Link className="btn btn-outline-secondary" to="/signin">Sign In</Link>
+          </div>
           <form className="form-inline my-2 my-lg-0">
             <input className="form-control mr-sm-2" type="text" placeholder="E.g. save the whales"/>
             <button className="btn btn-outline-success my-2 my-sm-0" type="submit">Find</button>
