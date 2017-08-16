@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import { Form, Input, File } from 'formsy-react-components';
+import { Form, Input } from 'formsy-react-components';
 import { socket } from '../../lib/feathersClient'
 import Loader from '../Loader'
 import QuillFormsy from '../QuillFormsy';
@@ -102,7 +102,7 @@ class EditCause extends Component {
 
   render(){
     const { isNew } = this.props
-    let { isLoading, isSaving, title, description, image } = this.state
+    let { isLoading, isSaving, title, description } = this.state
 
     return(
         <div id="edit-cause-view">

@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import { Form, Input, File, Select } from 'formsy-react-components';
+import { Form, Input, Select } from 'formsy-react-components';
 import { socket } from '../../lib/feathersClient'
 import Loader from '../Loader'
 import QuillFormsy from '../QuillFormsy'
@@ -169,7 +169,7 @@ class EditCampaign extends Component {
 
   render(){
     const { isNew, currentUser } = this.props
-    let { isLoading, isSaving, title, description, image, causes, causesOptions, milestones } = this.state
+    let { isLoading, isSaving, title, description, causes, causesOptions, milestones } = this.state
 
     return(
         <div id="edit-campaign-view">

@@ -1,5 +1,6 @@
 import React, { Component } from 'react'
-import { File } from 'formsy-react-components';
+import { File } from 'formsy-react-components'
+import ImageTools from './../lib/ImageResizer'
 
 /**
  * Image uploader with preview. Returns base64 image
@@ -28,7 +29,10 @@ class FormsyImageUploader extends Component {
       this.props.setImage(e.target.result)
     }
 
-    reader.readAsDataURL(this.refs.imagePreview.element.files[0])
+    ImageTools.resize(this.refs.imagePreview.element.files[0], {
+      width: 800,
+      height: 600
+    }, (blob, didItResize) => reader.readAsDataURL(blob))
   }
 
   render(){

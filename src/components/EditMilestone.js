@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import { Form, Input, File } from 'formsy-react-components';
+import { Form, Input } from 'formsy-react-components';
 import { socket } from '../lib/feathersClient'
 import Loader from './Loader'
 import QuillFormsy from './QuillFormsy'
@@ -152,7 +152,7 @@ class EditMilestone extends Component {
 
   render(){
     const { isNew } = this.props
-    let { id, isLoading, isSaving, title, description, image, recipientAddress, reviewerAddress, completionDeadline } = this.state
+    let { id, isLoading, isSaving, title, description, recipientAddress, reviewerAddress, completionDeadline } = this.state
 
     return(
       <div className="card">
