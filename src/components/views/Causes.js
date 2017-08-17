@@ -25,7 +25,7 @@ class Causes extends Component {
               <div className="col-md-6 card-container" key={index}>
                 <div className="card" id={cause._id}>
                   <img className="card-img-top" src={cause.image} alt=""/>
-                  <div className="card-block">
+                  <div className="card-body">
                     <Link to={`/dacs/${ cause._id }`}>
                       <h4 className="card-title">{cause.title}</h4>
                     </Link>

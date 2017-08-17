@@ -25,7 +25,7 @@ class Campaigns extends Component {
               <div className="col-md-6 card-container" key={index}>
                 <div className="card" id={campaign._id}>
                   <img className="card-img-top" src={campaign.image} alt=""/>
-                  <div className="card-block">
+                  <div className="card-body">
                     <Link to={`/campaigns/${ campaign._id }`}>
                       <h4 className="card-title">{campaign.title}</h4>
                     </Link>

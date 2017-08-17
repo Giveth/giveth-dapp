@@ -6,7 +6,6 @@ import Web3Monitor from '../lib/Web3Monitor';
 
 // views
 import Profile from './../components/views/Profile'
-import Milestones from './../components/views/Milestones'
 import ViewMilestone from './../components/views/ViewMilestone'
 import Causes from './../components/views/Causes'
 import EditCause from './../components/views/EditCause'
@@ -16,6 +15,7 @@ import NotFound from './../components/views/NotFound'
 import Campaigns from './../components/views/Campaigns'
 import EditCampaign from './../components/views/EditCampaign'
 import ViewCampaign from './../components/views/ViewCampaign'
+import EditMilestone from './../components/views/EditMilestone'
 
 
 // components
@@ -38,7 +38,7 @@ class Application extends Component {
       campaigns: [],
       web3: undefined,
       accounts: [],
-      currentUser: "KJkjiquwekn98",
+      currentUser: '',
       isLoading: true,
       hasError: false
     }
@@ -53,7 +53,7 @@ class Application extends Component {
 
     Promise.all([
       new Promise((resolve, reject) => {
-        new loadAndWatchFeatherJSResource('causes', (resp, err) => {
+        new loadAndWatchFeatherJSResource('causes', {}, (resp, err) => {
           if(resp) {
             this.setState({ causes: resp })
             resolve()
@@ -64,7 +64,7 @@ class Application extends Component {
       })
     ,
       new Promise((resolve, reject) => {
-        new loadAndWatchFeatherJSResource('campaigns', (resp, err) => {
+        new loadAndWatchFeatherJSResource('campaigns', {}, (resp, err) => {
           if(resp) {
             this.setState({ campaigns: resp })
             resolve()
@@ -109,14 +109,17 @@ class Application extends Component {
                 <Route exact path="/dacs" component={props => <Causes causes={this.state.causes} currentUser={this.state.currentUser} {...props}/>} />
                 <Route exact path="/dacs/new" component={props => <EditCause isNew="true" currentUser={this.state.currentUser} {...props}/>} />                        
                 <Route exact path="/dacs/:id" component={ViewCause}/>
-                <Route exact path="/dacs/:id/edit" component={EditCause}/>            
-                <Route exact path="/dacs/:id/milestones" component={Milestones}/>
-                <Route exact path="/dacs/:id/milestones/:id" component={ViewMilestone}/>          
+                <Route exact path="/dacs/:id/edit" component={props => <EditCause currentUser={this.state.currentUser} {...props}/>} />  
 
                 <Route exact path="/campaigns" component={props => <Campaigns campaigns={this.state.campaigns} currentUser={this.state.currentUser} {...props}/>} />
                 <Route exact path="/campaigns/new" component={props => <EditCampaign isNew="true" currentUser={this.state.currentUser} {...props}/>} />                        
                 <Route exact path="/campaigns/:id" component={ViewCampaign}/>
-                <Route exact path="/campaigns/:id/edit" component={EditCampaign}/>                 
+                <Route exact path="/campaigns/:id/edit" component={props => <EditCampaign currentUser={this.state.currentUser} {...props}/>} />   
+
+                <Route exact path="/campaigns/:id/milestones/new" component={props => <EditMilestone isNew={true} currentUser={this.state.currentUser} {...props} />}/>                          
+                <Route exact path="/campaigns/:id/milestones/:milestoneId" component={props => <ViewMilestone currentUser={this.state.currentUser} {...props} />}/>          
+                <Route exact path="/campaigns/:id/milestones/:milestoneId/edit" component={props => <EditMilestone currentUser={this.state.currentUser} {...props} />}/>       
+                             
                 
                 <Route exact path="/profile" component={props => <Profile currentUser={this.state.currentUser} {...props}/>} />
                 

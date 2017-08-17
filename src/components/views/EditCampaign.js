@@ -1,8 +1,11 @@
 import React, { Component } from 'react'
-import { Form, Input, File, Select } from 'formsy-react-components';
+import { Form, Input, Select } from 'formsy-react-components';
 import { socket } from '../../lib/feathersClient'
 import Loader from '../Loader'
-import QuillFormsy from '../QuillFormsy';
+import QuillFormsy from '../QuillFormsy'
+// import Milestone from '../Milestone'
+// import EditMilestone from '../EditMilestone'
+import FormsyImageUploader from './../FormsyImageUploader'
 
 
 /**
@@ -24,6 +27,10 @@ class EditCampaign extends Component {
     this.state = {
       isLoading: true,
       isSaving: false,
+      hasError: false,
+      causesOptions: [],
+
+      // campaign model
       title: '',
       description: '',
       image: '',
@@ -31,12 +38,11 @@ class EditCampaign extends Component {
       ownerAddress: null,
       milestones: [],
       causes: [],
-      causesOptions: [],
-      hasError: false
     }
 
     this.submit = this.submit.bind(this)
-  } 
+    this.setImage = this.setImage.bind(this)  
+  }
 
 
   componentDidMount() {
@@ -45,18 +51,10 @@ class EditCampaign extends Component {
       new Promise((resolve, reject) => {
         if(!this.props.isNew) {
           socket.emit('campaigns::find', {_id: this.props.match.params.id}, (error, resp) => {   
-            console.log(resp) 
             if(resp) {  
-              this.setState({
+              this.setState(Object.assign({}, resp.data[0], {
                 id: this.props.match.params.id,
-                title: resp.data[0].title,
-                description: resp.data[0].description,
-                image: resp.data[0].image,
-                videoUrl: resp.data[0].videoUrl,
-                ownerAddress: resp.data[0].ownerAddress,
-                milestones: resp.data[0].milestones,        
-                causes: resp.data[0].causes  
-              }, resolve())  
+              }), resolve())  
             } else {
               reject()
             }
@@ -76,7 +74,7 @@ class EditCampaign extends Component {
               hasError: false
             }, resolve())
           } else {
-            this.setState({ hasError: true }, reject())
+            reject()
           }
         })
       })
@@ -100,12 +98,8 @@ class EditCampaign extends Component {
     }
   }  
 
-  loadAndPreviewImage() {
-    const reader = new FileReader()  
-
-    reader.onload = (e) => this.setState({ image: e.target.result })
-
-    reader.readAsDataURL(this.refs.imagePreview.element.files[0])
+  setImage(image) {
+    this.setState({ image: image })
   }
 
   isValid() {
@@ -118,7 +112,8 @@ class EditCampaign extends Component {
       title: model.title,
       description: model.description,
       image: this.state.image,
-      causes: [ model.causes ]
+      causes: [ model.causes ],
+      ownerAddress: this.props.currentUser            
     }
 
     const afterEmit = () => {
@@ -147,7 +142,7 @@ class EditCampaign extends Component {
         <div id="edit-campaign-view">
           <div className="container-fluid page-layout">
             <div className="row">
-              <div className="col-md-8 offset-md-2">
+              <div className="col-md-8 m-auto">
                 { isLoading && 
                   <Loader className="fixed"/>
                 }
@@ -196,19 +191,7 @@ class EditCampaign extends Component {
                         />
                       </div>
 
-                      <div id="image-preview">
-                        <img src={image} width="500px" alt=""/>
-                      </div>
-
-                      <div className="form-group">
-                        <label>Add a picture</label>
-                        <File
-                          name="picture"
-                          onChange={()=>this.loadAndPreviewImage()}
-                          ref="imagePreview"
-                          required
-                        />
-                      </div>
+                      <FormsyImageUploader setImage={this.setImage} previewImage={image}/>
 
                       {/* TO DO: This needs to be replaced by something like http://react-autosuggest.js.org/ */}
                       <div className="form-group">
@@ -220,7 +203,6 @@ class EditCampaign extends Component {
                           required
                         />
                       </div>
-
 
                       <button className="btn btn-success" formNoValidate={true} type="submit" disabled={isSaving || !this.isValid()}>
                         {isSaving ? "Saving..." : "Save campaign"}

@@ -1,11 +1,12 @@
 import React, { Component } from 'react'
-import { Form, Input, File } from 'formsy-react-components';
+import { Form, Input } from 'formsy-react-components';
 import { socket } from '../../lib/feathersClient'
 import Loader from '../Loader'
 import QuillFormsy from '../QuillFormsy';
+import FormsyImageUploader from './../FormsyImageUploader'
 
 /**
- * Create or edit a cause
+ * Create or edit a cause (DAC)
  *
  *  @props
  *    isNew (bool):  
@@ -23,6 +24,8 @@ class EditCause extends Component {
     this.state = {
       isLoading: true,
       isSaving: false,
+
+      // DAC model
       title: '',
       description: '',
       image: '',
@@ -31,20 +34,16 @@ class EditCause extends Component {
     }
 
     this.submit = this.submit.bind(this)
+    this.setImage = this.setImage.bind(this)        
   }  
 
   componentDidMount() {
     if(!this.props.isNew) {
       socket.emit('causes::find', {_id: this.props.match.params.id}, (error, resp) => {      
-        this.setState({
-          id: this.props.match.params.id,
-          title: resp.data[0].title,
-          description: resp.data[0].description,
-          image: resp.data[0].image,
-          videoUrl: resp.data[0].videoUrl,
-          ownerAddress: resp.data[0].ownerAddress,          
+        this.setState(Object.assign({}, resp.data[0], {
+          id: this.props.match.params.id,       
           isLoading: false
-        }, this.focusFirstInput())  
+        }), this.focusFirstInput())  
       })  
     } else {
       this.setState({
@@ -62,14 +61,10 @@ class EditCause extends Component {
       'title': inputs.title,
       'description': inputs.description
     }
-  }  
+  }
 
-  loadAndPreviewImage() {
-    const reader = new FileReader()  
-
-    reader.onload = (e) => this.setState({ image: e.target.result })
-
-    reader.readAsDataURL(this.refs.imagePreview.element.files[0])
+  setImage(image) {
+    this.setState({ image: image })
   }
 
   isValid() {
@@ -81,7 +76,8 @@ class EditCause extends Component {
     const constructedModel = {
       title: model.title,
       description: model.description,
-      image: this.state.image      
+      image: this.state.image,
+      ownerAddress: this.props.currentUser      
     }
 
     const afterEmit = () => {
@@ -104,13 +100,13 @@ class EditCause extends Component {
 
   render(){
     const { isNew } = this.props
-    let { isLoading, isSaving, title, description, image } = this.state
+    let { isLoading, isSaving, title, description } = this.state
 
     return(
         <div id="edit-cause-view">
           <div className="container-fluid page-layout">
             <div className="row">
-              <div className="col-md-8 offset-md-2">
+              <div className="col-md-8 m-auto">
                 { isLoading && 
                   <Loader className="fixed"/>
                 }
@@ -118,11 +114,11 @@ class EditCause extends Component {
                 { !isLoading &&
                   <div>
                     { isNew &&
-                      <h1>Start a new cause!</h1>
+                      <h1>Start a Democratic Autonomous Charity!</h1>
                     }
 
                     { !isNew &&
-                      <h1>Edit cause {title}</h1>
+                      <h1>Edit DAC {title}</h1>
                     }
 
                     <Form onSubmit={this.submit} mapping={this.mapInputs} layout='vertical'>
@@ -135,7 +131,7 @@ class EditCause extends Component {
                           type="text"
                           value={title}
                           placeholder="E.g. Climate change."
-                          help="Describe your cause in 1 scentence."
+                          help="Describe your DAC in 1 scentence."
                           validations="minLength:10"
                           validationErrors={{
                               minLength: 'Please provide at least 10 characters.'
@@ -147,7 +143,7 @@ class EditCause extends Component {
                       <div className="form-group">
                         <QuillFormsy 
                           name="description"
-                          label="Description"
+                          label="What cause are you solving?"
                           value={description}
                           placeholder="Describe your cause..."
                           validations="minLength:10"  
@@ -159,19 +155,7 @@ class EditCause extends Component {
                         />
                       </div>
 
-                      <div id="image-preview">
-                        <img src={image} width="500px" alt=""/>
-                      </div>
-
-                      <div className="form-group">
-                        <label>Add a picture</label>
-                        <File
-                          name="picture"
-                          onChange={()=>this.loadAndPreviewImage()}
-                          ref="imagePreview"
-                          required
-                        />
-                      </div>
+                      <FormsyImageUploader setImage={this.setImage}/>
 
                       <button className="btn btn-success" formNoValidate={true} type="submit" disabled={isSaving || !this.isValid()}>
                         {isSaving ? "Saving..." : "Save cause"}
