@@ -4,6 +4,7 @@ import { socket } from '../../lib/feathersClient'
 import Loader from '../Loader'
 import QuillFormsy from '../QuillFormsy';
 import FormsyImageUploader from './../FormsyImageUploader'
+import GoBackButton from '../GoBackButton'
 
 /**
  * Create or edit a cause (DAC)
@@ -99,7 +100,7 @@ class EditCause extends Component {
   }
 
   render(){
-    const { isNew } = this.props
+    const { isNew, history } = this.props
     let { isLoading, isSaving, title, description } = this.state
 
     return(
@@ -113,12 +114,14 @@ class EditCause extends Component {
                 
                 { !isLoading &&
                   <div>
+                    <GoBackButton history={history}/>
+
                     { isNew &&
                       <h1>Start a Democratic Autonomous Charity!</h1>
                     }
 
                     { !isNew &&
-                      <h1>Edit DAC {title}</h1>
+                      <h1>Edit DAC</h1>
                     }
 
                     <Form onSubmit={this.submit} mapping={this.mapInputs} layout='vertical'>

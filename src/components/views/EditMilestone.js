@@ -4,6 +4,7 @@ import { socket } from './../../lib/feathersClient'
 import Loader from './../Loader'
 import QuillFormsy from './../QuillFormsy'
 import FormsyImageUploader from './../FormsyImageUploader'
+import GoBackButton from '../GoBackButton'
 
 /**
  * Create or edit a milestone
@@ -123,7 +124,7 @@ class EditMilestone extends Component {
   } 
 
   render(){
-    const { isNew } = this.props
+    const { isNew, history } = this.props
     let { isLoading, isSaving, title, description, image, recipientAddress, reviewerAddress, completionDeadline } = this.state
 
     return(
@@ -137,6 +138,8 @@ class EditMilestone extends Component {
                 
                 { !isLoading &&
                   <div>
+                    <GoBackButton history={history}/>
+                  
                     { isNew &&
                       <h1>Add a new milestone</h1>
                     }

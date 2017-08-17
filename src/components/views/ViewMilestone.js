@@ -1,6 +1,7 @@
 import React, { Component } from 'react'
 import { socket } from './../../lib/feathersClient'
 import Loader from './../Loader'
+import GoBackButton from '../GoBackButton'
 
 /**
   Loads and shows a single milestone
@@ -36,6 +37,8 @@ class ViewMilestone extends Component {
   }
 
   render() {
+    const { history } = this.props
+
     let { isLoading, 
           title, 
           description, 
@@ -59,6 +62,8 @@ class ViewMilestone extends Component {
               
               { !isLoading &&
                 <div>
+                  <GoBackButton history={history}/>
+
                   <p>Milestone</p>
                                     
                   <h1 className="milestone-title">{title}</h1>

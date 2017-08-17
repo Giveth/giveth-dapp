@@ -1,0 +1,30 @@
+.card {
+
+  .card-body {
+    box-shadow: 0 0 20px darken($page-background, 10%);
+
+    a {
+      text-decoration: none;
+      color: $link-color;      
+
+      .card-title {
+        font-weight: 700;
+      }
+
+      &:hover {
+        color: $green !important;
+      }
+    }
+
+    .card-text {
+      color: lighten($link-color, 50%);
+      height: 200px;
+      overflow: hidden;
+      font-size: 0.9rem;
+    }
+
+    iframe {
+      max-width: 100%;
+    }
+  }
+}

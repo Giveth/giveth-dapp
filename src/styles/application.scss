@@ -1,5 +1,7 @@
 // Global classes are defined here
 
+@import 'colors.scss';
+
 // views
 @import 'causesView.scss';
 @import 'editCausesView.scss';
@@ -8,17 +10,35 @@
 // components
 @import 'loader.scss';
 @import 'mainMenu.scss';
+@import 'goBackButton.scss';
 
 // misc
 @import 'quill-overrides.scss';
 
+// overrides
+@import 'card.scss';
+
+html, 
+body {
+  font-family: 'Muli', sans-serif;
+}
+
 body {
   margin: 0;
   padding: 0;
+  background-color: $page-background;
 }
 
 .page-layout {
-  padding: 50px 20px;
+  padding: 130px 20px 50px 20px;
+
+  &.reduced-padding {
+    padding-top: 50px;
+  }
+
+  &.extended-padding {
+    padding-top: 80px + 50px;
+  }
 }
 
 a, button {

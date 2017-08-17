@@ -1,10 +1,22 @@
 $height: 400px;
 
-.ql-container {
-  min-height: $height;
+.quill {
+  .ql-toolbar {
+    border-top-left-radius: 3px;
+    border-top-right-radius: 3px;
+  }
 
-  .ql-editor {
-    font-size: 1rem;
+  .ql-container {
     min-height: $height;
+    border-bottom-left-radius: 3px;
+    border-bottom-right-radius: 3px;    
+
+    .ql-editor {
+      font-size: 1rem;
+      min-height: $height;
+      background-color: white;
+      border-bottom-left-radius: 3px;
+      border-bottom-right-radius: 3px;          
+    }
   }
 }

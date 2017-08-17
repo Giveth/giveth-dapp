@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, NavLink } from 'react-router-dom'
 
 import '../styles/mainMenu.css'
 
@@ -18,17 +18,17 @@ class MainMenu extends Component {
 
         <div className="collapse navbar-collapse" id="navbarSupportedContent">
           <ul className="navbar-nav mr-auto">
-            <li className="nav-item active">
-              <Link className="nav-link" to="/">DACs</Link>
+            <li className="nav-item">
+              <NavLink className="nav-link" to="/dacs" activeClassName="active">DACs</NavLink>
             </li>
-            <li className="nav-item active">
-              <Link className="nav-link" to="/campaigns">Campaigns</Link>
+            <li className="nav-item">
+              <NavLink className="nav-link" to="/campaigns" activeClassName="active">Campaigns</NavLink>
             </li>            
             <li className="nav-item">
-              <Link className="nav-link" to="/profile">Dashboard</Link>
+              <NavLink className="nav-link" to="/profile" activeClassName="active">Dashboard</NavLink>
             </li>
             <li className="nav-item">
-              <Link className="nav-link" to="/profile">Profile</Link>
+              <NavLink className="nav-link" to="/profile" activeClassName="active">Profile</NavLink>
             </li>            
           </ul>
 

@@ -1,6 +1,8 @@
 import React, { Component } from 'react'
 import { socket } from '../../lib/feathersClient'
 import Loader from '../Loader'
+import GoBackButton from '../GoBackButton'
+
 
 /**
   Loads and shows a single DAC
@@ -33,6 +35,7 @@ class ViewCause extends Component {
   }
 
   render() {
+    const { history } = this.props
     let { isLoading, title, description, image } = this.state
 
     return (
@@ -46,6 +49,8 @@ class ViewCause extends Component {
               
               { !isLoading &&
                 <div>
+                  <GoBackButton history={history}/>
+
                   <p>Democratic Autonomous Charity</p>
                   <h1 className="cause-title">{title}</h1>
                   <img className="cause-header-image" src={image} alt=""/>

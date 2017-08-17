@@ -6,6 +6,7 @@ import QuillFormsy from '../QuillFormsy'
 // import Milestone from '../Milestone'
 // import EditMilestone from '../EditMilestone'
 import FormsyImageUploader from './../FormsyImageUploader'
+import GoBackButton from '../GoBackButton'
 
 
 /**
@@ -135,7 +136,7 @@ class EditCampaign extends Component {
   }
 
   render(){
-    const { isNew } = this.props
+    const { isNew, history } = this.props
     let { isLoading, isSaving, title, description, image, causes, causesOptions } = this.state
 
     return(
@@ -149,6 +150,8 @@ class EditCampaign extends Component {
                 
                 { !isLoading &&
                   <div>
+                    <GoBackButton history={history}/>
+                  
                     { isNew &&
                       <h1>Start a new campaign!</h1>
                     }

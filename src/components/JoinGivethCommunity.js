@@ -15,15 +15,15 @@ class JoinGivethCommunity extends Component {
         <center>
           <h3>Together we will save the world</h3>
 
-          <a className="btn btn-success btn-lg" href="https://giveth.slack.com/" target="_blank" rel="noopener noreferrer">
+          <a className="btn btn-success" href="https://giveth.slack.com/" target="_blank" rel="noopener noreferrer">
             <i className="fa fa-slack"></i>
             &nbsp;Join Giveth
           </a>
           
           &nbsp;
 
-          <Link className="btn btn-outline-primary btn-lg" to="/dacs/new">Create a DAC</Link>      
-          <Link className="btn btn-outline-primary btn-lg" to="/campaigns/new">Start a Campaign</Link>      
+          <Link className="btn btn-outline-primary" to="/dacs/new">Create a DAC</Link>      
+          <Link className="btn btn-outline-primary" to="/campaigns/new">Start a Campaign</Link>      
         </center>
       </div>
     )

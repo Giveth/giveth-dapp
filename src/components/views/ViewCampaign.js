@@ -4,6 +4,7 @@ import Loader from '../Loader'
 import { Link } from 'react-router-dom'
 import Milestone from '../Milestone'
 import loadAndWatchFeatherJSResource from '../../lib/loadAndWatchFeatherJSResource'
+import GoBackButton from '../GoBackButton'
 
 /**
   Loads and shows a single campaign
@@ -58,6 +59,7 @@ class ViewCampaign extends Component {
   }    
 
   render() {
+    const { history } = this.props
     let { isLoading, id, title, description, image, milestones } = this.state
 
     return (
@@ -71,6 +73,8 @@ class ViewCampaign extends Component {
               
               { !isLoading &&
                 <div>
+                  <GoBackButton history={history}/>
+
                   <p>Campaign</p>
                                     
                   <h1 className="campaign-title">{title}</h1>
