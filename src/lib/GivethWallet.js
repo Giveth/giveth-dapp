@@ -74,6 +74,21 @@ class GivethWallet {
 
     });
   }
+
+  static getKeystoreAddress(serializedKeystore) {
+    return new Promise((resolve, reject) => {
+
+      const ks = lightwallet.keystore.deserialize(serializedKeystore);
+
+      const addrs = ks.getAddresses();
+
+      if (addrs.length > 0) resolve(GivethWallet.fixAddress(addrs[0]));
+
+      reject("No addresses found.");
+
+
+    })
+  }
 }
 
 export default GivethWallet;

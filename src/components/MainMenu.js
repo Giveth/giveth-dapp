@@ -34,7 +34,9 @@ class MainMenu extends Component {
           </ul>
 
           <div className="navbar-right">
-            <Link className="btn btn-outline-secondary" to="/signin">Sign In</Link>
+            { !this.props.authenticated &&
+              <Link className="btn btn-outline-secondary" to="/signin">Sign In</Link>
+            }
           </div>
           <form className="form-inline my-2 my-lg-0">
             <input className="form-control mr-sm-2" type="text" placeholder="E.g. save the whales"/>

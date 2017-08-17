@@ -1,5 +1,6 @@
 import React, { Component } from 'react'
 import { BrowserRouter as Router, Route, Switch } from 'react-router-dom'
+import localforage from 'localforage';
 
 import loadAndWatchFeatherJSResource from '../lib/loadAndWatchFeatherJSResource'
 import Web3Monitor from '../lib/Web3Monitor';
@@ -40,12 +41,15 @@ class Application extends Component {
       causes: [],
       campaigns: [],
       web3: undefined,
-      accounts: [],
       currentUser: '',
       isLoading: true,
       hasError: false,
       wallet: undefined,
     };
+
+    localforage.config({
+      name: 'giveth',
+    });
 
     this.handleWalletChange = this.handleWalletChange.bind(this);
   }
@@ -84,19 +88,29 @@ class Application extends Component {
         console.log('error loading', e)
         this.setState({ isLoading: false, hasError: true })
       })
-    
+
     // QUESTION: Should rendering with for this to load?
-    new Web3Monitor(({web3, accounts}) => {
+    new Web3Monitor(({web3}) => {
       this.setState({
-        web3,
-        accounts,
-        currentUser: (accounts.length > 0) ? accounts[0].address : undefined,
+        web3
       })
     })
   }
 
   handleWalletChange(wallet) {
-    this.setState({wallet});
+    if (wallet) {
+     localforage.setItem('keystore', wallet.keystore.serialize());
+      this.setState({
+        wallet,
+        currentUser: wallet.getAddresses()[0],
+      });
+    } else {
+      localforage.removeItem('keystore');
+      this.setState({
+        wallet,
+        currentUser: undefined,
+      });
+    }
   }
 
   render(){
@@ -104,7 +118,7 @@ class Application extends Component {
     return(
       <Router>
         <div>
-          <MainMenu/>    
+          <MainMenu authenticated={(this.state.currentUser)}/>
 
           { this.state.isLoading && 
             <Loader className="fixed"/>

@@ -9,6 +9,7 @@
     "feathers-client": "^2.3.0",
     "formsy-react": "^0.19.5",
     "formsy-react-components": "^0.10.1",
+    "localforage": "^1.5.0",
     "node-sass-chokidar": "^0.0.3",
     "npm-run-all": "^4.0.2",
     "react": "^15.6.1",
