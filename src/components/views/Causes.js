@@ -2,6 +2,7 @@ import React, { Component } from 'react'
 import JoinGivethCommunity from '../JoinGivethCommunity'
 import { feathersClient } from '../../lib/feathersClient'
 import { Link } from 'react-router-dom'
+import { isOwner } from '../../lib/helpers'
 
 /**
   The causes view
@@ -15,6 +16,8 @@ class Causes extends Component {
   }
 
   render() {
+    const { currentUser } = this.props
+
     return (
       <div id="causes-view">
         <JoinGivethCommunity/>
@@ -29,12 +32,17 @@ class Causes extends Component {
                     <h4 className="card-title">{cause.title}</h4>
                   </Link>
                   <div className="card-text" dangerouslySetInnerHTML={{__html: cause.description}}></div>
-                  <a className="btn btn-link" onClick={()=>this.removeCause(cause._id)}>
-                    <i className="fa fa-trash"></i>
-                  </a>
-                  <Link className="btn btn-link" to={`/dacs/${ cause._id }/edit`}>
-                    <i className="fa fa-edit"></i>
-                  </Link>
+
+                  { isOwner(cause.ownerAddress, currentUser) && 
+                    <div>
+                      <a className="btn btn-link" onClick={()=>this.removeCause(cause._id)}>
+                        <i className="fa fa-trash"></i>
+                      </a>
+                      <Link className="btn btn-link" to={`/dacs/${ cause._id }/edit`}>
+                        <i className="fa fa-edit"></i>
+                      </Link>
+                    </div>
+                  }
                 </div>
               </div>
             )}

@@ -7,7 +7,7 @@ import QuillFormsy from '../QuillFormsy'
 // import EditMilestone from '../EditMilestone'
 import FormsyImageUploader from './../FormsyImageUploader'
 import GoBackButton from '../GoBackButton'
-
+import { isOwner } from '../../lib/helpers'
 
 /**
  * Create or edit a campaign
@@ -53,9 +53,13 @@ class EditCampaign extends Component {
         if(!this.props.isNew) {
           socket.emit('campaigns::find', {_id: this.props.match.params.id}, (error, resp) => {   
             if(resp) {  
-              this.setState(Object.assign({}, resp.data[0], {
-                id: this.props.match.params.id,
-              }), resolve())  
+              if(!isOwner(resp.data[0].ownerAddress, this.props.currentUser)) {
+                this.props.history.goBack()
+              } else {                
+                this.setState(Object.assign({}, resp.data[0], {
+                  id: this.props.match.params.id,
+                }), resolve())  
+              }
             } else {
               reject()
             }

@@ -5,6 +5,7 @@ import Loader from './../Loader'
 import QuillFormsy from './../QuillFormsy'
 import FormsyImageUploader from './../FormsyImageUploader'
 import GoBackButton from '../GoBackButton'
+import { isOwner } from '../../lib/helpers'
 
 /**
  * Create or edit a milestone
@@ -52,12 +53,16 @@ class EditMilestone extends Component {
     // load a single milestones (when editing)
     if(!this.props.isNew) {
       socket.emit('milestones::find', {_id: this.props.match.params.milestoneId}, (error, resp) => {   
-        if(resp) {  
-          this.setState(Object.assign({}, resp.data[0], {
-            id: this.props.match.params.milestoneId,
-            isLoading: false,
-            hasError: false
-          }), this.focusFirstInput()) 
+        if(resp) { 
+          if(!isOwner(resp.data[0].ownerAddress, this.props.currentUser)) {
+            this.props.history.goBack()
+          } else {         
+            this.setState(Object.assign({}, resp.data[0], {
+              id: this.props.match.params.milestoneId,
+              isLoading: false,
+              hasError: false
+            }), this.focusFirstInput()) 
+          }
         } else {
           this.setState( { 
             isLoading: false,

@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom'
 import Milestone from '../Milestone'
 import loadAndWatchFeatherJSResource from '../../lib/loadAndWatchFeatherJSResource'
 import GoBackButton from '../GoBackButton'
+import { isOwner } from '../../lib/helpers'
 
 /**
   Loads and shows a single campaign
@@ -29,6 +30,7 @@ class ViewCampaign extends Component {
     Promise.all([
       new Promise((resolve, reject) => {
         socket.emit('campaigns::find', {_id: this.props.match.params.id}, (error, resp) => {      
+          console.log(resp)
           if(resp) {
             this.setState(resp.data[0], resolve())   
           } else {
@@ -59,8 +61,8 @@ class ViewCampaign extends Component {
   }    
 
   render() {
-    const { history } = this.props
-    let { isLoading, id, title, description, image, milestones } = this.state
+    const { history, currentUser } = this.props
+    let { isLoading, id, title, description, image, milestones, ownerAddress } = this.state
 
     return (
       <div id="view-campaign-view">
@@ -84,11 +86,17 @@ class ViewCampaign extends Component {
                   <hr/>
 
                   <h3>Milestones
-                  <Link className="btn btn-primary btn-sm pull-right" to={`/campaigns/${ id }/milestones/new`}>Add milestone</Link>
+                  { isOwner(ownerAddress, currentUser) && 
+                    <Link className="btn btn-primary btn-sm pull-right" to={`/campaigns/${ id }/milestones/new`}>Add milestone</Link>
+                  }
                   </h3>
 
                   {milestones.length > 0 && milestones.map((m, i) => 
-                    <Milestone model={m} key={i} removeMilestone={()=>this.removeMilestone(m._id)}/>
+                    <Milestone 
+                      model={m} 
+                      currentUser={currentUser}
+                      key={i} 
+                      removeMilestone={()=>this.removeMilestone(m._id)}/>
                   )}
                 </div>
               }

@@ -2,8 +2,6 @@ import React, { Component } from 'react'
 import { Link } from 'react-router-dom'
 
 
-import '../styles/joinGivethCommunity.css'
-
 /**
   The join Giveth community top-bar
 **/
@@ -22,8 +20,8 @@ class JoinGivethCommunity extends Component {
           
           &nbsp;
 
-          <Link className="btn btn-outline-primary" to="/dacs/new">Create a DAC</Link>      
-          <Link className="btn btn-outline-primary" to="/campaigns/new">Start a Campaign</Link>      
+          <Link className="btn btn-info" to="/dacs/new">Create a DAC</Link>      
+          <Link className="btn btn-info" to="/campaigns/new">Start a Campaign</Link>      
         </center>
       </div>
     )

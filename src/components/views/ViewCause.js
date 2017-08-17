@@ -40,7 +40,7 @@ class ViewCause extends Component {
 
     return (
       <div id="view-cause-view">
-        <div className="container-fluid page-layout">
+        <div className="container-fluid page-layout reduced-padding">
           <div className="row">
             <div className="col-md-8 m-auto">
               { isLoading && 

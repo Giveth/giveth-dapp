@@ -1,5 +1,6 @@
 import React, { Component } from 'react'
 import { Link } from 'react-router-dom'
+import { isOwner } from './../lib/helpers'
 
 /**
   A single milestone
@@ -7,7 +8,7 @@ import { Link } from 'react-router-dom'
 
 class Milestone extends Component {
   render(){
-    const { model, removeMilestone } = this.props
+    const { model, removeMilestone, currentUser } = this.props
 
     return(
       <div className="card">
@@ -17,12 +18,17 @@ class Milestone extends Component {
             <h4 className="card-title">{model.title}</h4>
           </Link>
           <div className="card-text" dangerouslySetInnerHTML={{__html: model.description}}></div>
-          <a className="btn btn-link" onClick={removeMilestone}>
-            <i className="fa fa-trash"></i>
-          </a>
-          <Link className="btn btn-link" to={`/campaigns/${ model.campaignId }/milestones/${ model._id}/edit`}>
-            <i className="fa fa-edit"></i>
-          </Link>
+          
+          { isOwner(model.ownerAddress, currentUser) && 
+            <div>
+              <a className="btn btn-link" onClick={removeMilestone}>
+                <i className="fa fa-trash"></i>
+              </a>
+              <Link className="btn btn-link" to={`/campaigns/${ model.campaignId }/milestones/${ model._id}/edit`}>
+                <i className="fa fa-edit"></i>
+              </Link>
+            </div>
+          }
         </div>
       </div>
     )

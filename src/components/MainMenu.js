@@ -1,8 +1,6 @@
 import React, { Component } from 'react'
 import { Link, NavLink } from 'react-router-dom'
 
-import '../styles/mainMenu.css'
-
 /**
   The main top menu
 **/
