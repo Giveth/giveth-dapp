@@ -15,15 +15,7 @@ class ViewCampaign extends Component {
 
     this.state = {
       isLoading: true,
-      title: '',
-      description: '',
-      image: '',
-      videoUrl: '',  
-      donationsReceived: 0,
-      donationsGiven: 0,
-      balance: 0,
-      ownerAddress: null,
-      milestones: []
+      hasError: false
     }
   }  
 
@@ -97,7 +89,7 @@ class ViewCampaign extends Component {
                   <h3>Milestones
                   <Link className="btn btn-primary btn-sm pull-right" to={`/campaigns/${ id }/milestones/new`}>Add milestone</Link>
                   </h3>
-                  
+
                   {milestones.length > 0 && milestones.map((m, i) => 
                     <Milestone model={m} key={i} removeMilestone={()=>this.removeMilestone(m._id)}/>
                   )}
