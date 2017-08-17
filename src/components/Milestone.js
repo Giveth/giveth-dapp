@@ -6,10 +6,6 @@ import { Link } from 'react-router-dom'
 **/
 
 class Milestone extends Component {
-  constructor(){
-    super()
-  }
-
   render(){
     const { model, removeMilestone } = this.props
 

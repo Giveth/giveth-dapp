@@ -3,7 +3,10 @@ import { socket } from '../../lib/feathersClient'
 import Loader from '../Loader'
 
 /**
-  Shows details of an individual cause
+  Loads and shows a single DAC
+
+  @route params:
+    id (string): id of a DAC
 **/
 
 class ViewCause extends Component {
@@ -12,30 +15,20 @@ class ViewCause extends Component {
 
     this.state = {
       isLoading: true,
-      title: '',
-      description: '',
-      image: '',
-      videoUrl: '',  
-      donationsReceived: 0,
-      donationsGiven: 0,
-      balance: 0,
-      ownerAddress: null
+      hasError: false
     }
   }  
 
   componentDidMount() {
     socket.emit('causes::find', {_id: this.props.match.params.id}, (error, resp) => {      
-      this.setState({
-        title: resp.data[0].title,
-        description: resp.data[0].description,
-        image: resp.data[0].image,
-        videoUrl: resp.data[0].videoUrl,
-        donationsReceived: resp.data[0].donationsReceived,
-        donationsGiven: resp.data[0].donationsGiven,
-        balance: resp.data[0].balance,
-        ownerAddress: resp.data[0].ownerAddress,     
-        isLoading: false
-      })      
+      if(resp) {
+        this.setState(Object.assign({}, resp.data[0], {  
+          isLoading: false,
+          hasError: false
+        }))
+      } else {
+        this.setState({ isLoading: false, hasError: true })
+      }   
     })
   }
 

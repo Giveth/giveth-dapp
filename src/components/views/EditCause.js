@@ -6,7 +6,7 @@ import QuillFormsy from '../QuillFormsy';
 import FormsyImageUploader from './../FormsyImageUploader'
 
 /**
- * Create or edit a cause
+ * Create or edit a cause (DAC)
  *
  *  @props
  *    isNew (bool):  
@@ -24,6 +24,8 @@ class EditCause extends Component {
     this.state = {
       isLoading: true,
       isSaving: false,
+
+      // DAC model
       title: '',
       description: '',
       image: '',
@@ -38,15 +40,10 @@ class EditCause extends Component {
   componentDidMount() {
     if(!this.props.isNew) {
       socket.emit('causes::find', {_id: this.props.match.params.id}, (error, resp) => {      
-        this.setState({
-          id: this.props.match.params.id,
-          title: resp.data[0].title,
-          description: resp.data[0].description,
-          image: resp.data[0].image,
-          videoUrl: resp.data[0].videoUrl,
-          ownerAddress: resp.data[0].ownerAddress,          
+        this.setState(Object.assign({}, resp.data[0], {
+          id: this.props.match.params.id,       
           isLoading: false
-        }, this.focusFirstInput())  
+        }), this.focusFirstInput())  
       })  
     } else {
       this.setState({

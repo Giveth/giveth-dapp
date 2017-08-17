@@ -3,7 +3,10 @@ import { socket } from './../../lib/feathersClient'
 import Loader from './../Loader'
 
 /**
-  Shows details of an individual milestone
+  Loads and shows a single milestone
+
+  @route params:
+    milestoneId (string): id of a milestone
 **/
 
 class ViewMilestone extends Component {
@@ -17,29 +20,12 @@ class ViewMilestone extends Component {
   }  
 
   componentDidMount() {
-    this.setState({ id: this.props.match.params.milestoneId })
-
     socket.emit('milestones::find', {_id: this.props.match.params.milestoneId}, (error, resp) => {   
-      console.log(resp) 
       if(resp) {  
-        const r = resp.data[0]
-
-        this.setState({
-          id: this.props.match.params.id,
-          title: r.title,
-          description: r.description,
-          image: r.image,
-          videoUrl: r.videoUrl,
-          ownerAddress: r.ownerAddress,
-          reviewerAddress: r.reviewerAddress,
-          recipientAddress: r.recipientAddress,
-          donationsReceived: r.donationsReceived,
-          donationsGiven: r.donationsGiven,
-          completionDeadline: r.completionDeadline,
-          completionStatus: r.completionStatus,
+        this.setState(Object.assign({}, resp.data[0], {
           isLoading: false,
           hasError: false
-        })  
+        }))  
       } else {
         this.setState( { 
           isLoading: false,
@@ -50,7 +36,17 @@ class ViewMilestone extends Component {
   }
 
   render() {
-    let { id, isLoading, title, description, recipientAddress, reviewerAddress, completionDeadline, image } = this.state
+    let { isLoading, 
+          title, 
+          description, 
+          recipientAddress, 
+          reviewerAddress, 
+          ownerAddress,
+          completionDeadline, 
+          image,
+          donationsReceived,
+          donationsGiven
+    } = this.state
 
     return (
       <div id="view-milestone-view">
@@ -68,6 +64,15 @@ class ViewMilestone extends Component {
                   <h1 className="milestone-title">{title}</h1>
                   <img className="milestone-header-image" src={image} alt=""/>
                   <div dangerouslySetInnerHTML={{__html: description}}></div>
+
+                  <hr/>
+
+                  <p>Reviewer address: {reviewerAddress}</p>
+                  <p>Owner address: {ownerAddress}</p>
+                  <p>Recipient address: {recipientAddress}</p>
+                  <p>Completion deadline: {completionDeadline}</p>
+                  <p>Donations received: {donationsReceived}</p>
+                  <p>Donations given: {donationsGiven}</p>
 
                 </div>
               }

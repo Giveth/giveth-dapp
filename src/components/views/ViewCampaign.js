@@ -6,7 +6,10 @@ import Milestone from '../Milestone'
 import loadAndWatchFeatherJSResource from '../../lib/loadAndWatchFeatherJSResource'
 
 /**
-  Shows details of an individual campaign
+  Loads and shows a single campaign
+
+  @route params:
+    id (string): id of a campaign
 **/
 
 class ViewCampaign extends Component {
@@ -25,18 +28,8 @@ class ViewCampaign extends Component {
     Promise.all([
       new Promise((resolve, reject) => {
         socket.emit('campaigns::find', {_id: this.props.match.params.id}, (error, resp) => {      
-          console.log(error, resp)
           if(resp) {
-            this.setState({
-              title: resp.data[0].title,
-              description: resp.data[0].description,
-              image: resp.data[0].image,
-              videoUrl: resp.data[0].videoUrl,
-              donationsReceived: resp.data[0].donationsReceived,
-              donationsGiven: resp.data[0].donationsGiven,
-              balance: resp.data[0].balance,
-              ownerAddress: resp.data[0].ownerAddress,     
-            }, resolve())   
+            this.setState(resp.data[0], resolve())   
           } else {
             this.setState({ hasError: true }, reject())
           }

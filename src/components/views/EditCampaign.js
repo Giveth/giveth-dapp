@@ -27,6 +27,10 @@ class EditCampaign extends Component {
     this.state = {
       isLoading: true,
       isSaving: false,
+      hasError: false,
+      causesOptions: [],
+
+      // campaign model
       title: '',
       description: '',
       image: '',
@@ -34,8 +38,6 @@ class EditCampaign extends Component {
       ownerAddress: null,
       milestones: [],
       causes: [],
-      causesOptions: [],
-      hasError: false
     }
 
     this.submit = this.submit.bind(this)
@@ -49,18 +51,10 @@ class EditCampaign extends Component {
       new Promise((resolve, reject) => {
         if(!this.props.isNew) {
           socket.emit('campaigns::find', {_id: this.props.match.params.id}, (error, resp) => {   
-            console.log(resp) 
             if(resp) {  
-              this.setState({
+              this.setState(Object.assign({}, resp.data[0], {
                 id: this.props.match.params.id,
-                title: resp.data[0].title,
-                description: resp.data[0].description,
-                image: resp.data[0].image,
-                videoUrl: resp.data[0].videoUrl,
-                ownerAddress: resp.data[0].ownerAddress,
-                milestones: resp.data[0].milestones,        
-                causes: resp.data[0].causes  
-              }, resolve())  
+              }), resolve())  
             } else {
               reject()
             }
@@ -136,24 +130,13 @@ class EditCampaign extends Component {
     }
   } 
 
-  // addMilestone(){
-  //   this.setState({ milestones: [...this.state.milestones, new MilestoneModel] }) 
-  // }
-
-  // removeMilestone(milestone){
-  //   console.log('milestones', this.state.milestones)
-  //   console.log('removing milestone', milestone)
-
-  //   this.setState({ milestones: this.state.milestones.filter((m) => m.id !== milestone.id) })
-  // }
-
   goBack(){
     this.props.history.push('/campaigns')
   }
 
   render(){
-    const { isNew, currentUser } = this.props
-    let { isLoading, isSaving, title, description, image, causes, causesOptions, milestones } = this.state
+    const { isNew } = this.props
+    let { isLoading, isSaving, title, description, image, causes, causesOptions } = this.state
 
     return(
         <div id="edit-campaign-view">
@@ -208,7 +191,7 @@ class EditCampaign extends Component {
                         />
                       </div>
 
-                      <FormsyImageUploader setImage={this.setImage}/>
+                      <FormsyImageUploader setImage={this.setImage} previewImage={image}/>
 
                       {/* TO DO: This needs to be replaced by something like http://react-autosuggest.js.org/ */}
                       <div className="form-group">
@@ -220,43 +203,6 @@ class EditCampaign extends Component {
                           required
                         />
                       </div>
-
-                      {/*
-                      <div className="form-group">
-                        <label>Milestones</label>
-                        <div className="row">
-                          <div className="col-md-12">
-
-                            { isNew &&
-                              <div id="accordion" role="tablist">
-                                {milestones.length > 0 && milestones.map((m, i) => 
-                                  <EditMilestone 
-                                    model={m} 
-                                    isNew={true} 
-                                    removeMilestone={()=>this.removeMilestone(m)} 
-                                    currentUser={currentUser} 
-                                    key={i} 
-                                  />
-                                )}                              
-                              </div>
-                            }
-                            
-                            { !isNew && 
-                              <div id="accordion" role="tablist">
-                                {milestones.length > 0 && milestones.map((m, i) => 
-                                  <Milestone model={m} key={i} />
-                                )}
-                              </div>
-                            }
-                          </div>                            
-                        </div>
-                      
-
-                        <div className="card card-outline">
-                          <a className="btn btn-primary btn-sm" onClick={()=>this.addMilestone()}>Add milestone</a>
-                        </div>
-                      </div>
-                      */}
 
                       <button className="btn btn-success" formNoValidate={true} type="submit" disabled={isSaving || !this.isValid()}>
                         {isSaving ? "Saving..." : "Save campaign"}

@@ -6,7 +6,6 @@ import Web3Monitor from '../lib/Web3Monitor';
 
 // views
 import Profile from './../components/views/Profile'
-import Milestones from './../components/views/Milestones'
 import ViewMilestone from './../components/views/ViewMilestone'
 import Causes from './../components/views/Causes'
 import EditCause from './../components/views/EditCause'

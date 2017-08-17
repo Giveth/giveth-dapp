@@ -5,8 +5,6 @@ import Loader from './../Loader'
 import QuillFormsy from './../QuillFormsy'
 import FormsyImageUploader from './../FormsyImageUploader'
 
-import MilestoneModel from './../../models/MilestoneModel'
-
 /**
  * Create or edit a milestone
  *
@@ -27,6 +25,19 @@ class EditMilestone extends Component {
       isLoading: true,
       isSaving: false,
       hasError: false,
+
+      // milestone model
+      title: '',
+      description: '',
+      image: '',
+      videoUrl: '',
+      ownerAddress: '',
+      reviewerAddress: '',
+      recipientAddress: '',
+      donationsReceived: 0,
+      donationsGiven: 0,
+      completionDeadline: new Date(),
+      completionStatus: 'pending'      
     }
 
     this.submit = this.submit.bind(this)
@@ -36,31 +47,16 @@ class EditMilestone extends Component {
 
   componentDidMount() {
     this.setState({ campaignId: this.props.match.params.id })
-    this.setState(new MilestoneModel())
 
     // load a single milestones (when editing)
     if(!this.props.isNew) {
       socket.emit('milestones::find', {_id: this.props.match.params.milestoneId}, (error, resp) => {   
-        console.log(resp) 
         if(resp) {  
-          const r = resp.data[0]
-
-          this.setState({
+          this.setState(Object.assign({}, resp.data[0], {
             id: this.props.match.params.milestoneId,
-            title: r.title,
-            description: r.description,
-            image: r.image,
-            videoUrl: r.videoUrl,
-            ownerAddress: r.ownerAddress,
-            reviewerAddress: r.reviewerAddress,
-            recipientAddress: r.recipientAddress,
-            donationsReceived: r.donationsReceived,
-            donationsGiven: r.donationsGiven,
-            completionDeadline: r.completionDeadline,
-            completionStatus: r.completionStatus,
             isLoading: false,
             hasError: false
-          }, this.focusFirstInput())  
+          }), this.focusFirstInput()) 
         } else {
           this.setState( { 
             isLoading: false,
@@ -128,7 +124,7 @@ class EditMilestone extends Component {
 
   render(){
     const { isNew } = this.props
-    let { id, isLoading, isSaving, title, description, image, recipientAddress, reviewerAddress, completionDeadline } = this.state
+    let { isLoading, isSaving, title, description, image, recipientAddress, reviewerAddress, completionDeadline } = this.state
 
     return(
         <div id="edit-milestone-view">
