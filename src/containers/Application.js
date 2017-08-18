@@ -154,7 +154,7 @@ class Application extends Component {
                 <Route exact path="/campaigns/:id/milestones/:milestoneId/edit" component={props => <EditMilestone currentUser={this.state.currentUser} {...props} />}/>       
                              
                 <Route exact path="/signin" render={props => <SignIn wallet={this.state.wallet} handleWalletChange={this.handleWalletChange} provider={this.state.web3 ? this.state.web3.currentProvider : undefined} {...props}/>} />
-                <Route exact path="/profile" component={props => <Profile currentUser={this.state.currentUser} {...props}/>} />
+                <Route exact path="/profile" component={props => <Profile currentUser={this.state.currentUser} wallet={this.state.wallet} {...props}/>} />
 
                 <Route component={NotFound}/>
               </Switch>

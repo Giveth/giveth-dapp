@@ -69,12 +69,24 @@ class NewWallet extends Component {
 
     if (wallet) {
       return (
-        <BackupWallet wallet={wallet}/>
+        <div>
+          <h1>Backup your new Wallet!</h1>
+
+          <div className="alert alert-info">
+            We <strong>highly</strong> recommend that you download this backup file and keep it in a safe place. If you loose this file
+            or forget your wallet password, you will not be able to access this account and all funds associated with
+            it.
+          </div>
+
+          <BackupWallet wallet={wallet}/>
+        </div>
       )
     }
 
     return (
       <div>
+        <h1>Create Wallet!</h1>
+
         {error &&
         <div className="alert alert-danger">{error}</div>
         }

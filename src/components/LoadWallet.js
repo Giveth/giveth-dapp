@@ -30,8 +30,8 @@ class LoadWallet extends Component {
     const reader = new FileReader();
 
     reader.onload = e => {
-
       let parsedKeystore;
+
       try {
         parsedKeystore = JSON.parse(e.target.result);
       } catch (e) {

@@ -60,7 +60,7 @@ class SignIn extends Component {
     socket.emit('authenticate', { signature: wallet.signMessage().signature });
 
     this.props.handleWalletChange(wallet);
-    this.props.history.push('/profile');
+    this.props.history.push('/');
   }
 
   removeKeystore() {
@@ -98,10 +98,7 @@ class SignIn extends Component {
           <div className="col-md-8 m-auto">
             <div>
               {newWallet &&
-              <div>
-                <h1>Create Wallet!</h1>
                 <NewWallet walletCreated={this.props.handleWalletChange} provider={this.props.provider}/>
-              </div>
               }
 
               {!newWallet && keystore &&
@@ -121,11 +118,14 @@ class SignIn extends Component {
                     />
                   </div>
 
+                  <div className="form-group">
+                    <button className="btn btn-link pl-sm-0" onClick={this.removeKeystore}>Not {address}?</button>
+                  </div>
+
                   <button className="btn btn-success" formNoValidate={true} type="submit"
                           disabled={!this.state.validForm}>Unlock Wallet
                   </button>
                 </Form>
-                <button className="btn btn-link" onClick={this.removeKeystore}>Not {address}?</button>
               </div>
               }
 
@@ -133,7 +133,7 @@ class SignIn extends Component {
               <div>
                 <h1>Sign In!</h1>
                 <LoadWallet walletLoaded={this.walletLoaded} provider={this.props.provider}/>
-                <button className="btn btn-link" onClick={this.newWallet}>New User?</button>
+                <button className="btn btn-link pl-sm-0" onClick={this.newWallet}>New User?</button>
               </div>
               }
             </div>
