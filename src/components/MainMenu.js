@@ -21,29 +21,31 @@ class MainMenu extends Component {
             </li>
             <li className="nav-item">
               <NavLink className="nav-link" to="/campaigns" activeClassName="active">Campaigns</NavLink>
-            </li>            
+            </li>
             <li className="nav-item">
               <NavLink className="nav-link" to="/profile" activeClassName="active">Dashboard</NavLink>
             </li>
             <li className="nav-item">
               <NavLink className="nav-link" to="/profile" activeClassName="active">Profile</NavLink>
-            </li>            
+            </li>
             <li className="nav-item">
               <Link className="nav-link" to="/wallet">Wallet Demo</Link>
             </li>
           </ul>
 
-          <div className="navbar-right">
-            { !this.props.authenticated &&
+          <ul className="navbar-nav ml-auto mr-sm-2">
+          { !this.props.authenticated &&
+            <li className="nav-item">
               <Link className="btn btn-outline-secondary" to="/signin">Sign In</Link>
-            }
-          </div>
-          <form className="form-inline my-2 my-lg-0">
+            </li>
+          }
+          </ul>
+          <form id="search-form" className="form-inline my-2 my-lg-0">
             <input className="form-control mr-sm-2" type="text" placeholder="E.g. save the whales"/>
             <button className="btn btn-outline-success my-2 my-sm-0" type="submit">Find</button>
           </form>
         </div>
-      </nav>      
+      </nav>
     )
   }
 }

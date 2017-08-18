@@ -1,5 +1,5 @@
-import React, {Component} from 'react';
-import {Form, Input} from 'formsy-react-components';
+import React, { Component } from 'react';
+import { Form, Input } from 'formsy-react-components';
 import GivethWallet from '../lib/GivethWallet';
 import BackupWallet from "./BackupWallet";
 
@@ -32,24 +32,24 @@ class NewWallet extends Component {
     setTimeout(() => this.refs.password.element.focus(), 0)
   }
 
-  submit({password}) {
+  submit({ password }) {
     this.setState({
-      error: undefined
+      error: undefined,
     });
 
-    GivethWallet.createWallet(password)
-    .then(wallet => {
-      this.props.walletCreated(wallet);
-      this.setState({wallet});
-    })
-    .catch((error) => {
-      if (typeof error === 'object') {
-        console.error(error);
-        error = "Error creating wallet."
-      }
+    GivethWallet.createWallet(this.props.provider, password)
+      .then(wallet => {
+        this.props.walletCreated(wallet);
+        this.setState({ wallet });
+      })
+      .catch((error) => {
+        if (typeof error === 'object') {
+          console.error(error);
+          error = "Error creating wallet."
+        }
 
-      this.setState({error})
-    });
+        this.setState({ error })
+      });
   }
 
   onValid() {
@@ -65,18 +65,18 @@ class NewWallet extends Component {
   }
 
   render() {
-    const {wallet, error} = this.state;
+    const { wallet, error } = this.state;
 
     if (wallet) {
       return (
-        <BackupWallet wallet={wallet} />
+        <BackupWallet wallet={wallet}/>
       )
     }
 
     return (
       <div>
-        { error &&
-          <div className="alert alert-danger">{error}</div>
+        {error &&
+        <div className="alert alert-danger">{error}</div>
         }
 
         <Form onSubmit={this.submit} onValid={this.onValid} onInvalid={this.onInvalid} layout='vertical'>

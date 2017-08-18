@@ -33,7 +33,7 @@ class Causes extends Component {
                   </Link>
                   <div className="card-text" dangerouslySetInnerHTML={{__html: cause.description}}></div>
 
-                  { isOwner(cause.ownerAddress, currentUser) && 
+                  {/*{ isOwner(cause.ownerAddress, currentUser) && */}
                     <div>
                       <a className="btn btn-link" onClick={()=>this.removeCause(cause._id)}>
                         <i className="fa fa-trash"></i>
@@ -42,7 +42,7 @@ class Causes extends Component {
                         <i className="fa fa-edit"></i>
                       </Link>
                     </div>
-                  }
+                  // }
                 </div>
               </div>
             )}

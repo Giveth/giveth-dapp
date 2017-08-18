@@ -1,10 +1,11 @@
-import React, {Component} from 'react'
-import {Form, Input} from 'formsy-react-components';
+import React, { Component } from 'react'
+import { Form, Input } from 'formsy-react-components';
 import localforage from "localforage";
 
 import NewWallet from "../NewWallet";
 import LoadWallet from "../LoadWallet";
 import GivethWallet from "../../lib/GivethWallet";
+import { socket } from "../../lib/feathersClient";
 
 /**
  SignIn Page
@@ -27,49 +28,37 @@ class SignIn extends Component {
     this.removeKeystore = this.removeKeystore.bind(this);
     this.newWallet = this.newWallet.bind(this);
     this.walletLoaded = this.walletLoaded.bind(this);
-    this.focusFirstInput = this.focusFirstInput.bind(this);
   }
 
   componentDidMount() {
     localforage.getItem('keystore')
-    .then((keystore) => {
-      if (keystore) {
-        GivethWallet.getKeystoreAddress(keystore)
-        .then(addr => {
+      .then((keystore) => {
+
+        if (keystore && keystore.length > 0) {
           this.setState({
             keystore,
-            address: addr
+            address: GivethWallet.fixAddress(keystore[ 0 ].address),
           });
-        })
-        .catch((err) => {
-          this.setState({
-            error: err,
-          });
-        });
-      }
-    });
+        }
 
-    // this.focusFirstInput();
+      });
   }
 
-  focusFirstInput() {
-    setTimeout(() => this.refs.password.element.focus(), 0)
-  }
-
-  submit({password}) {
-    GivethWallet.loadWallet(this.state.keystore, password)
-    .then(wallet => this.walletLoaded(wallet))
-    .catch((error) => {
-      if (typeof error === 'object') {
+  submit({ password }) {
+    GivethWallet.loadWallet(this.state.keystore, this.props.provider, password)
+      .then(wallet => this.walletLoaded(wallet))
+      .catch((error) => {
         console.error(error);
-        error = "Error unlocking wallet."
-      }
 
-      this.setState({error})
-    });
+        this.setState({
+          error: "Error unlocking wallet. Possibly an invalid password.",
+        });
+      });
   }
 
   walletLoaded(wallet) {
+    socket.emit('authenticate', { signature: wallet.signMessage().signature });
+
     this.props.handleWalletChange(wallet);
     this.props.history.push('/profile');
   }
@@ -77,7 +66,7 @@ class SignIn extends Component {
   removeKeystore() {
     this.setState({
       address: undefined,
-      keystore: undefined
+      keystore: undefined,
     });
     this.props.handleWalletChange(undefined);
   }
@@ -101,37 +90,40 @@ class SignIn extends Component {
   }
 
   render() {
-    const {newWallet, keystore, address} = this.state;
+    const { newWallet, keystore, address, error } = this.state;
 
     return (
       <div id="signin-view" className="container-fluid page-layout">
         <div className="row">
-          <div className="col-md-8 offset-md-2">
+          <div className="col-md-8 m-auto">
             <div>
               {newWallet &&
               <div>
                 <h1>Create Wallet!</h1>
-                <NewWallet walletCreated={this.props.handleWalletChange}/>
+                <NewWallet walletCreated={this.props.handleWalletChange} provider={this.props.provider}/>
               </div>
               }
 
               {!newWallet && keystore &&
               <div>
                 <h1>Welcome {address}!</h1>
+                {error &&
+                <div className="alert alert-danger">{error}</div>
+                }
                 <Form onSubmit={this.submit} onValid={this.onValid} onInvalid={this.onInvalid} layout='vertical'>
                   <div className="form-group">
                     <Input
                       name="password"
                       id="password-input"
                       label="Wallet Password"
-                      ref="password"
                       type="password"
                       required
                     />
                   </div>
 
                   <button className="btn btn-success" formNoValidate={true} type="submit"
-                          disabled={!this.state.validForm}>Unlock Wallet</button>
+                          disabled={!this.state.validForm}>Unlock Wallet
+                  </button>
                 </Form>
                 <button className="btn btn-link" onClick={this.removeKeystore}>Not {address}?</button>
               </div>
@@ -140,7 +132,7 @@ class SignIn extends Component {
               {!newWallet && !keystore &&
               <div>
                 <h1>Sign In!</h1>
-                <LoadWallet walletLoaded={this.walletLoaded}/>
+                <LoadWallet walletLoaded={this.walletLoaded} provider={this.props.provider}/>
                 <button className="btn btn-link" onClick={this.newWallet}>New User?</button>
               </div>
               }

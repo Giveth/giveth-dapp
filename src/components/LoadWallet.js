@@ -1,5 +1,5 @@
-import React, {Component} from 'react';
-import {File, Form, Input} from 'formsy-react-components';
+import React, { Component } from 'react';
+import { File, Form, Input } from 'formsy-react-components';
 import GivethWallet from '../lib/GivethWallet';
 
 /**
@@ -22,7 +22,7 @@ class LoadWallet extends Component {
     this.onInvalid = this.onInvalid.bind(this);
   }
 
-  submit({keystore, password}) {
+  submit({ keystore, password }) {
     this.setState({
       error: undefined,
     });
@@ -30,19 +30,30 @@ class LoadWallet extends Component {
     const reader = new FileReader();
 
     reader.onload = e => {
-      GivethWallet.loadWallet(e.target.result, password)
-      .then(wallet => this.props.walletLoaded(wallet))
-      .catch((error) => {
-        if (typeof error === 'object') {
-          console.error(error);
-          error = "Error loading wallet."
-        }
 
-        this.setState({error})
-      });
+      let parsedKeystore;
+      try {
+        parsedKeystore = JSON.parse(e.target.result);
+      } catch (e) {
+        this.setState({
+          error: "Failed to parse keystore file",
+        });
+        return;
+      }
+
+      GivethWallet.loadWallet(parsedKeystore, this.props.provider, password)
+        .then(wallet => this.props.walletLoaded(wallet))
+        .catch((error) => {
+          if (typeof error === 'object') {
+            console.error(error);
+            error = "Error loading wallet."
+          }
+
+          this.setState({ error })
+        });
     };
 
-    reader.readAsText(keystore[0]);
+    reader.readAsText(keystore[ 0 ]);
   }
 
   onValid() {
@@ -58,7 +69,7 @@ class LoadWallet extends Component {
   }
 
   render() {
-    const {error} = this.state;
+    const { error } = this.state;
 
     return (
       <div>
