@@ -8,6 +8,8 @@ import { Link } from 'react-router-dom'
 
 class JoinGivethCommunity extends Component {
   render() {
+    const btnClass = "btn btn-info " + (this.props.authenticated ? "" : "disabled");
+
     return (
       <div id="join-giveth-community">
         <center>
@@ -20,8 +22,8 @@ class JoinGivethCommunity extends Component {
           
           &nbsp;
 
-          <Link className="btn btn-info" to="/dacs/new">Create a DAC</Link>      
-          <Link className="btn btn-info" to="/campaigns/new">Start a Campaign</Link>      
+          <Link className={btnClass} to="/dacs/new">Create a DAC</Link>
+          <Link className={btnClass} to="/campaigns/new">Start a Campaign</Link>
         </center>
       </div>
     )

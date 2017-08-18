@@ -78,7 +78,7 @@ class NewWallet extends Component {
             it.
           </div>
 
-          <BackupWallet wallet={wallet}/>
+          <BackupWallet onBackup={this.props.onBackup} wallet={wallet}/>
         </div>
       )
     }

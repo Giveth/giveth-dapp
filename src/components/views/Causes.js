@@ -20,7 +20,7 @@ class Causes extends Component {
 
     return (
       <div id="causes-view">
-        <JoinGivethCommunity/>
+        <JoinGivethCommunity authenticated={(this.props.currentUser)}/>
 
         <div className="container-fluid page-layout reduced-padding">
           <div className="card-columns">

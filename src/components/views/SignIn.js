@@ -6,6 +6,7 @@ import NewWallet from "../NewWallet";
 import LoadWallet from "../LoadWallet";
 import GivethWallet from "../../lib/GivethWallet";
 import { socket } from "../../lib/feathersClient";
+import Loader from "../Loader";
 
 /**
  SignIn Page
@@ -16,6 +17,7 @@ class SignIn extends Component {
     super();
 
     this.state = {
+      isLoading: true,
       error: undefined,
       validForm: false,
       newWallet: false,
@@ -33,6 +35,9 @@ class SignIn extends Component {
   componentDidMount() {
     localforage.getItem('keystore')
       .then((keystore) => {
+        this.setState({
+          isLoading: false,
+        });
 
         if (keystore && keystore.length > 0) {
           this.setState({
@@ -41,7 +46,21 @@ class SignIn extends Component {
           });
         }
 
-      });
+      }).catch(() => {
+        this.setState({
+          isLoading: false,
+        });
+    });
+  }
+
+  componentWillUpdate() {
+    if (!this.state.newWallet && this.state.keystore) {
+      setTimeout(() => {
+        if (this.refs.password) {
+          this.refs.password.element.focus()
+        }
+      }, 500);
+    }
   }
 
   submit({ password }) {
@@ -90,7 +109,11 @@ class SignIn extends Component {
   }
 
   render() {
-    const { newWallet, keystore, address, error } = this.state;
+    const { newWallet, keystore, address, error, isLoading } = this.state;
+
+    if (isLoading) {
+      return <Loader className="fixed"/>
+    }
 
     return (
       <div id="signin-view" className="container-fluid page-layout">
@@ -98,7 +121,8 @@ class SignIn extends Component {
           <div className="col-md-8 m-auto">
             <div>
               {newWallet &&
-                <NewWallet walletCreated={this.props.handleWalletChange} provider={this.props.provider}/>
+              <NewWallet walletCreated={this.props.handleWalletChange} provider={this.props.provider}
+                         onBackup={() => this.props.history.push('/profile')}/>
               }
 
               {!newWallet && keystore &&
@@ -114,6 +138,7 @@ class SignIn extends Component {
                       id="password-input"
                       label="Wallet Password"
                       type="password"
+                      ref="password"
                       required
                     />
                   </div>

@@ -177,7 +177,7 @@ class EditCampaign extends Component {
                           validations="minLength:10"
                           validationErrors={{
                               minLength: 'Please provide at least 10 characters.'
-                          }}                    
+                          }}
                           required
                         />
                       </div>

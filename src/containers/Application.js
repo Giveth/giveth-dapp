@@ -41,7 +41,7 @@ class Application extends Component {
       causes: [],
       campaigns: [],
       web3: undefined,
-      currentUser: '',
+      currentUser: undefined,
       isLoading: true,
       hasError: false,
       wallet: undefined,
