@@ -28,9 +28,6 @@ class MainMenu extends Component {
             <li className="nav-item">
               <NavLink className="nav-link" to="/profile" activeClassName="active">Profile</NavLink>
             </li>
-            <li className="nav-item">
-              <Link className="nav-link" to="/wallet">Wallet Demo</Link>
-            </li>
           </ul>
 
           <ul className="navbar-nav ml-auto mr-sm-2">

@@ -118,7 +118,6 @@ class EditCampaign extends Component {
       description: model.description,
       image: this.state.image,
       causes: [ model.causes ],
-      ownerAddress: this.props.currentUser            
     }
 
     const afterEmit = () => {

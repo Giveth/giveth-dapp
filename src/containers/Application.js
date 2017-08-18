@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Route, Switch } from 'react-router-dom'
 import localforage from 'localforage';
 
 import loadAndWatchFeatherJSResource from '../lib/loadAndWatchFeatherJSResource'
+import { socket } from "../lib/feathersClient";
 import Web3Monitor from '../lib/Web3Monitor';
 
 // views
@@ -14,7 +15,6 @@ import Causes from './../components/views/Causes'
 import EditCause from './../components/views/EditCause'
 import ViewCause from './../components/views/ViewCause'
 import NotFound from './../components/views/NotFound'
-import WalletDemo from './../components/views/WalletDemo'
 
 import Campaigns from './../components/views/Campaigns'
 import EditCampaign from './../components/views/EditCampaign'
@@ -88,6 +88,12 @@ class Application extends Component {
         console.log('error loading', e)
         this.setState({ isLoading: false, hasError: true })
       })
+
+    socket.on('reconnect', () => {
+      if (this.state.wallet && this.state.wallet.unlocked) {
+        socket.emit('authenticate', { signature: this.state.wallet.signMessage().signature });
+      }
+    })
 
     // QUESTION: Should rendering with for this to load?
     // new Web3Monitor(({web3}) => {
