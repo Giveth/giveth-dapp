@@ -1,17 +1,20 @@
 import React, { Component } from 'react'
 import { BrowserRouter as Router, Route, Switch } from 'react-router-dom'
+import localforage from 'localforage';
 
 import loadAndWatchFeatherJSResource from '../lib/loadAndWatchFeatherJSResource'
+import { socket } from "../lib/feathersClient";
 import Web3Monitor from '../lib/Web3Monitor';
 
 // views
 import Profile from './../components/views/Profile'
+import SignIn from './../components/views/SignIn'
+
 import ViewMilestone from './../components/views/ViewMilestone'
 import Causes from './../components/views/Causes'
 import EditCause from './../components/views/EditCause'
 import ViewCause from './../components/views/ViewCause'
 import NotFound from './../components/views/NotFound'
-import WalletDemo from './../components/views/WalletDemo'
 
 import Campaigns from './../components/views/Campaigns'
 import EditCampaign from './../components/views/EditCampaign'
@@ -38,11 +41,17 @@ class Application extends Component {
       causes: [],
       campaigns: [],
       web3: undefined,
-      accounts: [],
-      currentUser: '',
+      currentUser: undefined,
       isLoading: true,
-      hasError: false
-    }
+      hasError: false,
+      wallet: undefined,
+    };
+
+    localforage.config({
+      name: 'giveth',
+    });
+
+    this.handleWalletChange = this.handleWalletChange.bind(this);
   }
  
   componentWillMount(){
@@ -79,15 +88,38 @@ class Application extends Component {
         console.log('error loading', e)
         this.setState({ isLoading: false, hasError: true })
       })
-    
-    // QUESTION: Should rendering with for this to load?
-    new Web3Monitor(({web3, accounts}) => {
-      this.setState({
-        web3,
-        accounts,
-        currentUser: (accounts.length > 0) ? accounts[0].address : undefined,
-      })
+
+    socket.on('reconnect', () => {
+      if (this.state.wallet && this.state.wallet.unlocked) {
+        socket.emit('authenticate', { signature: this.state.wallet.signMessage().signature });
+      }
     })
+
+    // QUESTION: Should rendering with for this to load?
+    // new Web3Monitor(({web3}) => {
+    //   this.setState({
+    //     web3
+    //   })
+    // })
+  }
+
+  handleWalletChange(wallet) {
+    if (wallet) {
+     localforage.setItem('keystore', wallet.getKeystore());
+      this.setState({
+        wallet,
+        currentUser: wallet.getAddresses()[0],
+      });
+    } else {
+
+      if (this.state.wallet) this.state.wallet.clear();
+
+      localforage.removeItem('keystore');
+      this.setState({
+        wallet,
+        currentUser: undefined,
+      });
+    }
   }
 
   render(){
@@ -95,7 +127,7 @@ class Application extends Component {
     return(
       <Router>
         <div>
-          <MainMenu/>    
+          <MainMenu authenticated={(this.state.currentUser)}/>
 
           { this.state.isLoading && 
             <Loader className="fixed"/>
@@ -117,14 +149,12 @@ class Application extends Component {
                 <Route exact path="/campaigns/:id" component={props => <ViewCampaign currentUser={this.state.currentUser} {...props} /> }/>
                 <Route exact path="/campaigns/:id/edit" component={props => <EditCampaign currentUser={this.state.currentUser} {...props}/>} />   
 
-                <Route exact path="/campaigns/:id/milestones/new" component={props => <EditMilestone isNew={true} currentUser={this.state.currentUser} {...props} />}/>                          
+                <Route exact path="/campaigns/:id/milestones/new" component={props => <EditMilestone isNew={true} currentUser={this.state.currentUser} {...props} />}/>
                 <Route exact path="/campaigns/:id/milestones/:milestoneId" component={props => <ViewMilestone currentUser={this.state.currentUser} {...props} />}/>          
                 <Route exact path="/campaigns/:id/milestones/:milestoneId/edit" component={props => <EditMilestone currentUser={this.state.currentUser} {...props} />}/>       
                              
-                
-                <Route exact path="/profile" component={props => <Profile currentUser={this.state.currentUser} {...props}/>} />
-
-                <Route exact path="/wallet" component={props => <WalletDemo currentUser={this.state.currentUser} {...props}/>} />
+                <Route exact path="/signin" render={props => <SignIn wallet={this.state.wallet} handleWalletChange={this.handleWalletChange} provider={this.state.web3 ? this.state.web3.currentProvider : undefined} {...props}/>} />
+                <Route exact path="/profile" component={props => <Profile currentUser={this.state.currentUser} wallet={this.state.wallet} {...props}/>} />
 
                 <Route component={NotFound}/>
               </Switch>
