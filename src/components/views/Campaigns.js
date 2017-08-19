@@ -20,7 +20,7 @@ class Campaigns extends Component {
     
     return (
       <div id="campaigns-view">
-        <JoinGivethCommunity authenticated={(this.props.currentUser)}/>
+        <JoinGivethCommunity/>
 
         <div className="container-fluid page-layout reduced-padding">
           <div className="card-columns">

@@ -108,7 +108,8 @@ class EditMilestone extends Component {
       recipientAddress: model.recipientAddress,
       completionDeadline: model.completionDeadline,
       image: this.state.image,
-      campaignId: this.state.campaignId
+      ownerAddress: this.props.currentUser,
+      campaignId: this.state.campaignId    
     }
 
     console.log('model', constructedModel)

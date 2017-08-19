@@ -90,6 +90,7 @@ class EditCause extends Component {
       title: model.title,
       description: model.description,
       image: this.state.image,
+      ownerAddress: this.props.currentUser      
     }
 
     const afterEmit = () => {

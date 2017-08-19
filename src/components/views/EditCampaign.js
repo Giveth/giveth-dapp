@@ -118,6 +118,7 @@ class EditCampaign extends Component {
       description: model.description,
       image: this.state.image,
       causes: [ model.causes ],
+      ownerAddress: this.props.currentUser            
     }
 
     const afterEmit = () => {
@@ -177,7 +178,7 @@ class EditCampaign extends Component {
                           validations="minLength:10"
                           validationErrors={{
                               minLength: 'Please provide at least 10 characters.'
-                          }}
+                          }}                    
                           required
                         />
                       </div>

@@ -1,9 +1,8 @@
 import React, { Component } from 'react'
-import BackupWallet from "../BackupWallet";
 
 /**
- Shows the user's profile
- **/
+  Shows the user's profile
+**/
 
 class Profile extends Component {
   render() {
@@ -12,16 +11,12 @@ class Profile extends Component {
         <center>
           <h1>Profile</h1>
           {this.props.currentUser &&
-          <div>
-            <h2>Welcome {this.props.currentUser}!</h2>
-
-            <BackupWallet wallet={this.props.wallet}/>
-          </div>
+          <h2>Welcome {this.props.currentUser}!</h2>
           }
         </center>
       </div>
     )
-  }
+  } 
 }
 
 export default Profile

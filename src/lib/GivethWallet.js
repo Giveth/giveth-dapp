@@ -1,107 +1,79 @@
-import Accounts from 'web3-eth-accounts';
-
-const _get = WeakMap.prototype.get;
-const _set = WeakMap.prototype.set;
-
-const _accounts = new WeakMap();
-const _password = new WeakMap();
+import lightwallet from 'eth-lightwallet';
 
 class GivethWallet {
-
-  constructor(provider, keystoreArray) {
-    const accounts = new Accounts(provider);
-    _set.call(_accounts, this, accounts);
-
-    this._keystore = keystoreArray;
-
-    this.unlocked = false;
-  }
-
-  signMessage(msg) {
-    if (!this.unlocked) throw new Error("Locked Wallet");
-
-    const accounts = _get.call(_accounts, this);
-
-    return accounts.wallet[ 0 ].sign(msg || "")
-  }
-
-  unlock(password) {
-    if (this.unlocked) return;
-
-    _set.call(_password, this, password);
-
-    const accounts = _get.call(_accounts, this);
-    accounts.wallet.decrypt(this._keystore, password);
-
-    this.unlocked = true;
-  }
-
-  lock() {
-    if (!this.unlocked) return;
-
-    const accounts = _get.call(_accounts, this);
-    this._keystore = this.getKeystore();
-
-    accounts.wallet.clear();
-  }
-
-  clear() {
-    _get.call(_accounts, this).clear();
-  }
-
-  getKeystore() {
-    if (this.unlocked) {
-      const password = _get.call(_password, this);
-      const accounts = _get.call(_accounts, this);
-
-      return accounts.wallet.encrypt(password);
+  constructor(keystore) {
+    if (keystore) {
+      this.keystore = keystore;
     }
+  }
 
-    return this._keystore;
+  getSeed(password) {
+    return new Promise((resolve, reject) => {
+
+      if (!this.keystore) reject("No keystore available");
+
+      this.keystore.keyFromPassword(password, (err, pwDerivedKey) => {
+        if (err) reject(err);
+
+        if (!this.keystore.isDerivedKeyCorrect) reject("Error: Invalid Password");
+
+        resolve(this.keystore.getSeed(pwDerivedKey));
+      });
+
+    });
   }
 
   getAddresses() {
-    if (this.unlocked) {
-      const wallet = _get.call(_accounts, this).wallet;
-      const addrs = [];
+    if (!this.keystore) return [];
 
-      for (let i = 0; i < wallet.length; i++) {
-        addrs[ i ] = wallet[ i ].address;
-      }
-
-      return addrs;
-    }
-
-    if (!this._keystore) return [];
-
-    return this._keystore.map(account => GivethWallet.fixAddress(account.address));
+    return this.keystore.getAddresses().map(addr => GivethWallet.fixAddress(addr))
   }
 
   static fixAddress(addr) {
-    return (addr.toLowerCase().startsWith('0x')) ? addr : `0x${addr}`;
+    return (addr.startsWith('0x')) ? addr : `0x${addr}`;
   }
 
-  static createWallet(provider, password) {
-    return new Promise(resolve => {
-      const keystore = new Accounts(provider).wallet.create(1).encrypt(password);
-      resolve(createGivethWallet(keystore, provider, password));
+  static createWallet(password, seed) {
+    return new Promise((resolve, reject) => {
+
+      const opts = {
+        password,
+      };
+
+      if (seed) {
+        opts.seedPhrase = seed;
+      }
+
+      lightwallet.keystore.createVault(opts, (err, ks) => {
+        if (err) reject(err);
+
+        ks.keyFromPassword(password, (err, pwDerivedKey) => {
+          if (err) reject(err);
+
+          ks.generateNewAddress(pwDerivedKey);
+
+          resolve(new GivethWallet(ks));
+        })
+
+      });
     });
   }
 
-  static loadWallet(keystore, provider, password) {
-    return new Promise(resolve => {
-      if (!Array.isArray(keystore)) keystore = [ keystore ];
+  static loadWallet(serializedKeystore, password) {
+    return new Promise((resolve, reject) => {
 
-      resolve(createGivethWallet(keystore, provider, password));
+      const ks = lightwallet.keystore.deserialize(serializedKeystore);
+
+      ks.keyFromPassword(password, (err, pwDerivedKey) => {
+        if (err) reject(err);
+
+        if (!ks.isDerivedKeyCorrect(pwDerivedKey)) reject("Error: Invalid Password");
+
+        resolve(new GivethWallet(ks));
+      })
+
     });
   }
 }
-
-const createGivethWallet = (keystore, provider, password) => {
-  const wallet = new GivethWallet(provider, keystore);
-  wallet.unlock(password);
-
-  return wallet;
-};
 
 export default GivethWallet;
