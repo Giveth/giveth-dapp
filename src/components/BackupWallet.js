@@ -7,11 +7,11 @@ import React, { Component } from 'react';
  **/
 
 class BackupWallet extends Component {
-  handleClick = () => {
+  handleClick() {
     if (this.props.onBackup) {
       this.props.onBackup();
     }
-  };
+  }
 
   render() {
     return (
