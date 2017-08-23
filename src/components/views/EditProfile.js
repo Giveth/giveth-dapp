@@ -8,12 +8,11 @@ import GoBackButton from '../GoBackButton'
 import { isOwner } from '../../lib/helpers'
 
 /**
- * Create or edit a user profile
+ * Edit a user profile
  *
  *  @props
- *    isNew (bool):  
- *      If set, component will load an empty model.
- *      If not set, component expects an id param and will load a user object from backend
+ *    currentUser (string):  
+ *      The current user's address
  *    
  *  @params
  *    address (string): an id of a user object
@@ -26,6 +25,7 @@ class EditProfile extends Component {
     this.state = {
       isLoading: true,
       isSaving: false,
+      validForm: false,
 
       // user model
       name: '',
@@ -35,27 +35,30 @@ class EditProfile extends Component {
     }
 
     this.submit = this.submit.bind(this)
-    this.setImage = this.setImage.bind(this)        
+    this.setImage = this.setImage.bind(this)   
+    this.onValid = this.onValid.bind(this);
+    this.onInvalid = this.onInvalid.bind(this);         
   }  
 
   componentDidMount() {
-    console.log('cu', this.props.currentUser)
-
-    new Promise((resolve, reject) => {
-      socket.emit('users::find', {address: this.props.currentUser}, (error, resp) => { 
-        console.log('find user: ', error, resp)   
-        if(resp) {
-          this.setState(Object.assign({}, resp.data[0], {
-            isLoading: false
-          }, resolve()))
-        } else {
-          this.setState( { 
-            isLoading: false,
-            hasError: true
-          }, resolve())          
-        }
-      })  
-    }).then(() => this.setState({ isLoading: false }, this.focusFirstInput()))
+    if(!this.props.currentUser) {
+      this.props.history.goBack()
+    } else {
+      new Promise((resolve, reject) => {
+        socket.emit('users::find', {address: this.props.currentUser}, (error, resp) => { 
+          if(resp) {
+            this.setState(Object.assign({}, resp.data[0], {
+              isLoading: false
+            }, resolve()))
+          } else {
+            this.setState( { 
+              isLoading: false,
+              hasError: true
+            }, resolve())          
+          }
+        })  
+      }).then(() => this.setState({ isLoading: false }, this.focusFirstInput()))
+    }
   }
 
   focusFirstInput(){
@@ -89,29 +92,27 @@ class EditProfile extends Component {
 
     this.setState({ isSaving: true })
 
-    console.log('cuc', this.props.currentUser, constructedModel)
-
     feathersClient.service('/users').update(this.props.currentUser, 
       constructedModel
-    , {
-      nedb: { upsert: true }
-    }).then(user => {
-      console.log('upserted user', user)
+    ).then(user => {
       this.setState({ isSaving: false })
     })
-
-    // socket.emit('users::update', 
-    //   this.props.currentUser, 
-    //   constructedModel, 
-    //   this.setState({ isSaving: false }))
   } 
 
-  goBack(){
-    this.props.history.push('/causes')
+  onValid() {
+    this.setState({
+      validForm: true,
+    })
   }
 
+  onInvalid() {
+    this.setState({
+      validForm: false,
+    })
+  }  
+
   render(){
-    let { isLoading, isSaving, name, email, linkedIn, avatar } = this.state
+    let { isLoading, isSaving, name, email, linkedIn, avatar, validForm } = this.state
 
     return(
         <div id="edit-cause-view">
@@ -126,7 +127,7 @@ class EditProfile extends Component {
                   <div>
                     <h1>Edit your profile</h1>
 
-                    <Form onSubmit={this.submit} mapping={this.mapInputs} layout='vertical'>
+                    <Form onSubmit={this.submit} mapping={this.mapInputs} onValid={this.onValid} onInvalid={this.onInvalid} layout='vertical'>
                       <div className="form-group">
                         <Input
                           name="name"
@@ -138,7 +139,7 @@ class EditProfile extends Component {
                           placeholder="John Doe."
                           validations="minLength:3"
                           validationErrors={{
-                              minLength: 'Please enter your name'
+                            minLength: 'Please enter your name'
                           }}                    
                           required
                         />
@@ -150,10 +151,10 @@ class EditProfile extends Component {
                           label="Email"
                           value={email}
                           placeholder="email@example.com"
-                          validations="minLength:10"  
+                          validations="isEmail"  
                           help="Please enter your email address."   
                           validationErrors={{
-                              minLength: 'Please provide at least 10 characters.'
+                            isEmail: "That's not a valid email address."
                           }}                    
                           required                                        
                         />
@@ -169,14 +170,14 @@ class EditProfile extends Component {
                           type="text"
                           value={linkedIn}
                           placeholder="Your linkedIn profile url"
-                          validations="minLength:3"
+                          validations="isUrl"
                           validationErrors={{
-                              minLength: 'Please enter your linkedin profile url'
+                            isUrl: 'Please enter your linkedin profile url'
                           }}                    
                         />
                       </div>                      
 
-                      <button className="btn btn-success" formNoValidate={true} type="submit" disabled={isSaving || !this.isValid()}>
+                      <button className="btn btn-success" formNoValidate={true} type="submit" disabled={isSaving || !validForm}>
                         {isSaving ? "Saving..." : "Save profile"}
                       </button>
                                      
