@@ -5,7 +5,7 @@ import localforage from "localforage";
 import NewWallet from "../NewWallet";
 import LoadWallet from "../LoadWallet";
 import GivethWallet from "../../lib/GivethWallet";
-import { socket } from "../../lib/feathersClient";
+import { socket, feathersClient } from "../../lib/feathersClient";
 import Loader from "../Loader";
 
 /**
@@ -76,10 +76,11 @@ class SignIn extends Component {
   }
 
   walletLoaded(wallet) {
-    socket.emit('authenticate', { signature: wallet.signMessage().signature });
-
-    this.props.handleWalletChange(wallet);
-    this.props.history.push('/');
+    socket.emit('authenticate', { signature: wallet.signMessage().signature }, () => {
+      console.log('authenticated')
+      this.props.handleWalletChange(wallet);
+      this.props.history.push('/');
+    });
   }
 
   removeKeystore() {

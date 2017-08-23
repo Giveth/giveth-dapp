@@ -2,6 +2,8 @@ import React, { Component } from 'react';
 import { Form, Input } from 'formsy-react-components';
 import GivethWallet from '../lib/GivethWallet';
 import BackupWallet from "./BackupWallet";
+import { socket, feathersClient } from '../lib/feathersClient'
+
 
 /**
 
@@ -39,6 +41,15 @@ class NewWallet extends Component {
 
     GivethWallet.createWallet(this.props.provider, password)
       .then(wallet => {
+        socket.emit('authenticate', { signature: wallet.signMessage().signature }, () => {
+          // now create a user object
+          console.log('authenticated, creating user...')
+
+          feathersClient.service('/users').create({
+            address: wallet.getAddresses()[0]
+          }).then(user => console.log('created user ', user))           
+        });
+
         this.props.walletCreated(wallet);
         this.setState({ wallet });
       })

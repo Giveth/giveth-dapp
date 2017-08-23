@@ -33,16 +33,23 @@ class Campaigns extends Component {
                   </Link>
                   <div className="card-text" dangerouslySetInnerHTML={{__html: campaign.description}}></div>
 
-                  { isOwner(campaign.ownerAddress, currentUser) && 
-                    <div>
-                      <a className="btn btn-link" onClick={()=>this.removeCampaign(campaign._id)}>
-                        <i className="fa fa-trash"></i>
-                      </a>
-                      <Link className="btn btn-link" to={`/campaigns/${ campaign._id }/edit`}>
-                        <i className="fa fa-edit"></i>
-                      </Link>
-                    </div>
-                  }
+                  <div>
+                    <a className="btn btn-success">
+                      GivETH
+                    </a>                  
+
+                    { isOwner(campaign.ownerAddress, currentUser) && 
+                      <span>
+                        <a className="btn btn-link" onClick={()=>this.removeCampaign(campaign._id)}>
+                          <i className="fa fa-trash"></i>
+                        </a>
+                        <Link className="btn btn-link" to={`/campaigns/${ campaign._id }/edit`}>
+                          <i className="fa fa-edit"></i>
+                        </Link>
+                      </span>
+                    }
+                  </div>
+
                 </div>
               </div>
             )}
