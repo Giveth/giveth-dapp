@@ -2,6 +2,8 @@ import React, { Component } from 'react';
 import { Form, Input } from 'formsy-react-components';
 import GivethWallet from '../lib/GivethWallet';
 import BackupWallet from "./BackupWallet";
+import { socket, feathersClient } from '../lib/feathersClient'
+
 
 /**
 
@@ -15,13 +17,11 @@ class NewWallet extends Component {
 
     this.state = {
       error: undefined,
-      validForm: false,
+      formIsValid: false,
       wallet: undefined,
     };
 
     this.submit = this.submit.bind(this);
-    this.onValid = this.onValid.bind(this);
-    this.onInvalid = this.onInvalid.bind(this);
   }
 
   componentDidMount() {
@@ -39,6 +39,15 @@ class NewWallet extends Component {
 
     GivethWallet.createWallet(this.props.provider, password)
       .then(wallet => {
+        socket.emit('authenticate', { signature: wallet.signMessage().signature }, () => {
+          // now create a user object
+          console.log('authenticated, creating user...')
+
+          feathersClient.service('/users').create({
+            address: wallet.getAddresses()[0]
+          }).then(user => console.log('created user ', user))           
+        });
+
         this.props.walletCreated(wallet);
         this.setState({ wallet });
       })
@@ -52,20 +61,12 @@ class NewWallet extends Component {
       });
   }
 
-  onValid() {
-    this.setState({
-      validForm: true,
-    })
-  }
-
-  onInvalid() {
-    this.setState({
-      validForm: false,
-    })
+  toggleFormValid(state) {
+    this.setState({ formIsValid: state })
   }
 
   render() {
-    const { wallet, error } = this.state;
+    const { wallet, error, formIsValid } = this.state;
 
     if (wallet) {
       return (
@@ -91,7 +92,7 @@ class NewWallet extends Component {
         <div className="alert alert-danger">{error}</div>
         }
 
-        <Form onSubmit={this.submit} onValid={this.onValid} onInvalid={this.onInvalid} layout='vertical'>
+        <Form onSubmit={this.submit} onValid={()=>this.toggleFormValid(true)} onInvalid={()=>this.toggleFormValid(false)} layout='vertical'>
           <div className="form-group">
             <Input
               name="password"
@@ -118,7 +119,7 @@ class NewWallet extends Component {
             />
           </div>
 
-          <button className="btn btn-success" formNoValidate={true} type="submit" disabled={!this.state.validForm}>
+          <button className="btn btn-success" formNoValidate={true} type="submit" disabled={!formIsValid}>
             Create Wallet
           </button>
 

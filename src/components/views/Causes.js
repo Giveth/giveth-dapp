@@ -1,4 +1,6 @@
 import React, { Component } from 'react'
+import PropTypes from 'prop-types'
+
 import JoinGivethCommunity from '../JoinGivethCommunity'
 import { feathersClient } from '../../lib/feathersClient'
 import { Link } from 'react-router-dom'
@@ -33,16 +35,23 @@ class Causes extends Component {
                   </Link>
                   <div className="card-text" dangerouslySetInnerHTML={{__html: cause.description}}></div>
 
-                  { isOwner(cause.ownerAddress, currentUser) &&
-                    <div>
-                      <a className="btn btn-link" onClick={()=>this.removeCause(cause._id)}>
-                        <i className="fa fa-trash"></i>
-                      </a>
-                      <Link className="btn btn-link" to={`/dacs/${ cause._id }/edit`}>
-                        <i className="fa fa-edit"></i>
-                      </Link>
-                    </div>
-                  }
+                  <div>
+                    <a className="btn btn-success">
+                      GivETH
+                    </a>
+
+                    { isOwner(cause.ownerAddress, currentUser) &&
+                      <span>
+                        <a className="btn btn-link" onClick={()=>this.removeCause(cause._id)}>
+                          <i className="fa fa-trash"></i>
+                        </a>
+                        <Link className="btn btn-link" to={`/dacs/${ cause._id }/edit`}>
+                          <i className="fa fa-edit"></i>
+                        </Link>
+                      </span>
+                    }
+                  </div>
+
                 </div>
               </div>
             )}
@@ -58,3 +67,8 @@ class Causes extends Component {
 }
 
 export default Causes
+
+Causes.propTypes = {
+  currentUser: PropTypes.string,
+  history: PropTypes.object.isRequired
+}

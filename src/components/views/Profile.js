@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import BackupWallet from "../BackupWallet";
+import BackupWallet from "../BackupWallet"
 
 /**
  Shows the user's profile

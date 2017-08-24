@@ -1,4 +1,6 @@
 import React, { Component } from 'react'
+import PropTypes from 'prop-types';
+
 import { Form, Input, Select } from 'formsy-react-components';
 import { socket } from '../../lib/feathersClient'
 import Loader from '../Loader'
@@ -227,3 +229,9 @@ class EditCampaign extends Component {
 }
 
 export default EditCampaign
+
+EditCampaign.propTypes = {
+  currentUser: PropTypes.string,
+  history: PropTypes.object.isRequired,
+  isNew: PropTypes.bool
+}

@@ -1,4 +1,6 @@
 import React, { Component } from 'react'
+import PropTypes from 'prop-types'
+
 import { socket } from '../../lib/feathersClient'
 import Loader from '../Loader'
 import GoBackButton from '../GoBackButton'
@@ -66,3 +68,7 @@ class ViewCause extends Component {
 }
 
 export default ViewCause
+
+ViewCause.propTypes = {
+  history: PropTypes.object.isRequired
+}

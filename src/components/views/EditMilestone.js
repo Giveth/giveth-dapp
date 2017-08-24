@@ -1,4 +1,6 @@
 import React, { Component } from 'react'
+import PropTypes from 'prop-types'
+
 import { Form, Input } from 'formsy-react-components';
 import { socket } from './../../lib/feathersClient'
 import Loader from './../Loader'
@@ -249,3 +251,9 @@ class EditMilestone extends Component {
 }
 
 export default EditMilestone
+
+EditMilestone.propTypes = {
+  currentUser: PropTypes.string,
+  history: PropTypes.object.isRequired,
+  isNew: PropTypes.bool
+}

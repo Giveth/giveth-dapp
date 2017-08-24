@@ -1,4 +1,6 @@
 import React, { Component } from 'react'
+import PropTypes from 'prop-types'
+
 import { socket } from './../../lib/feathersClient'
 import Loader from './../Loader'
 import GoBackButton from '../GoBackButton'
@@ -90,3 +92,7 @@ class ViewMilestone extends Component {
 }
 
 export default ViewMilestone
+
+ViewMilestone.propTypes = {
+  history: PropTypes.object.isRequired
+}

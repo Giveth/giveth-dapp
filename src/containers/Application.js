@@ -4,10 +4,11 @@ import localforage from 'localforage';
 
 import loadAndWatchFeatherJSResource from '../lib/loadAndWatchFeatherJSResource'
 import { socket } from "../lib/feathersClient";
-import Web3Monitor from '../lib/Web3Monitor';
 
 // views
 import Profile from './../components/views/Profile'
+import UserWallet from './../components/views/UserWallet'
+import EditProfile from './../components/views/EditProfile'
 import SignIn from './../components/views/SignIn'
 
 import ViewMilestone from './../components/views/ViewMilestone'
@@ -95,7 +96,7 @@ class Application extends Component {
       }
     })
 
-    // QUESTION: Should rendering with for this to load?
+    // QUESTION: Should rendering wait for this to load?
     // new Web3Monitor(({web3}) => {
     //   this.setState({
     //     web3
@@ -105,7 +106,7 @@ class Application extends Component {
 
   handleWalletChange(wallet) {
     if (wallet) {
-     localforage.setItem('keystore', wallet.getKeystore());
+      localforage.setItem('keystore', wallet.getKeystore());
       this.setState({
         wallet,
         currentUser: wallet.getAddresses()[0],
@@ -154,7 +155,9 @@ class Application extends Component {
                 <Route exact path="/campaigns/:id/milestones/:milestoneId/edit" component={props => <EditMilestone currentUser={this.state.currentUser} {...props} />}/>       
                              
                 <Route exact path="/signin" render={props => <SignIn wallet={this.state.wallet} handleWalletChange={this.handleWalletChange} provider={this.state.web3 ? this.state.web3.currentProvider : undefined} {...props}/>} />
-                <Route exact path="/profile" component={props => <Profile currentUser={this.state.currentUser} wallet={this.state.wallet} {...props}/>} />
+                <Route exact path="/wallet" component={props => <UserWallet currentUser={this.state.currentUser} wallet={this.state.wallet} {...props}/>} />
+                <Route exact path="/profile" component={props => <EditProfile currentUser={this.state.currentUser} wallet={this.state.wallet} {...props}/>} />
+                <Route exact path="/profile/:userId" component={props => <Profile {...props}/>} />
 
                 <Route component={NotFound}/>
               </Switch>

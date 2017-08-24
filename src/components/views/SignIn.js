@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import { Form, Input } from 'formsy-react-components';
+import { Form, Input } from 'formsy-react-components'
 import localforage from "localforage";
 
 import NewWallet from "../NewWallet";
@@ -19,14 +19,12 @@ class SignIn extends Component {
     this.state = {
       isLoading: true,
       error: undefined,
-      validForm: false,
+      formIsValid: false,
       newWallet: false,
       keystore: undefined,
     };
 
     this.submit = this.submit.bind(this);
-    this.onValid = this.onValid.bind(this);
-    this.onInvalid = this.onInvalid.bind(this);
     this.removeKeystore = this.removeKeystore.bind(this);
     this.newWallet = this.newWallet.bind(this);
     this.walletLoaded = this.walletLoaded.bind(this);
@@ -76,10 +74,11 @@ class SignIn extends Component {
   }
 
   walletLoaded(wallet) {
-    socket.emit('authenticate', { signature: wallet.signMessage().signature });
-
-    this.props.handleWalletChange(wallet);
-    this.props.history.push('/');
+    socket.emit('authenticate', { signature: wallet.signMessage().signature }, () => {
+      console.log('authenticated')
+      this.props.handleWalletChange(wallet);
+      this.props.history.push('/');
+    });
   }
 
   removeKeystore() {
@@ -96,20 +95,12 @@ class SignIn extends Component {
     })
   }
 
-  onValid() {
-    this.setState({
-      validForm: true,
-    })
-  }
-
-  onInvalid() {
-    this.setState({
-      validForm: false,
-    })
+  toggleFormValid(state) {
+    this.setState({ formIsValid: state })
   }
 
   render() {
-    const { newWallet, keystore, address, error, isLoading } = this.state;
+    const { newWallet, keystore, address, error, isLoading, formIsValid } = this.state;
 
     if (isLoading) {
       return <Loader className="fixed"/>
@@ -131,7 +122,7 @@ class SignIn extends Component {
                 {error &&
                 <div className="alert alert-danger">{error}</div>
                 }
-                <Form onSubmit={this.submit} onValid={this.onValid} onInvalid={this.onInvalid} layout='vertical'>
+                <Form onSubmit={this.submit} onValid={()=>this.toggleFormValid(true)} onInvalid={()=>this.toggleFormValid(false)} layout='vertical'>
                   <div className="form-group">
                     <Input
                       name="password"
@@ -148,7 +139,7 @@ class SignIn extends Component {
                   </div>
 
                   <button className="btn btn-success" formNoValidate={true} type="submit"
-                          disabled={!this.state.validForm}>Unlock Wallet
+                          disabled={!formIsValid}>Unlock Wallet
                   </button>
                 </Form>
               </div>

@@ -53,6 +53,11 @@ class FormsyImageUploader extends Component {
             name="picture"
             onChange={()=>this.loadAndPreviewImage()}
             ref="imagePreview"
+            help="Select a png or jpeg."
+            validations="isExisty"
+            validationErrors={{
+              isExisty: "Please select an image file."
+            }}                
             required
           />
         </div> 
