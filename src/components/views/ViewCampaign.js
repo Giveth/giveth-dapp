@@ -1,4 +1,6 @@
 import React, { Component } from 'react'
+import PropTypes from 'prop-types'
+
 import { socket, feathersClient } from '../../lib/feathersClient'
 import Loader from '../Loader'
 import { Link } from 'react-router-dom'
@@ -109,3 +111,7 @@ class ViewCampaign extends Component {
 }
 
 export default ViewCampaign
+
+ViewCampaign.propTypes = {
+  history: PropTypes.object.isRequired
+}

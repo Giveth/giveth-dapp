@@ -1,11 +1,10 @@
 import React, { Component } from 'react'
+import PropTypes from 'prop-types'
+
 import { Form, Input } from 'formsy-react-components';
 import { socket, feathersClient } from '../../lib/feathersClient'
 import Loader from '../Loader'
-import QuillFormsy from '../QuillFormsy';
 import FormsyImageUploader from './../FormsyImageUploader'
-import GoBackButton from '../GoBackButton'
-import { isOwner } from '../../lib/helpers'
 import { isAuthenticated } from '../../lib/middleware'
 
 
@@ -178,3 +177,13 @@ class EditProfile extends Component {
 }
 
 export default EditProfile
+
+
+EditProfile.propTypes = {
+  wallet: PropTypes.shape({
+    unlocked: PropTypes.bool,
+    _keystore: PropTypes.array
+  }).isRequired,
+  currentUser: PropTypes.string.isRequired,
+  history: PropTypes.object.isRequired
+}

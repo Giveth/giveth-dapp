@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-
+import PropTypes from 'prop-types';
 
 class GoBackButton extends Component {
   goBack(){
@@ -17,3 +17,7 @@ class GoBackButton extends Component {
 }
 
 export default GoBackButton
+
+GoBackButton.propTypes = {
+  history: PropTypes.object.isRequired
+}

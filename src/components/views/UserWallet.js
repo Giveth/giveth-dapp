@@ -1,4 +1,6 @@
 import React, { Component } from 'react'
+import PropTypes from 'prop-types'
+
 import BackupWallet from "../BackupWallet"
 import { isAuthenticated } from "../../lib/middleware"
 
@@ -29,3 +31,8 @@ class UserWallet extends Component {
 }
 
 export default UserWallet
+
+UserWallet.propTypes = {
+  currentUser: PropTypes.string,
+  history: PropTypes.object.isRequired,
+}

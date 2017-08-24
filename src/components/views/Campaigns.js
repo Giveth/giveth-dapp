@@ -1,4 +1,6 @@
 import React, { Component } from 'react'
+import PropTypes from 'prop-types';
+
 import JoinGivethCommunity from '../JoinGivethCommunity'
 import { feathersClient } from '../../lib/feathersClient'
 import { Link } from 'react-router-dom'
@@ -65,3 +67,8 @@ class Campaigns extends Component {
 }
 
 export default Campaigns
+
+Campaigns.propTypes = {
+  currentUser: PropTypes.string,
+  history: PropTypes.object.isRequired
+}

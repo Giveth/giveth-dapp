@@ -1,4 +1,6 @@
 import React, { Component } from 'react'
+import PropTypes from 'prop-types'
+
 import { Link } from 'react-router-dom'
 import { isOwner } from './../lib/helpers'
 
@@ -36,3 +38,9 @@ class Milestone extends Component {
 }
 
 export default Milestone
+
+Milestone.propTypes = {
+  model: PropTypes.object.isRequired,
+  removeMilestone: PropTypes.func.isRequired,
+  currentUser: PropTypes.string
+}

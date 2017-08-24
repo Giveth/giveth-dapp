@@ -1,11 +1,11 @@
 import React, { Component } from 'react'
-import { Form, Input } from 'formsy-react-components';
+import { Form, Input } from 'formsy-react-components'
 import localforage from "localforage";
 
 import NewWallet from "../NewWallet";
 import LoadWallet from "../LoadWallet";
 import GivethWallet from "../../lib/GivethWallet";
-import { socket, feathersClient } from "../../lib/feathersClient";
+import { socket } from "../../lib/feathersClient";
 import Loader from "../Loader";
 
 /**

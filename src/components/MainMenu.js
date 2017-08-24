@@ -1,4 +1,6 @@
 import React, { Component } from 'react'
+import PropTypes from 'prop-types'
+
 import { Link, NavLink } from 'react-router-dom'
 
 /**
@@ -60,3 +62,7 @@ class MainMenu extends Component {
 }
 
 export default MainMenu
+
+MainMenu.propTypes = {
+  authenticated: PropTypes.string,
+}

@@ -1,8 +1,10 @@
 import React, { Component } from 'react'
+import PropTypes from 'prop-types'
+
 import { Form, Input } from 'formsy-react-components';
 import { socket } from '../../lib/feathersClient'
 import Loader from '../Loader'
-import QuillFormsy from '../QuillFormsy';
+import QuillFormsy from '../QuillFormsy'
 import FormsyImageUploader from './../FormsyImageUploader'
 import GoBackButton from '../GoBackButton'
 import { isOwner } from '../../lib/helpers'
@@ -188,3 +190,9 @@ class EditCause extends Component {
 }
 
 export default EditCause
+
+EditCause.propTypes = {
+  currentUser: PropTypes.string,
+  history: PropTypes.object.isRequired,
+  isNew: PropTypes.bool
+}

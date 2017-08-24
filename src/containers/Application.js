@@ -4,7 +4,6 @@ import localforage from 'localforage';
 
 import loadAndWatchFeatherJSResource from '../lib/loadAndWatchFeatherJSResource'
 import { socket } from "../lib/feathersClient";
-import Web3Monitor from '../lib/Web3Monitor';
 
 // views
 import Profile from './../components/views/Profile'
