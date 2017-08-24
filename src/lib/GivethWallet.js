@@ -49,12 +49,24 @@ class GivethWallet {
     _get.call(_accounts, this).clear();
   }
 
-  getKeystore() {
-    if (this.unlocked) {
-      const password = _get.call(_password, this);
-      const accounts = _get.call(_accounts, this);
+  getKeystore(callback) {
+    if (this.unlocked) {   
 
-      return accounts.wallet.encrypt(password);
+      // This code is a bit spaghetti, but we need to use requestAnimationFrame multiple times here.
+      // or the complete thread is blocked, causing rendering to stall.
+      function fetchWallet() {
+        const password = _get.call(_password, this);
+
+        function getAccounts() {
+          const accounts = _get.call(_accounts, this);
+          callback(accounts.wallet.encrypt(password));
+        }
+
+        window.requestAnimationFrame(getAccounts.bind(this))
+      }
+
+      window.requestAnimationFrame(fetchWallet.bind(this))
+
     }
 
     return this._keystore;

@@ -106,7 +106,10 @@ class Application extends Component {
 
   handleWalletChange(wallet) {
     if (wallet) {
-      localforage.setItem('keystore', wallet.getKeystore());
+      wallet.getKeystore((keystore) => {
+        localforage.setItem('keystore', keystore)
+      })
+
       this.setState({
         wallet,
         currentUser: wallet.getAddresses()[0],
