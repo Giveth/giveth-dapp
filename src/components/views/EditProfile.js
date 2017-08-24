@@ -183,7 +183,7 @@ EditProfile.propTypes = {
   wallet: PropTypes.shape({
     unlocked: PropTypes.bool,
     _keystore: PropTypes.array
-  }).isRequired,
-  currentUser: PropTypes.string.isRequired,
+  }),
+  currentUser: PropTypes.string,
   history: PropTypes.object.isRequired
 }

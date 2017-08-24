@@ -33,6 +33,10 @@ class UserWallet extends Component {
 export default UserWallet
 
 UserWallet.propTypes = {
+  wallet: PropTypes.shape({
+    unlocked: PropTypes.bool,
+    _keystore: PropTypes.array
+  }),  
   currentUser: PropTypes.string,
   history: PropTypes.object.isRequired,
 }
