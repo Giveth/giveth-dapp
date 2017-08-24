@@ -72,19 +72,18 @@ class EditProfile extends Component {
   }
 
   submit(model) {    
-    const constructedModel = {
-      name: model.name,
-      email: model.email,
-      linkedIn: model.linkedIn,
-      avatar: this.state.avatar,
-    }
-
     this.setState({ isSaving: true })
 
-    feathersClient.service('/users').update(this.props.currentUser, 
-      constructedModel
-    ).then(user => {
-      this.setState({ isSaving: false })
+    // first upload image, then update user
+    feathersClient.service('/uploads').create({uri: this.state.avatar}).then(file => {
+      feathersClient.service('/users').update(this.props.currentUser, {
+        name: model.name,
+        email: model.email,
+        linkedIn: model.linkedIn,
+        avatar: file.url,
+      }).then(user => {
+        this.setState({ isSaving: false })
+      })
     })
   } 
 

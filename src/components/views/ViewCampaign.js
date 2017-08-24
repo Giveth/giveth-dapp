@@ -64,7 +64,7 @@ class ViewCampaign extends Component {
 
   render() {
     const { history, currentUser } = this.props
-    let { isLoading, id, title, description, image, milestones, ownerAddress } = this.state
+    let { isLoading, id, title, description, image, milestones, owner } = this.state
 
     return (
       <div id="view-campaign-view">
@@ -88,7 +88,7 @@ class ViewCampaign extends Component {
                   <hr/>
 
                   <h3>Milestones
-                  { isOwner(ownerAddress, currentUser) && 
+                  { isOwner(owner.address, currentUser) && 
                     <Link className="btn btn-primary btn-sm pull-right" to={`/campaigns/${ id }/milestones/new`}>Add milestone</Link>
                   }
                   </h3>

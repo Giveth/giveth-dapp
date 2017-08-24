@@ -47,7 +47,7 @@ class Campaigns extends Component {
                       GivETH
                     </a>                  
 
-                    { isOwner(campaign.ownerAddress, currentUser) && 
+                    { isOwner(campaign.owner.address, currentUser) && 
                       <span>
                         <a className="btn btn-link" onClick={()=>this.removeCampaign(campaign._id)}>
                           <i className="fa fa-trash"></i>

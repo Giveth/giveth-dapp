@@ -44,7 +44,7 @@ class FormsyImageUploader extends Component {
   render(){
     return(
       <div>
-        { this.props.imagePreview &&
+        { this.props.previewImage &&
           <div id="image-preview">
             <img src={this.state.image} width="500px" alt=""/>
           </div>

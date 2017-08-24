@@ -48,7 +48,7 @@ class Causes extends Component {
                       GivETH
                     </a>
 
-                    { isOwner(cause.ownerAddress, currentUser) &&
+                    { isOwner(cause.owner.address, currentUser) &&
                       <span>
                         <a className="btn btn-link" onClick={()=>this.removeCause(cause._id)}>
                           <i className="fa fa-trash"></i>

@@ -2,7 +2,7 @@ import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 
 import { Form, Input } from 'formsy-react-components';
-import { socket } from '../../lib/feathersClient'
+import { socket, feathersClient } from '../../lib/feathersClient'
 import Loader from '../Loader'
 import QuillFormsy from '../QuillFormsy'
 import FormsyImageUploader from './../FormsyImageUploader'
@@ -47,7 +47,7 @@ class EditCause extends Component {
       if(!this.props.isNew) {
         socket.emit('causes::find', {_id: this.props.match.params.id}, (error, resp) => {    
           if(resp) {
-            if(!isOwner(resp.data[0].ownerAddress, this.props.currentUser)) {
+            if(!isOwner(resp.data[0].owner.address, this.props.currentUser)) {
               this.props.history.goBack()
             } else {
               this.setState(Object.assign({}, resp.data[0], {
@@ -91,12 +91,6 @@ class EditCause extends Component {
   }
 
   submit(model) {    
-    const constructedModel = {
-      title: model.title,
-      description: model.description,
-      image: this.state.image,
-    }
-
     const afterEmit = () => {
       this.setState({ isSaving: false })
       this.props.history.push('/dacs')      
@@ -104,11 +98,19 @@ class EditCause extends Component {
 
     this.setState({ isSaving: true })
 
-    if(this.props.isNew){
-      socket.emit('causes::create', constructedModel, afterEmit)
-    } else {
-      socket.emit('causes::update', this.state.id, constructedModel, afterEmit)
-    }
+    feathersClient.service('/uploads').create({uri: this.state.image}).then(file => {
+      const constructedModel = {
+        title: model.title,
+        description: model.description,
+        image: file.url,
+      }
+
+      if(this.props.isNew){
+        socket.emit('causes::create', constructedModel, afterEmit)
+      } else {
+        socket.emit('causes::update', this.state.id, constructedModel, afterEmit)
+      }
+    })
   } 
 
   goBack(){
@@ -117,7 +119,7 @@ class EditCause extends Component {
 
   render(){
     const { isNew, history } = this.props
-    let { isLoading, isSaving, title, description } = this.state
+    let { isLoading, isSaving, title, description, image } = this.state
 
     return(
         <div id="edit-cause-view">
@@ -174,7 +176,7 @@ class EditCause extends Component {
                         />
                       </div>
 
-                      <FormsyImageUploader setImage={this.setImage}/>
+                      <FormsyImageUploader setImage={this.setImage} previewImage={image}/>
 
                       <button className="btn btn-success" formNoValidate={true} type="submit" disabled={isSaving || !this.isValid()}>
                         {isSaving ? "Saving..." : "Save cause"}
