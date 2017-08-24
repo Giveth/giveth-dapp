@@ -2,12 +2,13 @@ import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 
 import { Form, Input } from 'formsy-react-components';
-import { socket } from './../../lib/feathersClient'
+import { socket, feathersClient } from './../../lib/feathersClient'
 import Loader from './../Loader'
 import QuillFormsy from './../QuillFormsy'
 import FormsyImageUploader from './../FormsyImageUploader'
 import GoBackButton from '../GoBackButton'
 import { isOwner } from '../../lib/helpers'
+import { isAuthenticated } from '../../lib/middleware'
 
 /**
  * Create or edit a milestone
@@ -50,32 +51,33 @@ class EditMilestone extends Component {
 
 
   componentDidMount() {
-    this.setState({ campaignId: this.props.match.params.id })
+    isAuthenticated(this.props.currentUser, this.props.history).then(()=> {
+      this.setState({ campaignId: this.props.match.params.id })
 
-    // load a single milestones (when editing)
-    if(!this.props.isNew) {
-      socket.emit('milestones::find', {_id: this.props.match.params.milestoneId}, (error, resp) => {   
-        if(resp) { 
-          if(!isOwner(resp.data[0].ownerAddress, this.props.currentUser)) {
-            this.props.history.goBack()
-          } else {         
-            this.setState(Object.assign({}, resp.data[0], {
-              id: this.props.match.params.milestoneId,
+      // load a single milestones (when editing)
+      if(!this.props.isNew) {
+        socket.emit('milestones::find', {_id: this.props.match.params.milestoneId}, (error, resp) => {   
+          if(resp) { 
+            if(!isOwner(resp.data[0].owner.address, this.props.currentUser)) {
+              this.props.history.goBack()
+            } else {         
+              this.setState(Object.assign({}, resp.data[0], {
+                id: this.props.match.params.milestoneId,
+                isLoading: false,
+                hasError: false
+              }), this.focusFirstInput()) 
+            }
+          } else {
+            this.setState( { 
               isLoading: false,
-              hasError: false
-            }), this.focusFirstInput()) 
+              hasError: true
+            })
           }
-        } else {
-          this.setState( { 
-            isLoading: false,
-            hasError: true
-          })
-        }
-      })  
-    } else {
-      this.setState({ isLoading: false })
-    }
-
+        })  
+      } else {
+        this.setState({ isLoading: false })
+      }
+    })
   }
 
   focusFirstInput(){
@@ -103,18 +105,6 @@ class EditMilestone extends Component {
   }
 
   submit(model) {    
-    const constructedModel = {
-      title: model.title,
-      description: model.description,
-      reviewerAddress: model.reviewerAddress,
-      recipientAddress: model.recipientAddress,
-      completionDeadline: model.completionDeadline,
-      image: this.state.image,
-      campaignId: this.state.campaignId
-    }
-
-    console.log('model', constructedModel)
-
     const afterEmit = () => {
       this.setState({ isSaving: false })
       this.props.history.goBack()  
@@ -122,11 +112,23 @@ class EditMilestone extends Component {
 
     this.setState({ isSaving: true })
 
-    if(this.props.isNew){
-      socket.emit('milestones::create', constructedModel, afterEmit)
-    } else {
-      socket.emit('milestones::update', this.state.id, constructedModel, afterEmit)
-    }
+    feathersClient.service('/uploads').create({uri: this.state.image}).then(file => {
+      const constructedModel = {
+        title: model.title,
+        description: model.description,
+        reviewerAddress: model.reviewerAddress,
+        recipientAddress: model.recipientAddress,
+        completionDeadline: model.completionDeadline,
+        image: file.url,
+        campaignId: this.state.campaignId
+      }    
+
+      if(this.props.isNew){
+        socket.emit('milestones::create', constructedModel, afterEmit)
+      } else {
+        socket.emit('milestones::update', this.state.id, constructedModel, afterEmit)
+      }
+    })
   } 
 
   render(){

@@ -141,12 +141,12 @@ class Application extends Component {
                 <Route exact path="/" component={props => <Causes causes={this.state.causes} currentUser={this.state.currentUser} {...props}/>} />
                 
                 <Route exact path="/dacs" component={props => <Causes causes={this.state.causes} currentUser={this.state.currentUser} {...props}/>} />
-                <Route exact path="/dacs/new" component={props => <EditCause isNew="true" currentUser={this.state.currentUser} {...props}/>} />                        
+                <Route exact path="/dacs/new" component={props => <EditCause isNew={true} currentUser={this.state.currentUser} {...props}/>} />                        
                 <Route exact path="/dacs/:id" component={ViewCause}/>
                 <Route exact path="/dacs/:id/edit" component={props => <EditCause currentUser={this.state.currentUser} {...props}/>} />  
 
                 <Route exact path="/campaigns" component={props => <Campaigns campaigns={this.state.campaigns} currentUser={this.state.currentUser} {...props}/>} />
-                <Route exact path="/campaigns/new" component={props => <EditCampaign isNew="true" currentUser={this.state.currentUser} {...props}/>} />                        
+                <Route exact path="/campaigns/new" component={props => <EditCampaign isNew={true} currentUser={this.state.currentUser} {...props}/>} />                        
                 <Route exact path="/campaigns/:id" component={props => <ViewCampaign currentUser={this.state.currentUser} {...props} /> }/>
                 <Route exact path="/campaigns/:id/edit" component={props => <EditCampaign currentUser={this.state.currentUser} {...props}/>} />   
 
@@ -157,7 +157,7 @@ class Application extends Component {
                 <Route exact path="/signin" render={props => <SignIn wallet={this.state.wallet} handleWalletChange={this.handleWalletChange} provider={this.state.web3 ? this.state.web3.currentProvider : undefined} {...props}/>} />
                 <Route exact path="/wallet" component={props => <UserWallet currentUser={this.state.currentUser} wallet={this.state.wallet} {...props}/>} />
                 <Route exact path="/profile" component={props => <EditProfile currentUser={this.state.currentUser} wallet={this.state.wallet} {...props}/>} />
-                <Route exact path="/profile/:userId" component={props => <Profile {...props}/>} />
+                <Route exact path="/profile/:userAddress" component={props => <Profile {...props}/>} />
 
                 <Route component={NotFound}/>
               </Switch>

@@ -2,7 +2,7 @@ import React, { Component } from 'react'
 import PropTypes from 'prop-types';
 
 import { Form, Input, Select } from 'formsy-react-components';
-import { socket } from '../../lib/feathersClient'
+import { socket, feathersClient } from '../../lib/feathersClient'
 import Loader from '../Loader'
 import QuillFormsy from '../QuillFormsy'
 // import Milestone from '../Milestone'
@@ -10,6 +10,7 @@ import QuillFormsy from '../QuillFormsy'
 import FormsyImageUploader from './../FormsyImageUploader'
 import GoBackButton from '../GoBackButton'
 import { isOwner } from '../../lib/helpers'
+import { isAuthenticated } from '../../lib/middleware'
 
 /**
  * Create or edit a campaign
@@ -49,48 +50,50 @@ class EditCampaign extends Component {
 
 
   componentDidMount() {
-    Promise.all([
-      // load a single campaigns (when editing)
-      new Promise((resolve, reject) => {
-        if(!this.props.isNew) {
-          socket.emit('campaigns::find', {_id: this.props.match.params.id}, (error, resp) => {   
-            if(resp) {  
-              if(!isOwner(resp.data[0].ownerAddress, this.props.currentUser)) {
-                this.props.history.goBack()
-              } else {                
-                this.setState(Object.assign({}, resp.data[0], {
-                  id: this.props.match.params.id,
-                }), resolve())  
+    isAuthenticated(this.props.currentUser, this.props.history).then(()=>
+      Promise.all([
+        // load a single campaigns (when editing)
+        new Promise((resolve, reject) => {
+          if(!this.props.isNew) {
+            socket.emit('campaigns::find', {_id: this.props.match.params.id}, (error, resp) => {   
+              if(resp) {  
+                if(!isOwner(resp.data[0].owner.address, this.props.currentUser)) {
+                  this.props.history.goBack()
+                } else {                
+                  this.setState(Object.assign({}, resp.data[0], {
+                    id: this.props.match.params.id,
+                  }), resolve())  
+                }
+              } else {
+                reject()
               }
+            })  
+          } else {
+            resolve()
+          }
+        })
+      ,
+        // load all causes. 
+        // TO DO: this needs to be replaced by something like http://react-autosuggest.js.org/
+        new Promise((resolve, reject) => {
+          socket.emit('causes::find', { $select: [ 'title', '_id' ] }, (err, resp) => {    
+            if(resp){
+              this.setState({ 
+                causesOptions: resp.data.map((c) =>  { return { label: c.title, value: c._id } }),
+                hasError: false
+              }, resolve())
             } else {
               reject()
             }
-          })  
-        } else {
-          resolve()
-        }
-      })
-    ,
-      // load all causes. 
-      // TO DO: this needs to be replaced by something like http://react-autosuggest.js.org/
-      new Promise((resolve, reject) => {
-        socket.emit('causes::find', { $select: [ 'title', '_id' ] }, (err, resp) => {    
-          if(resp){
-            this.setState({ 
-              causesOptions: resp.data.map((c) =>  { return { label: c.title, value: c._id } }),
-              hasError: false
-            }, resolve())
-          } else {
-            reject()
-          }
+          })
         })
-      })
 
-    ]).then(() => this.setState({ isLoading: false, hasError: false }), this.focusFirstInput())
-      .catch((e) => {
-        console.log('error loading', e)
-        this.setState({ isLoading: false, hasError: true })        
-      })
+      ]).then(() => this.setState({ isLoading: false, hasError: false }), this.focusFirstInput())
+        .catch((e) => {
+          console.log('error loading', e)
+          this.setState({ isLoading: false, hasError: true })        
+        })
+    )
   }
 
   focusFirstInput(){
@@ -115,13 +118,6 @@ class EditCampaign extends Component {
   }
 
   submit(model) {    
-    const constructedModel = {
-      title: model.title,
-      description: model.description,
-      image: this.state.image,
-      causes: [ model.causes ],
-    }
-
     const afterEmit = () => {
       this.setState({ isSaving: false })
       this.props.history.push('/campaigns')      
@@ -129,11 +125,20 @@ class EditCampaign extends Component {
 
     this.setState({ isSaving: true })
 
-    if(this.props.isNew){
-      socket.emit('campaigns::create', constructedModel, afterEmit)
-    } else {
-      socket.emit('campaigns::update', this.state.id, constructedModel, afterEmit)
-    }
+    feathersClient.service('/uploads').create({uri: this.state.image}).then(file => {
+      const constructedModel = {
+        title: model.title,
+        description: model.description,
+        image: file.url,
+        causes: [ model.causes ],
+      }    
+
+      if(this.props.isNew){
+        socket.emit('campaigns::create', constructedModel, afterEmit)
+      } else {
+        socket.emit('campaigns::update', this.state.id, constructedModel, afterEmit)
+      }
+    })
   } 
 
   goBack(){

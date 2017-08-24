@@ -21,7 +21,7 @@ class Milestone extends Component {
           </Link>
           <div className="card-text" dangerouslySetInnerHTML={{__html: model.description}}></div>
           
-          { isOwner(model.ownerAddress, currentUser) && 
+          { isOwner(model.owner.address, currentUser) && 
             <div>
               <a className="btn btn-link" onClick={removeMilestone}>
                 <i className="fa fa-trash"></i>
