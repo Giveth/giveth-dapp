@@ -22,16 +22,24 @@ class MainMenu extends Component {
             <li className="nav-item">
               <NavLink className="nav-link" to="/campaigns" activeClassName="active">Campaigns</NavLink>
             </li>
+
             {this.props.authenticated &&
-            <li className="nav-item">
-              <NavLink className="nav-link" to="/dashboard" activeClassName="active">Dashboard</NavLink>
-            </li>
+              <li className="nav-item">
+                <NavLink className="nav-link" to="/dashboard" activeClassName="active">Dashboard</NavLink>
+              </li>
             }
+
             {this.props.authenticated &&
               <li className="nav-item">
                 <NavLink className="nav-link" to="/profile" activeClassName="active">Profile</NavLink>
               </li>
             }
+            {this.props.authenticated &&
+              <li className="nav-item">
+                <NavLink className="nav-link" to="/wallet" activeClassName="active">Wallet</NavLink>
+              </li>   
+            }
+
           </ul>
 
           <ul className="navbar-nav ml-auto mr-sm-2">

@@ -6,16 +6,16 @@ import QuillFormsy from '../QuillFormsy';
 import FormsyImageUploader from './../FormsyImageUploader'
 import GoBackButton from '../GoBackButton'
 import { isOwner } from '../../lib/helpers'
+import { isAuthenticated } from '../../lib/middleware'
+
 
 /**
  * Edit a user profile
  *
  *  @props
- *    currentUser (string):  
- *      The current user's address
- *    
- *  @params
- *    address (string): an id of a user object
+ *    currentUser (string): The current user's address
+ *    wallet (object): The current user's wallet
+ *
  */
 
 class EditProfile extends Component {
@@ -25,7 +25,7 @@ class EditProfile extends Component {
     this.state = {
       isLoading: true,
       isSaving: false,
-      validForm: false,
+      formIsValid: false,
 
       // user model
       name: '',
@@ -36,14 +36,11 @@ class EditProfile extends Component {
 
     this.submit = this.submit.bind(this)
     this.setImage = this.setImage.bind(this)   
-    this.onValid = this.onValid.bind(this);
-    this.onInvalid = this.onInvalid.bind(this);         
+    this.toggleFormValid = this.toggleFormValid.bind(this)
   }  
 
   componentDidMount() {
-    if(!this.props.currentUser) {
-      this.props.history.goBack()
-    } else {
+    isAuthenticated(this.props.currentUser, this.props.history).then(()=>
       new Promise((resolve, reject) => {
         socket.emit('users::find', {address: this.props.currentUser}, (error, resp) => { 
           if(resp) {
@@ -58,7 +55,7 @@ class EditProfile extends Component {
           }
         })  
       }).then(() => this.setState({ isLoading: false }, this.focusFirstInput()))
-    }
+    )
   }
 
   focusFirstInput(){
@@ -75,11 +72,6 @@ class EditProfile extends Component {
 
   setImage(image) {
     this.setState({ avatar: image })
-  }
-
-  isValid() {
-    return true
-    return this.state.name.length > 0 && this.state.email.length > 10 && this.state.avatar.length > 0
   }
 
   submit(model) {    
@@ -99,20 +91,12 @@ class EditProfile extends Component {
     })
   } 
 
-  onValid() {
-    this.setState({
-      validForm: true,
-    })
+  toggleFormValid(state) {
+    this.setState({ formIsValid: !this.state.formIsValid })
   }
 
-  onInvalid() {
-    this.setState({
-      validForm: false,
-    })
-  }  
-
   render(){
-    let { isLoading, isSaving, name, email, linkedIn, avatar, validForm } = this.state
+    let { isLoading, isSaving, name, email, linkedIn, avatar, formIsValid } = this.state
 
     return(
         <div id="edit-cause-view">
@@ -127,7 +111,7 @@ class EditProfile extends Component {
                   <div>
                     <h1>Edit your profile</h1>
 
-                    <Form onSubmit={this.submit} mapping={this.mapInputs} onValid={this.onValid} onInvalid={this.onInvalid} layout='vertical'>
+                    <Form onSubmit={this.submit} mapping={this.mapInputs} onValid={this.toggleFormValid} onInvalid={this.toggleFormValid} layout='vertical'>
                       <div className="form-group">
                         <Input
                           name="name"
@@ -177,7 +161,7 @@ class EditProfile extends Component {
                         />
                       </div>                      
 
-                      <button className="btn btn-success" formNoValidate={true} type="submit" disabled={isSaving || !validForm}>
+                      <button className="btn btn-success" formNoValidate={true} type="submit" disabled={isSaving || !formIsValid}>
                         {isSaving ? "Saving..." : "Save profile"}
                       </button>
                                      

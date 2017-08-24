@@ -8,6 +8,7 @@ import Web3Monitor from '../lib/Web3Monitor';
 
 // views
 import Profile from './../components/views/Profile'
+import UserWallet from './../components/views/UserWallet'
 import EditProfile from './../components/views/EditProfile'
 import SignIn from './../components/views/SignIn'
 
@@ -155,7 +156,9 @@ class Application extends Component {
                 <Route exact path="/campaigns/:id/milestones/:milestoneId/edit" component={props => <EditMilestone currentUser={this.state.currentUser} {...props} />}/>       
                              
                 <Route exact path="/signin" render={props => <SignIn wallet={this.state.wallet} handleWalletChange={this.handleWalletChange} provider={this.state.web3 ? this.state.web3.currentProvider : undefined} {...props}/>} />
+                <Route exact path="/wallet" component={props => <UserWallet currentUser={this.state.currentUser} wallet={this.state.wallet} {...props}/>} />
                 <Route exact path="/profile" component={props => <EditProfile currentUser={this.state.currentUser} wallet={this.state.wallet} {...props}/>} />
+                <Route exact path="/profile/:userId" component={props => <Profile {...props}/>} />
 
                 <Route component={NotFound}/>
               </Switch>
