@@ -35,7 +35,6 @@ class EditProfile extends Component {
 
     this.submit = this.submit.bind(this)
     this.setImage = this.setImage.bind(this)   
-    this.toggleFormValid = this.toggleFormValid.bind(this)
   }  
 
   componentDidMount() {
@@ -91,7 +90,7 @@ class EditProfile extends Component {
   } 
 
   toggleFormValid(state) {
-    this.setState({ formIsValid: !this.state.formIsValid })
+    this.setState({ formIsValid: state })
   }
 
   render(){
@@ -110,7 +109,7 @@ class EditProfile extends Component {
                   <div>
                     <h1>Edit your profile</h1>
 
-                    <Form onSubmit={this.submit} mapping={this.mapInputs} onValid={this.toggleFormValid} onInvalid={this.toggleFormValid} layout='vertical'>
+                    <Form onSubmit={this.submit} mapping={this.mapInputs} onValid={()=>this.toggleFormValid(true)} onInvalid={()=>this.toggleFormValid(false)} layout='vertical'>
                       <div className="form-group">
                         <Input
                           name="name"
