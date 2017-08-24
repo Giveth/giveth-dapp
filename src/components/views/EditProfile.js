@@ -7,7 +7,6 @@ import Loader from '../Loader'
 import FormsyImageUploader from './../FormsyImageUploader'
 import { isAuthenticated } from '../../lib/middleware'
 
-
 /**
  * Edit a user profile
  *
@@ -142,7 +141,7 @@ class EditProfile extends Component {
                         />
                       </div>
 
-                      <FormsyImageUploader setImage={this.setImage} previewImage={avatar}/>
+                      <FormsyImageUploader setImage={this.setImage} avatar={avatar}/>
 
                       <div className="form-group">
                         <Input

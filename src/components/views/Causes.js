@@ -6,6 +6,8 @@ import { feathersClient } from '../../lib/feathersClient'
 import { Link } from 'react-router-dom'
 import { isOwner } from '../../lib/helpers'
 
+import Avatar from 'react-avatar'
+
 /**
   The causes view
 **/
@@ -30,7 +32,13 @@ class Causes extends Component {
               <div className="card" id={cause._id} key={index}>
                 <img className="card-img-top" src={cause.image} alt=""/>
                 <div className="card-body">
-                  <Link to={`/dacs/${ cause._id }`}>
+                
+                  <Link to={`/profile/${ cause.owner.address }`}>
+                    <Avatar size={30} src={cause.owner.avatar} round={true}/>                  
+                    <span className="small">{cause.owner.name}</span>
+                  </Link>
+
+                  <Link to={`/dacs/${ cause._id }`}>                  
                     <h4 className="card-title">{cause.title}</h4>
                   </Link>
                   <div className="card-text" dangerouslySetInnerHTML={{__html: cause.description}}></div>

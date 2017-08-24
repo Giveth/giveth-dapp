@@ -1,6 +1,7 @@
 import React, { Component } from 'react'
 import { File } from 'formsy-react-components'
 import ImageTools from './../lib/ImageResizer'
+import Avatar from 'react-avatar'
 
 /**
  * Image uploader with preview. Returns base64 image
@@ -43,9 +44,15 @@ class FormsyImageUploader extends Component {
   render(){
     return(
       <div>
-        <div id="image-preview">
-          <img src={this.state.image} width="500px" alt=""/>
-        </div>
+        { this.props.imagePreview &&
+          <div id="image-preview">
+            <img src={this.state.image} width="500px" alt=""/>
+          </div>
+        }
+
+        { this.props.avatar &&
+          <Avatar size={100} src={this.props.avatar} round={true}/>                  
+        }
 
         <div className="form-group">
           <label>Add a picture</label>

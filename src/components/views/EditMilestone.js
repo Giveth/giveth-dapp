@@ -8,6 +8,7 @@ import QuillFormsy from './../QuillFormsy'
 import FormsyImageUploader from './../FormsyImageUploader'
 import GoBackButton from '../GoBackButton'
 import { isOwner } from '../../lib/helpers'
+import { isAuthenticated } from '../../lib/middleware'
 
 /**
  * Create or edit a milestone
@@ -50,32 +51,33 @@ class EditMilestone extends Component {
 
 
   componentDidMount() {
-    this.setState({ campaignId: this.props.match.params.id })
+    isAuthenticated(this.props.currentUser, this.props.history).then(()=> {
+      this.setState({ campaignId: this.props.match.params.id })
 
-    // load a single milestones (when editing)
-    if(!this.props.isNew) {
-      socket.emit('milestones::find', {_id: this.props.match.params.milestoneId}, (error, resp) => {   
-        if(resp) { 
-          if(!isOwner(resp.data[0].ownerAddress, this.props.currentUser)) {
-            this.props.history.goBack()
-          } else {         
-            this.setState(Object.assign({}, resp.data[0], {
-              id: this.props.match.params.milestoneId,
+      // load a single milestones (when editing)
+      if(!this.props.isNew) {
+        socket.emit('milestones::find', {_id: this.props.match.params.milestoneId}, (error, resp) => {   
+          if(resp) { 
+            if(!isOwner(resp.data[0].ownerAddress, this.props.currentUser)) {
+              this.props.history.goBack()
+            } else {         
+              this.setState(Object.assign({}, resp.data[0], {
+                id: this.props.match.params.milestoneId,
+                isLoading: false,
+                hasError: false
+              }), this.focusFirstInput()) 
+            }
+          } else {
+            this.setState( { 
               isLoading: false,
-              hasError: false
-            }), this.focusFirstInput()) 
+              hasError: true
+            })
           }
-        } else {
-          this.setState( { 
-            isLoading: false,
-            hasError: true
-          })
-        }
-      })  
-    } else {
-      this.setState({ isLoading: false })
-    }
-
+        })  
+      } else {
+        this.setState({ isLoading: false })
+      }
+    })
   }
 
   focusFirstInput(){

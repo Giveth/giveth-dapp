@@ -8,6 +8,7 @@ import QuillFormsy from '../QuillFormsy'
 import FormsyImageUploader from './../FormsyImageUploader'
 import GoBackButton from '../GoBackButton'
 import { isOwner } from '../../lib/helpers'
+import { isAuthenticated } from '../../lib/middleware'
 
 /**
  * Create or edit a cause (DAC)
@@ -42,29 +43,31 @@ class EditCause extends Component {
   }  
 
   componentDidMount() {
-    if(!this.props.isNew) {
-      socket.emit('causes::find', {_id: this.props.match.params.id}, (error, resp) => {    
-        if(resp) {
-          if(!isOwner(resp.data[0].ownerAddress, this.props.currentUser)) {
-            this.props.history.goBack()
+    isAuthenticated(this.props.currentUser, this.props.history).then(()=> {
+      if(!this.props.isNew) {
+        socket.emit('causes::find', {_id: this.props.match.params.id}, (error, resp) => {    
+          if(resp) {
+            if(!isOwner(resp.data[0].ownerAddress, this.props.currentUser)) {
+              this.props.history.goBack()
+            } else {
+              this.setState(Object.assign({}, resp.data[0], {
+                id: this.props.match.params.id,       
+                isLoading: false
+              }), this.focusFirstInput())  
+            }
           } else {
-            this.setState(Object.assign({}, resp.data[0], {
-              id: this.props.match.params.id,       
-              isLoading: false
-            }), this.focusFirstInput())  
+            this.setState( { 
+              isLoading: false,
+              hasError: true
+            })          
           }
-        } else {
-          this.setState( { 
-            isLoading: false,
-            hasError: true
-          })          
-        }
-      })  
-    } else {
-      this.setState({
-        isLoading: false
-      }, this.focusFirstInput())
-    }
+        })  
+      } else {
+        this.setState({
+          isLoading: false
+        }, this.focusFirstInput())
+      }
+    })
   }
 
   focusFirstInput(){

@@ -5,6 +5,7 @@ import JoinGivethCommunity from '../JoinGivethCommunity'
 import { feathersClient } from '../../lib/feathersClient'
 import { Link } from 'react-router-dom'
 import { isOwner } from '../../lib/helpers'
+import Avatar from 'react-avatar'
 
 /**
   The campaigns view
@@ -30,6 +31,12 @@ class Campaigns extends Component {
               <div className="card" id={campaign._id} key={index}>
                 <img className="card-img-top" src={campaign.image} alt=""/>
                 <div className="card-body">
+
+                  <Link to={`/profile/${ campaign.owner.address }`}>
+                    <Avatar size={30} src={campaign.owner.avatar} round={true}/>                  
+                    <span className="small">{campaign.owner.name}</span>
+                  </Link>
+
                   <Link to={`/campaigns/${ campaign._id }`}>
                     <h4 className="card-title">{campaign.title}</h4>
                   </Link>
