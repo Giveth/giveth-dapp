@@ -13,11 +13,7 @@
  */
 
 export const isAuthenticated = (currentUser, history) => {
-  return new Promise((resolve, reject) => {
-    if(!currentUser) {
-      history.goBack()
-    } else {
-      resolve()
-    }
-  })
+  return new Promise((resolve, reject) =>
+    !currentUser ? history.goBack() : resolve()
+  )
 }
