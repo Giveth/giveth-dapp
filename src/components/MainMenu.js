@@ -12,7 +12,7 @@ class MainMenu extends Component {
     return (
       <nav id="main-menu" className="navbar navbar-expand-lg fixed-top">
         <button className="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-          <span className="navbar-toggler-icon"></span>
+          <span className="navbar-toggler-icon">&#9776;</span>
         </button>
         <Link className="navbar-brand" to="/">Giveth</Link>
 
@@ -39,7 +39,7 @@ class MainMenu extends Component {
             {this.props.authenticated &&
               <li className="nav-item">
                 <NavLink className="nav-link" to="/wallet" activeClassName="active">Wallet</NavLink>
-              </li>   
+              </li>
             }
 
           </ul>
