@@ -1,5 +1,5 @@
 #join-giveth-community {
-  height: 200px;
+  min-height: 200px;
   background-color: $header-background;
   padding: 80px 20px 50px 20px;
   color: white;
@@ -10,5 +10,9 @@
 
   a:not(:first-child) {
     margin-left: 10px;
+  }
+
+  .btn {
+    margin: 4px 2px;
   }
 }
