@@ -8,6 +8,9 @@ import Milestone from '../Milestone'
 import loadAndWatchFeatherJSResource from '../../lib/loadAndWatchFeatherJSResource'
 import GoBackButton from '../GoBackButton'
 import { isOwner } from '../../lib/helpers'
+import BackgroundImageHeader from '../BackgroundImageHeader'
+import Avatar from 'react-avatar'
+import DonateButton from '../DonateButton'
 
 /**
   Loads and shows a single campaign
@@ -43,6 +46,7 @@ class ViewCampaign extends Component {
     ,
       new Promise((resolve, reject) => {
         new loadAndWatchFeatherJSResource('milestones', {campaignId: this.props.match.params.id}, (resp, err) => {
+          console.log(err, resp)
           if(resp){
             this.setState({ milestones: resp.data }, resolve())
           } else {
@@ -68,43 +72,53 @@ class ViewCampaign extends Component {
 
     return (
       <div id="view-campaign-view">
-        <div className="container-fluid page-layout">
-          <div className="row">
-            <div className="col-md-8 m-auto">
-              { isLoading && 
-                <Loader className="fixed"/>
-              }
-              
-              { !isLoading &&
-                <div>
-                  <GoBackButton history={history}/>
+        { isLoading && 
+          <Loader className="fixed"/>
+        }
+        
+        { !isLoading &&
+          <div>
+            <BackgroundImageHeader image={image} height={300} >
+              <Link to={`/profile/${ owner.address }`}>
+                <Avatar size={50} src={owner.avatar} round={true}/>                  
+                <p className="small">{owner.name}</p>
+              </Link> 
+              <h6>Campaign</h6>
+              <h1>{title}</h1>
 
-                  <p>Campaign</p>
-                                    
-                  <h1 className="campaign-title">{title}</h1>
-                  <img className="campaign-header-image" src={image} alt=""/>
+              <DonateButton type="campaign" model={{ title: title, id: id }}/>
+            </BackgroundImageHeader>
+
+            <div className="row">
+              <div className="col-md-8 m-auto">            
+
+                <GoBackButton history={history}/>
+
+                <div className="content">
+                  <h2>About this DAC</h2>
                   <div dangerouslySetInnerHTML={{__html: description}}></div>
+                </div>            
 
-                  <hr/>
 
-                  <h3>Milestones
+                <hr/>
+
+                <h3>Milestones
                   { isOwner(owner.address, currentUser) && 
                     <Link className="btn btn-primary btn-sm pull-right" to={`/campaigns/${ id }/milestones/new`}>Add milestone</Link>
                   }
-                  </h3>
+                </h3>
 
-                  {milestones.length > 0 && milestones.map((m, i) => 
-                    <Milestone 
-                      model={m} 
-                      currentUser={currentUser}
-                      key={i} 
-                      removeMilestone={()=>this.removeMilestone(m._id)}/>
-                  )}
-                </div>
-              }
+                {milestones.length > 0 && milestones.map((m, i) => 
+                  <Milestone 
+                    model={m} 
+                    currentUser={currentUser}
+                    key={i} 
+                    removeMilestone={()=>this.removeMilestone(m._id)}/>
+                )}
+              </div>
             </div>
           </div>
-        </div>
+        }
       </div>
     )
   } 

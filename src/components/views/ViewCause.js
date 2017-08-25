@@ -28,6 +28,8 @@ class ViewCause extends Component {
   }  
 
   componentDidMount() {
+    this.setState({ id: this.props.match.params.id })
+
     socket.emit('causes::find', {_id: this.props.match.params.id}, (error, resp) => {      
       if(resp) {
         this.setState(Object.assign({}, resp.data[0], {  
@@ -42,43 +44,41 @@ class ViewCause extends Component {
 
   render() {
     const { history } = this.props
-    let { isLoading, title, description, image, owner } = this.state
+    let { isLoading, id, title, description, image, owner } = this.state
 
     return (
       <div id="view-cause-view">
-        <div className="">
-          { isLoading && 
-            <Loader className="fixed"/>
-          }
-          
-          { !isLoading &&
-            <div>
-              <BackgroundImageHeader image={image} height={300} >
-                <Link to={`/profile/${ owner.address }`}>
-                  <Avatar size={50} src={owner.avatar} round={true}/>                  
-                  <p className="small">{owner.name}</p>
-                </Link> 
-                <h6>Democratic Autonomous Charity</h6>
-                <h1>{title}</h1>
-                <DonateButton/>
-              </BackgroundImageHeader>
+        { isLoading && 
+          <Loader className="fixed"/>
+        }
+        
+        { !isLoading &&
+          <div>
+            <BackgroundImageHeader image={image} height={300} >
+              <Link to={`/profile/${ owner.address }`}>
+                <Avatar size={50} src={owner.avatar} round={true}/>                  
+                <p className="small">{owner.name}</p>
+              </Link> 
+              <h6>Democratic Autonomous Charity</h6>
+              <h1>{title}</h1>
+              
+              <DonateButton type="DAC" model={{ title: title, id: id }}/>
+            </BackgroundImageHeader>
 
-              <div className="row">
-                <div className="col-md-8 m-auto">
+            <div className="row">
+              <div className="col-md-8 m-auto">
 
-                  <GoBackButton history={history}/>
+                <GoBackButton history={history}/>
 
-                  <div className="content">
-                    <h2>About this DAC</h2>
-                    <div dangerouslySetInnerHTML={{__html: description}}></div>
-                  </div>
-
+                <div className="content">
+                  <h2>About this DAC</h2>
+                  <div dangerouslySetInnerHTML={{__html: description}}></div>
                 </div>
-              </div>   
-            </div>             
-          }
 
-        </div>
+              </div>
+            </div>   
+          </div>             
+        }
       </div>
     )
   } 

@@ -77,7 +77,7 @@ class SignIn extends Component {
     socket.emit('authenticate', { signature: wallet.signMessage().signature }, () => {
       console.log('authenticated')
       this.props.handleWalletChange(wallet);
-      this.props.history.push('/');
+      this.props.history.goBack();
     });
   }
 

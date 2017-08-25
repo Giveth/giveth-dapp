@@ -46,7 +46,7 @@ class Causes extends Component {
                     <div className="card-text" dangerouslySetInnerHTML={{__html: cause.description}}></div>
 
                     <div>
-                      <DonateButton />
+                      <DonateButton type="DAC" model={cause}/>
 
                       { isOwner(cause.owner.address, currentUser) &&
                         <span>

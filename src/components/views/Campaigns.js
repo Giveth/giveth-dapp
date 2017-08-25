@@ -5,6 +5,7 @@ import JoinGivethCommunity from '../JoinGivethCommunity'
 import { feathersClient } from '../../lib/feathersClient'
 import { Link } from 'react-router-dom'
 import { isOwner } from '../../lib/helpers'
+import DonateButton from '../DonateButton'
 import Avatar from 'react-avatar'
 import Masonry, {ResponsiveMasonry} from "react-responsive-masonry"
 
@@ -45,10 +46,8 @@ class Campaigns extends Component {
                     <div className="card-text" dangerouslySetInnerHTML={{__html: campaign.description}}></div>
 
                     <div>
-                      <a className="btn btn-success">
-                        GivETH
-                      </a>                  
-
+                      <DonateButton type="campaign" model={campaign}/>
+                
                       { isOwner(campaign.owner.address, currentUser) && 
                         <span>
                           <a className="btn btn-link" onClick={()=>this.removeCampaign(campaign._id)}>

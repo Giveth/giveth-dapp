@@ -1,0 +1,26 @@
+#view-campaign-view {
+  padding-top: 50px;
+
+  padding-top: 50px;
+
+  .cause-title {
+    margin-bottom: 20px;
+  }
+
+
+  .content {
+
+    iframe,
+    img {
+      max-width: 100%;
+      max-height: 300px; 
+      width: 100%;
+      height: 100%;
+
+      &.cause-header-image {
+        margin-bottom: 30px;
+        border-radius: 3px;
+      }   
+    }
+  }
+}  
