@@ -8,7 +8,7 @@ import { isOwner } from '../../lib/helpers'
 import DonateButton from '../DonateButton'
 
 import Avatar from 'react-avatar'
-
+import Masonry, {ResponsiveMasonry} from "react-responsive-masonry"
 /**
   The causes view
 **/
@@ -28,45 +28,47 @@ class Causes extends Component {
         <JoinGivethCommunity authenticated={(this.props.currentUser)}/>
 
         <div className="container-fluid page-layout reduced-padding">
-          <div className="card-columns">
-            { this.props.causes.data && this.props.causes.data.length > 0 && this.props.causes.data.map((cause, index) =>
-              <div className="card" id={cause._id} key={index}>
-                <img className="card-img-top" src={cause.image} alt=""/>
-                <div className="card-body">
-                
-                  <Link to={`/profile/${ cause.owner.address }`}>
-                    <Avatar size={30} src={cause.owner.avatar} round={true}/>                  
-                    <span className="small">{cause.owner.name}</span>
-                  </Link>
+          <ResponsiveMasonry columnsCountBreakPoints={{350: 1, 750: 2, 900: 3, 1024: 4, 1470: 5}}>
+            <Masonry gutter="10px">
+              { this.props.causes.data && this.props.causes.data.length > 0 && this.props.causes.data.map((cause, index) =>
+                <div className="card" id={cause._id} key={index}>
+                  <img className="card-img-top" src={cause.image} alt=""/>
+                  <div className="card-body">
+                  
+                    <Link to={`/profile/${ cause.owner.address }`}>
+                      <Avatar size={30} src={cause.owner.avatar} round={true}/>                  
+                      <span className="small">{cause.owner.name}</span>
+                    </Link>
 
-                  <Link to={`/dacs/${ cause._id }`}>                  
-                    <h4 className="card-title">{cause.title}</h4>
-                  </Link>
-                  <div className="card-text" dangerouslySetInnerHTML={{__html: cause.description}}></div>
+                    <Link to={`/dacs/${ cause._id }`}>                  
+                      <h4 className="card-title">{cause.title}</h4>
+                    </Link>
+                    <div className="card-text" dangerouslySetInnerHTML={{__html: cause.description}}></div>
 
-                  <div>
-                    <DonateButton />
+                    <div>
+                      <DonateButton />
 
-                    { isOwner(cause.owner.address, currentUser) &&
-                      <span>
-                        <a className="btn btn-link" onClick={()=>this.removeCause(cause._id)}>
-                          <i className="fa fa-trash"></i>
-                        </a>
-                        <Link className="btn btn-link" to={`/dacs/${ cause._id }/edit`}>
-                          <i className="fa fa-edit"></i>
-                        </Link>
-                      </span>
-                    }
+                      { isOwner(cause.owner.address, currentUser) &&
+                        <span>
+                          <a className="btn btn-link" onClick={()=>this.removeCause(cause._id)}>
+                            <i className="fa fa-trash"></i>
+                          </a>
+                          <Link className="btn btn-link" to={`/dacs/${ cause._id }/edit`}>
+                            <i className="fa fa-edit"></i>
+                          </Link>
+                        </span>
+                      }
+                    </div>
+
                   </div>
-
                 </div>
-              </div>
-            )}
+              )}
+            </Masonry>
+          </ResponsiveMasonry>            
 
-            { this.props.causes.data && this.props.causes.data.length === 0 &&
-              <center>There are no DACs yet!</center>
-            }
-          </div>
+          { this.props.causes.data && this.props.causes.data.length === 0 &&
+            <center>There are no DACs yet!</center>
+          }
         </div>
       </div>
     )
