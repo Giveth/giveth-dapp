@@ -1,0 +1,15 @@
+// vertical align utilities, (Bootstrap's vertical align is currently not working)
+// include @make-flex to parent before including .vertical-align
+
+@mixin make-flex() {
+  display: flex;
+  flex-direction: row;    
+}
+
+.vertical-align {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}  
+

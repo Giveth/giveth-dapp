@@ -5,6 +5,7 @@ import JoinGivethCommunity from '../JoinGivethCommunity'
 import { feathersClient } from '../../lib/feathersClient'
 import { Link } from 'react-router-dom'
 import { isOwner } from '../../lib/helpers'
+import DonateButton from '../DonateButton'
 
 import Avatar from 'react-avatar'
 
@@ -44,9 +45,7 @@ class Causes extends Component {
                   <div className="card-text" dangerouslySetInnerHTML={{__html: cause.description}}></div>
 
                   <div>
-                    <a className="btn btn-success">
-                      GivETH
-                    </a>
+                    <DonateButton />
 
                     { isOwner(cause.owner.address, currentUser) &&
                       <span>

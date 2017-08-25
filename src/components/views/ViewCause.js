@@ -1,9 +1,13 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
+import { Link } from 'react-router-dom'
 
 import { socket } from '../../lib/feathersClient'
 import Loader from '../Loader'
 import GoBackButton from '../GoBackButton'
+import BackgroundImageHeader from '../BackgroundImageHeader'
+import Avatar from 'react-avatar'
+import DonateButton from '../DonateButton'
 
 
 /**
@@ -38,29 +42,42 @@ class ViewCause extends Component {
 
   render() {
     const { history } = this.props
-    let { isLoading, title, description, image } = this.state
+    let { isLoading, title, description, image, owner } = this.state
 
     return (
       <div id="view-cause-view">
-        <div className="container-fluid page-layout reduced-padding">
-          <div className="row">
-            <div className="col-md-8 m-auto">
-              { isLoading && 
-                <Loader className="fixed"/>
-              }
-              
-              { !isLoading &&
-                <div>
+        <div className="">
+          { isLoading && 
+            <Loader className="fixed"/>
+          }
+          
+          { !isLoading &&
+            <div>
+              <BackgroundImageHeader image={image} height={300} >
+                <Link to={`/profile/${ owner.address }`}>
+                  <Avatar size={50} src={owner.avatar} round={true}/>                  
+                  <p className="small">{owner.name}</p>
+                </Link> 
+                <h6>Democratic Autonomous Charity</h6>
+                <h1>{title}</h1>
+                <DonateButton/>
+              </BackgroundImageHeader>
+
+              <div className="row">
+                <div className="col-md-8 m-auto">
+
                   <GoBackButton history={history}/>
 
-                  <p>Democratic Autonomous Charity</p>
-                  <h1 className="cause-title">{title}</h1>
-                  <img className="cause-header-image" src={image} alt=""/>
-                  <div dangerouslySetInnerHTML={{__html: description}}></div>
+                  <div className="content">
+                    <h2>About this DAC</h2>
+                    <div dangerouslySetInnerHTML={{__html: description}}></div>
+                  </div>
+
                 </div>
-              }
-            </div>
-          </div>
+              </div>   
+            </div>             
+          }
+
         </div>
       </div>
     )

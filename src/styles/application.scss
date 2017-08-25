@@ -1,5 +1,6 @@
 // Global classes are defined here
 
+@import 'layout.scss';
 @import 'colors.scss';
 
 // views
@@ -12,6 +13,7 @@
 @import 'mainMenu.scss';
 @import 'goBackButton.scss';
 @import 'joinGivethCommunity.scss';
+@import 'backgroundImageHeader.scss';
 
 // misc
 @import 'quill-overrides.scss';
@@ -45,3 +47,4 @@ body {
 a, button {
   cursor: pointer;
 }
+

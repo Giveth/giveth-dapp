@@ -1,8 +1,10 @@
 #join-giveth-community {
-  height: 200px;
-  background-color: $header-background;
+  height: 300px;
+  background: linear-gradient(rgba(80, 99, 119, 0.5), rgba(28, 59, 68, 0.9));
   padding: 80px 20px 50px 20px;
   color: white;
+
+  @include make-flex();
 
   h3 {
     margin-bottom: 20px;
