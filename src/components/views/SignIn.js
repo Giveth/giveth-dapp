@@ -5,7 +5,7 @@ import localforage from "localforage";
 import NewWallet from "../NewWallet";
 import LoadWallet from "../LoadWallet";
 import GivethWallet from "../../lib/GivethWallet";
-import { socket } from "../../lib/feathersClient";
+import { socket, feathersClient } from '../../lib/feathersClient'
 import Loader from "../Loader";
 
 /**
@@ -75,9 +75,28 @@ class SignIn extends Component {
 
   walletLoaded(wallet) {
     socket.emit('authenticate', { signature: wallet.signMessage().signature }, () => {
-      console.log('authenticated')
+      console.log('authenticated');
       this.props.handleWalletChange(wallet);
-      this.props.history.goBack();
+
+      const address = wallet.getAddresses()[ 0 ];
+
+      // TODO this check should maybe be done in LoadWallet as that is when a keystore file is actually uploaded
+      // However I'm putting this here for now as a users may have created a wallet in an earlier stage of the
+      // mpv and thus it is stored in their localStorage, and the ui crashes if this user creates a milestone, etc
+      feathersClient.service('/users').get(address)
+        .then(() => this.props.history.goBack())
+        .catch(err => {
+          if (err.code === 404) {
+            feathersClient.service('/users').create({ address })
+              .then(user => {
+                console.log('created user ', user);
+                this.props.history.push('/profile');
+              })
+          } else {
+            this.props.history.goBack();
+          }
+        })
+
     });
   }
 
