@@ -1,5 +1,5 @@
 #main-menu {
-  background-color: $header-background; 
+  background-color: $header-background;
 
   a {
     color: $menu-item-color;
@@ -11,5 +11,18 @@
     &.active {
       color: $green;
     }
+  }
+
+  .navbar-toggler {
+    padding: 0;
+    color: #fff;
+
+    &:focus {
+      outline: none;
+    }
+  }
+
+  .navbar-toggler-icon {
+    width: 0;
   }
 }
