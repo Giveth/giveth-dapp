@@ -71,7 +71,9 @@ class NewWallet extends Component {
     if (wallet) {
       return (
         <div>
-          <h1>Backup your new Wallet!</h1>
+          <center>
+            <h1>Backup your new Wallet!</h1>
+          </center>
 
           <div className="alert alert-info">
             We <strong>highly</strong> recommend that you download this backup file and keep it in a safe place. If you loose this file
@@ -86,13 +88,15 @@ class NewWallet extends Component {
 
     return (
       <div>
-        <h1>Create Wallet!</h1>
+        <center>
+          <h1>Create Wallet!</h1>
+        </center>
 
         {error &&
         <div className="alert alert-danger">{error}</div>
         }
 
-        <Form onSubmit={this.submit} onValid={()=>this.toggleFormValid(true)} onInvalid={()=>this.toggleFormValid(false)} layout='vertical'>
+        <Form className="sign-up-form" onSubmit={this.submit} onValid={()=>this.toggleFormValid(true)} onInvalid={()=>this.toggleFormValid(false)} layout='vertical'>
           <div className="form-group">
             <Input
               name="password"

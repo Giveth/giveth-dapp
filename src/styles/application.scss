@@ -8,6 +8,7 @@
 @import 'editCausesView.scss';
 @import 'viewCauseView.scss';
 @import 'viewCampaignView.scss';
+@import 'signinView.scss';
 
 // components
 @import 'loader.scss';
@@ -48,5 +49,9 @@ body {
 
 a, button {
   cursor: pointer;
+}
+
+label {
+  font-weight: 600;  
 }
 

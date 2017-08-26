@@ -28,9 +28,9 @@ class Campaigns extends Component {
         <JoinGivethCommunity authenticated={(this.props.currentUser)}/>
 
         <div className="container-fluid page-layout reduced-padding">
-          <ResponsiveMasonry columnsCountBreakPoints={{350: 1, 750: 2, 900: 3, 1024: 4, 1470: 5}}>
-            <Masonry gutter="10px">
-              { this.props.campaigns.data && this.props.campaigns.data.length > 0 && this.props.campaigns.data.map((campaign, index) =>
+          { this.props.campaigns.data && this.props.campaigns.data.length > 0 && this.props.campaigns.data.map((campaign, index) =>
+            <ResponsiveMasonry columnsCountBreakPoints={{350: 1, 750: 2, 900: 3, 1024: 4, 1470: 5}}>
+              <Masonry gutter="10px">            
                 <div className="card" id={campaign._id} key={index}>
                   <img className="card-img-top" src={campaign.image} alt=""/>
                   <div className="card-body">
@@ -62,9 +62,10 @@ class Campaigns extends Component {
 
                   </div>
                 </div>
-              )}
-            </Masonry>
-          </ResponsiveMasonry>   
+              </Masonry>
+            </ResponsiveMasonry>                  
+          )}
+ 
 
           { this.props.campaigns.data && this.props.campaigns.data.length === 0 &&
             <center>There are no campaigns yet!</center>

@@ -28,9 +28,10 @@ class Causes extends Component {
         <JoinGivethCommunity authenticated={(this.props.currentUser)}/>
 
         <div className="container-fluid page-layout reduced-padding">
-          <ResponsiveMasonry columnsCountBreakPoints={{350: 1, 750: 2, 900: 3, 1024: 4, 1470: 5}}>
-            <Masonry gutter="10px">
-              { this.props.causes.data && this.props.causes.data.length > 0 && this.props.causes.data.map((cause, index) =>
+
+          { this.props.causes.data && this.props.causes.data.length > 0 && this.props.causes.data.map((cause, index) =>
+            <ResponsiveMasonry columnsCountBreakPoints={{350: 1, 750: 2, 900: 3, 1024: 4, 1470: 5}}>
+              <Masonry gutter="10px">                
                 <div className="card" id={cause._id} key={index}>
                   <img className="card-img-top" src={cause.image} alt=""/>
                   <div className="card-body">
@@ -62,9 +63,10 @@ class Causes extends Component {
 
                   </div>
                 </div>
-              )}
-            </Masonry>
-          </ResponsiveMasonry>            
+              </Masonry>
+            </ResponsiveMasonry>                    
+          )}
+        
 
           { this.props.causes.data && this.props.causes.data.length === 0 &&
             <center>There are no DACs yet!</center>

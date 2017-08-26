@@ -1,0 +1,33 @@
+#signin-view {
+  .card {
+    padding: 40px;
+  }
+
+  form {
+
+    &.sign-in-form {
+      margin-top: 50px;    
+
+      input {
+        text-align: center;
+        width: 50%;
+      }
+    }
+
+    &.sign-up-form {
+      margin-top: 50px;      
+    }
+  }
+
+  .btn {
+    margin-bottom: 15px;
+  }
+
+  a {
+    color: #007bff;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+}

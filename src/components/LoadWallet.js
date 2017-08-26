@@ -74,10 +74,10 @@ class LoadWallet extends Component {
     return (
       <div>
         {error &&
-        <div className="alert alert-danger">{error}</div>
+          <div className="alert alert-danger">{error}</div>
         }
 
-        <Form onSubmit={this.submit} onValid={this.onValid} onInvalid={this.onInvalid} layout='vertical'>
+        <Form className="sign-in-form" onSubmit={this.submit} onValid={this.onValid} onInvalid={this.onInvalid} layout='vertical'>
           <div className="form-group">
             <label>Wallet File</label>
             <File
@@ -96,7 +96,7 @@ class LoadWallet extends Component {
             />
           </div>
 
-          <button className="btn btn-success" formNoValidate={true} type="submit" disabled={!this.state.validForm}>
+          <button className="btn btn-success btn-lg" formNoValidate={true} type="submit" disabled={!this.state.validForm}>
             Load Wallet
           </button>
 

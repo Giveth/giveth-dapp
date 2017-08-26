@@ -7,6 +7,7 @@ import LoadWallet from "../LoadWallet";
 import GivethWallet from "../../lib/GivethWallet";
 import { socket, feathersClient } from '../../lib/feathersClient'
 import Loader from "../Loader";
+import Avatar from 'react-avatar'
 
 /**
  SignIn Page
@@ -33,15 +34,16 @@ class SignIn extends Component {
   componentDidMount() {
     localforage.getItem('keystore')
       .then((keystore) => {
-        this.setState({
-          isLoading: false,
-        });
-
         if (keystore && keystore.length > 0) {
           this.setState({
             keystore,
             address: GivethWallet.fixAddress(keystore[ 0 ].address),
-          });
+          }, 
+          // try to find the user's profile based on the address
+          () => this.fetchUserProfile());          
+                  
+        } else {
+        this.setState({ isLoading: false });
         }
 
       }).catch(() => {
@@ -60,6 +62,22 @@ class SignIn extends Component {
       }, 500);
     }
   }
+  
+  fetchUserProfile(address) {
+    socket.emit('users::find', {address: this.state.address}, (error, resp) => {    
+      console.log(error, resp)
+      if(resp) {
+        this.setState(Object.assign({}, resp.data[0], {
+          isLoading: false,
+        })) 
+      } else {
+        this.setState( { 
+          isLoading: false,
+        })  
+      }
+    })
+  }
+
 
   submit({ password }) {
     GivethWallet.loadWallet(this.state.keystore, this.props.provider, password)
@@ -119,7 +137,7 @@ class SignIn extends Component {
   }
 
   render() {
-    const { newWallet, keystore, address, error, isLoading, formIsValid } = this.state;
+    const { newWallet, keystore, avatar, name, address, error, isLoading, formIsValid } = this.state;
 
     if (isLoading) {
       return <Loader className="fixed"/>
@@ -131,45 +149,64 @@ class SignIn extends Component {
           <div className="col-md-8 m-auto">
             <div>
               {newWallet &&
-              <NewWallet walletCreated={this.props.handleWalletChange} provider={this.props.provider}
-                         onBackup={() => this.props.history.push('/profile')}/>
+                <div className="card">
+                  <NewWallet 
+                    walletCreated={this.props.handleWalletChange} 
+                    provider={this.props.provider}
+                    onBackup={() => this.props.history.push('/profile')}/>
+                </div>
               }
 
               {!newWallet && keystore &&
-              <div>
-                <h1>Welcome {address}!</h1>
-                {error &&
-                <div className="alert alert-danger">{error}</div>
-                }
-                <Form onSubmit={this.submit} onValid={()=>this.toggleFormValid(true)} onInvalid={()=>this.toggleFormValid(false)} layout='vertical'>
-                  <div className="form-group">
-                    <Input
-                      name="password"
-                      id="password-input"
-                      label="Wallet Password"
-                      type="password"
-                      ref="password"
-                      required
-                    />
-                  </div>
+                <div className="card">
+                  <center>
+                    {avatar &&
+                      <Avatar size={100} src={avatar} round={true}/>                  
+                    }
+                    <h1>Welcome <br/><strong>{name || address}!</strong></h1>
+                    { name &&
+                      <p className="small">Your address: {address}</p>
+                    }
 
-                  <div className="form-group">
-                    <button className="btn btn-link pl-sm-0" onClick={this.removeKeystore}>Not {address}?</button>
-                  </div>
+                    {error &&
+                      <div className="alert alert-danger">{error}</div>
+                    }
+                    <Form className="sign-in-form" onSubmit={this.submit} onValid={()=>this.toggleFormValid(true)} onInvalid={()=>this.toggleFormValid(false)} layout='vertical'>
+                      <div className="form-group">
+                        <Input
+                          name="password"
+                          id="password-input"
+                          label="Sign in by entering your wallet password"
+                          type="password"
+                          ref="password"
+                          required
+                        />
+                      </div>
 
-                  <button className="btn btn-success" formNoValidate={true} type="submit"
-                          disabled={!formIsValid}>Unlock Wallet
-                  </button>
-                </Form>
-              </div>
+                      <button className="btn btn-success btn-lg" formNoValidate={true} type="submit"
+                              disabled={!formIsValid}>Unlock your wallet
+                      </button>
+
+                      <div className="form-group">
+                        <p className="small"><a onClick={this.removeKeystore}>Not {name} / {address}?</a></p>
+                      </div>
+
+                    </Form>
+                  </center>
+                </div>
               }
 
               {!newWallet && !keystore &&
-              <div>
-                <h1>Sign In!</h1>
-                <LoadWallet walletLoaded={this.walletLoaded} provider={this.props.provider}/>
-                <button className="btn btn-link pl-sm-0" onClick={this.newWallet}>New User?</button>
-              </div>
+                <div className="card">
+                  <center>
+                    <h1>Sign In!</h1>
+                    <LoadWallet walletLoaded={this.walletLoaded} provider={this.props.provider}/>
+
+                    <p className="small">
+                      <a onClick={this.newWallet}>New User?</a>
+                    </p>
+                  </center>
+                </div>
               }
             </div>
           </div>
