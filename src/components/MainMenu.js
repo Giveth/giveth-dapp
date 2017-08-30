@@ -9,8 +9,8 @@ import {withRouter} from "react-router-dom";
 **/
 
 class MainMenu extends Component {
-  signout(){
-    this.props.handleWalletChange(undefined)
+  signout() {
+    this.props.signOut();
     this.props.history.push('/')
   }
 

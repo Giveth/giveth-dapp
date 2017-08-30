@@ -3,7 +3,7 @@ import { BrowserRouter as Router, Route, Switch } from 'react-router-dom'
 import localforage from 'localforage';
 
 import loadAndWatchFeatherJSResource from '../lib/loadAndWatchFeatherJSResource'
-import { socket } from "../lib/feathersClient";
+import { feathersClient } from "../lib/feathersClient";
 
 // views
 import Profile from './../components/views/Profile'
@@ -56,8 +56,8 @@ class Application extends Component {
 
     this.handleWalletChange = this.handleWalletChange.bind(this);
   }
- 
-  componentWillMount(){
+
+  componentWillMount() {
     // Load causes and campaigns. When we receive first data, we finish loading.
     // This setup is a little ugly, because the callback is being called 
     // again and again by loadAndWatchFeatherJSResource whenever data changes.
@@ -67,7 +67,7 @@ class Application extends Component {
     Promise.all([
       new Promise((resolve, reject) => {
         new loadAndWatchFeatherJSResource('causes', {}, (resp, err) => {
-          if(resp) {
+          if (resp) {
             this.setState({ causes: resp })
             resolve()
           } else {
@@ -75,10 +75,10 @@ class Application extends Component {
           }
         })
       })
-    ,
+      ,
       new Promise((resolve, reject) => {
         new loadAndWatchFeatherJSResource('campaigns', {}, (resp, err) => {
-          if(resp) {
+          if (resp) {
             this.setState({ campaigns: resp })
             resolve()
           } else {
@@ -90,13 +90,16 @@ class Application extends Component {
       .catch((e) => {
         console.log('error loading', e)
         this.setState({ isLoading: false, hasError: true })
-      })
+      });
 
-    socket.on('reconnect', () => {
-      if (this.state.wallet && this.state.wallet.unlocked) {
-        socket.emit('authenticate', { signature: this.state.wallet.signMessage().signature });
-      }
-    })
+    // login the user if we have a valid JWT
+    feathersClient.passport.getJWT()
+      .then(token => feathersClient.passport.verifyJWT(token))
+      .then(payload => {
+        this.setState({ currentUser: payload.userId });
+        feathersClient.authenticate(); // need to authenticate the socket connection
+      })
+      .catch(console.log);
 
     // QUESTION: Should rendering wait for this to load?
     // new Web3Monitor(({web3}) => {
@@ -106,6 +109,13 @@ class Application extends Component {
     // })
   }
 
+  signOut = () => {
+    if (this.wallet) this.wallet.lock();
+
+    feathersClient.logout();
+    this.setState({ currentUser: undefined });
+  };
+
   handleWalletChange(wallet) {
     if (wallet) {
       wallet.getKeystore((keystore) => {
@@ -114,7 +124,7 @@ class Application extends Component {
 
       this.setState({
         wallet,
-        currentUser: wallet.getAddresses()[0],
+        currentUser: wallet.getAddresses()[ 0 ],
       });
     } else {
       if (this.state.wallet) this.state.wallet.clear();
@@ -128,18 +138,18 @@ class Application extends Component {
     }
   }
 
-  render(){
+  render() {
 
-    return(
+    return (
       <Router>
         <div>
-          <MainMenu authenticated={(this.state.currentUser)} handleWalletChange={this.handleWalletChange}/>
+          <MainMenu authenticated={(this.state.currentUser)} signOut={this.signOut}/>
 
-          { this.state.isLoading && 
+          {this.state.isLoading &&
             <Loader className="fixed"/>
           }
 
-          { !this.state.isLoading && !this.state.hasError &&
+          {!this.state.isLoading && !this.state.hasError &&
             <div>
               {/* Routes are defined here. Persistent data is set as props on components */}
               <Switch>

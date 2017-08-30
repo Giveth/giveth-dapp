@@ -27,7 +27,8 @@ class SignIn extends Component {
     };
 
     this.submit = this.submit.bind(this);
-    this.walletLoaded = this.walletLoaded.bind(this);
+    this.removeKeystore = this.removeKeystore.bind(this);
+    this.newWallet = this.newWallet.bind(this);
   }
 
   componentDidMount() {
@@ -35,21 +36,21 @@ class SignIn extends Component {
       .then((keystore) => {
         if (keystore && keystore.length > 0) {
           this.setState({
-            keystore,
-            address: GivethWallet.fixAddress(keystore[ 0 ].address),
-          }, 
-          // try to find the user's profile based on the address
-          () => this.fetchUserProfile());          
-                  
+              keystore,
+              address: GivethWallet.fixAddress(keystore[ 0 ].address),
+            },
+            // try to find the user's profile based on the address
+            () => this.fetchUserProfile());
         } else {
-          this.props.history.push('/change-account')
+          this.props.history.push('/change-account');
         }
 
-      }).catch(() => {
+      })
+      .catch(() => {
         this.setState({
           isLoading: false,
         });
-    });
+      });
   }
 
   componentWillUpdate() {
@@ -61,18 +62,18 @@ class SignIn extends Component {
       }, 500);
     }
   }
-  
-  fetchUserProfile(address) {
-    socket.emit('users::find', {address: this.state.address}, (error, resp) => {    
+
+  fetchUserProfile() {
+    socket.emit('users::find', { address: this.state.address }, (error, resp) => {
       console.log(error, resp)
-      if(resp) {
-        this.setState(Object.assign({}, resp.data[0], {
+      if (resp) {
+        this.setState(Object.assign({}, resp.data[ 0 ], {
           isLoading: false,
-        })) 
+        }))
       } else {
-        this.setState( { 
+        this.setState({
           isLoading: false,
-        })  
+        })
       }
     })
   }
@@ -101,32 +102,46 @@ class SignIn extends Component {
     })
   }
 
-  walletLoaded(wallet) {
-    socket.emit('authenticate', { signature: wallet.signMessage().signature }, () => {
-      console.log('authenticated');
-      this.props.handleWalletChange(wallet);
+  authenticate = wallet => {
+    const authData = {
+      strategy: 'web3',
+      address: wallet.getAddresses()[ 0 ],
+    };
 
-      const address = wallet.getAddresses()[ 0 ];
+    return new Promise((resolve, reject) => {
+      feathersClient.authenticate(authData)
+        .catch(response => {
+          // normal flow will issue a 401 with a challenge message we need to sign and send to verify our identity
+          if (response.code === 401 && response.data.startsWith('Challenge =')) {
+            const msg = response.data.replace('Challenge =', '').trim();
 
-      // TODO this check should maybe be done in LoadWallet as that is when a keystore file is actually uploaded
-      // However I'm putting this here for now as a users may have created a wallet in an earlier stage of the
-      // mpv and thus it is stored in their localStorage, and the ui crashes if this user creates a milestone, etc
-      feathersClient.service('/users').get(address)
-        .then(() => this.props.history.goBack())
-        .catch(err => {
-          if (err.code === 404) {
-            feathersClient.service('/users').create({ address })
-              .then(user => {
-                console.log('created user ', user);
-                this.props.history.push('/profile');
-              })
-          } else {
-            this.props.history.goBack();
+            return resolve(wallet.signMessage(msg).signature);
           }
+          return reject(response);
         })
+    }).then(signature => {
+      authData.signature = signature;
+      return feathersClient.authenticate(authData)
+    }).then(response => {
+      console.log('Authenticated!');
 
+      this.props.handleWalletChange(wallet);
+      return response.accessToken;
     });
-  }
+  };
+
+  walletLoaded = wallet => {
+    this.authenticate(wallet)
+      .then(token => {
+        return feathersClient.passport.verifyJWT(token);
+      })
+      .then(payload => {
+        payload.newUser ? this.props.history.push('/profile') : this.props.history.goBack();
+      })
+      .catch(err => {
+        console.log(err)
+      });
+  };
 
   toggleFormValid(state) {
     this.setState({ formIsValid: state })
@@ -158,7 +173,8 @@ class SignIn extends Component {
                     {error &&
                       <div className="alert alert-danger">{error}</div>
                     }
-                    <Form className="sign-in-form" onSubmit={this.submit} onValid={()=>this.toggleFormValid(true)} onInvalid={()=>this.toggleFormValid(false)} layout='vertical'>
+                    <Form className="sign-in-form" onSubmit={this.submit} onValid={()=>this.toggleFormValid(true)}
+                          onInvalid={()=>this.toggleFormValid(false)} layout='vertical'>
                       <div className="form-group">
                         <Input
                           name="password"

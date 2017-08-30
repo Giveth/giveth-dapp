@@ -1,6 +1,9 @@
 import feathers from 'feathers/client';
 import socketio from 'feathers-socketio/client';
 import hooks from 'feathers-hooks';
+import auth from 'feathers-authentication-client';
+import localforage from 'localforage';
+
 // import errors from 'feathers-errors'; // An object with all of the custom error types.
 import io from 'socket.io-client/dist/socket.io';
 
@@ -15,4 +18,5 @@ socket.on('reconnect_attempt', (e) => console.log('Trying to reconnect to Feathe
 
 export const feathersClient = feathers()
   .configure(socketio(socket, { timeout: 5000 }))
+  .configure(auth({ storage: localforage }))
   .configure(hooks());
