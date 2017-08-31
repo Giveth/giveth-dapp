@@ -117,10 +117,10 @@ class Application extends Component {
         currentUser: wallet.getAddresses()[0],
       });
     } else {
-
       if (this.state.wallet) this.state.wallet.clear();
 
-      localforage.removeItem('keystore');
+      // This is now only used when signing out. I don't think we should clear this.
+      // localforage.removeItem('keystore');
       this.setState({
         wallet,
         currentUser: undefined,
@@ -133,7 +133,7 @@ class Application extends Component {
     return(
       <Router>
         <div>
-          <MainMenu authenticated={(this.state.currentUser)}/>
+          <MainMenu authenticated={(this.state.currentUser)} handleWalletChange={this.handleWalletChange}/>
 
           { this.state.isLoading && 
             <Loader className="fixed"/>

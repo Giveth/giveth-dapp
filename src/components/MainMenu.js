@@ -64,6 +64,12 @@ class MainMenu extends Component {
             { !this.props.authenticated &&
               <NavLink className="nav-link" to="/signup" activeClassName="active">Sign Up</NavLink>              
             }
+
+            { this.props.authenticated &&
+              <li className="nav-item" onClick={()=>this.props.handleWalletChange(undefined)}>
+                <a className="nav-link">Sign out</a>
+              </li>
+            }
           </ul>
 
         </div>

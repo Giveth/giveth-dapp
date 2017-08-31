@@ -2,8 +2,6 @@ import React, { Component } from 'react'
 import { Form, Input } from 'formsy-react-components'
 import localforage from "localforage";
 
-import Signup from "../views/Signup";
-import ChangeAccount from "../views/ChangeAccount";
 import GivethWallet from "../../lib/GivethWallet";
 import { socket, feathersClient } from '../../lib/feathersClient'
 import Loader from "../Loader";
@@ -29,7 +27,6 @@ class SignIn extends Component {
     };
 
     this.submit = this.submit.bind(this);
-    this.removeKeystore = this.removeKeystore.bind(this);
     this.walletLoaded = this.walletLoaded.bind(this);
   }
 
@@ -45,7 +42,7 @@ class SignIn extends Component {
           () => this.fetchUserProfile());          
                   
         } else {
-        this.setState({ isLoading: false });
+          this.props.history.push('/change-account')
         }
 
       }).catch(() => {
@@ -130,14 +127,6 @@ class SignIn extends Component {
     });
   }
 
-  removeKeystore() {
-    this.setState({
-      address: undefined,
-      keystore: undefined,
-    });
-    this.props.handleWalletChange(undefined);
-  }
-
   toggleFormValid(state) {
     this.setState({ formIsValid: state })
   }
@@ -197,19 +186,6 @@ class SignIn extends Component {
                       </div>
 
                     </Form>
-                  </center>
-                </div>
-              }
-
-              { !keystore &&
-                <div className="card">
-                  <center>
-                    <h1>Sign In!</h1>
-                    <ChangeAccount walletLoaded={this.walletLoaded} provider={this.props.provider}/>
-
-                    <p className="small">
-                      <Link to="/signup">New user?</Link>
-                    </p>
                   </center>
                 </div>
               }

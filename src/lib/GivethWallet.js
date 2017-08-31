@@ -46,7 +46,7 @@ class GivethWallet {
   }
 
   clear() {
-    _get.call(_accounts, this).clear();
+    _get.call(_accounts, this).wallet.clear();
   }
 
   getKeystore(callback) {
