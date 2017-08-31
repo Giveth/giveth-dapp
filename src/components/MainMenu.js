@@ -14,7 +14,6 @@ class MainMenu extends Component {
     this.props.history.push('/')
   }
 
-
   render() {
     return (
       <nav id="main-menu" className="navbar navbar-expand-lg fixed-top">
@@ -44,17 +43,6 @@ class MainMenu extends Component {
               </li>
             }
 
-            {this.props.authenticated &&
-              <li className="nav-item">
-                <NavLink className="nav-link" to="/profile" activeClassName="active">Profile</NavLink>
-              </li>
-            }
-            {this.props.authenticated &&
-              <li className="nav-item">
-                <NavLink className="nav-link" to="/wallet" activeClassName="active">Wallet</NavLink>
-              </li>
-            }
-
           </ul>
 
           {/*
@@ -72,9 +60,14 @@ class MainMenu extends Component {
               <NavLink className="nav-link" to="/signup" activeClassName="active">Sign Up</NavLink>              
             }
 
-            { this.props.authenticated &&
-              <li className="nav-item" onClick={()=>this.signout()}>
-                <a className="nav-link">Sign out</a>
+            {this.props.authenticated &&
+              <li className="nav-item dropdown">
+                <NavLink className="nav-link dropdown-toggle" id="navbarDropdownYou" to="/" activeClassName="active" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Hi, you!</NavLink>
+                <div className="dropdown-menu dropdown-profile" aria-labelledby="navbarDropdownYou">
+                  <Link className="dropdown-item" to="/profile">Profile</Link>
+                  <Link className="dropdown-item" to="/wallet">Wallet</Link>
+                  <a className="dropdown-item" onClick={()=>this.signout()}>Sign out</a>
+                </div>
               </li>
             }
           </ul>
