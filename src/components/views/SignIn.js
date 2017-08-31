@@ -27,7 +27,7 @@ class SignIn extends Component {
     };
 
     this.submit = this.submit.bind(this);
-    this.walletLoaded = this.walletLoaded.bind(this);
+    this.authenticate = this.authenticate.bind(this);
   }
 
   componentDidMount() {
@@ -82,9 +82,24 @@ class SignIn extends Component {
       isSigninIn: true,
       error: undefined
     }, () => {
-      function createWallet() {
+      function loadWallet() {
         GivethWallet.loadWallet(this.state.keystore, this.props.provider, password)
-          .then(wallet => this.walletLoaded(wallet))
+          .then(wallet => {
+            const address = wallet.getAddresses()[ 0 ];
+            // find user, if does not exist, too bad. Redirect back.
+            feathersClient.service('/users').get(address)
+              .then(user => this.authenticate(wallet, false))
+              .catch(err => {
+                if (err.code === 404) {
+                  feathersClient.service('/users').create({ address })
+                    .then(user => {
+                      this.authenticate(wallet, true);
+                    })
+                } else {
+                  this.props.history.goBack();
+                }
+              })
+          })
           .catch((error) => {
             console.error(error);
 
@@ -96,35 +111,18 @@ class SignIn extends Component {
       }
 
       // web3 blocks all rendering, so we need to request an animation frame        
-      window.requestAnimationFrame(createWallet.bind(this))
+      window.requestAnimationFrame(loadWallet.bind(this))
           
     })
   }
 
-  walletLoaded(wallet) {
+  authenticate(wallet, newUser) {
     socket.emit('authenticate', { signature: wallet.signMessage().signature }, () => {
       console.log('authenticated');
-      this.props.handleWalletChange(wallet);
 
-      const address = wallet.getAddresses()[ 0 ];
-
-      // TODO this check should maybe be done in LoadWallet as that is when a keystore file is actually uploaded
-      // However I'm putting this here for now as a users may have created a wallet in an earlier stage of the
-      // mpv and thus it is stored in their localStorage, and the ui crashes if this user creates a milestone, etc
-      feathersClient.service('/users').get(address)
-        .then(() => this.props.history.goBack())
-        .catch(err => {
-          if (err.code === 404) {
-            feathersClient.service('/users').create({ address })
-              .then(user => {
-                console.log('created user ', user);
-                this.props.history.push('/profile');
-              })
-          } else {
-            this.props.history.goBack();
-          }
-        })
-
+      this.props.handleWalletChange(wallet, () => {
+        newUser ? this.props.history.push('/profile') : this.props.history.goBack()
+      });
     });
   }
 

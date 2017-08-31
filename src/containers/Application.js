@@ -3,7 +3,7 @@ import { BrowserRouter as Router, Route, Switch } from 'react-router-dom'
 import localforage from 'localforage';
 
 import loadAndWatchFeatherJSResource from '../lib/loadAndWatchFeatherJSResource'
-import { socket } from "../lib/feathersClient";
+import { socket, feathersClient } from "../lib/feathersClient";
 
 // views
 import Profile from './../components/views/Profile'
@@ -48,6 +48,7 @@ class Application extends Component {
       isLoading: true,
       hasError: false,
       wallet: undefined,
+      userProfile: undefined
     };
 
     localforage.config({
@@ -106,15 +107,42 @@ class Application extends Component {
     // })
   }
 
-  handleWalletChange(wallet) {
+  handleWalletChange(wallet, callback) {
     if (wallet) {
       wallet.getKeystore((keystore) => {
         localforage.setItem('keystore', keystore)
       })
 
+      const address = wallet.getAddresses()[0]
+
+      feathersClient.service('/users').get(address)
+        .then(user => {
+          console.log('user', user)
+          this.setState({ userProfile: user })          
+          if(callback) callback()
+        }) 
+        .catch(err => {
+          if (err.code === 404) {
+            feathersClient.service('/users').create({ address })
+              .then(user => {
+                console.log('created user ', user);
+                this.props.history.push('/profile');
+              })
+          } else {
+            this.props.history.goBack();
+          }
+        })      
+
+      // socket.emit('users::find', {address: address}, (error, resp) => {    
+      //   console.log('err, res', error, resp)
+      //   if(resp) {
+      //     this.setState({ userProfile: resp.data[0] })
+      //   } 
+      // })
+
       this.setState({
         wallet,
-        currentUser: wallet.getAddresses()[0],
+        currentUser: address,
       });
     } else {
       if (this.state.wallet) this.state.wallet.clear();
@@ -124,6 +152,7 @@ class Application extends Component {
       this.setState({
         wallet,
         currentUser: undefined,
+        userProfile: undefined
       });
     }
   }
@@ -133,7 +162,10 @@ class Application extends Component {
     return(
       <Router>
         <div>
-          <MainMenu authenticated={(this.state.currentUser)} handleWalletChange={this.handleWalletChange}/>
+          <MainMenu 
+            authenticated={this.state.currentUser} 
+            handleWalletChange={this.handleWalletChange}
+            userProfile={this.state.userProfile}/>
 
           { this.state.isLoading && 
             <Loader className="fixed"/>
