@@ -4,6 +4,7 @@ import localforage from 'localforage';
 
 import loadAndWatchFeatherJSResource from '../lib/loadAndWatchFeatherJSResource'
 import { feathersClient } from "../lib/feathersClient";
+import GivethWallet from '../lib/GivethWallet';
 
 // views
 import Profile from './../components/views/Profile'
@@ -28,6 +29,7 @@ import EditMilestone from './../components/views/EditMilestone'
 // components
 import MainMenu from './../components/MainMenu'
 import Loader from './../components/Loader'
+import UnlockWallet from "../components/UnlockWallet";
 
 /**
  * This container holds the application and its routes.
@@ -48,6 +50,7 @@ class Application extends Component {
       isLoading: true,
       hasError: false,
       wallet: undefined,
+      unlockWallet: false,
     };
 
     localforage.config({
@@ -85,12 +88,21 @@ class Application extends Component {
             reject()
           }
         })
-      })       
+      })
     ]).then(() => this.setState({ isLoading: false, hasError: false }))
       .catch((e) => {
         console.log('error loading', e)
         this.setState({ isLoading: false, hasError: true })
       });
+
+    // Load the wallet if it is cached
+    GivethWallet.getCachedKeystore()
+      .then(keystore => {
+        //TODO change to getWeb3() when implemented
+        const provider = this.state.web3 ? this.state.web3.currentProvider : undefined;
+        return GivethWallet.loadWallet(keystore, provider);
+      }).then(wallet => this.setState({ wallet }))
+      .catch(console.log);
 
     // login the user if we have a valid JWT
     feathersClient.passport.getJWT()
@@ -118,19 +130,18 @@ class Application extends Component {
 
   handleWalletChange(wallet) {
     if (wallet) {
-      wallet.getKeystore((keystore) => {
-        localforage.setItem('keystore', keystore)
-      })
+      wallet.cacheKeystore();
 
       this.setState({
         wallet,
         currentUser: wallet.getAddresses()[ 0 ],
       });
     } else {
+      //TODO is this ever used?
       if (this.state.wallet) this.state.wallet.clear();
 
       // This is now only used when signing out. I don't think we should clear this.
-      // localforage.removeItem('keystore');
+      // GivethWallet.removeCachedKeystore();
       this.setState({
         wallet,
         currentUser: undefined,
@@ -143,10 +154,15 @@ class Application extends Component {
     return (
       <Router>
         <div>
-          <MainMenu authenticated={(this.state.currentUser)} signOut={this.signOut}/>
+          <MainMenu authenticated={(this.state.currentUser)} signOut={this.signOut} wallet={this.state.wallet}
+                    unlockWallet={() => this.setState({ unlockWallet: true })} />
 
           {this.state.isLoading &&
             <Loader className="fixed"/>
+          }
+
+          {this.state.wallet && this.state.unlockWallet &&
+            <UnlockWallet wallet={this.state.wallet} onClose={() => this.setState({ unlockWallet: false })}/>
           }
 
           {!this.state.isLoading && !this.state.hasError &&

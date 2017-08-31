@@ -1,14 +1,12 @@
 import React, { Component } from 'react'
-import { Form, Input } from 'formsy-react-components'
-import localforage from "localforage";
 
 import GivethWallet from "../../lib/GivethWallet";
 import { socket, feathersClient } from '../../lib/feathersClient'
 import Loader from "../Loader";
 import Avatar from 'react-avatar'
 import { Link } from 'react-router-dom'
-import LoaderButton from "../../components/LoaderButton"
 
+import UnlockWalletForm from "../UnlockWalletForm";
 
 /**
  SignIn Page
@@ -32,24 +30,17 @@ class SignIn extends Component {
   }
 
   componentDidMount() {
-    localforage.getItem('keystore')
+    GivethWallet.getCachedKeystore()
       .then((keystore) => {
-        if (keystore && keystore.length > 0) {
-          this.setState({
-              keystore,
-              address: GivethWallet.fixAddress(keystore[ 0 ].address),
-            },
-            // try to find the user's profile based on the address
-            () => this.fetchUserProfile());
-        } else {
-          this.props.history.push('/change-account');
-        }
-
+        this.setState({
+          keystore,
+          address: GivethWallet.fixAddress(keystore[ 0 ].address),
+        },
+        // try to find the user's profile based on the address
+        () => this.fetchUserProfile());
       })
       .catch(() => {
-        this.setState({
-          isLoading: false,
-        });
+        this.props.history.push('/change-account');
       });
   }
 
@@ -143,12 +134,8 @@ class SignIn extends Component {
       });
   };
 
-  toggleFormValid(state) {
-    this.setState({ formIsValid: state })
-  }
-
   render() {
-    const { keystore, avatar, name, address, error, isLoading, formIsValid, isSigninIn } = this.state;
+    const { keystore, avatar, name, address, error, isLoading, isSigninIn } = this.state;
 
     if (isLoading) {
       return <Loader className="fixed"/>
@@ -163,46 +150,26 @@ class SignIn extends Component {
                 <div className="card">
                   <center>
                     {avatar &&
-                      <Avatar size={100} src={avatar} round={true}/>                  
+                      <Avatar size={100} src={avatar} round={true}/>
                     }
                     <h1>Welcome back<br/><strong>{name || address}!</strong></h1>
                     { name &&
                       <p className="small">Your address: {address}</p>
                     }
 
-                    {error &&
-                      <div className="alert alert-danger">{error}</div>
-                    }
-                    <Form className="sign-in-form" onSubmit={this.submit} onValid={()=>this.toggleFormValid(true)}
-                          onInvalid={()=>this.toggleFormValid(false)} layout='vertical'>
-                      <div className="form-group">
-                        <Input
-                          name="password"
-                          id="password-input"
-                          label="Sign in by entering your wallet password"
-                          type="password"
-                          ref="password"
-                          required
-                        />
-                      </div>
-
-                      <LoaderButton
-                        className="btn btn-success btn-lg" 
-                        formNoValidate={true} type="submit" 
-                        disabled={isSigninIn || !formIsValid}
-                        isLoading={isSigninIn}
-                        loadingText="Unlocking your wallet...">
-                        Sign in
-                      </LoaderButton>                      
-
-                      <div className="form-group">
-                        <p className="small">
-                          <Link to="/signup">Not you</Link>, or&nbsp;
-                          <Link to="/change-account">want to change wallet?</Link>
-                        </p>
-                      </div>
-
-                    </Form>
+                    <UnlockWalletForm
+                      submit={this.submit}
+                      label="Sign in by entering your wallet password"
+                      error={error}
+                      buttonText="Sign in"
+                      unlocking={isSigninIn}>
+                        <div className="form-group">
+                          <p className="small">
+                            <Link to="/signup">Not you</Link>, or&nbsp;
+                            <Link to="/change-account">want to change wallet?</Link>
+                          </p>
+                        </div>
+                    </UnlockWalletForm>
                   </center>
                 </div>
               }

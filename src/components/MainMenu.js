@@ -9,10 +9,40 @@ import {withRouter} from "react-router-dom";
 **/
 
 class MainMenu extends Component {
+  constructor(props) {
+    super();
+
+    this.state = {
+      walletLocked: props.wallet ? !props.wallet.unlocked : true,
+    }
+  }
+
+  componentWillReceiveProps(nextProps) {
+    console.log(nextProps);
+    if (nextProps.wallet && nextProps.wallet.unlocked && this.state.walletLocked) {
+      this.setState({
+        walletLocked: false
+      });
+    }
+  }
+
   signout() {
     this.props.signOut();
     this.props.history.push('/')
   }
+
+  lockWallet = e => {
+    e.preventDefault();
+    this.props.wallet.lock();
+    this.setState({
+      walletLocked: true
+    });
+  };
+
+  unlockWallet = e => {
+    e.preventDefault();
+    this.props.unlockWallet();
+  };
 
   render() {
     return (
@@ -45,6 +75,18 @@ class MainMenu extends Component {
 
           </ul>
 
+          <ul className="navbar-nav ml-auto mr-sm-2">
+            { this.props.authenticated && this.props.wallet && this.state.walletLocked &&
+            <li className="nav-item mr-sm-2">
+              <Link className="btn btn-outline-secondary" to="#" onClick={this.unlockWallet}>UnLock Wallet</Link>
+            </li>
+            }
+            { this.props.authenticated && this.props.wallet && !this.state.walletLocked &&
+              <li className="nav-item mr-sm-2">
+                <Link className="btn btn-outline-secondary" to="#" onClick={this.lockWallet}>Lock Wallet</Link>
+              </li>
+            }
+          </ul>
           {/*
           <form id="search-form" className="form-inline my-2 my-lg-0">
             <input className="form-control mr-sm-2" type="text" placeholder="E.g. save the whales"/>
@@ -82,4 +124,10 @@ export default withRouter(MainMenu)
 
 MainMenu.propTypes = {
   authenticated: PropTypes.string,
-}
+  wallet: PropTypes.shape({
+    unlocked: PropTypes.bool.isRequired,
+    lock: PropTypes.func.isRequired,
+  }),
+  signOut: PropTypes.func.isRequired,
+  unlockWallet: PropTypes.func.isRequired,
+};
