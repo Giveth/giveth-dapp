@@ -4,6 +4,8 @@ import PropTypes from 'prop-types'
 import { Link, NavLink } from 'react-router-dom'
 import {withRouter} from "react-router-dom";
 
+import Avatar from 'react-avatar'
+
 /**
   The main top menu
 **/
@@ -25,6 +27,10 @@ class MainMenu extends Component {
     }
   }
 
+  componentWillUpdate(){
+    console.log('props', this.props)
+  }
+
   signout() {
     this.props.onSignOut();
     this.props.history.push('/')
@@ -44,6 +50,8 @@ class MainMenu extends Component {
   };
 
   render() {
+    const { userProfile, authenticated } = this.props;
+
     return (
       <nav id="main-menu" className="navbar navbar-expand-lg fixed-top">
         <button className="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
@@ -60,7 +68,7 @@ class MainMenu extends Component {
               <NavLink className="nav-link" to="/campaigns" activeClassName="active">Campaigns</NavLink>
             </li>
 
-            {this.props.authenticated &&
+            {authenticated &&
               <li className="nav-item dropdown">
                 <NavLink className="nav-link dropdown-toggle" id="navbarDropdownDashboard" to="/dashboard" activeClassName="active" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Dashboard</NavLink>
                 <div className="dropdown-menu" aria-labelledby="navbarDropdownDashboard">
@@ -75,12 +83,12 @@ class MainMenu extends Component {
           </ul>
 
           <ul className="navbar-nav ml-auto mr-sm-2">
-            { this.props.authenticated && this.props.wallet && this.state.walletLocked &&
+            { authenticated && this.props.wallet && this.state.walletLocked &&
             <li className="nav-item mr-sm-2">
               <Link className="btn btn-outline-secondary" to="#" onClick={this.unlockWallet}>UnLock Wallet</Link>
             </li>
             }
-            { this.props.authenticated && this.props.wallet && !this.state.walletLocked &&
+            { authenticated && this.props.wallet && !this.state.walletLocked &&
               <li className="nav-item mr-sm-2">
                 <Link className="btn btn-outline-secondary" to="#" onClick={this.lockWallet}>Lock Wallet</Link>
               </li>
@@ -94,16 +102,28 @@ class MainMenu extends Component {
         */}
 
           <ul className="navbar-nav">
-            { !this.props.authenticated &&
+            { !authenticated &&
               <NavLink className="nav-link" to="/signin" activeClassName="active">Sign In</NavLink>
             }
-            { !this.props.authenticated &&
+            { !authenticated &&
               <NavLink className="nav-link" to="/signup" activeClassName="active">Sign Up</NavLink>              
             }
 
-            {this.props.authenticated &&
+            { authenticated &&
               <li className="nav-item dropdown">
-                <NavLink className="nav-link dropdown-toggle" id="navbarDropdownYou" to="/" activeClassName="active" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Hi, you!</NavLink>
+                <NavLink className="nav-link dropdown-toggle" id="navbarDropdownYou" to="/" activeClassName="active" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                  { userProfile && userProfile.avatar &&
+                    <Avatar size={30} src={userProfile.avatar} round={true}/>                  
+                  }
+
+                  { userProfile && userProfile.name && 
+                    <span>{userProfile.name}</span>
+                  }
+
+                  { userProfile && !userProfile.name &&
+                    <span>Hi, you!</span>
+                  }
+                </NavLink>
                 <div className="dropdown-menu dropdown-profile" aria-labelledby="navbarDropdownYou">
                   <Link className="dropdown-item" to="/profile">Profile</Link>
                   <Link className="dropdown-item" to="/wallet">Wallet</Link>
@@ -123,6 +143,10 @@ export default withRouter(MainMenu)
 
 MainMenu.propTypes = {
   authenticated: PropTypes.string,
+  userProfile: PropTypes.shape({
+    avatar: PropTypes.string,
+    name: PropTypes.string,
+  }),
   wallet: PropTypes.shape({
     unlocked: PropTypes.bool.isRequired,
     lock: PropTypes.func.isRequired,

@@ -76,7 +76,7 @@ class SignIn extends Component {
       isSigninIn: true,
       error: undefined
     }, () => {
-      function createWallet() {
+      function loadWallet() {
         this.props.wallet.unlock(password)
           .then(() => authenticate(this.props.wallet))
           .then(token => {
@@ -98,9 +98,9 @@ class SignIn extends Component {
       }
 
       // web3 blocks all rendering, so we need to request an animation frame
-      window.requestAnimationFrame(createWallet.bind(this))
-
-    });
+      window.requestAnimationFrame(loadWallet.bind(this))
+          
+    })
   }
 
   render() {
