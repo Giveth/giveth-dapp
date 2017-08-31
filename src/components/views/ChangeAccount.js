@@ -3,6 +3,7 @@ import { File, Form, Input } from 'formsy-react-components';
 import GivethWallet from "../../lib/GivethWallet";
 import { socket, feathersClient } from '../../lib/feathersClient'
 import LoaderButton from "../../components/LoaderButton"
+import { Link } from 'react-router-dom'
 
 /**
 
@@ -130,7 +131,14 @@ class ChangeAccount extends Component {
                     isLoading={isLoading}
                     loadingText="Signing in...">
                     Sign in
-                  </LoaderButton>                  
+                  </LoaderButton>     
+
+                  <div className="form-group">
+                    <p className="small">
+                      Don't have a wallet?&nbsp;
+                      <Link to="/signup">Sign up instead!</Link>
+                    </p>
+                  </div>                               
 
                 </Form>
               </center>

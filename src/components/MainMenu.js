@@ -2,12 +2,19 @@ import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 
 import { Link, NavLink } from 'react-router-dom'
+import {withRouter} from "react-router-dom";
 
 /**
   The main top menu
 **/
 
 class MainMenu extends Component {
+  signout(){
+    this.props.handleWalletChange(undefined)
+    this.props.history.push('/')
+  }
+
+
   render() {
     return (
       <nav id="main-menu" className="navbar navbar-expand-lg fixed-top">
@@ -66,7 +73,7 @@ class MainMenu extends Component {
             }
 
             { this.props.authenticated &&
-              <li className="nav-item" onClick={()=>this.props.handleWalletChange(undefined)}>
+              <li className="nav-item" onClick={()=>this.signout()}>
                 <a className="nav-link">Sign out</a>
               </li>
             }
@@ -78,7 +85,7 @@ class MainMenu extends Component {
   }
 }
 
-export default MainMenu
+export default withRouter(MainMenu)
 
 MainMenu.propTypes = {
   authenticated: PropTypes.string,

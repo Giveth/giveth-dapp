@@ -90,6 +90,7 @@ class SignIn extends Component {
 
             this.setState({
               error: "Error unlocking wallet. Possibly an invalid password.",
+              isSigninIn: false
             });
           });
       }
