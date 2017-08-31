@@ -133,13 +133,6 @@ class Application extends Component {
           }
         })      
 
-      // socket.emit('users::find', {address: address}, (error, resp) => {    
-      //   console.log('err, res', error, resp)
-      //   if(resp) {
-      //     this.setState({ userProfile: resp.data[0] })
-      //   } 
-      // })
-
       this.setState({
         wallet,
         currentUser: address,

@@ -30,7 +30,8 @@ class EditProfile extends Component {
       name: '',
       avatar: '',
       email: '',
-      linkedIn: '' 
+      linkedIn: '',
+      uploadNewAvatar: false
     }
 
     this.submit = this.submit.bind(this)
@@ -69,23 +70,43 @@ class EditProfile extends Component {
   }
 
   setImage(image) {
-    this.setState({ avatar: image })
+    this.setState({ avatar: image, uploadNewAvatar: true })
   }
 
   submit(model) {    
     this.setState({ isSaving: true })
 
-    // first upload image, then update user
-    feathersClient.service('/uploads').create({uri: this.state.avatar}).then(file => {
+    const updateUser = (file) => {
       feathersClient.service('/users').update(this.props.currentUser, {
         name: model.name,
         email: model.email,
         linkedIn: model.linkedIn,
-        avatar: file.url,
+        avatar: file,
       }).then(user => {
         this.setState({ isSaving: false })
+      })   
+    }
+
+
+    if(this.state.uploadNewAvatar) {
+      feathersClient.service('/uploads').create({uri: this.state.avatar}).then(file => {
+        updateUser(file.url)
       })
-    })
+    } else {
+      updateUser()
+    }
+
+    // // first upload image, then update user
+    // feathersClient.service('/uploads').create({uri: this.state.avatar}).then(file => {
+    //   feathersClient.service('/users').update(this.props.currentUser, {
+    //     name: model.name,
+    //     email: model.email,
+    //     linkedIn: model.linkedIn,
+    //     avatar: file ? file.url : null,
+    //   }).then(user => {
+    //     this.setState({ isSaving: false })
+    //   })
+    // })
   } 
 
   toggleFormValid(state) {

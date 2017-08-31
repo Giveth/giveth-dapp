@@ -70,9 +70,9 @@ class MainMenu extends Component {
 
             { authenticated &&
               <li className="nav-item dropdown">
-                <NavLink className="nav-link dropdown-toggle" id="navbarDropdownYou" to="/" activeClassName="active" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                <Link className="nav-link dropdown-toggle" id="navbarDropdownYou" to="/" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                   { userProfile && userProfile.avatar &&
-                    <Avatar size={30} src={userProfile.avatar} round={true}/>                  
+                    <Avatar className="menu-avatar" size={30} src={userProfile.avatar} round={true}/>                  
                   }
 
                   { userProfile && userProfile.name && 
@@ -82,7 +82,7 @@ class MainMenu extends Component {
                   { userProfile && !userProfile.name &&
                     <span>Hi, you!</span>
                   }
-                </NavLink>
+                </Link>
                 <div className="dropdown-menu dropdown-profile" aria-labelledby="navbarDropdownYou">
                   <Link className="dropdown-item" to="/profile">Profile</Link>
                   <Link className="dropdown-item" to="/wallet">Wallet</Link>

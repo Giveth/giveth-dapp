@@ -5,7 +5,7 @@
     color: $menu-item-color;
 
     &:hover {
-      color: darken($menu-item-color, 30%);
+      color: darken($green, 10%);
     }
 
     &.active {
@@ -30,5 +30,9 @@
   .dropdown-profile {
     left: inherit;
     right: 0;
+  }
+
+  .menu-avatar {
+    margin-right: 8px;
   }
 }
