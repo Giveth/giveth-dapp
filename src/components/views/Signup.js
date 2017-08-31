@@ -3,8 +3,7 @@ import { Form, Input } from 'formsy-react-components';
 import GivethWallet from "../../lib/GivethWallet";
 import BackupWallet from "../BackupWallet";
 import { socket, feathersClient } from '../../lib/feathersClient'
-
-
+import LoaderButton from "../../components/LoaderButton"
 /**
 
  generates a new GivethWallet
@@ -134,9 +133,14 @@ class Signup extends Component {
                           />
                         </div>
 
-                        <button className="btn btn-success btn-lg" formNoValidate={true} type="submit" disabled={isSaving || !formIsValid}>
-                          {isSaving ? "Creating your wallet..." : "Sign up"}
-                        </button>
+                        <LoaderButton
+                          className="btn btn-success btn-lg" 
+                          formNoValidate={true} type="submit" 
+                          disabled={isSaving || !formIsValid}
+                          isLoading={isSaving}
+                          loadingText="Creating your wallet...">
+                          Sign up
+                        </LoaderButton>
 
                       </Form>
                     </div>

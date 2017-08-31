@@ -9,6 +9,8 @@ import { socket, feathersClient } from '../../lib/feathersClient'
 import Loader from "../Loader";
 import Avatar from 'react-avatar'
 import { Link } from 'react-router-dom'
+import LoaderButton from "../../components/LoaderButton"
+
 
 /**
  SignIn Page
@@ -23,6 +25,7 @@ class SignIn extends Component {
       error: undefined,
       formIsValid: false,
       keystore: undefined,
+      isSigninIn: false
     };
 
     this.submit = this.submit.bind(this);
@@ -77,17 +80,27 @@ class SignIn extends Component {
     })
   }
 
-
   submit({ password }) {
-    GivethWallet.loadWallet(this.state.keystore, this.props.provider, password)
-      .then(wallet => this.walletLoaded(wallet))
-      .catch((error) => {
-        console.error(error);
+    this.setState({
+      isSigninIn: true,
+      error: undefined
+    }, () => {
+      function createWallet() {
+        GivethWallet.loadWallet(this.state.keystore, this.props.provider, password)
+          .then(wallet => this.walletLoaded(wallet))
+          .catch((error) => {
+            console.error(error);
 
-        this.setState({
-          error: "Error unlocking wallet. Possibly an invalid password.",
-        });
-      });
+            this.setState({
+              error: "Error unlocking wallet. Possibly an invalid password.",
+            });
+          });
+      }
+
+      // web3 blocks all rendering, so we need to request an animation frame        
+      window.requestAnimationFrame(createWallet.bind(this))
+          
+    })
   }
 
   walletLoaded(wallet) {
@@ -130,7 +143,7 @@ class SignIn extends Component {
   }
 
   render() {
-    const { keystore, avatar, name, address, error, isLoading, formIsValid } = this.state;
+    const { keystore, avatar, name, address, error, isLoading, formIsValid, isSigninIn } = this.state;
 
     if (isLoading) {
       return <Loader className="fixed"/>
@@ -167,9 +180,14 @@ class SignIn extends Component {
                         />
                       </div>
 
-                      <button className="btn btn-success btn-lg" formNoValidate={true} type="submit"
-                              disabled={!formIsValid}>Unlock your wallet
-                      </button>
+                      <LoaderButton
+                        className="btn btn-success btn-lg" 
+                        formNoValidate={true} type="submit" 
+                        disabled={isSigninIn || !formIsValid}
+                        isLoading={isSigninIn}
+                        loadingText="Unlocking your wallet...">
+                        Sign in
+                      </LoaderButton>                      
 
                       <div className="form-group">
                         <p className="small">

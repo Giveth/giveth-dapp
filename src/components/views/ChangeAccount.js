@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import { File, Form, Input } from 'formsy-react-components';
 import GivethWallet from "../../lib/GivethWallet";
 import { socket, feathersClient } from '../../lib/feathersClient'
+import LoaderButton from "../../components/LoaderButton"
 
 /**
 
@@ -122,9 +123,14 @@ class ChangeAccount extends Component {
                     />
                   </div>
 
-                  <button className="btn btn-success btn-lg" formNoValidate={true} type="submit" disabled={isLoading || !formIsValid}>
-                    {isLoading ? "Signing in..." : "Sign in"}
-                  </button>
+                  <LoaderButton
+                    className="btn btn-success btn-lg" 
+                    formNoValidate={true} type="submit" 
+                    disabled={isLoading || !formIsValid}
+                    isLoading={isLoading}
+                    loadingText="Signing in...">
+                    Sign in
+                  </LoaderButton>                  
 
                 </Form>
               </center>

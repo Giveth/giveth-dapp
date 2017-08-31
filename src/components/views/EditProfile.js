@@ -6,6 +6,7 @@ import { socket, feathersClient } from '../../lib/feathersClient'
 import Loader from '../Loader'
 import FormsyImageUploader from './../FormsyImageUploader'
 import { isAuthenticated } from '../../lib/middleware'
+import LoaderButton from "../../components/LoaderButton"
 
 /**
  * Edit a user profile
@@ -157,9 +158,15 @@ class EditProfile extends Component {
                         />
                       </div>                      
 
-                      <button className="btn btn-success" formNoValidate={true} type="submit" disabled={isSaving || !formIsValid}>
-                        {isSaving ? "Saving..." : "Save profile"}
-                      </button>
+                      <LoaderButton
+                        className="btn btn-success btn-lg" 
+                        formNoValidate={true} 
+                        type="submit" 
+                        disabled={isSaving}
+                        isLoading={isSaving}
+                        loadingText="Saving...">
+                        Save profile
+                      </LoaderButton>                      
                                      
                     </Form>
                   </div>

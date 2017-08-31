@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import Loader from './Loader'
 
 /**
 
@@ -33,7 +34,10 @@ class BackupWallet extends Component {
     return (
       <div>
         {isLoading && 
-          <p>Loading wallet...</p>
+          <p>
+            <Loader/>
+            Loading wallet...
+          </p>
         }
 
         {!isLoading &&

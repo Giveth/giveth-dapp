@@ -18,6 +18,19 @@
   &.fixed {
     position: fixed;
   }
+
+  &.btn-loader {
+    position: relative;
+    display: inline-block;
+    left: 0;
+    top: 3px;
+    margin-right: 8px;
+
+    .double-bounce1, .double-bounce2 {
+      background-color: white;
+      opacity: 0.8;
+    }
+  }
 }
 
 .double-bounce1, .double-bounce2 {
