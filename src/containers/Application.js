@@ -129,7 +129,7 @@ class Application extends Component {
   }
 
   onSignOut = () => {
-    if (this.wallet) this.wallet.lock();
+    if (this.state.wallet) this.state.wallet.lock();
 
     feathersClient.logout();
     this.setState({ currentUser: undefined });

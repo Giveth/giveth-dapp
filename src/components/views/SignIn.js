@@ -97,7 +97,6 @@ class SignIn extends Component {
           });
       }
 
-      // PERISSOLOGY: I don't think this is working, it still appears to be blocked
       // web3 blocks all rendering, so we need to request an animation frame
       window.requestAnimationFrame(createWallet.bind(this))
 

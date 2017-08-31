@@ -18,17 +18,17 @@ const _password = new WeakMap();
 class GivethWallet {
 
   /**
-   *
+   * @param keystore      array of keystores to add to the wallet
    * @param provider      optional. This is necessary when signing a transaction to retrieve chainId, gasPrice
    *                      and nonce automatically
-   * @param keystoreArray array of keystores to add to the wallet
    */
-  constructor(provider, keystoreArray) {
+  constructor(keystore, provider) {
+    if (!Array.isArray(keystore) || keystore.length === 0) throw new Error('keystore is required. and must be an array');
+
     const accounts = new Accounts(provider);
     _set.call(_accounts, this, accounts);
 
-    this._keystore = keystoreArray;
-
+    this.keystore = keystore;
     this.unlocked = false;
   }
 
@@ -47,14 +47,18 @@ class GivethWallet {
   }
 
   unlock(password) {
-    return new Promise(resolve => {
+    return new Promise((resolve, reject) => {
       if (this.unlocked) return resolve(true);
 
       _set.call(_password, this, password);
 
       const decrypt = () => {
         const accounts = _get.call(_accounts, this);
-        accounts.wallet.decrypt(this._keystore, password);
+        try {
+          accounts.wallet.decrypt(this.keystore, password);
+        } catch (e) {
+          return reject(e);
+        }
 
         this.unlocked = true;
         resolve(true);
@@ -67,18 +71,11 @@ class GivethWallet {
   }
 
   lock() {
-    return new Promise(resolve => {
-      if (!this.unlocked) return resolve();
+    if (!this.unlocked) return;
 
-      const accounts = _get.call(_accounts, this);
-      this.getKeystore(ks => {
-        this._keystore = ks;
-      });
-
-      accounts.wallet.clear();
-      this.unlocked = false;
-      resolve();
-    });
+    const accounts = _get.call(_accounts, this);
+    accounts.wallet.clear();
+    this.unlocked = false;
   }
 
   /**
@@ -86,41 +83,6 @@ class GivethWallet {
    */
   clear() {
     _get.call(_accounts, this).wallet.clear();
-  }
-
-  /**
-   * returns an array of encrypted keystore objects. utilizes a callback to return the array so we don't block
-   * the main thread as encrypting the keystores is cpu intensive.
-   *
-   * TODO: look into using webworkers for encrypting/decrypting keystores
-   *
-   * @param callback function that will recieve the array of keystores
-   */
-  getKeystore(callback) {
-    if (!callback || typeof callback !== 'function') {
-      throw new Error('a callback function is required');
-    }
-
-    if (this.unlocked) {
-
-      // This code is a bit spaghetti, but we need to use requestAnimationFrame multiple times here.
-      // or the complete thread is blocked, causing rendering to stall.
-      function fetchWallet() {
-        const password = _get.call(_password, this);
-
-        function getAccounts() {
-          const accounts = _get.call(_accounts, this);
-          callback(accounts.wallet.encrypt(password));
-        }
-
-        window.requestAnimationFrame(getAccounts.bind(this))
-      }
-
-      window.requestAnimationFrame(fetchWallet.bind(this))
-
-    }
-
-    callback(this._keystore);
   }
 
   /**
@@ -138,19 +100,14 @@ class GivethWallet {
       return addrs;
     }
 
-    if (!this._keystore) return [];
-
-    return this._keystore.map(account => GivethWallet.fixAddress(account.address));
+    return this.keystore.map(account => GivethWallet.fixAddress(account.address));
   }
 
   /**
    * locally caches the keystore in storage
    */
   cacheKeystore() {
-    this.getKeystore((keystore) => {
-      localforage.setItem('keystore', keystore)
-    })
-
+    localforage.setItem('keystore', this.keystore);
   }
 
   /**
@@ -185,9 +142,11 @@ class GivethWallet {
    * @param password    optional. if provided, the returned wallet will be unlocked, otherwise the wallet will be locked
    */
   static loadWallet(keystore, provider, password) {
-      if (!Array.isArray(keystore)) keystore = [ keystore ];
+    if (!keystore) throw new Error('keystore is required');
 
-      return createGivethWallet(keystore, provider, password);
+    if (!Array.isArray(keystore)) keystore = [ keystore ];
+
+    return createGivethWallet(keystore, provider, password);
   }
 
   /**
@@ -211,7 +170,7 @@ class GivethWallet {
 }
 
 const createGivethWallet = (keystore, provider, password) => {
-  const wallet = new GivethWallet(provider, keystore);
+  const wallet = new GivethWallet(keystore, provider);
 
   if (password) return wallet.unlock(password).then(() => wallet);
 

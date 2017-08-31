@@ -22,20 +22,25 @@ class UnlockWallet extends Component {
     this.setState({
       unlocking: true
     }, () => {
-      this.props.wallet.unlock(password)
-        .then(() => {
-          this.setState({
-            unlocking: false
+      const unlock = () => {
+        this.props.wallet.unlock(password)
+          .then(() => {
+            this.setState({
+              unlocking: false
+            });
+            this.props.onClose();
+          })
+          .catch(error => {
+            console.log(error);
+            this.setState({
+              error: "Error unlocking wallet. Possibly an invalid password.",
+              unlocking: false,
+            });
           });
-          this.props.onClose();
-        })
-        .catch(error => {
-          console.log(error);
-          this.setState({
-            error: "Error unlocking wallet. Possibly an invalid password.",
-            unlocking: false,
-          });
-        });
+      };
+
+      // web3 blocks all rendering, so we need to request an animation frame
+      window.requestAnimationFrame(unlock);
     });
   };
 
