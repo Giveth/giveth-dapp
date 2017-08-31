@@ -48,15 +48,21 @@ class GivethWallet {
 
   unlock(password) {
     return new Promise(resolve => {
-      if (this.unlocked) return resolve();
+      if (this.unlocked) return resolve(true);
 
       _set.call(_password, this, password);
 
-      const accounts = _get.call(_accounts, this);
-      accounts.wallet.decrypt(this._keystore, password);
+      const decrypt = () => {
+        const accounts = _get.call(_accounts, this);
+        accounts.wallet.decrypt(this._keystore, password);
 
-      this.unlocked = true;
-      resolve();
+        this.unlocked = true;
+        resolve(true);
+      };
+
+      // web3 blocks all rendering, so we need to request an animation frame
+      window.requestAnimationFrame(decrypt)
+
     })
   }
 
@@ -161,11 +167,10 @@ class GivethWallet {
    */
   static createWallet(provider, password) {
     return new Promise(resolve => {
-
-      function createWallet() {
+      const createWallet = () => {
         const keystore = new Accounts(provider).wallet.create(1).encrypt(password);
         resolve(createGivethWallet(keystore, provider, password));
-      }
+      };
 
       // web3 blocks all rendering, so we need to request an animation frame
       window.requestAnimationFrame(createWallet)
@@ -174,16 +179,15 @@ class GivethWallet {
 
   /**
    * loads a GivethWallet with the provided keystores.
+   *
    * @param keystore    the keystores to hold in the wallet
    * @param provider    optional. web3 provider
    * @param password    optional. if provided, the returned wallet will be unlocked, otherwise the wallet will be locked
    */
   static loadWallet(keystore, provider, password) {
-    return new Promise(resolve => {
       if (!Array.isArray(keystore)) keystore = [ keystore ];
 
-      resolve(createGivethWallet(keystore, provider, password));
-    });
+      return createGivethWallet(keystore, provider, password);
   }
 
   /**
@@ -209,9 +213,9 @@ class GivethWallet {
 const createGivethWallet = (keystore, provider, password) => {
   const wallet = new GivethWallet(provider, keystore);
 
-  if (password) wallet.unlock(password);
+  if (password) return wallet.unlock(password).then(() => wallet);
 
-  return wallet;
+  return Promise.resolve(wallet);
 };
 
 export default GivethWallet;

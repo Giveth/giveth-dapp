@@ -3,7 +3,7 @@ import PropTypes from 'prop-types'
 
 import { Form, Input } from 'formsy-react-components';
 
-import LoaderButton from "../../components/LoaderButton"
+import LoaderButton from "../components/LoaderButton"
 
 /**
  * simple for with only a password field for unlocking a wallet. Any children will be displayed after the unlock button

@@ -21,22 +21,22 @@ class UnlockWallet extends Component {
   submit = ({ password }) => {
     this.setState({
       unlocking: true
+    }, () => {
+      this.props.wallet.unlock(password)
+        .then(() => {
+          this.setState({
+            unlocking: false
+          });
+          this.props.onClose();
+        })
+        .catch(error => {
+          console.log(error);
+          this.setState({
+            error: "Error unlocking wallet. Possibly an invalid password.",
+            unlocking: false,
+          });
+        });
     });
-
-    this.props.wallet.unlock(password)
-      .then(() => {
-        this.setState({
-          unlocking: false
-        });
-        this.props.onClose();
-      })
-      .catch(error => {
-        console.log(error);
-        this.setState({
-          error: "Error unlocking wallet. Possibly an invalid password.",
-          unlocking: false,
-        });
-      });
   };
 
 

@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { Form, Input } from 'formsy-react-components';
 import GivethWallet from "../../lib/GivethWallet";
 import BackupWallet from "../BackupWallet";
-import { socket, feathersClient } from '../../lib/feathersClient'
+import { authenticate } from "../../lib/helpers";
 import LoaderButton from "../../components/LoaderButton"
 /**
 
@@ -38,29 +38,23 @@ class Signup extends Component {
       error: undefined,
     }, () => {
       function createWallet() {
+        let wallet = undefined;
         GivethWallet.createWallet(this.props.provider, password)
-          .then(wallet => {
-            socket.emit('authenticate', { signature: wallet.signMessage().signature }, () => {
-              // now create a user object
-              console.log('authenticated, creating user...')
-
-              feathersClient.service('/users').create({
-                address: wallet.getAddresses()[0]
-              }).then(user => console.log('created user ', user)) 
-
-              this.setState({ 
-                isSaving: false,
-                wallet 
-              });
-
-              this.props.walletCreated(wallet);
-
+          .then(w => wallet = w)
+          .then(authenticate)
+          .then(() => {
+            this.setState({
+              isSaving: false,
+              wallet
             });
+
+            this.props.walletCreated(wallet);
           })
           .catch((error) => {
             if (typeof error === 'object') {
               console.error(error);
-              error = "Error creating wallet."
+              error = (error.type && error.type === 'FeathersError') ? "authentication error" :
+                "Error creating wallet.";
             }
 
             this.setState({ 

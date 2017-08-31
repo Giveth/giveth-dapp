@@ -18,7 +18,6 @@ class MainMenu extends Component {
   }
 
   componentWillReceiveProps(nextProps) {
-    console.log(nextProps);
     if (nextProps.wallet && nextProps.wallet.unlocked && this.state.walletLocked) {
       this.setState({
         walletLocked: false
@@ -27,7 +26,7 @@ class MainMenu extends Component {
   }
 
   signout() {
-    this.props.signOut();
+    this.props.onSignOut();
     this.props.history.push('/')
   }
 
@@ -128,6 +127,6 @@ MainMenu.propTypes = {
     unlocked: PropTypes.bool.isRequired,
     lock: PropTypes.func.isRequired,
   }),
-  signOut: PropTypes.func.isRequired,
+  onSignOut: PropTypes.func.isRequired,
   unlockWallet: PropTypes.func.isRequired,
 };

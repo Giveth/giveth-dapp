@@ -51,6 +51,7 @@ class Application extends Component {
       hasError: false,
       wallet: undefined,
       unlockWallet: false,
+      cachedWallet: true,
     };
 
     localforage.config({
@@ -101,8 +102,14 @@ class Application extends Component {
         //TODO change to getWeb3() when implemented
         const provider = this.state.web3 ? this.state.web3.currentProvider : undefined;
         return GivethWallet.loadWallet(keystore, provider);
-      }).then(wallet => this.setState({ wallet }))
-      .catch(console.log);
+      })
+      .then(wallet => this.setState({ wallet }))
+      .catch(err => {
+        console.log(err);
+        this.setState({
+          cachedWallet: false,
+        })
+      });
 
     // login the user if we have a valid JWT
     feathersClient.passport.getJWT()
@@ -121,32 +128,24 @@ class Application extends Component {
     // })
   }
 
-  signOut = () => {
+  onSignOut = () => {
     if (this.wallet) this.wallet.lock();
 
     feathersClient.logout();
     this.setState({ currentUser: undefined });
   };
 
+  onSignIn = () => this.setState({
+    currentUser: this.state.wallet.getAddresses()[ 0 ]
+  });
+
   handleWalletChange(wallet) {
-    if (wallet) {
-      wallet.cacheKeystore();
+    wallet.cacheKeystore();
 
-      this.setState({
-        wallet,
-        currentUser: wallet.getAddresses()[ 0 ],
-      });
-    } else {
-      //TODO is this ever used?
-      if (this.state.wallet) this.state.wallet.clear();
-
-      // This is now only used when signing out. I don't think we should clear this.
-      // GivethWallet.removeCachedKeystore();
-      this.setState({
-        wallet,
-        currentUser: undefined,
-      });
-    }
+    this.setState({
+      wallet,
+      currentUser: wallet.getAddresses()[ 0 ],
+    });
   }
 
   render() {
@@ -154,7 +153,7 @@ class Application extends Component {
     return (
       <Router>
         <div>
-          <MainMenu authenticated={(this.state.currentUser)} signOut={this.signOut} wallet={this.state.wallet}
+          <MainMenu authenticated={(this.state.currentUser)} onSignOut={this.onSignOut} wallet={this.state.wallet}
                     unlockWallet={() => this.setState({ unlockWallet: true })} />
 
           {this.state.isLoading &&
@@ -185,19 +184,17 @@ class Application extends Component {
                 <Route exact path="/campaigns/:id/milestones/:milestoneId" component={props => <ViewMilestone currentUser={this.state.currentUser} {...props} />}/>          
                 <Route exact path="/campaigns/:id/milestones/:milestoneId/edit" component={props => <EditMilestone currentUser={this.state.currentUser} {...props} />}/>       
                              
-                <Route exact path="/signin" render={props => <SignIn wallet={this.state.wallet} handleWalletChange={this.handleWalletChange} provider={this.state.web3 ? this.state.web3.currentProvider : undefined} {...props}/>} />
+                <Route exact path="/signin" render={props => <SignIn wallet={this.state.wallet} cachedWallet={this.state.cachedWallet} onSignIn={this.onSignIn} {...props}/>} />
                 
                 <Route exact path="/signup" render={props => 
                   <Signup 
-                    wallet={this.state.wallet} 
-                    provider={this.state.web3 ? this.state.web3.currentProvider : undefined} 
+                    provider={this.state.web3 ? this.state.web3.currentProvider : undefined}
                     walletCreated={this.handleWalletChange}                     
                     {...props}/>} />
                 
                 <Route exact path="/change-account" render={props => 
                   <ChangeAccount 
-                    wallet={this.state.wallet} 
-                    provider={this.state.web3 ? this.state.web3.currentProvider : undefined} 
+                    provider={this.state.web3 ? this.state.web3.currentProvider : undefined}
                     handleWalletChange={this.handleWalletChange}                     
                     {...props}/>} />
 

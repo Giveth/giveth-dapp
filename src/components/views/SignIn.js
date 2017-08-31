@@ -1,12 +1,12 @@
 import React, { Component } from 'react'
 
-import GivethWallet from "../../lib/GivethWallet";
-import { socket, feathersClient } from '../../lib/feathersClient'
+import { feathersClient } from '../../lib/feathersClient'
 import Loader from "../Loader";
 import Avatar from 'react-avatar'
 import { Link } from 'react-router-dom'
 
 import UnlockWalletForm from "../UnlockWalletForm";
+import { authenticate } from "../../lib/helpers";
 
 /**
  SignIn Page
@@ -19,33 +19,24 @@ class SignIn extends Component {
     this.state = {
       isLoading: true,
       error: undefined,
+      address: undefined,
       formIsValid: false,
-      keystore: undefined,
       isSigninIn: false
     };
 
     this.submit = this.submit.bind(this);
-    this.removeKeystore = this.removeKeystore.bind(this);
-    this.newWallet = this.newWallet.bind(this);
   }
 
   componentDidMount() {
-    GivethWallet.getCachedKeystore()
-      .then((keystore) => {
-        this.setState({
-          keystore,
-          address: GivethWallet.fixAddress(keystore[ 0 ].address),
-        },
-        // try to find the user's profile based on the address
-        () => this.fetchUserProfile());
-      })
-      .catch(() => {
-        this.props.history.push('/change-account');
-      });
+    this.handleProps(this.props);
+  }
+
+  componentWillReceiveProps(nextProps) {
+    this.handleProps(nextProps);
   }
 
   componentWillUpdate() {
-    if (this.state.keystore) {
+    if (this.props.wallet) {
       setTimeout(() => {
         if (this.refs.password) {
           this.refs.password.element.focus()
@@ -54,19 +45,30 @@ class SignIn extends Component {
     }
   }
 
+  handleProps(props) {
+    if (!props.cachedWallet) {
+      this.props.history.push('/change-account');
+    }
+    else if (props.wallet && (!this.state.address || props.wallet !== this.props.wallet)) {
+        this.setState({
+          address: props.wallet.getAddresses()[ 0 ],
+        }, () => this.fetchUserProfile());
+    }
+  }
+
   fetchUserProfile() {
-    socket.emit('users::find', { address: this.state.address }, (error, resp) => {
-      console.log(error, resp)
-      if (resp) {
-        this.setState(Object.assign({}, resp.data[ 0 ], {
+    feathersClient.service('users').get(this.state.address)
+      .then(resp => {
+        this.setState(Object.assign({}, resp.data, {
           isLoading: false,
-        }))
-      } else {
+        }));
+      })
+      .catch(error => {
+        console.log(error);
         this.setState({
           isLoading: false,
-        })
-      }
-    })
+        });
+      });
   }
 
   submit({ password }) {
@@ -75,67 +77,35 @@ class SignIn extends Component {
       error: undefined
     }, () => {
       function createWallet() {
-        GivethWallet.loadWallet(this.state.keystore, this.props.provider, password)
-          .then(wallet => this.walletLoaded(wallet))
-          .catch((error) => {
-            console.error(error);
+        this.props.wallet.unlock(password)
+          .then(() => authenticate(this.props.wallet))
+          .then(token => {
+            this.props.onSignIn();
+            return feathersClient.passport.verifyJWT(token);
+          })
+          .then(() => this.props.history.goBack())
+          .catch((err) => {
+            console.error(err);
+
+            const error = (err.type && err.type === 'FeathersError') ? "authentication error" :
+              "Error unlocking wallet. Possibly an invalid password.";
 
             this.setState({
-              error: "Error unlocking wallet. Possibly an invalid password.",
+              error,
               isSigninIn: false
             });
           });
       }
 
-      // web3 blocks all rendering, so we need to request an animation frame        
+      // PERISSOLOGY: I don't think this is working, it still appears to be blocked
+      // web3 blocks all rendering, so we need to request an animation frame
       window.requestAnimationFrame(createWallet.bind(this))
-          
-    })
+
+    });
   }
 
-  authenticate = wallet => {
-    const authData = {
-      strategy: 'web3',
-      address: wallet.getAddresses()[ 0 ],
-    };
-
-    return new Promise((resolve, reject) => {
-      feathersClient.authenticate(authData)
-        .catch(response => {
-          // normal flow will issue a 401 with a challenge message we need to sign and send to verify our identity
-          if (response.code === 401 && response.data.startsWith('Challenge =')) {
-            const msg = response.data.replace('Challenge =', '').trim();
-
-            return resolve(wallet.signMessage(msg).signature);
-          }
-          return reject(response);
-        })
-    }).then(signature => {
-      authData.signature = signature;
-      return feathersClient.authenticate(authData)
-    }).then(response => {
-      console.log('Authenticated!');
-
-      this.props.handleWalletChange(wallet);
-      return response.accessToken;
-    });
-  };
-
-  walletLoaded = wallet => {
-    this.authenticate(wallet)
-      .then(token => {
-        return feathersClient.passport.verifyJWT(token);
-      })
-      .then(payload => {
-        payload.newUser ? this.props.history.push('/profile') : this.props.history.goBack();
-      })
-      .catch(err => {
-        console.log(err)
-      });
-  };
-
   render() {
-    const { keystore, avatar, name, address, error, isLoading, isSigninIn } = this.state;
+    const { avatar, name, address, error, isLoading, isSigninIn } = this.state;
 
     if (isLoading) {
       return <Loader className="fixed"/>
@@ -146,7 +116,7 @@ class SignIn extends Component {
         <div className="row">
           <div className="col-md-8 m-auto">
             <div>
-              { keystore &&
+              { this.props.wallet &&
                 <div className="card">
                   <center>
                     {avatar &&
