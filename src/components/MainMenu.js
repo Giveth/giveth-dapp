@@ -26,8 +26,14 @@ class MainMenu extends Component {
             </li>
 
             {this.props.authenticated &&
-              <li className="nav-item">
-                <NavLink className="nav-link" to="/dashboard" activeClassName="active">Dashboard</NavLink>
+              <li className="nav-item dropdown">
+                <NavLink className="nav-link dropdown-toggle" id="navbarDropdownDashboard" to="/dashboard" activeClassName="active" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Dashboard</NavLink>
+                <div className="dropdown-menu" aria-labelledby="navbarDropdownDashboard">
+                  <a className="dropdown-item" href="#">My donations</a>
+                  <a className="dropdown-item" href="#">Delegations</a>
+                  <a className="dropdown-item" href="#">DACs</a>
+                  <a className="dropdown-item" href="#">Campaigns</a>
+                </div>
               </li>
             }
 
@@ -44,17 +50,22 @@ class MainMenu extends Component {
 
           </ul>
 
-          <ul className="navbar-nav ml-auto mr-sm-2">
-          { !this.props.authenticated &&
-            <li className="nav-item">
-              <Link className="btn btn-outline-secondary" to="/signin">Sign In</Link>
-            </li>
-          }
-          </ul>
+          {/*
           <form id="search-form" className="form-inline my-2 my-lg-0">
             <input className="form-control mr-sm-2" type="text" placeholder="E.g. save the whales"/>
             <button className="btn btn-outline-success my-2 my-sm-0" type="submit">Find</button>
           </form>
+        */}
+
+          <ul className="navbar-nav">
+            { !this.props.authenticated &&
+              <NavLink className="nav-link" to="/signin" activeClassName="active">Sign In</NavLink>
+            }
+            { !this.props.authenticated &&
+              <NavLink className="nav-link" to="/signup" activeClassName="active">Sign Up</NavLink>              
+            }
+          </ul>
+
         </div>
       </nav>
     )

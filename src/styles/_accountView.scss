@@ -1,4 +1,4 @@
-#signin-view {
+#account-view {
   .card {
     padding: 40px;
   }
@@ -23,7 +23,7 @@
     margin-bottom: 15px;
   }
 
-  a {
+  a(:not(.btn)) {
     color: #007bff;
 
     &:hover {

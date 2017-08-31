@@ -15,7 +15,7 @@
 
   .navbar-toggler {
     padding: 0;
-    color: #fff;
+    color: $green;
 
     &:focus {
       outline: none;
@@ -24,5 +24,6 @@
 
   .navbar-toggler-icon {
     width: 18px;
+    padding-top: 5px;
   }
 }

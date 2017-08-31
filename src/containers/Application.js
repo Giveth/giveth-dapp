@@ -10,6 +10,8 @@ import Profile from './../components/views/Profile'
 import UserWallet from './../components/views/UserWallet'
 import EditProfile from './../components/views/EditProfile'
 import SignIn from './../components/views/SignIn'
+import Signup from './../components/views/Signup'
+import ChangeAccount from './../components/views/ChangeAccount'
 
 import ViewMilestone from './../components/views/ViewMilestone'
 import Causes from './../components/views/Causes'
@@ -158,6 +160,21 @@ class Application extends Component {
                 <Route exact path="/campaigns/:id/milestones/:milestoneId/edit" component={props => <EditMilestone currentUser={this.state.currentUser} {...props} />}/>       
                              
                 <Route exact path="/signin" render={props => <SignIn wallet={this.state.wallet} handleWalletChange={this.handleWalletChange} provider={this.state.web3 ? this.state.web3.currentProvider : undefined} {...props}/>} />
+                
+                <Route exact path="/signup" render={props => 
+                  <Signup 
+                    wallet={this.state.wallet} 
+                    provider={this.state.web3 ? this.state.web3.currentProvider : undefined} 
+                    walletCreated={this.handleWalletChange}                     
+                    {...props}/>} />
+                
+                <Route exact path="/change-account" render={props => 
+                  <ChangeAccount 
+                    wallet={this.state.wallet} 
+                    provider={this.state.web3 ? this.state.web3.currentProvider : undefined} 
+                    handleWalletChange={this.handleWalletChange}                     
+                    {...props}/>} />
+
                 <Route exact path="/wallet" component={props => <UserWallet currentUser={this.state.currentUser} wallet={this.state.wallet} {...props}/>} />
                 <Route exact path="/profile" component={props => <EditProfile currentUser={this.state.currentUser} wallet={this.state.wallet} {...props}/>} />
                 <Route exact path="/profile/:userAddress" component={props => <Profile {...props}/>} />

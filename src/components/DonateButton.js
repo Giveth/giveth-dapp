@@ -37,9 +37,9 @@ class DonateButton extends Component {
     this.setState({ isSaving: true })
 
     feathersClient.service('/donations').create({
-      amount: parseInt(model.amount),
+      amount: parseInt(model.amount, 10),
       type: this.props.type.toLowerCase(),
-      _id: this.props.model._id,
+      type_id: this.props.model._id,
     }).then(user => {
       this.setState({ 
         isSaving: false,
@@ -53,7 +53,7 @@ class DonateButton extends Component {
 
 
   render(){
-    const { type, objectId, model } = this.props
+    const { type, model } = this.props
     let { isSaving, amount, formIsValid } = this.state
 
     return(

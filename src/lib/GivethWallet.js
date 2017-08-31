@@ -95,8 +95,14 @@ class GivethWallet {
 
   static createWallet(provider, password) {
     return new Promise(resolve => {
-      const keystore = new Accounts(provider).wallet.create(1).encrypt(password);
-      resolve(createGivethWallet(keystore, provider, password));
+
+      function createWallet() {
+        const keystore = new Accounts(provider).wallet.create(1).encrypt(password);
+        resolve(createGivethWallet(keystore, provider, password));
+      }
+
+      // web3 blocks all rendering, so we need to request an animation frame
+      window.requestAnimationFrame(createWallet)
     });
   }
 

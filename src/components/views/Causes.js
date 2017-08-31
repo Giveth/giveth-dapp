@@ -29,43 +29,46 @@ class Causes extends Component {
 
         <div className="container-fluid page-layout reduced-padding">
 
-          { this.props.causes.data && this.props.causes.data.length > 0 && this.props.causes.data.map((cause, index) =>
+          { this.props.causes.data && this.props.causes.data.length > 0 && 
             <ResponsiveMasonry columnsCountBreakPoints={{350: 1, 750: 2, 900: 3, 1024: 4, 1470: 5}}>
-              <Masonry gutter="10px">                
-                <div className="card" id={cause._id} key={index}>
-                  <img className="card-img-top" src={cause.image} alt=""/>
-                  <div className="card-body">
-                  
-                    <Link to={`/profile/${ cause.owner.address }`}>
-                      <Avatar size={30} src={cause.owner.avatar} round={true}/>                  
-                      <span className="small">{cause.owner.name}</span>
-                    </Link>
+              <Masonry gutter="10px"> 
+                { this.props.causes.data.map((cause, index) =>
 
-                    <Link to={`/dacs/${ cause._id }`}>                  
-                      <h4 className="card-title">{cause.title}</h4>
-                    </Link>
-                    <div className="card-text" dangerouslySetInnerHTML={{__html: cause.description}}></div>
+                  <div className="card" id={cause._id} key={index}>
+                    <img className="card-img-top" src={cause.image} alt=""/>
+                    <div className="card-body">
+                    
+                      <Link to={`/profile/${ cause.owner.address }`}>
+                        <Avatar size={30} src={cause.owner.avatar} round={true}/>                  
+                        <span className="small">{cause.owner.name}</span>
+                      </Link>
 
-                    <div>
-                      <DonateButton type="DAC" model={cause}/>
+                      <Link to={`/dacs/${ cause._id }`}>                  
+                        <h4 className="card-title">{cause.title}</h4>
+                      </Link>
+                      <div className="card-text" dangerouslySetInnerHTML={{__html: cause.description}}></div>
 
-                      { isOwner(cause.owner.address, currentUser) &&
-                        <span>
-                          <a className="btn btn-link" onClick={()=>this.removeCause(cause._id)}>
-                            <i className="fa fa-trash"></i>
-                          </a>
-                          <Link className="btn btn-link" to={`/dacs/${ cause._id }/edit`}>
-                            <i className="fa fa-edit"></i>
-                          </Link>
-                        </span>
-                      }
+                      <div>
+                        <DonateButton type="DAC" model={cause}/>
+
+                        { isOwner(cause.owner.address, currentUser) &&
+                          <span>
+                            <a className="btn btn-link" onClick={()=>this.removeCause(cause._id)}>
+                              <i className="fa fa-trash"></i>
+                            </a>
+                            <Link className="btn btn-link" to={`/dacs/${ cause._id }/edit`}>
+                              <i className="fa fa-edit"></i>
+                            </Link>
+                          </span>
+                        }
+                      </div>
+
                     </div>
-
                   </div>
-                </div>
+                )}
               </Masonry>
             </ResponsiveMasonry>                    
-          )}
+          }
         
 
           { this.props.causes.data && this.props.causes.data.length === 0 &&
