@@ -16,10 +16,11 @@ class BackupWallet extends Component {
     }
   }
 
-  componentDidMount(){
-    this.props.wallet.getKeystore((keystore) => {
-      this.setState({ keystore: keystore, isLoading: false })
-    })
+  componentDidMount() {
+    this.setState({
+      keystore: this.props.wallet.keystore,
+      isLoading: false,
+    });
   }
 
   handleClick = () => {

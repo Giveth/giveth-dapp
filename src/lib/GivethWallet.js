@@ -1,4 +1,7 @@
+import localforage from 'localforage';
 import Accounts from 'web3-eth-accounts';
+
+const STORAGE_KEY = 'keystore';
 
 const _get = WeakMap.prototype.get;
 const _set = WeakMap.prototype.set;
@@ -6,17 +9,35 @@ const _set = WeakMap.prototype.set;
 const _accounts = new WeakMap();
 const _password = new WeakMap();
 
+/**
+ * Wallet to handle ethereum accounts. While this wallet can store multiple accounts, we currently sign using only
+ * the first account.
+ *
+ * TODO: allow account specification for signing tx/messages
+ */
 class GivethWallet {
 
-  constructor(provider, keystoreArray) {
+  /**
+   * @param keystore      array of keystores to add to the wallet
+   * @param provider      optional. This is necessary when signing a transaction to retrieve chainId, gasPrice
+   *                      and nonce automatically
+   */
+  constructor(keystore, provider) {
+    if (!Array.isArray(keystore) || keystore.length === 0) throw new Error('keystore is required. and must be an array');
+
     const accounts = new Accounts(provider);
     _set.call(_accounts, this, accounts);
 
-    this._keystore = keystoreArray;
-
+    this.keystore = keystore;
     this.unlocked = false;
   }
 
+  /**
+   * sign a message with the first account
+   *
+   * @param msg   the message to sign
+   * @returns     object containing signature data. https://web3js.readthedocs.io/en/1.0/web3-eth-accounts.html#sign
+   */
   signMessage(msg) {
     if (!this.unlocked) throw new Error("Locked Wallet");
 
@@ -26,52 +47,47 @@ class GivethWallet {
   }
 
   unlock(password) {
-    if (this.unlocked) return;
+    return new Promise((resolve, reject) => {
+      if (this.unlocked) return resolve(true);
 
-    _set.call(_password, this, password);
+      _set.call(_password, this, password);
 
-    const accounts = _get.call(_accounts, this);
-    accounts.wallet.decrypt(this._keystore, password);
+      const decrypt = () => {
+        const accounts = _get.call(_accounts, this);
+        try {
+          accounts.wallet.decrypt(this.keystore, password);
+        } catch (e) {
+          return reject(e);
+        }
 
-    this.unlocked = true;
+        this.unlocked = true;
+        resolve(true);
+      };
+
+      // web3 blocks all rendering, so we need to request an animation frame
+      window.requestAnimationFrame(decrypt)
+
+    })
   }
 
   lock() {
     if (!this.unlocked) return;
 
     const accounts = _get.call(_accounts, this);
-    this._keystore = this.getKeystore();
-
     accounts.wallet.clear();
+    this.unlocked = false;
   }
 
+  /**
+   * remove all accounts from this wallet
+   */
   clear() {
     _get.call(_accounts, this).wallet.clear();
   }
 
-  getKeystore(callback) {
-    if (this.unlocked) {   
-
-      // This code is a bit spaghetti, but we need to use requestAnimationFrame multiple times here.
-      // or the complete thread is blocked, causing rendering to stall.
-      function fetchWallet() {
-        const password = _get.call(_password, this);
-
-        function getAccounts() {
-          const accounts = _get.call(_accounts, this);
-          callback(accounts.wallet.encrypt(password));
-        }
-
-        window.requestAnimationFrame(getAccounts.bind(this))
-      }
-
-      window.requestAnimationFrame(fetchWallet.bind(this))
-
-    }
-
-    return this._keystore;
-  }
-
+  /**
+   * @return {Array} of addresses in this wallet
+   */
   getAddresses() {
     if (this.unlocked) {
       const wallet = _get.call(_accounts, this).wallet;
@@ -84,42 +100,81 @@ class GivethWallet {
       return addrs;
     }
 
-    if (!this._keystore) return [];
-
-    return this._keystore.map(account => GivethWallet.fixAddress(account.address));
+    return this.keystore.map(account => GivethWallet.fixAddress(account.address));
   }
 
+  /**
+   * locally caches the keystore in storage
+   */
+  cacheKeystore() {
+    localforage.setItem('keystore', this.keystore);
+  }
+
+  /**
+   * normalize an address to the 0x form
+   */
   static fixAddress(addr) {
     return (addr.toLowerCase().startsWith('0x')) ? addr : `0x${addr}`;
   }
 
+  /**
+   * generate a new wallet with a new keystore
+   * @param provider - optional
+   * @param password - password to encrypt the wallet with
+   */
   static createWallet(provider, password) {
     return new Promise(resolve => {
-
-      function createWallet() {
+      const createWallet = () => {
         const keystore = new Accounts(provider).wallet.create(1).encrypt(password);
         resolve(createGivethWallet(keystore, provider, password));
-      }
+      };
 
       // web3 blocks all rendering, so we need to request an animation frame
       window.requestAnimationFrame(createWallet)
     });
   }
 
+  /**
+   * loads a GivethWallet with the provided keystores.
+   *
+   * @param keystore    the keystores to hold in the wallet
+   * @param provider    optional. web3 provider
+   * @param password    optional. if provided, the returned wallet will be unlocked, otherwise the wallet will be locked
+   */
   static loadWallet(keystore, provider, password) {
-    return new Promise(resolve => {
-      if (!Array.isArray(keystore)) keystore = [ keystore ];
+    if (!keystore) throw new Error('keystore is required');
 
-      resolve(createGivethWallet(keystore, provider, password));
-    });
+    if (!Array.isArray(keystore)) keystore = [ keystore ];
+
+    return createGivethWallet(keystore, provider, password);
+  }
+
+  /**
+   * fetches the locally cached keystore from storage
+   */
+  static getCachedKeystore() {
+    return localforage.getItem(STORAGE_KEY)
+      .then(ks => {
+        if (ks && ks.length > 0) return ks;
+
+        throw new Error('No keystore found');
+      });
+  }
+
+  /**
+   * remove the locally cached keystore from storage
+   */
+  static removeCachedKeystore() {
+    localforage.removeItem(STORAGE_KEY);
   }
 }
 
 const createGivethWallet = (keystore, provider, password) => {
-  const wallet = new GivethWallet(provider, keystore);
-  wallet.unlock(password);
+  const wallet = new GivethWallet(keystore, provider);
 
-  return wallet;
+  if (password) return wallet.unlock(password).then(() => wallet);
+
+  return Promise.resolve(wallet);
 };
 
 export default GivethWallet;

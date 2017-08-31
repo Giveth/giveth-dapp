@@ -3,7 +3,8 @@ import { BrowserRouter as Router, Route, Switch } from 'react-router-dom'
 import localforage from 'localforage';
 
 import loadAndWatchFeatherJSResource from '../lib/loadAndWatchFeatherJSResource'
-import { socket, feathersClient } from "../lib/feathersClient";
+import { feathersClient } from "../lib/feathersClient";
+import GivethWallet from '../lib/GivethWallet';
 
 // views
 import Profile from './../components/views/Profile'
@@ -28,6 +29,7 @@ import EditMilestone from './../components/views/EditMilestone'
 // components
 import MainMenu from './../components/MainMenu'
 import Loader from './../components/Loader'
+import UnlockWallet from "../components/UnlockWallet";
 
 /**
  * This container holds the application and its routes.
@@ -48,6 +50,8 @@ class Application extends Component {
       isLoading: true,
       hasError: false,
       wallet: undefined,
+      unlockWallet: false,
+      cachedWallet: true,
       userProfile: undefined
     };
 
@@ -57,8 +61,8 @@ class Application extends Component {
 
     this.handleWalletChange = this.handleWalletChange.bind(this);
   }
- 
-  componentWillMount(){
+
+  componentWillMount() {
     // Load causes and campaigns. When we receive first data, we finish loading.
     // This setup is a little ugly, because the callback is being called 
     // again and again by loadAndWatchFeatherJSResource whenever data changes.
@@ -68,7 +72,7 @@ class Application extends Component {
     Promise.all([
       new Promise((resolve, reject) => {
         new loadAndWatchFeatherJSResource('causes', {}, (resp, err) => {
-          if(resp) {
+          if (resp) {
             this.setState({ causes: resp })
             resolve()
           } else {
@@ -76,28 +80,50 @@ class Application extends Component {
           }
         })
       })
-    ,
+      ,
       new Promise((resolve, reject) => {
         new loadAndWatchFeatherJSResource('campaigns', {}, (resp, err) => {
-          if(resp) {
+          if (resp) {
             this.setState({ campaigns: resp })
             resolve()
           } else {
             reject()
           }
         })
-      })       
+      })
     ]).then(() => this.setState({ isLoading: false, hasError: false }))
       .catch((e) => {
         console.log('error loading', e)
         this.setState({ isLoading: false, hasError: true })
-      })
+      });
 
-    socket.on('reconnect', () => {
-      if (this.state.wallet && this.state.wallet.unlocked) {
-        socket.emit('authenticate', { signature: this.state.wallet.signMessage().signature });
-      }
-    })
+    // Load the wallet if it is cached
+    GivethWallet.getCachedKeystore()
+      .then(keystore => {
+        //TODO change to getWeb3() when implemented
+        const provider = this.state.web3 ? this.state.web3.currentProvider : undefined;
+        return GivethWallet.loadWallet(keystore, provider);
+      })
+      .then(wallet => this.setState({ wallet }))
+      .catch(err => {
+        console.log(err);
+        this.setState({
+          cachedWallet: false,
+        })
+      });
+
+    // login the user if we have a valid JWT
+    feathersClient.passport.getJWT()
+      .then(token => feathersClient.passport.verifyJWT(token))
+      .then(payload => this.getUserProfile(payload.userId))
+      .then(user => {
+        this.setState({
+          currentUser: user.address,
+          userProfile: user,
+        });
+        feathersClient.authenticate(); // need to authenticate the socket connection
+      })
+      .catch(console.log);
 
     // QUESTION: Should rendering wait for this to load?
     // new Web3Monitor(({web3}) => {
@@ -107,64 +133,68 @@ class Application extends Component {
     // })
   }
 
-  handleWalletChange(wallet, callback) {
-    if (wallet) {
-      wallet.getKeystore((keystore) => {
-        localforage.setItem('keystore', keystore)
-      })
+  onSignOut = () => {
+    if (this.state.wallet) this.state.wallet.lock();
 
-      const address = wallet.getAddresses()[0]
+    feathersClient.logout();
+    this.setState({ currentUser: undefined });
+  };
 
-      feathersClient.service('/users').get(address)
-        .then(user => {
-          console.log('user', user)
-          this.setState({ userProfile: user })          
-          if(callback) callback()
-        }) 
-        .catch(err => {
-          if (err.code === 404) {
-            feathersClient.service('/users').create({ address })
-              .then(user => {
-                console.log('created user ', user);
-                this.props.history.push('/profile');
-              })
-          } else {
-            this.props.history.goBack();
-          }
-        })      
+  onSignIn = () => {
+    const address = this.state.wallet.getAddresses()[ 0 ];
+    return this.getUserProfile(address)
+      .then(user =>
+        this.setState({
+          currentUser: address,
+          userProfile
+        }));
+  };
 
-      this.setState({
-        wallet,
-        currentUser: address,
-      });
-    } else {
-      if (this.state.wallet) this.state.wallet.clear();
+  handleWalletChange(wallet) {
+    wallet.cacheKeystore();
 
-      // This is now only used when signing out. I don't think we should clear this.
-      // localforage.removeItem('keystore');
-      this.setState({
-        wallet,
-        currentUser: undefined,
-        userProfile: undefined
-      });
-    }
+    this.getUserProfile(address)
+      .then(user =>
+        this.setState({
+          wallet,
+          currentUser: wallet.getAddresses()[ 0 ],
+          userProfile: user
+      }));
   }
 
-  render(){
+  getUserProfile(address) {
+    return feathersClient.service('/users').get(address)
+      .then(user => {
+        console.log('user', user);
+        return user;
+      })
+      .catch(err => {
+        console.log(err);
+//      this.props.history.goBack();
+      });
+  }
 
-    return(
+  render() {
+
+    return (
       <Router>
         <div>
-          <MainMenu 
-            authenticated={this.state.currentUser} 
-            handleWalletChange={this.handleWalletChange}
-            userProfile={this.state.userProfile}/>
+          <MainMenu
+            authenticated={(this.state.currentUser)}
+            onSignOut={this.onSignOut}
+            wallet={this.state.wallet}
+            userProfile={this.state.userProfile}
+            unlockWallet={() => this.setState({ unlockWallet: true })} />
 
-          { this.state.isLoading && 
+          {this.state.isLoading &&
             <Loader className="fixed"/>
           }
 
-          { !this.state.isLoading && !this.state.hasError &&
+          {this.state.wallet && this.state.unlockWallet &&
+            <UnlockWallet wallet={this.state.wallet} onClose={() => this.setState({ unlockWallet: false })}/>
+          }
+
+          {!this.state.isLoading && !this.state.hasError &&
             <div>
               {/* Routes are defined here. Persistent data is set as props on components */}
               <Switch>
@@ -184,19 +214,17 @@ class Application extends Component {
                 <Route exact path="/campaigns/:id/milestones/:milestoneId" component={props => <ViewMilestone currentUser={this.state.currentUser} {...props} />}/>          
                 <Route exact path="/campaigns/:id/milestones/:milestoneId/edit" component={props => <EditMilestone currentUser={this.state.currentUser} {...props} />}/>       
                              
-                <Route exact path="/signin" render={props => <SignIn wallet={this.state.wallet} handleWalletChange={this.handleWalletChange} provider={this.state.web3 ? this.state.web3.currentProvider : undefined} {...props}/>} />
+                <Route exact path="/signin" render={props => <SignIn wallet={this.state.wallet} cachedWallet={this.state.cachedWallet} onSignIn={this.onSignIn} {...props}/>} />
                 
                 <Route exact path="/signup" render={props => 
                   <Signup 
-                    wallet={this.state.wallet} 
-                    provider={this.state.web3 ? this.state.web3.currentProvider : undefined} 
+                    provider={this.state.web3 ? this.state.web3.currentProvider : undefined}
                     walletCreated={this.handleWalletChange}                     
                     {...props}/>} />
                 
                 <Route exact path="/change-account" render={props => 
                   <ChangeAccount 
-                    wallet={this.state.wallet} 
-                    provider={this.state.web3 ? this.state.web3.currentProvider : undefined} 
+                    provider={this.state.web3 ? this.state.web3.currentProvider : undefined}
                     handleWalletChange={this.handleWalletChange}                     
                     {...props}/>} />
 

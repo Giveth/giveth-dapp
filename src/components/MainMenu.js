@@ -11,17 +11,46 @@ import Avatar from 'react-avatar'
 **/
 
 class MainMenu extends Component {
-  signout(){
-    this.props.handleWalletChange(undefined)
-    this.props.history.push('/')
+  constructor(props) {
+    super();
+
+    this.state = {
+      walletLocked: props.wallet ? !props.wallet.unlocked : true,
+    }
+  }
+
+  componentWillReceiveProps(nextProps) {
+    if (nextProps.wallet && nextProps.wallet.unlocked && this.state.walletLocked) {
+      this.setState({
+        walletLocked: false
+      });
+    }
   }
 
   componentWillUpdate(){
     console.log('props', this.props)
   }
 
+  signout() {
+    this.props.onSignOut();
+    this.props.history.push('/')
+  }
+
+  lockWallet = e => {
+    e.preventDefault();
+    this.props.wallet.lock();
+    this.setState({
+      walletLocked: true
+    });
+  };
+
+  unlockWallet = e => {
+    e.preventDefault();
+    this.props.unlockWallet();
+  };
+
   render() {
-    const { userProfile, authenticated } = this.props
+    const { userProfile, authenticated } = this.props;
 
     return (
       <nav id="main-menu" className="navbar navbar-expand-lg fixed-top">
@@ -53,6 +82,18 @@ class MainMenu extends Component {
 
           </ul>
 
+          <ul className="navbar-nav ml-auto mr-sm-2">
+            { authenticated && this.props.wallet && this.state.walletLocked &&
+            <li className="nav-item mr-sm-2">
+              <Link className="btn btn-outline-secondary" to="#" onClick={this.unlockWallet}>UnLock Wallet</Link>
+            </li>
+            }
+            { authenticated && this.props.wallet && !this.state.walletLocked &&
+              <li className="nav-item mr-sm-2">
+                <Link className="btn btn-outline-secondary" to="#" onClick={this.lockWallet}>Lock Wallet</Link>
+              </li>
+            }
+          </ul>
           {/*
           <form id="search-form" className="form-inline my-2 my-lg-0">
             <input className="form-control mr-sm-2" type="text" placeholder="E.g. save the whales"/>
@@ -102,4 +143,14 @@ export default withRouter(MainMenu)
 
 MainMenu.propTypes = {
   authenticated: PropTypes.string,
-}
+  userProfile: PropTypes.shape({
+    avatar: PropTypes.string,
+    name: PropTypes.string,
+  }),
+  wallet: PropTypes.shape({
+    unlocked: PropTypes.bool.isRequired,
+    lock: PropTypes.func.isRequired,
+  }),
+  onSignOut: PropTypes.func.isRequired,
+  unlockWallet: PropTypes.func.isRequired,
+};

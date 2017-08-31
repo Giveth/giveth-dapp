@@ -1,7 +1,8 @@
 import React, { Component } from 'react';
 import { File, Form, Input } from 'formsy-react-components';
 import GivethWallet from "../../lib/GivethWallet";
-import { socket, feathersClient } from '../../lib/feathersClient'
+import { feathersClient } from '../../lib/feathersClient'
+import { authenticate } from '../../lib/helpers';
 import LoaderButton from "../../components/LoaderButton"
 import { Link } from 'react-router-dom'
 
@@ -44,12 +45,23 @@ class ChangeAccount extends Component {
         return;
       }
 
+      let wallet = undefined;
       GivethWallet.loadWallet(parsedKeystore, this.props.provider, password)
-        .then(wallet => this.walletLoaded(wallet))
+        .then(w => wallet = w)
+        .then(authenticate)
+        .then(token => {
+          this.props.handleWalletChange(wallet);
+          return feathersClient.passport.verifyJWT(token);
+        })
+        .then(payload => {
+          payload.newUser ? this.props.history.push('/profile') : this.props.history.push('/');
+        })
         .catch((error) => {
           if (typeof error === 'object') {
             console.error(error);
-            error = "Error loading wallet."
+
+            error = (error.type && error.type === 'FeathersError') ? "authentication error" :
+              "Error unlocking wallet. Possibly an invalid password.";
           }
 
           this.setState({ isLoading: false, error })
@@ -57,33 +69,6 @@ class ChangeAccount extends Component {
     };
 
     reader.readAsText(keystore[ 0 ]);
-  }
-
-  walletLoaded(wallet) {
-    socket.emit('authenticate', { signature: wallet.signMessage().signature }, () => {
-      console.log('authenticated');
-      this.props.handleWalletChange(wallet);
-
-      const address = wallet.getAddresses()[ 0 ];
-
-      // TODO this check should maybe be done in LoadWallet as that is when a keystore file is actually uploaded
-      // However I'm putting this here for now as a users may have created a wallet in an earlier stage of the
-      // mpv and thus it is stored in their localStorage, and the ui crashes if this user creates a milestone, etc
-      feathersClient.service('/users').get(address)
-        .then(() => this.props.history.push('/'))
-        .catch(err => {
-          if (err.code === 404) {
-            feathersClient.service('/users').create({ address })
-              .then(user => {
-                console.log('created user ', user);
-                this.props.history.push('/profile');
-              })
-          } else {
-            this.props.history.goBack();
-          }
-        })
-
-    });
   }
 
   toggleFormValid(state) {
