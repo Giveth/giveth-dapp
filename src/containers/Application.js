@@ -116,7 +116,7 @@ class Application extends Component {
     feathersClient.passport.getJWT()
       .then(token => feathersClient.passport.verifyJWT(token))
       .then(payload => {
-        this.setState({ currentUser: payload.userId });
+        this.setState({ currentUser: payload.userId }, this.getUserProfile);
         feathersClient.authenticate(); // need to authenticate the socket connection
       })
       .catch(console.log);
