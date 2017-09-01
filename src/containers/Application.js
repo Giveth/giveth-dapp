@@ -159,14 +159,15 @@ class Application extends Component {
 
   handleWalletChange(wallet) {
     wallet.cacheKeystore();
-    const address = this.state.wallet.getAddresses()[ 0 ];
+    const address = wallet.getAddresses()[ 0 ];
 
     this.getUserProfile(address)
       .then(user =>
         this.setState({
           wallet,
           currentUser: wallet.getAddresses()[ 0 ],
-          userProfile: user
+          userProfile: user,
+          cachedWallet: true,
       }));
   }
 
