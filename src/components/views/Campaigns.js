@@ -16,9 +16,33 @@ import Masonry, {ResponsiveMasonry} from "react-responsive-masonry"
 class Campaigns extends Component {
   
   removeCampaign(id){
-    const campaigns = feathersClient.service('/campaigns');
-    campaigns.remove(id).then(campaign => console.log('Remove a campaign', campaign));    
+    React.swal({
+      title: "Delete Campaign?",
+      text: "You will not be able to recover this Campaign!",
+      type: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#DD6B55",
+      confirmButtonText: "Yes, delete it!",
+      closeOnConfirm: true,
+    }, () => {
+      const campaigns = feathersClient.service('/campaigns');
+      campaigns.remove(id).then(campaign => {
+        React.toast.success("Your Campaign has been deleted.")
+      })
+    });
   }
+
+  editCampaign(id) {
+    React.swal({
+      title: "Edit Campaign?",
+      text: "Are you sure you want to edit this Campaign?",
+      type: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#DD6B55",
+      confirmButtonText: "Yes, continue editing!",
+      closeOnConfirm: true,
+    }, () => this.props.history.push("/campaigns/" + id + "/edit"));
+  }  
 
   render() {
     const { currentUser } = this.props
@@ -54,9 +78,9 @@ class Campaigns extends Component {
                             <a className="btn btn-link" onClick={()=>this.removeCampaign(campaign._id)}>
                               <i className="fa fa-trash"></i>
                             </a>
-                            <Link className="btn btn-link" to={`/campaigns/${ campaign._id }/edit`}>
+                            <a className="btn btn-link" onClick={()=>this.editCampaign(campaign._id)}>
                               <i className="fa fa-edit"></i>
-                            </Link>
+                            </a>
                           </span>
                         }
                       </div>

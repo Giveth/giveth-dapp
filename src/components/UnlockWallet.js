@@ -27,7 +27,7 @@ class UnlockWallet extends Component {
           .then(() => {
             this.setState({
               unlocking: false
-            });
+            })
             this.props.onClose();
           })
           .catch(error => {
@@ -54,7 +54,7 @@ class UnlockWallet extends Component {
         isVisible={true}
         hideOnOverlayClicked
         title={'Enter your password to unlock your wallet!'}
-        onCloseClicked={onClose}>
+        afterClose={onClose}>
 
         <UnlockWalletForm
           submit={this.submit}

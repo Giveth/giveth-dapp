@@ -83,7 +83,8 @@ class EditProfile extends Component {
         linkedIn: model.linkedIn,
         avatar: file,
       }).then(user => {
-        this.setState({ isSaving: false })
+        React.toast.success("Your profile has been updated.")
+        this.setState({ isSaving: false })        
       })   
     }
 
@@ -114,88 +115,86 @@ class EditProfile extends Component {
   }
 
   render(){
-    let { isLoading, isSaving, name, email, linkedIn, avatar, formIsValid } = this.state
+    let { isLoading, isSaving, name, email, linkedIn, avatar } = this.state
 
     return(
-        <div id="edit-cause-view">
-          <div className="container-fluid page-layout">
-            <div className="row">
-              <div className="col-md-8 m-auto">
-                { isLoading && 
-                  <Loader className="fixed"/>
-                }
-                
-                { !isLoading &&
-                  <div>
-                    <h1>Edit your profile</h1>
+      <div id="edit-cause-view" className="container-fluid page-layout">
+        <div className="row">
+          <div className="col-md-8 m-auto">
+            { isLoading && 
+              <Loader className="fixed"/>
+            }
+            
+            { !isLoading &&
+              <div>
+                <h1>Edit your profile</h1>
 
-                    <Form onSubmit={this.submit} mapping={this.mapInputs} onValid={()=>this.toggleFormValid(true)} onInvalid={()=>this.toggleFormValid(false)} layout='vertical'>
-                      <div className="form-group">
-                        <Input
-                          name="name"
-                          id="name-input"
-                          label="Your name"
-                          ref="name"
-                          type="text"
-                          value={name}
-                          placeholder="John Doe."
-                          validations="minLength:3"
-                          validationErrors={{
-                            minLength: 'Please enter your name'
-                          }}                    
-                          required
-                        />
-                      </div>
-
-                      <div className="form-group">
-                        <Input 
-                          name="email"
-                          label="Email"
-                          value={email}
-                          placeholder="email@example.com"
-                          validations="isEmail"  
-                          help="Please enter your email address."   
-                          validationErrors={{
-                            isEmail: "That's not a valid email address."
-                          }}                    
-                          required                                        
-                        />
-                      </div>
-
-                      <FormsyImageUploader setImage={this.setImage} avatar={avatar}/>
-
-                      <div className="form-group">
-                        <Input
-                          name="linkedIn"
-                          label="LinkedIn Profile"
-                          ref="linkedIn"
-                          type="text"
-                          value={linkedIn}
-                          placeholder="Your linkedIn profile url"
-                          validations="isUrl"
-                          validationErrors={{
-                            isUrl: 'Please enter your linkedin profile url'
-                          }}                    
-                        />
-                      </div>                      
-
-                      <LoaderButton
-                        className="btn btn-success btn-lg" 
-                        formNoValidate={true} 
-                        type="submit" 
-                        disabled={isSaving}
-                        isLoading={isSaving}
-                        loadingText="Saving...">
-                        Save profile
-                      </LoaderButton>                      
-                                     
-                    </Form>
+                <Form onSubmit={this.submit} mapping={this.mapInputs} onValid={()=>this.toggleFormValid(true)} onInvalid={()=>this.toggleFormValid(false)} layout='vertical'>
+                  <div className="form-group">
+                    <Input
+                      name="name"
+                      id="name-input"
+                      label="Your name"
+                      ref="name"
+                      type="text"
+                      value={name}
+                      placeholder="John Doe."
+                      validations="minLength:3"
+                      validationErrors={{
+                        minLength: 'Please enter your name'
+                      }}                    
+                      required
+                    />
                   </div>
-                }
 
+                  <div className="form-group">
+                    <Input 
+                      name="email"
+                      label="Email"
+                      value={email}
+                      placeholder="email@example.com"
+                      validations="isEmail"  
+                      help="Please enter your email address."   
+                      validationErrors={{
+                        isEmail: "That's not a valid email address."
+                      }}                    
+                      required                                        
+                    />
+                  </div>
+
+                  <FormsyImageUploader setImage={this.setImage} avatar={avatar}/>
+
+                  <div className="form-group">
+                    <Input
+                      name="linkedIn"
+                      label="LinkedIn Profile"
+                      ref="linkedIn"
+                      type="text"
+                      value={linkedIn}
+                      placeholder="Your linkedIn profile url"
+                      validations="isUrl"
+                      validationErrors={{
+                        isUrl: 'Please enter your linkedin profile url'
+                      }}                    
+                    />
+                  </div>                      
+
+                  <LoaderButton
+                    className="btn btn-success btn-lg" 
+                    formNoValidate={true} 
+                    type="submit" 
+                    disabled={isSaving}
+                    isLoading={isSaving}
+                    loadingText="Saving...">
+                    Save profile
+                  </LoaderButton>                      
+                                 
+                </Form>
               </div>
-            </div>
+            }
+
           </div>
+        </div>
       </div>
     )
   }

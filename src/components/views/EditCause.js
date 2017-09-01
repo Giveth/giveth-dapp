@@ -91,9 +91,10 @@ class EditCause extends Component {
   }
 
   submit(model) {    
-    const afterEmit = () => {
+    const afterEmit = (isNew) => {
       this.setState({ isSaving: false })
-      this.props.history.push('/dacs')      
+      isNew ? React.toast.success("Your DAC was created!") : React.toast.success("Your DAC has been updated!")
+      this.props.history.push('/dacs')     
     }
 
     this.setState({ isSaving: true })
@@ -106,7 +107,7 @@ class EditCause extends Component {
       }
 
       if(this.props.isNew){
-        socket.emit('causes::create', constructedModel, afterEmit)
+        socket.emit('causes::create', constructedModel, afterEmit(true))
       } else {
         socket.emit('causes::update', this.state.id, constructedModel, afterEmit)
       }

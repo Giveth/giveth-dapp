@@ -2,6 +2,9 @@ import React, { Component } from 'react'
 import { BrowserRouter as Router, Route, Switch } from 'react-router-dom'
 import localforage from 'localforage';
 
+import { ToastContainer, toast } from 'react-toastify'
+import 'react-toastify/dist/ReactToastify.min.css'
+
 import loadAndWatchFeatherJSResource from '../lib/loadAndWatchFeatherJSResource'
 import { feathersClient } from "../lib/feathersClient";
 import GivethWallet from '../lib/GivethWallet';
@@ -30,6 +33,10 @@ import EditMilestone from './../components/views/EditMilestone'
 import MainMenu from './../components/MainMenu'
 import Loader from './../components/Loader'
 import UnlockWallet from "../components/UnlockWallet";
+
+// Hack to make things globaly available
+React.swal = require('sweetalert')
+React.toast = toast
 
 /**
  * This container holds the application and its routes.
@@ -175,6 +182,11 @@ class Application extends Component {
       });
   }
 
+  unlockWallet() {
+    this.setState({ showUnlockWalletModal: false })
+    React.toast.success("Your wallet has been unlocked!")
+  }
+
   render() {
 
     return (
@@ -185,14 +197,14 @@ class Application extends Component {
             onSignOut={this.onSignOut}
             wallet={this.state.wallet}
             userProfile={this.state.userProfile}
-            unlockWallet={() => this.setState({ unlockWallet: true })} />
+            showUnlockWalletModal={() => this.setState({ showUnlockWalletModal: true })} />
 
           {this.state.isLoading &&
             <Loader className="fixed"/>
           }
 
-          {this.state.wallet && this.state.unlockWallet &&
-            <UnlockWallet wallet={this.state.wallet} onClose={() => this.setState({ unlockWallet: false })}/>
+          {this.state.wallet && this.state.showUnlockWalletModal &&
+            <UnlockWallet wallet={this.state.wallet} onClose={() => this.unlockWallet()}/>
           }
 
           {!this.state.isLoading && !this.state.hasError &&
@@ -244,6 +256,15 @@ class Application extends Component {
               <p>The Giveth dapp could not load for some reason. Please try again...</p>
             </center>
           }
+
+          <ToastContainer 
+            position="top-right"
+            type="success"
+            autoClose={3000}
+            hideProgressBar={false}
+            newestOnTop={false}
+            closeOnClick
+          />          
 
         </div>
       </Router>

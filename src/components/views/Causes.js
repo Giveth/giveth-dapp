@@ -9,6 +9,7 @@ import DonateButton from '../DonateButton'
 
 import Avatar from 'react-avatar'
 import Masonry, {ResponsiveMasonry} from "react-responsive-masonry"
+
 /**
   The causes view
 **/
@@ -16,12 +17,38 @@ import Masonry, {ResponsiveMasonry} from "react-responsive-masonry"
 class Causes extends Component {
 
   removeCause(id){
-    const causes = feathersClient.service('/causes');
-    causes.remove(id).then(cause => console.log('Remove a cause', cause));
+    React.swal({
+      title: "Delete DAC?",
+      text: "You will not be able to recover this DAC!",
+      type: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#DD6B55",
+      confirmButtonText: "Yes, delete it!",
+      closeOnConfirm: true,
+    }, () => {
+      const causes = feathersClient.service('/causes');
+      causes.remove(id).then(cause => {
+        React.toast.success("Your DAC has been deleted.")
+      })
+    });
+  }
+
+  editCause(id) {
+    React.swal({
+      title: "Edit DAC?",
+      text: "Are you sure you want to edit this DAC?",
+      type: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#DD6B55",
+      confirmButtonText: "Yes, continue editing!",
+      closeOnConfirm: true,
+    }, () => this.props.history.push("/dacs/" + id + "/edit"));
   }
 
   render() {
     const { currentUser } = this.props
+
+    console.log(React.satya)
 
     return (
       <div id="causes-view">
@@ -56,9 +83,9 @@ class Causes extends Component {
                             <a className="btn btn-link" onClick={()=>this.removeCause(cause._id)}>
                               <i className="fa fa-trash"></i>
                             </a>
-                            <Link className="btn btn-link" to={`/dacs/${ cause._id }/edit`}>
+                            <a className="btn btn-link" onClick={()=>this.editCause(cause._id)}>
                               <i className="fa fa-edit"></i>
-                            </Link>
+                            </a>
                           </span>
                         }
                       </div>
@@ -74,6 +101,7 @@ class Causes extends Component {
           { this.props.causes.data && this.props.causes.data.length === 0 &&
             <center>There are no DACs yet!</center>
           }
+
         </div>
       </div>
     )

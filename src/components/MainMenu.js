@@ -44,9 +44,9 @@ class MainMenu extends Component {
     });
   };
 
-  unlockWallet = e => {
+  showUnlockWalletModal = e => {
     e.preventDefault();
-    this.props.unlockWallet();
+    this.props.showUnlockWalletModal();
   };
 
   render() {
@@ -85,12 +85,18 @@ class MainMenu extends Component {
           <ul className="navbar-nav ml-auto mr-sm-2">
             { authenticated && this.props.wallet && this.state.walletLocked &&
             <li className="nav-item mr-sm-2">
-              <Link className="btn btn-outline-secondary" to="#" onClick={this.unlockWallet}>UnLock Wallet</Link>
+              <NavLink className="nav-link" to="#" onClick={this.showUnlockWalletModal}>
+                <i className="fa fa-lock"></i>
+                &nbsp;UnLock Wallet
+              </NavLink>
             </li>
             }
             { authenticated && this.props.wallet && !this.state.walletLocked &&
               <li className="nav-item mr-sm-2">
-                <Link className="btn btn-outline-secondary" to="#" onClick={this.lockWallet}>Lock Wallet</Link>
+                <NavLink className="nav-link" to="#" onClick={this.lockWallet}>
+                  <i className="fa fa-unlock"></i>
+                  &nbsp;Lock Wallet
+                </NavLink>
               </li>
             }
           </ul>
@@ -152,5 +158,5 @@ MainMenu.propTypes = {
     lock: PropTypes.func.isRequired,
   }),
   onSignOut: PropTypes.func.isRequired,
-  unlockWallet: PropTypes.func.isRequired,
+  showUnlockWalletModal: PropTypes.func.isRequired,
 };

@@ -35,10 +35,10 @@ class BackupWallet extends Component {
     return (
       <div>
         {isLoading && 
-          <p>
+          <div>
             <Loader/>
             Loading wallet...
-          </p>
+          </div>
         }
 
         {!isLoading &&

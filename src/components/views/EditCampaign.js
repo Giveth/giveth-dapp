@@ -118,8 +118,9 @@ class EditCampaign extends Component {
   }
 
   submit(model) {    
-    const afterEmit = () => {
+    const afterEmit = (isNew) => {
       this.setState({ isSaving: false })
+      isNew ? React.toast.success("Your DAC was created!") : React.toast.success("Your DAC has been updated!")      
       this.props.history.push('/campaigns')      
     }
 
@@ -134,7 +135,7 @@ class EditCampaign extends Component {
       }    
 
       if(this.props.isNew){
-        socket.emit('campaigns::create', constructedModel, afterEmit)
+        socket.emit('campaigns::create', constructedModel, afterEmit(true))
       } else {
         socket.emit('campaigns::update', this.state.id, constructedModel, afterEmit)
       }
