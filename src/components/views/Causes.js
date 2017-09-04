@@ -6,6 +6,8 @@ import { feathersClient } from '../../lib/feathersClient'
 import { Link } from 'react-router-dom'
 import { isOwner } from '../../lib/helpers'
 import DonateButton from '../DonateButton'
+import { redirectAfterWalletUnlock } from '../../lib/middleware'
+
 
 import Avatar from 'react-avatar'
 import Masonry, {ResponsiveMasonry} from "react-responsive-masonry"
@@ -42,7 +44,7 @@ class Causes extends Component {
       confirmButtonColor: "#DD6B55",
       confirmButtonText: "Yes, continue editing!",
       closeOnConfirm: true,
-    }, () => this.props.history.push("/dacs/" + id + "/edit"));
+    }, () => redirectAfterWalletUnlock("/dacs/" + id + "/edit", this.props.wallet, this.props.history))
   }
 
   render() {

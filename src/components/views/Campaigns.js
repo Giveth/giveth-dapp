@@ -7,6 +7,8 @@ import { Link } from 'react-router-dom'
 import { isOwner } from '../../lib/helpers'
 import DonateButton from '../DonateButton'
 import Avatar from 'react-avatar'
+import { redirectAfterWalletUnlock } from '../../lib/middleware'
+
 import Masonry, {ResponsiveMasonry} from "react-responsive-masonry"
 
 /**
@@ -41,7 +43,7 @@ class Campaigns extends Component {
       confirmButtonColor: "#DD6B55",
       confirmButtonText: "Yes, continue editing!",
       closeOnConfirm: true,
-    }, () => this.props.history.push("/campaigns/" + id + "/edit"));
+    }, () => redirectAfterWalletUnlock("/campaigns/" + id + "/edit", this.props.wallet, this.props.history));
   }  
 
   render() {

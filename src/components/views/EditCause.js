@@ -180,7 +180,7 @@ class EditCause extends Component {
                       <FormsyImageUploader setImage={this.setImage} previewImage={image}/>
 
                       <button className="btn btn-success" formNoValidate={true} type="submit" disabled={isSaving || !this.isValid()}>
-                        {isSaving ? "Saving..." : "Save cause"}
+                        {isSaving ? "Saving..." : "Save DAC"}
                       </button>
                                      
                     </Form>
