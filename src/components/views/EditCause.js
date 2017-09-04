@@ -43,7 +43,7 @@ class EditCause extends Component {
   }  
 
   componentDidMount() {
-    isAuthenticated(this.props.currentUser, this.props.history).then(()=> {
+    isAuthenticated(this.props.currentUser, this.props.history, this.props.wallet).then(()=> {
       if(!this.props.isNew) {
         socket.emit('causes::find', {_id: this.props.match.params.id}, (error, resp) => {    
           if(resp) {

@@ -4,6 +4,8 @@ import PropTypes from 'prop-types'
 import { Link, NavLink } from 'react-router-dom'
 import {withRouter} from "react-router-dom";
 
+import AuthenticatedLink from './AuthenticatedLink'
+
 import Avatar from 'react-avatar'
 
 /**
@@ -27,10 +29,6 @@ class MainMenu extends Component {
     }
   }
 
-  componentWillUpdate(){
-    console.log('props', this.props)
-  }
-
   signout() {
     this.props.onSignOut();
     this.props.history.push('/')
@@ -50,7 +48,7 @@ class MainMenu extends Component {
   };
 
   render() {
-    const { userProfile, authenticated } = this.props;
+    const { userProfile, authenticated, wallet, showUnlockWalletModal } = this.props;
 
     return (
       <nav id="main-menu" className="navbar navbar-expand-lg fixed-top">
@@ -72,10 +70,10 @@ class MainMenu extends Component {
               <li className="nav-item dropdown">
                 <NavLink className="nav-link dropdown-toggle" id="navbarDropdownDashboard" to="/dashboard" activeClassName="active" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Dashboard</NavLink>
                 <div className="dropdown-menu" aria-labelledby="navbarDropdownDashboard">
-                  <a className="dropdown-item" href="#">My donations</a>
+                  <Link className="dropdown-item" to="/donations">My donations</Link>
                   <a className="dropdown-item" href="#">Delegations</a>
-                  <a className="dropdown-item" href="#">DACs</a>
-                  <a className="dropdown-item" href="#">Campaigns</a>
+                  <Link className="dropdown-item" to="/my-causes">My DACs</Link>
+                  <Link className="dropdown-item" to="/my-campaigns">My campaigns</Link>
                 </div>
               </li>
             }
@@ -85,7 +83,7 @@ class MainMenu extends Component {
           <ul className="navbar-nav ml-auto mr-sm-2">
             { authenticated && this.props.wallet && this.state.walletLocked &&
             <li className="nav-item mr-sm-2">
-              <NavLink className="nav-link" to="#" onClick={this.showUnlockWalletModal}>
+              <NavLink className="nav-link" to="#" onClick={showUnlockWalletModal}>
                 <i className="fa fa-lock"></i>
                 &nbsp;UnLock Wallet
               </NavLink>
@@ -131,7 +129,7 @@ class MainMenu extends Component {
                   }
                 </Link>
                 <div className="dropdown-menu dropdown-profile" aria-labelledby="navbarDropdownYou">
-                  <Link className="dropdown-item" to="/profile">Profile</Link>
+                  <AuthenticatedLink className="dropdown-item" to="/profile" onClick={showUnlockWalletModal} wallet={wallet}>Profile</AuthenticatedLink>
                   <Link className="dropdown-item" to="/wallet">Wallet</Link>
                   <a className="dropdown-item" onClick={()=>this.signout()}>Sign out</a>
                 </div>

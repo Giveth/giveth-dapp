@@ -51,7 +51,7 @@ class EditMilestone extends Component {
 
 
   componentDidMount() {
-    isAuthenticated(this.props.currentUser, this.props.history).then(()=> {
+    isAuthenticated(this.props.currentUser, this.props.history, this.props.wallet).then(()=> {
       this.setState({ campaignId: this.props.match.params.id })
 
       // load a single milestones (when editing)

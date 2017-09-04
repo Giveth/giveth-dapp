@@ -50,7 +50,7 @@ class EditCampaign extends Component {
 
 
   componentDidMount() {
-    isAuthenticated(this.props.currentUser, this.props.history).then(()=>
+    isAuthenticated(this.props.currentUser, this.props.history, this.props.wallet).then(()=>
       Promise.all([
         // load a single campaigns (when editing)
         new Promise((resolve, reject) => {

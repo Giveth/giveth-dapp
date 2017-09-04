@@ -21,6 +21,9 @@ import ViewMilestone from './../components/views/ViewMilestone'
 import Causes from './../components/views/Causes'
 import EditCause from './../components/views/EditCause'
 import ViewCause from './../components/views/ViewCause'
+import Donations from './../components/views/Donations'
+import MyCauses from './../components/views/MyCauses'
+import MyCampaigns from './../components/views/MyCampaigns'
 import NotFound from './../components/views/NotFound'
 
 import Campaigns from './../components/views/Campaigns'
@@ -184,8 +187,10 @@ class Application extends Component {
   }
 
   unlockWallet() {
-    this.setState({ showUnlockWalletModal: false })
-    React.toast.success("Your wallet has been unlocked!")
+    this.setState({ 
+      showUnlockWalletModal: false 
+    })
+    React.toast.success("Your wallet has been unlocked!")    
   }
 
   render() {
@@ -214,21 +219,25 @@ class Application extends Component {
               <Switch>
                 <Route exact path="/" component={props => <Causes causes={this.state.causes} currentUser={this.state.currentUser} {...props}/>} />
                 
-                <Route exact path="/dacs" component={props => <Causes causes={this.state.causes} currentUser={this.state.currentUser} {...props}/>} />
-                <Route exact path="/dacs/new" component={props => <EditCause isNew={true} currentUser={this.state.currentUser} {...props}/>} />                        
+                <Route exact path="/dacs" component={props => <Causes causes={this.state.causes} currentUser={this.state.currentUser} wallet={this.state.wallet} {...props}/>} />
+                <Route exact path="/dacs/new" component={props => <EditCause isNew={true} currentUser={this.state.currentUser} walletUnlocked={this.state.wallet} {...props}/>} />                        
                 <Route exact path="/dacs/:id" component={ViewCause}/>
-                <Route exact path="/dacs/:id/edit" component={props => <EditCause currentUser={this.state.currentUser} {...props}/>} />  
+                <Route exact path="/dacs/:id/edit" component={props => <EditCause currentUser={this.state.currentUser} wallet={this.state.wallet} {...props}/>} />  
 
-                <Route exact path="/campaigns" component={props => <Campaigns campaigns={this.state.campaigns} currentUser={this.state.currentUser} {...props}/>} />
-                <Route exact path="/campaigns/new" component={props => <EditCampaign isNew={true} currentUser={this.state.currentUser} {...props}/>} />                        
+                <Route exact path="/campaigns" component={props => <Campaigns campaigns={this.state.campaigns} currentUser={this.state.currentUser} wallet={this.state.wallet} {...props}/>} />
+                <Route exact path="/campaigns/new" component={props => <EditCampaign isNew={true} currentUser={this.state.currentUser} wallet={this.state.wallet} {...props}/>} />                        
                 <Route exact path="/campaigns/:id" component={props => <ViewCampaign currentUser={this.state.currentUser} {...props} /> }/>
-                <Route exact path="/campaigns/:id/edit" component={props => <EditCampaign currentUser={this.state.currentUser} {...props}/>} />   
+                <Route exact path="/campaigns/:id/edit" component={props => <EditCampaign currentUser={this.state.currentUser} wallet={this.state.wallet} {...props}/>} />   
 
-                <Route exact path="/campaigns/:id/milestones/new" component={props => <EditMilestone isNew={true} currentUser={this.state.currentUser} {...props} />}/>
+                <Route exact path="/campaigns/:id/milestones/new" component={props => <EditMilestone isNew={true} currentUser={this.state.currentUser} wallet={this.state.wallet} {...props} />}/>
                 <Route exact path="/campaigns/:id/milestones/:milestoneId" component={props => <ViewMilestone currentUser={this.state.currentUser} {...props} />}/>          
-                <Route exact path="/campaigns/:id/milestones/:milestoneId/edit" component={props => <EditMilestone currentUser={this.state.currentUser} {...props} />}/>       
-                             
-                <Route exact path="/signin" render={props => <SignIn wallet={this.state.wallet} cachedWallet={this.state.cachedWallet} onSignIn={this.onSignIn} {...props}/>} />
+                <Route exact path="/campaigns/:id/milestones/:milestoneId/edit" component={props => <EditMilestone currentUser={this.state.currentUser} wallet={this.state.wallet} {...props} />}/>       
+                          
+                <Route exact path="/donations" component={props => <Donations currentUser={this.state.currentUser} {...props}/>} />
+                <Route exact path="/my-causes" component={props => <MyCauses currentUser={this.state.currentUser} {...props}/>} />
+                <Route exact path="/my-campaigns" component={props => <MyCampaigns currentUser={this.state.currentUser} {...props}/>} />
+
+                <Route exact path="/signin" render={props => <SignIn wallet={this.state.wallet} cachedWallet={this.state.wallet} onSignIn={this.onSignIn} {...props}/>} />
                 
                 <Route exact path="/signup" render={props => 
                   <Signup 

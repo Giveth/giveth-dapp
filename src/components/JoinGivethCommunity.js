@@ -10,7 +10,7 @@ import { Link } from 'react-router-dom'
 
 class JoinGivethCommunity extends Component {
   render() {
-    const btnClass = "btn btn-info " + (this.props.authenticated ? "" : "disabled");
+    const btnClass = "btn btn-info " + ((this.props.authenticated && this.props.walletUnlocked) ? "" : "disabled");
 
     return (
       <div id="join-giveth-community">
@@ -38,4 +38,5 @@ export default JoinGivethCommunity
 
 JoinGivethCommunity.propTypes = {
   authenticated: PropTypes.string,
+  walletUnlocked: PropTypes.bool
 }

@@ -45,17 +45,17 @@ class Campaigns extends Component {
   }  
 
   render() {
-    const { currentUser } = this.props
+    const { currentUser, wallet, campaigns } = this.props
     
     return (
       <div id="campaigns-view">
-        <JoinGivethCommunity authenticated={(this.props.currentUser)}/>
+        <JoinGivethCommunity authenticated={currentUser} walletUnlocked={(wallet && wallet.unlocked)}/>
 
         <div className="container-fluid page-layout reduced-padding">
-          { this.props.campaigns.data && this.props.campaigns.data.length > 0 && 
+          { campaigns.data && campaigns.data.length > 0 && 
             <ResponsiveMasonry columnsCountBreakPoints={{350: 1, 750: 2, 900: 3, 1024: 4, 1470: 5}}>
               <Masonry gutter="10px">
-                { this.props.campaigns.data.map((campaign, index) =>            
+                { campaigns.data.map((campaign, index) =>            
                   <div className="card" id={campaign._id} key={index}>
                     <img className="card-img-top" src={campaign.image} alt=""/>
                     <div className="card-body">
@@ -93,7 +93,7 @@ class Campaigns extends Component {
           }
  
 
-          { this.props.campaigns.data && this.props.campaigns.data.length === 0 &&
+          { campaigns.data && campaigns.data.length === 0 &&
             <center>There are no campaigns yet!</center>
           }            
 

@@ -39,7 +39,7 @@ class EditProfile extends Component {
   }  
 
   componentDidMount() {
-    isAuthenticated(this.props.currentUser, this.props.history).then(()=>
+    isAuthenticated(this.props.currentUser, this.props.history, this.props.wallet).then(()=>
       new Promise((resolve, reject) => {
         socket.emit('users::find', {address: this.props.currentUser}, (error, resp) => { 
           if(resp) {

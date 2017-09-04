@@ -46,20 +46,18 @@ class Causes extends Component {
   }
 
   render() {
-    const { currentUser } = this.props
-
-    console.log(React.satya)
+    const { currentUser, wallet, causes } = this.props
 
     return (
       <div id="causes-view">
-        <JoinGivethCommunity authenticated={(this.props.currentUser)}/>
+        <JoinGivethCommunity authenticated={currentUser} walletUnlocked={(wallet && wallet.unlocked)}/>
 
         <div className="container-fluid page-layout reduced-padding">
 
-          { this.props.causes.data && this.props.causes.data.length > 0 && 
+          { causes.data && causes.data.length > 0 && 
             <ResponsiveMasonry columnsCountBreakPoints={{350: 1, 750: 2, 900: 3, 1024: 4, 1470: 5}}>
               <Masonry gutter="10px"> 
-                { this.props.causes.data.map((cause, index) =>
+                { causes.data.map((cause, index) =>
 
                   <div className="card" id={cause._id} key={index}>
                     <img className="card-img-top" src={cause.image} alt=""/>
@@ -98,7 +96,7 @@ class Causes extends Component {
           }
         
 
-          { this.props.causes.data && this.props.causes.data.length === 0 &&
+          { causes.data && causes.data.length === 0 &&
             <center>There are no DACs yet!</center>
           }
 

@@ -12,8 +12,8 @@
  *      .then(()=> ...do something when authenticated)
  */
 
-export const isAuthenticated = (currentUser, history) => {
+export const isAuthenticated = (currentUser, history, wallet) => {
   return new Promise((resolve, reject) =>
-    !currentUser ? history.goBack() : resolve()
+    (!currentUser || (wallet && !wallet.unlocked)) ? history.goBack() : resolve()
   )
 }
