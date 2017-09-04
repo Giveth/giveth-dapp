@@ -248,8 +248,8 @@ class Application extends Component {
                 <Route exact path="/campaigns/:id/milestones/:milestoneId/edit" component={props => <EditMilestone currentUser={this.state.currentUser} wallet={this.state.wallet} {...props} />}/>       
                           
                 <Route exact path="/donations" component={props => <Donations currentUser={this.state.currentUser} {...props}/>} />
-                <Route exact path="/my-causes" component={props => <MyCauses currentUser={this.state.currentUser} {...props}/>} />
-                <Route exact path="/my-campaigns" component={props => <MyCampaigns currentUser={this.state.currentUser} {...props}/>} />
+                <Route exact path="/my-causes" component={props => <MyCauses currentUser={this.state.currentUser} wallet={this.state.wallet} {...props}/>} />
+                <Route exact path="/my-campaigns" component={props => <MyCampaigns currentUser={this.state.currentUser} wallet={this.state.wallet} {...props}/>} />
 
                 <Route exact path="/signin" render={props => <SignIn wallet={this.state.wallet} cachedWallet={this.state.wallet} onSignIn={this.onSignIn} {...props}/>} />
                 

@@ -33,6 +33,7 @@ export const isAuthenticated = (currentUser, history, wallet) => {
  */
 
 export const redirectAfterWalletUnlock = (to, wallet, history) => {
+  console.log(wallet)
   if (!wallet || (wallet && !wallet.unlocked)) {
     React.unlockWallet(to)
   } else {
