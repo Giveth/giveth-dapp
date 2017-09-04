@@ -5,6 +5,7 @@ import { Link, NavLink } from 'react-router-dom'
 import {withRouter} from "react-router-dom";
 
 import AuthenticatedLink from './AuthenticatedLink'
+import AuthenticatedNavLink from './AuthenticatedNavLink'
 
 import Avatar from 'react-avatar'
 
@@ -42,13 +43,8 @@ class MainMenu extends Component {
     });
   };
 
-  showUnlockWalletModal = e => {
-    e.preventDefault();
-    this.props.showUnlockWalletModal();
-  };
-
   render() {
-    const { userProfile, authenticated, wallet, showUnlockWalletModal } = this.props;
+    const { userProfile, authenticated, wallet } = this.props;
 
     return (
       <nav id="main-menu" className="navbar navbar-expand-lg fixed-top">
@@ -83,10 +79,10 @@ class MainMenu extends Component {
           <ul className="navbar-nav ml-auto mr-sm-2">
             { authenticated && this.props.wallet && this.state.walletLocked &&
             <li className="nav-item mr-sm-2">
-              <NavLink className="nav-link" to="#" onClick={showUnlockWalletModal}>
+              <AuthenticatedNavLink className="nav-link" to="#">
                 <i className="fa fa-lock"></i>
                 &nbsp;UnLock Wallet
-              </NavLink>
+              </AuthenticatedNavLink>
             </li>
             }
             { authenticated && this.props.wallet && !this.state.walletLocked &&
@@ -129,7 +125,7 @@ class MainMenu extends Component {
                   }
                 </Link>
                 <div className="dropdown-menu dropdown-profile" aria-labelledby="navbarDropdownYou">
-                  <AuthenticatedLink className="dropdown-item" to="/profile" onClick={showUnlockWalletModal} wallet={wallet}>Profile</AuthenticatedLink>
+                  <AuthenticatedLink className="dropdown-item" to="/profile" wallet={wallet}>Profile</AuthenticatedLink>
                   <Link className="dropdown-item" to="/wallet">Wallet</Link>
                   <a className="dropdown-item" onClick={()=>this.signout()}>Sign out</a>
                 </div>
@@ -155,6 +151,5 @@ MainMenu.propTypes = {
     unlocked: PropTypes.bool.isRequired,
     lock: PropTypes.func.isRequired,
   }),
-  onSignOut: PropTypes.func.isRequired,
-  showUnlockWalletModal: PropTypes.func.isRequired,
+  onSignOut: PropTypes.func.isRequired
 };

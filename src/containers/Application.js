@@ -70,6 +70,9 @@ class Application extends Component {
     });
 
     this.handleWalletChange = this.handleWalletChange.bind(this);
+
+    // we need this global to make opening the unlockWalletModal possible from anywhere in the app
+    React.unlockWallet = this.unlockWallet.bind(this);
   }
 
   componentWillMount() {
@@ -186,12 +189,20 @@ class Application extends Component {
       });
   }
 
-  unlockWallet() {
-    this.setState({ 
-      showUnlockWalletModal: false 
-    })
+
+  unlockWallet(redirectAfter) {
+    this.setState({ showUnlockWalletModal: true, redirectAfter: redirectAfter })
+  }  
+
+  walletUnlocked() {
+    this.hideUnlockWalletModal()
     React.toast.success("Your wallet has been unlocked!")    
   }
+
+  hideUnlockWalletModal() {
+    this.setState({ showUnlockWalletModal: false, redirectAfter: undefined})
+  }
+
 
   render() {
 
@@ -202,15 +213,18 @@ class Application extends Component {
             authenticated={(this.state.currentUser)}
             onSignOut={this.onSignOut}
             wallet={this.state.wallet}
-            userProfile={this.state.userProfile}
-            showUnlockWalletModal={() => this.setState({ showUnlockWalletModal: true })} />
+            userProfile={this.state.userProfile}/>
 
           {this.state.isLoading &&
             <Loader className="fixed"/>
           }
 
           {this.state.wallet && this.state.showUnlockWalletModal &&
-            <UnlockWallet wallet={this.state.wallet} onClose={() => this.unlockWallet()}/>
+            <UnlockWallet 
+              wallet={this.state.wallet} 
+              redirectAfter={this.state.redirectAfter} 
+              onClose={() => this.walletUnlocked()}
+              onCloseClicked={() => this.hideUnlockWalletModal()}/>
           }
 
           {!this.state.isLoading && !this.state.hasError &&

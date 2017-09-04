@@ -1,5 +1,6 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
+import {withRouter} from "react-router-dom"
 
 import { SkyLightStateless } from 'react-skylight'
 
@@ -29,6 +30,9 @@ class UnlockWallet extends Component {
               unlocking: false
             })
             this.props.onClose();
+
+            // if requested, redirect after successfully unlocking the wallet
+            if(this.props.redirectAfter) this.props.history.push(this.props.redirectAfter);
           })
           .catch(error => {
             console.log(error);
@@ -46,7 +50,7 @@ class UnlockWallet extends Component {
 
 
   render() {
-    const { onClose } = this.props;
+    const { onClose, onCloseClicked } = this.props;
     const { unlocking, error } = this.state;
 
     return (
@@ -54,6 +58,7 @@ class UnlockWallet extends Component {
         isVisible={true}
         hideOnOverlayClicked
         title={'Enter your password to unlock your wallet!'}
+        onCloseClicked={onCloseClicked}
         afterClose={onClose}>
 
         <UnlockWalletForm
@@ -69,7 +74,7 @@ class UnlockWallet extends Component {
   }
 }
 
-export default UnlockWallet;
+export default withRouter(UnlockWallet);
 
 UnlockWallet.propTypes = {
   wallet: PropTypes.shape({
