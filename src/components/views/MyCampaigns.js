@@ -3,7 +3,7 @@ import PropTypes from 'prop-types'
 
 import { socket, feathersClient } from '../../lib/feathersClient'
 import { Link } from 'react-router-dom'
-import { isAuthenticated } from '../../lib/middleware'
+import { isAuthenticated, redirectAfterWalletUnlock } from '../../lib/middleware'
 import Loader from '../Loader'
 
 import Avatar from 'react-avatar'
@@ -70,7 +70,7 @@ class MyCampaigns extends Component {
       confirmButtonColor: "#DD6B55",
       confirmButtonText: "Yes, continue editing!",
       closeOnConfirm: true,
-    }, () => this.props.history.push("/campaigns/" + id + "/edit"));
+    }, () => redirectAfterWalletUnlock("/campaigns/" + id + "/edit", this.props.wallet, this.props.history));
   }  
 
 

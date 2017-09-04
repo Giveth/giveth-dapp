@@ -28,11 +28,12 @@ class UnlockWallet extends Component {
           .then(() => {
             this.setState({
               unlocking: false
-            })
-            this.props.onClose();
+            }, () => {
+              this.props.onClose();
 
-            // if requested, redirect after successfully unlocking the wallet
-            if(this.props.redirectAfter) this.props.history.push(this.props.redirectAfter);
+              // if requested, redirect after successfully unlocking the wallet
+              if(this.props.redirectAfter) this.props.history.push(this.props.redirectAfter);
+            })
           })
           .catch(error => {
             console.log(error);
