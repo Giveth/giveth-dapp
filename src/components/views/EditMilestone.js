@@ -126,7 +126,7 @@ class EditMilestone extends Component {
       if(this.props.isNew){
         socket.emit('milestones::create', constructedModel, afterEmit)
       } else {
-        socket.emit('milestones::update', this.state.id, constructedModel, afterEmit)
+        socket.emit('milestones::patch', this.state.id, constructedModel, afterEmit)
       }
     })
   } 

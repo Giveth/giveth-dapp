@@ -137,7 +137,7 @@ class EditCampaign extends Component {
       if(this.props.isNew){
         socket.emit('campaigns::create', constructedModel, afterEmit(true))
       } else {
-        socket.emit('campaigns::update', this.state.id, constructedModel, afterEmit)
+        socket.emit('campaigns::patch', this.state.id, constructedModel, afterEmit)
       }
     })
   } 

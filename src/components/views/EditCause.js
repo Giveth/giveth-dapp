@@ -109,7 +109,7 @@ class EditCause extends Component {
       if(this.props.isNew){
         socket.emit('causes::create', constructedModel, afterEmit(true))
       } else {
-        socket.emit('causes::update', this.state.id, constructedModel, afterEmit)
+        socket.emit('causes::patch', this.state.id, constructedModel, afterEmit)
       }
     })
   } 
