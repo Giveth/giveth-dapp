@@ -37,6 +37,7 @@ import EditMilestone from './../components/views/EditMilestone'
 import MainMenu from './../components/MainMenu'
 import Loader from './../components/Loader'
 import UnlockWallet from "../components/UnlockWallet";
+import getWeb3 from "../lib/getWeb3";
 
 // Hack to make things globaly available
 React.swal = require('sweetalert')
@@ -119,7 +120,10 @@ class Application extends Component {
         const provider = this.state.web3 ? this.state.web3.currentProvider : undefined;
         return GivethWallet.loadWallet(keystore, provider);
       })
-      .then(wallet => this.setState({ wallet }))
+      .then(wallet => {
+        getWeb3().then(web3 => web3.setWallet(wallet));
+        this.setState({ wallet });
+      })
       .catch(err => {
         console.log(err);
         this.setState({
@@ -168,6 +172,8 @@ class Application extends Component {
   handleWalletChange(wallet) {
     wallet.cacheKeystore();
     const address = wallet.getAddresses()[ 0 ];
+
+    getWeb3().then(web3 => web3.setWallet(wallet));
 
     this.getUserProfile(address)
       .then(user =>

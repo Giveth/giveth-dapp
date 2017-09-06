@@ -33,6 +33,22 @@ class GivethWallet {
   }
 
   /**
+   * sign a transaction with the first account.
+   *
+   * @param     txData the txData to sign. chainId, gasPrice, and nonce are required
+   * @returns   signature object. https://web3js.readthedocs.io/en/1.0/web3-eth-accounts.html#signtransaction
+   */
+  signTransaction(txData) {
+    if (!this.unlocked) throw new Error('Locked Wallet');
+
+    if (!txData.gasPrice || !txData.nonce || !txData.chainId) throw new Error('gasPrice, nonce, and chainId are required');
+
+    const accounts = _get.call(_accounts, this);
+
+    return accounts.wallet[ 0 ].signTransaction(txData);
+  }
+
+  /**
    * sign a message with the first account
    *
    * @param msg   the message to sign

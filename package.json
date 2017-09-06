@@ -28,7 +28,8 @@
     "react-toastify": "^2.0.0-rc.3",
     "sweetalert": "^1.1.3",
     "web3": "^1.0.0-beta.18",
-    "web3-eth-accounts": "^1.0.0-beta.18"
+    "web3-eth-accounts": "^1.0.0-beta.18",
+    "web3-provider-engine": "^13.2.9"
   },
   "scripts": {
     "build-css": "node-sass-chokidar --include-path ./src --include-path ./node_modules src/ -o src/",
