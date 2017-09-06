@@ -2,7 +2,7 @@ import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 
 import { Form, Input } from 'formsy-react-components';
-import { socket, feathersClient } from '../../lib/feathersClient'
+import { feathersClient } from '../../lib/feathersClient'
 import Loader from '../Loader'
 import FormsyImageUploader from './../FormsyImageUploader'
 import { isAuthenticated } from '../../lib/middleware'
@@ -32,33 +32,34 @@ class EditProfile extends Component {
       avatar: '',
       email: '',
       linkedIn: '',
-      uploadNewAvatar: false
+      donorId: '',
+      uploadNewAvatar: false,
     }
 
     this.submit = this.submit.bind(this)
-    this.setImage = this.setImage.bind(this)   
-  }  
-
-  componentDidMount() {
-    isAuthenticated(this.props.currentUser, this.props.history, this.props.wallet).then(()=>
-      new Promise((resolve, reject) => {
-        socket.emit('users::find', {address: this.props.currentUser}, (error, resp) => { 
-          if(resp) {
-            this.setState(Object.assign({}, resp.data[0], {
-              isLoading: false
-            }, resolve()))
-          } else {
-            this.setState( { 
-              isLoading: false,
-              hasError: true
-            }, resolve())          
-          }
-        })  
-      }).then(() => this.setState({ isLoading: false }, this.focusFirstInput()))
-    )
+    this.setImage = this.setImage.bind(this)
   }
 
-  focusFirstInput(){
+  componentDidMount() {
+    isAuthenticated(this.props.currentUser, this.props.history, this.props.wallet)
+      .then(() => feathersClient.service('/users').get(this.props.currentUser))
+      .then(user => this.setState(Object.assign({}, user, {
+          isLoading: false,
+        }), this.focusFirstInput()),
+      )
+      .catch(err => {
+        console.log(err);
+
+        // set donorId to 0. This way we don't create 2 Donors for the same user
+        this.setState({
+          donorId: 0,
+          isLoading: false,
+          hasError: true,
+        });
+      });
+  }
+
+  focusFirstInput() {
     setTimeout(() => this.refs.name.element.focus(), 0)
   }
 
@@ -66,7 +67,7 @@ class EditProfile extends Component {
     return {
       'name': inputs.name,
       'email': inputs.email,
-      'linkedIn': inputs.linkedIn
+      'linkedIn': inputs.linkedIn,
     }
   }
 
@@ -74,7 +75,7 @@ class EditProfile extends Component {
     this.setState({ avatar: image, uploadNewAvatar: true })
   }
 
-  submit(model) {    
+  submit(model) {
     this.setState({ isSaving: true })
 
     const updateUser = (file) => {
@@ -83,15 +84,50 @@ class EditProfile extends Component {
         email: model.email,
         linkedIn: model.linkedIn,
         avatar: file,
-      }).then(user => {
-        React.toast.success("Your profile has been updated.")
-        this.setState({ isSaving: false })        
-      })   
-    }
+        // if no donorId, set to 0 so we don't add 2 donors for the same user if they update their profile
+        // before the AddDonor tx has been mined. 0 is a reserved donorId
+        donorId: this.state.donorId || 0,
+      })
+      .then(user => {
+        React.toast.success("Your profile has been updated.");
+        this.setState(Object.assign({}, user, { isSaving: false }));
+      })
+      .catch(err => console.log('update profile error -> ', err));
+
+      // TODO store user profile on ipfs and add Donor in liquidpledging contract
+      // TODO if donorId is set, update the donor if commitTime or name has changed
+      if (!this.state.donorId) {
+        getNetwork()
+          .then(network => {
+            const { liquidPledging } = network;
+
+            let txHash;
+            liquidPledging.addDonor(model.name, 86400) // TODO allow user to set commitTime
+              .once('transactionHash', hash => {
+                txHash = hash;
+                React.toast.info(`AddDonor transaction hash ${network.etherscan}tx/${txHash}`)
+              })
+              .then(txReceipt => {
+                React.toast.success(`AddDonor transaction mined ${network.etherscan}tx/${txHash}`);
+
+                const donorId = txReceipt.events.DonorAdded.returnValues.idDonor;
+
+                feathersClient.service('/users').patch(this.props.currentUser, {
+                    donorId,
+                  })
+                  .catch(console.log);
+              })
+              .catch(err => {
+                console.log('AddDonor transaction failed:', err);
+                React.toast.error(`AddDonor transaction failed ${network.etherscan}tx/${ttxHash}`);
+              });
+          })
+      }
+    };
 
 
-    if(this.state.uploadNewAvatar) {
-      feathersClient.service('/uploads').create({uri: this.state.avatar}).then(file => {
+    if (this.state.uploadNewAvatar) {
+      feathersClient.service('/uploads').create({ uri: this.state.avatar }).then(file => {
         updateUser(file.url)
       })
     } else {
@@ -109,89 +145,90 @@ class EditProfile extends Component {
     //     this.setState({ isSaving: false })
     //   })
     // })
-  } 
+  }
 
   toggleFormValid(state) {
     this.setState({ formIsValid: state })
   }
 
-  render(){
+  render() {
     let { isLoading, isSaving, name, email, linkedIn, avatar } = this.state
 
-    return(
+    return (
       <div id="edit-cause-view" className="container-fluid page-layout">
         <div className="row">
           <div className="col-md-8 m-auto">
-            { isLoading && 
-              <Loader className="fixed"/>
+            {isLoading &&
+            <Loader className="fixed"/>
             }
-            
-            { !isLoading &&
-              <div>
-                <h1>Edit your profile</h1>
 
-                <Form onSubmit={this.submit} mapping={this.mapInputs} onValid={()=>this.toggleFormValid(true)} onInvalid={()=>this.toggleFormValid(false)} layout='vertical'>
-                  <div className="form-group">
-                    <Input
-                      name="name"
-                      id="name-input"
-                      label="Your name"
-                      ref="name"
-                      type="text"
-                      value={name}
-                      placeholder="John Doe."
-                      validations="minLength:3"
-                      validationErrors={{
-                        minLength: 'Please enter your name'
-                      }}                    
-                      required
-                    />
-                  </div>
+            {!isLoading &&
+            <div>
+              <h1>Edit your profile</h1>
 
-                  <div className="form-group">
-                    <Input 
-                      name="email"
-                      label="Email"
-                      value={email}
-                      placeholder="email@example.com"
-                      validations="isEmail"  
-                      help="Please enter your email address."   
-                      validationErrors={{
-                        isEmail: "That's not a valid email address."
-                      }}                    
-                      required                                        
-                    />
-                  </div>
+              <Form onSubmit={this.submit} mapping={this.mapInputs} onValid={() => this.toggleFormValid(true)}
+                    onInvalid={() => this.toggleFormValid(false)} layout='vertical'>
+                <div className="form-group">
+                  <Input
+                    name="name"
+                    id="name-input"
+                    label="Your name"
+                    ref="name"
+                    type="text"
+                    value={name}
+                    placeholder="John Doe."
+                    validations="minLength:3"
+                    validationErrors={{
+                      minLength: 'Please enter your name',
+                    }}
+                    required
+                  />
+                </div>
 
-                  <FormsyImageUploader setImage={this.setImage} avatar={avatar}/>
+                <div className="form-group">
+                  <Input
+                    name="email"
+                    label="Email"
+                    value={email}
+                    placeholder="email@example.com"
+                    validations="isEmail"
+                    help="Please enter your email address."
+                    validationErrors={{
+                      isEmail: "That's not a valid email address.",
+                    }}
+                    required
+                  />
+                </div>
 
-                  <div className="form-group">
-                    <Input
-                      name="linkedIn"
-                      label="LinkedIn Profile"
-                      ref="linkedIn"
-                      type="text"
-                      value={linkedIn}
-                      placeholder="Your linkedIn profile url"
-                      validations="isUrl"
-                      validationErrors={{
-                        isUrl: 'Please enter your linkedin profile url'
-                      }}                    
-                    />
-                  </div>                      
+                <FormsyImageUploader setImage={this.setImage} avatar={avatar}/>
 
-                  <LoaderButton
-                    className="btn btn-success btn-lg" 
-                    formNoValidate={true} 
-                    type="submit" 
-                    disabled={isSaving}
-                    isLoading={isSaving}
-                    loadingText="Saving...">
-                    Save profile
-                  </LoaderButton>                      
-                                 
-                </Form>
-              </div>
+                <div className="form-group">
+                  <Input
+                    name="linkedIn"
+                    label="LinkedIn Profile"
+                    ref="linkedIn"
+                    type="text"
+                    value={linkedIn}
+                    placeholder="Your linkedIn profile url"
+                    validations="isUrl"
+                    validationErrors={{
+                      isUrl: 'Please enter your linkedin profile url',
+                    }}
+                  />
+                </div>
+
+                <LoaderButton
+                  className="btn btn-success btn-lg"
+                  formNoValidate={true}
+                  type="submit"
+                  disabled={isSaving}
+                  isLoading={isSaving}
+                  loadingText="Saving...">
+                  Save profile
+                </LoaderButton>
+
+              </Form>
+            </div>
             }
 
           </div>
@@ -207,8 +244,8 @@ export default EditProfile
 EditProfile.propTypes = {
   wallet: PropTypes.shape({
     unlocked: PropTypes.bool,
-    keystore: PropTypes.array
+    keystore: PropTypes.array,
   }),
   currentUser: PropTypes.string,
-  history: PropTypes.object.isRequired
-}
+  history: PropTypes.object.isRequired,
+};
