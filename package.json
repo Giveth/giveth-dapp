@@ -12,6 +12,7 @@
     "formsy-react": "^0.19.5",
     "formsy-react-components": "^0.10.1",
     "giveth-react-scripts": "1.0.11",
+    "liquidpledging": "../liquidpledging",
     "localforage": "^1.5.0",
     "node-sass-chokidar": "^0.0.3",
     "npm-run-all": "^4.0.2",
@@ -26,7 +27,7 @@
     "react-skylight": "^0.4.2",
     "react-toastify": "^2.0.0-rc.3",
     "sweetalert": "^1.1.3",
-    "web3": "0.19.1",
+    "web3": "^1.0.0-beta.18",
     "web3-eth-accounts": "^1.0.0-beta.18"
   },
   "scripts": {

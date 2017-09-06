@@ -1,4 +1,4 @@
-import Web3 from "web3";
+import Web3 from "src/lib/getWeb3";
 import BigNumber from "bignumber.js";
 
 const ONE_SECOND = 1000;
@@ -166,48 +166,3 @@ class Web3Monitor {
 }
 
 export default Web3Monitor;
-
-/* ///////////// custom Web3 Functions ///////////// */
-
-const getTransactionReceiptMined = (txHash, blockLimit = 25) => new Promise(
-  (resolve, reject) => {
-    const {web3} = window;
-    this.eth.getTransactionReceipt(txHash, (err, res) => {
-      if (err) {
-        reject(err);
-        return;
-      }
-
-      // tx already mined
-      if (res) {
-        resolve(res);
-        return;
-      }
-
-      let blockCounter = blockLimit;
-      const listener = web3.eth.filter("latest").watch((blockErr) => {
-        if (blockErr) {
-          listener.stopWatching();
-          reject(blockErr);
-          return;
-        }
-
-        if (blockCounter <= 0) {
-          listener.stopWatching();
-          console.warn(`${ txHash } not mined in last ${ blockLimit } blocks`);
-
-          reject("blockLimit reached");
-          return;
-        }
-
-        web3.eth.getTransactionReceipt(txHash, (receiptErr, receiptRes) => {
-          blockCounter -= 1;
-
-          if (receiptRes) {
-            listener.stopWatching();
-            resolve(receiptRes);
-          }
-        });
-      });
-    });
-  });
