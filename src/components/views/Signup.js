@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { Form, Input } from 'formsy-react-components';
-import GivethWallet from "../../lib/GivethWallet";
+import GivethWallet from "../../lib/blockchain/GivethWallet";
 import BackupWallet from "../BackupWallet";
 import { authenticate } from "../../lib/helpers";
 import LoaderButton from "../../components/LoaderButton"

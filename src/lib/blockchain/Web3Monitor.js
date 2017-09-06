@@ -1,4 +1,4 @@
-import Web3 from "src/lib/getWeb3";
+import Web3 from "./getWeb3";
 import BigNumber from "bignumber.js";
 
 const ONE_SECOND = 1000;

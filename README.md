@@ -28,3 +28,8 @@ If required you can 'eject' the project by running `npm run eject`. Note that th
 ## You don't use Redux?
 Nope. We use container architecture instead. So persistent data is loaded in containers, for example `Application.js`, and passed on as props to its children.
 As long as a container is rendered the data is persistent.
+
+## Local Development with TestRPC
+When running `testrpc` locally and in `deterministic` mode, you can use any of the keystores in the `keystores` when loading your wallet.
+This will provide you access to the testrpc accounts for local development. Each keystore uses the same password: `password`. **DO NOT USE
+THESE ON MAINNET ETHEREUM.**

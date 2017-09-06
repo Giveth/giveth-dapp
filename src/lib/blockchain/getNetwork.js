@@ -1,4 +1,4 @@
-import liquidpledging from "liquidpledging";
+import liquidpledging from 'liquidpledging';
 import getWeb3 from "./getWeb3";
 
 const LiquidPledging = liquidpledging.LiquidPledging(false);

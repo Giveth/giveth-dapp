@@ -7,6 +7,7 @@ import Loader from '../Loader'
 import FormsyImageUploader from './../FormsyImageUploader'
 import { isAuthenticated } from '../../lib/middleware'
 import LoaderButton from "../../components/LoaderButton"
+import getNetwork from "../../lib/blockchain/getNetwork";
 
 /**
  * Edit a user profile

@@ -7,7 +7,8 @@ import 'react-toastify/dist/ReactToastify.min.css'
 
 import loadAndWatchFeatherJSResource from '../lib/loadAndWatchFeatherJSResource'
 import { feathersClient } from "../lib/feathersClient";
-import GivethWallet from '../lib/GivethWallet';
+import GivethWallet from '../lib/blockchain/GivethWallet';
+import getWeb3 from "../lib/blockchain/getWeb3";
 
 // views
 import Profile from './../components/views/Profile'
@@ -37,7 +38,6 @@ import EditMilestone from './../components/views/EditMilestone'
 import MainMenu from './../components/MainMenu'
 import Loader from './../components/Loader'
 import UnlockWallet from "../components/UnlockWallet";
-import getWeb3 from "../lib/getWeb3";
 
 // Hack to make things globaly available
 React.swal = require('sweetalert')
