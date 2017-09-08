@@ -2,13 +2,14 @@ import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 
 import { Form, Input } from 'formsy-react-components';
-import { socket, feathersClient } from '../../lib/feathersClient'
+import { feathersClient } from '../../lib/feathersClient'
 import Loader from '../Loader'
 import QuillFormsy from '../QuillFormsy'
 import FormsyImageUploader from './../FormsyImageUploader'
 import GoBackButton from '../GoBackButton'
 import { isOwner } from '../../lib/helpers'
 import { isAuthenticated } from '../../lib/middleware'
+import { getTruncatedText } from '../../lib/helpers'
 
 /**
  * Create or edit a cause (DAC)
@@ -33,9 +34,12 @@ class EditCause extends Component {
       // DAC model
       title: '',
       description: '',
+      summary: '',      
       image: '',
       videoUrl: '',  
-      ownerAddress: null      
+      ownerAddress: null,
+      uploadNewImage: false
+
     }
 
     this.submit = this.submit.bind(this)
@@ -45,8 +49,8 @@ class EditCause extends Component {
   componentDidMount() {
     isAuthenticated(this.props.currentUser, this.props.history, this.props.wallet).then(()=> {
       if(!this.props.isNew) {
-        socket.emit('causes::find', {_id: this.props.match.params.id}, (error, resp) => {    
-          if(resp) {
+        feathersClient.service('causes').find({query: {_id: this.props.match.params.id}})
+          .then((resp) => {
             if(!isOwner(resp.data[0].owner.address, this.props.currentUser)) {
               this.props.history.goBack()
             } else {
@@ -55,13 +59,12 @@ class EditCause extends Component {
                 isLoading: false
               }), this.focusFirstInput())  
             }
-          } else {
+          })
+          .catch(()=>
             this.setState( { 
               isLoading: false,
               hasError: true
-            })          
-          }
-        })  
+            }))
       } else {
         this.setState({
           isLoading: false
@@ -90,33 +93,46 @@ class EditCause extends Component {
     return this.state.description.length > 0 && this.state.title.length > 10 && this.state.image.length > 0
   }
 
-  submit(model) {    
+  submit(model) {  
+    this.setState({ isSaving: true })
+
     const afterEmit = (isNew) => {
       this.setState({ isSaving: false })
       isNew ? React.toast.success("Your DAC was created!") : React.toast.success("Your DAC has been updated!")
       this.props.history.push('/dacs')     
     }
 
-    this.setState({ isSaving: true })
-
-    feathersClient.service('/uploads').create({uri: this.state.image}).then(file => {
+    const updateDAC = (file) => {
       const constructedModel = {
         title: model.title,
         description: model.description,
-        image: file.url,
-      }
+        summary: getTruncatedText(this.state.summary, 200),
+        image: file,
+      } 
 
       if(this.props.isNew){
-        socket.emit('causes::create', constructedModel, afterEmit(true))
+        feathersClient.service('causes').create(constructedModel)
+          .then(()=> afterEmit(true))
       } else {
-        socket.emit('causes::patch', this.state.id, constructedModel, afterEmit)
-      }
-    })
+        feathersClient.service('causes').patch(this.state.id, constructedModel)
+          .then(()=> afterEmit())        
+      }      
+    }
+
+    if(this.state.uploadNewImage) {
+      feathersClient.service('/uploads').create({uri: this.state.image}).then(file => updateDAC(file.url))
+    } else {
+      updateDAC()
+    }
   } 
 
   goBack(){
     this.props.history.push('/causes')
   }
+
+  constructSummary(text){
+    this.setState({ summary: text})
+  }  
 
   render(){
     const { isNew, history } = this.props
@@ -168,6 +184,7 @@ class EditCause extends Component {
                           label="What cause are you solving?"
                           value={description}
                           placeholder="Describe your cause..."
+                          onTextChanged={(content)=>this.constructSummary(content)}                          
                           validations="minLength:10"  
                           help="Describe your cause."   
                           validationErrors={{

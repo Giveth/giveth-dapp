@@ -14,28 +14,36 @@
   .card-body {
     box-shadow: 0 0 20px darken($page-background, 10%);
 
-    a {
-      text-decoration: none;
-      color: $link-color;      
-
-      .card-title {
-        font-weight: 700;
-      }
-
-      &:hover {
-        color: $green !important;
-      }
+    .sb-avatar {
+      margin-right: 4px;      
     }
+
+    .card-title {
+      margin: 20px 0 5px;
+      font-weight: 700;
+    }    
 
     .card-text {
       color: lighten($link-color, 50%);
-      height: 200px;
+      max-height: 200px;
       overflow: hidden;
       font-size: 0.9rem;
     }
 
     iframe {
       max-width: 100%;
+    }
+  }
+}
+
+.card-view {
+  .card {
+    cursor: pointer;
+    transition: transform .2s ease-in-out;
+
+    &:hover {
+      will-change: transform;
+      transform: scale(1.02);
     }
   }
 }

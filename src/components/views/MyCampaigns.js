@@ -1,10 +1,12 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 
-import { socket, feathersClient } from '../../lib/feathersClient'
+import { feathersClient } from '../../lib/feathersClient'
 import { Link } from 'react-router-dom'
 import { isAuthenticated, redirectAfterWalletUnlock } from '../../lib/middleware'
 import Loader from '../Loader'
+import { getTruncatedText } from '../../lib/helpers'
+
 
 import Avatar from 'react-avatar'
 import Masonry, {ResponsiveMasonry} from "react-responsive-masonry"
@@ -24,23 +26,20 @@ class MyCampaigns extends Component {
   }
 
   componentDidMount() {
-    isAuthenticated(this.props.currentUser, this.props.history).then(()=>{
-      socket.emit('campaigns::find', { ownerAddress: this.props.currentUser }, (err, resp) => {    
-        console.log('err/res', err, resp);
-        if(resp){
+    isAuthenticated(this.props.currentUser, this.props.history).then(() =>
+      feathersClient.service('campaigns').find({query: { ownerAddress: this.props.currentUser }})
+        .then((resp) =>
           this.setState({ 
             campaigns: resp.data,
             hasError: false,
             isLoading: false
-          })
-        } else {
+          }))
+        .catch(() => 
           this.setState({ 
             isLoading: false, 
             hasError: true 
-          })
-        }
-      })  
-    })    
+          }))
+    )   
   }
 
 
@@ -106,9 +105,9 @@ class MyCampaigns extends Component {
                               </Link>
 
                               <Link to={`/dacs/${ campaign._id }`}>                  
-                                <h4 className="card-title">{campaign.title}</h4>
+                                <h4 className="card-title">{getTruncatedText(campaign.title, 30)}</h4>
                               </Link>
-                              <div className="card-text" dangerouslySetInnerHTML={{__html: campaign.description}}></div>
+                              <div className="card-text">{campaign.summary}</div>
 
                               <div>
                                 <a className="btn btn-link" onClick={()=>this.removeCampaign(campaign._id)}>

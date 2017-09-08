@@ -3,11 +3,10 @@ import PropTypes from 'prop-types'
 
 import JoinGivethCommunity from '../JoinGivethCommunity'
 import { feathersClient } from '../../lib/feathersClient'
-import { Link } from 'react-router-dom'
 import { isOwner } from '../../lib/helpers'
-import DonateButton from '../DonateButton'
 import { redirectAfterWalletUnlock } from '../../lib/middleware'
 
+import { getTruncatedText } from '../../lib/helpers'
 
 import Avatar from 'react-avatar'
 import Masonry, {ResponsiveMasonry} from "react-responsive-masonry"
@@ -18,7 +17,9 @@ import Masonry, {ResponsiveMasonry} from "react-responsive-masonry"
 
 class Causes extends Component {
 
-  removeCause(id){
+  removeCause(e, id){
+    e.stopPropagation()
+
     React.swal({
       title: "Delete DAC?",
       text: "You will not be able to recover this DAC!",
@@ -35,7 +36,9 @@ class Causes extends Component {
     });
   }
 
-  editCause(id) {
+  editCause(e, id) {
+    e.stopPropagation()
+
     React.swal({
       title: "Edit DAC?",
       text: "Are you sure you want to edit this DAC?",
@@ -47,11 +50,20 @@ class Causes extends Component {
     }, () => redirectAfterWalletUnlock("/dacs/" + id + "/edit", this.props.wallet, this.props.history))
   }
 
+  viewCause(id){
+    this.props.history.push("/dacs/" + id)
+  }
+
+  viewProfile(e, id){
+    e.stopPropagation()
+    this.props.history.push("/profile/" + id)
+  }  
+
   render() {
     const { currentUser, wallet, causes } = this.props
 
     return (
-      <div id="causes-view">
+      <div id="causes-view" className="card-view">
         <JoinGivethCommunity authenticated={currentUser} walletUnlocked={(wallet && wallet.unlocked)}/>
 
         <div className="container-fluid page-layout reduced-padding">
@@ -61,29 +73,25 @@ class Causes extends Component {
               <Masonry gutter="10px"> 
                 { causes.data.map((cause, index) =>
 
-                  <div className="card" id={cause._id} key={index}>
+                  <div className="card" id={cause._id} key={index} onClick={()=>this.viewCause(cause._id)}>
                     <img className="card-img-top" src={cause.image} alt=""/>
                     <div className="card-body">
-                    
-                      <Link to={`/profile/${ cause.owner.address }`}>
+                      
+                      <div onClick={(e)=>this.viewProfile(e, cause.owner.address)}>
                         <Avatar size={30} src={cause.owner.avatar} round={true}/>                  
                         <span className="small">{cause.owner.name}</span>
-                      </Link>
+                      </div>
 
-                      <Link to={`/dacs/${ cause._id }`}>                  
-                        <h4 className="card-title">{cause.title}</h4>
-                      </Link>
-                      <div className="card-text" dangerouslySetInnerHTML={{__html: cause.description}}></div>
+                      <h4 className="card-title">{getTruncatedText(cause.title, 30)}</h4>
+                      <div className="card-text">{cause.summary}</div>
 
                       <div>
-                        <DonateButton type="DAC" model={cause}/>
-
                         { isOwner(cause.owner.address, currentUser) &&
                           <span>
-                            <a className="btn btn-link" onClick={()=>this.removeCause(cause._id)}>
+                            <a className="btn btn-link" onClick={(e)=>this.removeCause(e, cause._id)}>
                               <i className="fa fa-trash"></i>
                             </a>
-                            <a className="btn btn-link" onClick={()=>this.editCause(cause._id)}>
+                            <a className="btn btn-link" onClick={(e)=>this.editCause(e, cause._id)}>
                               <i className="fa fa-edit"></i>
                             </a>
                           </span>

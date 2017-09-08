@@ -119,7 +119,7 @@ class ViewCampaign extends Component {
                 <GoBackButton history={history}/>
 
                 <div className="content">
-                  <h2>About this DAC</h2>
+                  <h2>About this Campaign</h2>
                   <div dangerouslySetInnerHTML={{__html: description}}></div>
                 </div>            
 

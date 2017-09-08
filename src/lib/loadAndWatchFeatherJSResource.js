@@ -45,7 +45,7 @@ class loadAndWatchFeatherJSResource {
     })
 
 
-    // when a new cause is removed, remove it from the UI
+    // when a new object is removed, remove it from the UI
     socket.on(this.service + " removed", object => {
       console.log('removed object: ', object)      
       
@@ -55,13 +55,21 @@ class loadAndWatchFeatherJSResource {
     })  
 
 
-    // when a new cause is updated, update it in the UI
-    socket.on(this.service + " updated", object => {
+    // when an object is updated, update it in the UI
+    socket.on(this.object + " updated", object => {
       console.log('updated object: ', object)
 
       this.data.data = this.data.data.map((o) => o._id === object._id ? object : o)
       this.callback(this.data)            
-    })      
+    })    
+
+    // when an object is patched, update it in the UI
+    socket.on(this.object + " patched", object => {
+      console.log('patched object: ', object)
+
+      this.data.data = this.data.data.map((o) => o._id === object._id ? object : o)
+      this.callback(this.data)            
+    })       
   }
 }
 

@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import { socket } from '../../lib/feathersClient'
+import { feathersClient } from '../../lib/feathersClient'
 
 import GoBackButton from '../GoBackButton'
 import Loader from '../Loader'
@@ -19,22 +19,19 @@ class Profile extends Component {
     }
   }
 
-  componentWillMount(){
-    socket.emit('users::find', {address: this.props.match.params.userAddress}, (error, resp) => {    
-      console.log(error, resp)
-      if(resp) {
+  componentDidMount() {
+    feathersClient.service('users').find({query: {address: this.props.match.params.userAddress}})
+      .then((resp) => 
         this.setState(Object.assign({}, resp.data[0], {
           isLoading: false,
           hasError: false
-        })) 
-      } else {
-        this.setState( { 
+        })))
+      .catch(() => 
+        this.setState({ 
           isLoading: false,
           hasError: true
-        })  
-      }
-    })
-  } 
+        }))
+  }  
 
   render() {
     const { history } = this.props

@@ -2,7 +2,7 @@ import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 
 import { Form, Input } from 'formsy-react-components';
-import { socket, feathersClient } from '../../lib/feathersClient'
+import { feathersClient } from '../../lib/feathersClient'
 import Loader from '../Loader'
 import FormsyImageUploader from './../FormsyImageUploader'
 import { isAuthenticated } from '../../lib/middleware'
@@ -39,26 +39,22 @@ class EditProfile extends Component {
   }  
 
   componentDidMount() {
-    isAuthenticated(this.props.currentUser, this.props.history, this.props.wallet).then(()=>
-      new Promise((resolve, reject) => {
-        socket.emit('users::find', {address: this.props.currentUser}, (error, resp) => { 
-          if(resp) {
-            this.setState(Object.assign({}, resp.data[0], {
-              isLoading: false
-            }, resolve()))
-          } else {
-            this.setState( { 
-              isLoading: false,
-              hasError: true
-            }, resolve())          
-          }
-        })  
-      }).then(() => this.setState({ isLoading: false }, this.focusFirstInput()))
+    isAuthenticated(this.props.currentUser, this.props.history, this.props.wallet).then(() =>
+      feathersClient.service('users').find({query: {address: this.props.currentUser}})
+        .then((resp) => 
+          this.setState(Object.assign({}, resp.data[0], 
+            { isLoading: false })), this.focusFirstInput()
+          )
+        .catch(() => 
+          this.setState( { 
+            isLoading: false,
+            hasError: true
+          }))
     )
   }
 
   focusFirstInput(){
-    setTimeout(() => this.refs.name.element.focus(), 0)
+    setTimeout(() => this.refs.name.element.focus(), 200)
   }
 
   mapInputs(inputs) {
@@ -77,7 +73,7 @@ class EditProfile extends Component {
     this.setState({ isSaving: true })
 
     const updateUser = (file) => {
-      feathersClient.service('/users').update(this.props.currentUser, {
+      feathersClient.service('/users').patch(this.props.currentUser, {
         name: model.name,
         email: model.email,
         linkedIn: model.linkedIn,
