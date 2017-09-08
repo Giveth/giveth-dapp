@@ -113,10 +113,11 @@ class ViewMilestone extends Component {
                   <GoBackButton history={history}/>
 
                   <p>Milestone</p>
-                                    
-                  <h1 className="milestone-title">{title}</h1>
-                  <img className="milestone-header-image" src={image} alt=""/>
-                  <div dangerouslySetInnerHTML={{__html: description}}></div>
+
+                  <div className="content">
+                    <h2>About this Milestone</h2>
+                    <div dangerouslySetInnerHTML={{__html: description}}></div>
+                  </div>                    
 
                   <hr/>
 

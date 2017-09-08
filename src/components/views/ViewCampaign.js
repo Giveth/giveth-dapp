@@ -108,7 +108,7 @@ class ViewCampaign extends Component {
     let { isLoading, id, title, description, image, milestones, owner, donations, isLoadingDonations } = this.state
 
     return (
-      <div id="view-campaign-view">
+      <div id="view-campaign-view" className="card-view">
         { isLoading && 
           <Loader className="fixed"/>
         }
