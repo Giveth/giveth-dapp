@@ -9,28 +9,40 @@ import { isOwner } from './../lib/helpers'
 **/
 
 class Milestone extends Component {
+
+  viewMilestone() {
+    this.props.history.push(`/campaigns/${ this.props.model.campaignId }/milestones/${ this.props.model._id}`)
+  }
+
   render(){
     const { model, removeMilestone, currentUser } = this.props
 
     return(
-      <div className="card">
-        <img className="card-img-top" src={model.image} alt=""/>
+      <div className="card milestone-card" onClick={()=>this.viewMilestone()}>
         <div className="card-body">
-          <Link to={`/campaigns/${ model.campaignId }/milestones/${ model._id}`}>
-            <h4 className="card-title">{model.title}</h4>
-          </Link>
-          <div className="card-text" dangerouslySetInnerHTML={{__html: model.description}}></div>
-          
-          { isOwner(model.owner.address, currentUser) && 
-            <div>
-              <a className="btn btn-link" onClick={removeMilestone}>
-                <i className="fa fa-trash"></i>
-              </a>
-              <Link className="btn btn-link" to={`/campaigns/${ model.campaignId }/milestones/${ model._id}/edit`}>
-                <i className="fa fa-edit"></i>
-              </Link>
-            </div>
-          }
+          <table>
+            <tbody>
+              <tr>
+                <td className="milestone-image">
+                  <img src={model.image} alt=""/>
+                </td>
+                <td>
+                  <h4>{model.title}</h4>
+                  <p>{model.summary}</p>
+                  { isOwner(model.owner.address, currentUser) && 
+                    <div>
+                      <a className="btn btn-link" onClick={removeMilestone}>
+                        <i className="fa fa-trash"></i>
+                      </a>
+                      <Link className="btn btn-link" to={`/campaigns/${ model.campaignId }/milestones/${ model._id}/edit`}>
+                        <i className="fa fa-edit"></i>
+                      </Link>
+                    </div>
+                  }
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </div>
     )

@@ -128,16 +128,19 @@ class ViewCampaign extends Component {
 
                 <hr/>
 
-                <h3>Milestones</h3>
-                { isOwner(owner.address, currentUser) && 
-                  <AuthenticatedLink className="btn btn-primary btn-sm pull-right" to={`/campaigns/${ id }/milestones/new`} wallet={wallet}>Add Milestone</AuthenticatedLink>
-                }
+                <div className="milestone-header">
+                  <h3>Milestones</h3>
+                  { isOwner(owner.address, currentUser) && 
+                    <AuthenticatedLink className="btn btn-primary btn-sm pull-right" to={`/campaigns/${ id }/milestones/new`} wallet={wallet}>Add Milestone</AuthenticatedLink>
+                  }
+                </div>
 
                 {milestones.length > 0 && milestones.map((m, i) => 
                   <Milestone 
                     model={m} 
                     currentUser={currentUser}
-                    key={i} 
+                    key={i}
+                    history={history} 
                     removeMilestone={()=>this.removeMilestone(m._id)}/>
                 )}
               </div>

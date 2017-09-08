@@ -7,9 +7,7 @@
     margin-bottom: 20px;
   }
 
-
   .content {
-
     iframe,
     img {
       max-width: 100%;
@@ -21,6 +19,31 @@
         margin-bottom: 30px;
         border-radius: 3px;
       }   
+    }
+  }
+
+  .milestone-header h3 {
+      display: inline-block;    
+  }
+
+  .milestone-card {
+    margin-bottom: 10px;
+
+    table {
+      width: 100%;
+
+      .milestone-image {
+        max-width: 100px;
+        width: 20%;
+
+        img {
+          max-width: 100px;
+        }
+      }
+
+      td {
+        vertical-align: top;
+      }
     }
   }
 }  
