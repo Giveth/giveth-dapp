@@ -66,23 +66,26 @@ class ViewCampaign extends Component {
 
 
     // lazy load donations             
-    const query = paramsForServer({ 
+    const query = paramsForServer({
       query: { type_id: campaignId },
       schema: 'includeDonorDetails'
-    })  
+    });
 
-    new loadAndWatchFeatherJSResource('donations', query, (resp, err) => {
-      if(resp){
+    // TODO rewrite feathers-reactive 'smart' strategy to re-fetch the updated object if $client params are present
+    feathersClient.service('/donations').watch({ listStrategy: 'always' }).find(query)
+      .subscribe(resp => {
         this.setState({
           donations: resp.data,
           isLoadingDonations: false,
           errorLoadingDonations: false
+        },
+        err => {
+          if (err) {
+            console.log('donations error ->', err);
+            this.setState({ isLoadingDonations: false, errorLoadingDonations: true })
+          }
         })
-      } else {
-        this.setState({ isLoadingDonations: false, errorLoadingDonations: true })
-      }
-    })  
-
+      })
   }
 
   removeMilestone(id){
