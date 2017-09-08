@@ -14,6 +14,7 @@ import BackgroundImageHeader from '../BackgroundImageHeader'
 import Avatar from 'react-avatar'
 import DonateButton from '../DonateButton'
 import ShowTypeDonations from '../ShowTypeDonations'
+import AuthenticatedLink from '../AuthenticatedLink'
 
 /**
   Loads and shows a single campaign
@@ -90,7 +91,7 @@ class ViewCampaign extends Component {
   }    
 
   render() {
-    const { history, currentUser } = this.props
+    const { history, currentUser, wallet } = this.props
     let { isLoading, id, title, description, image, milestones, owner, donations, isLoadingDonations } = this.state
 
     return (
@@ -122,14 +123,12 @@ class ViewCampaign extends Component {
                   <div dangerouslySetInnerHTML={{__html: description}}></div>
                 </div>            
 
-
                 <hr/>
 
-                <h3>Milestones
-                  { isOwner(owner.address, currentUser) && 
-                    <Link className="btn btn-primary btn-sm pull-right" to={`/campaigns/${ id }/milestones/new`}>Add milestone</Link>
-                  }
-                </h3>
+                <h3>Milestones</h3>
+                { isOwner(owner.address, currentUser) && 
+                  <AuthenticatedLink className="btn btn-primary btn-sm pull-right" to={`/campaigns/${ id }/milestones/new`} wallet={wallet}>Add Milestone</AuthenticatedLink>
+                }
 
                 {milestones.length > 0 && milestones.map((m, i) => 
                   <Milestone 

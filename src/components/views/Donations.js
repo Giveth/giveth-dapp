@@ -21,7 +21,10 @@ class Donations extends Component {
 
   componentDidMount() {
     isAuthenticated(this.props.currentUser, this.props.history).then(()=>{
-      feathersClient.service('donations').find(paramsForServer({ schema: 'includeTypeDetails' }))
+      feathersClient.service('donations').find(paramsForServer({ 
+          schema: 'includeTypeDetails',
+          query: { $limit: 100 }
+        }))
         .then(resp => 
           this.setState({
             donations: resp.data,
@@ -33,7 +36,6 @@ class Donations extends Component {
             isLoading: false,
             hasError: true
           }));       
-      
     })    
   }
 
