@@ -1,8 +1,8 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 
-import { Link } from 'react-router-dom'
 import { isOwner } from './../lib/helpers'
+import { redirectAfterWalletUnlock } from './../lib/middleware'
 
 /**
   A single milestone
@@ -14,8 +14,27 @@ class Milestone extends Component {
     this.props.history.push(`/campaigns/${ this.props.model.campaignId }/milestones/${ this.props.model._id}`)
   }
 
+  removeMilestone(e) {
+    e.stopPropagation()
+    this.props.removeMilestone()
+  }
+
+  editMilestone(e) {
+    e.stopPropagation()
+
+    React.swal({
+      title: "Edit Milestone?",
+      text: "Are you sure you want to edit this milestone?",
+      type: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#DD6B55",
+      confirmButtonText: "Yes, continue editing!",
+      closeOnConfirm: true,
+    }, () => redirectAfterWalletUnlock(`/campaigns/${ this.props.model.campaignId }/milestones/${ this.props.model._id}/edit`, this.props.wallet, this.props.history))
+  }
+
   render(){
-    const { model, removeMilestone, currentUser } = this.props
+    const { model, currentUser } = this.props
 
     return(
       <div className="card milestone-card" onClick={()=>this.viewMilestone()}>
@@ -31,12 +50,12 @@ class Milestone extends Component {
                   <p>{model.summary}</p>
                   { isOwner(model.owner.address, currentUser) && 
                     <div>
-                      <a className="btn btn-link" onClick={removeMilestone}>
+                      <a className="btn btn-link" onClick={(e)=>this.removeMilestone(e)}>
                         <i className="fa fa-trash"></i>
                       </a>
-                      <Link className="btn btn-link" to={`/campaigns/${ model.campaignId }/milestones/${ model._id}/edit`}>
+                      <a className="btn btn-link" onClick={(e)=>this.editMilestone(e)}>
                         <i className="fa fa-edit"></i>
-                      </Link>
+                      </a>
                     </div>
                   }
                 </td>
@@ -54,5 +73,10 @@ export default Milestone
 Milestone.propTypes = {
   model: PropTypes.object.isRequired,
   removeMilestone: PropTypes.func.isRequired,
-  currentUser: PropTypes.string
+  currentUser: PropTypes.string,
+  history: PropTypes.object.isRequired,
+  wallet: PropTypes.shape({
+    unlocked: PropTypes.bool.isRequired,
+    unlock: PropTypes.func.isRequired,
+  })
 }

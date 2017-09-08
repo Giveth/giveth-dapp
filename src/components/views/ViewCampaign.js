@@ -89,8 +89,18 @@ class ViewCampaign extends Component {
   }
 
   removeMilestone(id){
-    const milestones = feathersClient.service('/milestones');
-    milestones.remove(id).then(milestone => console.log('Remove a milestone', milestone));
+    React.swal({
+      title: "Delete Milestone?",
+      text: "You will not be able to recover this milestone!",
+      type: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#DD6B55",
+      confirmButtonText: "Yes, delete it!",
+      closeOnConfirm: true,
+    }, () => {
+      const milestones = feathersClient.service('/milestones');
+      milestones.remove(id).then(milestone => console.log('Remove a milestone', milestone));
+    })
   }    
 
   render() {
@@ -141,6 +151,7 @@ class ViewCampaign extends Component {
                     currentUser={currentUser}
                     key={i}
                     history={history} 
+                    wallet={wallet}
                     removeMilestone={()=>this.removeMilestone(m._id)}/>
                 )}
               </div>

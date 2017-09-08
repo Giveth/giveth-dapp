@@ -58,8 +58,9 @@ class EditMilestone extends Component {
 
       // load a single milestones (when editing)
       if(!this.props.isNew) {
-        feathersClient.service('milestone').find({query: {_id: this.props.match.params.id}})
+        feathersClient.service('milestones').find({query: {_id: this.props.match.params.milestoneId}})
           .then((resp) => {
+            console.log("resp", resp)
             if(!isOwner(resp.data[0].owner.address, this.props.currentUser)) {
               this.props.history.goBack()
             } else {         
@@ -86,7 +87,7 @@ class EditMilestone extends Component {
   }
 
   setImage(image) {
-    this.setState({ image: image })
+    this.setState({ image: image,  uploadNewImage: true })
   }
 
   mapInputs(inputs) {
