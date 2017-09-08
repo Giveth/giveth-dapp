@@ -2,6 +2,8 @@ import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 
 import { socket, feathersClient } from '../../lib/feathersClient'
+import { paramsForServer } from 'feathers-hooks-common'
+
 import Loader from '../Loader'
 import { Link } from 'react-router-dom'
 import Milestone from '../Milestone'
@@ -11,6 +13,7 @@ import { isOwner } from '../../lib/helpers'
 import BackgroundImageHeader from '../BackgroundImageHeader'
 import Avatar from 'react-avatar'
 import DonateButton from '../DonateButton'
+import ShowTypeDonations from '../ShowTypeDonations'
 
 /**
   Loads and shows a single campaign
@@ -25,7 +28,10 @@ class ViewCampaign extends Component {
 
     this.state = {
       isLoading: true,
-      hasError: false
+      hasError: false,
+      isLoadingDonations: true,
+      errorLoadingDonations: false,
+      donations: []      
     }
   }  
 
@@ -58,7 +64,24 @@ class ViewCampaign extends Component {
       .catch((e) => {
         console.log('error loading', e)
         this.setState({ isLoading: false, hasError: true })        
-      })      
+      })   
+
+
+    // lazy load donations
+    feathersClient.service('donations').find(paramsForServer({ 
+        query: { type_id: this.props.match.params.id },
+        schema: 'includeDonorDetails'
+      }))
+      .then(resp => {
+        console.log(resp.data)
+        this.setState({
+          donations: resp.data,
+          isLoadingDonations: false,
+          errorLoadingDonations: false
+        })})
+      .catch(() =>
+        this.setState({ isLoadingDonations: false, errorLoadingDonations: true })
+      )           
   }
 
   removeMilestone(id){
@@ -68,7 +91,7 @@ class ViewCampaign extends Component {
 
   render() {
     const { history, currentUser } = this.props
-    let { isLoading, id, title, description, image, milestones, owner } = this.state
+    let { isLoading, id, title, description, image, milestones, owner, donations, isLoadingDonations } = this.state
 
     return (
       <div id="view-campaign-view">
@@ -86,7 +109,7 @@ class ViewCampaign extends Component {
               <h6>Campaign</h6>
               <h1>{title}</h1>
 
-              <DonateButton type="campaign" model={{ title: title, id: id }}/>
+              <DonateButton type="campaign" model={{ title: title, _id: id }}/>
             </BackgroundImageHeader>
 
             <div className="row">
@@ -117,6 +140,13 @@ class ViewCampaign extends Component {
                 )}
               </div>
             </div>
+
+            <div className="row">
+              <div className="col-md-8 m-auto">    
+                <h4>Donations</h4>        
+                <ShowTypeDonations donations={donations} isLoading={isLoadingDonations} />  
+              </div>
+            </div>              
           </div>
         }
       </div>

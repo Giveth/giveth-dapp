@@ -2,12 +2,15 @@ import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import { Link } from 'react-router-dom'
 
-import { socket } from '../../lib/feathersClient'
+import { feathersClient, socket } from '../../lib/feathersClient'
+import { paramsForServer } from 'feathers-hooks-common'
+
 import Loader from '../Loader'
 import GoBackButton from '../GoBackButton'
 import BackgroundImageHeader from '../BackgroundImageHeader'
 import Avatar from 'react-avatar'
 import DonateButton from '../DonateButton'
+import ShowTypeDonations from '../ShowTypeDonations'
 
 
 /**
@@ -23,28 +26,46 @@ class ViewCause extends Component {
 
     this.state = {
       isLoading: true,
-      hasError: false
+      hasError: false,
+      isLoadingDonations: true,
+      errorLoadingDonations: false,
+      donations: []
     }
   }  
 
   componentDidMount() {
     this.setState({ id: this.props.match.params.id })
 
-    socket.emit('causes::find', {_id: this.props.match.params.id}, (error, resp) => {      
-      if(resp) {
+    feathersClient.service('causes').find({ query: {_id: this.props.match.params.id}})
+      .then(resp =>
         this.setState(Object.assign({}, resp.data[0], {  
           isLoading: false,
           hasError: false
-        }))
-      } else {
+        })))
+      .catch(() =>
         this.setState({ isLoading: false, hasError: true })
-      }   
-    })
+      )
+
+    // lazy load donations
+    feathersClient.service('donations').find(paramsForServer({ 
+        query: { type_id: this.props.match.params.id },
+        schema: 'includeDonorDetails'
+      }))
+      .then(resp => {
+        console.log(resp.data)
+        this.setState({
+          donations: resp.data,
+          isLoadingDonations: false,
+          errorLoadingDonations: false
+        })})
+      .catch(() =>
+        this.setState({ isLoadingDonations: false, errorLoadingDonations: true })
+      )      
   }
 
   render() {
     const { history } = this.props
-    let { isLoading, id, title, description, image, owner } = this.state
+    let { isLoading, id, title, description, image, owner, donations, isLoadingDonations } = this.state
 
     return (
       <div id="view-cause-view">
@@ -62,7 +83,7 @@ class ViewCause extends Component {
               <h6>Democratic Autonomous Charity</h6>
               <h1>{title}</h1>
               
-              <DonateButton type="DAC" model={{ title: title, id: id }}/>
+              <DonateButton type="DAC" model={{ title: title, _id: id }}/>
             </BackgroundImageHeader>
 
             <div className="row">
@@ -77,6 +98,14 @@ class ViewCause extends Component {
 
               </div>
             </div>   
+
+            <div className="row">
+              <div className="col-md-8 m-auto">    
+                <h4>Donations</h4>        
+                <ShowTypeDonations donations={donations} isLoading={isLoadingDonations} />  
+              </div>
+            </div>          
+
           </div>             
         }
       </div>

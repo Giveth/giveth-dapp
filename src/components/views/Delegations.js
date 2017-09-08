@@ -2,32 +2,33 @@ import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 
 import { feathersClient } from '../../lib/feathersClient'
-import { paramsForServer } from 'feathers-hooks-common'
+// import { paramsForServer } from 'feathers-hooks-common'
 import Loader from '../Loader'
 import { isAuthenticated } from '../../lib/middleware'
 /**
-  The my donations view
+  The my delegations view
 **/
 
-class Donations extends Component {
+class Delegations extends Component {
   constructor() {
     super()
 
     this.state = {
       isLoading: true,
-      donations: [],
+      delegations: [],
     }    
   }
 
   componentDidMount() {
     isAuthenticated(this.props.currentUser, this.props.history).then(()=>{
-      feathersClient.service('donations').find(paramsForServer({ schema: 'includeTypeDetails' }))
-        .then(resp => 
+      feathersClient.service('causes').find({query: { ownerAddress: this.props.currentUser }})
+        .then(resp => {
+          console.log(resp)
           this.setState({
-            donations: resp.data,
+            delegations: resp.data,
             hasError: false,
             isLoading: false
-          }))
+          })})
         .catch(() => 
           this.setState({
             isLoading: false,
@@ -39,14 +40,14 @@ class Donations extends Component {
 
 
   render() {
-    let { donations, isLoading } = this.state
+    let { delegations, isLoading } = this.state
 
     return (
         <div id="edit-campaign-view">
           <div className="container-fluid page-layout">
             <div className="row">
               <div className="col-md-12">
-                <h1>Your donations</h1>
+                <h1>Your delegations</h1>
 
                 { isLoading && 
                   <Loader className="fixed"/>
@@ -54,7 +55,7 @@ class Donations extends Component {
 
                 { !isLoading &&
                   <div>
-                    { donations && donations.length > 0 && 
+                    { delegations && delegations.length > 0 && 
 
                       <table className="table table-responsive table-hover">
                         <thead>
@@ -66,7 +67,7 @@ class Donations extends Component {
                           </tr>
                         </thead>
                         <tbody>
-                          { donations.map((d, index) =>
+                          { delegations.map((d, index) =>
                             <tr key={index}>
                               <td>{d.amount} ETH</td>
                               <td>{d.type}</td>
@@ -88,8 +89,8 @@ class Donations extends Component {
                       </table>
                     }
 
-                    { donations && donations.length === 0 &&
-                      <center>You didn't make any donations yet!</center>
+                    { delegations && delegations.length === 0 &&
+                      <center>You didn't make any delegations yet!</center>
                     }
 
                   </div>
@@ -102,9 +103,9 @@ class Donations extends Component {
   }
 }
 
-export default Donations
+export default Delegations
 
-Donations.propTypes = {
+Delegations.propTypes = {
   currentUser: PropTypes.string,
   history: PropTypes.object.isRequired
 }

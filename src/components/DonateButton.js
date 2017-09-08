@@ -32,12 +32,12 @@ class DonateButton extends Component {
 
 
   submit(model) {    
-    console.log(model)
+    console.log(model, this.props.type.toLowerCase(), this.props.model._id)
 
     this.setState({ isSaving: true })
 
     feathersClient.service('/donations').create({
-      amount: parseInt(model.amount, 10),
+      amount: parseFloat(model.amount, 10),
       type: this.props.type.toLowerCase(),
       type_id: this.props.model._id,
     }).then(user => {

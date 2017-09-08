@@ -77,7 +77,7 @@ class MainMenu extends Component {
                 <NavLink className="nav-link dropdown-toggle" id="navbarDropdownDashboard" to="/dashboard" activeClassName="active" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Dashboard</NavLink>
                 <div className="dropdown-menu" aria-labelledby="navbarDropdownDashboard">
                   <Link className="dropdown-item" to="/donations">My donations</Link>
-                  <a className="dropdown-item" href="#">Delegations</a>
+                  <Link className="dropdown-item" to="/delegations">My delegations</Link>
                   <Link className="dropdown-item" to="/my-causes">My DACs</Link>
                   <Link className="dropdown-item" to="/my-campaigns">My campaigns</Link>
                 </div>

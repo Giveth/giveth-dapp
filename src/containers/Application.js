@@ -9,6 +9,8 @@ import loadAndWatchFeatherJSResource from '../lib/loadAndWatchFeatherJSResource'
 import { feathersClient } from "../lib/feathersClient";
 import GivethWallet from '../lib/GivethWallet';
 
+import AppGlobals from './../containers/App'
+
 // views
 import Profile from './../components/views/Profile'
 import UserWallet from './../components/views/UserWallet'
@@ -22,6 +24,7 @@ import Causes from './../components/views/Causes'
 import EditCause from './../components/views/EditCause'
 import ViewCause from './../components/views/ViewCause'
 import Donations from './../components/views/Donations'
+import Delegations from './../components/views/Delegations'
 import MyCauses from './../components/views/MyCauses'
 import MyCampaigns from './../components/views/MyCampaigns'
 import NotFound from './../components/views/NotFound'
@@ -73,6 +76,7 @@ class Application extends Component {
 
     // we need this global to make opening the unlockWalletModal possible from anywhere in the app
     React.unlockWallet = this.unlockWallet.bind(this);
+    AppGlobals.unlockWallet = this.unlockWallet.bind(this);
   }
 
   componentWillMount() {
@@ -180,7 +184,6 @@ class Application extends Component {
   getUserProfile(address) {
     return feathersClient.service('/users').get(address)
       .then(user => {
-        console.log('user', user);
         return user;
       })
       .catch(err => {
@@ -248,6 +251,7 @@ class Application extends Component {
                 <Route exact path="/campaigns/:id/milestones/:milestoneId/edit" component={props => <EditMilestone currentUser={this.state.currentUser} wallet={this.state.wallet} {...props} />}/>       
                           
                 <Route exact path="/donations" component={props => <Donations currentUser={this.state.currentUser} {...props}/>} />
+                <Route exact path="/delegations" component={props => <Delegations currentUser={this.state.currentUser} {...props}/>} />
                 <Route exact path="/my-causes" component={props => <MyCauses currentUser={this.state.currentUser} wallet={this.state.wallet} {...props}/>} />
                 <Route exact path="/my-campaigns" component={props => <MyCampaigns currentUser={this.state.currentUser} wallet={this.state.wallet} {...props}/>} />
 
