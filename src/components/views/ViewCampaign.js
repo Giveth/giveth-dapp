@@ -80,8 +80,10 @@ class ViewCampaign extends Component {
           errorLoadingDonations: false
         },
         err => {
-          console.log('donations error ->', err);
-          this.setState({ isLoadingDonations: false, errorLoadingDonations: true })
+          if (err) {
+            console.log('donations error ->', err);
+            this.setState({ isLoadingDonations: false, errorLoadingDonations: true })
+          }
         })
       })
   }
