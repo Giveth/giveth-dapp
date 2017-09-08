@@ -1,6 +1,7 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'                
 import Loader from './Loader'
+import Avatar from 'react-avatar'
 
 /**
   Shows a table of donations for a given type (dac, campaign, milestone)
@@ -32,7 +33,12 @@ class ShowTypeDonations extends Component {
                   { donations.map((d, index) =>
                     <tr key={index}>
                       <td>{d.amount} ETH</td>
-                      <td>{d.donor.name}</td>
+                      <td>
+                        {d.donor.avatar &&
+                          <Avatar size={30} src={d.donor.avatar} round={true}/>                  
+                        }
+                        <span>{d.donor.name}</span>
+                      </td>
                       <td>{d.donor.address}</td>
                     </tr>
                   )}
