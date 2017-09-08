@@ -2,7 +2,8 @@ import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import { Link } from 'react-router-dom'
 
-import { feathersClient, socket } from '../../lib/feathersClient'
+import { feathersClient } from '../../lib/feathersClient'
+import loadAndWatchFeatherJSResource from '../../lib/loadAndWatchFeatherJSResource'
 import { paramsForServer } from 'feathers-hooks-common'
 
 import Loader from '../Loader'
@@ -34,9 +35,11 @@ class ViewCause extends Component {
   }  
 
   componentDidMount() {
-    this.setState({ id: this.props.match.params.id })
+    const dacId = this.props.match.params.id
 
-    feathersClient.service('causes').find({ query: {_id: this.props.match.params.id}})
+    this.setState({ id: dacId })
+
+    feathersClient.service('causes').find({ query: {_id: dacId }})
       .then(resp =>
         this.setState(Object.assign({}, resp.data[0], {  
           isLoading: false,
@@ -46,21 +49,23 @@ class ViewCause extends Component {
         this.setState({ isLoading: false, hasError: true })
       )
 
-    // lazy load donations
-    feathersClient.service('donations').find(paramsForServer({ 
-        query: { type_id: this.props.match.params.id },
-        schema: 'includeDonorDetails'
-      }))
-      .then(resp => {
-        console.log(resp.data)
+    // lazy load donations         
+    const query = paramsForServer({ 
+      query: { type_id: dacId },
+      schema: 'includeDonorDetails'
+    })  
+
+    new loadAndWatchFeatherJSResource('donations', query, (resp, err) => {
+      if(resp){
         this.setState({
           donations: resp.data,
           isLoadingDonations: false,
           errorLoadingDonations: false
-        })})
-      .catch(() =>
+        })
+      } else {
         this.setState({ isLoadingDonations: false, errorLoadingDonations: true })
-      )      
+      }
+    })      
   }
 
   render() {

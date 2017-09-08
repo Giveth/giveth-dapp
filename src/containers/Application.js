@@ -9,8 +9,6 @@ import loadAndWatchFeatherJSResource from '../lib/loadAndWatchFeatherJSResource'
 import { feathersClient } from "../lib/feathersClient";
 import GivethWallet from '../lib/GivethWallet';
 
-import AppGlobals from './../containers/App'
-
 // views
 import Profile from './../components/views/Profile'
 import UserWallet from './../components/views/UserWallet'
@@ -76,7 +74,7 @@ class Application extends Component {
 
     // we need this global to make opening the unlockWalletModal possible from anywhere in the app
     React.unlockWallet = this.unlockWallet.bind(this);
-    AppGlobals.unlockWallet = this.unlockWallet.bind(this);
+    React.unlockWallet = this.unlockWallet.bind(this);
   }
 
   componentWillMount() {
@@ -88,7 +86,7 @@ class Application extends Component {
 
     Promise.all([
       new Promise((resolve, reject) => {
-        new loadAndWatchFeatherJSResource('causes', {}, (resp, err) => {
+        new loadAndWatchFeatherJSResource('causes', { query: {} }, (resp, err) => {
           if (resp) {
             this.setState({ causes: resp })
             resolve()
@@ -99,7 +97,7 @@ class Application extends Component {
       })
       ,
       new Promise((resolve, reject) => {
-        new loadAndWatchFeatherJSResource('campaigns', {}, (resp, err) => {
+        new loadAndWatchFeatherJSResource('campaigns', { query: {} }, (resp, err) => {
           if (resp) {
             this.setState({ campaigns: resp })
             resolve()

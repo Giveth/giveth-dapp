@@ -1,7 +1,7 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 
-import { socket, feathersClient } from '../../lib/feathersClient'
+import { feathersClient } from '../../lib/feathersClient'
 import { paramsForServer } from 'feathers-hooks-common'
 
 import Loader from '../Loader'
@@ -36,22 +36,19 @@ class ViewCampaign extends Component {
   }  
 
   componentDidMount() {
-    this.setState({ id: this.props.match.params.id })
+    const campaignId = this.props.match.params.id
+
+    this.setState({ id: campaignId })
 
     Promise.all([
       new Promise((resolve, reject) => {
-        socket.emit('campaigns::find', {_id: this.props.match.params.id}, (error, resp) => {      
-          console.log(resp)
-          if(resp) {
-            this.setState(resp.data[0], resolve())   
-          } else {
-            this.setState({ hasError: true }, reject())
-          }
-        })
+        feathersClient.service('campaigns').find({ query: {_id: campaignId }})
+          .then(resp => this.setState(resp.data[0], resolve()))
+          .catch(() => this.setState({ hasError: true }, reject()))
       })
     ,
       new Promise((resolve, reject) => {
-        new loadAndWatchFeatherJSResource('milestones', {campaignId: this.props.match.params.id}, (resp, err) => {
+        new loadAndWatchFeatherJSResource('milestones', {campaignId: campaignId}, (resp, err) => {
           console.log(err, resp)
           if(resp){
             this.setState({ milestones: resp.data }, resolve())
@@ -64,24 +61,27 @@ class ViewCampaign extends Component {
       .catch((e) => {
         console.log('error loading', e)
         this.setState({ isLoading: false, hasError: true })        
-      })   
+      })  
 
 
-    // lazy load donations
-    feathersClient.service('donations').find(paramsForServer({ 
-        query: { type_id: this.props.match.params.id },
-        schema: 'includeDonorDetails'
-      }))
-      .then(resp => {
-        console.log(resp.data)
+    // lazy load donations             
+    const query = paramsForServer({ 
+      query: { type_id: campaignId },
+      schema: 'includeDonorDetails'
+    })  
+
+    new loadAndWatchFeatherJSResource('donations', query, (resp, err) => {
+      if(resp){
         this.setState({
           donations: resp.data,
           isLoadingDonations: false,
           errorLoadingDonations: false
-        })})
-      .catch(() =>
+        })
+      } else {
         this.setState({ isLoadingDonations: false, errorLoadingDonations: true })
-      )           
+      }
+    })  
+
   }
 
   removeMilestone(id){

@@ -1,6 +1,4 @@
 import React from 'react'
-import AppGlobals from '../containers/App'
-
 
 /* check if currentUser is authenticated. If not, routes back. If yes, resolves returned promise
  *
@@ -36,7 +34,7 @@ export const isAuthenticated = (currentUser, history, wallet) => {
 export const redirectAfterWalletUnlock = (to, wallet, history) => {
   console.log(wallet)
   if (!wallet || (wallet && !wallet.unlocked)) {
-    AppGlobals.unlockWallet(to)
+    React.unlockWallet(to)
   } else {
     history.push(to)
   }
