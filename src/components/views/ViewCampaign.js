@@ -48,7 +48,7 @@ class ViewCampaign extends Component {
       })
     ,
       new Promise((resolve, reject) => {
-        feathersClient.service('milestones').watch({ strategy: 'always' }).find({ query: {campaignId: campaignId}}).subscribe(
+        this.milestoneObserver = feathersClient.service('milestones').watch({ strategy: 'always' }).find({ query: {campaignId: campaignId}}).subscribe(
           resp => this.setState({ milestones: resp.data }, resolve()),
           err => reject()
         )    
@@ -66,7 +66,7 @@ class ViewCampaign extends Component {
       schema: 'includeDonorDetails'
     });
 
-    feathersClient.service('donations').watch({ listStrategy: 'always' }).find(query).subscribe(
+    this.donationsObserver = feathersClient.service('donations').watch({ listStrategy: 'always' }).find(query).subscribe(
       resp =>
         this.setState({
           donations: resp.data,
@@ -76,8 +76,12 @@ class ViewCampaign extends Component {
       err =>
         this.setState({ isLoadingDonations: false, errorLoadingDonations: true })
     ) 
-
   }
+
+  componentWillUnmount() {
+    this.donationsObserver.unsubscribe()
+    this.milestoneObserver.unsubscribe()
+  } 
 
   removeMilestone(id){
     React.swal({

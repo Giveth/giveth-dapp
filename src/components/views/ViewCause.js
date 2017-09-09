@@ -54,7 +54,7 @@ class ViewCause extends Component {
       schema: 'includeDonorDetails'
     })  
 
-    feathersClient.service('donations').watch({ listStrategy: 'always' }).find(query).subscribe(
+    this.donationsObserver = feathersClient.service('donations').watch({ listStrategy: 'always' }).find(query).subscribe(
       resp =>
         this.setState({
           donations: resp.data,
@@ -64,6 +64,10 @@ class ViewCause extends Component {
       err => this.setState({ isLoadingDonations: false, errorLoadingDonations: true })
     )    
   }
+
+  componentWillUnmount() {
+    this.donationsObserver.unsubscribe()
+  }  
 
   render() {
     const { history } = this.props
