@@ -50,8 +50,8 @@ class DonateButton extends Component {
       } else {
         React.swal("You're awesome!", "You're donation has been received. Please make sure to join the community to follow progess of this project.", 'success')
       }
-      this.refs.donateDialog.hide()
     }).catch((e) => {
+      console.log(e)
       React.swal("Oh no!", "Something went wrong with the transaction. Please try again.", 'error')
       this.setState({ isSaving: false })
     })
