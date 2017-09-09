@@ -5,7 +5,6 @@ import localforage from 'localforage';
 import { ToastContainer, toast } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.min.css'
 
-import loadAndWatchFeatherJSResource from '../lib/loadAndWatchFeatherJSResource'
 import { feathersClient } from "../lib/feathersClient";
 import GivethWallet from '../lib/GivethWallet';
 
@@ -80,37 +79,26 @@ class Application extends Component {
   componentWillMount() {
     // Load causes and campaigns. When we receive first data, we finish loading.
     // This setup is a little ugly, because the callback is being called 
-    // again and again by loadAndWatchFeatherJSResource whenever data changes.
-    // Yet the promise will be resolved the first time.
+    // again and again whenever data changes. Yet the promise will be resolved the first time.
     // But he, it works! ;-)
 
     Promise.all([
       new Promise((resolve, reject) => {
-        new loadAndWatchFeatherJSResource('causes', { query: {} }, (resp, err) => {
-          if (resp) {
-            this.setState({ causes: resp })
-            resolve()
-          } else {
-            reject()
-          }
-        })
+        feathersClient.service('causes').watch({ strategy: 'always' }).find().subscribe(
+          resp => this.setState({ causes: resp }, resolve()),
+          err => reject()
+        )
       })
-      ,
+    ,
       new Promise((resolve, reject) => {
-        new loadAndWatchFeatherJSResource('campaigns', { query: {} }, (resp, err) => {
-          if (resp) {
-            this.setState({ campaigns: resp })
-            resolve()
-          } else {
-            reject()
-          }
-        })
+        feathersClient.service('campaigns').watch({ strategy: 'always' }).find().subscribe(
+          resp => this.setState({ campaigns: resp }, resolve()),
+          err => reject()
+
+        )
       })
-    ]).then(() => this.setState({ isLoading: false, hasError: false }))
-      .catch((e) => {
-        console.log('error loading', e)
-        this.setState({ isLoading: false, hasError: true })
-      });
+    ]).then( () => this.setState({ isLoading: false, hasError: false }))
+      .catch( e => this.setState({ isLoading: false, hasError: true }))
 
     // Load the wallet if it is cached
     GivethWallet.getCachedKeystore()

@@ -7,7 +7,6 @@ import { paramsForServer } from 'feathers-hooks-common'
 import Loader from '../Loader'
 import { Link } from 'react-router-dom'
 import Milestone from '../Milestone'
-import loadAndWatchFeatherJSResource from '../../lib/loadAndWatchFeatherJSResource'
 import GoBackButton from '../GoBackButton'
 import { isOwner } from '../../lib/helpers'
 import BackgroundImageHeader from '../BackgroundImageHeader'
@@ -49,14 +48,10 @@ class ViewCampaign extends Component {
       })
     ,
       new Promise((resolve, reject) => {
-        new loadAndWatchFeatherJSResource('milestones', {campaignId: campaignId}, (resp, err) => {
-          console.log(err, resp)
-          if(resp){
-            this.setState({ milestones: resp.data }, resolve())
-          } else {
-            reject()           
-          }
-        })         
+        feathersClient.service('milestones').watch({ strategy: 'always' }).find({ query: {campaignId: campaignId}}).subscribe(
+          resp => this.setState({ milestones: resp.data }, resolve()),
+          err => reject()
+        )    
       })
     ]).then(() => this.setState({ isLoading: false, hasError: false }))
       .catch((e) => {
@@ -71,21 +66,17 @@ class ViewCampaign extends Component {
       schema: 'includeDonorDetails'
     });
 
-    // TODO rewrite feathers-reactive 'smart' strategy to re-fetch the updated object if $client params are present
-    feathersClient.service('/donations').watch({ listStrategy: 'always' }).find(query)
-      .subscribe(resp => {
+    feathersClient.service('donations').watch({ listStrategy: 'always' }).find(query).subscribe(
+      resp =>
         this.setState({
           donations: resp.data,
           isLoadingDonations: false,
           errorLoadingDonations: false
-        },
-        err => {
-          if (err) {
-            console.log('donations error ->', err);
-            this.setState({ isLoadingDonations: false, errorLoadingDonations: true })
-          }
-        })
-      })
+        }),
+      err =>
+        this.setState({ isLoadingDonations: false, errorLoadingDonations: true })
+    ) 
+
   }
 
   removeMilestone(id){

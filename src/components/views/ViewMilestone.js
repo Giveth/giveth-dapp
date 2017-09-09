@@ -3,7 +3,6 @@ import PropTypes from 'prop-types'
 import { Link } from 'react-router-dom'
 
 import { feathersClient } from './../../lib/feathersClient'
-import loadAndWatchFeatherJSResource from '../../lib/loadAndWatchFeatherJSResource'
 import { paramsForServer } from 'feathers-hooks-common'
 
 import Loader from './../Loader'
@@ -54,18 +53,16 @@ class ViewMilestone extends Component {
       query: { type_id: milestoneId },
       schema: 'includeDonorDetails'
     })  
-
-    new loadAndWatchFeatherJSResource('donations', query, (resp, err) => {
-      if(resp){
+    
+    feathersClient.service('donations').watch({ listStrategy: 'always' }).find(query).subscribe(
+      resp =>
         this.setState({
           donations: resp.data,
           isLoadingDonations: false,
           errorLoadingDonations: false
-        })
-      } else {
-        this.setState({ isLoadingDonations: false, errorLoadingDonations: true })
-      }
-    })       
+        }),
+      err => this.setState({ isLoadingDonations: false, errorLoadingDonations: true })
+    )     
 
   }
 
