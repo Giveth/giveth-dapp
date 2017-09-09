@@ -78,11 +78,8 @@ class ViewMilestone extends Component {
           description, 
           recipientAddress, 
           reviewerAddress, 
-          ownerAddress,
           completionDeadline, 
           image,
-          donationsReceived,
-          donationsGiven,
           donations,
           isLoadingDonations,
           owner
@@ -103,43 +100,47 @@ class ViewMilestone extends Component {
               <DonateButton type="milestone" model={{ title: title, _id: id }}/>
             </BackgroundImageHeader>
 
-            <div className="row">
-              <div className="col-md-8 m-auto">
-                <div>
-                  <GoBackButton history={history}/>
+            <div className="container-fluid">
 
-                  <center>
-                    <Link to={`/profile/${ owner.address }`}>
-                      <Avatar size={50} src={owner.avatar} round={true}/>                  
-                      <p className="small">{owner.name}</p>
-                    </Link> 
-                  </center>
+              <div className="row">
+                <div className="col-md-8 m-auto">
+                  <div>
+                    <GoBackButton history={history}/>
 
-                  <div className="card content-card">
-                    <div className="card-body content">
-                      <div dangerouslySetInnerHTML={{__html: description}}></div>
-                    </div>
-                  </div>              
+                    <center>
+                      <Link to={`/profile/${ owner.address }`}>
+                        <Avatar size={50} src={owner.avatar} round={true}/>                  
+                        <p className="small">{owner.name}</p>
+                      </Link> 
+                    </center>
+
+                    <div className="card content-card">
+                      <div className="card-body content">
+                        <div dangerouslySetInnerHTML={{__html: description}}></div>
+                      </div>
+                    </div>              
+                  </div>
                 </div>
-              </div>
-            </div>  
+              </div>  
 
-            <div className="row spacer-top-50">
-              <div className="col-md-8 m-auto">  
-                <h4>Details</h4>
-                <p>Reviewer address: {reviewerAddress}</p>
-                <p>Recipient address: {recipientAddress}</p>
-                <p>Completion deadline: {completionDeadline}</p>             
-              </div>
-            </div>                          
+              <div className="row spacer-top-50">
+                <div className="col-md-8 m-auto">  
+                  <h4>Details</h4>
+                  <p>Reviewer address: {reviewerAddress}</p>
+                  <p>Recipient address: {recipientAddress}</p>
+                  <p>Completion deadline: {completionDeadline}</p>             
+                </div>
+              </div>                          
 
-            <div className="row spacer-top-50 spacer-bottom-50">
-              <div className="col-md-8 m-auto">    
-                <h4>Donations</h4>        
-                <ShowTypeDonations donations={donations} isLoading={isLoadingDonations} />  
-                <DonateButton type="milestone" model={{ title: title, _id: id }}/>
-              </div>
-            </div> 
+              <div className="row spacer-top-50 spacer-bottom-50">
+                <div className="col-md-8 m-auto">    
+                  <h4>Donations</h4>        
+                  <ShowTypeDonations donations={donations} isLoading={isLoadingDonations} />  
+                  <DonateButton type="milestone" model={{ title: title, _id: id }}/>
+                </div>
+              </div> 
+
+            </div>
           </div>                
         }
       </div>

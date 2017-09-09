@@ -87,35 +87,38 @@ class ViewCause extends Component {
               <DonateButton type="DAC" model={{ title: title, _id: id }}/>
             </BackgroundImageHeader>
 
-            <div className="row">
-              <div className="col-md-8 m-auto">
+            <div className="container-fluid">
 
-                <GoBackButton history={history}/>
+              <div className="row">
+                <div className="col-md-8 m-auto">
 
-                <center>
-                  <Link to={`/profile/${ owner.address }`}>
-                    <Avatar size={50} src={owner.avatar} round={true}/>                  
-                    <p className="small">{owner.name}</p>
-                  </Link>   
-                </center>              
+                  <GoBackButton history={history}/>
 
-                <div className="card content-card ">
-                  <div className="card-body content">
-                    <div dangerouslySetInnerHTML={{__html: description}}></div>
+                  <center>
+                    <Link to={`/profile/${ owner.address }`}>
+                      <Avatar size={50} src={owner.avatar} round={true}/>                  
+                      <p className="small">{owner.name}</p>
+                    </Link>   
+                  </center>              
+
+                  <div className="card content-card">
+                    <div className="card-body content">
+                      <div dangerouslySetInnerHTML={{__html: description}}></div>
+                    </div>
                   </div>
+
                 </div>
+              </div>   
 
-              </div>
-            </div>   
+              <div className="row spacer-top-50 spacer-bottom-50">
+                <div className="col-md-8 m-auto">    
+                  <h4>Donations</h4>        
+                  <ShowTypeDonations donations={donations} isLoading={isLoadingDonations} />  
+                  <DonateButton type="DAC" model={{ title: title, _id: id }}/>
+                </div>
+              </div>    
 
-            <div className="row spacer-top-50 spacer-bottom-50">
-              <div className="col-md-8 m-auto">    
-                <h4>Donations</h4>        
-                <ShowTypeDonations donations={donations} isLoading={isLoadingDonations} />  
-                <DonateButton type="DAC" model={{ title: title, _id: id }}/>
-              </div>
-            </div>          
-
+            </div>      
           </div>             
         }
       </div>
