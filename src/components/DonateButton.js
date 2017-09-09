@@ -45,6 +45,11 @@ class DonateButton extends Component {
         isSaving: false,
         amount: 10
       })
+
+      // For some reason (I suspect a rerender when donations are being fetched again) 
+      // the skylight dialog is sometimes gone and this throws error
+      if(this.refs.donateDialog) this.refs.donateDialog.hide()
+
       if(this.props.type === "DAC") {
         React.swal("You're awesome!", "You're donation has been received. As long as the organizer doesn't lock your money you can take it back any time. Please make sure you join the community to follow progress of this DAC.", 'success')
       } else {
