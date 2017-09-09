@@ -34,6 +34,41 @@
       max-width: 100%;
     }
   }
+
+  &.content-card {
+    position: relative;
+
+    .card-body {
+      box-shadow: none;
+      border: none;
+    }
+
+    &:after {
+      position: absolute;
+      content: "";
+      width: 0;
+      height: 0;
+      border-style: solid;
+      border-width: 0 10px 12px 10px;
+      border-color: transparent transparent white transparent;
+      top: -12px;
+      left: 50%;
+      margin-left: -10px;
+    }
+
+    &:before {
+      position: absolute;
+      content: "";
+      width: 0;
+      height: 0;
+      border-style: solid;
+      border-width: 0 12px 14px 12px;
+      border-color: transparent transparent #dfdfdf transparent;
+      top: -14px;
+      left: 50%;
+      margin-left: -12px;      
+    }
+  }
 }
 
 .card-view {

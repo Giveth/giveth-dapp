@@ -45,8 +45,14 @@ class DonateButton extends Component {
         isSaving: false,
         amount: 10
       })
+      if(this.props.type === "DAC") {
+        React.swal("You're awesome!", "You're donation has been received. As long as the organizer doesn't lock your money you can take it back any time. Please make sure you join the community to follow progress of this DAC.", 'success')
+      } else {
+        React.swal("You're awesome!", "You're donation has been received. Please make sure to join the community to follow progess of this project.", 'success')
+      }
       this.refs.donateDialog.hide()
     }).catch((e) => {
+      React.swal("Oh no!", "Something went wrong with the transaction. Please try again.", 'error')
       this.setState({ isSaving: false })
     })
   }   

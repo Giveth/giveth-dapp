@@ -108,7 +108,7 @@ class ViewCampaign extends Component {
     let { isLoading, id, title, description, image, milestones, owner, donations, isLoadingDonations } = this.state
 
     return (
-      <div id="view-campaign-view" className="card-view">
+      <div id="view-campaign-view">
         { isLoading && 
           <Loader className="fixed"/>
         }
@@ -116,10 +116,6 @@ class ViewCampaign extends Component {
         { !isLoading &&
           <div>
             <BackgroundImageHeader image={image} height={300} >
-              <Link to={`/profile/${ owner.address }`}>
-                <Avatar size={50} src={owner.avatar} round={true}/>                  
-                <p className="small">{owner.name}</p>
-              </Link> 
               <h6>Campaign</h6>
               <h1>{title}</h1>
 
@@ -131,36 +127,43 @@ class ViewCampaign extends Component {
 
                 <GoBackButton history={history}/>
 
-                <div className="content">
-                  <h2>About this Campaign</h2>
-                  <div dangerouslySetInnerHTML={{__html: description}}></div>
-                </div>            
+                <center>
+                  <Link to={`/profile/${ owner.address }`}>
+                    <Avatar size={50} src={owner.avatar} round={true}/>                  
+                    <p className="small">{owner.name}</p>
+                  </Link>
+                </center>                
 
-                <hr/>
-
-                <div className="milestone-header">
+                <div className="card content-card ">
+                  <div className="card-body content">
+                    <div dangerouslySetInnerHTML={{__html: description}}></div>
+                  </div>
+                </div>                
+      
+                <div className="milestone-header spacer-top-50 card-view">
                   <h3>Milestones</h3>
                   { isOwner(owner.address, currentUser) && 
                     <AuthenticatedLink className="btn btn-primary btn-sm pull-right" to={`/campaigns/${ id }/milestones/new`} wallet={wallet}>Add Milestone</AuthenticatedLink>
                   }
-                </div>
 
-                {milestones.length > 0 && milestones.map((m, i) => 
-                  <Milestone 
-                    model={m} 
-                    currentUser={currentUser}
-                    key={i}
-                    history={history} 
-                    wallet={wallet}
-                    removeMilestone={()=>this.removeMilestone(m._id)}/>
-                )}
+                  {milestones.length > 0 && milestones.map((m, i) => 
+                    <Milestone 
+                      model={m} 
+                      currentUser={currentUser}
+                      key={i}
+                      history={history} 
+                      wallet={wallet}
+                      removeMilestone={()=>this.removeMilestone(m._id)}/>
+                  )}
+                </div>
               </div>
             </div>
 
-            <div className="row">
+            <div className="row spacer-top-50 spacer-bottom-50">
               <div className="col-md-8 m-auto">    
                 <h4>Donations</h4>        
                 <ShowTypeDonations donations={donations} isLoading={isLoadingDonations} />  
+                <DonateButton type="campaign" model={{ title: title, _id: id }}/>
               </div>
             </div>              
           </div>
