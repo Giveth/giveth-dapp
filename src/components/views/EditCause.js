@@ -15,10 +15,10 @@ import { getTruncatedText } from '../../lib/helpers'
  * Create or edit a cause (DAC)
  *
  *  @props
- *    isNew (bool):  
+ *    isNew (bool):
  *      If set, component will load an empty model.
  *      If not set, component expects an id param and will load a cause object from backend
- *    
+ *
  *  @params
  *    id (string): an id of a cause object
  */
@@ -34,17 +34,17 @@ class EditCause extends Component {
       // DAC model
       title: '',
       description: '',
-      summary: '',      
+      summary: '',
       image: '',
-      videoUrl: '',  
+      videoUrl: '',
       ownerAddress: null,
       uploadNewImage: false
 
     }
 
     this.submit = this.submit.bind(this)
-    this.setImage = this.setImage.bind(this)        
-  }  
+    this.setImage = this.setImage.bind(this)
+  }
 
   componentDidMount() {
     isAuthenticated(this.props.currentUser, this.props.history, this.props.wallet).then(()=> {
@@ -55,13 +55,13 @@ class EditCause extends Component {
               this.props.history.goBack()
             } else {
               this.setState(Object.assign({}, resp.data[0], {
-                id: this.props.match.params.id,       
+                id: this.props.match.params.id,
                 isLoading: false
-              }), this.focusFirstInput())  
+              }), this.focusFirstInput())
             }
           })
           .catch(()=>
-            this.setState( { 
+            this.setState( {
               isLoading: false,
               hasError: true
             }))
@@ -93,13 +93,13 @@ class EditCause extends Component {
     return this.state.description.length > 0 && this.state.title.length > 10 && this.state.image.length > 0
   }
 
-  submit(model) {  
+  submit(model) {
     this.setState({ isSaving: true })
 
     const afterEmit = (isNew) => {
       this.setState({ isSaving: false })
       isNew ? React.toast.success("Your DAC was created!") : React.toast.success("Your DAC has been updated!")
-      this.props.history.push('/dacs')     
+      this.props.history.push('/dacs')
     }
 
     const updateDAC = (file) => {
@@ -108,15 +108,15 @@ class EditCause extends Component {
         description: model.description,
         summary: getTruncatedText(this.state.summary, 200),
         image: file,
-      } 
+      }
 
       if(this.props.isNew){
         feathersClient.service('causes').create(constructedModel)
           .then(()=> afterEmit(true))
       } else {
         feathersClient.service('causes').patch(this.state.id, constructedModel)
-          .then(()=> afterEmit())        
-      }      
+          .then(()=> afterEmit())
+      }
     }
 
     if(this.state.uploadNewImage) {
@@ -124,7 +124,7 @@ class EditCause extends Component {
     } else {
       updateDAC()
     }
-  } 
+  }
 
   goBack(){
     this.props.history.push('/causes')
@@ -132,7 +132,7 @@ class EditCause extends Component {
 
   constructSummary(text){
     this.setState({ summary: text})
-  }  
+  }
 
   render(){
     const { isNew, history } = this.props
@@ -143,16 +143,16 @@ class EditCause extends Component {
           <div className="container-fluid page-layout">
             <div className="row">
               <div className="col-md-8 m-auto">
-                { isLoading && 
+                { isLoading &&
                   <Loader className="fixed"/>
                 }
-                
+
                 { !isLoading &&
                   <div>
                     <GoBackButton history={history}/>
 
                     { isNew &&
-                      <h1>Start a Democratic Autonomous Charity!</h1>
+                      <h1>Start a Decentralized Altruistic Community!</h1>
                     }
 
                     { !isNew &&
@@ -173,24 +173,24 @@ class EditCause extends Component {
                           validations="minLength:10"
                           validationErrors={{
                               minLength: 'Please provide at least 10 characters.'
-                          }}                    
+                          }}
                           required
                         />
                       </div>
 
                       <div className="form-group">
-                        <QuillFormsy 
+                        <QuillFormsy
                           name="description"
                           label="What cause are you solving?"
                           value={description}
                           placeholder="Describe your cause..."
-                          onTextChanged={(content)=>this.constructSummary(content)}                          
-                          validations="minLength:10"  
-                          help="Describe your cause."   
+                          onTextChanged={(content)=>this.constructSummary(content)}
+                          validations="minLength:10"
+                          help="Describe your cause."
                           validationErrors={{
                               minLength: 'Please provide at least 10 characters.'
-                          }}                    
-                          required                                        
+                          }}
+                          required
                         />
                       </div>
 
@@ -199,7 +199,7 @@ class EditCause extends Component {
                       <button className="btn btn-success" formNoValidate={true} type="submit" disabled={isSaving || !this.isValid()}>
                         {isSaving ? "Saving..." : "Save DAC"}
                       </button>
-                                     
+
                     </Form>
                   </div>
                 }

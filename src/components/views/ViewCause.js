@@ -82,7 +82,7 @@ class ViewCause extends Component {
         { !isLoading &&
           <div>
             <BackgroundImageHeader image={image} height={300} >
-              <h6>Democratic Autonomous Charity</h6>
+              <h6>Decentralized Altruistic Community</h6>
               <h1>{title}</h1>
               
               <DonateButton type="DAC" model={{ title: title, _id: id }}/>
