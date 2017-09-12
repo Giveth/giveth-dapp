@@ -11,11 +11,11 @@ class DonateButton extends Component {
     this.state = {
       isSaving: false,
       formIsValid: false,
-      amount: 10 
+      amount: 10
     }
 
     this.submit = this.submit.bind(this)
-  }  
+  }
 
 
   openDialog(){
@@ -23,15 +23,15 @@ class DonateButton extends Component {
   }
 
   focusInput(){
-    this.refs.amount.element.focus()    
+    this.refs.amount.element.focus()
   }
 
   toggleFormValid(state) {
     this.setState({ formIsValid: state })
-  }  
+  }
 
 
-  submit(model) {    
+  submit(model) {
     console.log(model, this.props.type.toLowerCase(), this.props.model._id)
 
     this.setState({ isSaving: true })
@@ -41,12 +41,12 @@ class DonateButton extends Component {
       type: this.props.type.toLowerCase(),
       type_id: this.props.model._id,
     }).then(user => {
-      this.setState({ 
+      this.setState({
         isSaving: false,
         amount: 10
       })
 
-      // For some reason (I suspect a rerender when donations are being fetched again) 
+      // For some reason (I suspect a rerender when donations are being fetched again)
       // the skylight dialog is sometimes gone and this throws error
       if(this.refs.donateDialog) this.refs.donateDialog.hide()
 
@@ -60,7 +60,7 @@ class DonateButton extends Component {
       React.swal("Oh no!", "Something went wrong with the transaction. Please try again.", 'error')
       this.setState({ isSaving: false })
     })
-  }   
+  }
 
 
   render(){
@@ -70,8 +70,8 @@ class DonateButton extends Component {
     return(
       <span>
         <a className="btn btn-success" onClick={() => this.openDialog()}>
-          GivETH
-        </a>  
+          Donate
+        </a>
 
         <SkyLight hideOnOverlayClicked ref="donateDialog" title={`Support this ${type}!`} afterOpen={()=>this.focusInput()}>
           <h4>Give Ether to support {model.title}</h4>
@@ -93,20 +93,20 @@ class DonateButton extends Component {
                 validations="minLength:1"
                 validationErrors={{
                   minLength: 'Please enter an amount.'
-                }}                    
+                }}
                 required
               />
-            </div>        
+            </div>
 
             <button className="btn btn-success" formNoValidate={true} type="submit" disabled={isSaving || !formIsValid}>
               {isSaving ? "Saving..." : "Donate ETH"}
-            </button>            
+            </button>
           </Form>
 
         </SkyLight>
-      </span>    
+      </span>
     )
-  }  
+  }
 }
 
 export default DonateButton
