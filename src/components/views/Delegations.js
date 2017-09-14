@@ -2,9 +2,10 @@ import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 
 import { feathersClient } from '../../lib/feathersClient'
-// import { paramsForServer } from 'feathers-hooks-common'
+import { paramsForServer } from 'feathers-hooks-common'
 import Loader from '../Loader'
 import { isAuthenticated } from '../../lib/middleware'
+
 /**
   The my delegations view
 **/
@@ -15,28 +16,64 @@ class Delegations extends Component {
 
     this.state = {
       isLoading: true,
-      delegations: [],
+      hasError: false,
+      causes: [],
+      delegations: []
     }    
   }
 
   componentDidMount() {
-    isAuthenticated(this.props.currentUser, this.props.history).then(()=>{
-      feathersClient.service('causes').find({query: { ownerAddress: this.props.currentUser }})
-        .then(resp => {
+    isAuthenticated(this.props.currentUser, this.props.history).then(() => {
+      this.causesObserver = feathersClient.service('causes').watch({ strategy: 'always' }).find({query: { ownerAddress: this.props.currentUser }}).subscribe(
+        resp => {
           console.log(resp)
           this.setState({
-            delegations: resp.data,
+            causes: resp.data,
             hasError: false,
             isLoading: false
-          })})
-        .catch(() => 
+          })
+
+          this.getAndWatchDonations()
+        },
+
+        err =>
           this.setState({
             isLoading: false,
             hasError: true
-          }));       
-      
+          })
+      )  
     })    
   }
+
+  getAndWatchDonations() {
+    const causesIds = this.state.causes.map(c => c['_id'])
+
+    const query = paramsForServer({
+      query: { 
+        type_id: { $in: causesIds },
+        status: 'waiting'      
+      },
+      schema: 'includeDonorDetails'
+    });
+
+    this.donationsObserver = feathersClient.service('donations').watch({ listStrategy: 'always' }).find(query).subscribe(
+      resp => {
+        console.log(resp)
+        this.setState({
+          delegations: resp.data,
+          isLoading: false,
+          hasError: false
+        })},
+      err =>
+        this.setState({ isLoading: false, hasError: true })
+    )             
+  }
+
+  componentWillUnmount() {
+    if(this.donationsObserver) this.donationsObserver.unsubscribe()
+    this.causesObserver.unsubscribe()
+  } 
+
 
 
   render() {
@@ -90,7 +127,7 @@ class Delegations extends Component {
                     }
 
                     { delegations && delegations.length === 0 &&
-                      <center>You didn't make any delegations yet!</center>
+                      <center>There's nothing to delegate yet!</center>
                     }
 
                   </div>
