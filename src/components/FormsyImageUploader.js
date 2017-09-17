@@ -65,7 +65,7 @@ class FormsyImageUploader extends Component {
             validationErrors={{
               isExisty: "Please select an image file."
             }}                
-            required
+            required={this.props.isRequired}
           />
         </div> 
       </div>     

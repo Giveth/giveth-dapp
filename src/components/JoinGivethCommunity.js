@@ -3,6 +3,8 @@ import PropTypes from 'prop-types';
 
 import { Link } from 'react-router-dom'
 
+import CommunityButton from './CommunityButton'
+
 
 /**
   The join Giveth community top-bar
@@ -18,10 +20,9 @@ class JoinGivethCommunity extends Component {
           <center>
             <h3>Together we will save the world!</h3>
 
-            <a className="btn btn-success" href="https://giveth.slack.com/" target="_blank" rel="noopener noreferrer">
-              <i className="fa fa-slack"></i>
+            <CommunityButton className="btn btn-success" url="https://giveth.slack.com">
               &nbsp;Join Giveth
-            </a>
+            </CommunityButton>
             
             &nbsp;
 

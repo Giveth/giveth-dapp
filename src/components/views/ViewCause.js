@@ -12,6 +12,7 @@ import Avatar from 'react-avatar'
 import DonateButton from '../DonateButton'
 import ShowTypeDonations from '../ShowTypeDonations'
 
+import CommunityButton from '../CommunityButton'
 
 /**
   Loads and shows a single DAC
@@ -39,11 +40,12 @@ class ViewCause extends Component {
     this.setState({ id: dacId })
 
     feathersClient.service('causes').find({ query: {_id: dacId }})
-      .then(resp =>
+      .then(resp => {
+        console.log(resp)
         this.setState(Object.assign({}, resp.data[0], {  
           isLoading: false,
           hasError: false
-        })))
+        }))})
       .catch(() =>
         this.setState({ isLoading: false, hasError: true })
       )
@@ -71,7 +73,7 @@ class ViewCause extends Component {
 
   render() {
     const { history } = this.props
-    let { isLoading, id, title, description, image, owner, donations, isLoadingDonations } = this.state
+    let { isLoading, id, title, description, image, owner, donations, isLoadingDonations, communityUrl } = this.state
 
     return (
       <div id="view-cause-view">
@@ -86,6 +88,9 @@ class ViewCause extends Component {
               <h1>{title}</h1>
               
               <DonateButton type="DAC" model={{ title: title, _id: id }}/>
+              {communityUrl &&
+                <CommunityButton className="btn btn-secondary" url={communityUrl}>&nbsp;Join our community</CommunityButton>
+              }
             </BackgroundImageHeader>
 
             <div className="container-fluid">

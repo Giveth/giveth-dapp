@@ -12,6 +12,7 @@ import GoBackButton from '../GoBackButton'
 import { isOwner } from '../../lib/helpers'
 import { isAuthenticated } from '../../lib/middleware'
 import { getTruncatedText } from '../../lib/helpers'
+import LoaderButton from "../../components/LoaderButton"
 
 /**
  * Create or edit a campaign
@@ -33,6 +34,7 @@ class EditCampaign extends Component {
       isLoading: true,
       isSaving: false,
       hasError: false,
+      formIsValid: false,      
       causesOptions: [],
 
       // campaign model
@@ -41,6 +43,7 @@ class EditCampaign extends Component {
       summary: '',
       image: '',
       videoUrl: '',
+      communityUrl: '',      
       ownerAddress: null,
       milestones: [],
       causes: [],
@@ -102,7 +105,8 @@ class EditCampaign extends Component {
     return {
       'title': inputs.title,
       'description': inputs.description,
-      'causes': inputs.causes
+      'causes': inputs.causes,
+      'communityUrl': inputs.communityUrl
     }
   }  
 
@@ -128,6 +132,7 @@ class EditCampaign extends Component {
       const constructedModel = {
         title: model.title,
         description: model.description,
+        communityUrl: model.communityUrl,
         summary: getTruncatedText(this.state.summary, 200),
         image: file,
         causes: [ model.causes ],
@@ -149,6 +154,10 @@ class EditCampaign extends Component {
     }
   } 
 
+  toggleFormValid(state) {
+    this.setState({ formIsValid: state })
+  }    
+
   goBack(){
     this.props.history.push('/campaigns')
   }
@@ -159,7 +168,7 @@ class EditCampaign extends Component {
 
   render(){
     const { isNew, history } = this.props
-    let { isLoading, isSaving, title, description, image, causes, causesOptions } = this.state
+    let { isLoading, isSaving, title, description, image, causes, causesOptions, communityUrl, formIsValid } = this.state
 
     return(
         <div id="edit-campaign-view">
@@ -182,7 +191,7 @@ class EditCampaign extends Component {
                       <h1>Edit campaign {title}</h1>
                     }
 
-                    <Form onSubmit={this.submit} mapping={this.mapInputs} layout='vertical'>
+                    <Form onSubmit={this.submit} mapping={this.mapInputs} onValid={()=>this.toggleFormValid(true)} onInvalid={()=>this.toggleFormValid(false)} layout='vertical'>
                       <div className="form-group">
                         <Input
                           name="title"
@@ -217,7 +226,7 @@ class EditCampaign extends Component {
                         />
                       </div>
 
-                      <FormsyImageUploader setImage={this.setImage} previewImage={image}/>
+                      <FormsyImageUploader setImage={this.setImage} previewImage={image} required={isNew}/>
 
                       {/* TO DO: This needs to be replaced by something like http://react-autosuggest.js.org/ */}
                       <div className="form-group">
@@ -230,9 +239,32 @@ class EditCampaign extends Component {
                         />
                       </div>
 
-                      <button className="btn btn-success" formNoValidate={true} type="submit" disabled={isSaving || !this.isValid()}>
-                        {isSaving ? "Saving..." : "Save campaign"}
-                      </button>
+                      <div className="form-group">
+                        <Input
+                          name="communityUrl"
+                          id="community-url"
+                          ref="communityUrl"
+                          label="Url to join your community"
+                          type="text"
+                          value={communityUrl}
+                          placeholder="https://slack.giveth.com"
+                          help="Enter the url of your community"
+                          validations="isUrl"
+                          validationErrors={{
+                            isUrl: 'Please provide a url.'
+                          }}
+                        />
+                      </div>                      
+
+                      <LoaderButton
+                        className="btn btn-success btn-lg" 
+                        formNoValidate={true} 
+                        type="submit" 
+                        disabled={isSaving || !formIsValid}
+                        isLoading={isSaving}
+                        loadingText="Saving...">
+                        Save Campaign
+                      </LoaderButton>                         
                                      
                     </Form>
                   </div>

@@ -10,6 +10,8 @@ import GoBackButton from '../GoBackButton'
 import { isOwner } from '../../lib/helpers'
 import { isAuthenticated } from '../../lib/middleware'
 import { getTruncatedText } from '../../lib/helpers'
+import LoaderButton from "../../components/LoaderButton"
+import DatePickerFormsy from './../DatePickerFormsy'
 
 /**
  * Create or edit a milestone
@@ -31,6 +33,7 @@ class EditMilestone extends Component {
       isLoading: true,
       isSaving: false,
       hasError: false,
+      formIsValid: false,      
 
       // milestone model
       title: '',
@@ -90,6 +93,11 @@ class EditMilestone extends Component {
     this.setState({ image: image,  uploadNewImage: true })
   }
 
+  changeDate(moment) {
+    console.log('change date', moment.format('YYYY/MM/DD'))
+    this.setState({ completionDeadline: moment.format('YYYY/MM/DD') })
+  }
+
   mapInputs(inputs) {
     return {
       'title': inputs.title,
@@ -121,7 +129,7 @@ class EditMilestone extends Component {
         summary: getTruncatedText(this.state.summary, 200),        
         reviewerAddress: model.reviewerAddress,
         recipientAddress: model.recipientAddress,
-        completionDeadline: model.completionDeadline,
+        completionDeadline: this.state.completionDeadline,
         image: file,
         campaignId: this.state.campaignId
       }       
@@ -143,13 +151,17 @@ class EditMilestone extends Component {
     }
   } 
 
+  toggleFormValid(state) {
+    this.setState({ formIsValid: state })
+  }    
+
   constructSummary(text){
     this.setState({ summary: text})
   }    
 
   render(){
     const { isNew, history } = this.props
-    let { isLoading, isSaving, title, description, image, recipientAddress, reviewerAddress, completionDeadline } = this.state
+    let { isLoading, isSaving, title, description, image, recipientAddress, reviewerAddress, completionDeadline, formIsValid } = this.state
 
     return(
         <div id="edit-milestone-view">
@@ -172,7 +184,7 @@ class EditMilestone extends Component {
                       <h1>Edit milestone {title}</h1>
                     }
 
-                    <Form onSubmit={this.submit} mapping={this.mapInputs} onChange={this.change} layout='vertical'>
+                    <Form onSubmit={this.submit} mapping={this.mapInputs} onValid={()=>this.toggleFormValid(true)} onInvalid={()=>this.toggleFormValid(false)} layout='vertical'>
 
                       <div className="form-group">
                         <Input
@@ -206,7 +218,7 @@ class EditMilestone extends Component {
                         />
                       </div>
 
-                      <FormsyImageUploader setImage={this.setImage} previewImage={image}/>
+                      <FormsyImageUploader setImage={this.setImage} previewImage={image} required={isNew}/>
 
                       <Input
                         name="reviewerAddress"
@@ -236,26 +248,32 @@ class EditMilestone extends Component {
                             minLength: 'Please provide at least 10 characters.'
                         }}                    
                         required
-                      />   
+                      />                         
 
-                      <Input
+                      <DatePickerFormsy
                         name="completionDeadline"
-                        id="title-input"
-                        label="Recipient Address"
+                        label="Completion date"
                         type="text"
                         value={completionDeadline}
+                        changeDate={(date)=>this.changeDate(date)}
                         placeholder="When will the milestone be completed?"
                         help="Enter a date."
                         validations="minLength:10"
                         validationErrors={{
-                            minLength: 'Please provide at least 10 characters.'
+                            minLength: 'Please provide a date.'
                         }}                    
                         required
                       />   
                                               
-                      <button className="btn btn-success" formNoValidate={true} type="submit" disabled={isSaving || !this.isValid()}>
-                        {isSaving ? "Saving..." : "Save milestone"}
-                      </button>
+                      <LoaderButton
+                        className="btn btn-success btn-lg" 
+                        formNoValidate={true} 
+                        type="submit" 
+                        disabled={isSaving || !formIsValid}
+                        isLoading={isSaving}
+                        loadingText="Saving...">
+                        Save Milestone
+                      </LoaderButton>         
 
                     </Form>
                                          

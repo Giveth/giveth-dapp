@@ -66,9 +66,12 @@ class DonateButton extends Component {
   render(){
     const { type, model } = this.props
     let { isSaving, amount, formIsValid } = this.state
+    const style = {
+      display: 'inline-block'     
+    }
 
     return(
-      <span>
+      <span style={style}>
         <a className="btn btn-success" onClick={() => this.openDialog()}>
           Donate
         </a>
