@@ -24,13 +24,12 @@ class Delegations extends Component {
 
   componentDidMount() {
     isAuthenticated(this.props.currentUser, this.props.history).then(() => {
-      this.causesObserver = feathersClient.service('causes').watch({ strategy: 'always' }).find({query: { ownerAddress: this.props.currentUser }}).subscribe(
+      this.causesObserver = feathersClient.service('causes').watch({ strategy: 'always' }).find({query: { ownerAddress: this.props.currentUser, $select: [ 'title', '_id' ] }}).subscribe(
         resp => {
           console.log(resp)
           this.setState({
             causes: resp.data,
             hasError: false,
-            isLoading: false
           })
 
           this.getAndWatchDonations()
@@ -58,7 +57,13 @@ class Delegations extends Component {
 
     this.donationsObserver = feathersClient.service('donations').watch({ listStrategy: 'always' }).find(query).subscribe(
       resp => {
-        console.log(resp)
+
+        // join type with donations
+        resp.data.map((d)=> {
+          const cause = this.state.causes.find((c) => { return c._id === d.type_id })
+          return d = cause ? d.type_title = cause.title : d
+        })
+
         this.setState({
           delegations: resp.data,
           isLoading: false,
@@ -99,25 +104,26 @@ class Delegations extends Component {
                           <tr>
                             <th>Amount</th>
                             <th>To</th>
-                            <th>Name</th>
+                            <th>From</th>
                             <th>Address</th>
+                            <th>Status</th>
+                            <th></th>
                           </tr>
                         </thead>
                         <tbody>
                           { delegations.map((d, index) =>
                             <tr key={index}>
                               <td>{d.amount} ETH</td>
-                              <td>{d.type}</td>
-                              <td>
-                                {d.type === 'dac' && d.dac &&
-                                  <span>{d.dac.title}</span>
-                                }
-
-                                {d.type === 'campaign' && d.campaign &&
-                                  <span>{d.campaign.title}</span>
-                                }
-                              </td>
+                              <td>{d.type.toUpperCase()} <em>{d.type_title}</em></td>
+                              <td>{d.donor.name}</td>
                               <td>{d.donorAddress}</td>
+                              <td>{d.status}</td>
+                              <td>
+                                <button className="btn btn-sm btn-success">
+                                  Delegate
+                                </button>
+
+                              </td>
                             </tr>
                           )}
 

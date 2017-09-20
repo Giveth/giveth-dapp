@@ -32,8 +32,6 @@ class DonateButton extends Component {
 
 
   submit(model) {
-    console.log(model, this.props.type.toLowerCase(), this.props.model._id)
-
     this.setState({ isSaving: true })
 
     feathersClient.service('/donations').create({
