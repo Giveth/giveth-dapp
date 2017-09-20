@@ -2,13 +2,14 @@ import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 
 import { Form, Input } from 'formsy-react-components';
-import { socket, feathersClient } from './../../lib/feathersClient'
+import { feathersClient } from './../../lib/feathersClient'
 import Loader from './../Loader'
 import QuillFormsy from './../QuillFormsy'
 import FormsyImageUploader from './../FormsyImageUploader'
 import GoBackButton from '../GoBackButton'
 import { isOwner } from '../../lib/helpers'
 import { isAuthenticated } from '../../lib/middleware'
+import { getTruncatedText } from '../../lib/helpers'
 
 /**
  * Create or edit a milestone
@@ -42,7 +43,8 @@ class EditMilestone extends Component {
       donationsReceived: 0,
       donationsGiven: 0,
       completionDeadline: new Date(),
-      completionStatus: 'pending'      
+      completionStatus: 'pending',
+      uploadNewImage: false         
     }
 
     this.submit = this.submit.bind(this)
@@ -56,8 +58,9 @@ class EditMilestone extends Component {
 
       // load a single milestones (when editing)
       if(!this.props.isNew) {
-        socket.emit('milestones::find', {_id: this.props.match.params.milestoneId}, (error, resp) => {   
-          if(resp) { 
+        feathersClient.service('milestones').find({query: {_id: this.props.match.params.milestoneId}})
+          .then((resp) => {
+            console.log("resp", resp)
             if(!isOwner(resp.data[0].owner.address, this.props.currentUser)) {
               this.props.history.goBack()
             } else {         
@@ -67,13 +70,12 @@ class EditMilestone extends Component {
                 hasError: false
               }), this.focusFirstInput()) 
             }
-          } else {
+          })
+          .catch(()=>
             this.setState( { 
               isLoading: false,
               hasError: true
-            })
-          }
-        })  
+            }))
       } else {
         this.setState({ isLoading: false })
       }
@@ -85,7 +87,7 @@ class EditMilestone extends Component {
   }
 
   setImage(image) {
-    this.setState({ image: image })
+    this.setState({ image: image,  uploadNewImage: true })
   }
 
   mapInputs(inputs) {
@@ -104,32 +106,46 @@ class EditMilestone extends Component {
     return this.state.description.length > 0 && this.state.title.length > 10 && this.state.image.length > 0
   }
 
-  submit(model) {    
+  submit(model) {  
+    this.setState({ isSaving: true })
+
     const afterEmit = () => {
       this.setState({ isSaving: false })
       this.props.history.goBack()  
     }
 
-    this.setState({ isSaving: true })
-
-    feathersClient.service('/uploads').create({uri: this.state.image}).then(file => {
+    const updateMilestone = (file) => {
       const constructedModel = {
         title: model.title,
         description: model.description,
+        summary: getTruncatedText(this.state.summary, 200),        
         reviewerAddress: model.reviewerAddress,
         recipientAddress: model.recipientAddress,
         completionDeadline: model.completionDeadline,
-        image: file.url,
+        image: file,
         campaignId: this.state.campaignId
-      }    
+      }       
 
       if(this.props.isNew){
-        socket.emit('milestones::create', constructedModel, afterEmit)
+        feathersClient.service('milestones').create(constructedModel)
+          .then(()=> afterEmit(true))
       } else {
-        socket.emit('milestones::patch', this.state.id, constructedModel, afterEmit)
-      }
-    })
+        feathersClient.service('milestones').patch(this.state.id, constructedModel)
+          .then(()=> afterEmit())        
+      }         
+
+    }
+
+    if(this.state.uploadNewImage) {
+      feathersClient.service('/uploads').create({uri: this.state.image}).then(file => updateMilestone(file.url))
+    } else {
+      updateMilestone()
+    }
   } 
+
+  constructSummary(text){
+    this.setState({ summary: text})
+  }    
 
   render(){
     const { isNew, history } = this.props
@@ -180,6 +196,7 @@ class EditMilestone extends Component {
                           label="Description"
                           value={description}
                           placeholder="Describe your milestone..."
+                          onTextChanged={(content)=>this.constructSummary(content)}                                                    
                           validations="minLength:10"  
                           help="Describe your milestone."   
                           validationErrors={{

@@ -34,3 +34,13 @@ export const authenticate = wallet => {
     return response.accessToken;
   });
 };
+
+
+export const getTruncatedText = (text, maxLength) => {
+  if(text.length > maxLength) {
+    text = text.substr(0, maxLength)
+    const lastWhitespace = text.lastIndexOf(' ')
+    return text.substr(0, lastWhitespace) + "..."
+  }
+  return text
+}

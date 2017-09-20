@@ -42,10 +42,10 @@ class EditProfile extends Component {
 
   componentDidMount() {
     isAuthenticated(this.props.currentUser, this.props.history, this.props.wallet)
-      .then(() => feathersClient.service('/users').get(this.props.currentUser))
-      .then(user => this.setState(Object.assign({}, user, {
-          isLoading: false,
-        }), this.focusFirstInput()),
+      .then(() => feathersClient.service('users').find({query: {address: this.props.currentUser}}))
+      .then((resp) =>
+        this.setState(Object.assign({}, resp.data[0],
+          { isLoading: false })), this.focusFirstInput()
       )
       .catch(err => {
         console.log(err);
@@ -59,8 +59,8 @@ class EditProfile extends Component {
       });
   }
 
-  focusFirstInput() {
-    setTimeout(() => this.refs.name.element.focus(), 0)
+  focusFirstInput(){
+    setTimeout(() => this.refs.name.element.focus(), 200)
   }
 
   mapInputs(inputs) {
@@ -79,7 +79,7 @@ class EditProfile extends Component {
     this.setState({ isSaving: true })
 
     const updateUser = (file) => {
-      feathersClient.service('/users').update(this.props.currentUser, {
+      feathersClient.service('/users').patch(this.props.currentUser, {
         name: model.name,
         email: model.email,
         linkedIn: model.linkedIn,

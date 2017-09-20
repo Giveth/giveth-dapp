@@ -7,8 +7,9 @@ import ReactQuill from 'react-quill'
 const QuillFormsy = createReactClass({
   mixins: [Formsy.Mixin],
 
-  changeValue(value) {
+  changeValue(value, delta, source, editor) {
     this.setValue(value);
+    this.props.onTextChanged(editor.getText())
   },
 
   render() {

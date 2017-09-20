@@ -8,6 +8,7 @@
     "feathers-authentication-client": "^0.3.3",
     "feathers-client": "^2.3.0",
     "feathers-commons": "^0.8.7",
+    "feathers-hooks-common": "^3.7.2",
     "feathers-reactive": "^0.5.2",
     "formsy-react": "^0.19.5",
     "formsy-react-components": "^0.10.1",

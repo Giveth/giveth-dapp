@@ -1,36 +1,67 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 
-import { Link } from 'react-router-dom'
 import { isOwner } from './../lib/helpers'
+import { redirectAfterWalletUnlock } from './../lib/middleware'
 
 /**
   A single milestone
 **/
 
 class Milestone extends Component {
+
+  viewMilestone() {
+    this.props.history.push(`/campaigns/${ this.props.model.campaignId }/milestones/${ this.props.model._id}`)
+  }
+
+  removeMilestone(e) {
+    e.stopPropagation()
+    this.props.removeMilestone()
+  }
+
+  editMilestone(e) {
+    e.stopPropagation()
+
+    React.swal({
+      title: "Edit Milestone?",
+      text: "Are you sure you want to edit this milestone?",
+      type: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#DD6B55",
+      confirmButtonText: "Yes, continue editing!",
+      closeOnConfirm: true,
+    }, () => redirectAfterWalletUnlock(`/campaigns/${ this.props.model.campaignId }/milestones/${ this.props.model._id}/edit`, this.props.wallet, this.props.history))
+  }
+
   render(){
-    const { model, removeMilestone, currentUser } = this.props
+    const { model, currentUser } = this.props
 
     return(
-      <div className="card">
-        <img className="card-img-top" src={model.image} alt=""/>
+      <div className="card milestone-card" onClick={()=>this.viewMilestone()}>
         <div className="card-body">
-          <Link to={`/campaigns/${ model.campaignId }/milestones/${ model._id}`}>
-            <h4 className="card-title">{model.title}</h4>
-          </Link>
-          <div className="card-text" dangerouslySetInnerHTML={{__html: model.description}}></div>
-          
-          { isOwner(model.owner.address, currentUser) && 
-            <div>
-              <a className="btn btn-link" onClick={removeMilestone}>
-                <i className="fa fa-trash"></i>
-              </a>
-              <Link className="btn btn-link" to={`/campaigns/${ model.campaignId }/milestones/${ model._id}/edit`}>
-                <i className="fa fa-edit"></i>
-              </Link>
-            </div>
-          }
+          <table>
+            <tbody>
+              <tr>
+                <td className="milestone-image">
+                  <img src={model.image} alt=""/>
+                </td>
+                <td>
+                  <h4>{model.title}</h4>
+                  <p>{model.summary}</p>
+                  { isOwner(model.owner.address, currentUser) && 
+                    <div>
+                      <a className="btn btn-link" onClick={(e)=>this.removeMilestone(e)}>
+                        <i className="fa fa-trash"></i>
+                      </a>
+                      <a className="btn btn-link" onClick={(e)=>this.editMilestone(e)}>
+                        <i className="fa fa-edit"></i>
+                      </a>
+                    </div>
+                  }
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </div>
     )
@@ -42,5 +73,10 @@ export default Milestone
 Milestone.propTypes = {
   model: PropTypes.object.isRequired,
   removeMilestone: PropTypes.func.isRequired,
-  currentUser: PropTypes.string
+  currentUser: PropTypes.string,
+  history: PropTypes.object.isRequired,
+  wallet: PropTypes.shape({
+    unlocked: PropTypes.bool.isRequired,
+    unlock: PropTypes.func.isRequired,
+  })
 }

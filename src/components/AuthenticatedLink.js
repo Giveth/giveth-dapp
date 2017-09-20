@@ -15,9 +15,7 @@ class AuthenticatedLink extends Component {
       )
     } else {
       return (
-        <div>
-          <a className={className} onClick={()=>React.unlockWallet(to)}>{children}</a>
-        </div>
+        <button className={className} onClick={()=>React.unlockWallet(to)}>{children}</button>
       )
     }
   }

@@ -2,7 +2,7 @@ import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 
 import { Form, Input } from 'formsy-react-components';
-import { socket, feathersClient } from '../../lib/feathersClient'
+import { feathersClient } from '../../lib/feathersClient'
 import Loader from '../Loader'
 import QuillFormsy from '../QuillFormsy'
 import FormsyImageUploader from './../FormsyImageUploader'
@@ -10,15 +10,16 @@ import GoBackButton from '../GoBackButton'
 import { isOwner } from '../../lib/helpers'
 import { isAuthenticated } from '../../lib/middleware'
 import getNetwork from "../../lib/blockchain/getNetwork";
+import { getTruncatedText } from '../../lib/helpers'
 
 /**
  * Create or edit a cause (DAC)
  *
  *  @props
- *    isNew (bool):  
+ *    isNew (bool):
  *      If set, component will load an empty model.
  *      If not set, component expects an id param and will load a cause object from backend
- *    
+ *
  *  @params
  *    id (string): an id of a cause object
  */
@@ -34,35 +35,37 @@ class EditCause extends Component {
       // DAC model
       title: '',
       description: '',
+      summary: '',
       image: '',
-      videoUrl: '',  
-      ownerAddress: null      
+      videoUrl: '',
+      ownerAddress: null,
+      uploadNewImage: false
+
     }
 
     this.submit = this.submit.bind(this)
-    this.setImage = this.setImage.bind(this)        
-  }  
+    this.setImage = this.setImage.bind(this)
+  }
 
   componentDidMount() {
     isAuthenticated(this.props.currentUser, this.props.history, this.props.wallet).then(()=> {
       if(!this.props.isNew) {
-        socket.emit('causes::find', {_id: this.props.match.params.id}, (error, resp) => {    
-          if(resp) {
+        feathersClient.service('causes').find({query: {_id: this.props.match.params.id}})
+          .then((resp) => {
             if(!isOwner(resp.data[0].owner.address, this.props.currentUser)) {
               this.props.history.goBack()
             } else {
               this.setState(Object.assign({}, resp.data[0], {
-                id: this.props.match.params.id,       
+                id: this.props.match.params.id,
                 isLoading: false
-              }), this.focusFirstInput())  
+              }), this.focusFirstInput())
             }
-          } else {
-            this.setState( { 
+          })
+          .catch(()=>
+            this.setState( {
               isLoading: false,
               hasError: true
-            })          
-          }
-        })  
+            }))
       } else {
         this.setState({
           isLoading: false
@@ -91,20 +94,21 @@ class EditCause extends Component {
     return this.state.description.length > 0 && this.state.title.length > 10 && this.state.image.length > 0
   }
 
-  submit(model) {    
+  submit(model) {
+    this.setState({ isSaving: true })
+
     const afterEmit = (isNew) => {
       this.setState({ isSaving: false })
       isNew ? React.toast.success("Your DAC was created!") : React.toast.success("Your DAC has been updated!")
-      this.props.history.push('/dacs')     
+      this.props.history.push('/dacs')
     }
 
-    this.setState({ isSaving: true })
-
-    feathersClient.service('/uploads').create({uri: this.state.image}).then(file => {
+    const updateDAC = (file) => {
       const constructedModel = {
         title: model.title,
         description: model.description,
-        image: file.url,
+        summary: getTruncatedText(this.state.summary, 200),
+        image: file,
       }
 
       if(this.props.isNew){
@@ -118,20 +122,34 @@ class EditCause extends Component {
                 txHash = hash;
                 React.toast.info(`New DAC transaction hash ${network.etherscan}tx/${txHash}`)
               })
-              .then(txReceipt => React.toast.success(`New DAC transaction mined ${network.etherscan}tx/${txHash}`))
+              .then(() => {
+                React.toast.success(`New DAC transaction mined ${network.etherscan}tx/${txHash}`);
+                afterEmit(true);
+              })
               .catch(err => {
                 console.log('New DAC transaction failed:', err);
                 React.toast.error(`New DAC transaction failed ${network.etherscan}tx/${txHash}`);
               });
           })
       } else {
-        socket.emit('causes::patch', this.state.id, constructedModel, afterEmit)
+        feathersClient.service('causes').patch(this.state.id, constructedModel)
+          .then(()=> afterEmit())
       }
-    })
-  } 
+    }
+
+    if(this.state.uploadNewImage) {
+      feathersClient.service('/uploads').create({uri: this.state.image}).then(file => updateDAC(file.url))
+    } else {
+      updateDAC()
+    }
+  }
 
   goBack(){
     this.props.history.push('/causes')
+  }
+
+  constructSummary(text){
+    this.setState({ summary: text})
   }
 
   render(){
@@ -143,16 +161,16 @@ class EditCause extends Component {
           <div className="container-fluid page-layout">
             <div className="row">
               <div className="col-md-8 m-auto">
-                { isLoading && 
+                { isLoading &&
                   <Loader className="fixed"/>
                 }
-                
+
                 { !isLoading &&
                   <div>
                     <GoBackButton history={history}/>
 
                     { isNew &&
-                      <h1>Start a Democratic Autonomous Charity!</h1>
+                      <h1>Start a Decentralized Altruistic Community!</h1>
                     }
 
                     { !isNew &&
@@ -173,23 +191,24 @@ class EditCause extends Component {
                           validations="minLength:10"
                           validationErrors={{
                               minLength: 'Please provide at least 10 characters.'
-                          }}                    
+                          }}
                           required
                         />
                       </div>
 
                       <div className="form-group">
-                        <QuillFormsy 
+                        <QuillFormsy
                           name="description"
                           label="What cause are you solving?"
                           value={description}
                           placeholder="Describe your cause..."
-                          validations="minLength:10"  
-                          help="Describe your cause."   
+                          onTextChanged={(content)=>this.constructSummary(content)}
+                          validations="minLength:10"
+                          help="Describe your cause."
                           validationErrors={{
                               minLength: 'Please provide at least 10 characters.'
-                          }}                    
-                          required                                        
+                          }}
+                          required
                         />
                       </div>
 
@@ -198,7 +217,7 @@ class EditCause extends Component {
                       <button className="btn btn-success" formNoValidate={true} type="submit" disabled={isSaving || !this.isValid()}>
                         {isSaving ? "Saving..." : "Save DAC"}
                       </button>
-                                     
+
                     </Form>
                   </div>
                 }

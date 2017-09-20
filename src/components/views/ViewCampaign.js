@@ -7,7 +7,6 @@ import { paramsForServer } from 'feathers-hooks-common'
 import Loader from '../Loader'
 import { Link } from 'react-router-dom'
 import Milestone from '../Milestone'
-import loadAndWatchFeatherJSResource from '../../lib/loadAndWatchFeatherJSResource'
 import GoBackButton from '../GoBackButton'
 import { isOwner } from '../../lib/helpers'
 import BackgroundImageHeader from '../BackgroundImageHeader'
@@ -49,14 +48,10 @@ class ViewCampaign extends Component {
       })
     ,
       new Promise((resolve, reject) => {
-        new loadAndWatchFeatherJSResource('milestones', {campaignId: campaignId}, (resp, err) => {
-          console.log(err, resp)
-          if(resp){
-            this.setState({ milestones: resp.data }, resolve())
-          } else {
-            reject()           
-          }
-        })         
+        this.milestoneObserver = feathersClient.service('milestones').watch({ strategy: 'always' }).find({ query: {campaignId: campaignId}}).subscribe(
+          resp => this.setState({ milestones: resp.data }, resolve()),
+          err => reject()
+        )    
       })
     ]).then(() => this.setState({ isLoading: false, hasError: false }))
       .catch((e) => {
@@ -71,26 +66,36 @@ class ViewCampaign extends Component {
       schema: 'includeDonorDetails'
     });
 
-    // TODO rewrite feathers-reactive 'smart' strategy to re-fetch the updated object if $client params are present
-    feathersClient.service('/donations').watch({ listStrategy: 'always' }).find(query)
-      .subscribe(resp => {
+    this.donationsObserver = feathersClient.service('donations').watch({ listStrategy: 'always' }).find(query).subscribe(
+      resp =>
         this.setState({
           donations: resp.data,
           isLoadingDonations: false,
           errorLoadingDonations: false
-        },
-        err => {
-          if (err) {
-            console.log('donations error ->', err);
-            this.setState({ isLoadingDonations: false, errorLoadingDonations: true })
-          }
-        })
-      })
+        }),
+      err =>
+        this.setState({ isLoadingDonations: false, errorLoadingDonations: true })
+    ) 
   }
 
+  componentWillUnmount() {
+    this.donationsObserver.unsubscribe()
+    this.milestoneObserver.unsubscribe()
+  } 
+
   removeMilestone(id){
-    const milestones = feathersClient.service('/milestones');
-    milestones.remove(id).then(milestone => console.log('Remove a milestone', milestone));
+    React.swal({
+      title: "Delete Milestone?",
+      text: "You will not be able to recover this milestone!",
+      type: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#DD6B55",
+      confirmButtonText: "Yes, delete it!",
+      closeOnConfirm: true,
+    }, () => {
+      const milestones = feathersClient.service('/milestones');
+      milestones.remove(id).then(milestone => console.log('Remove a milestone', milestone));
+    })
   }    
 
   render() {
@@ -106,49 +111,60 @@ class ViewCampaign extends Component {
         { !isLoading &&
           <div>
             <BackgroundImageHeader image={image} height={300} >
-              <Link to={`/profile/${ owner.address }`}>
-                <Avatar size={50} src={owner.avatar} round={true}/>                  
-                <p className="small">{owner.name}</p>
-              </Link> 
               <h6>Campaign</h6>
               <h1>{title}</h1>
 
               <DonateButton type="campaign" model={{ title: title, _id: id }}/>
             </BackgroundImageHeader>
 
-            <div className="row">
-              <div className="col-md-8 m-auto">            
+            <div className="container-fluid">
 
-                <GoBackButton history={history}/>
+              <div className="row">
+                <div className="col-md-8 m-auto">            
 
-                <div className="content">
-                  <h2>About this DAC</h2>
-                  <div dangerouslySetInnerHTML={{__html: description}}></div>
-                </div>            
+                  <GoBackButton history={history}/>
 
-                <hr/>
+                  <center>
+                    <Link to={`/profile/${ owner.address }`}>
+                      <Avatar size={50} src={owner.avatar} round={true}/>                  
+                      <p className="small">{owner.name}</p>
+                    </Link>
+                  </center>                
 
-                <h3>Milestones</h3>
-                { isOwner(owner.address, currentUser) && 
-                  <AuthenticatedLink className="btn btn-primary btn-sm pull-right" to={`/campaigns/${ id }/milestones/new`} wallet={wallet}>Add Milestone</AuthenticatedLink>
-                }
+                  <div className="card content-card ">
+                    <div className="card-body content">
+                      <div dangerouslySetInnerHTML={{__html: description}}></div>
+                    </div>
+                  </div>                
+        
+                  <div className="milestone-header spacer-top-50 card-view">
+                    <h3>Milestones</h3>
+                    { isOwner(owner.address, currentUser) && 
+                      <AuthenticatedLink className="btn btn-primary btn-sm pull-right" to={`/campaigns/${ id }/milestones/new`} wallet={wallet}>Add Milestone</AuthenticatedLink>
+                    }
 
-                {milestones.length > 0 && milestones.map((m, i) => 
-                  <Milestone 
-                    model={m} 
-                    currentUser={currentUser}
-                    key={i} 
-                    removeMilestone={()=>this.removeMilestone(m._id)}/>
-                )}
+                    {milestones.length > 0 && milestones.map((m, i) => 
+                      <Milestone 
+                        model={m} 
+                        currentUser={currentUser}
+                        key={i}
+                        history={history} 
+                        wallet={wallet}
+                        removeMilestone={()=>this.removeMilestone(m._id)}/>
+                    )}
+                  </div>
+                </div>
               </div>
-            </div>
 
-            <div className="row">
-              <div className="col-md-8 m-auto">    
-                <h4>Donations</h4>        
-                <ShowTypeDonations donations={donations} isLoading={isLoadingDonations} />  
-              </div>
-            </div>              
+              <div className="row spacer-top-50 spacer-bottom-50">
+                <div className="col-md-8 m-auto">    
+                  <h4>Donations</h4>        
+                  <ShowTypeDonations donations={donations} isLoading={isLoadingDonations} />  
+                  <DonateButton type="campaign" model={{ title: title, _id: id }}/>
+                </div>
+              </div>  
+
+            </div>            
           </div>
         }
       </div>
