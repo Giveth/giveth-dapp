@@ -3,11 +3,11 @@ import ZeroClientProvider from "./ZeroClientProvider";
 
 let givethWeb3 = undefined;
 
-export default getWeb3 = () => {
+const getWeb3 = () => {
   return new Promise((resolve) => {
 
     if (!givethWeb3) {
-      givethWeb3 = new Web3(process.env.ETH_NODE_CONNECTION_URL);
+      givethWeb3 = new Web3(process.env.REACT_APP_ETH_NODE_CONNECTION_URL);
     }
 
     // web3 1.0 expects the chainId to be no longer then 1 byte. If the chainId is longer then 1 byte,
@@ -27,6 +27,8 @@ export default getWeb3 = () => {
     resolve(givethWeb3);
   })
 }
+
+export default getWeb3;
 
 /* ///////////// custom Web3 Functions ///////////// */
 
