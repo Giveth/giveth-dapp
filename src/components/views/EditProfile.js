@@ -103,7 +103,7 @@ class EditProfile extends Component {
             const { liquidPledging } = network;
 
             let txHash;
-            liquidPledging.addDonor(model.name, 259200) // 3 days commitTime. TODO allow user to set commitTime
+            liquidPledging.addDonor(model.name, 259200, '0x0') // 3 days commitTime. TODO allow user to set commitTime
               .once('transactionHash', hash => {
                 txHash = hash;
                 React.toast.info(`AddDonor transaction hash ${network.etherscan}tx/${txHash}`)

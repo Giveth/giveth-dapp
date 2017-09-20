@@ -9,6 +9,7 @@ import FormsyImageUploader from './../FormsyImageUploader'
 import GoBackButton from '../GoBackButton'
 import { isOwner } from '../../lib/helpers'
 import { isAuthenticated } from '../../lib/middleware'
+import getNetwork from "../../lib/blockchain/getNetwork";
 
 /**
  * Create or edit a cause (DAC)
@@ -107,7 +108,22 @@ class EditCause extends Component {
       }
 
       if(this.props.isNew){
-        socket.emit('causes::create', constructedModel, afterEmit(true))
+        getNetwork()
+          .then(network => {
+            const { liquidPledging } = network;
+
+            let txHash;
+            liquidPledging.addDelegate(model.title, 0, '0x0')
+              .once('transactionHash', hash => {
+                txHash = hash;
+                React.toast.info(`New DAC transaction hash ${network.etherscan}tx/${txHash}`)
+              })
+              .then(txReceipt => React.toast.success(`New DAC transaction mined ${network.etherscan}tx/${txHash}`))
+              .catch(err => {
+                console.log('New DAC transaction failed:', err);
+                React.toast.error(`New DAC transaction failed ${network.etherscan}tx/${txHash}`);
+              });
+          })
       } else {
         socket.emit('causes::patch', this.state.id, constructedModel, afterEmit)
       }

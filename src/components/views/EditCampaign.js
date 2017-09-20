@@ -11,6 +11,7 @@ import FormsyImageUploader from './../FormsyImageUploader'
 import GoBackButton from '../GoBackButton'
 import { isOwner } from '../../lib/helpers'
 import { isAuthenticated } from '../../lib/middleware'
+import getNetwork from "../../lib/blockchain/getNetwork";
 
 /**
  * Create or edit a campaign
@@ -135,7 +136,25 @@ class EditCampaign extends Component {
       }    
 
       if(this.props.isNew){
-        socket.emit('campaigns::create', constructedModel, afterEmit(true))
+        getNetwork()
+          .then(network => {
+            const { liquidPledging } = network;
+
+            // set a 2 year commitTime. This is temporary so the campaign acts like a delegate and the donor can
+            // still has control of their funds for upto 2 years. Once we implement campaign reviewers, we can set a
+            // more reasonable commitTime
+            let txHash;
+            liquidPledging.addProject(model.title, 60 * 60 * 24 * 365 * 2, '0x0')
+              .once('transactionHash', hash => {
+                txHash = hash;
+                React.toast.info(`New Campaign transaction hash ${network.etherscan}tx/${txHash}`)
+              })
+              .then(txReceipt => React.toast.success(`New Campaign transaction mined ${network.etherscan}tx/${txHash}`))
+              .catch(err => {
+                console.log('New Campaign transaction failed:', err);
+                React.toast.error(`New Campaign transaction failed ${network.etherscan}tx/${txHash}`);
+              });
+          })
       } else {
         socket.emit('campaigns::patch', this.state.id, constructedModel, afterEmit)
       }
