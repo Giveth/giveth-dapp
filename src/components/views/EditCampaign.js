@@ -14,6 +14,9 @@ import { isAuthenticated } from '../../lib/middleware'
 import { getTruncatedText } from '../../lib/helpers'
 import LoaderButton from "../../components/LoaderButton"
 
+import InputToken from "react-input-token";
+import "react-input-token/lib/style.css";
+
 /**
  * Create or edit a campaign
  *
@@ -47,12 +50,18 @@ class EditCampaign extends Component {
       ownerAddress: null,
       milestones: [],
       causes: [],
-      uploadNewImage: false
+      uploadNewImage: false,
+      isLoadingTokens: false,      
     }
 
     this.submit = this.submit.bind(this)
     this.setImage = this.setImage.bind(this)  
   }
+
+  selectDACs = ({ target: { value: selectedDacs } }) => {
+    console.log('causes', selectedDacs)
+    this.setState({ causes: selectedDacs })
+  };  
 
 
   componentDidMount() {
@@ -65,7 +74,7 @@ class EditCampaign extends Component {
               .then((resp) => {
                 if(!isOwner(resp.data[0].owner.address, this.props.currentUser)) {
                   this.props.history.goBack()
-                } else {                
+                } else {  
                   this.setState(Object.assign({}, resp.data[0], {
                     id: this.props.match.params.id,
                   }), resolve())  
@@ -82,7 +91,7 @@ class EditCampaign extends Component {
           feathersClient.service('causes').find({query: { $select: [ 'title', '_id' ] }})
             .then((resp) => 
               this.setState({ 
-                causesOptions: resp.data.map((c) =>  { return { label: c.title, value: c._id } }),
+                causesOptions: resp.data.map((c) =>  { return { name: c.title, id: c._id, element: <span>{c.title}</span> } }),
                 hasError: false
               }, resolve())
             )
@@ -105,7 +114,6 @@ class EditCampaign extends Component {
     return {
       'title': inputs.title,
       'description': inputs.description,
-      'causes': inputs.causes,
       'communityUrl': inputs.communityUrl
     }
   }  
@@ -130,7 +138,7 @@ class EditCampaign extends Component {
         communityUrl: model.communityUrl,
         summary: getTruncatedText(this.state.summary, 200),
         image: file,
-        causes: [ model.causes ],
+        causes: this.state.causes,
       }  
 
       if(this.props.isNew){
@@ -223,15 +231,16 @@ class EditCampaign extends Component {
 
                       <FormsyImageUploader setImage={this.setImage} previewImage={image} required={isNew}/>
 
-                      {/* TO DO: This needs to be replaced by something like http://react-autosuggest.js.org/ */}
                       <div className="form-group">
-                        <Select
-                          name="causes"
-                          label="Which cause does this campaign solve?"
+                        <label>Which cause(s) is this campaign solving?</label>
+
+                        <InputToken
+                          name="dac"
+                          placeholder="Select one or more DACs"
+                          value={causes}
                           options={causesOptions}
-                          value={causes[0]}
-                          required
-                        />
+                          onSelect={this.selectDACs}/>
+
                       </div>
 
                       <div className="form-group">

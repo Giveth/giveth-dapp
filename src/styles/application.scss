@@ -23,6 +23,7 @@
 @import 'quill-overrides.scss';
 @import 'react-skylight.scss';
 @import 'toastify-overrides.scss';
+@import 'react-token-input-overrides.scss';
 
 // overrides
 @import 'card.scss';
@@ -61,5 +62,7 @@ a, button {
 
 label {
   font-weight: 600;  
+  margin-bottom: 2px;
+  font-size: 0.9rem;  
 }
 
