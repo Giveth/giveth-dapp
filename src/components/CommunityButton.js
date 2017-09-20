@@ -34,3 +34,8 @@ class CommunityButton extends Component {
 }
 
 export default CommunityButton
+
+CommunityButton.propTypes = {
+  url: PropTypes.string.isRequired,
+  className: PropTypes.string
+}

@@ -40,6 +40,7 @@ class DonateButton extends Component {
       amount: parseFloat(model.amount, 10),
       type: this.props.type.toLowerCase(),
       type_id: this.props.model._id,
+      status: 'waiting'
     }).then(user => {
       this.setState({
         isSaving: false,

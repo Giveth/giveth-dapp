@@ -114,11 +114,6 @@ class EditCampaign extends Component {
     this.setState({ image: image, uploadNewImage: true })
   }
 
-  isValid() {
-    return true
-    return this.state.description.length > 0 && this.state.title.length > 10 && this.state.image.length > 0
-  }
-
   submit(model) {    
     this.setState({ isSaving: true })
 
