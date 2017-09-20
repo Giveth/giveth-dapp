@@ -3,7 +3,7 @@ import ZeroClientProvider from "./ZeroClientProvider";
 
 let givethWeb3 = undefined;
 
-export default () => {
+export default getWeb3 = () => {
   return new Promise((resolve) => {
 
     if (!givethWeb3) {
@@ -56,6 +56,18 @@ function setWallet(wallet) {
         })
     },
   });
+
+  engine.on('block', () => {
+      getWeb3()
+        .then(web3 => {
+          const addr = wallet.getAddresses()[ 0 ];
+
+          return (addr) ? web3.eth.getBalance(addr) : undefined;
+        })
+        .then(balance => wallet.balance = balance)
+        .catch(console.error);
+    }
+  );
 
   this.setProvider(engine);
 }

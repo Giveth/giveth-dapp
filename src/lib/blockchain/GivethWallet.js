@@ -1,5 +1,6 @@
 import localforage from 'localforage';
 import Accounts from 'web3-eth-accounts';
+import { utils } from 'web3';
 
 const STORAGE_KEY = 'keystore';
 
@@ -30,6 +31,17 @@ class GivethWallet {
 
     this.keystore = keystore;
     this.unlocked = false;
+    this.balance = undefined;
+  }
+
+  /**
+   * return the balance of the wallet
+   *
+   * @param unit (optional) eth, finny, wei, etc
+   * @return {String}
+   */
+  getBalance(unit) {
+    return (this.balance) ? utils.fromWei(this.balance, unit || 'eth') : undefined;
   }
 
   /**

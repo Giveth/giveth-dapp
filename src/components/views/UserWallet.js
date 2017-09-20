@@ -21,6 +21,7 @@ class UserWallet extends Component {
           {this.props.currentUser &&
           <div>
             <p>{this.props.currentUser}</p>
+            <p> balance: {this.props.wallet.getBalance()} </p>
             <BackupWallet wallet={this.props.wallet}/>
           </div>
           }
