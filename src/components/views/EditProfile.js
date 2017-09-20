@@ -94,6 +94,7 @@ class EditProfile extends Component {
       })
       .catch(err => console.log('update profile error -> ', err));
 
+      // TODO need to cache the tx so we don't send a second tx while the first is still processing
       // TODO store user profile on ipfs and add Donor in liquidpledging contract
       // TODO if donorId is set, update the donor if commitTime or name has changed
       if (!this.state.donorId) {
@@ -102,24 +103,15 @@ class EditProfile extends Component {
             const { liquidPledging } = network;
 
             let txHash;
-            liquidPledging.addDonor(model.name, 86400) // TODO allow user to set commitTime
+            liquidPledging.addDonor(model.name, 259200) // 3 days commitTime. TODO allow user to set commitTime
               .once('transactionHash', hash => {
                 txHash = hash;
                 React.toast.info(`AddDonor transaction hash ${network.etherscan}tx/${txHash}`)
               })
-              .then(txReceipt => {
-                React.toast.success(`AddDonor transaction mined ${network.etherscan}tx/${txHash}`);
-
-                const donorId = txReceipt.events.DonorAdded.returnValues.idDonor;
-
-                feathersClient.service('/users').patch(this.props.currentUser, {
-                    donorId,
-                  })
-                  .catch(console.log);
-              })
+              .then(txReceipt => React.toast.success(`AddDonor transaction mined ${network.etherscan}tx/${txHash}`))
               .catch(err => {
                 console.log('AddDonor transaction failed:', err);
-                React.toast.error(`AddDonor transaction failed ${network.etherscan}tx/${ttxHash}`);
+                React.toast.error(`AddDonor transaction failed ${network.etherscan}tx/${txHash}`);
               });
           })
       }

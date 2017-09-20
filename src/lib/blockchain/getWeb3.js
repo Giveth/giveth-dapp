@@ -7,7 +7,7 @@ export default () => {
   return new Promise((resolve) => {
 
     if (!givethWeb3) {
-      givethWeb3 = new Web3(new Web3.providers.HttpProvider(process.env.ETH_NODE_CONNECTION_URL));
+      givethWeb3 = new Web3(process.env.ETH_NODE_CONNECTION_URL);
     }
 
     // web3 1.0 expects the chainId to be no longer then 1 byte. If the chainId is longer then 1 byte,
