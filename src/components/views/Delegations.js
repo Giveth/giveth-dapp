@@ -6,6 +6,7 @@ import { paramsForServer } from 'feathers-hooks-common'
 import Loader from '../Loader'
 import { isAuthenticated } from '../../lib/middleware'
 import DelegateButton from '../../components/DelegateButton'
+import Avatar from 'react-avatar'
 
 /**
   The my delegations view
@@ -156,10 +157,10 @@ class Delegations extends Component {
     let { delegations, isLoading, causes, campaigns, milestones, currentUser } = this.state
 
     return (
-        <div id="edit-campaign-view">
-          <div className="container-fluid page-layout">
+        <div id="delegations-view">
+          <div className="container-fluid page-layout dashboard-table-view">
             <div className="row">
-              <div className="col-md-12">
+              <div className="col-md-10 m-auto">
                 <h1>Your delegations</h1>
 
                 { isLoading && 
@@ -170,12 +171,12 @@ class Delegations extends Component {
                   <div>
                     { delegations && delegations.length > 0 && 
 
-                      <table className="table table-responsive table-hover">
+                      <table className="table table-responsive table-striped table-hover">
                         <thead>
                           <tr>
                             <th>Amount</th>
-                            <th>To</th>
-                            <th>From</th>
+                            <th>Donated to</th>
+                            <th>Received from</th>
                             <th>Address</th>
                             <th>Status</th>
                             <th></th>
@@ -186,7 +187,11 @@ class Delegations extends Component {
                             <tr key={index}>
                               <td>{d.amount} ETH</td>
                               <td>{d.type.toUpperCase()} <em>{d.type_title}</em></td>
-                              <td>{d.donor.name}</td>
+                              <td>
+                                {d.donor.avatar &&
+                                  <Avatar size={30} src={d.donor.avatar} round={true}/>                  
+                                }
+                                {d.donor.name}</td>
                               <td>{d.donorAddress}</td>
                               <td>{d.status}</td>
                               <td>

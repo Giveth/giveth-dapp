@@ -7,7 +7,7 @@ import Loader from '../Loader'
 import { isAuthenticated } from '../../lib/middleware'
 
 import _ from 'underscore'
-
+import moment from 'moment'
 
 /**
   The my donations view
@@ -133,10 +133,10 @@ class Donations extends Component {
     let { donations, isLoading, isRefunding, isCommitting } = this.state
 
     return (
-        <div id="edit-campaign-view">
-          <div className="container-fluid page-layout">
+        <div id="donations-view">
+          <div className="container-fluid page-layout dashboard-table-view">
             <div className="row">
-              <div className="col-md-12">
+              <div className="col-md-10 m-auto">
                 <h1>Your donations</h1>
 
                 { isLoading && 
@@ -147,22 +147,22 @@ class Donations extends Component {
                   <div>
                     { donations && donations.length > 0 && 
 
-                      <table className="table table-responsive table-hover">
+                      <table className="table table-responsive table-striped table-hover">
                         <thead>
                           <tr>
+                            <th>Status</th>                          
                             <th>Amount</th>
-                            <th>To</th>
-                            <th>Name</th>
-                            <th>Status</th>
+                            <th>Donated to</th>
                             <th>Address</th>
+                            <th>Date</th>
                             <th></th>
                           </tr>
                         </thead>
                         <tbody>
                           { donations.map((d, index) =>
                             <tr key={index}>
+                              <td>{this.getStatus(d.status)}</td>                            
                               <td>{d.amount} ETH</td>
-                              <td>{d.type}</td>
                               <td>
                                 {d.from_type_id &&
                                   <span className="badge badge-info">
@@ -171,17 +171,22 @@ class Donations extends Component {
                                   </span>
                                 }  
 
-                                {d.type === 'dac' && d.dac &&
-                                  <span>{d.dac.title}</span>
-                                }
+                                {d.type.toUpperCase()}
 
-                                {d.type === 'campaign' && d.campaign &&
-                                  <span>{d.campaign.title}</span>
-                                }
+                                &nbsp;
+                                <em>
+                                  {d.type === 'dac' && d.dac &&
+                                    <span>{d.dac.title}</span>
+                                  }
+
+                                  {d.type === 'campaign' && d.campaign &&
+                                    <span>{d.campaign.title}</span>
+                                  }
+                                </em>
 
                               </td>
-                              <td>{this.getStatus(d.status)}</td>
                               <td>{d.donorAddress}</td>
+                              <td>{moment(d.createdAt).format("MM/DD/YYYY")}</td>
                               <td>
                                 { d.status === 'waiting' &&
                                   <a className="btn btn-sm btn-danger" onClick={()=>this.refund(d)} disabled={isRefunding}>
