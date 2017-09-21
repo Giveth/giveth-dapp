@@ -74,7 +74,7 @@ class DelegateButton extends Component {
 
     return(
       <span style={style}>
-        <a className="btn btn-success" onClick={() => this.openDialog()}>
+        <a className="btn btn-success btn-sm" onClick={() => this.openDialog()}>
           Delegate
         </a>
 
