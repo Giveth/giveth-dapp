@@ -22,15 +22,17 @@ class MyCauses extends Component {
     this.state = {
       isLoading: true,
       causes: [],
+      pendingCauses: [],
     }    
   }
 
   componentDidMount() {
     isAuthenticated(this.props.currentUser, this.props.history).then(() =>
-      feathersClient.service('causes').find({query: { ownerAddress: this.props.currentUser }})
+      feathersClient.service('dacs').find({query: { ownerAddress: this.props.currentUser }})
         .then((resp) =>
           this.setState({ 
-            causes: resp.data,
+            causes: resp.data.filter(cause => (cause.delegateId)),
+            pendingCauses: resp.data.filter(cause => !(cause.delegateId)),
             hasError: false,
             isLoading: false
           }))
@@ -52,7 +54,7 @@ class MyCauses extends Component {
       confirmButtonText: "Yes, delete it!",
       closeOnConfirm: true,
     }, () => {
-      const causes = feathersClient.service('/causes');
+      const causes = feathersClient.service('/dacs');
       causes.remove(id).then(cause => {
         React.toast.success("Your DAC has been deleted.")
       })
@@ -72,7 +74,7 @@ class MyCauses extends Component {
   }
 
   render() {
-    let { causes, isLoading } = this.state
+    let { causes, pendingCauses, isLoading } = this.state;
 
     return (
       <div id="causes-view">
@@ -87,6 +89,9 @@ class MyCauses extends Component {
 
               { !isLoading &&
                 <div>
+                  {pendingCauses.length > 0 &&
+                  <p>{pendingCauses.length} pending causes</p>
+                  }
 
                   { causes && causes.length > 0 && 
                     <ResponsiveMasonry columnsCountBreakPoints={{350: 1, 750: 2, 900: 3, 1024: 4, 1470: 5}}>

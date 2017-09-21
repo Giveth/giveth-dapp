@@ -43,6 +43,7 @@ class EditCampaign extends Component {
       image: '',
       videoUrl: '',
       ownerAddress: null,
+      projectId: 0,
       milestones: [],
       causes: [],
       uploadNewImage: false
@@ -74,13 +75,13 @@ class EditCampaign extends Component {
           }
         })
       ,
-        // load all causes. 
+        // load all causes. that aren't pending
         // TO DO: this needs to be replaced by something like http://react-autosuggest.js.org/
         new Promise((resolve, reject) => {
-          feathersClient.service('causes').find({query: { $select: [ 'title', '_id' ] }})
+          feathersClient.service('causes').find({query: { $exists: [ 'delegateId' ], $select: [ 'title', 'delegateId' ] }})
             .then((resp) => 
               this.setState({ 
-                causesOptions: resp.data.map((c) =>  { return { label: c.title, value: c._id } }),
+                causesOptions: resp.data.map((c) =>  { return { label: c.title, value: c.delegateId } }),
                 hasError: false
               }, resolve())
             )
@@ -119,9 +120,9 @@ class EditCampaign extends Component {
   submit(model) {    
     this.setState({ isSaving: true })
 
-    const afterEmit = (isNew) => {
+    const afterEmit = () => {
       this.setState({ isSaving: false })
-      isNew ? React.toast.success("Your DAC was created!") : React.toast.success("Your DAC has been updated!")      
+      React.toast.success("Your Campaign has been updated!")      
       this.props.history.push('/campaigns')      
     }
 
@@ -131,12 +132,14 @@ class EditCampaign extends Component {
         description: model.description,
         summary: getTruncatedText(this.state.summary, 200),
         image: file,
-        causes: [ model.causes ],
-        // pending: true,
+        projectId: this.state.projectId,
+        parentProject: model.cause || 0,
       }  
 
-      // TODO push pending campaign to feathers
       if(this.props.isNew){
+        feathersClient.service('campaigns').create(constructedModel)
+          .then(() => this.props.history.push('/my-campaigns'));
+
         getNetwork()
           .then(network => {
             const { liquidPledging } = network;
@@ -145,19 +148,18 @@ class EditCampaign extends Component {
             // still has control of their funds for upto 2 years. Once we implement campaign reviewers, we can set a
             // more reasonable commitTime
             let txHash;
-            liquidPledging.addProject(model.title, 60 * 60 * 24 * 365 * 2, '0x0')
+            liquidPledging.addProject(model.title, this.props.currentUser, model.parentProject, 60 * 60 * 24 * 365 * 2, '0x0')
               .once('transactionHash', hash => {
-                // TODO update
                 txHash = hash;
                 React.toast.info(`New Campaign transaction hash ${network.etherscan}tx/${txHash}`)
               })
               .then(() => {
-                React.toast.success(`New Campaign transaction mined ${network.etherscan}tx/${txHash}`);
-                afterEmit(true);
+                React.toast.success(`Your Campaign was created! New Campaign transaction mined ${network.etherscan}tx/${txHash}`);
               })
               .catch(err => {
                 console.log('New Campaign transaction failed:', err);
                 React.toast.error(`New Campaign transaction failed ${network.etherscan}tx/${txHash}`);
+                //TODO update or remove from feathers? maybe don't remove, so we can inform the user that the tx failed
               });
           })
       } else {
@@ -216,7 +218,7 @@ class EditCampaign extends Component {
                           type="text"
                           value={title}
                           placeholder="E.g. Climate change."
-                          help="Describe your cause in 1 scentence."
+                          help="Describe your campaign in 1 sentence."
                           validations="minLength:10"
                           validationErrors={{
                               minLength: 'Please provide at least 10 characters.'

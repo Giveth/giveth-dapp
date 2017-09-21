@@ -108,10 +108,14 @@ class EditCause extends Component {
         title: model.title,
         description: model.description,
         summary: getTruncatedText(this.state.summary, 200),
+        delegateId: this.state.delegateId,
         image: file,
-      }
+      };
 
       if(this.props.isNew){
+        feathersClient.service('dacs').create(constructedModel)
+          .then(() => this.props.history.push('/my-causes'));
+
         getNetwork()
           .then(network => {
             const { liquidPledging } = network;
@@ -129,6 +133,7 @@ class EditCause extends Component {
               .catch(err => {
                 console.log('New DAC transaction failed:', err);
                 React.toast.error(`New DAC transaction failed ${network.etherscan}tx/${txHash}`);
+                //TODO update or remove from feathers? maybe don't remove, so we can inform the user that the tx failed
               });
           })
       } else {

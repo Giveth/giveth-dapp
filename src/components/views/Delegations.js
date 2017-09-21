@@ -21,7 +21,7 @@ class Delegations extends Component {
 
   componentDidMount() {
     isAuthenticated(this.props.currentUser, this.props.history).then(()=>{
-      feathersClient.service('causes').find({query: { ownerAddress: this.props.currentUser }})
+      feathersClient.service('dacs').find({query: { ownerAddress: this.props.currentUser }})
         .then(resp => {
           console.log(resp)
           this.setState({

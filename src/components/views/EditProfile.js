@@ -97,7 +97,7 @@ class EditProfile extends Component {
       // TODO need to cache the tx so we don't send a second tx while the first is still processing
       // TODO store user profile on ipfs and add Donor in liquidpledging contract
       // TODO if donorId is set, update the donor if commitTime or name has changed
-      if (!this.state.donorId) {
+      if (this.state.donorId === undefined) {
         getNetwork()
           .then(network => {
             const { liquidPledging } = network;

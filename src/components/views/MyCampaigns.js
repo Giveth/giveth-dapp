@@ -22,6 +22,7 @@ class MyCampaigns extends Component {
     this.state = {
       isLoading: true,
       campaigns: [],
+      pendingCampaigns: [],
     }    
   }
 
@@ -30,7 +31,8 @@ class MyCampaigns extends Component {
       feathersClient.service('campaigns').find({query: { ownerAddress: this.props.currentUser }})
         .then((resp) =>
           this.setState({ 
-            campaigns: resp.data,
+            campaigns: resp.data.filter(campaign => (campaign.projectId)),
+            pendingCampaigns: resp.data.filter(campaign => !(campaign.projectId)),
             hasError: false,
             isLoading: false
           }))
@@ -74,7 +76,7 @@ class MyCampaigns extends Component {
 
 
   render() {
-    let { campaigns, isLoading } = this.state
+    let { campaigns, pendingCampaigns, isLoading } = this.state
 
     return (
       <div id="campaigns-view">
@@ -89,6 +91,9 @@ class MyCampaigns extends Component {
 
               { !isLoading &&
                 <div>
+                  {pendingCampaigns.length > 0 &&
+                    <p>{pendingCampaigns.length} pending campaigns</p>
+                  }
 
                   { campaigns && campaigns.length > 0 && 
                     <ResponsiveMasonry columnsCountBreakPoints={{350: 1, 750: 2, 900: 3, 1024: 4, 1470: 5}}>

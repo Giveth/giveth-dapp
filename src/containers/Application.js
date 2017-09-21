@@ -85,14 +85,26 @@ class Application extends Component {
 
     Promise.all([
       new Promise((resolve, reject) => {
-        feathersClient.service('causes').watch({ strategy: 'always' }).find().subscribe(
+        feathersClient.service('dacs').watch({ strategy: 'always' }).find({
+          query: {
+            delegateId: {
+              $gt: 0 // 0 is a pending dac
+            }
+          }
+        }).subscribe(
           resp => this.setState({ causes: resp }, resolve()),
           err => reject()
         )
       })
     ,
       new Promise((resolve, reject) => {
-        feathersClient.service('campaigns').watch({ strategy: 'always' }).find().subscribe(
+        feathersClient.service('campaigns').watch({ strategy: 'always' }).find({
+          query: {
+            projectId: {
+              $gt: 0 // 0 is a pending campaign
+            }
+          }
+        }).subscribe(
           resp => this.setState({ campaigns: resp }, resolve()),
           err => reject()
 
