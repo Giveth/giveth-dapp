@@ -37,11 +37,11 @@ class GivethWallet {
   /**
    * return the balance of the wallet
    *
-   * @param unit (optional) eth, finny, wei, etc
+   * @param unit (optional) ether, finney, wei, etc
    * @return {String}
    */
   getBalance(unit) {
-    return (this.balance) ? utils.fromWei(this.balance, unit || 'eth') : undefined;
+    return (this.balance) ? utils.fromWei(this.balance, unit || 'ether') : undefined;
   }
 
   /**

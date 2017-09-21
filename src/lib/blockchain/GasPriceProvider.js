@@ -11,6 +11,6 @@ export default class GasPriceProvider extends SubProvider {
   handleRequest(payload, next, end) {
     if (payload.method !== 'eth_gasPrice') return next();
 
-    end(null, utils.toWei(4, 'gwei'));
+    end(null, utils.toHex(utils.toWei(4, 'gwei')));
   }
 }

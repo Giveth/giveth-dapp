@@ -6,8 +6,9 @@ import CacheSubprovider from 'web3-provider-engine/subproviders/cache';
 import FilterSubprovider from 'web3-provider-engine/subproviders/filters';
 import InflightCacheSubprovider from 'web3-provider-engine/subproviders/inflight-cache';
 import SanitizingSubprovider from 'web3-provider-engine/subproviders/sanitizer';
-import FetchSubprovider from 'web3-provider-engine/subproviders/fetch';
 import GasPriceProvider from "./GasPriceProvider";
+
+import WebSocketSubProvider from './WebSocketSubProvider';
 
 // web3 1.0 only supports async sends
 ProviderEngine.prototype.send = ProviderEngine.prototype.sendAsync;
@@ -16,6 +17,7 @@ ProviderEngine.prototype.send = ProviderEngine.prototype.sendAsync;
 export default (opts) => {
   opts = opts || {};
 
+  //TODO rewrite ProviderEngine to use pubsub instead of EthBlockTracker
   const engine = new ProviderEngine();
 
   // static
@@ -67,15 +69,17 @@ export default (opts) => {
   });
   engine.addProvider(idmgmtSubprovider);
 
+  //TODO support http connections as well as urls
   // data source
-  const fetchSubprovider = new FetchSubprovider({
-    rpcUrl: opts.rpcUrl || 'https://mainnet.infura.io/',
-    originHttpHeaderKey: opts.originHttpHeaderKey,
+  const fetchSubprovider = new WebSocketSubProvider({
+    wsProvider: opts.wsProvider,
   });
   engine.addProvider(fetchSubprovider);
 
   // start polling
   engine.start();
+
+  engine.on('block', () => engine.stop());
 
   return engine;
 }
