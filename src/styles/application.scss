@@ -69,3 +69,8 @@ label {
   font-size: 0.9rem;  
 }
 
+table {
+  overflow-x: scroll; /* has to be scroll, not auto */
+  -webkit-overflow-scrolling: touch;  
+}
+
