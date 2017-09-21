@@ -35,4 +35,10 @@
   .menu-avatar {
     margin-right: 8px;
   }
+
+  .dropdown-item {
+    &:active {
+      background-color: #ddedfd;
+    }
+  }
 }

@@ -29,7 +29,10 @@ class Donations extends Component {
     isAuthenticated(this.props.currentUser, this.props.history).then(()=>{
       this.donationsObserver = feathersClient.service('donations').watch({ strategy: 'always' }).find(paramsForServer({ 
           schema: 'includeTypeDetails',
-          query: { $limit: 100 }
+          query: { 
+            donorAddress: this.props.currentUser,
+            $limit: 100
+          }
         })).subscribe(
           resp => 
             this.setState({
@@ -61,15 +64,12 @@ class Donations extends Component {
     switch(status){
       case "pending":
         return "pending for your approval to be committed."
-        break;
       case "waiting":
         return "waiting for further delegation"
-        break;
       case "committed":
         return "committed"
-        break;
       default:
-        break;
+        return;
     }    
   }
 
@@ -182,6 +182,10 @@ class Donations extends Component {
                                   {d.type === 'campaign' && d.campaign &&
                                     <span>{d.campaign.title}</span>
                                   }
+
+                                  {d.type === 'milestone' && d.milestone &&
+                                    <span>{d.milestone.title}</span>
+                                  }                                  
                                 </em>
 
                               </td>
