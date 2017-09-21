@@ -2,7 +2,7 @@ import React, { Component } from 'react'
 import SkyLight from 'react-skylight'
 
 import { feathersClient } from '../lib/feathersClient'
-import { Form, Input } from 'formsy-react-components';
+import { Form } from 'formsy-react-components';
 
 import InputToken from "react-input-token";
 
@@ -29,28 +29,28 @@ class DelegateButton extends Component {
 
   submit(model) {
     this.setState({ isSaving: true })
-
-    console.log('blah', this.state.campaignsToDelegateTo)
     
-
+    // find the type of where we delegate to
     const type = this.props.types.find((t) => { return t.id === this.state.campaignsToDelegateTo[0]}).type
-    console.log(type)
 
     feathersClient.service('/donations').patch(this.props.model._id, {
-      status: type === 'milestone' ? 'pending' : 'waiting',
-      type_id: this.state.campaignsToDelegateTo[0],
-      from_type_id: this.props.model._id
+      status: type === 'milestone' ? 'pending' : 'waiting', // if type is a milestone, the money will be pending before being locked
+      type: type,
+      type_id: this.state.campaignsToDelegateTo[0], // for now we don't support splitting, but we could in the future
+      from_type_id: this.props.model._id,
+      delegated_by: this.props.currentUser
     }).then(donation => {
-      this.setState({
-        isSaving: false,
-        campaignsToDelegateTo: []
-      })
+      this.resetSkylight()
 
       // For some reason (I suspect a rerender when donations are being fetched again)
       // the skylight dialog is sometimes gone and this throws error
       if(this.refs.donateDialog) this.refs.donateDialog.hide()
 
-      React.swal("You're awesome!", "The donation has been delegated. The donator has 3 days to reject your delegation.", 'success')
+      if(type === 'milestone') {
+        React.swal("You're awesome!", "The donation has been delegated. The donator has 3 days to reject your delegation before the money gets locked.", 'success')
+      } else {
+        React.swal("Delegated", "The donation has been delegated successfully. The donator has been notified.", 'success')        
+      }
 
     }).catch((e) => {
       console.log(e)
@@ -59,13 +59,18 @@ class DelegateButton extends Component {
     })
   }
 
+  resetSkylight(){
+    this.setState({ 
+      isSaving: false,
+      campaignsToDelegateTo: []
+    })
+  }
+
 
   render(){
-    const { types, model } = this.props
+    const { types } = this.props
     let { isSaving, campaignsToDelegateTo } = this.state
-    const style = {
-      display: 'inline-block'     
-    }
+    const style = { display: 'inline-block' }
 
     return(
       <span style={style}>
@@ -73,7 +78,9 @@ class DelegateButton extends Component {
           Delegate
         </a>
 
-        <SkyLight hideOnOverlayClicked ref="donateDialog" title="Delegate Donation">
+        <SkyLight hideOnOverlayClicked ref="donateDialog" title="Delegate Donation" afterClose={() => this.resetSkylight()}>
+
+          <p>Select a DAC, Campaign or Milestone to delegate this donation to</p>
 
           <Form onSubmit={this.submit} layout='vertical'>
             <div className="form-group">
@@ -88,7 +95,7 @@ class DelegateButton extends Component {
             </div>
 
             <button className="btn btn-success" formNoValidate={true} type="submit" disabled={isSaving || this.state.campaignsToDelegateTo.length === 0}>
-              {isSaving ? "Saving..." : "Donate ETH"}
+              {isSaving ? "Delegating..." : "Delegate here"}
             </button>
           </Form>
 

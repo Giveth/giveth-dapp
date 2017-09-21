@@ -52,7 +52,10 @@ class ViewCause extends Component {
 
     // lazy load donations         
     const query = paramsForServer({ 
-      query: { type_id: dacId },
+      query: { 
+        type_id: dacId,
+        status: { $nin: ['waiting', 'pending'] }        
+      },
       schema: 'includeDonorDetails'
     })  
 

@@ -62,7 +62,10 @@ class ViewCampaign extends Component {
 
     // lazy load donations             
     const query = paramsForServer({
-      query: { type_id: campaignId },
+      query: { 
+        type_id: campaignId,
+        status: { $nin: ['waiting', 'pending'] }        
+      },      
       schema: 'includeDonorDetails'
     });
 
