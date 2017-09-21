@@ -1,7 +1,7 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types';
 
-import { Form, Input, Select } from 'formsy-react-components';
+import { Form, Input } from 'formsy-react-components';
 import { feathersClient } from '../../lib/feathersClient'
 import Loader from '../Loader'
 import QuillFormsy from '../QuillFormsy'
@@ -57,11 +57,6 @@ class EditCampaign extends Component {
     this.submit = this.submit.bind(this)
     this.setImage = this.setImage.bind(this)  
   }
-
-  selectDACs = ({ target: { value: selectedDacs } }) => {
-    console.log('causes', selectedDacs)
-    this.setState({ causes: selectedDacs })
-  };  
 
 
   componentDidMount() {
@@ -169,6 +164,10 @@ class EditCampaign extends Component {
     this.setState({ summary: text})
   }
 
+  selectDACs = ({ target: { value: selectedDacs } }) => {
+    this.setState({ causes: selectedDacs })
+  }  
+
   render(){
     const { isNew, history } = this.props
     let { isLoading, isSaving, title, description, image, causes, causesOptions, communityUrl, formIsValid } = this.state
@@ -229,7 +228,7 @@ class EditCampaign extends Component {
                         />
                       </div>
 
-                      <FormsyImageUploader setImage={this.setImage} previewImage={image} required={isNew}/>
+                      <FormsyImageUploader setImage={this.setImage} previewImage={image} isRequired={isNew}/>
 
                       <div className="form-group">
                         <label>Which cause(s) is this campaign solving?</label>
