@@ -78,7 +78,7 @@ class EditCampaign extends Component {
         // load all causes. that aren't pending
         // TO DO: this needs to be replaced by something like http://react-autosuggest.js.org/
         new Promise((resolve, reject) => {
-          feathersClient.service('causes').find({query: { $exists: [ 'delegateId' ], $select: [ 'title', 'delegateId' ] }})
+          feathersClient.service('dacs').find({query: { $exists: [ 'delegateId' ], $select: [ 'title', 'delegateId' ] }})
             .then((resp) => 
               this.setState({ 
                 causesOptions: resp.data.map((c) =>  { return { label: c.title, value: c.delegateId } }),

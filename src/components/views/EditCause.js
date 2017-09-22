@@ -50,7 +50,7 @@ class EditCause extends Component {
   componentDidMount() {
     isAuthenticated(this.props.currentUser, this.props.history, this.props.wallet).then(()=> {
       if(!this.props.isNew) {
-        feathersClient.service('causes').find({query: {_id: this.props.match.params.id}})
+        feathersClient.service('dacs').find({query: {_id: this.props.match.params.id}})
           .then((resp) => {
             if(!isOwner(resp.data[0].owner.address, this.props.currentUser)) {
               this.props.history.goBack()
@@ -137,7 +137,7 @@ class EditCause extends Component {
               });
           })
       } else {
-        feathersClient.service('causes').patch(this.state.id, constructedModel)
+        feathersClient.service('dacs').patch(this.state.id, constructedModel)
           .then(()=> afterEmit())
       }
     }
