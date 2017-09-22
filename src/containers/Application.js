@@ -88,7 +88,7 @@ class Application extends Component {
         feathersClient.service('dacs').watch({ strategy: 'always' }).find({
           query: {
             delegateId: {
-              $gt: 0 // 0 is a pending dac
+              $gt: '0' // 0 is a pending dac
             }
           }
         }).subscribe(
@@ -101,7 +101,7 @@ class Application extends Component {
         feathersClient.service('campaigns').watch({ strategy: 'always' }).find({
           query: {
             projectId: {
-              $gt: 0 // 0 is a pending campaign
+              $gt: '0' // 0 is a pending campaign
             }
           }
         }).subscribe(
@@ -116,7 +116,7 @@ class Application extends Component {
     // Load the wallet if it is cached
     GivethWallet.getCachedKeystore()
       .then(keystore => {
-        //TODO change to getWeb3() when implemented
+        //TODO change to getWeb3() when implemented. actually remove provider from GivethWallet
         const provider = this.state.web3 ? this.state.web3.currentProvider : undefined;
         return GivethWallet.loadWallet(keystore, provider);
       })
@@ -239,7 +239,7 @@ class Application extends Component {
 
                 <Route exact path="/dacs" component={props => <Causes causes={this.state.causes} currentUser={this.state.currentUser} wallet={this.state.wallet} {...props}/>} />
                 <Route exact path="/dacs/new" component={props => <EditCause isNew={true} currentUser={this.state.currentUser} walletUnlocked={this.state.wallet} {...props}/>} />
-                <Route exact path="/dacs/:id" component={ViewCause}/>
+                <Route exact path="/dacs/:id" component={props => <ViewCause currentUser={this.state.currentUser} {...props}/>} />
                 <Route exact path="/dacs/:id/edit" component={props => <EditCause currentUser={this.state.currentUser} wallet={this.state.wallet} {...props}/>} />
 
                 <Route exact path="/campaigns" component={props => <Campaigns campaigns={this.state.campaigns} currentUser={this.state.currentUser} wallet={this.state.wallet} {...props}/>} />

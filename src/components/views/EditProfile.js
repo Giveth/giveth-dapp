@@ -32,7 +32,6 @@ class EditProfile extends Component {
       avatar: '',
       email: '',
       linkedIn: '',
-      donorId: '',
       uploadNewAvatar: false,
     }
 
