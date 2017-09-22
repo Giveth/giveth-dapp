@@ -32,7 +32,7 @@ const networks = {
   default: {
     title: "TestRPC",
     liquidPledgingAddress: "0x5b1869D9A4C187F2EAa108f3062412ecf0526b24",
-    etherscan: "",
+    etherscan: "https://etherscan.io/", // this won't work for. only here so we can see links during development
   },
 };
 

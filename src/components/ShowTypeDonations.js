@@ -2,14 +2,32 @@ import React, { Component } from 'react'
 import PropTypes from 'prop-types'                
 import Loader from './Loader'
 import Avatar from 'react-avatar'
+import { utils } from 'web3';
+import getNetwork from '../lib/blockchain/getNetwork';
 
 /**
   Shows a table of donations for a given type (dac, campaign, milestone)
 **/
 
 class ShowTypeDonations extends Component {
+  constructor() {
+    super();
+
+    this.state = {
+      etherScanUrl: ''
+    };
+
+    getNetwork().then(network => {
+      this.setState({
+        etherScanUrl: network.etherscan
+      })
+    })
+
+  }
+
   render(){
     const { isLoading, donations } = this.props
+    const { etherScanUrl } = this.state;
 
     return(
       <div>
@@ -32,14 +50,19 @@ class ShowTypeDonations extends Component {
                 <tbody>
                   { donations.map((d, index) =>
                     <tr key={index}>
-                      <td>{d.amount} ETH</td>
+                      <td>{utils.fromWei(d.amount)} ETH</td>
                       <td>
                         {d.donor.avatar &&
                           <Avatar size={30} src={d.donor.avatar} round={true}/>                  
                         }
                         <span>{d.donor.name}</span>
                       </td>
-                      <td>{d.donor.address}</td>
+                      {etherScanUrl &&
+                        <td><a href={`${etherScanUrl}address/${d.donor.address}`}>{d.donor.address}</a></td>
+                      }
+                      {!etherScanUrl &&
+                        <td>{d.donor.address}</td>
+                      }
                     </tr>
                   )}
 

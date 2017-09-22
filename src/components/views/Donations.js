@@ -5,6 +5,7 @@ import { feathersClient } from '../../lib/feathersClient'
 import { paramsForServer } from 'feathers-hooks-common'
 import Loader from '../Loader'
 import { isAuthenticated } from '../../lib/middleware'
+import getNetwork from '../../lib/blockchain/getNetwork';
 /**
   The my donations view
 **/
@@ -16,7 +17,14 @@ class Donations extends Component {
     this.state = {
       isLoading: true,
       donations: [],
-    }    
+      etherScanUrl: ''
+    };
+
+    getNetwork().then(network => {
+      this.setState({
+        etherScanUrl: network.etherscan
+      })
+    })
   }
 
   componentDidMount() {
@@ -41,7 +49,7 @@ class Donations extends Component {
 
 
   render() {
-    let { donations, isLoading } = this.state
+    let { donations, isLoading, etherScanUrl } = this.state;
 
     return (
         <div id="edit-campaign-view">
@@ -81,7 +89,12 @@ class Donations extends Component {
                                   <span>{d.campaign.title}</span>
                                 }
                               </td>
+                              {etherScanUrl &&
+                              <td><a href={`${etherScanUrl}address/${d.donorAddress}`}>{d.donorAddress}</a></td>
+                              }
+                              {!etherScanUrl &&
                               <td>{d.donorAddress}</td>
+                              }
                             </tr>
                           )}
 

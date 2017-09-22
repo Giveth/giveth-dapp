@@ -1,5 +1,6 @@
 import React, { Component } from 'react'
 import { feathersClient } from '../../lib/feathersClient'
+import getNetwork from "../../lib/blockchain/getNetwork";
 
 import GoBackButton from '../GoBackButton'
 import Loader from '../Loader'
@@ -15,8 +16,16 @@ class Profile extends Component {
 
     this.state = {
       isLoading: true,
-      hasError: false
-    }
+      hasError: false,
+      etherScanUrl: ''
+    };
+
+    getNetwork()
+      .then(network => {
+        this.setState({
+          etherScanUrl: network.etherscan
+        })
+      });
   }
 
   componentDidMount() {
@@ -31,11 +40,11 @@ class Profile extends Component {
           isLoading: false,
           hasError: true
         }))
-  }  
+  }
 
   render() {
     const { history } = this.props
-    let { isLoading, hasError, avatar, name, address, email, linkedIn } = this.state
+    let { isLoading, hasError, avatar, name, address, email, linkedIn, etherScanUrl } = this.state
 
     return (
       <div id="profile-view">
@@ -53,7 +62,12 @@ class Profile extends Component {
                   <center>
                     <Avatar size={100} src={avatar} round={true}/>                  
                     <h1>{name}</h1>
-                    <p>{address}</p>
+                    {etherScanUrl &&
+                      <p><a href={`${etherScanUrl}address/${address}`}>{address}</a></p>
+                    }
+                    {!etherScanUrl &&
+                      <p>{address}</p>
+                    }
                     <p>{email}</p>
                     <p>{linkedIn}</p>
                   </center>
