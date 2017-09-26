@@ -59,7 +59,8 @@ class SignIn extends Component {
   fetchUserProfile() {
     feathersClient.service('users').get(this.state.address)
       .then(resp => {
-        this.setState(Object.assign({}, resp.data, {
+        console.log(resp)
+        this.setState(Object.assign({}, resp, {
           isLoading: false,
         }));
       })
@@ -121,7 +122,15 @@ class SignIn extends Component {
                     {avatar &&
                       <Avatar size={100} src={avatar} round={true}/>
                     }
-                    <h1>Welcome back<br/><strong>{name || address}!</strong></h1>
+
+                    {name &&
+                      <h1>Welcome back<br/><strong>{name}!</strong></h1>
+                    }
+
+                    {address && !name &&
+                      <div><h1>Welcome back</h1><strong>{address}</strong></div>
+                    }
+
                     { name &&
                       <p className="small">Your address: {address}</p>
                     }

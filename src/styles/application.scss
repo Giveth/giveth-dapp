@@ -27,6 +27,7 @@
 @import 'react-skylight.scss';
 @import 'toastify-overrides.scss';
 @import 'react-token-input-overrides.scss';
+@import 'sweet-alert-overrides.scss';
 
 // overrides
 @import 'card.scss';
@@ -72,5 +73,15 @@ label {
 table {
   overflow-x: scroll; /* has to be scroll, not auto */
   -webkit-overflow-scrolling: touch;  
+}
+
+.help-block {
+  color: #666;
+  font-size: 0.75rem; 
+  font-weight: 300; 
+}
+
+input[type="file"] {
+  display: block;  
 }
 

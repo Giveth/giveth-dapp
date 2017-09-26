@@ -176,7 +176,7 @@ class EditProfile extends Component {
                   </div>                      
 
                   <LoaderButton
-                    className="btn btn-success btn-lg" 
+                    className="btn btn-success" 
                     formNoValidate={true} 
                     type="submit" 
                     disabled={isSaving}

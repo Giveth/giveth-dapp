@@ -1,0 +1,12 @@
+.sweet-alert {
+
+  font-family: 'Quicksand', sans-serif;
+
+  
+  button {
+    @media (max-width: 768px) {
+      font-size: 14px;
+      padding: 8px 24px;
+    }
+  }
+}

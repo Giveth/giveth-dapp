@@ -3,6 +3,8 @@ import SkyLight from 'react-skylight'
 
 import { feathersClient } from '../lib/feathersClient'
 import { Form, Input } from 'formsy-react-components';
+import { takeActionAfterWalletUnlock } from '../lib/middleware'
+
 
 class DonateButton extends Component {
   constructor() {
@@ -19,7 +21,7 @@ class DonateButton extends Component {
 
 
   openDialog(){
-    this.refs.donateDialog.show()
+    takeActionAfterWalletUnlock(this.props.wallet, () => this.refs.donateDialog.show())
   }
 
   focusInput(){
@@ -76,7 +78,7 @@ class DonateButton extends Component {
         </a>
 
         <SkyLight hideOnOverlayClicked ref="donateDialog" title={`Support this ${type}!`} afterOpen={()=>this.focusInput()}>
-          <h4>Give Ether to support {model.title}</h4>
+          <strong>Give Ether to support <em>{model.title}</em></strong>
 
           {["DAC", "campaign"].indexOf(type) > -1 &&
             <p>Note: as long as the {type} owner does not lock your money you can take it back any time.</p>

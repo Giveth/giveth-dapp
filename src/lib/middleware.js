@@ -32,10 +32,27 @@ export const isAuthenticated = (currentUser, history, wallet) => {
  */
 
 export const redirectAfterWalletUnlock = (to, wallet, history) => {
-  console.log(wallet)
   if (!wallet || (wallet && !wallet.unlocked)) {
     React.unlockWallet(to)
   } else {
     history.push(to)
+  }
+}
+
+
+
+/* if the wallet is locked, asks the user to unlock his wallet, otherwise performs the action
+ *
+ * @params:
+ *    wallet (object): wallet object
+ *    action (function): function to call when the wallet is unlocked
+ *
+ */
+
+export const takeActionAfterWalletUnlock = (wallet, action) => {
+  if (!wallet || (wallet && !wallet.unlocked)) {
+    React.unlockWallet()
+  } else {
+    action.call()
   }
 }
