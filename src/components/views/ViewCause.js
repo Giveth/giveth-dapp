@@ -75,7 +75,7 @@ class ViewCause extends Component {
   }  
 
   render() {
-    const { history, wallet } = this.props
+    const { history, wallet, currentUser } = this.props
     let { isLoading, id, title, description, image, owner, donations, isLoadingDonations, communityUrl } = this.state
 
     return (
@@ -90,7 +90,7 @@ class ViewCause extends Component {
               <h6>Decentralized Altruistic Community</h6>
               <h1>{title}</h1>
               
-              <DonateButton type="DAC" model={{ title: title, _id: id }} wallet={wallet}/>
+              <DonateButton type="DAC" model={{ title: title, _id: id }} wallet={wallet} currentUser={currentUser}/>
               {communityUrl &&
                 <CommunityButton className="btn btn-secondary" url={communityUrl}>&nbsp;Join our community</CommunityButton>
               }
@@ -123,7 +123,7 @@ class ViewCause extends Component {
                 <div className="col-md-8 m-auto">    
                   <h4>Donations</h4>        
                   <ShowTypeDonations donations={donations} isLoading={isLoadingDonations} />  
-                  <DonateButton type="DAC" model={{ title: title, _id: id }} wallet={wallet}/>
+                  <DonateButton type="DAC" model={{ title: title, _id: id }} wallet={wallet} currentUser={currentUser}/>
                 </div>
               </div>    
 

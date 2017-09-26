@@ -84,14 +84,14 @@ class Application extends Component {
 
     Promise.all([
       new Promise((resolve, reject) => {
-        feathersClient.service('causes').watch({ strategy: 'always' }).find().subscribe(
+        feathersClient.service('causes').watch({ strategy: 'always' }).find({ $limit: 200 }).subscribe(
           resp => this.setState({ causes: resp }, resolve()),
           err => reject()
         )
       })
     ,
       new Promise((resolve, reject) => {
-        feathersClient.service('campaigns').watch({ strategy: 'always' }).find().subscribe(
+        feathersClient.service('campaigns').watch({ strategy: 'always' }).find({ $limit: 200 }).subscribe(
           resp => this.setState({ campaigns: resp }, resolve()),
           err => reject()
 
@@ -224,7 +224,7 @@ class Application extends Component {
                 
                 <Route exact path="/dacs" component={props => <Causes causes={this.state.causes} currentUser={this.state.currentUser} wallet={this.state.wallet} {...props}/>} />
                 <Route exact path="/dacs/new" component={props => <EditCause isNew={true} currentUser={this.state.currentUser} walletUnlocked={this.state.wallet} {...props}/>} />                        
-                <Route exact path="/dacs/:id" component={ViewCause}/>
+                <Route exact path="/dacs/:id" component={props => <ViewCause currentUser={this.state.currentUser} wallet={this.state.wallet} {...props}/>} />                        
                 <Route exact path="/dacs/:id/edit" component={props => <EditCause currentUser={this.state.currentUser} wallet={this.state.wallet} {...props}/>} />  
 
                 <Route exact path="/campaigns" component={props => <Campaigns campaigns={this.state.campaigns} currentUser={this.state.currentUser} wallet={this.state.wallet} {...props}/>} />
