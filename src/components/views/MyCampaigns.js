@@ -109,7 +109,7 @@ class MyCampaigns extends Component {
                                 <span className="small">{campaign.owner.name}</span>
                               </Link>
 
-                              <Link to={`/dacs/${ campaign._id }`}>                  
+                              <Link to={`/campaigns/${ campaign._id }`}>
                                 <h4 className="card-title">{getTruncatedText(campaign.title, 30)}</h4>
                               </Link>
                               <div className="card-text">{campaign.summary}</div>

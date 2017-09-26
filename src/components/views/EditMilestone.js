@@ -1,5 +1,6 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
+import LPPMilestone from 'lpp-milestone';
 
 import { Form, Input } from 'formsy-react-components';
 import { feathersClient } from './../../lib/feathersClient'
@@ -10,6 +11,8 @@ import GoBackButton from '../GoBackButton'
 import { isOwner } from '../../lib/helpers'
 import { isAuthenticated } from '../../lib/middleware'
 import { getTruncatedText } from '../../lib/helpers'
+import getNetwork from "../../lib/blockchain/getNetwork";
+import getWeb3 from "../../lib/blockchain/getWeb3";
 
 /**
  * Create or edit a milestone
@@ -77,7 +80,17 @@ class EditMilestone extends Component {
               hasError: true
             }))
       } else {
-        this.setState({ isLoading: false })
+        feathersClient.service('campaigns').get(this.props.match.params.id)
+          .then(campaign => {
+            if (!campaign.projectId) {
+              this.props.history.goBack();
+            } else {
+              this.setState({
+                campaignProjectId: campaign.projectId,
+                isLoading: false,
+              });
+            }
+          });
       }
     })
   }
@@ -124,11 +137,50 @@ class EditMilestone extends Component {
         completionDeadline: model.completionDeadline,
         image: file,
         campaignId: this.state.campaignId
-      }       
+      };
 
       if(this.props.isNew){
-        feathersClient.service('milestones').create(constructedModel)
-          .then(()=> afterEmit(true))
+        const createMilestone = () => {
+          constructedModel.txHash = txHash;
+          constructedModel.pluginAddress = '0x0000000000000000000000000000000000000000';
+          feathersClient.service('milestones').create(constructedModel)
+            .then(() => afterEmit(true))
+        };
+
+        let txHash;
+        let etherScanUrl;
+        Promise.all([ getNetwork(), getWeb3() ])
+          .then(([ network, web3 ]) => {
+            const { liquidPledging } = network;
+            etherScanUrl = network.txHash;
+
+            //TODO set this in form
+            const maxAmount = web3.utils.toWei(100000000); // 100 million ether
+
+            // web3, lp address, name, parentProject, recipient, maxAmount, reviewer
+            LPPMilestone.new(web3, liquidPledging.$address, model.title, this.state.campaignProjectId, model.recipientAddress, maxAmount, model.reviewerAddress)
+              .on('transactionHash', (hash) => {
+                txHash = hash;
+                createMilestone(txHash);
+                React.toast.info(`Your milestone is pending. ${network.etherscan}tx/${txHash}`)
+              })
+              .then(() => {
+                React.toast.success(`Milestone successfully created. ${network.etherscan}tx/${txHash}`);
+              })
+          })
+          .catch(err => {
+            console.log('New milestone transaction failed:', err);
+            let msg;
+            if (txHash) {
+              msg = `Something went wrong with the transaction. ${etherScanUrl}tx/${txHash}`;
+              //TODO update or remove from feathers? maybe don't remove, so we can inform the user that the tx failed and retry
+            } else {
+              msg = "Something went wrong creating the milestone. Is your wallet unlocked?";
+            }
+            React.toast.error(msg);
+          });
+
+
       } else {
         feathersClient.service('milestones').patch(this.state.id, constructedModel)
           .then(()=> afterEmit())        

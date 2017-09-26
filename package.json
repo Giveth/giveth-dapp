@@ -13,7 +13,7 @@
     "formsy-react": "^0.19.5",
     "formsy-react-components": "^0.10.1",
     "giveth-react-scripts": "1.0.11",
-    "liquidpledging": "git://github.com/perissology/liquidpledging.git",
+    "liquidpledging": "git://github.com/perissology/liquidpledging.git#tmp",
     "localforage": "^1.5.0",
     "lpp-milestone": "git://github.com/Giveth/lpp-milestone.git#web3_1.0",
     "node-sass-chokidar": "^0.0.3",
