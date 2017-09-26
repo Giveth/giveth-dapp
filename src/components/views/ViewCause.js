@@ -75,6 +75,7 @@ class ViewCause extends Component {
   }  
 
   render() {
+    let { wallet, history, currentUser } = this.props;
     let { isLoading, id, delegateId, title, description, image, owner, donations, isLoadingDonations, communityUrl } = this.state
 
     return (

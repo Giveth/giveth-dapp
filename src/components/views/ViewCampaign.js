@@ -163,11 +163,7 @@ class ViewCampaign extends Component {
                 <div className="col-md-8 m-auto">    
                   <h4>Donations</h4>        
                   <ShowTypeDonations donations={donations} isLoading={isLoadingDonations} />  
-<<<<<<< HEAD
-                  <DonateButton type="campaign" model={{ title: title, _id: id, managerId: projectId }} currentUser={currentUser}/>
-=======
-                  <DonateButton type="campaign" model={{ title: title, _id: id }} wallet={wallet} currentUser={currentUser}/>
->>>>>>> origin/master
+                  <DonateButton type="campaign" model={{ title: title, _id: id, managerId: projectId }} wallet={wallet} currentUser={currentUser}/>
                 </div>
               </div>  
 
