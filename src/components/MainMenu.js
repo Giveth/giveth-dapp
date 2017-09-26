@@ -9,6 +9,7 @@ import AuthenticatedNavLink from './AuthenticatedNavLink'
 
 import Avatar from 'react-avatar'
 
+
 /**
   The main top menu
 **/
@@ -19,6 +20,7 @@ class MainMenu extends Component {
 
     this.state = {
       walletLocked: props.wallet ? !props.wallet.unlocked : true,
+      showMobileMenu: false
     }
   }
 
@@ -53,17 +55,30 @@ class MainMenu extends Component {
     });
   }
 
+  toggleMobileMenu(){
+    this.setState({ showMobileMenu: !this.state.showMobileMenu })
+  }
+
+  componentDidMount(){
+    // when route changes, close the menu
+    this.props.history.listen((location, action) => {
+      this.setState({ showMobileMenu: false })
+    })
+  }
+
+
   render() {
-    const { userProfile, authenticated, wallet } = this.props;
+    const { userProfile, authenticated, wallet } = this.props
+    const { showMobileMenu } = this.state
 
     return (
-      <nav id="main-menu" className="navbar navbar-expand-lg fixed-top">
-        <button className="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-          <span className="navbar-toggler-icon">&#9776;</span>
+      <nav id="main-menu" className={`navbar navbar-expand-lg fixed-top ${showMobileMenu ? 'show' : ''} `}>
+        <button className="navbar-toggler navbar-toggler-right" type="button" onClick={()=>this.toggleMobileMenu()}>
+          <i className={`navbar-toggler-icon fa ${showMobileMenu ? 'fa-close' : 'fa-bars'}`}></i>
         </button>
         <Link className="navbar-brand" to="/">Giveth</Link>
 
-        <div className="collapse navbar-collapse" id="navbarSupportedContent">
+        <div className={`collapse navbar-collapse ${showMobileMenu ? 'show' : ''} `} id="navbarSupportedContent">
           <ul className="navbar-nav mr-auto">
             <li className="nav-item">
               <NavLink className="nav-link" to="/dacs" activeClassName="active">DACs</NavLink>
@@ -75,7 +90,7 @@ class MainMenu extends Component {
             {authenticated &&
               <li className="nav-item dropdown">
                 <NavLink className="nav-link dropdown-toggle" id="navbarDropdownDashboard" to="/dashboard" activeClassName="active" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Dashboard</NavLink>
-                <div className="dropdown-menu" aria-labelledby="navbarDropdownDashboard">
+                <div className={`dropdown-menu ${showMobileMenu ? 'show' : ''} `} aria-labelledby="navbarDropdownDashboard">
                   <Link className="dropdown-item" to="/donations">My donations</Link>
                   <Link className="dropdown-item" to="/delegations">My delegations</Link>
                   <Link className="dropdown-item" to="/my-causes">My DACs</Link>
@@ -134,7 +149,7 @@ class MainMenu extends Component {
                     <span>Hi, you!</span>
                   }
                 </Link>
-                <div className="dropdown-menu dropdown-profile" aria-labelledby="navbarDropdownYou">
+                <div className={`dropdown-menu dropdown-profile ${showMobileMenu ? 'show' : ''}`} aria-labelledby="navbarDropdownYou">
                   <AuthenticatedLink className="dropdown-item" to="/profile" wallet={wallet}>Profile</AuthenticatedLink>
                   <Link className="dropdown-item" to="/wallet">Wallet</Link>
                   <a className="dropdown-item" onClick={()=>this.signout()}>Sign out</a>

@@ -128,7 +128,7 @@ class Signup extends Component {
                         </div>
 
                         <LoaderButton
-                          className="btn btn-success btn-lg" 
+                          className="btn btn-success btn-block" 
                           formNoValidate={true} type="submit" 
                           disabled={isSaving || !formIsValid}
                           isLoading={isSaving}

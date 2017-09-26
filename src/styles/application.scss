@@ -1,5 +1,7 @@
 // Global classes are defined here
 
+@import '~react-input-token/lib/style.css';
+
 @import 'layout.scss';
 @import 'colors.scss';
 @import 'typography.scss';
@@ -11,6 +13,7 @@
 @import 'viewCampaignView.scss';
 @import 'viewMilestoneView.scss';
 @import 'accountView.scss';
+@import 'dashboard.scss';
 
 // components
 @import 'loader.scss';
@@ -23,6 +26,8 @@
 @import 'quill-overrides.scss';
 @import 'react-skylight.scss';
 @import 'toastify-overrides.scss';
+@import 'react-token-input-overrides.scss';
+@import 'sweet-alert-overrides.scss';
 
 // overrides
 @import 'card.scss';
@@ -30,7 +35,7 @@
 
 html, 
 body {
-  font-family: 'Muli', sans-serif;
+  font-family: 'Quicksand', sans-serif;
 }
 
 body {
@@ -61,5 +66,22 @@ a, button {
 
 label {
   font-weight: 600;  
+  margin-bottom: 2px;
+  font-size: 0.9rem;  
+}
+
+table {
+  overflow-x: scroll; /* has to be scroll, not auto */
+  -webkit-overflow-scrolling: touch;  
+}
+
+.help-block {
+  color: #666;
+  font-size: 0.75rem; 
+  font-weight: 300; 
+}
+
+input[type="file"] {
+  display: block;  
 }
 

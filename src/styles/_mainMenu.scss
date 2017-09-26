@@ -1,6 +1,22 @@
 #main-menu {
   background-color: $header-background;
 
+  &.show {
+
+    .navbar-collapse { 
+      animation: pop 0.1s ease-out 1;
+    }
+
+    .navbar-toggler {
+      border-radius: 50%;
+      border: 1px solid #efefef;
+  
+      .navbar-toggler-icon {
+        color: $red;
+      }
+    }
+  }
+
   a {
     color: $menu-item-color;
 
@@ -11,6 +27,10 @@
     &.active {
       color: $green;
     }
+
+    @media (max-width: 991px) {
+      font-size: 1.6rem;
+    }     
   }
 
   .navbar-toggler {
@@ -35,4 +55,80 @@
   .menu-avatar {
     margin-right: 8px;
   }
+
+  .dropdown-menu {
+    @media (max-width: 991px) {
+      text-align: center;
+      border: none;
+      margin-top: -9px;
+      padding: 0 0 20px 0;      
+    }      
+  }
+
+  .dropdown-item {
+    &:active {
+      background-color: #ddedfd;
+    }
+
+    @media (max-width: 991px) {
+      font-size: 1.2rem;
+      font-weight: 300;
+      padding: .05rem 1.5rem;      
+    }      
+  }
+}
+
+@media (max-width: 991px) {
+  .navbar-toggler {
+    width: 40px;
+    height: 40px;        
+  }
+
+  .navbar-collapse {
+    opacity: 0.99;
+    position: fixed;
+    background-color: white;
+    bottom: 0;
+    top: 55px;
+    right: 0;
+    left: 0;
+    padding: .5rem 1rem;
+    overflow-y: scroll;  
+    -webkit-overflow-scrolling: touch;   
+
+    text-align: center;
+
+    .nav-link {
+      font-size: 1.6rem;
+      font-weight: 700;
+    }
+
+    .dropdown-toggle:after {
+      display: none;
+    }
+  }
+
+  #navbarDropdownYou {
+    margin-top: 20px;
+
+    .menu-avatar {
+      position: relative;
+      margin: 0 auto;   
+      display: block !important;   
+      width: 50px !important;
+      height: 50px !important;      
+     
+      img {
+        width: 50px !important;
+        height: 50px !important;
+        max-width: none !important;
+      }
+    }
+  }
+}
+
+@keyframes pop {
+  0%   {transform: scale(0);    opacity: 0;           }  
+  50%  {transform: scale(0.8);  opacity: 0.5;         }
+  100% {transform: scale(1);    opacity: 1;           }
 }

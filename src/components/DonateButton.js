@@ -6,6 +6,8 @@ import getNetwork from '../lib/blockchain/getNetwork';
 
 import { feathersClient } from '../lib/feathersClient'
 import { Form, Input } from 'formsy-react-components';
+import { takeActionAfterWalletUnlock } from '../lib/middleware'
+
 
 class DonateButton extends Component {
   constructor() {
@@ -28,7 +30,7 @@ class DonateButton extends Component {
   }
 
   openDialog(){
-    this.refs.donateDialog.show()
+    takeActionAfterWalletUnlock(this.props.wallet, () => this.refs.donateDialog.show())
   }
 
   focusInput(){
@@ -107,17 +109,20 @@ class DonateButton extends Component {
   render() {
     const { type, model } = this.props
     let { isSaving, amount, formIsValid, user } = this.state;
+    const style = {
+      display: 'inline-block'     
+    }
 
     //TODO inform the user why the donate button is disabled
     return(
-      <span>
+      <span style={style}>
         <a className={"btn btn-success " + (user && user.donorId ? "" : "disabled")} onClick={() => this.openDialog()}>
           Donate
         </a>
 
         <SkyLight hideOnOverlayClicked ref="donateDialog" title={`Support this ${type}!`}
                   afterOpen={() => this.focusInput()}>
-          <h4>Give Ether to support {model.title}</h4>
+          <strong>Give Ether to support <em>{model.title}</em></strong>
 
           {[ "DAC", "campaign" ].indexOf(type) > -1 &&
           <p>Note: as long as the {type} owner does not lock your money you can take it back any time.</p>

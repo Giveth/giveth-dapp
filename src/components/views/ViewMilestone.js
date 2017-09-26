@@ -70,7 +70,7 @@ class ViewMilestone extends Component {
   }  
 
   render() {
-    const { history, currentUser } = this.props
+    const { history, wallet, currentUser } = this.props
 
     let { isLoading, 
           id,
@@ -98,7 +98,7 @@ class ViewMilestone extends Component {
               <h6>Milestone</h6>
               <h1>{title}</h1>
               
-              <DonateButton type="milestone" model={{ title: title, _id: id, managerId: projectId }} currentUser={currentUser}/>
+              <DonateButton type="milestone" model={{ title: title, _id: id, managerId: projectId }} wallet={wallet} currentUser={currentUser}/>
             </BackgroundImageHeader>
 
             <div className="container-fluid">
@@ -137,7 +137,7 @@ class ViewMilestone extends Component {
                 <div className="col-md-8 m-auto">    
                   <h4>Donations</h4>        
                   <ShowTypeDonations donations={donations} isLoading={isLoadingDonations} />  
-                  <DonateButton type="milestone" model={{ title: title, _id: id, managerId: projectId }} currentUser={currentUser}/>
+                  <DonateButton type="milestone" model={{ title: title, _id: id, managerId: projectId }} wallet={wallet} currentUser={currentUser}/>
                 </div>
               </div> 
 

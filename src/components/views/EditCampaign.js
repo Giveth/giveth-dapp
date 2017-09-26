@@ -1,7 +1,7 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types';
 
-import { Form, Input, Select } from 'formsy-react-components';
+import { Form, Input } from 'formsy-react-components';
 import { feathersClient } from '../../lib/feathersClient'
 import Loader from '../Loader'
 import QuillFormsy from '../QuillFormsy'
@@ -13,6 +13,10 @@ import { isOwner } from '../../lib/helpers'
 import { isAuthenticated } from '../../lib/middleware'
 import getNetwork from "../../lib/blockchain/getNetwork";
 import { getTruncatedText } from '../../lib/helpers'
+import LoaderButton from "../../components/LoaderButton"
+
+import InputToken from "react-input-token";
+import "react-input-token/lib/style.css";
 
 /**
  * Create or edit a campaign
@@ -34,6 +38,7 @@ class EditCampaign extends Component {
       isLoading: true,
       isSaving: false,
       hasError: false,
+      formIsValid: false,      
       causesOptions: [],
 
       // campaign model
@@ -42,11 +47,13 @@ class EditCampaign extends Component {
       summary: '',
       image: '',
       videoUrl: '',
+      communityUrl: '',      
       ownerAddress: null,
       projectId: 0,
       milestones: [],
       causes: [],
-      uploadNewImage: false
+      uploadNewImage: false,
+      isLoadingTokens: false,      
     }
 
     this.submit = this.submit.bind(this)
@@ -64,7 +71,7 @@ class EditCampaign extends Component {
               .then((resp) => {
                 if(!isOwner(resp.data[0].owner.address, this.props.currentUser)) {
                   this.props.history.goBack()
-                } else {                
+                } else {  
                   this.setState(Object.assign({}, resp.data[0], {
                     id: this.props.match.params.id,
                   }), resolve())  
@@ -82,7 +89,7 @@ class EditCampaign extends Component {
             .then((resp) => 
               this.setState({
                 //TODO should we filter the available cuases to those that have been mined? It is possible that a createCause tx will fail and the cause will not be available
-                causesOptions: resp.data.map((c) =>  { return { label: c.title, value: c._id } }),
+                causesOptions: resp.data.map((c) =>  { return { name: c.title, id: c._id, element: <span>{c.title}</span> } }),
                 // causesOptions: resp.data.filter((c) => (c.delegateId && c.delegateId > 0)).map((c) =>  { return { label: c.title, value: c._id} }),
                 hasError: false
               }, resolve())
@@ -106,17 +113,12 @@ class EditCampaign extends Component {
     return {
       'title': inputs.title,
       'description': inputs.description,
-      'causes': inputs.causes
+      'communityUrl': inputs.communityUrl
     }
   }  
 
   setImage(image) {
     this.setState({ image: image, uploadNewImage: true })
-  }
-
-  isValid() {
-    return true
-    return this.state.description.length > 0 && this.state.title.length > 10 && this.state.image.length > 0
   }
 
   submit(model) {    
@@ -132,11 +134,12 @@ class EditCampaign extends Component {
       const constructedModel = {
         title: model.title,
         description: model.description,
+        communityUrl: model.communityUrl,
         summary: getTruncatedText(this.state.summary, 200),
         image: file,
         projectId: this.state.projectId,
-        causes: [ model.causes ]
-      }
+        causes: this.state.causes,
+      }  
 
       if(this.props.isNew){
         const createCampaign = (txHash) => {
@@ -187,6 +190,10 @@ class EditCampaign extends Component {
     }
   } 
 
+  toggleFormValid(state) {
+    this.setState({ formIsValid: state })
+  }    
+
   goBack(){
     this.props.history.push('/campaigns')
   }
@@ -195,9 +202,13 @@ class EditCampaign extends Component {
     this.setState({ summary: text})
   }
 
+  selectDACs = ({ target: { value: selectedDacs } }) => {
+    this.setState({ causes: selectedDacs })
+  }  
+
   render(){
     const { isNew, history } = this.props
-    let { isLoading, isSaving, title, description, image, causes, causesOptions } = this.state
+    let { isLoading, isSaving, title, description, image, causes, causesOptions, communityUrl, formIsValid } = this.state
 
     return(
         <div id="edit-campaign-view">
@@ -220,7 +231,7 @@ class EditCampaign extends Component {
                       <h1>Edit campaign {title}</h1>
                     }
 
-                    <Form onSubmit={this.submit} mapping={this.mapInputs} layout='vertical'>
+                    <Form onSubmit={this.submit} mapping={this.mapInputs} onValid={()=>this.toggleFormValid(true)} onInvalid={()=>this.toggleFormValid(false)} layout='vertical'>
                       <div className="form-group">
                         <Input
                           name="title"
@@ -255,22 +266,46 @@ class EditCampaign extends Component {
                         />
                       </div>
 
-                      <FormsyImageUploader setImage={this.setImage} previewImage={image}/>
+                      <FormsyImageUploader setImage={this.setImage} previewImage={image} isRequired={isNew}/>
 
-                      {/* TO DO: This needs to be replaced by something like http://react-autosuggest.js.org/ */}
                       <div className="form-group">
-                        <Select
-                          name="causes"
-                          label="Which cause does this campaign solve?"
+                        <label>Which cause(s) is this campaign solving?</label>
+
+                        <InputToken
+                          name="dac"
+                          placeholder="Select one or more DACs"
+                          value={causes}
                           options={causesOptions}
-                          value={causes[0]}
-                          required
-                        />
+                          onSelect={this.selectDACs}/>
+
                       </div>
 
-                      <button className="btn btn-success" formNoValidate={true} type="submit" disabled={isSaving || !this.isValid()}>
-                        {isSaving ? "Saving..." : "Save campaign"}
-                      </button>
+                      <div className="form-group">
+                        <Input
+                          name="communityUrl"
+                          id="community-url"
+                          ref="communityUrl"
+                          label="Url to join your community"
+                          type="text"
+                          value={communityUrl}
+                          placeholder="https://slack.giveth.com"
+                          help="Enter the url of your community"
+                          validations="isUrl"
+                          validationErrors={{
+                            isUrl: 'Please provide a url.'
+                          }}
+                        />
+                      </div>                      
+
+                      <LoaderButton
+                        className="btn btn-success" 
+                        formNoValidate={true} 
+                        type="submit" 
+                        disabled={isSaving || !formIsValid}
+                        isLoading={isSaving}
+                        loadingText="Saving...">
+                        Save Campaign
+                      </LoaderButton>                         
                                      
                     </Form>
                   </div>

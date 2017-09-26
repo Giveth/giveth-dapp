@@ -12,6 +12,7 @@ import Avatar from 'react-avatar'
 import DonateButton from '../DonateButton'
 import ShowTypeDonations from '../ShowTypeDonations'
 
+import CommunityButton from '../CommunityButton'
 
 /**
   Loads and shows a single DAC
@@ -39,18 +40,22 @@ class ViewCause extends Component {
     this.setState({ id: dacId })
 
     feathersClient.service('dacs').find({ query: {_id: dacId }})
-      .then(resp =>
-        this.setState(Object.assign({}, resp.data[0], {  
+      .then(resp => {
+        console.log(resp)
+        this.setState(Object.assign({}, resp.data[0], {
           isLoading: false,
           hasError: false
-        })))
+        }))})
       .catch(() =>
         this.setState({ isLoading: false, hasError: true })
       )
 
     // lazy load donations         
     const query = paramsForServer({ 
-      query: { type_id: dacId },
+      query: { 
+        type_id: dacId,
+        status: { $nin: ['waiting', 'pending'] }        
+      },
       schema: 'includeDonorDetails'
     })  
 
@@ -70,8 +75,7 @@ class ViewCause extends Component {
   }  
 
   render() {
-    const { history, currentUser } = this.props;
-    let { isLoading, id, delegateId, title, description, image, owner, donations, isLoadingDonations } = this.state;
+    let { isLoading, id, delegateId, title, description, image, owner, donations, isLoadingDonations, communityUrl } = this.state
 
     return (
       <div id="view-cause-view">
@@ -85,7 +89,10 @@ class ViewCause extends Component {
               <h6>Decentralized Altruistic Community</h6>
               <h1>{title}</h1>
               
-              <DonateButton type="DAC" model={{ title: title, _id: id, managerId: delegateId }} currentUser={currentUser}/>
+              <DonateButton type="DAC" model={{ title: title, _id: id, managerId: delegateId }} wallet={wallet} currentUser={currentUser}/>
+              {communityUrl &&
+                <CommunityButton className="btn btn-secondary" url={communityUrl}>&nbsp;Join our community</CommunityButton>
+              }
             </BackgroundImageHeader>
 
             <div className="container-fluid">
@@ -115,7 +122,7 @@ class ViewCause extends Component {
                 <div className="col-md-8 m-auto">    
                   <h4>Donations</h4>        
                   <ShowTypeDonations donations={donations} isLoading={isLoadingDonations} />  
-                  <DonateButton type="DAC" model={{ title: title, _id: id, managerId: delegateId }} currentUser={currentUser}/>
+                  <DonateButton type="DAC" model={{ title: title, _id: id, managerId: delegateId }} wallet={wallet} currentUser={currentUser}/>
                 </div>
               </div>    
 

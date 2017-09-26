@@ -11,6 +11,7 @@ import { isOwner } from '../../lib/helpers'
 import { isAuthenticated } from '../../lib/middleware'
 import getNetwork from "../../lib/blockchain/getNetwork";
 import { getTruncatedText } from '../../lib/helpers'
+import LoaderButton from "../../components/LoaderButton"
 
 /**
  * Create or edit a cause (DAC)
@@ -31,6 +32,7 @@ class EditCause extends Component {
     this.state = {
       isLoading: true,
       isSaving: false,
+      formIsValid: false,
 
       // DAC model
       title: '',
@@ -38,6 +40,7 @@ class EditCause extends Component {
       summary: '',
       image: '',
       videoUrl: '',
+      communityUrl: '',
       ownerAddress: null,
       uploadNewImage: false
 
@@ -81,17 +84,13 @@ class EditCause extends Component {
   mapInputs(inputs) {
     return {
       'title': inputs.title,
-      'description': inputs.description
+      'description': inputs.description,
+      'communityUrl': inputs.communityUrl
     }
   }
 
   setImage(image) {
-    this.setState({ image: image })
-  }
-
-  isValid() {
-    return true
-    return this.state.description.length > 0 && this.state.title.length > 10 && this.state.image.length > 0
+    this.setState({ image: image, uploadNewImage: true })
   }
 
   submit(model) {
@@ -107,10 +106,13 @@ class EditCause extends Component {
       const constructedModel = {
         title: model.title,
         description: model.description,
+        communityUrl: model.communityUrl,
         summary: getTruncatedText(this.state.summary, 200),
         delegateId: this.state.delegateId,
         image: file,
       };
+
+      console.log(constructedModel)
 
       if(this.props.isNew){
         const createDAC = (txHash) => {
@@ -161,6 +163,10 @@ class EditCause extends Component {
     }
   }
 
+  toggleFormValid(state) {
+    this.setState({ formIsValid: state })
+  }  
+
   goBack(){
     this.props.history.push('/causes')
   }
@@ -171,7 +177,7 @@ class EditCause extends Component {
 
   render(){
     const { isNew, history } = this.props
-    let { isLoading, isSaving, title, description, image } = this.state
+    let { isLoading, isSaving, title, description, image, communityUrl, formIsValid } = this.state
 
     return(
         <div id="edit-cause-view">
@@ -194,7 +200,8 @@ class EditCause extends Component {
                       <h1>Edit DAC</h1>
                     }
 
-                    <Form onSubmit={this.submit} mapping={this.mapInputs} layout='vertical'>
+
+                    <Form onSubmit={this.submit} mapping={this.mapInputs} onValid={()=>this.toggleFormValid(true)} onInvalid={()=>this.toggleFormValid(false)} layout='vertical'>
                       <div className="form-group">
                         <Input
                           name="title"
@@ -229,11 +236,34 @@ class EditCause extends Component {
                         />
                       </div>
 
-                      <FormsyImageUploader setImage={this.setImage} previewImage={image}/>
+                      <FormsyImageUploader setImage={this.setImage} previewImage={image} isRequired={isNew}/>
 
-                      <button className="btn btn-success" formNoValidate={true} type="submit" disabled={isSaving || !this.isValid()}>
-                        {isSaving ? "Saving..." : "Save DAC"}
-                      </button>
+                      <div className="form-group">
+                        <Input
+                          name="communityUrl"
+                          id="community-url"
+                          ref="communityUrl"
+                          label="Url to join your community"
+                          type="text"
+                          value={communityUrl}
+                          placeholder="https://slack.giveth.com"
+                          help="Enter the url of your community"
+                          validations="isUrl"
+                          validationErrors={{
+                            isUrl: 'Please provide a url.'
+                          }}
+                        />
+                      </div>
+
+                      <LoaderButton
+                        className="btn btn-success" 
+                        formNoValidate={true} 
+                        type="submit" 
+                        disabled={isSaving || !formIsValid}
+                        isLoading={isSaving}
+                        loadingText="Saving...">
+                        Save DAC
+                      </LoaderButton>                         
 
                     </Form>
                   </div>

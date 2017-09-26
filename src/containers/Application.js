@@ -90,7 +90,8 @@ class Application extends Component {
             delegateId: {
               $gt: '0' // 0 is a pending dac
             }
-          }
+          },
+          $limit: 200,
         }).subscribe(
           resp => this.setState({ causes: resp }, resolve()),
           err => reject()
@@ -103,7 +104,8 @@ class Application extends Component {
             projectId: {
               $gt: '0' // 0 is a pending campaign
             }
-          }
+          },
+          $limit: 200,
         }).subscribe(
           resp => this.setState({ campaigns: resp }, resolve()),
           err => reject()
@@ -239,8 +241,8 @@ class Application extends Component {
 
                 <Route exact path="/dacs" component={props => <Causes causes={this.state.causes} currentUser={this.state.currentUser} wallet={this.state.wallet} {...props}/>} />
                 <Route exact path="/dacs/new" component={props => <EditCause isNew={true} currentUser={this.state.currentUser} walletUnlocked={this.state.wallet} {...props}/>} />
-                <Route exact path="/dacs/:id" component={props => <ViewCause currentUser={this.state.currentUser} {...props}/>} />
-                <Route exact path="/dacs/:id/edit" component={props => <EditCause currentUser={this.state.currentUser} wallet={this.state.wallet} {...props}/>} />
+                <Route exact path="/dacs/:id" component={props => <ViewCause currentUser={this.state.currentUser} wallet={this.state.wallet} {...props}/>} />                        
+                <Route exact path="/dacs/:id/edit" component={props => <EditCause currentUser={this.state.currentUser} wallet={this.state.wallet} {...props}/>} />  
 
                 <Route exact path="/campaigns" component={props => <Campaigns campaigns={this.state.campaigns} currentUser={this.state.currentUser} wallet={this.state.wallet} {...props}/>} />
                 <Route exact path="/campaigns/new" component={props => <EditCampaign isNew={true} currentUser={this.state.currentUser} wallet={this.state.wallet} {...props}/>} />
