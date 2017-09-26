@@ -92,8 +92,10 @@ class GivethWallet {
         resolve(true);
       };
 
+      decrypt();
+
       // web3 blocks all rendering, so we need to request an animation frame
-      window.requestAnimationFrame(decrypt)
+      // window.requestAnimationFrame(decrypt)
 
     })
   }

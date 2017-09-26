@@ -38,7 +38,7 @@ class ViewCause extends Component {
 
     this.setState({ id: dacId })
 
-    feathersClient.service('causes').find({ query: {_id: dacId }})
+    feathersClient.service('dacs').find({ query: {_id: dacId }})
       .then(resp =>
         this.setState(Object.assign({}, resp.data[0], {  
           isLoading: false,
@@ -70,8 +70,8 @@ class ViewCause extends Component {
   }  
 
   render() {
-    const { history } = this.props
-    let { isLoading, id, title, description, image, owner, donations, isLoadingDonations } = this.state
+    const { history, currentUser } = this.props;
+    let { isLoading, id, delegateId, title, description, image, owner, donations, isLoadingDonations } = this.state;
 
     return (
       <div id="view-cause-view">
@@ -85,7 +85,7 @@ class ViewCause extends Component {
               <h6>Decentralized Altruistic Community</h6>
               <h1>{title}</h1>
               
-              <DonateButton type="DAC" model={{ title: title, _id: id }}/>
+              <DonateButton type="DAC" model={{ title: title, _id: id, managerId: delegateId }} currentUser={currentUser}/>
             </BackgroundImageHeader>
 
             <div className="container-fluid">
@@ -115,7 +115,7 @@ class ViewCause extends Component {
                 <div className="col-md-8 m-auto">    
                   <h4>Donations</h4>        
                   <ShowTypeDonations donations={donations} isLoading={isLoadingDonations} />  
-                  <DonateButton type="DAC" model={{ title: title, _id: id }}/>
+                  <DonateButton type="DAC" model={{ title: title, _id: id, managerId: delegateId }} currentUser={currentUser}/>
                 </div>
               </div>    
 
@@ -130,5 +130,6 @@ class ViewCause extends Component {
 export default ViewCause
 
 ViewCause.propTypes = {
-  history: PropTypes.object.isRequired
+  history: PropTypes.object.isRequired,
+  currentUser: PropTypes.string.required
 }

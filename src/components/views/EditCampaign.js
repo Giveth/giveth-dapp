@@ -45,7 +45,7 @@ class EditCampaign extends Component {
       ownerAddress: null,
       projectId: 0,
       milestones: [],
-      causes: [],
+      parentProject: 0,
       uploadNewImage: false
     }
 
@@ -78,10 +78,10 @@ class EditCampaign extends Component {
         // load all causes. that aren't pending
         // TO DO: this needs to be replaced by something like http://react-autosuggest.js.org/
         new Promise((resolve, reject) => {
-          feathersClient.service('dacs').find({query: { $exists: [ 'delegateId' ], $select: [ 'title', 'delegateId' ] }})
+          feathersClient.service('dacs').find({query: {  $select: [ 'title', 'delegateId' ] }})
             .then((resp) => 
               this.setState({ 
-                causesOptions: resp.data.map((c) =>  { return { label: c.title, value: c.delegateId } }),
+                causesOptions: resp.data.filter((c) => (c.delegateId && c.delegateId > 0)).map((c) =>  { return { label: c.title, value: c.delegateId } }),
                 hasError: false
               }, resolve())
             )
@@ -104,7 +104,7 @@ class EditCampaign extends Component {
     return {
       'title': inputs.title,
       'description': inputs.description,
-      'causes': inputs.causes
+      'parentProject': inputs.parentProject,
     }
   }  
 
@@ -133,13 +133,15 @@ class EditCampaign extends Component {
         summary: getTruncatedText(this.state.summary, 200),
         image: file,
         projectId: this.state.projectId,
-        parentProject: model.cause || 0,
+        parentProject: model.parentProject || 0,
       }  
 
       if(this.props.isNew){
         feathersClient.service('campaigns').create(constructedModel)
           .then(() => this.props.history.push('/my-campaigns'));
 
+        console.log('model ->', model);
+        console.log('currentUser ->', this.props.currentUser);
         getNetwork()
           .then(network => {
             const { liquidPledging } = network;
@@ -148,7 +150,7 @@ class EditCampaign extends Component {
             // still has control of their funds for upto 2 years. Once we implement campaign reviewers, we can set a
             // more reasonable commitTime
             let txHash;
-            liquidPledging.addProject(model.title, this.props.currentUser, model.parentProject, 60 * 60 * 24 * 365 * 2, '0x0')
+            liquidPledging.addProject(model.title, this.props.currentUser, model.parentProject || 0, 60 * 60 * 24 * 365 * 2, '0x0')
               .once('transactionHash', hash => {
                 txHash = hash;
                 React.toast.info(`New Campaign transaction hash ${network.etherscan}tx/${txHash}`)
@@ -185,7 +187,7 @@ class EditCampaign extends Component {
 
   render(){
     const { isNew, history } = this.props
-    let { isLoading, isSaving, title, description, image, causes, causesOptions } = this.state
+    let { isLoading, isSaving, title, description, image, parentProject, causesOptions } = this.state
 
     return(
         <div id="edit-campaign-view">
@@ -248,10 +250,10 @@ class EditCampaign extends Component {
                       {/* TO DO: This needs to be replaced by something like http://react-autosuggest.js.org/ */}
                       <div className="form-group">
                         <Select
-                          name="causes"
+                          name="parentProject"
                           label="Which cause does this campaign solve?"
                           options={causesOptions}
-                          value={causes[0]}
+                          value={parentProject}
                           required
                         />
                       </div>

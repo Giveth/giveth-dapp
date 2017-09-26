@@ -100,7 +100,7 @@ class ViewCampaign extends Component {
 
   render() {
     const { history, currentUser, wallet } = this.props
-    let { isLoading, id, title, description, image, milestones, owner, donations, isLoadingDonations } = this.state
+    let { isLoading, id, projectId, title, description, image, milestones, owner, donations, isLoadingDonations } = this.state
 
     return (
       <div id="view-campaign-view">
@@ -114,7 +114,7 @@ class ViewCampaign extends Component {
               <h6>Campaign</h6>
               <h1>{title}</h1>
 
-              <DonateButton type="campaign" model={{ title: title, _id: id }}/>
+              <DonateButton type="campaign" model={{ title: title, _id: id, managerId: projectId}} currentUser={currentUser}/>
             </BackgroundImageHeader>
 
             <div className="container-fluid">
@@ -160,7 +160,7 @@ class ViewCampaign extends Component {
                 <div className="col-md-8 m-auto">    
                   <h4>Donations</h4>        
                   <ShowTypeDonations donations={donations} isLoading={isLoadingDonations} />  
-                  <DonateButton type="campaign" model={{ title: title, _id: id }}/>
+                  <DonateButton type="campaign" model={{ title: title, _id: id, managerId: projectId }} currentUser={currentUser}/>
                 </div>
               </div>  
 
@@ -175,5 +175,6 @@ class ViewCampaign extends Component {
 export default ViewCampaign
 
 ViewCampaign.propTypes = {
-  history: PropTypes.object.isRequired
+  history: PropTypes.object.isRequired,
+  currentUser: PropTypes.string.isRequired,
 }

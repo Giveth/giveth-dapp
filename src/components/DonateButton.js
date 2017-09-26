@@ -1,5 +1,8 @@
 import React, { Component } from 'react'
+import PropTypes from 'prop-types'
 import SkyLight from 'react-skylight'
+import { utils } from 'web3';
+import getNetwork from '../lib/blockchain/getNetwork';
 
 import { feathersClient } from '../lib/feathersClient'
 import { Form, Input } from 'formsy-react-components';
@@ -17,6 +20,12 @@ class DonateButton extends Component {
     this.submit = this.submit.bind(this)
   }
 
+  componentDidMount() {
+    //TODO currentUser should probably store the profile object instead of just the address
+    //this is tmp until we work on the same branch to reduce conflicts when merging
+    feathersClient.service('users').get(this.props.currentUser)
+      .then(user => this.setState({user}));
+  }
 
   openDialog(){
     this.refs.donateDialog.show()
@@ -34,53 +43,88 @@ class DonateButton extends Component {
   submit(model) {
     console.log(model, this.props.type.toLowerCase(), this.props.model._id)
 
-    this.setState({ isSaving: true })
+    this.setState({ isSaving: true });
 
-    feathersClient.service('/donations').create({
-      amount: parseFloat(model.amount, 10),
-      type: this.props.type.toLowerCase(),
-      type_id: this.props.model._id,
-    }).then(user => {
-      this.setState({
-        isSaving: false,
-        amount: 10
+    const amount = utils.toWei(model.amount);
+    const service = feathersClient.service('donations');
+
+    // TODO will the txHash cause issues when instant mining?
+    const donate = (etherScanUrl, txHash) => service.create({
+        amount,
+        type: this.props.type.toLowerCase(),
+        type_id: this.props.model._id,
+        txHash,
+      }).then(() =>{
+        this.setState({
+          isSaving: false,
+          amount: 10
+        });
+
+        // For some reason (I suspect a rerender when donations are being fetched again)
+        // the skylight dialog is sometimes gone and this throws error
+        if(this.refs.donateDialog) this.refs.donateDialog.hide()
+
+        if(this.props.type === "DAC") {
+          React.swal("You're awesome!", `You're donation is pending. You have full control of this donation and can take it back at any time. You will also have a 3 day window to veto the use of these funds upon delegation by the dac. Please make sure you join the community to follow progress of this DAC. ${etherScanUrl}tx/${txHash}`, 'success')
+        } else {
+          React.swal("You're awesome!", "You're donation is pending. Please make sure to join the community to follow progress of this project.", 'success')
+        }
+      });
+
+    // TODO check for donorId first
+    let txHash;
+    let etherScanUrl;
+    getNetwork()
+      .then((network) => {
+        const { liquidPledging } = network;
+        etherScanUrl = network.etherscan;
+
+        return liquidPledging.donate(this.state.user.donorId, this.props.model.managerId, { value: amount })
+          .once('transactionHash', hash => {
+            txHash = hash;
+            donate(etherScanUrl, txHash);
+          });
       })
+      .then(() => {
+        React.toast.success(`Your donation has been confirmed! ${etherScanUrl}tx/${txHash}`);
+      }).catch((e) => {
+        console.log(e);
 
-      // For some reason (I suspect a rerender when donations are being fetched again)
-      // the skylight dialog is sometimes gone and this throws error
-      if(this.refs.donateDialog) this.refs.donateDialog.hide()
+        let msg;
+        if (txHash) {
+          msg = `Something went wrong with the transaction. ${etherScanUrl}tx/${txHash}`;
+          //TODO update or remove from feathers? maybe don't remove, so we can inform the user that the tx failed and retry
+        } else {
+          msg = "Something went wrong with the transaction. Is your wallet unlocked?";
+        }
 
-      if(this.props.type === "DAC") {
-        React.swal("You're awesome!", "You're donation has been received. As long as the organizer doesn't lock your money you can take it back any time. Please make sure you join the community to follow progress of this DAC.", 'success')
-      } else {
-        React.swal("You're awesome!", "You're donation has been received. Please make sure to join the community to follow progess of this project.", 'success')
-      }
-    }).catch((e) => {
-      console.log(e)
-      React.swal("Oh no!", "Something went wrong with the transaction. Please try again.", 'error')
-      this.setState({ isSaving: false })
-    })
+        React.swal("Oh no!", msg, 'error');
+        this.setState({ isSaving: false });
+      })
   }
 
 
-  render(){
+  render() {
     const { type, model } = this.props
-    let { isSaving, amount, formIsValid } = this.state
+    let { isSaving, amount, formIsValid, user } = this.state;
 
+    //TODO inform the user why the donate button is disabled
     return(
       <span>
-        <a className="btn btn-success" onClick={() => this.openDialog()}>
+        <a className={"btn btn-success " + (user && user.donorId ? "" : "disabled")} onClick={() => this.openDialog()}>
           Donate
         </a>
 
-        <SkyLight hideOnOverlayClicked ref="donateDialog" title={`Support this ${type}!`} afterOpen={()=>this.focusInput()}>
+        <SkyLight hideOnOverlayClicked ref="donateDialog" title={`Support this ${type}!`}
+                  afterOpen={() => this.focusInput()}>
           <h4>Give Ether to support {model.title}</h4>
 
-          {["DAC", "campaign"].indexOf(type) > -1 &&
-            <p>Note: as long as the {type} owner does not lock your money you can take it back any time.</p>
+          {[ "DAC", "campaign" ].indexOf(type) > -1 &&
+          <p>Note: as long as the {type} owner does not lock your money you can take it back any time.</p>
           }
 
-          <Form onSubmit={this.submit} mapping={this.mapInputs} onValid={()=>this.toggleFormValid(true)} onInvalid={()=>this.toggleFormValid(false)} layout='vertical'>
+          <Form onSubmit={this.submit} mapping={this.mapInputs} onValid={() => this.toggleFormValid(true)}
+                onInvalid={() => this.toggleFormValid(false)} layout='vertical'>
             <div className="form-group">
               <Input
                 name="amount"
@@ -110,3 +154,13 @@ class DonateButton extends Component {
 }
 
 export default DonateButton
+
+DonateButton.propTypes = {
+  type: PropTypes.string.required,
+  model: PropTypes.shape({
+    managerId: PropTypes.number.required,
+    _id: PropTypes.string.required,
+    title: PropTypes.string.required,
+  }).required,
+  currentUser: PropTypes.string.required,
+};

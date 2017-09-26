@@ -70,10 +70,11 @@ class ViewMilestone extends Component {
   }  
 
   render() {
-    const { history } = this.props
+    const { history, currentUser } = this.props
 
     let { isLoading, 
           id,
+          projectId,
           title, 
           description, 
           recipientAddress, 
@@ -97,7 +98,7 @@ class ViewMilestone extends Component {
               <h6>Milestone</h6>
               <h1>{title}</h1>
               
-              <DonateButton type="milestone" model={{ title: title, _id: id }}/>
+              <DonateButton type="milestone" model={{ title: title, _id: id, managerId: projectId }} currentUser={currentUser}/>
             </BackgroundImageHeader>
 
             <div className="container-fluid">
@@ -136,7 +137,7 @@ class ViewMilestone extends Component {
                 <div className="col-md-8 m-auto">    
                   <h4>Donations</h4>        
                   <ShowTypeDonations donations={donations} isLoading={isLoadingDonations} />  
-                  <DonateButton type="milestone" model={{ title: title, _id: id }}/>
+                  <DonateButton type="milestone" model={{ title: title, _id: id, managerId: projectId }} currentUser={currentUser}/>
                 </div>
               </div> 
 
@@ -151,5 +152,6 @@ class ViewMilestone extends Component {
 export default ViewMilestone
 
 ViewMilestone.propTypes = {
-  history: PropTypes.object.isRequired
+  history: PropTypes.object.isRequired,
+  currentUser: PropTypes.string.required
 }

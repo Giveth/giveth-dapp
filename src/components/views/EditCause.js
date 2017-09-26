@@ -113,29 +113,41 @@ class EditCause extends Component {
       };
 
       if(this.props.isNew){
-        feathersClient.service('dacs').create(constructedModel)
-          .then(() => this.props.history.push('/my-causes'));
+        const createDAC = (txHash) => {
+          constructedModel.txHash = txHash;
+          feathersClient.service('dacs').create(constructedModel)
+            .then(() => this.props.history.push('/my-causes'));
+        };
 
+        let txHash;
+        let etherScanUrl;
         getNetwork()
           .then(network => {
             const { liquidPledging } = network;
+            etherScanUrl = network.txHash;
 
-            let txHash;
             liquidPledging.addDelegate(model.title, 0, '0x0')
               .once('transactionHash', hash => {
                 txHash = hash;
+                createDAC(txHash);
                 React.toast.info(`New DAC transaction hash ${network.etherscan}tx/${txHash}`)
               })
               .then(() => {
                 React.toast.success(`New DAC transaction mined ${network.etherscan}tx/${txHash}`);
                 afterEmit(true);
               })
-              .catch(err => {
-                console.log('New DAC transaction failed:', err);
-                React.toast.error(`New DAC transaction failed ${network.etherscan}tx/${txHash}`);
-                //TODO update or remove from feathers? maybe don't remove, so we can inform the user that the tx failed
-              });
           })
+          .catch(err => {
+            console.log('New DAC transaction failed:', err);
+            let msg;
+            if (txHash) {
+              msg = `Something went wrong with the transaction. ${etherScanUrl}tx/${txHash}`;
+              //TODO update or remove from feathers? maybe don't remove, so we can inform the user that the tx failed and retry
+            } else {
+              msg = "Something went wrong with the transaction. Is your wallet unlocked?";
+            }
+            React.toast.error(msg);
+          });
       } else {
         feathersClient.service('dacs').patch(this.state.id, constructedModel)
           .then(()=> afterEmit())

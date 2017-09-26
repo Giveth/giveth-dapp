@@ -90,7 +90,7 @@ class MyCauses extends Component {
               { !isLoading &&
                 <div>
                   {pendingCauses.length > 0 &&
-                  <p>{pendingCauses.length} pending causes</p>
+                  <p>{pendingCauses.length} pending dacs</p>
                   }
 
                   { causes && causes.length > 0 && 
