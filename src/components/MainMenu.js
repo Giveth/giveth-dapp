@@ -60,6 +60,7 @@ class MainMenu extends Component {
   }
 
   componentDidMount(){
+    // when route changes, close the menu
     this.props.history.listen((location, action) => {
       this.setState({ showMobileMenu: false })
     })
