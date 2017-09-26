@@ -45,7 +45,7 @@ class EditCampaign extends Component {
       ownerAddress: null,
       projectId: 0,
       milestones: [],
-      parentProject: 0,
+      causes: [],
       uploadNewImage: false
     }
 
@@ -78,10 +78,12 @@ class EditCampaign extends Component {
         // load all causes. that aren't pending
         // TO DO: this needs to be replaced by something like http://react-autosuggest.js.org/
         new Promise((resolve, reject) => {
-          feathersClient.service('dacs').find({query: {  $select: [ 'title', 'delegateId' ] }})
+          feathersClient.service('dacs').find({query: {  $select: [ 'title', '_id' ] }})
             .then((resp) => 
-              this.setState({ 
-                causesOptions: resp.data.filter((c) => (c.delegateId && c.delegateId > 0)).map((c) =>  { return { label: c.title, value: c.delegateId } }),
+              this.setState({
+                //TODO should we filter the available cuases to those that have been mined? It is possible that a createCause tx will fail and the cause will not be available
+                causesOptions: resp.data.map((c) =>  { return { label: c.title, value: c._id } }),
+                // causesOptions: resp.data.filter((c) => (c.delegateId && c.delegateId > 0)).map((c) =>  { return { label: c.title, value: c._id} }),
                 hasError: false
               }, resolve())
             )
@@ -104,7 +106,7 @@ class EditCampaign extends Component {
     return {
       'title': inputs.title,
       'description': inputs.description,
-      'parentProject': inputs.parentProject,
+      'causes': inputs.causes
     }
   }  
 
@@ -133,37 +135,45 @@ class EditCampaign extends Component {
         summary: getTruncatedText(this.state.summary, 200),
         image: file,
         projectId: this.state.projectId,
-        parentProject: model.parentProject || 0,
-      }  
+        causes: [ model.causes ]
+      }
 
       if(this.props.isNew){
-        feathersClient.service('campaigns').create(constructedModel)
-          .then(() => this.props.history.push('/my-campaigns'));
+        const createCampaign = (txHash) => {
+          constructedModel.txHash = txHash;
+          feathersClient.service('campaigns').create(constructedModel)
+            .then(() => this.props.history.push('/my-campaigns'));
+        };
 
-        console.log('model ->', model);
-        console.log('currentUser ->', this.props.currentUser);
+        let txHash;
+        let etherScanUrl;
         getNetwork()
           .then(network => {
             const { liquidPledging } = network;
+            etherScanUrl = network.txHash;
 
-            // set a 2 year commitTime. This is temporary so the campaign acts like a delegate and the donor can
-            // still has control of their funds for upto 2 years. Once we implement campaign reviewers, we can set a
-            // more reasonable commitTime
             let txHash;
-            liquidPledging.addProject(model.title, this.props.currentUser, model.parentProject || 0, 60 * 60 * 24 * 365 * 2, '0x0')
+            liquidPledging.addProject(model.title, this.props.currentUser, 0, 0, '0x0')
               .once('transactionHash', hash => {
                 txHash = hash;
-                React.toast.info(`New Campaign transaction hash ${network.etherscan}tx/${txHash}`)
+                createCampaign(txHash);
+                React.toast.info(`Your campaign is pending. ${etherScanUrl}tx/${txHash}`)
               })
               .then(() => {
-                React.toast.success(`Your Campaign was created! New Campaign transaction mined ${network.etherscan}tx/${txHash}`);
+                React.toast.success(`Your Campaign was created! ${etherScanUrl}tx/${txHash}`);
               })
-              .catch(err => {
-                console.log('New Campaign transaction failed:', err);
-                React.toast.error(`New Campaign transaction failed ${network.etherscan}tx/${txHash}`);
-                //TODO update or remove from feathers? maybe don't remove, so we can inform the user that the tx failed
-              });
           })
+          .catch(err => {
+            console.log('New Campaign transaction failed:', err);
+            let msg;
+            if (txHash) {
+              msg = `Something went wrong with the transaction. ${etherScanUrl}tx/${txHash}`;
+              //TODO update or remove from feathers? maybe don't remove, so we can inform the user that the tx failed and retry
+            } else {
+              msg = "Something went wrong with the transaction. Is your wallet unlocked?";
+            }
+            React.toast.error(msg);
+          });
       } else {
         feathersClient.service('campaigns').patch(this.state.id, constructedModel)
           .then(()=> afterEmit())        
@@ -187,7 +197,7 @@ class EditCampaign extends Component {
 
   render(){
     const { isNew, history } = this.props
-    let { isLoading, isSaving, title, description, image, parentProject, causesOptions } = this.state
+    let { isLoading, isSaving, title, description, image, causes, causesOptions } = this.state
 
     return(
         <div id="edit-campaign-view">
@@ -250,10 +260,10 @@ class EditCampaign extends Component {
                       {/* TO DO: This needs to be replaced by something like http://react-autosuggest.js.org/ */}
                       <div className="form-group">
                         <Select
-                          name="parentProject"
+                          name="causes"
                           label="Which cause does this campaign solve?"
                           options={causesOptions}
-                          value={parentProject}
+                          value={causes[0]}
                           required
                         />
                       </div>

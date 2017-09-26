@@ -77,8 +77,9 @@ class EditProfile extends Component {
   submit(model) {
     this.setState({ isSaving: true })
 
+
     const updateUser = (file) => {
-      feathersClient.service('/users').patch(this.props.currentUser, {
+      const constructedModel = {
         name: model.name,
         email: model.email,
         linkedIn: model.linkedIn,
@@ -86,16 +87,10 @@ class EditProfile extends Component {
         // if no donorId, set to 0 so we don't add 2 donors for the same user if they update their profile
         // before the AddDonor tx has been mined. 0 is a reserved donorId
         donorId: this.state.donorId || 0,
-      })
-      .then(user => {
-        React.toast.success("Your profile has been updated.");
-        this.setState(Object.assign({}, user, { isSaving: false }));
-      })
-      .catch(err => console.log('update profile error -> ', err));
+      };
 
-      // TODO need to cache the tx so we don't send a second tx while the first is still processing
+      // TODO if (donorId > 0), need to send tx if commitTime or name has changed
       // TODO store user profile on ipfs and add Donor in liquidpledging contract
-      // TODO if donorId is set, update the donor if commitTime or name has changed
       if (this.state.donorId === undefined) {
         getNetwork()
           .then(network => {
@@ -105,14 +100,32 @@ class EditProfile extends Component {
             liquidPledging.addDonor(model.name, 259200, '0x0') // 3 days commitTime. TODO allow user to set commitTime
               .once('transactionHash', hash => {
                 txHash = hash;
-                React.toast.info(`AddDonor transaction hash ${network.etherscan}tx/${txHash}`)
+                feathersClient.service('/users').patch(this.props.currentUser, constructedModel)
+                  .then((user) => {
+                    React.toast.success(`Your profile has been created. ${network.etherscan}tx/${txHash}`);
+                    this.setState(Object.assign({}, user, { isSaving: false }));
+                  });
               })
               .then(txReceipt => React.toast.success(`AddDonor transaction mined ${network.etherscan}tx/${txHash}`))
               .catch(err => {
                 console.log('AddDonor transaction failed:', err);
-                React.toast.error(`AddDonor transaction failed ${network.etherscan}tx/${txHash}`);
+                let msg;
+                if (txHash) {
+                  msg = `AddDonor transaction failed ${network.etherscan}tx/${txHash}`;
+                  //TODO need to update user profile?
+                } else {
+                  msg = "Error creating your profile. Is your wallet unlocked?";
+                }
+                React.toast.error(msg);
               });
           })
+      } else {
+        feathersClient.service('/users').patch(this.props.currentUser, constructedModel)
+        .then(user => {
+          React.toast.success("Your profile has been updated.");
+          this.setState(Object.assign({}, user, { isSaving: false }));
+        })
+          .catch(err => console.log('update profile error -> ', err));
       }
     };
 

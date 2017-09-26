@@ -130,7 +130,7 @@ class EditCause extends Component {
               .once('transactionHash', hash => {
                 txHash = hash;
                 createDAC(txHash);
-                React.toast.info(`New DAC transaction hash ${network.etherscan}tx/${txHash}`)
+                React.toast.info(`Your DAC is pending. ${network.etherscan}tx/${txHash}`)
               })
               .then(() => {
                 React.toast.success(`New DAC transaction mined ${network.etherscan}tx/${txHash}`);
