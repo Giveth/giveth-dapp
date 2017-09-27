@@ -190,7 +190,7 @@ class EditCause extends Component {
                           name="description"
                           label="What does your community support?"
                           value={description}
-                          placeholder="Describe your DAC."
+                          placeholder="Describe your DAC..."
                           onTextChanged={(content)=>this.constructSummary(content)}
                           validations="minLength:10"
                           help="Describe the concerns your community supports."
