@@ -1,5 +1,6 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
+import { utils } from 'web3';
 
 import { feathersClient } from '../../lib/feathersClient'
 import { paramsForServer } from 'feathers-hooks-common'
@@ -38,14 +39,14 @@ class Delegations extends Component {
 
       Promise.all([
         new Promise((resolve, reject) => {
-          this.causesObserver = feathersClient.service('causes').watch({ strategy: 'always' }).find({query: { $select: [ 'ownerAddress', 'title', '_id' ] }}).subscribe(
+          this.causesObserver = feathersClient.service('dacs').watch({ strategy: 'always' }).find({query: { $select: [ 'ownerAddress', 'title', '_id' ] }}).subscribe(
             resp =>         
               this.setState({ 
                 causes: resp.data.map( c => {
                   c.type = 'dac'
                   c.name = c.title
                   c.id = c._id
-                  c.element = <span>{c.title} <em>Campaign</em></span>
+                  c.element = <span>{c.title} <em>DAC</em></span>
                   return c
                 })
               }, resolve()),
@@ -104,44 +105,24 @@ class Delegations extends Component {
       .map(c => c['_id'])
 
     const query = paramsForServer({
-      query: { 
-        type_id: { $in: causesIds.concat(campaignIds) },
-        status: { $in: ['waiting', 'pending'] }
+      query: {
+        $or: [
+          { ownerId: { $in: campaignIds } },
+          { delegateId: { $in: causesIds } },
+        ]
       },
-      schema: 'includeDonorDetails'
+      schema: 'includeTypeAndDonorDetails'
     });
 
     // start watching donations, this will re-run when donations change or are added
     this.donationsObserver = feathersClient.service('donations').watch({ listStrategy: 'always' }).find(query).subscribe(
-      resp => {
-
-        // Here we join type with donations
-        resp.data.map((d)=> {
-          let type
-          switch(d.type){
-            case 'dac':
-              type = this.state.causes.find((c) => { return c._id === d.type_id })
-              break;
-            case 'campaign':
-              type = this.state.campaigns.find((c) => { return c._id === d.type_id })
-              break;
-            case 'milestone':
-              type = this.state.milestones.find((m) => { return m._id === d.type_id })
-              break;
-            default:
-              // do nothing
-          }
-          return d = type ? d.type_title = type.title : d
-        })
-
-        this.setState({
+      resp => this.setState({
           delegations: resp.data,
           isLoading: false,
           hasError: false
-        })},
-      err =>
-        this.setState({ isLoading: false, hasError: true })
-    )             
+        }),
+      err => this.setState({ isLoading: false, hasError: true })
+    );
   }
 
   componentWillUnmount() {
@@ -185,8 +166,13 @@ class Delegations extends Component {
                         <tbody>
                           { delegations.map((d, index) =>
                             <tr key={index}>
-                              <td>{d.amount} ETH</td>
-                              <td>{d.type.toUpperCase()} <em>{d.type_title}</em></td>
+                              <td>{utils.fromWei(d.amount)} ETH</td>
+                              {d.delegate > 0 &&
+                                <td>DAC <em>{d.dac.title}</em></td>
+                              }
+                              {!d.delegate &&
+                                <td>{d.ownerType.toUpperCase()} <em>{d.campaign.title}</em></td>
+                              }
                               <td>
                                 {d.donor.avatar &&
                                   <Avatar size={30} src={d.donor.avatar} round={true}/>                  
