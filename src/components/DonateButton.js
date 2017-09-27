@@ -43,24 +43,42 @@ class DonateButton extends Component {
 
 
   submit(model) {
-    console.log(model, this.props.type.toLowerCase(), this.props.model._id)
+    console.log(model, this.props.type.toLowerCase(), this.props.model.managerId);
 
     this.setState({ isSaving: true });
 
     const amount = utils.toWei(model.amount);
     const service = feathersClient.service('donations');
 
-    // TODO will the txHash cause issues when instant mining?
-    const donate = (etherScanUrl, txHash) => service.create({
+    const donate = (etherScanUrl, txHash) => {
+      const donation = {
         amount,
-        type: this.props.type.toLowerCase(),
-        type_id: this.props.model._id,
         txHash,
-      }).then(() =>{
-        this.setState({
-          isSaving: false,
-          amount: 10
+        status: 'pending',
+      };
+
+      if (this.props.type.toLowerCase() === 'dac') {
+        Object.assign(donation, {
+          delegate: this.props.model.managerId,
+          delegateId: this.props.model._id,
+          owner: this.state.user.donorId,
+          ownerId: this.state.user.address,
+          ownerType: 'user'
         });
+      } else {
+        Object.assign(donation, {
+          owner: this.props.model.managerId,
+          ownerId: this.props.model._id,
+          ownerType: this.props.type.toLowerCase()
+        })
+      }
+
+      return service.create(donation)
+        .then(() =>{
+          this.setState({
+            isSaving: false,
+            amount: 10
+          });
 
         // For some reason (I suspect a rerender when donations are being fetched again)
         // the skylight dialog is sometimes gone and this throws error
@@ -72,6 +90,7 @@ class DonateButton extends Component {
           React.swal("You're awesome!", "You're donation is pending. Please make sure to join the community to follow progress of this project.", 'success')
         }
       });
+    }
 
     // TODO check for donorId first
     let txHash;

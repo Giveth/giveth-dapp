@@ -1,5 +1,6 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
+import { utils } from 'web3';
 
 import { feathersClient } from '../../lib/feathersClient'
 import { paramsForServer } from 'feathers-hooks-common'
@@ -33,7 +34,7 @@ class Donations extends Component {
   }
 
   componentDidMount() {
-    isAuthenticated(this.props.currentUser, this.props.history).then(()=>{
+    isAuthenticated(this.props.currentUser, this.props.history).then(() => {
       this.donationsObserver = feathersClient.service('donations').watch({ strategy: 'always' }).find(paramsForServer({ 
           schema: 'includeTypeDetails',
           query: { 
@@ -45,8 +46,9 @@ class Donations extends Component {
             this.setState({
               donations: _.sortBy(resp.data, (d) => {
                 if(d.status === 'pending') return 1
-                if(d.status === 'waiting') return 2
-                if(d.status === 'committed') return 3
+                if(d.status === 'to_approve') return 2
+                if(d.status === 'waiting') return 3
+                if(d.status === 'committed') return 4
                 if(d.status === 'cancelled') return 5
                 return 4
               }),
@@ -70,6 +72,8 @@ class Donations extends Component {
   getStatus(status){
     switch(status){
       case "pending":
+        return "pending successful transaction";
+      case "to_approve":
         return "pending for your approval to be committed."
       case "waiting":
         return "waiting for further delegation"
@@ -169,28 +173,33 @@ class Donations extends Component {
                           { donations.map((d, index) =>
                             <tr key={index}>
                               <td>{this.getStatus(d.status)}</td>                            
-                              <td>{d.amount} ETH</td>
+                              <td>{utils.fromWei(d.amount)} ETH</td>
                               <td>
                                 {d.from_type_id &&
                                   <span className="badge badge-info">
                                     <i className="fa fa-random"></i>
                                     &nbsp;Delegated
                                   </span>
-                                }  
+                                }
 
-                                {d.type.toUpperCase()}
+                                {d.delegate > 0 &&
+                                  'DAC'
+                                }
+                                {!d.delegate &&
+                                  d.ownerType.toUpperCase()
+                                }
 
                                 &nbsp;
                                 <em>
-                                  {d.type === 'dac' && d.dac &&
+                                  {d.delegate > 0 && d.dac &&
                                     <span>{d.dac.title}</span>
                                   }
 
-                                  {d.type === 'campaign' && d.campaign &&
+                                  {d.ownerType === 'campaign' && d.campaign &&
                                     <span>{d.campaign.title}</span>
                                   }
 
-                                  {d.type === 'milestone' && d.milestone &&
+                                  {d.ownerType === 'milestone' && d.milestone &&
                                     <span>{d.milestone.title}</span>
                                   }                                  
                                 </em>

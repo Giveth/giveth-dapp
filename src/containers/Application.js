@@ -130,7 +130,8 @@ class Application extends Component {
         cachedWallet: false,
       }));
 
-    const BreakSignal = () => {}
+    const BreakSignal = () => {};
+
     // login the user if we have a valid JWT
     feathersClient.passport.getJWT()
       .then(token => {

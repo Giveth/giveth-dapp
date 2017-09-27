@@ -61,10 +61,11 @@ class ViewCampaign extends Component {
 
 
     // lazy load donations             
+    //TODO fetch "non comitted" donations? add "proposedProjectId: campaignId" to query to get all "pending aproval" donations for this campaign
     const query = paramsForServer({
       query: { 
-        type_id: campaignId,
-        status: { $nin: ['waiting', 'pending'] }        
+        ownerId: campaignId,
+        status: { $nin: ['waiting', 'pending', 'to_approve'] }
       },      
       schema: 'includeDonorDetails'
     });

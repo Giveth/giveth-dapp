@@ -48,9 +48,10 @@ class ViewMilestone extends Component {
         this.setState({ isLoading: false, hasError: true })
       )
 
-    // lazy load donations         
+    // lazy load donations
+    //TODO fetch "non comitted" donations? add "proposedProjectId: milestoneId" to query to get all "pending aproval" donations for this milestone
     const query = paramsForServer({ 
-      query: { type_id: milestoneId },
+      query: { ownerId: milestoneId },
       schema: 'includeDonorDetails'
     })  
     

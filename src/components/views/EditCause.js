@@ -112,8 +112,6 @@ class EditCause extends Component {
         image: file,
       };
 
-      console.log(constructedModel)
-
       if(this.props.isNew){
         const createDAC = (txHash) => {
           constructedModel.txHash = txHash;
