@@ -158,7 +158,7 @@ class EditCause extends Component {
                     <GoBackButton history={history}/>
 
                     { isNew &&
-                      <h1>Start a Decentralized Altruistic Community!</h1>
+                      <h1>Start a DAC</h1>
                     }
 
                     { !isNew &&
@@ -175,8 +175,8 @@ class EditCause extends Component {
                           ref="title"
                           type="text"
                           value={title}
-                          placeholder="E.g. Climate change."
-                          help="Describe your DAC in 1 scentence."
+                          placeholder="e.g. Hurricane relief."
+                          help="Describe your Decentralized Altruistic Community (DAC) in 1 sentence."
                           validations="minLength:10"
                           validationErrors={{
                               minLength: 'Please provide at least 10 characters.'
@@ -188,12 +188,12 @@ class EditCause extends Component {
                       <div className="form-group">
                         <QuillFormsy
                           name="description"
-                          label="What cause are you solving?"
+                          label="What does your community support?"
                           value={description}
-                          placeholder="Describe your cause..."
+                          placeholder="Describe your DAC."
                           onTextChanged={(content)=>this.constructSummary(content)}
                           validations="minLength:10"
-                          help="Describe your cause."
+                          help="Describe the concerns your community supports."
                           validationErrors={{
                               minLength: 'Please provide at least 10 characters.'
                           }}
