@@ -61,9 +61,9 @@ class DonateButton extends Component {
         Object.assign(donation, {
           delegate: this.props.model.managerId,
           delegateId: this.props.model._id,
-          owner: this.state.user.donorId,
-          ownerId: this.state.user.address,
-          ownerType: 'user'
+          owner: this.state.user.donorId || 0,
+          ownerId: this.props.currentUser,
+          ownerType: 'donor'
         });
       } else {
         Object.assign(donation, {
@@ -92,7 +92,6 @@ class DonateButton extends Component {
       });
     }
 
-    // TODO check for donorId first
     let txHash;
     let etherScanUrl;
     getNetwork()
@@ -100,7 +99,7 @@ class DonateButton extends Component {
         const { liquidPledging } = network;
         etherScanUrl = network.etherscan;
 
-        return liquidPledging.donate(this.state.user.donorId, this.props.model.managerId, { value: amount })
+        return liquidPledging.donate(this.state.user.donorId || 0, this.props.model.managerId, { value: amount })
           .once('transactionHash', hash => {
             txHash = hash;
             donate(etherScanUrl, txHash);
@@ -126,16 +125,15 @@ class DonateButton extends Component {
 
 
   render() {
-    const { type, model } = this.props
-    let { isSaving, amount, formIsValid, user } = this.state;
+    const { type, model, currentUser } = this.props
+    let { isSaving, amount, formIsValid } = this.state;
     const style = {
       display: 'inline-block'     
     }
 
-    //TODO inform the user why the donate button is disabled
     return(
       <span style={style}>
-        <a className={"btn btn-success " + (user && user.donorId ? "" : "disabled")} onClick={() => this.openDialog()}>
+        <a className={`btn btn-success ${!currentUser ? 'disabled' : ''}`} onClick={() => this.openDialog()}>
           Donate
         </a>
 
@@ -180,11 +178,11 @@ class DonateButton extends Component {
 export default DonateButton
 
 DonateButton.propTypes = {
-  type: PropTypes.string.required,
+  type: PropTypes.string.isRequired,
   model: PropTypes.shape({
-    managerId: PropTypes.number.required,
-    _id: PropTypes.string.required,
-    title: PropTypes.string.required,
-  }).required,
-  currentUser: PropTypes.string.required,
+    managerId: PropTypes.number.isRequired,
+    _id: PropTypes.string.isRequired,
+    title: PropTypes.string.isRequired,
+  }).isRequired,
+  currentUser: PropTypes.string,
 };

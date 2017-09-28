@@ -36,6 +36,9 @@
     "web3-eth-accounts": "^1.0.0-beta.18",
     "web3-provider-engine": "^13.2.9"
   },
+  "devDependencies": {
+    "lerna": "^2.2.0"
+  },
   "scripts": {
     "build-css": "node-sass-chokidar --include-path ./src --include-path ./node_modules src/ -o src/",
     "watch-css": "npm run build-css && node-sass-chokidar --include-path ./src --include-path ./node_modules src/ -o src/ --watch --recursive",
