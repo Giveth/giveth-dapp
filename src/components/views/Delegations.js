@@ -39,7 +39,7 @@ class Delegations extends Component {
 
       Promise.all([
         new Promise((resolve, reject) => {
-          this.causesObserver = feathersClient.service('dacs').watch({ strategy: 'always' }).find({query: { $select: [ 'ownerAddress', 'title', '_id' ] }}).subscribe(
+          this.causesObserver = feathersClient.service('dacs').watch({ strategy: 'always' }).find({query: { delegateId: { $gt: '0' }, $select: [ 'ownerAddress', 'title', '_id', 'delegateId' ] }}).subscribe(
             resp =>         
               this.setState({ 
                 causes: resp.data.map( c => {
@@ -55,7 +55,7 @@ class Delegations extends Component {
         })
       ,
         new Promise((resolve, reject) => {
-          this.campaignsObserver = feathersClient.service('campaigns').watch({ strategy: 'always' }).find({query: { $select: [ 'ownerAddress', 'title', '_id' ] }}).subscribe(
+          this.campaignsObserver = feathersClient.service('campaigns').watch({ strategy: 'always' }).find({query: { projectId: { $gt: '0' }, $select: [ 'ownerAddress', 'title', '_id', 'projectId' ] }}).subscribe(
             resp =>         
               this.setState({ 
                 campaigns: resp.data.map( c => {
@@ -72,7 +72,7 @@ class Delegations extends Component {
         })
       ,        
         new Promise((resolve, reject) => {
-          this.milestoneObserver = feathersClient.service('milestones').watch({ strategy: 'always' }).find({query: { $select: [ 'title', '_id' ] }}).subscribe(
+          this.milestoneObserver = feathersClient.service('milestones').watch({ strategy: 'always' }).find({query: { projectId: { $gt: '0' }, $select: [ 'title', '_id', 'projectId', 'maxAmount', 'totalDonated' ] }}).subscribe(
             resp => 
               this.setState({ 
                 milestones: resp.data.map( m => { 
@@ -109,7 +109,10 @@ class Delegations extends Component {
         $or: [
           { ownerId: { $in: campaignIds } },
           { delegateId: { $in: causesIds } },
-        ]
+        ],
+        status: {
+          $in: ['waiting', 'committed']
+        }
       },
       schema: 'includeTypeAndDonorDetails'
     });
@@ -181,7 +184,7 @@ class Delegations extends Component {
                               <td>{d.donorAddress}</td>
                               <td>{d.status}</td>
                               <td>
-                                <DelegateButton types={causes.concat(campaigns).concat(milestones)} model={d} currentUser={currentUser} />
+                                <DelegateButton types={causes.concat(campaigns).concat(milestones)} model={d} />
                               </td>
                             </tr>
                           )}

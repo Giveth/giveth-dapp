@@ -175,7 +175,7 @@ class Donations extends Component {
                               <td>{this.getStatus(d.status)}</td>                            
                               <td>{utils.fromWei(d.amount)} ETH</td>
                               <td>
-                                {d.from_type_id &&
+                                {d.proposedProject > 0 &&
                                   <span className="badge badge-info">
                                     <i className="fa fa-random"></i>
                                     &nbsp;Delegated
@@ -218,8 +218,7 @@ class Donations extends Component {
                                     Refund
                                   </a>
                                 }
-
-                                { d.status === 'pending' &&
+                                { d.status === 'to_approve' && new Date() < new Date(d.commitTime) &&
                                   <a className="btn btn-sm btn-success" onClick={()=>this.commit(d)} disabled={isCommitting}>
                                     Commit
                                   </a>
