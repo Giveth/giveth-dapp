@@ -97,15 +97,59 @@ class Donations extends Component {
       if(isConfirmed) {   
         this.setState({ isCommitting: true })
 
-        feathersClient.service('/donations').patch(donation._id, {
-          status: 'committed',
-        }).then(donation => { 
-          this.setState({ isCommitting: false })
-          React.toast.success("You're awesome! Your donation is now committed.", 'success')
-        }).catch((e) => {
-          console.log(e)
-          React.toast.error("Oh no! Something went wrong with the transaction. Please try again.")
-          this.setState({ isCommitting: false })
+        const doCommit = (etherScanUrl, txHash) => {
+          feathersClient.service('/donations').patch(donation._id, {
+            status: 'pending',
+            $unset: {
+              pendingProject: true,
+              pendingProjectId: true,
+              pendingProjectType: true,
+              delegate: true,
+              delegateType: true,
+              delegateId: true,
+            },
+            txHash,
+            owner: donation.pendingProject,
+            ownerId: donation.pendingProjectId,
+            ownerType: donation.pendingProjectType,
+          }).then(donation => {
+            this.setState({ isCommitting: false })
+            React.toast.success(`You're awesome! Your donation is now committed. ${etherScanUrl}tx/${txHash}`, 'success')
+          }).catch((e) => {
+            console.log(e)
+            React.toast.error("Oh no! Something went wrong with the transaction. Please try again.")
+            this.setState({ isCommitting: false })
+          });
+        };
+
+        let txHash;
+        let etherScanUrl;
+        getNetwork()
+          .then((network) => {
+            const { liquidPledging } = network;
+            etherScanUrl = network.etherscan;
+
+            return liquidPledging.transfer(donation.owner, donation.noteId, donation.amount, donation.proposedProject)
+              .once('transactionHash', hash => {
+                txHash = hash;
+                doCommit(etherScanUrl, txHash);
+              });
+          })
+          .then(() => {
+            React.toast.success(`Your donation has been committed! ${etherScanUrl}tx/${txHash}`);
+          }).catch((e) => {
+          console.error(e);
+
+          let msg;
+          if (txHash) {
+            //TODO need to update feathers to reset the donation to previous state as this tx failed.
+            msg = `Something went wrong with the transaction. ${etherScanUrl}tx/${txHash}`;
+          } else {
+            msg = "Something went wrong with the transaction. Is your wallet unlocked?";
+          }
+
+          React.swal("Oh no!", msg, 'error');
+          this.setState({ isSaving: false });
         })
       }
     })
