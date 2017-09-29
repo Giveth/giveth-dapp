@@ -6,6 +6,7 @@ import { Link } from 'react-router-dom'
 import { isAuthenticated, redirectAfterWalletUnlock } from '../../lib/middleware'
 import Loader from '../Loader'
 import { getTruncatedText } from '../../lib/helpers'
+import currentUserModel from '../../models/currentUserModel'
 
 
 import Avatar from 'react-avatar'
@@ -28,7 +29,7 @@ class MyCampaigns extends Component {
 
   componentDidMount() {
     isAuthenticated(this.props.currentUser, this.props.history).then(() =>
-      feathersClient.service('campaigns').find({query: { ownerAddress: this.props.currentUser }})
+      feathersClient.service('campaigns').find({query: { ownerAddress: this.props.currentUser.address }})
         .then((resp) =>
           this.setState({ 
             campaigns: resp.data.filter(campaign => (campaign.projectId)),
@@ -147,6 +148,6 @@ class MyCampaigns extends Component {
 export default MyCampaigns
 
 MyCampaigns.propTypes = {
-  currentUser: PropTypes.string,
+  currentUser: currentUserModel,
   history: PropTypes.object.isRequired
 }

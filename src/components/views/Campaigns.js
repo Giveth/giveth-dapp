@@ -10,6 +10,7 @@ import { redirectAfterWalletUnlock } from '../../lib/middleware'
 import { getTruncatedText } from '../../lib/helpers'
 
 import Masonry, {ResponsiveMasonry} from "react-responsive-masonry"
+import currentUserModel from '../../models/currentUserModel'
 
 /**
   The campaigns view
@@ -64,7 +65,7 @@ class Campaigns extends Component {
     
     return (
       <div id="campaigns-view" className="card-view">
-        <JoinGivethCommunity authenticated={currentUser} walletUnlocked={(wallet && wallet.unlocked)}/>
+        <JoinGivethCommunity currentUser={currentUser} walletUnlocked={(wallet && wallet.unlocked)}/>
 
         <div className="container-fluid page-layout reduced-padding">
           { campaigns.data && campaigns.data.length > 0 && 
@@ -84,7 +85,7 @@ class Campaigns extends Component {
                       <div className="card-text">{campaign.summary}</div>
 
                       <div>                  
-                        { isOwner(campaign.owner.address, currentUser) && 
+                        { isOwner(campaign.owner.address, currentUser.address) && 
                           <span>
                             <a className="btn btn-link" onClick={(e)=>this.removeCampaign(e, campaign._id)}>
                               <i className="fa fa-trash"></i>
@@ -117,6 +118,6 @@ class Campaigns extends Component {
 export default Campaigns
 
 Campaigns.propTypes = {
-  currentUser: PropTypes.string,
+  currentUser: currentUserModel,
   history: PropTypes.object.isRequired
 }

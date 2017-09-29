@@ -7,6 +7,7 @@ import { isAuthenticated, redirectAfterWalletUnlock } from '../../lib/middleware
 import Loader from '../Loader'
 
 import { getTruncatedText } from '../../lib/helpers'
+import currentUserModel from '../../models/currentUserModel'
 
 import Avatar from 'react-avatar'
 import Masonry, {ResponsiveMasonry} from "react-responsive-masonry"
@@ -28,7 +29,7 @@ class MyCauses extends Component {
 
   componentDidMount() {
     isAuthenticated(this.props.currentUser, this.props.history).then(() =>
-      feathersClient.service('dacs').find({query: { ownerAddress: this.props.currentUser }})
+      feathersClient.service('dacs').find({query: { ownerAddress: this.props.currentUser.address }})
         .then((resp) =>
           this.setState({ 
             causes: resp.data.filter(cause => (cause.delegateId)),
@@ -145,6 +146,6 @@ class MyCauses extends Component {
 export default MyCauses
 
 MyCauses.propTypes = {
-  currentUser: PropTypes.string,
+  currentUser: currentUserModel,
   history: PropTypes.object.isRequired
 }

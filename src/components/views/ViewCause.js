@@ -13,6 +13,7 @@ import DonateButton from '../DonateButton'
 import ShowTypeDonations from '../ShowTypeDonations'
 
 import CommunityButton from '../CommunityButton'
+import currentUserModel from '../../models/currentUserModel'
 
 /**
   Loads and shows a single DAC
@@ -54,7 +55,7 @@ class ViewCause extends Component {
     const query = paramsForServer({ 
       query: { 
         delegateId: dacId,
-        status: { $in: ['waiting', 'pending', 'to_approve'] }
+        status: { $in: ['transaction_pending', 'waiting', 'pending', 'to_approve'] }
       },
       schema: 'includeDonorDetails'
     })  
@@ -139,5 +140,5 @@ export default ViewCause
 
 ViewCause.propTypes = {
   history: PropTypes.object.isRequired,
-  currentUser: PropTypes.string,
+  currentUser: currentUserModel,
 }

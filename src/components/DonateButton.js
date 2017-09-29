@@ -7,7 +7,7 @@ import getNetwork from '../lib/blockchain/getNetwork';
 import { feathersClient } from '../lib/feathersClient'
 import { Form, Input } from 'formsy-react-components';
 import { takeActionAfterWalletUnlock } from '../lib/middleware'
-
+import currentUserModel from '../models/currentUserModel'
 
 class DonateButton extends Component {
   constructor() {
@@ -25,7 +25,7 @@ class DonateButton extends Component {
   componentDidMount() {
     //TODO currentUser should probably store the profile object instead of just the address
     //this is tmp until we work on the same branch to reduce conflicts when merging
-    feathersClient.service('users').get(this.props.currentUser)
+    feathersClient.service('users').get(this.props.currentUser.address)
       .then(user => this.setState({user}));
   }
 
@@ -180,9 +180,9 @@ export default DonateButton
 DonateButton.propTypes = {
   type: PropTypes.string.isRequired,
   model: PropTypes.shape({
-    managerId: PropTypes.number.isRequired,
+    managerId: PropTypes.string.isRequired,
     _id: PropTypes.string.isRequired,
     title: PropTypes.string.isRequired,
   }).isRequired,
-  currentUser: PropTypes.string,
+  currentUser: currentUserModel,
 };

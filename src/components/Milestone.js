@@ -48,7 +48,7 @@ class Milestone extends Component {
                 <td>
                   <h4>{model.title}</h4>
                   <p>{model.summary}</p>
-                  { isOwner(model.owner.address, currentUser) && 
+                  { isOwner(model.owner.address, currentUser.address) && 
                     <div>
                       <a className="btn btn-link" onClick={(e)=>this.removeMilestone(e)}>
                         <i className="fa fa-trash"></i>

@@ -15,6 +15,8 @@ import DonateButton from '../DonateButton'
 import ShowTypeDonations from '../ShowTypeDonations'
 import AuthenticatedLink from '../AuthenticatedLink'
 
+import currentUserModel from '../../models/currentUserModel'
+
 /**
   Loads and shows a single campaign
 
@@ -65,13 +67,13 @@ class ViewCampaign extends Component {
     const query = paramsForServer({
       query: { 
         ownerId: campaignId,
-        status: { $nin: ['waiting', 'pending', 'to_approve'] }
+        status: { $nin: ['transaction_pending', 'waiting', 'pending', 'to_approve'] }
       },      
       schema: 'includeDonorDetails'
     });
 
     this.donationsObserver = feathersClient.service('donations').watch({ listStrategy: 'always' }).find(query).subscribe(
-      resp =>
+      resp => 
         this.setState({
           donations: resp.data,
           isLoadingDonations: false,
@@ -143,7 +145,7 @@ class ViewCampaign extends Component {
         
                   <div className="milestone-header spacer-top-50 card-view">
                     <h3>Milestones</h3>
-                    { isOwner(owner.address, currentUser) && 
+                    { isOwner(owner.address, currentUser.address) && 
                       <AuthenticatedLink className="btn btn-primary btn-sm pull-right" to={`/campaigns/${ id }/milestones/new`} wallet={wallet}>Add Milestone</AuthenticatedLink>
                     }
 
@@ -180,5 +182,5 @@ export default ViewCampaign
 
 ViewCampaign.propTypes = {
   history: PropTypes.object.isRequired,
-  currentUser: PropTypes.string.isRequired,
+  currentUser: currentUserModel
 }

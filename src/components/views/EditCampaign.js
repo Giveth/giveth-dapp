@@ -17,6 +17,7 @@ import LoaderButton from "../../components/LoaderButton"
 
 import InputToken from "react-input-token";
 import "react-input-token/lib/style.css";
+import currentUserModel from '../../models/currentUserModel'
 
 /**
  * Create or edit a campaign
@@ -69,7 +70,7 @@ class EditCampaign extends Component {
           if(!this.props.isNew) {
             feathersClient.service('campaigns').find({query: {_id: this.props.match.params.id}})
               .then((resp) => {
-                if(!isOwner(resp.data[0].owner.address, this.props.currentUser)) {
+                if(!isOwner(resp.data[0].owner.address, this.props.currentUser.address)) {
                   this.props.history.goBack()
                 } else {  
                   this.setState(Object.assign({}, resp.data[0], {
@@ -322,7 +323,7 @@ class EditCampaign extends Component {
 export default EditCampaign
 
 EditCampaign.propTypes = {
-  currentUser: PropTypes.string,
+  currentUser: currentUserModel,
   history: PropTypes.object.isRequired,
   isNew: PropTypes.bool
 }

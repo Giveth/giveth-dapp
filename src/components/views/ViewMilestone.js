@@ -11,6 +11,7 @@ import BackgroundImageHeader from '../BackgroundImageHeader'
 import Avatar from 'react-avatar'
 import DonateButton from '../DonateButton'
 import ShowTypeDonations from '../ShowTypeDonations'
+import currentUserModel from '../../models/currentUserModel'
 
 
 /**
@@ -154,5 +155,5 @@ export default ViewMilestone
 
 ViewMilestone.propTypes = {
   history: PropTypes.object.isRequired,
-  currentUser: PropTypes.string.required
+  currentUser: currentUserModel
 }

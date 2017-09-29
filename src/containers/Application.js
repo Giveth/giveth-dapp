@@ -62,8 +62,7 @@ class Application extends Component {
       hasError: false,
       wallet: undefined,
       unlockWallet: false,
-      cachedWallet: true,
-      userProfile: undefined
+      cachedWallet: true
     };
 
     localforage.config({
@@ -138,10 +137,8 @@ class Application extends Component {
       })
       .then(payload => this.getUserProfile(payload.userId))
       .then(user => {
-        this.setState({
-          currentUser: user.address,
-          userProfile: user,
-        });
+        console.log('user', user)
+        this.setState({ currentUser: user });
         feathersClient.authenticate(); // need to authenticate the socket connection
       })
       .catch((err) => {
@@ -167,10 +164,7 @@ class Application extends Component {
     const address = this.state.wallet.getAddresses()[ 0 ];
     return this.getUserProfile(address)
       .then(user =>
-        this.setState({
-          currentUser: address,
-          userProfile: user
-        }));
+        this.setState({ currentUser: user }));
   };
 
   handleWalletChange(wallet) {
@@ -183,8 +177,7 @@ class Application extends Component {
       .then(user =>
         this.setState({
           wallet,
-          currentUser: wallet.getAddresses()[ 0 ],
-          userProfile: user,
+          currentUser: user,
           cachedWallet: true,
       }));
   }
@@ -221,10 +214,9 @@ class Application extends Component {
       <Router>
         <div>
           <MainMenu
-            authenticated={(this.state.currentUser)}
             onSignOut={this.onSignOut}
             wallet={this.state.wallet}
-            userProfile={this.state.userProfile}/>
+            currentUser={this.state.currentUser}/>
 
           {this.state.isLoading &&
             <Loader className="fixed"/>

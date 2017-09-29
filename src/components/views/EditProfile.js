@@ -41,7 +41,7 @@ class EditProfile extends Component {
 
   componentDidMount() {
     isAuthenticated(this.props.currentUser, this.props.history, this.props.wallet)
-      .then(() => feathersClient.service('users').find({query: {address: this.props.currentUser}}))
+      .then(() => feathersClient.service('users').find({query: {address: this.props.currentUser.address}}))
       .then((resp) =>
         this.setState(Object.assign({}, resp.data[0],
           { isLoading: false })), this.focusFirstInput()
@@ -100,7 +100,7 @@ class EditProfile extends Component {
             liquidPledging.addDonor(model.name, 259200, '0x0') // 3 days commitTime. TODO allow user to set commitTime
               .once('transactionHash', hash => {
                 txHash = hash;
-                feathersClient.service('/users').patch(this.props.currentUser, constructedModel)
+                feathersClient.service('/users').patch(this.props.currentUser.address, constructedModel)
                   .then((user) => {
                     React.toast.success(`Your profile has been created. ${network.etherscan}tx/${txHash}`);
                     this.setState(Object.assign({}, user, { isSaving: false }));
@@ -120,7 +120,7 @@ class EditProfile extends Component {
               });
           })
       } else {
-        feathersClient.service('/users').patch(this.props.currentUser, constructedModel)
+        feathersClient.service('/users').patch(this.props.currentUser.address, constructedModel)
         .then(user => {
           React.toast.success("Your profile has been updated.");
           this.setState(Object.assign({}, user, { isSaving: false }));
@@ -140,7 +140,7 @@ class EditProfile extends Component {
 
     // // first upload image, then update user
     // feathersClient.service('/uploads').create({uri: this.state.avatar}).then(file => {
-    //   feathersClient.service('/users').update(this.props.currentUser, {
+    //   feathersClient.service('/users').update(this.props.currentUser.address, {
     //     name: model.name,
     //     email: model.email,
     //     linkedIn: model.linkedIn,

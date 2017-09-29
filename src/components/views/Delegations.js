@@ -8,6 +8,7 @@ import Loader from '../Loader'
 import { isAuthenticated } from '../../lib/middleware'
 import DelegateButton from '../../components/DelegateButton'
 import Avatar from 'react-avatar'
+import currentUserModel from '../../models/currentUserModel'
 
 /**
   The my delegations view
@@ -97,11 +98,11 @@ class Delegations extends Component {
     // NOTE: This will not rerun, meaning after any dac/campaign/milestone is added
 
     const causesIds = this.state.causes
-      .filter(c => c.ownerAddress === this.props.currentUser )
+      .filter(c => c.ownerAddress === this.props.currentUser.address )
       .map(c => c['_id'])
 
     const campaignIds = this.state.campaigns
-      .filter((c) => { return c.ownerAddress === this.props.currentUser })
+      .filter((c) => { return c.ownerAddress === this.props.currentUser.address })
       .map(c => c['_id'])
 
     const query = paramsForServer({
@@ -211,6 +212,6 @@ class Delegations extends Component {
 export default Delegations
 
 Delegations.propTypes = {
-  currentUser: PropTypes.string,
+  currentUser: currentUserModel,
   history: PropTypes.object.isRequired
 }

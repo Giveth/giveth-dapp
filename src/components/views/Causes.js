@@ -11,6 +11,8 @@ import { getTruncatedText } from '../../lib/helpers'
 import Avatar from 'react-avatar'
 import Masonry, {ResponsiveMasonry} from "react-responsive-masonry"
 
+import currentUserModel from '../../models/currentUserModel'
+
 /**
   The causes view
 **/
@@ -64,7 +66,7 @@ class Causes extends Component {
 
     return (
       <div id="causes-view" className="card-view">
-        <JoinGivethCommunity authenticated={currentUser} walletUnlocked={(wallet && wallet.unlocked)}/>
+        <JoinGivethCommunity currentUser={currentUser} walletUnlocked={(wallet && wallet.unlocked)}/>
 
         <div className="container-fluid page-layout reduced-padding">
 
@@ -86,7 +88,7 @@ class Causes extends Component {
                       <div className="card-text">{cause.summary}</div>
 
                       <div>
-                        { isOwner(cause.owner.address, currentUser) &&
+                        { isOwner(cause.owner.address, currentUser.address) &&
                           <span>
                             <a className="btn btn-link" onClick={(e)=>this.removeCause(e, cause._id)}>
                               <i className="fa fa-trash"></i>
@@ -119,6 +121,6 @@ class Causes extends Component {
 export default Causes
 
 Causes.propTypes = {
-  currentUser: PropTypes.string,
+  currentUser: currentUserModel,
   history: PropTypes.object.isRequired
 }

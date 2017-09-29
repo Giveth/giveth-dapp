@@ -12,6 +12,7 @@ import { isAuthenticated } from '../../lib/middleware'
 import getNetwork from "../../lib/blockchain/getNetwork";
 import { getTruncatedText } from '../../lib/helpers'
 import LoaderButton from "../../components/LoaderButton"
+import currentUserModel from '../../models/currentUserModel'
 
 /**
  * Create or edit a cause (DAC)
@@ -55,7 +56,7 @@ class EditCause extends Component {
       if(!this.props.isNew) {
         feathersClient.service('dacs').find({query: {_id: this.props.match.params.id}})
           .then((resp) => {
-            if(!isOwner(resp.data[0].owner.address, this.props.currentUser)) {
+            if(!isOwner(resp.data[0].owner.address, this.props.currentUser.address)) {
               this.props.history.goBack()
             } else {
               this.setState(Object.assign({}, resp.data[0], {
@@ -278,7 +279,7 @@ class EditCause extends Component {
 export default EditCause
 
 EditCause.propTypes = {
-  currentUser: PropTypes.string,
+  currentUser: currentUserModel,
   history: PropTypes.object.isRequired,
   isNew: PropTypes.bool
 }

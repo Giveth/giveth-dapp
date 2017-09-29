@@ -8,6 +8,8 @@ import Loader from '../Loader'
 import { isAuthenticated } from '../../lib/middleware'
 import getNetwork from '../../lib/blockchain/getNetwork';
 
+import currentUserModel from '../../models/currentUserModel'
+
 import _ from 'underscore'
 import moment from 'moment'
 /**
@@ -38,23 +40,24 @@ class Donations extends Component {
       this.donationsObserver = feathersClient.service('donations').watch({ strategy: 'always' }).find(paramsForServer({ 
           schema: 'includeTypeDetails',
           query: { 
-            donorAddress: this.props.currentUser,
+            donorAddress: this.props.currentUser.address,
             $limit: 100
           }
         })).subscribe(
-          resp => 
+          resp => {
             this.setState({
               donations: _.sortBy(resp.data, (d) => {
-                if(d.status === 'pending') return 1
-                if(d.status === 'to_approve') return 2
-                if(d.status === 'waiting') return 3
-                if(d.status === 'committed') return 4
-                if(d.status === 'cancelled') return 5
-                return 4
+                if(d.status === 'transaction_pending') return 1
+                if(d.status === 'pending') return 2
+                if(d.status === 'to_approve') return 3
+                if(d.status === 'waiting') return 4
+                if(d.status === 'committed') return 5
+                if(d.status === 'cancelled') return 6
+                return 6
               }),
               hasError: false,
               isLoading: false
-            }),
+            })},
           err =>
             this.setState({
               isLoading: false,
@@ -292,6 +295,6 @@ class Donations extends Component {
 export default Donations
 
 Donations.propTypes = {
-  currentUser: PropTypes.string,
+  currentUser: currentUserModel,
   history: PropTypes.object.isRequired
 }
