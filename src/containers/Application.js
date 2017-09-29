@@ -118,6 +118,14 @@ class Application extends Component {
         this.setState({ isLoading: false, hasError: true })
       })
 
+    /**
+
+    TO DO!!
+      GivethWallet and JWT need to be loaded
+      BEFORE state.isLoading is being set to true
+
+    **/
+
     // Load the wallet if it is cached
     GivethWallet.getCachedKeystore()
       .then(keystore => {

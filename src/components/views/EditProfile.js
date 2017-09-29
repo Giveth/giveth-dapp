@@ -8,6 +8,7 @@ import FormsyImageUploader from './../FormsyImageUploader'
 import { isAuthenticated } from '../../lib/middleware'
 import LoaderButton from "../../components/LoaderButton"
 import getNetwork from "../../lib/blockchain/getNetwork";
+import currentUserModel from '../../models/currentUserModel'
 
 /**
  * Edit a user profile
@@ -249,6 +250,6 @@ EditProfile.propTypes = {
     unlocked: PropTypes.bool,
     keystore: PropTypes.array,
   }),
-  currentUser: PropTypes.string,
+  currentUser: currentUserModel,
   history: PropTypes.object.isRequired,
 };
