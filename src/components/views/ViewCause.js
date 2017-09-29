@@ -54,7 +54,7 @@ class ViewCause extends Component {
     const query = paramsForServer({ 
       query: { 
         delegateId: dacId,
-        status: { $nin: ['waiting', 'pending', 'to_approve'] }
+        status: { $in: ['waiting', 'pending', 'to_approve'] }
       },
       schema: 'includeDonorDetails'
     })  
@@ -139,5 +139,5 @@ export default ViewCause
 
 ViewCause.propTypes = {
   history: PropTypes.object.isRequired,
-  currentUser: PropTypes.string.required
+  currentUser: PropTypes.string,
 }

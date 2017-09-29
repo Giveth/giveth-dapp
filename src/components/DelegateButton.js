@@ -1,5 +1,8 @@
 import React, { Component } from 'react'
+import PropTypes from 'prop-types'
 import SkyLight from 'react-skylight'
+import { utils } from 'web3';
+import getNetwork from '../lib/blockchain/getNetwork';
 
 import { feathersClient } from '../lib/feathersClient'
 import { Form } from 'formsy-react-components';
@@ -28,34 +31,89 @@ class DelegateButton extends Component {
 
 
   submit(model) {
+    const { toBN } = utils;
     this.setState({ isSaving: true })
     
     // find the type of where we delegate to
-    const type = this.props.types.find((t) => { return t.id === this.state.campaignsToDelegateTo[0]}).type
+    const manager = this.props.types.find((t) => { return t.id === this.state.campaignsToDelegateTo[0]});
 
-    feathersClient.service('/donations').patch(this.props.model._id, {
-      status: type === 'milestone' ? 'pending' : 'waiting', // if type is a milestone, the money will be pending before being locked
-      type: type,
-      type_id: this.state.campaignsToDelegateTo[0], // for now we don't support splitting, but we could in the future
-      from_type_id: this.props.model._id,
-      delegated_by: this.props.currentUser
-    }).then(donation => {
-      this.resetSkylight()
+    // TODO find a more friendly way to do this.
+    if (manager.type === 'milestone' && toBN(manager.maxAmount).lt(toBN(manager.totalDonated || 0).add(toBN(this.props.model.amount)))) {
+      React.toast.error('That milestone has reached its funding goal. Please pick another');
+      return;
+    }
 
-      // For some reason (I suspect a rerender when donations are being fetched again)
-      // the skylight dialog is sometimes gone and this throws error
-      if(this.refs.donateDialog) this.refs.donateDialog.hide()
+    const delegate = (etherScanUrl, txHash) => {
+      const mutation = {
+        txHash,
+        status: 'pending'
+      };
 
-      if(type === 'milestone') {
-        React.swal("You're awesome!", "The donation has been delegated. The donator has 3 days to reject your delegation before the money gets locked.", 'success')
+      if (manager.type.toLowerCase() === 'dac') {
+        Object.assign(mutation, {
+          delegate: manager.delegateId,
+          delegateId: manager._id
+        });
       } else {
-        React.swal("Delegated", "The donation has been delegated successfully. The donator has been notified.", 'success')        
+        Object.assign(mutation, {
+          proposedProject: manager.projectId,
+          proposedProjectId: manager._id,
+          proposedProjectType: manager.type,
+        })
       }
 
-    }).catch((e) => {
-      console.log(e)
-      React.swal("Oh no!", "Something went wrong with the transaction. Please try again.", 'error')
-      this.setState({ isSaving: false })
+      feathersClient.service('/donations').patch(this.props.model._id, mutation)
+        .then(donation => {
+          this.resetSkylight()
+
+          // For some reason (I suspect a rerender when donations are being fetched again)
+          // the skylight dialog is sometimes gone and this throws error
+          if (this.refs.donateDialog) this.refs.donateDialog.hide()
+
+          if (manager.type === 'milestone' || 'campaign') {
+            React.swal("You're awesome!", `The donation has been delegated. The donator has 3 days to reject your delegation before the money gets locked. ${etherScanUrl}tx/${txHash}`, 'success')
+          } else {
+            React.swal("Delegated", `The donation has been delegated successfully. The donator has been notified. ${etherScanUrl}tx/${txHash}`, 'success')
+          }
+
+      }).catch((e) => {
+        console.log(e)
+        React.swal("Oh no!", "Something went wrong with the transaction. Please try again.", 'error')
+        this.setState({ isSaving: false })
+      })
+    };
+
+    let txHash;
+    let etherScanUrl;
+    getNetwork()
+      .then((network) => {
+        const { liquidPledging } = network;
+        etherScanUrl = network.etherscan;
+
+        const senderId = (this.props.model.delegate > 0) ? this.props.model.delegate : this.props.model.owner;
+        const receiverId = (manager.type === 'dac') ? manager.delegateId : manager.projectId;
+
+        return liquidPledging.transfer(senderId, this.props.model.noteId, this.props.model.amount, receiverId)
+          .once('transactionHash', hash => {
+            txHash = hash;
+            delegate(etherScanUrl, txHash);
+          });
+      })
+      .then(() => {
+        React.toast.success(`Your donation has been confirmed! ${etherScanUrl}tx/${txHash}`);
+      }).catch((e) => {
+        console.error(e);
+
+        let msg;
+        if (txHash) {
+          //TODO need to update feathers to reset the donation to previous state as this tx failed.
+          msg = `Something went wrong with the transaction. ${etherScanUrl}tx/${txHash}`;
+        } else {
+          msg = "Something went wrong with the transaction. Is your wallet unlocked?";
+        }
+
+        React.swal("Oh no!", msg, 'error');
+        this.setState({ isSaving: false });
     })
   }
 
