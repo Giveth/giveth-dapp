@@ -96,6 +96,7 @@ class MainMenu extends Component {
                   <Link className="dropdown-item" to="/delegations">My delegations</Link>
                   <Link className="dropdown-item" to="/my-dacs">My DACs</Link>
                   <Link className="dropdown-item" to="/my-campaigns">My campaigns</Link>
+                  <Link className="dropdown-item" to="/my-milestones">My milestones</Link>
                 </div>
               </li>
             }

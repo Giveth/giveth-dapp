@@ -25,6 +25,7 @@ import Donations from './../components/views/Donations'
 import Delegations from './../components/views/Delegations'
 import MyDACs from './../components/views/MyDACs'
 import MyCampaigns from './../components/views/MyCampaigns'
+import MyMilestones from './../components/views/MyMilestones'
 import NotFound from './../components/views/NotFound'
 
 import Campaigns from './../components/views/Campaigns'
@@ -257,6 +258,7 @@ class Application extends Component {
                 <Route exact path="/delegations" component={props => <Delegations currentUser={this.state.currentUser} {...props}/>} />
                 <Route exact path="/my-dacs" component={props => <MyDACs currentUser={this.state.currentUser} wallet={this.state.wallet} {...props}/>} />
                 <Route exact path="/my-campaigns" component={props => <MyCampaigns currentUser={this.state.currentUser} wallet={this.state.wallet} {...props}/>} />
+                <Route exact path="/my-milestones" component={props => <MyMilestones currentUser={this.state.currentUser} wallet={this.state.wallet} {...props}/>} />
 
                 <Route exact path="/signin" render={props => <SignIn wallet={this.state.wallet} cachedWallet={this.state.wallet} onSignIn={this.onSignIn} {...props}/>} />
 
