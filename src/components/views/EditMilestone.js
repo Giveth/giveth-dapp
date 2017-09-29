@@ -138,7 +138,8 @@ class EditMilestone extends Component {
         recipientAddress: model.recipientAddress,
         completionDeadline: this.state.completionDeadline,
         image: file,
-        campaignId: this.state.campaignId
+        campaignId: this.state.campaignId,
+        status: 'unstarted'
       };
 
       if(this.props.isNew){

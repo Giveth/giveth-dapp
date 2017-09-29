@@ -84,6 +84,7 @@ class Application extends Component {
     // But he, it works! ;-)
 
     Promise.all([
+      // Load all the DACS
       new Promise((resolve, reject) => {
         feathersClient.service('dacs').watch({ strategy: 'always' }).find({
           query: {
@@ -98,6 +99,7 @@ class Application extends Component {
         )
       })
     ,
+      // Load all the campaigns
       new Promise((resolve, reject) => {
         feathersClient.service('campaigns').watch({ strategy: 'always' }).find({
           query: {
@@ -112,21 +114,30 @@ class Application extends Component {
 
         )
       })
-    ]).then( () => this.setState({ isLoading: false, hasError: false }))
+    ,
+      // login the user if we have a valid JWT
+      new Promise((resolve, reject) => {
+        feathersClient.passport.getJWT()
+          .then(token => {
+            if (token) return feathersClient.passport.verifyJWT(token)
+          })
+          .then(payload => this.getUserProfile(payload.userId))
+          .then(user => {
+            feathersClient.authenticate(); // need to authenticate the socket connection
+            resolve(user);            
+          })
+          .catch(()=> resolve())
+      })
+    ]).then( res => 
+        this.setState({ isLoading: false, hasError: false, currentUser: res[2] })
+      )
       .catch( e => {
         console.log(e)
         this.setState({ isLoading: false, hasError: true })
       })
 
-    /**
 
-    TO DO!!
-      GivethWallet and JWT need to be loaded
-      BEFORE state.isLoading is being set to true
-
-    **/
-
-    // Load the wallet if it is cached
+    //  Load the wallet if it is cached
     GivethWallet.getCachedKeystore()
       .then(keystore => {
         //TODO change to getWeb3() when implemented. actually remove provider from GivethWallet
@@ -137,25 +148,13 @@ class Application extends Component {
         getWeb3().then(web3 => web3.setWallet(wallet));
         this.setState({ wallet });
       })
-      .catch(err => this.setState({
-        cachedWallet: false,
-      }));
+      .catch( err => {
+        console.log(err)
+        this.setState({
+          cachedWallet: false,
+        })
+      });       
 
-
-    // login the user if we have a valid JWT
-    feathersClient.passport.getJWT()
-      .then(token => {
-        if (token) return feathersClient.passport.verifyJWT(token)
-      })
-      .then(payload => this.getUserProfile(payload.userId))
-      .then(user => {
-        console.log('user', user)
-        this.setState({ currentUser: user });
-        feathersClient.authenticate(); // need to authenticate the socket connection
-      })
-      .catch((err) => {
-        console.error(err);
-      });
 
     // QUESTION: Should rendering wait for this to load?
     // new Web3Monitor(({web3}) => {

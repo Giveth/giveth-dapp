@@ -16,7 +16,6 @@ import React from 'react'
  */
 
 export const isAuthenticated = (currentUser, history, wallet) => {
-  console.log(currentUser, wallet, (!(currentUser && currentUser.address) || (wallet && !wallet.unlocked)))
   return new Promise((resolve, reject) =>
     (!(currentUser && currentUser.address) || (wallet && !wallet.unlocked)) ? history.goBack() : resolve()
   )

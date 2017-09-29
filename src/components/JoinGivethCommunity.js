@@ -13,8 +13,6 @@ import currentUserModel from '../models/currentUserModel'
 
 class JoinGivethCommunity extends Component {
   render() {
-    console.log(this.props)
-
     const btnClass = "btn btn-info " + ((this.props.currentUser && this.props.walletUnlocked) ? "" : "disabled");
 
     return (

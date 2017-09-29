@@ -3,6 +3,7 @@ import PropTypes from 'prop-types'
 
 import BackupWallet from "../BackupWallet"
 import { isAuthenticated } from "../../lib/middleware"
+import currentUserModel from '../../models/currentUserModel'
 
 /**
  Shows the user's wallet
@@ -18,12 +19,12 @@ class UserWallet extends Component {
       <div id="profile-view" className="container-fluid page-layout">
         <center>
           <h1>Your wallet</h1>
-          {this.props.currentUser &&
-          <div>
-            <p>{this.props.currentUser}</p>
-            <p> balance: {this.props.wallet.getBalance()} eth</p>
-            <BackupWallet wallet={this.props.wallet}/>
-          </div>
+          {this.props.currentUser && 
+            <div>
+              <p>{this.props.currentUser.address}</p>
+              <p> balance: {this.props.wallet.getBalance()} eth</p>
+              <BackupWallet wallet={this.props.wallet}/>
+            </div>
           }
         </center>
       </div>
@@ -38,6 +39,6 @@ UserWallet.propTypes = {
     unlocked: PropTypes.bool,
     keystore: PropTypes.array
   }),  
-  currentUser: PropTypes.string,
+  currentUser: currentUserModel,
   history: PropTypes.object.isRequired,
 }
