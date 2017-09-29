@@ -14,10 +14,10 @@ class Milestone extends Component {
     this.props.history.push(`/campaigns/${ this.props.model.campaignId }/milestones/${ this.props.model._id}`)
   }
 
-  removeMilestone(e) {
-    e.stopPropagation()
-    this.props.removeMilestone()
-  }
+  // removeMilestone(e) {
+  //   e.stopPropagation()
+  //   this.props.removeMilestone()
+  // }
 
   editMilestone(e) {
     e.stopPropagation()
@@ -50,9 +50,11 @@ class Milestone extends Component {
                   <p>{model.summary}</p>
                   { isOwner(model.owner.address, currentUser) && 
                     <div>
-                      <a className="btn btn-link" onClick={(e)=>this.removeMilestone(e)}>
-                        <i className="fa fa-trash"></i>
-                      </a>
+                      {/*
+                        <a className="btn btn-link" onClick={(e)=>this.removeMilestone(e)}>
+                          <i className="fa fa-trash"></i>
+                        </a>
+                       */}
                       <a className="btn btn-link" onClick={(e)=>this.editMilestone(e)}>
                         <i className="fa fa-edit"></i>
                       </a>

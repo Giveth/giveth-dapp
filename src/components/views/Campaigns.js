@@ -2,7 +2,7 @@ import React, { Component } from 'react'
 import PropTypes from 'prop-types';
 
 import JoinGivethCommunity from '../JoinGivethCommunity'
-import { feathersClient } from '../../lib/feathersClient'
+// import { feathersClient } from '../../lib/feathersClient'
 import { isOwner } from '../../lib/helpers'
 import Avatar from 'react-avatar'
 import { redirectAfterWalletUnlock } from '../../lib/middleware'
@@ -18,24 +18,24 @@ import currentUserModel from '../../models/currentUserModel'
 
 class Campaigns extends Component {
   
-  removeCampaign(e, id){
-    e.stopPropagation()
+  // removeCampaign(e, id){
+  //   e.stopPropagation()
 
-    React.swal({
-      title: "Delete Campaign?",
-      text: "You will not be able to recover this Campaign!",
-      type: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#DD6B55",
-      confirmButtonText: "Yes, delete it!",
-      closeOnConfirm: true,
-    }, () => {
-      const campaigns = feathersClient.service('/campaigns');
-      campaigns.remove(id).then(campaign => {
-        React.toast.success("Your Campaign has been deleted.")
-      })
-    });
-  }
+  //   React.swal({
+  //     title: "Delete Campaign?",
+  //     text: "You will not be able to recover this Campaign!",
+  //     type: "warning",
+  //     showCancelButton: true,
+  //     confirmButtonColor: "#DD6B55",
+  //     confirmButtonText: "Yes, delete it!",
+  //     closeOnConfirm: true,
+  //   }, () => {
+  //     const campaigns = feathersClient.service('/campaigns');
+  //     campaigns.remove(id).then(campaign => {
+  //       React.toast.success("Your Campaign has been deleted.")
+  //     })
+  //   });
+  // }
 
   editCampaign(e, id) {
     e.stopPropagation()
@@ -87,9 +87,11 @@ class Campaigns extends Component {
                       <div>                  
                         { isOwner(campaign.owner.address, currentUser) && 
                           <span>
-                            <a className="btn btn-link" onClick={(e)=>this.removeCampaign(e, campaign._id)}>
-                              <i className="fa fa-trash"></i>
-                            </a>
+                            {/* 
+                              <a className="btn btn-link" onClick={(e)=>this.removeCampaign(e, campaign._id)}>
+                                <i className="fa fa-trash"></i>
+                              </a>
+                              */}
                             <a className="btn btn-link" onClick={(e)=>this.editCampaign(e, campaign._id)}>
                               <i className="fa fa-edit"></i>
                             </a>

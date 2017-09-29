@@ -2,7 +2,7 @@ import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 
 import JoinGivethCommunity from '../JoinGivethCommunity'
-import { feathersClient } from '../../lib/feathersClient'
+// import { feathersClient } from '../../lib/feathersClient'
 import { isOwner } from '../../lib/helpers'
 import { redirectAfterWalletUnlock } from '../../lib/middleware'
 
@@ -19,24 +19,24 @@ import currentUserModel from '../../models/currentUserModel'
 
 class DACs extends Component {
 
-  removeDAC(e, id){
-    e.stopPropagation()
+  // removeDAC(e, id){
+  //   e.stopPropagation()
 
-    React.swal({
-      title: "Delete DAC?",
-      text: "You will not be able to recover this DAC!",
-      type: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#DD6B55",
-      confirmButtonText: "Yes, delete it!",
-      closeOnConfirm: true,
-    }, () => {
-      const dacs = feathersClient.service('/causes');
-      dacs.remove(id).then(dac => {
-        React.toast.success("Your DAC has been deleted.")
-      })
-    });
-  }
+  //   React.swal({
+  //     title: "Delete DAC?",
+  //     text: "You will not be able to recover this DAC!",
+  //     type: "warning",
+  //     showCancelButton: true,
+  //     confirmButtonColor: "#DD6B55",
+  //     confirmButtonText: "Yes, delete it!",
+  //     closeOnConfirm: true,
+  //   }, () => {
+  //     const dacs = feathersClient.service('/causes');
+  //     dacs.remove(id).then(dac => {
+  //       React.toast.success("Your DAC has been deleted.")
+  //     })
+  //   });
+  // }
 
   editDAC(e, id) {
     e.stopPropagation()
@@ -90,9 +90,11 @@ class DACs extends Component {
                       <div>
                         { isOwner(dac.owner.address, currentUser) &&
                           <span>
-                            <a className="btn btn-link" onClick={(e)=>this.removeDAC(e, dac._id)}>
-                              <i className="fa fa-trash"></i>
-                            </a>
+                            {/*
+                              <a className="btn btn-link" onClick={(e)=>this.removeDAC(e, dac._id)}>
+                                <i className="fa fa-trash"></i>
+                              </a>
+                            */}
                             <a className="btn btn-link" onClick={(e)=>this.editDAC(e, dac._id)}>
                               <i className="fa fa-edit"></i>
                             </a>
