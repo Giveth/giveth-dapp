@@ -14,12 +14,12 @@ import Masonry, {ResponsiveMasonry} from "react-responsive-masonry"
 import currentUserModel from '../../models/currentUserModel'
 
 /**
-  The causes view
+  The dacs view
 **/
 
-class Causes extends Component {
+class DACs extends Component {
 
-  removeCause(e, id){
+  removeDAC(e, id){
     e.stopPropagation()
 
     React.swal({
@@ -31,14 +31,14 @@ class Causes extends Component {
       confirmButtonText: "Yes, delete it!",
       closeOnConfirm: true,
     }, () => {
-      const causes = feathersClient.service('/causes');
-      causes.remove(id).then(cause => {
+      const dacs = feathersClient.service('/causes');
+      dacs.remove(id).then(dac => {
         React.toast.success("Your DAC has been deleted.")
       })
     });
   }
 
-  editCause(e, id) {
+  editDAC(e, id) {
     e.stopPropagation()
 
     React.swal({
@@ -52,7 +52,7 @@ class Causes extends Component {
     }, () => redirectAfterWalletUnlock("/dacs/" + id + "/edit", this.props.wallet, this.props.history))
   }
 
-  viewCause(id){
+  viewDAC(id){
     this.props.history.push("/dacs/" + id)
   }
 
@@ -62,38 +62,38 @@ class Causes extends Component {
   }  
 
   render() {
-    const { currentUser, wallet, causes } = this.props
+    const { currentUser, wallet, dacs } = this.props
 
     return (
-      <div id="causes-view" className="card-view">
+      <div id="dacs-view" className="card-view">
         <JoinGivethCommunity currentUser={currentUser} walletUnlocked={(wallet && wallet.unlocked)}/>
 
         <div className="container-fluid page-layout reduced-padding">
 
-          { causes.data && causes.data.length > 0 && 
+          { dacs.data && dacs.data.length > 0 && 
             <ResponsiveMasonry columnsCountBreakPoints={{350: 1, 750: 2, 900: 3, 1024: 4, 1470: 5}}>
               <Masonry gutter="10px"> 
-                { causes.data.map((cause, index) =>
+                { dacs.data.map((dac, index) =>
 
-                  <div className="card" id={cause._id} key={index} onClick={()=>this.viewCause(cause._id)}>
-                    <img className="card-img-top" src={cause.image} alt=""/>
+                  <div className="card" id={dac._id} key={index} onClick={()=>this.viewDAC(dac._id)}>
+                    <img className="card-img-top" src={dac.image} alt=""/>
                     <div className="card-body">
                       
-                      <div onClick={(e)=>this.viewProfile(e, cause.owner.address)}>
-                        <Avatar size={30} src={cause.owner.avatar} round={true}/>                  
-                        <span className="small">{cause.owner.name}</span>
+                      <div onClick={(e)=>this.viewProfile(e, dac.owner.address)}>
+                        <Avatar size={30} src={dac.owner.avatar} round={true}/>                  
+                        <span className="small">{dac.owner.name}</span>
                       </div>
 
-                      <h4 className="card-title">{getTruncatedText(cause.title, 30)}</h4>
-                      <div className="card-text">{cause.summary}</div>
+                      <h4 className="card-title">{getTruncatedText(dac.title, 30)}</h4>
+                      <div className="card-text">{dac.summary}</div>
 
                       <div>
-                        { isOwner(cause.owner.address, currentUser.address) &&
+                        { isOwner(dac.owner.address, currentUser) &&
                           <span>
-                            <a className="btn btn-link" onClick={(e)=>this.removeCause(e, cause._id)}>
+                            <a className="btn btn-link" onClick={(e)=>this.removeDAC(e, dac._id)}>
                               <i className="fa fa-trash"></i>
                             </a>
-                            <a className="btn btn-link" onClick={(e)=>this.editCause(e, cause._id)}>
+                            <a className="btn btn-link" onClick={(e)=>this.editDAC(e, dac._id)}>
                               <i className="fa fa-edit"></i>
                             </a>
                           </span>
@@ -108,7 +108,7 @@ class Causes extends Component {
           }
         
 
-          { causes.data && causes.data.length === 0 &&
+          { dacs.data && dacs.data.length === 0 &&
             <center>There are no DACs yet!</center>
           }
 
@@ -118,9 +118,9 @@ class Causes extends Component {
   }
 }
 
-export default Causes
+export default DACs
 
-Causes.propTypes = {
+DACs.propTypes = {
   currentUser: currentUserModel,
   history: PropTypes.object.isRequired
 }

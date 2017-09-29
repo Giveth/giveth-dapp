@@ -67,7 +67,7 @@ class EditMilestone extends Component {
         feathersClient.service('milestones').find({query: {_id: this.props.match.params.milestoneId}})
           .then((resp) => {
             console.log("resp", resp)
-            if(!isOwner(resp.data[0].owner.address, this.props.currentUser.address)) {
+            if(!isOwner(resp.data[0].owner.address, this.props.currentUser)) {
               this.props.history.goBack()
             } else {         
               this.setState(Object.assign({}, resp.data[0], {

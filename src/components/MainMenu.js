@@ -68,11 +68,6 @@ class MainMenu extends Component {
     })
   }
 
-  isAuthenticated(){
-    this.props.currentUser && this.props.currentUser.address
-  }
-
-
   render() {
     const { currentUser, wallet } = this.props
     const { showMobileMenu } = this.state
@@ -99,7 +94,7 @@ class MainMenu extends Component {
                 <div className={`dropdown-menu ${showMobileMenu ? 'show' : ''} `} aria-labelledby="navbarDropdownDashboard">
                   <Link className="dropdown-item" to="/donations">My donations</Link>
                   <Link className="dropdown-item" to="/delegations">My delegations</Link>
-                  <Link className="dropdown-item" to="/my-causes">My DACs</Link>
+                  <Link className="dropdown-item" to="/my-dacs">My DACs</Link>
                   <Link className="dropdown-item" to="/my-campaigns">My campaigns</Link>
                 </div>
               </li>

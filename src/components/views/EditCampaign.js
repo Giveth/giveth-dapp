@@ -40,7 +40,7 @@ class EditCampaign extends Component {
       isSaving: false,
       hasError: false,
       formIsValid: false,      
-      causesOptions: [],
+      dacsOptions: [],
 
       // campaign model
       title: '',
@@ -52,7 +52,7 @@ class EditCampaign extends Component {
       ownerAddress: null,
       projectId: 0,
       milestones: [],
-      causes: [],
+      dacs: [],
       uploadNewImage: false,
       isLoadingTokens: false,      
     }
@@ -70,7 +70,7 @@ class EditCampaign extends Component {
           if(!this.props.isNew) {
             feathersClient.service('campaigns').find({query: {_id: this.props.match.params.id}})
               .then((resp) => {
-                if(!isOwner(resp.data[0].owner.address, this.props.currentUser.address)) {
+                if(!isOwner(resp.data[0].owner.address, this.props.currentUser)) {
                   this.props.history.goBack()
                 } else {  
                   this.setState(Object.assign({}, resp.data[0], {
@@ -83,15 +83,15 @@ class EditCampaign extends Component {
           }
         })
       ,
-        // load all causes. that aren't pending
+        // load all dacs. that aren't pending
         // TO DO: this needs to be replaced by something like http://react-autosuggest.js.org/
         new Promise((resolve, reject) => {
-          feathersClient.service('dacs').find({query: {  $select: [ 'title', '_id' ] }})
+          feathersClient.service('causes').find({query: {  $select: [ 'title', '_id' ] }})
             .then((resp) => 
               this.setState({
-                //TODO should we filter the available cuases to those that have been mined? It is possible that a createCause tx will fail and the cause will not be available
-                causesOptions: resp.data.map((c) =>  { return { name: c.title, id: c._id, element: <span>{c.title}</span> } }),
-                // causesOptions: resp.data.filter((c) => (c.delegateId && c.delegateId > 0)).map((c) =>  { return { label: c.title, value: c._id} }),
+                //TODO should we filter the available cuases to those that have been mined? It is possible that a createCause tx will fail and the dac will not be available
+                dacsOptions: resp.data.map((c) =>  { return { name: c.title, id: c._id, element: <span>{c.title}</span> } }),
+                // dacsOptions: resp.data.filter((c) => (c.delegateId && c.delegateId > 0)).map((c) =>  { return { label: c.title, value: c._id} }),
                 hasError: false
               }, resolve())
             )
@@ -139,7 +139,7 @@ class EditCampaign extends Component {
         summary: getTruncatedText(this.state.summary, 200),
         image: file,
         projectId: this.state.projectId,
-        causes: this.state.causes,
+        dacs: this.state.dacs,
       }  
 
       if(this.props.isNew){
@@ -204,12 +204,12 @@ class EditCampaign extends Component {
   }
 
   selectDACs = ({ target: { value: selectedDacs } }) => {
-    this.setState({ causes: selectedDacs })
+    this.setState({ dacs: selectedDacs })
   }  
 
   render(){
     const { isNew, history } = this.props
-    let { isLoading, isSaving, title, description, image, causes, causesOptions, communityUrl, formIsValid } = this.state
+    let { isLoading, isSaving, title, description, image, dacs, dacsOptions, communityUrl, formIsValid } = this.state
 
     return(
         <div id="edit-campaign-view">
@@ -270,13 +270,13 @@ class EditCampaign extends Component {
                       <FormsyImageUploader setImage={this.setImage} previewImage={image} isRequired={isNew}/>
 
                       <div className="form-group">
-                        <label>Which cause(s) is this campaign solving?</label>
+                        <label>Which dac(s) is this campaign solving?</label>
 
                         <InputToken
                           name="dac"
                           placeholder="Select one or more DACs"
-                          value={causes}
-                          options={causesOptions}
+                          value={dacs}
+                          options={dacsOptions}
                           onSelect={this.selectDACs}/>
 
                       </div>

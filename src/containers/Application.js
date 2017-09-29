@@ -18,12 +18,12 @@ import Signup from './../components/views/Signup'
 import ChangeAccount from './../components/views/ChangeAccount'
 
 import ViewMilestone from './../components/views/ViewMilestone'
-import Causes from './../components/views/Causes'
-import EditCause from './../components/views/EditCause'
-import ViewCause from './../components/views/ViewCause'
+import DACs from './../components/views/DACs'
+import EditDAC from './../components/views/EditDAC'
+import ViewDAC from './../components/views/ViewDAC'
 import Donations from './../components/views/Donations'
 import Delegations from './../components/views/Delegations'
-import MyCauses from './../components/views/MyCauses'
+import MyDACs from './../components/views/MyDACs'
 import MyCampaigns from './../components/views/MyCampaigns'
 import NotFound from './../components/views/NotFound'
 
@@ -54,7 +54,7 @@ class Application extends Component {
 
     this.state = {
       milestones: [],
-      causes: [],
+      dacs: [],
       campaigns: [],
       web3: undefined,
       currentUser: undefined,
@@ -77,8 +77,8 @@ class Application extends Component {
   }
 
   componentWillMount() {
-    // Load causes and campaigns. When we receive first data, we finish loading.
-    // This setup is a little ugly, because the callback is being called 
+    // Load dacs and campaigns. When we receive first data, we finish loading.
+    // This setup is a little ugly, bedac the callback is being called 
     // again and again whenever data changes. Yet the promise will be resolved the first time.
     // But he, it works! ;-)
 
@@ -92,7 +92,7 @@ class Application extends Component {
           },
           $limit: 200,
         }).subscribe(
-          resp => this.setState({ causes: resp }, resolve()),
+          resp => this.setState({ dacs: resp }, resolve()),
           err => reject()
         )
       })
@@ -112,7 +112,10 @@ class Application extends Component {
         )
       })
     ]).then( () => this.setState({ isLoading: false, hasError: false }))
-      .catch( e => this.setState({ isLoading: false, hasError: true }))
+      .catch( e => {
+        console.log(e)
+        this.setState({ isLoading: false, hasError: true })
+      })
 
     // Load the wallet if it is cached
     GivethWallet.getCachedKeystore()
@@ -234,12 +237,12 @@ class Application extends Component {
             <div>
               {/* Routes are defined here. Persistent data is set as props on components */}
               <Switch>
-                <Route exact path="/" component={props => <Causes causes={this.state.causes} currentUser={this.state.currentUser} wallet={this.state.wallet} {...props}/>} />
+                <Route exact path="/" component={props => <DACs dacs={this.state.dacs} currentUser={this.state.currentUser} wallet={this.state.wallet} {...props}/>} />
 
-                <Route exact path="/dacs" component={props => <Causes causes={this.state.causes} currentUser={this.state.currentUser} wallet={this.state.wallet} {...props}/>} />
-                <Route exact path="/dacs/new" component={props => <EditCause isNew={true} currentUser={this.state.currentUser} walletUnlocked={this.state.wallet} {...props}/>} />
-                <Route exact path="/dacs/:id" component={props => <ViewCause currentUser={this.state.currentUser} wallet={this.state.wallet} {...props}/>} />                        
-                <Route exact path="/dacs/:id/edit" component={props => <EditCause currentUser={this.state.currentUser} wallet={this.state.wallet} {...props}/>} />  
+                <Route exact path="/dacs" component={props => <DACs dacs={this.state.dacs} currentUser={this.state.currentUser} wallet={this.state.wallet} {...props}/>} />
+                <Route exact path="/dacs/new" component={props => <EditDAC isNew={true} currentUser={this.state.currentUser} walletUnlocked={this.state.wallet} {...props}/>} />
+                <Route exact path="/dacs/:id" component={props => <ViewDAC currentUser={this.state.currentUser} wallet={this.state.wallet} {...props}/>} />                        
+                <Route exact path="/dacs/:id/edit" component={props => <EditDAC currentUser={this.state.currentUser} wallet={this.state.wallet} {...props}/>} />  
 
                 <Route exact path="/campaigns" component={props => <Campaigns campaigns={this.state.campaigns} currentUser={this.state.currentUser} wallet={this.state.wallet} {...props}/>} />
                 <Route exact path="/campaigns/new" component={props => <EditCampaign isNew={true} currentUser={this.state.currentUser} wallet={this.state.wallet} {...props}/>} />
@@ -252,7 +255,7 @@ class Application extends Component {
 
                 <Route exact path="/donations" component={props => <Donations currentUser={this.state.currentUser} {...props}/>} />
                 <Route exact path="/delegations" component={props => <Delegations currentUser={this.state.currentUser} {...props}/>} />
-                <Route exact path="/my-causes" component={props => <MyCauses currentUser={this.state.currentUser} wallet={this.state.wallet} {...props}/>} />
+                <Route exact path="/my-dacs" component={props => <MyDACs currentUser={this.state.currentUser} wallet={this.state.wallet} {...props}/>} />
                 <Route exact path="/my-campaigns" component={props => <MyCampaigns currentUser={this.state.currentUser} wallet={this.state.wallet} {...props}/>} />
 
                 <Route exact path="/signin" render={props => <SignIn wallet={this.state.wallet} cachedWallet={this.state.wallet} onSignIn={this.onSignIn} {...props}/>} />

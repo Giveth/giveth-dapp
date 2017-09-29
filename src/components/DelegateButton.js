@@ -1,5 +1,4 @@
 import React, { Component } from 'react'
-import PropTypes from 'prop-types'
 import SkyLight from 'react-skylight'
 import { utils } from 'web3';
 import getNetwork from '../lib/blockchain/getNetwork';

@@ -13,27 +13,27 @@ import Avatar from 'react-avatar'
 import Masonry, {ResponsiveMasonry} from "react-responsive-masonry"
 
 /**
-  The my causes view
+  The my dacs view
 **/
 
-class MyCauses extends Component {
+class MyDACs extends Component {
   constructor() {
     super()
 
     this.state = {
       isLoading: true,
-      causes: [],
-      pendingCauses: [],
+      dacs: [],
+      pendingDACs: [],
     }    
   }
 
   componentDidMount() {
     isAuthenticated(this.props.currentUser, this.props.history).then(() =>
-      feathersClient.service('dacs').find({query: { ownerAddress: this.props.currentUser.address }})
+      feathersClient.service('causes').find({query: { ownerAddress: this.props.currentUser.address }})
         .then((resp) =>
           this.setState({ 
-            causes: resp.data.filter(cause => (cause.delegateId)),
-            pendingCauses: resp.data.filter(cause => !(cause.delegateId)),
+            dacs: resp.data.filter(dac => (dac.delegateId)),
+            pendingDACs: resp.data.filter(dac => !(dac.delegateId)),
             hasError: false,
             isLoading: false
           }))
@@ -45,7 +45,7 @@ class MyCauses extends Component {
     )   
   }  
 
-  removeCause(id){
+  removeDAC(id){
     React.swal({
       title: "Delete DAC?",
       text: "You will not be able to recover this DAC!",
@@ -55,14 +55,14 @@ class MyCauses extends Component {
       confirmButtonText: "Yes, delete it!",
       closeOnConfirm: true,
     }, () => {
-      const causes = feathersClient.service('/dacs');
-      causes.remove(id).then(cause => {
+      const dacs = feathersClient.service('/dacs');
+      dacs.remove(id).then(dac => {
         React.toast.success("Your DAC has been deleted.")
       })
     });
   }
 
-  editCause(id) {
+  editDAC(id) {
     React.swal({
       title: "Edit DAC?",
       text: "Are you sure you want to edit this DAC?",
@@ -75,10 +75,10 @@ class MyCauses extends Component {
   }
 
   render() {
-    let { causes, pendingCauses, isLoading } = this.state;
+    let { dacs, pendingDACs, isLoading } = this.state;
 
     return (
-      <div id="causes-view">
+      <div id="dacs-view">
         <div className="container-fluid page-layout">
           <div className="row">
             <div className="col-md-12">
@@ -90,34 +90,34 @@ class MyCauses extends Component {
 
               { !isLoading &&
                 <div>
-                  {pendingCauses.length > 0 &&
-                  <p>{pendingCauses.length} pending dacs</p>
+                  {pendingDACs.length > 0 &&
+                  <p>{pendingDACs.length} pending dacs</p>
                   }
 
-                  { causes && causes.length > 0 && 
+                  { dacs && dacs.length > 0 && 
                     <ResponsiveMasonry columnsCountBreakPoints={{350: 1, 750: 2, 900: 3, 1024: 4, 1470: 5}}>
                       <Masonry gutter="10px"> 
-                        { causes.map((cause, index) =>
+                        { dacs.map((dac, index) =>
 
-                          <div className="card" id={cause._id} key={index}>
-                            <img className="card-img-top" src={cause.image} alt=""/>
+                          <div className="card" id={dac._id} key={index}>
+                            <img className="card-img-top" src={dac.image} alt=""/>
                             <div className="card-body">
                             
-                              <Link to={`/profile/${ cause.owner.address }`}>
-                                <Avatar size={30} src={cause.owner.avatar} round={true}/>                  
-                                <span className="small">{cause.owner.name}</span>
+                              <Link to={`/profile/${ dac.owner.address }`}>
+                                <Avatar size={30} src={dac.owner.avatar} round={true}/>                  
+                                <span className="small">{dac.owner.name}</span>
                               </Link>
 
-                              <Link to={`/dacs/${ cause._id }`}>                  
-                                <h4 className="card-title">{getTruncatedText(cause.title, 30)}</h4>
+                              <Link to={`/dacs/${ dac._id }`}>                  
+                                <h4 className="card-title">{getTruncatedText(dac.title, 30)}</h4>
                               </Link>
-                              <div className="card-text">{cause.summary}</div>
+                              <div className="card-text">{dac.summary}</div>
 
                               <div>
-                                <a className="btn btn-link" onClick={()=>this.removeCause(cause._id)}>
+                                <a className="btn btn-link" onClick={()=>this.removeDAC(dac._id)}>
                                   <i className="fa fa-trash"></i>
                                 </a>
-                                <a className="btn btn-link" onClick={()=>this.editCause(cause._id)}>
+                                <a className="btn btn-link" onClick={()=>this.editDAC(dac._id)}>
                                   <i className="fa fa-edit"></i>
                                 </a>
                               </div>
@@ -130,7 +130,7 @@ class MyCauses extends Component {
                   }
                 
 
-                  { causes && causes.length === 0 &&
+                  { dacs && dacs.length === 0 &&
                     <center>You didn't create any DACs yet!</center>
                   }
                 </div>
@@ -143,9 +143,9 @@ class MyCauses extends Component {
   }
 }
 
-export default MyCauses
+export default MyDACs
 
-MyCauses.propTypes = {
+MyDACs.propTypes = {
   currentUser: currentUserModel,
   history: PropTypes.object.isRequired
 }

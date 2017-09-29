@@ -22,7 +22,7 @@ import currentUserModel from '../../models/currentUserModel'
     id (string): id of a DAC
 **/
 
-class ViewCause extends Component {
+class ViewDAC extends Component {
   constructor() {
     super()
 
@@ -136,9 +136,9 @@ class ViewCause extends Component {
   } 
 }
 
-export default ViewCause
+export default ViewDAC
 
-ViewCause.propTypes = {
+ViewDAC.propTypes = {
   history: PropTypes.object.isRequired,
   currentUser: currentUserModel,
 }

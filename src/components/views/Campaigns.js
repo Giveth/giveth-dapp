@@ -85,7 +85,7 @@ class Campaigns extends Component {
                       <div className="card-text">{campaign.summary}</div>
 
                       <div>                  
-                        { isOwner(campaign.owner.address, currentUser.address) && 
+                        { isOwner(campaign.owner.address, currentUser) && 
                           <span>
                             <a className="btn btn-link" onClick={(e)=>this.removeCampaign(e, campaign._id)}>
                               <i className="fa fa-trash"></i>

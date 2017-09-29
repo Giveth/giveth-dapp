@@ -21,7 +21,7 @@ class Delegations extends Component {
     this.state = {
       isLoading: true,
       hasError: false,
-      causes: [],
+      dacs: [],
       campaigns: [],
       milestones: [],
       delegations: []
@@ -40,10 +40,10 @@ class Delegations extends Component {
 
       Promise.all([
         new Promise((resolve, reject) => {
-          this.causesObserver = feathersClient.service('dacs').watch({ strategy: 'always' }).find({query: { delegateId: { $gt: '0' }, $select: [ 'ownerAddress', 'title', '_id', 'delegateId' ] }}).subscribe(
+          this.dacsObserver = feathersClient.service('causes').watch({ strategy: 'always' }).find({query: { delegateId: { $gt: '0' }, $select: [ 'ownerAddress', 'title', '_id', 'delegateId' ] }}).subscribe(
             resp =>         
               this.setState({ 
-                causes: resp.data.map( c => {
+                dacs: resp.data.map( c => {
                   c.type = 'dac'
                   c.name = c.title
                   c.id = c._id
@@ -97,7 +97,7 @@ class Delegations extends Component {
     // TO DO: less overhead here if we move it all to a single service.
     // NOTE: This will not rerun, meaning after any dac/campaign/milestone is added
 
-    const causesIds = this.state.causes
+    const dacsIds = this.state.dacs
       .filter(c => c.ownerAddress === this.props.currentUser.address )
       .map(c => c['_id'])
 
@@ -109,7 +109,7 @@ class Delegations extends Component {
       query: {
         $or: [
           { ownerId: { $in: campaignIds } },
-          { delegateId: { $in: causesIds } },
+          { delegateId: { $in: dacsIds } },
         ],
         status: {
           $in: ['waiting', 'committed']
@@ -131,7 +131,7 @@ class Delegations extends Component {
 
   componentWillUnmount() {
     if(this.donationsObserver) this.donationsObserver.unsubscribe()
-    this.causesObserver.unsubscribe()
+    this.dacsObserver.unsubscribe()
     this.campaignsObserver.unsubscribe()
     this.milestoneObserver.unsubscribe()
   } 
@@ -139,7 +139,7 @@ class Delegations extends Component {
 
 
   render() {
-    let { delegations, isLoading, causes, campaigns, milestones, currentUser } = this.state
+    let { delegations, isLoading, dacs, campaigns, milestones } = this.state
 
     return (
         <div id="delegations-view">
@@ -185,7 +185,7 @@ class Delegations extends Component {
                               <td>{d.donorAddress}</td>
                               <td>{d.status}</td>
                               <td>
-                                <DelegateButton types={causes.concat(campaigns).concat(milestones)} model={d} />
+                                <DelegateButton types={dacs.concat(campaigns).concat(milestones)} model={d} />
                               </td>
                             </tr>
                           )}
