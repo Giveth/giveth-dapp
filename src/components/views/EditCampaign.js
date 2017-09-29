@@ -157,7 +157,7 @@ class EditCampaign extends Component {
             etherScanUrl = network.txHash;
 
             let txHash;
-            liquidPledging.addProject(model.title, this.props.currentUser, 0, 0, '0x0')
+            liquidPledging.addProject(model.title, this.props.currentUser.address, 0, 0, '0x0')
               .once('transactionHash', hash => {
                 txHash = hash;
                 createCampaign(txHash);
