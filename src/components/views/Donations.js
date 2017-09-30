@@ -23,6 +23,7 @@ class Donations extends Component {
     this.state = {
       isLoading: true,
       isCommitting: false,
+      isRejecting: false,
       isRefunding: false,
       donations: [],
       etherScanUrl: ''
@@ -158,6 +159,71 @@ class Donations extends Component {
     })
   }
 
+  reject(donation){
+    React.swal({
+      title: "Reject your donation?",
+      text: "Your donation will not go to this milestone. You will still be in control of you funds and the dac can still delegate you donation.",
+      type: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#DD6B55",
+      confirmButtonText: "Yes, reject!",
+      closeOnConfirm: true,
+    }, (isConfirmed) => {
+      if(isConfirmed) {
+        this.setState({ isRejecting: true })
+
+        const doReject = (etherScanUrl, txHash) => {
+          feathersClient.service('/donations').patch(donation._id, {
+            status: 'pending',
+            $unset: {
+              pendingProject: true,
+              pendingProjectId: true,
+              pendingProjectType: true,
+            },
+            txHash,
+          }).then(donation => {
+            this.setState({ isRejecting: false })
+            React.toast.success(`The delegation has been rejected. ${etherScanUrl}tx/${txHash}`, 'success')
+          }).catch((e) => {
+            console.log(e)
+            React.toast.error("Oh no! Something went wrong with the transaction. Please try again.")
+            this.setState({ isRejecting: false })
+          });
+        };
+
+        let txHash;
+        let etherScanUrl;
+        getNetwork()
+          .then((network) => {
+            const { liquidPledging } = network;
+            etherScanUrl = network.etherscan;
+
+            return liquidPledging.transfer(donation.owner, donation.noteId, donation.amount, donation.delegate)
+              .once('transactionHash', hash => {
+                txHash = hash;
+                doReject(etherScanUrl, txHash);
+              });
+          })
+          .then(() => {
+            React.toast.success(`The delegation has been rejected! ${etherScanUrl}tx/${txHash}`);
+          }).catch((e) => {
+          console.error(e);
+
+          let msg;
+          if (txHash) {
+            //TODO need to update feathers to reset the donation to previous state as this tx failed.
+            msg = `Something went wrong with the transaction. ${etherScanUrl}tx/${txHash}`;
+          } else {
+            msg = "Something went wrong with the transaction. Is your wallet unlocked?";
+          }
+
+          React.swal("Oh no!", msg, 'error');
+          this.setState({ isSaving: false });
+        })
+      }
+    })
+  }
+
   refund(donation){
     React.swal({
       title: "Refund your donation?",
@@ -189,7 +255,7 @@ class Donations extends Component {
 
   render() {
     let { currentUser } = this.props;
-    let { donations, isLoading, etherScanUrl, isRefunding, isCommitting } = this.state
+    let { donations, isLoading, etherScanUrl, isRefunding, isCommitting, isRejecting } = this.state
 
     return (
         <div id="donations-view">
@@ -267,9 +333,14 @@ class Donations extends Component {
                                   </a>
                                 }
                                 { d.ownerId === currentUser.address && d.status === 'to_approve' && new Date() < new Date(d.commitTime) &&
-                                  <a className="btn btn-sm btn-success" onClick={()=>this.commit(d)} disabled={isCommitting}>
-                                    Commit
-                                  </a>
+                                  <div>
+                                    <a className="btn btn-sm btn-success" onClick={()=>this.commit(d)} disabled={isCommitting}>
+                                      Commit
+                                    </a>
+                                    <a className="btn btn-sm btn-danger" onClick={()=>this.reject(d)} disabled={isRejecting}>
+                                      Reject
+                                    </a>
+                                  </div>
                                 }                             
                               </td>
                             </tr>

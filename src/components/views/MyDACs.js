@@ -29,7 +29,7 @@ class MyDACs extends Component {
 
   componentDidMount() {
     isAuthenticated(this.props.currentUser, this.props.history).then(() =>
-      feathersClient.service('causes').find({query: { ownerAddress: this.props.currentUser.address }})
+      feathersClient.service('dacs').find({query: { ownerAddress: this.props.currentUser.address }})
         .then((resp) =>
           this.setState({ 
             dacs: resp.data.filter(dac => (dac.delegateId)),

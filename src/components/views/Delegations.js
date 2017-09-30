@@ -40,7 +40,7 @@ class Delegations extends Component {
 
       Promise.all([
         new Promise((resolve, reject) => {
-          this.dacsObserver = feathersClient.service('causes').watch({ strategy: 'always' }).find({query: { delegateId: { $gt: '0' }, $select: [ 'ownerAddress', 'title', '_id', 'delegateId' ] }}).subscribe(
+          this.dacsObserver = feathersClient.service('dacs').watch({ strategy: 'always' }).find({query: { delegateId: { $gt: '0' }, $select: [ 'ownerAddress', 'title', '_id', 'delegateId' ] }}).subscribe(
             resp =>         
               this.setState({ 
                 dacs: resp.data.map( c => {

@@ -1,6 +1,7 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import LPPMilestone from 'lpp-milestone';
+import { utils } from 'web3';
 
 import { Form, Input } from 'formsy-react-components';
 import { feathersClient } from './../../lib/feathersClient'
@@ -51,7 +52,7 @@ class EditMilestone extends Component {
       donationsReceived: 0,
       donationsGiven: 0,
       completionDeadline: new Date(),
-      completionStatus: 'pending',
+      state: 'pending',
       uploadNewImage: false         
     }
 
@@ -74,6 +75,7 @@ class EditMilestone extends Component {
             } else {         
               this.setState(Object.assign({}, resp.data[0], {
                 id: this.props.match.params.milestoneId,
+                maxAmount: utils.fromWei(resp.data[0].maxAmount),
                 isLoading: false,
                 hasError: false
               }), this.focusFirstInput()) 
@@ -137,13 +139,13 @@ class EditMilestone extends Component {
         title: model.title,
         description: model.description,
         summary: getTruncatedText(this.state.summary, 200),        
-        maxAmount: model.maxAmount,
+        maxAmount: utils.toWei(model.maxAmount),
         reviewerAddress: model.reviewerAddress,
         recipientAddress: model.recipientAddress,
         completionDeadline: this.state.completionDeadline,
         image: file,
         campaignId: this.state.campaignId,
-        status: 'unstarted'
+        state: 'pending'
       };
 
       if(this.props.isNew){
@@ -162,7 +164,7 @@ class EditMilestone extends Component {
             etherScanUrl = network.txHash;
 
             // web3, lp address, name, parentProject, recipient, maxAmount, reviewer
-            LPPMilestone.new(web3, liquidPledging.$address, model.title, this.state.campaignProjectId, model.recipientAddress, model.maxAmount, model.reviewerAddress)
+            LPPMilestone.new(web3, liquidPledging.$address, model.title, this.state.campaignProjectId, model.recipientAddress, constructedModel.maxAmount, model.reviewerAddress)
               .on('transactionHash', (hash) => {
                 txHash = hash;
                 createMilestone(txHash);

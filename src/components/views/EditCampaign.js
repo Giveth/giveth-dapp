@@ -86,7 +86,7 @@ class EditCampaign extends Component {
         // load all dacs. that aren't pending
         // TO DO: this needs to be replaced by something like http://react-autosuggest.js.org/
         new Promise((resolve, reject) => {
-          feathersClient.service('causes').find({query: {  $select: [ 'title', '_id' ] }})
+          feathersClient.service('dacs').find({query: {  $select: [ 'title', '_id' ] }})
             .then((resp) => 
               this.setState({
                 //TODO should we filter the available cuases to those that have been mined? It is possible that a createCause tx will fail and the dac will not be available
