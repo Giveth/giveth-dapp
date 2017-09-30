@@ -22,8 +22,7 @@ class MyCampaigns extends Component {
 
     this.state = {
       isLoading: true,
-      campaigns: [],
-      pendingCampaigns: [],
+      campaigns: []
     }    
   }
 
@@ -32,8 +31,10 @@ class MyCampaigns extends Component {
       feathersClient.service('campaigns').find({query: { ownerAddress: this.props.currentUser.address }})
         .then((resp) =>
           this.setState({ 
-            campaigns: resp.data.filter(campaign => (campaign.projectId)),
-            pendingCampaigns: resp.data.filter(campaign => !(campaign.projectId)),
+            campaigns: resp.data.map((c) => {
+              c.status = (c.projectId === 0) ? 'pending' : 'accepting donations' 
+              return c
+            }),
             hasError: false,
             isLoading: false
           }))
@@ -81,7 +82,7 @@ class MyCampaigns extends Component {
 
     return (
       <div id="campaigns-view">
-        <div className="container-fluid page-layout">
+        <div className="container-fluid page-layout dashboard-table-view">
           <div className="row">
             <div className="col-md-12">
               <h1>Your Campaigns</h1>
@@ -92,47 +93,40 @@ class MyCampaigns extends Component {
 
               { !isLoading &&
                 <div>
-                  {pendingCampaigns.length > 0 &&
-                    <p>{pendingCampaigns.length} pending campaigns</p>
-                  }
-
                   { campaigns && campaigns.length > 0 && 
-                    <ResponsiveMasonry columnsCountBreakPoints={{350: 1, 750: 2, 900: 3, 1024: 4, 1470: 5}}>
-                      <Masonry gutter="10px"> 
-                        { campaigns.map((campaign, index) =>
 
-                          <div className="card" id={campaign._id} key={index}>
-                            <img className="card-img-top" src={campaign.image} alt=""/>
-                            <div className="card-body">
-                            
-                              <Link to={`/profile/${ campaign.owner.address }`}>
-                                <Avatar size={30} src={campaign.owner.avatar} round={true}/>                  
-                                <span className="small">{campaign.owner.name}</span>
-                              </Link>
+                    <table className="table table-responsive table-striped table-hover">
+                      <thead>
+                        <tr>
+                          <th>Name</th>     
+                          <th>Number of donations</th>                     
+                          <th>Amount donated</th>
+                          <th>Status</th>
+                          <th></th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        { campaigns.map((c, index) =>
+                          <tr key={index} className={c.status === 'pending' ? 'pending' : ''}>
+                            <td>{c.title}</td>
+                            <td>{c.donationCount}</td>
+                            <td>{c.totalDonated}</td>
+                            <td>
+                              {c.status === 'pending' && 
+                                <span><i className="fa fa-circle-o-notch fa-spin"></i>&nbsp;</span> }
+                              {c.status}
+                            </td>
+                            <td>
+                              <a className="btn btn-link" onClick={()=>this.editCampaign(c._id)}>
+                                <i className="fa fa-edit"></i>
+                              </a>
+                            </td>
+                          </tr>
 
-                              <Link to={`/campaigns/${ campaign._id }`}>
-                                <h4 className="card-title">{getTruncatedText(campaign.title, 30)}</h4>
-                              </Link>
-                              <div className="card-text">{campaign.summary}</div>
-
-                              <div>
-                                {/* 
-                                  <a className="btn btn-link" onClick={()=>this.removeCampaign(campaign._id)}>
-                                    <i className="fa fa-trash"></i>
-                                  </a>
-                                */}
-                                <a className="btn btn-link" onClick={()=>this.editCampaign(campaign._id)}>
-                                  <i className="fa fa-edit"></i>
-                                </a>
-                              </div>
-
-                            </div>
-                          </div>
                         )}
-                      </Masonry>
-                    </ResponsiveMasonry>                    
+                      </tbody>
+                    </table>
                   }
-                
 
                   { campaigns && campaigns.length === 0 &&
                     <center>You didn't create any campaigns yet!</center>
