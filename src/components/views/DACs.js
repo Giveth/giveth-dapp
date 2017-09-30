@@ -31,7 +31,7 @@ class DACs extends Component {
   //     confirmButtonText: "Yes, delete it!",
   //     closeOnConfirm: true,
   //   }, () => {
-  //     const dacs = feathersClient.service('/causes');
+  //     const dacs = feathersClient.service('/dacs');
   //     dacs.remove(id).then(dac => {
   //       React.toast.success("Your DAC has been deleted.")
   //     })

@@ -2,15 +2,11 @@ import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 
 import { feathersClient } from '../../lib/feathersClient'
-import { Link } from 'react-router-dom'
 import { isAuthenticated, redirectAfterWalletUnlock } from '../../lib/middleware'
 import Loader from '../Loader'
 
-import { getTruncatedText } from '../../lib/helpers'
 import currentUserModel from '../../models/currentUserModel'
 
-import Avatar from 'react-avatar'
-import Masonry, {ResponsiveMasonry} from "react-responsive-masonry"
 
 /**
   The my dacs view
@@ -28,8 +24,10 @@ class MyDACs extends Component {
 
   componentDidMount() {
     isAuthenticated(this.props.currentUser, this.props.history).then(() =>
-      feathersClient.service('causes').find({query: { ownerAddress: this.props.currentUser.address }})
-        .then((resp) => 
+      feathersClient.service('dacs').find({query: { ownerAddress: this.props.currentUser.address }})
+        .then((resp) => {
+
+          console.log(resp)
           this.setState({ 
             dacs: resp.data.map((d) => {
               d.status = (d.delegateId) ? 'pending' : 'accepting donations' 
@@ -37,7 +35,7 @@ class MyDACs extends Component {
             }),
             hasError: false,
             isLoading: false
-          }))
+          })})
         .catch(() => 
           this.setState({ 
             isLoading: false, 
@@ -76,7 +74,7 @@ class MyDACs extends Component {
   }
 
   render() {
-    let { dacs, pendingDACs, isLoading } = this.state;
+    let { dacs, isLoading } = this.state;
 
     return (
       <div id="dacs-view">

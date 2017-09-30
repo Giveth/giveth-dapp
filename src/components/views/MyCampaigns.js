@@ -2,15 +2,9 @@ import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 
 import { feathersClient } from '../../lib/feathersClient'
-import { Link } from 'react-router-dom'
 import { isAuthenticated, redirectAfterWalletUnlock } from '../../lib/middleware'
 import Loader from '../Loader'
-import { getTruncatedText } from '../../lib/helpers'
 import currentUserModel from '../../models/currentUserModel'
-
-
-import Avatar from 'react-avatar'
-import Masonry, {ResponsiveMasonry} from "react-responsive-masonry"
 
 /**
   The my campaings view
@@ -78,7 +72,7 @@ class MyCampaigns extends Component {
 
 
   render() {
-    let { campaigns, pendingCampaigns, isLoading } = this.state
+    let { campaigns, isLoading } = this.state
 
     return (
       <div id="campaigns-view">
