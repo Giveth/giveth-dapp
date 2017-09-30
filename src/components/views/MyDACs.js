@@ -1,5 +1,6 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
+import { utils } from 'web3';
 
 import { feathersClient } from '../../lib/feathersClient'
 import { isAuthenticated, redirectAfterWalletUnlock } from '../../lib/middleware'
@@ -30,7 +31,7 @@ class MyDACs extends Component {
           console.log(resp)
           this.setState({
             dacs: resp.data.map((d) => {
-              d.status = (d.delegateId) ? 'pending' : 'accepting donations' 
+              d.status = (d.delegateId) ? 'accepting donations' : 'pending';
               return d
             }),
             hasError: false,
@@ -105,10 +106,10 @@ class MyDACs extends Component {
                         { dacs.map((d, index) =>
                           <tr key={index} className={d.status === 'pending' ? 'pending' : ''}>
                             <td>{d.title}</td>
-                            <td>{d.donationCount}</td>
-                            <td>{d.totalDonated}</td>
+                            <td>{d.donationCount || 0}</td>
+                            <td>{utils.fromWei(d.totalDonated) || 0}</td>
                             <td>
-                              {d.status === 'pending' && 
+                              {d.status === 'pending' &&
                                 <span><i className="fa fa-circle-o-notch fa-spin"></i>&nbsp;</span> }
                               {d.status}
                             </td>

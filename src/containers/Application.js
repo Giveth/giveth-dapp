@@ -152,7 +152,7 @@ class Application extends Component {
         this.setState({ wallet });
       })
       .catch( err => {
-        console.log(err)
+        if (err.message !== 'No keystore found') console.error(err);
         this.setState({
           cachedWallet: false,
         })
