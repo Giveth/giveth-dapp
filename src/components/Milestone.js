@@ -3,6 +3,7 @@ import PropTypes from 'prop-types'
 
 import { isOwner } from './../lib/helpers'
 import { redirectAfterWalletUnlock } from './../lib/middleware'
+import currentUserModel from '../models/currentUserModel'
 
 /**
   A single milestone
@@ -75,7 +76,7 @@ export default Milestone
 Milestone.propTypes = {
   model: PropTypes.object.isRequired,
   removeMilestone: PropTypes.func.isRequired,
-  currentUser: PropTypes.string,
+  currentUser: currentUserModel,
   history: PropTypes.object.isRequired,
   wallet: PropTypes.shape({
     unlocked: PropTypes.bool.isRequired,

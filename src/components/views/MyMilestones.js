@@ -54,22 +54,22 @@ class MyMilestones extends Component {
   }
 
 
-  removeMilestone(id){
-    React.swal({
-      title: "Delete Milestone?",
-      text: "You will not be able to recover this Milestone!",
-      type: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#DD6B55",
-      confirmButtonText: "Yes, delete it!",
-      closeOnConfirm: true,
-    }, () => {
-      const milestones = feathersClient.service('/milestones');
-      milestones.remove(id).then(milestone => {
-        React.toast.success("Your Milestone has been deleted.")
-      })
-    });
-  }
+  // removeMilestone(id){
+  //   React.swal({
+  //     title: "Delete Milestone?",
+  //     text: "You will not be able to recover this Milestone!",
+  //     type: "warning",
+  //     showCancelButton: true,
+  //     confirmButtonColor: "#DD6B55",
+  //     confirmButtonText: "Yes, delete it!",
+  //     closeOnConfirm: true,
+  //   }, () => {
+  //     const milestones = feathersClient.service('/milestones');
+  //     milestones.remove(id).then(milestone => {
+  //       React.toast.success("Your Milestone has been deleted.")
+  //     })
+  //   });
+  // }
 
   editMilestone(id) {
     React.swal({
@@ -124,9 +124,11 @@ class MyMilestones extends Component {
                               <div className="card-text">{milestone.summary}</div>
 
                               <div>
-                                <a className="btn btn-link" onClick={()=>this.removeMilestone(milestone._id)}>
-                                  <i className="fa fa-trash"></i>
-                                </a>
+                                {/*
+                                  <a className="btn btn-link" onClick={()=>this.removeMilestone(milestone._id)}>
+                                    <i className="fa fa-trash"></i>
+                                  </a>
+                                */}
                                 <a className="btn btn-link" onClick={()=>this.editMilestone(milestone._id)}>
                                   <i className="fa fa-edit"></i>
                                 </a>

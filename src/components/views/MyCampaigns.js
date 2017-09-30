@@ -46,22 +46,22 @@ class MyCampaigns extends Component {
   }
 
 
-  removeCampaign(id){
-    React.swal({
-      title: "Delete Campaign?",
-      text: "You will not be able to recover this Campaign!",
-      type: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#DD6B55",
-      confirmButtonText: "Yes, delete it!",
-      closeOnConfirm: true,
-    }, () => {
-      const campaigns = feathersClient.service('/campaigns');
-      campaigns.remove(id).then(campaign => {
-        React.toast.success("Your Campaign has been deleted.")
-      })
-    });
-  }
+  // removeCampaign(id){
+  //   React.swal({
+  //     title: "Delete Campaign?",
+  //     text: "You will not be able to recover this Campaign!",
+  //     type: "warning",
+  //     showCancelButton: true,
+  //     confirmButtonColor: "#DD6B55",
+  //     confirmButtonText: "Yes, delete it!",
+  //     closeOnConfirm: true,
+  //   }, () => {
+  //     const campaigns = feathersClient.service('/campaigns');
+  //     campaigns.remove(id).then(campaign => {
+  //       React.toast.success("Your Campaign has been deleted.")
+  //     })
+  //   });
+  // }
 
   editCampaign(id) {
     React.swal({
@@ -116,9 +116,11 @@ class MyCampaigns extends Component {
                               <div className="card-text">{campaign.summary}</div>
 
                               <div>
-                                <a className="btn btn-link" onClick={()=>this.removeCampaign(campaign._id)}>
-                                  <i className="fa fa-trash"></i>
-                                </a>
+                                {/* 
+                                  <a className="btn btn-link" onClick={()=>this.removeCampaign(campaign._id)}>
+                                    <i className="fa fa-trash"></i>
+                                  </a>
+                                */}
                                 <a className="btn btn-link" onClick={()=>this.editCampaign(campaign._id)}>
                                   <i className="fa fa-edit"></i>
                                 </a>

@@ -45,22 +45,22 @@ class MyDACs extends Component {
     )   
   }  
 
-  removeDAC(id){
-    React.swal({
-      title: "Delete DAC?",
-      text: "You will not be able to recover this DAC!",
-      type: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#DD6B55",
-      confirmButtonText: "Yes, delete it!",
-      closeOnConfirm: true,
-    }, () => {
-      const dacs = feathersClient.service('/dacs');
-      dacs.remove(id).then(dac => {
-        React.toast.success("Your DAC has been deleted.")
-      })
-    });
-  }
+  // removeDAC(id){
+  //   React.swal({
+  //     title: "Delete DAC?",
+  //     text: "You will not be able to recover this DAC!",
+  //     type: "warning",
+  //     showCancelButton: true,
+  //     confirmButtonColor: "#DD6B55",
+  //     confirmButtonText: "Yes, delete it!",
+  //     closeOnConfirm: true,
+  //   }, () => {
+  //     const dacs = feathersClient.service('/dacs');
+  //     dacs.remove(id).then(dac => {
+  //       React.toast.success("Your DAC has been deleted.")
+  //     })
+  //   });
+  // }
 
   editDAC(id) {
     React.swal({
@@ -114,9 +114,11 @@ class MyDACs extends Component {
                               <div className="card-text">{dac.summary}</div>
 
                               <div>
-                                <a className="btn btn-link" onClick={()=>this.removeDAC(dac._id)}>
-                                  <i className="fa fa-trash"></i>
-                                </a>
+                                {/*
+                                  <a className="btn btn-link" onClick={()=>this.removeDAC(dac._id)}>
+                                    <i className="fa fa-trash"></i>
+                                  </a>
+                                */}
                                 <a className="btn btn-link" onClick={()=>this.editDAC(dac._id)}>
                                   <i className="fa fa-edit"></i>
                                 </a>

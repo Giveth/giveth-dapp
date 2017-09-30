@@ -39,6 +39,9 @@ import MainMenu from './../components/MainMenu'
 import Loader from './../components/Loader'
 import UnlockWallet from "../components/UnlockWallet";
 
+require('./../lib/validators')
+
+
 // Hack to make things globaly available
 React.swal = require('sweetalert')
 React.toast = toast
