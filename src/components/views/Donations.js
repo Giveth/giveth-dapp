@@ -47,13 +47,12 @@ class Donations extends Component {
           resp => {
             this.setState({
               donations: _.sortBy(resp.data, (d) => {
-                if(d.status === 'transaction_pending') return 1
-                if(d.status === 'pending') return 2
-                if(d.status === 'to_approve') return 3
-                if(d.status === 'waiting') return 4
-                if(d.status === 'committed') return 5
-                if(d.status === 'cancelled') return 6
-                return 6
+                if(d.status === 'pending') return 1
+                if(d.status === 'to_approve') return 2
+                if(d.status === 'waiting') return 3
+                if(d.status === 'committed') return 4
+                if(d.status === 'cancelled') return 5
+                return 4
               }),
               hasError: false,
               isLoading: false
@@ -219,8 +218,13 @@ class Donations extends Component {
                         </thead>
                         <tbody>
                           { donations.map((d, index) =>
-                            <tr key={index}>
-                              <td>{this.getStatus(d.status)}</td>                            
+                            <tr key={index} className={d.status === 'pending' ? 'pending' : ''}>
+                              <td>
+                                {d.status === 'pending' && 
+                                  <span><i className="fa fa-circle-o-notch fa-spin"></i>&nbsp;</span> 
+                                }                              
+                                {this.getStatus(d.status)}
+                              </td>                            
                               <td>{utils.fromWei(d.amount)} ETH</td>
                               <td>
                                 {d.proposedProject > 0 &&
