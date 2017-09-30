@@ -2,15 +2,9 @@ import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 
 import { feathersClient } from '../../lib/feathersClient'
-import { Link } from 'react-router-dom'
 import { isAuthenticated, redirectAfterWalletUnlock } from '../../lib/middleware'
 import Loader from '../Loader'
-import { getTruncatedText } from '../../lib/helpers'
 import currentUserModel from '../../models/currentUserModel'
-
-
-import Avatar from 'react-avatar'
-import Masonry, {ResponsiveMasonry} from "react-responsive-masonry"
 
 /**
   The my campaings view
@@ -22,8 +16,7 @@ class MyMilestones extends Component {
 
     this.state = {
       isLoading: true,
-      milestones: [],
-      pendingMilestones: [],
+      milestones: []
     }    
   }
 
@@ -40,8 +33,10 @@ class MyMilestones extends Component {
         }})
         .then((resp) =>
           this.setState({ 
-            milestones: resp.data.filter(milestone => (milestone.projectId)),
-            pendingMilestones: resp.data.filter(milestone => !(milestone.projectId)),
+            milestones: resp.data.map((m) => {
+              m.status = (m.projectId === 0) ? 'pending' : 'accepting donations' 
+              return m
+            }),
             hasError: false,
             isLoading: false
           }))
@@ -85,7 +80,7 @@ class MyMilestones extends Component {
 
 
   render() {
-    let { milestones, pendingMilestones, isLoading } = this.state
+    let { milestones, isLoading } = this.state
 
     return (
       <div id="milestones-view">
@@ -100,45 +95,38 @@ class MyMilestones extends Component {
 
               { !isLoading &&
                 <div>
-                  {pendingMilestones.length > 0 &&
-                    <p>{pendingMilestones.length} pending milestones</p>
-                  }
-
                   { milestones && milestones.length > 0 && 
-                    <ResponsiveMasonry columnsCountBreakPoints={{350: 1, 750: 2, 900: 3, 1024: 4, 1470: 5}}>
-                      <Masonry gutter="10px"> 
-                        { milestones.map((milestone, index) =>
+                    <table className="table table-responsive table-striped table-hover">
+                      <thead>
+                        <tr>
+                          <th>Name</th>     
+                          <th>Number of donations</th>                     
+                          <th>Amount donated</th>
+                          <th>Status</th>
+                          <th></th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        { milestones.map((m, index) =>
+                          <tr key={index} className={m.status === 'pending' ? 'pending' : ''}>
+                            <td>{m.title}</td>
+                            <td>{m.donationCount}</td>
+                            <td>{m.totalDonated}</td>
+                            <td>
+                              {m.status === 'pending' && 
+                                <span><i className="fa fa-circle-o-notch fa-spin"></i>&nbsp;</span> }
+                              {m.status}
+                            </td>
+                            <td>
+                              <a className="btn btn-link" onClick={()=>this.editCampaign(m._id)}>
+                                <i className="fa fa-edit"></i>
+                              </a>
+                            </td>
+                          </tr>
 
-                          <div className="card" id={milestone._id} key={index}>
-                            <img className="card-img-top" src={milestone.image} alt=""/>
-                            <div className="card-body">
-                            
-                              <Link to={`/profile/${ milestone.owner.address }`}>
-                                <Avatar size={30} src={milestone.owner.avatar} round={true}/>                  
-                                <span className="small">{milestone.owner.name}</span>
-                              </Link>
-
-                              <Link to={`/milestones/${ milestone._id }`}>
-                                <h4 className="card-title">{getTruncatedText(milestone.title, 30)}</h4>
-                              </Link>
-                              <div className="card-text">{milestone.summary}</div>
-
-                              <div>
-                                {/*
-                                  <a className="btn btn-link" onClick={()=>this.removeMilestone(milestone._id)}>
-                                    <i className="fa fa-trash"></i>
-                                  </a>
-                                */}
-                                <a className="btn btn-link" onClick={()=>this.editMilestone(milestone._id)}>
-                                  <i className="fa fa-edit"></i>
-                                </a>
-                              </div>
-
-                            </div>
-                          </div>
                         )}
-                      </Masonry>
-                    </ResponsiveMasonry>                    
+                      </tbody>
+                    </table>                                      
                   }
                 
 

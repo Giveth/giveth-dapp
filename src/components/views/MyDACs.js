@@ -2,15 +2,11 @@ import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 
 import { feathersClient } from '../../lib/feathersClient'
-import { Link } from 'react-router-dom'
 import { isAuthenticated, redirectAfterWalletUnlock } from '../../lib/middleware'
 import Loader from '../Loader'
 
-import { getTruncatedText } from '../../lib/helpers'
 import currentUserModel from '../../models/currentUserModel'
 
-import Avatar from 'react-avatar'
-import Masonry, {ResponsiveMasonry} from "react-responsive-masonry"
 
 /**
   The my dacs view
@@ -22,21 +18,24 @@ class MyDACs extends Component {
 
     this.state = {
       isLoading: true,
-      dacs: [],
-      pendingDACs: [],
+      dacs: []
     }    
   }
 
   componentDidMount() {
     isAuthenticated(this.props.currentUser, this.props.history).then(() =>
       feathersClient.service('dacs').find({query: { ownerAddress: this.props.currentUser.address }})
-        .then((resp) =>
-          this.setState({ 
-            dacs: resp.data.filter(dac => (dac.delegateId)),
-            pendingDACs: resp.data.filter(dac => !(dac.delegateId)),
+        .then((resp) => {
+
+          console.log(resp)
+          this.setState({
+            dacs: resp.data.map((d) => {
+              d.status = (d.delegateId) ? 'pending' : 'accepting donations' 
+              return d
+            }),
             hasError: false,
             isLoading: false
-          }))
+          })})
         .catch(() => 
           this.setState({ 
             isLoading: false, 
@@ -75,11 +74,11 @@ class MyDACs extends Component {
   }
 
   render() {
-    let { dacs, pendingDACs, isLoading } = this.state;
+    let { dacs, isLoading } = this.state;
 
     return (
       <div id="dacs-view">
-        <div className="container-fluid page-layout">
+        <div className="container-fluid page-layout dashboard-table-view">
           <div className="row">
             <div className="col-md-12">
               <h1>Your DACs</h1>
@@ -90,45 +89,39 @@ class MyDACs extends Component {
 
               { !isLoading &&
                 <div>
-                  {pendingDACs.length > 0 &&
-                  <p>{pendingDACs.length} pending dacs</p>
-                  }
 
                   { dacs && dacs.length > 0 && 
-                    <ResponsiveMasonry columnsCountBreakPoints={{350: 1, 750: 2, 900: 3, 1024: 4, 1470: 5}}>
-                      <Masonry gutter="10px"> 
-                        { dacs.map((dac, index) =>
+                    <table className="table table-responsive table-striped table-hover">
+                      <thead>
+                        <tr>
+                          <th>Name</th>     
+                          <th>Number of donations</th>                     
+                          <th>Amount donated</th>
+                          <th>Status</th>
+                          <th></th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        { dacs.map((d, index) =>
+                          <tr key={index} className={d.status === 'pending' ? 'pending' : ''}>
+                            <td>{d.title}</td>
+                            <td>{d.donationCount}</td>
+                            <td>{d.totalDonated}</td>
+                            <td>
+                              {d.status === 'pending' && 
+                                <span><i className="fa fa-circle-o-notch fa-spin"></i>&nbsp;</span> }
+                              {d.status}
+                            </td>
+                            <td>
+                              <a className="btn btn-link" onClick={()=>this.editDAC(d._id)}>
+                                <i className="fa fa-edit"></i>
+                              </a>
+                            </td>
+                          </tr>
 
-                          <div className="card" id={dac._id} key={index}>
-                            <img className="card-img-top" src={dac.image} alt=""/>
-                            <div className="card-body">
-                            
-                              <Link to={`/profile/${ dac.owner.address }`}>
-                                <Avatar size={30} src={dac.owner.avatar} round={true}/>                  
-                                <span className="small">{dac.owner.name}</span>
-                              </Link>
-
-                              <Link to={`/dacs/${ dac._id }`}>                  
-                                <h4 className="card-title">{getTruncatedText(dac.title, 30)}</h4>
-                              </Link>
-                              <div className="card-text">{dac.summary}</div>
-
-                              <div>
-                                {/*
-                                  <a className="btn btn-link" onClick={()=>this.removeDAC(dac._id)}>
-                                    <i className="fa fa-trash"></i>
-                                  </a>
-                                */}
-                                <a className="btn btn-link" onClick={()=>this.editDAC(dac._id)}>
-                                  <i className="fa fa-edit"></i>
-                                </a>
-                              </div>
-
-                            </div>
-                          </div>
                         )}
-                      </Masonry>
-                    </ResponsiveMasonry>                    
+                      </tbody>
+                    </table>              
                   }
                 
 
