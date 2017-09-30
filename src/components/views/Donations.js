@@ -188,6 +188,7 @@ class Donations extends Component {
 
 
   render() {
+    let { currentUser } = this.props;
     let { donations, isLoading, etherScanUrl, isRefunding, isCommitting } = this.state
 
     return (
@@ -260,12 +261,12 @@ class Donations extends Component {
                               }
                               <td>{moment(d.createdAt).format("MM/DD/YYYY")}</td>
                               <td>
-                                { d.status === 'waiting' &&
+                                { d.ownerId === currentUser.address && d.status === 'waiting' &&
                                   <a className="btn btn-sm btn-danger" onClick={()=>this.refund(d)} disabled={isRefunding}>
                                     Refund
                                   </a>
                                 }
-                                { d.status === 'to_approve' && new Date() < new Date(d.commitTime) &&
+                                { d.ownerId === currentUser.address && d.status === 'to_approve' && new Date() < new Date(d.commitTime) &&
                                   <a className="btn btn-sm btn-success" onClick={()=>this.commit(d)} disabled={isCommitting}>
                                     Commit
                                   </a>
