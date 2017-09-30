@@ -15,6 +15,7 @@ import getNetwork from "../../lib/blockchain/getNetwork";
 import getWeb3 from "../../lib/blockchain/getWeb3";
 import LoaderButton from "../../components/LoaderButton"
 import DatePickerFormsy from './../DatePickerFormsy'
+import currentUserModel from '../../models/currentUserModel'
 
 /**
  * Create or edit a milestone
@@ -43,6 +44,7 @@ class EditMilestone extends Component {
       description: '',
       image: '',
       videoUrl: '',
+      maxAmount: 1000,
       ownerAddress: '',
       reviewerAddress: '',
       recipientAddress: '',
@@ -117,7 +119,8 @@ class EditMilestone extends Component {
       'description': inputs.description,
       'reviewerAddress': inputs.reviewerAddress,
       'recipientAddress': inputs.recipientAddress,
-      'completionDeadline': inputs.completionDeadline
+      'completionDeadline': inputs.completionDeadline,
+      'maxAmount': inputs.maxAmount
     }
   }  
 
@@ -134,6 +137,7 @@ class EditMilestone extends Component {
         title: model.title,
         description: model.description,
         summary: getTruncatedText(this.state.summary, 200),        
+        maxAmount: model.maxAmount,
         reviewerAddress: model.reviewerAddress,
         recipientAddress: model.recipientAddress,
         completionDeadline: this.state.completionDeadline,
@@ -157,11 +161,8 @@ class EditMilestone extends Component {
             const { liquidPledging } = network;
             etherScanUrl = network.txHash;
 
-            //TODO set this in form
-            const maxAmount = web3.utils.toWei(100000000); // 100 million ether
-
             // web3, lp address, name, parentProject, recipient, maxAmount, reviewer
-            LPPMilestone.new(web3, liquidPledging.$address, model.title, this.state.campaignProjectId, model.recipientAddress, maxAmount, model.reviewerAddress)
+            LPPMilestone.new(web3, liquidPledging.$address, model.title, this.state.campaignProjectId, model.recipientAddress, model.maxAmount, model.reviewerAddress)
               .on('transactionHash', (hash) => {
                 txHash = hash;
                 createMilestone(txHash);
@@ -208,7 +209,7 @@ class EditMilestone extends Component {
 
   render(){
     const { isNew, history } = this.props
-    let { isLoading, isSaving, title, description, image, recipientAddress, reviewerAddress, completionDeadline, formIsValid } = this.state
+    let { isLoading, isSaving, title, description, image, recipientAddress, reviewerAddress, completionDeadline, formIsValid, maxAmount } = this.state
 
     return(
         <div id="edit-milestone-view">
@@ -275,9 +276,9 @@ class EditMilestone extends Component {
                         value={reviewerAddress}
                         placeholder="Who will review this milestone?"
                         help="Enter an Ethereum address."
-                        validations="minLength:10"
+                        validations="isEtherAddress"
                         validationErrors={{
-                            minLength: 'Please provide at least 10 characters.'
+                            isEtherAddress: 'Please insert a valid Ethereum address.'
                         }}                    
                         required
                       />    
@@ -290,9 +291,9 @@ class EditMilestone extends Component {
                         value={recipientAddress}
                         placeholder="Where will the money go?"
                         help="Enter an Ethereum address."
-                        validations="minLength:10"
+                        validations="isEtherAddress"
                         validationErrors={{
-                            minLength: 'Please provide at least 10 characters.'
+                            isEtherAddress: 'Please insert a valid Ethereum address.'
                         }}                    
                         required
                       />                         
@@ -310,7 +311,24 @@ class EditMilestone extends Component {
                             minLength: 'Please provide a date.'
                         }}                    
                         required
-                      />   
+                      />  
+
+                      <div className="form-group">
+                        <Input
+                          name="maxAmount"
+                          id="maxamount-input"
+                          ref="maxAmount"
+                          type="number"
+                          label="Maximum amount of ETH for this milestone"
+                          value={maxAmount}
+                          placeholder="1000"
+                          validations="greaterThan:0.1"                            
+                          validationErrors={{
+                              greaterThan: 'Minimum value must be at least 0.1 ETH'
+                          }}                    
+                          required                             
+                        />
+                      </div>                       
                                               
                       <LoaderButton
                         className="btn btn-success" 
@@ -337,7 +355,7 @@ class EditMilestone extends Component {
 export default EditMilestone
 
 EditMilestone.propTypes = {
-  currentUser: PropTypes.string,
+  currentUser: currentUserModel,
   history: PropTypes.object.isRequired,
   isNew: PropTypes.bool
 }
