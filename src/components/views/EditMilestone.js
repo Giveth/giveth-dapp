@@ -144,6 +144,7 @@ class EditMilestone extends Component {
         maxAmount: utils.toWei(model.maxAmount),
         reviewerAddress: model.reviewerAddress,
         recipientAddress: model.recipientAddress,
+        ownerAddress: this.props.currentUser.address,
         completionDeadline: this.state.completionDeadline,
         image: file,
         campaignId: this.state.campaignId,
@@ -304,7 +305,7 @@ class EditMilestone extends Component {
 
                       <DatePickerFormsy
                         name="completionDeadline"
-                        label="Completion date"
+                        label="Estimated Completion Date"
                         type="text"
                         value={completionDeadline}
                         changeDate={(date)=>this.changeDate(date)}

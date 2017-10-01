@@ -126,8 +126,9 @@ class Application extends Component {
           })
           .then(payload => this.getUserProfile(payload.userId))
           .then(user => {
+            if (!user) throw new Error('No User');
             feathersClient.authenticate(); // need to authenticate the socket connection
-            resolve(user);            
+            resolve(user);
           })
           .catch(()=> resolve())
       })
