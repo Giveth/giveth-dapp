@@ -6,7 +6,6 @@ import { feathersClient } from '../../lib/feathersClient'
 import { isAuthenticated, redirectAfterWalletUnlock } from '../../lib/middleware'
 import Loader from '../Loader'
 import currentUserModel from '../../models/currentUserModel'
-import { utils } from 'web3';
 
 /**
   The my campaings view
