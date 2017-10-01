@@ -51,7 +51,10 @@ class ViewCampaign extends Component {
     ,
       new Promise((resolve, reject) => {
         this.milestoneObserver = feathersClient.service('milestones').watch({ strategy: 'always' }).find({ query: {campaignId: campaignId}}).subscribe(
-          resp => this.setState({ milestones: resp.data }, resolve()),
+          resp => {
+            console.log(resp.data)
+            this.setState({ milestones: resp.data }, resolve())
+          },
           err => reject()
         )    
       })

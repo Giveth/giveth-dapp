@@ -93,9 +93,9 @@ class Application extends Component {
           query: {
             delegateId: {
               $gt: '0' // 0 is a pending dac
-            }
+            },
+            $limit: 200,
           },
-          $limit: 200,
         }).subscribe(
           resp => this.setState({ dacs: resp }, resolve()),
           err => reject()
@@ -108,9 +108,9 @@ class Application extends Component {
           query: {
             projectId: {
               $gt: '0' // 0 is a pending campaign
-            }
+            },
+            $limit: 200,
           },
-          $limit: 200,
         }).subscribe(
           resp => this.setState({ campaigns: resp }, resolve()),
           err => reject()
@@ -152,7 +152,7 @@ class Application extends Component {
         this.setState({ wallet });
       })
       .catch( err => {
-        console.log(err)
+        if (err.message !== 'No keystore found') console.error(err);
         this.setState({
           cachedWallet: false,
         })

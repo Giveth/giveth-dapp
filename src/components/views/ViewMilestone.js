@@ -85,6 +85,7 @@ class ViewMilestone extends Component {
           image,
           donations,
           isLoadingDonations,
+          ownerAddress,
           owner
     } = this.state
 
@@ -111,7 +112,7 @@ class ViewMilestone extends Component {
                     <GoBackButton history={history}/>
 
                     <center>
-                      <Link to={`/profile/${ owner.address }`}>
+                      <Link to={`/profile/${ ownerAddress }`}>
                         <Avatar size={50} src={owner.avatar} round={true}/>                  
                         <p className="small">{owner.name}</p>
                       </Link> 

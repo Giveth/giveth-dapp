@@ -42,6 +42,7 @@ class EditDAC extends Component {
       image: '',
       videoUrl: '',
       communityUrl: '',
+      delegateId: 0,
       ownerAddress: null,
       uploadNewImage: false
 

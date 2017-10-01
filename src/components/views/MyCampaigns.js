@@ -1,11 +1,11 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
+import { utils } from 'web3';
 
 import { feathersClient } from '../../lib/feathersClient'
 import { isAuthenticated, redirectAfterWalletUnlock } from '../../lib/middleware'
 import Loader from '../Loader'
 import currentUserModel from '../../models/currentUserModel'
-import Web3 from 'web3'
 
 /**
   The my campaings view
@@ -104,8 +104,8 @@ class MyCampaigns extends Component {
                         { campaigns.map((c, index) =>
                           <tr key={index} className={c.status === 'pending' ? 'pending' : ''}>
                             <td>{c.title}</td>
-                            <td>{c.donationCount}</td>
-                            <td>{c.totalDonated && Web3.utils.fromWei(c.totalDonated)}</td>
+                            <td>{c.donationCount || 0}</td>
+                            <td>{utils.fromWei(c.totalDonated) || 0}</td>
                             <td>
                               {c.status === 'pending' && 
                                 <span><i className="fa fa-circle-o-notch fa-spin"></i>&nbsp;</span> }

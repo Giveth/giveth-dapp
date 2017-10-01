@@ -52,7 +52,7 @@ class EditMilestone extends Component {
       donationsReceived: 0,
       donationsGiven: 0,
       completionDeadline: new Date(),
-      state: 'pending',
+      status: 'pending',
       uploadNewImage: false         
     }
 
@@ -140,12 +140,13 @@ class EditMilestone extends Component {
         description: model.description,
         summary: getTruncatedText(this.state.summary, 200),        
         maxAmount: utils.toWei(model.maxAmount),
+        ownerAddress: this.props.currentUser.address,
         reviewerAddress: model.reviewerAddress,
         recipientAddress: model.recipientAddress,
         completionDeadline: this.state.completionDeadline,
         image: file,
         campaignId: this.state.campaignId,
-        state: 'pending'
+        status: this.state.status // make sure not to change status!
       };
 
       if(this.props.isNew){
