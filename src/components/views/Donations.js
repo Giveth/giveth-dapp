@@ -226,30 +226,74 @@ class Donations extends Component {
   refund(donation){
     React.swal({
       title: "Refund your donation?",
-      text: "Your donation will be cancelled and the ETH will return to your wallet.",
+      text: "Your donation will be cancelled and the a payment will be authorized for you to withdraw your ETH. All withdrawls" +
+      " must be confirmed for security reasons and may take a day or two. When it has been confirmed, you will be able" +
+      " to withdraw your ETH to your wallet.",
       type: "warning",
       showCancelButton: true,
       confirmButtonColor: "#DD6B55",
       confirmButtonText: "Yes, refund!",
       closeOnConfirm: true,
     }, (isConfirmed) => {
-        if(isConfirmed) {   
-          this.setState({ isRefunding: true })
+        if (isConfirmed) {
+          this.setState({ isRefunding: true });
 
-          feathersClient.service('/donations').patch(donation._id, {
-            status: 'cancelled',
-          }).then(donation => { 
-            this.setState({ isRefunding: false })
-            React.toast.success("Your donation has been refunded.")
-          }).catch((e) => {
-            console.log(e)
-            React.toast.error("Oh no! Something went wrong with the transaction. Please try again.")
-            this.setState({ isRefunding: false })
-          })
+          const doRefund = (etherScanUrl, txHash) => {
+            feathersClient.service('/donations').patch(donation._id, {
+              status: 'pending',
+              $unset: {
+                delegate: true,
+                delegateId: true,
+                delegateType: true,
+                pendingProject: true,
+                pendingProjectId: true,
+                pendingProjectType: true,
+              },
+              paymentState: 'Paying',
+              txHash,
+            }).then(donation => {
+              this.setState({ isRefunding: false })
+              React.toast.success(`Your refund in pending. ${etherScanUrl}tx/${txHash}`);
+            }).catch((e) => {
+              console.log(e)
+              React.toast.error("Oh no! Something went wrong with the transaction. Please try again.")
+              this.setState({ isRefunding: false })
+            });
+          };
+
+          let txHash;
+          let etherScanUrl;
+          getNetwork()
+            .then((network) => {
+              const { liquidPledging } = network;
+              etherScanUrl = network.etherscan;
+
+              return liquidPledging.withdraw(donation.noteId, donation.amount)
+                .once('transactionHash', hash => {
+                  txHash = hash;
+                  doRefund(etherScanUrl, txHash);
+                });
+            })
+            .then(() => {
+              React.toast.success(`Your donation has been refunded! ${etherScanUrl}tx/${txHash}`);
+            }).catch((e) => {
+            console.error(e);
+
+            let msg;
+            if (txHash) {
+              //TODO need to update feathers to reset the donation to previous state as this tx failed.
+              msg = `Something went wrong with the transaction. ${etherScanUrl}tx/${txHash}`;
+            } else {
+              msg = "Something went wrong with the transaction. Is your wallet unlocked?";
+            }
+
+            React.swal("Oh no!", msg, 'error');
+            this.setState({ isSaving: false });
+          });
         }
       }
     )
-  }  
+  }
 
 
   render() {

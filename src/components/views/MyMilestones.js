@@ -1,5 +1,6 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
+import { utils } from 'web3';
 
 import { feathersClient } from '../../lib/feathersClient'
 import { isAuthenticated, redirectAfterWalletUnlock } from '../../lib/middleware'
@@ -110,8 +111,8 @@ class MyMilestones extends Component {
                         { milestones.map((m, index) =>
                           <tr key={index} className={m.status === 'pending' ? 'pending' : ''}>
                             <td>{m.title}</td>
-                            <td>{m.donationCount}</td>
-                            <td>{m.totalDonated}</td>
+                            <td>{m.donationCount || 0}</td>
+                            <td>{(m.totalDonated) ? utils.fromWei(m.totalDonated) : 0}</td>
                             <td>
                               {m.status === 'pending' && 
                                 <span><i className="fa fa-circle-o-notch fa-spin"></i>&nbsp;</span> }

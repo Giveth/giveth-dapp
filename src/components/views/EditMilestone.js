@@ -99,7 +99,9 @@ class EditMilestone extends Component {
             }
           });
       }
-    })
+    });
+
+    this.setState({ recipientAddress: this.props.currentUser.address });
   }
 
   focusFirstInput(){

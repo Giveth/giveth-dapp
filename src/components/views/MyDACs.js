@@ -107,7 +107,7 @@ class MyDACs extends Component {
                           <tr key={index} className={d.status === 'pending' ? 'pending' : ''}>
                             <td>{d.title}</td>
                             <td>{d.donationCount || 0}</td>
-                            <td>{utils.fromWei(d.totalDonated) || 0}</td>
+                            <td>{(d.totalDonated) ? utils.fromWei(d.totalDonated) : 0}</td>
                             <td>
                               {d.status === 'pending' &&
                                 <span><i className="fa fa-circle-o-notch fa-spin"></i>&nbsp;</span> }
