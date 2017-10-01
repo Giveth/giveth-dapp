@@ -5,6 +5,7 @@ import { feathersClient } from '../../lib/feathersClient'
 import { isAuthenticated, redirectAfterWalletUnlock } from '../../lib/middleware'
 import Loader from '../Loader'
 import currentUserModel from '../../models/currentUserModel'
+import Web3 from 'web3'
 
 /**
   The my campaings view
@@ -111,7 +112,7 @@ class MyMilestones extends Component {
                           <tr key={index} className={m.status === 'pending' ? 'pending' : ''}>
                             <td>{m.title}</td>
                             <td>{m.donationCount}</td>
-                            <td>{m.totalDonated}</td>
+                            <td>{m.totalDonated && Web3.utils.fromWei(m.totalDonated)}</td>
                             <td>
                               {m.status === 'pending' && 
                                 <span><i className="fa fa-circle-o-notch fa-spin"></i>&nbsp;</span> }

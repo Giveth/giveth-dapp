@@ -6,6 +6,7 @@ import { isAuthenticated, redirectAfterWalletUnlock } from '../../lib/middleware
 import Loader from '../Loader'
 
 import currentUserModel from '../../models/currentUserModel'
+import Web3 from 'web3'
 
 
 /**
@@ -30,7 +31,7 @@ class MyDACs extends Component {
           console.log(resp)
           this.setState({
             dacs: resp.data.map((d) => {
-              d.status = (d.delegateId) ? 'pending' : 'accepting donations' 
+              d.status = !(d.delegateId) ? 'pending' : 'accepting donations' 
               return d
             }),
             hasError: false,
@@ -106,7 +107,7 @@ class MyDACs extends Component {
                           <tr key={index} className={d.status === 'pending' ? 'pending' : ''}>
                             <td>{d.title}</td>
                             <td>{d.donationCount}</td>
-                            <td>{d.totalDonated}</td>
+                            <td>{d.totalDonated && Web3.utils.fromWei(d.totalDonated)}</td>
                             <td>
                               {d.status === 'pending' && 
                                 <span><i className="fa fa-circle-o-notch fa-spin"></i>&nbsp;</span> }
