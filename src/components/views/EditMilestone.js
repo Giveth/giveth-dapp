@@ -145,7 +145,6 @@ class EditMilestone extends Component {
         ownerAddress: this.props.currentUser.address,
         reviewerAddress: model.reviewerAddress,
         recipientAddress: model.recipientAddress,
-        ownerAddress: this.props.currentUser.address,
         completionDeadline: this.state.completionDeadline,
         image: file,
         campaignId: this.state.campaignId,

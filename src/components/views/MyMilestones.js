@@ -6,7 +6,6 @@ import { feathersClient } from '../../lib/feathersClient'
 import { isAuthenticated, redirectAfterWalletUnlock } from '../../lib/middleware'
 import Loader from '../Loader'
 import currentUserModel from '../../models/currentUserModel'
-import { utils } from 'web3';
 
 /**
   The my campaings view
@@ -25,32 +24,20 @@ class MyMilestones extends Component {
   componentDidMount() {
     const myAddress = this.props.currentUser.address
 
-    isAuthenticated(this.props.currentUser, this.props.history).then(() =>
+    const self = this;
+
+    isAuthenticated(this.props.currentUser, this.props.history).then(() => {
       this.milestonesObserver = feathersClient.service('milestones').watch({ strategy: 'always' }).find({query: { 
-        $or: [{
-          ownerAddress: myAddress,
-          reviewerAddress: myAddress,
-          recipientAddress: myAddress
-        }]
-        }}).subscribe(
-          resp => {
-            console.log(resp.data)
-            this.setState({ 
-              milestones: resp.data.map((m) => {
-                m.status = (m.projectId === 0) ? 'pending' : 'accepting donations' 
-                return m
-              }),
-              hasError: false,
-              isLoading: false
-            })
-          },
-          err =>
-            this.setState({ 
-              isLoading: false, 
-              hasError: true 
-            })          
-        )
-    )   
+        $or: [
+          { ownerAddress: myAddress },
+          { reviewerAddress: myAddress },
+          { recipientAddress: myAddress }
+        ]
+      }}).subscribe(
+        resp => this.setState({ milestones: resp.data, isLoading: false, hasError: false }),
+        err => this.setState({ isLoading: false, hasError: true })
+      )
+    })   
   }
 
 
@@ -191,7 +178,8 @@ class MyMilestones extends Component {
 
 
   render() {
-    let { milestones, isLoading, currentUser } = this.state
+    let { milestones, isLoading } = this.state
+    let { currentUser } = this.props
 
     return (
       <div id="milestones-view">
@@ -282,7 +270,6 @@ class MyMilestones extends Component {
                     </table>                                      
                   }
                 
-
                   { milestones && milestones.length === 0 &&
                     <center>You didn't create any milestones yet!</center>
                   }
