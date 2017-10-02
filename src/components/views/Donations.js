@@ -249,7 +249,7 @@ class Donations extends Component {
                 pendingProjectId: true,
                 pendingProjectType: true,
               },
-              paymentState: 'Paying',
+              paymentStatus: 'Paying',
               txHash,
             }).then(donation => {
               this.setState({ isRefunding: false })
