@@ -1,5 +1,6 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types';
+import LPPCampaign from 'lpp-campaign';
 
 import { Form, Input } from 'formsy-react-components';
 import { feathersClient } from '../../lib/feathersClient'
@@ -12,6 +13,7 @@ import GoBackButton from '../GoBackButton'
 import { isOwner } from '../../lib/helpers'
 import { isAuthenticated } from '../../lib/middleware'
 import getNetwork from "../../lib/blockchain/getNetwork";
+import getWeb3 from "../../lib/blockchain/getWeb3";
 import { getTruncatedText } from '../../lib/helpers'
 import LoaderButton from "../../components/LoaderButton"
 
@@ -144,20 +146,23 @@ class EditCampaign extends Component {
 
       if(this.props.isNew){
         const createCampaign = (txHash) => {
-          constructedModel.txHash = txHash;
-          feathersClient.service('campaigns').create(constructedModel)
+          feathersClient.service('campaigns').create(Object.assign({}, constructedModel, {
+            txHash,
+            pluginAddress: '0x0000000000000000000000000000000000000000',
+          }))
             .then(() => this.props.history.push('/my-campaigns'));
         };
 
         let txHash;
         let etherScanUrl;
-        getNetwork()
-          .then(network => {
+        Promise.all([ getNetwork(), getWeb3() ])
+          .then(([ network, web3 ]) => {
             const { liquidPledging } = network;
             etherScanUrl = network.txHash;
 
             let txHash;
-            liquidPledging.addProject(model.title, this.props.currentUser.address, 0, 0, '0x0')
+            // web3, lp address, name, parentProject, reviewer
+            LPPCampaign.new(web3, liquidPledging.$address, model.title, 0, model.reviewerAddress)
               .once('transactionHash', hash => {
                 txHash = hash;
                 createCampaign(txHash);
