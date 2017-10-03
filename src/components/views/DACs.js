@@ -25,7 +25,7 @@ class DACs extends Component {
   //   React.swal({
   //     title: "Delete DAC?",
   //     text: "You will not be able to recover this DAC!",
-  //     type: "warning",
+  //     icon: "warning",
   //     showCancelButton: true,
   //     confirmButtonColor: "#DD6B55",
   //     confirmButtonText: "Yes, delete it!",
@@ -44,12 +44,14 @@ class DACs extends Component {
     React.swal({
       title: "Edit DAC?",
       text: "Are you sure you want to edit this DAC?",
-      type: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#DD6B55",
-      confirmButtonText: "Yes, continue editing!",
-      closeOnConfirm: true,
-    }, () => redirectAfterWalletUnlock("/dacs/" + id + "/edit", this.props.wallet, this.props.history))
+      icon: "warning",
+      buttons: ["Cancel", "Yes, edit"],      
+      dangerMode: true
+    }).then((isConfirmed) => {
+      if(isConfirmed){
+        redirectAfterWalletUnlock("/dacs/" + id + "/edit", this.props.wallet, this.props.history)
+      }
+    });
   }
 
   viewDAC(id){

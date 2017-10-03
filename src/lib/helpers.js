@@ -1,4 +1,6 @@
 import { feathersClient } from './feathersClient';
+import React from 'react'
+
 
 export const isOwner = (address, currentUser) => {
   // console.log('a/c', address, currentUser)
@@ -43,4 +45,22 @@ export const getTruncatedText = (text, maxLength) => {
     return text.substr(0, lastWhitespace) + "..."
   }
   return text
+}
+
+// displays a sweet alert with an error when the transaction goes wrong
+
+export const displayTransactionError = (txHash, etherScanUrl) => {
+  let msg = document.createElement("span");
+  if (txHash) {
+    msg.innerHTML = `Something went wrong with the transaction. <a href="${etherScanUrl}tx/${txHash}" target="_blank" rel="noopener noreferrer">View transaction</a>`;
+    //TODO update or remove from feathers? maybe don't remove, so we can inform the user that the tx failed and retry
+  } else {
+    msg.text = "Something went wrong with the transaction. Is your wallet unlocked?";
+  }
+
+  React.swal({
+    title: "Oh no!", 
+    content: msg,
+    icon: 'error',
+  });
 }

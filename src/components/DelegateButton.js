@@ -6,6 +6,7 @@ import getNetwork from '../lib/blockchain/getNetwork';
 import { feathersClient } from '../lib/feathersClient'
 import { Form } from 'formsy-react-components';
 import { takeActionAfterWalletUnlock } from '../lib/middleware'
+import { displayTransactionError } from '../lib/helpers'
 
 
 import InputToken from "react-input-token";
@@ -71,21 +72,30 @@ class DelegateButton extends Component {
           // the skylight dialog is sometimes gone and this throws error
           if (this.refs.donateDialog) this.refs.donateDialog.hide()
 
+          let msg = document.createElement("span");
+          
           if (manager.type === 'milestone' || 'campaign') {
-            React.swal("You're awesome!", `The donation has been delegated. The donator has 3 days to reject your delegation before the money gets locked. ${etherScanUrl}tx/${txHash}`, 'success')
+            msg.innerHTML = `The donation has been delegated, <a href=${etherScanUrl}tx/${txHash} target="_blank" rel="noopener noreferrer">view the transaction here.</a> 
+            The donator has <strong>3 days</strong> to reject your delegation before the money gets locked.`
           } else {
-            React.swal("Delegated", `The donation has been delegated successfully. The donator has been notified. ${etherScanUrl}tx/${txHash}`, 'success')
+            msg.innerHTML = `The donation has been delegated, <a href=${etherScanUrl}tx/${txHash} target="_blank" rel="noopener noreferrer">view the transaction here.</a> The donator has been notified.`            
           }
 
+          React.swal({
+            title: "Delegated!", 
+            content: msg,
+            icon: 'success',
+          })          
       }).catch((e) => {
         console.log(e)
-        React.swal("Oh no!", "Something went wrong with the transaction. Please try again.", 'error')
+        displayTransactionError(txHash, etherScanUrl)
         this.setState({ isSaving: false })
       })
     };
 
     let txHash;
     let etherScanUrl;
+    
     getNetwork()
       .then((network) => {
         const { liquidPledging } = network;
@@ -104,16 +114,7 @@ class DelegateButton extends Component {
         React.toast.success(`Your donation has been confirmed! ${etherScanUrl}tx/${txHash}`);
       }).catch((e) => {
         console.error(e);
-
-        let msg;
-        if (txHash) {
-          //TODO need to update feathers to reset the donation to previous state as this tx failed.
-          msg = `Something went wrong with the transaction. ${etherScanUrl}tx/${txHash}`;
-        } else {
-          msg = "Something went wrong with the transaction. Is your wallet unlocked?";
-        }
-
-        React.swal("Oh no!", msg, 'error');
+        displayTransactionError(txHash, etherScanUrl)
         this.setState({ isSaving: false });
     })
   }

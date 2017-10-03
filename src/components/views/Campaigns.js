@@ -24,7 +24,7 @@ class Campaigns extends Component {
   //   React.swal({
   //     title: "Delete Campaign?",
   //     text: "You will not be able to recover this Campaign!",
-  //     type: "warning",
+  //     icon: "warning",
   //     showCancelButton: true,
   //     confirmButtonColor: "#DD6B55",
   //     confirmButtonText: "Yes, delete it!",
@@ -43,12 +43,14 @@ class Campaigns extends Component {
     React.swal({
       title: "Edit Campaign?",
       text: "Are you sure you want to edit this Campaign?",
-      type: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#DD6B55",
-      confirmButtonText: "Yes, continue editing!",
-      closeOnConfirm: true,
-    }, () => redirectAfterWalletUnlock("/campaigns/" + id + "/edit", this.props.wallet, this.props.history));
+      icon: "warning",
+      dangerMode: true,
+      buttons: ["Cancel", "Yes, edit"]      
+    }).then((isConfirmed) => {
+      if(isConfirmed){
+        redirectAfterWalletUnlock("/campaigns/" + id + "/edit", this.props.wallet, this.props.history)
+      }
+    });
   }  
 
   viewCampaign(id){

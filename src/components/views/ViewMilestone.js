@@ -73,7 +73,7 @@ class ViewMilestone extends Component {
   } 
 
   isActiveMilestone() {
-    this.state.status === 'InProgress' && this.state.totalDonated < this.state.maxAmount
+    return this.state.status === 'InProgress' && this.state.totalDonated < this.state.maxAmount
   } 
 
   render() {

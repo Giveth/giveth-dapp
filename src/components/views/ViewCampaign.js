@@ -96,12 +96,9 @@ class ViewCampaign extends Component {
     React.swal({
       title: "Delete Milestone?",
       text: "You will not be able to recover this milestone!",
-      type: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#DD6B55",
-      confirmButtonText: "Yes, delete it!",
-      closeOnConfirm: true,
-    }, () => {
+      icon: "warning",
+      dangerMode: true,
+    }).then(() => {
       const milestones = feathersClient.service('/milestones');
       milestones.remove(id).then(milestone => console.log('Remove a milestone', milestone));
     })
