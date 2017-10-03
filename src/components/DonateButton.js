@@ -8,6 +8,7 @@ import { feathersClient } from '../lib/feathersClient'
 import { Form, Input } from 'formsy-react-components';
 import { takeActionAfterWalletUnlock } from '../lib/middleware'
 import currentUserModel from '../models/currentUserModel'
+import { displayTransactionError } from '../lib/helpers'
 
 class DonateButton extends Component {
   constructor() {
@@ -83,12 +84,24 @@ class DonateButton extends Component {
         // For some reason (I suspect a rerender when donations are being fetched again)
         // the skylight dialog is sometimes gone and this throws error
         if(this.refs.donateDialog) this.refs.donateDialog.hide()
-
+        
+        let msg = document.createElement("span");
+        
         if(this.props.type === "DAC") {
-          React.swal("You're awesome!", `You're donation is pending. You have full control of this donation and can take it back at any time. You will also have a 3 day window to veto the use of these funds upon delegation by the dac. Please make sure you join the community to follow progress of this DAC. ${etherScanUrl}tx/${txHash}`, 'success')
+          msg.innerHTML = `<p>You're donation is pending, <a href=${etherScanUrl}tx/${txHash} target="_blank" rel="noopener noreferrer">view the transaction here.</a>
+          You have full control of this donation and <strong>can take it back at any time</strong>. 
+          You will also have a <strong>3 day window</strong> to veto the use of these funds upon delegation by the dac.</p>
+          <p>Do make sure to <a href=${this.props.commmunityUrl} target="_blank" rel="noopener noreferrer">join the community</a> to follow the progress of this DAC.</p>`
         } else {
-          React.swal("You're awesome!", "You're donation is pending. Please make sure to join the community to follow progress of this project.", 'success')
+          msg.innerHTML = `<p>You're donation is pending.</p>
+          <p>Do make sure to <a href=${this.props.commmunityUrl} target="_blank" rel="noopener noreferrer">join the community</a> to follow the progress of this DAC.</p>`
         }
+
+        React.swal({
+          title: "You're awesome!", 
+          content: msg,
+          icon: 'success',
+        })
       });
     }
 
@@ -109,16 +122,8 @@ class DonateButton extends Component {
         React.toast.success(`Your donation has been confirmed! <a href="${etherScanUrl}tx/${txHash}" target="_blank" rel="noopener noreferrer">${etherScanUrl}tx/${txHash}</a>`);
       }).catch((e) => {
         console.log(e);
+        displayTransactionError(txHash, etherScanUrl)
 
-        let msg;
-        if (txHash) {
-          msg = `Something went wrong with the transaction. ${etherScanUrl}tx/${txHash}`;
-          //TODO update or remove from feathers? maybe don't remove, so we can inform the user that the tx failed and retry
-        } else {
-          msg = "Something went wrong with the transaction. Is your wallet unlocked?";
-        }
-
-        React.swal("Oh no!", msg, 'error');
         this.setState({ isSaving: false });
       })
   }
@@ -185,4 +190,5 @@ DonateButton.propTypes = {
     title: PropTypes.string.isRequired,
   }).isRequired,
   currentUser: currentUserModel,
+  communityUrl: PropTypes.string
 };

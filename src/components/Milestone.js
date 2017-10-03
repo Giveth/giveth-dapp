@@ -26,12 +26,14 @@ class Milestone extends Component {
     React.swal({
       title: "Edit Milestone?",
       text: "Are you sure you want to edit this milestone?",
-      type: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#DD6B55",
-      confirmButtonText: "Yes, continue editing!",
-      closeOnConfirm: true,
-    }, () => redirectAfterWalletUnlock(`/campaigns/${ this.props.model.campaignId }/milestones/${ this.props.model._id}/edit`, this.props.wallet, this.props.history))
+      icon: "warning",
+      dangerMode: true,
+      buttons: ["Cancel", "Yes, edit"]
+    }).then((isConfirmed) => {
+      if(isConfirmed){
+        redirectAfterWalletUnlock(`/campaigns/${ this.props.model.campaignId }/milestones/${ this.props.model._id}/edit`, this.props.wallet, this.props.history)
+      } 
+    })
   }
 
   render(){

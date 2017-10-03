@@ -53,7 +53,7 @@ class MyCampaigns extends Component {
   //   React.swal({
   //     title: "Delete Campaign?",
   //     text: "You will not be able to recover this Campaign!",
-  //     type: "warning",
+  //     icon: "warning",
   //     showCancelButton: true,
   //     confirmButtonColor: "#DD6B55",
   //     confirmButtonText: "Yes, delete it!",
@@ -70,12 +70,10 @@ class MyCampaigns extends Component {
     React.swal({
       title: "Edit Campaign?",
       text: "Are you sure you want to edit this Campaign?",
-      type: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#DD6B55",
-      confirmButtonText: "Yes, continue editing!",
-      closeOnConfirm: true,
-    }, (isConfirmed) => {
+      icon: "warning",
+      dangerMode: true,
+      buttons: ["Cancel", "Yes, edit"]      
+    }).then((isConfirmed) => {
       if(isConfirmed) redirectAfterWalletUnlock("/campaigns/" + id + "/edit", this.props.wallet, this.props.history)
     });
   }  
@@ -84,12 +82,10 @@ class MyCampaigns extends Component {
     React.swal({
       title: "Cancel Campaign?",
       text: "Are you sure you want to cancel this Campaign?",
-      type: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#DD6B55",
-      confirmButtonText: "Yes, cancel!",
-      closeOnConfirm: true,
-    }, (isConfirmed) => {
+      icon: "warning",
+      dangerMode: true,
+      buttons: ["Dismiss", "Yes, cancel"]      
+    }).then((isConfirmed) => {
       if(isConfirmed) {
         // TO DO: Implement cancelation of campaign by reviewer
         React.toast.success("Your Campaign has been deleted.")

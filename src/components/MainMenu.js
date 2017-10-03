@@ -45,15 +45,15 @@ class MainMenu extends Component {
     React.swal({
       title: "Lock your wallet?",
       text: "You will be redirected to the home page. Any changes you're making will be lost.",
-      type: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#DD6B55",
-      confirmButtonText: "Yes, lock wallet!",
-      closeOnConfirm: true,
-    }, () => {
-      this.props.wallet.lock();
-      this.setState({ walletLocked: true });
-      this.props.history.push('/');
+      icon: "warning",
+      dangerMode: true,    
+      buttons: ["Cancel", "Yes, lock wallet!"]
+    }).then( (isConfirmed) => {
+      if(isConfirmed) {
+        this.props.wallet.lock();
+        this.setState({ walletLocked: true });
+        this.props.history.push('/');
+      }
     });
   }
 

@@ -265,7 +265,7 @@ class Application extends Component {
                 <Route exact path="/campaigns/:id/milestones/:milestoneId" component={props => <ViewMilestone currentUser={this.state.currentUser} wallet={this.state.wallet} {...props} />}/>
                 <Route exact path="/campaigns/:id/milestones/:milestoneId/edit" component={props => <EditMilestone currentUser={this.state.currentUser} wallet={this.state.wallet} {...props} />}/>
 
-                <Route exact path="/donations" component={props => <Donations currentUser={this.state.currentUser} {...props}/>} />
+                <Route exact path="/donations" component={props => <Donations currentUser={this.state.currentUser} wallet={this.state.wallet} {...props}/>} />
                 <Route exact path="/delegations" component={props => <Delegations currentUser={this.state.currentUser} wallet={this.state.wallet} {...props}/>} />
                 <Route exact path="/my-dacs" component={props => <MyDACs currentUser={this.state.currentUser} wallet={this.state.wallet} {...props}/>} />
                 <Route exact path="/my-campaigns" component={props => <MyCampaigns currentUser={this.state.currentUser} wallet={this.state.wallet} {...props}/>} />

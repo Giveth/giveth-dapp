@@ -91,7 +91,7 @@ class ViewDAC extends Component {
               <h6>Decentralized Altruistic Community</h6>
               <h1>{title}</h1>
               
-              <DonateButton type="DAC" model={{ title: title, _id: id, managerId: delegateId }} wallet={wallet} currentUser={currentUser}/>
+              <DonateButton type="DAC" model={{ title: title, _id: id, managerId: delegateId }} wallet={wallet} currentUser={currentUser} commmunityUrl={communityUrl}/>
               {communityUrl &&
                 <CommunityButton className="btn btn-secondary" url={communityUrl}>&nbsp;Join our community</CommunityButton>
               }

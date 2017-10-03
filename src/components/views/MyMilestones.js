@@ -9,6 +9,7 @@ import getNetwork from '../../lib/blockchain/getNetwork';
 import getWeb3 from '../../lib/blockchain/getWeb3';
 import Loader from '../Loader'
 import currentUserModel from '../../models/currentUserModel'
+import { displayTransactionError } from '../../lib/helpers'
 
 /**
   The my campaings view
@@ -46,7 +47,7 @@ class MyMilestones extends Component {
   //   React.swal({
   //     title: "Delete Milestone?",
   //     text: "You will not be able to recover this Milestone!",
-  //     type: "warning",
+  //     icon: "warning",
   //     showCancelButton: true,
   //     confirmButtonColor: "#DD6B55",
   //     confirmButtonText: "Yes, delete it!",
@@ -63,12 +64,10 @@ class MyMilestones extends Component {
     React.swal({
       title: "Edit Milestone?",
       text: "Are you sure you want to edit this Milestone?",
-      type: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#DD6B55",
-      confirmButtonText: "Yes, continue editing!",
-      closeOnConfirm: true,
-    }, (isConfirmed) => {
+      icon: "warning",
+      dangerMode: true,
+      buttons: ["Cancel", "Yes, edit"]      
+    }).then((isConfirmed) => {
       if(isConfirmed) redirectAfterWalletUnlock("/milestones/" + id + "/edit", this.props.wallet, this.props.history)
     })
     
@@ -78,12 +77,10 @@ class MyMilestones extends Component {
     React.swal({
       title: "Mark as complete?",
       text: "Are you sure you want to mark this Milestone as complete?",
-      type: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#DD6B55",
-      confirmButtonText: "Yes, mark complete!",
-      closeOnConfirm: true,
-    }, (isConfirmed) => {
+      icon: "warning",
+      dangerMode: true,
+      buttons: ["Cancel", "Yes, mark complete"]      
+    }).then((isConfirmed) => {
       if(isConfirmed) {
         const markComplete = (etherScanUrl, txHash) => {
           feathersClient.service('/milestones').patch(milestone._id, {
@@ -112,17 +109,8 @@ class MyMilestones extends Component {
           .then(() => {
             React.toast.success(`The milestone has been marked as NeedsReview! ${etherScanUrl}tx/${txHash}`);
           }).catch((e) => {
-          console.error(e);
-
-          let msg;
-          if (txHash) {
-            //TODO need to update feathers to reset the donation to previous state as this tx failed.
-            msg = `Something went wrong with the transaction. ${etherScanUrl}tx/${txHash}`;
-          } else {
-            msg = "Something went wrong with the transaction. Is your wallet unlocked?";
-          }
-
-          React.swal("Oh no!", msg, 'error');
+            console.error(e);
+            displayTransactionError(txHash, etherScanUrl)
         })
       }
     })
@@ -132,12 +120,10 @@ class MyMilestones extends Component {
     React.swal({
       title: "Cancel Milestone?",
       text: "Are you sure you want to cancel this Milestone?",
-      type: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#DD6B55",
-      confirmButtonText: "Yes, cancel!",
-      closeOnConfirm: true,
-    }, (isConfirmed) => {
+      icon: "warning",
+      buttons: ["I changed my mind", "Yes, cancel"],  
+      dangerMode: true
+    }).then((isConfirmed) => {
       if(isConfirmed) {
         const cancel = (etherScanUrl, txHash) => {
           feathersClient.service('/milestones').patch(milestone._id, {
@@ -166,17 +152,9 @@ class MyMilestones extends Component {
           .then(() => {
             React.toast.success(`The milestone has been canceled! ${etherScanUrl}tx/${txHash}`);
           }).catch((e) => {
-          console.error(e);
+            console.error(e);
 
-          let msg;
-          if (txHash) {
-            //TODO need to update feathers to reset the donation to previous state as this tx failed.
-            msg = `Something went wrong with the transaction. ${etherScanUrl}tx/${txHash}`;
-          } else {
-            msg = "Something went wrong with the transaction. Is your wallet unlocked?";
-          }
-
-          React.swal("Oh no!", msg, 'error');
+            displayTransactionError(txHash, etherScanUrl)
         })
       }
     })
@@ -186,12 +164,10 @@ class MyMilestones extends Component {
     React.swal({
       title: "Approve Milestone?",
       text: "Are you sure you want to approve this Milestone?",
-      type: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#DD6B55",
-      confirmButtonText: "Yes, approve!",
-      closeOnConfirm: true,
-    }, (isConfirmed) => {
+      icon: "warning",
+      dangerMode: true,
+      buttons: ["Cancel", "Yes, approve"]
+    }).then((isConfirmed) => {
       if(isConfirmed) {
         const approve = (etherScanUrl, txHash) => {
           feathersClient.service('/milestones').patch(milestone._id, {
@@ -221,17 +197,9 @@ class MyMilestones extends Component {
           .then(() => {
             React.toast.success(`The milestone has been approved! ${etherScanUrl}tx/${txHash}`);
           }).catch((e) => {
-          console.error(e);
+            console.error(e);
 
-          let msg;
-          if (txHash) {
-            //TODO need to update feathers to reset the donation to previous state as this tx failed.
-            msg = `Something went wrong with the transaction. ${etherScanUrl}tx/${txHash}`;
-          } else {
-            msg = "Something went wrong with the transaction. Is your wallet unlocked?";
-          }
-
-          React.swal("Oh no!", msg, 'error');
+            displayTransactionError(txHash, etherScanUrl)
         })
       }
     })
@@ -241,12 +209,10 @@ class MyMilestones extends Component {
     React.swal({
       title: "Reject Milestone?",
       text: "Are you sure you want to reject this Milestone?",
-      type: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#DD6B55",
-      confirmButtonText: "Yes, reject!",
-      closeOnConfirm: true,
-    }, (isConfirmed) => {
+      icon: "warning",
+      dangerMode: true,
+      buttons: ["Cancel", "Yes, reject"]
+    }).then((isConfirmed) => {
       if(isConfirmed) {
         const reject = (etherScanUrl, txHash) => {
           feathersClient.service('/milestones').patch(milestone._id, {
@@ -276,17 +242,8 @@ class MyMilestones extends Component {
           .then(() => {
             React.toast.success(`The milestone has been rejected! ${etherScanUrl}tx/${txHash}`);
           }).catch((e) => {
-          console.error(e);
-
-          let msg;
-          if (txHash) {
-            //TODO need to update feathers to reset the donation to previous state as this tx failed.
-            msg = `Something went wrong with the transaction. ${etherScanUrl}tx/${txHash}`;
-          } else {
-            msg = "Something went wrong with the transaction. Is your wallet unlocked?";
-          }
-
-          React.swal("Oh no!", msg, 'error');
+            console.error(e);
+            displayTransactionError(txHash, etherScanUrl)
         })
       }
     })
@@ -296,12 +253,10 @@ class MyMilestones extends Component {
     React.swal({
       title: "Request Withdrawal",
       text: "For security reasons, there's a 3 day delay from the moment you request withdrawal before you can actually withdraw the money.",
-      type: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#DD6B55",
-      confirmButtonText: "Continue",
-      closeOnConfirm: true,
-    }, (isConfirmed) => {
+      icon: "warning",
+      dangerMode: true,
+      buttons: ["Cancel", "Yes, request withdrawal"]
+    }).then((isConfirmed) => {
       if(isConfirmed) {
         console.log('request withdrawal')
         if(isConfirmed) {
@@ -398,12 +353,10 @@ class MyMilestones extends Component {
     React.swal({
       title: "Request Withdrawal",
       text: "For security reasons, there's a 3 day delay from the moment you request withdrawal before you can actually withdraw the money.",
-      type: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#DD6B55",
-      confirmButtonText: "Continue",
-      closeOnConfirm: true,
-    }, (isConfirmed) => {
+      icon: "warning",
+      dangerMode: true,
+      buttons: ["Cancel", "Yes, withdraw"]
+    }).then((isConfirmed) => {
       if (isConfirmed) {
         console.log('request payment')
         feathersClient.service('/milestones').patch(id, {
