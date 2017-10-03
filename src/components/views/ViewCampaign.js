@@ -75,7 +75,7 @@ class ViewCampaign extends Component {
       schema: 'includeDonorDetails'
     });
 
-    this.donationsObserver = feathersClient.service('donations').watch({ listStrategy: 'always' }).find(query).subscribe(
+    this.donationsObserver = feathersClient.service('donations/history').watch({ listStrategy: 'always' }).find(query).subscribe(
       resp => 
         this.setState({
           donations: resp.data,
