@@ -317,8 +317,8 @@ class Donations extends Component {
                                     &nbsp;Delegated
                                   </span>
                                 }
-
-                                {d.delegate > 0 &&
+ 
+                                {d.delegate > 0 && d.proposedProject &&
                                   <span>{d.proposedProject.toUpperCase()}</span>
                                 }
                                 {!d.delegate &&

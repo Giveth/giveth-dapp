@@ -306,8 +306,8 @@ class Application extends Component {
           <ToastContainer 
             position="top-right"
             type="default"
-            autoClose={5000}
-            hideProgressBar={false}
+            autoClose={false}
+            hideProgressBar={true}
             newestOnTop={false}
             closeOnClick
             pauseOnHover
