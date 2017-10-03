@@ -52,6 +52,7 @@ class EditCampaign extends Component {
       videoUrl: '',
       communityUrl: '',      
       ownerAddress: null,
+      reviewerAddress: '',      
       projectId: 0,
       milestones: [],
       dacs: [],
@@ -116,7 +117,8 @@ class EditCampaign extends Component {
     return {
       'title': inputs.title,
       'description': inputs.description,
-      'communityUrl': inputs.communityUrl
+      'communityUrl': inputs.communityUrl,
+      'reviewerAddress': inputs.reviewerAddress,      
     }
   }  
 
@@ -142,6 +144,7 @@ class EditCampaign extends Component {
         image: file,
         projectId: this.state.projectId,
         dacs: this.state.dacs,
+        reviewerAddress: model.reviewerAddress      
       }  
 
       if(this.props.isNew){
@@ -214,7 +217,7 @@ class EditCampaign extends Component {
 
   render(){
     const { isNew, history } = this.props
-    let { isLoading, isSaving, title, description, image, dacs, dacsOptions, communityUrl, formIsValid } = this.state
+    let { isLoading, isSaving, title, description, image, dacs, dacsOptions, communityUrl, formIsValid, reviewerAddress } = this.state
 
     return(
         <div id="edit-campaign-view">
@@ -301,7 +304,22 @@ class EditCampaign extends Component {
                             isUrl: 'Please provide a url.'
                           }}
                         />
-                      </div>                      
+                      </div>   
+
+                      <Input
+                        name="reviewerAddress"
+                        id="title-input"
+                        label="Reviewer Address"
+                        type="text"
+                        value={reviewerAddress}
+                        placeholder="Who will review this milestone?"
+                        help="Enter an Ethereum address."
+                        validations="isEtherAddress"
+                        validationErrors={{
+                            isEtherAddress: 'Please insert a valid Ethereum address.'
+                        }}                    
+                        required
+                      />                                           
 
                       <LoaderButton
                         className="btn btn-success" 
