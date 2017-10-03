@@ -92,11 +92,11 @@ class MainMenu extends Component {
               <li className="nav-item dropdown">
                 <NavLink className="nav-link dropdown-toggle" id="navbarDropdownDashboard" to="/dashboard" activeClassName="active" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Dashboard</NavLink>
                 <div className={`dropdown-menu ${showMobileMenu ? 'show' : ''} `} aria-labelledby="navbarDropdownDashboard">
-                  <Link className="dropdown-item" to="/donations">My donations</Link>
-                  <Link className="dropdown-item" to="/delegations">My delegations</Link>
-                  <Link className="dropdown-item" to="/my-dacs">My DACs</Link>
-                  <Link className="dropdown-item" to="/my-campaigns">My campaigns</Link>
-                  <Link className="dropdown-item" to="/my-milestones">My milestones</Link>
+                  <Link className="dropdown-item" to="/donations">Donations</Link>
+                  <Link className="dropdown-item" to="/delegations">Delegations</Link>
+                  <Link className="dropdown-item" to="/my-dacs">DACs</Link>
+                  <Link className="dropdown-item" to="/my-campaigns">Campaigns</Link>
+                  <Link className="dropdown-item" to="/my-milestones">Milestones</Link>
                 </div>
               </li>
             }

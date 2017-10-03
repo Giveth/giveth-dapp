@@ -41,7 +41,7 @@ class DelegateButton extends Component {
 
     // TODO find a more friendly way to do this.
     if (manager.type === 'milestone' && toBN(manager.maxAmount).lt(toBN(manager.totalDonated || 0).add(toBN(this.props.model.amount)))) {
-      React.toast.error('That milestone has reached its funding goal. Please pick another');
+      React.alert('That milestone has reached its funding goal. Please pick another', 'error');
       return;
     }
 
@@ -111,7 +111,7 @@ class DelegateButton extends Component {
           });
       })
       .then(() => {
-        React.toast.success(`Your donation has been confirmed! ${etherScanUrl}tx/${txHash}`);
+        React.alert(<p>Your donation has been confirmed!<br/><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>, 'success')
       }).catch((e) => {
         console.error(e);
         displayTransactionError(txHash, etherScanUrl)

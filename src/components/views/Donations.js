@@ -116,10 +116,10 @@ class Donations extends Component {
               ownerType: donation.pendingProjectType,
             }).then(donation => {
               this.setState({ isCommitting: false })
-              React.toast.success(`You're awesome! Your donation is now committed. ${etherScanUrl}tx/${txHash}`, 'success')
+                React.alert(<p>Your donation has been committed.<br/><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>, 'success')
             }).catch((e) => {
               console.log(e)
-              React.toast.error("Oh no! Something went wrong with the transaction. Please try again.")
+              React.alert("Oh no! Something went wrong with the transaction. Please try again.", "error")
               this.setState({ isCommitting: false })
             });
           };
@@ -138,7 +138,7 @@ class Donations extends Component {
                 });
             })
             .then(() => {
-              React.toast.success(`Your donation has been committed! ${etherScanUrl}tx/${txHash}`);
+              React.alert(<p>Your donation has been committed.<br/><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>, 'success')
             }).catch((e) => {
             console.error(e);
             displayTransactionError(txHash, etherScanUrl)
@@ -172,10 +172,10 @@ class Donations extends Component {
               txHash,
             }).then(donation => {
               this.setState({ isRejecting: false })
-              React.toast.success(`The delegation has been rejected. ${etherScanUrl}tx/${txHash}`, 'success')
+              React.alert(<p>Your donation has been rejected.<br/><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>, 'success')
             }).catch((e) => {
               console.log(e)
-              React.toast.error("Oh no! Something went wrong with the transaction. Please try again.")
+              React.alert("Oh no! Something went wrong with the transaction. Please try again.", "error")
               this.setState({ isRejecting: false })
             });
           };
@@ -194,11 +194,11 @@ class Donations extends Component {
                 });
             })
             .then(() => {
-              React.toast.success(`The delegation has been rejected! ${etherScanUrl}tx/${txHash}`);
+              React.alert(<p>The delegation has been rejected.<br/><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>, 'success')
             }).catch((e) => {
-            console.error(e);
-            displayTransactionError(txHash, etherScanUrl)
-            this.setState({ isSaving: false });
+              console.error(e);
+              displayTransactionError(txHash, etherScanUrl)
+              this.setState({ isSaving: false });
           })
         }
       })
@@ -234,10 +234,10 @@ class Donations extends Component {
                 txHash,
               }).then(donation => {
                 this.setState({ isRefunding: false })
-                React.toast.success(`Your refund in pending. ${etherScanUrl}tx/${txHash}`);
+                React.alert(<p>The refund is pending...<br/><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>, 'success')
               }).catch((e) => {
                 console.log(e)
-                React.toast.error("Oh no! Something went wrong with the transaction. Please try again.")
+                React.alert("Oh no! Something went wrong with the transaction. Please try again.", "error")
                 this.setState({ isRefunding: false })
               });
             };
@@ -256,12 +256,12 @@ class Donations extends Component {
                   });
               })
               .then(() => {
-                React.toast.success(`Your donation has been refunded! ${etherScanUrl}tx/${txHash}`);
+                React.alert(<p>Your donation has been refunded!<br/><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>, 'success')
               }).catch((e) => {
-              console.error(e);
-              displayTransactionError(txHash, etherScanUrl)
+                console.error(e);
+                displayTransactionError(txHash, etherScanUrl)
 
-              this.setState({ isSaving: false });
+                this.setState({ isSaving: false });
             });
           }
         }

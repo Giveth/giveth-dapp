@@ -119,7 +119,7 @@ class DonateButton extends Component {
           });
       })
       .then(() => {
-        React.toast.success(`Your donation has been confirmed! <a href="${etherScanUrl}tx/${txHash}" target="_blank" rel="noopener noreferrer">${etherScanUrl}tx/${txHash}</a>`);
+        React.alert(<p>Your donation has been confirmed!<br/><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>, 'success')
       }).catch((e) => {
         console.log(e);
         displayTransactionError(txHash, etherScanUrl)
