@@ -23,7 +23,14 @@ class MyCampaigns extends Component {
 
   componentDidMount() {
     isAuthenticated(this.props.currentUser, this.props.history).then(() =>
-      feathersClient.service('campaigns').find({query: { ownerAddress: this.props.currentUser.address }})
+      feathersClient.service('campaigns').find({
+          query: { 
+            $or: [
+              { ownerAddress: this.props.currentUser.address },
+              { reviewerAddress: this.props.currentUser.address }
+            ]
+          }
+        })
         .then((resp) =>
           this.setState({ 
             campaigns: resp.data.map((c) => {
@@ -68,12 +75,33 @@ class MyCampaigns extends Component {
       confirmButtonColor: "#DD6B55",
       confirmButtonText: "Yes, continue editing!",
       closeOnConfirm: true,
-    }, () => redirectAfterWalletUnlock("/campaigns/" + id + "/edit", this.props.wallet, this.props.history));
+    }, (isConfirmed) => {
+      if(isConfirmed) redirectAfterWalletUnlock("/campaigns/" + id + "/edit", this.props.wallet, this.props.history)
+    });
   }  
+
+  cancelCampaign(id){
+    React.swal({
+      title: "Cancel Campaign?",
+      text: "Are you sure you want to cancel this Campaign?",
+      type: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#DD6B55",
+      confirmButtonText: "Yes, cancel!",
+      closeOnConfirm: true,
+    }, (isConfirmed) => {
+      if(isConfirmed) {
+        // TO DO: Implement cancelation of campaign by reviewer
+        React.toast.success("Your Campaign has been deleted.")
+      }
+    });
+  }
+
 
 
   render() {
     let { campaigns, isLoading } = this.state
+    let { currentUser } = this.props
 
     return (
       <div id="campaigns-view">
@@ -103,7 +131,15 @@ class MyCampaigns extends Component {
                       <tbody>
                         { campaigns.map((c, index) =>
                           <tr key={index} className={c.status === 'pending' ? 'pending' : ''}>
-                            <td>{c.title}</td>
+                            <td>{c.title}
+                              { c.reviewerAddress === currentUser.address &&
+                                <span className="badge badge-info">
+                                  <i className="fa fa-eye"></i>
+                                  &nbsp;I'm reviewer
+                                </span>
+                              }
+
+                            </td>
                             <td>{c.donationCount || 0}</td>
                             <td>{(c.totalDonated) ? utils.fromWei(c.totalDonated) : 0}</td>
                             <td>
@@ -112,9 +148,17 @@ class MyCampaigns extends Component {
                               {c.status}
                             </td>
                             <td>
-                              <a className="btn btn-link" onClick={()=>this.editCampaign(c._id)}>
-                                <i className="fa fa-edit"></i>
-                              </a>
+                              { c.ownerAddress === currentUser.address && c.status !== 'pending' &&
+                                <a className="btn btn-link" onClick={()=>this.editCampaign(c._id)}>
+                                  <i className="fa fa-edit"></i>&nbsp;Edit
+                                </a>
+                              }
+
+                              { c.reviewerAddress === currentUser.address && c.status !== 'pending' &&
+                                <a className="btn btn-danger btn-sm" onClick={()=>this.cancelCampaign(c._id)}>
+                                  <i className="fa fa-ban"></i>&nbsp;Cancel
+                                </a>                                
+                              }
                             </td>
                           </tr>
 
