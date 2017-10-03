@@ -101,7 +101,7 @@ class EditDAC extends Component {
 
     const afterEmit = (isNew) => {
       this.setState({ isSaving: false })
-      isNew ? React.alert("Your DAC was created!", "success") : React.alert("Your DAC has been updated!", "success")
+      isNew ? React.toast.success("Your DAC was created!") : React.toast.success("Your DAC has been updated!")
       this.props.history.push('/dacs')
     }
 
@@ -133,10 +133,10 @@ class EditDAC extends Component {
               .once('transactionHash', hash => {
                 txHash = hash;
                 createDAC(txHash);
-                React.alert(<p>Your DAC is pending....<br/><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>, 'info')
+                React.toast.info(<p>Your DAC is pending....<br/><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>)
               })
               .then(() => {
-                React.alert(<p>Your DAC has been created!<br/><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>, 'success')
+                React.toast.success(<p>Your DAC has been created!<br/><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>)
                 afterEmit(true);
               })
           })

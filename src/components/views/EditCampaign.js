@@ -132,7 +132,7 @@ class EditCampaign extends Component {
 
     const afterEmit = () => {
       this.setState({ isSaving: false })
-      React.alert("Your Campaign has been updated!", "success")      
+      React.toast.success("Your Campaign has been updated!")      
       this.props.history.push('/campaigns')      
     }
 
@@ -170,10 +170,10 @@ class EditCampaign extends Component {
               .once('transactionHash', hash => {
                 txHash = hash;
                 createCampaign(txHash);
-                React.alert(<p>Your campaign is pending....<br/><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>, 'info')
+                React.toast.info(<p>Your campaign is pending....<br/><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>)
               })
               .then(() => {
-                React.alert(<p>Your campaign was created!<br/><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>, 'success')
+                React.toast.success(<p>Your campaign was created!<br/><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>)
               })
           })
           .catch(err => {

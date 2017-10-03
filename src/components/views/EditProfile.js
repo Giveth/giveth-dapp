@@ -104,12 +104,12 @@ class EditProfile extends Component {
                 txHash = hash;
                 feathersClient.service('/users').patch(this.props.currentUser.address, constructedModel)
                   .then((user) => {
-                    React.alert(<p>Your profile was created!<br/><a href={`${network.etherscan}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>, 'success')
+                    React.toast.success(<p>Your profile was created!<br/><a href={`${network.etherscan}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>)
                     this.setState(Object.assign({}, user, { isSaving: false }));
                   });
               })
               .then(txReceipt => 
-                React.alert(<p>You are now a registered user<br/><a href={`${network.etherscan}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>, 'success'))
+                React.toast.success(<p>You are now a registered user<br/><a href={`${network.etherscan}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>))
               .catch(err => {
                 console.log('AddDonor transaction failed:', err)
                 displayTransactionError(txHash, network.etherscan)
@@ -118,7 +118,7 @@ class EditProfile extends Component {
       } else {
         feathersClient.service('/users').patch(this.props.currentUser.address, constructedModel)
         .then(user => {
-          React.alert("Your profile has been updated.", "success");
+          React.toast.success("Your profile has been updated.");
           this.setState(Object.assign({}, user, { isSaving: false }));
         })
           .catch(err => console.log('update profile error -> ', err));

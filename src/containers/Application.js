@@ -2,7 +2,9 @@ import React, { Component } from 'react'
 import { BrowserRouter as Router, Route, Switch } from 'react-router-dom'
 import localforage from 'localforage';
 
-import { AlertList } from "react-bs-notifier"
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.min.css';
+
 
 import { feathersClient } from "../lib/feathersClient";
 import GivethWallet from '../lib/blockchain/GivethWallet';
@@ -43,6 +45,7 @@ require('./../lib/validators')
 
 // Hack to make things globaly available
 React.swal = require('sweetalert')
+React.toast = toast
 
 /**
  * This container holds the application and its routes.
@@ -73,25 +76,10 @@ class Application extends Component {
     });
 
     this.handleWalletChange = this.handleWalletChange.bind(this);
-    this.dismissAlert = this.dismissAlert.bind(this);
 
     // we need this global to make opening the unlockWalletModal possible from anywhere in the app
     React.unlockWallet = this.unlockWallet.bind(this);
     React.unlockWallet = this.unlockWallet.bind(this);
-
-    React.alert = this.alert.bind(this)
-  }
-
-  alert(msg, type) {
-    this.state.alerts.push({ 
-      id: new Date().getTime(), 
-      message: msg, 
-      type: type 
-    })
-  }
-
-  dismissAlert(alert) {
-    this.setState({ alerts: this.state.alerts.filter((a) => { return a.id !== alert.id })})
   }
 
   componentWillMount() {
@@ -229,7 +217,7 @@ class Application extends Component {
 
   walletUnlocked() {
     this.hideUnlockWalletModal()
-    React.alert("Your wallet has been unlocked!", "success")    
+    React.toast.success("Your wallet has been unlocked!")    
   }
 
   hideUnlockWalletModal() {
@@ -315,11 +303,15 @@ class Application extends Component {
             </center>
           }
 
-          <AlertList
-            alerts={this.state.alerts}
-            timeout={3000}
-            onDismiss={this.dismissAlert}
-          />
+          <ToastContainer 
+            position="top-right"
+            type="default"
+            autoClose={5000}
+            hideProgressBar={false}
+            newestOnTop={false}
+            closeOnClick
+            pauseOnHover
+          />          
 
         </div>
       </Router>

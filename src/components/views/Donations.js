@@ -116,10 +116,10 @@ class Donations extends Component {
               ownerType: donation.pendingProjectType,
             }).then(donation => {
               this.setState({ isCommitting: false })
-                React.alert(<p>Your donation has been committed.<br/><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>, 'success')
+                React.toast.success(<p>Your donation has been committed.<br/><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>)
             }).catch((e) => {
               console.log(e)
-              React.alert("Oh no! Something went wrong with the transaction. Please try again.", "error")
+              React.toast.error("Oh no! Something went wrong with the transaction. Please try again.")
               this.setState({ isCommitting: false })
             });
           };
@@ -138,7 +138,7 @@ class Donations extends Component {
                 });
             })
             .then(() => {
-              React.alert(<p>Your donation has been committed.<br/><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>, 'success')
+              React.toast.success(<p>Your donation has been committed.<br/><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>)
             }).catch((e) => {
             console.error(e);
             displayTransactionError(txHash, etherScanUrl)
@@ -172,10 +172,10 @@ class Donations extends Component {
               txHash,
             }).then(donation => {
               this.setState({ isRejecting: false })
-              React.alert(<p>Your donation has been rejected.<br/><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>, 'success')
+              React.toast.success(<p>Your donation has been rejected.<br/><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>)
             }).catch((e) => {
               console.log(e)
-              React.alert("Oh no! Something went wrong with the transaction. Please try again.", "error")
+              React.toast.error("Oh no! Something went wrong with the transaction. Please try again.")
               this.setState({ isRejecting: false })
             });
           };
@@ -194,7 +194,7 @@ class Donations extends Component {
                 });
             })
             .then(() => {
-              React.alert(<p>The delegation has been rejected.<br/><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>, 'success')
+              React.toast.success(<p>The delegation has been rejected.<br/><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>)
             }).catch((e) => {
               console.error(e);
               displayTransactionError(txHash, etherScanUrl)
@@ -234,10 +234,10 @@ class Donations extends Component {
                 txHash,
               }).then(donation => {
                 this.setState({ isRefunding: false })
-                React.alert(<p>The refund is pending...<br/><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>, 'success')
+                React.toast.success(<p>The refund is pending...<br/><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>)
               }).catch((e) => {
                 console.log(e)
-                React.alert("Oh no! Something went wrong with the transaction. Please try again.", "error")
+                React.toast.error("Oh no! Something went wrong with the transaction. Please try again.")
                 this.setState({ isRefunding: false })
               });
             };
@@ -256,7 +256,7 @@ class Donations extends Component {
                   });
               })
               .then(() => {
-                React.alert(<p>Your donation has been refunded!<br/><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>, 'success')
+                React.toast.success(<p>Your donation has been refunded!<br/><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>)
               }).catch((e) => {
                 console.error(e);
                 displayTransactionError(txHash, etherScanUrl)

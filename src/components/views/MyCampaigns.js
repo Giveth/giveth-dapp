@@ -88,7 +88,7 @@ class MyCampaigns extends Component {
     }).then((isConfirmed) => {
       if(isConfirmed) {
         // TO DO: Implement cancelation of campaign by reviewer
-        React.alert("Your Campaign has been deleted.", "success")
+        React.toast.success("Your Campaign has been deleted.")
       }
     });
   }

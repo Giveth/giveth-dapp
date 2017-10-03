@@ -87,7 +87,7 @@ class MyMilestones extends Component {
             status: 'NeedsReview',
             mined: false
           }).then(() => {
-            React.alert(<p>Marking this milestone as complete...<br/><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>, 'info')
+            React.toast.info(<p>Marking this milestone as complete...<br/><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>)
           }).catch((e) => {
             console.log('Error updating feathers cache ->', e);
           })
@@ -107,7 +107,7 @@ class MyMilestones extends Component {
               });
           })
           .then(() => {
-            React.alert(<p>The milestone has been marked as complete!<br/><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>, 'success')
+            React.toast.success(<p>The milestone has been marked as complete!<br/><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>)
           }).catch((e) => {
             console.error(e);
             displayTransactionError(txHash, etherScanUrl)
@@ -130,7 +130,7 @@ class MyMilestones extends Component {
             status: 'Canceled',
             mined: false
           }).then(() => {
-            React.alert(<p>Cancelling this milestone is pending...<br/><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>, 'info')
+            React.toast.info(<p>Cancelling this milestone is pending...<br/><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>)
           }).catch((e) => {
             console.log('Error updating feathers cache ->', e);
           })
@@ -150,7 +150,7 @@ class MyMilestones extends Component {
               });
           })
           .then(() => {
-            React.alert(<p>The milestone has been cancelled!<br/><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>, 'success')
+            React.toast.success(<p>The milestone has been cancelled!<br/><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>)
           }).catch((e) => {
             console.error(e);
 
@@ -174,7 +174,7 @@ class MyMilestones extends Component {
             status: 'Completed',
             mined: false
           }).then(() => {
-            React.alert(<p>Approving this milestone is pending...<br/><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>, 'info')
+            React.toast.info(<p>Approving this milestone is pending...<br/><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>)
           }).catch((e) => {
             console.log('Error updating feathers cache ->', e);
           })
@@ -195,7 +195,7 @@ class MyMilestones extends Component {
               });
           })
           .then(() => {
-            React.alert(<p>The milestone has been approved!<br/><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>, 'success')
+            React.toast.success(<p>The milestone has been approved!<br/><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>)
           }).catch((e) => {
             console.error(e);
 
@@ -219,7 +219,7 @@ class MyMilestones extends Component {
             status: 'InProgress',
             mined: false
           }).then(() => {
-            React.alert(<p>Rejecting this milestone is pending...<br/><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>, 'info')
+            React.toast.info(<p>Rejecting this milestone is pending...<br/><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>)
           }).catch((e) => {
             console.log('Error updating feathers cache ->', e);
           })
@@ -240,7 +240,7 @@ class MyMilestones extends Component {
               });
           })
           .then(() => {
-            React.alert(<p>The milestone has been rejected!<br/><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>, 'success')
+            React.toast.success(<p>The milestone has been rejected!<br/><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>)
           }).catch((e) => {
             console.error(e);
             displayTransactionError(txHash, etherScanUrl)
@@ -265,7 +265,7 @@ class MyMilestones extends Component {
               status: 'Completed',
               mined: false
             }).then(() => {
-              React.alert(<p>Request withdrawal from milestone...<br/><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>, 'info')
+              React.toast.info(<p>Request withdrawal from milestone...<br/><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>)
             }).catch((e) => {
               console.log('Error updating feathers cache ->', e);
             })
@@ -328,7 +328,7 @@ class MyMilestones extends Component {
                 });
             })
             .then(() => {
-              React.alert(<p>The milestone withdraw has been initiated...<br/><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>, 'info')
+              React.toast.info(<p>The milestone withdraw has been initiated...<br/><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>)
             }).catch((e) => {
             console.error(e);
 
@@ -366,7 +366,7 @@ class MyMilestones extends Component {
         feathersClient.service('/milestones').patch(id, {
           status: 'Paid'
         }).catch((e) => {
-          React.alert("Oh no! Something went wrong with the transaction. Please try again.", "error")
+          React.toast.error("Oh no! Something went wrong with the transaction. Please try again.")
         })
       }
     });

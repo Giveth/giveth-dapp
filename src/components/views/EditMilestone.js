@@ -172,10 +172,10 @@ class EditMilestone extends Component {
               .on('transactionHash', (hash) => {
                 txHash = hash;
                 createMilestone(txHash);
-                React.alert(<p>Your milestone is pending....<br/><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>, 'info')
+                React.toast.info(<p>Your milestone is pending....<br/><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>)
               })
               .then(() => {
-                React.alert(<p>Your milestone has been created!<br/><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>, 'success')
+                React.toast.success(<p>Your milestone has been created!<br/><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>)
               })
           })
           .catch(err => {
