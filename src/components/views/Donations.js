@@ -330,6 +330,7 @@ class Donations extends Component {
                           { donations.map((d, index) =>
                             <tr key={index} className={d.status === 'pending' ? 'pending' : ''}>
                               <td>
+                                {console.log(d)}
                                 {d.status === 'pending' && 
                                   <span><i className="fa fa-circle-o-notch fa-spin"></i>&nbsp;</span> 
                                 }                              
@@ -345,7 +346,7 @@ class Donations extends Component {
                                 }
 
                                 {d.delegate > 0 &&
-                                  'DAC'
+                                  <span>{d.proposedProject.toUpperCase()}</span>
                                 }
                                 {!d.delegate &&
                                   d.ownerType.toUpperCase()

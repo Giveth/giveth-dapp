@@ -5,6 +5,8 @@ import getNetwork from '../lib/blockchain/getNetwork';
 
 import { feathersClient } from '../lib/feathersClient'
 import { Form } from 'formsy-react-components';
+import { takeActionAfterWalletUnlock } from '../lib/middleware'
+
 
 import InputToken from "react-input-token";
 
@@ -14,18 +16,18 @@ class DelegateButton extends Component {
 
     this.state = {
       isSaving: false,
-      campaignsToDelegateTo: [],
+      objectsToDelegateTo: [],
     }
 
     this.submit = this.submit.bind(this)
   }
 
   openDialog(){
-    this.refs.donateDialog.show()
+    takeActionAfterWalletUnlock(this.props.wallet, () => this.refs.donateDialog.show())    
   }
 
-  selectedCampaign = ({ target: { value: selectedCampaign } }) => {
-    this.setState({ campaignsToDelegateTo: selectedCampaign })
+  selectedObject = ({ target: { value: selectedObject } }) => {
+    this.setState({ objectsToDelegateTo: selectedObject })
   }    
 
 
@@ -34,7 +36,7 @@ class DelegateButton extends Component {
     this.setState({ isSaving: true })
     
     // find the type of where we delegate to
-    const manager = this.props.types.find((t) => { return t.id === this.state.campaignsToDelegateTo[0]});
+    const manager = this.props.types.find((t) => { return t.id === this.state.objectsToDelegateTo[0]});
 
     // TODO find a more friendly way to do this.
     if (manager.type === 'milestone' && toBN(manager.maxAmount).lt(toBN(manager.totalDonated || 0).add(toBN(this.props.model.amount)))) {
@@ -119,14 +121,14 @@ class DelegateButton extends Component {
   resetSkylight(){
     this.setState({ 
       isSaving: false,
-      campaignsToDelegateTo: []
+      objectsToDelegateTo: []
     })
   }
 
 
   render(){
-    const { types } = this.props
-    let { isSaving, campaignsToDelegateTo } = this.state
+    const { types, milestoneOnly } = this.props
+    let { isSaving, objectsToDelegateTo } = this.state
     const style = { display: 'inline-block' }
 
     return(
@@ -137,21 +139,27 @@ class DelegateButton extends Component {
 
         <SkyLight hideOnOverlayClicked ref="donateDialog" title="Delegate Donation" afterClose={() => this.resetSkylight()}>
 
-          <p>Select a DAC, Campaign or Milestone to delegate this donation to</p>
+          { milestoneOnly &&
+            <p>Select a Milestone to delegate this donation to</p>
+          }
+
+          { !milestoneOnly &&
+            <p>Select a DAC, Campaign or Milestone to delegate this donation to</p>
+          }
 
           <Form onSubmit={this.submit} layout='vertical'>
             <div className="form-group">
               <InputToken
                 name="campaigns"
                 ref="campaignsInput"
-                placeholder="Select a campaign to delegate the money to"
-                value={campaignsToDelegateTo}
+                placeholder={milestoneOnly? "Select a milestone" : "Select a dac or campaign"}
+                value={objectsToDelegateTo}
                 options={types}
-                onSelect={this.selectedCampaign}
+                onSelect={this.selectedObject}
                 maxLength={1}/>
             </div>
 
-            <button className="btn btn-success" formNoValidate={true} type="submit" disabled={isSaving || this.state.campaignsToDelegateTo.length === 0}>
+            <button className="btn btn-success" formNoValidate={true} type="submit" disabled={isSaving || this.state.objectsToDelegateTo.length === 0}>
               {isSaving ? "Delegating..." : "Delegate here"}
             </button>
           </Form>

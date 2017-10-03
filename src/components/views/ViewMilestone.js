@@ -1,6 +1,7 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import { Link } from 'react-router-dom'
+import { utils } from 'web3';
 
 import { feathersClient } from './../../lib/feathersClient'
 import { paramsForServer } from 'feathers-hooks-common'
@@ -69,7 +70,11 @@ class ViewMilestone extends Component {
 
   componentWillUnmount() {
     this.donationsObserver.unsubscribe()
-  }  
+  } 
+
+  isActiveMilestone() {
+    this.state.status === 'InProgress' && this.state.totalDonated < this.state.maxAmount
+  } 
 
   render() {
     const { history, wallet, currentUser } = this.props
@@ -86,7 +91,9 @@ class ViewMilestone extends Component {
           donations,
           isLoadingDonations,
           ownerAddress,
-          owner
+          owner,
+          maxAmount,
+          totalDonated
     } = this.state
 
     return (
@@ -101,7 +108,18 @@ class ViewMilestone extends Component {
               <h6>Milestone</h6>
               <h1>{title}</h1>
               
-              <DonateButton type="milestone" model={{ title: title, _id: id, managerId: projectId }} wallet={wallet} currentUser={currentUser}/>
+              { this.isActiveMilestone() && 
+                <DonateButton type="milestone" model={{ title: title, _id: id, managerId: projectId }} wallet={wallet} currentUser={currentUser}/>
+              }
+
+              { !this.state.status === 'InProgress' &&
+                <p>This milestone is not active anymore</p>
+              }
+
+              { this.state.totalDonated >= this.state.maxAmount &&
+                <p>This milestone has reached its funding goal.</p>
+              }              
+
             </BackgroundImageHeader>
 
             <div className="container-fluid">
@@ -132,7 +150,10 @@ class ViewMilestone extends Component {
                   <h4>Details</h4>
                   <p>Reviewer address: {reviewerAddress}</p>
                   <p>Recipient address: {recipientAddress}</p>
-                  <p>Completion deadline: {completionDeadline}</p>             
+                  <p>Completion deadline: {completionDeadline}</p>   
+                  <p>Max amount to raise: {utils.fromWei(maxAmount)} ETH</p>  
+                  <p>Amount donated: {totalDonated} ETH</p>      
+
                 </div>
               </div>                          
 
@@ -140,7 +161,9 @@ class ViewMilestone extends Component {
                 <div className="col-md-8 m-auto">    
                   <h4>Donations</h4>        
                   <ShowTypeDonations donations={donations} isLoading={isLoadingDonations} />  
-                  <DonateButton type="milestone" model={{ title: title, _id: id, managerId: projectId }} wallet={wallet} currentUser={currentUser}/>
+                  { this.isActiveMilestone() && 
+                    <DonateButton type="milestone" model={{ title: title, _id: id, managerId: projectId }} wallet={wallet} currentUser={currentUser}/>
+                  }
                 </div>
               </div> 
 

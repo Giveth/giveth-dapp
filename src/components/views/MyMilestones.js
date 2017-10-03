@@ -27,8 +27,6 @@ class MyMilestones extends Component {
   componentDidMount() {
     const myAddress = this.props.currentUser.address
 
-    const self = this;
-
     isAuthenticated(this.props.currentUser, this.props.history).then(() => {
       this.milestonesObserver = feathersClient.service('milestones').watch({ strategy: 'always' }).find({query: { 
         $or: [
@@ -456,7 +454,7 @@ class MyMilestones extends Component {
                             <td>{m.donationCount || 0}</td>
                             <td>{(m.totalDonated) ? utils.fromWei(m.totalDonated) : 0}</td>
                             <td>
-                              {m.status === 'pending' || (Object.keys(m).includes('mined') && !m.mined) &&
+                              {(m.status === 'pending' || (Object.keys(m).includes('mined') && !m.mined)) &&
                                 <span><i className="fa fa-circle-o-notch fa-spin"></i>&nbsp;</span> }
                               {m.status}
                             </td>

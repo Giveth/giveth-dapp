@@ -73,8 +73,14 @@ class Delegations extends Component {
         })
       ,        
         new Promise((resolve, reject) => {
-          this.milestoneObserver = feathersClient.service('milestones').watch({ strategy: 'always' }).find({query: { projectId: { $gt: '0' }, $select: [ 'title', '_id', 'projectId', 'maxAmount', 'totalDonated' ] }}).subscribe(
-            resp => 
+          this.milestoneObserver = feathersClient.service('milestones').watch({ strategy: 'always' }).find({
+            query: { 
+              projectId: { $gt: '0' }, 
+              status: "InProgress",
+              $select: [ 'title', '_id', 'projectId', 'campaignId', 'maxAmount', 'totalDonated', 'status' ] }
+            }).subscribe(
+            resp => {
+              console.log(resp)
               this.setState({ 
                 milestones: resp.data.map( m => { 
                   m.type ='milestone'
@@ -82,8 +88,8 @@ class Delegations extends Component {
                   m.id = m._id
                   m.element = <span>{m.title} <em>Milestone</em></span> 
                   return m
-                })
-              }, resolve()),
+                }) //.filter((m) => m.totalDonated < m.maxAmount)
+              }, resolve())},
             err => reject()
           )      
         })
@@ -96,6 +102,8 @@ class Delegations extends Component {
     // here we get all the ids.
     // TO DO: less overhead here if we move it all to a single service.
     // NOTE: This will not rerun, meaning after any dac/campaign/milestone is added
+
+    console.log('watching donations')
 
     const dacsIds = this.state.dacs
       .filter(c => c.ownerAddress === this.props.currentUser.address )
@@ -139,6 +147,7 @@ class Delegations extends Component {
 
 
   render() {
+    let { wallet } = this.props
     let { delegations, isLoading, dacs, campaigns, milestones } = this.state
 
     return (
@@ -184,8 +193,17 @@ class Delegations extends Component {
                                 {d.donor.name}</td>
                               <td>{d.donorAddress}</td>
                               <td>{d.status}</td>
-                              <td>
-                                <DelegateButton types={dacs.concat(campaigns).concat(milestones)} model={d} />
+                              <td>                                
+                                {/* when donated to a dac, allow delegation to anywhere */}
+                                {Object.keys(d).includes('dac') &&
+                                  <DelegateButton types={dacs.concat(campaigns).concat(milestones)} model={d} wallet={wallet}/>
+                                }
+
+                                {/* when donated to a campaign, only allow delegation to milestones of this campaign */}
+                                {Object.keys(d).includes('campaign') &&
+                                  <DelegateButton types={milestones.filter((m) => { return m.campaignId === d.ownerId })} model={d} milestoneOnly={true} wallet={wallet}/>
+                                }                                
+
                               </td>
                             </tr>
                           )}
