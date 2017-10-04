@@ -116,7 +116,7 @@ class Donations extends Component {
               ownerType: donation.pendingProjectType,
             }).then(donation => {
               this.setState({ isCommitting: false })
-              React.toast.success(`You're awesome! Your donation is now committed. ${etherScanUrl}tx/${txHash}`, 'success')
+                React.toast.success(<p>Your donation has been committed.<br/><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>)
             }).catch((e) => {
               console.log(e)
               React.toast.error("Oh no! Something went wrong with the transaction. Please try again.")
@@ -138,7 +138,7 @@ class Donations extends Component {
                 });
             })
             .then(() => {
-              React.toast.success(`Your donation has been committed! ${etherScanUrl}tx/${txHash}`);
+              React.toast.success(<p>Your donation has been committed.<br/><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>)
             }).catch((e) => {
             console.error(e);
             displayTransactionError(txHash, etherScanUrl)
@@ -172,7 +172,7 @@ class Donations extends Component {
               txHash,
             }).then(donation => {
               this.setState({ isRejecting: false })
-              React.toast.success(`The delegation has been rejected. ${etherScanUrl}tx/${txHash}`, 'success')
+              React.toast.success(<p>Your donation has been rejected.<br/><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>)
             }).catch((e) => {
               console.log(e)
               React.toast.error("Oh no! Something went wrong with the transaction. Please try again.")
@@ -194,11 +194,11 @@ class Donations extends Component {
                 });
             })
             .then(() => {
-              React.toast.success(`The delegation has been rejected! ${etherScanUrl}tx/${txHash}`);
+              React.toast.success(<p>The delegation has been rejected.<br/><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>)
             }).catch((e) => {
-            console.error(e);
-            displayTransactionError(txHash, etherScanUrl)
-            this.setState({ isSaving: false });
+              console.error(e);
+              displayTransactionError(txHash, etherScanUrl)
+              this.setState({ isSaving: false });
           })
         }
       })
@@ -211,7 +211,7 @@ class Donations extends Component {
         title: "Refund your donation?",
         text: "Your donation will be cancelled and the a payment will be authorized for you to withdraw your ETH. All withdrawls" +
         " must be confirmed for security reasons and may take a day or two. When it has been confirmed, you will be able" +
-        " to withdraw your ETH to your wallet.",
+        " to withdraw your &#926; to your wallet.",
         icon: "warning",
         dangerMode: true,      
         buttons: ["Cancel", "Yes, refund"]
@@ -234,7 +234,7 @@ class Donations extends Component {
                 txHash,
               }).then(donation => {
                 this.setState({ isRefunding: false })
-                React.toast.success(`Your refund in pending. ${etherScanUrl}tx/${txHash}`);
+                React.toast.success(<p>The refund is pending...<br/><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>)
               }).catch((e) => {
                 console.log(e)
                 React.toast.error("Oh no! Something went wrong with the transaction. Please try again.")
@@ -256,12 +256,12 @@ class Donations extends Component {
                   });
               })
               .then(() => {
-                React.toast.success(`Your donation has been refunded! ${etherScanUrl}tx/${txHash}`);
+                React.toast.success(<p>Your donation has been refunded!<br/><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>)
               }).catch((e) => {
-              console.error(e);
-              displayTransactionError(txHash, etherScanUrl)
+                console.error(e);
+                displayTransactionError(txHash, etherScanUrl)
 
-              this.setState({ isSaving: false });
+                this.setState({ isSaving: false });
             });
           }
         }
@@ -309,7 +309,7 @@ class Donations extends Component {
                                 }                              
                                 {this.getStatus(d.status)}
                               </td>                            
-                              <td>{utils.fromWei(d.amount)} ETH</td>
+                              <td>&#926;{utils.fromWei(d.amount)}</td>
                               <td>
                                 {d.proposedProject > 0 &&
                                   <span className="badge badge-info">
@@ -317,8 +317,8 @@ class Donations extends Component {
                                     &nbsp;Delegated
                                   </span>
                                 }
-
-                                {d.delegate > 0 &&
+ 
+                                {d.delegate > 0 && d.proposedProject &&
                                   <span>{d.proposedProject.toUpperCase()}</span>
                                 }
                                 {!d.delegate &&

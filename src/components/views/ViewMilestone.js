@@ -151,8 +151,8 @@ class ViewMilestone extends Component {
                   <p>Reviewer address: {reviewerAddress}</p>
                   <p>Recipient address: {recipientAddress}</p>
                   <p>Completion deadline: {completionDeadline}</p>   
-                  <p>Max amount to raise: {utils.fromWei(maxAmount)} ETH</p>  
-                  <p>Amount donated: {totalDonated} ETH</p>      
+                  <p>Max amount to raise: &#926;{utils.fromWei(maxAmount)}</p>  
+                  <p>Amount donated: &#926;{totalDonated}</p>      
 
                 </div>
               </div>                          

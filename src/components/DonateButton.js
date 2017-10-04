@@ -17,7 +17,7 @@ class DonateButton extends Component {
     this.state = {
       isSaving: false,
       formIsValid: false,
-      amount: 10
+      amount: ""
     }
 
     this.submit = this.submit.bind(this)
@@ -85,16 +85,23 @@ class DonateButton extends Component {
         // the skylight dialog is sometimes gone and this throws error
         if(this.refs.donateDialog) this.refs.donateDialog.hide()
         
-        let msg = document.createElement("span");
-        
+        let msg;
         if(this.props.type === "DAC") {
-          msg.innerHTML = `<p>You're donation is pending, <a href=${etherScanUrl}tx/${txHash} target="_blank" rel="noopener noreferrer">view the transaction here.</a>
-          You have full control of this donation and <strong>can take it back at any time</strong>. 
-          You will also have a <strong>3 day window</strong> to veto the use of these funds upon delegation by the dac.</p>
-          <p>Do make sure to <a href=${this.props.commmunityUrl} target="_blank" rel="noopener noreferrer">join the community</a> to follow the progress of this DAC.</p>`
+          msg = React.swal.msg(
+            <div>
+              <p> 
+                You're donation is pending, <a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">view the transaction here.</a>
+                You have full control of this donation and <strong>can take it back at any time</strong>. 
+                You will also have a <strong>3 day window</strong> to veto the use of these funds upon delegation by the dac.
+              </p>
+              <p>Do make sure to <a href={this.props.commmunityUrl} target="_blank" rel="noopener noreferrer">join the community</a> to follow the progress of this DAC.</p>
+            </div>)
         } else {
-          msg.innerHTML = `<p>You're donation is pending.</p>
-          <p>Do make sure to <a href=${this.props.commmunityUrl} target="_blank" rel="noopener noreferrer">join the community</a> to follow the progress of this DAC.</p>`
+          msg = React.swal.msg(
+            <div>
+              <p>You're donation is pending.</p>
+              <p>Do make sure to <a href={this.props.commmunityUrl} target="_blank" rel="noopener noreferrer">join the community</a> to follow the progress of this DAC.</p>
+            </div>)
         }
 
         React.swal({
@@ -119,7 +126,7 @@ class DonateButton extends Component {
           });
       })
       .then(() => {
-        React.toast.success(`Your donation has been confirmed! <a href="${etherScanUrl}tx/${txHash}" target="_blank" rel="noopener noreferrer">${etherScanUrl}tx/${txHash}</a>`);
+        React.toast.success(<p>Your donation has been confirmed!<br/><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>)
       }).catch((e) => {
         console.log(e);
         displayTransactionError(txHash, etherScanUrl)
@@ -130,7 +137,7 @@ class DonateButton extends Component {
 
 
   render() {
-    const { type, model, currentUser } = this.props
+    const { type, model, currentUser, wallet } = this.props
     let { isSaving, amount, formIsValid } = this.state;
     const style = {
       display: 'inline-block'     
@@ -150,27 +157,33 @@ class DonateButton extends Component {
           <p>Note: as long as the {type} owner does not lock your money you can take it back any time.</p>
           }
 
+          <p>Your wallet balance: <em>&#926;{wallet.getBalance()}</em></p>
+
           <Form onSubmit={this.submit} mapping={this.mapInputs} onValid={() => this.toggleFormValid(true)}
                 onInvalid={() => this.toggleFormValid(false)} layout='vertical'>
             <div className="form-group">
               <Input
                 name="amount"
                 id="amount-input"
-                label="Amount of Ether"
+                label="How much &#926; do you want to donate?"
                 ref="amount"
                 type="number"
                 value={amount}
                 placeholder="10"
-                validations="minLength:1"
+                validations={{
+                  lessThan: wallet.getBalance() - 0.5,
+                  greaterThan: 0.1
+                }}
                 validationErrors={{
-                  minLength: 'Please enter an amount.'
+                  greaterThan: 'Minimum value must be at least &#926;0.1',
+                  lessThan: 'This donation exceeds your wallet balance. Note that you also need to pay for the transaction.'
                 }}
                 required
               />
             </div>
 
             <button className="btn btn-success" formNoValidate={true} type="submit" disabled={isSaving || !formIsValid}>
-              {isSaving ? "Saving..." : "Donate ETH"}
+              {isSaving ? "Saving..." : "Donate &#926;"}
             </button>
           </Form>
 
@@ -190,5 +203,9 @@ DonateButton.propTypes = {
     title: PropTypes.string.isRequired,
   }).isRequired,
   currentUser: currentUserModel,
-  communityUrl: PropTypes.string
+  communityUrl: PropTypes.string,
+  wallet: PropTypes.shape({
+    unlocked: PropTypes.bool.isRequired,
+    lock: PropTypes.func.isRequired,
+  })
 };

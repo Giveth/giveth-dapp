@@ -1,9 +1,12 @@
 import React, { Component } from 'react'
+import ReactDOM from 'react-dom'
+
 import { BrowserRouter as Router, Route, Switch } from 'react-router-dom'
 import localforage from 'localforage';
 
-import { ToastContainer, toast } from 'react-toastify'
-import 'react-toastify/dist/ReactToastify.min.css'
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.min.css';
+
 
 import { feathersClient } from "../lib/feathersClient";
 import GivethWallet from '../lib/blockchain/GivethWallet';
@@ -42,9 +45,24 @@ import UnlockWallet from "../components/UnlockWallet";
 require('./../lib/validators')
 
 
-// Hack to make things globaly available
+/**
+ * Here we hack to make stuff globally available
+ *
+ */
+
+// Make sweet alert global
 React.swal = require('sweetalert')
+
+// Construct a dom node to be used as content for sweet alert
+React.swal.msg = (reactNode) => {
+  let wrapper = document.createElement("span")
+  ReactDOM.render(reactNode, wrapper);  
+  return wrapper.firstChild
+}
+
+// make toast globally available
 React.toast = toast
+
 
 /**
  * This container holds the application and its routes.
@@ -66,7 +84,8 @@ class Application extends Component {
       hasError: false,
       wallet: undefined,
       unlockWallet: false,
-      cachedWallet: true
+      cachedWallet: true,
+      alerts: []
     };
 
     localforage.config({
@@ -225,68 +244,70 @@ class Application extends Component {
 
   render() {
 
+    const { wallet, currentUser, dacs, campaigns, web3, isLoading, hasError, showUnlockWalletModal, redirectAfter } = this.state
+
     return (
       <Router>
         <div>
           <MainMenu
             onSignOut={this.onSignOut}
-            wallet={this.state.wallet}
-            currentUser={this.state.currentUser}/>
+            wallet={wallet}
+            currentUser={currentUser}/>
 
-          {this.state.isLoading &&
+          {isLoading &&
             <Loader className="fixed"/>
           }
 
-          {this.state.wallet && this.state.showUnlockWalletModal &&
+          {wallet && showUnlockWalletModal &&
             <UnlockWallet
-              wallet={this.state.wallet}
-              redirectAfter={this.state.redirectAfter}
+              wallet={wallet}
+              redirectAfter={redirectAfter}
               onClose={() => this.walletUnlocked()}
               onCloseClicked={() => this.hideUnlockWalletModal()}/>
           }
 
-          {!this.state.isLoading && !this.state.hasError &&
+          {!isLoading && !hasError &&
             <div>
               {/* Routes are defined here. Persistent data is set as props on components */}
               <Switch>
-                <Route exact path="/" component={props => <DACs dacs={this.state.dacs} currentUser={this.state.currentUser} wallet={this.state.wallet} {...props}/>} />
+                <Route exact path="/" component={props => <DACs dacs={dacs} currentUser={currentUser} wallet={wallet} {...props}/>} />
 
-                <Route exact path="/dacs" component={props => <DACs dacs={this.state.dacs} currentUser={this.state.currentUser} wallet={this.state.wallet} {...props}/>} />
-                <Route exact path="/dacs/new" component={props => <EditDAC isNew={true} currentUser={this.state.currentUser} walletUnlocked={this.state.wallet} {...props}/>} />
-                <Route exact path="/dacs/:id" component={props => <ViewDAC currentUser={this.state.currentUser} wallet={this.state.wallet} {...props}/>} />                        
-                <Route exact path="/dacs/:id/edit" component={props => <EditDAC currentUser={this.state.currentUser} wallet={this.state.wallet} {...props}/>} />  
+                <Route exact path="/dacs" component={props => <DACs dacs={dacs} currentUser={currentUser} wallet={wallet} {...props}/>} />
+                <Route exact path="/dacs/new" component={props => <EditDAC isNew={true} currentUser={currentUser} walletUnlocked={wallet} {...props}/>} />
+                <Route exact path="/dacs/:id" component={props => <ViewDAC currentUser={currentUser} wallet={wallet} {...props}/>} />                        
+                <Route exact path="/dacs/:id/edit" component={props => <EditDAC currentUser={currentUser} wallet={wallet} {...props}/>} />  
 
-                <Route exact path="/campaigns" component={props => <Campaigns campaigns={this.state.campaigns} currentUser={this.state.currentUser} wallet={this.state.wallet} {...props}/>} />
-                <Route exact path="/campaigns/new" component={props => <EditCampaign isNew={true} currentUser={this.state.currentUser} wallet={this.state.wallet} {...props}/>} />
-                <Route exact path="/campaigns/:id" component={props => <ViewCampaign currentUser={this.state.currentUser} wallet={this.state.wallet} {...props} /> }/>
-                <Route exact path="/campaigns/:id/edit" component={props => <EditCampaign currentUser={this.state.currentUser} wallet={this.state.wallet} {...props}/>} />
+                <Route exact path="/campaigns" component={props => <Campaigns campaigns={campaigns} currentUser={currentUser} wallet={wallet} {...props}/>} />
+                <Route exact path="/campaigns/new" component={props => <EditCampaign isNew={true} currentUser={currentUser} wallet={wallet} {...props}/>} />
+                <Route exact path="/campaigns/:id" component={props => <ViewCampaign currentUser={currentUser} wallet={wallet} {...props} /> }/>
+                <Route exact path="/campaigns/:id/edit" component={props => <EditCampaign currentUser={currentUser} wallet={wallet} {...props}/>} />
 
-                <Route exact path="/campaigns/:id/milestones/new" component={props => <EditMilestone isNew={true} currentUser={this.state.currentUser} wallet={this.state.wallet} {...props} />}/>
-                <Route exact path="/campaigns/:id/milestones/:milestoneId" component={props => <ViewMilestone currentUser={this.state.currentUser} wallet={this.state.wallet} {...props} />}/>
-                <Route exact path="/campaigns/:id/milestones/:milestoneId/edit" component={props => <EditMilestone currentUser={this.state.currentUser} wallet={this.state.wallet} {...props} />}/>
+                <Route exact path="/campaigns/:id/milestones/new" component={props => <EditMilestone isNew={true} currentUser={currentUser} wallet={wallet} {...props} />}/>
+                <Route exact path="/campaigns/:id/milestones/:milestoneId" component={props => <ViewMilestone currentUser={currentUser} wallet={wallet} {...props} />}/>
+                <Route exact path="/campaigns/:id/milestones/:milestoneId/edit" component={props => <EditMilestone currentUser={currentUser} wallet={wallet} {...props} />}/>
 
-                <Route exact path="/donations" component={props => <Donations currentUser={this.state.currentUser} wallet={this.state.wallet} {...props}/>} />
-                <Route exact path="/delegations" component={props => <Delegations currentUser={this.state.currentUser} wallet={this.state.wallet} {...props}/>} />
-                <Route exact path="/my-dacs" component={props => <MyDACs currentUser={this.state.currentUser} wallet={this.state.wallet} {...props}/>} />
-                <Route exact path="/my-campaigns" component={props => <MyCampaigns currentUser={this.state.currentUser} wallet={this.state.wallet} {...props}/>} />
-                <Route exact path="/my-milestones" component={props => <MyMilestones currentUser={this.state.currentUser} wallet={this.state.wallet} {...props}/>} />
+                <Route exact path="/donations" component={props => <Donations currentUser={currentUser} wallet={wallet} {...props}/>} />
+                <Route exact path="/delegations" component={props => <Delegations currentUser={currentUser} wallet={wallet} {...props}/>} />
+                <Route exact path="/my-dacs" component={props => <MyDACs currentUser={currentUser} wallet={wallet} {...props}/>} />
+                <Route exact path="/my-campaigns" component={props => <MyCampaigns currentUser={currentUser} wallet={wallet} {...props}/>} />
+                <Route exact path="/my-milestones" component={props => <MyMilestones currentUser={currentUser} wallet={wallet} {...props}/>} />
 
-                <Route exact path="/signin" render={props => <SignIn wallet={this.state.wallet} cachedWallet={this.state.wallet} onSignIn={this.onSignIn} {...props}/>} />
+                <Route exact path="/signin" render={props => <SignIn wallet={wallet} cachedWallet={wallet} onSignIn={this.onSignIn} {...props}/>} />
 
                 <Route exact path="/signup" render={props =>
                   <Signup
-                    provider={this.state.web3 ? this.state.web3.currentProvider : undefined}
+                    provider={web3 ? web3.currentProvider : undefined}
                     walletCreated={this.handleWalletChange}
                     {...props}/>} />
 
                 <Route exact path="/change-account" render={props =>
                   <ChangeAccount
-                    provider={this.state.web3 ? this.state.web3.currentProvider : undefined}
+                    provider={web3 ? web3.currentProvider : undefined}
                     handleWalletChange={this.handleWalletChange}
                     {...props}/>} />
 
-                <Route exact path="/wallet" component={props => <UserWallet currentUser={this.state.currentUser} wallet={this.state.wallet} {...props}/>} />
-                <Route exact path="/profile" component={props => <EditProfile currentUser={this.state.currentUser} wallet={this.state.wallet} {...props}/>} />
+                <Route exact path="/wallet" component={props => <UserWallet currentUser={currentUser} wallet={wallet} {...props}/>} />
+                <Route exact path="/profile" component={props => <EditProfile currentUser={currentUser} wallet={wallet} {...props}/>} />
                 <Route exact path="/profile/:userAddress" component={props => <Profile {...props}/>} />
 
                 <Route component={NotFound}/>
@@ -294,21 +315,22 @@ class Application extends Component {
             </div>
           }
 
-          { !this.state.isLoading && this.state.hasError &&
+          { !isLoading && hasError &&
             <center>
               <h2>Oops, something went wrong...</h2>
               <p>The Giveth dapp could not load for some reason. Please try again...</p>
             </center>
           }
 
-          <ToastContainer
+          <ToastContainer 
             position="top-right"
-            type="success"
+            type="default"
             autoClose={3000}
-            hideProgressBar={false}
+            hideProgressBar={true}
             newestOnTop={false}
             closeOnClick
-          />
+            pauseOnHover
+          />          
 
         </div>
       </Router>

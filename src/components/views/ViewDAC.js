@@ -60,13 +60,14 @@ class ViewDAC extends Component {
       schema: 'includeDonorDetails'
     })  
 
-    this.donationsObserver = feathersClient.service('donations/history').watch({ listStrategy: 'always' }).find(query).subscribe(
-      resp =>
+    this.donationsObserver = feathersClient.service('donations/history').watch({ listStrategy: 'always' }).find({}).subscribe(
+      resp =>{
+        console.log(resp)
         this.setState({
           donations: resp.data,
           isLoadingDonations: false,
           errorLoadingDonations: false
-        }),
+        })},
       err => this.setState({ isLoadingDonations: false, errorLoadingDonations: true })
     )    
   }

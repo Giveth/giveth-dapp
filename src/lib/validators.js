@@ -8,6 +8,11 @@ Formsy.addValidationRule('greaterThan', function (formValues, inputValue, value)
   return parseFloat(inputValue) > value;
 });
 
+// Less than number
+Formsy.addValidationRule('lessThan', function (formValues, inputValue, value) {
+  return parseFloat(inputValue) < value;
+});
+
 // Checks if input is a valid Ether address
 // TO DO: Does not support ENS! (It's hard, ENS returns promises)
 Formsy.addValidationRule('isEtherAddress', function (formValues, inputValue, value) {

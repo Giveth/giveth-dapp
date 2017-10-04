@@ -11,7 +11,7 @@ class App extends Component {
           <h2>Welcome to Giveth</h2>
         </div>
         <p className="App-intro">
-          To get started, get some ETH and save the world.
+          To get started, get some &#926; and save the world.
         </p>
       </div>
     )

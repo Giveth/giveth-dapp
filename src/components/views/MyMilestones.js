@@ -87,7 +87,7 @@ class MyMilestones extends Component {
             status: 'NeedsReview',
             mined: false
           }).then(() => {
-            React.toast.success(`Marking this milestone as NeedsReview in progress. ${etherScanUrl}tx/${txHash}`, 'success')
+            React.toast.info(<p>Marking this milestone as complete...<br/><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>)
           }).catch((e) => {
             console.log('Error updating feathers cache ->', e);
           })
@@ -107,7 +107,7 @@ class MyMilestones extends Component {
               });
           })
           .then(() => {
-            React.toast.success(`The milestone has been marked as NeedsReview! ${etherScanUrl}tx/${txHash}`);
+            React.toast.success(<p>The milestone has been marked as complete!<br/><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>)
           }).catch((e) => {
             console.error(e);
             displayTransactionError(txHash, etherScanUrl)
@@ -130,7 +130,7 @@ class MyMilestones extends Component {
             status: 'Canceled',
             mined: false
           }).then(() => {
-            React.toast.success(`Cancel milestone is pending. ${etherScanUrl}tx/${txHash}`, 'success')
+            React.toast.info(<p>Cancelling this milestone is pending...<br/><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>)
           }).catch((e) => {
             console.log('Error updating feathers cache ->', e);
           })
@@ -150,7 +150,7 @@ class MyMilestones extends Component {
               });
           })
           .then(() => {
-            React.toast.success(`The milestone has been canceled! ${etherScanUrl}tx/${txHash}`);
+            React.toast.success(<p>The milestone has been cancelled!<br/><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>)
           }).catch((e) => {
             console.error(e);
 
@@ -174,7 +174,7 @@ class MyMilestones extends Component {
             status: 'Completed',
             mined: false
           }).then(() => {
-            React.toast.success(`Approve milestone is pending. ${etherScanUrl}tx/${txHash}`, 'success')
+            React.toast.info(<p>Approving this milestone is pending...<br/><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>)
           }).catch((e) => {
             console.log('Error updating feathers cache ->', e);
           })
@@ -195,7 +195,7 @@ class MyMilestones extends Component {
               });
           })
           .then(() => {
-            React.toast.success(`The milestone has been approved! ${etherScanUrl}tx/${txHash}`);
+            React.toast.success(<p>The milestone has been approved!<br/><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>)
           }).catch((e) => {
             console.error(e);
 
@@ -219,7 +219,7 @@ class MyMilestones extends Component {
             status: 'InProgress',
             mined: false
           }).then(() => {
-            React.toast.success(`Reject milestone is pending. ${etherScanUrl}tx/${txHash}`, 'success')
+            React.toast.info(<p>Rejecting this milestone is pending...<br/><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>)
           }).catch((e) => {
             console.log('Error updating feathers cache ->', e);
           })
@@ -240,7 +240,7 @@ class MyMilestones extends Component {
               });
           })
           .then(() => {
-            React.toast.success(`The milestone has been rejected! ${etherScanUrl}tx/${txHash}`);
+            React.toast.success(<p>The milestone has been rejected!<br/><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>)
           }).catch((e) => {
             console.error(e);
             displayTransactionError(txHash, etherScanUrl)
@@ -265,7 +265,7 @@ class MyMilestones extends Component {
               status: 'Completed',
               mined: false
             }).then(() => {
-              React.toast.success(`Milestone request withdraw is pending. ${etherScanUrl}tx/${txHash}`, 'success')
+              React.toast.info(<p>Request withdrawal from milestone...<br/><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>)
             }).catch((e) => {
               console.log('Error updating feathers cache ->', e);
             })
@@ -328,21 +328,25 @@ class MyMilestones extends Component {
                 });
             })
             .then(() => {
-              React.toast.success(`The milestone withdraw has been initiated! ${etherScanUrl}tx/${txHash}`);
+              React.toast.info(<p>The milestone withdraw has been initiated...<br/><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>)
             }).catch((e) => {
             console.error(e);
 
             let msg;
             if (txHash) {
               //TODO need to update feathers to reset the donations to previous state as this tx failed.
-              msg = `Something went wrong with the transaction. ${etherScanUrl}tx/${txHash}`;
+              msg = React.swal.msg(<p>Something went wrong with the transaction.<br/><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>);
             } else if (e.message === 'No donations found to withdraw') {
-              msg = "Nothing to withdraw. There are no donations to this milestone.";
+              msg = React.swal.msg(<p>Nothing to withdraw. There are no donations to this milestone.</p>);
             } else {
-              msg = "Something went wrong with the transaction. Is your wallet unlocked?";
+              msg = React.swal.msg(<p>Something went wrong with the transaction. Is your wallet unlocked?</p>);
             }
 
-            React.swal("Oh no!", msg, 'error');
+            React.swal({
+              title: "Oh no!",
+              content: msg,
+              icon: 'error'
+            });
           })
         }
       }
@@ -378,7 +382,7 @@ class MyMilestones extends Component {
 
     return (
       <div id="milestones-view">
-        <div className="container-fluid page-layout">
+        <div className="container-fluid page-layout dashboard-table-view">
           <div className="row">
             <div className="col-md-12">
               <h1>Your Milestones</h1>
@@ -419,32 +423,32 @@ class MyMilestones extends Component {
                               }
 
                               { m.recipientAddress === currentUser.address && m.status === 'InProgress' && m.mined &&
-                                <a className="btn btn-link" onClick={()=>this.markComplete(m)}>
-                                  <i className="fa fa-edit"></i>&nbsp;Mark complete
+                                <a className="btn btn-success btn-sm" onClick={()=>this.markComplete(m)}>
+                                  <i className="fa fa-check-square-o"></i>&nbsp;Mark complete
                                 </a>
                               }  
 
                               { m.reviewerAddress === currentUser.address && ['InProgress', 'NeedReview'].includes(m.status) && m.mined &&
-                                <a className="btn btn-link" onClick={()=>this.cancelMilestone(m)}>
-                                  <i className="fa fa-edit"></i>&nbsp;Cancel
+                                <a className="btn btn-danger btn-sm" onClick={()=>this.cancelMilestone(m)}>
+                                  <i className="fa fa-times"></i>&nbsp;Cancel
                                 </a>
                               }
 
                               { m.reviewerAddress === currentUser.address && m.status === 'NeedsReview' && m.mined &&
                                 <span>
-                                  <a className="btn btn-link" onClick={()=>this.approveMilestone(m)}>
-                                    <i className="fa fa-edit"></i>&nbsp;Approve
+                                  <a className="btn btn-success btn-sm" onClick={()=>this.approveMilestone(m)}>
+                                    <i className="fa fa-thumbs-up"></i>&nbsp;Approve
                                   </a>
 
-                                  <a className="btn btn-link" onClick={()=>this.rejectMilestone(m)}>
-                                    <i className="fa fa-edit"></i>&nbsp;Reject
+                                  <a className="btn btn-danger btn-sm" onClick={()=>this.rejectMilestone(m)}>
+                                    <i className="fa fa-thumbs-down"></i>&nbsp;Reject
                                   </a>
                                 </span>
                               }   
 
                               { m.recipientAddress === currentUser.address && m.status === 'Completed' && m.mined &&
-                                <a className="btn btn-link" onClick={()=>this.requestWithdrawal(m)}>
-                                  <i className="fa fa-edit"></i>&nbsp;Request Withdrawal
+                                <a className="btn btn-success btn-sm" onClick={()=>this.requestWithdrawal(m)}>
+                                  <i className="fa fa-usd"></i>&nbsp;Request Withdrawal
                                 </a>
                               }
 
@@ -453,8 +457,8 @@ class MyMilestones extends Component {
                               }  
 
                               { m.recipientAddress === currentUser.address && m.status === 'CanWithdraw' &&
-                                <a className="btn btn-link" onClick={()=>this.withdraw(m._id)}>
-                                  <i className="fa fa-edit"></i>&nbsp;withdraw
+                                <a className="btn btn-success btn-sm" onClick={()=>this.withdraw(m._id)}>
+                                  <i className="fa fa-usd"></i>&nbsp;withdraw
                                 </a>
                               }                                                                                                                                                          
                             </td>

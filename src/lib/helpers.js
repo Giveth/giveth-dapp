@@ -50,12 +50,12 @@ export const getTruncatedText = (text, maxLength) => {
 // displays a sweet alert with an error when the transaction goes wrong
 
 export const displayTransactionError = (txHash, etherScanUrl) => {
-  let msg = document.createElement("span");
+  let msg;
   if (txHash) {
-    msg.innerHTML = `Something went wrong with the transaction. <a href="${etherScanUrl}tx/${txHash}" target="_blank" rel="noopener noreferrer">View transaction</a>`;
+    msg = React.swal.msg(<p>Something went wrong with the transaction. <a href={`{etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>);
     //TODO update or remove from feathers? maybe don't remove, so we can inform the user that the tx failed and retry
   } else {
-    msg.text = "Something went wrong with the transaction. Is your wallet unlocked?";
+    msg = React.swal.msg(<p>Something went wrong with the transaction. Is your wallet unlocked?</p>);
   }
 
   React.swal({

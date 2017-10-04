@@ -9,6 +9,7 @@ import { isAuthenticated } from '../../lib/middleware'
 import LoaderButton from "../../components/LoaderButton"
 import getNetwork from "../../lib/blockchain/getNetwork";
 import currentUserModel from '../../models/currentUserModel'
+import { displayTransactionError } from '../../lib/helpers'
 
 /**
  * Edit a user profile
@@ -103,22 +104,16 @@ class EditProfile extends Component {
                 txHash = hash;
                 feathersClient.service('/users').patch(this.props.currentUser.address, constructedModel)
                   .then((user) => {
-                    React.toast.success(`Your profile has been created. ${network.etherscan}tx/${txHash}`);
+                    React.toast.success(<p>Your profile was created!<br/><a href={`${network.etherscan}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>)
                     this.setState(Object.assign({}, user, { isSaving: false }));
                   });
               })
-              .then(txReceipt => React.toast.success(`AddDonor transaction mined ${network.etherscan}tx/${txHash}`))
+              .then(txReceipt => 
+                React.toast.success(<p>You are now a registered user<br/><a href={`${network.etherscan}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>))
               .catch(err => {
-                console.log('AddDonor transaction failed:', err);
-                let msg;
-                if (txHash) {
-                  msg = `AddDonor transaction failed ${network.etherscan}tx/${txHash}`;
-                  //TODO need to update user profile?
-                } else {
-                  msg = "Error creating your profile. Is your wallet unlocked?";
-                }
-                React.toast.error(msg);
-              });
+                console.log('AddDonor transaction failed:', err)
+                displayTransactionError(txHash, network.etherscan)
+              })
           })
       } else {
         feathersClient.service('/users').patch(this.props.currentUser.address, constructedModel)

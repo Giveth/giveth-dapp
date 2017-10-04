@@ -179,7 +179,7 @@ class Delegations extends Component {
                         <tbody>
                           { delegations.map((d, index) =>
                             <tr key={index}>
-                              <td>{utils.fromWei(d.amount)} ETH</td>
+                              <td>&#926;{utils.fromWei(d.amount)}</td>
                               {d.delegate > 0 &&
                                 <td>DAC <em>{d.dac.title}</em></td>
                               }

@@ -17,6 +17,7 @@ import getWeb3 from "../../lib/blockchain/getWeb3";
 import LoaderButton from "../../components/LoaderButton"
 import DatePickerFormsy from './../DatePickerFormsy'
 import currentUserModel from '../../models/currentUserModel'
+import { displayTransactionError } from '../../lib/helpers'
 
 /**
  * Create or edit a milestone
@@ -174,22 +175,15 @@ class EditMilestone extends Component {
               .on('transactionHash', (hash) => {
                 txHash = hash;
                 createMilestone(txHash);
-                React.toast.info(`Your milestone is pending. ${network.etherscan}tx/${txHash}`)
+                React.toast.info(<p>Your milestone is pending....<br/><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>)
               })
               .then(() => {
-                React.toast.success(`Milestone successfully created. ${network.etherscan}tx/${txHash}`);
+                React.toast.success(<p>Your milestone has been created!<br/><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>)
               })
           })
           .catch(err => {
             console.log('New milestone transaction failed:', err);
-            let msg;
-            if (txHash) {
-              msg = `Something went wrong with the transaction. ${etherScanUrl}tx/${txHash}`;
-              //TODO update or remove from feathers? maybe don't remove, so we can inform the user that the tx failed and retry
-            } else {
-              msg = "Something went wrong creating the milestone. Is your wallet unlocked?";
-            }
-            React.toast.error(msg);
+            displayTransactionError(txHash, etherScanUrl)            
           });
 
 
@@ -327,12 +321,12 @@ class EditMilestone extends Component {
                           id="maxamount-input"
                           ref="maxAmount"
                           type="number"
-                          label="Maximum amount of ETH for this milestone"
+                          label="Maximum amount of &#926; for this milestone"
                           value={maxAmount}
                           placeholder="1000"
                           validations="greaterThan:0.1"                            
                           validationErrors={{
-                              greaterThan: 'Minimum value must be at least 0.1 ETH'
+                              greaterThan: 'Minimum value must be at least &#926;0.1'
                           }}                    
                           required                             
                         />

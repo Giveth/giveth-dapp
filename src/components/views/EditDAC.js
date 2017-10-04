@@ -13,6 +13,7 @@ import getNetwork from "../../lib/blockchain/getNetwork";
 import { getTruncatedText } from '../../lib/helpers'
 import LoaderButton from "../../components/LoaderButton"
 import currentUserModel from '../../models/currentUserModel'
+import { displayTransactionError } from '../../lib/helpers'
 
 /**
  * Create or edit a dac (DAC)
@@ -45,7 +46,6 @@ class EditDAC extends Component {
       delegateId: 0,
       ownerAddress: null,
       uploadNewImage: false
-
     }
 
     this.submit = this.submit.bind(this)
@@ -135,23 +135,16 @@ class EditDAC extends Component {
               .once('transactionHash', hash => {
                 txHash = hash;
                 createDAC(txHash);
-                React.toast.info(`Your DAC is pending. ${network.etherscan}tx/${txHash}`)
+                React.toast.info(<p>Your DAC is pending....<br/><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>)
               })
               .then(() => {
-                React.toast.success(`New DAC transaction mined ${network.etherscan}tx/${txHash}`);
+                React.toast.success(<p>Your DAC has been created!<br/><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>)
                 afterEmit(true);
               })
           })
           .catch(err => {
             console.log('New DAC transaction failed:', err);
-            let msg;
-            if (txHash) {
-              msg = `Something went wrong with the transaction. ${etherScanUrl}tx/${txHash}`;
-              //TODO update or remove from feathers? maybe don't remove, so we can inform the user that the tx failed and retry
-            } else {
-              msg = "Something went wrong with the transaction. Is your wallet unlocked?";
-            }
-            React.toast.error(msg);
+            displayTransactionError(txHash, etherScanUrl)
           });
       } else {
         feathersClient.service('dacs').patch(this.state.id, constructedModel)
