@@ -335,7 +335,7 @@ class MyMilestones extends Component {
             let msg;
             if (txHash) {
               //TODO need to update feathers to reset the donations to previous state as this tx failed.
-              msg = React.swal.msg(<p>Something went wrong with the transaction.<br><a href=${etherScanUrl}tx/${txHash} target="_blank" rel="noopener noreferrer">View transaction</a></p>);
+              msg = React.swal.msg(<p>Something went wrong with the transaction.<br/><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>);
             } else if (e.message === 'No donations found to withdraw') {
               msg = React.swal.msg(<p>Nothing to withdraw. There are no donations to this milestone.</p>);
             } else {

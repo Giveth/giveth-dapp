@@ -88,16 +88,20 @@ class DonateButton extends Component {
         let msg;
         if(this.props.type === "DAC") {
           msg = React.swal.msg(
-            <p> 
-              You're donation is pending, <a href=${etherScanUrl}tx/${txHash} target="_blank" rel="noopener noreferrer">view the transaction here.</a>
-              You have full control of this donation and <strong>can take it back at any time</strong>. 
-              You will also have a <strong>3 day window</strong> to veto the use of these funds upon delegation by the dac.
-            </p>
-            <p>Do make sure to <a href=${this.props.commmunityUrl} target="_blank" rel="noopener noreferrer">join the community</a> to follow the progress of this DAC.</p>)
+            <div>
+              <p> 
+                You're donation is pending, <a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">view the transaction here.</a>
+                You have full control of this donation and <strong>can take it back at any time</strong>. 
+                You will also have a <strong>3 day window</strong> to veto the use of these funds upon delegation by the dac.
+              </p>
+              <p>Do make sure to <a href={this.props.commmunityUrl} target="_blank" rel="noopener noreferrer">join the community</a> to follow the progress of this DAC.</p>
+            </div>)
         } else {
           msg = React.swal.msg(
-            <p>You're donation is pending.</p>
-            <p>Do make sure to <a href=${this.props.commmunityUrl} target="_blank" rel="noopener noreferrer">join the community</a> to follow the progress of this DAC.</p>)
+            <div>
+              <p>You're donation is pending.</p>
+              <p>Do make sure to <a href={this.props.commmunityUrl} target="_blank" rel="noopener noreferrer">join the community</a> to follow the progress of this DAC.</p>
+            </div>)
         }
 
         React.swal({
