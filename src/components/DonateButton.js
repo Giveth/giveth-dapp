@@ -17,7 +17,7 @@ class DonateButton extends Component {
     this.state = {
       isSaving: false,
       formIsValid: false,
-      amount: 10
+      amount: ""
     }
 
     this.submit = this.submit.bind(this)
@@ -137,7 +137,7 @@ class DonateButton extends Component {
 
 
   render() {
-    const { type, model, currentUser } = this.props
+    const { type, model, currentUser, wallet } = this.props
     let { isSaving, amount, formIsValid } = this.state;
     const style = {
       display: 'inline-block'     
@@ -157,20 +157,26 @@ class DonateButton extends Component {
           <p>Note: as long as the {type} owner does not lock your money you can take it back any time.</p>
           }
 
+          <p>Your wallet balance: <em>{wallet.getBalance()} ETH</em></p>
+
           <Form onSubmit={this.submit} mapping={this.mapInputs} onValid={() => this.toggleFormValid(true)}
                 onInvalid={() => this.toggleFormValid(false)} layout='vertical'>
             <div className="form-group">
               <Input
                 name="amount"
                 id="amount-input"
-                label="Amount of Ether"
+                label="How much Ether do you want to donate?"
                 ref="amount"
                 type="number"
                 value={amount}
                 placeholder="10"
-                validations="minLength:1"
+                validations={{
+                  lessThan: wallet.getBalance() - 0.5,
+                  greaterThan: 0.1
+                }}
                 validationErrors={{
-                  minLength: 'Please enter an amount.'
+                  greaterThan: 'Minimum value must be at least 0.1 ETH',
+                  lessThan: 'This donation exceeds your wallet balance. Note that you also need to pay for the transaction.'
                 }}
                 required
               />
@@ -197,5 +203,9 @@ DonateButton.propTypes = {
     title: PropTypes.string.isRequired,
   }).isRequired,
   currentUser: currentUserModel,
-  communityUrl: PropTypes.string
+  communityUrl: PropTypes.string,
+  wallet: PropTypes.shape({
+    unlocked: PropTypes.bool.isRequired,
+    lock: PropTypes.func.isRequired,
+  })
 };
