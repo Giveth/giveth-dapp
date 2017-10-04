@@ -181,10 +181,10 @@ class Delegations extends Component {
                             <tr key={index}>
                               <td>&#926;{utils.fromWei(d.amount)}</td>
                               {d.delegate > 0 &&
-                                <td>DAC <em>{d.dac.title}</em></td>
+                                <td>DAC <em>{d.delegateEntity.title}</em></td>
                               }
                               {!d.delegate &&
-                                <td>{d.ownerType.toUpperCase()} <em>{d.campaign.title}</em></td>
+                                <td>{d.ownerType.toUpperCase()} <em>{d.ownerEntity.title}</em></td>
                               }
                               <td>
                                 {d.donor.avatar &&
