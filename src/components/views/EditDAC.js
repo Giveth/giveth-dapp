@@ -46,7 +46,6 @@ class EditDAC extends Component {
       delegateId: 0,
       ownerAddress: null,
       uploadNewImage: false
-
     }
 
     this.submit = this.submit.bind(this)
