@@ -195,12 +195,12 @@ class Delegations extends Component {
                               <td>{d.status}</td>
                               <td>                                
                                 {/* when donated to a dac, allow delegation to anywhere */}
-                                {Object.keys(d).includes('dac') &&
+                                {d.delegate > 0 &&
                                   <DelegateButton types={dacs.concat(campaigns).concat(milestones)} model={d} wallet={wallet}/>
                                 }
 
                                 {/* when donated to a campaign, only allow delegation to milestones of this campaign */}
-                                {Object.keys(d).includes('campaign') &&
+                                {d.ownerType === 'campaign' &&
                                   <DelegateButton types={milestones.filter((m) => { return m.campaignId === d.ownerId })} model={d} milestoneOnly={true} wallet={wallet}/>
                                 }                                
 
