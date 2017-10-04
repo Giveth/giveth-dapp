@@ -5,11 +5,9 @@ import JoinGivethCommunity from '../JoinGivethCommunity'
 import CardStats from '../CardStats'
 
 // import { feathersClient } from '../../lib/feathersClient'
-import { isOwner } from '../../lib/helpers'
+import { isOwner, getTruncatedText } from '../../lib/helpers'
 import Avatar from 'react-avatar'
 import { redirectAfterWalletUnlock } from '../../lib/middleware'
-
-import { getTruncatedText } from '../../lib/helpers'
 
 import Masonry, {ResponsiveMasonry} from "react-responsive-masonry"
 import currentUserModel from '../../models/currentUserModel'

@@ -32,7 +32,7 @@ class ShowTypeDonations extends Component {
     return(
       <div>
         { isLoading && 
-          <Loader/>
+          <Loader className="small" />
         }
 
         { !isLoading &&

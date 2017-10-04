@@ -50,7 +50,12 @@ class ViewCampaign extends Component {
       })
     ,
       new Promise((resolve, reject) => {
-        this.milestoneObserver = feathersClient.service('milestones').watch({ strategy: 'always' }).find({ query: {campaignId: campaignId}}).subscribe(
+        this.milestoneObserver = feathersClient.service('milestones').watch({ strategy: 'always' }).find({ query: {
+          campaignId: campaignId,
+          projectId: {
+            $gt: '0' // 0 is a pending milestone
+          }         
+        }}).subscribe(
           resp => {
             console.log(resp.data)
             this.setState({ milestones: resp.data }, resolve())

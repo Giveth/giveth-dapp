@@ -15,6 +15,9 @@ import ShowTypeDonations from '../ShowTypeDonations'
 import CommunityButton from '../CommunityButton'
 import currentUserModel from '../../models/currentUserModel'
 
+import { getTruncatedText } from '../../lib/helpers'
+
+
 /**
   Loads and shows a single DAC
 
@@ -31,7 +34,9 @@ class ViewDAC extends Component {
       hasError: false,
       isLoadingDonations: true,
       errorLoadingDonations: false,
-      donations: []
+      donations: [],
+      isLoadingCampaigns: true,
+      campaigns: []      
     }
   }  
 
@@ -60,25 +65,41 @@ class ViewDAC extends Component {
       schema: 'includeDonorDetails'
     })  
 
-    this.donationsObserver = feathersClient.service('donations/history').watch({ listStrategy: 'always' }).find({}).subscribe(
-      resp =>{
-        console.log(resp)
-        this.setState({
-          donations: resp.data,
-          isLoadingDonations: false,
-          errorLoadingDonations: false
-        })},
-      err => this.setState({ isLoadingDonations: false, errorLoadingDonations: true })
+    // this.donationsObserver = feathersClient.service('donations/history').watch({ listStrategy: 'always' }).find({}).subscribe(
+    //   resp =>{
+    //     console.log(resp)
+    //     this.setState({
+    //       donations: resp.data,
+    //       isLoadingDonations: false,
+    //       errorLoadingDonations: false
+    //     })},
+    //   err => this.setState({ isLoadingDonations: false, errorLoadingDonations: true })
+    // ) 
+
+    // lazy load campaigns
+    this.campaignsObserver = feathersClient.service('campaigns').watch({ strategy: 'always' }).find({
+      query: {
+        projectId: {
+          $gt: '0' // 0 is a pending campaign
+        },
+        dacs: dacId,
+        $limit: 200,
+        $select: [ 'title', '_id', 'image', 'summary', 'projectId' ]
+      },
+    }).subscribe(
+      resp => this.setState({ campaigns: resp.data, isLoadingCampaigns: false }),
+      err => this.setState({ campaignsLoading: false })
     )    
   }
 
   componentWillUnmount() {
-    this.donationsObserver.unsubscribe()
+    // this.donationsObserver.unsubscribe()
+    this.campaignsObserver.unsubscribe()
   }  
 
   render() {
     let { wallet, history, currentUser } = this.props;
-    let { isLoading, id, delegateId, title, description, image, owner, donations, isLoadingDonations, communityUrl } = this.state
+    let { isLoading, id, delegateId, title, description, image, owner, donations, isLoadingDonations, communityUrl, campaignsCount, isLoadingCampaigns, campaigns } = this.state
 
     return (
       <div id="view-cause-view">
@@ -123,11 +144,41 @@ class ViewDAC extends Component {
 
               <div className="row spacer-top-50 spacer-bottom-50">
                 <div className="col-md-8 m-auto">    
+                  <h4>{campaignsCount} campaigns</h4>  
+                  <p>These campaigns are working hard to solve the cause of this DAC</p>
+
+                  { campaignsCount > 0 && isLoadingCampaigns &&
+                    <Loader className="small" />
+                  }
+
+                  { campaignsCount > 0 && !isLoadingCampaigns &&
+                    <div className="card-deck">
+                      { campaigns.map((c, index) => 
+                        <div className="card" key={index}>
+                          <img className="card-img-top" src={c.image} alt=""/>
+                          <div className="card-body">
+                            <h4 className="card-title">{getTruncatedText(c.title, 30)}</h4>
+                            <div className="card-text">{c.summary}</div>
+              
+                            <DonateButton type="campaign" model={{ title: c.title, _id: c.id, managerId: c.projectId}} wallet={wallet} currentUser={currentUser}/>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  }
+
+                </div>
+              </div>                
+
+              <div className="row spacer-top-50 spacer-bottom-50">
+                <div className="col-md-8 m-auto">    
                   <h4>Donations</h4>        
                   <ShowTypeDonations donations={donations} isLoading={isLoadingDonations} />  
                   <DonateButton type="DAC" model={{ title: title, _id: id, managerId: delegateId }} wallet={wallet} currentUser={currentUser}/>
                 </div>
               </div>    
+
+                
 
             </div>      
           </div>             

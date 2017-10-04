@@ -2,17 +2,13 @@ import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 
 import JoinGivethCommunity from '../JoinGivethCommunity'
-import CardStats from '../CardStats'
 // import { feathersClient } from '../../lib/feathersClient'
-import { isOwner } from '../../lib/helpers'
 import { redirectAfterWalletUnlock } from '../../lib/middleware'
-
-import { getTruncatedText } from '../../lib/helpers'
-
-import Avatar from 'react-avatar'
 import Masonry, {ResponsiveMasonry} from "react-responsive-masonry"
 
 import currentUserModel from '../../models/currentUserModel'
+
+import DacCard from '../DacCard'
 
 /**
   The dacs view
@@ -78,39 +74,13 @@ class DACs extends Component {
               <Masonry gutter="10px"> 
                 { dacs.data.map((dac, index) =>
 
-                  <div className="card" id={dac._id} key={index} onClick={()=>this.viewDAC(dac._id)}>
-                    <img className="card-img-top" src={dac.image} alt=""/>
-                    <div className="card-body">
-                      
-                      <div onClick={(e)=>this.viewProfile(e, dac.owner.address)}>
-                        <Avatar size={30} src={dac.owner.avatar} round={true}/>                  
-                        <span className="small">{dac.owner.name}</span>
-                      </div>
-
-                      <h4 className="card-title">{getTruncatedText(dac.title, 30)}</h4>
-                      <div className="card-text">{dac.summary}</div>
-
-                      <hr/>
-
-                      <CardStats donationCount={dac.donationCount} totalDonated={dac.totalDonated} />
-                                                                
-                      <div>
-                        { isOwner(dac.owner.address, currentUser) &&
-                          <span>
-                            {/*
-                              <a className="btn btn-link" onClick={(e)=>this.removeDAC(e, dac._id)}>
-                                <i className="fa fa-trash"></i>
-                              </a>
-                            */}
-                            <a className="btn btn-link" onClick={(e)=>this.editDAC(e, dac._id)}>
-                              <i className="fa fa-edit"></i>
-                            </a>
-                          </span>
-                        }
-                      </div>
-
-                    </div>
-                  </div>
+                  <DacCard 
+                    key={index} 
+                    dac={dac} 
+                    viewDAC={(id) => this.viewDAC(id)} 
+                    editDAC={(e, id) => this.editDAC(e, id)} 
+                    removeDAC={this.removeDAC} 
+                    currentUser={currentUser}/>
                 )}
               </Masonry>
             </ResponsiveMasonry>                    
