@@ -85,16 +85,15 @@ class DonateButton extends Component {
         // the skylight dialog is sometimes gone and this throws error
         if(this.refs.donateDialog) this.refs.donateDialog.hide()
         
-        let msg = document.createElement("span");
-        
+        let msg;
         if(this.props.type === "DAC") {
-          msg.innerHTML = `<p>You're donation is pending, <a href=${etherScanUrl}tx/${txHash} target="_blank" rel="noopener noreferrer">view the transaction here.</a>
+          msg = React.swal.msg(`<p>You're donation is pending, <a href=${etherScanUrl}tx/${txHash} target="_blank" rel="noopener noreferrer">view the transaction here.</a>
           You have full control of this donation and <strong>can take it back at any time</strong>. 
           You will also have a <strong>3 day window</strong> to veto the use of these funds upon delegation by the dac.</p>
-          <p>Do make sure to <a href=${this.props.commmunityUrl} target="_blank" rel="noopener noreferrer">join the community</a> to follow the progress of this DAC.</p>`
+          <p>Do make sure to <a href=${this.props.commmunityUrl} target="_blank" rel="noopener noreferrer">join the community</a> to follow the progress of this DAC.</p>`)
         } else {
-          msg.innerHTML = `<p>You're donation is pending.</p>
-          <p>Do make sure to <a href=${this.props.commmunityUrl} target="_blank" rel="noopener noreferrer">join the community</a> to follow the progress of this DAC.</p>`
+          msg = React.swal.msg(`<p>You're donation is pending.</p>
+          <p>Do make sure to <a href=${this.props.commmunityUrl} target="_blank" rel="noopener noreferrer">join the community</a> to follow the progress of this DAC.</p>`)
         }
 
         React.swal({

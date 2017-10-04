@@ -72,13 +72,12 @@ class DelegateButton extends Component {
           // the skylight dialog is sometimes gone and this throws error
           if (this.refs.donateDialog) this.refs.donateDialog.hide()
 
-          let msg = document.createElement("span");
-          
+          let msg;
           if (manager.type === 'milestone' || 'campaign') {
-            msg.innerHTML = `The donation has been delegated, <a href=${etherScanUrl}tx/${txHash} target="_blank" rel="noopener noreferrer">view the transaction here.</a> 
-            The donator has <strong>3 days</strong> to reject your delegation before the money gets locked.`
+            msg = React.swall.msg(`The donation has been delegated, <a href=${etherScanUrl}tx/${txHash} target="_blank" rel="noopener noreferrer">view the transaction here.</a>
+            The donator has <strong>3 days</strong> to reject your delegation before the money gets locked.`)
           } else {
-            msg.innerHTML = `The donation has been delegated, <a href=${etherScanUrl}tx/${txHash} target="_blank" rel="noopener noreferrer">view the transaction here.</a> The donator has been notified.`            
+            msg = React.swall.msg(`The donation has been delegated, <a href=${etherScanUrl}tx/${txHash} target="_blank" rel="noopener noreferrer">view the transaction here.</a> The donator has been notified.`)
           }
 
           React.swal({
