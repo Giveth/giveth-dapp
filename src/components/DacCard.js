@@ -9,46 +9,46 @@ import { feathersClient } from './../lib/feathersClient'
 import Loader from './Loader'
 
 class DacCard extends Component {
-  constructor(){
-    super()
+  // constructor(){
+  //   super()
 
-    this.state = {
-      isLoadingCampaigns: true,
-      campaigns: []
-    }
-  }
+  //   this.state = {
+  //     isLoadingCampaigns: true,
+  //     campaigns: []
+  //   }
+  // }
 
-  componentWillMount(){
-    if(this.props.dac.campaignsCount > 0) {
-      console.log('need to load campaings')
+  // componentWillMount(){
+  //   if(this.props.dac.campaignsCount > 0) {
+  //     console.log('need to load campaings')
 
-      this.campaignsObserver = feathersClient.service('campaigns').watch({ strategy: 'always' }).find({
-        query: {
-          projectId: {
-            $gt: '0' // 0 is a pending campaign
-          },
-          dacs: this.props.dac._id,
-          $limit: 200,
-          $select: [ 'title', '_id', 'image' ]
-        },
-      }).subscribe(
-        resp => this.setState({ campaigns: resp.data, isLoadingCampaigns: false }),
-        err => this.setState({ campaignsLoading: false })
-      )
+  //     this.campaignsObserver = feathersClient.service('campaigns').watch({ strategy: 'always' }).find({
+  //       query: {
+  //         projectId: {
+  //           $gt: '0' // 0 is a pending campaign
+  //         },
+  //         dacs: this.props.dac._id,
+  //         $limit: 200,
+  //         $select: [ 'title', '_id', 'image' ]
+  //       },
+  //     }).subscribe(
+  //       resp => this.setState({ campaigns: resp.data, isLoadingCampaigns: false }),
+  //       err => this.setState({ campaignsLoading: false })
+  //     )
 
-    } else {
-      this.setState({ campaignsLoading: false })
-    }
-  }
+  //   } else {
+  //     this.setState({ campaignsLoading: false })
+  //   }
+  // }
 
-  componentWillUnmount() {
-    if(this.campaignsObserver) this.campaignsObserver.unsubscribe()
-  }   
+  // componentWillUnmount() {
+  //   if(this.campaignsObserver) this.campaignsObserver.unsubscribe()
+  // }   
 
 
   render(){
     const { dac, viewDAC, currentUser, removeDAC, editDAC } = this.props
-    const { campaigns, isLoadingCampaigns } = this.state
+    // const { campaigns, isLoadingCampaigns } = this.state
 
     return(
       <div className="card dac-card" id={dac._id} onClick={()=>viewDAC(dac._id)}>
@@ -65,26 +65,28 @@ class DacCard extends Component {
 
           <hr/>
 
-          <CardStats donationCount={dac.donationCount} totalDonated={dac.totalDonated} />
+          <CardStats donationCount={dac.donationCount} totalDonated={dac.totalDonated} campaignsCount={dac.campaignsCount} />
 
-          <hr/>
+          {/*
+            <hr/>
 
-          <strong>{dac.campaignsCount} campaigns</strong>
-          { dac.campaignsCount === 0 &&
-            <p>No campaigns attached to this DAC</p>
-          }
+            <strong>{dac.campaignsCount} campaigns</strong>
+            { dac.campaignsCount === 0 &&
+              <p>No campaigns attached to this DAC</p>
+            }
 
-          { dac.campaignsCount > 0 && isLoadingCampaigns &&
-            <Loader className="small" />
-          }
+            { dac.campaignsCount > 0 && isLoadingCampaigns &&
+              <Loader className="small" />
+            }
 
-          { dac.campaignsCount > 0 && !isLoadingCampaigns &&
-            <div className="campaigns-container">
-              { campaigns.map((c, index) => 
-                <div key={index} className="campaign-thumbnail" style={{backgroundImage: `url(${c.image})`}}></div>
-              )}
-            </div>
-          }
+            { dac.campaignsCount > 0 && !isLoadingCampaigns &&
+              <div className="campaigns-container">
+                { campaigns.map((c, index) => 
+                  <div key={index} className="campaign-thumbnail" style={{backgroundImage: `url(${c.image})`}}></div>
+                )}
+              </div>
+            }
+          */}
                                        
           <div>
             { isOwner(dac.owner.address, currentUser) &&
