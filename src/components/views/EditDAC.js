@@ -116,8 +116,11 @@ class EditDAC extends Component {
 
       if(this.props.isNew){
         const createDAC = (txHash) => {
-          constructedModel.txHash = txHash;
-          feathersClient.service('dacs').create(constructedModel)
+          feathersClient.service('dacs').create(Object.assign({}, constructedModel, {
+              txHash,
+              totalDonated: 0,
+              donationCount: 0,
+            }))
             .then(() => this.props.history.push('/my-dacs'));
         };
 

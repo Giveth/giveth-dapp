@@ -152,6 +152,8 @@ class EditCampaign extends Component {
           feathersClient.service('campaigns').create(Object.assign({}, constructedModel, {
             txHash,
             pluginAddress: '0x0000000000000000000000000000000000000000',
+            totalDonated: 0,
+            donationCount: 0,
           }))
             .then(() => this.props.history.push('/my-campaigns'));
         };

@@ -327,16 +327,16 @@ class Donations extends Component {
 
                                 &nbsp;
                                 <em>
-                                  {d.delegate > 0 && d.dac &&
-                                    <span>{d.dac.title}</span>
+                                  {d.delegate > 0 && d.delegateEntity &&
+                                    <span>{d.delegateEntity.title}</span>
                                   }
 
-                                  {d.ownerType === 'campaign' && d.campaign &&
-                                    <span>{d.campaign.title}</span>
+                                  {d.ownerType === 'campaign' && d.ownerEntity &&
+                                    <span>{d.ownerEntity.title}</span>
                                   }
 
-                                  {d.ownerType === 'milestone' && d.milestone &&
-                                    <span>{d.milestone.title}</span>
+                                  {d.ownerType === 'milestone' && d.ownerEntity &&
+                                    <span>{d.ownerEntity.title}</span>
                                   }                                  
                                 </em>
 

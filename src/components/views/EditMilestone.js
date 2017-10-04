@@ -153,9 +153,12 @@ class EditMilestone extends Component {
 
       if(this.props.isNew){
         const createMilestone = () => {
-          constructedModel.txHash = txHash;
-          constructedModel.pluginAddress = '0x0000000000000000000000000000000000000000';
-          feathersClient.service('milestones').create(constructedModel)
+          feathersClient.service('milestones').create(Object.assign({}, constructedModel, {
+              txHash,
+              pluginAddress: '0x0000000000000000000000000000000000000000',
+              totalDonated: 0,
+              donationCount: 0,
+            }))
             .then(() => afterEmit(true))
         };
 
