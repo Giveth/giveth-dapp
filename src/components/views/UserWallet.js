@@ -22,7 +22,7 @@ class UserWallet extends Component {
           {this.props.currentUser && 
             <div>
               <p>{this.props.currentUser.address}</p>
-              <p> balance: {this.props.wallet.getBalance()} eth</p>
+              <p> balance: &#926;{this.props.wallet.getBalance()}</p>
               <BackupWallet wallet={this.props.wallet}/>
             </div>
           }

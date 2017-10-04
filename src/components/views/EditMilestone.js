@@ -318,12 +318,12 @@ class EditMilestone extends Component {
                           id="maxamount-input"
                           ref="maxAmount"
                           type="number"
-                          label="Maximum amount of ETH for this milestone"
+                          label="Maximum amount of &#926; for this milestone"
                           value={maxAmount}
                           placeholder="1000"
                           validations="greaterThan:0.1"                            
                           validationErrors={{
-                              greaterThan: 'Minimum value must be at least 0.1 ETH'
+                              greaterThan: 'Minimum value must be at least &#926;0.1'
                           }}                    
                           required                             
                         />

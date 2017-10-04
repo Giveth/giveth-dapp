@@ -2,6 +2,7 @@ import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 
 import JoinGivethCommunity from '../JoinGivethCommunity'
+import CardStats from '../CardStats'
 // import { feathersClient } from '../../lib/feathersClient'
 import { isOwner } from '../../lib/helpers'
 import { redirectAfterWalletUnlock } from '../../lib/middleware'
@@ -89,6 +90,10 @@ class DACs extends Component {
                       <h4 className="card-title">{getTruncatedText(dac.title, 30)}</h4>
                       <div className="card-text">{dac.summary}</div>
 
+                      <hr/>
+
+                      <CardStats donationCount={dac.donationCount} totalDonated={dac.totalDonated} />
+                                                                
                       <div>
                         { isOwner(dac.owner.address, currentUser) &&
                           <span>

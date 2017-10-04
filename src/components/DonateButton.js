@@ -157,7 +157,7 @@ class DonateButton extends Component {
           <p>Note: as long as the {type} owner does not lock your money you can take it back any time.</p>
           }
 
-          <p>Your wallet balance: <em>{wallet.getBalance()} ETH</em></p>
+          <p>Your wallet balance: <em>&#926;{wallet.getBalance()}</em></p>
 
           <Form onSubmit={this.submit} mapping={this.mapInputs} onValid={() => this.toggleFormValid(true)}
                 onInvalid={() => this.toggleFormValid(false)} layout='vertical'>
@@ -165,7 +165,7 @@ class DonateButton extends Component {
               <Input
                 name="amount"
                 id="amount-input"
-                label="How much Ether do you want to donate?"
+                label="How much &#926; do you want to donate?"
                 ref="amount"
                 type="number"
                 value={amount}
@@ -175,7 +175,7 @@ class DonateButton extends Component {
                   greaterThan: 0.1
                 }}
                 validationErrors={{
-                  greaterThan: 'Minimum value must be at least 0.1 ETH',
+                  greaterThan: 'Minimum value must be at least &#926;0.1',
                   lessThan: 'This donation exceeds your wallet balance. Note that you also need to pay for the transaction.'
                 }}
                 required
@@ -183,7 +183,7 @@ class DonateButton extends Component {
             </div>
 
             <button className="btn btn-success" formNoValidate={true} type="submit" disabled={isSaving || !formIsValid}>
-              {isSaving ? "Saving..." : "Donate ETH"}
+              {isSaving ? "Saving..." : "Donate &#926;"}
             </button>
           </Form>
 

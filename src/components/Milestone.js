@@ -4,6 +4,7 @@ import PropTypes from 'prop-types'
 import { isOwner } from './../lib/helpers'
 import { redirectAfterWalletUnlock } from './../lib/middleware'
 import currentUserModel from '../models/currentUserModel'
+import CardStats from './CardStats'
 
 /**
   A single milestone
@@ -51,6 +52,9 @@ class Milestone extends Component {
                 <td>
                   <h4>{model.title}</h4>
                   <p>{model.summary}</p>
+                  <hr/>
+                  <CardStats donationCount={model.donationCount} totalDonated={model.totalDonated} />
+
                   { isOwner(model.ownerAddress, currentUser) && 
                     <div>
                       {/*

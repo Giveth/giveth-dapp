@@ -211,7 +211,7 @@ class Donations extends Component {
         title: "Refund your donation?",
         text: "Your donation will be cancelled and the a payment will be authorized for you to withdraw your ETH. All withdrawls" +
         " must be confirmed for security reasons and may take a day or two. When it has been confirmed, you will be able" +
-        " to withdraw your ETH to your wallet.",
+        " to withdraw your &#926; to your wallet.",
         icon: "warning",
         dangerMode: true,      
         buttons: ["Cancel", "Yes, refund"]
@@ -309,7 +309,7 @@ class Donations extends Component {
                                 }                              
                                 {this.getStatus(d.status)}
                               </td>                            
-                              <td>{utils.fromWei(d.amount)} ETH</td>
+                              <td>&#926;{utils.fromWei(d.amount)}</td>
                               <td>
                                 {d.proposedProject > 0 &&
                                   <span className="badge badge-info">

@@ -2,6 +2,8 @@ import React, { Component } from 'react'
 import PropTypes from 'prop-types';
 
 import JoinGivethCommunity from '../JoinGivethCommunity'
+import CardStats from '../CardStats'
+
 // import { feathersClient } from '../../lib/feathersClient'
 import { isOwner } from '../../lib/helpers'
 import Avatar from 'react-avatar'
@@ -85,6 +87,10 @@ class Campaigns extends Component {
 
                       <h4 className="card-title">{getTruncatedText(campaign.title, 30)}</h4>
                       <div className="card-text">{campaign.summary}</div>
+
+                      <hr/>
+                      
+                      <CardStats donationCount={campaign.donationCount} totalDonated={campaign.totalDonated} />
 
                       <div>                  
                         { isOwner(campaign.owner.address, currentUser) && 

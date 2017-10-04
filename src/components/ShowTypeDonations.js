@@ -50,7 +50,7 @@ class ShowTypeDonations extends Component {
                 <tbody>
                   { donations.map((d, index) =>
                     <tr key={index}>
-                      <td>{utils.fromWei(d.amount)} ETH</td>
+                      <td>&#926;{utils.fromWei(d.amount)}</td>
                       <td>
                         {d.donor.avatar &&
                           <Avatar size={30} src={d.donor.avatar} round={true}/>                  
