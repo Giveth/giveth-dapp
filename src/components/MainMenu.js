@@ -44,7 +44,7 @@ class MainMenu extends Component {
 
     React.swal({
       title: "Lock your wallet?",
-      content: React.swal.msg("<p>You will be redirected to the home page. Any changes you're making will be lost.</p>"),
+      content: React.swal.msg(<p>You will be redirected to the home page. Any changes you're making will be lost.</p>),
       icon: "warning",
       dangerMode: true,     
       buttons: ["Cancel", "Yes, lock wallet!"]

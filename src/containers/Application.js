@@ -1,4 +1,6 @@
 import React, { Component } from 'react'
+import ReactDOM from 'react-dom'
+
 import { BrowserRouter as Router, Route, Switch } from 'react-router-dom'
 import localforage from 'localforage';
 
@@ -52,10 +54,10 @@ require('./../lib/validators')
 React.swal = require('sweetalert')
 
 // Construct a dom node to be used as content for sweet alert
-React.swal.msg = (msg) => {
-  let el = document.createElement("span")
-  el.innerHTML = msg
-  return el
+React.swal.msg = (reactNode) => {
+  let wrapper = document.createElement("span")
+  ReactDOM.render(reactNode, wrapper);  
+  return wrapper.firstChild
 }
 
 // make toast globally available
