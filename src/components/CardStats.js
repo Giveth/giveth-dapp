@@ -10,10 +10,22 @@ class CardStats extends Component {
     return(
       <div className="row card-stats">
         <div className="col-6">
-          {donationCount} people
+          {donationCount &&
+            <span>{donationCount} people</span>
+          }
+          
+          {!donationCount &&
+            <span>Nobody's here yet...</span>
+          }
         </div>
         <div className="col-6">
-          &#926;{utils.fromWei(totalDonated)} donated
+          { totalDonated &&
+            <span>&#926;{utils.fromWei(totalDonated)} donated</span>
+          }
+
+          { !totalDonated && 
+            <span>Be the first to donate!</span>
+          }
         </div>
       </div>        
     )

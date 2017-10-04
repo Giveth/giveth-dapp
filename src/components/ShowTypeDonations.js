@@ -52,7 +52,7 @@ class ShowTypeDonations extends Component {
                     <tr key={index}>
                       <td>&#926;{utils.fromWei(d.amount)}</td>
                       <td>
-                        {d.donor.avatar &&
+                        {d.donor && d.donor.avatar &&
                           <Avatar size={30} src={d.donor.avatar} round={true}/>                  
                         }
                         <span>{d.donor.name}</span>
