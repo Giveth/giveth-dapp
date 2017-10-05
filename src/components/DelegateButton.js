@@ -103,7 +103,7 @@ class DelegateButton extends Component {
         const senderId = (this.props.model.delegate > 0) ? this.props.model.delegate : this.props.model.owner;
         const receiverId = (manager.type === 'dac') ? manager.delegateId : manager.projectId;
 
-        return liquidPledging.transfer(senderId, this.props.model.noteId, this.props.model.amount, receiverId)
+        return liquidPledging.transfer(senderId, this.props.model.pledgeId, this.props.model.amount, receiverId)
           .once('transactionHash', hash => {
             txHash = hash;
             delegate(etherScanUrl, txHash);

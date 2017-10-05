@@ -131,7 +131,7 @@ class Donations extends Component {
               const { liquidPledging } = network;
               etherScanUrl = network.etherscan;
 
-              return liquidPledging.transfer(donation.owner, donation.noteId, donation.amount, donation.proposedProject)
+              return liquidPledging.transfer(donation.owner, donation.pledgeId, donation.amount, donation.proposedProject)
                 .once('transactionHash', hash => {
                   txHash = hash;
                   doCommit(etherScanUrl, txHash);
@@ -187,7 +187,7 @@ class Donations extends Component {
               const { liquidPledging } = network;
               etherScanUrl = network.etherscan;
 
-              return liquidPledging.transfer(donation.owner, donation.noteId, donation.amount, donation.delegate)
+              return liquidPledging.transfer(donation.owner, donation.pledgeId, donation.amount, donation.delegate)
                 .once('transactionHash', hash => {
                   txHash = hash;
                   doReject(etherScanUrl, txHash);
@@ -249,7 +249,7 @@ class Donations extends Component {
                 const { liquidPledging } = network;
                 etherScanUrl = network.etherscan;
 
-                return liquidPledging.withdraw(donation.noteId, donation.amount)
+                return liquidPledging.withdraw(donation.pledgeId, donation.amount)
                   .once('transactionHash', hash => {
                     txHash = hash;
                     doRefund(etherScanUrl, txHash);

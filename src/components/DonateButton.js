@@ -154,7 +154,7 @@ class DonateButton extends Component {
           <strong>Give Ether to support <em>{model.title}</em></strong>
 
           {[ "DAC", "campaign" ].indexOf(type) > -1 &&
-          <p>Note: as long as the {type} owner does not lock your money you can take it back any time.</p>
+          <p>Pledge: as long as the {type} owner does not lock your money you can take it back any time.</p>
           }
 
           <p>Your wallet balance: <em>&#926;{wallet.getBalance()}</em></p>
@@ -176,7 +176,7 @@ class DonateButton extends Component {
                 }}
                 validationErrors={{
                   greaterThan: 'Minimum value must be at least &#926;0.1',
-                  lessThan: 'This donation exceeds your wallet balance. Note that you also need to pay for the transaction.'
+                  lessThan: 'This donation exceeds your wallet balance. Pledge that you also need to pay for the transaction.'
                 }}
                 required
               />

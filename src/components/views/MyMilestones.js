@@ -284,7 +284,7 @@ class MyMilestones extends Component {
             })
           };
 
-          const getNote = () => {
+          const getPledge = () => {
             return feathersClient.service('donations').find({
               query: {
                 ownerType: 'milestone',
@@ -294,34 +294,34 @@ class MyMilestones extends Component {
             .then(({ data }) => {
                if (data.length === 0) throw new Error('No donations found to withdraw');
 
-               const notes = [];
+               const pledges = [];
                data.forEach((donation) => {
-                 const note = notes.find(n => n.id === donation.noteId);
+                 const pledge = pledges.find(n => n.id === donation.pledgeId);
 
-                 if (note) {
-                   note.amount = note.amount.add(utils.toBN(donation.amount));
+                 if (pledge) {
+                   pledge.amount = pledge.amount.add(utils.toBN(donation.amount));
                  } else {
-                   notes.push({
-                     id: donation.noteId,
+                   pledges.push({
+                     id: donation.pledgeId,
                      amount: utils.toBN(donation.amount),
                    });
                  }
                });
 
-               if (notes.length > 1) throw new Error('got multiple notes, but expecting 1');
+               if (pledges.length > 1) throw new Error('got multiple pledges, but expecting 1');
 
-               return notes[0];
+               return pledges[0];
             })
           };
 
           let txHash;
           let etherScanUrl;
-          Promise.all([ getNetwork(), getWeb3(), getNote() ])
-            .then(([ network, web3, note ]) => {
+          Promise.all([ getNetwork(), getWeb3(), getPledge() ])
+            .then(([ network, web3, pledge ]) => {
               const lppMilestone = new LPPMilestone(web3, milestone.pluginAddress);
               etherScanUrl = network.etherscan;
 
-              return lppMilestone.withdraw(note.id, note.amount, { from: this.props.currentUser.address })
+              return lppMilestone.withdraw(pledge.id, pledge.amount, { from: this.props.currentUser.address })
                 .once('transactionHash', hash => {
                   txHash = hash;
                   withdraw(etherScanUrl, txHash);
