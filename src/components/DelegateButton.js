@@ -37,10 +37,10 @@ class DelegateButton extends Component {
     this.setState({ isSaving: true })
     
     // find the type of where we delegate to
-    const manager = this.props.types.find((t) => { return t.id === this.state.objectsToDelegateTo[0]});
+    const admin = this.props.types.find((t) => { return t.id === this.state.objectsToDelegateTo[0]});
 
     // TODO find a more friendly way to do this.
-    if (manager.type === 'milestone' && toBN(manager.maxAmount).lt(toBN(manager.totalDonated || 0).add(toBN(this.props.model.amount)))) {
+    if (admin.type === 'milestone' && toBN(admin.maxAmount).lt(toBN(admin.totalDonated || 0).add(toBN(this.props.model.amount)))) {
       React.toast.error('That milestone has reached its funding goal. Please pick another');
       return;
     }
@@ -51,16 +51,16 @@ class DelegateButton extends Component {
         status: 'pending'
       };
 
-      if (manager.type.toLowerCase() === 'dac') {
+      if (admin.type.toLowerCase() === 'dac') {
         Object.assign(mutation, {
-          delegate: manager.delegateId,
-          delegateId: manager._id
+          delegate: admin.delegateId,
+          delegateId: admin._id
         });
       } else {
         Object.assign(mutation, {
-          proposedProject: manager.projectId,
-          proposedProjectId: manager._id,
-          proposedProjectType: manager.type,
+          proposedProject: admin.projectId,
+          proposedProjectId: admin._id,
+          proposedProjectType: admin.type,
         })
       }
 
@@ -73,7 +73,7 @@ class DelegateButton extends Component {
           if (this.refs.donateDialog) this.refs.donateDialog.hide()
 
           let msg;
-          if (manager.type === 'milestone' || 'campaign') {
+          if (admin.type === 'milestone' || 'campaign') {
             msg = React.swal.msg(`The donation has been delegated, <a href=${etherScanUrl}tx/${txHash} target="_blank" rel="noopener noreferrer">view the transaction here.</a>
             The donator has <strong>3 days</strong> to reject your delegation before the money gets locked.`)
           } else {
@@ -101,7 +101,7 @@ class DelegateButton extends Component {
         etherScanUrl = network.etherscan;
 
         const senderId = (this.props.model.delegate > 0) ? this.props.model.delegate : this.props.model.owner;
-        const receiverId = (manager.type === 'dac') ? manager.delegateId : manager.projectId;
+        const receiverId = (admin.type === 'dac') ? admin.delegateId : admin.projectId;
 
         return liquidPledging.transfer(senderId, this.props.model.pledgeId, this.props.model.amount, receiverId)
           .once('transactionHash', hash => {

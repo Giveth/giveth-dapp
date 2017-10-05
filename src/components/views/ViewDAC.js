@@ -113,7 +113,7 @@ class ViewDAC extends Component {
               <h6>Decentralized Altruistic Community</h6>
               <h1>{title}</h1>
               
-              <DonateButton type="DAC" model={{ title: title, _id: id, managerId: delegateId }} wallet={wallet} currentUser={currentUser} commmunityUrl={communityUrl}/>
+              <DonateButton type="DAC" model={{ title: title, _id: id, adminId: delegateId }} wallet={wallet} currentUser={currentUser} commmunityUrl={communityUrl}/>
               {communityUrl &&
                 <CommunityButton className="btn btn-secondary" url={communityUrl}>&nbsp;Join our community</CommunityButton>
               }
@@ -160,7 +160,7 @@ class ViewDAC extends Component {
                             <h4 className="card-title">{getTruncatedText(c.title, 30)}</h4>
                             <div className="card-text">{c.summary}</div>
               
-                            <DonateButton type="campaign" model={{ title: c.title, _id: c.id, managerId: c.projectId}} wallet={wallet} currentUser={currentUser}/>
+                            <DonateButton type="campaign" model={{ title: c.title, _id: c.id, adminId: c.projectId}} wallet={wallet} currentUser={currentUser}/>
                           </div>
                         </div>
                       )}
@@ -174,7 +174,7 @@ class ViewDAC extends Component {
                 <div className="col-md-8 m-auto">    
                   <h4>Donations</h4>        
                   <ShowTypeDonations donations={donations} isLoading={isLoadingDonations} />  
-                  <DonateButton type="DAC" model={{ title: title, _id: id, managerId: delegateId }} wallet={wallet} currentUser={currentUser}/>
+                  <DonateButton type="DAC" model={{ title: title, _id: id, adminId: delegateId }} wallet={wallet} currentUser={currentUser}/>
                 </div>
               </div>    
 

@@ -44,7 +44,7 @@ class DonateButton extends Component {
 
 
   submit(model) {
-    console.log(model, this.props.type.toLowerCase(), this.props.model.managerId);
+    console.log(model, this.props.type.toLowerCase(), this.props.model.adminId);
 
     this.setState({ isSaving: true });
 
@@ -60,7 +60,7 @@ class DonateButton extends Component {
 
       if (this.props.type.toLowerCase() === 'dac') {
         Object.assign(donation, {
-          delegate: this.props.model.managerId,
+          delegate: this.props.model.adminId,
           delegateId: this.props.model._id,
           owner: this.state.user.giverId || 0,
           ownerId: this.props.currentUser,
@@ -68,7 +68,7 @@ class DonateButton extends Component {
         });
       } else {
         Object.assign(donation, {
-          owner: this.props.model.managerId,
+          owner: this.props.model.adminId,
           ownerId: this.props.model._id,
           ownerType: this.props.type.toLowerCase()
         })
@@ -119,7 +119,7 @@ class DonateButton extends Component {
         const { liquidPledging } = network;
         etherScanUrl = network.etherscan;
 
-        return liquidPledging.donate(this.state.user.giverId || 0, this.props.model.managerId, { value: amount })
+        return liquidPledging.donate(this.state.user.giverId || 0, this.props.model.adminId, { value: amount })
           .once('transactionHash', hash => {
             txHash = hash;
             donate(etherScanUrl, txHash);
@@ -198,7 +198,7 @@ export default DonateButton
 DonateButton.propTypes = {
   type: PropTypes.string.isRequired,
   model: PropTypes.shape({
-    managerId: PropTypes.string.isRequired,
+    adminId: PropTypes.string.isRequired,
     _id: PropTypes.string.isRequired,
     title: PropTypes.string.isRequired,
   }).isRequired,

@@ -125,7 +125,7 @@ class ViewCampaign extends Component {
               <h6>Campaign</h6>
               <h1>{title}</h1>
 
-              <DonateButton type="campaign" model={{ title: title, _id: id, managerId: projectId}} wallet={wallet} currentUser={currentUser}/>
+              <DonateButton type="campaign" model={{ title: title, _id: id, adminId: projectId}} wallet={wallet} currentUser={currentUser}/>
             </BackgroundImageHeader>
 
             <div className="container-fluid">
@@ -171,7 +171,7 @@ class ViewCampaign extends Component {
                 <div className="col-md-8 m-auto">    
                   <h4>Donations</h4>        
                   <ShowTypeDonations donations={donations} isLoading={isLoadingDonations} />  
-                  <DonateButton type="campaign" model={{ title: title, _id: id, managerId: projectId }} wallet={wallet} currentUser={currentUser}/>
+                  <DonateButton type="campaign" model={{ title: title, _id: id, adminId: projectId }} wallet={wallet} currentUser={currentUser}/>
                 </div>
               </div>  
 

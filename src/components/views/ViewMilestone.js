@@ -109,7 +109,7 @@ class ViewMilestone extends Component {
               <h1>{title}</h1>
               
               { this.isActiveMilestone() && 
-                <DonateButton type="milestone" model={{ title: title, _id: id, managerId: projectId }} wallet={wallet} currentUser={currentUser}/>
+                <DonateButton type="milestone" model={{ title: title, _id: id, adminId: projectId }} wallet={wallet} currentUser={currentUser}/>
               }
 
               { !this.state.status === 'InProgress' &&
@@ -162,7 +162,7 @@ class ViewMilestone extends Component {
                   <h4>Donations</h4>        
                   <ShowTypeDonations donations={donations} isLoading={isLoadingDonations} />  
                   { this.isActiveMilestone() && 
-                    <DonateButton type="milestone" model={{ title: title, _id: id, managerId: projectId }} wallet={wallet} currentUser={currentUser}/>
+                    <DonateButton type="milestone" model={{ title: title, _id: id, adminId: projectId }} wallet={wallet} currentUser={currentUser}/>
                   }
                 </div>
               </div> 
