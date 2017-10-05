@@ -82,35 +82,17 @@ class MyMilestones extends Component {
       buttons: ["Cancel", "Yes, mark complete"]      
     }).then((isConfirmed) => {
       if(isConfirmed) {
-        const markComplete = (etherScanUrl, txHash) => {
-          feathersClient.service('/milestones').patch(milestone._id, {
-            status: 'NeedsReview',
-            mined: false
-          }).then(() => {
-            React.toast.info(<p>Marking this milestone as complete...<br/><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>)
-          }).catch((e) => {
-            console.log('Error updating feathers cache ->', e);
-          })
-        };
-
-        let txHash;
-        let etherScanUrl;
-        Promise.all([ getNetwork(), getWeb3() ])
-          .then(([ network, web3 ]) => {
-            const lppMilestone = new LPPMilestone(web3, milestone.pluginAddress);
-            etherScanUrl = network.etherscan;
-
-            return lppMilestone.readyForReview({ from: this.props.currentUser.address })
-              .once('transactionHash', hash => {
-                txHash = hash;
-                markComplete(etherScanUrl, txHash);
-              });
-          })
-          .then(() => {
-            React.toast.success(<p>The milestone has been marked as complete!<br/><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>)
-          }).catch((e) => {
-            console.error(e);
-            displayTransactionError(txHash, etherScanUrl)
+        feathersClient.service('/milestones').patch(milestone._id, {
+          status: 'NeedsReview',
+        }).then(() => {
+          React.toast.info(<p>Your milestone has been marked as complete...</p>)
+        }).catch((e) => {
+          console.log('Error marking milestone complete ->', e);
+          React.swal({
+            title: "Oh no!",
+            content: "<p>Something went wrong with the transaction. Is your wallet unlocked?</p>",
+            icon: 'error',
+          });
         })
       }
     })
@@ -214,37 +196,18 @@ class MyMilestones extends Component {
       buttons: ["Cancel", "Yes, reject"]
     }).then((isConfirmed) => {
       if(isConfirmed) {
-        const reject = (etherScanUrl, txHash) => {
-          feathersClient.service('/milestones').patch(milestone._id, {
-            status: 'InProgress',
-            mined: false
-          }).then(() => {
-            React.toast.info(<p>Rejecting this milestone is pending...<br/><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>)
-          }).catch((e) => {
-            console.log('Error updating feathers cache ->', e);
-          })
-        };
-
-        let txHash;
-        let etherScanUrl;
-        Promise.all([ getNetwork(), getWeb3() ])
-          .then(([ network, web3 ]) => {
-            const lppMilestone = new LPPMilestone(web3, milestone.pluginAddress);
-            etherScanUrl = network.etherscan;
-
-            // only uses 14,xxx gas, but will throw out of gas error if given anything less then 30000
-            return lppMilestone.rejectMilestone({ from: this.props.currentUser.address, gas: 30000 })
-              .once('transactionHash', hash => {
-                txHash = hash;
-                reject(etherScanUrl, txHash);
-              });
-          })
-          .then(() => {
-            React.toast.success(<p>The milestone has been rejected!<br/><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>)
-          }).catch((e) => {
-            console.error(e);
-            displayTransactionError(txHash, etherScanUrl)
-        })
+        feathersClient.service('/milestones').patch(milestone._id, {
+          status: 'InProgress',
+        }).then(() => {
+          React.toast.info(<p>You have rejected this milestone...</p>)
+        }).catch((e) => {
+          console.log('Error rejecting completed milestone ->', e);
+          React.swal({
+            title: "Oh no!",
+            content: "<p>Something went wrong with the transaction. Is your wallet unlocked?</p>",
+            icon: 'error',
+          });
+        });
       }
     })
   }
