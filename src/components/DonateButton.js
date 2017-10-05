@@ -62,9 +62,9 @@ class DonateButton extends Component {
         Object.assign(donation, {
           delegate: this.props.model.managerId,
           delegateId: this.props.model._id,
-          owner: this.state.user.donorId || 0,
+          owner: this.state.user.giverId || 0,
           ownerId: this.props.currentUser,
-          ownerType: 'donor'
+          ownerType: 'giver'
         });
       } else {
         Object.assign(donation, {
@@ -119,7 +119,7 @@ class DonateButton extends Component {
         const { liquidPledging } = network;
         etherScanUrl = network.etherscan;
 
-        return liquidPledging.donate(this.state.user.donorId || 0, this.props.model.managerId, { value: amount })
+        return liquidPledging.donate(this.state.user.giverId || 0, this.props.model.managerId, { value: amount })
           .once('transactionHash', hash => {
             txHash = hash;
             donate(etherScanUrl, txHash);

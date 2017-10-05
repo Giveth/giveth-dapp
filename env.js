@@ -23,12 +23,12 @@ async function deploy() {
   console.log('vaultAddress: ', vault.$address);
   console.log('liquidPledgingAddress: ', liquidPledging.$address);
 
-  // add 2 donors
-  const donor1 = accounts[ 0 ];
-  await liquidPledging.addDonor("Donor1", 0, { from: donor1 }); // managerId 1
+  // add 2 givers
+  const giver1 = accounts[ 0 ];
+  await liquidPledging.addGiver("Giver1", 0, { from: giver1 }); // managerId 1
 
-  const donor2 = accounts[ 1 ];
-  await liquidPledging.addDonor("Donor2", 0, { from: donor2 }); // managerId 2
+  const giver2 = accounts[ 1 ];
+  await liquidPledging.addGiver("Giver2", 0, { from: giver2 }); // managerId 2
 
   // add 2 dacs
   await liquidPledging.addDelegate("DAC 1", { from: accounts[ 0 ] }); // managerId 3
@@ -65,10 +65,10 @@ async function deploy() {
   await liquidPledging.transfer(5, 3, web3.utils.toWei(.5), 7, {$from: projectManager1, $gas: 2000000}); // idSender, idNote, amount, idReceiver; noteId 8
 
   // approve proposedProject
-  await liquidPledging.transfer(1, 7, web3.utils.toWei(.25), 7, {$from: donor1, $gas: 300000 });
+  await liquidPledging.transfer(1, 7, web3.utils.toWei(.25), 7, {$from: giver1, $gas: 300000 });
 
   //
-  // await liquidPledging.withdraw(7, web3.utils.toWei(.25), {$from: donor1 });
+  // await liquidPledging.withdraw(7, web3.utils.toWei(.25), {$from: giver1 });
 
   const st2 = await liquidPledging.getState();
   console.log(JSON.stringify(st2.notes, null, 2));

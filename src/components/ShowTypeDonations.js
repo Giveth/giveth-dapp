@@ -52,16 +52,16 @@ class ShowTypeDonations extends Component {
                     <tr key={index}>
                       <td>&#926;{utils.fromWei(d.amount)}</td>
                       <td>
-                        {d.donor && d.donor.avatar &&
-                          <Avatar size={30} src={d.donor.avatar} round={true}/>                  
+                        {d.giver && d.giver.avatar &&
+                          <Avatar size={30} src={d.giver.avatar} round={true}/>
                         }
-                        <span>{d.donor.name}</span>
+                        <span>{d.giver.name}</span>
                       </td>
                       {etherScanUrl &&
-                        <td><a href={`${etherScanUrl}address/${d.donor.address}`}>{d.donor.address}</a></td>
+                        <td><a href={`${etherScanUrl}address/${d.giver.address}`}>{d.giver.address}</a></td>
                       }
                       {!etherScanUrl &&
-                        <td>{d.donor.address}</td>
+                        <td>{d.giver.address}</td>
                       }
                     </tr>
                   )}

@@ -123,7 +123,7 @@ class Delegations extends Component {
           $in: ['waiting', 'committed']
         }
       },
-      schema: 'includeTypeAndDonorDetails'
+      schema: 'includeTypeAndGiverDetails'
     });
 
     // start watching donations, this will re-run when donations change or are added
@@ -187,11 +187,11 @@ class Delegations extends Component {
                                 <td>{d.ownerType.toUpperCase()} <em>{d.ownerEntity.title}</em></td>
                               }
                               <td>
-                                {d.donor.avatar &&
-                                  <Avatar size={30} src={d.donor.avatar} round={true}/>                  
+                                {d.giver.avatar &&
+                                  <Avatar size={30} src={d.giver.avatar} round={true}/>
                                 }
-                                {d.donor.name}</td>
-                              <td>{d.donorAddress}</td>
+                                {d.giver.name}</td>
+                              <td>{d.giverAddress}</td>
                               <td>{d.status}</td>
                               <td>                                
                                 {/* when donated to a dac, allow delegation to anywhere */}

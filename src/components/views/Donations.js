@@ -42,7 +42,7 @@ class Donations extends Component {
       this.donationsObserver = feathersClient.service('donations').watch({ strategy: 'always' }).find(paramsForServer({ 
           schema: 'includeTypeDetails',
           query: { 
-            donorAddress: this.props.currentUser.address,
+            giverAddress: this.props.currentUser.address,
             $limit: 100
           }
         })).subscribe(
@@ -342,10 +342,10 @@ class Donations extends Component {
 
                               </td>
                               {etherScanUrl &&
-                              <td><a href={`${etherScanUrl}address/${d.donorAddress}`}>{d.donorAddress}</a></td>
+                              <td><a href={`${etherScanUrl}address/${d.giverAddress}`}>{d.giverAddress}</a></td>
                               }
                               {!etherScanUrl &&
-                              <td>{d.donorAddress}</td>
+                              <td>{d.giverAddress}</td>
                               }
                               <td>{moment(d.createdAt).format("MM/DD/YYYY")}</td>
                               <td>

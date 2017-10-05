@@ -77,7 +77,7 @@ class ViewCampaign extends Component {
         ownerId: campaignId,
         status: { $nin: ['transaction_pending', 'waiting', 'pending', 'to_approve'] }
       },      
-      schema: 'includeDonorDetails'
+      schema: 'includeGiverDetails'
     });
 
     this.donationsObserver = feathersClient.service('donations/history').watch({ listStrategy: 'always' }).find(query).subscribe(

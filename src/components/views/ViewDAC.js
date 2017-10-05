@@ -62,7 +62,7 @@ class ViewDAC extends Component {
         delegateId: dacId,
         status: { $in: ['transaction_pending', 'waiting', 'pending', 'to_approve'] }
       },
-      schema: 'includeDonorDetails'
+      schema: 'includeGiverDetails'
     })  
 
     // this.donationsObserver = feathersClient.service('donations/history').watch({ listStrategy: 'always' }).find({}).subscribe(

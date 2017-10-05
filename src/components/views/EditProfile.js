@@ -51,9 +51,9 @@ class EditProfile extends Component {
       .catch(err => {
         console.log(err);
 
-        // set donorId to 0. This way we don't create 2 Donors for the same user
+        // set giverId to 0. This way we don't create 2 Givers for the same user
         this.setState({
-          donorId: 0,
+          giverId: 0,
           isLoading: false,
           hasError: true,
         });
@@ -86,20 +86,20 @@ class EditProfile extends Component {
         email: model.email,
         linkedIn: model.linkedIn,
         avatar: file,
-        // if no donorId, set to 0 so we don't add 2 donors for the same user if they update their profile
-        // before the AddDonor tx has been mined. 0 is a reserved donorId
-        donorId: this.state.donorId || 0,
+        // if no giverId, set to 0 so we don't add 2 givers for the same user if they update their profile
+        // before the AddGiver tx has been mined. 0 is a reserved giverId
+        giverId: this.state.giverId || 0,
       };
 
-      // TODO if (donorId > 0), need to send tx if commitTime or name has changed
-      // TODO store user profile on ipfs and add Donor in liquidpledging contract
-      if (this.state.donorId === undefined) {
+      // TODO if (giverId > 0), need to send tx if commitTime or name has changed
+      // TODO store user profile on ipfs and add Giver in liquidpledging contract
+      if (this.state.giverId === undefined) {
         getNetwork()
           .then(network => {
             const { liquidPledging } = network;
 
             let txHash;
-            liquidPledging.addDonor(model.name, 259200, '0x0') // 3 days commitTime. TODO allow user to set commitTime
+            liquidPledging.addGiver(model.name, 259200, '0x0') // 3 days commitTime. TODO allow user to set commitTime
               .once('transactionHash', hash => {
                 txHash = hash;
                 feathersClient.service('/users').patch(this.props.currentUser.address, constructedModel)
@@ -111,7 +111,7 @@ class EditProfile extends Component {
               .then(txReceipt => 
                 React.toast.success(<p>You are now a registered user<br/><a href={`${network.etherscan}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>))
               .catch(err => {
-                console.log('AddDonor transaction failed:', err)
+                console.log('AddGiver transaction failed:', err)
                 displayTransactionError(txHash, network.etherscan)
               })
           })
