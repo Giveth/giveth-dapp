@@ -69,8 +69,12 @@ class DACs extends Component {
 
         <div className="container-fluid page-layout reduced-padding">
 
+          <center>
+            <p>These communities are solving causes. Help them realise their goals by joining them and giving Ether!</p>
+          </center>
+
           { dacs.data && dacs.data.length > 0 && 
-            <ResponsiveMasonry columnsCountBreakPoints={{350: 1, 750: 2, 900: 3, 1024: 4, 1470: 5}}>
+            <ResponsiveMasonry columnsCountBreakPoints={{350: 1, 750: 2, 900: 3, 1024: 3, 1470: 4}}>
               <Masonry gutter="10px"> 
                 { dacs.data.map((dac, index) =>
 

@@ -82,7 +82,7 @@ class MainMenu extends Component {
         <div className={`collapse navbar-collapse ${showMobileMenu ? 'show' : ''} `} id="navbarSupportedContent">
           <ul className="navbar-nav mr-auto">
             <li className="nav-item">
-              <NavLink className="nav-link" to="/dacs" activeClassName="active">DACs</NavLink>
+              <NavLink className="nav-link" to="/dacs" activeClassName="active">Communities</NavLink>
             </li>
             <li className="nav-item">
               <NavLink className="nav-link" to="/campaigns" activeClassName="active">Campaigns</NavLink>
@@ -94,7 +94,7 @@ class MainMenu extends Component {
                 <div className={`dropdown-menu ${showMobileMenu ? 'show' : ''} `} aria-labelledby="navbarDropdownDashboard">
                   <Link className="dropdown-item" to="/donations">Donations</Link>
                   <Link className="dropdown-item" to="/delegations">Delegations</Link>
-                  <Link className="dropdown-item" to="/my-dacs">DACs</Link>
+                  <Link className="dropdown-item" to="/my-dacs">Communities</Link>
                   <Link className="dropdown-item" to="/my-campaigns">Campaigns</Link>
                   <Link className="dropdown-item" to="/my-milestones">Milestones</Link>
                 </div>

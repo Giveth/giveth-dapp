@@ -52,55 +52,29 @@ class DacCard extends Component {
 
     return(
       <div className="card dac-card" id={dac._id} onClick={()=>viewDAC(dac._id)}>
-        <img className="card-img-top" src={dac.image} alt=""/>
         <div className="card-body">
-          
-          <div onClick={(e)=>this.viewProfile(e, dac.owner.address)}>
+          <div className="card-avatar" onClick={(e)=>this.viewProfile(e, dac.owner.address)}>
             <Avatar size={30} src={dac.owner.avatar} round={true}/>                  
             <span className="small">{dac.owner.name}</span>
-          </div>
 
-          <h4 className="card-title">{getTruncatedText(dac.title, 30)}</h4>
-          <div className="card-text">{dac.summary}</div>
-
-          <hr/>
-
-          <CardStats donationCount={dac.donationCount} totalDonated={dac.totalDonated} campaignsCount={dac.campaignsCount} />
-
-          {/*
-            <hr/>
-
-            <strong>{dac.campaignsCount} campaigns</strong>
-            { dac.campaignsCount === 0 &&
-              <p>No campaigns attached to this DAC</p>
-            }
-
-            { dac.campaignsCount > 0 && isLoadingCampaigns &&
-              <Loader className="small" />
-            }
-
-            { dac.campaignsCount > 0 && !isLoadingCampaigns &&
-              <div className="campaigns-container">
-                { campaigns.map((c, index) => 
-                  <div key={index} className="campaign-thumbnail" style={{backgroundImage: `url(${c.image})`}}></div>
-                )}
-              </div>
-            }
-          */}
-                                       
-          <div>
             { isOwner(dac.owner.address, currentUser) &&
-              <span>
-                {/*
-                  <a className="btn btn-link" onClick={(e)=>removeDAC(e, dac._id)}>
-                    <i className="fa fa-trash"></i>
-                  </a>
-                */}
-                <a className="btn btn-link" onClick={(e)=>editDAC(e, dac._id)}>
+              <span className="pull-right">
+                <a className="btn btn-link btn-edit" onClick={(e)=>editDAC(e, dac._id)}>
                   <i className="fa fa-edit"></i>
                 </a>
               </span>
             }
+          </div>
+                  
+          <div className="card-img" style={{backgroundImage: `url(${dac.image})`}}></div>
+
+          <div className="card-content">
+            <h4 className="card-title">{getTruncatedText(dac.title, 30)}</h4>
+            <div className="card-text">{dac.summary}</div>
+          </div>
+
+          <div className="card-footer">
+            <CardStats donationCount={dac.donationCount} totalDonated={dac.totalDonated} campaignsCount={dac.campaignsCount} />
           </div>
 
         </div>
