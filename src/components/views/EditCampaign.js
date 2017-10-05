@@ -168,7 +168,7 @@ class EditCampaign extends Component {
 
             let txHash;
             // web3, lp address, name, parentProject, reviewer
-            LPPCampaign.new(web3, liquidPledging.$address, model.title, 0, model.reviewerAddress)
+            LPPCampaign.new(web3, liquidPledging.$address, model.title, '', 0, model.reviewerAddress)
               .once('transactionHash', hash => {
                 txHash = hash;
                 createCampaign(txHash);
