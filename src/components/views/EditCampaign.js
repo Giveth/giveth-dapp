@@ -141,7 +141,7 @@ class EditCampaign extends Component {
         title: model.title,
         description: model.description,
         communityUrl: model.communityUrl,
-        summary: getTruncatedText(this.state.summary, 200),
+        summary: getTruncatedText(this.state.summary, 100),
         image: file,
         projectId: this.state.projectId,
         dacs: this.state.dacs,
@@ -217,7 +217,7 @@ class EditCampaign extends Component {
 
     return(
         <div id="edit-campaign-view">
-          <div className="container-fluid page-layout">
+          <div className="container-fluid page-layout edit-view">
             <div className="row">
               <div className="col-md-8 m-auto">
                 { isLoading && 
@@ -228,24 +228,32 @@ class EditCampaign extends Component {
                   <div>
                     <GoBackButton history={history}/>
                   
-                    { isNew &&
-                      <h1>Start a new campaign!</h1>
-                    }
+                    <div className="form-header">   
+                      { isNew &&
+                        <h3>Start a new campaign!</h3>
+                      }
 
-                    { !isNew &&
-                      <h1>Edit campaign {title}</h1>
-                    }
+                      { !isNew &&
+                        <h3>Edit campaign {title}</h3>
+                      }
+                      <p>
+                        <i className="fa fa-question-circle"></i>
+                        A campaign solves a specific cause by executing a project via its milestones.
+                        Funds raised by a campaign need to be delegated to its milestones in order to be paid out.
+                      </p>
+                    </div>
+
 
                     <Form onSubmit={this.submit} mapping={this.mapInputs} onValid={()=>this.toggleFormValid(true)} onInvalid={()=>this.toggleFormValid(false)} layout='vertical'>
                       <div className="form-group">
                         <Input
                           name="title"
                           id="title-input"
-                          label="Title"
+                          label="What are you working on?"
                           ref="title"
                           type="text"
                           value={title}
-                          placeholder="E.g. Climate change."
+                          placeholder="E.g. Installing 1000 solar panels."
                           help="Describe your campaign in 1 sentence."
                           validations="minLength:10"
                           validationErrors={{
@@ -258,9 +266,10 @@ class EditCampaign extends Component {
                       <div className="form-group">
                         <QuillFormsy 
                           name="description"
-                          label="Description"
+                          label="Explain how you are going to do this successfully."
+                          helpText="Make it as extensive as necessary. Your goal is to build trust, so that people donate Ether to your campaign."                          
                           value={description}
-                          placeholder="Describe your campaign..."
+                          placeholder="Describe how you're going to execute your campaign successfully..."
                           onTextChanged={(content)=>this.constructSummary(content)}
                           validations="minLength:10"  
                           help="Describe your campaign."   
@@ -274,11 +283,11 @@ class EditCampaign extends Component {
                       <FormsyImageUploader setImage={this.setImage} previewImage={image} isRequired={isNew}/>
 
                       <div className="form-group">
-                        <label>Which dac(s) is this campaign solving?</label>
-
+                        <label>Relate your campaign to a community.</label>
+                        <small className="form-text">By relating your campaign to a community, Ether from that community can be delegated to your campaign. This increases your chances of successfully funding your campaign.</small> 
                         <InputToken
                           name="dac"
-                          placeholder="Select one or more DACs"
+                          placeholder="Select one or more communities (DACs)"
                           value={dacs}
                           options={dacsOptions}
                           onSelect={this.selectDACs}/>
@@ -294,7 +303,7 @@ class EditCampaign extends Component {
                           type="text"
                           value={communityUrl}
                           placeholder="https://slack.giveth.com"
-                          help="Enter the url of your community"
+                          help="Where can people join your community? Giveth redirect people there."
                           validations="isUrl"
                           validationErrors={{
                             isUrl: 'Please provide a url.'
@@ -308,11 +317,11 @@ class EditCampaign extends Component {
                         label="Reviewer Address"
                         type="text"
                         value={reviewerAddress}
-                        placeholder="Who will review this milestone?"
-                        help="Enter an Ethereum address."
+                        placeholder="0x0000000000000000000000000000000000000000"
+                        help="This person or smart contract will be reviewing your campaign to increase trust for donators."
                         validations="isEtherAddress"
                         validationErrors={{
-                            isEtherAddress: 'Please insert a valid Ethereum address.'
+                            isEtherAddress: 'Please enter a valid Ethereum address.'
                         }}                    
                         required
                       />                                           

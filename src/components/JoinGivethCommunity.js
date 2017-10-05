@@ -27,7 +27,7 @@ class JoinGivethCommunity extends Component {
             
             &nbsp;
 
-            <Link className={btnClass} to="/dacs/new">Create a DAC</Link>
+            <Link className={btnClass} to="/dacs/new">Create a Community</Link>
             <Link className={btnClass} to="/campaigns/new">Start a Campaign</Link>
           </center>
         </div>

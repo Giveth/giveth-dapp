@@ -1,16 +1,6 @@
-// @media (min-width: 768px) {
-//   .card-columns {
-//     column-count: 4;
-//   }
-// }
-// @media (min-width: 1200px) {
-//   .card-columns {
-//     column-count: 5;
-//   }
-// }
-
-.card {
-  height: 400px;
+// Card used in campaign / milestone views
+.overview-card {
+  height: 390px;
   position: relative;
 
   .card-img {
@@ -26,10 +16,15 @@
 
     .card-avatar {
       padding: 10px 20px;
-      font-size: 0.75rem;
 
       .sb-avatar {
         margin-right: 4px;      
+      }
+
+      .owner-name {
+        position: relative;
+        top: 1px;   
+        font-size: 0.75rem;
       }
 
       .btn-edit {
@@ -43,6 +38,7 @@
       .card-title {
         font-weight: 700;
         font-size: 20px;
+        margin-bottom: 5px;
       }    
 
       .card-text {
@@ -57,43 +53,44 @@
       position: absolute;
       bottom: 0;
       left: 0;
-      right: 0;      
+      right: 0;   
+      border: none;   
     }
   }
+}
 
-  &.content-card {
-    position: relative;
+.content-card {
+  position: relative;
 
-    .card-body {
-      box-shadow: none;
-      border: none;
-    }
+  .card-body {
+    box-shadow: none;
+    border: none;
+  }
 
-    &:after {
-      position: absolute;
-      content: "";
-      width: 0;
-      height: 0;
-      border-style: solid;
-      border-width: 0 10px 12px 10px;
-      border-color: transparent transparent white transparent;
-      top: -12px;
-      left: 50%;
-      margin-left: -10px;
-    }
+  &:after {
+    position: absolute;
+    content: "";
+    width: 0;
+    height: 0;
+    border-style: solid;
+    border-width: 0 10px 12px 10px;
+    border-color: transparent transparent white transparent;
+    top: -12px;
+    left: 50%;
+    margin-left: -10px;
+  }
 
-    &:before {
-      position: absolute;
-      content: "";
-      width: 0;
-      height: 0;
-      border-style: solid;
-      border-width: 0 12px 14px 12px;
-      border-color: transparent transparent #dfdfdf transparent;
-      top: -14px;
-      left: 50%;
-      margin-left: -12px;      
-    }
+  &:before {
+    position: absolute;
+    content: "";
+    width: 0;
+    height: 0;
+    border-style: solid;
+    border-width: 0 12px 14px 12px;
+    border-color: transparent transparent #dfdfdf transparent;
+    top: -14px;
+    left: 50%;
+    margin-left: -12px;      
   }
 }
 
@@ -104,7 +101,7 @@
 
     &:hover {
       will-change: transform;
-      transform: scale(1.02);
+      transform: scale(1.01);
     }
   }
 }

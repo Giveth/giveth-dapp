@@ -44,6 +44,7 @@ const QuillFormsy = createReactClass({
     return (
       <div className={className}>
         <label>{this.props.label}</label>
+        <small className="form-text">{this.props.helpText}</small>
         <ReactQuill 
           height="200px"
           modules={modules}

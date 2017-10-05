@@ -141,7 +141,7 @@ class EditMilestone extends Component {
       const constructedModel = {
         title: model.title,
         description: model.description,
-        summary: getTruncatedText(this.state.summary, 200),        
+        summary: getTruncatedText(this.state.summary, 100),        
         maxAmount: utils.toWei(model.maxAmount),
         ownerAddress: this.props.currentUser.address,
         reviewerAddress: model.reviewerAddress,
