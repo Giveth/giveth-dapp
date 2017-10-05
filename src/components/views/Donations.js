@@ -131,7 +131,7 @@ class Donations extends Component {
               const { liquidPledging } = network;
               etherScanUrl = network.etherscan;
 
-              return liquidPledging.transfer(donation.owner, donation.pledgeId, donation.amount, donation.proposedProject)
+              return liquidPledging.transfer(donation.owner, donation.pledgeId, donation.amount, donation.intendedProject)
                 .once('transactionHash', hash => {
                   txHash = hash;
                   doCommit(etherScanUrl, txHash);
@@ -311,15 +311,15 @@ class Donations extends Component {
                               </td>                            
                               <td>&#926;{utils.fromWei(d.amount)}</td>
                               <td>
-                                {d.proposedProject > 0 &&
+                                {d.intendedProject > 0 &&
                                   <span className="badge badge-info">
                                     <i className="fa fa-random"></i>
                                     &nbsp;Delegated
                                   </span>
                                 }
  
-                                {d.delegate > 0 && d.proposedProject &&
-                                  <span>{d.proposedProject.toUpperCase()}</span>
+                                {d.delegate > 0 && d.intendedProject &&
+                                  <span>{d.intendedProject.toUpperCase()}</span>
                                 }
                                 {!d.delegate &&
                                   d.ownerType.toUpperCase()

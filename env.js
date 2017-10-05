@@ -64,7 +64,7 @@ async function deploy() {
   // transfer from campaign 1 to milestone 1
   await liquidPledging.transfer(5, 3, web3.utils.toWei(.5), 7, {$from: projectAdmin1, $gas: 2000000}); // idSender, idPledge, amount, idReceiver; pledgeId 8
 
-  // approve proposedProject
+  // approve intendedProject
   await liquidPledging.transfer(1, 7, web3.utils.toWei(.25), 7, {$from: giver1, $gas: 300000 });
 
   //

@@ -58,9 +58,9 @@ class DelegateButton extends Component {
         });
       } else {
         Object.assign(mutation, {
-          proposedProject: admin.projectId,
-          proposedProjectId: admin._id,
-          proposedProjectType: admin.type,
+          intendedProject: admin.projectId,
+          intendedProjectId: admin._id,
+          intendedProjectType: admin.type,
         })
       }
 

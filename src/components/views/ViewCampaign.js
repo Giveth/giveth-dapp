@@ -71,7 +71,7 @@ class ViewCampaign extends Component {
 
 
     // lazy load donations             
-    //TODO fetch "non comitted" donations? add "proposedProjectId: campaignId" to query to get all "pending aproval" donations for this campaign
+    //TODO fetch "non comitted" donations? add "intendedProjectId: campaignId" to query to get all "pending aproval" donations for this campaign
     const query = paramsForServer({
       query: { 
         ownerId: campaignId,
