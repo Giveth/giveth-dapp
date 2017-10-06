@@ -74,10 +74,10 @@ class DelegateButton extends Component {
 
           let msg;
           if (admin.type === 'milestone' || 'campaign') {
-            msg = React.swal.msg(`The donation has been delegated, <a href=${etherScanUrl}tx/${txHash} target="_blank" rel="noopener noreferrer">view the transaction here.</a>
-            The donator has <strong>3 days</strong> to reject your delegation before the money gets locked.`)
+            msg = React.swal.msg(<p>The donation has been delegated, <a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">view the transaction here.</a>
+            The donator has <strong>3 days</strong> to reject your delegation before the money gets locked.</p>)
           } else {
-            msg = React.swal.msg(`The donation has been delegated, <a href=${etherScanUrl}tx/${txHash} target="_blank" rel="noopener noreferrer">view the transaction here.</a> The donator has been notified.`)
+            msg = React.swal.msg(<p>The donation has been delegated, <a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">view the transaction here.</a> The donator has been notified.</p>)
           }
 
           React.swal({

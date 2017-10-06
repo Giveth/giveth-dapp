@@ -77,16 +77,7 @@ class ViewCampaign extends Component {
 
 
     // lazy load donations             
-    //TODO fetch "non comitted" donations? add "intendedProjectId: campaignId" to query to get all "pending aproval" donations for this campaign
-    const query = paramsForServer({
-      query: { 
-        ownerId: campaignId,
-        status: { $nin: ['transaction_pending', 'waiting', 'pending', 'to_approve'] }
-      },      
-      schema: 'includeGiverDetails'
-    });
-
-    this.donationsObserver = feathersClient.service('donations/history').watch({ listStrategy: 'always' }).find(query).subscribe(
+    this.donationsObserver = feathersClient.service('donations/history').watch({ listStrategy: 'always' }).find({}).subscribe(
       resp => 
         this.setState({
           donations: resp.data,
