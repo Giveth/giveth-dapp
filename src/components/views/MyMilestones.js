@@ -316,6 +316,50 @@ class MyMilestones extends Component {
     })
   }
 
+  collect(milestone) {
+    React.swal({
+      title: "Collect Funds",
+      text: "The funds will be transferred to you wallet.",
+      icon: "warning",
+      dangerMode: true,
+      buttons: ["Cancel", "Yes, collect"]
+    }).then((isConfirmed) => {
+      if(isConfirmed) {
+        if(isConfirmed) {
+          const collect = (etherScanUrl, txHash) => {
+            feathersClient.service('/milestones').patch(milestone._id, {
+              status: 'Paid',
+              mined: false,
+              txHash
+            }).then(() => {
+              React.toast.info(<p>Collecting funds from milestone...<br/><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>)
+            }).catch((e) => {
+              console.log('Error updating feathers cache ->', e);
+            });
+          };
+
+          let txHash;
+          let etherScanUrl;
+          Promise.all([ getNetwork(), getWeb3() ])
+            .then(([ network, web3 ]) => {
+              const lppMilestone = new LPPMilestone(web3, milestone.pluginAddress);
+              etherScanUrl = network.etherscan;
+
+              return lppMilestone.collect({ from: this.props.currentUser.address })
+                .once('transactionHash', hash => {
+                  txHash = hash;
+                  collect(etherScanUrl, txHash);
+                });
+            })
+            .catch((e) => {
+              console.error(e);
+              displayTransactionError(txHash, etherScanUrl)
+            });
+        }
+      }
+    })
+  }
+
   componentWillUnmount() {
     if (this.milestonesObserver) this.milestonesObserver.unsubscribe();
   }   
@@ -397,8 +441,14 @@ class MyMilestones extends Component {
                               }
 
                               { m.recipientAddress === currentUser.address && m.status === 'Paying' &&
-                                <p>Withdraw authorization pending. The funds will be transferred to your wallet when confirmed.</p>
-                              }  
+                                <p>Withdraw authorization pending. You will be able to collect the funds when confirmed.</p>
+                              }
+
+                              { m.recipientAddress === currentUser.address && m.status === 'CanWithdraw' && m.mined &&
+                              <a className="btn btn-success btn-sm" onClick={()=>this.collect(m)}>
+                                <i className="fa fa-usd"></i>&nbsp;Collect
+                              </a>
+                              }
                             </td>
                           </tr>
 
