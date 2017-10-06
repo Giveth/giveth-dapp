@@ -183,7 +183,7 @@ class DonateButton extends Component {
             </div>
 
             <button className="btn btn-success" formNoValidate={true} type="submit" disabled={isSaving || !formIsValid}>
-              {isSaving ? "Saving..." : "Donate &#926;"}
+              {isSaving ? "Saving..." : "Donate Ξ"}
             </button>
           </Form>
 

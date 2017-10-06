@@ -283,7 +283,7 @@ class EditCampaign extends Component {
                       <FormsyImageUploader setImage={this.setImage} previewImage={image} isRequired={isNew}/>
 
                       <div className="form-group">
-                        <label>Relate your campaign to a community.</label>
+                        <label>Relate your campaign to a community</label>
                         <small className="form-text">By relating your campaign to a community, Ether from that community can be delegated to your campaign. This increases your chances of successfully funding your campaign.</small> 
                         <InputToken
                           name="dac"

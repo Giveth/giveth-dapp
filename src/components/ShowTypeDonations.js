@@ -37,7 +37,7 @@ class ShowTypeDonations extends Component {
         }
 
         { !isLoading &&
-          <div>
+          <div className="dashboard-table-view">
             { donations && donations.length > 0 && 
 
               <table className="table table-responsive table-hover">

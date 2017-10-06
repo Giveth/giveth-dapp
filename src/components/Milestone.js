@@ -53,7 +53,11 @@ class Milestone extends Component {
                   <h4>{model.title}</h4>
                   <p>{model.summary}</p>
                   <hr/>
-                  <CardStats donationCount={model.donationCount} totalDonated={model.totalDonated} />
+                  <CardStats 
+                    type="milestone"
+                    donationCount={model.donationCount} 
+                    totalDonated={model.totalDonated}
+                    status={model.status} />
 
                   { isOwner(model.ownerAddress, currentUser) && 
                     <div>

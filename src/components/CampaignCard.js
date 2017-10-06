@@ -62,7 +62,11 @@ class CampaignCard extends Component {
           </div>
 
           <div className="card-footer">
-            <CardStats donationCount={campaign.donationCount} totalDonated={campaign.totalDonated} campaingsCount={campaign.milestonesCount} />
+            <CardStats 
+              type="campaign"
+              donationCount={campaign.donationCount} 
+              totalDonated={campaign.totalDonated} 
+              milestonesCount={campaign.milestonesCount} />
           </div>
 
         </div>

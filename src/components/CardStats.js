@@ -5,7 +5,7 @@ import PropTypes from 'prop-types'
 
 class CardStats extends Component {
   render(){
-    const { totalDonated, donationCount, campaignsCount } = this.props
+    const { totalDonated, donationCount, campaignsCount, milestonesCount, type, status } = this.props
 
     return(
       <div className="row card-stats">
@@ -20,8 +20,26 @@ class CardStats extends Component {
         </div>  
 
         <div className="col-4 text-right">
-          <span><i className="fa fa-flag"></i>{campaignsCount}</span>
-          <p>campaigns</p>
+          {type === 'dac' &&
+            <div>
+              <span><i className="fa fa-flag"></i>{campaignsCount}</span>
+              <p>campaigns</p>
+            </div>
+          }
+
+          {type === 'campaign' &&
+            <div>
+              <span><i className="fa fa-check-circle"></i>{milestonesCount}</span>
+              <p>milestones</p>
+            </div>
+          }
+
+          {type === 'milestone' &&
+            <div>
+              <span><i className="fa fa-check-circle"></i>{status}</span>
+              <p>status</p>
+            </div>
+          }                     
         </div>               
       </div>        
     )
@@ -31,7 +49,9 @@ class CardStats extends Component {
 export default CardStats
 
 CardStats.PropTypes = {
+  type: PropTypes.string.isRequired,
   donationCount: PropTypes.number.isRequired,
   totalDonated: PropTypes.string.isRequired,
-  campaignsCount: PropTypes.number
+  campaignsCount: PropTypes.number,
+  milestonesCount: PropTypes.number
 }
