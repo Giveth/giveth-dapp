@@ -193,7 +193,7 @@ class Donations extends Component {
               const { liquidPledging } = network;
               etherScanUrl = network.etherscan;
 
-              return liquidPledging.transfer(donation.owner, donation.pledgeId, donation.amount, donation.delegate)
+              return liquidPledging.transfer(donation.owner, donation.pledgeId, donation.amount, donation.delegate, { $extraGas: 50000 })
                 .once('transactionHash', hash => {
                   txHash = hash;
                   doReject(etherScanUrl, txHash);
