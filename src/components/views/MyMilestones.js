@@ -247,7 +247,7 @@ class MyMilestones extends Component {
             })
           };
 
-          const getPledge = () => {
+          const getPledges = () => {
             return feathersClient.service('donations').find({
               query: {
                 ownerType: 'milestone',
@@ -271,20 +271,20 @@ class MyMilestones extends Component {
                  }
                });
 
-               if (pledges.length > 1) throw new Error('got multiple pledges, but expecting 1');
-
-               return pledges[0];
+               return pledges.map(note => {
+                 return '0x' + utils.padLeft(utils.toHex(note.amount).substring(2), 48) + utils.padLeft(utils.toHex(note.id).substring(2), 16);
+               });
             })
           };
 
           let txHash;
           let etherScanUrl;
-          Promise.all([ getNetwork(), getWeb3(), getPledge() ])
-            .then(([ network, web3, pledge ]) => {
+          Promise.all([ getNetwork(), getWeb3(), getPledges() ])
+            .then(([ network, web3, pledges ]) => {
               const lppMilestone = new LPPMilestone(web3, milestone.pluginAddress);
               etherScanUrl = network.etherscan;
 
-              return lppMilestone.withdraw(pledge.id, pledge.amount, { from: this.props.currentUser.address })
+              return lppMilestone.mWithdraw(pledges, { from: this.props.currentUser.address })
                 .once('transactionHash', hash => {
                   txHash = hash;
                   withdraw(etherScanUrl, txHash);
