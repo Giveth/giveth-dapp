@@ -53,7 +53,9 @@ class Donations extends Component {
                 if(d.status === 'to_approve') return 2
                 if(d.status === 'waiting') return 3
                 if(d.status === 'committed') return 4
-                if(d.status === 'cancelled') return 5
+                if(d.status === 'paying') return 5
+                if(d.status === 'paid') return 6
+                if(d.status === 'cancelled') return 7
                 return 4
               }),
               hasError: false,
@@ -82,7 +84,11 @@ class Donations extends Component {
       case "waiting":
         return "waiting for further delegation"
       case "committed":
-        return "committed"
+        return "committed";
+      case "paying":
+        return "paying";
+      case "paid":
+        return "paid";
       default:
         return;
     }    
@@ -210,8 +216,8 @@ class Donations extends Component {
       React.swal({
         title: "Refund your donation?",
         text: "Your donation will be cancelled and the a payment will be authorized for you to withdraw your ETH. All withdrawls" +
-        " must be confirmed for security reasons and may take a day or two. When it has been confirmed, you will be able" +
-        " to withdraw your &#926; to your wallet.",
+        " must be confirmed for security reasons and may take a day or two. Upon confirmation, your &#926; will be" +
+        " transferred to your wallet.",
         icon: "warning",
         dangerMode: true,      
         buttons: ["Cancel", "Yes, refund"]
@@ -306,7 +312,7 @@ class Donations extends Component {
                               <td>
                                 {d.status === 'pending' && 
                                   <span><i className="fa fa-circle-o-notch fa-spin"></i>&nbsp;</span> 
-                                }                              
+                                }
                                 {this.getStatus(d.status)}
                               </td>                            
                               <td>&#926;{utils.fromWei(d.amount)}</td>

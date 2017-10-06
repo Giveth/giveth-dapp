@@ -225,7 +225,7 @@ class MyMilestones extends Component {
         if(isConfirmed) {
           const withdraw = (etherScanUrl, txHash) => {
             feathersClient.service('/milestones').patch(milestone._id, {
-              status: 'Completed',
+              status: 'Paying',
               mined: false
             }).then(() => {
               React.toast.info(<p>Request withdrawal from milestone...<br/><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>)
@@ -316,25 +316,6 @@ class MyMilestones extends Component {
     })
   }
 
-  withdraw(id) {
-    React.swal({
-      title: "Request Withdrawal",
-      text: "For security reasons, there's a 3 day delay from the moment you request withdrawal before you can actually withdraw the money.",
-      icon: "warning",
-      dangerMode: true,
-      buttons: ["Cancel", "Yes, withdraw"]
-    }).then((isConfirmed) => {
-      if (isConfirmed) {
-        console.log('request payment')
-        feathersClient.service('/milestones').patch(id, {
-          status: 'Paid'
-        }).catch((e) => {
-          React.toast.error("Oh no! Something went wrong with the transaction. Please try again.")
-        })
-      }
-    });
-  }
-
   componentWillUnmount() {
     if (this.milestonesObserver) this.milestonesObserver.unsubscribe();
   }   
@@ -415,15 +396,9 @@ class MyMilestones extends Component {
                                 </a>
                               }
 
-                              { m.recipientAddress === currentUser.address && m.status === 'InitializedWithdraw' &&
-                                <p>You can withdraw the money in 3 days</p>
+                              { m.recipientAddress === currentUser.address && m.status === 'Paying' &&
+                                <p>Withdraw authorization pending. The funds will be transferred to your wallet when confirmed.</p>
                               }  
-
-                              { m.recipientAddress === currentUser.address && m.status === 'CanWithdraw' &&
-                                <a className="btn btn-success btn-sm" onClick={()=>this.withdraw(m._id)}>
-                                  <i className="fa fa-usd"></i>&nbsp;withdraw
-                                </a>
-                              }                                                                                                                                                          
                             </td>
                           </tr>
 
