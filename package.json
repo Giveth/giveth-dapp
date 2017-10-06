@@ -13,7 +13,7 @@
     "formsy-react": "^0.19.5",
     "formsy-react-components": "^0.10.1",
     "giveth-react-scripts": "1.0.11",
-    "liquidpledging": "git://github.com/Giveth/liquidpledging.git#0191db3a0785194dfbd4705e56a970517cea808f",
+    "liquidpledging": "git://github.com/Giveth/liquidpledging.git#tmp",
     "localforage": "^1.5.0",
     "lpp-campaign": "0.0.5",
     "lpp-milestone": "git://github.com/Giveth/lpp-milestone.git#ad9c0605295b27d3308a157b256d233c6f70884e",
