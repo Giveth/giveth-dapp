@@ -15,7 +15,7 @@
     "giveth-react-scripts": "1.0.11",
     "liquidpledging": "git://github.com/Giveth/liquidpledging.git#fd88f22a6ffa3cfce1fcbc1bc3421726ac6e61b9",
     "localforage": "^1.5.0",
-    "lpp-campaign": "0.0.5",
+    "lpp-campaign": "0.0.6",
     "lpp-milestone": "git://github.com/Giveth/lpp-milestone.git#81c426f58674bd307661e2562730cef918fe1311",
     "node-sass-chokidar": "^0.0.3",
     "npm-run-all": "^4.0.2",

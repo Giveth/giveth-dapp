@@ -1,12 +1,14 @@
 import React, { Component } from 'react'
 import SkyLight from 'react-skylight'
 import { utils } from 'web3';
-import getNetwork from '../lib/blockchain/getNetwork';
+import LPPCampaign from 'lpp-campaign';
 
 import { feathersClient } from '../lib/feathersClient'
 import { Form } from 'formsy-react-components';
 import { takeActionAfterWalletUnlock } from '../lib/middleware'
 import { displayTransactionError } from '../lib/helpers'
+import getNetwork from '../lib/blockchain/getNetwork';
+import getWeb3 from '../lib/blockchain/getWeb3';
 
 
 import InputToken from "react-input-token";
@@ -32,15 +34,16 @@ class DelegateButton extends Component {
   }    
 
 
-  submit(model) {
+  submit() {
     const { toBN } = utils;
+    const { model } = this.props;
     this.setState({ isSaving: true })
     
     // find the type of where we delegate to
     const admin = this.props.types.find((t) => { return t.id === this.state.objectsToDelegateTo[0]});
 
     // TODO find a more friendly way to do this.
-    if (admin.type === 'milestone' && toBN(admin.maxAmount).lt(toBN(admin.totalDonated || 0).add(toBN(this.props.model.amount)))) {
+    if (admin.type === 'milestone' && toBN(admin.maxAmount).lt(toBN(admin.totalDonated || 0).add(toBN(model.amount)))) {
       React.toast.error('That milestone has reached its funding goal. Please pick another');
       return;
     }
@@ -64,7 +67,7 @@ class DelegateButton extends Component {
         })
       }
 
-      feathersClient.service('/donations').patch(this.props.model._id, mutation)
+      feathersClient.service('/donations').patch(model._id, mutation)
         .then(donation => {
           this.resetSkylight()
 
@@ -95,19 +98,20 @@ class DelegateButton extends Component {
     let txHash;
     let etherScanUrl;
     
-    getNetwork()
-      .then((network) => {
+    Promise.all([ getNetwork(), getWeb3() ])
+      .then(([ network, web3 ]) => {
         const { liquidPledging } = network;
         etherScanUrl = network.etherscan;
 
-        const senderId = (this.props.model.delegate > 0) ? this.props.model.delegate : this.props.model.owner;
+        const senderId = (model.delegate > 0) ? model.delegate : model.owner;
         const receiverId = (admin.type === 'dac') ? admin.delegateId : admin.projectId;
+        const contract = (model.ownerType === 'campaign') ? new LPPCampaign(web3, model.ownerEntity.pluginAddress) : liquidPledging;
 
-        return liquidPledging.transfer(senderId, this.props.model.pledgeId, this.props.model.amount, receiverId)
+        return contract.transfer(senderId, model.pledgeId, model.amount, receiverId)
           .once('transactionHash', hash => {
             txHash = hash;
             delegate(etherScanUrl, txHash);
-          });
+          }).on('error', console.log);
       })
       .then(() => {
         React.toast.success(<p>Your donation has been confirmed!<br/><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>)
