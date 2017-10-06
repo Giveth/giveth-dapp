@@ -109,7 +109,7 @@ class EditDAC extends Component {
         title: model.title,
         description: model.description,
         communityUrl: model.communityUrl,
-        summary: getTruncatedText(this.state.summary, 200),
+        summary: getTruncatedText(this.state.summary, 100),
         delegateId: this.state.delegateId,
         image: file,
       };
@@ -177,7 +177,7 @@ class EditDAC extends Component {
 
     return(
         <div id="edit-dac-view">
-          <div className="container-fluid page-layout">
+          <div className="container-fluid page-layout edit-view">
             <div className="row">
               <div className="col-md-8 m-auto">
                 { isLoading &&
@@ -188,26 +188,30 @@ class EditDAC extends Component {
                   <div>
                     <GoBackButton history={history}/>
 
-                    { isNew &&
-                      <h1>Start a Decentralized Altruistic Community!</h1>
-                    }
+                    <div className="form-header">
 
-                    { !isNew &&
-                      <h1>Edit DAC</h1>
-                    }
+                      { isNew &&
+                        <h3>Start a Decentralized Altruistic Community (DAC)!</h3>
+                      } 
 
+                      { !isNew &&
+                        <h1>Edit DAC</h1>
+                      }
+
+                      <p><i className="fa fa-question-circle"></i>A DAC aims to solve a cause by building a community, raising funds and delegating those funds to campaigns that solve its cause.</p>
+                    </div>
 
                     <Form onSubmit={this.submit} mapping={this.mapInputs} onValid={()=>this.toggleFormValid(true)} onInvalid={()=>this.toggleFormValid(false)} layout='vertical'>
                       <div className="form-group">
                         <Input
                           name="title"
                           id="title-input"
-                          label="Title"
+                          label="Community cause"
                           ref="title"
                           type="text"
                           value={title}
-                          placeholder="E.g. Climate change."
-                          help="Describe your DAC in 1 scentence."
+                          placeholder="E.g. Ending climate change."
+                          help="Describe what your community is aiming for in 1 scentence."
                           validations="minLength:10"
                           validationErrors={{
                               minLength: 'Please provide at least 10 characters.'
@@ -219,9 +223,10 @@ class EditDAC extends Component {
                       <div className="form-group">
                         <QuillFormsy
                           name="description"
-                          label="What dac are you solving?"
+                          label="Explain how you are going to solve this your cause"
+                          helpText="Make it as extensive as necessary. Your goal is to build trust, so that people join your community and/or donate Ether."
                           value={description}
-                          placeholder="Describe your dac..."
+                          placeholder="Describe how you're going to solve your cause..."
                           onTextChanged={(content)=>this.constructSummary(content)}
                           validations="minLength:10"
                           help="Describe your dac."
@@ -243,7 +248,7 @@ class EditDAC extends Component {
                           type="text"
                           value={communityUrl}
                           placeholder="https://slack.giveth.com"
-                          help="Enter the url of your community"
+                          help="Where can people join your community? Giveth redirect people there."
                           validations="isUrl"
                           validationErrors={{
                             isUrl: 'Please provide a url.'

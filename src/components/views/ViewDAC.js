@@ -15,6 +15,8 @@ import ShowTypeDonations from '../ShowTypeDonations'
 import CommunityButton from '../CommunityButton'
 import currentUserModel from '../../models/currentUserModel'
 
+import CampaignCard from '../CampaignCard'
+
 import { getTruncatedText } from '../../lib/helpers'
 
 
@@ -154,15 +156,15 @@ class ViewDAC extends Component {
                   { campaignsCount > 0 && !isLoadingCampaigns &&
                     <div className="card-deck">
                       { campaigns.map((c, index) => 
-                        <div className="card" key={index}>
-                          <img className="card-img-top" src={c.image} alt=""/>
-                          <div className="card-body">
-                            <h4 className="card-title">{getTruncatedText(c.title, 30)}</h4>
-                            <div className="card-text">{c.summary}</div>
-              
-                            <DonateButton type="campaign" model={{ title: c.title, _id: c.id, adminId: c.projectId}} wallet={wallet} currentUser={currentUser}/>
-                          </div>
-                        </div>
+
+                        <CampaignCard 
+                          key={index} 
+                          campaign={c} 
+                          viewDAC={(id) => this.viewCampaign(id)} 
+                          editDAC={(e, id) => this.editCampaign(e, id)} 
+                          removeDAC={this.removeCampaign} 
+                          currentUser={currentUser}/>
+
                       )}
                     </div>
                   }

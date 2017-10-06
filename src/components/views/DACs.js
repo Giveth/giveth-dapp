@@ -39,8 +39,8 @@ class DACs extends Component {
     e.stopPropagation()
 
     React.swal({
-      title: "Edit DAC?",
-      text: "Are you sure you want to edit this DAC?",
+      title: "Edit Community?",
+      text: "Are you sure you want to edit the description of this Community?",
       icon: "warning",
       buttons: ["Cancel", "Yes, edit"],      
       dangerMode: true

@@ -64,8 +64,8 @@ class MyDACs extends Component {
 
   editDAC(id) {
     React.swal({
-      title: "Edit DAC?",
-      text: "Are you sure you want to edit this DAC?",
+      title: "Edit Community?",
+      text: "Are you sure you want to edit the description of this community?",
       icon: "warning",
       dangerMode: true,
       buttons: ["Cancel", "Yes, edit"]

@@ -61,10 +61,10 @@ class FormsyImageUploader extends Component {
             accept=".png,.jpeg,.jpg"
             onChange={()=>this.loadAndPreviewImage()}
             ref="imagePreview"
-            help="Select a png or jpeg."
+            help="A picture says more than a thousand words. Select a png or jpeg."
             validations="minLength: 1"
             validationErrors={{
-              minLength: "Please select an image file."
+              minLength: "Please select an png or jpeg."
             }}                
             required={this.props.isRequired}
           />
