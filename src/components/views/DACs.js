@@ -2,12 +2,9 @@ import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 
 import JoinGivethCommunity from '../JoinGivethCommunity'
-// import { feathersClient } from '../../lib/feathersClient'
-import { redirectAfterWalletUnlock } from '../../lib/middleware'
 import Masonry, {ResponsiveMasonry} from "react-responsive-masonry"
 
 import currentUserModel from '../../models/currentUserModel'
-
 import DacCard from '../DacCard'
 
 /**
@@ -35,33 +32,12 @@ class DACs extends Component {
   //   });
   // }
 
-  editDAC(e, id) {
-    e.stopPropagation()
 
-    React.swal({
-      title: "Edit Community?",
-      text: "Are you sure you want to edit the description of this Community?",
-      icon: "warning",
-      buttons: ["Cancel", "Yes, edit"],      
-      dangerMode: true
-    }).then((isConfirmed) => {
-      if(isConfirmed){
-        redirectAfterWalletUnlock("/dacs/" + id + "/edit", this.props.wallet, this.props.history)
-      }
-    });
-  }
 
-  viewDAC(id){
-    this.props.history.push("/dacs/" + id)
-  }
 
-  viewProfile(e, id){
-    e.stopPropagation()
-    this.props.history.push("/profile/" + id)
-  }  
 
   render() {
-    const { currentUser, wallet, dacs } = this.props
+    const { currentUser, wallet, dacs, history } = this.props
 
     return (
       <div id="dacs-view" className="card-view">
@@ -84,7 +60,9 @@ class DACs extends Component {
                     viewDAC={(id) => this.viewDAC(id)} 
                     editDAC={(e, id) => this.editDAC(e, id)} 
                     removeDAC={this.removeDAC} 
-                    currentUser={currentUser}/>
+                    currentUser={currentUser}
+                    wallet={wallet}
+                    history={history}/>                      
                 )}
               </Masonry>
             </ResponsiveMasonry>                    

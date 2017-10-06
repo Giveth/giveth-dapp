@@ -9,6 +9,7 @@ import { isAuthenticated } from '../../lib/middleware'
 import DelegateButton from '../../components/DelegateButton'
 import Avatar from 'react-avatar'
 import currentUserModel from '../../models/currentUserModel'
+import { getUserName, getUserAvatar } from '../../lib/helpers'
 
 /**
   The my delegations view
@@ -187,10 +188,8 @@ class Delegations extends Component {
                                 <td>{d.ownerType.toUpperCase()} <em>{d.ownerEntity.title}</em></td>
                               }
                               <td>
-                                {d.giver.avatar &&
-                                  <Avatar size={30} src={d.giver.avatar} round={true}/>
-                                }
-                                {d.giver.name}</td>
+                                <Avatar size={30} src={getUserAvatar(d.giver)} round={true}/>
+                                {getUserName(d.giver)}</td>
                               <td>{d.giverAddress}</td>
                               <td>{d.status}</td>
                               <td>                                

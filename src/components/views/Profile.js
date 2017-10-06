@@ -5,6 +5,7 @@ import getNetwork from "../../lib/blockchain/getNetwork";
 import GoBackButton from '../GoBackButton'
 import Loader from '../Loader'
 import Avatar from 'react-avatar'
+import { getUserName, getUserAvatar } from '../../lib/helpers'
 
 /**
  Shows the user's profile
@@ -45,6 +46,10 @@ class Profile extends Component {
   render() {
     const { history } = this.props
     let { isLoading, hasError, avatar, name, address, email, linkedIn, etherScanUrl } = this.state
+    const user = {
+      name: name,
+      avatar: avatar
+    }
 
     return (
       <div id="profile-view">
@@ -60,8 +65,8 @@ class Profile extends Component {
                   <GoBackButton history={history}/>
 
                   <center>
-                    <Avatar size={100} src={avatar} round={true}/>                  
-                    <h1>{name}</h1>
+                    <Avatar size={100} src={getUserAvatar(user)} round={true}/>                  
+                    <h1>{getUserName(user)}</h1>
                     {etherScanUrl &&
                       <p><a href={`${etherScanUrl}address/${address}`}>{address}</a></p>
                     }

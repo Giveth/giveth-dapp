@@ -4,6 +4,7 @@ import Loader from './Loader'
 import Avatar from 'react-avatar'
 import { utils } from 'web3';
 import getNetwork from '../lib/blockchain/getNetwork';
+import { getUserName, getUserAvatar } from '../lib/helpers'
 
 /**
   Shows a table of donations for a given type (dac, campaign, milestone)
@@ -52,10 +53,10 @@ class ShowTypeDonations extends Component {
                     <tr key={index}>
                       <td>&#926;{utils.fromWei(d.amount)}</td>
                       <td>
-                        {d.giver && d.giver.avatar &&
-                          <Avatar size={30} src={d.giver.avatar} round={true}/>
+                        {d.giver && 
+                          <Avatar size={30} src={getUserAvatar(d.giver)} round={true}/>
                         }
-                        <span>{d.giver.name}</span>
+                        <span>{getUserName(d.giver)}</span>
                       </td>
                       {etherScanUrl &&
                         <td><a href={`${etherScanUrl}address/${d.giver.address}`}>{d.giver.address}</a></td>

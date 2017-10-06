@@ -1,27 +1,52 @@
 import React, { Component } from 'react'
 
-import { getTruncatedText } from './../lib/helpers'
-import { isOwner } from './../lib/helpers'
+import { getTruncatedText, getUserAvatar, isOwner, getUserName } from './../lib/helpers'
 import Avatar from 'react-avatar'
 import CardStats from './CardStats'
 import currentUserModel from './../models/currentUserModel'
-import { feathersClient } from './../lib/feathersClient'
-import Loader from './Loader'
+import { redirectAfterWalletUnlock } from './../lib/middleware'
 
 class DacCard extends Component {
+  viewProfile(e){
+    e.stopPropagation()
+    this.props.history.push("/profile/" + this.props.dac.owner.address)
+  }  
+
+  viewDAC(){
+    this.props.history.push("/dacs/" + this.props.dac._id)
+  }  
+
+
+  editDAC(e) {
+    e.stopPropagation()
+
+    React.swal({
+      title: "Edit Community?",
+      text: "Are you sure you want to edit the description of this Community?",
+      icon: "warning",
+      buttons: ["Cancel", "Yes, edit"],      
+      dangerMode: true
+    }).then((isConfirmed) => {
+      if(isConfirmed){
+        redirectAfterWalletUnlock("/dacs/" + this.props.dac._id + "/edit", this.props.wallet, this.props.history)
+      }
+    });
+  }  
+
   render(){
-    const { dac, viewDAC, currentUser, removeDAC, editDAC } = this.props
+    const { dac, currentUser, removeDAC } = this.props
 
     return(
-      <div className="card overview-card" id={dac._id} onClick={()=>viewDAC(dac._id)}>
+      <div className="card overview-card" id={dac._id} onClick={()=>this.viewDAC()}>
         <div className="card-body">
-          <div className="card-avatar" onClick={(e)=>this.viewProfile(e, dac.owner.address)}>
-            <Avatar size={30} src={dac.owner.avatar} round={true}/>                  
-            <span className="owner-name">{dac.owner.name}</span>
+          <div className="card-avatar" onClick={(e)=>this.viewProfile(e)}>
+            
+            <Avatar size={30} src={getUserAvatar(dac.owner)} round={true}/>                  
+            <span className="owner-name">{getUserName(dac.owner)}</span>
 
             { isOwner(dac.owner.address, currentUser) &&
               <span className="pull-right">
-                <a className="btn btn-link btn-edit" onClick={(e)=>editDAC(e, dac._id)}>
+                <a className="btn btn-link btn-edit" onClick={(e)=>this.editDAC(e)}>
                   <i className="fa fa-edit"></i>
                 </a>
               </span>

@@ -8,7 +8,7 @@ import Loader from '../Loader'
 import { Link } from 'react-router-dom'
 import Milestone from '../Milestone'
 import GoBackButton from '../GoBackButton'
-import { isOwner } from '../../lib/helpers'
+import { isOwner, getUserName, getUserAvatar } from '../../lib/helpers'
 import BackgroundImageHeader from '../BackgroundImageHeader'
 import Avatar from 'react-avatar'
 import DonateButton from '../DonateButton'
@@ -45,8 +45,14 @@ class ViewCampaign extends Component {
     Promise.all([
       new Promise((resolve, reject) => {
         feathersClient.service('campaigns').find({ query: {_id: campaignId }})
-          .then(resp => this.setState(resp.data[0], resolve()))
-          .catch(() => this.setState({ hasError: true }, reject()))
+          .then(resp => {
+            console.log(resp)
+            this.setState(resp.data[0], resolve())
+          })
+          .catch((e) => {
+            console.log(e)
+            this.setState({ hasError: true }, reject())
+          })
       })
     ,
       new Promise((resolve, reject) => {
@@ -137,8 +143,8 @@ class ViewCampaign extends Component {
 
                   <center>
                     <Link to={`/profile/${ owner.address }`}>
-                      <Avatar size={50} src={owner.avatar} round={true}/>                  
-                      <p className="small">{owner.name}</p>
+                      <Avatar size={50} src={getUserAvatar(owner)} round={true}/>                  
+                      <p className="small">{getUserName(owner)}</p>
                     </Link>
                   </center>                
 

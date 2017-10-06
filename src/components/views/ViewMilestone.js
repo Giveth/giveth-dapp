@@ -13,6 +13,7 @@ import Avatar from 'react-avatar'
 import DonateButton from '../DonateButton'
 import ShowTypeDonations from '../ShowTypeDonations'
 import currentUserModel from '../../models/currentUserModel'
+import { getUserName, getUserAvatar } from '../../lib/helpers'
 
 
 /**
@@ -131,8 +132,8 @@ class ViewMilestone extends Component {
 
                     <center>
                       <Link to={`/profile/${ ownerAddress }`}>
-                        <Avatar size={50} src={owner.avatar} round={true}/>                  
-                        <p className="small">{owner.name}</p>
+                        <Avatar size={50} src={getUserAvatar(owner)} round={true}/>                  
+                        <p className="small">{getUserName(owner)}</p>
                       </Link> 
                     </center>
 

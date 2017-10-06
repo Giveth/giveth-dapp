@@ -3,7 +3,6 @@ import PropTypes from 'prop-types'
 import { Link } from 'react-router-dom'
 
 import { feathersClient } from '../../lib/feathersClient'
-import { paramsForServer } from 'feathers-hooks-common'
 
 import Loader from '../Loader'
 import GoBackButton from '../GoBackButton'
@@ -17,7 +16,7 @@ import currentUserModel from '../../models/currentUserModel'
 
 import CampaignCard from '../CampaignCard'
 
-import { getTruncatedText } from '../../lib/helpers'
+import { getUserName, getUserAvatar } from '../../lib/helpers'
 
 
 /**
@@ -59,24 +58,16 @@ class ViewDAC extends Component {
       )
 
     // lazy load donations         
-    const query = paramsForServer({ 
-      query: { 
-        delegateId: dacId,
-        status: { $in: ['transaction_pending', 'waiting', 'pending', 'to_approve'] }
-      },
-      schema: 'includeGiverDetails'
-    })  
-
-    // this.donationsObserver = feathersClient.service('donations/history').watch({ listStrategy: 'always' }).find({}).subscribe(
-    //   resp =>{
-    //     console.log(resp)
-    //     this.setState({
-    //       donations: resp.data,
-    //       isLoadingDonations: false,
-    //       errorLoadingDonations: false
-    //     })},
-    //   err => this.setState({ isLoadingDonations: false, errorLoadingDonations: true })
-    // ) 
+    this.donationsObserver = feathersClient.service('donations/history').watch({ listStrategy: 'always' }).find({}).subscribe(
+      resp =>{
+        console.log(resp)
+        this.setState({
+          donations: resp.data,
+          isLoadingDonations: false,
+          errorLoadingDonations: false
+        })},
+      err => this.setState({ isLoadingDonations: false, errorLoadingDonations: true })
+    ) 
 
     // lazy load campaigns
     this.campaignsObserver = feathersClient.service('campaigns').watch({ strategy: 'always' }).find({
@@ -86,11 +77,16 @@ class ViewDAC extends Component {
         },
         dacs: dacId,
         $limit: 200,
-        $select: [ 'title', '_id', 'image', 'summary', 'projectId' ]
       },
     }).subscribe(
-      resp => this.setState({ campaigns: resp.data, isLoadingCampaigns: false }),
-      err => this.setState({ campaignsLoading: false })
+      resp => {
+        console.log(resp)
+        this.setState({ campaigns: resp.data, isLoadingCampaigns: false })
+      },
+      err => {
+        console.log(err)
+        this.setState({ isLoadingCampaigns: false })
+      }
     )    
   }
 
@@ -130,8 +126,8 @@ class ViewDAC extends Component {
 
                   <center>
                     <Link to={`/profile/${ owner.address }`}>
-                      <Avatar size={50} src={owner.avatar} round={true}/>                  
-                      <p className="small">{owner.name}</p>
+                      <Avatar size={50} src={getUserAvatar(owner)} round={true}/>                  
+                      <p className="small">{getUserName(owner)}</p>
                     </Link>   
                   </center>              
 
@@ -160,10 +156,9 @@ class ViewDAC extends Component {
                         <CampaignCard 
                           key={index} 
                           campaign={c} 
-                          viewDAC={(id) => this.viewCampaign(id)} 
-                          editDAC={(e, id) => this.editCampaign(e, id)} 
-                          removeDAC={this.removeCampaign} 
-                          currentUser={currentUser}/>
+                          currentUser={currentUser}
+                          wallet={wallet}
+                          history={history}/>
 
                       )}
                     </div>

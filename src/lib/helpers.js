@@ -1,6 +1,6 @@
 import { feathersClient } from './feathersClient';
 import React from 'react'
-
+import DefaultAvatar from './../assets/avatar-100.svg'
 
 export const isOwner = (address, currentUser) => {
   // console.log('a/c', address, currentUser)
@@ -63,4 +63,24 @@ export const displayTransactionError = (txHash, etherScanUrl) => {
     content: msg,
     icon: 'error',
   });
+}
+
+
+// returns the user name, or if no user name, returns default name
+export const getUserName = (owner) => {
+  if(owner.name) {
+    return owner.name
+  } else {
+    return "Anonymous user"
+  } 
+}
+
+
+// returns the user avatar, or if no user avatar, returns default avatar
+export const getUserAvatar = (owner) => {
+  if(owner.avatar) {
+    return owner.avatar
+  } else {
+    return DefaultAvatar
+  } 
 }
