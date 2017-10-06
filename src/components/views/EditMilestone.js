@@ -171,7 +171,7 @@ class EditMilestone extends Component {
             etherScanUrl = network.txHash;
 
             // web3, lp address, name, parentProject, recipient, maxAmount, reviewer
-            LPPMilestone.new(web3, liquidPledging.$address, model.title, '', this.state.campaignProjectId, model.recipientAddress, constructedModel.maxAmount, model.reviewerAddress, { $extraGas: 50000 })
+            LPPMilestone.new(web3, liquidPledging.$address, model.title, '', this.state.campaignProjectId, model.recipientAddress, constructedModel.maxAmount, model.reviewerAddress)
               .on('transactionHash', (hash) => {
                 txHash = hash;
                 createMilestone(txHash);
