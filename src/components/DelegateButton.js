@@ -1,8 +1,15 @@
 import React, { Component } from 'react'
 import SkyLight from 'react-skylight'
+import { utils } from 'web3';
+import LPPCampaign from 'lpp-campaign';
 
 import { feathersClient } from '../lib/feathersClient'
 import { Form } from 'formsy-react-components';
+import { takeActionAfterWalletUnlock } from '../lib/middleware'
+import { displayTransactionError } from '../lib/helpers'
+import getNetwork from '../lib/blockchain/getNetwork';
+import getWeb3 from '../lib/blockchain/getWeb3';
+
 
 import InputToken from "react-input-token";
 
@@ -12,64 +19,120 @@ class DelegateButton extends Component {
 
     this.state = {
       isSaving: false,
-      campaignsToDelegateTo: [],
+      objectsToDelegateTo: [],
     }
 
     this.submit = this.submit.bind(this)
   }
 
   openDialog(){
-    this.refs.donateDialog.show()
+    takeActionAfterWalletUnlock(this.props.wallet, () => this.refs.donateDialog.show())    
   }
 
-  selectedCampaign = ({ target: { value: selectedCampaign } }) => {
-    this.setState({ campaignsToDelegateTo: selectedCampaign })
+  selectedObject = ({ target: { value: selectedObject } }) => {
+    this.setState({ objectsToDelegateTo: selectedObject })
   }    
 
 
-  submit(model) {
+  submit() {
+    const { toBN } = utils;
+    const { model } = this.props;
     this.setState({ isSaving: true })
     
     // find the type of where we delegate to
-    const type = this.props.types.find((t) => { return t.id === this.state.campaignsToDelegateTo[0]}).type
+    const admin = this.props.types.find((t) => { return t.id === this.state.objectsToDelegateTo[0]});
 
-    feathersClient.service('/donations').patch(this.props.model._id, {
-      status: type === 'milestone' ? 'pending' : 'waiting', // if type is a milestone, the money will be pending before being locked
-      type: type,
-      type_id: this.state.campaignsToDelegateTo[0], // for now we don't support splitting, but we could in the future
-      from_type_id: this.props.model._id,
-      delegated_by: this.props.currentUser
-    }).then(donation => {
-      this.resetSkylight()
+    // TODO find a more friendly way to do this.
+    if (admin.type === 'milestone' && toBN(admin.maxAmount).lt(toBN(admin.totalDonated || 0).add(toBN(model.amount)))) {
+      React.toast.error('That milestone has reached its funding goal. Please pick another');
+      return;
+    }
 
-      // For some reason (I suspect a rerender when donations are being fetched again)
-      // the skylight dialog is sometimes gone and this throws error
-      if(this.refs.donateDialog) this.refs.donateDialog.hide()
+    const delegate = (etherScanUrl, txHash) => {
+      const mutation = {
+        txHash,
+        status: 'pending'
+      };
 
-      if(type === 'milestone') {
-        React.swal("You're awesome!", "The donation has been delegated. The donator has 3 days to reject your delegation before the money gets locked.", 'success')
+      if (admin.type.toLowerCase() === 'dac') {
+        Object.assign(mutation, {
+          delegate: admin.delegateId,
+          delegateId: admin._id
+        });
       } else {
-        React.swal("Delegated", "The donation has been delegated successfully. The donator has been notified.", 'success')        
+        Object.assign(mutation, {
+          intendedProject: admin.projectId,
+          intendedProjectId: admin._id,
+          intendedProjectType: admin.type,
+        })
       }
 
-    }).catch((e) => {
-      console.log(e)
-      React.swal("Oh no!", "Something went wrong with the transaction. Please try again.", 'error')
-      this.setState({ isSaving: false })
+      feathersClient.service('/donations').patch(model._id, mutation)
+        .then(donation => {
+          this.resetSkylight()
+
+          // For some reason (I suspect a rerender when donations are being fetched again)
+          // the skylight dialog is sometimes gone and this throws error
+          if (this.refs.donateDialog) this.refs.donateDialog.hide()
+
+          let msg;
+          if (admin.type === 'milestone' || 'campaign') {
+            msg = React.swal.msg(<p>The donation has been delegated, <a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">view the transaction here.</a>
+            The donator has <strong>3 days</strong> to reject your delegation before the money gets locked.</p>)
+          } else {
+            msg = React.swal.msg(<p>The donation has been delegated, <a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">view the transaction here.</a> The donator has been notified.</p>)
+          }
+
+          React.swal({
+            title: "Delegated!", 
+            content: msg,
+            icon: 'success',
+          })          
+      }).catch((e) => {
+        console.log(e)
+        displayTransactionError(txHash, etherScanUrl)
+        this.setState({ isSaving: false })
+      })
+    };
+
+    let txHash;
+    let etherScanUrl;
+    
+    Promise.all([ getNetwork(), getWeb3() ])
+      .then(([ network, web3 ]) => {
+        const { liquidPledging } = network;
+        etherScanUrl = network.etherscan;
+
+        const senderId = (model.delegate > 0) ? model.delegate : model.owner;
+        const receiverId = (admin.type === 'dac') ? admin.delegateId : admin.projectId;
+        const contract = (model.ownerType === 'campaign') ? new LPPCampaign(web3, model.ownerEntity.pluginAddress) : liquidPledging;
+
+        return contract.transfer(senderId, model.pledgeId, model.amount, receiverId, { $extraGas: 50000 })
+          .once('transactionHash', hash => {
+            txHash = hash;
+            delegate(etherScanUrl, txHash);
+          }).on('error', console.log);
+      })
+      .then(() => {
+        React.toast.success(<p>Your donation has been confirmed!<br/><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>)
+      }).catch((e) => {
+        console.error(e);
+        displayTransactionError(txHash, etherScanUrl)
+        this.setState({ isSaving: false });
     })
   }
 
   resetSkylight(){
     this.setState({ 
       isSaving: false,
-      campaignsToDelegateTo: []
+      objectsToDelegateTo: []
     })
   }
 
 
   render(){
-    const { types } = this.props
-    let { isSaving, campaignsToDelegateTo } = this.state
+    const { types, milestoneOnly } = this.props
+    let { isSaving, objectsToDelegateTo } = this.state
     const style = { display: 'inline-block' }
 
     return(
@@ -80,21 +143,27 @@ class DelegateButton extends Component {
 
         <SkyLight hideOnOverlayClicked ref="donateDialog" title="Delegate Donation" afterClose={() => this.resetSkylight()}>
 
-          <p>Select a DAC, Campaign or Milestone to delegate this donation to</p>
+          { milestoneOnly &&
+            <p>Select a Milestone to delegate this donation to</p>
+          }
+
+          { !milestoneOnly &&
+            <p>Select a DAC, Campaign or Milestone to delegate this donation to</p>
+          }
 
           <Form onSubmit={this.submit} layout='vertical'>
             <div className="form-group">
               <InputToken
                 name="campaigns"
                 ref="campaignsInput"
-                placeholder="Select a campaign to delegate the money to"
-                value={campaignsToDelegateTo}
+                placeholder={milestoneOnly? "Select a milestone" : "Select a dac or campaign"}
+                value={objectsToDelegateTo}
                 options={types}
-                onSelect={this.selectedCampaign}
+                onSelect={this.selectedObject}
                 maxLength={1}/>
             </div>
 
-            <button className="btn btn-success" formNoValidate={true} type="submit" disabled={isSaving || this.state.campaignsToDelegateTo.length === 0}>
+            <button className="btn btn-success" formNoValidate={true} type="submit" disabled={isSaving || this.state.objectsToDelegateTo.length === 0}>
               {isSaving ? "Delegating..." : "Delegate here"}
             </button>
           </Form>

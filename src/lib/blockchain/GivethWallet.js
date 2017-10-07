@@ -1,5 +1,6 @@
 import localforage from 'localforage';
 import Accounts from 'web3-eth-accounts';
+import { utils } from 'web3';
 
 const STORAGE_KEY = 'keystore';
 
@@ -30,6 +31,33 @@ class GivethWallet {
 
     this.keystore = keystore;
     this.unlocked = false;
+    this.balance = undefined;
+  }
+
+  /**
+   * return the balance of the wallet
+   *
+   * @param unit (optional) ether, finney, wei, etc
+   * @return {String}
+   */
+  getBalance(unit) {
+    return (this.balance) ? utils.fromWei(this.balance, unit || 'ether') : undefined;
+  }
+
+  /**
+   * sign a transaction with the first account.
+   *
+   * @param     txData the txData to sign. chainId, gasPrice, and nonce are required
+   * @returns   signature object. https://web3js.readthedocs.io/en/1.0/web3-eth-accounts.html#signtransaction
+   */
+  signTransaction(txData) {
+    if (!this.unlocked) throw new Error('Locked Wallet');
+
+    if (!txData.gasPrice || !txData.nonce || !txData.chainId) throw new Error('gasPrice, nonce, and chainId are required');
+
+    const accounts = _get.call(_accounts, this);
+
+    return accounts.wallet[ 0 ].signTransaction(txData);
   }
 
   /**
@@ -64,8 +92,10 @@ class GivethWallet {
         resolve(true);
       };
 
+      decrypt();
+
       // web3 blocks all rendering, so we need to request an animation frame
-      window.requestAnimationFrame(decrypt)
+      // window.requestAnimationFrame(decrypt)
 
     })
   }

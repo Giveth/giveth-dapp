@@ -1,6 +1,7 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import { Link } from 'react-router-dom'
+import { utils } from 'web3';
 
 import { feathersClient } from './../../lib/feathersClient'
 import { paramsForServer } from 'feathers-hooks-common'
@@ -11,6 +12,8 @@ import BackgroundImageHeader from '../BackgroundImageHeader'
 import Avatar from 'react-avatar'
 import DonateButton from '../DonateButton'
 import ShowTypeDonations from '../ShowTypeDonations'
+import currentUserModel from '../../models/currentUserModel'
+import { getUserName, getUserAvatar } from '../../lib/helpers'
 
 
 /**
@@ -48,10 +51,11 @@ class ViewMilestone extends Component {
         this.setState({ isLoading: false, hasError: true })
       )
 
-    // lazy load donations         
+    // lazy load donations
+    //TODO fetch "non comitted" donations? add "intendedProjectId: milestoneId" to query to get all "pending aproval" donations for this milestone
     const query = paramsForServer({ 
-      query: { type_id: milestoneId },
-      schema: 'includeDonorDetails'
+      query: { ownerId: milestoneId },
+      schema: 'includeGiverDetails'
     })  
     
     this.donationsObserver = feathersClient.service('donations').watch({ listStrategy: 'always' }).find(query).subscribe(
@@ -67,13 +71,18 @@ class ViewMilestone extends Component {
 
   componentWillUnmount() {
     this.donationsObserver.unsubscribe()
-  }  
+  } 
+
+  isActiveMilestone() {
+    return this.state.status === 'InProgress' && this.state.totalDonated < this.state.maxAmount
+  } 
 
   render() {
     const { history, wallet, currentUser } = this.props
 
     let { isLoading, 
           id,
+          projectId,
           title, 
           description, 
           recipientAddress, 
@@ -82,7 +91,10 @@ class ViewMilestone extends Component {
           image,
           donations,
           isLoadingDonations,
-          owner
+          ownerAddress,
+          owner,
+          maxAmount,
+          totalDonated
     } = this.state
 
     return (
@@ -97,7 +109,18 @@ class ViewMilestone extends Component {
               <h6>Milestone</h6>
               <h1>{title}</h1>
               
-              <DonateButton type="milestone" model={{ title: title, _id: id }} wallet={wallet} currentUser={currentUser}/>
+              { this.isActiveMilestone() && 
+                <DonateButton type="milestone" model={{ title: title, _id: id, adminId: projectId }} wallet={wallet} currentUser={currentUser}/>
+              }
+
+              { !this.state.status === 'InProgress' &&
+                <p>This milestone is not active anymore</p>
+              }
+
+              { this.state.totalDonated >= this.state.maxAmount &&
+                <p>This milestone has reached its funding goal.</p>
+              }              
+
             </BackgroundImageHeader>
 
             <div className="container-fluid">
@@ -108,9 +131,9 @@ class ViewMilestone extends Component {
                     <GoBackButton history={history}/>
 
                     <center>
-                      <Link to={`/profile/${ owner.address }`}>
-                        <Avatar size={50} src={owner.avatar} round={true}/>                  
-                        <p className="small">{owner.name}</p>
+                      <Link to={`/profile/${ ownerAddress }`}>
+                        <Avatar size={50} src={getUserAvatar(owner)} round={true}/>                  
+                        <p className="small">{getUserName(owner)}</p>
                       </Link> 
                     </center>
 
@@ -128,7 +151,10 @@ class ViewMilestone extends Component {
                   <h4>Details</h4>
                   <p>Reviewer address: {reviewerAddress}</p>
                   <p>Recipient address: {recipientAddress}</p>
-                  <p>Completion deadline: {completionDeadline}</p>             
+                  <p>Completion deadline: {completionDeadline}</p>   
+                  <p>Max amount to raise: &#926;{utils.fromWei(maxAmount)}</p>  
+                  <p>Amount donated: &#926;{totalDonated}</p>      
+
                 </div>
               </div>                          
 
@@ -136,7 +162,9 @@ class ViewMilestone extends Component {
                 <div className="col-md-8 m-auto">    
                   <h4>Donations</h4>        
                   <ShowTypeDonations donations={donations} isLoading={isLoadingDonations} />  
-                  <DonateButton type="milestone" model={{ title: title, _id: id }} wallet={wallet} currentUser={currentUser}/>
+                  { this.isActiveMilestone() && 
+                    <DonateButton type="milestone" model={{ title: title, _id: id, adminId: projectId }} wallet={wallet} currentUser={currentUser}/>
+                  }
                 </div>
               </div> 
 
@@ -151,5 +179,6 @@ class ViewMilestone extends Component {
 export default ViewMilestone
 
 ViewMilestone.propTypes = {
-  history: PropTypes.object.isRequired
+  history: PropTypes.object.isRequired,
+  currentUser: currentUserModel
 }

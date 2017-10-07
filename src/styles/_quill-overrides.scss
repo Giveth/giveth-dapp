@@ -4,6 +4,7 @@ $height: 400px;
   .ql-toolbar {
     border-top-left-radius: 3px;
     border-top-right-radius: 3px;
+    font-family: 'Quicksand', sans-serif;
   }
 
   .ql-container {
@@ -16,7 +17,8 @@ $height: 400px;
       min-height: $height;
       background-color: white;
       border-bottom-left-radius: 3px;
-      border-bottom-right-radius: 3px;          
+      border-bottom-right-radius: 3px;     
+      font-family: 'Quicksand', sans-serif;
     }
   }
 }

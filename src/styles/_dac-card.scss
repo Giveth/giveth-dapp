@@ -1,0 +1,16 @@
+.dac-card {
+
+  .campaigns-container {
+    overflow-x: scroll;
+
+    .campaign-thumbnail {
+      width: 100px;
+      height: 100px;
+      background-size: cover;
+      background-position: 50% 50%;
+      border-radius: 3px;
+      margin-right: 4px;  
+      display: inline-block;      
+    }
+  }
+}

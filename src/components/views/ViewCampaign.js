@@ -8,12 +8,14 @@ import Loader from '../Loader'
 import { Link } from 'react-router-dom'
 import Milestone from '../Milestone'
 import GoBackButton from '../GoBackButton'
-import { isOwner } from '../../lib/helpers'
+import { isOwner, getUserName, getUserAvatar } from '../../lib/helpers'
 import BackgroundImageHeader from '../BackgroundImageHeader'
 import Avatar from 'react-avatar'
 import DonateButton from '../DonateButton'
 import ShowTypeDonations from '../ShowTypeDonations'
 import AuthenticatedLink from '../AuthenticatedLink'
+
+import currentUserModel from '../../models/currentUserModel'
 
 /**
   Loads and shows a single campaign
@@ -43,13 +45,27 @@ class ViewCampaign extends Component {
     Promise.all([
       new Promise((resolve, reject) => {
         feathersClient.service('campaigns').find({ query: {_id: campaignId }})
-          .then(resp => this.setState(resp.data[0], resolve()))
-          .catch(() => this.setState({ hasError: true }, reject()))
+          .then(resp => {
+            console.log(resp)
+            this.setState(resp.data[0], resolve())
+          })
+          .catch((e) => {
+            console.log(e)
+            this.setState({ hasError: true }, reject())
+          })
       })
     ,
       new Promise((resolve, reject) => {
-        this.milestoneObserver = feathersClient.service('milestones').watch({ strategy: 'always' }).find({ query: {campaignId: campaignId}}).subscribe(
-          resp => this.setState({ milestones: resp.data }, resolve()),
+        this.milestoneObserver = feathersClient.service('milestones').watch({ strategy: 'always' }).find({ query: {
+          campaignId: campaignId,
+          projectId: {
+            $gt: '0' // 0 is a pending milestone
+          }         
+        }}).subscribe(
+          resp => {
+            console.log(resp.data)
+            this.setState({ milestones: resp.data }, resolve())
+          },
           err => reject()
         )    
       })
@@ -61,16 +77,12 @@ class ViewCampaign extends Component {
 
 
     // lazy load donations             
-    const query = paramsForServer({
-      query: { 
-        type_id: campaignId,
-        status: { $nin: ['waiting', 'pending'] }        
-      },      
-      schema: 'includeDonorDetails'
-    });
-
-    this.donationsObserver = feathersClient.service('donations').watch({ listStrategy: 'always' }).find(query).subscribe(
-      resp =>
+    this.donationsObserver = feathersClient.service('donations/history').watch({ listStrategy: 'always' }).find({
+      query: {
+        ownerId: campaignId,
+      },
+    }).subscribe(
+      resp => 
         this.setState({
           donations: resp.data,
           isLoadingDonations: false,
@@ -90,12 +102,9 @@ class ViewCampaign extends Component {
     React.swal({
       title: "Delete Milestone?",
       text: "You will not be able to recover this milestone!",
-      type: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#DD6B55",
-      confirmButtonText: "Yes, delete it!",
-      closeOnConfirm: true,
-    }, () => {
+      icon: "warning",
+      dangerMode: true,
+    }).then(() => {
       const milestones = feathersClient.service('/milestones');
       milestones.remove(id).then(milestone => console.log('Remove a milestone', milestone));
     })
@@ -103,7 +112,7 @@ class ViewCampaign extends Component {
 
   render() {
     const { history, currentUser, wallet } = this.props
-    let { isLoading, id, title, description, image, milestones, owner, donations, isLoadingDonations } = this.state
+    let { isLoading, id, projectId, title, description, image, milestones, owner, donations, isLoadingDonations } = this.state
 
     return (
       <div id="view-campaign-view">
@@ -117,7 +126,7 @@ class ViewCampaign extends Component {
               <h6>Campaign</h6>
               <h1>{title}</h1>
 
-              <DonateButton type="campaign" model={{ title: title, _id: id }} wallet={wallet} currentUser={currentUser}/>
+              <DonateButton type="campaign" model={{ title: title, _id: id, adminId: projectId}} wallet={wallet} currentUser={currentUser}/>
             </BackgroundImageHeader>
 
             <div className="container-fluid">
@@ -129,8 +138,8 @@ class ViewCampaign extends Component {
 
                   <center>
                     <Link to={`/profile/${ owner.address }`}>
-                      <Avatar size={50} src={owner.avatar} round={true}/>                  
-                      <p className="small">{owner.name}</p>
+                      <Avatar size={50} src={getUserAvatar(owner)} round={true}/>                  
+                      <p className="small">{getUserName(owner)}</p>
                     </Link>
                   </center>                
 
@@ -163,7 +172,7 @@ class ViewCampaign extends Component {
                 <div className="col-md-8 m-auto">    
                   <h4>Donations</h4>        
                   <ShowTypeDonations donations={donations} isLoading={isLoadingDonations} />  
-                  <DonateButton type="campaign" model={{ title: title, _id: id }} wallet={wallet} currentUser={currentUser}/>
+                  <DonateButton type="campaign" model={{ title: title, _id: id, adminId: projectId }} wallet={wallet} currentUser={currentUser}/>
                 </div>
               </div>  
 
@@ -178,5 +187,6 @@ class ViewCampaign extends Component {
 export default ViewCampaign
 
 ViewCampaign.propTypes = {
-  history: PropTypes.object.isRequired
+  history: PropTypes.object.isRequired,
+  currentUser: currentUserModel
 }

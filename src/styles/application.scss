@@ -14,6 +14,7 @@
 @import 'viewMilestoneView.scss';
 @import 'accountView.scss';
 @import 'dashboard.scss';
+@import 'edit-view.scss';
 
 // components
 @import 'loader.scss';
@@ -21,6 +22,7 @@
 @import 'goBackButton.scss';
 @import 'joinGivethCommunity.scss';
 @import 'backgroundImageHeader.scss';
+@import 'dac-card.scss';
 
 // misc
 @import 'quill-overrides.scss';
@@ -76,12 +78,30 @@ table {
 }
 
 .help-block {
-  color: #666;
+  color: lighten(black, 30%);  
   font-size: 0.75rem; 
   font-weight: 300; 
 }
 
+.form-text {
+  margin-top: -3px;
+  margin-bottom: 10px;
+  color: lighten(black, 30%);  
+  font-size: 0.75rem;
+  font-weight: 300;  
+}
+
+
 input[type="file"] {
   display: block;  
+}
+
+i {
+  margin-right: 5px;
+
+  &.fa-question-circle-o,
+  &.fa-question-circle {
+    color: $green;
+  }
 }
 

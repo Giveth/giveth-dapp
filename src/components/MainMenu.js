@@ -9,6 +9,8 @@ import AuthenticatedNavLink from './AuthenticatedNavLink'
 
 import Avatar from 'react-avatar'
 
+import currentUserModel from '../models/currentUserModel'
+
 
 /**
   The main top menu
@@ -43,15 +45,15 @@ class MainMenu extends Component {
     React.swal({
       title: "Lock your wallet?",
       text: "You will be redirected to the home page. Any changes you're making will be lost.",
-      type: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#DD6B55",
-      confirmButtonText: "Yes, lock wallet!",
-      closeOnConfirm: true,
-    }, () => {
-      this.props.wallet.lock();
-      this.setState({ walletLocked: true });
-      this.props.history.push('/');
+      icon: "warning",
+      dangerMode: true,     
+      buttons: ["Cancel", "Yes, lock wallet!"]
+    }).then( (isConfirmed) => {
+      if(isConfirmed) {
+        this.props.wallet.lock();
+        this.setState({ walletLocked: true });
+        this.props.history.push('/');
+      }
     });
   }
 
@@ -66,9 +68,8 @@ class MainMenu extends Component {
     })
   }
 
-
   render() {
-    const { userProfile, authenticated, wallet } = this.props
+    const { currentUser, wallet } = this.props
     const { showMobileMenu } = this.state
 
     return (
@@ -81,20 +82,21 @@ class MainMenu extends Component {
         <div className={`collapse navbar-collapse ${showMobileMenu ? 'show' : ''} `} id="navbarSupportedContent">
           <ul className="navbar-nav mr-auto">
             <li className="nav-item">
-              <NavLink className="nav-link" to="/dacs" activeClassName="active">DACs</NavLink>
+              <NavLink className="nav-link" to="/dacs" activeClassName="active">Communities</NavLink>
             </li>
             <li className="nav-item">
               <NavLink className="nav-link" to="/campaigns" activeClassName="active">Campaigns</NavLink>
             </li>
 
-            {authenticated &&
+            {this.props.currentUser &&
               <li className="nav-item dropdown">
                 <NavLink className="nav-link dropdown-toggle" id="navbarDropdownDashboard" to="/dashboard" activeClassName="active" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Dashboard</NavLink>
                 <div className={`dropdown-menu ${showMobileMenu ? 'show' : ''} `} aria-labelledby="navbarDropdownDashboard">
-                  <Link className="dropdown-item" to="/donations">My donations</Link>
-                  <Link className="dropdown-item" to="/delegations">My delegations</Link>
-                  <Link className="dropdown-item" to="/my-causes">My DACs</Link>
-                  <Link className="dropdown-item" to="/my-campaigns">My campaigns</Link>
+                  <Link className="dropdown-item" to="/donations">Donations</Link>
+                  <Link className="dropdown-item" to="/delegations">Delegations</Link>
+                  <Link className="dropdown-item" to="/my-dacs">Communities</Link>
+                  <Link className="dropdown-item" to="/my-campaigns">Campaigns</Link>
+                  <Link className="dropdown-item" to="/my-milestones">Milestones</Link>
                 </div>
               </li>
             }
@@ -102,7 +104,7 @@ class MainMenu extends Component {
           </ul>
 
           <ul className="navbar-nav ml-auto mr-sm-2">
-            { authenticated && this.props.wallet && this.state.walletLocked &&
+            { this.props.currentUser && this.props.wallet && this.state.walletLocked &&
             <li className="nav-item mr-sm-2">
               <AuthenticatedNavLink className="nav-link" to="#">
                 <i className="fa fa-lock"></i>
@@ -110,7 +112,7 @@ class MainMenu extends Component {
               </AuthenticatedNavLink>
             </li>
             }
-            { authenticated && this.props.wallet && !this.state.walletLocked &&
+            { this.props.currentUser && this.props.wallet && !this.state.walletLocked &&
               <li className="nav-item mr-sm-2">
                 <NavLink className="nav-link" to="#" onClick={this.lockWallet}>
                   <i className="fa fa-unlock"></i>
@@ -127,25 +129,25 @@ class MainMenu extends Component {
         */}
 
           <ul className="navbar-nav">
-            { !authenticated &&
+            { !this.props.currentUser &&
               <NavLink className="nav-link" to="/signin" activeClassName="active">Sign In</NavLink>
             }
-            { !authenticated &&
+            { !this.props.currentUser &&
               <NavLink className="nav-link" to="/signup" activeClassName="active">Sign Up</NavLink>              
             }
 
-            { authenticated &&
+            { this.props.currentUser &&
               <li className="nav-item dropdown">
                 <Link className="nav-link dropdown-toggle" id="navbarDropdownYou" to="/" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                  { userProfile && userProfile.avatar &&
-                    <Avatar className="menu-avatar" size={30} src={userProfile.avatar} round={true}/>                  
+                  { currentUser && currentUser.avatar &&
+                    <Avatar className="menu-avatar" size={30} src={currentUser.avatar} round={true}/>                  
                   }
 
-                  { userProfile && userProfile.name && 
-                    <span>{userProfile.name}</span>
+                  { currentUser && currentUser.name && 
+                    <span>{currentUser.name}</span>
                   }
 
-                  { userProfile && !userProfile.name &&
+                  { currentUser && !currentUser.name &&
                     <span>Hi, you!</span>
                   }
                 </Link>
@@ -167,11 +169,7 @@ class MainMenu extends Component {
 export default withRouter(MainMenu)
 
 MainMenu.propTypes = {
-  authenticated: PropTypes.string,
-  userProfile: PropTypes.shape({
-    avatar: PropTypes.string,
-    name: PropTypes.string,
-  }),
+  currentUser: currentUserModel,
   wallet: PropTypes.shape({
     unlocked: PropTypes.bool.isRequired,
     lock: PropTypes.func.isRequired,

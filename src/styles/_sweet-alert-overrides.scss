@@ -9,4 +9,21 @@
       padding: 8px 24px;
     }
   }
+
+}
+
+.swal-text {
+  text-align: center;
+}
+
+.swal-footer  {
+  text-align: center;
+
+  .swal-button--danger {
+    background-color: #DD6B55;
+
+    &:hover {
+      background-color: darken(#DD6B55, 8%);
+    }
+  }
 }

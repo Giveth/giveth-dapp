@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom'
 
 import CommunityButton from './CommunityButton'
 
+import currentUserModel from '../models/currentUserModel'
 
 /**
   The join Giveth community top-bar
@@ -12,7 +13,7 @@ import CommunityButton from './CommunityButton'
 
 class JoinGivethCommunity extends Component {
   render() {
-    const btnClass = "btn btn-info " + ((this.props.authenticated && this.props.walletUnlocked) ? "" : "disabled");
+    const btnClass = "btn btn-info " + ((this.props.currentUser && this.props.walletUnlocked) ? "" : "disabled");
 
     return (
       <div id="join-giveth-community">
@@ -26,7 +27,7 @@ class JoinGivethCommunity extends Component {
             
             &nbsp;
 
-            <Link className={btnClass} to="/dacs/new">Create a DAC</Link>
+            <Link className={btnClass} to="/dacs/new">Create a Community</Link>
             <Link className={btnClass} to="/campaigns/new">Start a Campaign</Link>
           </center>
         </div>
@@ -38,6 +39,6 @@ class JoinGivethCommunity extends Component {
 export default JoinGivethCommunity
 
 JoinGivethCommunity.propTypes = {
-  authenticated: PropTypes.string,
+  currentUser: currentUserModel,
   walletUnlocked: PropTypes.bool
 }

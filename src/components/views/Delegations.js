@@ -1,5 +1,6 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
+import { utils } from 'web3';
 
 import { feathersClient } from '../../lib/feathersClient'
 import { paramsForServer } from 'feathers-hooks-common'
@@ -7,6 +8,8 @@ import Loader from '../Loader'
 import { isAuthenticated } from '../../lib/middleware'
 import DelegateButton from '../../components/DelegateButton'
 import Avatar from 'react-avatar'
+import currentUserModel from '../../models/currentUserModel'
+import { getUserName, getUserAvatar } from '../../lib/helpers'
 
 /**
   The my delegations view
@@ -19,7 +22,7 @@ class Delegations extends Component {
     this.state = {
       isLoading: true,
       hasError: false,
-      causes: [],
+      dacs: [],
       campaigns: [],
       milestones: [],
       delegations: []
@@ -38,14 +41,14 @@ class Delegations extends Component {
 
       Promise.all([
         new Promise((resolve, reject) => {
-          this.causesObserver = feathersClient.service('causes').watch({ strategy: 'always' }).find({query: { $select: [ 'ownerAddress', 'title', '_id' ] }}).subscribe(
+          this.dacsObserver = feathersClient.service('dacs').watch({ strategy: 'always' }).find({query: { delegateId: { $gt: '0' }, $select: [ 'ownerAddress', 'title', '_id', 'delegateId' ] }}).subscribe(
             resp =>         
               this.setState({ 
-                causes: resp.data.map( c => {
+                dacs: resp.data.map( c => {
                   c.type = 'dac'
                   c.name = c.title
                   c.id = c._id
-                  c.element = <span>{c.title} <em>Campaign</em></span>
+                  c.element = <span>{c.title} <em>DAC</em></span>
                   return c
                 })
               }, resolve()),
@@ -54,7 +57,14 @@ class Delegations extends Component {
         })
       ,
         new Promise((resolve, reject) => {
-          this.campaignsObserver = feathersClient.service('campaigns').watch({ strategy: 'always' }).find({query: { $select: [ 'ownerAddress', 'title', '_id' ] }}).subscribe(
+          this.campaignsObserver = feathersClient.service('campaigns').watch({ strategy: 'always' }).find({
+            query: {
+              projectId: {
+                $gt: '0'
+              },
+              status: "Active",
+              $select: [ 'ownerAddress', 'title', '_id', 'projectId' ] }
+          }).subscribe(
             resp =>         
               this.setState({ 
                 campaigns: resp.data.map( c => {
@@ -71,8 +81,14 @@ class Delegations extends Component {
         })
       ,        
         new Promise((resolve, reject) => {
-          this.milestoneObserver = feathersClient.service('milestones').watch({ strategy: 'always' }).find({query: { $select: [ 'title', '_id' ] }}).subscribe(
-            resp => 
+          this.milestoneObserver = feathersClient.service('milestones').watch({ strategy: 'always' }).find({
+            query: { 
+              projectId: { $gt: '0' }, 
+              status: "InProgress",
+              $select: [ 'title', '_id', 'projectId', 'campaignId', 'maxAmount', 'totalDonated', 'status' ] }
+            }).subscribe(
+            resp => {
+              console.log(resp)
               this.setState({ 
                 milestones: resp.data.map( m => { 
                   m.type ='milestone'
@@ -80,8 +96,8 @@ class Delegations extends Component {
                   m.id = m._id
                   m.element = <span>{m.title} <em>Milestone</em></span> 
                   return m
-                })
-              }, resolve()),
+                }) //.filter((m) => m.totalDonated < m.maxAmount)
+              }, resolve())},
             err => reject()
           )      
         })
@@ -95,58 +111,44 @@ class Delegations extends Component {
     // TO DO: less overhead here if we move it all to a single service.
     // NOTE: This will not rerun, meaning after any dac/campaign/milestone is added
 
-    const causesIds = this.state.causes
-      .filter(c => c.ownerAddress === this.props.currentUser )
+    console.log('watching donations')
+
+    const dacsIds = this.state.dacs
+      .filter(c => c.ownerAddress === this.props.currentUser.address )
       .map(c => c['_id'])
 
     const campaignIds = this.state.campaigns
-      .filter((c) => { return c.ownerAddress === this.props.currentUser })
+      .filter((c) => { return c.ownerAddress === this.props.currentUser.address })
       .map(c => c['_id'])
 
     const query = paramsForServer({
-      query: { 
-        type_id: { $in: causesIds.concat(campaignIds) },
-        status: { $in: ['waiting', 'pending'] }
+      query: {
+        $or: [
+          { ownerId: { $in: campaignIds } },
+          { delegateId: { $in: dacsIds } },
+          { ownerId: this.props.currentUser.address, $not: { delegateId: { $gt: '0' } } },
+        ],
+        status: {
+          $in: ['waiting', 'committed']
+        }
       },
-      schema: 'includeDonorDetails'
+      schema: 'includeTypeAndGiverDetails'
     });
 
     // start watching donations, this will re-run when donations change or are added
     this.donationsObserver = feathersClient.service('donations').watch({ listStrategy: 'always' }).find(query).subscribe(
-      resp => {
-
-        // Here we join type with donations
-        resp.data.map((d)=> {
-          let type
-          switch(d.type){
-            case 'dac':
-              type = this.state.causes.find((c) => { return c._id === d.type_id })
-              break;
-            case 'campaign':
-              type = this.state.campaigns.find((c) => { return c._id === d.type_id })
-              break;
-            case 'milestone':
-              type = this.state.milestones.find((m) => { return m._id === d.type_id })
-              break;
-            default:
-              // do nothing
-          }
-          return d = type ? d.type_title = type.title : d
-        })
-
-        this.setState({
+      resp => { console.log(resp); this.setState({
           delegations: resp.data,
           isLoading: false,
           hasError: false
         })},
-      err =>
-        this.setState({ isLoading: false, hasError: true })
-    )             
+      err => this.setState({ isLoading: false, hasError: true })
+    );
   }
 
   componentWillUnmount() {
     if(this.donationsObserver) this.donationsObserver.unsubscribe()
-    this.causesObserver.unsubscribe()
+    this.dacsObserver.unsubscribe()
     this.campaignsObserver.unsubscribe()
     this.milestoneObserver.unsubscribe()
   } 
@@ -154,7 +156,8 @@ class Delegations extends Component {
 
 
   render() {
-    let { delegations, isLoading, causes, campaigns, milestones, currentUser } = this.state
+    let { wallet, currentUser } = this.props
+    let { delegations, isLoading, dacs, campaigns, milestones } = this.state
 
     return (
         <div id="delegations-view">
@@ -185,17 +188,29 @@ class Delegations extends Component {
                         <tbody>
                           { delegations.map((d, index) =>
                             <tr key={index}>
-                              <td>{d.amount} ETH</td>
-                              <td>{d.type.toUpperCase()} <em>{d.type_title}</em></td>
+                              <td>&#926;{utils.fromWei(d.amount)}</td>
+                              {d.delegate > 0 &&
+                                <td>DAC <em>{d.delegateEntity.title}</em></td>
+                              }
+                              {!d.delegate &&
+                                <td>{d.ownerType.toUpperCase()} <em>{d.ownerEntity.title}</em></td>
+                              }
                               <td>
-                                {d.donor.avatar &&
-                                  <Avatar size={30} src={d.donor.avatar} round={true}/>                  
-                                }
-                                {d.donor.name}</td>
-                              <td>{d.donorAddress}</td>
+                                <Avatar size={30} src={getUserAvatar(d.giver)} round={true}/>
+                                {getUserName(d.giver)}</td>
+                              <td>{d.giverAddress}</td>
                               <td>{d.status}</td>
-                              <td>
-                                <DelegateButton types={causes.concat(campaigns).concat(milestones)} model={d} currentUser={currentUser} />
+                              <td>                                
+                                {/* when donated to a dac, allow delegation to anywhere */}
+                                {(d.delegate > 0  || d.ownerId === currentUser.address )&&
+                                  <DelegateButton types={dacs.concat(campaigns).concat(milestones)} model={d} wallet={wallet}/>
+                                }
+
+                                {/* when donated to a campaign, only allow delegation to milestones of this campaign */}
+                                {d.ownerType === 'campaign' &&
+                                  <DelegateButton types={milestones.filter((m) => { return m.campaignId === d.ownerId })} model={d} milestoneOnly={true} wallet={wallet}/>
+                                }                                
+
                               </td>
                             </tr>
                           )}
@@ -222,6 +237,6 @@ class Delegations extends Component {
 export default Delegations
 
 Delegations.propTypes = {
-  currentUser: PropTypes.string,
+  currentUser: currentUserModel,
   history: PropTypes.object.isRequired
 }

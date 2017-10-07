@@ -1,9 +1,11 @@
 import React, { Component } from 'react'
 import { feathersClient } from '../../lib/feathersClient'
+import getNetwork from "../../lib/blockchain/getNetwork";
 
 import GoBackButton from '../GoBackButton'
 import Loader from '../Loader'
 import Avatar from 'react-avatar'
+import { getUserName, getUserAvatar } from '../../lib/helpers'
 
 /**
  Shows the user's profile
@@ -15,8 +17,16 @@ class Profile extends Component {
 
     this.state = {
       isLoading: true,
-      hasError: false
-    }
+      hasError: false,
+      etherScanUrl: ''
+    };
+
+    getNetwork()
+      .then(network => {
+        this.setState({
+          etherScanUrl: network.etherscan
+        })
+      });
   }
 
   componentDidMount() {
@@ -31,11 +41,15 @@ class Profile extends Component {
           isLoading: false,
           hasError: true
         }))
-  }  
+  }
 
   render() {
     const { history } = this.props
-    let { isLoading, hasError, avatar, name, address, email, linkedIn } = this.state
+    let { isLoading, hasError, avatar, name, address, email, linkedIn, etherScanUrl } = this.state
+    const user = {
+      name: name,
+      avatar: avatar
+    }
 
     return (
       <div id="profile-view">
@@ -51,9 +65,14 @@ class Profile extends Component {
                   <GoBackButton history={history}/>
 
                   <center>
-                    <Avatar size={100} src={avatar} round={true}/>                  
-                    <h1>{name}</h1>
-                    <p>{address}</p>
+                    <Avatar size={100} src={getUserAvatar(user)} round={true}/>                  
+                    <h1>{getUserName(user)}</h1>
+                    {etherScanUrl &&
+                      <p><a href={`${etherScanUrl}address/${address}`}>{address}</a></p>
+                    }
+                    {!etherScanUrl &&
+                      <p>{address}</p>
+                    }
                     <p>{email}</p>
                     <p>{linkedIn}</p>
                   </center>

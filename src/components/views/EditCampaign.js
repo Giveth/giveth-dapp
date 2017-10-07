@@ -1,5 +1,6 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types';
+import LPPCampaign from 'lpp-campaign';
 
 import { Form, Input } from 'formsy-react-components';
 import { feathersClient } from '../../lib/feathersClient'
@@ -11,11 +12,15 @@ import FormsyImageUploader from './../FormsyImageUploader'
 import GoBackButton from '../GoBackButton'
 import { isOwner } from '../../lib/helpers'
 import { isAuthenticated } from '../../lib/middleware'
+import getNetwork from "../../lib/blockchain/getNetwork";
+import getWeb3 from "../../lib/blockchain/getWeb3";
 import { getTruncatedText } from '../../lib/helpers'
 import LoaderButton from "../../components/LoaderButton"
 
 import InputToken from "react-input-token";
 import "react-input-token/lib/style.css";
+import currentUserModel from '../../models/currentUserModel'
+import { displayTransactionError } from '../../lib/helpers'
 
 /**
  * Create or edit a campaign
@@ -38,7 +43,7 @@ class EditCampaign extends Component {
       isSaving: false,
       hasError: false,
       formIsValid: false,      
-      causesOptions: [],
+      dacsOptions: [],
 
       // campaign model
       title: '',
@@ -48,8 +53,10 @@ class EditCampaign extends Component {
       videoUrl: '',
       communityUrl: '',      
       ownerAddress: null,
+      reviewerAddress: '',      
+      projectId: 0,
       milestones: [],
-      causes: [],
+      dacs: [],
       uploadNewImage: false,
       isLoadingTokens: false,      
     }
@@ -80,13 +87,15 @@ class EditCampaign extends Component {
           }
         })
       ,
-        // load all causes. 
+        // load all dacs. that aren't pending
         // TO DO: this needs to be replaced by something like http://react-autosuggest.js.org/
         new Promise((resolve, reject) => {
-          feathersClient.service('causes').find({query: { $select: [ 'title', '_id' ] }})
+          feathersClient.service('dacs').find({query: {  $select: [ 'title', '_id' ] }})
             .then((resp) => 
-              this.setState({ 
-                causesOptions: resp.data.map((c) =>  { return { name: c.title, id: c._id, element: <span>{c.title}</span> } }),
+              this.setState({
+                //TODO should we filter the available cuases to those that have been mined? It is possible that a createCause tx will fail and the dac will not be available
+                dacsOptions: resp.data.map((c) =>  { return { name: c.title, id: c._id, element: <span>{c.title}</span> } }),
+                // dacsOptions: resp.data.filter((c) => (c.delegateId && c.delegateId > 0)).map((c) =>  { return { label: c.title, value: c._id} }),
                 hasError: false
               }, resolve())
             )
@@ -109,7 +118,8 @@ class EditCampaign extends Component {
     return {
       'title': inputs.title,
       'description': inputs.description,
-      'communityUrl': inputs.communityUrl
+      'communityUrl': inputs.communityUrl,
+      'reviewerAddress': inputs.reviewerAddress,      
     }
   }  
 
@@ -120,9 +130,9 @@ class EditCampaign extends Component {
   submit(model) {    
     this.setState({ isSaving: true })
 
-    const afterEmit = (isNew) => {
+    const afterEmit = () => {
       this.setState({ isSaving: false })
-      isNew ? React.toast.success("Your DAC was created!") : React.toast.success("Your DAC has been updated!")      
+      React.toast.success("Your Campaign has been updated!")      
       this.props.history.push('/campaigns')      
     }
 
@@ -131,14 +141,48 @@ class EditCampaign extends Component {
         title: model.title,
         description: model.description,
         communityUrl: model.communityUrl,
-        summary: getTruncatedText(this.state.summary, 200),
+        summary: getTruncatedText(this.state.summary, 100),
         image: file,
-        causes: this.state.causes,
+        projectId: this.state.projectId,
+        dacs: this.state.dacs,
+        reviewerAddress: model.reviewerAddress      
       }  
 
       if(this.props.isNew){
-        feathersClient.service('campaigns').create(constructedModel)
-          .then(()=> afterEmit(true))
+        const createCampaign = (txHash) => {
+          feathersClient.service('campaigns').create(Object.assign({}, constructedModel, {
+            txHash,
+            pluginAddress: '0x0000000000000000000000000000000000000000',
+            totalDonated: 0,
+            donationCount: 0,
+            status: 'pending'
+          }))
+            .then(() => this.props.history.push('/my-campaigns'));
+        };
+
+        let txHash;
+        let etherScanUrl;
+        Promise.all([ getNetwork(), getWeb3() ])
+          .then(([ network, web3 ]) => {
+            const { liquidPledging } = network;
+            etherScanUrl = network.txHash;
+
+            let txHash;
+            // web3, lp address, name, parentProject, reviewer
+            LPPCampaign.new(web3, liquidPledging.$address, model.title, '', 0, model.reviewerAddress)
+              .once('transactionHash', hash => {
+                txHash = hash;
+                createCampaign(txHash);
+                React.toast.info(<p>Your campaign is pending....<br/><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>)
+              })
+              .then(() => {
+                React.toast.success(<p>Your campaign was created!<br/><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>)
+              })
+          })
+          .catch(err => {
+            console.log('New Campaign transaction failed:', err);
+            displayTransactionError(txHash, etherScanUrl)
+          });
       } else {
         feathersClient.service('campaigns').patch(this.state.id, constructedModel)
           .then(()=> afterEmit())        
@@ -165,16 +209,16 @@ class EditCampaign extends Component {
   }
 
   selectDACs = ({ target: { value: selectedDacs } }) => {
-    this.setState({ causes: selectedDacs })
+    this.setState({ dacs: selectedDacs })
   }  
 
   render(){
     const { isNew, history } = this.props
-    let { isLoading, isSaving, title, description, image, causes, causesOptions, communityUrl, formIsValid } = this.state
+    let { isLoading, isSaving, title, description, image, dacs, dacsOptions, communityUrl, formIsValid, reviewerAddress } = this.state
 
     return(
         <div id="edit-campaign-view">
-          <div className="container-fluid page-layout">
+          <div className="container-fluid page-layout edit-view">
             <div className="row">
               <div className="col-md-8 m-auto">
                 { isLoading && 
@@ -185,25 +229,33 @@ class EditCampaign extends Component {
                   <div>
                     <GoBackButton history={history}/>
                   
-                    { isNew &&
-                      <h1>Start a new campaign!</h1>
-                    }
+                    <div className="form-header">   
+                      { isNew &&
+                        <h3>Start a new campaign!</h3>
+                      }
 
-                    { !isNew &&
-                      <h1>Edit campaign {title}</h1>
-                    }
+                      { !isNew &&
+                        <h3>Edit campaign {title}</h3>
+                      }
+                      <p>
+                        <i className="fa fa-question-circle"></i>
+                        A campaign solves a specific cause by executing a project via its milestones.
+                        Funds raised by a campaign need to be delegated to its milestones in order to be paid out.
+                      </p>
+                    </div>
+
 
                     <Form onSubmit={this.submit} mapping={this.mapInputs} onValid={()=>this.toggleFormValid(true)} onInvalid={()=>this.toggleFormValid(false)} layout='vertical'>
                       <div className="form-group">
                         <Input
                           name="title"
                           id="title-input"
-                          label="Title"
+                          label="What are you working on?"
                           ref="title"
                           type="text"
                           value={title}
-                          placeholder="E.g. Climate change."
-                          help="Describe your cause in 1 scentence."
+                          placeholder="E.g. Installing 1000 solar panels."
+                          help="Describe your campaign in 1 sentence."
                           validations="minLength:10"
                           validationErrors={{
                               minLength: 'Please provide at least 10 characters.'
@@ -215,9 +267,10 @@ class EditCampaign extends Component {
                       <div className="form-group">
                         <QuillFormsy 
                           name="description"
-                          label="Description"
+                          label="Explain how you are going to do this successfully."
+                          helpText="Make it as extensive as necessary. Your goal is to build trust, so that people donate Ether to your campaign."                          
                           value={description}
-                          placeholder="Describe your campaign..."
+                          placeholder="Describe how you're going to execute your campaign successfully..."
                           onTextChanged={(content)=>this.constructSummary(content)}
                           validations="minLength:10"  
                           help="Describe your campaign."   
@@ -231,13 +284,13 @@ class EditCampaign extends Component {
                       <FormsyImageUploader setImage={this.setImage} previewImage={image} isRequired={isNew}/>
 
                       <div className="form-group">
-                        <label>Which cause(s) is this campaign solving?</label>
-
+                        <label>Relate your campaign to a community</label>
+                        <small className="form-text">By relating your campaign to a community, Ether from that community can be delegated to your campaign. This increases your chances of successfully funding your campaign.</small> 
                         <InputToken
                           name="dac"
-                          placeholder="Select one or more DACs"
-                          value={causes}
-                          options={causesOptions}
+                          placeholder="Select one or more communities (DACs)"
+                          value={dacs}
+                          options={dacsOptions}
                           onSelect={this.selectDACs}/>
 
                       </div>
@@ -251,13 +304,28 @@ class EditCampaign extends Component {
                           type="text"
                           value={communityUrl}
                           placeholder="https://slack.giveth.com"
-                          help="Enter the url of your community"
+                          help="Where can people join your community? Giveth redirect people there."
                           validations="isUrl"
                           validationErrors={{
                             isUrl: 'Please provide a url.'
                           }}
                         />
-                      </div>                      
+                      </div>   
+
+                      <Input
+                        name="reviewerAddress"
+                        id="title-input"
+                        label="Reviewer Address"
+                        type="text"
+                        value={reviewerAddress}
+                        placeholder="0x0000000000000000000000000000000000000000"
+                        help="This person or smart contract will be reviewing your campaign to increase trust for donators."
+                        validations="isEtherAddress"
+                        validationErrors={{
+                            isEtherAddress: 'Please enter a valid Ethereum address.'
+                        }}                    
+                        required
+                      />                                           
 
                       <LoaderButton
                         className="btn btn-success" 
@@ -284,7 +352,7 @@ class EditCampaign extends Component {
 export default EditCampaign
 
 EditCampaign.propTypes = {
-  currentUser: PropTypes.string,
+  currentUser: currentUserModel,
   history: PropTypes.object.isRequired,
   isNew: PropTypes.bool
 }

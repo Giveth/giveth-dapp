@@ -2,23 +2,42 @@ import React, { Component } from 'react'
 import PropTypes from 'prop-types'                
 import Loader from './Loader'
 import Avatar from 'react-avatar'
+import { utils } from 'web3';
+import getNetwork from '../lib/blockchain/getNetwork';
+import { getUserName, getUserAvatar } from '../lib/helpers'
 
 /**
   Shows a table of donations for a given type (dac, campaign, milestone)
 **/
 
 class ShowTypeDonations extends Component {
+  constructor() {
+    super();
+
+    this.state = {
+      etherScanUrl: ''
+    };
+
+    getNetwork().then(network => {
+      this.setState({
+        etherScanUrl: network.etherscan
+      })
+    })
+
+  }
+
   render(){
     const { isLoading, donations } = this.props
+    const { etherScanUrl } = this.state;
 
     return(
       <div>
         { isLoading && 
-          <Loader/>
+          <Loader className="small" />
         }
 
         { !isLoading &&
-          <div>
+          <div className="dashboard-table-view">
             { donations && donations.length > 0 && 
 
               <table className="table table-responsive table-hover">
@@ -32,14 +51,19 @@ class ShowTypeDonations extends Component {
                 <tbody>
                   { donations.map((d, index) =>
                     <tr key={index}>
-                      <td>{d.amount} ETH</td>
+                      <td>&#926;{utils.fromWei(d.amount)}</td>
                       <td>
-                        {d.donor.avatar &&
-                          <Avatar size={30} src={d.donor.avatar} round={true}/>                  
+                        {d.giver && 
+                          <Avatar size={30} src={getUserAvatar(d.giver)} round={true}/>
                         }
-                        <span>{d.donor.name}</span>
+                        <span>{getUserName(d.giver)}</span>
                       </td>
-                      <td>{d.donor.address}</td>
+                      {etherScanUrl &&
+                        <td><a href={`${etherScanUrl}address/${d.giver.address}`}>{d.giver.address}</a></td>
+                      }
+                      {!etherScanUrl &&
+                        <td>{d.giver.address}</td>
+                      }
                     </tr>
                   )}
 
