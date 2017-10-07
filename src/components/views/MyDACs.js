@@ -31,7 +31,9 @@ class MyDACs extends Component {
           console.log(resp)
           this.setState({
             dacs: resp.data.map((d) => {
-              d.status = (d.delegateId) ? 'accepting donations' : 'pending';
+              if (!d.status) {
+                d.status = (d.delegateId) ? 'accepting donations' : 'pending';
+              }
               return d
             }),
             hasError: false,
