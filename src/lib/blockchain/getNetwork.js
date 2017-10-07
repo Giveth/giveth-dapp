@@ -16,7 +16,7 @@ const networks = {
   },
   ropsten: {
     title: "Ropsten",
-    liquidPledgingAddress: "0x0",
+    liquidPledgingAddress: "0x18658A1A7cB8b0Be97b155D051769b3651b2943c",
     etherscan: "https://ropsten.etherscan.io/",
   },
   rinkeby: {

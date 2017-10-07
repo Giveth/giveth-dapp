@@ -129,7 +129,7 @@ class EditDAC extends Component {
         getNetwork()
           .then(network => {
             const { liquidPledging } = network;
-            etherScanUrl = network.txHash;
+            etherScanUrl = network.etherscan;
 
             liquidPledging.addDelegate(model.title, '', 0, '0x0')
               .once('transactionHash', hash => {
