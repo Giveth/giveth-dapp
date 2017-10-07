@@ -128,6 +128,7 @@ class Application extends Component {
             projectId: {
               $gt: '0' // 0 is a pending campaign
             },
+            status: 'Active',
             $limit: 200,
           },
         }).subscribe(

@@ -154,7 +154,8 @@ class MyMilestones extends Component {
         const approve = (etherScanUrl, txHash) => {
           feathersClient.service('/milestones').patch(milestone._id, {
             status: 'Completed',
-            mined: false
+            mined: false,
+            txHash
           }).then(() => {
             React.toast.info(<p>Approving this milestone is pending...<br/><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>)
           }).catch((e) => {
@@ -226,7 +227,8 @@ class MyMilestones extends Component {
           const withdraw = (etherScanUrl, txHash) => {
             feathersClient.service('/milestones').patch(milestone._id, {
               status: 'Paying',
-              mined: false
+              mined: false,
+              txHash
             }).then(() => {
               React.toast.info(<p>Request withdrawal from milestone...<br/><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>)
             }).catch((e) => {

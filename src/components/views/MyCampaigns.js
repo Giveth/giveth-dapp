@@ -1,11 +1,16 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import { utils } from 'web3';
+import LPPCampaign from 'lpp-campaign';
+import _ from 'underscore'
 
 import { feathersClient } from '../../lib/feathersClient'
 import { isAuthenticated, redirectAfterWalletUnlock } from '../../lib/middleware'
 import Loader from '../Loader'
 import currentUserModel from '../../models/currentUserModel'
+import { displayTransactionError } from "../../lib/helpers";
+import getNetwork from "../../lib/blockchain/getNetwork";
+import getWeb3 from "../../lib/blockchain/getWeb3";
 
 /**
   The my campaings view
@@ -33,9 +38,11 @@ class MyCampaigns extends Component {
         })
         .then((resp) =>
           this.setState({ 
-            campaigns: resp.data.map((c) => {
-              c.status = (c.projectId === 0) ? 'pending' : 'accepting donations' 
-              return c
+            campaigns: _.sortBy(resp.data, (c) => {
+              if(c.status === 'pending') return 1
+              if(c.status === 'Active') return 2
+              if(c.status === 'Canceled') return 3
+              return 4
             }),
             hasError: false,
             isLoading: false
@@ -78,7 +85,7 @@ class MyCampaigns extends Component {
     });
   }  
 
-  cancelCampaign(id){
+  cancelCampaign(campaign){
     React.swal({
       title: "Cancel Campaign?",
       text: "Are you sure you want to cancel this Campaign?",
@@ -87,12 +94,45 @@ class MyCampaigns extends Component {
       buttons: ["Dismiss", "Yes, cancel"]      
     }).then((isConfirmed) => {
       if(isConfirmed) {
-        // TO DO: Implement cancelation of campaign by reviewer
-        React.toast.success("Your Campaign has been deleted.")
+        const cancel = (etherScanUrl, txHash) => {
+          feathersClient.service('/campaigns').patch(campaign._id, {
+            status: 'Canceled',
+            mined: false,
+            txHash,
+          }).then(() => {
+            React.toast.info(<p>Campaign cancelation pending...<br/><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>)
+          }).catch((e) => {
+            console.log('Error updating feathers cache ->', e);
+          })
+        };
+
+        let txHash;
+        let etherScanUrl;
+        Promise.all([ getNetwork(), getWeb3() ])
+          .then(([ network, web3 ]) => {
+            const lppCampaign = new LPPCampaign(web3, campaign.pluginAddress);
+            etherScanUrl = network.etherscan;
+
+            return lppCampaign.cancelCampaign({ from: this.props.currentUser.address })
+              .once('transactionHash', hash => {
+                txHash = hash;
+                cancel(etherScanUrl, txHash);
+              });
+          })
+          .then(() => {
+            React.toast.success(<p>The campaign has been cancelled!<br/><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>)
+          }).catch((e) => {
+          console.error(e);
+
+          displayTransactionError(txHash, etherScanUrl)
+        })
       }
     });
   }
 
+  hasPendingTx(campaign) {
+    return campaign.status === 'pending' || (Object.keys(campaign).includes('mined') && !campaign.mined);
+  }
 
 
   render() {
@@ -139,19 +179,19 @@ class MyCampaigns extends Component {
                             <td>{c.donationCount || 0}</td>
                             <td>{(c.totalDonated) ? utils.fromWei(c.totalDonated) : 0}</td>
                             <td>
-                              {c.status === 'pending' && 
+                              {this.hasPendingTx(c) &&
                                 <span><i className="fa fa-circle-o-notch fa-spin"></i>&nbsp;</span> }
                               {c.status}
                             </td>
                             <td>
-                              { c.ownerAddress === currentUser.address && c.status !== 'pending' &&
+                              { c.ownerAddress === currentUser.address && c.status === 'Active' &&
                                 <a className="btn btn-link" onClick={()=>this.editCampaign(c._id)}>
                                   <i className="fa fa-edit"></i>&nbsp;Edit
                                 </a>
                               }
 
-                              { c.reviewerAddress === currentUser.address && c.status !== 'pending' &&
-                                <a className="btn btn-danger btn-sm" onClick={()=>this.cancelCampaign(c._id)}>
+                              { (c.reviewerAddress === currentUser.address || c.ownerAddress === currentUser.address) && c.status === 'Active' &&
+                                <a className="btn btn-danger btn-sm" onClick={()=>this.cancelCampaign(c)}>
                                   <i className="fa fa-ban"></i>&nbsp;Cancel
                                 </a>                                
                               }

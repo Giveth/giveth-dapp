@@ -107,7 +107,7 @@ class DelegateButton extends Component {
         const receiverId = (admin.type === 'dac') ? admin.delegateId : admin.projectId;
         const contract = (model.ownerType === 'campaign') ? new LPPCampaign(web3, model.ownerEntity.pluginAddress) : liquidPledging;
 
-        return contract.transfer(senderId, model.pledgeId, model.amount, receiverId)
+        return contract.transfer(senderId, model.pledgeId, model.amount, receiverId, { $extraGas: 50000 })
           .once('transactionHash', hash => {
             txHash = hash;
             delegate(etherScanUrl, txHash);

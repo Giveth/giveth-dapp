@@ -155,6 +155,7 @@ class EditCampaign extends Component {
             pluginAddress: '0x0000000000000000000000000000000000000000',
             totalDonated: 0,
             donationCount: 0,
+            status: 'pending'
           }))
             .then(() => this.props.history.push('/my-campaigns'));
         };

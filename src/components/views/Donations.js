@@ -56,7 +56,7 @@ class Donations extends Component {
                 if(d.status === 'paying') return 5
                 if(d.status === 'paid') return 6
                 if(d.status === 'cancelled') return 7
-                return 4
+                return 8
               }),
               hasError: false,
               isLoading: false
