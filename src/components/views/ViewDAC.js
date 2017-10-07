@@ -58,7 +58,11 @@ class ViewDAC extends Component {
       )
 
     // lazy load donations         
-    this.donationsObserver = feathersClient.service('donations/history').watch({ listStrategy: 'always' }).find({}).subscribe(
+    this.donationsObserver = feathersClient.service('donations/history').watch({ listStrategy: 'always' }).find({
+      query: {
+        delegateId: dacId,
+      }
+    }).subscribe(
       resp =>{
         console.log(resp)
         this.setState({

@@ -77,7 +77,11 @@ class ViewCampaign extends Component {
 
 
     // lazy load donations             
-    this.donationsObserver = feathersClient.service('donations/history').watch({ listStrategy: 'always' }).find({}).subscribe(
+    this.donationsObserver = feathersClient.service('donations/history').watch({ listStrategy: 'always' }).find({
+      query: {
+        ownerId: campaignId,
+      },
+    }).subscribe(
       resp => 
         this.setState({
           donations: resp.data,
