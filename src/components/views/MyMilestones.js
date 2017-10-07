@@ -110,7 +110,8 @@ class MyMilestones extends Component {
         const cancel = (etherScanUrl, txHash) => {
           feathersClient.service('/milestones').patch(milestone._id, {
             status: 'Canceled',
-            mined: false
+            mined: false,
+            txHash
           }).then(() => {
             React.toast.info(<p>Cancelling this milestone is pending...<br/><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>)
           }).catch((e) => {
@@ -436,7 +437,7 @@ class MyMilestones extends Component {
                                 </span>
                               }   
 
-                              { m.recipientAddress === currentUser.address && m.status === 'Completed' && m.mined &&
+                              { m.recipientAddress === currentUser.address && m.status === 'Completed' && m.mined && m.donationCount > 0 &&
                                 <a className="btn btn-success btn-sm" onClick={()=>this.requestWithdrawal(m)}>
                                   <i className="fa fa-usd"></i>&nbsp;Request Withdrawal
                                 </a>
