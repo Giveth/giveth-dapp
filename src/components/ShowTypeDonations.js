@@ -58,11 +58,11 @@ class ShowTypeDonations extends Component {
                         }
                         <span>{getUserName(d.giver)}</span>
                       </td>
-                      {etherScanUrl &&
+                      {etherScanUrl && d.giver &&
                         <td><a href={`${etherScanUrl}address/${d.giver.address}`}>{d.giver.address}</a></td>
                       }
                       {!etherScanUrl &&
-                        <td>{d.giver.address}</td>
+                        <td>{d.giver && d.giver.address}</td>
                       }
                     </tr>
                   )}

@@ -227,23 +227,30 @@ class EditMilestone extends Component {
                     <GoBackButton history={history}/>
                   
                     { isNew &&
-                      <h1>Add a new milestone</h1>
+                      <h3>Add a new milestone</h3>
                     }
 
                     { !isNew &&
-                      <h1>Edit milestone {title}</h1>
+                      <h3>Edit milestone {title}</h3>
                     }
+
+                      <p>
+                        <i className="fa fa-question-circle"></i>
+                        A milestone is a single accomplishment within a project. In the end, all donations end up in milestones. Once milestones are completed, you can request payout.
+                      </p>                    
 
                     <Form onSubmit={this.submit} mapping={this.mapInputs} onValid={()=>this.toggleFormValid(true)} onInvalid={()=>this.toggleFormValid(false)} layout='vertical'>
 
                       <div className="form-group">
                         <Input
                           name="title"
+                          label="What are you going to accomplish in this milestone."                          
                           id="title-input"
                           ref="title"
                           type="text"
                           value={title}
-                          placeholder="E.g. Climate change."
+                          placeholder="E.g. buying goods"
+                          help="Describe your milestone in 1 sentence."                          
                           validations="minLength:10"                            
                           validationErrors={{
                               minLength: 'Please provide at least 10 characters.'
@@ -255,9 +262,10 @@ class EditMilestone extends Component {
                       <div className="form-group">
                         <QuillFormsy 
                           name="description"
-                          label="Description"
+                          label="Explain how you are going to do this successfully."
+                          helpText="Make it as extensive as necessary. Your goal is to build trust, so that people donate Ether to your campaign."                                                    
                           value={description}
-                          placeholder="Describe your milestone..."
+                          placeholder="Describe how you're going to execute your milestone successfully..."
                           onTextChanged={(content)=>this.constructSummary(content)}                                                    
                           validations="minLength:10"  
                           help="Describe your milestone."   
@@ -273,10 +281,10 @@ class EditMilestone extends Component {
                       <Input
                         name="reviewerAddress"
                         id="title-input"
-                        label="Reviewer Address"
+                        label="Each milestone needs a reviewer who verifies that the milestone is completed successfully"
                         type="text"
                         value={reviewerAddress}
-                        placeholder="Who will review this milestone?"
+                        placeholder="0x0000000000000000000000000000000000000000"
                         help="Enter an Ethereum address."
                         validations="isEtherAddress"
                         validationErrors={{
@@ -288,10 +296,10 @@ class EditMilestone extends Component {
                       <Input
                         name="recipientAddress"
                         id="title-input"
-                        label="Recipient Address"
+                        label="Where will the money go after completion?"
                         type="text"
                         value={recipientAddress}
-                        placeholder="Where will the money go?"
+                        placeholder="0x0000000000000000000000000000000000000000"
                         help="Enter an Ethereum address."
                         validations="isEtherAddress"
                         validationErrors={{
@@ -302,12 +310,12 @@ class EditMilestone extends Component {
 
                       <DatePickerFormsy
                         name="completionDeadline"
-                        label="Estimated Completion Date"
+                        label="When will the milestone be completed?"
                         type="text"
                         value={completionDeadline}
                         changeDate={(date)=>this.changeDate(date)}
-                        placeholder="When will the milestone be completed?"
-                        help="Enter a date."
+                        placeholder="06/10/2018"
+                        help="Select a date"
                         validations="minLength:10"
                         validationErrors={{
                             minLength: 'Please provide a date.'
@@ -321,7 +329,7 @@ class EditMilestone extends Component {
                           id="maxamount-input"
                           ref="maxAmount"
                           type="number"
-                          label="Maximum amount of &#926; for this milestone"
+                          label="Maximum amount of &#926; required for this milestone"
                           value={maxAmount}
                           placeholder="1000"
                           validations="greaterThan:0.1"                            

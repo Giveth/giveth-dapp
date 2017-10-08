@@ -6,4 +6,17 @@
   .milestone-title {
     margin-bottom: 20px;
   }
+
+  table {
+    font-size: 0.8rem;
+
+    td {
+      height: 40px;
+      vertical-align: middle;
+    }
+
+    .sb-avatar {
+      margin-right: 5px;
+    }
+  }
 }

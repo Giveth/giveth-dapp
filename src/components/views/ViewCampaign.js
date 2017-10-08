@@ -2,11 +2,10 @@ import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 
 import { feathersClient } from '../../lib/feathersClient'
-import { paramsForServer } from 'feathers-hooks-common'
 
 import Loader from '../Loader'
 import { Link } from 'react-router-dom'
-import Milestone from '../Milestone'
+import MilestoneCard from '../MilestoneCard'
 import GoBackButton from '../GoBackButton'
 import { isOwner, getUserName, getUserAvatar } from '../../lib/helpers'
 import BackgroundImageHeader from '../BackgroundImageHeader'
@@ -60,7 +59,8 @@ class ViewCampaign extends Component {
           campaignId: campaignId,
           projectId: {
             $gt: '0' // 0 is a pending milestone
-          }         
+          },
+          $sort: { completionDeadline: 1 }     
         }}).subscribe(
           resp => {
             console.log(resp.data)
@@ -126,7 +126,7 @@ class ViewCampaign extends Component {
               <h6>Campaign</h6>
               <h1>{title}</h1>
 
-              <DonateButton type="campaign" model={{ title: title, _id: id, adminId: projectId}} wallet={wallet} currentUser={currentUser}/>
+              <DonateButton type="campaign" model={{ title: title, _id: id, adminId: projectId}} wallet={wallet} currentUser={currentUser} history={history}/>
             </BackgroundImageHeader>
 
             <div className="container-fluid">
@@ -156,8 +156,8 @@ class ViewCampaign extends Component {
                     }
 
                     {milestones.length > 0 && milestones.map((m, i) => 
-                      <Milestone 
-                        model={m} 
+                      <MilestoneCard 
+                        milestone={m} 
                         currentUser={currentUser}
                         key={i}
                         history={history} 
@@ -172,7 +172,7 @@ class ViewCampaign extends Component {
                 <div className="col-md-8 m-auto">    
                   <h4>Donations</h4>        
                   <ShowTypeDonations donations={donations} isLoading={isLoadingDonations} />  
-                  <DonateButton type="campaign" model={{ title: title, _id: id, adminId: projectId }} wallet={wallet} currentUser={currentUser}/>
+                  <DonateButton type="campaign" model={{ title: title, _id: id, adminId: projectId }} wallet={wallet} currentUser={currentUser} history={history}/>
                 </div>
               </div>  
 

@@ -1,8 +1,6 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types';
 
-import { Link } from 'react-router-dom'
-
 import CommunityButton from './CommunityButton'
 
 import currentUserModel from '../models/currentUserModel'
@@ -12,9 +10,49 @@ import currentUserModel from '../models/currentUserModel'
 **/
 
 class JoinGivethCommunity extends Component {
-  render() {
-    const btnClass = "btn btn-info " + ((this.props.currentUser && this.props.walletUnlocked) ? "" : "disabled");
+  createDAC(){
+    if(this.props.currentUser) {
+      this.props.history.push('/dacs/new')
+    } else {
+      React.swal({
+        title: "You're almost there...", 
+        content: React.swal.msg(
+          <p>
+            Great to see that you want to start a Decentralized Altruistic Community, or DAC.
+            To get started, please sign up (or sign in) first.
+          </p>
+        ),
+        icon: 'info',
+        buttons: ["Cancel", "Sign up now!"]
+      }).then((isConfirmed) => {
+        if(isConfirmed) this.props.history.push('/signup')
+      });      
+    }    
+  }
 
+  createCampaign(){
+    if(this.props.currentUser) {
+      this.props.history.push('/dacs/new')
+    } else {
+      React.swal({
+        title: "You're almost there...", 
+        content: React.swal.msg(
+          <p>
+            Great to see that you want to start a campaign.
+            To get started, please sign up (or sign in) first.
+          </p>
+        ),
+        icon: 'info',
+        buttons: ["Cancel", "Sign up now!"]
+      }).then((isConfirmed) => {
+        if(isConfirmed) this.props.history.push('/signup')
+      });      
+    }    
+  }
+
+
+
+  render() {
     return (
       <div id="join-giveth-community">
         <div className="vertical-align">
@@ -27,8 +65,8 @@ class JoinGivethCommunity extends Component {
             
             &nbsp;
 
-            <Link className={btnClass} to="/dacs/new">Create a Community</Link>
-            <Link className={btnClass} to="/campaigns/new">Start a Campaign</Link>
+            <a className="btn btn-info" onClick={()=>this.createDAC()}>Create a Community</a>
+            <a className="btn btn-info" onClick={()=>this.createCampaign()}>Start a Campaign</a>
           </center>
         </div>
       </div>
@@ -40,5 +78,6 @@ export default JoinGivethCommunity
 
 JoinGivethCommunity.propTypes = {
   currentUser: currentUserModel,
-  walletUnlocked: PropTypes.bool
+  walletUnlocked: PropTypes.bool,
+  history: PropTypes.object.isRequired
 }

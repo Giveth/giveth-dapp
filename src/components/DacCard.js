@@ -1,4 +1,5 @@
 import React, { Component } from 'react'
+import PropTypes from 'prop-types'
 
 import { getTruncatedText, getUserAvatar, isOwner, getUserName } from './../lib/helpers'
 import Avatar from 'react-avatar'
@@ -34,7 +35,7 @@ class DacCard extends Component {
   }  
 
   render(){
-    const { dac, currentUser, removeDAC } = this.props
+    const { dac, currentUser } = this.props
 
     return(
       <div className="card overview-card" id={dac._id} onClick={()=>this.viewDAC()}>
@@ -74,3 +75,14 @@ class DacCard extends Component {
   }
 }
 export default DacCard
+
+DacCard.propTypes = {
+  dac: PropTypes.object.isRequired,
+  removeDac: PropTypes.func,
+  currentUser: currentUserModel,
+  wallet: PropTypes.shape({
+    unlocked: PropTypes.bool.isRequired,
+    lock: PropTypes.func.isRequired,
+  }).isRequired,
+  history: PropTypes.object.isRequired
+};

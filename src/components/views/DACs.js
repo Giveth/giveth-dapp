@@ -41,7 +41,10 @@ class DACs extends Component {
 
     return (
       <div id="dacs-view" className="card-view">
-        <JoinGivethCommunity currentUser={currentUser} walletUnlocked={(wallet && wallet.unlocked)}/>
+        <JoinGivethCommunity 
+          currentUser={currentUser} 
+          walletUnlocked={(wallet && wallet.unlocked)}
+          history={history}/>
 
         <div className="container-fluid page-layout reduced-padding">
 
@@ -57,8 +60,6 @@ class DACs extends Component {
                   <DacCard 
                     key={index} 
                     dac={dac} 
-                    viewDAC={(id) => this.viewDAC(id)} 
-                    editDAC={(e, id) => this.editDAC(e, id)} 
                     removeDAC={this.removeDAC} 
                     currentUser={currentUser}
                     wallet={wallet}

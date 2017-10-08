@@ -14,7 +14,10 @@ class UnlockWalletForm extends Component {
 
     this.state = {
       formIsValid: false,
+      password: ''
     };
+
+    this.submit = this.submit.bind(this)    
   }
 
   componentDidMount() {
@@ -29,19 +32,25 @@ class UnlockWalletForm extends Component {
     this.setState({ formIsValid: state })
   }
 
+  submit(model){
+    this.props.submit(model)
+  }
+
   render() {
-    const { error, label, submit, buttonText, unlocking } = this.props;
-    const { formIsValid } = this.state;
+    const { error, label, buttonText, unlocking } = this.props;
+    const { formIsValid, password } = this.state;
 
     return (
       <span>
        {error &&
        <div className="alert alert-danger">{error}</div>
        }
-        <Form className="unlock-wallet-form" onSubmit={submit} onValid={() => this.toggleFormValid(true)}
+        <Form className="unlock-wallet-form" onSubmit={this.submit} onValid={() => this.toggleFormValid(true)}
               onInvalid={() => this.toggleFormValid(false)} layout='vertical'>
+          
           <div className="form-group">
             <Input
+              value={password}
               name="password"
               id="password-input"
               label={label}
