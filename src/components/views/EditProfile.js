@@ -61,7 +61,7 @@ class EditProfile extends Component {
   }
 
   focusFirstInput(){
-    setTimeout(() => this.refs.name.element.focus(), 200)
+    setTimeout(() => this.refs.name.element.focus(), 500)
   }
 
   mapInputs(inputs) {
@@ -164,7 +164,12 @@ class EditProfile extends Component {
 
             { !isLoading &&
               <div>
-                <h1>Edit your profile</h1>
+                <h3>Edit your profile</h3>
+                <p>
+                  <i className="fa fa-question-circle"></i>
+                  Trust is important to run successful communities or campaigns. Without trust you will likely not receive donations. 
+                  Therefore, we strongly recommend that you <strong>fill out your profile</strong> when you want to start communities or campaigns on Giveth.
+                </p>
 
                 <Form onSubmit={this.submit} mapping={this.mapInputs} onValid={()=>this.toggleFormValid(true)} onInvalid={()=>this.toggleFormValid(false)} layout='vertical'>
                   <div className="form-group">
@@ -209,6 +214,7 @@ class EditProfile extends Component {
                       type="text"
                       value={linkedIn}
                       placeholder="Your linkedIn profile url"
+                      help="Fill this out so that people can check your LinkedIn profile and ask for references."
                       validations="isUrl"
                       validationErrors={{
                         isUrl: 'Please enter your linkedin profile url'

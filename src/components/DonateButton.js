@@ -23,15 +23,24 @@ class DonateButton extends Component {
     this.submit = this.submit.bind(this)
   }
 
-  componentDidMount() {
-    //TODO currentUser should probably store the profile object instead of just the address
-    //this is tmp until we work on the same branch to reduce conflicts when merging
-    feathersClient.service('users').get(this.props.currentUser.address)
-      .then(user => this.setState({user}));
-  }
-
   openDialog(){
-    takeActionAfterWalletUnlock(this.props.wallet, () => this.refs.donateDialog.show())
+    if(this.props.currentUser) {
+      takeActionAfterWalletUnlock(this.props.wallet, () => this.refs.donateDialog.show())
+    } else {
+      React.swal({
+        title: "You're almost there...", 
+        content: React.swal.msg(
+          <p>
+            Great to see that you want to donate!! However you first need to sign up (or sign in).
+            Also make sure to transfer some Ether to your Giveth wallet before donating.
+          </p>
+        ),
+        icon: 'info',
+        buttons: ["Cancel", "Sign up now!"]
+      }).then((isConfirmed) => {
+        if(isConfirmed) this.props.history.push('/signup')
+      });      
+    }
   }
 
   focusInput(){
@@ -62,7 +71,7 @@ class DonateButton extends Component {
         Object.assign(donation, {
           delegate: this.props.model.adminId,
           delegateId: this.props.model._id,
-          owner: this.state.user.giverId || 0,
+          owner: this.props.currentUser.giverId || 0,
           ownerId: this.props.currentUser,
           ownerType: 'giver'
         });
@@ -119,7 +128,7 @@ class DonateButton extends Component {
         const { liquidPledging } = network;
         etherScanUrl = network.etherscan;
 
-        return liquidPledging.donate(this.state.user.giverId || 0, this.props.model.adminId, { value: amount })
+        return liquidPledging.donate(this.props.currentUser.giverId || 0, this.props.model.adminId, { value: amount })
           .once('transactionHash', hash => {
             txHash = hash;
             donate(etherScanUrl, txHash);
@@ -137,7 +146,7 @@ class DonateButton extends Component {
 
 
   render() {
-    const { type, model, currentUser, wallet } = this.props
+    const { type, model, wallet } = this.props
     let { isSaving, amount, formIsValid } = this.state;
     const style = {
       display: 'inline-block'     
@@ -145,7 +154,7 @@ class DonateButton extends Component {
 
     return(
       <span style={style}>
-        <a className={`btn btn-success ${!currentUser ? 'disabled' : ''}`} onClick={() => this.openDialog()}>
+        <a className="btn btn-success" onClick={() => this.openDialog()}>
           Donate
         </a>
 

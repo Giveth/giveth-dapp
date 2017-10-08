@@ -68,7 +68,7 @@ export const displayTransactionError = (txHash, etherScanUrl) => {
 
 // returns the user name, or if no user name, returns default name
 export const getUserName = (owner) => {
-  if(owner.name) {
+  if(owner && owner.name) {
     return owner.name
   } else {
     return "Anonymous user"
@@ -78,7 +78,7 @@ export const getUserName = (owner) => {
 
 // returns the user avatar, or if no user avatar, returns default avatar
 export const getUserAvatar = (owner) => {
-  if(owner.avatar) {
+  if(owner && owner.avatar) {
     return owner.avatar
   } else {
     return DefaultAvatar

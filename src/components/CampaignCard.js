@@ -1,4 +1,5 @@
 import React, { Component } from 'react'
+import PropTypes from 'prop-types'
 
 import { isOwner, getTruncatedText, getUserName, getUserAvatar } from './../lib/helpers'
 import Avatar from 'react-avatar'
@@ -35,7 +36,7 @@ class CampaignCard extends Component {
 
 
   render(){
-    const { campaign, currentUser, removeCampaign } = this.props
+    const { campaign, currentUser } = this.props
 
     return(
       <div className="card overview-card" id={campaign._id} onClick={()=>this.viewCampaign()}>
@@ -75,3 +76,14 @@ class CampaignCard extends Component {
   }
 }
 export default CampaignCard
+
+CampaignCard.propTypes = {
+  campaign: PropTypes.object.isRequired,
+  removeCampaign: PropTypes.func,
+  currentUser: currentUserModel,
+  wallet: PropTypes.shape({
+    unlocked: PropTypes.bool.isRequired,
+    lock: PropTypes.func.isRequired,
+  }).isRequired,
+  history: PropTypes.object.isRequired
+};
