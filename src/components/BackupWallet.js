@@ -44,7 +44,7 @@ class BackupWallet extends Component {
         {!isLoading &&
           <a className="btn btn-success"
              onClick={this.handleClick}
-             href={"data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(keystore))}
+             href={URL.createObjectURL(new Blob([JSON.stringify(keystore)], {type:'application/json'}))}
              download={'givethKeystore-' + Date.now() + '.json'}>
             Download Backup File
           </a>
