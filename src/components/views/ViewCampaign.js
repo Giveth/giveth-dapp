@@ -5,7 +5,7 @@ import { feathersClient } from '../../lib/feathersClient'
 
 import Loader from '../Loader'
 import { Link } from 'react-router-dom'
-import Milestone from '../Milestone'
+import MilestoneCard from '../MilestoneCard'
 import GoBackButton from '../GoBackButton'
 import { isOwner, getUserName, getUserAvatar } from '../../lib/helpers'
 import BackgroundImageHeader from '../BackgroundImageHeader'
@@ -59,7 +59,8 @@ class ViewCampaign extends Component {
           campaignId: campaignId,
           projectId: {
             $gt: '0' // 0 is a pending milestone
-          }         
+          },
+          $sort: { completionDeadline: 1 }     
         }}).subscribe(
           resp => {
             console.log(resp.data)
@@ -155,8 +156,8 @@ class ViewCampaign extends Component {
                     }
 
                     {milestones.length > 0 && milestones.map((m, i) => 
-                      <Milestone 
-                        model={m} 
+                      <MilestoneCard 
+                        milestone={m} 
                         currentUser={currentUser}
                         key={i}
                         history={history} 

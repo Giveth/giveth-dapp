@@ -5,6 +5,7 @@ import { utils } from 'web3';
 
 import { feathersClient } from './../../lib/feathersClient'
 import { paramsForServer } from 'feathers-hooks-common'
+import { getUserName, getUserAvatar } from '../../lib/helpers'
 
 import Loader from './../Loader'
 import GoBackButton from '../GoBackButton'
@@ -13,7 +14,7 @@ import Avatar from 'react-avatar'
 import DonateButton from '../DonateButton'
 import ShowTypeDonations from '../ShowTypeDonations'
 import currentUserModel from '../../models/currentUserModel'
-import { getUserName, getUserAvatar } from '../../lib/helpers'
+import getNetwork from './../../lib/blockchain/getNetwork';
 
 
 /**
@@ -32,8 +33,15 @@ class ViewMilestone extends Component {
       hasError: false,
       isLoadingDonations: true,
       errorLoadingDonations: false,
-      donations: []      
-    }
+      donations: [],
+      etherScanUrl: ''
+    };
+
+    getNetwork().then(network => {
+      this.setState({
+        etherScanUrl: network.etherscan
+      })
+    })
   }  
 
   componentDidMount() {
@@ -74,7 +82,7 @@ class ViewMilestone extends Component {
   } 
 
   isActiveMilestone() {
-    return this.state.status === 'InProgress' && this.state.totalDonated < this.state.maxAmount
+    return this.state.status === 'InProgress' && parseInt(utils.fromWei(this.state.totalDonated)) < parseInt(utils.fromWei(this.state.maxAmount))
   } 
 
   render() {
@@ -94,7 +102,10 @@ class ViewMilestone extends Component {
           ownerAddress,
           owner,
           maxAmount,
-          totalDonated
+          totalDonated,
+          reviewer,
+          recipient,
+          etherScanUrl
     } = this.state
 
     return (
@@ -109,17 +120,23 @@ class ViewMilestone extends Component {
               <h6>Milestone</h6>
               <h1>{title}</h1>
               
-              { this.isActiveMilestone() && 
-                <DonateButton type="milestone" model={{ title: title, _id: id, adminId: projectId }} wallet={wallet} currentUser={currentUser} history={history}/>
-              }
 
               { !this.state.status === 'InProgress' &&
                 <p>This milestone is not active anymore</p>
               }
 
-              { this.state.totalDonated >= this.state.maxAmount &&
-                <p>This milestone has reached its funding goal.</p>
+              { parseInt(utils.fromWei(this.state.totalDonated)) >= parseInt(utils.fromWei(this.state.maxAmount)) &&
+                <p>This milestone has reached its funding goal. Completion deadline {this.state.completionDeadline}</p>
               }              
+
+              { parseInt(utils.fromWei(this.state.totalDonated)) < parseInt(utils.fromWei(this.state.maxAmount)) &&
+                <p>Ξ{utils.fromWei(this.state.totalDonated)} of Ξ{utils.fromWei(this.state.maxAmount)} raised. Completion deadline {this.state.completionDeadline}</p>
+              }
+
+              { this.isActiveMilestone() && 
+                <DonateButton type="milestone" model={{ title: title, _id: id, adminId: projectId }} wallet={wallet} currentUser={currentUser} history={history}/>
+              }              
+
 
             </BackgroundImageHeader>
 
@@ -149,12 +166,72 @@ class ViewMilestone extends Component {
               <div className="row spacer-top-50">
                 <div className="col-md-8 m-auto">  
                   <h4>Details</h4>
-                  <p>Reviewer address: {reviewerAddress}</p>
-                  <p>Recipient address: {recipientAddress}</p>
-                  <p>Completion deadline: {completionDeadline}</p>   
-                  <p>Max amount to raise: &#926;{utils.fromWei(maxAmount)}</p>  
-                  <p>Amount donated: &#926;{totalDonated}</p>      
 
+                  <div className="form-group">
+                    <label>Reviewer</label>
+                    <small className="form-text">This person will review the actual completion of the milestone</small>
+
+                    <table className="table-responsive">
+                      <tbody>
+                        <tr>
+                          <td className="td-user">
+                            <Link to={`/profile/${ reviewerAddress }`}>
+                              <Avatar size={30} src={getUserAvatar(recipient.avatar)} round={true}/>
+                              <span>{getUserName(recipient.name)}</span>
+                            </Link>
+                          </td>
+                          {etherScanUrl &&
+                            <td className="td-address"> - <a href={`${etherScanUrl}address/${reviewerAddress}`}>{reviewerAddress}</a></td>
+                          }
+                          {!etherScanUrl &&
+                            <td className="td-address"> - {reviewerAddress}</td>
+                          }
+                        </tr> 
+                      </tbody>
+                    </table>                                        
+                  </div> 
+
+                  <div className="form-group">
+                    <label>Recipient</label>
+                    <small className="form-text">Where the Ether goes after successful completion of the milestone</small>
+
+                    <table className="table-responsive">
+                      <tbody>
+                        <tr>
+                          <td className="td-user">
+                            <Link to={`/profile/${ recipientAddress }`}>
+                              <Avatar size={30} src={getUserAvatar(recipient.avatar)} round={true}/>
+                              <span>{getUserName(recipient.name)}</span>
+                            </Link>
+                          </td>
+                          {etherScanUrl &&
+                            <td className="td-address"> - <a href={`${etherScanUrl}address/${recipientAddress}`}>{recipientAddress}</a></td>
+                          }
+                          {!etherScanUrl &&
+                            <td className="td-address"> - {recipientAddress}</td>
+                          }
+                        </tr> 
+                      </tbody>
+                    </table>                     
+                  </div>
+
+                  <div className="form-group">
+                    <label>Max amount to raise</label>
+                    <small className="form-text">The maximum amount of &#926; that can be donated to this milestone</small>
+                    &#926;{utils.fromWei(maxAmount)}
+                  </div>
+
+                  <div className="form-group">
+                    <label>Amount donated</label>
+                    <small className="form-text">The amount of &#926; currently donated to this milestone</small>
+                    &#926;{utils.fromWei(totalDonated)}
+                  </div>  
+
+                  <div className="form-group">
+                    <label>Completion deadline</label>
+                    <small className="form-text">When the milestone will be completed</small>
+                    {completionDeadline}
+                  </div>                  
                 </div>
               </div>                          
 

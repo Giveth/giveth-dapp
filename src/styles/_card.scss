@@ -10,6 +10,10 @@
     border-radius: 0;    
   }
 
+  i.fa.fa-edit:hover {
+    color: $green;
+  }
+
   .card-body {
     box-shadow: 0 0 20px darken($page-background, 10%);
     padding: 0;

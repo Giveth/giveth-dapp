@@ -14,21 +14,9 @@
   .milestone-card {
     margin-bottom: 10px;
 
-    table {
-      width: 100%;
-
-      .milestone-image {
-        max-width: 100px;
-        width: 20%;
-
-        img {
-          max-width: 100px;
-        }
-      }
-
-      td {
-        vertical-align: top;
-      }
+    small {
+      font-size: 0.7rem;
+      color: lighten(black, 60%);
     }
   }
 }  
