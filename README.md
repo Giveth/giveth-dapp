@@ -22,17 +22,17 @@ Welcome to the code for Giveth's dapp. This is an open source effort to realize 
 ### Install
 1. Click **Star** on this repo near the top-right corner of this web page.
 2. Join our [slack](http://slack.giveth.io) if you haven't already.
-3. Fork this repo by clicking **Fork** button in top-right corner of this web page. Continue to follow instruction steps from your own feathers-giveth repo.
+3. Fork this repo by clicking **Fork** button in top-right corner of this web page. Continue to follow instruction steps from your own giveth-dapp repo.
 5. The rest of these steps must be done from your machine's command line. Clone your own "giveth-dapp" repo: 
     ```
     git clone https://github.com/GITHUB_USERNAME/giveth-dapp.git
     ```
-6. Change directories to feathers-giveth:
+6. Change directories to giveth-dapp:
     ```
     cd giveth-dapp
     ```
 5. Make sure you have [NodeJS](https://nodejs.org/) (v8.4.0 or higher) and [npm](https://www.npmjs.com/) (5.4.1 or higher) installed.
-6. Install dependencies from within feathers-giveth directory:
+6. Install dependencies from within giveth-dapp directory:
     ```
     npm install
     ```
