@@ -12,7 +12,7 @@ Welcome to the code for Giveth's dapp. This is an open source effort to realize 
 - [Build](#build)
 - [Port](#port)
 - [Dependencies](#dependencies)
-- [Where are the config files?](#where-are-the-config-files?)
+- [Where are the config files?](#where-are-the-config-files)
 - [You don't use Redux?](#you-dont-use-redux?)
 - [Local Development with TestRPC](#Local-Development-with-TestRPC)
 - [Help](#help)
@@ -48,8 +48,10 @@ Welcome to the code for Giveth's dapp. This is an open source effort to realize 
 
 
 ## Build
-`npm run build`
-
+    ```
+    npm run build
+    ```
+    
 ## Port
 - Don't like port 3010? Change it in `.env`
 
