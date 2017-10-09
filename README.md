@@ -13,7 +13,7 @@ Welcome to the code for Giveth's dapp. This is an open source effort to realize 
 - [Port](#port)
 - [Dependencies](#dependencies)
 - [Where are the config files?](#where-are-the-config-files)
-- [You don't use Redux?](#you-dont-use-redux?)
+- [You don't use Redux?](#you-dont-use-redux)
 - [Local Development with TestRPC](#Local-Development-with-TestRPC)
 - [Help](#help)
 
