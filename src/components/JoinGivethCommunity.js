@@ -32,7 +32,7 @@ class JoinGivethCommunity extends Component {
 
   createCampaign(){
     if(this.props.currentUser) {
-      this.props.history.push('/dacs/new')
+      this.props.history.push('/campaigns/new')
     } else {
       React.swal({
         title: "You're almost there...", 
