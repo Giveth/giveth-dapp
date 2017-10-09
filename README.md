@@ -17,10 +17,7 @@ Welcome to the code for Giveth's dapp. This is an open source effort to realize 
 - [Local Development with TestRPC](#Local-Development-with-TestRPC)
 - [Help](#help)
 
-## Requirements
-Must install and run [feathers-giveth](https://github.com/Giveth/feathers-giveth) .
-
-## Get Started
+## Getting Started
 
 ### Install
 1. Click **Star** on this repo near the top-right corner of this web page.
