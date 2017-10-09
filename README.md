@@ -47,9 +47,9 @@ Welcome to the code for Giveth's dapp. This is an open source effort to realize 
 4. For testing locally, choose any of the wallet files found in the `giveth-dapp/keystores/` folder using the wallet password: `password`. **DO NOT USE THESE ON MAINNET ETHEREUM.**
 
 ## Build
-    ```
-    npm run build
-    ```
+```
+npm run build
+```
     
 ## Port
 - Don't like port 3010? Change it in `.env`
