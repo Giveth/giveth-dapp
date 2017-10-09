@@ -14,7 +14,7 @@ Welcome to the code for Giveth's dapp. This is an open source effort to realize 
 - [Dependencies](#dependencies)
 - [Where are the config files?](#where-are-the-config-files)
 - [You don't use Redux?](#you-dont-use-redux)
-- [Local Development with TestRPC](#Local-Development-with-TestRPC)
+- [Local Development with TestRPC](#local-development-with-testrpc)
 - [Help](#help)
 
 ## Getting Started
