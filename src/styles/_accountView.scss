@@ -7,11 +7,20 @@
 
     &.unlock-wallet-form,
     &.sign-in-form {
-      margin-top: 50px;    
+      margin-top: 50px;   
+
+      label {
+        display: block;
+      } 
 
       input {
         text-align: center;
         width: 50%;
+        display: inline-block;
+      }
+
+      .empty-state-img {
+        margin-top: 0;
       }
     }
 

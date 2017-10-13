@@ -148,7 +148,10 @@ class MyCampaigns extends Component {
         <div className="container-fluid page-layout dashboard-table-view">
           <div className="row">
             <div className="col-md-10 m-auto">
-              <h1>Your Campaigns</h1>
+
+              { isLoading || (campaigns && campaigns.length > 0) &&
+                <h1>Your campaigns</h1>
+              }                 
 
               { isLoading && 
                 <Loader className="fixed"/>
@@ -208,7 +211,12 @@ class MyCampaigns extends Component {
                   }
 
                   { campaigns && campaigns.length === 0 &&
-                    <center>You didn't create any campaigns yet!</center>
+                    <div>            
+                      <center>
+                        <h3>You didn't create any campaigns yet!</h3>
+                        <img className="empty-state-img" src={process.env.PUBLIC_URL + "/img/campaign.svg"} width="200px" height="200px" />
+                      </center>
+                    </div> 
                   }
                 </div>
               }

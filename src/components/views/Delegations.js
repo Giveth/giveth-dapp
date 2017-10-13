@@ -164,7 +164,10 @@ class Delegations extends Component {
           <div className="container-fluid page-layout dashboard-table-view">
             <div className="row">
               <div className="col-md-10 m-auto">
-                <h1>Your delegations</h1>
+
+                { isLoading || (delegations && delegations.length > 0) &&
+                  <h1>Your delegations</h1>
+                }              
 
                 { isLoading && 
                   <Loader className="fixed"/>
@@ -230,7 +233,12 @@ class Delegations extends Component {
                     }
 
                     { delegations && delegations.length === 0 &&
-                      <center>There's nothing to delegate yet!</center>
+                      <div>            
+                        <center>
+                          <h3>There's nothing to delegate yet!</h3>
+                          <img className="empty-state-img" src={process.env.PUBLIC_URL + "/img/delegation.svg"} width="200px" height="200px" />
+                        </center>
+                      </div>                         
                     }
 
                   </div>

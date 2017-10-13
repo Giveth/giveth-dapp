@@ -48,30 +48,38 @@ class DACs extends Component {
 
         <div className="container-fluid page-layout reduced-padding">
 
-          <center>
-            <p>These communities are solving causes. Help them realise their goals by joining them and giving Ether!</p>
-          </center>
-
           { dacs.data && dacs.data.length > 0 && 
-            <ResponsiveMasonry columnsCountBreakPoints={{350: 1, 750: 2, 900: 3, 1024: 3, 1470: 4}}>
-              <Masonry gutter="10px"> 
-                { dacs.data.map((dac, index) =>
+            <div>
+              <center>
+                <p>These communities are solving causes. Help them realise their goals by joining them and giving Ether!</p>
+              </center>
 
-                  <DacCard 
-                    key={index} 
-                    dac={dac} 
-                    removeDAC={this.removeDAC} 
-                    currentUser={currentUser}
-                    wallet={wallet}
-                    history={history}/>                      
-                )}
-              </Masonry>
-            </ResponsiveMasonry>                    
+
+              <ResponsiveMasonry columnsCountBreakPoints={{350: 1, 750: 2, 900: 3, 1024: 3, 1470: 4}}>
+                <Masonry gutter="10px"> 
+                  { dacs.data.map((dac, index) =>
+
+                    <DacCard 
+                      key={index} 
+                      dac={dac} 
+                      removeDAC={this.removeDAC} 
+                      currentUser={currentUser}
+                      wallet={wallet}
+                      history={history}/>                      
+                  )}
+                </Masonry>
+              </ResponsiveMasonry> 
+            </div>                   
           }
         
 
           { dacs.data && dacs.data.length === 0 &&
-            <center>There are no DACs yet!</center>
+            <div>
+              <center>
+                <p>There are no decentralized altruistic communities (DACs) yet!</p>
+                <img className="empty-state-img" src={process.env.PUBLIC_URL + "/img/community.svg"} width="200px" height="200px" />
+              </center>
+            </div>
           }
 
         </div>

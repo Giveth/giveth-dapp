@@ -86,7 +86,10 @@ class MyDACs extends Component {
         <div className="container-fluid page-layout dashboard-table-view">
           <div className="row">
             <div className="col-md-10 m-auto">
-              <h1>Your DACs</h1>
+
+              { isLoading || (dacs && dacs.length > 0) &&
+                <h1>Your DACs</h1>
+              }                 
 
               { isLoading && 
                 <Loader className="fixed"/>
@@ -131,7 +134,12 @@ class MyDACs extends Component {
                 
 
                   { dacs && dacs.length === 0 &&
-                    <center>You didn't create any DACs yet!</center>
+                    <div>            
+                      <center>
+                        <h3>You didn't create any decentralized altruistic communities (DACs) yet!</h3>
+                        <img className="empty-state-img" src={process.env.PUBLIC_URL + "/img/community.svg"} width="200px" height="200px" />
+                      </center>
+                    </div>  
                   }
                 </div>
               }

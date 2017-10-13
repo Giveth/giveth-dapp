@@ -291,7 +291,10 @@ class Donations extends Component {
           <div className="container-fluid page-layout dashboard-table-view">
             <div className="row">
               <div className="col-md-10 m-auto">
-                <h1>Your donations</h1>
+                
+                { isLoading || (donations && donations.length > 0) &&
+                  <h1>Your donations</h1>
+                }
 
                 { isLoading && 
                   <Loader className="fixed"/>
@@ -386,7 +389,12 @@ class Donations extends Component {
                     }
 
                     { donations && donations.length === 0 &&
-                      <center>You didn't make any donations yet!</center>
+                      <div>            
+                        <center>
+                          <h3>You didn't make any donations yet!</h3>
+                          <img className="empty-state-img" src={process.env.PUBLIC_URL + "/img/donation.svg"} width="200px" height="200px" />
+                        </center>
+                      </div>                         
                     }
                   </div>
                 }

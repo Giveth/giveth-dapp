@@ -18,7 +18,10 @@ class UserWallet extends Component {
     return (
       <div id="profile-view" className="container-fluid page-layout">
         <center>
+          <img className="empty-state-img" src={process.env.PUBLIC_URL + "/img/wallet.svg"} width="200px" height="200px" />
+
           <h1>Your wallet</h1>
+
           {this.props.currentUser && 
             <div>
               <p>{this.props.currentUser.address}</p>

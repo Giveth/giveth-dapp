@@ -58,7 +58,7 @@ class UnlockWallet extends Component {
       <SkyLightStateless
         isVisible={true}
         hideOnOverlayClicked
-        title={'Enter your password to unlock your wallet!'}
+        title={'Unlock your wallet to continue'}
         onCloseClicked={onCloseClicked}
         afterClose={onClose}>
 

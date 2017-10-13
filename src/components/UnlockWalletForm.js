@@ -41,12 +41,16 @@ class UnlockWalletForm extends Component {
     const { formIsValid, password } = this.state;
 
     return (
-      <span>
+      <span id="account-view">
        {error &&
        <div className="alert alert-danger">{error}</div>
        }
         <Form className="unlock-wallet-form" onSubmit={this.submit} onValid={() => this.toggleFormValid(true)}
               onInvalid={() => this.toggleFormValid(false)} layout='vertical'>
+
+          <center>
+            <img className="empty-state-img" src={process.env.PUBLIC_URL + "/img/unlock wallet.svg"} width="150px" height="150px" />
+          </center>              
           
           <div className="form-group">
             <Input

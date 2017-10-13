@@ -389,7 +389,10 @@ class MyMilestones extends Component {
         <div className="container-fluid page-layout dashboard-table-view">
           <div className="row">
             <div className="col-md-10 m-auto">
-              <h1>Your Milestones</h1>
+
+              { isLoading || (milestones && milestones.length > 0) &&
+                <h1>Your milestones</h1>
+              }              
 
               { isLoading && 
                 <Loader className="fixed"/>
@@ -474,7 +477,12 @@ class MyMilestones extends Component {
                   }
                 
                   { milestones && milestones.length === 0 &&
-                    <center>You didn't create any milestones yet!</center>
+                    <div>            
+                      <center>
+                        <h3>You didn't create any milestones yet!</h3>
+                        <img className="empty-state-img" src={process.env.PUBLIC_URL + "/img/delegation.svg"} width="200px" height="200px" />
+                      </center>
+                    </div>  
                   }
                 </div>
               }
