@@ -65,7 +65,7 @@ React.toast = toast
 
 // TO DO: This is the minimum transaction view required to:
 // create a DAC / Campaign / Milestone / Profile 
-React.minimumWalletBalance = 100.02
+React.minimumWalletBalance = 0.02
 
 
 /**
@@ -118,6 +118,7 @@ class Application extends Component {
               $gt: '0' // 0 is a pending dac
             },
             $limit: 200,
+            $sort: { campaignsCount: -1 }
           },
         }).subscribe(
           resp => this.setState({ dacs: resp }, resolve()),
@@ -134,6 +135,7 @@ class Application extends Component {
             },
             status: 'Active',
             $limit: 200,
+            $sort: { milestonesCount: -1 }
           },
         }).subscribe(
           resp => this.setState({ campaigns: resp }, resolve()),
