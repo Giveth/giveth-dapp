@@ -5,14 +5,17 @@ import CommunityButton from './CommunityButton'
 
 import currentUserModel from '../models/currentUserModel'
 
+import { checkWalletBalance } from '../lib/middleware'
+
 /**
   The join Giveth community top-bar
 **/
 
 class JoinGivethCommunity extends Component {
+
   createDAC(){
     if(this.props.currentUser) {
-      this.props.history.push('/dacs/new')
+      checkWalletBalance(this.props.wallet).then(() => { this.props.history.push('/dacs/new')})
     } else {
       React.swal({
         title: "You're almost there...", 
@@ -26,14 +29,14 @@ class JoinGivethCommunity extends Component {
         buttons: ["Cancel", "Sign up now!"]
       }).then((isConfirmed) => {
         if(isConfirmed) this.props.history.push('/signup')
-      });      
-    }    
+      });     
+    }  
   }
 
   createCampaign(){
     if(this.props.currentUser) {
-      this.props.history.push('/campaigns/new')
-    } else {
+      checkWalletBalance(this.props.wallet).then(() => { this.props.history.push('/dacs/new')})
+    } else {    
       React.swal({
         title: "You're almost there...", 
         content: React.swal.msg(
@@ -46,11 +49,9 @@ class JoinGivethCommunity extends Component {
         buttons: ["Cancel", "Sign up now!"]
       }).then((isConfirmed) => {
         if(isConfirmed) this.props.history.push('/signup')
-      });      
+      });  
     }    
   }
-
-
 
   render() {
     return (
@@ -78,6 +79,9 @@ export default JoinGivethCommunity
 
 JoinGivethCommunity.propTypes = {
   currentUser: currentUserModel,
-  walletUnlocked: PropTypes.bool,
+  wallet: PropTypes.shape({
+    unlocked: PropTypes.bool.isRequired,
+    lock: PropTypes.func.isRequired,
+  }).isRequired,
   history: PropTypes.object.isRequired
 }

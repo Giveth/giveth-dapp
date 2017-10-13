@@ -40,7 +40,7 @@ class Campaigns extends Component {
       <div id="campaigns-view" className="card-view">
         <JoinGivethCommunity 
           currentUser={currentUser} 
-          walletUnlocked={(wallet && wallet.unlocked)}
+          wallet={wallet}
           history={history}/>
 
         <div className="container-fluid page-layout reduced-padding">

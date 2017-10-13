@@ -334,7 +334,7 @@ class EditCampaign extends Component {
                         disabled={isSaving || !formIsValid}
                         isLoading={isSaving}
                         loadingText="Saving...">
-                        Save Campaign
+                        Create Campaign
                       </LoaderButton>                         
                                      
                     </Form>

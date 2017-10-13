@@ -3,7 +3,7 @@ import PropTypes from 'prop-types'
 import { utils } from 'web3';
 
 import { feathersClient } from '../../lib/feathersClient'
-import { isAuthenticated, redirectAfterWalletUnlock } from '../../lib/middleware'
+import { isAuthenticated, redirectAfterWalletUnlock, checkWalletBalance } from '../../lib/middleware'
 import Loader from '../Loader'
 
 import currentUserModel from '../../models/currentUserModel'
@@ -65,15 +65,17 @@ class MyDACs extends Component {
   // }
 
   editDAC(id) {
-    React.swal({
-      title: "Edit Community?",
-      text: "Are you sure you want to edit the description of this community?",
-      icon: "warning",
-      dangerMode: true,
-      buttons: ["Cancel", "Yes, edit"]
-    }).then((isConfirmed) => {
-      if(isConfirmed) redirectAfterWalletUnlock("/dacs/" + id + "/edit", this.props.wallet, this.props.history)
-    })
+    checkWalletBalance(this.props.wallet, this.props.history).then(()=>    
+      React.swal({
+        title: "Edit Community?",
+        text: "Are you sure you want to edit the description of this community?",
+        icon: "warning",
+        dangerMode: true,
+        buttons: ["Cancel", "Yes, edit"]
+      }).then((isConfirmed) => {
+        if(isConfirmed) redirectAfterWalletUnlock("/dacs/" + id + "/edit", this.props.wallet, this.props.history)
+      })
+    )
   }
 
   render() {
@@ -83,7 +85,7 @@ class MyDACs extends Component {
       <div id="dacs-view">
         <div className="container-fluid page-layout dashboard-table-view">
           <div className="row">
-            <div className="col-md-12">
+            <div className="col-md-10 m-auto">
               <h1>Your DACs</h1>
 
               { isLoading && 

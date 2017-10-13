@@ -63,6 +63,10 @@ React.swal.msg = (reactNode) => {
 // make toast globally available
 React.toast = toast
 
+// TO DO: This is the minimum transaction view required to:
+// create a DAC / Campaign / Milestone / Profile 
+React.minimumWalletBalance = 100.02
+
 
 /**
  * This container holds the application and its routes.

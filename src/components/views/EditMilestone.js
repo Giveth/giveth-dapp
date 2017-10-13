@@ -10,7 +10,7 @@ import QuillFormsy from './../QuillFormsy'
 import FormsyImageUploader from './../FormsyImageUploader'
 import GoBackButton from '../GoBackButton'
 import { isOwner } from '../../lib/helpers'
-import { isAuthenticated } from '../../lib/middleware'
+import { isAuthenticated, checkWalletBalance } from '../../lib/middleware'
 import { getTruncatedText } from '../../lib/helpers'
 import getNetwork from "../../lib/blockchain/getNetwork";
 import getWeb3 from "../../lib/blockchain/getWeb3";
@@ -63,46 +63,51 @@ class EditMilestone extends Component {
 
 
   componentDidMount() {
-    isAuthenticated(this.props.currentUser, this.props.history, this.props.wallet).then(()=> {
-      this.setState({ campaignId: this.props.match.params.id })
+    isAuthenticated(this.props.currentUser, this.props.history, this.props.wallet)
+      .then(()=> checkWalletBalance(this.props.wallet, this.props.history))
+      .then(()=> {
+        this.setState({ campaignId: this.props.match.params.id })
 
-      // load a single milestones (when editing)
-      if(!this.props.isNew) {
-        feathersClient.service('milestones').find({query: {_id: this.props.match.params.milestoneId}})
-          .then((resp) => {
-            console.log("resp", resp)
-            if(!isOwner(resp.data[0].owner.address, this.props.currentUser)) {
-              this.props.history.goBack()
-            } else {         
-              this.setState(Object.assign({}, resp.data[0], {
-                id: this.props.match.params.milestoneId,
-                maxAmount: utils.fromWei(resp.data[0].maxAmount),
+        // load a single milestones (when editing)
+        if(!this.props.isNew) {
+          feathersClient.service('milestones').find({query: {_id: this.props.match.params.milestoneId}})
+            .then((resp) => {
+              console.log("resp", resp)
+              if(!isOwner(resp.data[0].owner.address, this.props.currentUser)) {
+                this.props.history.goBack()
+              } else {         
+                this.setState(Object.assign({}, resp.data[0], {
+                  id: this.props.match.params.milestoneId,
+                  maxAmount: utils.fromWei(resp.data[0].maxAmount),
+                  isLoading: false,
+                  hasError: false
+                }), this.focusFirstInput()) 
+              }
+            })
+            .catch(()=>
+              this.setState( { 
                 isLoading: false,
-                hasError: false
-              }), this.focusFirstInput()) 
-            }
-          })
-          .catch(()=>
-            this.setState( { 
-              isLoading: false,
-              hasError: true
-            }))
-      } else {
-        feathersClient.service('campaigns').get(this.props.match.params.id)
-          .then(campaign => {
-            if (!campaign.projectId) {
-              this.props.history.goBack();
-            } else {
-              this.setState({
-                campaignProjectId: campaign.projectId,
-                isLoading: false,
-              });
-            }
-          });
-      }
-    });
+                hasError: true
+              }))
+        } else {
+          feathersClient.service('campaigns').get(this.props.match.params.id)
+            .then(campaign => {
+              if (!campaign.projectId) {
+                this.props.history.goBack();
+              } else {
+                this.setState({
+                  campaignProjectId: campaign.projectId,
+                  isLoading: false,
+                });
+              }
+            });
+        }
+      })
+      .catch(err => {
+        if(err === 'noBalance') this.props.history.goBack()
+      });
 
-    this.setState({ recipientAddress: this.props.currentUser.address });
+      this.setState({ recipientAddress: this.props.currentUser.address });
   }
 
   focusFirstInput(){

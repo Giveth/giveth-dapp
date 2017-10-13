@@ -43,7 +43,7 @@ class DACs extends Component {
       <div id="dacs-view" className="card-view">
         <JoinGivethCommunity 
           currentUser={currentUser} 
-          walletUnlocked={(wallet && wallet.unlocked)}
+          wallet={wallet}
           history={history}/>
 
         <div className="container-fluid page-layout reduced-padding">

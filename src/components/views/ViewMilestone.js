@@ -103,7 +103,6 @@ class ViewMilestone extends Component {
           owner,
           maxAmount,
           totalDonated,
-          reviewer,
           recipient,
           etherScanUrl
     } = this.state

@@ -5,7 +5,7 @@ import { utils } from 'web3';
 import { feathersClient } from '../../lib/feathersClient'
 import { paramsForServer } from 'feathers-hooks-common'
 import Loader from '../Loader'
-import { isAuthenticated, takeActionAfterWalletUnlock } from '../../lib/middleware'
+import { isAuthenticated, takeActionAfterWalletUnlock, checkWalletBalance } from '../../lib/middleware'
 import getNetwork from '../../lib/blockchain/getNetwork';
 import { displayTransactionError } from '../../lib/helpers'
 
@@ -96,155 +96,38 @@ class Donations extends Component {
 
   commit(donation){
     takeActionAfterWalletUnlock(this.props.wallet, () =>
-      React.swal({
-        title: "Commit your donation?",
-        text: "Your donation will go to this milestone. After committing you cannot take back your money anymore.",
-        icon: "warning",
-        buttons: ["Cancel", "Yes, commit"]      
-      }).then((isConfirmed) => {
-        if(isConfirmed) {   
-          this.setState({ isCommitting: true })
+      checkWalletBalance(this.props.wallet, this.props.history).then(()=>
+        React.swal({
+          title: "Commit your donation?",
+          text: "Your donation will go to this milestone. After committing you cannot take back your money anymore.",
+          icon: "warning",
+          buttons: ["Cancel", "Yes, commit"]      
+        }).then((isConfirmed) => {
+          if(isConfirmed) {   
+            this.setState({ isCommitting: true })
 
-          const doCommit = (etherScanUrl, txHash) => {
-            feathersClient.service('/donations').patch(donation._id, {
-              status: 'pending',
-              $unset: {
-                pendingProject: true,
-                pendingProjectId: true,
-                pendingProjectType: true,
-                delegate: true,
-                delegateType: true,
-                delegateId: true,
-              },
-              txHash,
-              owner: donation.pendingProject,
-              ownerId: donation.pendingProjectId,
-              ownerType: donation.pendingProjectType,
-            }).then(donation => {
-              this.setState({ isCommitting: false })
-                React.toast.success(<p>Your donation has been committed.<br/><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>)
-            }).catch((e) => {
-              console.log(e)
-              React.toast.error("Oh no! Something went wrong with the transaction. Please try again.")
-              this.setState({ isCommitting: false })
-            });
-          };
-
-          let txHash;
-          let etherScanUrl;
-          getNetwork()
-            .then((network) => {
-              const { liquidPledging } = network;
-              etherScanUrl = network.etherscan;
-
-              return liquidPledging.transfer(donation.owner, donation.pledgeId, donation.amount, donation.intendedProject, { $extraGas: 50000 })
-                .once('transactionHash', hash => {
-                  txHash = hash;
-                  doCommit(etherScanUrl, txHash);
-                });
-            })
-            .then(() => {
-              React.toast.success(<p>Your donation has been committed.<br/><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>)
-            }).catch((e) => {
-            console.error(e);
-            displayTransactionError(txHash, etherScanUrl)
-            this.setState({ isSaving: false });
-          })
-        }
-      })
-    )
-  }
-
-  reject(donation){
-    takeActionAfterWalletUnlock(this.props.wallet, () =>
-      React.swal({
-        title: "Reject your donation?",
-        text: "Your donation will not go to this milestone. You will still be in control of you funds and the dac can still delegate you donation.",
-        icon: "warning",
-        dangerMode: true,
-        buttons: ["Cancel", "Yes, reject"]
-      }).then((isConfirmed) => {
-        if(isConfirmed) {
-          this.setState({ isRejecting: true })
-
-          const doReject = (etherScanUrl, txHash) => {
-            feathersClient.service('/donations').patch(donation._id, {
-              status: 'pending',
-              $unset: {
-                pendingProject: true,
-                pendingProjectId: true,
-                pendingProjectType: true,
-              },
-              txHash,
-            }).then(donation => {
-              this.setState({ isRejecting: false })
-              React.toast.success(<p>Your donation has been rejected.<br/><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>)
-            }).catch((e) => {
-              console.log(e)
-              React.toast.error("Oh no! Something went wrong with the transaction. Please try again.")
-              this.setState({ isRejecting: false })
-            });
-          };
-
-          let txHash;
-          let etherScanUrl;
-          getNetwork()
-            .then((network) => {
-              const { liquidPledging } = network;
-              etherScanUrl = network.etherscan;
-
-              return liquidPledging.transfer(donation.owner, donation.pledgeId, donation.amount, donation.delegate, { $extraGas: 50000 })
-                .once('transactionHash', hash => {
-                  txHash = hash;
-                  doReject(etherScanUrl, txHash);
-                });
-            })
-            .then(() => {
-              React.toast.success(<p>The delegation has been rejected.<br/><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>)
-            }).catch((e) => {
-              console.error(e);
-              displayTransactionError(txHash, etherScanUrl)
-              this.setState({ isSaving: false });
-          })
-        }
-      })
-    )
-  }
-
-  refund(donation){
-    takeActionAfterWalletUnlock(this.props.wallet, () =>
-      React.swal({
-        title: "Refund your donation?",
-        text: "Your donation will be cancelled and the a payment will be authorized for you to withdraw your ETH. All withdrawls" +
-        " must be confirmed for security reasons and may take a day or two. Upon confirmation, your &#926; will be" +
-        " transferred to your wallet.",
-        icon: "warning",
-        dangerMode: true,      
-        buttons: ["Cancel", "Yes, refund"]
-      }).then((isConfirmed) => {
-          if (isConfirmed) {
-            this.setState({ isRefunding: true });
-
-            const doRefund = (etherScanUrl, txHash) => {
+            const doCommit = (etherScanUrl, txHash) => {
               feathersClient.service('/donations').patch(donation._id, {
                 status: 'pending',
                 $unset: {
-                  delegate: true,
-                  delegateId: true,
-                  delegateType: true,
                   pendingProject: true,
                   pendingProjectId: true,
                   pendingProjectType: true,
+                  delegate: true,
+                  delegateType: true,
+                  delegateId: true,
                 },
-                paymentStatus: 'Paying',
                 txHash,
+                owner: donation.pendingProject,
+                ownerId: donation.pendingProjectId,
+                ownerType: donation.pendingProjectType,
               }).then(donation => {
-                this.setState({ isRefunding: false })
-                React.toast.success(<p>The refund is pending...<br/><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>)
+                this.setState({ isCommitting: false })
+                  React.toast.success(<p>Your donation has been committed.<br/><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>)
               }).catch((e) => {
                 console.log(e)
                 React.toast.error("Oh no! Something went wrong with the transaction. Please try again.")
-                this.setState({ isRefunding: false })
+                this.setState({ isCommitting: false })
               });
             };
 
@@ -255,22 +138,145 @@ class Donations extends Component {
                 const { liquidPledging } = network;
                 etherScanUrl = network.etherscan;
 
-                return liquidPledging.withdraw(donation.pledgeId, donation.amount, { $extraGas: 50000 })
+                return liquidPledging.transfer(donation.owner, donation.pledgeId, donation.amount, donation.intendedProject, { $extraGas: 50000 })
                   .once('transactionHash', hash => {
                     txHash = hash;
-                    doRefund(etherScanUrl, txHash);
+                    doCommit(etherScanUrl, txHash);
                   });
               })
               .then(() => {
-                React.toast.success(<p>Your donation has been refunded!<br/><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>)
+                React.toast.success(<p>Your donation has been committed.<br/><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>)
+              }).catch((e) => {
+              console.error(e);
+              displayTransactionError(txHash, etherScanUrl)
+              this.setState({ isSaving: false });
+            })
+          }
+        })
+      )
+    )
+  }
+
+  reject(donation){
+    takeActionAfterWalletUnlock(this.props.wallet, () =>
+      checkWalletBalance(this.props.wallet, this.props.history).then(()=>    
+        React.swal({
+          title: "Reject your donation?",
+          text: "Your donation will not go to this milestone. You will still be in control of you funds and the dac can still delegate you donation.",
+          icon: "warning",
+          dangerMode: true,
+          buttons: ["Cancel", "Yes, reject"]
+        }).then((isConfirmed) => {
+          if(isConfirmed) {
+            this.setState({ isRejecting: true })
+
+            const doReject = (etherScanUrl, txHash) => {
+              feathersClient.service('/donations').patch(donation._id, {
+                status: 'pending',
+                $unset: {
+                  pendingProject: true,
+                  pendingProjectId: true,
+                  pendingProjectType: true,
+                },
+                txHash,
+              }).then(donation => {
+                this.setState({ isRejecting: false })
+                React.toast.success(<p>Your donation has been rejected.<br/><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>)
+              }).catch((e) => {
+                console.log(e)
+                React.toast.error("Oh no! Something went wrong with the transaction. Please try again.")
+                this.setState({ isRejecting: false })
+              });
+            };
+
+            let txHash;
+            let etherScanUrl;
+            getNetwork()
+              .then((network) => {
+                const { liquidPledging } = network;
+                etherScanUrl = network.etherscan;
+
+                return liquidPledging.transfer(donation.owner, donation.pledgeId, donation.amount, donation.delegate, { $extraGas: 50000 })
+                  .once('transactionHash', hash => {
+                    txHash = hash;
+                    doReject(etherScanUrl, txHash);
+                  });
+              })
+              .then(() => {
+                React.toast.success(<p>The delegation has been rejected.<br/><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>)
               }).catch((e) => {
                 console.error(e);
                 displayTransactionError(txHash, etherScanUrl)
-
                 this.setState({ isSaving: false });
-            });
+            })
           }
-        }
+        })
+      )
+    )
+  }
+
+  refund(donation){
+    takeActionAfterWalletUnlock(this.props.wallet, () =>
+      checkWalletBalance(this.props.wallet, this.props.history).then(()=>    
+        React.swal({
+          title: "Refund your donation?",
+          text: "Your donation will be cancelled and the a payment will be authorized for you to withdraw your ETH. All withdrawls" +
+          " must be confirmed for security reasons and may take a day or two. Upon confirmation, your &#926; will be" +
+          " transferred to your wallet.",
+          icon: "warning",
+          dangerMode: true,      
+          buttons: ["Cancel", "Yes, refund"]
+        }).then((isConfirmed) => {
+            if (isConfirmed) {
+              this.setState({ isRefunding: true });
+
+              const doRefund = (etherScanUrl, txHash) => {
+                feathersClient.service('/donations').patch(donation._id, {
+                  status: 'pending',
+                  $unset: {
+                    delegate: true,
+                    delegateId: true,
+                    delegateType: true,
+                    pendingProject: true,
+                    pendingProjectId: true,
+                    pendingProjectType: true,
+                  },
+                  paymentStatus: 'Paying',
+                  txHash,
+                }).then(donation => {
+                  this.setState({ isRefunding: false })
+                  React.toast.success(<p>The refund is pending...<br/><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>)
+                }).catch((e) => {
+                  console.log(e)
+                  React.toast.error("Oh no! Something went wrong with the transaction. Please try again.")
+                  this.setState({ isRefunding: false })
+                });
+              };
+
+              let txHash;
+              let etherScanUrl;
+              getNetwork()
+                .then((network) => {
+                  const { liquidPledging } = network;
+                  etherScanUrl = network.etherscan;
+
+                  return liquidPledging.withdraw(donation.pledgeId, donation.amount, { $extraGas: 50000 })
+                    .once('transactionHash', hash => {
+                      txHash = hash;
+                      doRefund(etherScanUrl, txHash);
+                    });
+                })
+                .then(() => {
+                  React.toast.success(<p>Your donation has been refunded!<br/><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>)
+                }).catch((e) => {
+                  console.error(e);
+                  displayTransactionError(txHash, etherScanUrl)
+
+                  this.setState({ isSaving: false });
+              });
+            }
+          }
+        )
       )
     )
   }

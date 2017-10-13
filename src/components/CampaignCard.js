@@ -5,7 +5,7 @@ import { isOwner, getTruncatedText, getUserName, getUserAvatar } from './../lib/
 import Avatar from 'react-avatar'
 import CardStats from './CardStats'
 import currentUserModel from './../models/currentUserModel'
-import { redirectAfterWalletUnlock } from './../lib/middleware'
+import { redirectAfterWalletUnlock, checkWalletBalance } from './../lib/middleware'
 
 class CampaignCard extends Component {
 
@@ -16,17 +16,19 @@ class CampaignCard extends Component {
   editCampaign(e) {
     e.stopPropagation()
 
-    React.swal({
-      title: "Edit Campaign?",
-      text: "Are you sure you want to edit this Campaign?",
-      icon: "warning",
-      dangerMode: true,
-      buttons: ["Cancel", "Yes, edit"]      
-    }).then((isConfirmed) => {
-      if(isConfirmed){
-        redirectAfterWalletUnlock("/campaigns/" + this.props.campaign._id + "/edit", this.props.wallet, this.props.history)
-      }
-    });
+    checkWalletBalance(this.props.wallet, this.props.history).then(()=>{
+      React.swal({
+        title: "Edit Campaign?",
+        text: "Are you sure you want to edit this Campaign?",
+        icon: "warning",
+        dangerMode: true,
+        buttons: ["Cancel", "Yes, edit"]      
+      }).then((isConfirmed) => {
+        if(isConfirmed){
+          redirectAfterWalletUnlock("/campaigns/" + this.props.campaign._id + "/edit", this.props.wallet, this.props.history)
+        }
+      });
+    })
   } 
 
   viewProfile(e){

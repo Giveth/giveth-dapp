@@ -5,7 +5,7 @@ import { getTruncatedText, getUserAvatar, isOwner, getUserName } from './../lib/
 import Avatar from 'react-avatar'
 import CardStats from './CardStats'
 import currentUserModel from './../models/currentUserModel'
-import { redirectAfterWalletUnlock } from './../lib/middleware'
+import { redirectAfterWalletUnlock, checkWalletBalance} from './../lib/middleware'
 
 class DacCard extends Component {
   viewProfile(e){
@@ -21,17 +21,19 @@ class DacCard extends Component {
   editDAC(e) {
     e.stopPropagation()
 
-    React.swal({
-      title: "Edit Community?",
-      text: "Are you sure you want to edit the description of this Community?",
-      icon: "warning",
-      buttons: ["Cancel", "Yes, edit"],      
-      dangerMode: true
-    }).then((isConfirmed) => {
-      if(isConfirmed){
-        redirectAfterWalletUnlock("/dacs/" + this.props.dac._id + "/edit", this.props.wallet, this.props.history)
-      }
-    });
+    checkWalletBalance(this.props.wallet, this.props.history).then(()=>{
+      React.swal({
+        title: "Edit Community?",
+        text: "Are you sure you want to edit the description of this Community?",
+        icon: "warning",
+        buttons: ["Cancel", "Yes, edit"],      
+        dangerMode: true
+      }).then((isConfirmed) => {
+        if(isConfirmed){
+          redirectAfterWalletUnlock("/dacs/" + this.props.dac._id + "/edit", this.props.wallet, this.props.history)
+        }
+      });
+    })
   }  
 
   render(){

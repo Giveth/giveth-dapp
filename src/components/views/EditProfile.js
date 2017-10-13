@@ -5,7 +5,7 @@ import { Form, Input } from 'formsy-react-components';
 import { feathersClient } from '../../lib/feathersClient'
 import Loader from '../Loader'
 import FormsyImageUploader from './../FormsyImageUploader'
-import { isAuthenticated } from '../../lib/middleware'
+import { isAuthenticated, checkWalletBalance } from '../../lib/middleware'
 import LoaderButton from "../../components/LoaderButton"
 import getNetwork from "../../lib/blockchain/getNetwork";
 import currentUserModel from '../../models/currentUserModel'
@@ -44,12 +44,13 @@ class EditProfile extends Component {
   componentDidMount() {
     isAuthenticated(this.props.currentUser, this.props.history, this.props.wallet)
       .then(() => feathersClient.service('users').find({query: {address: this.props.currentUser.address}}))
+      .then(() => checkWalletBalance(this.props.wallet))
       .then((resp) =>
         this.setState(Object.assign({}, resp.data[0],
           { isLoading: false })), this.focusFirstInput()
       )
       .catch(err => {
-        console.log(err);
+        if(err === 'noBalance') this.props.history.goBack()
 
         // set giverId to 0. This way we don't create 2 Givers for the same user
         this.setState({
@@ -61,7 +62,7 @@ class EditProfile extends Component {
   }
 
   focusFirstInput(){
-    setTimeout(() => this.refs.name.element.focus(), 500)
+    setTimeout(() => this.refs.name && this.refs.name.element.focus(), 500)
   }
 
   mapInputs(inputs) {

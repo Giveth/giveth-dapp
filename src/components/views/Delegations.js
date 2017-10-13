@@ -156,7 +156,7 @@ class Delegations extends Component {
 
 
   render() {
-    let { wallet, currentUser } = this.props
+    let { wallet, currentUser, history } = this.props
     let { delegations, isLoading, dacs, campaigns, milestones } = this.state
 
     return (
@@ -203,12 +203,21 @@ class Delegations extends Component {
                               <td>                                
                                 {/* when donated to a dac, allow delegation to anywhere */}
                                 {(d.delegate > 0  || d.ownerId === currentUser.address )&&
-                                  <DelegateButton types={dacs.concat(campaigns).concat(milestones)} model={d} wallet={wallet}/>
+                                  <DelegateButton 
+                                    types={dacs.concat(campaigns).concat(milestones)} 
+                                    model={d} 
+                                    wallet={wallet}
+                                    history={history}/>
                                 }
 
                                 {/* when donated to a campaign, only allow delegation to milestones of this campaign */}
                                 {d.ownerType === 'campaign' &&
-                                  <DelegateButton types={milestones.filter((m) => { return m.campaignId === d.ownerId })} model={d} milestoneOnly={true} wallet={wallet}/>
+                                  <DelegateButton 
+                                    types={milestones.filter((m) => { return m.campaignId === d.ownerId })} 
+                                    model={d} 
+                                    milestoneOnly={true} 
+                                    wallet={wallet}
+                                    history={history}/>
                                 }                                
 
                               </td>
