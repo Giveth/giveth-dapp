@@ -5,7 +5,7 @@ import CommunityButton from './CommunityButton'
 
 import currentUserModel from '../models/currentUserModel'
 
-import { checkWalletBalance } from '../lib/middleware'
+import { takeActionAfterWalletUnlock, checkWalletBalance } from '../lib/middleware'
 
 /**
   The join Giveth community top-bar
@@ -15,7 +15,9 @@ class JoinGivethCommunity extends Component {
 
   createDAC(){
     if(this.props.currentUser) {
-      checkWalletBalance(this.props.wallet).then(() => { this.props.history.push('/dacs/new')})
+      takeActionAfterWalletUnlock(this.props.wallet, ()=> {
+        checkWalletBalance(this.props.wallet).then(() => { this.props.history.push('/dacs/new')})
+      })
     } else {
       React.swal({
         title: "You're almost there...", 
@@ -35,7 +37,9 @@ class JoinGivethCommunity extends Component {
 
   createCampaign(){
     if(this.props.currentUser) {
-      checkWalletBalance(this.props.wallet).then(() => { this.props.history.push('/dacs/new')})
+      takeActionAfterWalletUnlock(this.props.wallet, ()=> {
+        checkWalletBalance(this.props.wallet).then(() => { this.props.history.push('/campaigns/new')})
+      })
     } else {    
       React.swal({
         title: "You're almost there...", 
