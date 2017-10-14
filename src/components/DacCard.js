@@ -85,6 +85,6 @@ DacCard.propTypes = {
   wallet: PropTypes.shape({
     unlocked: PropTypes.bool.isRequired,
     lock: PropTypes.func.isRequired,
-  }).isRequired,
+  }),
   history: PropTypes.object.isRequired
 };
