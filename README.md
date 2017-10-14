@@ -7,6 +7,20 @@
 # Build
 `npm run build`
 
+NOTE: due to a bug in Safari create-react-app's output does not work in Safari (and any iPhone browser)
+To fix this:
+
+`cd /node_modules/giveth-react-scripts/config`
+open `webpack.config.prod.js`
+go to line 300, and add:
+```
+  mangle: {
+    safari10: true,
+  },  
+```
+
+now the build will work in Safari
+
 # Issues?
 - You need to use Node > v6
 - You need to use npm 4.x, or npm >= 5.3, or yarn to correctly install the dependencies
