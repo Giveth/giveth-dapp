@@ -158,45 +158,47 @@ class DonateButton extends Component {
           Donate
         </a>
 
-        <SkyLight hideOnOverlayClicked ref="donateDialog" title={`Support this ${type}!`}
-                  afterOpen={() => this.focusInput()}>
-          <strong>Give Ether to support <em>{model.title}</em></strong>
+        {wallet &&
+          <SkyLight hideOnOverlayClicked ref="donateDialog" title={`Support this ${type}!`}
+                    afterOpen={() => this.focusInput()}>
+            <strong>Give Ether to support <em>{model.title}</em></strong>
 
-          {[ "DAC", "campaign" ].indexOf(type) > -1 &&
-          <p>Pledge: as long as the {type} owner does not lock your money you can take it back any time.</p>
-          }
+            {[ "DAC", "campaign" ].indexOf(type) > -1 &&
+            <p>Pledge: as long as the {type} owner does not lock your money you can take it back any time.</p>
+            }
 
-          <p>Your wallet balance: <em>&#926;{wallet.getBalance()}</em></p>
+            <p>Your wallet balance: <em>&#926;{wallet.getBalance()}</em></p>
 
-          <Form onSubmit={this.submit} mapping={this.mapInputs} onValid={() => this.toggleFormValid(true)}
-                onInvalid={() => this.toggleFormValid(false)} layout='vertical'>
-            <div className="form-group">
-              <Input
-                name="amount"
-                id="amount-input"
-                label="How much &#926; do you want to donate?"
-                ref="amount"
-                type="number"
-                value={amount}
-                placeholder="10"
-                validations={{
-                  lessThan: wallet.getBalance() - 0.5,
-                  greaterThan: 0.1
-                }}
-                validationErrors={{
-                  greaterThan: 'Minimum value must be at least &#926;0.1',
-                  lessThan: 'This donation exceeds your wallet balance. Pledge that you also need to pay for the transaction.'
-                }}
-                required
-              />
-            </div>
+            <Form onSubmit={this.submit} mapping={this.mapInputs} onValid={() => this.toggleFormValid(true)}
+                  onInvalid={() => this.toggleFormValid(false)} layout='vertical'>
+              <div className="form-group">
+                <Input
+                  name="amount"
+                  id="amount-input"
+                  label="How much &#926; do you want to donate?"
+                  ref="amount"
+                  type="number"
+                  value={amount}
+                  placeholder="10"
+                  validations={{
+                    lessThan: wallet.getBalance() - 0.5,
+                    greaterThan: 0.1
+                  }}
+                  validationErrors={{
+                    greaterThan: 'Minimum value must be at least &#926;0.1',
+                    lessThan: 'This donation exceeds your wallet balance. Pledge that you also need to pay for the transaction.'
+                  }}
+                  required
+                />
+              </div>
 
-            <button className="btn btn-success" formNoValidate={true} type="submit" disabled={isSaving || !formIsValid}>
-              {isSaving ? "Saving..." : "Donate Ξ"}
-            </button>
-          </Form>
+              <button className="btn btn-success" formNoValidate={true} type="submit" disabled={isSaving || !formIsValid}>
+                {isSaving ? "Saving..." : "Donate Ξ"}
+              </button>
+            </Form>
 
-        </SkyLight>
+          </SkyLight>
+        }
       </span>
     )
   }
