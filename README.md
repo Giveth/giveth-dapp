@@ -1,4 +1,5 @@
-# giveth-dapp
+![Giveth Dapp](./readme-header.png)
+
 
 > Dapp for donating ether without losing ownership 
 
