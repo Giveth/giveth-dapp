@@ -40,12 +40,19 @@ Welcome to the code for Giveth's dapp. This is an open source effort to realize 
     
 ### Run dapp
 1. The Giveth dapp will need to connect to a [feathers-giveth](https://github.com/Giveth/feathers-giveth) server. Follow the feathers-giveth readme instructions to install and run server before proceeding further.
-2. From the giveth-dapp directory, start the dapp.
+2. From the giveth-dapp directory, create a filed called `.env.local` with these configs.
+    ```
+    PORT=3010
+    REACT_APP_FEATHERJS_CONNECTION_URL=http://localhost:3030
+    REACT_APP_ETH_NODE_CONNECTION_URL=ws://localhost:8546
+    ```
+
+3. Start the dapp.
     ```
     npm start
     ```
-3. Once the dapp is up in your browser, click "Sign In" from the main menu.
-4. For testing locally, choose any of the wallet files found in the `giveth-dapp/keystores/` folder using the wallet password: `password`. **DO NOT USE THESE ON MAINNET ETHEREUM.**
+4. Once the dapp is up in your browser, click "Sign In" from the main menu.
+5. For testing locally, choose any of the wallet files found in the `giveth-dapp/keystores/` folder using the wallet password: `password`. **DO NOT USE THESE ON MAINNET ETHEREUM.**
 
 ## Build
 ```
