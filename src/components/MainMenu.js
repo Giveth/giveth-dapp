@@ -77,7 +77,9 @@ class MainMenu extends Component {
         <button className="navbar-toggler navbar-toggler-right" type="button" onClick={()=>this.toggleMobileMenu()}>
           <i className={`navbar-toggler-icon fa ${showMobileMenu ? 'fa-close' : 'fa-bars'}`}></i>
         </button>
-        <Link className="navbar-brand" to="/">Giveth</Link>
+        <Link className="navbar-brand" to="/">
+          <img src="/img/Giveth-typelogo.svg" width="70px" alt="Giveth logo" />
+        </Link>
 
         <div className={`collapse navbar-collapse ${showMobileMenu ? 'show' : ''} `} id="navbarSupportedContent">
           <ul className="navbar-nav mr-auto">
@@ -153,7 +155,7 @@ class MainMenu extends Component {
                 </Link>
                 <div className={`dropdown-menu dropdown-profile ${showMobileMenu ? 'show' : ''}`} aria-labelledby="navbarDropdownYou">
                   <AuthenticatedLink className="dropdown-item" to="/profile" wallet={wallet}>Profile</AuthenticatedLink>
-                  <Link className="dropdown-item" to="/wallet">Wallet</Link>
+                  <AuthenticatedLink className="dropdown-item" to="/wallet">Wallet</AuthenticatedLink>
                   <a className="dropdown-item" onClick={()=>this.signout()}>Sign out</a>
                 </div>
               </li>

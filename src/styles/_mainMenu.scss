@@ -1,6 +1,11 @@
 #main-menu {
   background-color: $header-background;
 
+  .navbar-brand {
+    padding-bottom: .5225rem;    
+    padding-top: 0;
+  }
+
   &.show {
 
     .navbar-collapse { 

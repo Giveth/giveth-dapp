@@ -16,7 +16,7 @@ import currentUserModel from '../../models/currentUserModel'
 
 import CampaignCard from '../CampaignCard'
 
-import { getUserName, getUserAvatar } from '../../lib/helpers'
+import { getUserName, getUserAvatar, calculateRiskFactor } from '../../lib/helpers'
 
 
 /**
@@ -48,7 +48,8 @@ class ViewDAC extends Component {
 
     feathersClient.service('dacs').find({ query: {_id: dacId }})
       .then(resp => {
-        console.log(resp)
+        console.log(resp);
+        // console.log(calculateRiskFactor(resp.data[0].owner, resp.data[0].milestonesCount))
         this.setState(Object.assign({}, resp.data[0], {
           isLoading: false,
           hasError: false

@@ -11,8 +11,9 @@ import currentUserModel from '../../models/currentUserModel'
 
 class UserWallet extends Component {
   componentWillMount(){
-    isAuthenticated(this.props.currentUser, this.props.history)
+    isAuthenticated(this.props.currentUser, this.props.history, this.props.wallet)
   }
+
 
   render() {
     return (
