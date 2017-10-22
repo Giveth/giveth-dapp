@@ -2,6 +2,7 @@ import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import { utils } from 'web3';
 
+import { Link } from 'react-router-dom'
 import { feathersClient } from '../../lib/feathersClient'
 import { paramsForServer } from 'feathers-hooks-common'
 import Loader from '../Loader'
@@ -193,10 +194,10 @@ class Delegations extends Component {
                             <tr key={index}>
                               <td>&#926;{utils.fromWei(d.amount)}</td>
                               {d.delegate > 0 &&
-                                <td>DAC <em>{d.delegateEntity.title}</em></td>
+                                <td><Link to={`/dacs/${d._id}`}>DAC <em>{d.delegateEntity.title}</em></Link></td>
                               }
                               {!d.delegate &&
-                                <td>{d.ownerType.toUpperCase()} <em>{d.ownerEntity.title}</em></td>
+                                <td><Link to={`/${d.ownerType}s/${d.ownerEntity._id}`}>{d.ownerType.toUpperCase()} <em>{d.ownerEntity.title}</em></Link></td>
                               }
                               <td>
                                 <Avatar size={30} src={getUserAvatar(d.giver)} round={true}/>
