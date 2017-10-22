@@ -52,7 +52,7 @@ class EditMilestone extends Component {
       recipientAddress: '',
       donationsReceived: 0,
       donationsGiven: 0,
-      completionDeadline: new Date(),
+      completionDeadline: '',
       status: 'pending',
       uploadNewImage: false         
     }
@@ -315,11 +315,11 @@ class EditMilestone extends Component {
 
                       <DatePickerFormsy
                         name="completionDeadline"
-                        label="When will the milestone be completed?"
+                        label="Until what date is the milestone achievable?"
                         type="text"
                         value={completionDeadline}
                         changeDate={(date)=>this.changeDate(date)}
-                        placeholder="06/10/2018"
+                        placeholder="Select a date"
                         help="Select a date"
                         validations="minLength:10"
                         validationErrors={{
