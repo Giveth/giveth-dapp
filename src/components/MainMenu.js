@@ -77,9 +77,31 @@ class MainMenu extends Component {
         <button className="navbar-toggler navbar-toggler-right" type="button" onClick={()=>this.toggleMobileMenu()}>
           <i className={`navbar-toggler-icon fa ${showMobileMenu ? 'fa-close' : 'fa-bars'}`}></i>
         </button>
+
+        <ul className="navbar-nav mobile-wallet-lock">
+          { this.props.currentUser && this.props.wallet && this.state.walletLocked &&
+            <li className="nav-item mr-sm-2">
+              <AuthenticatedNavLink className="nav-link" to="#">
+                <i className="fa fa-lock"></i>
+                Wallet
+              </AuthenticatedNavLink>
+            </li>
+          }
+          { this.props.currentUser && this.props.wallet && !this.state.walletLocked &&
+            <li className="nav-item mr-sm-2">
+              <NavLink className="nav-link" to="#" onClick={this.lockWallet}>
+                <i className="fa fa-unlock"></i>
+                Wallet
+              </NavLink>
+            </li>
+          }
+        </ul>  
+
         <Link className="navbar-brand" to="/">
           <img src="/img/Giveth-typelogo.svg" width="70px" alt="Giveth logo" />
         </Link>
+
+
 
         <div className={`collapse navbar-collapse ${showMobileMenu ? 'show' : ''} `} id="navbarSupportedContent">
           <ul className="navbar-nav mr-auto">
