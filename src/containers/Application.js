@@ -241,7 +241,7 @@ class Application extends Component {
 
   walletUnlocked() {
     this.hideUnlockWalletModal()
-    React.toast.success("Your wallet has been unlocked!")    
+    React.toast.success(<p>Your wallet has been unlocked.<br/>Note that your wallet will <strong>auto-lock</strong> upon page refresh.</p>)    
   }
 
   hideUnlockWalletModal() {

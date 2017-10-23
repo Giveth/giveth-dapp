@@ -62,6 +62,8 @@ class UnlockWallet extends Component {
         onCloseClicked={onCloseClicked}
         afterClose={onClose}>
 
+        <p>Note: for security reasons your wallet auto-locks whenever the Giveth dapp reloads.</p>
+
         <UnlockWalletForm
           submit={this.submit}
           label="password"
