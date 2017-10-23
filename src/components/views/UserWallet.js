@@ -19,7 +19,7 @@ class UserWallet extends Component {
     return (
       <div id="profile-view" className="container-fluid page-layout">
         <center>
-          <img className="empty-state-img" src={process.env.PUBLIC_URL + "/img/wallet.svg"} width="200px" height="200px" />
+          <img className="empty-state-img" src={process.env.PUBLIC_URL + "/img/wallet.svg"} width="200px" height="200px" alt="wallet-icon"/>
 
           <h1>Your wallet</h1>
 

@@ -77,7 +77,7 @@ class DACs extends Component {
             <div>
               <center>
                 <p>There are no decentralized altruistic communities (DACs) yet!</p>
-                <img className="empty-state-img" src={process.env.PUBLIC_URL + "/img/community.svg"} width="200px" height="200px" />
+                <img className="empty-state-img" src={process.env.PUBLIC_URL + "/img/community.svg"} width="200px" height="200px" alt="no-dacs-icon" />
               </center>
             </div>
           }

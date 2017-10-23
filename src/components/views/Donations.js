@@ -292,7 +292,7 @@ class Donations extends Component {
             <div className="row">
               <div className="col-md-10 m-auto">
                 
-                { isLoading || (donations && donations.length > 0) &&
+                { (isLoading || (donations && donations.length > 0)) &&
                   <h1>Your donations</h1>
                 }
 
@@ -392,7 +392,7 @@ class Donations extends Component {
                       <div>            
                         <center>
                           <h3>You didn't make any donations yet!</h3>
-                          <img className="empty-state-img" src={process.env.PUBLIC_URL + "/img/donation.svg"} width="200px" height="200px" />
+                          <img className="empty-state-img" src={process.env.PUBLIC_URL + "/img/donation.svg"} width="200px" height="200px" alt="no-donations-icon"/>
                         </center>
                       </div>                         
                     }

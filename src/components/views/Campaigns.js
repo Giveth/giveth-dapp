@@ -71,7 +71,7 @@ class Campaigns extends Component {
             <div>            
               <center>
                 <p>There are no campaigns yet!</p>
-                <img className="empty-state-img" src={process.env.PUBLIC_URL + "/img/campaign.svg"} width="200px" height="200px" />
+                <img className="empty-state-img" src={process.env.PUBLIC_URL + "/img/campaign.svg"} width="200px" height="200px" alt="no-campaigns-icon" />
               </center>
             </div>            
           }            

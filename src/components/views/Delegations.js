@@ -166,7 +166,7 @@ class Delegations extends Component {
             <div className="row">
               <div className="col-md-10 m-auto">
 
-                { isLoading || (delegations && delegations.length > 0) &&
+                { (isLoading || (delegations && delegations.length > 0)) &&
                   <h1>Your delegations</h1>
                 }              
 
@@ -237,7 +237,7 @@ class Delegations extends Component {
                       <div>            
                         <center>
                           <h3>There's nothing to delegate yet!</h3>
-                          <img className="empty-state-img" src={process.env.PUBLIC_URL + "/img/delegation.svg"} width="200px" height="200px" />
+                          <img className="empty-state-img" src={process.env.PUBLIC_URL + "/img/delegation.svg"} width="200px" height="200px" alt="no-delegations-icon"/>
                         </center>
                       </div>                         
                     }

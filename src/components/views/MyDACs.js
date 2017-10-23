@@ -87,7 +87,7 @@ class MyDACs extends Component {
           <div className="row">
             <div className="col-md-10 m-auto">
 
-              { isLoading || (dacs && dacs.length > 0) &&
+              { (isLoading || (dacs && dacs.length > 0)) &&
                 <h1>Your DACs</h1>
               }                 
 
@@ -137,7 +137,7 @@ class MyDACs extends Component {
                     <div>            
                       <center>
                         <h3>You didn't create any decentralized altruistic communities (DACs) yet!</h3>
-                        <img className="empty-state-img" src={process.env.PUBLIC_URL + "/img/community.svg"} width="200px" height="200px" />
+                        <img className="empty-state-img" src={process.env.PUBLIC_URL + "/img/community.svg"} width="200px" height="200px" alt="no-dacs-icon" />
                       </center>
                     </div>  
                   }

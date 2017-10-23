@@ -390,7 +390,7 @@ class MyMilestones extends Component {
           <div className="row">
             <div className="col-md-10 m-auto">
 
-              { isLoading || (milestones && milestones.length > 0) &&
+              { (isLoading || (milestones && milestones.length > 0)) &&
                 <h1>Your milestones</h1>
               }              
 
@@ -480,7 +480,7 @@ class MyMilestones extends Component {
                     <div>            
                       <center>
                         <h3>You didn't create any milestones yet!</h3>
-                        <img className="empty-state-img" src={process.env.PUBLIC_URL + "/img/delegation.svg"} width="200px" height="200px" />
+                        <img className="empty-state-img" src={process.env.PUBLIC_URL + "/img/delegation.svg"} width="200px" height="200px" alt="no-milestones-icon"/>
                       </center>
                     </div>  
                   }

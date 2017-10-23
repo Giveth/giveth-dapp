@@ -149,7 +149,7 @@ class MyCampaigns extends Component {
           <div className="row">
             <div className="col-md-10 m-auto">
 
-              { isLoading || (campaigns && campaigns.length > 0) &&
+              { (isLoading || (campaigns && campaigns.length > 0)) &&
                 <h1>Your campaigns</h1>
               }                 
 
@@ -214,7 +214,7 @@ class MyCampaigns extends Component {
                     <div>            
                       <center>
                         <h3>You didn't create any campaigns yet!</h3>
-                        <img className="empty-state-img" src={process.env.PUBLIC_URL + "/img/campaign.svg"} width="200px" height="200px" />
+                        <img className="empty-state-img" src={process.env.PUBLIC_URL + "/img/campaign.svg"} width="200px" height="200px" alt="no-campaigns-icon"/>
                       </center>
                     </div> 
                   }

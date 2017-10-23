@@ -16,7 +16,7 @@ import currentUserModel from '../../models/currentUserModel'
 
 import CampaignCard from '../CampaignCard'
 
-import { getUserName, getUserAvatar, calculateRiskFactor } from '../../lib/helpers'
+import { getUserName, getUserAvatar } from '../../lib/helpers'
 
 
 /**

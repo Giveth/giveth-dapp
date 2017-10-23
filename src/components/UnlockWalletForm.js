@@ -49,7 +49,7 @@ class UnlockWalletForm extends Component {
               onInvalid={() => this.toggleFormValid(false)} layout='vertical'>
 
           <center>
-            <img className="empty-state-img" src={process.env.PUBLIC_URL + "/img/unlock wallet.svg"} width="150px" height="150px" />
+            <img className="empty-state-img" src={process.env.PUBLIC_URL + "/img/unlock wallet.svg"} width="150px" height="150px" alt="unlock wallet icon"/>
           </center>              
           
           <div className="form-group">

@@ -4,7 +4,7 @@ import React, { Component } from 'react'
   Route not found page
 **/
 
-class NoValidRoute extends Component {
+class NotFound extends Component {
   render() {
     return (
       <center>
@@ -14,4 +14,4 @@ class NoValidRoute extends Component {
   } 
 }
 
-export default NoValidRoute
+export default NotFound
