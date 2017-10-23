@@ -24,9 +24,9 @@ Welcome to the code for Giveth's dapp. This is an open source effort to realize 
 1. Click **Star** on this repo near the top-right corner of this web page.
 2. Join our [slack](http://slack.giveth.io) if you haven't already.
 3. Fork this repo by clicking **Fork** button in top-right corner of this web page. Continue to follow instruction steps from your own giveth-dapp repo.
-5. The rest of these steps must be done from your machine's command line. Clone your own "giveth-dapp" repo: 
+5. The rest of these steps must be done from your machine's command line.  Copy the link from the "Clone or download" button near the top right of this repo's home page.
     ```
-    git clone https://github.com/GITHUB_USERNAME/giveth-dapp.git
+    git clone {paste your own repo link here}
     ```
 6. Change directories to giveth-dapp:
     ```
