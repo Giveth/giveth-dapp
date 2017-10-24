@@ -1,9 +1,12 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import { utils } from 'web3';
+import { Link } from 'react-router-dom'
 
 import { feathersClient } from '../../lib/feathersClient'
 import { isAuthenticated, redirectAfterWalletUnlock, checkWalletBalance } from '../../lib/middleware'
+import { getTruncatedText } from "../../lib/helpers";
+
 import Loader from '../Loader'
 
 import currentUserModel from '../../models/currentUserModel'
@@ -102,25 +105,25 @@ class MyDACs extends Component {
                     <table className="table table-responsive table-striped table-hover">
                       <thead>
                         <tr>
-                          <th>Name</th>     
-                          <th>Number of donations</th>                     
-                          <th>Amount donated</th>
-                          <th>Status</th>
-                          <th></th>
+                          <th className="td-name">Name</th>     
+                          <th className="td-donations-number">Number of donations</th>                     
+                          <th className="td-donations-amount">Amount donated</th>
+                          <th className="td-status">Status</th>
+                          <th className="td-actions"></th>
                         </tr>
                       </thead>
                       <tbody>
                         { dacs.map((d, index) =>
                           <tr key={index} className={d.status === 'pending' ? 'pending' : ''}>
-                            <td>{d.title}</td>
-                            <td>{d.donationCount || 0}</td>
-                            <td>{(d.totalDonated) ? utils.fromWei(d.totalDonated) : 0}</td>
-                            <td>
+                            <td className="td-name"><Link to={`/dacs/${d._id}`}>{getTruncatedText(d.title, 45)}</Link></td>
+                            <td className="td-donations-number">{d.donationCount || 0}</td>
+                            <td className="td-donations-amount">Ξ{(d.totalDonated) ? utils.fromWei(d.totalDonated) : 0}</td>
+                            <td className="td-status">
                               {d.status === 'pending' &&
                                 <span><i className="fa fa-circle-o-notch fa-spin"></i>&nbsp;</span> }
                               {d.status}
                             </td>
-                            <td>
+                            <td className="td-actions">
                               <a className="btn btn-link" onClick={()=>this.editDAC(d._id)}>
                                 <i className="fa fa-edit"></i>
                               </a>

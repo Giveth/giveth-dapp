@@ -62,6 +62,7 @@ class ViewDAC extends Component {
     this.donationsObserver = feathersClient.service('donations/history').watch({ listStrategy: 'always' }).find({
       query: {
         delegateId: dacId,
+        $sort: { createdAt: -1 }          
       }
     }).subscribe(
       resp =>{

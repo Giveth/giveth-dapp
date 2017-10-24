@@ -81,6 +81,7 @@ class ViewCampaign extends Component {
     this.donationsObserver = feathersClient.service('donations/history').watch({ listStrategy: 'always' }).find({
       query: {
         ownerId: campaignId,
+        $sort: { createdAt: -1 }  
       },
     }).subscribe(
       resp => 

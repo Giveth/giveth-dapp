@@ -10,7 +10,8 @@ import { isAuthenticated } from '../../lib/middleware'
 import DelegateButton from '../../components/DelegateButton'
 import Avatar from 'react-avatar'
 import currentUserModel from '../../models/currentUserModel'
-import { getUserName, getUserAvatar } from '../../lib/helpers'
+import { getUserName, getUserAvatar, getTruncatedText } from '../../lib/helpers'
+import moment from 'moment'
 
 /**
   The my delegations view
@@ -131,7 +132,8 @@ class Delegations extends Component {
         ],
         status: {
           $in: ['waiting', 'committed']
-        }
+        },
+        $sort: { createdAt: 1 }  
       },
       schema: 'includeTypeAndGiverDetails'
     });
@@ -181,30 +183,33 @@ class Delegations extends Component {
                       <table className="table table-responsive table-striped table-hover">
                         <thead>
                           <tr>
-                            <th>Amount</th>
-                            <th>Donated to</th>
-                            <th>Received from</th>
-                            <th>Address</th>
-                            <th>Status</th>
-                            <th></th>
+                            <th className="td-date">Date</th>
+                            <th className="td-donated-to">Donated to</th>                          
+                            <th className="td-donations-amount">Amount</th>
+                            <th className="td-user">Received from</th>
+                            <th className="td-tx-address">Address</th>
+                            <th className="td-status">Status</th>
+                            <th className="td-actions"></th>
                           </tr>
                         </thead>
                         <tbody>
                           { delegations.map((d, index) =>
                             <tr key={index}>
-                              <td>&#926;{utils.fromWei(d.amount)}</td>
+                              <td className="td-date">{moment(d.createdAt).format("MM/DD/YYYY")}</td>
+
                               {d.delegate > 0 &&
-                                <td><Link to={`/dacs/${d._id}`}>DAC <em>{d.delegateEntity.title}</em></Link></td>
+                                <td className="td-donated-to"><Link to={`/dacs/${d._id}`}>DAC <em>{getTruncatedText(d.delegateEntity.title, 45)}</em></Link></td>
                               }
                               {!d.delegate &&
-                                <td><Link to={`/${d.ownerType}s/${d.ownerEntity._id}`}>{d.ownerType.toUpperCase()} <em>{d.ownerEntity.title}</em></Link></td>
+                                <td className="td-donated-to"><Link to={`/${d.ownerType}s/${d.ownerEntity._id}`}>{d.ownerType.toUpperCase()} <em>{d.ownerEntity.title}</em></Link></td>
                               }
-                              <td>
+                              <td className="td-donations-amount">&#926;{utils.fromWei(d.amount)}</td>                              
+                              <td className="td-user">
                                 <Avatar size={30} src={getUserAvatar(d.giver)} round={true}/>
                                 {getUserName(d.giver)}</td>
-                              <td>{d.giverAddress}</td>
-                              <td>{d.status}</td>
-                              <td>                                
+                              <td className="td-tx-address">{d.giverAddress}</td>
+                              <td className="td-status">{d.status}</td>
+                              <td className="td-actions">                                
                                 {/* when donated to a dac, allow delegation to anywhere */}
                                 {(d.delegate > 0  || d.ownerId === currentUser.address )&&
                                   <DelegateButton 

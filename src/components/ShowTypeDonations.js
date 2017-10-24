@@ -5,6 +5,7 @@ import Avatar from 'react-avatar'
 import { utils } from 'web3';
 import getNetwork from '../lib/blockchain/getNetwork';
 import { getUserName, getUserAvatar } from '../lib/helpers'
+import moment from 'moment'
 
 /**
   Shows a table of donations for a given type (dac, campaign, milestone)
@@ -40,36 +41,41 @@ class ShowTypeDonations extends Component {
           <div className="dashboard-table-view">
             { donations && donations.length > 0 && 
 
-              <table className="table table-responsive table-hover">
-                <thead>
-                  <tr>
-                    <th>Amount</th>
-                    <th>Name</th>
-                    <th>Address</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  { donations.map((d, index) =>
-                    <tr key={index}>
-                      <td>&#926;{utils.fromWei(d.amount)}</td>
-                      <td>
-                        {d.giver && 
-                          <Avatar size={30} src={getUserAvatar(d.giver)} round={true}/>
-                        }
-                        <span>{getUserName(d.giver)}</span>
-                      </td>
-                      {etherScanUrl && d.giver &&
-                        <td><a href={`${etherScanUrl}address/${d.giver.address}`}>{d.giver.address}</a></td>
-                      }
-                      {!etherScanUrl &&
-                        <td>{d.giver && d.giver.address}</td>
-                      }
+              <div className="table-container">
+                <table className="table table-responsive table-hover">
+                  <thead>
+                    <tr>
+                      <th className="td-date">Date</th>
+                      <th className="td-donations-amount">Amount</th>
+                      <th className="td-user">Name</th>
+                      <th className="td-tx-address">Address</th>
                     </tr>
-                  )}
+                  </thead>
+                  <tbody>
+                    { donations.map((d, index) =>
+                      <tr key={index}>
+                        <td className="td-date">{moment(d.createdAt).format("MM/DD/YYYY")}</td>
 
-                </tbody>
+                        <td className="td-donations-amount">Ξ{utils.fromWei(d.amount)}</td>
+                        <td className="td-user">
+                          {d.giver && 
+                            <Avatar size={30} src={getUserAvatar(d.giver)} round={true}/>
+                          }
+                          <span>{getUserName(d.giver)}</span>
+                        </td>
+                        {etherScanUrl && d.giver &&
+                          <td className="td-tx-address"><a href={`${etherScanUrl}address/${d.giver.address}`}>{d.giver.address}</a></td>
+                        }
+                        {!etherScanUrl &&
+                          <td className="td-tx-address">{d.giver && d.giver.address}</td>
+                        }
+                      </tr>
+                    )}
 
-              </table>
+                  </tbody>
+
+                </table>
+              </div>
             }
 
             { donations && donations.length === 0 &&

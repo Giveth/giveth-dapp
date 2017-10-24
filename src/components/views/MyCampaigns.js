@@ -3,12 +3,13 @@ import PropTypes from 'prop-types'
 import { utils } from 'web3';
 import LPPCampaign from 'lpp-campaign';
 import _ from 'underscore'
+import { Link } from 'react-router-dom'
 
 import { feathersClient } from '../../lib/feathersClient'
 import { isAuthenticated, redirectAfterWalletUnlock, checkWalletBalance } from '../../lib/middleware'
 import Loader from '../Loader'
 import currentUserModel from '../../models/currentUserModel'
-import { displayTransactionError } from "../../lib/helpers";
+import { displayTransactionError, getTruncatedText } from "../../lib/helpers";
 import getNetwork from "../../lib/blockchain/getNetwork";
 import getWeb3 from "../../lib/blockchain/getWeb3";
 
@@ -158,23 +159,24 @@ class MyCampaigns extends Component {
               }
 
               { !isLoading &&
-                <div>
+                <div className="table-container">
                   { campaigns && campaigns.length > 0 && 
 
                     <table className="table table-responsive table-striped table-hover">
                       <thead>
                         <tr>
-                          <th>Name</th>     
-                          <th>Number of donations</th>                     
-                          <th>Amount donated</th>
-                          <th>Status</th>
-                          <th></th>
+                          <th className="td-name">Name</th>     
+                          <th className="td-donations-number">Donations</th>                     
+                          <th className="td-donations-amount">Amount</th>
+                          <th className="td-status">Status</th>
+                          <th className="td-actions"></th>
                         </tr>
                       </thead>
                       <tbody>
                         { campaigns.map((c, index) =>
                           <tr key={index} className={c.status === 'pending' ? 'pending' : ''}>
-                            <td>{c.title}
+                            <td className="td-name">
+                              <Link to={`/campaigns/${c._id}`}>{getTruncatedText(c.title, 45)}</Link>
                               { c.reviewerAddress === currentUser.address &&
                                 <span className="badge badge-info">
                                   <i className="fa fa-eye"></i>
@@ -183,14 +185,14 @@ class MyCampaigns extends Component {
                               }
 
                             </td>
-                            <td>{c.donationCount || 0}</td>
-                            <td>{(c.totalDonated) ? utils.fromWei(c.totalDonated) : 0}</td>
-                            <td>
+                            <td className="td-donations-number">{c.donationCount || 0}</td>
+                            <td className="td-donations-amount">Ξ{(c.totalDonated) ? utils.fromWei(c.totalDonated) : 0}</td>
+                            <td className="td-status">
                               {this.hasPendingTx(c) &&
                                 <span><i className="fa fa-circle-o-notch fa-spin"></i>&nbsp;</span> }
                               {c.status}
                             </td>
-                            <td>
+                            <td className="td-actions">
                               { c.ownerAddress === currentUser.address && c.status === 'Active' &&
                                 <a className="btn btn-link" onClick={()=>this.editCampaign(c._id)}>
                                   <i className="fa fa-edit"></i>&nbsp;Edit

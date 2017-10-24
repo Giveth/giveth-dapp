@@ -2,6 +2,7 @@ import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import { utils } from 'web3';
 import LPPMilestone from 'lpp-milestone';
+import { Link } from 'react-router-dom'
 
 import { feathersClient } from '../../lib/feathersClient'
 import { isAuthenticated, redirectAfterWalletUnlock, checkWalletBalance } from '../../lib/middleware'
@@ -9,7 +10,7 @@ import getNetwork from '../../lib/blockchain/getNetwork';
 import getWeb3 from '../../lib/blockchain/getWeb3';
 import Loader from '../Loader'
 import currentUserModel from '../../models/currentUserModel'
-import { displayTransactionError } from '../../lib/helpers'
+import { displayTransactionError, getTruncatedText } from '../../lib/helpers'
 
 /**
   The my campaings view
@@ -399,30 +400,34 @@ class MyMilestones extends Component {
               }
 
               { !isLoading &&
-                <div>
+                <div className="table-container">
                   { milestones && milestones.length > 0 && 
                     <table className="table table-responsive table-striped table-hover">
                       <thead>
                         <tr>
-                          <th>Name</th>     
-                          <th>Number of donations</th>                     
-                          <th>Amount donated</th>
-                          <th>Status</th>
-                          <th></th>
+                          <th className="td-name">Name</th>     
+                          <th className="td-donations-number">Donations</th>                     
+                          <th className="td-donations-amount">Amount</th>
+                          <th className="td-status">Status</th>
+                          <th className="td-actions"></th>
                         </tr>
                       </thead>
                       <tbody>
                         { milestones.map((m, index) =>
                           <tr key={index} className={m.status === 'pending' ? 'pending' : ''}>
-                            <td>{m.title}</td>
-                            <td>{m.donationCount || 0}</td>
-                            <td>{(m.totalDonated) ? utils.fromWei(m.totalDonated) : 0}</td>
-                            <td>
+                            <td className="td-name">
+                              <Link to={`/campaigns/${m.campaign._id}`}>CAMPAIGN <em>{getTruncatedText(m.campaign.title, 40)}</em></Link>
+                              <br/>
+                              &nbsp;&nbsp;&nbsp;&nbsp;<i className="fa fa-arrow-right"></i>
+                              <Link to={`/campaigns/${m.campaign._id}/milestones/${m._id}`}>MILESTONE <em>{getTruncatedText(m.title, 35)}</em></Link></td>
+                            <td className="td-donations-number">{m.donationCount || 0}</td>
+                            <td className="td-donations-amount">Ξ{(m.totalDonated) ? utils.fromWei(m.totalDonated) : 0}</td>
+                            <td className="td-status">
                               {(m.status === 'pending' || (Object.keys(m).includes('mined') && !m.mined)) &&
                                 <span><i className="fa fa-circle-o-notch fa-spin"></i>&nbsp;</span> }
                               {m.status}
                             </td>
-                            <td>
+                            <td className="td-actions">
                               { m.ownerAddress === currentUser.address &&
                                 <a className="btn btn-link" onClick={()=>this.editMilestone(m._id)}>
                                   <i className="fa fa-edit"></i>&nbsp;Edit

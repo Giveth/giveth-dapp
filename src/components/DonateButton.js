@@ -175,7 +175,7 @@ class DonateButton extends Component {
                 <Input
                   name="amount"
                   id="amount-input"
-                  label="How much &#926; do you want to donate?"
+                  label="How much Ξ do you want to donate?"
                   ref="amount"
                   type="number"
                   value={amount}
@@ -185,7 +185,7 @@ class DonateButton extends Component {
                     greaterThan: 0.1
                   }}
                   validationErrors={{
-                    greaterThan: 'Minimum value must be at least &#926;0.1',
+                    greaterThan: 'Minimum value must be at least Ξ0.1',
                     lessThan: 'This donation exceeds your wallet balance. Pledge that you also need to pay for the transaction.'
                   }}
                   required

@@ -1,20 +1,67 @@
 .dashboard-table-view {
+
+  .table-container {
+    overflow: scroll;
+  }
+
   table {
     font-size: 0.8rem;
     margin-top: 50px;  
 
     @media (max-width: 768px) {
       font-size: 1rem;
-    }    
+    }   
+
+    th {
+      white-space: nowrap;
+    }
+
+    td {
+      white-space: nowrap;
+      vertical-align: middle;
+    }
+
+    .td-name,
+    .td-donated-to {
+      min-width: 350px; 
+    }
+
+    .td-donations-number,
+    .td-donations-amount {
+      min-width: 80px;
+      text-align: center;   
+    }
+
+    .td-status {
+      min-width: 80px;
+    }
+
+    .td-transaction-status {
+      min-width: 100px;
+    }
+
+    .td-tx-address {
+      min-width: 355px;
+    }
   }
 
+
+
   .badge {
-    margin-right: 5px;
+    margin-left: 5px;
   }
 
   .btn {
     font-size: 0.7rem;
-    color: white !important;   
+    margin-left: 4px;
+
+    &:not(.btn-link) {
+     color: white !important;   
+    }
+
+    i {
+      margin-right: 0;
+    }
 
     @media (max-width: 768px) {
       font-size: 1rem;
