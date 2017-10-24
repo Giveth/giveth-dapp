@@ -58,11 +58,15 @@ class UnlockWallet extends Component {
       <SkyLightStateless
         isVisible={true}
         hideOnOverlayClicked
-        title={'Unlock your wallet to continue'}
         onCloseClicked={onCloseClicked}
         afterClose={onClose}>
 
-        <p>Note: for security reasons your wallet auto-locks whenever the Giveth dapp reloads.</p>
+        <center>
+          <img className="empty-state-img reduce-margin" src={process.env.PUBLIC_URL + "/img/unlock wallet.svg"} width="130px" height="130px" alt="unlock wallet icon"/>
+        </center>  
+
+        <h2>Unlock your wallet to continue</h2>     
+        <p className="small">Note: for security reasons your wallet auto-locks whenever the Giveth dapp reloads.</p>
 
         <UnlockWalletForm
           submit={this.submit}

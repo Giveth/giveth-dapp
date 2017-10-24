@@ -50,9 +50,9 @@ class SignIn extends Component {
       this.props.history.push('/change-account');
     }
     else if (props.wallet && (!this.state.address || props.wallet !== this.props.wallet)) {
-        this.setState({
-          address: props.wallet.getAddresses()[ 0 ],
-        }, () => this.fetchUserProfile());
+      this.setState({
+        address: props.wallet.getAddresses()[ 0 ],
+      }, () => this.fetchUserProfile());
     }
   }
 
@@ -84,7 +84,10 @@ class SignIn extends Component {
             this.props.onSignIn();
             return feathersClient.passport.verifyJWT(token);
           })
-          .then(() => this.props.history.goBack())
+          .then(() => {
+            React.toast.success(<p>Welcome back! <br/>Note that your wallet is unlocked and will <strong>auto-lock</strong> upon page refresh.</p>)    
+            this.props.history.goBack()
+          })
           .catch((err) => {
             console.error(err);
 
@@ -135,19 +138,21 @@ class SignIn extends Component {
                       <p className="small">Your address: {address}</p>
                     }
 
-                    <UnlockWalletForm
-                      submit={this.submit}
-                      label="Sign in by entering your wallet password"
-                      error={error}
-                      buttonText="Sign in"
-                      unlocking={isSigninIn}>
-                        <div className="form-group">
-                          <p className="small">
-                            <Link to="/signup">Not you</Link>, or&nbsp;
-                            <Link to="/change-account">want to change wallet?</Link>
-                          </p>
-                        </div>
-                    </UnlockWalletForm>
+                    <div className="spacer-top">
+                      <UnlockWalletForm
+                        submit={this.submit}
+                        label="Sign in by entering your wallet password"
+                        error={error}
+                        buttonText="Sign in"
+                        unlocking={isSigninIn}>
+                          <div className="form-group">
+                            <p className="small">
+                              <Link to="/signup">Not you</Link>, or&nbsp;
+                              <Link to="/change-account">want to change wallet?</Link>
+                            </p>
+                          </div>
+                      </UnlockWalletForm>
+                    </div>
                   </center>
                 </div>
               }

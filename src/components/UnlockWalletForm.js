@@ -42,16 +42,13 @@ class UnlockWalletForm extends Component {
 
     return (
       <span id="account-view">
-       {error &&
-       <div className="alert alert-danger">{error}</div>
-       }
+        {error &&
+          <div className="alert alert-danger">{error}</div>
+        }
+        
         <Form className="unlock-wallet-form" onSubmit={this.submit} onValid={() => this.toggleFormValid(true)}
               onInvalid={() => this.toggleFormValid(false)} layout='vertical'>
-
-          <center>
-            <img className="empty-state-img" src={process.env.PUBLIC_URL + "/img/unlock wallet.svg"} width="150px" height="150px" alt="unlock wallet icon"/>
-          </center>              
-          
+           
           <div className="form-group">
             <Input
               value={password}
@@ -70,12 +67,13 @@ class UnlockWalletForm extends Component {
             disabled={unlocking || !formIsValid}
             isLoading={unlocking}
             loadingText="Unlocking your wallet...">
+              <i className="fa fa-unlock"></i>
               {buttonText}
           </LoaderButton>
 
           {this.props.children}
 
-          </Form>
+        </Form>
      </span>
     )
   }

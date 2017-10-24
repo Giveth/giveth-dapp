@@ -75,6 +75,12 @@
   }
 
   .dropdown-item {
+    padding: .25rem 0.8rem;
+
+    i {
+      margin-right: 10px;
+    }
+
     &:active {
       background-color: #ddedfd;
     }

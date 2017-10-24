@@ -7,7 +7,6 @@
 
     &.unlock-wallet-form,
     &.sign-in-form {
-      margin-top: 50px;   
 
       label {
         display: block;
@@ -18,13 +17,10 @@
         width: 50%;
         display: inline-block;
       }
-
-      .empty-state-img {
-        margin-top: 0;
-      }
     }
 
-    &.sign-up-form {
+    &.sign-up-form,
+    &.sign-in-form {
       margin-top: 50px;      
     }
   }
