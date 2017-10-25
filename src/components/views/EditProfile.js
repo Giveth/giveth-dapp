@@ -250,7 +250,7 @@ export default EditProfile
 EditProfile.propTypes = {
   wallet: PropTypes.shape({
     unlocked: PropTypes.bool,
-    keystore: PropTypes.array,
+    keystores: PropTypes.array,
   }),
   currentUser: currentUserModel,
   history: PropTypes.object.isRequired,

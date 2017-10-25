@@ -177,7 +177,7 @@ class MainMenu extends Component {
                 </Link>
                 <div className={`dropdown-menu dropdown-profile ${showMobileMenu ? 'show' : ''}`} aria-labelledby="navbarDropdownYou">
                   <AuthenticatedLink className="dropdown-item" to="/profile" wallet={wallet}>Profile</AuthenticatedLink>
-                  <AuthenticatedLink className="dropdown-item" to="/wallet">Wallet</AuthenticatedLink>
+                  <AuthenticatedLink className="dropdown-item" to="/wallet" wallet={wallet}>Wallet</AuthenticatedLink>
                   <a className="dropdown-item" onClick={()=>this.signout()}>Sign out</a>
                 </div>
               </li>

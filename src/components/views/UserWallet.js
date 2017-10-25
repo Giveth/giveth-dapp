@@ -41,7 +41,7 @@ export default UserWallet
 UserWallet.propTypes = {
   wallet: PropTypes.shape({
     unlocked: PropTypes.bool,
-    keystore: PropTypes.array
+    keystores: PropTypes.array
   }),  
   currentUser: currentUserModel,
   history: PropTypes.object.isRequired,
