@@ -70,7 +70,7 @@ Welcome to the code for Giveth's dapp. This is an open source effort to realize 
     npm install
     ```
 
-22. That is it, you are now ready to run the giveth-dapp! Head to the [Run dapp] (#run-dapp) section for further instructions.
+22. That is it, you are now ready to run the giveth-dapp! Head to the [Run dapp](#run-dapp) section for further instructions.
 
 ### Install Linux/OSX
 1. Click **Star** on this repo near the top-right corner of this web page.
