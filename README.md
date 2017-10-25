@@ -9,8 +9,7 @@ Welcome to the code for Giveth's dapp. This is an open source effort to realize 
 
 - [Getting Started](#getting-started)
     - [Install Windows](#install-Windows)
-    - [Install Linux] (#install-Linux)
-    - [Install OSX] (#install-OSX)
+    - [Install Linux](#install-Linux/OSX)
     - [Run dapp](#run-dapp)
 - [Build](#build)
 - [Port](#port)
@@ -26,58 +25,46 @@ Welcome to the code for Giveth's dapp. This is an open source effort to realize 
 1. Click **Star** on this repo near the top-right corner of this web page.
 2. Join our [slack](http://slack.giveth.io) if you haven't already.
 3. Fork this repo by clicking **Fork** button in top-right corner of this web page. Continue to follow instruction steps from your own giveth-dapp repo.
-5. The rest of these steps must be done from your machine's command line.  Copy the link from the "Clone or download" button near the top right of this repo's home page.
-    ```
-    git clone {paste your own repo link here}
-    ```
-6. Change directories to giveth-dapp:
-    ```
-    cd giveth-dapp
-    ```
-5. Make sure you download the most current version of [64-bit NodeJS](https://nodejs.org/en/download/current) (v8.4.0 or higher) 
+4. Download the most current version of [64-bit NodeJS](https://nodejs.org/en/download/current) (v8.4.0 or higher) 
 
-6. Run the node-v8.X.X-x64.msi installer in administrator mode, verify that the 'User Account Control' contains the correct information (FIXIT:UAC info picture), and then click yes to start the installer.
+5. Run the node-v8.X.X-x64.msi installer and then continue through the installation as normal. Be sure to have the "Enable in PATH" option enabled before installing.
+ 
+   The rest of these steps must be done from your machine's command line. 
 
-7. Choose your (FIXME: install options) and click next
+6. Open the command line in administrator mode by right clicking on the cmd.exe application and selecting "Run as administrator"
+7. In the administrator command prompt, change to the directory where you want to store this repository.
+   ```
+   cd C:\some\directory\for\repositories
+   ```
 
-8. Choose your install directory (We use the default one) then click install.
-
-9. Click finish to complete the install of NodeJS and npm.
-
-10. Update npm with:
+8. Update npm to the latest version (in order to make sure the next step has the latest dependencies to install) with:
     ```
     npm install npm@latest -g
     ```
 
-11. Check to see that NodeJS is a compatible version (Should output a version that is higher than v8.4.0):
-    ```
-    npm -v
-    ```
+9. You must install the NodeJS/NPM dependcies for Windows before you are able to continue. This command will take a few minutes to install all of the necessary dependencies for building NodeJS applications on Windows.
+   ```
+   npm install -g windows-build-tools
+   ```
 
-12. Install dependencies from within giveth-dapp directory:
-    ```
-    npm install
-    ```
-
-### Install Linux
-1. Click **Star** on this repo near the top-right corner of this web page.
-2. Join our [slack](http://slack.giveth.io) if you haven't already.
-3. Fork this repo by clicking **Fork** button in top-right corner of this web page. Continue to follow instruction steps from your own giveth-dapp repo.
-5. The rest of these steps must be done from your machine's command line.  Copy the link from the "Clone or download" button near the top right of this repo's home page.
+10. Copy the link from the "Clone or download" button near the top right of this repo's home page.
     ```
     git clone {paste your own repo link here}
     ```
-6. Change directories to giveth-dapp:
+
+11. Change directories to giveth-dapp:
     ```
     cd giveth-dapp
     ```
-5. Make sure you have [NodeJS](https://nodejs.org/) (v8.4.0 or higher) and [npm](https://www.npmjs.com/) (5.4.1 or higher) installed.
-6. Install dependencies from within giveth-dapp directory:
+
+12. Install the giveth-dapp dependencies in order to be able to run the giveth-dapp:
     ```
     npm install
     ```
 
-### Install OSX
+13. That is it, you are now ready to run the giveth-dapp! Head to the [Run dapp] (#run-dapp) section for further instructions.
+
+### Install Linux/OSX
 1. Click **Star** on this repo near the top-right corner of this web page.
 2. Join our [slack](http://slack.giveth.io) if you haven't already.
 3. Fork this repo by clicking **Fork** button in top-right corner of this web page. Continue to follow instruction steps from your own giveth-dapp repo.
