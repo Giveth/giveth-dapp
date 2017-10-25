@@ -46,9 +46,9 @@ Welcome to the code for Giveth's dapp. This is an open source effort to realize 
    ```
 
 17. Update npm to the latest version (in order to make sure the next step has the latest dependencies to install) with:
-    ```
-    npm install npm@latest -g
-    ```
+   ```
+   npm install npm@latest -g
+   ```
 
 18. You must install the NodeJS/NPM dependcies for Windows before you are able to continue. This command will take a few minutes to install all of the necessary dependencies for building NodeJS applications on Windows.
    ```
