@@ -22,47 +22,55 @@ Welcome to the code for Giveth's dapp. This is an open source effort to realize 
 ## Getting Started
 
 ### Install Windows 
-1. Click **Star** on this repo near the top-right corner of this web page.
+1. Click **Start** on this repo near the top-right corner of this web page.
 2. Join our [slack](http://slack.giveth.io) if you haven't already.
 3. Fork this repo by clicking **Fork** button in top-right corner of this web page. Continue to follow instruction steps from your own giveth-dapp repo.
 4. Download the most current version of [64-bit NodeJS](https://nodejs.org/en/download/current) (v8.4.0 or higher) 
-
 5. Run the node-v8.X.X-x64.msi installer and then continue through the installation as normal. Be sure to have the "Enable in PATH" option enabled before installing.
- 
-   The rest of these steps must be done from your machine's command line. 
+6. Download the most current version of [Git-for-Windows](https://git-for-windows.github.io/) (v2.14.3-64-bit)
+7. Run the installer for Git-for-Windows, and click "next" to continue to the "Components" page of the install wizard.
+8. The defaults for the "Components" page are fine for this installation.
+9. On the "Adjusting your PATH environment" page, make sure that the "Use git from the Windows Command Prompt" option is selected and click next.
+10. On the "Choosing your HTTPS transport backend" page, make sure that the "Use the OpenSSL libary" option is selected, and then click next.
+11. On the "Configuring the line ending conversions" page, make sure that "Checkout as-is, commit as-is" option is selected, otherwise you may run into some trouble when checking out or committing code from git repositories. Click next to continue with the installation.
+12. On the "Configuring the terminal emulator to use with Git Bash" page, make sure that you select "Use Windows' default console window" option or else you will have trouble with the steps in the command line further on in the install process for Windows. Click next to continue with the installation.
+13. On the "Configuring extra options" page, make sure that you check the "Enable symbolic links" option, and then click "Install" to start the software installation now that you have configured the install options.
+14. Click on "Finish" to complete the installation of Git-for-Windows.
 
-6. Open the command line in administrator mode by right clicking on the cmd.exe application and selecting "Run as administrator"
-7. In the administrator command prompt, change to the directory where you want to store this repository.
+###   The rest of these steps must be done from your machine's command line. 
+
+15. Open the command line in administrator mode by right clicking on the cmd.exe application and selecting "Run as administrator"
+16. In the administrator command prompt, change to the directory where you want to store this repository.
    ```
    cd C:\some\directory\for\repositories
    ```
 
-8. Update npm to the latest version (in order to make sure the next step has the latest dependencies to install) with:
+17. Update npm to the latest version (in order to make sure the next step has the latest dependencies to install) with:
     ```
     npm install npm@latest -g
     ```
 
-9. You must install the NodeJS/NPM dependcies for Windows before you are able to continue. This command will take a few minutes to install all of the necessary dependencies for building NodeJS applications on Windows.
+18. You must install the NodeJS/NPM dependcies for Windows before you are able to continue. This command will take a few minutes to install all of the necessary dependencies for building NodeJS applications on Windows.
    ```
    npm install -g windows-build-tools
    ```
 
-10. Copy the link from the "Clone or download" button near the top right of this repo's home page.
+19. Copy the link from the "Clone or download" button near the top right of this repo's home page.
     ```
     git clone {paste your own repo link here}
     ```
 
-11. Change directories to giveth-dapp:
+20. Change directories to giveth-dapp:
     ```
     cd giveth-dapp
     ```
 
-12. Install the giveth-dapp dependencies in order to be able to run the giveth-dapp:
+21. Install the giveth-dapp dependencies in order to be able to run the giveth-dapp:
     ```
     npm install
     ```
 
-13. That is it, you are now ready to run the giveth-dapp! Head to the [Run dapp] (#run-dapp) section for further instructions.
+22. That is it, you are now ready to run the giveth-dapp! Head to the [Run dapp] (#run-dapp) section for further instructions.
 
 ### Install Linux/OSX
 1. Click **Star** on this repo near the top-right corner of this web page.
