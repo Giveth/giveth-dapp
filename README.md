@@ -70,7 +70,12 @@ Welcome to the code for Giveth's dapp. This is an open source effort to realize 
     npm install
     ```
 
-22. That is it, you are now ready to run the giveth-dapp! Head to the [Run dapp](#run-dapp) section for further instructions.
+24. For some reason the npm node-sass package does not install correctly in windows when using the 'npm install' command, so you must rebuild the node-sass package with:
+   ```
+   npm rebuild node-sass
+   ```
+   
+23. That is it, you are now ready to run the giveth-dapp! Head to the [Run dapp](#run-dapp) section for further instructions.
 
 ### Install Linux/OSX
 1. Click **Star** on this repo near the top-right corner of this web page.
