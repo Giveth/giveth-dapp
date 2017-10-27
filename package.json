@@ -33,9 +33,9 @@
     "react-skylight": "^0.4.2",
     "react-toastify": "^2.1.0",
     "sweetalert": "^2.0",
-    "web3": "git://github.com/perissology/web3.js.git#all_fixes",
-    "web3-eth-accounts": "^1.0.0-beta.18",
-    "web3-provider-engine": "^13.2.9"
+    "web3": "^1.0.0-beta.24",
+    "web3-eth-accounts": "^1.0.0-beta.24",
+    "web3-provider-engine": "^13.3.3"
   },
   "devDependencies": {
     "lerna": "^2.2.0"
