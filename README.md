@@ -9,7 +9,7 @@ Welcome to the code for Giveth's dapp. This is an open source effort to realize 
 
 - [Getting Started](#getting-started)
     - [Install Windows](#install-windows)
-    - [Install Linux\OSX](#install-linuxOSX)
+    - [Install Linux\OSX](#install-linuxosx)
     - [Run dapp](#run-dapp)
 - [Build](#build)
 - [Port](#port)
