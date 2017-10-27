@@ -8,8 +8,8 @@ Welcome to the code for Giveth's dapp. This is an open source effort to realize 
 ## Table of content
 
 - [Getting Started](#getting-started)
-    - [Install Windows](#install-Windows)
-    - [Install Linux](#install-Linux/OSX)
+    - [Install Windows](#install-windows)
+    - [Install Linux](#install-linux/osx)
     - [Run dapp](#run-dapp)
 - [Build](#build)
 - [Port](#port)
