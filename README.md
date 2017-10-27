@@ -9,7 +9,7 @@ Welcome to the code for Giveth's dapp. This is an open source effort to realize 
 
 - [Getting Started](#getting-started)
     - [Install Windows](#install-windows)
-    - [Install Linux OSX](#install-linux-OSX)
+    - [Install Linux\OSX](#install-linuxOSX)
     - [Run dapp](#run-dapp)
 - [Build](#build)
 - [Port](#port)
@@ -77,7 +77,7 @@ Welcome to the code for Giveth's dapp. This is an open source effort to realize 
    
 23. That is it, you are now ready to run the giveth-dapp! Head to the [Run dapp](#run-dapp) section for further instructions.
 
-### Install Linux OSX
+### Install LinuxOSX
 1. Click **Star** on this repo near the top-right corner of this web page.
 2. Join our [slack](http://slack.giveth.io) if you haven't already.
 3. Fork this repo by clicking **Fork** button in top-right corner of this web page. Continue to follow instruction steps from your own giveth-dapp repo.
