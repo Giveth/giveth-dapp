@@ -5,11 +5,14 @@
   "dependencies": {
     "bignumber.js": "^4.0.2",
     "create-react-class": "^15.6.0",
+    "feathers": "^2.2.3",
     "feathers-authentication-client": "^0.3.3",
     "feathers-client": "^2.3.0",
     "feathers-commons": "^0.8.7",
+    "feathers-hooks": "^2.1.1",
     "feathers-hooks-common": "^3.7.2",
     "feathers-reactive": "^0.5.2",
+    "feathers-socketio": "^2.0.0",
     "formsy-react": "^0.19.5",
     "formsy-react-components": "^0.10.1",
     "giveth-react-scripts": "1.0.12",
@@ -32,6 +35,7 @@
     "react-router-dom": "^4.1.2",
     "react-skylight": "^0.4.2",
     "react-toastify": "^2.1.0",
+    "socket.io-client": "^2.0.4",
     "sweetalert": "^2.0",
     "web3": "git://github.com/perissology/web3.js.git#all_fixes",
     "web3-eth-accounts": "^1.0.0-beta.18",
@@ -52,7 +56,6 @@
     "start": "npm-run-all -p watch-css start-js",
     "build": "npm run build-css && react-scripts build",
     "test": "npm run eslint && react-scripts test --env=jsdom",
-    "eslint": "eslint src/. test/.",
     "eject": "react-scripts eject"
   }
 }
