@@ -6,7 +6,7 @@ import CacheSubprovider from 'web3-provider-engine/subproviders/cache';
 import FilterSubprovider from 'web3-provider-engine/subproviders/filters';
 import InflightCacheSubprovider from 'web3-provider-engine/subproviders/inflight-cache';
 import SanitizingSubprovider from 'web3-provider-engine/subproviders/sanitizer';
-import GasPriceProvider from "./GasPriceProvider";
+import GasPriceProvider from './GasPriceProvider';
 
 import WebSocketSubProvider from './WebSocketSubProvider';
 
@@ -14,10 +14,10 @@ import WebSocketSubProvider from './WebSocketSubProvider';
 ProviderEngine.prototype.send = ProviderEngine.prototype.sendAsync;
 
 // web3-provider-engine ZeroClientProvider with a ProviderEngine override to work with web3 1.0
-export default (opts) => {
-  opts = opts || {};
+export default (options) => {
+  const opts = options || {};
 
-  //TODO rewrite ProviderEngine to use pubsub instead of EthBlockTracker
+  // TODO rewrite ProviderEngine to use pubsub instead of EthBlockTracker
   const engine = new ProviderEngine();
 
   // static
@@ -69,7 +69,7 @@ export default (opts) => {
   });
   engine.addProvider(idmgmtSubprovider);
 
-  //TODO support http connections as well as urls
+  // TODO support http connections as well as urls
   // data source
   const fetchSubprovider = new WebSocketSubProvider({
     wsProvider: opts.wsProvider,
@@ -82,4 +82,4 @@ export default (opts) => {
   engine.on('block', () => engine.stop());
 
   return engine;
-}
+};
