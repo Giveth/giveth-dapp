@@ -1,4 +1,4 @@
-import React from 'react'
+import React from 'react';
 
 /* check if currentUser is authenticated. If not, routes back. If yes, resolves returned promise
  *
@@ -9,17 +9,20 @@ import React from 'react'
  *
  * returns:
  *   new Promise
- *    
+ *
  * usage:
  *    isAuthenticated(currentUser)
  *      .then(()=> ...do something when authenticated)
  */
 
-export const isAuthenticated = (currentUser, history, wallet) => {
-  return new Promise((resolve, reject) =>
-    (!(currentUser && currentUser.address) || (wallet && !wallet.unlocked)) ? history.goBack() : resolve()
-  )
-}
+export const isAuthenticated = (currentUser, history, wallet) =>
+  new Promise((resolve, _reject) => {
+    if (!(currentUser && currentUser.address) || (wallet && !wallet.unlocked)) {
+      history.goBack();
+    } else {
+      resolve();
+    }
+  });
 
 
 /* if the wallet is locked, asks the user to unlock his wallet before redirecting to a route
@@ -33,12 +36,11 @@ export const isAuthenticated = (currentUser, history, wallet) => {
 
 export const redirectAfterWalletUnlock = (to, wallet, history) => {
   if (!wallet || (wallet && !wallet.unlocked)) {
-    React.unlockWallet(to)
+    React.unlockWallet(to);
   } else {
-    history.push(to)
+    history.push(to);
   }
-}
-
+};
 
 
 /* if the wallet is locked, asks the user to unlock his wallet, otherwise performs the action
@@ -51,37 +53,34 @@ export const redirectAfterWalletUnlock = (to, wallet, history) => {
 
 export const takeActionAfterWalletUnlock = (wallet, action) => {
   if (!wallet || (wallet && !wallet.unlocked)) {
-    React.unlockWallet()
+    React.unlockWallet();
   } else {
-    action.call()
+    action.call();
   }
-}
+};
 
 
-/* Checks for sufficient wallet balance. 
+/* Checks for sufficient wallet balance.
  *
  * @params:
  *    wallet (object): wallet object
  *
  */
-export const checkWalletBalance = (wallet, history) => {
-  return new Promise((resolve, reject) => {
-    if(wallet.getBalance() >= React.minimumWalletBalance) {
-      resolve()
+export const checkWalletBalance = (wallet, history) =>
+  new Promise((resolve, reject) => {
+    if (wallet.getBalance() >= React.minimumWalletBalance) {
+      resolve();
     } else {
       React.swal({
-        title: "Insufficient wallet balance", 
-        content: React.swal.msg(
-          <p>
-            Unfortunately you need at least Ξ{React.minimumWalletBalance} in your wallet to continue. Please transfer some Ξ to your Giveth wallet first.
-          </p>
-        ),
+        title: 'Insufficient wallet balance',
+        content: React.swal.msg('Unfortunately you need at least Ξ{React.minimumWalletBalance} in your wallet to continue. Please transfer some Ξ to your Giveth wallet first.'),
         icon: 'warning',
-        buttons: ["OK", "View wallet info"]
+        buttons: ['OK', 'View wallet info'],
       }).then((isConfirmed) => {
-        if(isConfirmed) history.push('/wallet')
-        reject('noBalance')
+        if (isConfirmed) {
+          history.push('/wallet');
+        }
+        reject(new Error('noBalance'));
       });
     }
-  })      
-}
+  });
