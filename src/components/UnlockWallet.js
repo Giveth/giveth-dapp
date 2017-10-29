@@ -19,7 +19,7 @@ class UnlockWallet extends Component {
     };
   }
 
-  submit = ({ password }) => {
+  submit({ password }) {
     this.setState({
       unlocking: true
     }, () => {

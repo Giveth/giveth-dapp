@@ -39,7 +39,7 @@ class MainMenu extends Component {
     this.props.history.push('/')
   }
 
-  lockWallet = e => {
+  lockWallet(e) {
     e.preventDefault();
 
     React.swal({

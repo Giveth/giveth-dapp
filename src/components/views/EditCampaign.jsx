@@ -1,48 +1,47 @@
-import React, { Component } from 'react'
+import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import LPPCampaign from 'lpp-campaign';
 
 import { Form, Input } from 'formsy-react-components';
-import { feathersClient } from '../../lib/feathersClient'
-import Loader from '../Loader'
-import QuillFormsy from '../QuillFormsy'
+import { feathersClient } from '../../lib/feathersClient';
+import Loader from '../Loader';
+import QuillFormsy from '../QuillFormsy';
 // import Milestone from '../Milestone'
 // import EditMilestone from '../EditMilestone'
-import FormsyImageUploader from './../FormsyImageUploader'
-import GoBackButton from '../GoBackButton'
-import { isOwner } from '../../lib/helpers'
-import { isAuthenticated } from '../../lib/middleware'
+import FormsyImageUploader from './../FormsyImageUploader';
+import GoBackButton from '../GoBackButton';
+import { isOwner } from '../../lib/helpers';
+import { isAuthenticated } from '../../lib/middleware';
 import getNetwork from "../../lib/blockchain/getNetwork";
 import getWeb3 from "../../lib/blockchain/getWeb3";
-import { getTruncatedText } from '../../lib/helpers'
-import LoaderButton from "../../components/LoaderButton"
+import { getTruncatedText } from '../../lib/helpers';
+import LoaderButton from "../../components/LoaderButton";
 
 import InputToken from "react-input-token";
 import "react-input-token/lib/style.css";
-import currentUserModel from '../../models/currentUserModel'
-import { displayTransactionError } from '../../lib/helpers'
+import currentUserModel from '../../models/currentUserModel';
+import { displayTransactionError } from '../../lib/helpers';
 
 /**
  * Create or edit a campaign
  *
  *  @props
- *    isNew (bool):  
+ *    isNew (bool):
  *      If set, component will load an empty model.
  *      If not set, component expects an id param and will load a campaign object from backend
- *    
+ *
  *  @params
  *    id (string): an id of a campaign object
  */
-
 class EditCampaign extends Component {
   constructor() {
-    super()
+    super();
 
     this.state = {
       isLoading: true,
       isSaving: false,
       hasError: false,
-      formIsValid: false,      
+      formIsValid: false,
       dacsOptions: [],
 
       // campaign model
@@ -51,23 +50,22 @@ class EditCampaign extends Component {
       summary: '',
       image: '',
       videoUrl: '',
-      communityUrl: '',      
+      communityUrl: '',
       ownerAddress: null,
-      reviewerAddress: '',      
+      reviewerAddress: '',
       projectId: 0,
       milestones: [],
       dacs: [],
       uploadNewImage: false,
-      isLoadingTokens: false,      
-    }
+      isLoadingTokens: false,
+    };
 
-    this.submit = this.submit.bind(this)
-    this.setImage = this.setImage.bind(this)  
+    this.submit = this.submit.bind(this);
+    this.setImage = this.setImage.bind(this);
   }
 
-
   componentDidMount() {
-    isAuthenticated(this.props.currentUser, this.props.history, this.props.wallet).then(()=>
+    isAuthenticated(this.props.currentUser, this.props.history, this.props.wallet).then(() =>
       Promise.all([
         // load a single campaigns (when editing)
         new Promise((resolve, reject) => {
@@ -75,43 +73,52 @@ class EditCampaign extends Component {
             feathersClient.service('campaigns').find({query: {_id: this.props.match.params.id}})
               .then((resp) => {
                 if(!isOwner(resp.data[0].owner.address, this.props.currentUser)) {
-                  this.props.history.goBack()
-                } else {  
-                  this.setState(Object.assign({}, resp.data[0], {
-                    id: this.props.match.params.id,
-                  }), resolve())  
-                }})
-              .catch(() => reject())
+                  this.props.history.goBack();
+                } else {
+                  this.setState(
+                    Object.assign(
+                      {},
+                      resp.data[0],
+                      { id: this.props.match.params.id }
+                    ),
+                    resolve()
+                  );
+                }
+              })
+              .catch(() => reject());
           } else {
-            resolve()
+            resolve();
           }
-        })
-      ,
+        }),
+
         // load all dacs. that aren't pending
         // TO DO: this needs to be replaced by something like http://react-autosuggest.js.org/
         new Promise((resolve, reject) => {
           feathersClient.service('dacs').find({query: {  $select: [ 'title', '_id' ] }})
-            .then((resp) => 
+            .then((resp) =>
               this.setState({
                 //TODO should we filter the available cuases to those that have been mined? It is possible that a createCause tx will fail and the dac will not be available
-                dacsOptions: resp.data.map((c) =>  { return { name: c.title, id: c._id, element: <span>{c.title}</span> } }),
-                // dacsOptions: resp.data.filter((c) => (c.delegateId && c.delegateId > 0)).map((c) =>  { return { label: c.title, value: c._id} }),
-                hasError: false
-              }, resolve())
+                dacsOptions: resp.data.map((c) => {
+                  return { name: c.title, id: c._id, element: <span>{c.title}</span> };
+                  }
+                ),
+                hasError: false, // dacsOptions: resp.data.filter((c) => (c.delegateId && c.delegateId > 0)).map((c) =>  { return { label: c.title, value: c._id} }),
+              },
+              resolve())
             )
-            .catch(() => reject())
-        })
-
+            .catch(() => reject());
+          }
+        )
       ]).then(() => this.setState({ isLoading: false, hasError: false }), this.focusFirstInput())
         .catch((e) => {
-          console.log('error loading', e)
-          this.setState({ isLoading: false, hasError: true })        
+          console.log('error loading', e);
+          this.setState({ isLoading: false, hasError: true });
         })
-    )
-  }
+    );
+  } // componentDidMount
 
   focusFirstInput(){
-    setTimeout(() => this.refs.title.element.focus(), 500)
+    setTimeout(() => this.refs.title.element.focus(), 500);
   }
 
   mapInputs(inputs) {
@@ -119,22 +126,22 @@ class EditCampaign extends Component {
       'title': inputs.title,
       'description': inputs.description,
       'communityUrl': inputs.communityUrl,
-      'reviewerAddress': inputs.reviewerAddress,      
-    }
-  }  
-
-  setImage(image) {
-    this.setState({ image: image, uploadNewImage: true })
+      'reviewerAddress': inputs.reviewerAddress,
+    };
   }
 
-  submit(model) {    
-    this.setState({ isSaving: true })
+  setImage(image) {
+    this.setState({ image: image, uploadNewImage: true });
+  }
+
+  submit(model) {
+    this.setState({ isSaving: true });
 
     const afterEmit = () => {
-      this.setState({ isSaving: false })
-      React.toast.success("Your Campaign has been updated!")      
-      this.props.history.push('/campaigns')      
-    }
+      this.setState({ isSaving: false });
+      React.toast.success("Your Campaign has been updated!");
+      this.props.history.push('/campaigns');
+    };
 
     const updateCampaign = (file) => {
       const constructedModel = {
@@ -145,18 +152,21 @@ class EditCampaign extends Component {
         image: file,
         projectId: this.state.projectId,
         dacs: this.state.dacs,
-        reviewerAddress: model.reviewerAddress      
-      }  
+        reviewerAddress: model.reviewerAddress,
+      };
 
       if(this.props.isNew){
         const createCampaign = (txHash) => {
-          feathersClient.service('campaigns').create(Object.assign({}, constructedModel, {
-            txHash,
-            pluginAddress: '0x0000000000000000000000000000000000000000',
-            totalDonated: 0,
-            donationCount: 0,
-            status: 'pending'
-          }))
+          feathersClient.service('campaigns')
+            .create(
+              Object.assign({}, constructedModel, {
+                txHash,
+                pluginAddress: '0x0000000000000000000000000000000000000000',
+                totalDonated: 0,
+                donationCount: 0,
+                status: 'pending',
+              })
+            )
             .then(() => this.props.history.push('/my-campaigns'));
         };
 
@@ -173,63 +183,65 @@ class EditCampaign extends Component {
               .once('transactionHash', hash => {
                 txHash = hash;
                 createCampaign(txHash);
-                React.toast.info(<p>Your campaign is pending....<br/><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>)
+                React.toast.info(<p>Your campaign is pending....<br/><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>);
               })
               .then(() => {
-                React.toast.success(<p>Your campaign was created!<br/><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>)
-              })
+                React.toast.success(<p>Your campaign was created!<br/><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>);
+              });
           })
           .catch(err => {
             console.log('New Campaign transaction failed:', err);
-            displayTransactionError(txHash, etherScanUrl)
+            displayTransactionError(txHash, etherScanUrl);
           });
       } else {
-        feathersClient.service('campaigns').patch(this.state.id, constructedModel)
-          .then(()=> afterEmit())        
+        feathersClient.service('campaigns')
+          .patch(this.state.id, constructedModel)
+          .then(()=> afterEmit());
       }
     }
 
     if(this.state.uploadNewImage) {
-      feathersClient.service('/uploads').create({uri: this.state.image}).then(file => updateCampaign(file.url))
+      feathersClient.service('/uploads')
+        .create({uri: this.state.image})
+        .then(file => updateCampaign(file.url));
     } else {
-      updateCampaign()
+      updateCampaign();
     }
-  } 
+  }
 
   toggleFormValid(state) {
-    this.setState({ formIsValid: state })
-  }    
+    this.setState({ formIsValid: state });
+  }
 
   goBack(){
-    this.props.history.push('/campaigns')
+    this.props.history.push('/campaigns');
   }
 
   constructSummary(text){
-    this.setState({ summary: text})
+    this.setState({ summary: text});
   }
 
-  selectDACs = ({ target: { value: selectedDacs } }) => {
-    this.setState({ dacs: selectedDacs })
-  }  
+  selectDACs({ target: { value: selectedDacs } }) {
+    this.setState({ dacs: selectedDacs });
+  }
 
   render(){
-    const { isNew, history } = this.props
-    let { isLoading, isSaving, title, description, image, dacs, dacsOptions, communityUrl, formIsValid, reviewerAddress } = this.state
+    const { isNew, history } = this.props;
+    let { isLoading, isSaving, title, description, image, dacs, dacsOptions, communityUrl, formIsValid, reviewerAddress } = this.state;
 
     return(
         <div id="edit-campaign-view">
           <div className="container-fluid page-layout edit-view">
             <div className="row">
               <div className="col-md-8 m-auto">
-                { isLoading && 
+                { isLoading &&
                   <Loader className="fixed"/>
                 }
-                
                 { !isLoading &&
                   <div>
                     <GoBackButton history={history}/>
-                  
-                    <div className="form-header">   
+
+                    <div className="form-header">
                       { isNew &&
                         <h3>Start a new campaign!</h3>
                       }
@@ -258,26 +270,26 @@ class EditCampaign extends Component {
                           help="Describe your campaign in 1 sentence."
                           validations="minLength:10"
                           validationErrors={{
-                              minLength: 'Please provide at least 10 characters.'
+                            minLength: 'Please provide at least 10 characters.'
                           }}
                           required
                         />
                       </div>
 
                       <div className="form-group">
-                        <QuillFormsy 
+                        <QuillFormsy
                           name="description"
                           label="Explain how you are going to do this successfully."
                           helpText="Make it as extensive as necessary. Your goal is to build trust, so that people donate Ether to your campaign."                          
                           value={description}
                           placeholder="Describe how you're going to execute your campaign successfully..."
                           onTextChanged={(content)=>this.constructSummary(content)}
-                          validations="minLength:10"  
-                          help="Describe your campaign."   
+                          validations="minLength:10"
+                          help="Describe your campaign."
                           validationErrors={{
                               minLength: 'Please provide at least 10 characters.'
-                          }}                    
-                          required                                        
+                          }}
+                          required
                         />
                       </div>
 
@@ -310,7 +322,7 @@ class EditCampaign extends Component {
                             isUrl: 'Please provide a url.'
                           }}
                         />
-                      </div>   
+                      </div>
 
                       <Input
                         name="reviewerAddress"
@@ -323,20 +335,20 @@ class EditCampaign extends Component {
                         validations="isEtherAddress"
                         validationErrors={{
                             isEtherAddress: 'Please enter a valid Ethereum address.'
-                        }}                    
+                        }}
                         required
-                      />                                           
+                      />
 
                       <LoaderButton
-                        className="btn btn-success" 
-                        formNoValidate={true} 
-                        type="submit" 
+                        className="btn btn-success"
+                        formNoValidate={true}
+                        type="submit"
                         disabled={isSaving || !formIsValid}
                         isLoading={isSaving}
                         loadingText="Saving...">
                         Create Campaign
-                      </LoaderButton>                         
-                                     
+                      </LoaderButton>
+
                     </Form>
                   </div>
                 }
@@ -349,10 +361,10 @@ class EditCampaign extends Component {
   }
 }
 
-export default EditCampaign
+export default EditCampaign;
 
 EditCampaign.propTypes = {
   currentUser: currentUserModel,
   history: PropTypes.object.isRequired,
   isNew: PropTypes.bool
-}
+};
