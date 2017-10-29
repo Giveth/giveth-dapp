@@ -1,4 +1,4 @@
-/* global Blob, document, FileReader, HTMLCanvasElement, URL */
+/* global Blob, document, FileReader, HTMLCanvasElement, URL, atob */
 
 /* Resizes an image
  *
@@ -16,100 +16,102 @@
  * https://gist.githubusercontent.com/dcollien/312bce1270a5f511bf4a/raw/9bb680a9d30f0df8046a78f7335abfaf5c026135/ImageTools.es6
  */
 
-let hasBlobConstructor = typeof(Blob) !== 'undefined' && (function () {
+const hasBlobConstructor = typeof Blob !== 'undefined' && (() => {
   try {
     return Boolean(new Blob());
   } catch (e) {
     return false;
   }
-}());
+})();
 
-let hasArrayBufferViewSupport = hasBlobConstructor && typeof(Uint8Array) !== 'undefined' && (function () {
+const hasArrayBufferViewSupport = hasBlobConstructor && typeof (Uint8Array) !== 'undefined' && (() => {
   try {
     return new Blob([new Uint8Array(100)]).size === 100;
   } catch (e) {
     return false;
   }
-}());
+})();
 
-let hasToBlobSupport = (typeof HTMLCanvasElement !== 'undefined' ? HTMLCanvasElement.prototype.toBlob : false);
+const hasToBlobSupport = (typeof HTMLCanvasElement !== 'undefined' ? HTMLCanvasElement.prototype.toBlob : false);
 
-let hasBlobSupport = (hasToBlobSupport || (typeof Uint8Array !== 'undefined' && typeof ArrayBuffer !== 'undefined' && typeof atob !== 'undefined'));
+const hasBlobSupport = (hasToBlobSupport || (typeof Uint8Array !== 'undefined' && typeof ArrayBuffer !== 'undefined' && typeof atob !== 'undefined'));
 
-let hasReaderSupport = (typeof FileReader !== 'undefined' || typeof URL !== 'undefined');
+const hasReaderSupport = (typeof FileReader !== 'undefined' || typeof URL !== 'undefined');
 
 export default class ImageTools {
   static resize(file, maxDimensions, callback) {
+    let modifiedCallback = callback;
+    let modifiedMaxDimensions = maxDimensions;
+
     if (typeof maxDimensions === 'function') {
-      callback = maxDimensions;
-      maxDimensions = {
+      modifiedCallback = maxDimensions;
+      modifiedMaxDimensions = {
         width: 640,
-        height: 480
+        height: 480,
       };
     }
 
     if (!ImageTools.isSupported() || !file.type.match(/image.*/)) {
-      callback(file, false);
+      modifiedCallback(file, false);
       return false;
     }
 
     if (file.type.match(/image\/gif/)) {
       // Not attempting, could be an animated gif
-      callback(file, false);
+      modifiedCallback(file, false);
       // TODO: use https://github.com/antimatter15/whammy to convert gif to webm
       return false;
     }
 
-    let image = document.createElement('img');
+    const image = document.createElement('image');
 
     image.onload = (_imgEvt) => {
-      let width  = image.width;
-      let height = image.height;
+      let { width, height } = image;
       let isTooLarge = false;
 
-      if (width >= height && width > maxDimensions.width) {
+      if (width >= height && width > modifiedMaxDimensions.width) {
         // width is the largest dimension, and it's too big.
-        height *= maxDimensions.width / width;
-        width = maxDimensions.width;
+        height *= modifiedMaxDimensions.width / width;
+        width = modifiedMaxDimensions.width; // eslint-disable-line prefer-destructuring
         isTooLarge = true;
-      } else if (height > maxDimensions.height) {
+      } else if (height > modifiedMaxDimensions.height) {
         // either width wasn't over-size or height is the largest dimension
         // and the height is over-size
-        width *= maxDimensions.height / height;
-        height = maxDimensions.height;
+        width *= modifiedMaxDimensions.height / height;
+        height = modifiedMaxDimensions.height; // eslint-disable-line prefer-destructuring
         isTooLarge = true;
       }
 
       if (!isTooLarge) {
         // early exit; no need to resize
-        callback(file, false);
+        modifiedCallback(file, false);
         return;
       }
 
-      let canvas = document.createElement('canvas');
+      const canvas = document.createElement('canvas');
       canvas.width = width;
       canvas.height = height;
 
-      let ctx = canvas.getContext('2d');
+      const ctx = canvas.getContext('2d');
       ctx.drawImage(image, 0, 0, width, height);
 
       if (hasToBlobSupport) {
         canvas.toBlob((blob) => {
-          callback(blob, true);
+          modifiedCallback(blob, true);
         }, file.type);
       } else {
-        let blob = ImageTools._toBlob(canvas, file.type);
-        callback(blob, true);
+        const blob = ImageTools.toBlob(canvas, file.type);
+        modifiedCallback(blob, true);
       }
     };
-    ImageTools._loadImage(image, file);
+    ImageTools.loadImage(image, file);
 
     return true;
   }
 
-  static _toBlob(canvas, type) {
-    let dataURI = canvas.toDataURL(type);
-    let dataURIParts = dataURI.split(',');
+  static toBlob(canvas, type) {
+    const dataURI = canvas.toDataURL(type);
+    const dataURIParts = dataURI.split(',');
     let byteString;
     if (dataURIParts[0].indexOf('base64') >= 0) {
       // Convert base64 to raw binary data held in a string:
@@ -118,23 +120,23 @@ export default class ImageTools {
       // Convert base64/URLEncoded data component to raw binary data:
       byteString = decodeURIComponent(dataURIParts[1]);
     }
-    let arrayBuffer = new ArrayBuffer(byteString.length);
-    let intArray = new Uint8Array(arrayBuffer);
+    const arrayBuffer = new ArrayBuffer(byteString.length);
+    const intArray = new Uint8Array(arrayBuffer);
 
     for (let i = 0; i < byteString.length; i += 1) {
       intArray[i] = byteString.charCodeAt(i);
     }
 
-    let mimeString = dataURIParts[0].split(':')[1].split(';')[0];
+    const mimeString = dataURIParts[0].split(':')[1].split(';')[0];
     let blob = null;
 
     if (hasBlobConstructor) {
       blob = new Blob(
         [hasArrayBufferViewSupport ? intArray : arrayBuffer],
-        {type: mimeString}
+        { type: mimeString },
       );
     } else {
-      let bb = new Blob();
+      const bb = new Blob();
       bb.append(arrayBuffer);
       blob = bb.getBlob(mimeString);
     }
@@ -142,10 +144,10 @@ export default class ImageTools {
     return blob;
   }
 
-  static _loadImage(image, file, callback) {
-    if (typeof(URL) === 'undefined') {
-      let reader = new FileReader();
-      reader.onload = function(evt) {
+  static loadImage(image, file, callback) {
+    if (typeof (URL) === 'undefined') {
+      const reader = new FileReader();
+      reader.onload = (evt) => {
         image.src = evt.target.result;
         if (callback) { callback(); }
       };
@@ -158,7 +160,7 @@ export default class ImageTools {
 
   static isSupported() {
     return (
-      (typeof(HTMLCanvasElement) !== 'undefined')
+      (typeof (HTMLCanvasElement) !== 'undefined')
       && hasBlobSupport
       && hasReaderSupport);
   }
