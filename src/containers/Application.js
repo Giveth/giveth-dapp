@@ -133,7 +133,7 @@ class Application extends Component {
         this.setState({
           cachedWallet: false,
         })
-      });       
+      });
 
 
     // QUESTION: Should rendering wait for this to load?
@@ -142,21 +142,21 @@ class Application extends Component {
     //     web3
     //   })
     // })
-  }
+  };
 
-  onSignOut = () => {
+  onSignOut() {
     if (this.state.wallet) this.state.wallet.lock();
 
     feathersClient.logout();
     this.setState({ currentUser: undefined });
-  };
+  }
 
-  onSignIn = () => {
+  onSignIn() {
     const address = this.state.wallet.getAddresses()[ 0 ];
     return this.getUserProfile(address)
       .then(user =>
         this.setState({ currentUser: user }));
-  };
+  }
 
   handleWalletChange(wallet) {
     wallet.cacheKeystore();
