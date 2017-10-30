@@ -1,6 +1,6 @@
 #view-milestone-view {
   @include content-styling;
-  
+
   padding-top: 50px;
 
   .milestone-title {
@@ -17,6 +17,15 @@
 
     .sb-avatar {
       margin-right: 5px;
+    }
+  }
+
+  .form-group {
+    .label {
+      /* how to mixin application.scss label element here? */
+      font-weight: 600;
+      margin-bottom: 2px;
+      font-size: 0.9rem;
     }
   }
 }

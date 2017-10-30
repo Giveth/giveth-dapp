@@ -35,7 +35,7 @@
 @import 'card.scss';
 
 
-html, 
+html,
 body {
   font-family: 'Quicksand', sans-serif;
 }
@@ -67,33 +67,33 @@ a, button {
 }
 
 label {
-  font-weight: 600;  
+  font-weight: 600;
   margin-bottom: 2px;
-  font-size: 0.9rem;  
+  font-size: 0.9rem;
 }
 
 table {
   overflow-x: scroll; /* has to be scroll, not auto */
-  -webkit-overflow-scrolling: touch;  
+  -webkit-overflow-scrolling: touch;
 }
 
 .help-block {
-  color: lighten(black, 30%);  
-  font-size: 0.75rem; 
-  font-weight: 300; 
+  color: lighten(black, 30%);
+  font-size: 0.75rem;
+  font-weight: 300;
 }
 
 .form-text {
   margin-top: -3px;
   margin-bottom: 10px;
-  color: lighten(black, 30%);  
+  color: lighten(black, 30%);
   font-size: 0.75rem;
-  font-weight: 300;  
+  font-weight: 300;
 }
 
 
 input[type="file"] {
-  display: block;  
+  display: block;
 }
 
 i {
@@ -109,7 +109,7 @@ i {
   margin: 40px 0;
 
   &.reduce-margin {
-    margin: 20px 0;    
+    margin: 20px 0;
   }
 }
 
