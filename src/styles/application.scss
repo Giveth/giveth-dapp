@@ -58,7 +58,7 @@ body {
   }
 
   @media (max-width: 768px) {
-    padding: 130px 10px 50px 10px;
+    padding: 130px 20px 50px 20px;
   }
 }
 
@@ -105,3 +105,14 @@ i {
   }
 }
 
+.empty-state-img {
+  margin: 40px 0;
+
+  &.reduce-margin {
+    margin: 20px 0;    
+  }
+}
+
+.spacer-top {
+  margin-top: 50px;
+}

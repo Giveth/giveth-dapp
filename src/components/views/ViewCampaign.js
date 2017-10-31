@@ -8,6 +8,7 @@ import { Link } from 'react-router-dom'
 import MilestoneCard from '../MilestoneCard'
 import GoBackButton from '../GoBackButton'
 import { isOwner, getUserName, getUserAvatar } from '../../lib/helpers'
+import { checkWalletBalance } from '../../lib/middleware'
 import BackgroundImageHeader from '../BackgroundImageHeader'
 import Avatar from 'react-avatar'
 import DonateButton from '../DonateButton'
@@ -80,6 +81,7 @@ class ViewCampaign extends Component {
     this.donationsObserver = feathersClient.service('donations/history').watch({ listStrategy: 'always' }).find({
       query: {
         ownerId: campaignId,
+        $sort: { createdAt: -1 }  
       },
     }).subscribe(
       resp => 
@@ -99,14 +101,16 @@ class ViewCampaign extends Component {
   } 
 
   removeMilestone(id){
-    React.swal({
-      title: "Delete Milestone?",
-      text: "You will not be able to recover this milestone!",
-      icon: "warning",
-      dangerMode: true,
-    }).then(() => {
-      const milestones = feathersClient.service('/milestones');
-      milestones.remove(id).then(milestone => console.log('Remove a milestone', milestone));
+    checkWalletBalance(this.props.wallet, this.props.history).then(()=>{
+      React.swal({
+        title: "Delete Milestone?",
+        text: "You will not be able to recover this milestone!",
+        icon: "warning",
+        dangerMode: true,
+      }).then(() => {
+        const milestones = feathersClient.service('/milestones');
+        milestones.remove(id).then(milestone => console.log('Remove a milestone', milestone));
+      })
     })
   }    
 

@@ -44,9 +44,11 @@ class FormsyImageUploader extends Component {
   render(){
     return(
       <div>
+        <label>Add a picture</label>
+
         { this.props.previewImage &&
           <div id="image-preview">
-            <img src={this.state.image} width="500px" alt=""/>
+            <img src={this.state.image} alt="preview of uploaded image"/>
           </div>
         }
 
@@ -55,7 +57,6 @@ class FormsyImageUploader extends Component {
         }
 
         <div className="form-group">
-          <label>Add a picture</label>
           <File
             name="picture"
             accept=".png,.jpeg,.jpg"

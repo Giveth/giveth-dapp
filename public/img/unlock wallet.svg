@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="435px" height="435px" viewBox="0 0 435 435" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 47 (45396) - http://www.bohemiancoding.com/sketch -->
+    <title>unlock wallet</title>
+    <desc>Created with Sketch.</desc>
+    <defs>
+        <circle id="path-1" cx="217.5" cy="217.5" r="217.5"></circle>
+    </defs>
+    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Unlock-Wallet" transform="translate(-192.000000, -100.000000)">
+            <g id="unlock-wallet" transform="translate(192.000000, 100.000000)">
+                <g id="Group-3">
+                    <g id="delegation">
+                        <g id="Group-2">
+                            <circle id="Oval" fill="#E6EBEE" cx="217.5" cy="217.5" r="217.5"></circle>
+                            <g id="Oval">
+                                <mask id="mask-2" fill="white">
+                                    <use xlink:href="#path-1"></use>
+                                </mask>
+                                <use id="Mask" fill="#E6EBEE" xlink:href="#path-1"></use>
+                                <circle fill="#ECF4F6" mask="url(#mask-2)" cx="169.5" cy="181.5" r="187.5"></circle>
+                            </g>
+                        </g>
+                    </g>
+                </g>
+                <g id="Group-8" transform="translate(93.000000, 124.000000)"></g>
+                <g id="Group" transform="translate(132.000000, 124.000000)">
+                    <path d="M21.7313433,0.0459263766 C21.2824232,0.0154690954 20.8295313,0 20.3731343,0 C9.12136293,0 0,9.40202025 0,21 C0,32.5979797 9.12136293,42 20.3731343,42 C20.8295313,42 21.2824232,41.9845309 21.7313433,41.9540736 L21.7313433,42 L182,42 L182,0 L21.7313433,0 L21.7313433,0.0459263766 Z" id="Combined-Shape" fill="#3A539B"></path>
+                    <path d="M0,20 L0,150.111621 C0.0147265278,155.903684 1.69064626,160.518046 5.0277592,163.954705 C7.15118118,166.141468 10.9357964,167.15053 16.3816047,166.981889 L205,166.981889 L205,34.1160801 L20.908982,34.1160801 C15.8977807,34.421814 11.7496114,33.4657493 8.46447415,31.2478862 C4.77995074,28.7603893 1.95845936,25.0110939 0,20 Z" id="Path-6" fill="#4A4A4A"></path>
+                    <rect id="Rectangle-3" fill="#F7CA18" x="24" y="20" width="169" height="51"></rect>
+                    <path d="M0,20 L0,150.111621 C0.0147265278,155.903684 1.69064626,160.518046 5.0277592,163.954705 C7.15118118,166.141468 10.9357964,167.15053 16.3816047,166.981889 L205,166.981889 L205,34.1160801 L20.908982,34.1160801 C15.8977807,34.421814 11.7496114,33.4657493 8.46447415,31.2478862 C4.77995074,28.7603893 1.95845936,25.0110939 0,20 Z" id="Path-6" fill="#22A7F0"></path>
+                    <path d="M179.333333,80.0631879 C178.885035,80.0213655 178.431039,80 177.972222,80 C169.703292,80 163,86.9395864 163,95.5 C163,104.060414 169.703292,111 177.972222,111 C178.431039,111 178.885035,110.978635 179.333333,110.936812 L179.333333,111 L212,111 L212,80 L179.333333,80 L179.333333,80.0631879 Z" id="Combined-Shape" fill="#4A4A4A"></path>
+                    <ellipse id="Oval" fill="#F7CA18" cx="178.5" cy="95" rx="9.5" ry="10"></ellipse>
+                </g>
+                <g id="Group-6" transform="translate(93.000000, 206.000000)">
+                    <g id="Group-5">
+                        <path d="M8,33 C8,14.7746033 22.7746033,0 41,0 C59.2253967,0 74,14.7746033 74,33 L61,33 C61,21.954305 52.045695,13 41,13 C29.954305,13 21,21.954305 21,33 L8,33 Z M8,33 L21,33 L21,61 L8,61 L8,33 Z" id="Combined-Shape" fill="#F09A27"></path>
+                        <path d="M0.0119563929,79 C0.542913885,56.8183463 18.6906081,39 41,39 C63.3093919,39 81.4570861,56.8183463 81.9880436,79 L82,79 L82,124 L0,124 L0,79 L0.0119563929,79 Z" id="Combined-Shape" fill="#6C7A89"></path>
+                        <circle id="Oval-5" fill="#D8D8D8" cx="41.5" cy="81.5" r="7.5"></circle>
+                        <rect id="Rectangle-7" fill="#D8D8D8" x="38" y="86" width="7" height="14"></rect>
+                    </g>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

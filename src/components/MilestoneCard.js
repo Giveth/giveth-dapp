@@ -2,7 +2,7 @@ import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 
 import { getTruncatedText, isOwner, getUserAvatar, getUserName } from './../lib/helpers'
-import { redirectAfterWalletUnlock } from './../lib/middleware'
+import { redirectAfterWalletUnlock, checkWalletBalance } from './../lib/middleware'
 import currentUserModel from '../models/currentUserModel'
 import CardStats from './CardStats'
 import Avatar from 'react-avatar'
@@ -25,16 +25,18 @@ class MilestoneCard extends Component {
   editMilestone(e) {
     e.stopPropagation()
 
-    React.swal({
-      title: "Edit Milestone?",
-      text: "Are you sure you want to edit this milestone?",
-      icon: "warning",
-      dangerMode: true,
-      buttons: ["Cancel", "Yes, edit"]
-    }).then((isConfirmed) => {
-      if(isConfirmed){
-        redirectAfterWalletUnlock(`/campaigns/${ this.props.milestone.campaignId }/milestones/${ this.props.milestone._id}/edit`, this.props.wallet, this.props.history)
-      } 
+    checkWalletBalance(this.props.wallet, this.props.history).then(()=>{  
+      React.swal({
+        title: "Edit Milestone?",
+        text: "Are you sure you want to edit this milestone?",
+        icon: "warning",
+        dangerMode: true,
+        buttons: ["Cancel", "Yes, edit"]
+      }).then((isConfirmed) => {
+        if(isConfirmed){
+          redirectAfterWalletUnlock(`/campaigns/${ this.props.milestone.campaignId }/milestones/${ this.props.milestone._id}/edit`, this.props.wallet, this.props.history)
+        } 
+      })
     })
   }
 

@@ -11,14 +11,18 @@ import currentUserModel from '../../models/currentUserModel'
 
 class UserWallet extends Component {
   componentWillMount(){
-    isAuthenticated(this.props.currentUser, this.props.history)
+    isAuthenticated(this.props.currentUser, this.props.history, this.props.wallet)
   }
+
 
   render() {
     return (
       <div id="profile-view" className="container-fluid page-layout">
         <center>
+          <img className="empty-state-img" src={process.env.PUBLIC_URL + "/img/wallet.svg"} width="200px" height="200px" alt="wallet-icon"/>
+
           <h1>Your wallet</h1>
+
           {this.props.currentUser && 
             <div>
               <p>{this.props.currentUser.address}</p>
@@ -37,7 +41,7 @@ export default UserWallet
 UserWallet.propTypes = {
   wallet: PropTypes.shape({
     unlocked: PropTypes.bool,
-    keystore: PropTypes.array
+    keystores: PropTypes.array
   }),  
   currentUser: currentUserModel,
   history: PropTypes.object.isRequired,

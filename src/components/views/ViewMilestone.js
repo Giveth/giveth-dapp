@@ -63,7 +63,8 @@ class ViewMilestone extends Component {
     //TODO fetch "non comitted" donations? add "intendedProjectId: milestoneId" to query to get all "pending aproval" donations for this milestone
     const query = paramsForServer({ 
       query: { ownerId: milestoneId },
-      schema: 'includeGiverDetails'
+      schema: 'includeGiverDetails',
+      $sort: { createdAt: -1 }  
     })  
     
     this.donationsObserver = feathersClient.service('donations').watch({ listStrategy: 'always' }).find(query).subscribe(
@@ -103,7 +104,6 @@ class ViewMilestone extends Component {
           owner,
           maxAmount,
           totalDonated,
-          reviewer,
           recipient,
           etherScanUrl
     } = this.state

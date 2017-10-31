@@ -10,7 +10,7 @@ const DatePickerFormsy = createReactClass({
   mixins: [Formsy.Mixin],
 
   getInitialState(){
-    return { startDate: moment() }
+    return { startDate: undefined }
   },
 
   handleChange(moment){
@@ -39,7 +39,7 @@ const DatePickerFormsy = createReactClass({
           tabIndex={2}
           minDate={moment()}
           selected={this.state.startDate}
-          placeholder={this.props.placeholder}
+          placeholderText={this.props.placeholder}
           onChange={this.handleChange} 
           className="form-control"
           />  

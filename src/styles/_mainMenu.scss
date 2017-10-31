@@ -1,6 +1,15 @@
 #main-menu {
   background-color: $header-background;
 
+  .mobile-wallet-lock {
+    display: none;
+  }
+
+  .navbar-brand {
+    padding-bottom: .5225rem;    
+    padding-top: 0;
+  }
+
   &.show {
 
     .navbar-collapse { 
@@ -45,6 +54,7 @@
   .navbar-toggler-icon {
     width: 18px;
     padding-top: 5px;
+    margin: 0;
   }
 
   .dropdown-profile {
@@ -66,6 +76,12 @@
   }
 
   .dropdown-item {
+    padding: .25rem 0.8rem;
+
+    i {
+      margin-right: 10px;
+    }
+
     &:active {
       background-color: #ddedfd;
     }
@@ -89,7 +105,7 @@
     position: fixed;
     background-color: white;
     bottom: 0;
-    top: 55px;
+    top: 54px;
     right: 0;
     left: 0;
     padding: .5rem 1rem;
@@ -123,6 +139,14 @@
         height: 50px !important;
         max-width: none !important;
       }
+    }
+  }
+
+  .mobile-wallet-lock {
+    display: flex !important;
+
+    a {
+      font-size: 1.2rem !important;
     }
   }
 }
