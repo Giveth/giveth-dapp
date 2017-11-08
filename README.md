@@ -14,7 +14,6 @@ Welcome to the code for Giveth's dapp. This is an open source effort to realize 
     - [For Windows](#for-windows)
     - [Run dapp](#run-dapp)
 - [Build](#build)
-- [Port](#port)
 - [Dependencies](#dependencies)
 - [Where are the config files?](#where-are-the-config-files)
 - [You don't use Redux?](#you-dont-use-redux)
@@ -91,19 +90,6 @@ Welcome to the code for Giveth's dapp. This is an open source effort to realize 
 # Build
 `npm run build`
 
-NOTE: due to a bug in Safari create-react-app's output does not work in Safari (and any iPhone browser)
-To fix this:
-
-`cd /node_modules/giveth-react-scripts/config`
-open `webpack.config.prod.js`
-go to line 300, and add:
-```
-  mangle: {
-    safari10: true,
-  },  
-```
-    
-## Port
 NOTE: due to a bug in Safari create-react-app's output does not work in Safari (and any iPhone browser)
 To fix this:
 
