@@ -66,6 +66,9 @@ class NewWallet extends Component {
         <div>
           <center>
             <h1>Backup your new Wallet!</h1>
+
+            <img className="empty-state-img" src={process.env.PUBLIC_URL + "/img/backup wallet.svg"} width="200px" height="200px" />
+
           </center>
 
           <div className="alert alert-info">

@@ -27,7 +27,7 @@ AuthenticatedLink.propTypes = {
   wallet: PropTypes.shape({
     unlocked: PropTypes.bool.isRequired,
     unlock: PropTypes.func.isRequired,
-  }).isRequired,
+  }),
   to: PropTypes.string.isRequired,
   children: PropTypes.node.isRequired,
   className: PropTypes.string

@@ -5,7 +5,7 @@ import LPPCampaign from 'lpp-campaign';
 
 import { feathersClient } from '../lib/feathersClient'
 import { Form } from 'formsy-react-components';
-import { takeActionAfterWalletUnlock } from '../lib/middleware'
+import { takeActionAfterWalletUnlock, checkWalletBalance } from '../lib/middleware'
 import { displayTransactionError } from '../lib/helpers'
 import getNetwork from '../lib/blockchain/getNetwork';
 import getWeb3 from '../lib/blockchain/getWeb3';
@@ -26,7 +26,9 @@ class DelegateButton extends Component {
   }
 
   openDialog(){
-    takeActionAfterWalletUnlock(this.props.wallet, () => this.refs.donateDialog.show())    
+    takeActionAfterWalletUnlock(this.props.wallet, () => 
+      checkWalletBalance(this.props.wallet, this.props.history)
+        .then(() => this.refs.donateDialog.show()))
   }
 
   selectedObject = ({ target: { value: selectedObject } }) => {
@@ -35,91 +37,91 @@ class DelegateButton extends Component {
 
 
   submit() {
-    const { toBN } = utils;
-    const { model } = this.props;
-    this.setState({ isSaving: true })
-    
-    // find the type of where we delegate to
-    const admin = this.props.types.find((t) => { return t.id === this.state.objectsToDelegateTo[0]});
+      const { toBN } = utils;
+      const { model } = this.props;
+      this.setState({ isSaving: true })
+      
+      // find the type of where we delegate to
+      const admin = this.props.types.find((t) => { return t.id === this.state.objectsToDelegateTo[0]});
 
-    // TODO find a more friendly way to do this.
-    if (admin.type === 'milestone' && toBN(admin.maxAmount).lt(toBN(admin.totalDonated || 0).add(toBN(model.amount)))) {
-      React.toast.error('That milestone has reached its funding goal. Please pick another');
-      return;
-    }
-
-    const delegate = (etherScanUrl, txHash) => {
-      const mutation = {
-        txHash,
-        status: 'pending'
-      };
-
-      if (admin.type.toLowerCase() === 'dac') {
-        Object.assign(mutation, {
-          delegate: admin.delegateId,
-          delegateId: admin._id
-        });
-      } else {
-        Object.assign(mutation, {
-          intendedProject: admin.projectId,
-          intendedProjectId: admin._id,
-          intendedProjectType: admin.type,
-        })
+      // TODO find a more friendly way to do this.
+      if (admin.type === 'milestone' && toBN(admin.maxAmount).lt(toBN(admin.totalDonated || 0).add(toBN(model.amount)))) {
+        React.toast.error('That milestone has reached its funding goal. Please pick another');
+        return;
       }
 
-      feathersClient.service('/donations').patch(model._id, mutation)
-        .then(donation => {
-          this.resetSkylight()
+      const delegate = (etherScanUrl, txHash) => {
+        const mutation = {
+          txHash,
+          status: 'pending'
+        };
 
-          // For some reason (I suspect a rerender when donations are being fetched again)
-          // the skylight dialog is sometimes gone and this throws error
-          if (this.refs.donateDialog) this.refs.donateDialog.hide()
+        if (admin.type.toLowerCase() === 'dac') {
+          Object.assign(mutation, {
+            delegate: admin.delegateId,
+            delegateId: admin._id
+          });
+        } else {
+          Object.assign(mutation, {
+            intendedProject: admin.projectId,
+            intendedProjectId: admin._id,
+            intendedProjectType: admin.type,
+          })
+        }
 
-          let msg;
-          if (admin.type === 'milestone' || 'campaign') {
-            msg = React.swal.msg(<p>The donation has been delegated, <a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">view the transaction here.</a>
-            The donator has <strong>3 days</strong> to reject your delegation before the money gets locked.</p>)
-          } else {
-            msg = React.swal.msg(<p>The donation has been delegated, <a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">view the transaction here.</a> The donator has been notified.</p>)
-          }
+        feathersClient.service('/donations').patch(model._id, mutation)
+          .then(donation => {
+            this.resetSkylight()
 
-          React.swal({
-            title: "Delegated!", 
-            content: msg,
-            icon: 'success',
-          })          
-      }).catch((e) => {
-        console.log(e)
-        displayTransactionError(txHash, etherScanUrl)
-        this.setState({ isSaving: false })
+            // For some reason (I suspect a rerender when donations are being fetched again)
+            // the skylight dialog is sometimes gone and this throws error
+            if (this.refs.donateDialog) this.refs.donateDialog.hide()
+
+            let msg;
+            if (admin.type === 'milestone' || 'campaign') {
+              msg = React.swal.msg(<p>The donation has been delegated, <a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">view the transaction here.</a>
+              The donator has <strong>3 days</strong> to reject your delegation before the money gets locked.</p>)
+            } else {
+              msg = React.swal.msg(<p>The donation has been delegated, <a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">view the transaction here.</a> The donator has been notified.</p>)
+            }
+
+            React.swal({
+              title: "Delegated!", 
+              content: msg,
+              icon: 'success',
+            })          
+        }).catch((e) => {
+          console.log(e)
+          displayTransactionError(txHash, etherScanUrl)
+          this.setState({ isSaving: false })
+        })
+      };
+
+      let txHash;
+      let etherScanUrl;
+      
+      Promise.all([ getNetwork(), getWeb3() ])
+        .then(([ network, web3 ]) => {
+          const { liquidPledging } = network;
+          etherScanUrl = network.etherscan;
+
+          const senderId = (model.delegate > 0) ? model.delegate : model.owner;
+          const receiverId = (admin.type === 'dac') ? admin.delegateId : admin.projectId;
+          const contract = (model.ownerType === 'campaign') ? new LPPCampaign(web3, model.ownerEntity.pluginAddress) : liquidPledging;
+
+          return contract.transfer(senderId, model.pledgeId, model.amount, receiverId, { $extraGas: 50000 })
+            .once('transactionHash', hash => {
+              txHash = hash;
+              delegate(etherScanUrl, txHash);
+            }).on('error', console.log);
+        })
+        .then(() => {
+          React.toast.success(<p>Your donation has been confirmed!<br/><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>)
+        }).catch((e) => {
+          console.error(e);
+          displayTransactionError(txHash, etherScanUrl)
+          this.setState({ isSaving: false });
       })
-    };
-
-    let txHash;
-    let etherScanUrl;
-    
-    Promise.all([ getNetwork(), getWeb3() ])
-      .then(([ network, web3 ]) => {
-        const { liquidPledging } = network;
-        etherScanUrl = network.etherscan;
-
-        const senderId = (model.delegate > 0) ? model.delegate : model.owner;
-        const receiverId = (admin.type === 'dac') ? admin.delegateId : admin.projectId;
-        const contract = (model.ownerType === 'campaign') ? new LPPCampaign(web3, model.ownerEntity.pluginAddress) : liquidPledging;
-
-        return contract.transfer(senderId, model.pledgeId, model.amount, receiverId, { $extraGas: 50000 })
-          .once('transactionHash', hash => {
-            txHash = hash;
-            delegate(etherScanUrl, txHash);
-          }).on('error', console.log);
-      })
-      .then(() => {
-        React.toast.success(<p>Your donation has been confirmed!<br/><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>)
-      }).catch((e) => {
-        console.error(e);
-        displayTransactionError(txHash, etherScanUrl)
-        this.setState({ isSaving: false });
-    })
   }
 
   resetSkylight(){

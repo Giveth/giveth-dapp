@@ -41,13 +41,14 @@ class UnlockWalletForm extends Component {
     const { formIsValid, password } = this.state;
 
     return (
-      <span>
-       {error &&
-       <div className="alert alert-danger">{error}</div>
-       }
+      <span id="account-view">
+        {error &&
+          <div className="alert alert-danger">{error}</div>
+        }
+        
         <Form className="unlock-wallet-form" onSubmit={this.submit} onValid={() => this.toggleFormValid(true)}
               onInvalid={() => this.toggleFormValid(false)} layout='vertical'>
-          
+           
           <div className="form-group">
             <Input
               value={password}
@@ -66,12 +67,13 @@ class UnlockWalletForm extends Component {
             disabled={unlocking || !formIsValid}
             isLoading={unlocking}
             loadingText="Unlocking your wallet...">
+              <i className="fa fa-unlock"></i>
               {buttonText}
           </LoaderButton>
 
           {this.props.children}
 
-          </Form>
+        </Form>
      </span>
     )
   }

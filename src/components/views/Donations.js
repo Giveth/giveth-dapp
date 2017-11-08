@@ -1,13 +1,14 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import { utils } from 'web3';
+import { Link } from 'react-router-dom'
 
 import { feathersClient } from '../../lib/feathersClient'
 import { paramsForServer } from 'feathers-hooks-common'
 import Loader from '../Loader'
-import { isAuthenticated, takeActionAfterWalletUnlock } from '../../lib/middleware'
+import { isAuthenticated, takeActionAfterWalletUnlock, checkWalletBalance } from '../../lib/middleware'
 import getNetwork from '../../lib/blockchain/getNetwork';
-import { displayTransactionError } from '../../lib/helpers'
+import { displayTransactionError, getTruncatedText } from '../../lib/helpers'
 
 import currentUserModel from '../../models/currentUserModel'
 
@@ -96,155 +97,38 @@ class Donations extends Component {
 
   commit(donation){
     takeActionAfterWalletUnlock(this.props.wallet, () =>
-      React.swal({
-        title: "Commit your donation?",
-        text: "Your donation will go to this milestone. After committing you cannot take back your money anymore.",
-        icon: "warning",
-        buttons: ["Cancel", "Yes, commit"]      
-      }).then((isConfirmed) => {
-        if(isConfirmed) {   
-          this.setState({ isCommitting: true })
+      checkWalletBalance(this.props.wallet, this.props.history).then(()=>
+        React.swal({
+          title: "Commit your donation?",
+          text: "Your donation will go to this milestone. After committing you cannot take back your money anymore.",
+          icon: "warning",
+          buttons: ["Cancel", "Yes, commit"]      
+        }).then((isConfirmed) => {
+          if(isConfirmed) {   
+            this.setState({ isCommitting: true })
 
-          const doCommit = (etherScanUrl, txHash) => {
-            feathersClient.service('/donations').patch(donation._id, {
-              status: 'pending',
-              $unset: {
-                pendingProject: true,
-                pendingProjectId: true,
-                pendingProjectType: true,
-                delegate: true,
-                delegateType: true,
-                delegateId: true,
-              },
-              txHash,
-              owner: donation.pendingProject,
-              ownerId: donation.pendingProjectId,
-              ownerType: donation.pendingProjectType,
-            }).then(donation => {
-              this.setState({ isCommitting: false })
-                React.toast.success(<p>Your donation has been committed.<br/><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>)
-            }).catch((e) => {
-              console.log(e)
-              React.toast.error("Oh no! Something went wrong with the transaction. Please try again.")
-              this.setState({ isCommitting: false })
-            });
-          };
-
-          let txHash;
-          let etherScanUrl;
-          getNetwork()
-            .then((network) => {
-              const { liquidPledging } = network;
-              etherScanUrl = network.etherscan;
-
-              return liquidPledging.transfer(donation.owner, donation.pledgeId, donation.amount, donation.intendedProject, { $extraGas: 50000 })
-                .once('transactionHash', hash => {
-                  txHash = hash;
-                  doCommit(etherScanUrl, txHash);
-                });
-            })
-            .then(() => {
-              React.toast.success(<p>Your donation has been committed.<br/><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>)
-            }).catch((e) => {
-            console.error(e);
-            displayTransactionError(txHash, etherScanUrl)
-            this.setState({ isSaving: false });
-          })
-        }
-      })
-    )
-  }
-
-  reject(donation){
-    takeActionAfterWalletUnlock(this.props.wallet, () =>
-      React.swal({
-        title: "Reject your donation?",
-        text: "Your donation will not go to this milestone. You will still be in control of you funds and the dac can still delegate you donation.",
-        icon: "warning",
-        dangerMode: true,
-        buttons: ["Cancel", "Yes, reject"]
-      }).then((isConfirmed) => {
-        if(isConfirmed) {
-          this.setState({ isRejecting: true })
-
-          const doReject = (etherScanUrl, txHash) => {
-            feathersClient.service('/donations').patch(donation._id, {
-              status: 'pending',
-              $unset: {
-                pendingProject: true,
-                pendingProjectId: true,
-                pendingProjectType: true,
-              },
-              txHash,
-            }).then(donation => {
-              this.setState({ isRejecting: false })
-              React.toast.success(<p>Your donation has been rejected.<br/><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>)
-            }).catch((e) => {
-              console.log(e)
-              React.toast.error("Oh no! Something went wrong with the transaction. Please try again.")
-              this.setState({ isRejecting: false })
-            });
-          };
-
-          let txHash;
-          let etherScanUrl;
-          getNetwork()
-            .then((network) => {
-              const { liquidPledging } = network;
-              etherScanUrl = network.etherscan;
-
-              return liquidPledging.transfer(donation.owner, donation.pledgeId, donation.amount, donation.delegate, { $extraGas: 50000 })
-                .once('transactionHash', hash => {
-                  txHash = hash;
-                  doReject(etherScanUrl, txHash);
-                });
-            })
-            .then(() => {
-              React.toast.success(<p>The delegation has been rejected.<br/><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>)
-            }).catch((e) => {
-              console.error(e);
-              displayTransactionError(txHash, etherScanUrl)
-              this.setState({ isSaving: false });
-          })
-        }
-      })
-    )
-  }
-
-  refund(donation){
-    takeActionAfterWalletUnlock(this.props.wallet, () =>
-      React.swal({
-        title: "Refund your donation?",
-        text: "Your donation will be cancelled and the a payment will be authorized for you to withdraw your ETH. All withdrawls" +
-        " must be confirmed for security reasons and may take a day or two. Upon confirmation, your &#926; will be" +
-        " transferred to your wallet.",
-        icon: "warning",
-        dangerMode: true,      
-        buttons: ["Cancel", "Yes, refund"]
-      }).then((isConfirmed) => {
-          if (isConfirmed) {
-            this.setState({ isRefunding: true });
-
-            const doRefund = (etherScanUrl, txHash) => {
+            const doCommit = (etherScanUrl, txHash) => {
               feathersClient.service('/donations').patch(donation._id, {
                 status: 'pending',
                 $unset: {
-                  delegate: true,
-                  delegateId: true,
-                  delegateType: true,
                   pendingProject: true,
                   pendingProjectId: true,
                   pendingProjectType: true,
+                  delegate: true,
+                  delegateType: true,
+                  delegateId: true,
                 },
-                paymentStatus: 'Paying',
                 txHash,
+                owner: donation.pendingProject,
+                ownerId: donation.pendingProjectId,
+                ownerType: donation.pendingProjectType,
               }).then(donation => {
-                this.setState({ isRefunding: false })
-                React.toast.success(<p>The refund is pending...<br/><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>)
+                this.setState({ isCommitting: false })
+                  React.toast.success(<p>Your donation has been committed.<br/><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>)
               }).catch((e) => {
                 console.log(e)
                 React.toast.error("Oh no! Something went wrong with the transaction. Please try again.")
-                this.setState({ isRefunding: false })
+                this.setState({ isCommitting: false })
               });
             };
 
@@ -255,22 +139,145 @@ class Donations extends Component {
                 const { liquidPledging } = network;
                 etherScanUrl = network.etherscan;
 
-                return liquidPledging.withdraw(donation.pledgeId, donation.amount, { $extraGas: 50000 })
+                return liquidPledging.transfer(donation.owner, donation.pledgeId, donation.amount, donation.intendedProject, { $extraGas: 50000 })
                   .once('transactionHash', hash => {
                     txHash = hash;
-                    doRefund(etherScanUrl, txHash);
+                    doCommit(etherScanUrl, txHash);
                   });
               })
               .then(() => {
-                React.toast.success(<p>Your donation has been refunded!<br/><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>)
+                React.toast.success(<p>Your donation has been committed.<br/><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>)
+              }).catch((e) => {
+              console.error(e);
+              displayTransactionError(txHash, etherScanUrl)
+              this.setState({ isSaving: false });
+            })
+          }
+        })
+      )
+    )
+  }
+
+  reject(donation){
+    takeActionAfterWalletUnlock(this.props.wallet, () =>
+      checkWalletBalance(this.props.wallet, this.props.history).then(()=>    
+        React.swal({
+          title: "Reject your donation?",
+          text: "Your donation will not go to this milestone. You will still be in control of you funds and the dac can still delegate you donation.",
+          icon: "warning",
+          dangerMode: true,
+          buttons: ["Cancel", "Yes, reject"]
+        }).then((isConfirmed) => {
+          if(isConfirmed) {
+            this.setState({ isRejecting: true })
+
+            const doReject = (etherScanUrl, txHash) => {
+              feathersClient.service('/donations').patch(donation._id, {
+                status: 'pending',
+                $unset: {
+                  pendingProject: true,
+                  pendingProjectId: true,
+                  pendingProjectType: true,
+                },
+                txHash,
+              }).then(donation => {
+                this.setState({ isRejecting: false })
+                React.toast.success(<p>Your donation has been rejected.<br/><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>)
+              }).catch((e) => {
+                console.log(e)
+                React.toast.error("Oh no! Something went wrong with the transaction. Please try again.")
+                this.setState({ isRejecting: false })
+              });
+            };
+
+            let txHash;
+            let etherScanUrl;
+            getNetwork()
+              .then((network) => {
+                const { liquidPledging } = network;
+                etherScanUrl = network.etherscan;
+
+                return liquidPledging.transfer(donation.owner, donation.pledgeId, donation.amount, donation.delegate, { $extraGas: 50000 })
+                  .once('transactionHash', hash => {
+                    txHash = hash;
+                    doReject(etherScanUrl, txHash);
+                  });
+              })
+              .then(() => {
+                React.toast.success(<p>The delegation has been rejected.<br/><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>)
               }).catch((e) => {
                 console.error(e);
                 displayTransactionError(txHash, etherScanUrl)
-
                 this.setState({ isSaving: false });
-            });
+            })
           }
-        }
+        })
+      )
+    )
+  }
+
+  refund(donation){
+    takeActionAfterWalletUnlock(this.props.wallet, () =>
+      checkWalletBalance(this.props.wallet, this.props.history).then(()=>    
+        React.swal({
+          title: "Refund your donation?",
+          text: "Your donation will be cancelled and the a payment will be authorized for you to withdraw your ETH. All withdrawls" +
+          " must be confirmed for security reasons and may take a day or two. Upon confirmation, your &#926; will be" +
+          " transferred to your wallet.",
+          icon: "warning",
+          dangerMode: true,      
+          buttons: ["Cancel", "Yes, refund"]
+        }).then((isConfirmed) => {
+            if (isConfirmed) {
+              this.setState({ isRefunding: true });
+
+              const doRefund = (etherScanUrl, txHash) => {
+                feathersClient.service('/donations').patch(donation._id, {
+                  status: 'pending',
+                  $unset: {
+                    delegate: true,
+                    delegateId: true,
+                    delegateType: true,
+                    pendingProject: true,
+                    pendingProjectId: true,
+                    pendingProjectType: true,
+                  },
+                  paymentStatus: 'Paying',
+                  txHash,
+                }).then(donation => {
+                  this.setState({ isRefunding: false })
+                  React.toast.success(<p>The refund is pending...<br/><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>)
+                }).catch((e) => {
+                  console.log(e)
+                  React.toast.error("Oh no! Something went wrong with the transaction. Please try again.")
+                  this.setState({ isRefunding: false })
+                });
+              };
+
+              let txHash;
+              let etherScanUrl;
+              getNetwork()
+                .then((network) => {
+                  const { liquidPledging } = network;
+                  etherScanUrl = network.etherscan;
+
+                  return liquidPledging.withdraw(donation.pledgeId, donation.amount, { $extraGas: 50000 })
+                    .once('transactionHash', hash => {
+                      txHash = hash;
+                      doRefund(etherScanUrl, txHash);
+                    });
+                })
+                .then(() => {
+                  React.toast.success(<p>Your donation has been refunded!<br/><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>)
+                }).catch((e) => {
+                  console.error(e);
+                  displayTransactionError(txHash, etherScanUrl)
+
+                  this.setState({ isSaving: false });
+              });
+            }
+          }
+        )
       )
     )
   }
@@ -285,76 +292,97 @@ class Donations extends Component {
           <div className="container-fluid page-layout dashboard-table-view">
             <div className="row">
               <div className="col-md-10 m-auto">
-                <h1>Your donations</h1>
+                
+                { (isLoading || (donations && donations.length > 0)) &&
+                  <h1>Your donations</h1>
+                }
 
                 { isLoading && 
                   <Loader className="fixed"/>
                 }
 
                 { !isLoading &&
-                  <div>
+                  <div className="table-container">
                     { donations && donations.length > 0 && 
 
                       <table className="table table-responsive table-striped table-hover">
                         <thead>
                           <tr>
-                            <th>Status</th>                          
-                            <th>Amount</th>
-                            <th>Donated to</th>
-                            <th>Address</th>
-                            <th>Date</th>
-                            <th></th>
+                            <th className="td-date">Date</th>  
+                            <th className="td-donated-to">Donated to</th>                                                                                                          
+                            <th className="td-donations-amount">Amount</th>  
+                            <th className="td-transaction-status">Status</th>                          
+                            <th className="td-tx-address">Address</th>
+                            <th className="td-action"></th>
                           </tr>
                         </thead>
                         <tbody>
                           { donations.map((d, index) =>
                             <tr key={index} className={d.status === 'pending' ? 'pending' : ''}>
-                              <td>
-                                {d.status === 'pending' && 
-                                  <span><i className="fa fa-circle-o-notch fa-spin"></i>&nbsp;</span> 
-                                }
-                                {this.getStatus(d.status)}
-                              </td>                            
-                              <td>&#926;{utils.fromWei(d.amount)}</td>
-                              <td>
+                              <td className="td-date">{moment(d.createdAt).format("MM/DD/YYYY")}</td>
+                          
+                              <td className="td-donated-to">
                                 {d.intendedProject > 0 &&
                                   <span className="badge badge-info">
                                     <i className="fa fa-random"></i>
                                     &nbsp;Delegated
                                   </span>
                                 }
- 
-                                {d.delegate > 0 && d.intendedProject &&
-                                  <span>{d.intendedProject.toUpperCase()}</span>
-                                }
-                                {!d.delegate &&
-                                  d.ownerType.toUpperCase()
-                                }
 
-                                &nbsp;
-                                <em>
+
+
+                                {/* Not sure why this is here, it just displays '0' in the UI
+                                  {d.delegate > 0 && d.intendedProject &&
+                                    <span>{d.intendedProject.toUpperCase()}</span>
+                                  }
+
+                                  I've hardcoded these values for now, see below
+
+                                  {!d.delegate &&
+                                    d.ownerType.toUpperCase()
+                                  }
+
                                   {d.delegate > 0 && d.delegateEntity &&
-                                    <span>{d.delegateEntity.title}</span>
-                                  }
+                                    <span>DAC</span>
+                                  }  
 
-                                  {d.ownerType === 'campaign' && d.ownerEntity &&
-                                    <span>{d.ownerEntity.title}</span>
-                                  }
+                                  &nbsp;
 
-                                  {d.ownerType === 'milestone' && d.ownerEntity &&
-                                    <span>{d.ownerEntity.title}</span>
-                                  }                                  
-                                </em>
+                                */}
+
+                                
+                                {d.delegate > 0 && d.delegateEntity &&
+                                  <Link to={`/dacs/${d.delegateEntity._id}`}>DAC <em>{getTruncatedText(d.delegateEntity.title, 45)}</em></Link>
+                                }
+
+                                {d.ownerType === 'campaign' && d.ownerEntity &&
+                                  <Link to={`/${d.ownerType}s/${d.ownerEntity._id}`}>CAMPAIGN <em>{getTruncatedText(d.ownerEntity.title, 45)}</em></Link>
+                                }
+
+                                {d.ownerType === 'milestone' && d.ownerEntity &&
+                                  <Link to={`/${d.ownerType}s/${d.ownerEntity._id}`}>MILESTONE <em>{getTruncatedText(d.ownerEntity.title, 45)}</em></Link>
+                                }                                  
 
                               </td>
+                              <td className="td-donations-amount">Ξ{utils.fromWei(d.amount)}</td>
+
+                              <td className="td-transaction-status">
+                                {d.status === 'pending' && 
+                                  <span><i className="fa fa-circle-o-notch fa-spin"></i>&nbsp;</span> 
+                                }
+                                {this.getStatus(d.status)}
+                              </td> 
+
                               {etherScanUrl &&
-                              <td><a href={`${etherScanUrl}address/${d.giverAddress}`}>{d.giverAddress}</a></td>
+                                <td className="td-tx-address"><a href={`${etherScanUrl}address/${d.giverAddress}`}>{d.giverAddress}</a></td>
                               }
                               {!etherScanUrl &&
-                              <td>{d.giverAddress}</td>
+                                <td className="td-tx-address">{d.giverAddress}</td>
                               }
-                              <td>{moment(d.createdAt).format("MM/DD/YYYY")}</td>
-                              <td>
+
+
+
+                              <td className="td-actions">
                                 { d.ownerId === currentUser.address && d.status === 'waiting' &&
                                   <a className="btn btn-sm btn-danger" onClick={()=>this.refund(d)} disabled={isRefunding}>
                                     Refund
@@ -380,7 +408,12 @@ class Donations extends Component {
                     }
 
                     { donations && donations.length === 0 &&
-                      <center>You didn't make any donations yet!</center>
+                      <div>            
+                        <center>
+                          <h3>You didn't make any donations yet!</h3>
+                          <img className="empty-state-img" src={process.env.PUBLIC_URL + "/img/donation.svg"} width="200px" height="200px" alt="no-donations-icon"/>
+                        </center>
+                      </div>                         
                     }
                   </div>
                 }

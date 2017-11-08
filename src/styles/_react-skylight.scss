@@ -10,7 +10,8 @@
   height: auto !important;
   width: 64% !important;
   z-index: 9999 !important;
-  
+  text-align: center; 
+
   animation: pop 0.3s ease-out 1;
 
   h2 {
@@ -22,7 +23,12 @@
   @media (max-width: 768px) {
     width: 90% !important;
     margin-left: -45% !important;
-  }    
+  }   
+
+  @media (min-width: 1200px) {
+    width: 50% !important;
+    margin-left: -25% !important;
+  }     
 }
 
 

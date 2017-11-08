@@ -48,7 +48,8 @@ class ViewDAC extends Component {
 
     feathersClient.service('dacs').find({ query: {_id: dacId }})
       .then(resp => {
-        console.log(resp)
+        console.log(resp);
+        // console.log(calculateRiskFactor(resp.data[0].owner, resp.data[0].milestonesCount))
         this.setState(Object.assign({}, resp.data[0], {
           isLoading: false,
           hasError: false
@@ -61,6 +62,7 @@ class ViewDAC extends Component {
     this.donationsObserver = feathersClient.service('donations/history').watch({ listStrategy: 'always' }).find({
       query: {
         delegateId: dacId,
+        $sort: { createdAt: -1 }          
       }
     }).subscribe(
       resp =>{

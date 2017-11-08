@@ -56,3 +56,32 @@ export const takeActionAfterWalletUnlock = (wallet, action) => {
     action.call()
   }
 }
+
+
+/* Checks for sufficient wallet balance. 
+ *
+ * @params:
+ *    wallet (object): wallet object
+ *
+ */
+export const checkWalletBalance = (wallet, history) => {
+  return new Promise((resolve, reject) => {
+    if(wallet.getBalance() >= React.minimumWalletBalance) {
+      resolve()
+    } else {
+      React.swal({
+        title: "Insufficient wallet balance", 
+        content: React.swal.msg(
+          <p>
+            Unfortunately you need at least Ξ{React.minimumWalletBalance} in your wallet to continue. Please transfer some Ξ to your Giveth wallet first.
+          </p>
+        ),
+        icon: 'warning',
+        buttons: ["OK", "View wallet info"]
+      }).then((isConfirmed) => {
+        if(isConfirmed) history.push('/wallet')
+        reject('noBalance')
+      });
+    }
+  })      
+}

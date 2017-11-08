@@ -19,17 +19,17 @@ const _password = new WeakMap();
 class GivethWallet {
 
   /**
-   * @param keystore      array of keystores to add to the wallet
+   * @param keystores      array of keystores to add to the wallet
    * @param provider      optional. This is necessary when signing a transaction to retrieve chainId, gasPrice
    *                      and nonce automatically
    */
-  constructor(keystore, provider) {
-    if (!Array.isArray(keystore) || keystore.length === 0) throw new Error('keystore is required. and must be an array');
+  constructor(keystores, provider) {
+    if (!Array.isArray(keystores) || keystores.length === 0) throw new Error('keystores is required. and must be an array');
 
     const accounts = new Accounts(provider);
     _set.call(_accounts, this, accounts);
 
-    this.keystore = keystore;
+    this.keystores = keystores;
     this.unlocked = false;
     this.balance = undefined;
   }
@@ -83,7 +83,7 @@ class GivethWallet {
       const decrypt = () => {
         const accounts = _get.call(_accounts, this);
         try {
-          accounts.wallet.decrypt(this.keystore, password);
+          accounts.wallet.decrypt(this.keystores, password);
         } catch (e) {
           return reject(e);
         }
@@ -130,14 +130,14 @@ class GivethWallet {
       return addrs;
     }
 
-    return this.keystore.map(account => GivethWallet.fixAddress(account.address));
+    return this.keystores.map(account => GivethWallet.fixAddress(account.address));
   }
 
   /**
-   * locally caches the keystore in storage
+   * locally caches the keystores in storage
    */
   cacheKeystore() {
-    localforage.setItem('keystore', this.keystore);
+    localforage.setItem('keystore', this.keystores);
   }
 
   /**
