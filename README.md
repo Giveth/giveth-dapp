@@ -1,7 +1,7 @@
 ![Giveth Dapp](./readme-header.png)
 
 
-> Dapp for donating ether without losing ownership 
+> Dapp for donating ether without losing ownership
 
 NOTE: Please use `develop` branch for contributing.
 
@@ -29,7 +29,7 @@ Welcome to the code for Giveth's dapp. This is an open source effort to realize 
 2. Join our [slack](http://slack.giveth.io) if you haven't already.
 3. Fork this repo by clicking **Fork** button in top-right corner of this web page. Continue to follow instruction steps from your own giveth-dapp repo.
 4. Clone your own "giveth-dapp" repo. Copy the link from the "Clone or download" button near the top right of this repo's home page.
-5. The rest of these steps must be done from your machine's command line. See the [OSX and Linux](#for-osx-and-linux) or [Windows](#for-windows) section to continue. 
+5. The rest of these steps must be done from your machine's command line. See the [OSX and Linux](#for-osx-and-linux) or [Windows](#for-windows) section to continue.
 
 ### For OSX and Linux
 1. From the desired directory you wish to copy the "giveth-dapp" folder with source files to.
@@ -46,10 +46,10 @@ Welcome to the code for Giveth's dapp. This is an open source effort to realize 
     npm install
     ```
 5. That is it, you are now ready to run the giveth-dapp! Head to the [Run dapp](#run-dapp) section for further instructions.
-    
-### For Windows 
-1. Make sure you have the most current version of [64-bit NodeJS](https://nodejs.org/en/download/current) (v8.4.0 or higher) 
-2. Run the node-v8.X.X-x64.msi installer and then continue through the installation as normal. Be sure to have the "Enable in PATH" option enabled before installing.
+
+### For Windows
+1. Make sure you have the LTS version of [64-bit NodeJS](https://nodejs.org/en/download/current) (v8.9.1)
+2. Run the node-v8.9.1-x64.msi installer and then continue through the installation as normal. Be sure to have the "Enable in PATH" option enabled before installing.
 3. Open the command line in administrator mode by right clicking on the cmd.exe application and selecting "Run as administrator"
 4. In the administrator command prompt, change to the directory where you want to store this repository.
    ```
@@ -63,11 +63,19 @@ Welcome to the code for Giveth's dapp. This is an open source effort to realize 
    ```
    npm install -g windows-build-tools
    ```
-7. For some reason the npm node-sass package does not install correctly in windows when using the 'npm install' command, so you must rebuild the node-sass package with:
+7. Install dependencies from within giveth-dapp directory:
+    ```
+    npm install
+    ```
+8. For some reason the npm node-sass package does not install correctly in windows when using the 'npm install' command, so you must rebuild the node-sass package with:
    ```
    npm rebuild node-sass
    ```
-8. That is it, you are now ready to run the giveth-dapp! Head to the [Run dapp](#run-dapp) section for further instructions.
+9. The web3 package does not install correctly when using the 'npm install' command, so you must install it separately in order for this dapp to run. Use the following to install web3:
+  ```
+  npm install web3
+  ```
+10. That is it, you are now ready to run the giveth-dapp! Head to the [Run dapp](#run-dapp) section for further instructions.
 
 ### Run dapp
 1. The Giveth dapp will need to connect to a [feathers-giveth](https://github.com/Giveth/feathers-giveth) server. Follow the feathers-giveth readme instructions to install and run server before proceeding further.
