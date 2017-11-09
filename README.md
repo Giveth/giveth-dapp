@@ -85,7 +85,7 @@ Welcome to the code for Giveth's dapp. This is an open source effort to realize 
 4. Once the dapp is up in your browser, click "Sign In" from the main menu.
 5. For testing locally, choose any of the wallet files found in the `giveth-dapp/keystores/` folder using the wallet password: `password`. **DO NOT USE THESE ON MAINNET ETHEREUM.**
 
-# Build
+## Build
 `npm run build`
 
 NOTE: due to a bug in Safari create-react-app's output does not work in Safari (and any iPhone browser)
@@ -102,7 +102,7 @@ go to line 300, and add:
 
 now the build will work in Safari
 
-# Issues?
+## Issues?
 - You need to use Node > v6
 - You need to use npm 4.x, or npm >= 5.3, or yarn to correctly install the dependencies
 - Don't use NPM? All commands can be used using Yarn.
@@ -128,6 +128,23 @@ As long as a container is rendered the data is persistent.
 When running `testrpc` locally and in `deterministic` mode, you can use any of the keystores in the `keystores` when loading your wallet.
 This will provide you access to the testrpc accounts for local development. Each keystore uses the same password: `password`. **DO NOT USE
 THESE ON MAINNET ETHEREUM.**
+
+## Testing Environments and CI
+
+### master to Ropsten
+1. The Giveth Dapp is auto deployed from the master branch and is live on Ropsten and can be reached here: https://alpha.giveth.io  
+2. In order to use the dapp you will need ETH on the Ropsten network. You can use this faucet to get some: http://faucet.ropsten.be:3001/
+3. "sign up" on the dapp to create an account.
+4. Go to the "wallet" page to see your new address (0x..). Copy and past that address into the faucet link above and you will have Ropsten network ETH for testing.
+
+### develop to remote testprc
+1. The Giveth Dapp is auto deployed from the develop branch to a remote testrpc instance and can be reached here: https://giveth-develop.netlify.com/
+2. In order to use the dapp you will need ETH on testrpc. You can do this by downloading a testrpc wallet from here: https://drive.google.com/open?id=1wb9xGdmAH9hWJsQTG7W8TrvKOqEzTmRs
+3. You can use one of the downloaded json files to "sign in" on the dapp.  The password is: password
+4. **Never use this wallet anywhere except for testing.** It should have ETH if you run testrpc locally or here on the develop environment: https://giveth-develop.netlify.com/
+5. Sometimes testrpc crashes. You can check if it's up by seeing if there is an error here: https://feathers3.giveth.io/get-state/
+6. If you see pretty json, then you're looking at the state of the running testrpc blockchain. If you see an error message, than testrpc needs to be restarted. Reach out to @oz on [slack](slack.giveth.io).
+7. We are hoping to replace remote testrpc with [puppeth](https://modalduality.org/posts/puppeth/), as soon as we figure it out :)
 
 ## Help
 Reach out to us on [slack](http://slack.giveth.io) for any help or to share ideas.
