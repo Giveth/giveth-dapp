@@ -139,12 +139,12 @@ THESE ON MAINNET ETHEREUM.**
 
 ### develop to remote testprc
 1. The Giveth Dapp is auto deployed from the develop branch to a remote testrpc instance and can be reached here: https://giveth-develop.netlify.com/
-2. In order to use the dapp you will need ETH on testrpc. You can do this by downloading a testrpc wallet from here: https://drive.google.com/open?id=1wb9xGdmAH9hWJsQTG7W8TrvKOqEzTmRs
+2. In order to use the dapp you will need ETH on testrpc. You can do this by downloading a testrpc wallet from here: https://drive.google.com/open?id=1EU3U2dFkFD0MuSQqN2GjZIosvuaP4u_S
 3. You can use one of the downloaded json files to "sign in" on the dapp.  The password is: password
 4. **Never use this wallet anywhere except for testing.** It should have ETH if you run testrpc locally or here on the develop environment: https://giveth-develop.netlify.com/
 5. Sometimes testrpc crashes. You can check if it's up by seeing if there is an error here: https://feathers3.giveth.io/get-state/
 6. If you see pretty json, then you're looking at the state of the running testrpc blockchain. If you see an error message, than testrpc needs to be restarted. Reach out to @oz on [slack](slack.giveth.io).
-7. We are hoping to replace remote testrpc with [puppeth](https://modalduality.org/posts/puppeth/), as soon as we figure it out :)
+7. We are hoping to replace remote testrpc with private geth node via [puppeth](https://modalduality.org/posts/puppeth/), as soon as we figure it out :)
 
 ## Help
 Reach out to us on [slack](http://slack.giveth.io) for any help or to share ideas.
