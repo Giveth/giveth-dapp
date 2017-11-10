@@ -210,8 +210,8 @@ class EditDAC extends Component {
                           ref="title"
                           type="text"
                           value={title}
-                          placeholder="E.g. Ending climate change."
-                          help="Describe what your community is aiming for in 1 scentence."
+                          placeholder="e.g. Hurricane relief."
+                          help="Describe your Decentralized Altruistic Community (DAC) in 1 sentence."
                           validations="minLength:10"
                           validationErrors={{
                               minLength: 'Please provide at least 10 characters.'
