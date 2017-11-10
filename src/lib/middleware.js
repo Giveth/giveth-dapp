@@ -83,5 +83,5 @@ export const checkWalletBalance = (wallet, history) => {
         reject('noBalance')
       });
     }
-  })      
+  })     
 }

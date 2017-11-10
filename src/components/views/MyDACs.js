@@ -4,7 +4,7 @@ import { utils } from 'web3';
 import { Link } from 'react-router-dom'
 
 import { feathersClient } from '../../lib/feathersClient'
-import { isAuthenticated, redirectAfterWalletUnlock, checkWalletBalance } from '../../lib/middleware'
+import { isAuthenticated, redirectAfterWalletUnlock, takeActionAfterWalletUnlock, checkWalletBalance } from '../../lib/middleware'
 import { getTruncatedText } from "../../lib/helpers";
 
 import Loader from '../Loader'
@@ -68,17 +68,19 @@ class MyDACs extends Component {
   // }
 
   editDAC(id) {
-    checkWalletBalance(this.props.wallet, this.props.history).then(()=>    
-      React.swal({
-        title: "Edit Community?",
-        text: "Are you sure you want to edit the description of this community?",
-        icon: "warning",
-        dangerMode: true,
-        buttons: ["Cancel", "Yes, edit"]
-      }).then((isConfirmed) => {
-        if(isConfirmed) redirectAfterWalletUnlock("/dacs/" + id + "/edit", this.props.wallet, this.props.history)
-      })
-    )
+    takeActionAfterWalletUnlock(this.props.wallet, () => { 
+      checkWalletBalance(this.props.wallet, this.props.history).then(()=>    
+        React.swal({
+          title: "Edit Community?",
+          text: "Are you sure you want to edit the description of this community?",
+          icon: "warning",
+          dangerMode: true,
+          buttons: ["Cancel", "Yes, edit"]
+        }).then((isConfirmed) => {
+          if(isConfirmed) redirectAfterWalletUnlock("/dacs/" + id + "/edit", this.props.wallet, this.props.history)
+        })
+      )
+    })
   }
 
   render() {

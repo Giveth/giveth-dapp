@@ -6,7 +6,7 @@ import _ from 'underscore'
 import { Link } from 'react-router-dom'
 
 import { feathersClient } from '../../lib/feathersClient'
-import { isAuthenticated, redirectAfterWalletUnlock, checkWalletBalance } from '../../lib/middleware'
+import { isAuthenticated, redirectAfterWalletUnlock, takeActionAfterWalletUnlock, checkWalletBalance } from '../../lib/middleware'
 import Loader from '../Loader'
 import currentUserModel from '../../models/currentUserModel'
 import { displayTransactionError, getTruncatedText } from "../../lib/helpers";
@@ -75,63 +75,67 @@ class MyCampaigns extends Component {
   // }
 
   editCampaign(id) {
-    checkWalletBalance(this.props.wallet, this.props.history).then(()=> { 
-      React.swal({
-        title: "Edit Campaign?",
-        text: "Are you sure you want to edit this Campaign?",
-        icon: "warning",
-        dangerMode: true,
-        buttons: ["Cancel", "Yes, edit"]      
-      }).then((isConfirmed) => {
-        if(isConfirmed) redirectAfterWalletUnlock("/campaigns/" + id + "/edit", this.props.wallet, this.props.history)
-      });
+    takeActionAfterWalletUnlock(this.props.wallet, () => {
+      checkWalletBalance(this.props.wallet, this.props.history).then(()=> { 
+        React.swal({
+          title: "Edit Campaign?",
+          text: "Are you sure you want to edit this Campaign?",
+          icon: "warning",
+          dangerMode: true,
+          buttons: ["Cancel", "Yes, edit"]      
+        }).then((isConfirmed) => {
+          if(isConfirmed) redirectAfterWalletUnlock("/campaigns/" + id + "/edit", this.props.wallet, this.props.history)
+        });
+      })
     })
   }  
 
   cancelCampaign(campaign){
-    checkWalletBalance(this.props.wallet, this.props.history).then(()=>{  
-      React.swal({
-        title: "Cancel Campaign?",
-        text: "Are you sure you want to cancel this Campaign?",
-        icon: "warning",
-        dangerMode: true,
-        buttons: ["Dismiss", "Yes, cancel"]      
-      }).then((isConfirmed) => {
-        if(isConfirmed) {
-          const cancel = (etherScanUrl, txHash) => {
-            feathersClient.service('/campaigns').patch(campaign._id, {
-              status: 'Canceled',
-              mined: false,
-              txHash,
-            }).then(() => {
-              React.toast.info(<p>Campaign cancelation pending...<br/><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>)
-            }).catch((e) => {
-              console.log('Error updating feathers cache ->', e);
+    takeActionAfterWalletUnlock(this.props.wallet, () => { 
+      checkWalletBalance(this.props.wallet, this.props.history).then(()=>{  
+        React.swal({
+          title: "Cancel Campaign?",
+          text: "Are you sure you want to cancel this Campaign?",
+          icon: "warning",
+          dangerMode: true,
+          buttons: ["Dismiss", "Yes, cancel"]      
+        }).then((isConfirmed) => {
+          if(isConfirmed) {
+            const cancel = (etherScanUrl, txHash) => {
+              feathersClient.service('/campaigns').patch(campaign._id, {
+                status: 'Canceled',
+                mined: false,
+                txHash,
+              }).then(() => {
+                React.toast.info(<p>Campaign cancelation pending...<br/><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>)
+              }).catch((e) => {
+                console.log('Error updating feathers cache ->', e);
+              })
+            };
+
+            let txHash;
+            let etherScanUrl;
+            Promise.all([ getNetwork(), getWeb3() ])
+              .then(([ network, web3 ]) => {
+                const lppCampaign = new LPPCampaign(web3, campaign.pluginAddress);
+                etherScanUrl = network.etherscan;
+
+                return lppCampaign.cancelCampaign({ from: this.props.currentUser.address })
+                  .once('transactionHash', hash => {
+                    txHash = hash;
+                    cancel(etherScanUrl, txHash);
+                  });
+              })
+              .then(() => {
+                React.toast.success(<p>The campaign has been cancelled!<br/><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>)
+              }).catch((e) => {
+              console.error(e);
+
+              displayTransactionError(txHash, etherScanUrl)
             })
-          };
-
-          let txHash;
-          let etherScanUrl;
-          Promise.all([ getNetwork(), getWeb3() ])
-            .then(([ network, web3 ]) => {
-              const lppCampaign = new LPPCampaign(web3, campaign.pluginAddress);
-              etherScanUrl = network.etherscan;
-
-              return lppCampaign.cancelCampaign({ from: this.props.currentUser.address })
-                .once('transactionHash', hash => {
-                  txHash = hash;
-                  cancel(etherScanUrl, txHash);
-                });
-            })
-            .then(() => {
-              React.toast.success(<p>The campaign has been cancelled!<br/><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>)
-            }).catch((e) => {
-            console.error(e);
-
-            displayTransactionError(txHash, etherScanUrl)
-          })
-        }
-      });
+          }
+        });
+      })
     })
   }
 
