@@ -210,16 +210,17 @@ class Delegations extends Component {
                               <td className="td-tx-address">{d.giverAddress}</td>
                               <td className="td-status">{d.status}</td>
                               <td className="td-actions">                                
-                                {/* when donated to a dac, allow delegation to anywhere */}
+
+                                {/* when donated to a dac, allow delegation to campaigns and milestones */}
                                 {(d.delegate > 0  || d.ownerId === currentUser.address )&&
                                   <DelegateButton 
-                                    types={dacs.concat(campaigns).concat(milestones)} 
+                                    types={campaigns.concat(milestones)} 
                                     model={d} 
                                     wallet={wallet}
                                     history={history}/>
                                 }
 
-                                {/* when donated to a campaign, only allow delegation to milestones of this campaign */}
+                                {/* when donated to a campaign, only allow delegation to milestones of that campaign */}
                                 {d.ownerType === 'campaign' &&
                                   <DelegateButton 
                                     types={milestones.filter((m) => { return m.campaignId === d.ownerId })} 

@@ -158,7 +158,7 @@ class DelegateButton extends Component {
               <InputToken
                 name="campaigns"
                 ref="campaignsInput"
-                placeholder={milestoneOnly? "Select a milestone" : "Select a dac or campaign"}
+                placeholder={milestoneOnly? "Select a milestone" : "Select a campaign or milestone"}
                 value={objectsToDelegateTo}
                 options={types}
                 onSelect={this.selectedObject}
