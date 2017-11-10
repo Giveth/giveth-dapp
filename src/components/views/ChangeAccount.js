@@ -2,9 +2,11 @@ import React, { Component } from 'react';
 import { File, Form, Input } from 'formsy-react-components';
 import GivethWallet from "../../lib/blockchain/GivethWallet";
 import { feathersClient } from '../../lib/feathersClient'
+import { checkWalletBalance } from '../../lib/middleware'
 import { authenticate } from '../../lib/helpers';
 import LoaderButton from "../../components/LoaderButton"
 import { Link } from 'react-router-dom'
+
 
 /**
 
@@ -54,7 +56,14 @@ class ChangeAccount extends Component {
           return feathersClient.passport.verifyJWT(token);
         })
         .then(payload => {
-          payload.newUser ? this.props.history.push('/profile') : this.props.history.push('/');
+          if(payload.newUser) {
+            // needs some time to fetch wallet balance and sign in the user
+            setTimeout(()=>
+              (wallet.getBalance() >= React.minimumWalletBalance) ? this.props.history.push('/profile') : this.props.history.push('/wallet')              
+            , 500);
+          } else {
+            this.props.history.push('/');
+          }
         })
         .catch((error) => {
           if (typeof error === 'object') {
