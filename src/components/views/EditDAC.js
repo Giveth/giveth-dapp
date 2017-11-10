@@ -212,9 +212,9 @@ class EditDAC extends Component {
                           value={title}
                           placeholder="e.g. Hurricane relief."
                           help="Describe your Decentralized Altruistic Community (DAC) in 1 sentence."
-                          validations="minLength:10"
+                          validations="minLength:3"
                           validationErrors={{
-                              minLength: 'Please provide at least 10 characters.'
+                              minLength: 'Please provide at least 3 characters.'
                           }}
                           required
                         />
@@ -228,10 +228,10 @@ class EditDAC extends Component {
                           value={description}
                           placeholder="Describe how you're going to solve your cause..."
                           onTextChanged={(content)=>this.constructSummary(content)}
-                          validations="minLength:10"
+                          validations="minLength:3"
                           help="Describe your dac."
                           validationErrors={{
-                              minLength: 'Please provide at least 10 characters.'
+                              minLength: 'Please provide at least 3 characters.'
                           }}
                           required
                         />

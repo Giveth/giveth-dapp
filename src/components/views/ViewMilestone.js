@@ -176,8 +176,8 @@ class ViewMilestone extends Component {
                         <tr>
                           <td className="td-user">
                             <Link to={`/profile/${ reviewerAddress }`}>
-                              <Avatar size={30} src={getUserAvatar(recipient.avatar)} round={true}/>
-                              <span>{getUserName(recipient.name)}</span>
+                              <Avatar size={30} src={getUserAvatar(recipient)} round={true}/>
+                              <span>{getUserName(recipient)}</span>
                             </Link>
                           </td>
                           {etherScanUrl &&
@@ -200,8 +200,8 @@ class ViewMilestone extends Component {
                         <tr>
                           <td className="td-user">
                             <Link to={`/profile/${ recipientAddress }`}>
-                              <Avatar size={30} src={getUserAvatar(recipient.avatar)} round={true}/>
-                              <span>{getUserName(recipient.name)}</span>
+                              <Avatar size={30} src={getUserAvatar(recipient)} round={true}/>
+                              <span>{getUserName(recipient)}</span>
                             </Link>
                           </td>
                           {etherScanUrl &&

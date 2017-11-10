@@ -256,9 +256,9 @@ class EditMilestone extends Component {
                           value={title}
                           placeholder="E.g. buying goods"
                           help="Describe your milestone in 1 sentence."                          
-                          validations="minLength:10"                            
+                          validations="minLength:3"                            
                           validationErrors={{
-                              minLength: 'Please provide at least 10 characters.'
+                              minLength: 'Please provide at least 3 characters.'
                           }}                    
                           required                             
                         />
@@ -272,10 +272,10 @@ class EditMilestone extends Component {
                           value={description}
                           placeholder="Describe how you're going to execute your milestone successfully..."
                           onTextChanged={(content)=>this.constructSummary(content)}                                                    
-                          validations="minLength:10"  
+                          validations="minLength:3"  
                           help="Describe your milestone."   
                           validationErrors={{
-                              minLength: 'Please provide at least 10 characters.'
+                              minLength: 'Please provide at least 3 characters.'
                           }}                    
                           required                                        
                         />

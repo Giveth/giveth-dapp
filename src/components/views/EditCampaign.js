@@ -256,9 +256,9 @@ class EditCampaign extends Component {
                           value={title}
                           placeholder="E.g. Installing 1000 solar panels."
                           help="Describe your campaign in 1 sentence."
-                          validations="minLength:10"
+                          validations="minLength:3"
                           validationErrors={{
-                              minLength: 'Please provide at least 10 characters.'
+                              minLength: 'Please provide at least 3 characters.'
                           }}
                           required
                         />
@@ -272,10 +272,10 @@ class EditCampaign extends Component {
                           value={description}
                           placeholder="Describe how you're going to execute your campaign successfully..."
                           onTextChanged={(content)=>this.constructSummary(content)}
-                          validations="minLength:10"  
+                          validations="minLength:3"  
                           help="Describe your campaign."   
                           validationErrors={{
-                              minLength: 'Please provide at least 10 characters.'
+                              minLength: 'Please provide at least 3 characters.'
                           }}                    
                           required                                        
                         />
