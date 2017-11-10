@@ -35,10 +35,12 @@ class EditProfile extends Component {
       email: '',
       linkedIn: '',
       uploadNewAvatar: false,
+      isPristine: true
     }
 
     this.submit = this.submit.bind(this)
     this.setImage = this.setImage.bind(this)
+    this.togglePristine = this.togglePristine.bind(this)
   }
 
   componentDidMount() {
@@ -152,8 +154,12 @@ class EditProfile extends Component {
     this.setState({ formIsValid: state })
   }
 
+  togglePristine(currentValues, isChanged) {
+    this.setState({ isPristine: !isChanged });
+  }
+
   render() {
-    let { isLoading, isSaving, name, email, linkedIn, avatar } = this.state
+    let { isLoading, isSaving, name, email, linkedIn, avatar, isPristine } = this.state
 
     return (
       <div id="edit-cause-view" className="container-fluid page-layout">
@@ -172,7 +178,7 @@ class EditProfile extends Component {
                   Therefore, we strongly recommend that you <strong>fill out your profile</strong> when you want to start communities or campaigns on Giveth.
                 </p>
 
-                <Form onSubmit={this.submit} mapping={this.mapInputs} onValid={()=>this.toggleFormValid(true)} onInvalid={()=>this.toggleFormValid(false)} layout='vertical'>
+                <Form onSubmit={this.submit} mapping={this.mapInputs} onChange={this.togglePristine} onValid={()=>this.toggleFormValid(true)} onInvalid={()=>this.toggleFormValid(false)} layout='vertical'>
                   <div className="form-group">
                     <Input
                       name="name"
@@ -227,7 +233,7 @@ class EditProfile extends Component {
                     className="btn btn-success" 
                     formNoValidate={true} 
                     type="submit" 
-                    disabled={isSaving}
+                    disabled={isSaving || isPristine}
                     isLoading={isSaving}
                     loadingText="Saving...">
                     Save profile
