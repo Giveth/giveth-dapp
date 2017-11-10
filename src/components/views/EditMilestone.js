@@ -54,7 +54,8 @@ class EditMilestone extends Component {
       donationsGiven: 0,
       completionDeadline: '',
       status: 'pending',
-      uploadNewImage: false         
+      uploadNewImage: false,
+      campaignTitle: ''       
     }
 
     this.submit = this.submit.bind(this)
@@ -96,6 +97,7 @@ class EditMilestone extends Component {
                 this.props.history.goBack();
               } else {
                 this.setState({
+                  campaignTitle: campaign.title,
                   campaignProjectId: campaign.projectId,
                   isLoading: false,
                 });
@@ -216,7 +218,7 @@ class EditMilestone extends Component {
 
   render(){
     const { isNew, history } = this.props
-    let { isLoading, isSaving, title, description, image, recipientAddress, reviewerAddress, completionDeadline, formIsValid, maxAmount } = this.state
+    let { isLoading, isSaving, title, description, image, recipientAddress, reviewerAddress, completionDeadline, formIsValid, maxAmount, campaignTitle } = this.state
 
     return(
         <div id="edit-milestone-view">
@@ -239,10 +241,13 @@ class EditMilestone extends Component {
                       <h3>Edit milestone {title}</h3>
                     }
 
-                      <p>
-                        <i className="fa fa-question-circle"></i>
-                        A milestone is a single accomplishment within a project. In the end, all donations end up in milestones. Once milestones are completed, you can request payout.
-                      </p>                    
+                    <h6>Campaign: <strong>{getTruncatedText(campaignTitle, 100)}</strong></h6>
+                    
+
+                    <p>
+                      <i className="fa fa-question-circle"></i>
+                      A milestone is a single accomplishment within a project. In the end, all donations end up in milestones. Once milestones are completed, you can request payout.
+                    </p>                    
 
                     <Form onSubmit={this.submit} mapping={this.mapInputs} onValid={()=>this.toggleFormValid(true)} onInvalid={()=>this.toggleFormValid(false)} layout='vertical'>
 
