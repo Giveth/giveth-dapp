@@ -46,7 +46,7 @@ class EditMilestone extends Component {
       description: '',
       image: '',
       videoUrl: '',
-      maxAmount: 1000,
+      maxAmount: '',
       ownerAddress: '',
       reviewerAddress: '',
       recipientAddress: '',
@@ -336,7 +336,7 @@ class EditMilestone extends Component {
                           type="number"
                           label="Maximum amount of &#926; required for this milestone"
                           value={maxAmount}
-                          placeholder="1000"
+                          placeholder="10"
                           validations="greaterThan:0.1"                            
                           validationErrors={{
                               greaterThan: 'Minimum value must be at least &#926;0.1'
