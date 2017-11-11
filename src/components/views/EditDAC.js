@@ -1,5 +1,6 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
+import LPPDac from 'lpp-dac';
 
 import { Form, Input } from 'formsy-react-components';
 import { feathersClient } from '../../lib/feathersClient'
@@ -10,6 +11,7 @@ import GoBackButton from '../GoBackButton'
 import { isOwner } from '../../lib/helpers'
 import { isAuthenticated } from '../../lib/middleware'
 import getNetwork from "../../lib/blockchain/getNetwork";
+import getWeb3 from "../../lib/blockchain/getWeb3";
 import { getTruncatedText } from '../../lib/helpers'
 import LoaderButton from "../../components/LoaderButton"
 import currentUserModel from '../../models/currentUserModel'
@@ -43,6 +45,8 @@ class EditDAC extends Component {
       image: '',
       videoUrl: '',
       communityUrl: '',
+      tokenName: '',
+      tokenSymbol: '',
       delegateId: 0,
       ownerAddress: null,
       uploadNewImage: false
@@ -87,7 +91,9 @@ class EditDAC extends Component {
     return {
       'title': inputs.title,
       'description': inputs.description,
-      'communityUrl': inputs.communityUrl
+      'communityUrl': inputs.communityUrl,
+      'tokenName': inputs.tokenName,
+      'tokenSymbol': inputs.tokenSymbol,
     }
   }
 
@@ -126,12 +132,12 @@ class EditDAC extends Component {
 
         let txHash;
         let etherScanUrl;
-        getNetwork()
-          .then(network => {
+        Promise.all([ getNetwork(), getWeb3() ])
+          .then(([ network, web3 ]) => {
             const { liquidPledging } = network;
             etherScanUrl = network.etherscan;
 
-            liquidPledging.addDelegate(model.title, '', 0, '0x0')
+            LPPDac.new(web3, liquidPledging.$address, model.title, '', 0, model.tokenName, model.tokenSymbol)
               .once('transactionHash', hash => {
                 txHash = hash;
                 createDAC(txHash);
@@ -173,7 +179,7 @@ class EditDAC extends Component {
 
   render(){
     const { isNew, history } = this.props
-    let { isLoading, isSaving, title, description, image, communityUrl, formIsValid } = this.state
+    let { isLoading, isSaving, title, description, image, communityUrl, tokenName, tokenSymbol, formIsValid } = this.state;
 
     return(
         <div id="edit-dac-view">
@@ -253,6 +259,43 @@ class EditDAC extends Component {
                           validationErrors={{
                             isUrl: 'Please provide a url.'
                           }}
+                        />
+                      </div>
+
+                      <div className="form-group">
+                        <Input
+                          name="tokenName"
+                          id="token-name-input"
+                          label="Token Name"
+                          ref="tokenName"
+                          type="text"
+                          value={tokenName}
+                          placeholder={title}
+                          help="The name of the token that givers will receive when they donate to this dac."
+                          validations="minLength:3"
+                          validationErrors={{
+                            minLength: 'Please provide at least 3 characters.'
+                          }}
+                          required
+                          disabled={!isNew}
+                        />
+                      </div>
+
+                      <div className="form-group">
+                        <Input
+                          name="tokenSymbol"
+                          id="token-symbol-input"
+                          label="Token Symbol"
+                          ref="tokenSymbol"
+                          type="text"
+                          value={tokenSymbol}
+                          help="The symbol of the token that givers will receive when they donate to this dac."
+                          validations="minLength:2"
+                          validationErrors={{
+                            minLength: 'Please provide at least 2 characters.'
+                          }}
+                          required
+                          disabled={!isNew}
                         />
                       </div>
 

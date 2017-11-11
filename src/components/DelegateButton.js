@@ -2,6 +2,7 @@ import React, { Component } from 'react'
 import SkyLight from 'react-skylight'
 import { utils } from 'web3';
 import LPPCampaign from 'lpp-campaign';
+import LPPDac from 'lpp-dac';
 
 import { feathersClient } from '../lib/feathersClient'
 import { Form } from 'formsy-react-components';
@@ -107,7 +108,11 @@ class DelegateButton extends Component {
 
           const senderId = (model.delegate > 0) ? model.delegate : model.owner;
           const receiverId = (admin.type === 'dac') ? admin.delegateId : admin.projectId;
-          const contract = (model.ownerType === 'campaign') ? new LPPCampaign(web3, model.ownerEntity.pluginAddress) : liquidPledging;
+          let contract;
+
+          if (model.ownerType === 'campaign') contract = new LPPCampaign(web3, model.ownerEntity.pluginAddress);
+          else if (model.ownerType === 'giver' && model.delegate > 0) contract = new LPPDac(web3, model.delegateEntity.pluginAddress);
+          else contract = liquidPledging;
 
           return contract.transfer(senderId, model.pledgeId, model.amount, receiverId, { $extraGas: 50000 })
             .once('transactionHash', hash => {

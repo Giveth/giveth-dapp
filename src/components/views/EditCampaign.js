@@ -53,7 +53,9 @@ class EditCampaign extends Component {
       videoUrl: '',
       communityUrl: '',      
       ownerAddress: null,
-      reviewerAddress: '',      
+      reviewerAddress: '',
+      tokenName: '',
+      tokenSymbol: '',
       projectId: 0,
       milestones: [],
       dacs: [],
@@ -119,7 +121,9 @@ class EditCampaign extends Component {
       'title': inputs.title,
       'description': inputs.description,
       'communityUrl': inputs.communityUrl,
-      'reviewerAddress': inputs.reviewerAddress,      
+      'reviewerAddress': inputs.reviewerAddress,
+      'tokenName': inputs.tokenName,
+      'tokenSymbol': inputs.tokenSymbol,
     }
   }  
 
@@ -168,8 +172,8 @@ class EditCampaign extends Component {
             etherScanUrl = network.txHash;
 
             let txHash;
-            // web3, lp address, name, parentProject, reviewer
-            LPPCampaign.new(web3, liquidPledging.$address, model.title, '', 0, model.reviewerAddress)
+            // web3, lp address, name, parentProject, reviewer, tokenName, tokenSymbol
+            LPPCampaign.new(web3, liquidPledging.$address, model.title, '', 0, model.reviewerAddress, model.tokenName, model.tokenSymbol)
               .once('transactionHash', hash => {
                 txHash = hash;
                 createCampaign(txHash);
@@ -214,7 +218,7 @@ class EditCampaign extends Component {
 
   render(){
     const { isNew, history } = this.props
-    let { isLoading, isSaving, title, description, image, dacs, dacsOptions, communityUrl, formIsValid, reviewerAddress } = this.state
+    let { isLoading, isSaving, title, description, image, dacs, dacsOptions, communityUrl, formIsValid, reviewerAddress, tokenName, tokenSymbol } = this.state;
 
     return(
         <div id="edit-campaign-view">
@@ -310,7 +314,45 @@ class EditCampaign extends Component {
                             isUrl: 'Please provide a url.'
                           }}
                         />
-                      </div>   
+                      </div>
+
+
+                      <div className="form-group">
+                        <Input
+                          name="tokenName"
+                          id="token-name-input"
+                          label="Token Name"
+                          ref="tokenName"
+                          type="text"
+                          value={tokenName}
+                          placeholder={title}
+                          help="The name of the token that givers will receive when they donate to this campaign."
+                          validations="minLength:3"
+                          validationErrors={{
+                            minLength: 'Please provide at least 3 characters.'
+                          }}
+                          required
+                          disabled={!isNew}
+                        />
+                      </div>
+
+                      <div className="form-group">
+                        <Input
+                          name="tokenSymbol"
+                          id="token-symbol-input"
+                          label="Token Symbol"
+                          ref="tokenSymbol"
+                          type="text"
+                          value={tokenSymbol}
+                          help="The symbol of the token that givers will receive when they donate to this campaign."
+                          validations="minLength:2"
+                          validationErrors={{
+                            minLength: 'Please provide at least 2 characters.'
+                          }}
+                          required
+                          disabled={!isNew}
+                        />
+                      </div>
 
                       <Input
                         name="reviewerAddress"
