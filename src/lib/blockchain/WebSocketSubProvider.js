@@ -21,8 +21,18 @@ class WebSocketSubProvider extends Subprovider {
       console.log('no payload');
       end('no payload', null);
     }
+
+    const handleResponse = (err, res) => {
+      if (err || res.error) {
+        console.error('RPC Error Response', err, res);
+        end(err || res.error);
+        return;
+      }
+
+      end(null, res.result);
+    };
     
-    this.wsProvider.send(newPayload, (err, res) => end(err, res.result));
+    this.wsProvider.send(newPayload, handleResponse);
   }
 }
 

@@ -9,6 +9,7 @@ import SanitizingSubprovider from 'web3-provider-engine/subproviders/sanitizer';
 import GasPriceProvider from "./GasPriceProvider";
 
 import WebSocketSubProvider from './WebSocketSubProvider';
+import CleanserSubProvider from './CleanserSubProvider';
 
 // web3 1.0 only supports async sends
 ProviderEngine.prototype.send = ProviderEngine.prototype.sendAsync;
@@ -19,6 +20,9 @@ export default (opts) => {
 
   //TODO rewrite ProviderEngine to use pubsub instead of EthBlockTracker
   const engine = new ProviderEngine();
+
+  // remove undefined properties from txParams object
+  engine.addProvider(new CleanserSubProvider());
 
   // static
   const staticSubprovider = new DefaultFixture(opts.static);
