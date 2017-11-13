@@ -18,7 +18,7 @@ const QuillFormsy = createReactClass({
     // when the value is empty and the required prop is
     // passed to the input. showError() is true when the
     // value typed is invalid
-    const className = this.showRequired() ? 'required' : this.showError() ? 'error' : null;
+    const errorClass = this.isPristine() ? '' : this.isValid() ? 'is-valid' : 'has-error'
 
     // An error message is returned ONLY if the component is invalid
     // or the server has returned an error message
@@ -39,11 +39,12 @@ const QuillFormsy = createReactClass({
       'bold', 'italic', 'underline', 'strike', 'blockquote',
       'list', 'bullet', 'indent',
       'link', 'image', 'video'
-    ]       
+    ]     
+
 
     return (
-      <div className={className}>
-        <label>{this.props.label}</label>
+      <div className={`form-group ${errorClass}`}>
+        <label>{this.props.label} {this.isRequired() ? '*' : null}</label>
         <small className="form-text">{this.props.helpText}</small>
         <ReactQuill 
           height="200px"
@@ -55,7 +56,7 @@ const QuillFormsy = createReactClass({
           placeholder={this.props.placeholder}
           onChange={this.changeValue} 
           />  
-        <span>{errorMessage}</span>
+        <span className="help-block validation-message">{errorMessage}</span>
       </div>
     );
   }  

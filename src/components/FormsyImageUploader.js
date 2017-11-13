@@ -44,8 +44,6 @@ class FormsyImageUploader extends Component {
   render(){
     return(
       <div>
-        <label>Add a picture</label>
-
         { this.props.previewImage &&
           <div id="image-preview">
             <img src={this.state.image} alt="preview of uploaded image"/>
@@ -56,20 +54,19 @@ class FormsyImageUploader extends Component {
           <Avatar size={100} src={this.props.avatar} round={true}/>                  
         }
 
-        <div className="form-group">
-          <File
-            name="picture"
-            accept=".png,.jpeg,.jpg"
-            onChange={()=>this.loadAndPreviewImage()}
-            ref="imagePreview"
-            help="A picture says more than a thousand words. Select a png or jpeg."
-            validations="minLength: 1"
-            validationErrors={{
-              minLength: "Please select an png or jpeg."
-            }}                
-            required={this.props.isRequired}
-          />
-        </div> 
+        <File
+          label="Add a picture"
+          name="picture"
+          accept=".png,.jpeg,.jpg"
+          onChange={()=>this.loadAndPreviewImage()}
+          ref="imagePreview"
+          help="A picture says more than a thousand words. Select a png or jpeg."
+          validations="minLength: 1"
+          validationErrors={{
+            minLength: "Please select an png or jpeg."
+          }}                
+          required={this.props.isRequired}
+        />
       </div>     
     )
   }

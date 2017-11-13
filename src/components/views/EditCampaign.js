@@ -250,40 +250,36 @@ class EditCampaign extends Component {
 
 
                     <Form onSubmit={this.submit} mapping={this.mapInputs} onValid={()=>this.toggleFormValid(true)} onInvalid={()=>this.toggleFormValid(false)} layout='vertical'>
-                      <div className="form-group">
-                        <Input
-                          name="title"
-                          id="title-input"
-                          label="What are you working on?"
-                          ref="title"
-                          type="text"
-                          value={title}
-                          placeholder="E.g. Installing 1000 solar panels."
-                          help="Describe your campaign in 1 sentence."
-                          validations="minLength:3"
-                          validationErrors={{
-                              minLength: 'Please provide at least 3 characters.'
-                          }}
-                          required
-                        />
-                      </div>
+                      <Input
+                        name="title"
+                        id="title-input"
+                        label="What are you working on?"
+                        ref="title"
+                        type="text"
+                        value={title}
+                        placeholder="E.g. Installing 1000 solar panels."
+                        help="Describe your campaign in 1 sentence."
+                        validations="minLength:3"
+                        validationErrors={{
+                            minLength: 'Please provide at least 3 characters.'
+                        }}
+                        required
+                      />
 
-                      <div className="form-group">
-                        <QuillFormsy 
-                          name="description"
-                          label="Explain how you are going to do this successfully."
-                          helpText="Make it as extensive as necessary. Your goal is to build trust, so that people donate Ether to your campaign."                          
-                          value={description}
-                          placeholder="Describe how you're going to execute your campaign successfully..."
-                          onTextChanged={(content)=>this.constructSummary(content)}
-                          validations="minLength:3"  
-                          help="Describe your campaign."   
-                          validationErrors={{
-                              minLength: 'Please provide at least 3 characters.'
-                          }}                    
-                          required                                        
-                        />
-                      </div>
+                      <QuillFormsy 
+                        name="description"
+                        label="Explain how you are going to do this successfully."
+                        helpText="Make it as extensive as necessary. Your goal is to build trust, so that people donate Ether to your campaign."                          
+                        value={description}
+                        placeholder="Describe how you're going to execute your campaign successfully..."
+                        onTextChanged={(content)=>this.constructSummary(content)}
+                        validations="minLength:20"  
+                        help="Describe your campaign."   
+                        validationErrors={{
+                            minLength: 'Please provide at least 10 characters.'
+                        }}                    
+                        required                                        
+                      />
 
                       <FormsyImageUploader setImage={this.setImage} previewImage={image} isRequired={isNew}/>
 
@@ -315,7 +311,6 @@ class EditCampaign extends Component {
                           }}
                         />
                       </div>
-
 
                       <div className="form-group">
                         <Input

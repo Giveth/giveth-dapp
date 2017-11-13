@@ -208,59 +208,53 @@ class EditDAC extends Component {
                     </div>
 
                     <Form onSubmit={this.submit} mapping={this.mapInputs} onValid={()=>this.toggleFormValid(true)} onInvalid={()=>this.toggleFormValid(false)} layout='vertical'>
-                      <div className="form-group">
-                        <Input
-                          name="title"
-                          id="title-input"
-                          label="Community cause"
-                          ref="title"
-                          type="text"
-                          value={title}
-                          placeholder="e.g. Hurricane relief."
-                          help="Describe your Decentralized Altruistic Community (DAC) in 1 sentence."
-                          validations="minLength:3"
-                          validationErrors={{
-                              minLength: 'Please provide at least 3 characters.'
-                          }}
-                          required
-                        />
-                      </div>
+                      <Input
+                        name="title"
+                        id="title-input"
+                        label="Community cause"
+                        ref="title"
+                        type="text"
+                        value={title}
+                        placeholder="e.g. Hurricane relief."
+                        help="Describe your Decentralized Altruistic Community (DAC) in 1 sentence."
+                        validations="minLength:3"
+                        validationErrors={{
+                            minLength: 'Please provide at least 3 characters.'
+                        }}
+                        required
+                      />
 
-                      <div className="form-group">
-                        <QuillFormsy
-                          name="description"
-                          label="Explain how you are going to solve this your cause"
-                          helpText="Make it as extensive as necessary. Your goal is to build trust, so that people join your community and/or donate Ether."
-                          value={description}
-                          placeholder="Describe how you're going to solve your cause..."
-                          onTextChanged={(content)=>this.constructSummary(content)}
-                          validations="minLength:3"
-                          help="Describe your dac."
-                          validationErrors={{
-                              minLength: 'Please provide at least 3 characters.'
-                          }}
-                          required
-                        />
-                      </div>
+                      <QuillFormsy
+                        name="description"
+                        label="Explain how you are going to solve this your cause"
+                        helpText="Make it as extensive as necessary. Your goal is to build trust, so that people join your community and/or donate Ether."
+                        value={description}
+                        placeholder="Describe how you're going to solve your cause..."
+                        onTextChanged={(content)=>this.constructSummary(content)}
+                        validations="minLength:20"
+                        help="Describe your dac."
+                        validationErrors={{
+                            minLength: 'Please provide at least 10 characters.'
+                        }}
+                        required
+                      />
 
                       <FormsyImageUploader setImage={this.setImage} previewImage={image} isRequired={isNew}/>
 
-                      <div className="form-group">
-                        <Input
-                          name="communityUrl"
-                          id="community-url"
-                          ref="communityUrl"
-                          label="Url to join your community"
-                          type="text"
-                          value={communityUrl}
-                          placeholder="https://slack.giveth.com"
-                          help="Where can people join your community? Giveth redirect people there."
-                          validations="isUrl"
-                          validationErrors={{
-                            isUrl: 'Please provide a url.'
-                          }}
-                        />
-                      </div>
+                      <Input
+                        name="communityUrl"
+                        id="community-url"
+                        ref="communityUrl"
+                        label="Url to join your community"
+                        type="text"
+                        value={communityUrl}
+                        placeholder="https://slack.giveth.com"
+                        help="Where can people join your community? Giveth redirect people there."
+                        validations="isUrl"
+                        validationErrors={{
+                          isUrl: 'Please provide a url.'
+                        }}
+                      />
 
                       <div className="form-group">
                         <Input

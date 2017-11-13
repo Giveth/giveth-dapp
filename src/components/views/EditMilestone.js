@@ -251,23 +251,21 @@ class EditMilestone extends Component {
 
                     <Form onSubmit={this.submit} mapping={this.mapInputs} onValid={()=>this.toggleFormValid(true)} onInvalid={()=>this.toggleFormValid(false)} layout='vertical'>
 
-                      <div className="form-group">
-                        <Input
-                          name="title"
-                          label="What are you going to accomplish in this milestone."                          
-                          id="title-input"
-                          ref="title"
-                          type="text"
-                          value={title}
-                          placeholder="E.g. buying goods"
-                          help="Describe your milestone in 1 sentence."                          
-                          validations="minLength:3"                            
-                          validationErrors={{
-                              minLength: 'Please provide at least 3 characters.'
-                          }}                    
-                          required                             
-                        />
-                      </div>
+                      <Input
+                        name="title"
+                        label="What are you going to accomplish in this milestone."                          
+                        id="title-input"
+                        ref="title"
+                        type="text"
+                        value={title}
+                        placeholder="E.g. buying goods"
+                        help="Describe your milestone in 1 sentence."                          
+                        validations="minLength:3"                            
+                        validationErrors={{
+                            minLength: 'Please provide at least 3 characters.'
+                        }}                    
+                        required                             
+                      />
 
                       <div className="form-group">
                         <QuillFormsy 
@@ -333,22 +331,20 @@ class EditMilestone extends Component {
                         required
                       />  
 
-                      <div className="form-group">
-                        <Input
-                          name="maxAmount"
-                          id="maxamount-input"
-                          ref="maxAmount"
-                          type="number"
-                          label="Maximum amount of &#926; required for this milestone"
-                          value={maxAmount}
-                          placeholder="10"
-                          validations="greaterThan:0.1"                            
-                          validationErrors={{
-                              greaterThan: 'Minimum value must be at least &#926;0.1'
-                          }}                    
-                          required                             
-                        />
-                      </div>                       
+                      <Input
+                        name="maxAmount"
+                        id="maxamount-input"
+                        ref="maxAmount"
+                        type="number"
+                        label="Maximum amount of &#926; required for this milestone"
+                        value={maxAmount}
+                        placeholder="10"
+                        validations="greaterThan:0.1"                            
+                        validationErrors={{
+                            greaterThan: 'Minimum value must be at least &#926;0.1'
+                        }}                    
+                        required                             
+                      />
                                               
                       <LoaderButton
                         className="btn btn-success" 
