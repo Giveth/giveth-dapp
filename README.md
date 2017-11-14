@@ -3,7 +3,6 @@
 
 > Dapp for donating ether without losing ownership
 
-NOTE: Please use `develop` branch for contributing.
 
 Welcome to the code for Giveth's dapp. This is an open source effort to realize the potential of ethereum smart contracts. More specifically, the Giveth dapp provides an alternative to traditional donation.
 
@@ -35,6 +34,10 @@ Welcome to the code for Giveth's dapp. This is an open source effort to realize 
 1. From the desired directory you wish to copy the "giveth-dapp" folder with source files to.
     ```
     git clone {paste your own repo link here}
+    ```
+    NOTE: Please use `develop` branch for contributing.
+    ```
+    git clone -b develop {paste your own repo link here}
     ```
 2. Change directories to giveth-dapp:
     ```
