@@ -67,6 +67,13 @@ React.toast = toast
 // create a DAC / Campaign / Milestone / Profile 
 React.minimumWalletBalance = 0.02
 
+React.whitelist = {}
+
+// Fetch whitelist
+feathersClient.service('/whitelist').find().then((res, err) => { 
+  React.whitelist = res; 
+});
+
 
 /**
  * This container holds the application and its routes.
@@ -116,7 +123,6 @@ class Application extends Component {
         console.log(e)
         this.setState({ isLoading: false, hasError: false })
       })  
-
 
     GivethWallet.getCachedKeystore()
       .then(keystore => {
@@ -231,7 +237,7 @@ class Application extends Component {
                   NOTE order matters, wrong order breaks routes!
                */}
 
-              <Route exact path="/dacs/new" component={props => <EditDAC isNew={true} currentUser={currentUser} walletUnlocked={wallet} {...props}/>} />            
+              <Route exact path="/dacs/new" component={props => <EditDAC isNew={true} currentUser={currentUser} wallet={wallet} {...props}/>} />            
               <Route exact path="/dacs/:id" component={props => <ViewDAC currentUser={currentUser} wallet={wallet} {...props}/>} />                        
               <Route exact path="/dacs/:id/edit" component={props => <EditDAC currentUser={currentUser} wallet={wallet} {...props}/>} />  
 

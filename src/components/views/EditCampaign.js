@@ -11,7 +11,7 @@ import QuillFormsy from '../QuillFormsy'
 import FormsyImageUploader from './../FormsyImageUploader'
 import GoBackButton from '../GoBackButton'
 import { isOwner } from '../../lib/helpers'
-import { isAuthenticated } from '../../lib/middleware'
+import { isAuthenticated, checkWalletBalance, isInWhitelist } from '../../lib/middleware'
 import getNetwork from "../../lib/blockchain/getNetwork";
 import getWeb3 from "../../lib/blockchain/getWeb3";
 import { getTruncatedText } from '../../lib/helpers'
@@ -20,7 +20,7 @@ import LoaderButton from "../../components/LoaderButton"
 import InputToken from "react-input-token";
 import "react-input-token/lib/style.css";
 import currentUserModel from '../../models/currentUserModel'
-import { displayTransactionError } from '../../lib/helpers'
+import { displayTransactionError, getRandomWhitelistAddress } from '../../lib/helpers'
 
 /**
  * Create or edit a campaign
@@ -53,7 +53,7 @@ class EditCampaign extends Component {
       videoUrl: '',
       communityUrl: '',      
       ownerAddress: null,
-      reviewerAddress: '',
+      reviewerAddress: getRandomWhitelistAddress(React.whitelist.reviewerWhitelist),
       tokenName: '',
       tokenSymbol: '',
       projectId: 0,
@@ -69,47 +69,50 @@ class EditCampaign extends Component {
 
 
   componentDidMount() {
-    isAuthenticated(this.props.currentUser, this.props.history, this.props.wallet).then(()=>
-      Promise.all([
-        // load a single campaigns (when editing)
-        new Promise((resolve, reject) => {
-          if(!this.props.isNew) {
-            feathersClient.service('campaigns').find({query: {_id: this.props.match.params.id}})
-              .then((resp) => {
-                if(!isOwner(resp.data[0].owner.address, this.props.currentUser)) {
-                  this.props.history.goBack()
-                } else {  
-                  this.setState(Object.assign({}, resp.data[0], {
-                    id: this.props.match.params.id,
-                  }), resolve())  
-                }})
+    isAuthenticated(this.props.currentUser, this.props.history, this.props.wallet)
+      .then(() => isInWhitelist(this.props.currentUser, React.whitelist.projectOwnerWhitelist, this.props.history))
+      .then(() => checkWalletBalance(this.props.wallet, this.props.history))      
+      .then(() => {
+        Promise.all([
+          // load a single campaigns (when editing)
+          new Promise((resolve, reject) => {
+            if(!this.props.isNew) {
+              feathersClient.service('campaigns').find({query: {_id: this.props.match.params.id}})
+                .then((resp) => {
+                  if(!isOwner(resp.data[0].owner.address, this.props.currentUser)) {
+                    this.props.history.goBack()
+                  } else {  
+                    this.setState(Object.assign({}, resp.data[0], {
+                      id: this.props.match.params.id,
+                    }), resolve())  
+                  }})
+                .catch(() => reject())
+            } else {
+              resolve()
+            }
+          })
+        ,
+          // load all dacs. that aren't pending
+          // TO DO: this needs to be replaced by something like http://react-autosuggest.js.org/
+          new Promise((resolve, reject) => {
+            feathersClient.service('dacs').find({query: {  $select: [ 'title', '_id' ] }})
+              .then((resp) => 
+                this.setState({
+                  //TODO should we filter the available cuases to those that have been mined? It is possible that a createCause tx will fail and the dac will not be available
+                  dacsOptions: resp.data.map((c) =>  { return { name: c.title, id: c._id, element: <span>{c.title}</span> } }),
+                  // dacsOptions: resp.data.filter((c) => (c.delegateId && c.delegateId > 0)).map((c) =>  { return { label: c.title, value: c._id} }),
+                  hasError: false
+                }, resolve())
+              )
               .catch(() => reject())
-          } else {
-            resolve()
-          }
-        })
-      ,
-        // load all dacs. that aren't pending
-        // TO DO: this needs to be replaced by something like http://react-autosuggest.js.org/
-        new Promise((resolve, reject) => {
-          feathersClient.service('dacs').find({query: {  $select: [ 'title', '_id' ] }})
-            .then((resp) => 
-              this.setState({
-                //TODO should we filter the available cuases to those that have been mined? It is possible that a createCause tx will fail and the dac will not be available
-                dacsOptions: resp.data.map((c) =>  { return { name: c.title, id: c._id, element: <span>{c.title}</span> } }),
-                // dacsOptions: resp.data.filter((c) => (c.delegateId && c.delegateId > 0)).map((c) =>  { return { label: c.title, value: c._id} }),
-                hasError: false
-              }, resolve())
-            )
-            .catch(() => reject())
-        })
+          })
 
-      ]).then(() => this.setState({ isLoading: false, hasError: false }), this.focusFirstInput())
-        .catch((e) => {
-          console.log('error loading', e)
-          this.setState({ isLoading: false, hasError: true })        
-        })
-    )
+        ]).then(() => this.setState({ isLoading: false, hasError: false }), this.focusFirstInput())
+          .catch((e) => {
+            console.log('error loading', e)
+            this.setState({ isLoading: false, hasError: true })        
+          })
+      })
   }
 
   focusFirstInput(){
@@ -356,12 +359,13 @@ class EditCampaign extends Component {
                         type="text"
                         value={reviewerAddress}
                         placeholder="0x0000000000000000000000000000000000000000"
-                        help="This person or smart contract will be reviewing your campaign to increase trust for donators."
+                        help="This person or smart contract will be reviewing your campaign to increase trust for donators. It has been automatically assigned."
                         validations="isEtherAddress"
                         validationErrors={{
                             isEtherAddress: 'Please enter a valid Ethereum address.'
                         }}                    
                         required
+                        disabled={true}
                       />                                           
 
                       <LoaderButton

@@ -85,6 +85,10 @@ export const getUserAvatar = (owner) => {
   } 
 }
 
+export const getRandomWhitelistAddress = (whitelist) => {
+  return whitelist[Math.floor(Math.random() * whitelist.length)];
+}
+
 // returns a risk indicator
 export const calculateRiskFactor = (owner, dependencies) => {
   let reasons = {
@@ -123,7 +127,6 @@ export const calculateRiskFactor = (owner, dependencies) => {
 
   return reasons
 }
-
 
 
 

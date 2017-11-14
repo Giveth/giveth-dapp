@@ -9,7 +9,7 @@ import QuillFormsy from '../QuillFormsy'
 import FormsyImageUploader from './../FormsyImageUploader'
 import GoBackButton from '../GoBackButton'
 import { isOwner } from '../../lib/helpers'
-import { isAuthenticated } from '../../lib/middleware'
+import { isAuthenticated, checkWalletBalance, isInWhitelist } from '../../lib/middleware'
 import getNetwork from "../../lib/blockchain/getNetwork";
 import getWeb3 from "../../lib/blockchain/getWeb3";
 import { getTruncatedText } from '../../lib/helpers'
@@ -57,30 +57,33 @@ class EditDAC extends Component {
   }
 
   componentDidMount() {
-    isAuthenticated(this.props.currentUser, this.props.history, this.props.wallet).then(()=> {
-      if(!this.props.isNew) {
-        feathersClient.service('dacs').find({query: {_id: this.props.match.params.id}})
-          .then((resp) => {
-            if(!isOwner(resp.data[0].owner.address, this.props.currentUser)) {
-              this.props.history.goBack()
-            } else {
-              this.setState(Object.assign({}, resp.data[0], {
-                id: this.props.match.params.id,
-                isLoading: false
-              }), this.focusFirstInput())
-            }
-          })
-          .catch(()=>
-            this.setState( {
-              isLoading: false,
-              hasError: true
-            }))
-      } else {
-        this.setState({
-          isLoading: false
-        }, this.focusFirstInput())
-      }
-    })
+    isAuthenticated(this.props.currentUser, this.props.history, this.props.wallet)
+      .then(() => checkWalletBalance(this.props.wallet, this.props.history))          
+      .then(() => isInWhitelist(this.props.currentUser, React.whitelist.delegateWhitelist, this.props.history))
+      .then(() => {      
+        if(!this.props.isNew) {
+          feathersClient.service('dacs').find({query: {_id: this.props.match.params.id}})
+            .then((resp) => {
+              if(!isOwner(resp.data[0].owner.address, this.props.currentUser)) {
+                this.props.history.goBack()
+              } else {
+                this.setState(Object.assign({}, resp.data[0], {
+                  id: this.props.match.params.id,
+                  isLoading: false
+                }), this.focusFirstInput())
+              }
+            })
+            .catch(()=>
+              this.setState( {
+                isLoading: false,
+                hasError: true
+              }))
+        } else {
+          this.setState({
+            isLoading: false
+          }, this.focusFirstInput())
+        }
+      })
   }
 
   focusFirstInput(){

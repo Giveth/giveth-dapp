@@ -10,14 +10,14 @@ import QuillFormsy from './../QuillFormsy'
 import FormsyImageUploader from './../FormsyImageUploader'
 import GoBackButton from '../GoBackButton'
 import { isOwner } from '../../lib/helpers'
-import { isAuthenticated, checkWalletBalance } from '../../lib/middleware'
+import { isAuthenticated, checkWalletBalance, isInWhitelist } from '../../lib/middleware'
 import { getTruncatedText } from '../../lib/helpers'
 import getNetwork from "../../lib/blockchain/getNetwork";
 import getWeb3 from "../../lib/blockchain/getWeb3";
 import LoaderButton from "../../components/LoaderButton"
 import DatePickerFormsy from './../DatePickerFormsy'
 import currentUserModel from '../../models/currentUserModel'
-import { displayTransactionError } from '../../lib/helpers'
+import { displayTransactionError, getRandomWhitelistAddress} from '../../lib/helpers'
 
 /**
  * Create or edit a milestone
@@ -48,7 +48,7 @@ class EditMilestone extends Component {
       videoUrl: '',
       maxAmount: '',
       ownerAddress: '',
-      reviewerAddress: '',
+      reviewerAddress: getRandomWhitelistAddress(React.whitelist.reviewerWhitelist),
       recipientAddress: '',
       donationsReceived: 0,
       donationsGiven: 0,
@@ -65,8 +65,9 @@ class EditMilestone extends Component {
 
   componentDidMount() {
     isAuthenticated(this.props.currentUser, this.props.history, this.props.wallet)
-      .then(()=> checkWalletBalance(this.props.wallet, this.props.history))
-      .then(()=> {
+      .then(() => checkWalletBalance(this.props.wallet, this.props.history))
+      .then(() => isInWhitelist(this.props.currentUser, React.whitelist.projectOwnerWhitelist, this.props.history))
+      .then(() => { 
         this.setState({ campaignId: this.props.match.params.id })
 
         // load a single milestones (when editing)
@@ -293,12 +294,13 @@ class EditMilestone extends Component {
                         type="text"
                         value={reviewerAddress}
                         placeholder="0x0000000000000000000000000000000000000000"
-                        help="Enter an Ethereum address."
+                        help="The milestone reviewer is automatically assigned while Giveth is in beta."
                         validations="isEtherAddress"
                         validationErrors={{
                             isEtherAddress: 'Please insert a valid Ethereum address.'
                         }}                    
                         required
+                        disabled={true}
                       />    
 
                       <Input
