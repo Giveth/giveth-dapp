@@ -7,13 +7,13 @@ import currentUserModel from '../../models/currentUserModel';
 import CampaignCard from '../CampaignCard';
 
 /**
-  The Campaigns view mapped to /campaigns
-
-  @param campaigns    List of all campaigns with navigation information
-  @param currentUser  Currently logged in user information
-  @param history      History stack
-  @param wallet       Wallet object with the balance and all keystores
-*/
+ * The Campaigns view mapped to /campaigns
+ *
+ * @param campaigns    List of all campaigns with navigation information
+ * @param currentUser  Currently logged in user information
+ * @param history      Browser history object
+ * @param wallet       Wallet object with the balance and all keystores
+ */
 const Campaigns = ({
   campaigns, currentUser, history, wallet,
 }) => (

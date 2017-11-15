@@ -1,6 +1,11 @@
 {
   "extends": "airbnb",
   "rules": {
+    "jsx-a11y/anchor-is-valid": [ "error", {
+        "components": [ "Link" ],
+        "specialLink": [ "to", "hrefLeft", "hrefRight" ],
+        "aspects": [ "noHref", "invalidHref", "preferButton" ]
+      }],
     "no-param-reassign": [2, {
       "props": false
     }],
