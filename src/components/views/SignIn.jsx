@@ -1,27 +1,26 @@
-import React, { Component } from 'react'
+import React, { Component } from 'react';
+import PropTypes from 'prop-types';
+import Avatar from 'react-avatar';
+import { Link } from 'react-router-dom';
 
-import { feathersClient } from '../../lib/feathersClient'
-import Loader from "../Loader";
-import Avatar from 'react-avatar'
-import { Link } from 'react-router-dom'
+import { feathersClient } from '../../lib/feathersClient';
+import Loader from '../Loader';
+import UnlockWalletForm from '../UnlockWalletForm';
+import { authenticate } from '../../lib/helpers';
 
-import UnlockWalletForm from "../UnlockWalletForm";
-import { authenticate } from "../../lib/helpers";
-
+/* global window */
 /**
- SignIn Page
- **/
-
+ * The SignIn view mapped to /sign-in
+ */
 class SignIn extends Component {
-  constructor() {
-    super();
+  constructor(props) {
+    super(props);
 
     this.state = {
       isLoading: true,
       error: undefined,
       address: undefined,
-      formIsValid: false,
-      isSigninIn: false
+      isSigninIn: false,
     };
 
     this.submit = this.submit.bind(this);
@@ -35,83 +34,70 @@ class SignIn extends Component {
     this.handleProps(nextProps);
   }
 
-  componentWillUpdate() {
-    if (this.props.wallet) {
-      setTimeout(() => {
-        if (this.refs.password) {
-          this.refs.password.element.focus()
-        }
-      }, 500);
-    }
-  }
-
   handleProps(props) {
     if (!props.cachedWallet) {
       this.props.history.push('/change-account');
-    }
-    else if (props.wallet && (!this.state.address || props.wallet !== this.props.wallet)) {
+    } else if (props.wallet && (!this.state.address || props.wallet !== this.props.wallet)) {
       this.setState({
-        address: props.wallet.getAddresses()[ 0 ],
+        address: props.wallet.getAddresses()[0],
       }, () => this.fetchUserProfile());
     }
   }
 
   fetchUserProfile() {
     feathersClient.service('users').get(this.state.address)
-      .then(resp => {
-        console.log(resp)
+      .then((resp) => {
         this.setState(Object.assign({}, resp, {
           isLoading: false,
         }));
       })
-      .catch(error => {
-        console.log(error);
+      .catch(() => {
         this.setState({
           isLoading: false,
         });
       });
   }
 
-  submit({ password }) {
+  submit(password) {
     this.setState({
       isSigninIn: true,
-      error: undefined
+      error: undefined,
     }, () => {
       function loadWallet() {
         this.props.wallet.unlock(password)
           .then(() => authenticate(this.props.wallet))
-          .then(token => {
+          .then((token) => {
             this.props.onSignIn();
             return feathersClient.passport.verifyJWT(token);
           })
           .then(() => {
-            React.toast.success(<p>Welcome back! <br/>Note that your wallet is unlocked and will <strong>auto-lock</strong> upon page refresh.</p>)    
-            this.props.history.goBack()
+            React.toast.success(<p>Welcome back! <br />Note that your wallet is unlocked and will
+              <strong>auto-lock</strong> upon page refresh.
+                                </p>);
+            this.props.history.goBack();
           })
           .catch((err) => {
-            console.error(err);
-
-            const error = (err.type && err.type === 'FeathersError') ? "authentication error" :
-              "Error unlocking wallet. Possibly an invalid password.";
-
             this.setState({
-              error,
-              isSigninIn: false
+              error: (err.type && err.type === 'FeathersError') ?
+                'authentication error' :
+                'Error unlocking wallet. Possibly an invalid password.',
+              isSigninIn: false,
             });
           });
       }
 
       // web3 blocks all rendering, so we need to request an animation frame
-      window.requestAnimationFrame(loadWallet.bind(this))
-          
-    })
+      window.requestAnimationFrame(loadWallet.bind(this));
+    });
   }
 
   render() {
-    const { avatar, name, address, error, isLoading, isSigninIn } = this.state;
+    const {
+      avatar, name, address, error, isLoading, isSigninIn,
+    } = this.state;
 
     if (isLoading) {
-      return <Loader className="fixed"/>
+      return <Loader className="fixed" />;
     }
 
     return (
@@ -123,11 +109,11 @@ class SignIn extends Component {
                 <div className="card">
                   <center>
                     {avatar &&
-                      <Avatar size={100} src={avatar} round={true}/>
+                      <Avatar size={100} src={avatar} round />
                     }
 
                     {name &&
-                      <h1>Welcome back<br/><strong>{name}!</strong></h1>
+                      <h1>Welcome back<br /><strong>{name}!</strong></h1>
                     }
 
                     {address && !name &&
@@ -144,13 +130,14 @@ class SignIn extends Component {
                         label="Sign in by entering your wallet password"
                         error={error}
                         buttonText="Sign in"
-                        unlocking={isSigninIn}>
-                          <div className="form-group">
-                            <p className="small">
-                              <Link to="/signup">Not you</Link>, or&nbsp;
+                        unlocking={isSigninIn}
+                      >
+                        <div className="form-group">
+                          <p className="small">
+                            <Link to="/signup">Not you</Link>, or&nbsp;
                               <Link to="/change-account">want to change wallet?</Link>
-                            </p>
-                          </div>
+                          </p>
+                        </div>
                       </UnlockWalletForm>
                     </div>
                   </center>
@@ -160,8 +147,19 @@ class SignIn extends Component {
           </div>
         </div>
       </div>
-    )
+    );
   }
 }
+
+SignIn.propTypes = {
+  history: PropTypes.shape({
+    push: PropTypes.func.isRequired,
+    goBack: PropTypes.func.isRequired,
+  }).isRequired,
+  wallet: PropTypes.shape({
+    unlock: PropTypes.func.isRequired,
+  }).isRequired,
+  onSignIn: PropTypes.func.isRequired,
+};
 
 export default SignIn;

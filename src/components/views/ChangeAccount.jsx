@@ -8,6 +8,7 @@ import { feathersClient } from '../../lib/feathersClient';
 import { authenticate } from '../../lib/helpers';
 import LoaderButton from '../../components/LoaderButton';
 
+/* global FileReader */
 /**
  * The Change Account view mappet to /change-account
  * Allow uploading existing keystore File
@@ -16,8 +17,6 @@ import LoaderButton from '../../components/LoaderButton';
  * @param history             Browser history object
  * @param provider
  */
-/* global FileReader */
-
 class ChangeAccount extends Component {
   constructor(props) {
     super(props);
