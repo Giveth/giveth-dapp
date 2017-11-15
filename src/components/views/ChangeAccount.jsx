@@ -26,6 +26,7 @@ class ChangeAccount extends Component {
       error: undefined,
       formIsValid: false,
       isLoading: false,
+      password: '',
     };
 
     this.submit = this.submit.bind(this);
@@ -139,6 +140,7 @@ class ChangeAccount extends Component {
                       id="password-input"
                       label="Wallet Password"
                       type="password"
+                      value={this.state.password}
                       placeholder="Wallet password"
                       required
                     />
