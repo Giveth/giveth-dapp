@@ -18,6 +18,7 @@
     "lpp-campaign": "0.0.11",
     "lpp-dac": "0.0.2",
     "lpp-milestone": "git://github.com/Giveth/lpp-milestone.git#7d53f995880983eac108899387614cb0952b65cb",
+    "moment": "^2.19.2",
     "node-sass-chokidar": "^0.0.3",
     "npm-run-all": "^4.0.2",
     "prop-types": "^15.5.10",

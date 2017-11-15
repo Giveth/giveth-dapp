@@ -4,20 +4,20 @@ import Masonry, { ResponsiveMasonry } from 'react-responsive-masonry';
 
 import JoinGivethCommunity from '../JoinGivethCommunity';
 import currentUserModel from '../../models/currentUserModel';
-import CampaignCard from '../CampaignCard';
+import DacCard from '../DacCard';
 
 /**
- * The Campaigns view mapped to /campaigns
+ * The DACs view mapped to /dacs
  *
- * @param campaigns    List of all campaigns with navigation information
+ * @param dacs         List of all campaigns with navigation information
  * @param currentUser  Currently logged in user information
  * @param history      Browser history object
  * @param wallet       Wallet object with the balance and all keystores
  */
-const Campaigns = ({
-  campaigns, currentUser, history, wallet,
+const DACs = ({
+  currentUser, wallet, dacs, history,
 }) => (
-  <div id="campaigns-view" className="card-view">
+  <div id="dacs-view" className="card-view">
     <JoinGivethCommunity
       currentUser={currentUser}
       wallet={wallet}
@@ -27,28 +27,27 @@ const Campaigns = ({
     <div className="container-fluid page-layout reduced-padding">
 
       { // There are some Campaigns in the system, show them
-        campaigns.data && campaigns.data.length > 0 &&
+        dacs.data && dacs.data.length > 0 &&
         <div>
           <center>
             <p>
-              These campaigns work hard to solve causes.
-              Help them realise their goals by giving Ether!
+            These communities are solving causes.
+            Help them realise their goals by joining them and giving Ether!
             </p>
           </center>
 
+
           <ResponsiveMasonry columnsCountBreakPoints={{
-            350: 1,
-            750: 2,
-            900: 3,
-            1024: 4,
-            1470: 5,
-          }}
+ 350: 1, 750: 2, 900: 3, 1024: 3, 1470: 4,
+}}
           >
             <Masonry gutter="10px">
-              { campaigns.data.map(campaign =>
-                    (<CampaignCard
-                      key={campaign._id} // eslint-disable-line no-underscore-dangle
-                      campaign={campaign}
+              { dacs.data.map(dac =>
+
+                    (<DacCard
+                      key={dac._id} // eslint-disable-line no-underscore-dangle
+                      dac={dac}
+                      removeDAC={this.removeDAC}
                       currentUser={currentUser}
                       wallet={wallet}
                       history={history}
@@ -58,12 +57,13 @@ const Campaigns = ({
         </div>
           }
 
+
       { // There are no Campaigns, show empty state
-        campaigns.data && campaigns.data.length === 0 &&
+        dacs.data && dacs.data.length === 0 &&
         <div>
           <center>
-            <p>There are no campaigns yet!</p>
-            <img className="empty-state-img" src={`${process.env.PUBLIC_URL}/img/campaign.svg`} width="200px" height="200px" alt="no-campaigns-icon" />
+            <p>There are no decentralized altruistic communities (DACs) yet!</p>
+            <img className="empty-state-img" src={`${process.env.PUBLIC_URL}/img/community.svg`} width="200px" height="200px" alt="no-dacs-icon" />
           </center>
         </div>
           }
@@ -72,11 +72,9 @@ const Campaigns = ({
   </div>
 );
 
-Campaigns.propTypes = {
+DACs.propTypes = {
   currentUser: currentUserModel,
-  history: PropTypes.shape({}).isRequired,
-  wallet: PropTypes.shape({}).isRequired,
-  campaigns: PropTypes.shape({
+  dacs: PropTypes.shape({
     data: PropTypes.arrayOf(PropTypes.shape({
       _id: PropTypes.string.isRequired,
     })),
@@ -84,10 +82,12 @@ Campaigns.propTypes = {
     skip: PropTypes.number.isRequired,
     total: PropTypes.number.isRequired,
   }).isRequired,
+  history: PropTypes.shape({}).isRequired,
+  wallet: PropTypes.shape({}).isRequired,
 };
 
-Campaigns.defaultProps = {
+DACs.defaultProps = {
   currentUser: {},
 };
 
-export default Campaigns;
+export default DACs;
