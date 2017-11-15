@@ -1,44 +1,45 @@
-import React, { Component } from 'react'
-import PropTypes from 'prop-types'
-import {withRouter} from "react-router-dom"
+import React, { Component } from 'react';
+import PropTypes from 'prop-types';
+import { withRouter } from 'react-router-dom';
 
-import { SkyLightStateless } from 'react-skylight'
+import { SkyLightStateless } from 'react-skylight';
 
-import UnlockWalletForm from "./UnlockWalletForm";
+import UnlockWalletForm from './UnlockWalletForm';
 
+/* global window */
 /**
  * Modal with a form to unlock a GivethWallet
  */
 class UnlockWallet extends Component {
-  constructor() {
-    super();
+  constructor(props) {
+    super(props);
 
     this.state = {
-      formIsValid: false,
       unlocking: false,
     };
+
+    this.submit = this.submit.bind(this);
   }
 
-  submit = ({ password }) => {
+  submit(password) {
     this.setState({
-      unlocking: true
+      unlocking: true,
     }, () => {
       const unlock = () => {
         this.props.wallet.unlock(password)
           .then(() => {
             this.setState({
-              unlocking: false
+              unlocking: false,
             }, () => {
               this.props.onClose();
 
               // if requested, redirect after successfully unlocking the wallet
-              if(this.props.redirectAfter) this.props.history.push(this.props.redirectAfter);
-            })
+              if (this.props.redirectAfter) this.props.history.push(this.props.redirectAfter);
+            });
           })
-          .catch(error => {
-            console.log(error);
+          .catch(() => {
             this.setState({
-              error: "Error unlocking wallet. Possibly an invalid password.",
+              error: 'Error unlocking wallet. Possibly an invalid password.',
               unlocking: false,
             });
           });
@@ -47,7 +48,7 @@ class UnlockWallet extends Component {
       // web3 blocks all rendering, so we need to request an animation frame
       window.requestAnimationFrame(unlock);
     });
-  };
+  }
 
 
   render() {
@@ -56,17 +57,26 @@ class UnlockWallet extends Component {
 
     return (
       <SkyLightStateless
-        isVisible={true}
+        isVisible
         hideOnOverlayClicked
         onCloseClicked={onCloseClicked}
-        afterClose={onClose}>
+        afterClose={onClose}
+      >
 
         <center>
-          <img className="empty-state-img reduce-margin" src={process.env.PUBLIC_URL + "/img/unlock wallet.svg"} width="130px" height="130px" alt="unlock wallet icon"/>
-        </center>  
+          <image
+            className="empty-state-img reduce-margin"
+            src={`${process.env.PUBLIC_URL}/img/unlock wallet.svg`}
+            width="130px"
+            height="130px"
+            alt="unlock wallet icon"
+          />
+        </center>
 
-        <h2>Unlock your wallet to continue</h2>     
-        <p className="small">Note: for security reasons your wallet auto-locks whenever the Giveth dapp reloads.</p>
+        <h2>Unlock your wallet to continue</h2>
+        <p className="small">
+          Note: for security reasons your wallet auto-locks whenever the Giveth dapp reloads.
+        </p>
 
         <UnlockWalletForm
           submit={this.submit}
@@ -77,7 +87,7 @@ class UnlockWallet extends Component {
         />
 
       </SkyLightStateless>
-    )
+    );
   }
 }
 
@@ -89,4 +99,9 @@ UnlockWallet.propTypes = {
     unlock: PropTypes.func.isRequired,
   }).isRequired,
   onClose: PropTypes.func.isRequired,
+  onCloseClicked: PropTypes.func.isRequired,
+  redirectAfter: PropTypes.string.isRequired,
+  history: PropTypes.shape({
+    push: PropTypes.func.isRequired,
+  }).isRequired,
 };
