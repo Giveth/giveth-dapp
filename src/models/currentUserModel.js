@@ -1,4 +1,4 @@
-import PropTypes from 'prop-types'
+import PropTypes from 'prop-types';
 
 const currentUserModel = PropTypes.shape({
   avatar: PropTypes.string,
@@ -7,7 +7,7 @@ const currentUserModel = PropTypes.shape({
   commitTime: PropTypes.string,
   giverId: PropTypes.string,
   email: PropTypes.string,
-  linkedin: PropTypes.string
-})
+  linkedin: PropTypes.string,
+});
 
-export default currentUserModel
+export default currentUserModel;
