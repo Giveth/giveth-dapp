@@ -1,13 +1,13 @@
 import PropTypes from 'prop-types';
 
 const currentUserModel = PropTypes.shape({
-  avatar: PropTypes.string,
-  name: PropTypes.string,
   address: PropTypes.string,
+  avatar: PropTypes.string,
   commitTime: PropTypes.string,
-  giverId: PropTypes.string,
   email: PropTypes.string,
+  giverId: PropTypes.number,
   linkedin: PropTypes.string,
+  name: PropTypes.string,
 });
 
 export default currentUserModel;
