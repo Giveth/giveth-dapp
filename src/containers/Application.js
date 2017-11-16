@@ -19,7 +19,7 @@ import Profile from './../components/views/Profile'
 import UserWallet from './../components/views/UserWallet'
 import EditProfile from './../components/views/EditProfile'
 import SignIn from './../components/views/SignIn'
-import Signup from './../components/views/Signup'
+import Signup from './../components/views/SignUp'
 import ChangeAccount from './../components/views/ChangeAccount'
 
 import ViewMilestone from './../components/views/ViewMilestone'
@@ -56,7 +56,7 @@ React.swal = require('sweetalert')
 // Construct a dom node to be used as content for sweet alert
 React.swal.msg = (reactNode) => {
   let wrapper = document.createElement("span")
-  ReactDOM.render(reactNode, wrapper);  
+  ReactDOM.render(reactNode, wrapper);
   return wrapper.firstChild
 }
 
@@ -64,14 +64,14 @@ React.swal.msg = (reactNode) => {
 React.toast = toast
 
 // TO DO: This is the minimum transaction view required to:
-// create a DAC / Campaign / Milestone / Profile 
+// create a DAC / Campaign / Milestone / Profile
 React.minimumWalletBalance = 0.02
 
 React.whitelist = {}
 
 // Fetch whitelist
-feathersClient.service('/whitelist').find().then((res, err) => { 
-  React.whitelist = res; 
+feathersClient.service('/whitelist').find().then((res, err) => {
+  React.whitelist = res;
 });
 
 
@@ -122,7 +122,7 @@ class Application extends Component {
       .catch( e => {
         console.log(e)
         this.setState({ isLoading: false, hasError: false })
-      })  
+      })
 
     GivethWallet.getCachedKeystore()
       .then(keystore => {
@@ -139,7 +139,7 @@ class Application extends Component {
         this.setState({
           cachedWallet: false,
         })
-      });       
+      });
 
 
     // QUESTION: Should rendering wait for this to load?
@@ -197,7 +197,7 @@ class Application extends Component {
 
   walletUnlocked() {
     this.hideUnlockWalletModal()
-    React.toast.success(<p>Your wallet has been unlocked.<br/>Note that your wallet will <strong>auto-lock</strong> upon page refresh.</p>)    
+    React.toast.success(<p>Your wallet has been unlocked.<br/>Note that your wallet will <strong>auto-lock</strong> upon page refresh.</p>)
   }
 
   hideUnlockWalletModal() {
@@ -237,12 +237,12 @@ class Application extends Component {
                   NOTE order matters, wrong order breaks routes!
                */}
 
-              <Route exact path="/dacs/new" component={props => <EditDAC isNew={true} currentUser={currentUser} wallet={wallet} {...props}/>} />            
-              <Route exact path="/dacs/:id" component={props => <ViewDAC currentUser={currentUser} wallet={wallet} {...props}/>} />                        
-              <Route exact path="/dacs/:id/edit" component={props => <EditDAC currentUser={currentUser} wallet={wallet} {...props}/>} />  
+              <Route exact path="/dacs/new" component={props => <EditDAC isNew={true} currentUser={currentUser} wallet={wallet} {...props}/>} />
+              <Route exact path="/dacs/:id" component={props => <ViewDAC currentUser={currentUser} wallet={wallet} {...props}/>} />
+              <Route exact path="/dacs/:id/edit" component={props => <EditDAC currentUser={currentUser} wallet={wallet} {...props}/>} />
 
               <Route exact path="/campaigns/new" component={props => <EditCampaign isNew={true} currentUser={currentUser} wallet={wallet} {...props}/>} />
-              <Route exact path="/campaigns/:id" component={props => <ViewCampaign currentUser={currentUser} wallet={wallet} {...props} /> }/>            
+              <Route exact path="/campaigns/:id" component={props => <ViewCampaign currentUser={currentUser} wallet={wallet} {...props} /> }/>
               <Route exact path="/campaigns/:id/edit" component={props => <EditCampaign currentUser={currentUser} wallet={wallet} {...props}/>} />
 
               <Route exact path="/campaigns/:id/milestones/new" component={props => <EditMilestone isNew={true} currentUser={currentUser} wallet={wallet} {...props} />}/>
@@ -273,7 +273,7 @@ class Application extends Component {
               <Route exact path="/profile" component={props => <EditProfile currentUser={currentUser} wallet={wallet} {...props}/>} />
               <Route exact path="/profile/:userAddress" component={props => <Profile {...props}/>} />
 
-              <DataRoutes currentUser={currentUser} wallet={wallet}/>              
+              <DataRoutes currentUser={currentUser} wallet={wallet}/>
 
               <Route component={NotFound}/>
             </Switch>
@@ -287,7 +287,7 @@ class Application extends Component {
           </center>
         }
 
-        <ToastContainer 
+        <ToastContainer
           position="top-right"
           type="default"
           autoClose={5000}
@@ -295,7 +295,7 @@ class Application extends Component {
           newestOnTop={false}
           closeOnClick
           pauseOnHover
-        />            
+        />
 
       </div>
     )
