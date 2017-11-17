@@ -64,7 +64,11 @@ BackupWallet.propTypes = {
       version: PropTypes.number.isRequired,
     })).isRequired,
   }).isRequired,
-  onBackup: PropTypes.func.isRequired,
+  onBackup: PropTypes.func,
+};
+
+BackupWallet.defaultProps = {
+  onBackup: () => {},
 };
 
 export default BackupWallet;
