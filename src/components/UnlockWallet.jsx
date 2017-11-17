@@ -91,8 +91,6 @@ class UnlockWallet extends Component {
   }
 }
 
-export default withRouter(UnlockWallet);
-
 UnlockWallet.propTypes = {
   wallet: PropTypes.shape({
     unlocked: PropTypes.bool.isRequired,
@@ -100,8 +98,14 @@ UnlockWallet.propTypes = {
   }).isRequired,
   onClose: PropTypes.func.isRequired,
   onCloseClicked: PropTypes.func.isRequired,
-  redirectAfter: PropTypes.string.isRequired,
+  redirectAfter: PropTypes.string,
   history: PropTypes.shape({
     push: PropTypes.func.isRequired,
   }).isRequired,
 };
+
+UnlockWallet.defaultProps = {
+  redirectAfter: '',
+};
+
+export default withRouter(UnlockWallet);
