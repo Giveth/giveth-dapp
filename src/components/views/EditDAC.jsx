@@ -225,6 +225,7 @@ class EditDAC extends Component {
                             minLength: 'Please provide at least 3 characters.',
                         }}
                     required
+                    autoFocus
                   />
 
                   <QuillFormsy
