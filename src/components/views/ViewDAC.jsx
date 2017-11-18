@@ -16,7 +16,7 @@ import { getUserName, getUserAvatar } from '../../lib/helpers';
 
 
 /**
- * The DAC detail view mapped to /campaing/id
+ * The DAC detail view mapped to /dac/id
  *
  * @param currentUser  Currently logged in user information
  * @param history      Browser history object
