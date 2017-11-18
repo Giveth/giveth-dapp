@@ -1,66 +1,66 @@
 import React, { Component } from 'react';
-import PropTypes from 'prop-types';
 import Avatar from 'react-avatar';
+import PropTypes from 'prop-types';
 
-import { getTruncatedText, getUserAvatar, isOwner, getUserName } from './../lib/helpers';
+import { isOwner, getTruncatedText, getUserName, getUserAvatar } from './../lib/helpers';
 import CardStats from './CardStats';
 import currentUserModel from './../models/currentUserModel';
 import { redirectAfterWalletUnlock, checkWalletBalance } from './../lib/middleware';
 
 /**
- * DAC Card visible in the DACs view.
+ * Campaign Card visible in the DACs view.
  *
  * @param currentUser  Currently logged in user information
  * @param history      Browser history object
  * @param wallet       Wallet object with the balance and all keystores
  */
-class DacCard extends Component {
+class CampaignCard extends Component {
   constructor(props) {
     super(props);
 
     this.viewProfile = this.viewProfile.bind(this);
-    this.viewDAC = this.viewDAC.bind(this);
-    this.editDAC = this.editDAC.bind(this);
+    this.viewCampaign = this.viewCampaign.bind(this);
+    this.editCampaign = this.editCampaign.bind(this);
   }
-
-  viewProfile(e) {
-    e.stopPropagation();
-    this.props.history.push(`/profile/${this.props.dac.owner.address}`);
-  }
-
-  viewDAC() {
+  viewCampaign() {
     // eslint-disable-next-line no-underscore-dangle
-    this.props.history.push(`/dacs/${this.props.dac._id}`);
+    this.props.history.push(`/campaigns/${this.props.campaign._id}`);
   }
 
-  editDAC(e) {
+  editCampaign(e) {
     e.stopPropagation();
 
     checkWalletBalance(this.props.wallet, this.props.history).then(() => {
       React.swal({
-        title: 'Edit Community?',
-        text: 'Are you sure you want to edit the description of this Community?',
+        title: 'Edit Campaign?',
+        text: 'Are you sure you want to edit this Campaign?',
         icon: 'warning',
-        buttons: ['Cancel', 'Yes, edit'],
         dangerMode: true,
+        buttons: ['Cancel', 'Yes, edit'],
       }).then((isConfirmed) => {
         if (isConfirmed) {
           // eslint-disable-next-line no-underscore-dangle
-          redirectAfterWalletUnlock(`/dacs/${this.props.dac._id}/edit`, this.props.wallet, this.props.history);
+          redirectAfterWalletUnlock(`/campaigns/${this.props.campaign._id}/edit`, this.props.wallet, this.props.history);
         }
       });
     });
   }
 
+  viewProfile(e) {
+    e.stopPropagation();
+    this.props.history.push(`/profile/${this.props.campaign.owner.address}`);
+  }
+
+
   render() {
-    const { dac, currentUser } = this.props;
+    const { campaign, currentUser } = this.props;
 
     return (
       <div
         className="card overview-card"
-        id={dac._id} // eslint-disable-line no-underscore-dangle
-        onClick={this.viewDAC}
-        onKeyPress={this.viewDAC}
+        id={campaign._id} // eslint-disable-line no-underscore-dangle
+        onClick={this.viewCampaign}
+        onKeyPress={this.viewCampaign}
         role="button"
         tabIndex="0"
       >
@@ -72,14 +72,15 @@ class DacCard extends Component {
             role="button"
             tabIndex="0"
           >
-            <Avatar size={30} src={getUserAvatar(dac.owner)} round />
-            <span className="owner-name">{getUserName(dac.owner)}</span>
 
-            { isOwner(dac.owner.address, currentUser) &&
+            <Avatar size={30} src={getUserAvatar(campaign.owner)} round />
+            <span className="owner-name">{getUserName(campaign.owner)}</span>
+
+            { isOwner(campaign.owner.address, currentUser) &&
               <span className="pull-right">
                 <button
                   className="btn btn-link btn-edit"
-                  onClick={e => this.editDAC(e)}
+                  onClick={this.editCampaign}
                 >
                   <i className="fa fa-edit" />
                 </button>
@@ -87,19 +88,19 @@ class DacCard extends Component {
             }
           </div>
 
-          <div className="card-img" style={{ backgroundImage: `url(${dac.image})` }} />
+          <div className="card-img" style={{ backgroundImage: `url(${campaign.image})` }} />
 
           <div className="card-content">
-            <h4 className="card-title">{getTruncatedText(dac.title, 30)}</h4>
-            <div className="card-text">{dac.summary}</div>
+            <h4 className="card-title">{getTruncatedText(campaign.title, 30)}</h4>
+            <div className="card-text">{campaign.summary}</div>
           </div>
 
           <div className="card-footer">
             <CardStats
-              type="dac"
-              donationCount={dac.donationCount}
-              totalDonated={dac.totalDonated}
-              campaignsCount={dac.campaignsCount}
+              type="campaign"
+              donationCount={campaign.donationCount}
+              totalDonated={campaign.totalDonated}
+              milestonesCount={campaign.milestonesCount}
             />
           </div>
 
@@ -109,8 +110,8 @@ class DacCard extends Component {
   }
 }
 
-DacCard.propTypes = {
-  dac: PropTypes.shape({
+CampaignCard.propTypes = {
+  campaign: PropTypes.shape({
     _id: PropTypes.string.isRequired,
     owner: PropTypes.shape({
       address: PropTypes.string.isRequired,
@@ -123,8 +124,8 @@ DacCard.propTypes = {
   }).isRequired,
 };
 
-DacCard.defaultProps = {
+CampaignCard.defaultProps = {
   currentUser: {},
 };
 
-export default DacCard;
+export default CampaignCard;
