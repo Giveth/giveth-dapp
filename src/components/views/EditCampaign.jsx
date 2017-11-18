@@ -15,7 +15,6 @@ import { isAuthenticated, checkWalletBalance, isInWhitelist } from '../../lib/mi
 import getNetwork from '../../lib/blockchain/getNetwork';
 import getWeb3 from '../../lib/blockchain/getWeb3';
 import LoaderButton from '../../components/LoaderButton';
-
 import currentUserModel from '../../models/currentUserModel';
 
 /**
@@ -27,7 +26,6 @@ import currentUserModel from '../../models/currentUserModel';
  * @param history  Browser history object
  * @param wallet   Wallet object with the balance and all keystores
  */
-
 class EditCampaign extends Component {
   constructor() {
     super();
