@@ -94,7 +94,7 @@ Welcome to the code for Giveth's dapp. This is an open source effort to realize 
 4. Once the dapp is up in your browser, click "Sign In" from the main menu.
 5. For testing locally, choose any of the wallet files found in the `giveth-dapp/keystores/` folder using the wallet password: `password`. **DO NOT USE THESE ON MAINNET ETHEREUM.**
 
-## Video Walkthrough
+### Video Walkthrough
 Video tutorial walkthrough here: https://tinyurl.com/y9lx6jrl
 
 ## Build
