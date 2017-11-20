@@ -14,16 +14,14 @@ import currentUserModel from '../../models/currentUserModel';
 import { getUserName, getUserAvatar, getTruncatedText } from '../../lib/helpers';
 
 /**
-  The my delegations view
-* */
-
+ * The my delegations view
+ */
 class Delegations extends Component {
   constructor() {
     super();
 
     this.state = {
       isLoading: true,
-      hasError: false,
       dacs: [],
       campaigns: [],
       milestones: [],
@@ -32,7 +30,7 @@ class Delegations extends Component {
   }
 
   componentDidMount() {
-    isAuthenticated(this.props.currentUser, this.props.history).then(() => {
+    isAuthenticated(this.props.currentUser, this.props.history, this.props.wallet).then(() => {
       /**
       Load all DACs/campaigns/milestones
       TO DO: We should really move this to a single service
@@ -103,7 +101,7 @@ class Delegations extends Component {
           );
         }),
       ]).then(() => this.getAndWatchDonations())
-        .catch(() => this.setState({ isLoading: false, hasError: true }));
+        .catch(() => this.setState({ isLoading: false }));
     });
   }
 
@@ -148,10 +146,9 @@ class Delegations extends Component {
         this.setState({
           delegations: resp.data,
           isLoading: false,
-          hasError: false,
         });
       },
-      () => this.setState({ isLoading: false, hasError: true }),
+      () => this.setState({ isLoading: false }),
     );
   }
 
