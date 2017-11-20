@@ -5,7 +5,7 @@ const currentUserModel = PropTypes.shape({
   avatar: PropTypes.string,
   commitTime: PropTypes.string,
   email: PropTypes.string,
-  giverId: PropTypes.string,
+  giverId: PropTypes.number,
   linkedin: PropTypes.string,
   name: PropTypes.string,
 });
