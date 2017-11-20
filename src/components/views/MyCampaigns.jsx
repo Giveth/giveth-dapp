@@ -13,10 +13,11 @@ import { displayTransactionError, getTruncatedText } from '../../lib/helpers';
 import getNetwork from '../../lib/blockchain/getNetwork';
 import getWeb3 from '../../lib/blockchain/getWeb3';
 
+// TODO Remove the eslint exception and fix feathers to provide id's without underscore
+/* eslint no-underscore-dangle: 0 */
 /**
-  The my campaings view
-* */
-
+ * The my campaings view
+ */
 class MyCampaigns extends Component {
   constructor() {
     super();
@@ -45,33 +46,13 @@ class MyCampaigns extends Component {
               if (c.status === 'Canceled') return 3;
               return 4;
             }),
-            hasError: false,
             isLoading: false,
           }))
         .catch(() =>
           this.setState({
             isLoading: false,
-            hasError: true,
           })));
   }
-
-
-  // removeCampaign(id){
-  //   React.swal({
-  //     title: "Delete Campaign?",
-  //     text: "You will not be able to recover this Campaign!",
-  //     icon: "warning",
-  //     showCancelButton: true,
-  //     confirmButtonColor: "#DD6B55",
-  //     confirmButtonText: "Yes, delete it!",
-  //     closeOnConfirm: true,
-  //   }, () => {
-  //     const campaigns = feathersClient.service('/campaigns');
-  //     campaigns.remove(id).then(campaign => {
-  //       React.toast.success("Your Campaign has been deleted.")
-  //     })
-  //   });
-  // }
 
   editCampaign(id) {
     takeActionAfterWalletUnlock(this.props.wallet, () => {
@@ -108,7 +89,7 @@ class MyCampaigns extends Component {
               }).then(() => {
                 React.toast.info(<p>Campaign cancelation pending...<br /><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>);
               }).catch((e) => {
-                console.log('Error updating feathers cache ->', e);
+                console.log('Error updating feathers cache ->', e); // eslint-disable-line no-console
               });
             };
 
@@ -127,9 +108,7 @@ class MyCampaigns extends Component {
               })
               .then(() => {
                 React.toast.success(<p>The campaign has been cancelled!<br /><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>);
-              }).catch((e) => {
-                console.error(e);
-
+              }).catch(() => {
                 displayTransactionError(txHash, etherScanUrl);
               });
           }
@@ -137,11 +116,6 @@ class MyCampaigns extends Component {
       });
     });
   }
-
-  hasPendingTx(campaign) {
-    return campaign.status === 'pending' || (Object.keys(campaign).includes('mined') && !campaign.mined);
-  }
-
 
   render() {
     const { campaigns, isLoading } = this.state;
@@ -176,39 +150,48 @@ class MyCampaigns extends Component {
                         </tr>
                       </thead>
                       <tbody>
-                        { campaigns.map((c, index) =>
-                          (<tr key={index} className={c.status === 'pending' ? 'pending' : ''}>
+                        { campaigns.map(c => (
+                          <tr key={c._id} className={c.status === 'pending' ? 'pending' : ''}>
                             <td className="td-name">
                               <Link to={`/campaigns/${c._id}`}>{getTruncatedText(c.title, 45)}</Link>
                               { c.reviewerAddress === currentUser.address &&
                                 <span className="badge badge-info">
                                   <i className="fa fa-eye" />
-                                  &nbsp;I'm reviewer
+                                  &nbsp;I&apos;m reviewer
                                 </span>
                               }
 
                             </td>
                             <td className="td-donations-number">{c.donationCount || 0}</td>
-                            <td className="td-donations-amount">Ξ{(c.totalDonated) ? utils.fromWei(c.totalDonated) : 0}</td>
+                            <td className="td-donations-amount">Ξ{(c.totalDonated)
+                              ? utils.fromWei(c.totalDonated)
+                              : 0}
+                            </td>
                             <td className="td-status">
-                              {this.hasPendingTx(c) &&
+                              {(c.status === 'pending' || (Object.keys(c).includes('mined') && !c.mined)) &&
                                 <span><i className="fa fa-circle-o-notch fa-spin" />&nbsp;</span> }
                               {c.status}
                             </td>
                             <td className="td-actions">
                               { c.ownerAddress === currentUser.address && c.status === 'Active' &&
-                                <a className="btn btn-link" onClick={() => this.editCampaign(c._id)}>
+                                <button
+                                  className="btn btn-link"
+                                  onClick={() => this.editCampaign(c._id)}
+                                >
                                   <i className="fa fa-edit" />&nbsp;Edit
-                                </a>
+                                </button>
                               }
 
                               { (c.reviewerAddress === currentUser.address || c.ownerAddress === currentUser.address) && c.status === 'Active' &&
-                                <a className="btn btn-danger btn-sm" onClick={() => this.cancelCampaign(c)}>
+                                <button
+                                  className="btn btn-danger btn-sm"
+                                  onClick={() => this.cancelCampaign(c)}
+                                >
                                   <i className="fa fa-ban" />&nbsp;Cancel
-                                </a>
+                                </button>
                               }
                             </td>
-                           </tr>))}
+                          </tr>))}
                       </tbody>
                     </table>
                   }
@@ -216,8 +199,8 @@ class MyCampaigns extends Component {
                   { campaigns && campaigns.length === 0 &&
                     <div>
                       <center>
-                        <h3>You didn't create any campaigns yet!</h3>
-                        <img className="empty-state-img" src={`${process.env.PUBLIC_URL}/img/campaign.svg`} width="200px" height="200px" alt="no-campaigns-icon" />
+                        <h3>You didn&apos;t create any campaigns yet!</h3>
+                        <image className="empty-state-img" src={`${process.env.PUBLIC_URL}/img/campaign.svg`} width="200px" height="200px" alt="no-campaigns-icon" />
                       </center>
                     </div>
                   }
@@ -231,9 +214,17 @@ class MyCampaigns extends Component {
   }
 }
 
-export default MyCampaigns;
-
 MyCampaigns.propTypes = {
   currentUser: currentUserModel,
-  history: PropTypes.object.isRequired,
+  history: PropTypes.shape({}).isRequired,
+  wallet: PropTypes.shape({
+    unlocked: PropTypes.bool.isRequired,
+    unlock: PropTypes.func.isRequired,
+  }).isRequired,
 };
+
+MyCampaigns.defaultProps = {
+  currentUser: undefined,
+};
+
+export default MyCampaigns;
