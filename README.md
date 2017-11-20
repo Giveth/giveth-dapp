@@ -13,7 +13,8 @@ Welcome to the code for Giveth's dapp. This is an open source effort to realize 
     - [Install](#install)
     - [For OSX and Linux](#for-osx-and-linux)
     - [For Windows](#for-windows)
-    - [Run dapp](#run-dapp)
+    - [Run Dapp](#run-dapp)
+    - [Video Walkthrough](#video-walkthrough)
 - [Build](#build)
 - [Dependencies](#dependencies)
 - [Where are the config files?](#where-are-the-config-files)
@@ -25,7 +26,7 @@ Welcome to the code for Giveth's dapp. This is an open source effort to realize 
 ## Getting Started
 
 ### Install
-1. Click **Star** on this repo near the top-right corner of this web page.
+1. Click **Star** on this repo near the top-right corner of this web page (if you want to).
 2. Join our [slack](http://slack.giveth.io) if you haven't already.
 3. Fork this repo by clicking **Fork** button in top-right corner of this web page. Continue to follow instruction steps from your own giveth-dapp repo.
 4. Clone your own "giveth-dapp" repo. Copy the link from the "Clone or download" button near the top right of this repo's home page.
@@ -72,9 +73,9 @@ Welcome to the code for Giveth's dapp. This is an open source effort to realize 
    npm rebuild node-sass
    ```
 9. The web3 package does not install correctly when using the 'npm install' command, so you must install it separately in order for this dapp to run. Use the following to install web3:
-  ```
-  npm install web3
-  ```
+   ```
+   npm install web3
+   ```
 10. That is it, you are now ready to run the giveth-dapp! Head to the [Run dapp](#run-dapp) section for further instructions.
 
 ### Run dapp
@@ -92,6 +93,9 @@ Welcome to the code for Giveth's dapp. This is an open source effort to realize 
     ```
 4. Once the dapp is up in your browser, click "Sign In" from the main menu.
 5. For testing locally, choose any of the wallet files found in the `giveth-dapp/keystores/` folder using the wallet password: `password`. **DO NOT USE THESE ON MAINNET ETHEREUM.**
+
+## Video Walkthrough
+Video tutorial walkthrough here: https://tinyurl.com/y9lx6jrl
 
 ## Build
 `npm run build`
