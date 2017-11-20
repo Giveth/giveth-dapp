@@ -73,7 +73,7 @@ CardStats.propTypes = {
 CardStats.defaultProps = {
   status: 'In Progress',
   milestonesCount: 0,
-  maxAmount: 0,
+  maxAmount: undefined,
   campaignsCount: 0,
 };
 
