@@ -47,10 +47,10 @@ class EditProfile extends Component {
       .catch((err) => {
         if (err === 'noBalance') this.props.history.goBack();
 
-        // set giverId to 0. This way we don't create 2 Givers for the same user
+        // set giverId to '0'. This way we don't create 2 Givers for the same user
         else {
           this.setState({
-            giverId: 0,
+            giverId: '0',
             isLoading: false,
           });
         }
@@ -73,7 +73,7 @@ class EditProfile extends Component {
         avatar: file,
         // If no giverId, set to 0 so we don't add 2 givers for the same user if they update their
         // profile before the AddGiver tx has been mined. 0 is a reserved giverId
-        giverId: this.state.giverId || 0,
+        giverId: this.state.giverId || '0',
       };
 
       // TODO if (giverId > 0), need to send tx if commitTime or name has changed

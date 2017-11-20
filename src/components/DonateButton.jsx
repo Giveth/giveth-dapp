@@ -66,7 +66,7 @@ class DonateButton extends Component {
         Object.assign(donation, {
           delegate: this.props.model.adminId,
           delegateId: this.props.model.id,
-          owner: this.props.currentUser.giverId || 0,
+          owner: this.props.currentUser.giverId || '0',
           ownerId: this.props.currentUser,
           ownerType: 'giver',
         });
@@ -153,7 +153,7 @@ class DonateButton extends Component {
         etherScanUrl = network.etherscan;
 
         return liquidPledging.donate(
-          this.props.currentUser.giverId || 0,
+          this.props.currentUser.giverId || '0',
           this.props.model.adminId, { value: amount },
         )
           .once('transactionHash', (hash) => {
