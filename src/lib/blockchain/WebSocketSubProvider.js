@@ -8,8 +8,7 @@ class WebSocketSubProvider extends Subprovider {
     this.wsProvider = opts.wsProvider;
   }
 
-  handleRequest(payload, next, end){
-
+  handleRequest(payload, next, end) {
     // new payload with random large id,
     // so as not to conflict with other concurrent users
     const newPayload = createPayload(payload);
@@ -17,7 +16,7 @@ class WebSocketSubProvider extends Subprovider {
     // console.log(payload)
     // console.log('---------------------------------------------')
 
-    if(!newPayload) {
+    if (!newPayload) {
       console.log('no payload');
       end('no payload', null);
     }
@@ -31,7 +30,7 @@ class WebSocketSubProvider extends Subprovider {
 
       end(null, res.result);
     };
-    
+
     this.wsProvider.send(newPayload, handleResponse);
   }
 }
