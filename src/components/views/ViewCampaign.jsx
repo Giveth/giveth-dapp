@@ -125,7 +125,7 @@ class ViewCampaign extends Component {
 
               <DonateButton
                 type="campaign"
-                model={{ title, _id: id, adminId: projectId }}
+                model={{ title, id, adminId: projectId }}
                 wallet={wallet}
                 currentUser={currentUser}
                 history={history}
@@ -180,7 +180,7 @@ class ViewCampaign extends Component {
                   <ShowTypeDonations donations={donations} isLoading={isLoadingDonations} />
                   <DonateButton
                     type="campaign"
-                    model={{ title, _id: id, adminId: projectId }}
+                    model={{ title, id, adminId: projectId }}
                     wallet={wallet}
                     currentUser={currentUser}
                     history={history}

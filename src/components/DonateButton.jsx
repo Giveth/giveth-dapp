@@ -1,11 +1,11 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import SkyLight from 'react-skylight';
+import { SkyLightStateless } from 'react-skylight';
 import { utils } from 'web3';
-import getNetwork from '../lib/blockchain/getNetwork';
-
-import { feathersClient } from '../lib/feathersClient';
 import { Form, Input } from 'formsy-react-components';
+
+import getNetwork from '../lib/blockchain/getNetwork';
+import { feathersClient } from '../lib/feathersClient';
 import { takeActionAfterWalletUnlock } from '../lib/middleware';
 import currentUserModel from '../models/currentUserModel';
 import { displayTransactionError } from '../lib/helpers';
@@ -18,6 +18,7 @@ class DonateButton extends Component {
       isSaving: false,
       formIsValid: false,
       amount: '',
+      modalVisible: false,
     };
 
     this.submit = this.submit.bind(this);
@@ -25,7 +26,7 @@ class DonateButton extends Component {
 
   openDialog() {
     if (this.props.currentUser) {
-      takeActionAfterWalletUnlock(this.props.wallet, () => this.refs.donateDialog.show());
+      takeActionAfterWalletUnlock(this.props.wallet, () => this.setState({ modalVisible: true }));
     } else {
       React.swal({
         title: "You're almost there...",
@@ -39,10 +40,6 @@ class DonateButton extends Component {
         if (isConfirmed) this.props.history.push('/signup');
       });
     }
-  }
-
-  focusInput() {
-    this.refs.amount.element.focus();
   }
 
   toggleFormValid(state) {
@@ -68,7 +65,7 @@ class DonateButton extends Component {
       if (this.props.type.toLowerCase() === 'dac') {
         Object.assign(donation, {
           delegate: this.props.model.adminId,
-          delegateId: this.props.model._id,
+          delegateId: this.props.model.id,
           owner: this.props.currentUser.giverId || 0,
           ownerId: this.props.currentUser,
           ownerType: 'giver',
@@ -76,7 +73,7 @@ class DonateButton extends Component {
       } else {
         Object.assign(donation, {
           owner: this.props.model.adminId,
-          ownerId: this.props.model._id,
+          ownerId: this.props.model.id,
           ownerType: this.props.type.toLowerCase(),
         });
       }
@@ -90,28 +87,59 @@ class DonateButton extends Component {
 
           // For some reason (I suspect a rerender when donations are being fetched again)
           // the skylight dialog is sometimes gone and this throws error
-          if (this.refs.donateDialog) this.refs.donateDialog.hide();
+          this.setState({ modalVisible: false });
 
           let msg;
           if (this.props.type === 'DAC') {
-            msg = React.swal.msg(<div>
-              <p>
-                You're donation is pending, <a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">view the transaction here.</a>
-                You have full control of this donation and <strong>can take it back at any time</strong>.
-                You will also have a <strong>3 day window</strong> to veto the use of these funds upon delegation by the dac.
-              </p>
-              <p>Do make sure to <a href={this.props.commmunityUrl} target="_blank" rel="noopener noreferrer">join the community</a> to follow the progress of this DAC.</p>
-                                 </div>);
+            msg = (
+              <div>
+                <p>
+                  You&apos;re donation is pending,
+                  <a
+                    href={`${etherScanUrl}tx/${txHash}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  > view the transaction here.
+                  </a>
+                  You have full control of this donation and
+                  <strong> can take it back at any time</strong>. You will also have a
+                  <strong> 3 day window</strong> to veto the use of these funds upon delegation by
+                  the dac.
+                </p>
+                <p>Do make sure to
+                  <a
+                    href={this.props.communityUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  > join the community
+                  </a> to follow the progress of this DAC.
+                </p>
+              </div>);
           } else {
-            msg = React.swal.msg(<div>
-              <p>You're donation is pending.</p>
-              <p>Do make sure to <a href={this.props.commmunityUrl} target="_blank" rel="noopener noreferrer">join the community</a> to follow the progress of this DAC.</p>
-                                 </div>);
+            msg = (
+              <div>
+                <p>You&apos;re donation is pending,
+                <a
+                  href={`${etherScanUrl}tx/${txHash}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                > view the transaction here.
+                </a>
+                </p>
+                <p>Do make sure to
+                  <a
+                    href={this.props.communityUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  > join the community
+                  </a> to follow the progress of this Campaign.
+                </p>
+              </div>);
           }
 
           React.swal({
             title: "You're awesome!",
-            content: msg,
+            content: React.swal.msg(msg),
             icon: 'success',
           });
         });
@@ -124,7 +152,10 @@ class DonateButton extends Component {
         const { liquidPledging } = network;
         etherScanUrl = network.etherscan;
 
-        return liquidPledging.donate(this.props.currentUser.giverId || 0, this.props.model.adminId, { value: amount })
+        return liquidPledging.donate(
+          this.props.currentUser.giverId || 0,
+          this.props.model.adminId, { value: amount },
+        )
           .once('transactionHash', (hash) => {
             txHash = hash;
             donate(etherScanUrl, txHash);
@@ -133,7 +164,7 @@ class DonateButton extends Component {
       .then(() => {
         React.toast.success(<p>Your donation has been confirmed!<br /><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>);
       }).catch((e) => {
-        console.log(e);
+        console.error(e);
         displayTransactionError(txHash, etherScanUrl);
 
         this.setState({ isSaving: false });
@@ -150,21 +181,25 @@ class DonateButton extends Component {
 
     return (
       <span style={style}>
-        <a className="btn btn-success" onClick={() => this.openDialog()}>
+        <button
+          className="btn btn-success"
+          onClick={() => this.openDialog()}
+        >
           Donate
-        </a>
+        </button>
 
         {wallet &&
-          <SkyLight
-            hideOnOverlayClicked
-            ref="donateDialog"
+          <SkyLightStateless
+            isVisible={this.state.modalVisible}
+            onCloseClicked={() => { this.setState({ modalVisible: false }); }}
             title={`Support this ${type}!`}
-            afterOpen={() => this.focusInput()}
           >
             <strong>Give Ether to support <em>{model.title}</em></strong>
 
             {['DAC', 'campaign'].indexOf(type) > -1 &&
-            <p>Pledge: as long as the {type} owner does not lock your money you can take it back any time.</p>
+            <p>Pledge: as long as the {type} owner does not lock your money you can take it back
+              any time.
+            </p>
             }
 
             <p>Your wallet balance: <em>&#926;{wallet.getBalance()}</em></p>
@@ -181,7 +216,6 @@ class DonateButton extends Component {
                   name="amount"
                   id="amount-input"
                   label="How much Ξ do you want to donate?"
-                  ref="amount"
                   type="number"
                   value={amount}
                   placeholder="10"
@@ -197,12 +231,17 @@ class DonateButton extends Component {
                 />
               </div>
 
-              <button className="btn btn-success" formNoValidate type="submit" disabled={isSaving || !formIsValid}>
+              <button
+                className="btn btn-success"
+                formNoValidate
+                type="submit"
+                disabled={isSaving || !formIsValid}
+              >
                 {isSaving ? 'Saving...' : 'Donate Ξ'}
               </button>
             </Form>
 
-          </SkyLight>
+          </SkyLightStateless>
         }
       </span>
     );
@@ -215,13 +254,19 @@ DonateButton.propTypes = {
   type: PropTypes.string.isRequired,
   model: PropTypes.shape({
     adminId: PropTypes.string,
-    _id: PropTypes.string,
+    id: PropTypes.string,
     title: PropTypes.string.isRequired,
+  }).isRequired,
+  history: PropTypes.shape({
+    goBack: PropTypes.func.isRequired,
+    push: PropTypes.func.isRequired,
   }).isRequired,
   currentUser: currentUserModel,
   communityUrl: PropTypes.string,
-  wallet: PropTypes.shape({
-    unlocked: PropTypes.bool.isRequired,
-    lock: PropTypes.func.isRequired,
-  }),
+  wallet: PropTypes.shape({}).isRequired,
+};
+
+DonateButton.defaultProps = {
+  communityUrl: '',
+  currentUser: {},
 };

@@ -109,7 +109,7 @@ class ViewDAC extends Component {
 
               <DonateButton
                 type="DAC"
-                model={{ title, _id: id, adminId: delegateId }}
+                model={{ title, id, adminId: delegateId }}
                 wallet={wallet}
                 currentUser={currentUser}
                 commmunityUrl={communityUrl}
@@ -180,7 +180,7 @@ class ViewDAC extends Component {
                   <ShowTypeDonations donations={donations} isLoading={isLoadingDonations} />
                   <DonateButton
                     type="DAC"
-                    model={{ title, _id: id, adminId: delegateId }}
+                    model={{ title, id, adminId: delegateId }}
                     wallet={wallet}
                     currentUser={currentUser}
                     history={history}
