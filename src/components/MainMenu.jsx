@@ -138,11 +138,31 @@ class MainMenu extends Component {
                 >Dashboard
                 </NavLink>
                 <div className={`dropdown-menu ${showMobileMenu ? 'show' : ''} `} aria-labelledby="navbarDropdownDashboard">
-                  <Link className="dropdown-item" to="/donations">Donations</Link>
-                  <Link className="dropdown-item" to="/delegations">Delegations</Link>
-                  <Link className="dropdown-item" to="/my-dacs">Communities</Link>
-                  <Link className="dropdown-item" to="/my-campaigns">Campaigns</Link>
-                  <Link className="dropdown-item" to="/my-milestones">Milestones</Link>
+                  <AuthenticatedLink
+                    className="dropdown-item"
+                    to="/donations"
+                  >Donations
+                  </AuthenticatedLink>
+                  <AuthenticatedLink
+                    className="dropdown-item"
+                    to="/delegations"
+                  >Delegations
+                  </AuthenticatedLink>
+                  <AuthenticatedLink
+                    className="dropdown-item"
+                    to="/my-dacs"
+                  >Communities
+                  </AuthenticatedLink>
+                  <AuthenticatedLink
+                    className="dropdown-item"
+                    to="/my-campaigns"
+                  >Campaigns
+                  </AuthenticatedLink>
+                  <AuthenticatedLink
+                    className="dropdown-item"
+                    to="/my-milestones"
+                  >Milestones
+                  </AuthenticatedLink>
                 </div>
               </li>
             }
