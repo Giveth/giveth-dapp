@@ -1,10 +1,10 @@
 # Contributing
-When bringing people on as conrtibutors we prefer that they start with an issue tagged "good first issue." After a contributor has shown they're a good fit and have completed 1 or 2 issues labeled "good first issue" with pull requests that have been accepted we will at this time consider adding them to the *community contributors* team. If you've completed issues labeled as such and haven't been added to the team **speak up** we're very busy. Most of the time this shouldn't happen. We're always thrilled to see new contributors. Once an open source contributor has been added to the contributors team they are eligible to apply for and receive reward DAO funds.
+When bringing people on as contributors we prefer that they start with an issue tagged "good first issue." After a contributor has shown they're a good fit and have completed 1 or 2 issues labeled "good first issue" with pull requests that have been accepted feel free of moving on to other issues. We're always thrilled to see new contributors. Once an open source contributor has completed an issue labeled "good first issue" they are eligible to apply for and receive reward DAO funds.
 
 ##
 
 ## Setup
-In order to get the repo setup before contributions refer to the README.md file.
+In order to get the repository setup before contributions refer to the README.md file.
 
 ## Contribution Steps
 
@@ -18,7 +18,8 @@ In order to get the repo setup before contributions refer to the README.md file.
 
 3. *Fork and clone giveth-dapp*
 
-    If you've been added to the community contributors team you may not need to fork but in general it's a good practice to fork into your own repository. If you are part of the team make sure that you address issues in a branch with the issue number in it's name.
+    In general it's a good practice to fork into your own repository. We prefer if issues
+    are addressed in a branch with the issue number in it's name.
     i.e. `29_this_is_an_issue`
 
 4. *Make contributions*
@@ -27,7 +28,7 @@ In order to get the repo setup before contributions refer to the README.md file.
 
 5. *Add testing*
 
-    Unfortunatly we don't always lead by example but in general we aim for full test coverage. For this reason most issues completed should include full testing. If you think there should be an exception for your issue please reach out.
+    In general we aim for full test coverage. For this reason most issues completed should include full testing. If you think there should be an exception for your issue please reach out.
 
 6. *Run previous tests*
 
@@ -39,7 +40,7 @@ In order to get the repo setup before contributions refer to the README.md file.
 
 8. *Create a Pull Request*
 
-    At this point you should either have a forked repository with your issue fixes or you should have a properly labeled branch. Either way now is time to put in a PR. Make sure that your PR has something like "addresses `#26`" or "closes `#26`" The most important thing is that it has the relevent issue number referenced in the body of the PR.
+    At this point you should either have a forked repository with your issue fixes or you should have a properly labeled branch. Either way now is time to put in a PR. Make sure that your PR has something like "addresses `#26`" or "closes `#26`" The most important thing is that it has the relevant issue number referenced in the body of the PR.
 
 9. *Make noise!*
 
