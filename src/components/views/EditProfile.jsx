@@ -244,7 +244,7 @@ EditProfile.propTypes = {
 };
 
 EditProfile.defaultProps = {
-  currentUser: {},
+  currentUser: undefined,
 };
 
 export default EditProfile;

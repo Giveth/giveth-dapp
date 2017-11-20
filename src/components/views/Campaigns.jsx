@@ -75,7 +75,7 @@ const Campaigns = ({
 Campaigns.propTypes = {
   currentUser: currentUserModel,
   history: PropTypes.shape({}).isRequired,
-  wallet: PropTypes.shape({}).isRequired,
+  wallet: PropTypes.shape({}),
   campaigns: PropTypes.shape({
     data: PropTypes.arrayOf(PropTypes.shape({
       _id: PropTypes.string.isRequired,
@@ -87,7 +87,8 @@ Campaigns.propTypes = {
 };
 
 Campaigns.defaultProps = {
-  currentUser: {},
+  currentUser: undefined,
+  wallet: undefined,
 };
 
 export default Campaigns;

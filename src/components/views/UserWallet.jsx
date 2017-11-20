@@ -53,7 +53,7 @@ UserWallet.propTypes = {
 };
 
 UserWallet.defaultProps = {
-  currentUser: {},
+  currentUser: undefined,
 };
 
 export default UserWallet;

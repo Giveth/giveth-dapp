@@ -83,11 +83,12 @@ DACs.propTypes = {
     total: PropTypes.number.isRequired,
   }).isRequired,
   history: PropTypes.shape({}).isRequired,
-  wallet: PropTypes.shape({}).isRequired,
+  wallet: PropTypes.shape({}),
 };
 
 DACs.defaultProps = {
-  currentUser: {},
+  currentUser: undefined,
+  wallet: undefined,
 };
 
 export default DACs;

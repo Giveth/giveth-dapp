@@ -340,7 +340,7 @@ EditDAC.propTypes = {
 };
 
 EditDAC.defaultProps = {
-  currentUser: {},
+  currentUser: undefined,
   isNew: false,
 };
 

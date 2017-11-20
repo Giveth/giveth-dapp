@@ -283,7 +283,7 @@ Delegations.propTypes = {
 };
 
 Delegations.defaultProps = {
-  currentUser: {},
+  currentUser: undefined,
 };
 
 export default Delegations;

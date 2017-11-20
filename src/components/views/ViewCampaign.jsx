@@ -207,11 +207,12 @@ ViewCampaign.propTypes = {
       id: PropTypes.string,
     }).isRequired,
   }).isRequired,
-  wallet: PropTypes.shape({}).isRequired,
+  wallet: PropTypes.shape({}),
 };
 
 ViewCampaign.defaultProps = {
-  currentUser: {},
+  currentUser: undefined,
+  wallet: undefined,
 };
 
 export default ViewCampaign;

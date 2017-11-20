@@ -206,11 +206,12 @@ ViewDAC.propTypes = {
       id: PropTypes.string,
     }).isRequired,
   }).isRequired,
-  wallet: PropTypes.shape({}).isRequired,
+  wallet: PropTypes.shape({}),
 };
 
 ViewDAC.defaultProps = {
-  currentUser: {},
+  currentUser: undefined,
+  wallet: undefined,
 };
 
 export default ViewDAC;

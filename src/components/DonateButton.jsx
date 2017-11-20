@@ -263,10 +263,11 @@ DonateButton.propTypes = {
   }).isRequired,
   currentUser: currentUserModel,
   communityUrl: PropTypes.string,
-  wallet: PropTypes.shape({}).isRequired,
+  wallet: PropTypes.shape({}),
 };
 
 DonateButton.defaultProps = {
   communityUrl: '',
-  currentUser: {},
+  currentUser: undefined,
+  wallet: undefined,
 };

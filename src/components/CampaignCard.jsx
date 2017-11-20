@@ -118,14 +118,15 @@ CampaignCard.propTypes = {
     }).isRequired,
   }).isRequired,
   currentUser: currentUserModel,
-  wallet: PropTypes.shape({}).isRequired,
+  wallet: PropTypes.shape({}),
   history: PropTypes.shape({
     push: PropTypes.func.isRequired,
   }).isRequired,
 };
 
 CampaignCard.defaultProps = {
-  currentUser: {},
+  currentUser: undefined,
+  wallet: undefined,
 };
 
 export default CampaignCard;

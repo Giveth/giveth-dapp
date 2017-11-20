@@ -412,7 +412,7 @@ EditCampaign.propTypes = {
 };
 
 EditCampaign.defaultProps = {
-  currentUser: {},
+  currentUser: undefined,
   isNew: false,
 };
 
