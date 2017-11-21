@@ -2,15 +2,15 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 import { utils } from 'web3';
+import { paramsForServer } from 'feathers-hooks-common';
+import Avatar from 'react-avatar';
 
 import { feathersClient } from './../../lib/feathersClient';
-import { paramsForServer } from 'feathers-hooks-common';
 import { getUserName, getUserAvatar } from '../../lib/helpers';
 
 import Loader from './../Loader';
 import GoBackButton from '../GoBackButton';
 import BackgroundImageHeader from '../BackgroundImageHeader';
-import Avatar from 'react-avatar';
 import DonateButton from '../DonateButton';
 import ShowTypeDonations from '../ShowTypeDonations';
 import currentUserModel from '../../models/currentUserModel';
@@ -30,9 +30,7 @@ class ViewMilestone extends Component {
 
     this.state = {
       isLoading: true,
-      hasError: false,
       isLoadingDonations: true,
-      errorLoadingDonations: false,
       donations: [],
       etherScanUrl: '',
     };
@@ -45,21 +43,21 @@ class ViewMilestone extends Component {
   }
 
   componentDidMount() {
-    const milestoneId = this.props.match.params.milestoneId;
-
-    this.setState({ id: milestoneId });
+    const { milestoneId } = this.props.match.params.milestoneId;
 
     feathersClient.service('milestones').find({ query: { _id: milestoneId } })
       .then(resp =>
         this.setState(Object.assign({}, resp.data[0], {
           isLoading: false,
           hasError: false,
+          id: milestoneId,
         })))
       .catch(() =>
-        this.setState({ isLoading: false, hasError: true }));
+        this.setState({ isLoading: false }));
 
     // lazy load donations
-    // TODO fetch "non comitted" donations? add "intendedProjectId: milestoneId" to query to get all "pending aproval" donations for this milestone
+    // TODO fetch "non comitted" donations? add "intendedProjectId: milestoneId" to query to get
+    // all "pending aproval" donations for this milestone
     const query = paramsForServer({
       query: { ownerId: milestoneId },
       schema: 'includeGiverDetails',
@@ -71,9 +69,8 @@ class ViewMilestone extends Component {
         this.setState({
           donations: resp.data,
           isLoadingDonations: false,
-          errorLoadingDonations: false,
         }),
-      err => this.setState({ isLoadingDonations: false, errorLoadingDonations: true }),
+      () => this.setState({ isLoadingDonations: false }),
     );
   }
 
@@ -82,7 +79,7 @@ class ViewMilestone extends Component {
   }
 
   isActiveMilestone() {
-    return this.state.status === 'InProgress' && parseInt(utils.fromWei(this.state.totalDonated)) < parseInt(utils.fromWei(this.state.maxAmount));
+    return this.state.status === 'InProgress' && this.state.totalDonated < this.state.maxAmount;
   }
 
   render() {
@@ -125,16 +122,29 @@ class ViewMilestone extends Component {
                 <p>This milestone is not active anymore</p>
               }
 
-              { parseInt(utils.fromWei(this.state.totalDonated)) >= parseInt(utils.fromWei(this.state.maxAmount)) &&
-                <p>This milestone has reached its funding goal. Completion deadline {this.state.completionDeadline}</p>
+              { this.state.totalDonated >= this.state.maxAmount &&
+                <p>
+                  This milestone has reached its funding goal.
+                  Completion deadline {this.state.completionDeadline}
+                </p>
               }
 
-              { parseInt(utils.fromWei(this.state.totalDonated)) < parseInt(utils.fromWei(this.state.maxAmount)) &&
-                <p>Ξ{utils.fromWei(this.state.totalDonated)} of Ξ{utils.fromWei(this.state.maxAmount)} raised. Completion deadline {this.state.completionDeadline}</p>
+              { this.state.totalDonated < this.state.maxAmount &&
+                <p>
+                  Ξ{utils.fromWei(this.state.totalDonated)} of
+                  Ξ{utils.fromWei(this.state.maxAmount)} raised.
+                  Completion deadline {this.state.completionDeadline}
+                </p>
               }
 
               { this.isActiveMilestone() &&
-                <DonateButton type="milestone" model={{ title, id, adminId: projectId }} wallet={wallet} currentUser={currentUser} history={history} />
+                <DonateButton
+                  type="milestone"
+                  model={{ title, id, adminId: projectId }}
+                  wallet={wallet}
+                  currentUser={currentUser}
+                  history={history}
+                />
               }
 
 
@@ -169,7 +179,10 @@ class ViewMilestone extends Component {
 
                   <div className="form-group">
                     <label>Reviewer</label>
-                    <small className="form-text">This person will review the actual completion of the milestone</small>
+                    <small
+                      className="form-text"
+                    >This person will review the actual completion of the milestone
+                    </small>
 
                     <table className="table-responsive">
                       <tbody>
@@ -193,7 +206,10 @@ class ViewMilestone extends Component {
 
                   <div className="form-group">
                     <label>Recipient</label>
-                    <small className="form-text">Where the Ether goes after successful completion of the milestone</small>
+                    <small
+                      className="form-text"
+                    >Where the Ether goes after successful completion of the milestone
+                    </small>
 
                     <table className="table-responsive">
                       <tbody>
@@ -217,13 +233,19 @@ class ViewMilestone extends Component {
 
                   <div className="form-group">
                     <label>Max amount to raise</label>
-                    <small className="form-text">The maximum amount of &#926; that can be donated to this milestone</small>
+                    <small
+                      className="form-text"
+                    >The maximum amount of &#926; that can be donated to this milestone
+                    </small>
                     &#926;{utils.fromWei(maxAmount)}
                   </div>
 
                   <div className="form-group">
                     <label>Amount donated</label>
-                    <small className="form-text">The amount of &#926; currently donated to this milestone</small>
+                    <small
+                      className="form-text"
+                    >The amount of &#926; currently donated to this milestone
+                    </small>
                     &#926;{utils.fromWei(totalDonated)}
                   </div>
 
@@ -240,7 +262,13 @@ class ViewMilestone extends Component {
                   <h4>Donations</h4>
                   <ShowTypeDonations donations={donations} isLoading={isLoadingDonations} />
                   { this.isActiveMilestone() &&
-                    <DonateButton type="milestone" model={{ title, id, adminId: projectId }} wallet={wallet} currentUser={currentUser} history={history} />
+                    <DonateButton
+                      type="milestone"
+                      model={{ title, id, adminId: projectId }}
+                      wallet={wallet}
+                      currentUser={currentUser}
+                      history={history}
+                    />
                   }
                 </div>
               </div>
@@ -253,9 +281,23 @@ class ViewMilestone extends Component {
   }
 }
 
-export default ViewMilestone;
-
 ViewMilestone.propTypes = {
-  history: PropTypes.object.isRequired,
+  history: PropTypes.shape({
+    goBack: PropTypes.func.isRequired,
+    push: PropTypes.func.isRequired,
+  }).isRequired,
   currentUser: currentUserModel,
+  wallet: PropTypes.shape({}),
+  match: PropTypes.shape({
+    params: PropTypes.shape({
+      milestoneId: PropTypes.string.isRequired,
+    }),
+  }).isRequired,
 };
+
+ViewMilestone.defaultProps = {
+  currentUser: undefined,
+  wallet: undefined,
+};
+
+export default ViewMilestone;
