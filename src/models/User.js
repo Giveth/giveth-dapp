@@ -2,18 +2,23 @@
 /**
  * The DApp User model
  *
- * @attribute address {string} Ethereum address of the user
- * @attribute avatar  {string} URL to user avatar
+ * @attribute address     Ethereum address of the user
+ * @attribute avatar      URL to user avatar
+ * @attribute commitTime
+ * @attribute email       Email address of the user
+ * @attribute giverId     Giver ID used for querying donations
+ * @attribute linkedin    Link to the linkedin profile
+ * @attribute name        Name of the user
  */
 class User {
   /**
-   * Checks that type of passef value is one of types
+   * Checks that type of passed value is one of types
    *
    * @param value    Value which type is to be tested
    * @param types    Array containing allowed PropTypes
    * @param propName Name of the property that is being inspected
    *
-   * @throws TypeError describing what wes the passed type and which types were expected
+   * @throws TypeError describing what was the passed type and which types were expected
    */
   static checkType(value, types, propName) {
     if (!types.includes(typeof value)) {
