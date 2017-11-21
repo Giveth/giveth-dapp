@@ -1,19 +1,20 @@
 import React, { Component } from 'react';
-import SkyLight from 'react-skylight';
+import { SkyLightStateless } from 'react-skylight';
 import { utils } from 'web3';
 import LPPCampaign from 'lpp-campaign';
 import LPPDac from 'lpp-dac';
+import { Form } from 'formsy-react-components';
+import InputToken from 'react-input-token';
+import PropTypes from 'prop-types';
 
 import { feathersClient } from '../lib/feathersClient';
-import { Form } from 'formsy-react-components';
 import { takeActionAfterWalletUnlock, checkWalletBalance } from '../lib/middleware';
 import { displayTransactionError } from '../lib/helpers';
 import getNetwork from '../lib/blockchain/getNetwork';
 import getWeb3 from '../lib/blockchain/getWeb3';
 
-
-import InputToken from 'react-input-token';
-
+// TODO Remove the eslint exception and fix feathers to provide id's without underscore
+/* eslint no-underscore-dangle: 0 */
 class DelegateButton extends Component {
   constructor() {
     super();
@@ -21,6 +22,7 @@ class DelegateButton extends Component {
     this.state = {
       isSaving: false,
       objectsToDelegateTo: [],
+      modalVisible: false,
     };
 
     this.submit = this.submit.bind(this);
@@ -30,7 +32,7 @@ class DelegateButton extends Component {
   openDialog() {
     takeActionAfterWalletUnlock(this.props.wallet, () =>
       checkWalletBalance(this.props.wallet, this.props.history)
-        .then(() => this.refs.donateDialog.show()));
+        .then(() => this.setState({ modalVisible: true })));
   }
 
   selectedObject({ target }) {
@@ -72,29 +74,25 @@ class DelegateButton extends Component {
       }
 
       feathersClient.service('/donations').patch(model._id, mutation)
-        .then((donation) => {
+        .then(() => {
           this.resetSkylight();
-
-          // For some reason (I suspect a rerender when donations are being fetched again)
-          // the skylight dialog is sometimes gone and this throws error
-          if (this.refs.donateDialog) this.refs.donateDialog.hide();
 
           let msg;
           if (admin.type === 'milestone' || 'campaign') {
-            msg = React.swal.msg(<p>The donation has been delegated, <a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">view the transaction here.</a>
-              The donator has <strong>3 days</strong> to reject your delegation before the money gets locked.
-                                 </p>);
+            msg = (<p>The donation has been delegated, <a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">view the transaction here.</a>
+              The giver has <strong>3 days</strong> to reject your delegation before the money
+              gets locked.
+                   </p>);
           } else {
-            msg = React.swal.msg(<p>The donation has been delegated, <a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">view the transaction here.</a> The donator has been notified.</p>);
+            msg = <p>The donation has been delegated, <a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">view the transaction here.</a> The donator has been notified.</p>;
           }
 
           React.swal({
             title: 'Delegated!',
-            content: msg,
+            content: React.swal.msg(msg),
             icon: 'success',
           });
-        }).catch((e) => {
-          console.log(e);
+        }).catch(() => {
           displayTransactionError(txHash, etherScanUrl);
           this.setState({ isSaving: false });
         });
@@ -116,16 +114,18 @@ class DelegateButton extends Component {
         else if (model.ownerType === 'giver' && model.delegate > 0) contract = new LPPDac(web3, model.delegateEntity.pluginAddress);
         else contract = liquidPledging;
 
-        return contract.transfer(senderId, model.pledgeId, model.amount, receiverId, { $extraGas: 50000 })
+        return contract.transfer(
+          senderId, model.pledgeId, model.amount, receiverId,
+          { $extraGas: 50000 },
+        )
           .once('transactionHash', (hash) => {
             txHash = hash;
             delegate(etherScanUrl, txHash);
-          }).on('error', console.log);
+          }).on('error', console.error); // eslint-disable-line no-console
       })
       .then(() => {
         React.toast.success(<p>Your donation has been confirmed!<br /><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>);
-      }).catch((e) => {
-        console.error(e);
+      }).catch(() => {
         displayTransactionError(txHash, etherScanUrl);
         this.setState({ isSaving: false });
       });
@@ -146,11 +146,16 @@ class DelegateButton extends Component {
 
     return (
       <span style={style}>
-        <a className="btn btn-success btn-sm" onClick={() => this.openDialog()}>
+        <button className="btn btn-success btn-sm" onClick={() => this.openDialog()}>
           Delegate
-        </a>
+        </button>
 
-        <SkyLight hideOnOverlayClicked ref="donateDialog" title="Delegate Donation" afterClose={() => this.resetSkylight()}>
+        <SkyLightStateless
+          isVisible={this.state.modalVisible}
+          hideOnOverlayClicked
+          title="Delegate Donation"
+          afterClose={() => this.resetSkylight()}
+        >
 
           { milestoneOnly &&
             <p>Select a Milestone to delegate this donation to</p>
@@ -164,7 +169,6 @@ class DelegateButton extends Component {
             <div className="form-group">
               <InputToken
                 name="campaigns"
-                ref="campaignsInput"
                 placeholder={milestoneOnly ? 'Select a milestone' : 'Select a campaign or milestone'}
                 value={objectsToDelegateTo}
                 options={types}
@@ -173,15 +177,37 @@ class DelegateButton extends Component {
               />
             </div>
 
-            <button className="btn btn-success" formNoValidate type="submit" disabled={isSaving || this.state.objectsToDelegateTo.length === 0}>
+            <button
+              className="btn btn-success"
+              formNoValidate
+              type="submit"
+              disabled={isSaving || this.state.objectsToDelegateTo.length === 0}
+            >
               {isSaving ? 'Delegating...' : 'Delegate here'}
             </button>
           </Form>
 
-        </SkyLight>
+        </SkyLightStateless>
       </span>
     );
   }
 }
+
+DelegateButton.propTypes = {
+  history: PropTypes.shape({}).isRequired,
+  wallet: PropTypes.shape({
+    unlocked: PropTypes.bool.isRequired,
+    unlock: PropTypes.func.isRequired,
+  }).isRequired,
+  types: PropTypes.shape({
+    find: PropTypes.func.isRequired,
+  }).isRequired,
+  milestoneOnly: PropTypes.bool,
+  model: PropTypes.shape({}).isRequired,
+};
+
+DelegateButton.defaultProps = {
+  milestoneOnly: false,
+};
 
 export default DelegateButton;

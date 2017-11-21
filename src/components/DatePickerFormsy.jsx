@@ -1,21 +1,22 @@
-import React from 'react'
-import createReactClass from 'create-react-class'
+import React from 'react';
+import createReactClass from 'create-react-class';
 import Formsy from 'formsy-react';
-import DatePicker from 'react-datepicker'
-import moment from 'moment'
+import DatePicker from 'react-datepicker';
+import moment from 'moment';
+import PropTypes from 'prop-types';
 import 'react-datepicker/dist/react-datepicker.css';
 
 
 const DatePickerFormsy = createReactClass({
   mixins: [Formsy.Mixin],
 
-  getInitialState(){
-    return { startDate: undefined }
+  getInitialState() {
+    return { startDate: undefined };
   },
 
-  handleChange(moment){
-    this.setState({ startDate: moment })
-    this.props.changeDate(moment)
+  handleChange(moment) {
+    this.setState({ startDate: moment });
+    this.props.changeDate(moment);
   },
 
   render() {
@@ -33,20 +34,24 @@ const DatePickerFormsy = createReactClass({
     return (
       <div className={`form-group ${className}`}>
         <label>{this.props.label}</label>
-        <DatePicker 
+        <DatePicker
           dateFormat="YYYY/MM/DD"
           name="description"
           tabIndex={2}
           minDate={moment()}
           selected={this.state.startDate}
           placeholderText={this.props.placeholder}
-          onChange={this.handleChange} 
+          onChange={this.handleChange}
           className="form-control"
-          />  
+        />
         <span>{errorMessage}</span>
       </div>
     );
-  }  
-})
+  },
+});
 
-export default DatePickerFormsy
+DatePickerFormsy.propTypes = {
+  placeholder: PropTypes.string.isRequired,
+};
+
+export default DatePickerFormsy;
