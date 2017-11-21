@@ -285,7 +285,7 @@ class Application extends Component {
                 exact
                 path="/campaigns/:id/milestones/new"
                 component={props =>
-                  <EditMilestone isNewcurrentUser={currentUser} wallet={wallet} {...props} />}
+                  <EditMilestone isNew currentUser={currentUser} wallet={wallet} {...props} />}
               />
               <Route
                 exact
