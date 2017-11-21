@@ -6,6 +6,7 @@ import { getTruncatedText, isOwner, getUserAvatar, getUserName } from './../lib/
 import { redirectAfterWalletUnlock, checkWalletBalance } from './../lib/middleware';
 import currentUserModel from '../models/currentUserModel';
 import CardStats from './CardStats';
+import GivethWallet from '../lib/blockchain/GivethWallet';
 
 // TODO Remove the eslint exception and fix feathers to provide id's without underscore
 /* eslint no-underscore-dangle: 0 */
@@ -113,7 +114,7 @@ MilestoneCard.propTypes = {
     }).isRequired,
   }).isRequired,
   currentUser: currentUserModel,
-  wallet: PropTypes.shape({}),
+  wallet: PropTypes.instanceOf(GivethWallet),
   history: PropTypes.shape({
     push: PropTypes.func.isRequired,
   }).isRequired,

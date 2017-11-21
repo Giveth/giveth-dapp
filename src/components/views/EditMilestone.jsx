@@ -16,6 +16,7 @@ import getWeb3 from '../../lib/blockchain/getWeb3';
 import LoaderButton from '../../components/LoaderButton';
 import DatePickerFormsy from './../DatePickerFormsy';
 import currentUserModel from '../../models/currentUserModel';
+import GivethWallet from '../../lib/blockchain/GivethWallet';
 
 /**
  * Create or edit a milestone
@@ -377,7 +378,7 @@ EditMilestone.propTypes = {
     push: PropTypes.func.isRequired,
   }).isRequired,
   isNew: PropTypes.bool,
-  wallet: PropTypes.shape({}).isRequired,
+  wallet: PropTypes.instanceOf(GivethWallet).isRequired,
   match: PropTypes.shape({
     params: PropTypes.shape({
       id: PropTypes.string,

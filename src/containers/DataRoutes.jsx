@@ -9,6 +9,7 @@ import Campaigns from './../components/views/Campaigns';
 import Loader from './../components/Loader';
 
 import currentUserModel from './../models/currentUserModel';
+import GivethWallet from '../lib/blockchain/GivethWallet';
 
 /**
  * These routes load and keep DACs and Campaigns in state for faster switching of routes
@@ -126,10 +127,7 @@ class DataRoutes extends Component {
 
 DataRoutes.propTypes = {
   currentUser: currentUserModel,
-  wallet: PropTypes.shape({
-    unlocked: PropTypes.bool,
-    lock: PropTypes.func,
-  }),
+  wallet: PropTypes.instanceOf(GivethWallet),
 };
 
 DataRoutes.defaultProps = {

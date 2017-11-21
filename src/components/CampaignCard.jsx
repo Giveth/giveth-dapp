@@ -6,6 +6,7 @@ import { isOwner, getTruncatedText, getUserName, getUserAvatar } from './../lib/
 import CardStats from './CardStats';
 import currentUserModel from './../models/currentUserModel';
 import { redirectAfterWalletUnlock, checkWalletBalance } from './../lib/middleware';
+import GivethWallet from '../lib/blockchain/GivethWallet';
 
 /**
  * Campaign Card visible in the DACs view.
@@ -118,7 +119,7 @@ CampaignCard.propTypes = {
     }).isRequired,
   }).isRequired,
   currentUser: currentUserModel,
-  wallet: PropTypes.shape({}),
+  wallet: PropTypes.instanceOf(GivethWallet),
   history: PropTypes.shape({
     push: PropTypes.func.isRequired,
   }).isRequired,

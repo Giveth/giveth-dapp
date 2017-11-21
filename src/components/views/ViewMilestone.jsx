@@ -15,7 +15,7 @@ import DonateButton from '../DonateButton';
 import ShowTypeDonations from '../ShowTypeDonations';
 import currentUserModel from '../../models/currentUserModel';
 import getNetwork from './../../lib/blockchain/getNetwork';
-
+import GivethWallet from '../../lib/blockchain/GivethWallet';
 
 /**
   Loads and shows a single milestone
@@ -287,7 +287,7 @@ ViewMilestone.propTypes = {
     push: PropTypes.func.isRequired,
   }).isRequired,
   currentUser: currentUserModel,
-  wallet: PropTypes.shape({}),
+  wallet: PropTypes.instanceOf(GivethWallet),
   match: PropTypes.shape({
     params: PropTypes.shape({
       milestoneId: PropTypes.string.isRequired,

@@ -12,6 +12,7 @@ import { isAuthenticated } from '../../lib/middleware';
 import DelegateButton from '../../components/DelegateButton';
 import currentUserModel from '../../models/currentUserModel';
 import { getUserName, getUserAvatar, getTruncatedText } from '../../lib/helpers';
+import GivethWallet from '../../lib/blockchain/GivethWallet';
 
 /**
  * The my delegations view
@@ -276,7 +277,7 @@ class Delegations extends Component {
 Delegations.propTypes = {
   currentUser: currentUserModel,
   history: PropTypes.shape({}).isRequired,
-  wallet: PropTypes.shape({}).isRequired,
+  wallet: PropTypes.instanceOf(GivethWallet).isRequired,
 };
 
 Delegations.defaultProps = {

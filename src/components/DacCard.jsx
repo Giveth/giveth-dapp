@@ -6,6 +6,7 @@ import { getTruncatedText, getUserAvatar, isOwner, getUserName } from './../lib/
 import CardStats from './CardStats';
 import currentUserModel from './../models/currentUserModel';
 import { redirectAfterWalletUnlock, checkWalletBalance } from './../lib/middleware';
+import GivethWallet from '../lib/blockchain/GivethWallet';
 
 /**
  * DAC Card visible in the DACs view.
@@ -117,7 +118,7 @@ DacCard.propTypes = {
     }).isRequired,
   }).isRequired,
   currentUser: currentUserModel,
-  wallet: PropTypes.shape({}),
+  wallet: PropTypes.instanceOf(GivethWallet),
   history: PropTypes.shape({
     push: PropTypes.func.isRequired,
   }).isRequired,

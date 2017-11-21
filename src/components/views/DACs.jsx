@@ -5,6 +5,7 @@ import Masonry, { ResponsiveMasonry } from 'react-responsive-masonry';
 import JoinGivethCommunity from '../JoinGivethCommunity';
 import currentUserModel from '../../models/currentUserModel';
 import DacCard from '../DacCard';
+import GivethWallet from '../../lib/blockchain/GivethWallet';
 
 /**
  * The DACs view mapped to /dacs
@@ -83,7 +84,7 @@ DACs.propTypes = {
     total: PropTypes.number.isRequired,
   }).isRequired,
   history: PropTypes.shape({}).isRequired,
-  wallet: PropTypes.shape({}),
+  wallet: PropTypes.instanceOf(GivethWallet),
 };
 
 DACs.defaultProps = {

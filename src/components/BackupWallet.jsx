@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 
 import Loader from './Loader';
+import GivethWallet from '../lib/blockchain/GivethWallet';
 
 /* global URL, Blob */
 /**
@@ -57,13 +58,7 @@ class BackupWallet extends Component {
 }
 
 BackupWallet.propTypes = {
-  wallet: PropTypes.shape({
-    keystores: PropTypes.arrayOf(PropTypes.shape({
-      address: PropTypes.string.isRequired,
-      id: PropTypes.string.isRequired,
-      version: PropTypes.number.isRequired,
-    })).isRequired,
-  }).isRequired,
+  wallet: PropTypes.instanceOf(GivethWallet).isRequired,
   onBackup: PropTypes.func,
 };
 

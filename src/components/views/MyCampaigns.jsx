@@ -12,6 +12,7 @@ import currentUserModel from '../../models/currentUserModel';
 import { displayTransactionError, getTruncatedText } from '../../lib/helpers';
 import getNetwork from '../../lib/blockchain/getNetwork';
 import getWeb3 from '../../lib/blockchain/getWeb3';
+import GivethWallet from '../../lib/blockchain/GivethWallet';
 
 // TODO Remove the eslint exception and fix feathers to provide id's without underscore
 /* eslint no-underscore-dangle: 0 */
@@ -220,10 +221,7 @@ class MyCampaigns extends Component {
 MyCampaigns.propTypes = {
   currentUser: currentUserModel,
   history: PropTypes.shape({}).isRequired,
-  wallet: PropTypes.shape({
-    unlocked: PropTypes.bool.isRequired,
-    unlock: PropTypes.func.isRequired,
-  }).isRequired,
+  wallet: PropTypes.instanceOf(GivethWallet).isRequired,
 };
 
 MyCampaigns.defaultProps = {

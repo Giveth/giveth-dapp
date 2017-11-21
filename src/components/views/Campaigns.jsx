@@ -5,6 +5,7 @@ import Masonry, { ResponsiveMasonry } from 'react-responsive-masonry';
 import JoinGivethCommunity from '../JoinGivethCommunity';
 import currentUserModel from '../../models/currentUserModel';
 import CampaignCard from '../CampaignCard';
+import GivethWallet from '../../lib/blockchain/GivethWallet';
 
 /**
  * The Campaigns view mapped to /campaigns
@@ -75,7 +76,7 @@ const Campaigns = ({
 Campaigns.propTypes = {
   currentUser: currentUserModel,
   history: PropTypes.shape({}).isRequired,
-  wallet: PropTypes.shape({}),
+  wallet: PropTypes.instanceOf(GivethWallet),
   campaigns: PropTypes.shape({
     data: PropTypes.arrayOf(PropTypes.shape({
       _id: PropTypes.string.isRequired,

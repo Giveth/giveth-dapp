@@ -13,7 +13,7 @@ import CommunityButton from '../CommunityButton';
 import currentUserModel from '../../models/currentUserModel';
 import CampaignCard from '../CampaignCard';
 import { getUserName, getUserAvatar } from '../../lib/helpers';
-
+import GivethWallet from '../../lib/blockchain/GivethWallet';
 
 /**
  * The DAC detail view mapped to /dac/id
@@ -206,7 +206,7 @@ ViewDAC.propTypes = {
       id: PropTypes.string,
     }).isRequired,
   }).isRequired,
-  wallet: PropTypes.shape({}),
+  wallet: PropTypes.instanceOf(GivethWallet),
 };
 
 ViewDAC.defaultProps = {

@@ -4,6 +4,7 @@ import PropTypes from 'prop-types';
 import BackupWallet from '../BackupWallet';
 import { isAuthenticated } from '../../lib/middleware';
 import currentUserModel from '../../models/currentUserModel';
+import GivethWallet from '../../lib/blockchain/GivethWallet';
 
 /**
  * The Wallet view showing the wallet address and balance
@@ -40,14 +41,7 @@ class UserWallet extends Component {
 }
 
 UserWallet.propTypes = {
-  wallet: PropTypes.shape({
-    keystores: PropTypes.arrayOf(PropTypes.shape({
-      address: PropTypes.string.isRequired,
-      id: PropTypes.string.isRequired,
-      version: PropTypes.number.isRequired,
-    })).isRequired,
-    getBalance: PropTypes.func,
-  }).isRequired,
+  wallet: PropTypes.instanceOf(GivethWallet).isRequired,
   currentUser: currentUserModel,
   history: PropTypes.shape({}).isRequired,
 };

@@ -10,6 +10,7 @@ import LoaderButton from '../../components/LoaderButton';
 import getNetwork from '../../lib/blockchain/getNetwork';
 import currentUserModel from '../../models/currentUserModel';
 import { displayTransactionError } from '../../lib/helpers';
+import GivethWallet from '../../lib/blockchain/GivethWallet';
 
 /**
  * The edit user profile view mapped to /profile/
@@ -95,9 +96,8 @@ class EditProfile extends Component {
               })
               .then(() =>
                 React.toast.success(<p>You are now a registered user<br /><a href={`${network.etherscan}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>))
-              .catch((err) => {
+              .catch(() => {
                 // TODO: Actually inform the user about error
-                console.log('AddGiver transaction failed:', err);
                 displayTransactionError(txHash, network.etherscan);
               });
           });
@@ -108,7 +108,7 @@ class EditProfile extends Component {
             this.setState(Object.assign({}, user, { isSaving: false }));
           })
           // TODO: Actually inform the user about error
-          .catch(err => console.error('update profile error -> ', err));
+          .catch(err => console.error('update profile error -> ', err)); // eslint-disable-line no-console
       }
     };
 
@@ -233,10 +233,7 @@ class EditProfile extends Component {
 }
 
 EditProfile.propTypes = {
-  wallet: PropTypes.shape({
-    unlocked: PropTypes.bool,
-    keystores: PropTypes.array,
-  }).isRequired,
+  wallet: PropTypes.instanceOf(GivethWallet).isRequired,
   currentUser: currentUserModel,
   history: PropTypes.shape({
     goBack: PropTypes.func.isRequired,

@@ -12,6 +12,7 @@ import { takeActionAfterWalletUnlock, checkWalletBalance } from '../lib/middlewa
 import { displayTransactionError } from '../lib/helpers';
 import getNetwork from '../lib/blockchain/getNetwork';
 import getWeb3 from '../lib/blockchain/getWeb3';
+import GivethWallet from '../lib/blockchain/GivethWallet';
 
 // TODO Remove the eslint exception and fix feathers to provide id's without underscore
 /* eslint no-underscore-dangle: 0 */
@@ -195,10 +196,7 @@ class DelegateButton extends Component {
 
 DelegateButton.propTypes = {
   history: PropTypes.shape({}).isRequired,
-  wallet: PropTypes.shape({
-    unlocked: PropTypes.bool.isRequired,
-    unlock: PropTypes.func.isRequired,
-  }).isRequired,
+  wallet: PropTypes.instanceOf(GivethWallet).isRequired,
   types: PropTypes.shape({
     find: PropTypes.func.isRequired,
   }).isRequired,

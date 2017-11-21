@@ -10,6 +10,7 @@ import { getTruncatedText } from '../../lib/helpers';
 import Loader from '../Loader';
 
 import currentUserModel from '../../models/currentUserModel';
+import GivethWallet from '../../lib/blockchain/GivethWallet';
 
 // TODO Remove the eslint exception and fix feathers to provide id's without underscore
 /* eslint no-underscore-dangle: 0 */
@@ -143,10 +144,7 @@ class MyDACs extends Component {
 MyDACs.propTypes = {
   currentUser: currentUserModel,
   history: PropTypes.shape({}).isRequired,
-  wallet: PropTypes.shape({
-    unlocked: PropTypes.bool.isRequired,
-    unlock: PropTypes.func.isRequired,
-  }).isRequired,
+  wallet: PropTypes.instanceOf(GivethWallet).isRequired,
 };
 
 MyDACs.defaultProps = {

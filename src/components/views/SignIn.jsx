@@ -7,6 +7,7 @@ import { feathersClient } from '../../lib/feathersClient';
 import Loader from '../Loader';
 import UnlockWalletForm from '../UnlockWalletForm';
 import { authenticate } from '../../lib/helpers';
+import GivethWallet from '../../lib/blockchain/GivethWallet';
 
 /* global window */
 /**
@@ -156,9 +157,7 @@ SignIn.propTypes = {
     push: PropTypes.func.isRequired,
     goBack: PropTypes.func.isRequired,
   }).isRequired,
-  wallet: PropTypes.shape({
-    unlock: PropTypes.func.isRequired,
-  }).isRequired,
+  wallet: PropTypes.instanceOf(GivethWallet).isRequired,
   onSignIn: PropTypes.func.isRequired,
 };
 

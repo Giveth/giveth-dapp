@@ -16,6 +16,7 @@ import getNetwork from '../../lib/blockchain/getNetwork';
 import getWeb3 from '../../lib/blockchain/getWeb3';
 import LoaderButton from '../../components/LoaderButton';
 import currentUserModel from '../../models/currentUserModel';
+import GivethWallet from '../../lib/blockchain/GivethWallet';
 
 /**
  * View to create or edit a Campaign
@@ -403,7 +404,7 @@ EditCampaign.propTypes = {
     push: PropTypes.func.isRequired,
   }).isRequired,
   isNew: PropTypes.bool,
-  wallet: PropTypes.shape({}).isRequired,
+  wallet: PropTypes.instanceOf(GivethWallet).isRequired,
   match: PropTypes.shape({
     params: PropTypes.shape({
       id: PropTypes.string,

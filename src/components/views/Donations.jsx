@@ -12,6 +12,7 @@ import { isAuthenticated, takeActionAfterWalletUnlock, checkWalletBalance } from
 import getNetwork from '../../lib/blockchain/getNetwork';
 import { displayTransactionError, getTruncatedText } from '../../lib/helpers';
 import currentUserModel from '../../models/currentUserModel';
+import GivethWallet from '../../lib/blockchain/GivethWallet';
 
 // TODO Remove the eslint exception and fix feathers to provide id's without underscore
 /* eslint no-underscore-dangle: 0 */
@@ -411,10 +412,7 @@ class Donations extends Component {
 Donations.propTypes = {
   currentUser: currentUserModel,
   history: PropTypes.shape({}).isRequired,
-  wallet: PropTypes.shape({
-    unlocked: PropTypes.bool.isRequired,
-    unlock: PropTypes.func.isRequired,
-  }).isRequired,
+  wallet: PropTypes.instanceOf(GivethWallet).isRequired,
 };
 
 Donations.defaultProps = {

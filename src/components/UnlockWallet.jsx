@@ -5,6 +5,7 @@ import { withRouter } from 'react-router-dom';
 import { SkyLightStateless } from 'react-skylight';
 
 import UnlockWalletForm from './UnlockWalletForm';
+import GivethWallet from '../lib/blockchain/GivethWallet';
 
 /* global window */
 /**
@@ -92,10 +93,7 @@ class UnlockWallet extends Component {
 }
 
 UnlockWallet.propTypes = {
-  wallet: PropTypes.shape({
-    unlocked: PropTypes.bool.isRequired,
-    unlock: PropTypes.func.isRequired,
-  }).isRequired,
+  wallet: PropTypes.instanceOf(GivethWallet).isRequired,
   onClose: PropTypes.func.isRequired,
   onCloseClicked: PropTypes.func.isRequired,
   redirectAfter: PropTypes.string,
