@@ -12,18 +12,27 @@ import Loader from '../Loader';
 import currentUserModel from '../../models/currentUserModel';
 import { displayTransactionError, getTruncatedText } from '../../lib/helpers';
 
+// TODO Remove the eslint exception and fix feathers to provide id's without underscore
+/* eslint no-underscore-dangle: 0 */
 /**
-  The my campaings view
-* */
-
+ * The my campaings view
+ */
 class MyMilestones extends Component {
-  constructor() {
-    super();
+  constructor(props) {
+    super(props);
 
     this.state = {
       isLoading: true,
       milestones: [],
     };
+
+    this.editMilestone = this.editMilestone.bind(this);
+    this.markComplete = this.markComplete.bind(this);
+    this.cancelMilestone = this.cancelMilestone.bind(this);
+    this.approveMilestone = this.approveMilestone.bind(this);
+    this.rejectMilestone = this.rejectMilestone.bind(this);
+    this.requestWithdrawal = this.requestWithdrawal.bind(this);
+    this.collect = this.collect.bind(this);
   }
 
   componentDidMount() {
@@ -39,29 +48,15 @@ class MyMilestones extends Component {
           ],
         },
       }).subscribe(
-        resp => this.setState({ milestones: resp.data, isLoading: false, hasError: false }),
-        err => this.setState({ isLoading: false, hasError: true }),
+        resp => this.setState({ milestones: resp.data, isLoading: false }),
+        () => this.setState({ isLoading: false }),
       );
     });
   }
 
-
-  // removeMilestone(id){
-  //   React.swal({
-  //     title: "Delete Milestone?",
-  //     text: "You will not be able to recover this Milestone!",
-  //     icon: "warning",
-  //     showCancelButton: true,
-  //     confirmButtonColor: "#DD6B55",
-  //     confirmButtonText: "Yes, delete it!",
-  //     closeOnConfirm: true,
-  //   }, () => {
-  //     const milestones = feathersClient.service('/milestones');
-  //     milestones.remove(id).then(milestone => {
-  //       React.toast.success("Your Milestone has been deleted.")
-  //     })
-  //   });
-  // }
+  componentWillUnmount() {
+    if (this.milestonesObserver) this.milestonesObserver.unsubscribe();
+  }
 
   editMilestone(id) {
     takeActionAfterWalletUnlock(this.props.wallet, () => {
@@ -94,7 +89,7 @@ class MyMilestones extends Component {
             }).then(() => {
               React.toast.info(<p>Your milestone has been marked as complete...</p>);
             }).catch((e) => {
-              console.log('Error marking milestone complete ->', e);
+              console.error('Error marking milestone complete ->', e); // eslint-disable-line no-console
               React.swal({
                 title: 'Oh no!',
                 content: '<p>Something went wrong with the transaction. Is your wallet unlocked?</p>',
@@ -125,7 +120,7 @@ class MyMilestones extends Component {
               }).then(() => {
                 React.toast.info(<p>Cancelling this milestone is pending...<br /><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>);
               }).catch((e) => {
-                console.log('Error updating feathers cache ->', e);
+                console.error('Error updating feathers cache ->', e); // eslint-disable-line no-console
               });
             };
 
@@ -145,7 +140,7 @@ class MyMilestones extends Component {
               .then(() => {
                 React.toast.success(<p>The milestone has been cancelled!<br /><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>);
               }).catch((e) => {
-                console.error(e);
+                console.error(e); // eslint-disable-line no-console
 
                 displayTransactionError(txHash, etherScanUrl);
               });
@@ -173,7 +168,7 @@ class MyMilestones extends Component {
               }).then(() => {
                 React.toast.info(<p>Approving this milestone is pending...<br /><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>);
               }).catch((e) => {
-                console.log('Error updating feathers cache ->', e);
+                console.log('Error updating feathers cache ->', e); // eslint-disable-line no-console
               });
             };
 
@@ -184,7 +179,8 @@ class MyMilestones extends Component {
                 const lppMilestone = new LPPMilestone(web3, milestone.pluginAddress);
                 etherScanUrl = network.etherscan;
 
-                // only uses 14,xxx gas, but will throw out of gas error if given anything less then 30000
+                // Only uses 14,xxx gas, but will throw out of gas error if given anything less
+                // then 30000
                 return lppMilestone.acceptMilestone({ from: this.props.currentUser.address })
                   .once('transactionHash', (hash) => {
                     txHash = hash;
@@ -194,7 +190,7 @@ class MyMilestones extends Component {
               .then(() => {
                 React.toast.success(<p>The milestone has been approved!<br /><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>);
               }).catch((e) => {
-                console.error(e);
+                console.error(e); // eslint-disable-line no-console
 
                 displayTransactionError(txHash, etherScanUrl);
               });
@@ -219,7 +215,7 @@ class MyMilestones extends Component {
             }).then(() => {
               React.toast.info(<p>You have rejected this milestone...</p>);
             }).catch((e) => {
-              console.log('Error rejecting completed milestone ->', e);
+              console.error('Error rejecting completed milestone ->', e); // eslint-disable-line no-console
               React.swal({
                 title: 'Oh no!',
                 content: '<p>Something went wrong with the transaction. Is your wallet unlocked?</p>',
@@ -242,7 +238,6 @@ class MyMilestones extends Component {
           buttons: ['Cancel', 'Yes, request withdrawal'],
         }).then((isConfirmed) => {
           if (isConfirmed) {
-            console.log('request withdrawal');
             if (isConfirmed) {
               const withdraw = (etherScanUrl, txHash) => {
                 feathersClient.service('/milestones').patch(milestone._id, {
@@ -252,7 +247,7 @@ class MyMilestones extends Component {
                 }).then(() => {
                   React.toast.info(<p>Request withdrawal from milestone...<br /><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>);
                 }).catch((e) => {
-                  console.log('Error updating feathers cache ->', e);
+                  console.log('Error updating feathers cache ->', e); // eslint-disable-line no-console
                 });
 
                 feathersClient.service('donations').patch(null, {
@@ -265,7 +260,7 @@ class MyMilestones extends Component {
                     ownerId: milestone._id,
                   },
                 }).catch((e) => {
-                  console.log('Error updating feathers cache ->', e);
+                  console.log('Error updating feathers cache ->', e); // eslint-disable-line no-console
                 });
               };
 
@@ -311,21 +306,23 @@ class MyMilestones extends Component {
                 .then(() => {
                   React.toast.info(<p>The milestone withdraw has been initiated...<br /><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>);
                 }).catch((e) => {
-                  console.error(e);
+                  console.error(e); // eslint-disable-line no-console
 
                   let msg;
                   if (txHash) {
-                  // TODO need to update feathers to reset the donations to previous state as this tx failed.
-                    msg = React.swal.msg(<p>Something went wrong with the transaction.<br /><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>);
+                  // TODO need to update feathers to reset the donations to previous state as this
+                  // tx failed.
+                    msg = <p>Something went wrong with the transaction.<br /><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>;
                   } else if (e.message === 'No donations found to withdraw') {
-                    msg = React.swal.msg(<p>Nothing to withdraw. There are no donations to this milestone.</p>);
+                    msg = <p>Nothing to withdraw. There are no donations to this milestone.</p>;
                   } else {
-                    msg = React.swal.msg(<p>Something went wrong with the transaction. Is your wallet unlocked?</p>);
+                    msg = (<p>Something went wrong with the transaction. Is your wallet unlocked?
+                           </p>);
                   }
 
                   React.swal({
                     title: 'Oh no!',
-                    content: msg,
+                    content: React.swal.msg(msg),
                     icon: 'error',
                   });
                 });
@@ -355,7 +352,7 @@ class MyMilestones extends Component {
                 }).then(() => {
                   React.toast.info(<p>Collecting funds from milestone...<br /><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>);
                 }).catch((e) => {
-                  console.log('Error updating feathers cache ->', e);
+                  console.log('Error updating feathers cache ->', e); // eslint-disable-line no-console
                 });
               };
 
@@ -373,17 +370,13 @@ class MyMilestones extends Component {
                     });
                 })
                 .catch((e) => {
-                  console.error(e);
+                  console.error(e); // eslint-disable-line no-console
                   displayTransactionError(txHash, etherScanUrl);
                 });
             }
           }
         }));
     });
-  }
-
-  componentWillUnmount() {
-    if (this.milestonesObserver) this.milestonesObserver.unsubscribe();
   }
 
   render() {
@@ -418,16 +411,19 @@ class MyMilestones extends Component {
                         </tr>
                       </thead>
                       <tbody>
-                        { milestones.map((m, index) =>
-                          (<tr key={index} className={m.status === 'pending' ? 'pending' : ''}>
+                        { milestones.map(m => (
+                          <tr key={m._id} className={m.status === 'pending' ? 'pending' : ''}>
                             <td className="td-name">
                               <Link to={`/campaigns/${m.campaign._id}`}>CAMPAIGN <em>{getTruncatedText(m.campaign.title, 40)}</em></Link>
                               <br />
-                              &nbsp;&nbsp;&nbsp;&nbsp;<i className="fa fa-arrow-right" />
+                              <i className="fa fa-arrow-right" />
                               <Link to={`/campaigns/${m.campaign._id}/milestones/${m._id}`}>MILESTONE <em>{getTruncatedText(m.title, 35)}</em></Link>
                             </td>
                             <td className="td-donations-number">{m.donationCount || 0}</td>
-                            <td className="td-donations-amount">Ξ{(m.totalDonated) ? utils.fromWei(m.totalDonated) : 0}</td>
+                            <td
+                              className="td-donations-amount"
+                            >Ξ{(m.totalDonated) ? utils.fromWei(m.totalDonated) : 0}
+                            </td>
                             <td className="td-status">
                               {(m.status === 'pending' || (Object.keys(m).includes('mined') && !m.mined)) &&
                                 <span><i className="fa fa-circle-o-notch fa-spin" />&nbsp;</span> }
@@ -435,52 +431,76 @@ class MyMilestones extends Component {
                             </td>
                             <td className="td-actions">
                               { m.ownerAddress === currentUser.address &&
-                                <a className="btn btn-link" onClick={() => this.editMilestone(m._id)}>
+                                <button
+                                  className="btn btn-link"
+                                  onClick={() => this.editMilestone(m._id)}
+                                >
                                   <i className="fa fa-edit" />&nbsp;Edit
-                                </a>
+                                </button>
                               }
 
                               { m.recipientAddress === currentUser.address && m.status === 'InProgress' && m.mined &&
-                                <a className="btn btn-success btn-sm" onClick={() => this.markComplete(m)}>
+                                <button
+                                  className="btn btn-success btn-sm"
+                                  onClick={() => this.markComplete(m)}
+                                >
                                   <i className="fa fa-check-square-o" />&nbsp;Mark complete
-                                </a>
+                                </button>
                               }
 
                               { m.reviewerAddress === currentUser.address && ['InProgress', 'NeedReview'].includes(m.status) && m.mined &&
-                                <a className="btn btn-danger btn-sm" onClick={() => this.cancelMilestone(m)}>
+                                <button
+                                  className="btn btn-danger btn-sm"
+                                  onClick={() => this.cancelMilestone(m)}
+                                >
                                   <i className="fa fa-times" />&nbsp;Cancel
-                                </a>
+                                </button>
                               }
 
                               { m.reviewerAddress === currentUser.address && m.status === 'NeedsReview' && m.mined &&
                                 <span>
-                                  <a className="btn btn-success btn-sm" onClick={() => this.approveMilestone(m)}>
+                                  <button
+                                    className="btn btn-success btn-sm"
+                                    onClick={() => this.approveMilestone(m)}
+                                  >
                                     <i className="fa fa-thumbs-up" />&nbsp;Approve
-                                  </a>
+                                  </button>
 
-                                  <a className="btn btn-danger btn-sm" onClick={() => this.rejectMilestone(m)}>
+                                  <button
+                                    className="btn btn-danger btn-sm"
+                                    onClick={() => this.rejectMilestone(m)}
+                                  >
                                     <i className="fa fa-thumbs-down" />&nbsp;Reject
-                                  </a>
+                                  </button>
                                 </span>
                               }
 
                               { m.recipientAddress === currentUser.address && m.status === 'Completed' && m.mined && m.donationCount > 0 &&
-                                <a className="btn btn-success btn-sm" onClick={() => this.requestWithdrawal(m)}>
+                                <button
+                                  className="btn btn-success btn-sm"
+                                  onClick={() => this.requestWithdrawal(m)}
+                                >
                                   <i className="fa fa-usd" />&nbsp;Request Withdrawal
-                                </a>
+                                </button>
                               }
 
                               { m.recipientAddress === currentUser.address && m.status === 'Paying' &&
-                                <p>Withdraw authorization pending. You will be able to collect the funds when confirmed.</p>
+                                <p>
+                                  Withdraw authorization pending. You will be able to collect the
+                                  funds when confirmed.
+                                </p>
                               }
 
                               { m.recipientAddress === currentUser.address && m.status === 'CanWithdraw' && m.mined &&
-                              <a className="btn btn-success btn-sm" onClick={() => this.collect(m)}>
-                                <i className="fa fa-usd" />&nbsp;Collect
-                              </a>
+                                <button
+                                  className="btn btn-success btn-sm"
+                                  onClick={() => this.collect(m)}
+                                >
+                                  <i className="fa fa-usd" />&nbsp;Collect
+                                </button>
                               }
                             </td>
-                           </tr>))}
+                          </tr>))}
                       </tbody>
                     </table>
                   }
@@ -488,7 +508,7 @@ class MyMilestones extends Component {
                   { milestones && milestones.length === 0 &&
                     <div>
                       <center>
-                        <h3>You didn't create any milestones yet!</h3>
+                        <h3>You didn&apos;t create any milestones yet!</h3>
                         <img className="empty-state-img" src={`${process.env.PUBLIC_URL}/img/delegation.svg`} width="200px" height="200px" alt="no-milestones-icon" />
                       </center>
                     </div>
@@ -503,9 +523,17 @@ class MyMilestones extends Component {
   }
 }
 
-export default MyMilestones;
-
 MyMilestones.propTypes = {
   currentUser: currentUserModel,
-  history: PropTypes.object.isRequired,
+  history: PropTypes.shape({}).isRequired,
+  wallet: PropTypes.shape({
+    unlocked: PropTypes.bool.isRequired,
+    unlock: PropTypes.func.isRequired,
+  }).isRequired,
 };
+
+MyMilestones.defaultProps = {
+  currentUser: undefined,
+};
+
+export default MyMilestones;

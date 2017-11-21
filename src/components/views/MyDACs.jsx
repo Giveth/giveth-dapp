@@ -24,6 +24,8 @@ class MyDACs extends Component {
       isLoading: true,
       dacs: [],
     };
+
+    this.editDAC = this.editDAC.bind(this);
   }
 
   componentDidMount() {

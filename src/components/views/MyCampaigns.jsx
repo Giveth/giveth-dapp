@@ -26,6 +26,9 @@ class MyCampaigns extends Component {
       isLoading: true,
       campaigns: [],
     };
+
+    this.editCampaign = this.editCampaign.bind(this);
+    this.cancelCampaign = this.cancelCampaign.bind(this);
   }
 
   componentDidMount() {

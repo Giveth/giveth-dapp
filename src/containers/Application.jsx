@@ -88,7 +88,7 @@ class Application extends Component {
     return feathersClient.service('/users').get(address)
       .then(user => user)
       .catch((err) => {
-        console.error(err);
+        console.error(err); // eslint-disable-line no-console
       });
   }
   constructor() {
@@ -129,7 +129,7 @@ class Application extends Component {
         this.setState({ isLoading: false, hasError: false, currentUser: user });
       })
       .catch((e) => {
-        console.error(e);
+        console.error(e); // eslint-disable-line no-console
         this.setState({ isLoading: false, hasError: false });
       });
 
@@ -144,7 +144,7 @@ class Application extends Component {
         this.setState({ wallet });
       })
       .catch((err) => {
-        if (err.message !== 'No keystore found') console.error(err);
+        if (err.message !== 'No keystore found') console.error(err); // eslint-disable-line no-console
       });
   }
 
@@ -294,6 +294,12 @@ class Application extends Component {
               <Route
                 exact
                 path="/campaigns/:id/milestones/:milestoneId/edit"
+                component={props =>
+                  <EditMilestone currentUser={currentUser} wallet={wallet} {...props} />}
+              />
+              <Route
+                exact
+                path="/milestones/:milestoneId/edit"
                 component={props =>
                   <EditMilestone currentUser={currentUser} wallet={wallet} {...props} />}
               />

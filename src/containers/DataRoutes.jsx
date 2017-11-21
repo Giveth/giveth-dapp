@@ -68,7 +68,7 @@ class DataRoutes extends Component {
     ]).then(() =>
       this.setState({ isLoading: false, hasError: false }))
       .catch((e) => {
-        console.error(e);
+        console.error(e); // eslint-disable-line no-console
         this.setState({ isLoading: false, hasError: true });
       });
   }
