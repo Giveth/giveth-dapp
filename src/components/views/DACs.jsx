@@ -3,9 +3,9 @@ import PropTypes from 'prop-types';
 import Masonry, { ResponsiveMasonry } from 'react-responsive-masonry';
 
 import JoinGivethCommunity from '../JoinGivethCommunity';
-import currentUserModel from '../../models/currentUserModel';
 import DacCard from '../DacCard';
 import GivethWallet from '../../lib/blockchain/GivethWallet';
+import User from '../../models/User';
 
 /**
  * The DACs view mapped to /dacs
@@ -74,7 +74,7 @@ const DACs = ({
 );
 
 DACs.propTypes = {
-  currentUser: currentUserModel,
+  currentUser: PropTypes.instanceOf(User),
   dacs: PropTypes.shape({
     data: PropTypes.arrayOf(PropTypes.shape({
       _id: PropTypes.string.isRequired,

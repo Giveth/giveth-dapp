@@ -11,7 +11,7 @@ import Loader from '../Loader';
 import { isAuthenticated, takeActionAfterWalletUnlock, checkWalletBalance } from '../../lib/middleware';
 import getNetwork from '../../lib/blockchain/getNetwork';
 import { displayTransactionError, getTruncatedText } from '../../lib/helpers';
-import currentUserModel from '../../models/currentUserModel';
+import User from '../../models/User';
 import GivethWallet from '../../lib/blockchain/GivethWallet';
 
 // TODO Remove the eslint exception and fix feathers to provide id's without underscore
@@ -410,13 +410,9 @@ class Donations extends Component {
 }
 
 Donations.propTypes = {
-  currentUser: currentUserModel,
+  currentUser: PropTypes.instanceOf(User).isRequired,
   history: PropTypes.shape({}).isRequired,
   wallet: PropTypes.instanceOf(GivethWallet).isRequired,
-};
-
-Donations.defaultProps = {
-  currentUser: undefined,
 };
 
 export default Donations;

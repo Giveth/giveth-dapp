@@ -45,6 +45,9 @@ import MainMenu from './../components/MainMenu';
 import Loader from './../components/Loader';
 import UnlockWallet from '../components/UnlockWallet';
 
+// models
+import User from '../models/User';
+
 import './../lib/validators';
 
 /* global document */
@@ -82,7 +85,6 @@ feathersClient.service('/whitelist').find().then((res) => {
  * As long as this component is mounted, the data will be persistent,
  * if passed as props to children.
  */
-
 class Application extends Component {
   static getUserProfile(address) {
     return feathersClient.service('/users').get(address)
@@ -126,7 +128,7 @@ class Application extends Component {
       .then((user) => {
         if (!user) throw new Error('No User');
         feathersClient.authenticate(); // need to authenticate the socket connection
-        this.setState({ isLoading: false, hasError: false, currentUser: user });
+        this.setState({ isLoading: false, hasError: false, currentUser: new User(user) });
       })
       .catch((e) => {
         console.error(e); // eslint-disable-line no-console
@@ -159,7 +161,7 @@ class Application extends Component {
     const address = this.state.wallet.getAddresses()[0];
     return Application.getUserProfile(address)
       .then(user =>
-        this.setState({ currentUser: user }));
+        this.setState({ currentUser: new User(user) }));
   }
 
   handleWalletChange(wallet) {
@@ -172,7 +174,7 @@ class Application extends Component {
       .then(user =>
         this.setState({
           wallet,
-          currentUser: user,
+          currentUser: new User(user),
         }));
   }
 

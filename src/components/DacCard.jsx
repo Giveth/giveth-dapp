@@ -4,7 +4,7 @@ import Avatar from 'react-avatar';
 
 import { getTruncatedText, getUserAvatar, isOwner, getUserName } from './../lib/helpers';
 import CardStats from './CardStats';
-import currentUserModel from './../models/currentUserModel';
+import User from './../models/User';
 import { redirectAfterWalletUnlock, checkWalletBalance } from './../lib/middleware';
 import GivethWallet from '../lib/blockchain/GivethWallet';
 
@@ -117,7 +117,7 @@ DacCard.propTypes = {
       address: PropTypes.string.isRequired,
     }).isRequired,
   }).isRequired,
-  currentUser: currentUserModel,
+  currentUser: PropTypes.instanceOf(User),
   wallet: PropTypes.instanceOf(GivethWallet),
   history: PropTypes.shape({
     push: PropTypes.func.isRequired,

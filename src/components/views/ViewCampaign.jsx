@@ -14,7 +14,7 @@ import DonateButton from '../DonateButton';
 import ShowTypeDonations from '../ShowTypeDonations';
 import AuthenticatedLink from '../AuthenticatedLink';
 
-import currentUserModel from '../../models/currentUserModel';
+import User from '../../models/User';
 import GivethWallet from '../../lib/blockchain/GivethWallet';
 
 /**
@@ -202,7 +202,7 @@ ViewCampaign.propTypes = {
     goBack: PropTypes.func.isRequired,
     push: PropTypes.func.isRequired,
   }).isRequired,
-  currentUser: currentUserModel,
+  currentUser: PropTypes.instanceOf(User),
   match: PropTypes.shape({
     params: PropTypes.shape({
       id: PropTypes.string,

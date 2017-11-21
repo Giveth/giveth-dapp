@@ -15,7 +15,7 @@ import { isAuthenticated, checkWalletBalance, isInWhitelist } from '../../lib/mi
 import getNetwork from '../../lib/blockchain/getNetwork';
 import getWeb3 from '../../lib/blockchain/getWeb3';
 import LoaderButton from '../../components/LoaderButton';
-import currentUserModel from '../../models/currentUserModel';
+import User from '../../models/User';
 import GivethWallet from '../../lib/blockchain/GivethWallet';
 
 /**
@@ -398,7 +398,7 @@ class EditCampaign extends Component {
 }
 
 EditCampaign.propTypes = {
-  currentUser: currentUserModel,
+  currentUser: PropTypes.instanceOf(User).isRequired,
   history: PropTypes.shape({
     goBack: PropTypes.func.isRequired,
     push: PropTypes.func.isRequired,
@@ -413,7 +413,6 @@ EditCampaign.propTypes = {
 };
 
 EditCampaign.defaultProps = {
-  currentUser: undefined,
   isNew: false,
 };
 

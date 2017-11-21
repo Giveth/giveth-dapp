@@ -15,7 +15,7 @@ import getNetwork from '../../lib/blockchain/getNetwork';
 import getWeb3 from '../../lib/blockchain/getWeb3';
 import LoaderButton from '../../components/LoaderButton';
 import DatePickerFormsy from './../DatePickerFormsy';
-import currentUserModel from '../../models/currentUserModel';
+import User from '../../models/User';
 import GivethWallet from '../../lib/blockchain/GivethWallet';
 
 /**
@@ -372,7 +372,7 @@ class EditMilestone extends Component {
 }
 
 EditMilestone.propTypes = {
-  currentUser: currentUserModel,
+  currentUser: PropTypes.instanceOf(User).isRequired,
   history: PropTypes.shape({
     goBack: PropTypes.func.isRequired,
     push: PropTypes.func.isRequired,
@@ -388,7 +388,6 @@ EditMilestone.propTypes = {
 };
 
 EditMilestone.defaultProps = {
-  currentUser: undefined,
   isNew: false,
 };
 

@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 
 import CommunityButton from './CommunityButton';
-import currentUserModel from '../models/currentUserModel';
+import User from '../models/User';
 import { takeActionAfterWalletUnlock, checkWalletBalance } from '../lib/middleware';
 import GivethWallet from '../lib/blockchain/GivethWallet';
 
@@ -93,7 +93,7 @@ JoinGivethCommunity.propTypes = {
     goBack: PropTypes.func.isRequired,
     push: PropTypes.func.isRequired,
   }).isRequired,
-  currentUser: currentUserModel,
+  currentUser: PropTypes.instanceOf(User),
   wallet: PropTypes.instanceOf(GivethWallet),
 };
 

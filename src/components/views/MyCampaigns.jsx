@@ -8,7 +8,7 @@ import { Link } from 'react-router-dom';
 import { feathersClient } from '../../lib/feathersClient';
 import { isAuthenticated, redirectAfterWalletUnlock, takeActionAfterWalletUnlock, checkWalletBalance } from '../../lib/middleware';
 import Loader from '../Loader';
-import currentUserModel from '../../models/currentUserModel';
+import User from '../../models/User';
 import { displayTransactionError, getTruncatedText } from '../../lib/helpers';
 import getNetwork from '../../lib/blockchain/getNetwork';
 import getWeb3 from '../../lib/blockchain/getWeb3';
@@ -219,13 +219,9 @@ class MyCampaigns extends Component {
 }
 
 MyCampaigns.propTypes = {
-  currentUser: currentUserModel,
+  currentUser: PropTypes.instanceOf(User).isRequired,
   history: PropTypes.shape({}).isRequired,
   wallet: PropTypes.instanceOf(GivethWallet).isRequired,
-};
-
-MyCampaigns.defaultProps = {
-  currentUser: undefined,
 };
 
 export default MyCampaigns;

@@ -10,9 +10,9 @@ import { feathersClient } from '../../lib/feathersClient';
 import Loader from '../Loader';
 import { isAuthenticated } from '../../lib/middleware';
 import DelegateButton from '../../components/DelegateButton';
-import currentUserModel from '../../models/currentUserModel';
 import { getUserName, getUserAvatar, getTruncatedText } from '../../lib/helpers';
 import GivethWallet from '../../lib/blockchain/GivethWallet';
+import User from '../../models/User';
 
 /**
  * The my delegations view
@@ -275,13 +275,9 @@ class Delegations extends Component {
 }
 
 Delegations.propTypes = {
-  currentUser: currentUserModel,
+  currentUser: PropTypes.instanceOf(User).isRequired,
   history: PropTypes.shape({}).isRequired,
   wallet: PropTypes.instanceOf(GivethWallet).isRequired,
-};
-
-Delegations.defaultProps = {
-  currentUser: undefined,
 };
 
 export default Delegations;

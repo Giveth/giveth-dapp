@@ -9,7 +9,7 @@ import { isAuthenticated, redirectAfterWalletUnlock, takeActionAfterWalletUnlock
 import getNetwork from '../../lib/blockchain/getNetwork';
 import getWeb3 from '../../lib/blockchain/getWeb3';
 import Loader from '../Loader';
-import currentUserModel from '../../models/currentUserModel';
+import User from '../../models/User';
 import { displayTransactionError, getTruncatedText } from '../../lib/helpers';
 import GivethWallet from '../../lib/blockchain/GivethWallet';
 
@@ -525,13 +525,9 @@ class MyMilestones extends Component {
 }
 
 MyMilestones.propTypes = {
-  currentUser: currentUserModel,
+  currentUser: PropTypes.instanceOf(User).isRequired,
   history: PropTypes.shape({}).isRequired,
   wallet: PropTypes.instanceOf(GivethWallet).isRequired,
-};
-
-MyMilestones.defaultProps = {
-  currentUser: undefined,
 };
 
 export default MyMilestones;

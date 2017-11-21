@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 
 import BackupWallet from '../BackupWallet';
 import { isAuthenticated } from '../../lib/middleware';
-import currentUserModel from '../../models/currentUserModel';
+import User from '../../models/User';
 import GivethWallet from '../../lib/blockchain/GivethWallet';
 
 /**
@@ -42,12 +42,8 @@ class UserWallet extends Component {
 
 UserWallet.propTypes = {
   wallet: PropTypes.instanceOf(GivethWallet).isRequired,
-  currentUser: currentUserModel,
+  currentUser: PropTypes.instanceOf(User).isRequired,
   history: PropTypes.shape({}).isRequired,
-};
-
-UserWallet.defaultProps = {
-  currentUser: undefined,
 };
 
 export default UserWallet;

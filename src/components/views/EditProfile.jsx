@@ -8,7 +8,7 @@ import FormsyImageUploader from './../FormsyImageUploader';
 import { isAuthenticated, checkWalletBalance } from '../../lib/middleware';
 import LoaderButton from '../../components/LoaderButton';
 import getNetwork from '../../lib/blockchain/getNetwork';
-import currentUserModel from '../../models/currentUserModel';
+import User from '../../models/User';
 import { displayTransactionError } from '../../lib/helpers';
 import GivethWallet from '../../lib/blockchain/GivethWallet';
 
@@ -234,7 +234,7 @@ class EditProfile extends Component {
 
 EditProfile.propTypes = {
   wallet: PropTypes.instanceOf(GivethWallet).isRequired,
-  currentUser: currentUserModel,
+  currentUser: PropTypes.instanceOf(User),
   history: PropTypes.shape({
     goBack: PropTypes.func.isRequired,
   }).isRequired,

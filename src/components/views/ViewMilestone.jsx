@@ -13,9 +13,10 @@ import GoBackButton from '../GoBackButton';
 import BackgroundImageHeader from '../BackgroundImageHeader';
 import DonateButton from '../DonateButton';
 import ShowTypeDonations from '../ShowTypeDonations';
-import currentUserModel from '../../models/currentUserModel';
 import getNetwork from './../../lib/blockchain/getNetwork';
+
 import GivethWallet from '../../lib/blockchain/GivethWallet';
+import User from '../../models/User';
 
 /**
   Loads and shows a single milestone
@@ -286,7 +287,7 @@ ViewMilestone.propTypes = {
     goBack: PropTypes.func.isRequired,
     push: PropTypes.func.isRequired,
   }).isRequired,
-  currentUser: currentUserModel,
+  currentUser: PropTypes.instanceOf(User),
   wallet: PropTypes.instanceOf(GivethWallet),
   match: PropTypes.shape({
     params: PropTypes.shape({

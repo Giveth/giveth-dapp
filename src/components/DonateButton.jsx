@@ -7,7 +7,7 @@ import { Form, Input } from 'formsy-react-components';
 import getNetwork from '../lib/blockchain/getNetwork';
 import { feathersClient } from '../lib/feathersClient';
 import { takeActionAfterWalletUnlock } from '../lib/middleware';
-import currentUserModel from '../models/currentUserModel';
+import User from '../models/User';
 import { displayTransactionError } from '../lib/helpers';
 import GivethWallet from '../lib/blockchain/GivethWallet';
 
@@ -262,7 +262,7 @@ DonateButton.propTypes = {
     goBack: PropTypes.func.isRequired,
     push: PropTypes.func.isRequired,
   }).isRequired,
-  currentUser: currentUserModel,
+  currentUser: PropTypes.instanceOf(User),
   communityUrl: PropTypes.string,
   wallet: PropTypes.instanceOf(GivethWallet),
 };

@@ -7,7 +7,7 @@ import moment from 'moment';
 import Loader from './Loader';
 import getNetwork from '../lib/blockchain/getNetwork';
 import { getUserName, getUserAvatar } from '../lib/helpers';
-import currentUserModel from '../models/currentUserModel';
+import User from '../models/User';
 
 /**
  * Shows a table of donations for a given type (dac, campaign, milestone)
@@ -94,7 +94,7 @@ ShowTypeDonations.propTypes = {
     createdAt: PropTypes.string.isRequired,
     delegateType: PropTypes.string,
     donationId: PropTypes.string.isRequired,
-    giver: currentUserModel,
+    currentUser: PropTypes.instanceOf(User),
     giverAddress: PropTypes.string.isRequired,
     ownerId: PropTypes.string.isRequired,
     ownerType: PropTypes.string.isRequired,

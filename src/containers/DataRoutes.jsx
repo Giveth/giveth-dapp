@@ -8,7 +8,7 @@ import DACs from './../components/views/DACs';
 import Campaigns from './../components/views/Campaigns';
 import Loader from './../components/Loader';
 
-import currentUserModel from './../models/currentUserModel';
+import User from './../models/User';
 import GivethWallet from '../lib/blockchain/GivethWallet';
 
 /**
@@ -126,7 +126,7 @@ class DataRoutes extends Component {
 }
 
 DataRoutes.propTypes = {
-  currentUser: currentUserModel,
+  currentUser: PropTypes.instanceOf(User),
   wallet: PropTypes.instanceOf(GivethWallet),
 };
 

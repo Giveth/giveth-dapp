@@ -10,7 +10,7 @@ import BackgroundImageHeader from '../BackgroundImageHeader';
 import DonateButton from '../DonateButton';
 import ShowTypeDonations from '../ShowTypeDonations';
 import CommunityButton from '../CommunityButton';
-import currentUserModel from '../../models/currentUserModel';
+import User from '../../models/User';
 import CampaignCard from '../CampaignCard';
 import { getUserName, getUserAvatar } from '../../lib/helpers';
 import GivethWallet from '../../lib/blockchain/GivethWallet';
@@ -200,7 +200,7 @@ ViewDAC.propTypes = {
     goBack: PropTypes.func.isRequired,
     push: PropTypes.func.isRequired,
   }).isRequired,
-  currentUser: currentUserModel,
+  currentUser: PropTypes.instanceOf(User),
   match: PropTypes.shape({
     params: PropTypes.shape({
       id: PropTypes.string,

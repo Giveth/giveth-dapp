@@ -4,7 +4,7 @@ import Avatar from 'react-avatar';
 
 import { getTruncatedText, isOwner, getUserAvatar, getUserName } from './../lib/helpers';
 import { redirectAfterWalletUnlock, checkWalletBalance } from './../lib/middleware';
-import currentUserModel from '../models/currentUserModel';
+import User from '../models/User';
 import CardStats from './CardStats';
 import GivethWallet from '../lib/blockchain/GivethWallet';
 
@@ -113,7 +113,7 @@ MilestoneCard.propTypes = {
       address: PropTypes.string.isRequired,
     }).isRequired,
   }).isRequired,
-  currentUser: currentUserModel,
+  currentUser: PropTypes.instanceOf(User),
   wallet: PropTypes.instanceOf(GivethWallet),
   history: PropTypes.shape({
     push: PropTypes.func.isRequired,

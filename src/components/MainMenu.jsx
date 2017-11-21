@@ -5,7 +5,7 @@ import { Link, NavLink, withRouter } from 'react-router-dom';
 
 import AuthenticatedLink from './AuthenticatedLink';
 import AuthenticatedNavLink from './AuthenticatedNavLink';
-import currentUserModel from '../models/currentUserModel';
+import User from '../models/User';
 import GivethWallet from '../lib/blockchain/GivethWallet';
 
 /**
@@ -260,7 +260,7 @@ class MainMenu extends Component {
 export default withRouter(MainMenu);
 
 MainMenu.propTypes = {
-  currentUser: currentUserModel,
+  currentUser: PropTypes.instanceOf(User),
   wallet: PropTypes.instanceOf(GivethWallet),
   history: PropTypes.shape({
     goBack: PropTypes.func.isRequired,
