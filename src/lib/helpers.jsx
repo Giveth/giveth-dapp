@@ -34,11 +34,11 @@ export const authenticate = (wallet) => {
 };
 
 export const getTruncatedText = (text, maxLength) => {
-  if (text.length > maxLength) {
-    const txt = text.substr(0, maxLength);
-    return `${txt.trim()}...`;
+  const txt = text.replace(/<(?:.|\n)*?>/gm, '').trim();
+  if (txt.length > maxLength) {
+    return `${txt.substr(0, maxLength).trim()}...`;
   }
-  return text;
+  return txt;
 };
 
 // displays a sweet alert with an error when the transaction goes wrong
