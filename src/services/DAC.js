@@ -5,36 +5,33 @@ import { feathersClient } from '../lib/feathersClient';
 import { displayTransactionError } from '../lib/helpers';
 
 class DACservice {
-  static save(dac, onCreated = () => {}, onMined = () => {}) {
-    if (dac.id) { // Just update existing DAC in feathers
+  static save(dac, afterCreate = () => {}, afterMined = () => {}) {
+    if (dac.id) {
       feathersClient.service('dacs').patch(dac.id, dac.toFeathers())
-        .then(() => onMined());
+        .then(() => afterMined());
     } else {
       let txHash;
-      getNetwork()
-        .then((network) => {
-          getWeb3()
-            .then((web3) => {
-              const { liquidPledging } = network;
+      let etherScanUrl;
+      Promise.all([getNetwork(), getWeb3()])
+        .then(([network, web3]) => {
+          const { liquidPledging } = network;
+          etherScanUrl = network.etherscan;
 
-              LPPDac
-                .new(web3, liquidPledging.$address, dac.title, '', 0, dac.tokenName, dac.tokenSymbol)
-                // Transaction created
-                .once('transactionHash', (hash) => {
-                  txHash = hash;
-                  dac.txHash = txHash;
-                  console.log(dac.toFeathers());
-                  feathersClient.service('dacs').create(dac.toFeathers())
-                    .then(() => { onCreated(txHash); });
-                })
-                // Transaction mined
-                .then(() => { onMined(`${network.etherscan}tx/${txHash}`); });
+          LPPDac.new(web3, liquidPledging.$address, dac.title, '', 0, dac.tokenName, dac.tokenSymbol)
+            .once('transactionHash', (hash) => {
+              txHash = hash;
+              dac.txHash = txHash;
+              feathersClient.service('dacs').create(dac.toFeathers())
+                .then(() => afterCreate(`${etherScanUrl}tx/${txHash}`));
             })
-            .catch((err) => {
-              console.log('New DAC transaction failed:', err); // eslint-disable-line no-console
-              displayTransactionError(txHash, network.etherscan);
+            .then(() => {
+              afterMined(`${etherScanUrl}tx/${txHash}`);
             });
-        }).catch(console.error); // TODO: Inform user that we are unable to connect to the network.
+        })
+        .catch((err) => {
+          console.log('New DAC transaction failed:', err); // eslint-disable-line no-console
+          displayTransactionError(txHash, etherScanUrl);
+        });
     }
   }
 }

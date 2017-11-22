@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import LPPDac from 'lpp-dac';
 
 import { Form, Input } from 'formsy-react-components';
 import { feathersClient } from '../../lib/feathersClient';
@@ -8,10 +7,8 @@ import Loader from '../Loader';
 import QuillFormsy from '../QuillFormsy';
 import FormsyImageUploader from './../FormsyImageUploader';
 import GoBackButton from '../GoBackButton';
-import { isOwner, getTruncatedText, displayTransactionError } from '../../lib/helpers';
+import { isOwner, getTruncatedText } from '../../lib/helpers';
 import { isAuthenticated, checkWalletBalance, isInWhitelist } from '../../lib/middleware';
-import getNetwork from '../../lib/blockchain/getNetwork';
-import getWeb3 from '../../lib/blockchain/getWeb3';
 import LoaderButton from '../../components/LoaderButton';
 
 import DAC from '../../models/DAC';
@@ -38,7 +35,6 @@ class EditDAC extends Component {
 
       // DAC model
       dac: new DAC({}),
-      uploadNewImage: false,
     };
 
     this.submit = this.submit.bind(this);
@@ -75,67 +71,44 @@ class EditDAC extends Component {
           });
         }
       });
+    this.mounted = true;
+  }
+
+  componentWillUnmount() {
+    this.mounted = false;
   }
 
   setImage(image) {
-    this.setState({ uploadNewImage: true });
     this.state.dac.image = image;
   }
 
   submit() {
     this.setState({ isSaving: true });
 
-    const afterEmit = (isNew) => {
-      this.setState({ isSaving: false });
-      if (isNew) {
-        React.toast.success('Your DAC was created!');
-      } else { React.toast.success('Your DAC has been updated!'); }
-      this.props.history.push('/dacs');
-    };
-
-    const updateDAC = (file) => {
-      if (file) this.state.dac.image = file;
-
-      if (this.props.isNew) {
-        const createDAC = (txHash) => {
-          this.state.dac.txHash = txHash;
-          feathersClient.service('dacs').create(this.state.dac.toFeathers())
-            .then(() => this.props.history.push('/my-dacs'));
-        };
-
-        let txHash;
-        let etherScanUrl;
-        Promise.all([getNetwork(), getWeb3()])
-          .then(([network, web3]) => {
-            const { liquidPledging } = network;
-            etherScanUrl = network.etherscan;
-
-            LPPDac.new(web3, liquidPledging.$address, this.state.dac.title, '', 0, this.state.dac.tokenName, this.state.dac.tokenSymbol)
-              .once('transactionHash', (hash) => {
-                txHash = hash;
-                createDAC(txHash);
-                React.toast.info(<p>Your DAC is pending....<br /><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>);
-              })
-              .then(() => {
-                React.toast.success(<p>Your DAC has been created!<br /><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>);
-                afterEmit(true);
-              });
-          })
-          .catch((err) => {
-            console.log('New DAC transaction failed:', err); // eslint-disable-line no-console
-            displayTransactionError(txHash, etherScanUrl);
-          });
+    const afterMined = (url) => {
+      if (url) {
+        const msg = (
+          <p>Your DAC has been created!<br />
+            <a href={url} target="_blank" rel="noopener noreferrer">View transaction</a>
+          </p>);
+        React.toast.success(msg);
       } else {
-        feathersClient.service('dacs').patch(this.state.dac.id, this.state.dac.toFeathers())
-          .then(() => afterEmit());
+        if (this.mounted) this.setState({ isSaving: false });
+        React.toast.success('Your DAC has been updated!');
+        this.props.history.push(`/dacs/${this.state.dac.id}`);
       }
     };
+    const afterCreate = (url) => {
+      if (this.mounted) this.setState({ isSaving: false });
+      const msg = (
+        <p>Your DAC is pending....<br />
+          <a href={url} target="_blank" rel="noopener noreferrer">View transaction</a>
+        </p>);
+      React.toast.info(msg);
+      this.props.history.push('/my-dacs');
+    };
 
-    if (this.state.uploadNewImage) {
-      feathersClient.service('/uploads').create({ uri: this.state.dac.image }).then(file => updateDAC(file.url));
-    } else {
-      updateDAC();
-    }
+    this.state.dac.save(afterCreate, afterMined);
   }
 
   toggleFormValid(state) {

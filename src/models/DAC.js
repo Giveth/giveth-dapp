@@ -1,5 +1,6 @@
 import BasicModel from './BasicModel';
 import DACservice from '../services/DAC';
+import UploadService from '../services/Uploads';
 /**
  * The DApp DAC model
  */
@@ -22,6 +23,7 @@ class DAC extends BasicModel {
     this.donationCount = donationCount;
     this.tokenName = tokenName;
     this.tokenSymbol = tokenSymbol;
+    this.newImage = false;
   }
 
   toFeathers() {
@@ -42,7 +44,17 @@ class DAC extends BasicModel {
   }
 
   save(onCreated, afterEmit) {
-    DACservice.save(this, onCreated, afterEmit);
+    if (this.newImage) {
+      UploadService.save(this.image).then((file) => {
+        // Save the new image address and mark it as old
+        this.image = file.url;
+        this.newImage = false;
+
+        DACservice.save(this, onCreated, afterEmit);
+      });
+    } else {
+      DACservice.save(this, onCreated, afterEmit);
+    }
   }
 
   get id() {
@@ -105,6 +117,7 @@ class DAC extends BasicModel {
 
   set image(value) {
     this.checkType(value, ['string'], 'image');
+    this.newImage = true;
     this.myImage = value;
   }
 
