@@ -206,6 +206,30 @@ class MyMilestones extends Component {
     });    
   }
 
+ rejectProposedMilestone(milestone) {
+    React.swal({
+      title: 'Reject Milestone?',
+      text: 'Are you sure you want to reject this Milestone?',
+      icon: 'warning',
+      dangerMode: true,
+      buttons: ['Cancel', 'Yes, reject'],
+    }).then((isConfirmed) => {
+      if (isConfirmed) {
+        console.log('rejecting milestone')
+
+        feathersClient.service('/milestones').patch(milestone._id, {
+          status: 'rejected',
+        }).then(() => {
+          React.toast.info(<p>The milestone has been rejected.</p>);
+        }).catch((e) => {
+          console.log('Error updating feathers cache ->', e); // eslint-disable-line no-console
+          React.toast.error('Oh no! Something went wrong. Please try again.');                
+        });
+      }
+    });
+  }
+
+
   approveMilestone(milestone) {
     takeActionAfterWalletUnlock(this.props.wallet, () => {
       checkWalletBalance(this.props.wallet, this.props.history).then(() =>
@@ -496,13 +520,21 @@ class MyMilestones extends Component {
                                 </button>
                               }
 
-                              { m.campaignOwnerAddress === currentUser.address &&
-                                <button
-                                  className="btn btn-link"
-                                  onClick={() => this.acceptProposedMilestone(m)}
-                                >
-                                  <i className="fa fa-check-square-o" />&nbsp;Accept
-                                </button>
+                              { (m.campaignOwnerAddress === currentUser.address) && m.status === 'proposed' &&
+                                <span>
+                                  <button
+                                    className="btn btn-link"
+                                    onClick={() => this.acceptProposedMilestone(m)}
+                                  >
+                                    <i className="fa fa-check-square-o" />&nbsp;Accept
+                                  </button>
+                                  <button
+                                    className="btn btn-danger btn-sm"
+                                    onClick={() => this.rejectProposedMilestone(m)}
+                                  >
+                                    <i className="fa fa-times-circle-o" />&nbsp;Reject
+                                  </button>    
+                                </span>                            
                               }                              
 
                               { m.recipientAddress === currentUser.address && m.status === 'InProgress' && m.mined &&

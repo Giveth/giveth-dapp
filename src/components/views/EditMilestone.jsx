@@ -140,7 +140,7 @@ class EditMilestone extends Component {
         completionDeadline: this.state.completionDeadline,
         image: file,
         campaignId: this.state.campaignId,
-        status: this.props.isProposed ? 'proposed' : this.state.status, // make sure not to change status!
+        status: (this.props.isProposed || this.state.status === 'rejected') ? 'proposed' : this.state.status, // make sure not to change status!
       };
 
       if (this.props.isNew) {

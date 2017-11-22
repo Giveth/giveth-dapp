@@ -44,10 +44,10 @@ class ViewMilestone extends Component {
   }
 
   componentDidMount() {
-    const { milestoneId } = this.props.match.params.milestoneId;
+    const milestoneId = this.props.match.params.milestoneId;
 
     feathersClient.service('milestones').find({ query: { _id: milestoneId } })
-      .then(resp =>
+      .then(resp => 
         this.setState(Object.assign({}, resp.data[0], {
           isLoading: false,
           hasError: false,
