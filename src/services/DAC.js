@@ -3,8 +3,91 @@ import getNetwork from '../lib/blockchain/getNetwork';
 import getWeb3 from '../lib/blockchain/getWeb3';
 import { feathersClient } from '../lib/feathersClient';
 import { displayTransactionError } from '../lib/helpers';
+import DAC from '../models/DAC';
 
 class DACservice {
+  /**
+   * Get a DAC defined by ID
+   *
+   * @param id   ID of the DAC to be retrieved
+   */
+  static get(id) {
+    return new Promise((resolve, reject) => {
+      feathersClient.service('dacs').find({ query: { _id: id } })
+        .then((resp) => { resolve(new DAC(resp.data[0])); })
+        .catch(err => reject(err));
+    });
+  }
+
+  /**
+   * Lazy-load DACs by subscribing to DACs listener
+   *
+   * @param onSuccess Callback function once response is obtained successfylly
+   * @param onError   Callback function if error is encountered
+   */
+  static subscribe(onSuccess, onError) {
+    feathersClient.service('dacs').watch({ strategy: 'always' }).find({
+      query: {
+        delegateId: {
+          $gt: '0', // 0 is a pending dac
+        },
+        $limit: 200,
+        $sort: { campaignsCount: -1 },
+      },
+    }).subscribe(
+      resp => onSuccess(resp/* resp.map(d => new DAC(d)) */), // TODO: return array with DACs
+      onError,
+    );
+  }
+
+  /**
+   * Lazy-load DAC Donations by subscribing to donations listener
+   *
+   * @param id        ID of the DAC which donations should be retrieved
+   * @param onSuccess Callback function once response is obtained successfylly
+   * @param onError   Callback function if error is encountered
+   */
+  static subscribeDonations(id, onSuccess, onError) {
+    return feathersClient.service('donations/history').watch({ listStrategy: 'always' }).find({
+      query: {
+        delegateId: id,
+        $sort: { createdAt: -1 },
+      },
+    }).subscribe(
+      resp => onSuccess(resp.data),
+      onError,
+    );
+  }
+
+  /**
+   * Lazy-load DAC Campaigns by subscribing to campaigns listener
+   *
+   * @param id        ID of the DAC which campaigns should be retrieved
+   * @param onSuccess Callback function once response is obtained successfylly
+   * @param onError   Callback function if error is encountered
+   */
+  static subscribeCampaigns(id, onSuccess, onError) {
+    return feathersClient.service('campaigns').watch({ strategy: 'always' }).find({
+      query: {
+        projectId: {
+          $gt: '0', // 0 is a pending campaign
+        },
+        dacs: id,
+        $limit: 200,
+      },
+    }).subscribe(
+      (resp) => { onSuccess(resp.data); },
+      onError,
+    );
+  }
+
+  /**
+   * Save new DAC to the blockchain or update existing one in feathers
+   *
+   * @param dac         DAC object to be saved
+   * @param afterCreate Callback to be triggered after the DAC is created in feathers
+   * @param afterMined  Callback to be triggered after the transaction is mined
+   */
   static save(dac, afterCreate = () => {}, afterMined = () => {}) {
     if (dac.id) {
       feathersClient.service('dacs').patch(dac.id, dac.toFeathers())

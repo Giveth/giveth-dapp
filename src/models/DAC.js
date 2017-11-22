@@ -7,7 +7,7 @@ import UploadService from '../services/Uploads';
 class DAC extends BasicModel {
   constructor({
     title = '', description = '', communityUrl = '', summary = '', delegateId = '0', image = '', _id,
-    txHash, totalDonated = 0, donationCount = 0, tokenName = '', tokenSymbol = '',
+    txHash, totalDonated = '0', donationCount = 0, tokenName = '', tokenSymbol = '', owner,
   }) {
     super();
 
@@ -24,6 +24,7 @@ class DAC extends BasicModel {
     this.tokenName = tokenName;
     this.tokenSymbol = tokenSymbol;
     this.newImage = false;
+    this.owner = owner;
   }
 
   toFeathers() {
@@ -126,7 +127,7 @@ class DAC extends BasicModel {
   }
 
   set txHash(value) {
-    this.checkType(value, ['undefined', 'string'], 'image');
+    this.checkType(value, ['undefined', 'string'], 'txHash');
     this.myTxHash = value;
   }
 
@@ -135,7 +136,11 @@ class DAC extends BasicModel {
   }
 
   set totalDonated(value) {
-    this.checkType(value, ['number'], 'image');
+    // TODO: Fix the value to always be string
+    if (typeof value === 'number') {
+      console.error('Total donated should always be string as it is bignumber! Fix it in feathers');
+    }
+    this.checkType(value, ['number', 'string'], 'totalDonated');
     this.myTotalDonated = value;
   }
 
@@ -144,7 +149,7 @@ class DAC extends BasicModel {
   }
 
   set donationCount(value) {
-    this.checkType(value, ['number'], 'image');
+    this.checkType(value, ['number'], 'donationCount');
     this.myDonationCount = value;
   }
 
@@ -153,7 +158,7 @@ class DAC extends BasicModel {
   }
 
   set tokenName(value) {
-    this.checkType(value, ['string'], 'image');
+    this.checkType(value, ['string'], 'tokenName');
     this.myTokenName = value;
   }
 
@@ -162,8 +167,17 @@ class DAC extends BasicModel {
   }
 
   set tokenSymbol(value) {
-    this.checkType(value, ['string'], 'image');
+    this.checkType(value, ['string'], 'tokenSymbol');
     this.myTokenSymbol = value;
+  }
+
+  get owner() {
+    return this.myOwner;
+  }
+
+  set owner(value) {
+    this.checkType(value, ['undefined', 'object'], 'owner');
+    this.myOwner = value;
   }
 }
 

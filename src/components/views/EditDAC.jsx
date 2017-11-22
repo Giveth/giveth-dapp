@@ -2,7 +2,6 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 
 import { Form, Input } from 'formsy-react-components';
-import { feathersClient } from '../../lib/feathersClient';
 import Loader from '../Loader';
 import QuillFormsy from '../QuillFormsy';
 import FormsyImageUploader from './../FormsyImageUploader';
@@ -11,6 +10,7 @@ import { isOwner, getTruncatedText } from '../../lib/helpers';
 import { isAuthenticated, checkWalletBalance, isInWhitelist } from '../../lib/middleware';
 import LoaderButton from '../../components/LoaderButton';
 
+import DACservice from '../../services/DAC';
 import DAC from '../../models/DAC';
 import User from '../../models/User';
 import GivethWallet from '../../lib/blockchain/GivethWallet';
@@ -50,21 +50,14 @@ class EditDAC extends Component {
       ))
       .then(() => {
         if (!this.props.isNew) {
-          feathersClient.service('dacs').find({ query: { _id: this.props.match.params.id } })
-            .then((resp) => {
-              if (!isOwner(resp.data[0].owner.address, this.props.currentUser)) {
-                this.props.history.goBack();
-              } else {
-                this.setState({
-                  dac: new DAC(resp.data[0]),
-                  isLoading: false,
-                });
-              }
-            })
-            .catch(() =>
-              this.setState({
-                isLoading: false,
-              }));
+          DACservice.get(this.props.match.params.id).then((dac) => {
+            // The user is not an owner, hence can not change the DAC
+            if (!isOwner(dac.owner.address, this.props.currentUser)) {
+              this.props.history.goBack();
+            } else {
+              this.setState({ isLoading: false, dac });
+            }
+          });
         } else {
           this.setState({
             isLoading: false,
@@ -264,7 +257,7 @@ class EditDAC extends Component {
                     isLoading={isSaving}
                     loadingText="Saving..."
                   >
-                        Create DAC
+                    { isNew ? 'Create DAC' : 'Save DAC changes'}
                   </LoaderButton>
 
                 </Form>
