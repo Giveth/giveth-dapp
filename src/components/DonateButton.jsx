@@ -26,29 +26,21 @@ class DonateButton extends Component {
     this.submit = this.submit.bind(this);
   }
 
-  openDialog() {
-    if (this.props.currentUser) {
-      takeActionAfterWalletUnlock(this.props.wallet, () => {
-        this.setState({ modalVisible: true })
-        getGasPrice().then((gas) => {
-          this.setState({ gas: gas })
-        })
-      });
-
-    } else {
-      React.swal({
-        title: "You're almost there...",
-        content: React.swal.msg(<p>
-            Great to see that you want to donate!! However you first need to sign up (or sign in).
-            Also make sure to transfer some Ether to your Giveth wallet before donating.
-                                </p>),
-        icon: 'info',
-        buttons: ['Cancel', 'Sign up now!'],
-      }).then((isConfirmed) => {
-        if (isConfirmed) this.props.history.push('/signup');
-      });
-    }
+  componentDidMount(){
+    getNetwork().then(network => 
+      this.setState({ MEWurl: `https://www.myetherwallet.com/?to=${network.liquidPledgingAddress.toUpperCase()}&gaslimit=550000&idGiver=0&idReciever=${this.props.model.adminId}#donate` })
+    )
   }
+
+
+  openDialog() {
+    getGasPrice().then((gas) =>
+      this.setState({ 
+        gas: gas,
+        modalVisible: true 
+      }))    
+  }
+
 
   toggleFormValid(state) {
     this.setState({ formIsValid: state });
@@ -58,8 +50,27 @@ class DonateButton extends Component {
   submit(model) {
     console.log(model, this.props.type.toLowerCase(), this.props.model.adminId);
 
-    this.setState({ isSaving: true });
+    if (this.props.currentUser) {
+      takeActionAfterWalletUnlock(this.props.wallet, () => {    
+        this.setState({ isSaving: true });
+        this.donateWithGiveth(model);
+      })
+    } else {
+      React.swal({
+        title: "You're almost there...",
+        content: React.swal.msg(<p>
+            Great to see that you want to donate!! However you first need to sign up (or sign in).
+            Also make sure to transfer some Ether to your Giveth wallet before donating.<br/><br/>
+            Alternatively, you can donate with MyEtherWallet</p>),
+        icon: 'info',
+        buttons: ['Cancel', 'Sign up now!'],
+      }).then((isConfirmed) => {
+        if (isConfirmed) this.props.history.push('/signup');
+      });
+    }
+  }
 
+  donateWithGiveth(model) {
     const amount = utils.toWei(model.amount);
     const service = feathersClient.service('donations');
 
@@ -176,13 +187,12 @@ class DonateButton extends Component {
         displayTransactionError(txHash, etherScanUrl);
 
         this.setState({ isSaving: false });
-      });
+      });    
   }
-
 
   render() {
     const { type, model, wallet } = this.props;
-    const { isSaving, amount, formIsValid, gas } = this.state;
+    const { isSaving, amount, formIsValid, gas, MEWurl } = this.state;
     const style = {
       display: 'inline-block',
     };
@@ -247,8 +257,18 @@ class DonateButton extends Component {
                 type="submit"
                 disabled={isSaving || !formIsValid}
               >
-                {isSaving ? 'Saving...' : 'Donate Ξ'}
+                {isSaving ? 'Donating...' : 'Donate Ξ with Giveth'}
               </button>
+
+              <a
+                className={`btn btn-secondary ${(isSaving || !formIsValid) ? 'disabled' : ''}`}
+                disabled={isSaving || !formIsValid}
+                href={MEWurl}
+                target="_blank"
+                rel="noopener noreferrer"                
+              >
+                Donate with MyEtherWallet
+              </a>
             </Form>
 
           </SkyLightStateless>
