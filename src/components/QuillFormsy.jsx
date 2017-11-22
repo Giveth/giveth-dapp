@@ -9,7 +9,7 @@ const QuillFormsy = createReactClass({
 
   changeValue(value, delta, source, editor) {
     this.setValue(value);
-    this.props.onTextChanged(editor.getText());
+    this.props.onTextChanged && this.props.onTextChanged(editor.getText());
   },
 
   render() {
