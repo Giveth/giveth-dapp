@@ -81,7 +81,7 @@ class User extends BasicModel {
   }
 
   set giverId(value) {
-    this.checkType(value, ['undefined', 'string'], 'giverId');
+    this.checkType(value, ['undefined', 'string', 'number'], 'giverId');
     this.myGiverId = value;
   }
 

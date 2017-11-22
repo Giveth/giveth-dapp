@@ -58,12 +58,13 @@ class EditMilestone extends Component {
 
 
   componentDidMount() {
+    console.log(this.props.isProposed)
     isAuthenticated(this.props.currentUser, this.props.history, this.props.wallet)
-      .then(() => checkWalletBalance(this.props.wallet, this.props.history))
-      .then(() => isInWhitelist(
+      .then(() => { if(!this.props.isProposed) checkWalletBalance(this.props.wallet, this.props.history)})
+      .then(() => { if(!this.props.isProposed) isInWhitelist(
         this.props.currentUser, React.whitelist.projectOwnerWhitelist,
         this.props.history,
-      ))
+      )})
       .then(() => {
         this.setState({
           campaignId: this.props.match.params.id,
@@ -98,6 +99,7 @@ class EditMilestone extends Component {
                 this.setState({
                   campaignTitle: campaign.title,
                   campaignProjectId: campaign.projectId,
+                  campaignOwnerAddress: campaign.ownerAddress,
                   isLoading: false,
                 });
               }
@@ -138,40 +140,50 @@ class EditMilestone extends Component {
         completionDeadline: this.state.completionDeadline,
         image: file,
         campaignId: this.state.campaignId,
-        status: this.state.status, // make sure not to change status!
+        status: this.props.isProposed ? 'proposed' : this.state.status, // make sure not to change status!
       };
 
       if (this.props.isNew) {
-        const createMilestone = () => {
-          feathersClient.service('milestones').create(Object.assign({}, constructedModel, {
-            txHash,
-            pluginAddress: '0x0000000000000000000000000000000000000000',
-            totalDonated: 0,
-            donationCount: 0,
-          }))
+        const createMilestone = (txData) => {
+          feathersClient.service('milestones').create(Object.assign({}, constructedModel, txData))
             .then(() => afterEmit(true));
         };
 
-        let etherScanUrl;
-        Promise.all([getNetwork(), getWeb3()])
-          .then(([network, web3]) => {
-            const { liquidPledging } = network;
-            etherScanUrl = network.txHash;
-
-            // web3, lp address, name, parentProject, recipient, maxAmount, reviewer
-            LPPMilestone.new(web3, liquidPledging.$address, model.title, '', this.state.campaignProjectId, model.recipientAddress, constructedModel.maxAmount, model.reviewerAddress)
-              .on('transactionHash', (hash) => {
-                txHash = hash;
-                createMilestone(txHash);
-                React.toast.info(<p>Your milestone is pending....<br /><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>);
-              })
-              .then(() => {
-                React.toast.success(<p>Your milestone has been created!<br /><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>);
-              });
+        if(this.props.isProposed) {
+          createMilestone({
+            pluginAddress: '0x0000000000000000000000000000000000000000',
+            totalDonated: 0,
+            donationCount: 0,
+            campaignOwnerAddress: this.state.campaignOwnerAddress
           })
-          .catch(() => {
-            displayTransactionError(txHash, etherScanUrl);
-          });
+          React.toast.info(<p>Your milestone is being proposed to the campaign owner.</p>);
+        } else {
+          let etherScanUrl;
+          Promise.all([getNetwork(), getWeb3()])
+            .then(([network, web3]) => {
+              const { liquidPledging } = network;
+              etherScanUrl = network.txHash;
+
+              // web3, lp address, name, parentProject, recipient, maxAmount, reviewer
+              LPPMilestone.new(web3, liquidPledging.$address, model.title, '', this.state.campaignProjectId, model.recipientAddress, constructedModel.maxAmount, model.reviewerAddress)
+                .on('transactionHash', (hash) => {
+                  txHash = hash;
+                  createMilestone(txHash, {
+                    txHash,
+                    pluginAddress: '0x0000000000000000000000000000000000000000',
+                    totalDonated: 0,
+                    donationCount: 0,
+                  });
+                  React.toast.info(<p>Your milestone is pending....<br /><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>);
+                })
+                .then(() => {
+                  React.toast.success(<p>Your milestone has been created!<br /><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>);
+                });
+            })
+            .catch(() => {
+              displayTransactionError(txHash, etherScanUrl);
+            });
+        }
       } else {
         feathersClient.service('milestones').patch(this.state.id, constructedModel)
           .then(() => afterEmit());
@@ -194,7 +206,7 @@ class EditMilestone extends Component {
   }
 
   render() {
-    const { isNew, history } = this.props;
+    const { isNew, isProposed, history } = this.props;
     const {
       isLoading, isSaving, title, description, image, recipientAddress, reviewerAddress,
       completionDeadline, formIsValid, maxAmount, campaignTitle,
@@ -213,23 +225,33 @@ class EditMilestone extends Component {
               <div>
                 <GoBackButton history={history} />
 
-                { isNew &&
-                <h3>Add a new milestone</h3>
-                    }
+                { isNew && !isProposed &&
+                  <h3>Add a new milestone</h3>
+                }
 
-                { !isNew &&
-                <h3>Edit milestone {title}</h3>
-                    }
+                { !isNew && !isProposed &&
+                  <h3>Edit milestone {title}</h3>
+                }                
+
+                { isNew && isProposed &&
+                  <h3>Propose a milestone</h3>
+                }    
 
                 <h6>Campaign: <strong>{getTruncatedText(campaignTitle, 100)}</strong></h6>
 
-
                 <p>
                   <i className="fa fa-question-circle" />
-                      A milestone is a single accomplishment within a project. In the end, all
-                      donations end up in milestones. Once milestones are completed, you can
-                      request payout.
+                  A milestone is a single accomplishment within a project. In the end, all
+                  donations end up in milestones. Once milestones are completed, you can
+                  request payout.
                 </p>
+
+                { isProposed && 
+                  <p>
+                    <i className="fa fa-exclamation-triangle" />
+                    You are proposing a milestone to the campaign owner. The campaign owner can accept or reject your milestone
+                  </p>
+                }                
 
                 <Form
                   onSubmit={this.submit}
@@ -256,8 +278,8 @@ class EditMilestone extends Component {
                     help="Describe your milestone in 1 sentence."
                     validations="minLength:3"
                     validationErrors={{
-                            minLength: 'Please provide at least 3 characters.',
-                        }}
+                      minLength: 'Please provide at least 3 characters.',
+                    }}
                     required
                     autoFocus
                   />
@@ -275,8 +297,8 @@ class EditMilestone extends Component {
                       validations="minLength:3"
                       help="Describe your milestone."
                       validationErrors={{
-                              minLength: 'Please provide at least 3 characters.',
-                          }}
+                        minLength: 'Please provide at least 3 characters.',
+                      }}
                       required
                     />
                   </div>
@@ -298,8 +320,8 @@ class EditMilestone extends Component {
                     help="The milestone reviewer is automatically assigned while Giveth is in beta."
                     validations="isEtherAddress"
                     validationErrors={{
-                            isEtherAddress: 'Please insert a valid Ethereum address.',
-                        }}
+                      isEtherAddress: 'Please insert a valid Ethereum address.',
+                    }}
                     required
                     disabled
                   />
@@ -314,8 +336,8 @@ class EditMilestone extends Component {
                     help="Enter an Ethereum address."
                     validations="isEtherAddress"
                     validationErrors={{
-                            isEtherAddress: 'Please insert a valid Ethereum address.',
-                        }}
+                      isEtherAddress: 'Please insert a valid Ethereum address.',
+                    }}
                     required
                   />
 
@@ -329,8 +351,8 @@ class EditMilestone extends Component {
                     help="Select a date"
                     validations="minLength:10"
                     validationErrors={{
-                            minLength: 'Please provide a date.',
-                        }}
+                      minLength: 'Please provide a date.',
+                    }}
                     required
                   />
 
@@ -343,8 +365,8 @@ class EditMilestone extends Component {
                     placeholder="10"
                     validations="greaterThan:0.1"
                     validationErrors={{
-                            greaterThan: 'Minimum value must be at least &#926;0.1',
-                        }}
+                      greaterThan: 'Minimum value must be at least &#926;0.1',
+                    }}
                     required
                   />
 
@@ -356,7 +378,14 @@ class EditMilestone extends Component {
                     isLoading={isSaving}
                     loadingText="Saving..."
                   >
-                        Save Milestone
+                    { isNew && isProposed &&
+                      <span>Propose Milestone</span>
+                    }
+
+                    { (!isProposed || !isNew) &&
+                      <span>Save Milestone</span>
+                    }
+
                   </LoaderButton>
 
                 </Form>
@@ -389,6 +418,7 @@ EditMilestone.propTypes = {
 
 EditMilestone.defaultProps = {
   isNew: false,
+  isProposed: false
 };
 
 export default EditMilestone;

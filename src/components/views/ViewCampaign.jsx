@@ -161,6 +161,10 @@ class ViewCampaign extends Component {
                       <AuthenticatedLink className="btn btn-primary btn-sm pull-right" to={`/campaigns/${id}/milestones/new`} wallet={wallet}>Add Milestone</AuthenticatedLink>
                     }
 
+                    { !isOwner(owner.address, currentUser) &&
+                      <AuthenticatedLink className="btn btn-primary btn-sm pull-right" to={`/campaigns/${id}/milestones/propose`} wallet={wallet}>Propose Milestone</AuthenticatedLink>
+                    }
+
                     {milestones.length > 0 && milestones.map(m =>
                       (<MilestoneCard
                         milestone={m}

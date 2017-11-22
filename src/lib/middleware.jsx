@@ -15,7 +15,7 @@ import React from 'react';
  */
 
 export const isAuthenticated = (currentUser, history, wallet) => new Promise(resolve =>
-  (currentUser && currentUser.address && wallet && wallet.unlocked ? resolve() : history.goBack()));
+  (currentUser && currentUser.address && wallet && wallet.unlocked ? resolve() : console.log('not authenticated') && history.goBack()));
 
 /**
  * check if the currentUser is in a particular whitelist. If not, route back.
@@ -34,7 +34,7 @@ export const isAuthenticated = (currentUser, history, wallet) => new Promise(res
 
 export const isInWhitelist = (currentUser, whitelist, history) => new Promise(resolve =>
   (currentUser && currentUser.address && whitelist.indexOf(currentUser.address.toLowerCase()) > -1
-    ? resolve() : history.goBack()));
+    ? resolve() : console.log('not in whitelist') && history.goBack()));
 
 
 /**
