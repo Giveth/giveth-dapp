@@ -8,7 +8,7 @@ import getNetwork from '../lib/blockchain/getNetwork';
 import { feathersClient } from '../lib/feathersClient';
 import { takeActionAfterWalletUnlock } from '../lib/middleware';
 import User from '../models/User';
-import { displayTransactionError } from '../lib/helpers';
+import { displayTransactionError, getGasPrice } from '../lib/helpers';
 import GivethWallet from '../lib/blockchain/GivethWallet';
 
 class DonateButton extends Component {
@@ -20,6 +20,7 @@ class DonateButton extends Component {
       formIsValid: false,
       amount: '',
       modalVisible: false,
+      gas: 4
     };
 
     this.submit = this.submit.bind(this);
@@ -27,7 +28,13 @@ class DonateButton extends Component {
 
   openDialog() {
     if (this.props.currentUser) {
-      takeActionAfterWalletUnlock(this.props.wallet, () => this.setState({ modalVisible: true }));
+      takeActionAfterWalletUnlock(this.props.wallet, () => {
+        this.setState({ modalVisible: true })
+        getGasPrice().then((gas) => {
+          this.setState({ gas: gas })
+        })
+      });
+
     } else {
       React.swal({
         title: "You're almost there...",
@@ -175,7 +182,7 @@ class DonateButton extends Component {
 
   render() {
     const { type, model, wallet } = this.props;
-    const { isSaving, amount, formIsValid } = this.state;
+    const { isSaving, amount, formIsValid, gas } = this.state;
     const style = {
       display: 'inline-block',
     };
@@ -203,7 +210,9 @@ class DonateButton extends Component {
             </p>
             }
 
-            <p>Your wallet balance: <em>&#926;{wallet.getBalance()}</em></p>
+            <p>Your wallet balance: <em>&#926;{wallet.getBalance()}</em><br/>
+              Gas price: <em>{gas} Gwei</em>
+            </p>
 
             <Form
               onSubmit={this.submit}
