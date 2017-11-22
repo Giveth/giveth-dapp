@@ -125,7 +125,6 @@ class Application extends Component {
         return null;
       })
       .then(payload => { 
-        // if(!payload) throw new Error('No Wallet')
         Application.getUserProfile(payload.userId)
       })
       .then((user) => {

@@ -36,16 +36,17 @@ class FormsyImageUploader extends Component {
     ImageTools.resize(this.imagePreview.element.files[0], {
       width: 800,
       height: 600,
-    }, (blob, didItResize) =>
-      reader.readAsDataURL(didItResize ? blob : this.imagePreview.element.files[0]));
+    }, (blob, didItResize) => {
+      reader.readAsDataURL(didItResize ? blob : this.imagePreview.element.files[0])
+    });
   }
 
   render() {
     return (
       <div>
-        { this.props.previewImage &&
+        { (this.props.previewImage || this.previewImage) &&
           <div id="image-preview">
-            <image src={this.state.image} alt="Preview of uploaded image" />
+            <img src={this.state.image} alt="Preview of uploaded image" />
           </div>
         }
 

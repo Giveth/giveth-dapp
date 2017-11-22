@@ -214,7 +214,7 @@ class EditMilestone extends Component {
 
     return (
       <div id="edit-milestone-view">
-        <div className="container-fluid page-layout">
+        <div className="container-fluid page-layout edit-view">
           <div className="row">
             <div className="col-md-8 m-auto">
               { isLoading &&
