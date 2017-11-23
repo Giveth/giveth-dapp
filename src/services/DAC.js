@@ -82,6 +82,21 @@ class DACservice {
   }
 
   /**
+   * Get the user's delegation
+   *
+   * @param userAddress Address of the user whose donations should be retrieved
+   *
+   * @return New promise with
+   */
+  static getUserDACs(userAddress) {
+    return new Promise((resolve, reject) => {
+      feathersClient.service('dacs').find({ query: { ownerAddress: userAddress } })
+        .then(resp => resolve(resp.data.map(dac => new DAC(dac))))
+        .catch(err => reject(err));
+    });
+  }
+
+  /**
    * Save new DAC to the blockchain or update existing one in feathers
    *
    * @param dac         DAC object to be saved
