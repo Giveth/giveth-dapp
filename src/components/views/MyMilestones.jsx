@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { utils } from 'web3';
-import LPPMilestone from 'lpp-milestone';
+import { LPPMilestone } from 'lpp-milestone';
 import { Link } from 'react-router-dom';
 
 import { feathersClient } from '../../lib/feathersClient';

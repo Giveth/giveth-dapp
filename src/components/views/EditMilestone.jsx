@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import LPPMilestone from 'lpp-milestone';
+import { LPPMilestoneFactory } from 'lpp-milestone';
 import { utils } from 'web3';
 
 import { Form, Input } from 'formsy-react-components';
@@ -98,6 +98,7 @@ class EditMilestone extends Component {
                 this.setState({
                   campaignTitle: campaign.title,
                   campaignProjectId: campaign.projectId,
+                  campaignReviewerAddress: campaign.reviewerAddress,
                   isLoading: false,
                 });
               }
@@ -136,6 +137,7 @@ class EditMilestone extends Component {
         reviewerAddress: model.reviewerAddress,
         recipientAddress: model.recipientAddress,
         completionDeadline: this.state.completionDeadline,
+        campaignReviewerAddress: this.state.campaignReviewerAddress,
         image: file,
         campaignId: this.state.campaignId,
         status: this.state.status, // make sure not to change status!
@@ -156,10 +158,11 @@ class EditMilestone extends Component {
         Promise.all([getNetwork(), getWeb3()])
           .then(([network, web3]) => {
             const { liquidPledging } = network;
-            etherScanUrl = network.txHash;
+            etherScanUrl = network.etherscan;
 
-            // web3, lp address, name, parentProject, recipient, maxAmount, reviewer
-            LPPMilestone.new(web3, liquidPledging.$address, model.title, '', this.state.campaignProjectId, model.recipientAddress, constructedModel.maxAmount, model.reviewerAddress)
+            const from = this.props.wallet.getAddresses()[0];
+            new LPPMilestoneFactory(web3, network.milestoneFactoryAddress)
+              .deploy(liquidPledging.$address, model.title, '', this.state.campaignProjectId, model.recipientAddress, constructedModel.maxAmount, model.reviewerAddress, constructedModel.campaignReviewerAddress, { gas: 1500000, from })
               .on('transactionHash', (hash) => {
                 txHash = hash;
                 createMilestone(txHash);

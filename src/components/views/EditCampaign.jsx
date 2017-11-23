@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import LPPCampaign from 'lpp-campaign';
+import { LPPCampaignFactory } from 'lpp-campaign';
 import InputToken from 'react-input-token';
 import 'react-input-token/lib/style.css';
 
@@ -151,10 +151,11 @@ class EditCampaign extends Component {
         Promise.all([getNetwork(), getWeb3()])
           .then(([network, web3]) => {
             const { liquidPledging } = network;
-            etherScanUrl = network.txHash;
+            etherScanUrl = network.etherscan;
 
             // web3, lp address, name, parentProject, reviewer, tokenName, tokenSymbol
-            LPPCampaign.new(web3, liquidPledging.$address, model.title, '', 0, model.reviewerAddress, model.tokenName, model.tokenSymbol)
+            new LPPCampaignFactory(web3, network.campaignFactoryAddress)
+              .deploy(liquidPledging.$address, model.title, '', 0, model.reviewerAddress, model.tokenName, model.tokenSymbol)
               .once('transactionHash', (hash) => {
                 txHash = hash;
                 createCampaign(txHash);

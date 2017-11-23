@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { utils } from 'web3';
-import LPPCampaign from 'lpp-campaign';
+import { LPPCampaign } from 'lpp-campaign';
 import _ from 'underscore';
 import { Link } from 'react-router-dom';
 

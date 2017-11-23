@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import LPPDac from 'lpp-dac';
+import { LPPDacFactory } from 'lpp-dac';
 
 import { Form, Input } from 'formsy-react-components';
 import { feathersClient } from '../../lib/feathersClient';
@@ -124,7 +124,8 @@ class EditDAC extends Component {
             const { liquidPledging } = network;
             etherScanUrl = network.etherscan;
 
-            LPPDac.new(web3, liquidPledging.$address, model.title, '', 0, model.tokenName, model.tokenSymbol)
+            new LPPDacFactory(web3, network.dacFactoryAddress)
+              .deploy(liquidPledging.$address, model.title, '', 0, model.tokenName, model.tokenSymbol)
               .once('transactionHash', (hash) => {
                 txHash = hash;
                 createDAC(txHash);
