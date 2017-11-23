@@ -10,6 +10,7 @@ import Loader from './../components/Loader';
 
 import User from './../models/User';
 import GivethWallet from '../lib/blockchain/GivethWallet';
+import DACservice from '../services/DAC';
 
 /**
  * These routes load and keep DACs and Campaigns in state for faster switching of routes
@@ -20,9 +21,10 @@ class DataRoutes extends Component {
     super();
 
     this.state = {
-      dacs: [],
-      campaigns: [],
-      isLoading: true,
+      dacs: {},
+      campaigns: {},
+      dacsLoading: true,
+      campaignsLoading: true,
       hasError: false,
     };
   }
@@ -33,60 +35,41 @@ class DataRoutes extends Component {
     // again and again whenever data changes. Yet the promise will be resolved the first time.
     // But he, it works! ;-)
 
-    Promise.all([
-      // Load all the DACS
-      new Promise((resolve, reject) => {
-        feathersClient.service('dacs').watch({ strategy: 'always' }).find({
-          query: {
-            delegateId: {
-              $gt: '0', // 0 is a pending dac
-            },
-            $limit: 200,
-            $sort: { campaignsCount: -1 },
-          },
-        }).subscribe(
-          resp => this.setState({ dacs: resp }, resolve()),
-          () => reject(),
-        );
-      }),
-      // Load all the campaigns
-      new Promise((resolve, reject) => {
-        feathersClient.service('campaigns').watch({ strategy: 'always' }).find({
-          query: {
-            projectId: {
-              $gt: '0', // 0 is a pending campaign
-            },
-            status: 'Active',
-            $limit: 200,
-            $sort: { milestonesCount: -1 },
-          },
-        }).subscribe(
-          resp => this.setState({ campaigns: resp }, resolve()),
-          () => reject(),
+    // Load all the DACS
+    DACservice.subscribe(
+      dacs => this.setState({ dacs, dacsLoading: false }),
+      () => this.setState({ hasError: true, dacsLoading: false }),
+    );
 
-        );
-      }),
-    ]).then(() =>
-      this.setState({ isLoading: false, hasError: false }))
-      .catch((e) => {
-        console.error(e); // eslint-disable-line no-console
-        this.setState({ isLoading: false, hasError: true });
-      });
+    // Load all the campaigns
+    feathersClient.service('campaigns').watch({ strategy: 'always' }).find({
+      query: {
+        projectId: {
+          $gt: '0', // 0 is a pending campaign
+        },
+        status: 'Active',
+        $limit: 200,
+        $sort: { milestonesCount: -1 },
+      },
+    }).subscribe(
+      resp => this.setState({ campaigns: resp, campaignsLoading: false }),
+      () => this.setState({ campaignsLoading: false, hasError: true }),
+    );
   }
 
   render() {
     const { currentUser, wallet } = this.props;
     const {
-      dacs, campaigns, isLoading, hasError,
+      dacs, campaigns, dacsLoading, campaignsLoading, hasError,
     } = this.state;
 
     return (
       <div>
-        {isLoading &&
+        {(dacsLoading || campaignsLoading) &&
           <Loader className="fixed" />
         }
 
-        {!isLoading && !hasError &&
+        {!(dacsLoading || campaignsLoading) && !hasError &&
           <div>
             <Route
               exact
@@ -113,7 +96,7 @@ class DataRoutes extends Component {
           </div>
         }
 
-        { !isLoading && hasError &&
+        { !(dacsLoading || campaignsLoading) && hasError &&
           <center>
             <h2>Oops, something went wrong...</h2>
             <p>The Giveth dapp could not load for some reason. Please try again...</p>

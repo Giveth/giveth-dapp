@@ -1,6 +1,7 @@
 import React from 'react';
 import { feathersClient } from './feathersClient';
 import DefaultAvatar from './../assets/avatar-100.svg';
+import 'whatwg-fetch';
 
 export const isOwner = (address, currentUser) =>
   address !== undefined && currentUser !== undefined && currentUser.address === address;
@@ -34,11 +35,11 @@ export const authenticate = (wallet) => {
 };
 
 export const getTruncatedText = (text, maxLength) => {
-  if (text.length > maxLength) {
-    const txt = text.substr(0, maxLength);
-    return `${txt.trim()}...`;
+  const txt = text.replace(/<(?:.|\n)*?>/gm, '').trim();
+  if (txt.length > maxLength) {
+    return `${txt.substr(0, maxLength).trim()}...`;
   }
-  return text;
+  return txt;
 };
 
 // displays a sweet alert with an error when the transaction goes wrong
@@ -86,6 +87,11 @@ export const getUserAvatar = (owner) => {
 };
 
 export const getRandomWhitelistAddress = wl => wl[Math.floor(Math.random() * wl.length)];
+
+export const getGasPrice = () => {
+  return feathersClient.service('/gasprice').find().then((resp) => { return resp.average * 2 })
+}
+
 
 // returns a risk indicator
 export const calculateRiskFactor = (owner, dependencies) => {

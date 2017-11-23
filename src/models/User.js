@@ -1,3 +1,4 @@
+import BasicModel from './BasicModel';
 
 /**
  * The DApp User model
@@ -10,7 +11,7 @@
  * @attribute linkedin    Link to the linkedin profile
  * @attribute name        Name of the user
  */
-class User {
+class User extends BasicModel {
   /**
    * Checks that type of passed value is one of types
    *
@@ -29,6 +30,7 @@ class User {
   constructor({
     address, avatar, commitTime, email, giverId, linkedin, name,
   }) {
+    super();
     this.address = address;
     this.avatar = avatar;
     this.commitTime = commitTime;
@@ -43,7 +45,7 @@ class User {
   }
 
   set address(value) {
-    User.checkType(value, ['undefined', 'string'], 'address');
+    this.checkType(value, ['undefined', 'string'], 'address');
     this.myAddress = value;
   }
 
@@ -52,7 +54,7 @@ class User {
   }
 
   set avatar(value) {
-    User.checkType(value, ['undefined', 'string'], 'avatar');
+    this.checkType(value, ['undefined', 'string'], 'avatar');
     this.myAvatar = value;
   }
 
@@ -61,7 +63,7 @@ class User {
   }
 
   set commitTime(value) {
-    User.checkType(value, ['undefined', 'string'], 'commitTime');
+    this.checkType(value, ['undefined', 'string'], 'commitTime');
     this.myCommitTime = value;
   }
 
@@ -70,7 +72,7 @@ class User {
   }
 
   set email(value) {
-    User.checkType(value, ['undefined', 'string'], 'email');
+    this.checkType(value, ['undefined', 'string'], 'email');
     this.myEmail = value;
   }
 
@@ -79,7 +81,7 @@ class User {
   }
 
   set giverId(value) {
-    User.checkType(value, ['undefined', 'string'], 'giverId');
+    this.checkType(value, ['undefined', 'string', 'number'], 'giverId');
     this.myGiverId = value;
   }
 
@@ -88,7 +90,7 @@ class User {
   }
 
   set linkedin(value) {
-    User.checkType(value, ['undefined', 'string'], 'linkedin');
+    this.checkType(value, ['undefined', 'string'], 'linkedin');
     this.myLinkedIn = value;
   }
 
@@ -97,7 +99,7 @@ class User {
   }
 
   set name(value) {
-    User.checkType(value, ['undefined', 'string'], 'name');
+    this.checkType(value, ['undefined', 'string'], 'name');
     this.myName = value;
   }
 }

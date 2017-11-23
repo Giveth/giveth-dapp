@@ -1,18 +1,17 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { LPPDacFactory } from 'lpp-dac';
 
 import { Form, Input } from 'formsy-react-components';
-import { feathersClient } from '../../lib/feathersClient';
 import Loader from '../Loader';
 import QuillFormsy from '../QuillFormsy';
 import FormsyImageUploader from './../FormsyImageUploader';
 import GoBackButton from '../GoBackButton';
-import { isOwner, getTruncatedText, displayTransactionError } from '../../lib/helpers';
+import { isOwner, getTruncatedText } from '../../lib/helpers';
 import { isAuthenticated, checkWalletBalance, isInWhitelist } from '../../lib/middleware';
-import getNetwork from '../../lib/blockchain/getNetwork';
-import getWeb3 from '../../lib/blockchain/getWeb3';
 import LoaderButton from '../../components/LoaderButton';
+
+import DACservice from '../../services/DAC';
+import DAC from '../../models/DAC';
 import User from '../../models/User';
 import GivethWallet from '../../lib/blockchain/GivethWallet';
 
@@ -35,15 +34,7 @@ class EditDAC extends Component {
       formIsValid: false,
 
       // DAC model
-      title: '',
-      description: '',
-      summary: '',
-      image: '',
-      communityUrl: '',
-      tokenName: '',
-      tokenSymbol: '',
-      delegateId: 0,
-      uploadNewImage: false,
+      dac: new DAC({}),
     };
 
     this.submit = this.submit.bind(this);
@@ -59,98 +50,58 @@ class EditDAC extends Component {
       ))
       .then(() => {
         if (!this.props.isNew) {
-          feathersClient.service('dacs').find({ query: { _id: this.props.match.params.id } })
-            .then((resp) => {
-              if (!isOwner(resp.data[0].owner.address, this.props.currentUser)) {
-                this.props.history.goBack();
-              } else {
-                this.setState(Object.assign({}, resp.data[0], {
-                  id: this.props.match.params.id,
-                  isLoading: false,
-                }));
-              }
-            })
-            .catch(() =>
-              this.setState({
-                isLoading: false,
-              }));
+          DACservice.get(this.props.match.params.id).then((dac) => {
+            // The user is not an owner, hence can not change the DAC
+            if (!isOwner(dac.owner.address, this.props.currentUser)) {
+              this.props.history.goBack();
+            } else {
+              this.setState({ isLoading: false, dac });
+            }
+          });
         } else {
           this.setState({
             isLoading: false,
           });
         }
       });
+    this.mounted = true;
+  }
+
+  componentWillUnmount() {
+    this.mounted = false;
   }
 
   setImage(image) {
-    this.setState({ image, uploadNewImage: true });
+    this.state.dac.image = image;
   }
 
-  submit(model) {
+  submit() {
     this.setState({ isSaving: true });
 
-    const afterEmit = (isNew) => {
-      this.setState({ isSaving: false });
-      if (isNew) {
-        React.toast.success('Your DAC was created!');
-      } else { React.toast.success('Your DAC has been updated!'); }
-      this.props.history.push('/dacs');
-    };
-
-    const updateDAC = (file) => {
-      const constructedModel = {
-        title: model.title,
-        description: model.description,
-        communityUrl: model.communityUrl,
-        summary: getTruncatedText(this.state.summary, 100),
-        delegateId: this.state.delegateId,
-        image: file,
-      };
-
-      if (this.props.isNew) {
-        const createDAC = (txHash) => {
-          feathersClient.service('dacs').create(Object.assign({}, constructedModel, {
-            txHash,
-            totalDonated: 0,
-            donationCount: 0,
-          }))
-            .then(() => this.props.history.push('/my-dacs'));
-        };
-
-        let txHash;
-        let etherScanUrl;
-        Promise.all([getNetwork(), getWeb3()])
-          .then(([network, web3]) => {
-            const { liquidPledging } = network;
-            etherScanUrl = network.etherscan;
-
-            new LPPDacFactory(web3, network.dacFactoryAddress)
-              .deploy(liquidPledging.$address, model.title, '', 0, model.tokenName, model.tokenSymbol)
-              .once('transactionHash', (hash) => {
-                txHash = hash;
-                createDAC(txHash);
-                React.toast.info(<p>Your DAC is pending....<br /><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>);
-              })
-              .then(() => {
-                React.toast.success(<p>Your DAC has been created!<br /><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>);
-                afterEmit(true);
-              });
-          })
-          .catch((err) => {
-            console.log('New DAC transaction failed:', err); // eslint-disable-line no-console
-            displayTransactionError(txHash, etherScanUrl);
-          });
+    const afterMined = (url) => {
+      if (url) {
+        const msg = (
+          <p>Your DAC has been created!<br />
+            <a href={url} target="_blank" rel="noopener noreferrer">View transaction</a>
+          </p>);
+        React.toast.success(msg);
       } else {
-        feathersClient.service('dacs').patch(this.state.id, constructedModel)
-          .then(() => afterEmit());
+        if (this.mounted) this.setState({ isSaving: false });
+        React.toast.success('Your DAC has been updated!');
+        this.props.history.push(`/dacs/${this.state.dac.id}`);
       }
     };
+    const afterCreate = (url) => {
+      if (this.mounted) this.setState({ isSaving: false });
+      const msg = (
+        <p>Your DAC is pending....<br />
+          <a href={url} target="_blank" rel="noopener noreferrer">View transaction</a>
+        </p>);
+      React.toast.info(msg);
+      this.props.history.push('/my-dacs');
+    };
 
-    if (this.state.uploadNewImage) {
-      feathersClient.service('/uploads').create({ uri: this.state.image }).then(file => updateDAC(file.url));
-    } else {
-      updateDAC();
-    }
+    this.state.dac.save(afterCreate, afterMined);
   }
 
   toggleFormValid(state) {
@@ -161,15 +112,10 @@ class EditDAC extends Component {
     this.props.history.push('/dacs');
   }
 
-  constructSummary(text) {
-    this.setState({ summary: text });
-  }
-
   render() {
     const { isNew, history } = this.props;
     const {
-      isLoading, isSaving, title, description, image, communityUrl,
-      tokenName, tokenSymbol, formIsValid,
+      isLoading, isSaving, dac, formIsValid,
     } = this.state;
 
     return (
@@ -203,13 +149,14 @@ class EditDAC extends Component {
 
                 <Form
                   onSubmit={this.submit}
-                  mapping={inputs => ({
-                  title: inputs.title,
-                  description: inputs.description,
-                  communityUrl: inputs.communityUrl,
-                  tokenName: inputs.tokenName,
-                  tokenSymbol: inputs.tokenSymbol,
-                })}
+                  mapping={(inputs) => {
+                    dac.title = inputs.title;
+                    dac.description = inputs.description;
+                    dac.communityUrl = inputs.communityUrl;
+                    dac.tokenName = inputs.tokenName;
+                    dac.tokenSymbol = inputs.tokenSymbol;
+                    dac.summary = getTruncatedText(inputs.description, 100);
+                  }}
                   onValid={() => this.toggleFormValid(true)}
                   onInvalid={() => this.toggleFormValid(false)}
                   layout="vertical"
@@ -219,7 +166,7 @@ class EditDAC extends Component {
                     id="title-input"
                     label="Community cause"
                     type="text"
-                    value={title}
+                    value={dac.title}
                     placeholder="e.g. Hurricane relief."
                     help="Describe your Decentralized Altruistic Community (DAC) in 1 sentence."
                     validations="minLength:3"
@@ -235,9 +182,8 @@ class EditDAC extends Component {
                     label="Explain how you are going to solve this your cause"
                     helpText="Make it as extensive as necessary. Your goal is to build trust,
                       so that people join your community and/or donate Ether."
-                    value={description}
+                    value={dac.description}
                     placeholder="Describe how you're going to solve your cause..."
-                    onTextChanged={content => this.constructSummary(content)}
                     validations="minLength:20"
                     help="Describe your dac."
                     validationErrors={{
@@ -247,8 +193,9 @@ class EditDAC extends Component {
                   />
 
                   <FormsyImageUploader
+                    name="image"
                     setImage={this.setImage}
-                    previewImage={image}
+                    previewImage={dac.image}
                     isRequired={isNew}
                   />
 
@@ -257,7 +204,7 @@ class EditDAC extends Component {
                     id="community-url"
                     label="Url to join your community"
                     type="text"
-                    value={communityUrl}
+                    value={dac.communityUrl}
                     placeholder="https://slack.giveth.com"
                     help="Where can people join your community? Giveth redirect people there."
                     validations="isUrl"
@@ -272,8 +219,7 @@ class EditDAC extends Component {
                       id="token-name-input"
                       label="Token Name"
                       type="text"
-                      value={tokenName}
-                      placeholder={title}
+                      value={dac.tokenName}
                       help="The name of the token that givers will receive when they donate to
                         this dac."
                       validations="minLength:3"
@@ -291,7 +237,7 @@ class EditDAC extends Component {
                       id="token-symbol-input"
                       label="Token Symbol"
                       type="text"
-                      value={tokenSymbol}
+                      value={dac.tokenSymbol}
                       help="The symbol of the token that givers will receive when they donate to
                         this dac."
                       validations="minLength:2"
@@ -311,7 +257,7 @@ class EditDAC extends Component {
                     isLoading={isSaving}
                     loadingText="Saving..."
                   >
-                        Create DAC
+                    { isNew ? 'Create DAC' : 'Save DAC changes'}
                   </LoaderButton>
 
                 </Form>

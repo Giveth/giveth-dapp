@@ -46,6 +46,10 @@ class MyMilestones extends Component {
             { ownerAddress: myAddress },
             { reviewerAddress: myAddress },
             { recipientAddress: myAddress },
+            { $and: [
+              { campaignOwnerAddress: myAddress },
+              { status: 'proposed' }
+            ]}
           ],
         },
       }).subscribe(
@@ -149,6 +153,82 @@ class MyMilestones extends Component {
         }));
     });
   }
+
+  acceptProposedMilestone(milestone) {
+    takeActionAfterWalletUnlock(this.props.wallet, () => {
+      checkWalletBalance(this.props.wallet, this.props.history).then(() =>
+        React.swal({
+          title: 'Accept Milestone?',
+          text: 'Are you sure you want to accept this Milestone?',
+          icon: 'warning',
+          dangerMode: true,
+          buttons: ['Cancel', 'Yes, accept'],
+        }).then((isConfirmed) => {
+          if (isConfirmed) {
+            console.log('creating milestone for real')
+
+            const createMilestone = (etherScanUrl, txHash) => {
+              feathersClient.service('/milestones').patch(milestone._id, {
+                status: 'pending',
+                mined: false,
+                txHash,
+              }).then(() => {
+                React.toast.info(<p>Accepting this milestone is pending...<br /><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>);
+              }).catch((e) => {
+                console.log('Error updating feathers cache ->', e); // eslint-disable-line no-console
+                React.toast.error('Oh no! Something went wrong with the transaction. Please try again.');                
+              });
+            };
+
+            let txHash;
+            let etherScanUrl;
+            Promise.all([getNetwork(), getWeb3()])
+              .then(([network, web3]) => {
+                console.log('creating milestone tx')
+
+                const { liquidPledging } = network;
+                etherScanUrl = network.txHash;
+
+                // web3, lp address, name, parentProject, recipient, maxAmount, reviewer
+                LPPMilestone.new(web3, liquidPledging.$address, milestone.title, '', milestone.campaign.projectId, milestone.recipientAddress, milestone.maxAmount, milestone.reviewerAddress)
+                  .on('transactionHash', (hash) => {
+                    txHash = hash;
+                    console.log('creating milestone in feathers')
+
+                    createMilestone(etherScanUrl, txHash);
+                  })
+              })
+              .catch(() => {
+                displayTransactionError(txHash, etherScanUrl);
+              });
+          }
+        }));
+    });    
+  }
+
+ rejectProposedMilestone(milestone) {
+    React.swal({
+      title: 'Reject Milestone?',
+      text: 'Are you sure you want to reject this Milestone?',
+      icon: 'warning',
+      dangerMode: true,
+      buttons: ['Cancel', 'Yes, reject'],
+    }).then((isConfirmed) => {
+      if (isConfirmed) {
+        console.log('rejecting milestone')
+
+        feathersClient.service('/milestones').patch(milestone._id, {
+          status: 'rejected',
+        }).then(() => {
+          React.toast.info(<p>The milestone has been rejected.</p>);
+        }).catch((e) => {
+          console.log('Error updating feathers cache ->', e); // eslint-disable-line no-console
+          React.toast.error('Oh no! Something went wrong. Please try again.');                
+        });
+      }
+    });
+  }
+
 
   approveMilestone(milestone) {
     takeActionAfterWalletUnlock(this.props.wallet, () => {
@@ -439,6 +519,23 @@ class MyMilestones extends Component {
                                   <i className="fa fa-edit" />&nbsp;Edit
                                 </button>
                               }
+
+                              { (m.campaignOwnerAddress === currentUser.address) && m.status === 'proposed' &&
+                                <span>
+                                  <button
+                                    className="btn btn-link"
+                                    onClick={() => this.acceptProposedMilestone(m)}
+                                  >
+                                    <i className="fa fa-check-square-o" />&nbsp;Accept
+                                  </button>
+                                  <button
+                                    className="btn btn-danger btn-sm"
+                                    onClick={() => this.rejectProposedMilestone(m)}
+                                  >
+                                    <i className="fa fa-times-circle-o" />&nbsp;Reject
+                                  </button>    
+                                </span>                            
+                              }                              
 
                               { m.recipientAddress === currentUser.address && m.status === 'InProgress' && m.mined &&
                                 <button

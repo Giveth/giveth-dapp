@@ -1,4 +1,6 @@
 import SubProvider from 'web3-provider-engine/subproviders/subprovider';
+import { getGasPrice } from './../helpers'
+
 // import { utils } from "web3";
 
 // TODO use http://ethgasstation.info/json/ethgasAPI.json to get gas price
@@ -13,8 +15,13 @@ export default class GasPriceProvider extends SubProvider {
       return next();
     }
 
+    getGasPrice().then((gas) => console.log(gas))
+
     // TODO re-enable this when deployed to mainnet
     return next();
-    // end(null, utils.toHex(utils.toWei(4, 'gwei')));
+
+
+    // getGasPrice().then((gas) => 
+    //   end(null, utils.toHex(utils.toWei(gas, 'gwei'))));
   }
 }

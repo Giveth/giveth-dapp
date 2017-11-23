@@ -3,7 +3,6 @@ import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 import Avatar from 'react-avatar';
 
-import { feathersClient } from '../../lib/feathersClient';
 import Loader from '../Loader';
 import GoBackButton from '../GoBackButton';
 import BackgroundImageHeader from '../BackgroundImageHeader';
@@ -14,6 +13,7 @@ import User from '../../models/User';
 import CampaignCard from '../CampaignCard';
 import { getUserName, getUserAvatar } from '../../lib/helpers';
 import GivethWallet from '../../lib/blockchain/GivethWallet';
+import DACservice from '../../services/DAC';
 
 /**
  * The DAC detail view mapped to /dac/id
@@ -38,61 +38,35 @@ class ViewDAC extends Component {
   componentDidMount() {
     const dacId = this.props.match.params.id;
 
-    feathersClient.service('dacs').find({ query: { _id: dacId } })
-      .then((resp) => {
-        this.setState(Object.assign({}, resp.data[0], {
-          isLoading: false,
-          hasError: false,
-        }));
-      })
-      .catch(() =>
-        this.setState({ isLoading: false, id: dacId }));
+    // Get the Campaign
+    DACservice.get(dacId)
+      .then((dac) => { this.setState({ dac, isLoading: false }); })
+      .catch(() => { this.setState({ isLoading: false }); }); // TODO: inform user of error
 
-    // lazy load donations
-    this.donationsObserver = feathersClient.service('donations/history').watch({ listStrategy: 'always' }).find({
-      query: {
-        delegateId: dacId,
-        $sort: { createdAt: -1 },
-      },
-    }).subscribe(
-      (resp) => {
-        this.setState({
-          donations: resp.data,
-          isLoadingDonations: false,
-        });
-      },
-      () => this.setState({ isLoadingDonations: false }),
+    // Lazy load donations
+    this.donationsObserver = DACservice.subscribeDonations(
+      dacId,
+      (donations) => { this.setState({ donations, isLoadingDonations: false }); },
+      () => this.setState({ isLoadingDonations: false }), // TODO: inform user of error
     );
 
-    // lazy load campaigns
-    this.campaignsObserver = feathersClient.service('campaigns').watch({ strategy: 'always' }).find({
-      query: {
-        projectId: {
-          $gt: '0', // 0 is a pending campaign
-        },
-        dacs: dacId,
-        $limit: 200,
-      },
-    }).subscribe(
-      (resp) => {
-        this.setState({ campaigns: resp.data, isLoadingCampaigns: false });
-      },
-      () => {
-        this.setState({ isLoadingCampaigns: false });
-      },
+    // Lazy load campaigns
+    this.campaignsObserver = DACservice.subscribeCampaigns(
+      dacId,
+      (campaigns) => { this.setState({ campaigns, isLoadingCampaigns: false }); },
+      () => this.setState({ isLoadingCampaigns: false }), // TODO: inform user of error
     );
   }
 
   componentWillUnmount() {
-    // this.donationsObserver.unsubscribe()
-    this.campaignsObserver.unsubscribe();
+    if (this.donationsObserver) this.donationsObserver.unsubscribe();
+    if (this.campaignsObserver) this.campaignsObserver.unsubscribe();
   }
 
   render() {
     const { wallet, history, currentUser } = this.props;
     const {
-      isLoading, id, delegateId, title, description, image, owner, donations,
-      isLoadingDonations, communityUrl, campaignsCount, isLoadingCampaigns, campaigns,
+      isLoading, donations, dac, isLoadingDonations, communityUrl, isLoadingCampaigns, campaigns,
     } = this.state;
 
     return (
@@ -103,13 +77,13 @@ class ViewDAC extends Component {
 
         { !isLoading &&
           <div>
-            <BackgroundImageHeader image={image} height={300} >
+            <BackgroundImageHeader image={dac.image} height={300} >
               <h6>Decentralized Altruistic Community</h6>
-              <h1>{title}</h1>
+              <h1>{dac.title}</h1>
 
               <DonateButton
                 type="DAC"
-                model={{ title, id, adminId: delegateId }}
+                model={{ title: dac.title, id: dac.id, adminId: dac.delegateId }}
                 wallet={wallet}
                 currentUser={currentUser}
                 commmunityUrl={communityUrl}
@@ -132,15 +106,15 @@ class ViewDAC extends Component {
                   <GoBackButton history={history} />
 
                   <center>
-                    <Link to={`/profile/${owner.address}`}>
-                      <Avatar size={50} src={getUserAvatar(owner)} round />
-                      <p className="small">{getUserName(owner)}</p>
+                    <Link to={`/profile/${dac.owner.address}`}>
+                      <Avatar size={50} src={getUserAvatar(dac.owner)} round />
+                      <p className="small">{getUserName(dac.owner)}</p>
                     </Link>
                   </center>
 
                   <div className="card content-card">
                     <div className="card-body content">
-                      <div dangerouslySetInnerHTML={{ __html: description }}>
+                      <div dangerouslySetInnerHTML={{ __html: dac.description }}>
                         { /* TODO: Find an alternative to dangerouslySetInnerHTML */ }
                       </div>
                     </div>
@@ -150,14 +124,14 @@ class ViewDAC extends Component {
 
               <div className="row spacer-top-50 spacer-bottom-50">
                 <div className="col-md-8 m-auto card-view">
-                  <h4>{campaignsCount} campaign(s)</h4>
+                  <h4>{campaigns ? campaigns.length : 0} campaign(s)</h4>
                   <p>These campaigns are working hard to solve the cause of this DAC</p>
 
-                  { campaignsCount > 0 && isLoadingCampaigns &&
+                  { campaigns && campaigns.length > 0 && isLoadingCampaigns &&
                     <Loader className="small" />
                   }
 
-                  { campaignsCount > 0 && !isLoadingCampaigns &&
+                  { campaigns && campaigns.length > 0 && !isLoadingCampaigns &&
                     <div className="card-deck">
                       { campaigns.map(c =>
 
@@ -180,7 +154,7 @@ class ViewDAC extends Component {
                   <ShowTypeDonations donations={donations} isLoading={isLoadingDonations} />
                   <DonateButton
                     type="DAC"
-                    model={{ title, id, adminId: delegateId }}
+                    model={{ title: dac.title, id: dac.id, adminId: dac.delegateId }}
                     wallet={wallet}
                     currentUser={currentUser}
                     history={history}

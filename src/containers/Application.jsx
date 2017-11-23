@@ -124,7 +124,9 @@ class Application extends Component {
         if (token) return feathersClient.passport.verifyJWT(token);
         return null;
       })
-      .then(payload => Application.getUserProfile(payload.userId))
+      .then(payload => { 
+        return Application.getUserProfile(payload.userId)
+      })
       .then((user) => {
         if (!user) throw new Error('No User');
         feathersClient.authenticate(); // need to authenticate the socket connection
@@ -287,6 +289,12 @@ class Application extends Component {
                 component={props =>
                   <EditMilestone isNew currentUser={currentUser} wallet={wallet} {...props} />}
               />
+              <Route
+                exact
+                path="/campaigns/:id/milestones/propose"
+                component={props =>
+                  <EditMilestone isNew isProposed currentUser={currentUser} wallet={wallet} {...props} />}
+              />              
               <Route
                 exact
                 path="/campaigns/:id/milestones/:milestoneId"

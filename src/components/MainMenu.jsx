@@ -135,7 +135,7 @@ class MainMenu extends Component {
                   data-toggle="dropdown"
                   aria-haspopup="true"
                   aria-expanded="false"
-                >Dashboard
+                >Manage
                 </NavLink>
                 <div className={`dropdown-menu ${showMobileMenu ? 'show' : ''} `} aria-labelledby="navbarDropdownDashboard">
                   <AuthenticatedLink
