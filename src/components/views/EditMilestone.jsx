@@ -175,7 +175,7 @@ class EditMilestone extends Component {
                 .deploy(liquidPledging.$address, model.title, '', this.state.campaignProjectId, model.recipientAddress, constructedModel.maxAmount, model.reviewerAddress, constructedModel.campaignReviewerAddress, { gas: 1500000, from })
                 .on('transactionHash', (hash) => {
                   txHash = hash;
-                  createMilestone(txHash, {
+                  createMilestone({
                     txHash,
                     pluginAddress: '0x0000000000000000000000000000000000000000',
                     totalDonated: 0,
