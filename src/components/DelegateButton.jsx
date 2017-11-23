@@ -37,7 +37,7 @@ class DelegateButton extends Component {
   }
 
   selectedObject({ target }) {
-    this.setState({ objectsToDelegateTo: target.value.selectedObject });
+    this.setState({ objectsToDelegateTo: target.value });
   }
 
 
@@ -153,6 +153,8 @@ class DelegateButton extends Component {
 
         <SkyLightStateless
           isVisible={this.state.modalVisible}
+          onCloseClicked={() => { this.setState({ modalVisible: false }); }}
+          onOverlayClicked={() => { this.setState({ modalVisible: false }); }}
           hideOnOverlayClicked
           title="Delegate Donation"
           afterClose={() => this.resetSkylight()}
@@ -182,7 +184,7 @@ class DelegateButton extends Component {
               className="btn btn-success"
               formNoValidate
               type="submit"
-              disabled={isSaving || this.state.objectsToDelegateTo.length === 0}
+              disabled={isSaving || objectsToDelegateTo.length !== 1}
             >
               {isSaving ? 'Delegating...' : 'Delegate here'}
             </button>
@@ -197,9 +199,7 @@ class DelegateButton extends Component {
 DelegateButton.propTypes = {
   history: PropTypes.shape({}).isRequired,
   wallet: PropTypes.instanceOf(GivethWallet).isRequired,
-  types: PropTypes.shape({
-    find: PropTypes.func.isRequired,
-  }).isRequired,
+  types: PropTypes.arrayOf(PropTypes.shape({})).isRequired,
   milestoneOnly: PropTypes.bool,
   model: PropTypes.shape({}).isRequired,
 };

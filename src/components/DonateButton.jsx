@@ -214,6 +214,7 @@ class DonateButton extends Component {
           <SkyLightStateless
             isVisible={this.state.modalVisible}
             onCloseClicked={() => { this.setState({ modalVisible: false }); }}
+            onOverlayClicked={() => { this.setState({ modalVisible: false }); }}
             title={`Support this ${type}!`}
           >
             <strong>Give Ether to support <em>{model.title}</em></strong>

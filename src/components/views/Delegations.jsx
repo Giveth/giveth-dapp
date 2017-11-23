@@ -14,6 +14,8 @@ import { getUserName, getUserAvatar, getTruncatedText } from '../../lib/helpers'
 import GivethWallet from '../../lib/blockchain/GivethWallet';
 import User from '../../models/User';
 
+// TODO Remove the eslint exception and fix feathers to provide id's without underscore
+/* eslint no-underscore-dangle: 0 */
 /**
  * The my delegations view
  */
@@ -190,9 +192,9 @@ class Delegations extends Component {
                     </tr>
                   </thead>
                   <tbody>
-                    { delegations.map((d, index) =>
+                    { delegations.map(d =>
                             (
-                              <tr key={index}>
+                              <tr key={d._id}>
                                 <td className="td-date">{moment(d.createdAt).format('MM/DD/YYYY')}</td>
 
                                 {d.delegate > 0 &&
