@@ -44,10 +44,10 @@ const networks = {
   },
   giveth: {
     title: 'Giveth',
-    liquidPledgingAddress: '0x0',
-    dacFactoryAddress: '0x0',
-    campaignFactoryAddress: '0x0',
-    milestoneFactoryAddress: '0x0',
+    liquidPledgingAddress: '0xf062a3d57660a96ace76cd01ddb632482a0a5d3f',
+    dacFactoryAddress: '0xb7af828254e8b0b41c83fe55d22d88915da47cbd',
+    campaignFactoryAddress: '0x54a192f26bc490e37f0997d63991cf92fc58d097',
+    milestoneFactoryAddress: '0x46d6448a52477c13587abe6ebce148b85d5a5fbe',
     etherscan: 'http://network_explorer.giveth.io/',
   },
   default: {
