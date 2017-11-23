@@ -19,6 +19,7 @@ class DonateButton extends Component {
       isSaving: false,
       formIsValid: false,
       amount: '',
+      mewAmount: '0',
       modalVisible: false,
       gas: 4,
     };
@@ -29,7 +30,7 @@ class DonateButton extends Component {
 
   componentDidMount() {
     getNetwork().then(network =>
-      this.setState({ MEWurl: `https://www.myetherwallet.com/?to=${network.liquidPledgingAddress.toUpperCase()}&gaslimit=550000&idGiver=0&idReciever=${this.props.model.adminId}#send-transaction` }));
+      this.setState({ MEWurl: `https://www.myetherwallet.com/?to=${network.liquidPledgingAddress.toUpperCase()}&gaslimit=550000&idGiver=0&idReciever=${this.props.model.adminId}` }));
   }
 
 
@@ -194,7 +195,7 @@ class DonateButton extends Component {
   render() {
     const { type, model, wallet } = this.props;
     const {
-      isSaving, amount, formIsValid, gas, MEWurl,
+      isSaving, amount, formIsValid, gas, MEWurl, mewAmount,
     } = this.state;
     const style = {
       display: 'inline-block',
@@ -241,6 +242,7 @@ class DonateButton extends Component {
                   label="How much Ξ do you want to donate?"
                   type="number"
                   value={amount}
+                  onChange={(name, value) => this.setState({ mewAmount: value })}
                   placeholder="10"
                   validations={{
                     lessThan: wallet.getBalance() - 0.5,
@@ -264,9 +266,9 @@ class DonateButton extends Component {
               </button>
 
               <a
-                className={`btn btn-secondary ${(isSaving || !formIsValid) ? 'disabled' : ''}`}
-                disabled={isSaving || !formIsValid}
-                href={MEWurl}
+                className={`btn btn-secondary ${(isSaving) ? 'disabled' : ''}`}
+                disabled={isSaving}
+                href={`${MEWurl}&value=${mewAmount}#send-transaction`}
                 target="_blank"
                 rel="noopener noreferrer"
               >
