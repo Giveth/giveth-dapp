@@ -6,6 +6,7 @@ import JoinGivethCommunity from '../JoinGivethCommunity';
 import DacCard from '../DacCard';
 import GivethWallet from '../../lib/blockchain/GivethWallet';
 import User from '../../models/User';
+import DAC from '../../models/DAC';
 
 /**
  * The DACs view mapped to /dacs
@@ -46,7 +47,7 @@ const DACs = ({
               { dacs.data.map(dac =>
 
                     (<DacCard
-                      key={dac._id} // eslint-disable-line no-underscore-dangle
+                      key={dac.id}
                       dac={dac}
                       removeDAC={this.removeDAC}
                       currentUser={currentUser}
@@ -76,9 +77,7 @@ const DACs = ({
 DACs.propTypes = {
   currentUser: PropTypes.instanceOf(User),
   dacs: PropTypes.shape({
-    data: PropTypes.arrayOf(PropTypes.shape({
-      _id: PropTypes.string.isRequired,
-    })),
+    data: PropTypes.arrayOf(PropTypes.instanceOf(DAC)),
     limit: PropTypes.number.isRequired,
     skip: PropTypes.number.isRequired,
     total: PropTypes.number.isRequired,

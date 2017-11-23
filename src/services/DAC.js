@@ -35,7 +35,10 @@ class DACservice {
         $sort: { campaignsCount: -1 },
       },
     }).subscribe(
-      resp => onSuccess(resp/* resp.map(d => new DAC(d)) */), // TODO: return array with DACs
+      (resp) => {
+        resp.data = resp.data.map(d => new DAC(d));
+        onSuccess(resp);
+      },
       onError,
     );
   }
@@ -79,6 +82,21 @@ class DACservice {
       (resp) => { onSuccess(resp.data); },
       onError,
     );
+  }
+
+  /**
+   * Get the user's delegation
+   *
+   * @param userAddress Address of the user whose donations should be retrieved
+   *
+   * @return New promise with
+   */
+  static getUserDACs(userAddress) {
+    return new Promise((resolve, reject) => {
+      feathersClient.service('dacs').find({ query: { ownerAddress: userAddress } })
+        .then(resp => resolve(resp.data.map(dac => new DAC(dac))))
+        .catch(err => reject(err));
+    });
   }
 
   /**

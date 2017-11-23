@@ -3,7 +3,6 @@ import PropTypes from 'prop-types';
 import { utils } from 'web3';
 import { Link } from 'react-router-dom';
 
-import { feathersClient } from '../../lib/feathersClient';
 import { isAuthenticated, redirectAfterWalletUnlock, takeActionAfterWalletUnlock, checkWalletBalance } from '../../lib/middleware';
 import { getTruncatedText } from '../../lib/helpers';
 
@@ -11,9 +10,8 @@ import Loader from '../Loader';
 
 import User from '../../models/User';
 import GivethWallet from '../../lib/blockchain/GivethWallet';
+import DACservice from '../../services/DAC';
 
-// TODO Remove the eslint exception and fix feathers to provide id's without underscore
-/* eslint no-underscore-dangle: 0 */
 /**
  * The my dacs view
  */
@@ -31,15 +29,10 @@ class MyDACs extends Component {
 
   componentDidMount() {
     isAuthenticated(this.props.currentUser, this.props.history, this.props.wallet).then(() =>
-      feathersClient.service('dacs').find({ query: { ownerAddress: this.props.currentUser.address } })
-        .then((resp) => {
+      DACservice.getUserDACs(this.props.currentUser.address)
+        .then((dacs) => {
           this.setState({
-            dacs: resp.data.map((d) => {
-              if (!d.status) {
-                d.status = (d.delegateId) ? 'accepting donations' : 'pending';
-              }
-              return d;
-            }),
+            dacs,
             isLoading: false,
           });
         })
@@ -97,12 +90,10 @@ class MyDACs extends Component {
                       </thead>
                       <tbody>
                         { dacs.map(d => (
-                          <tr key={d._id} className={d.status === 'pending' ? 'pending' : ''}>
-                            <td className="td-name"><Link to={`/dacs/${d._id}`}>{getTruncatedText(d.title, 45)}</Link></td>
-                            <td className="td-donations-number">{d.donationCount || 0}</td>
-                            <td
-                              className="td-donations-amount"
-                            >Ξ{(d.totalDonated) ? utils.fromWei(d.totalDonated) : 0}
+                          <tr key={d.id} className={d.status === 'pending' ? 'pending' : ''}>
+                            <td className="td-name"><Link to={`/dacs/${d.id}`}>{getTruncatedText(d.title, 45)}</Link></td>
+                            <td className="td-donations-number">{d.donationCount}</td>
+                            <td className="td-donations-amount">Ξ{utils.fromWei(d.totalDonated)}
                             </td>
                             <td className="td-status">
                               {d.status === 'pending' &&
@@ -110,7 +101,7 @@ class MyDACs extends Component {
                               {d.status}
                             </td>
                             <td className="td-actions">
-                              <button className="btn btn-link" onClick={() => this.editDAC(d._id)}>
+                              <button className="btn btn-link" onClick={() => this.editDAC(d.id)}>
                                 <i className="fa fa-edit" />
                               </button>
                             </td>
