@@ -35,7 +35,10 @@ class DACservice {
         $sort: { campaignsCount: -1 },
       },
     }).subscribe(
-      resp => onSuccess(resp/* resp.map(d => new DAC(d)) */), // TODO: return array with DACs
+      (resp) => {
+        resp.data = resp.data.map(d => new DAC(d));
+        onSuccess(resp);
+      },
       onError,
     );
   }

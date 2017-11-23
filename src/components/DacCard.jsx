@@ -7,6 +7,7 @@ import CardStats from './CardStats';
 import User from './../models/User';
 import { redirectAfterWalletUnlock, checkWalletBalance } from './../lib/middleware';
 import GivethWallet from '../lib/blockchain/GivethWallet';
+import DAC from '../models/DAC';
 
 /**
  * DAC Card visible in the DACs view.
@@ -30,8 +31,7 @@ class DacCard extends Component {
   }
 
   viewDAC() {
-    // eslint-disable-next-line no-underscore-dangle
-    this.props.history.push(`/dacs/${this.props.dac._id}`);
+    this.props.history.push(`/dacs/${this.props.dac.id}`);
   }
 
   editDAC(e) {
@@ -46,8 +46,7 @@ class DacCard extends Component {
         dangerMode: true,
       }).then((isConfirmed) => {
         if (isConfirmed) {
-          // eslint-disable-next-line no-underscore-dangle
-          redirectAfterWalletUnlock(`/dacs/${this.props.dac._id}/edit`, this.props.wallet, this.props.history);
+          redirectAfterWalletUnlock(`/dacs/${this.props.dac.id}/edit`, this.props.wallet, this.props.history);
         }
       });
     });
@@ -59,7 +58,7 @@ class DacCard extends Component {
     return (
       <div
         className="card overview-card"
-        id={dac._id} // eslint-disable-line no-underscore-dangle
+        id={dac.id}
         onClick={this.viewDAC}
         onKeyPress={this.viewDAC}
         role="button"
@@ -111,12 +110,7 @@ class DacCard extends Component {
 }
 
 DacCard.propTypes = {
-  dac: PropTypes.shape({
-    _id: PropTypes.string.isRequired,
-    owner: PropTypes.shape({
-      address: PropTypes.string.isRequired,
-    }).isRequired,
-  }).isRequired,
+  dac: PropTypes.instanceOf(DAC).isRequired,
   currentUser: PropTypes.instanceOf(User),
   wallet: PropTypes.instanceOf(GivethWallet),
   history: PropTypes.shape({
