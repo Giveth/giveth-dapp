@@ -125,7 +125,7 @@ class Application extends Component {
         return null;
       })
       .then(payload => { 
-        Application.getUserProfile(payload.userId)
+        return Application.getUserProfile(payload.userId)
       })
       .then((user) => {
         if (!user) throw new Error('No User');

@@ -73,7 +73,7 @@ class SignIn extends Component {
           })
           .then(() => {
             React.toast.success(<p>Welcome back! <br />Note that your wallet is unlocked and will
-              <strong>auto-lock</strong> upon page refresh.
+              <strong> auto-lock</strong> upon page refresh.
                                 </p>);
             this.props.history.goBack();
           })

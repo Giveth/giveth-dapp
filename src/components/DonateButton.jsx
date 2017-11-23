@@ -19,18 +19,16 @@ class DonateButton extends Component {
       isSaving: false,
       formIsValid: false,
       amount: '',
-      mewAmount: '0',
       modalVisible: false,
       gas: 4,
     };
 
     this.submit = this.submit.bind(this);
-    this.openDialog = this.openDialog.bind(this);
   }
 
   componentDidMount() {
     getNetwork().then(network =>
-      this.setState({ MEWurl: `https://www.myetherwallet.com/?to=${network.liquidPledgingAddress.toUpperCase()}&gaslimit=550000&idGiver=0&idReciever=${this.props.model.adminId}` }));
+      this.setState({ MEWurl: `https://www.myetherwallet.com/?to=${network.liquidPledgingAddress.toUpperCase()}&gaslimit=550000&idGiver=0&idReciever=${this.props.model.adminId}#donate` }));
   }
 
 
@@ -62,8 +60,7 @@ class DonateButton extends Component {
         content: React.swal.msg(<p>
             Great to see that you want to donate!! However you first need to sign up (or sign in).
             Also make sure to transfer some Ether to your Giveth wallet before donating.<br /><br />
-            Alternatively, you can donate with MyEtherWallet
-                                </p>),
+            Alternatively, you can donate with MyEtherWallet</p>),
         icon: 'info',
         buttons: ['Cancel', 'Sign up now!'],
       }).then((isConfirmed) => {
@@ -140,12 +137,12 @@ class DonateButton extends Component {
             msg = (
               <div>
                 <p>You&apos;re donation is pending,
-                <a
-                  href={`${etherScanUrl}tx/${txHash}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                > view the transaction here.
-                </a>
+                  <a
+                    href={`${etherScanUrl}tx/${txHash}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  > view the transaction here.
+                  </a>
                 </p>
                 <p>Do make sure to
                   <a
@@ -195,7 +192,7 @@ class DonateButton extends Component {
   render() {
     const { type, model, wallet } = this.props;
     const {
-      isSaving, amount, formIsValid, gas, MEWurl, mewAmount,
+      isSaving, amount, formIsValid, gas, MEWurl,
     } = this.state;
     const style = {
       display: 'inline-block',
@@ -205,7 +202,7 @@ class DonateButton extends Component {
       <span style={style}>
         <button
           className="btn btn-success"
-          onClick={this.openDialog}
+          onClick={() => this.openDialog()}
         >
           Donate
         </button>
@@ -242,7 +239,6 @@ class DonateButton extends Component {
                   label="How much Ξ do you want to donate?"
                   type="number"
                   value={amount}
-                  onChange={(name, value) => this.setState({ mewAmount: value })}
                   placeholder="10"
                   validations={{
                     lessThan: wallet.getBalance() - 0.5,
@@ -266,9 +262,9 @@ class DonateButton extends Component {
               </button>
 
               <a
-                className={`btn btn-secondary ${(isSaving) ? 'disabled' : ''}`}
-                disabled={isSaving}
-                href={`${MEWurl}&value=${mewAmount}#send-transaction`}
+                className={`btn btn-secondary ${(isSaving || !formIsValid) ? 'disabled' : ''}`}
+                disabled={isSaving || !formIsValid}
+                href={MEWurl}
                 target="_blank"
                 rel="noopener noreferrer"
               >
