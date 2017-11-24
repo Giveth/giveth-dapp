@@ -15,6 +15,7 @@
 @import 'accountView.scss';
 @import 'dashboard.scss';
 @import 'edit-view.scss';
+@import 'editMilestoneView.scss';
 
 // components
 @import 'loader.scss';
@@ -115,4 +116,79 @@ i {
 
 .spacer-top {
   margin-top: 50px;
+}
+
+
+// 
+.form-group {
+  // $valid-green: darken($green, 2%);
+
+  label {
+    // color: $valid-green;
+  }
+
+  input {
+    // border-color: $valid-green;
+
+    &[type="file"] {
+      margin-top: 2px;      
+    }
+  }
+
+  // &.is-valid {
+  //   .ql-toolbar {
+  //     border-top-color: $valid-green;
+  //     border-right-color: $valid-green;
+  //     border-left-color: $valid-green;
+  //   }
+
+  //   .ql-container {
+  //     border-bottom-color: $valid-green;
+  //     border-right-color: $valid-green;
+  //     border-left-color: $valid-green; 
+  //   }
+  // }
+
+
+  &.has-error {
+    $error-red: darken($red, 20%);
+
+    label {
+      color: $error-red;
+    }
+
+    input {
+      border-color: $error-red !important;
+    }
+
+    .ql-toolbar {
+      border-top-color: $error-red !important;
+      border-right-color: $error-red !important;
+      border-left-color: $error-red !important;
+    }
+
+    .ql-container {
+      border-bottom-color: $error-red !important;
+      border-right-color: $error-red !important;
+      border-left-color: $error-red !important;      
+    }
+
+    .help-block {
+      color: $error-red;
+      margin-left: 0;
+      font-weight: 500;      
+
+      &:not(.validation-message) {
+        display: none;
+      }
+    }
+  }
+
+  // &.has-feedback > input {
+  //   border-color: $valid-green;
+  // }
+
+  .validation-message {
+    margin-left: 3px;
+  }
 }
