@@ -33,16 +33,17 @@ class MyCampaigns extends Component {
   }
 
   componentDidMount() {
-    isAuthenticated(this.props.currentUser, this.props.history, this.props.wallet).then(() =>
-      feathersClient.service('campaigns').find({
+    isAuthenticated(this.props.currentUser, this.props.history, this.props.wallet).then(() => {
+      this.campaignsObserver = feathersClient.service('campaigns').watch({ strategy: 'always' }).find({
         query: {
           $or: [
             { ownerAddress: this.props.currentUser.address },
             { reviewerAddress: this.props.currentUser.address },
           ],
         },
-      })
-        .then(resp =>
+      }).subscribe(
+        (resp) => {
+          console.log(resp)
           this.setState({
             campaigns: _.sortBy(resp.data, (c) => {
               if (c.status === 'pending') return 1;
@@ -51,12 +52,19 @@ class MyCampaigns extends Component {
               return 4;
             }),
             isLoading: false,
-          }))
-        .catch(() =>
+          });
+        },
+        () =>
           this.setState({
             isLoading: false,
-          })));
+          })
+      );
+    });
   }
+
+  componentWillUnmount() {
+    if (this.campaignsObserver) this.campaignsObserver.unsubscribe();
+  }  
 
   editCampaign(id) {
     takeActionAfterWalletUnlock(this.props.wallet, () => {
