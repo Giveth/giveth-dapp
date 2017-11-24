@@ -36,8 +36,8 @@ class DACservice {
       },
     }).subscribe(
       (resp) => {
-        resp.data = resp.data.map(d => new DAC(d));
-        onSuccess(resp);
+        const newResp = Object.assign({}, resp, { data: resp.data.map(d => new DAC(d)) });
+        onSuccess(newResp);
       },
       onError,
     );
@@ -91,12 +91,12 @@ class DACservice {
    *
    * @return New promise with
    */
-  static getUserDACs(userAddress) {
-    return new Promise((resolve, reject) => {
-      feathersClient.service('dacs').find({ query: { ownerAddress: userAddress } })
-        .then(resp => resolve(resp.data.map(dac => new DAC(dac))))
-        .catch(err => reject(err));
-    });
+  static getUserDACs(userAddress, onSuccess, onError) {
+    return feathersClient.service('dacs').watch({ strategy: 'always' }).find({ query: { ownerAddress: userAddress } })
+      .subscribe(
+        resp => onSuccess(resp.data.map(dac => new DAC(dac))),
+        onError,
+      );
   }
 
   /**

@@ -28,18 +28,17 @@ class MyDACs extends Component {
   }
 
   componentDidMount() {
-    isAuthenticated(this.props.currentUser, this.props.history, this.props.wallet).then(() =>
-      DACservice.getUserDACs(this.props.currentUser.address)
-        .then((dacs) => {
-          this.setState({
-            dacs,
-            isLoading: false,
-          });
-        })
-        .catch(() =>
-          this.setState({
-            isLoading: false,
-          })));
+    isAuthenticated(this.props.currentUser, this.props.history, this.props.wallet).then(() => {
+      this.dacsObserver = DACservice.getUserDACs(
+        this.props.currentUser.address,
+        dacs => this.setState({ dacs, isLoading: false }),
+        () => this.setState({ isLoading: false }),
+      );
+    });
+  }
+
+  componentWillUnmount() {
+    if (this.dacsObserver) this.dacsObserver.unsubscribe();
   }
 
   editDAC(id) {

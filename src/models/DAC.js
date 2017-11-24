@@ -110,6 +110,8 @@ class DAC extends BasicModel {
   set delegateId(value) {
     this.checkType(value, ['string'], 'delegateId');
     this.myDelegateId = value;
+
+    this.status = value !== 0 ? 'Accepting donations' : 'Pending';
   }
 
   get image() {
@@ -136,11 +138,7 @@ class DAC extends BasicModel {
   }
 
   set totalDonated(value) {
-    // TODO: Fix the value to always be string
-    if (typeof value === 'number') {
-      console.error('Total donated should always be string as it is bignumber! Fix it in feathers');
-    }
-    this.checkType(value, ['number', 'string'], 'totalDonated');
+    this.checkType(value, ['string'], 'totalDonated');
     this.myTotalDonated = value;
   }
 
@@ -178,6 +176,15 @@ class DAC extends BasicModel {
   set owner(value) {
     this.checkType(value, ['undefined', 'object'], 'owner');
     this.myOwner = value;
+  }
+
+  get status() {
+    return this.myStatus;
+  }
+
+  set status(value) {
+    this.checkType(value, ['string'], 'status');
+    this.myStatus = value;
   }
 }
 
