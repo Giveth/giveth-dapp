@@ -51,10 +51,10 @@ class DAC extends BasicModel {
         this.image = file.url;
         this.newImage = false;
 
-        DACservice.save(this, onCreated, afterEmit);
+        DACservice.save(this, this.owner.address, onCreated, afterEmit);
       });
     } else {
-      DACservice.save(this, onCreated, afterEmit);
+      DACservice.save(this, this.owner.address, onCreated, afterEmit);
     }
   }
 

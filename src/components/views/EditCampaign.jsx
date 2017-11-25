@@ -155,7 +155,7 @@ class EditCampaign extends Component {
 
             // web3, lp address, name, parentProject, reviewer, tokenName, tokenSymbol
             new LPPCampaignFactory(web3, network.campaignFactoryAddress)
-              .deploy(liquidPledging.$address, model.title, '', 0, model.reviewerAddress, model.tokenName, model.tokenSymbol)
+              .deploy(liquidPledging.$address, model.title, '', 0, model.reviewerAddress, model.tokenName, model.tokenSymbol, { from: this.props.currentUser.address })
               .once('transactionHash', (hash) => {
                 txHash = hash;
                 createCampaign(txHash);

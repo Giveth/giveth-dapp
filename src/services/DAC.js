@@ -103,10 +103,11 @@ class DACservice {
    * Save new DAC to the blockchain or update existing one in feathers
    *
    * @param dac         DAC object to be saved
+   * @param from        address of the user creating the DAC
    * @param afterCreate Callback to be triggered after the DAC is created in feathers
    * @param afterMined  Callback to be triggered after the transaction is mined
    */
-  static save(dac, afterCreate = () => {}, afterMined = () => {}) {
+  static save(dac, from, afterCreate = () => {}, afterMined = () => {}) {
     if (dac.id) {
       feathersClient.service('dacs').patch(dac.id, dac.toFeathers())
         .then(() => afterMined());
@@ -119,7 +120,7 @@ class DACservice {
           etherScanUrl = network.etherscan;
 
           new LPPDacFactory(web3, network.dacFactoryAddress)
-            .deploy(liquidPledging.$address, dac.title, '', 0, dac.tokenName, dac.tokenSymbol)
+            .deploy(liquidPledging.$address, dac.title, '', 0, dac.tokenName, dac.tokenSymbol, { from })
             .once('transactionHash', (hash) => {
               txHash = hash;
               dac.txHash = txHash;
