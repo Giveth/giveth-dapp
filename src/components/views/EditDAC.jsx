@@ -34,7 +34,9 @@ class EditDAC extends Component {
       formIsValid: false,
 
       // DAC model
-      dac: new DAC({}),
+      dac: new DAC({
+        owner: this.props.currentUser
+      }),
     };
 
     this.submit = this.submit.bind(this);
