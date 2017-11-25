@@ -60,7 +60,9 @@ class EditMilestone extends Component {
   componentDidMount() {
     console.log(this.props.isProposed);
     isAuthenticated(this.props.currentUser, this.props.history, this.props.wallet)
-      .then(() => { if (!this.props.isProposed) checkWalletBalance(this.props.wallet, this.props.history); })
+      .then(() => {
+        if (!this.props.isProposed) checkWalletBalance(this.props.wallet, this.props.history);
+      })
       .then(() => {
         if (!this.props.isProposed) {
           isInWhitelist(
@@ -158,8 +160,8 @@ class EditMilestone extends Component {
         if (this.props.isProposed) {
           createMilestone({
             pluginAddress: '0x0000000000000000000000000000000000000000',
-            totalDonated: 0,
-            donationCount: 0,
+            totalDonated: '0',
+            donationCount: '0',
             campaignOwnerAddress: this.state.campaignOwnerAddress,
           });
           React.toast.info(<p>Your milestone is being proposed to the campaign owner.</p>);
@@ -178,8 +180,8 @@ class EditMilestone extends Component {
                   createMilestone({
                     txHash,
                     pluginAddress: '0x0000000000000000000000000000000000000000',
-                    totalDonated: 0,
-                    donationCount: 0,
+                    totalDonated: '0',
+                    donationCount: '0',
                   });
                   React.toast.info(<p>Your milestone is pending....<br /><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>);
                 })
@@ -256,7 +258,8 @@ class EditMilestone extends Component {
                 { isProposed &&
                   <p>
                     <i className="fa fa-exclamation-triangle" />
-                    You are proposing a milestone to the campaign owner. The campaign owner can accept or reject your milestone
+                    You are proposing a milestone to the campaign owner.
+                    The campaign owner can accept or reject your milestone
                   </p>
                 }
 
@@ -413,6 +416,7 @@ EditMilestone.propTypes = {
     goBack: PropTypes.func.isRequired,
     push: PropTypes.func.isRequired,
   }).isRequired,
+  isProposed: PropTypes.bool,
   isNew: PropTypes.bool,
   wallet: PropTypes.instanceOf(GivethWallet).isRequired,
   match: PropTypes.shape({
