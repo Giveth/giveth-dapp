@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 
 import BackupWallet from '../BackupWallet';
 import { isAuthenticated, takeActionAfterWalletUnlock } from '../../lib/middleware';
+import WithdrawButton from '../WithdrawButton';
 import User from '../../models/User';
 import GivethWallet from '../../lib/blockchain/GivethWallet';
 import Loader from '../Loader';
@@ -17,42 +18,43 @@ import { feathersClient } from '../../lib/feathersClient';
  */
 
 class UserWallet extends Component {
-  constructor(){
+  constructor() {
     super();
 
     this.state = {
       isLoadingWallet: true,
       isLoadingTokens: true,
       tokens: [],
-      hasError: false
-    }
+      hasError: false,
+    };
   }
 
   componentWillMount() {
     isAuthenticated(this.props.currentUser, this.props.history, this.props.wallet)
       .then(() => takeActionAfterWalletUnlock(this.props.wallet, () => {
-        this.setState({ isLoadingWallet: false })
+        this.setState({ isLoadingWallet: false });
 
         // load tokens
         feathersClient.service('/tokens').find()
           .then((resp) => {
-            console.log('tokens', resp)
+            console.log('tokens', resp);
             this.setState({
               tokens: resp,
               isLoadingTokens: false,
-              hasError: false
-            })
+              hasError: false,
+            });
           })
-          .catch((e) => {
+          .catch(() => {
             console.error('could not load tokens');
-            this.setState({ hasError: true })
-          })
-      })
-    );
+            this.setState({ hasError: true });
+          });
+      }));
   }
 
   render() {
-    const { isLoadingWallet, isLoadingTokens, tokens, hasError } = this.state;
+    const {
+      isLoadingWallet, isLoadingTokens, tokens, hasError,
+    } = this.state;
 
     return (
       <div id="profile-view" className="container-fluid page-layout">
@@ -63,19 +65,23 @@ class UserWallet extends Component {
 
           { isLoadingWallet &&
             <Loader className="fixed" />
-          }          
+          }
 
           { !isLoadingWallet && !hasError &&
             <div>
               <p>{this.props.currentUser.address}</p>
               <p> balance: &#926;{this.props.wallet.getBalance()}</p>
+              <WithdrawButton wallet={this.props.wallet} currentUser={this.props.currentUser} />
               <BackupWallet wallet={this.props.wallet} />
             </div>
           }
 
           { !isLoadingWallet && hasError &&
             <div>
-              <h1>Oops, something went wrong loading your wallet. Please refresh the page to try again</h1>
+              <h1>
+                Oops, something went wrong loading your wallet.
+                Please refresh the page to try again
+              </h1>
             </div>
           }
         </center>
