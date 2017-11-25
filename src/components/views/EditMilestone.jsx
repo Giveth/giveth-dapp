@@ -161,7 +161,7 @@ class EditMilestone extends Component {
           createMilestone({
             pluginAddress: '0x0000000000000000000000000000000000000000',
             totalDonated: '0',
-            donationCount: '0',
+            donationCount: 0,
             campaignOwnerAddress: this.state.campaignOwnerAddress,
           });
           React.toast.info(<p>Your milestone is being proposed to the campaign owner.</p>);
