@@ -21,7 +21,7 @@ const networks = {
   ropsten: {
     title: 'Ropsten',
     liquidPledgingAddress: '0x9a3e76a27e18994ebdb1ab813e87f4315d8faa5e',
-    dacFactoryAddress: ' 0x79f7b8faaec2c3f1926164cfdbcf4927afcfc627',
+    dacFactoryAddress: '0x79f7b8faaec2c3f1926164cfdbcf4927afcfc627',
     campaignFactoryAddress: '0x6168e3b4ec2463e556f733c2ebba19fb4f4f87e9',
     milestoneFactoryAddress: '0x8e50fa94479cd6fd54de547e7a8d21af4a12ece3',
     etherscan: 'https://ropsten.etherscan.io/',
