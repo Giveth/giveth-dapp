@@ -47,7 +47,7 @@ class BackupWallet extends Component {
             className="btn btn-success"
             onClick={this.handleClick}
             href={URL.createObjectURL(new Blob([JSON.stringify(keystore)], { type: 'application/json' }))}
-            download={`givethKeystore-${Date.now()}.json`}
+            download={`UTC--${new Date().toISOString()}-${keystore.address}.json`}
           >
             Download Backup File
           </a>
