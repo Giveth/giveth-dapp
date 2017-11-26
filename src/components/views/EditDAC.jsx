@@ -123,7 +123,7 @@ class EditDAC extends Component {
     return (
       <div id="edit-dac-view">
         <div className="container-fluid page-layout edit-view">
-          <div className="row">
+          <div>
             <div className="col-md-8 m-auto">
               { isLoading &&
               <Loader className="fixed" />
@@ -134,13 +134,12 @@ class EditDAC extends Component {
                 <GoBackButton history={history} />
 
                 <div className="form-header">
-
                   { isNew &&
                   <h3>Start a Decentralized Altruistic Community (DAC)!</h3>
                       }
 
                   { !isNew &&
-                  <h1>Edit DAC</h1>
+                  <h3>Edit DAC</h3>
                       }
 
                   <p><i className="fa fa-question-circle" />A DAC aims to solve a cause by building
@@ -179,41 +178,47 @@ class EditDAC extends Component {
                     autoFocus
                   />
 
-                  <QuillFormsy
-                    name="description"
-                    label="Explain how you are going to solve this your cause"
-                    helpText="Make it as extensive as necessary. Your goal is to build trust,
-                      so that people join your community and/or donate Ether."
-                    value={dac.description}
-                    placeholder="Describe how you're going to solve your cause..."
-                    validations="minLength:20"
-                    help="Describe your dac."
-                    validationErrors={{
-                            minLength: 'Please provide at least 10 characters.',
-                        }}
-                    required
-                  />
+                  <div className="form-group">
+                    <QuillFormsy
+                      name="description"
+                      label="Explain how you are going to solve this your cause"
+                      helpText="Make it as extensive as necessary. Your goal is to build trust,
+                        so that people join your community and/or donate Ether."
+                      value={dac.description}
+                      placeholder="Describe how you're going to solve your cause..."
+                      validations="minLength:20"
+                      help="Describe your dac."
+                      validationErrors={{
+                              minLength: 'Please provide at least 10 characters.',
+                          }}
+                      required
+                    />
+                  </div>
 
-                  <FormsyImageUploader
-                    name="image"
-                    setImage={this.setImage}
-                    previewImage={dac.image}
-                    isRequired={isNew}
-                  />
+                  <div className="form-group">
+                    <FormsyImageUploader
+                      name="image"
+                      setImage={this.setImage}
+                      previewImage={dac.image}
+                      isRequired={isNew}
+                    />
+                  </div>
 
-                  <Input
-                    name="communityUrl"
-                    id="community-url"
-                    label="Url to join your community"
-                    type="text"
-                    value={dac.communityUrl}
-                    placeholder="https://slack.giveth.com"
-                    help="Where can people join your community? Giveth redirect people there."
-                    validations="isUrl"
-                    validationErrors={{
-                          isUrl: 'Please provide a url.',
-                        }}
-                  />
+                  <div className="form-group">
+                    <Input
+                      name="communityUrl"
+                      id="community-url"
+                      label="Url to join your community"
+                      type="text"
+                      value={dac.communityUrl}
+                      placeholder="https://slack.giveth.com"
+                      help="Where can people join your community? Giveth redirect people there."
+                      validations="isUrl"
+                      validationErrors={{
+                            isUrl: 'Please provide a url.',
+                          }}
+                    />
+                  </div>
 
                   <div className="form-group">
                     <Input
@@ -251,16 +256,23 @@ class EditDAC extends Component {
                     />
                   </div>
 
-                  <LoaderButton
-                    className="btn btn-success"
-                    formNoValidate
-                    type="submit"
-                    disabled={isSaving || !formIsValid}
-                    isLoading={isSaving}
-                    loadingText="Saving..."
-                  >
-                    { isNew ? 'Create DAC' : 'Save DAC changes'}
-                  </LoaderButton>
+                  <div className="form-group row">
+                    <div className="col-6">
+                      <GoBackButton history={history} />
+                    </div>
+                    <div className="col-6">
+                      <LoaderButton
+                        className="btn btn-success pull-right"
+                        formNoValidate
+                        type="submit"
+                        disabled={isSaving || !formIsValid}
+                        isLoading={isSaving}
+                        loadingText="Saving..."
+                      >
+                        { isNew ? 'Create DAC' : 'Update DAC changes'}
+                      </LoaderButton>
+                    </div>
+                  </div>
 
                 </Form>
               </div>

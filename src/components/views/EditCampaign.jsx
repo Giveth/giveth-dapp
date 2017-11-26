@@ -350,20 +350,22 @@ class EditCampaign extends Component {
                     />
                   </div>
 
-                  <Input
-                    name="reviewerAddress"
-                    id="title-input"
-                    label="Reviewer Address"
-                    type="text"
-                    value={reviewerAddress}
-                    placeholder="0x0000000000000000000000000000000000000000"
-                    help="This person or smart contract will be reviewing your campaign to
-                      increase trust for donators. It has been automatically assigned."
-                    validations="isEtherAddress"
-                    validationErrors={{ isEtherAddress: 'Please enter a valid Ethereum address.' }}
-                    required
-                    disabled
-                  />
+                  <div className="form-group">
+                    <Input
+                      name="reviewerAddress"
+                      id="title-input"
+                      label="Reviewer Address"
+                      type="text"
+                      value={reviewerAddress}
+                      placeholder="0x0000000000000000000000000000000000000000"
+                      help="This person or smart contract will be reviewing your campaign to
+                        increase trust for donators. It has been automatically assigned."
+                      validations="isEtherAddress"
+                      validationErrors={{ isEtherAddress: 'Please enter a valid Ethereum address.' }}
+                      required
+                      disabled
+                    />
+                  </div>
 
                   <div className="form-group row">
                     <div className="col-md-6">
