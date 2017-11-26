@@ -216,6 +216,7 @@ class EditCampaign extends Component {
 
               { !isLoading &&
               <div>
+                <GoBackButton history={history} />
 
                 <div className="form-header">
                   { isNew &&
