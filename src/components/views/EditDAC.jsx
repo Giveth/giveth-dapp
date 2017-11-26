@@ -269,7 +269,7 @@ class EditDAC extends Component {
                         isLoading={isSaving}
                         loadingText="Saving..."
                       >
-                        { isNew ? 'Create DAC' : 'Update DAC changes'}
+                        { isNew ? 'Create DAC' : 'Update DAC'}
                       </LoaderButton>
                     </div>
                   </div>
