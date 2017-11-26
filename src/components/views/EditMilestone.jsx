@@ -224,7 +224,7 @@ class EditMilestone extends Component {
     return (
       <div id="edit-milestone-view">
         <div className="container-fluid page-layout edit-view">
-          <div className="row">
+          <div>
             <div className="col-md-8 m-auto">
               { isLoading &&
               <Loader className="fixed" />
@@ -234,34 +234,36 @@ class EditMilestone extends Component {
               <div>
                 <GoBackButton history={history} />
 
-                { isNew && !isProposed &&
+                <div className="form-header">
+                  { isNew && !isProposed &&
                   <h3>Add a new milestone</h3>
-                }
+                      }
 
-                { !isNew && !isProposed &&
+                  { !isNew && !isProposed &&
                   <h3>Edit milestone {title}</h3>
-                }
+                      }
 
-                { isNew && isProposed &&
+                  { isNew && isProposed &&
                   <h3>Propose a milestone</h3>
-                }
+                      }
 
-                <h6>Campaign: <strong>{getTruncatedText(campaignTitle, 100)}</strong></h6>
+                  <h6>Campaign: <strong>{getTruncatedText(campaignTitle, 100)}</strong></h6>
 
-                <p>
-                  <i className="fa fa-question-circle" />
-                  A milestone is a single accomplishment within a project. In the end, all
-                  donations end up in milestones. Once milestones are completed, you can
-                  request payout.
-                </p>
-
-                { isProposed &&
                   <p>
-                    <i className="fa fa-exclamation-triangle" />
-                    You are proposing a milestone to the campaign owner.
-                    The campaign owner can accept or reject your milestone
+                    <i className="fa fa-question-circle" />
+                    A milestone is a single accomplishment within a project. In the end, all
+                    donations end up in milestones. Once milestones are completed, you can
+                    request payout.
                   </p>
-                }
+
+                  { isProposed &&
+                    <p>
+                      <i className="fa fa-exclamation-triangle" />
+                      You are proposing a milestone to the campaign owner.
+                      The campaign owner can accept or reject your milestone
+                    </p>
+                  }
+                </div>
 
                 <Form
                   onSubmit={this.submit}
@@ -313,91 +315,107 @@ class EditMilestone extends Component {
                     />
                   </div>
 
-                  <FormsyImageUploader
-                    setImage={this.setImage}
-                    previewImage={image}
-                    required={isNew}
-                  />
+                  <div className="form-group">
+                    <FormsyImageUploader
+                      setImage={this.setImage}
+                      previewImage={image}
+                      required={isNew}
+                    />
+                  </div>
 
-                  <Input
-                    name="reviewerAddress"
-                    id="title-input"
-                    label="Each milestone needs a reviewer who verifies that the milestone is
-                      completed successfully"
-                    type="text"
-                    value={reviewerAddress}
-                    placeholder="0x0000000000000000000000000000000000000000"
-                    help="The milestone reviewer is automatically assigned while Giveth is in beta."
-                    validations="isEtherAddress"
-                    validationErrors={{
-                      isEtherAddress: 'Please insert a valid Ethereum address.',
-                    }}
-                    required
-                    disabled
-                  />
+                  <div className="form-group">
+                    <Input
+                      name="reviewerAddress"
+                      id="title-input"
+                      label="Each milestone needs a reviewer who verifies that the milestone is
+                        completed successfully"
+                      type="text"
+                      value={reviewerAddress}
+                      placeholder="0x0000000000000000000000000000000000000000"
+                      help="The milestone reviewer is automatically assigned while Giveth is in beta."
+                      validations="isEtherAddress"
+                      validationErrors={{
+                        isEtherAddress: 'Please insert a valid Ethereum address.',
+                      }}
+                      required
+                      disabled
+                    />
+                  </div>
 
-                  <Input
-                    name="recipientAddress"
-                    id="title-input"
-                    label="Where will the money go after completion?"
-                    type="text"
-                    value={recipientAddress}
-                    placeholder="0x0000000000000000000000000000000000000000"
-                    help="Enter an Ethereum address."
-                    validations="isEtherAddress"
-                    validationErrors={{
-                      isEtherAddress: 'Please insert a valid Ethereum address.',
-                    }}
-                    required
-                  />
+                  <div className="form-group">
+                    <Input
+                      name="recipientAddress"
+                      id="title-input"
+                      label="Where will the money go after completion?"
+                      type="text"
+                      value={recipientAddress}
+                      placeholder="0x0000000000000000000000000000000000000000"
+                      help="Enter an Ethereum address."
+                      validations="isEtherAddress"
+                      validationErrors={{
+                        isEtherAddress: 'Please insert a valid Ethereum address.',
+                      }}
+                      required
+                    />
+                  </div>
 
-                  <DatePickerFormsy
-                    name="completionDeadline"
-                    label="Until what date is the milestone achievable?"
-                    type="text"
-                    value={completionDeadline}
-                    changeDate={date => this.changeDate(date)}
-                    placeholder="Select a date"
-                    help="Select a date"
-                    validations="minLength:10"
-                    validationErrors={{
-                      minLength: 'Please provide a date.',
-                    }}
-                    required
-                  />
+                  <div className="form-group">
+                    <DatePickerFormsy
+                      name="completionDeadline"
+                      label="Until what date is the milestone achievable?"
+                      type="text"
+                      value={completionDeadline}
+                      changeDate={date => this.changeDate(date)}
+                      placeholder="Select a date"
+                      help="Select a date"
+                      validations="minLength:10"
+                      validationErrors={{
+                        minLength: 'Please provide a date.',
+                      }}
+                      required
+                    />
+                  </div>
 
-                  <Input
-                    name="maxAmount"
-                    id="maxamount-input"
-                    type="number"
-                    label="Maximum amount of &#926; required for this milestone"
-                    value={maxAmount}
-                    placeholder="10"
-                    validations="greaterThan:0.1"
-                    validationErrors={{
-                      greaterThan: 'Minimum value must be at least &#926;0.1',
-                    }}
-                    required
-                  />
+                  <div className="form-group">
+                    <Input
+                      name="maxAmount"
+                      id="maxamount-input"
+                      type="number"
+                      label="Maximum amount of &#926; required for this milestone"
+                      value={maxAmount}
+                      placeholder="10"
+                      validations="greaterThan:0.1"
+                      validationErrors={{
+                        greaterThan: 'Minimum value must be at least &#926;0.1',
+                      }}
+                      required
+                    />
+                  </div>
 
-                  <LoaderButton
-                    className="btn btn-success"
-                    formNoValidate
-                    type="submit"
-                    disabled={isSaving || !formIsValid}
-                    isLoading={isSaving}
-                    loadingText="Saving..."
-                  >
-                    { isNew && isProposed &&
-                      <span>Propose Milestone</span>
-                    }
+                  <div className="form-group row">
+                    <div className="col-6">
+                      <GoBackButton history={history} />
+                    </div>
+                    <div className="col-6">
+                      <LoaderButton
+                        className="btn btn-success pull-right"
+                        formNoValidate
+                        type="submit"
+                        disabled={isSaving || !formIsValid}
+                        isLoading={isSaving}
+                        loadingText="Saving..."
+                      >
+                        { isNew && isProposed &&
+                          <span>Propose Milestone</span>
+                        }
 
-                    { (!isProposed || !isNew) &&
-                      <span>Save Milestone</span>
-                    }
+                        { (!isProposed || !isNew) &&
+                          <span>Update Milestone</span>
+                        }
 
-                  </LoaderButton>
-
+                      </LoaderButton>
+                    </div>
+                  </div>
                 </Form>
 
               </div>
