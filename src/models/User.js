@@ -1,4 +1,4 @@
-import BasicModel from './BasicModel';
+import Model from './Model';
 
 /**
  * The DApp User model
@@ -11,7 +11,7 @@ import BasicModel from './BasicModel';
  * @attribute linkedin    Link to the linkedin profile
  * @attribute name        Name of the user
  */
-class User extends BasicModel {
+class User extends Model {
   /**
    * Checks that type of passed value is one of types
    *
