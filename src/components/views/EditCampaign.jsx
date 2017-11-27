@@ -139,7 +139,7 @@ class EditCampaign extends Component {
           feathersClient.service('campaigns').create(Object.assign({}, constructedModel, {
             txHash,
             pluginAddress: '0x0000000000000000000000000000000000000000',
-            totalDonated: 0,
+            totalDonated: '0',
             donationCount: 0,
             status: 'pending',
           }))
@@ -208,7 +208,7 @@ class EditCampaign extends Component {
     return (
       <div id="edit-campaign-view">
         <div className="container-fluid page-layout edit-view">
-          <div className="row">
+          <div>
             <div className="col-md-8 m-auto">
               { isLoading &&
               <Loader className="fixed" />
@@ -228,9 +228,9 @@ class EditCampaign extends Component {
                       }
                   <p>
                     <i className="fa fa-question-circle" />
-                        A campaign solves a specific cause by executing a project via
-                        its milestones. Funds raised by a campaign need to be delegated
-                        to its milestones in order to be paid out.
+                      A campaign solves a specific cause by executing a project via
+                      its milestones. Funds raised by a campaign need to be delegated
+                      to its milestones in order to be paid out.
                   </p>
                 </div>
 
@@ -258,9 +258,7 @@ class EditCampaign extends Component {
                     placeholder="E.g. Installing 1000 solar panels."
                     help="Describe your campaign in 1 sentence."
                     validations="minLength:3"
-                    validationErrors={{
-                            minLength: 'Please provide at least 3 characters.',
-                        }}
+                    validationErrors={{ minLength: 'Please provide at least 3 characters.' }}
                     required
                     autoFocus
                   />
@@ -275,26 +273,25 @@ class EditCampaign extends Component {
                     onTextChanged={content => this.constructSummary(content)}
                     validations="minLength:20"
                     help="Describe your campaign."
-                    validationErrors={{
-                            minLength: 'Please provide at least 10 characters.',
-                        }}
+                    validationErrors={{ minLength: 'Please provide at least 10 characters.' }}
                     required
                   />
 
-                  <FormsyImageUploader
-                    setImage={this.setImage}
-                    previewImage={image}
-                    isRequired={isNew}
-                  />
+                  <div className="form-group">
+                    <FormsyImageUploader
+                      setImage={this.setImage}
+                      previewImage={image}
+                      isRequired={isNew}
+                    />
+                  </div>
 
                   <div className="form-group">
-                    <label htmlFor="dac">Relate your campaign to a community
-                    <small
-                      className="form-text"
-                    >By relating your campaign to a community, Ether from that community
-                    can be delegated to your campaign.
-                    This increases your chances of successfully funding your campaign.
-                    </small>
+                    <label htmlFor="dac">
+                      Relate your campaign to a community
+                      <small className="form-text" >By relating your campaign to a
+                        community, Ether from that community can be delegated to your campaign.
+                        This increases your chances of successfully funding your campaign.
+                      </small>
                       <InputToken
                         name="dac"
                         id="dac"
@@ -316,9 +313,7 @@ class EditCampaign extends Component {
                       placeholder="https://slack.giveth.com"
                       help="Where can people join your community? Giveth redirect people there."
                       validations="isUrl"
-                      validationErrors={{
-                            isUrl: 'Please provide a url.',
-                          }}
+                      validationErrors={{ isUrl: 'Please provide a url.' }}
                     />
                   </div>
 
@@ -333,9 +328,7 @@ class EditCampaign extends Component {
                       help="The name of the token that givers will receive when they
                         donate to this campaign."
                       validations="minLength:3"
-                      validationErrors={{
-                            minLength: 'Please provide at least 3 characters.',
-                          }}
+                      validationErrors={{ minLength: 'Please provide at least 3 characters.' }}
                       required
                       disabled={!isNew}
                     />
@@ -351,41 +344,46 @@ class EditCampaign extends Component {
                       help="The symbol of the token that givers will receive when
                         they donate to this campaign."
                       validations="minLength:2"
-                      validationErrors={{
-                            minLength: 'Please provide at least 2 characters.',
-                          }}
+                      validationErrors={{ minLength: 'Please provide at least 2 characters.' }}
                       required
                       disabled={!isNew}
                     />
                   </div>
 
-                  <Input
-                    name="reviewerAddress"
-                    id="title-input"
-                    label="Reviewer Address"
-                    type="text"
-                    value={reviewerAddress}
-                    placeholder="0x0000000000000000000000000000000000000000"
-                    help="This person or smart contract will be reviewing your campaign to
-                      increase trust for donators. It has been automatically assigned."
-                    validations="isEtherAddress"
-                    validationErrors={{
-                            isEtherAddress: 'Please enter a valid Ethereum address.',
-                        }}
-                    required
-                    disabled
-                  />
+                  <div className="form-group">
+                    <Input
+                      name="reviewerAddress"
+                      id="title-input"
+                      label="Reviewer Address"
+                      type="text"
+                      value={reviewerAddress}
+                      placeholder="0x0000000000000000000000000000000000000000"
+                      help="This person or smart contract will be reviewing your campaign to
+                        increase trust for donators. It has been automatically assigned."
+                      validations="isEtherAddress"
+                      validationErrors={{ isEtherAddress: 'Please enter a valid Ethereum address.' }}
+                      required
+                      disabled
+                    />
+                  </div>
 
-                  <LoaderButton
-                    className="btn btn-success"
-                    formNoValidate
-                    type="submit"
-                    disabled={isSaving || !formIsValid}
-                    isLoading={isSaving}
-                    loadingText="Saving..."
-                  >
-                        Create Campaign
-                  </LoaderButton>
+                  <div className="form-group row">
+                    <div className="col-md-6">
+                      <GoBackButton history={history} />
+                    </div>
+                    <div className="col-md-6">
+                      <LoaderButton
+                        className="btn btn-success pull-right"
+                        formNoValidate
+                        type="submit"
+                        disabled={isSaving || !formIsValid}
+                        isLoading={isSaving}
+                        loadingText="Saving..."
+                      >
+                        {isNew ? "Create" : "Update"} Campaign
+                      </LoaderButton>
+                    </div>
+                 </div>
 
                 </Form>
               </div>
