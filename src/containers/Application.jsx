@@ -124,9 +124,7 @@ class Application extends Component {
         if (token) return feathersClient.passport.verifyJWT(token);
         return null;
       })
-      .then(payload => { 
-        return Application.getUserProfile(payload.userId)
-      })
+      .then(payload => Application.getUserProfile(payload.userId))
       .then((user) => {
         if (!user) throw new Error('No User');
         feathersClient.authenticate(); // need to authenticate the socket connection
@@ -293,8 +291,14 @@ class Application extends Component {
                 exact
                 path="/campaigns/:id/milestones/propose"
                 component={props =>
-                  <EditMilestone isNew isProposed currentUser={currentUser} wallet={wallet} {...props} />}
-              />              
+                  (<EditMilestone
+                    isNew
+                    isProposed
+                    currentUser={currentUser}
+                    wallet={wallet}
+                    {...props}
+                  />)}
+              />
               <Route
                 exact
                 path="/campaigns/:id/milestones/:milestoneId"
@@ -401,6 +405,24 @@ class Application extends Component {
 
               <Route component={NotFound} />
             </Switch>
+
+            <div
+              className="alert alert-warning alert-dismissible fade show"
+              role="alert"
+              style={{
+                  position: 'fixed',
+                  top: '80px',
+                  left: '2%',
+                  width: '96%',
+              }}
+            >
+              <button type="button" className="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+  Please note that this is a very early stage of Giveth DApp available only to a currated group
+  of testers. <strong>Do not send in any Ether</strong> and if not already contact us on our
+  <a href="https://slack.giveth.io"> Slack</a>
+            </div>
           </div>
         }
 
