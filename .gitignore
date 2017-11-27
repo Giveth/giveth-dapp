@@ -9,6 +9,9 @@
 # production
 /build
 
+# backend for local testing
+feathers-giveth/
+
 # misc
 .DS_Store
 .env

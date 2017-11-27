@@ -1,0 +1,149 @@
+const { fork, spawn } = require('child_process');
+const process = require('process');
+
+// main script
+function main() {
+
+  // navigate to feathers folder inside dapp
+  process.chdir('./feathers-giveth');
+
+  // start testrpc and return testrpc process in callback
+  const testrpc = startTestrpc(function (testrpc) {
+
+    // run deploy script to deploy smart contracts
+    runScript('./scripts/deploy.js', function (err) {
+      
+      if (err) throw err;
+
+      // start feathers and return feathers process
+      const feathers = startFeathers(function () {
+
+        // go back to dapp directory
+        process.chdir('..');
+
+        // start dapp and return dapp process
+        const dapp = startDapp(function () {
+
+          // graceful shutdown
+          process.on('SIGINT', () => {
+            shutdown(testrpc, feathers, dapp);
+          });
+        });
+      });
+    });
+
+    // really no point in returning this process here
+    // but felt this callback hell should return something
+    return testrpc;
+  })
+}
+
+function runScript(scriptPath, callback) {
+
+    // keep track of whether callback has been invoked to prevent multiple invocations
+    let invoked = false;
+
+    const process = fork(scriptPath);
+
+    // listen for errors as they may prevent the exit event from firing
+    process.on('error', function (err) {
+        if (invoked) return;
+        invoked = true;
+        callback(err);
+    });
+
+    // execute the callback once the process has finished running
+    process.on('exit', function (code) {
+        if (invoked) return;
+        invoked = true;
+        const err = code === 0 ? null : new Error('exit code ' + code);
+        callback(err);
+    });
+
+}
+
+function startTestrpc(callback) {
+
+  const testrpc = spawn('npm', ['run-script', 'testrpc']);
+
+  testrpc.stdout.on('data', (data) => {
+    console.log(`stdout: ${data}`);
+  });
+
+  testrpc.stderr.on('data', (data) => {
+    console.log(`stderr: ${data}`);
+  });
+
+  testrpc.on('close', (code, signal) => {
+    console.log(`child process terminated due to receipt of signal ${signal}`);
+  });
+
+  setTimeout(function(){ callback(testrpc); }, 3000);
+
+  return testrpc
+}
+
+function startFeathers(callback) {
+
+  const feathers = spawn('npm', ['run-script', 'start']);
+
+  feathers.stdout.on('data', (data) => {
+    console.log(`stdout: ${data}`);
+  });
+
+  feathers.stderr.on('data', (data) => {
+    console.log(`stderr: ${data}`);
+  });
+
+  feathers.on('close', (code, signal) => {
+    console.log(`child process terminated due to receipt of signal ${signal}`);
+  });
+
+  setTimeout(function(){ callback(); }, 3000);
+
+  return feathers;
+}
+
+function startDapp(callback) {
+
+  const dapp = spawn('npm', ['run-script', 'start']);
+
+  dapp.stdout.on('data', (data) => {
+    console.log(`stdout: ${data}`);
+  });
+
+  dapp.stderr.on('data', (data) => {
+    console.log(`stderr: ${data}`);
+  });
+
+  dapp.on('close', (code, signal) => {
+    console.log(`child process terminated due to receipt of signal ${signal}`);
+  });
+
+  callback();
+
+  return dapp;
+}
+
+function shutdown(testrpc, feathers, dapp) {
+
+  testrpc.on('close', (code, signal) => {
+    console.log('testrpc closed');
+    process.exit();
+  });
+
+  feathers.on('close', (code, signal) => {
+    console.log('feathers closed');
+    testrpc.kill('SIGHUP');
+  });
+
+  feathers.kill('SIGHUP');
+
+  dapp.on('close', (code, signal) => {
+    console.log('dapp closed');
+    process.exit();
+  });
+}
+
+// run main script
+main()
