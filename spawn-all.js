@@ -16,17 +16,19 @@ function main() {
       if (err) throw err;
 
       // start feathers and return feathers process
-      const feathers = startFeathers(function () {
+      const feathers = startFeathers(function (feathers) {
 
         // go back to dapp directory
         process.chdir('..');
 
         // start dapp and return dapp process
-        const dapp = startDapp(function () {
+        const dapp = startDapp(function (dapp) {
 
           // graceful shutdown
           process.on('SIGINT', () => {
-            shutdown(testrpc, feathers, dapp);
+            shutdown(testrpc, feathers, dapp, function () {
+              "graceful shutdown complete"
+            });
           });
         });
       });
@@ -99,7 +101,7 @@ function startFeathers(callback) {
     console.log(`child process terminated due to receipt of signal ${signal}`);
   });
 
-  setTimeout(function(){ callback(); }, 3000);
+  setTimeout(function(){ callback(feathers); }, 3000);
 
   return feathers;
 }
@@ -120,12 +122,12 @@ function startDapp(callback) {
     console.log(`child process terminated due to receipt of signal ${signal}`);
   });
 
-  callback();
+  callback(dapp);
 
   return dapp;
 }
 
-function shutdown(testrpc, feathers, dapp) {
+function shutdown(testrpc, feathers, dapp, callback) {
 
   testrpc.on('close', (code, signal) => {
     console.log('testrpc closed');
@@ -143,6 +145,8 @@ function shutdown(testrpc, feathers, dapp) {
     console.log('dapp closed');
     process.exit();
   });
+
+  callback()
 }
 
 // run main script
