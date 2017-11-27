@@ -1,7 +1,8 @@
 const { fork, spawn } = require('child_process');
 const process = require('process');
 
-// main script
+// main spawns 3 servers: testrpc, feathers, and dapp
+// feathers-giveth is expected to have been locally cloned and installed at root level of dapp
 function main() {
 
   // navigate to feathers folder inside dapp
@@ -40,6 +41,7 @@ function main() {
   })
 }
 
+// runs any js script, used to deploy contracts
 function runScript(scriptPath, callback) {
 
     // keep track of whether callback has been invoked to prevent multiple invocations
@@ -64,6 +66,7 @@ function runScript(scriptPath, callback) {
 
 }
 
+// start installed testrpc version with websockets
 function startTestrpc(callback) {
 
   const testrpc = spawn('npm', ['run-script', 'testrpc']);
@@ -85,6 +88,7 @@ function startTestrpc(callback) {
   return testrpc
 }
 
+// start localhost feathersjs cache server
 function startFeathers(callback) {
 
   const feathers = spawn('npm', ['run-script', 'start']);
@@ -106,6 +110,7 @@ function startFeathers(callback) {
   return feathers;
 }
 
+// start dapp
 function startDapp(callback) {
 
   const dapp = spawn('npm', ['run-script', 'start']);
@@ -127,6 +132,8 @@ function startDapp(callback) {
   return dapp;
 }
 
+
+// shudown all 3 servers
 function shutdown(testrpc, feathers, dapp, callback) {
 
   testrpc.on('close', (code, signal) => {
@@ -149,5 +156,5 @@ function shutdown(testrpc, feathers, dapp, callback) {
   callback()
 }
 
-// run main script
+// run main
 main()
