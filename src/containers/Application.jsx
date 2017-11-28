@@ -419,9 +419,9 @@ class Application extends Component {
               <button type="button" className="close" data-dismiss="alert" aria-label="Close">
                 <span aria-hidden="true">&times;</span>
               </button>
-  Please note that this is a very early stage of Giveth DApp available only to a currated group
-  of testers. <strong>Do not send in any Ether</strong> and if not already contact us on our
-  <a href="https://slack.giveth.io"> Slack</a>
+                Please note that this is a very early stage of Giveth DApp available only to a currated group
+                of testers. <strong>Do not send in any Ether</strong> and if not already contact us on our
+                <a href="https://slack.giveth.io"> Slack</a>
             </div>
           </div>
         }
