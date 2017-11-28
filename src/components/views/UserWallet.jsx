@@ -123,51 +123,53 @@ class UserWallet extends Component {
               }
 
               { !isLoadingTokens &&
-                <table className="table table-responsive table-striped table-hover">
-                  <thead>
-                    <tr>
-                      <th className="td-token-name">Token</th>
-                      <th className="td-token-symbol">Symbol</th>
-                      <th className="td-donations-amount">Amount</th>
-                      <th className="td-tx-address">Token address</th>
-                      <th className="td-name">Received from a donation to</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    { tokens.map(t => (
-                      <tr key={t._id}>
-                        <td className="td-token-name">
-                          {t.tokenName}
-                        </td>
-                        <td className="td-token-symbol">
-                          {t.tokenSymbol}
-                        </td>
-                        <td className="td-donations-amount">
-                          {(t.balance) ? utils.fromWei(t.balance) : 0}
-                        </td>
-                        <td className="td-tx-address">
-                          {etherScanUrl &&
-                            <a href={`${etherScanUrl}address/${t.tokenAddress}`}>{t.tokenAddress}</a>
-                          }
-                          {!etherScanUrl &&
-                            <span>{t.tokenAddress}</span>
-                          }
-                        </td>
-                        <td className="td-received-from">
-                          {t.type === 'campaign' &&
-                            <Link to={`/campaigns/${t.meta._id}`}><em>{t.type} </em>{getTruncatedText(t.meta.title, 45)}</Link>
-                          }
-                          {t.type === 'dac' &&
-                            <Link to={`/dacs/${t.meta._id}`}><em>{t.type} </em>{getTruncatedText(t.meta.title, 45)}</Link>
-                          }
-                          {t.type === 'revomed' &&
-                            <span>Does not exist anymore</span>
-                          }
-                        </td>
+                <div className="table-container">
+                  <table className="table table-responsive table-striped table-hover">
+                    <thead>
+                      <tr>
+                        <th className="td-token-name">Token</th>
+                        <th className="td-token-symbol">Symbol</th>
+                        <th className="td-donations-amount">Amount</th>
+                        <th className="td-tx-address">Token address</th>
+                        <th className="td-name">Received from a donation to</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody>
+                      { tokens.map(t => (
+                        <tr key={t._id}>
+                          <td className="td-token-name">
+                            {t.tokenName}
+                          </td>
+                          <td className="td-token-symbol">
+                            {t.tokenSymbol}
+                          </td>
+                          <td className="td-donations-amount">
+                            {(t.balance) ? utils.fromWei(t.balance) : 0}
+                          </td>
+                          <td className="td-tx-address">
+                            {etherScanUrl &&
+                              <a href={`${etherScanUrl}address/${t.tokenAddress}`}>{t.tokenAddress}</a>
+                            }
+                            {!etherScanUrl &&
+                              <span>{t.tokenAddress}</span>
+                            }
+                          </td>
+                          <td className="td-received-from">
+                            {t.type === 'campaign' &&
+                              <Link to={`/campaigns/${t.meta._id}`}><em>{t.type} </em>{getTruncatedText(t.meta.title, 45)}</Link>
+                            }
+                            {t.type === 'dac' &&
+                              <Link to={`/dacs/${t.meta._id}`}><em>{t.type} </em>{getTruncatedText(t.meta.title, 45)}</Link>
+                            }
+                            {t.type === 'revomed' &&
+                              <span>Does not exist anymore</span>
+                            }
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               }
 
 
