@@ -26,7 +26,7 @@ class DACservice {
    * @param onError   Callback function if error is encountered
    */
   static subscribe(onSuccess, onError) {
-    feathersClient.service('dacs').watch({ strategy: 'always' }).find({
+    return feathersClient.service('dacs').watch({ strategy: 'always' }).find({
       query: {
         delegateId: {
           $gt: '0', // 0 is a pending dac
@@ -47,7 +47,7 @@ class DACservice {
    * Lazy-load DAC Donations by subscribing to donations listener
    *
    * @param id        ID of the DAC which donations should be retrieved
-   * @param onSuccess Callback function once response is obtained successfylly
+   * @param onSuccess Callback function once response is obtained successfully
    * @param onError   Callback function if error is encountered
    */
   static subscribeDonations(id, onSuccess, onError) {
