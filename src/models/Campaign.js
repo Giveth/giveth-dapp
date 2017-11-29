@@ -7,6 +7,26 @@ import { getRandomWhitelistAddress } from '../lib/helpers';
  * The DApp Campaign model
  */
 class Campaign extends BasicModel {
+  static get CANCELED() { return 'Canceled'; }
+  static get PENDING() { return 'Pending'; }
+  static get ACTIVE() { return 'Active'; }
+
+  /**
+   * Compares two campaigns
+   *
+   * @param a First campaign
+   * @param b Second campaign
+   *
+   * @return 1  if a > b
+   *         -1 if a < b
+   *         0  if a = b
+   */
+  static compare(a, b) {
+    if (a.myOrder > b.myOrder) return 1;
+    if (a.myOrder < b.myOrder) return -1;
+    return 0;
+  }
+
   constructor(data) {
     super(data);
 
@@ -17,6 +37,8 @@ class Campaign extends BasicModel {
     this.dacs = data.dacs || [];
     this.reviewerAddress = data.reviewerAddress ||
       getRandomWhitelistAddress(React.whitelist.reviewerWhitelist);
+    this.pluginAddress = data.pluginAddress || '0x0000000000000000000000000000000000000000';
+    this.status = data.status || Campaign.PENDING;
   }
 
   toFeathers() {
@@ -38,18 +60,38 @@ class Campaign extends BasicModel {
     };
   }
 
-  save(onCreated, afterEmit) {
+  get isActive() {
+    return this.status === Campaign.ACTIVE;
+  }
+
+  /**
+   * Save the campaign to feathers and blockchain if necessary
+   *
+   * @param afterCreate Callback function once a transaction is created
+   * @param afterMined  Callback function once the transaction is mined and feathers updated
+   */
+  save(afterCreate, afterMined) {
     if (this.newImage) {
       UploadService.save(this.image).then((file) => {
         // Save the new image address and mark it as old
         this.image = file.url;
         this.newImage = false;
 
-        CampaignService.save(this, this.owner.address, onCreated, afterEmit);
+        CampaignService.save(this, this.owner.address, afterCreate, afterMined);
       });
     } else {
-      CampaignService.save(this, this.owner.address, onCreated, afterEmit);
+      CampaignService.save(this, this.owner.address, afterCreate, afterMined);
     }
+  }
+
+  /**
+   * Cancel the campaign in feathers and blockchain
+   *
+   * @param afterCreate Callback function once a transaction is created
+   * @param afterMined  Callback function once the transaction is mined and feathers updated
+   */
+  cancel(afterCreate, afterMined) {
+    CampaignService.cancel(this, this.owner.address, afterCreate, afterMined);
   }
 
   get communityUrl() {
@@ -68,8 +110,6 @@ class Campaign extends BasicModel {
   set projectId(value) {
     this.checkType(value, ['string'], 'projectId');
     this.myProjectId = value;
-
-    this.status = value !== 0 ? 'Accepting donations' : 'Pending';
   }
 
   get tokenName() {
@@ -95,8 +135,12 @@ class Campaign extends BasicModel {
   }
 
   set status(value) {
-    this.checkType(value, ['string'], 'status');
+    this.checkValue(value, [Campaign.PENDING, Campaign.ACTIVE, Campaign.CANCELED], 'status');
     this.myStatus = value;
+    if (value === Campaign.PENDING) this.myOrder = 1;
+    else if (value === Campaign.ACTIVE) this.myOrder = 2;
+    else if (value === Campaign.CANCELED) this.myOrder = 3;
+    else this.myOrder = 4;
   }
 
   get dacs() {
@@ -106,6 +150,15 @@ class Campaign extends BasicModel {
   set dacs(value) {
     this.checkType(value, ['object', 'array'], 'dacs');
     this.myDacs = value;
+  }
+
+  get pluginAddress() {
+    return this.myPluginAddress;
+  }
+
+  set pluginAddress(value) {
+    this.checkType(value, ['string'], 'dacs');
+    this.myPluginAddress = value;
   }
 }
 

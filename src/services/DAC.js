@@ -85,11 +85,11 @@ class DACservice {
   }
 
   /**
-   * Get the user's delegation
+   * Get the user's DACs
    *
-   * @param userAddress Address of the user whose donations should be retrieved
-   *
-   * @return New promise with
+   * @param userAddress Address of the user whose DAC list should be retrieved
+   * @param onSuccess   Callback function once response is obtained successfully
+   * @param onError     Callback function if error is encountered
    */
   static getUserDACs(userAddress, onSuccess, onError) {
     return feathersClient.service('dacs').watch({ strategy: 'always' }).find({ query: { ownerAddress: userAddress } })

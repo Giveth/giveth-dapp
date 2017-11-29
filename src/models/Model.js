@@ -17,6 +17,21 @@ class Model {
       throw new TypeError(`The type of ${propName} supplied to ${this.constructor.name} is: ${typeof value}. Expected one of: ${types.join(', ')}.`);
     }
   }
+
+  /**
+   * Checks passed value is one of approved values
+   *
+   * @param value    Value which type is to be tested
+   * @param values   Array containing allowed values
+   * @param propName Name of the property that is being inspected
+   *
+   * @throws Error describing what was the passed value and which values were expected
+   */
+  checkValue(value, values, propName) {
+    if (!values.includes(value)) {
+      throw new Error(`The value of ${propName} supplied to ${this.constructor.name} is: ${value}. Expected one of: ${values.join(', ')}.`);
+    }
+  }
 }
 
 export default Model;

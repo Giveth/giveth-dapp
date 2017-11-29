@@ -1,4 +1,4 @@
-import { LPPCampaignFactory } from 'lpp-campaign';
+import { LPPCampaignFactory, LPPCampaign } from 'lpp-campaign';
 import getNetwork from '../lib/blockchain/getNetwork';
 import getWeb3 from '../lib/blockchain/getWeb3';
 import { feathersClient } from '../lib/feathersClient';
@@ -86,7 +86,33 @@ class CampaignService {
   }
 
   /**
+   * Get the user's Campaigns
+   *
+   * @param userAddress Address of the user whose Campaign list should be retrieved
+   * @param onSuccess   Callback function once response is obtained successfully
+   * @param onError     Callback function if error is encountered
+   */
+  static getUserCampaigns(userAddress, onSuccess, onError) {
+    return feathersClient
+      .service('campaigns').watch({ strategy: 'always' }).find({
+        query: {
+          $or: [
+            { ownerAddress: userAddress },
+            { reviewerAddress: userAddress },
+          ],
+        },
+      })
+      .subscribe(
+        resp => onSuccess(resp.data
+          .map(campaign => new Campaign(campaign))
+          .sort(Campaign.compare)),
+        onError,
+      );
+  }
+
+  /**
    * Save new Campaign to the blockchain or update existing one in feathers
+   * TODO: Handle error states properly
    *
    * @param campaign    Campaign object to be saved
    * @param from        Address of the user creating the Campaign
@@ -118,6 +144,10 @@ class CampaignService {
             })
             .then(() => {
               afterMined(`${etherScanUrl}tx/${txHash}`);
+            })
+            .catch((err) => {
+              console.log('New Campaign transaction failed:', err); // eslint-disable-line no-console
+              displayTransactionError(txHash, etherScanUrl);
             });
         })
         .catch((err) => {
@@ -125,6 +155,48 @@ class CampaignService {
           displayTransactionError(txHash, etherScanUrl);
         });
     }
+  }
+
+  /**
+   * Cancel Campaign in the blockchain and update it in feathers
+   * TODO: Handle error states properly
+   *
+   * @param campaign    Campaign to be cancelled
+   * @param from        Address of the user cancelling the Campaign
+   * @param afterCreate Callback to be triggered after the Campaign is cancelled in feathers
+   * @param afterMined  Callback to be triggered after the transaction is mined
+   */
+  static cancel(campaign, from, afterCreate = () => {}, afterMined = () => {}) {
+    let txHash;
+    let etherScanUrl;
+    Promise.all([getNetwork(), getWeb3()])
+      .then(([network, web3]) => {
+        const lppCampaign = new LPPCampaign(web3, campaign.pluginAddress);
+        etherScanUrl = network.etherscan;
+
+        lppCampaign.cancelCampaign({ from })
+          .once('transactionHash', (hash) => {
+            txHash = hash;
+            feathersClient.service('/campaigns').patch(campaign.id, {
+              status: Campaign.CANCELED,
+              mined: false,
+              txHash,
+            })
+              .then(afterCreate(`${etherScanUrl}tx/${txHash}`))
+              .catch((err) => {
+                console.log('Failed to update feathers:', err); // eslint-disable-line no-console
+              });
+          })
+          .then(() => afterMined(`${etherScanUrl}tx/${txHash}`))
+          .catch((err) => {
+            console.log('Cancel Campaign failed:', err); // eslint-disable-line no-console
+            displayTransactionError(txHash, etherScanUrl);
+          });
+      })
+      .catch((err) => {
+        console.log('Cancel Campaign failed:', err); // eslint-disable-line no-console
+        displayTransactionError(txHash, etherScanUrl);
+      });
   }
 }
 
