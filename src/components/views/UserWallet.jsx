@@ -1,5 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
+import { Link } from 'react-router-dom';
+import { utils } from 'web3';
 
 import BackupWallet from '../BackupWallet';
 import { isAuthenticated, takeActionAfterWalletUnlock } from '../../lib/middleware';
@@ -8,8 +10,6 @@ import User from '../../models/User';
 import GivethWallet from '../../lib/blockchain/GivethWallet';
 import Loader from '../Loader';
 import { feathersClient } from '../../lib/feathersClient';
-import { Link } from 'react-router-dom';
-import { utils } from 'web3';
 import { getTruncatedText } from '../../lib/helpers';
 import getNetwork from '../../lib/blockchain/getNetwork';
 
@@ -82,14 +82,16 @@ class UserWallet extends Component {
           const matchingCampaign = campaigns.find(c => c.tokenSymbol === t.tokenSymbol);
 
           t.meta = matchingDac || matchingCampaign;
-          t.type = matchingDac ? 'dac' : (matchingCampaign ? 'campaign' : 'removed');
+          if (matchingDac) t.type = 'dac';
+          else if (matchingCampaign) t.type = 'campaign';
+          else t.type = 'removed';
           return t;
         }),
         isLoadingTokens: false,
         hasError: false,
       });
     })
-      .catch((e) => {
+      .catch(() => {
         this.setState({ isLoadingTokens: false, hasError: true });
       });
   }
