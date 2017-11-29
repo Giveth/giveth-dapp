@@ -20,7 +20,7 @@ class WithdrawButton extends Component {
       amount: '',
       modalVisible: false,
       to: '',
-      gas: 4,      
+      gas: 4,
     };
 
     this.submit = this.submit.bind(this);
@@ -33,7 +33,7 @@ class WithdrawButton extends Component {
         gas,
         modalVisible: true,
       }));
-  }  
+  }
 
   afterCreate(etherScanUrl, txHash) {
     this.setState({
@@ -128,6 +128,10 @@ class WithdrawButton extends Component {
                   label="To which address do you want to sent ether?"
                   type="text"
                   value={to}
+                  validations="isEtherAddress"
+                  validationErrors={{
+                    isEtherAddress: 'Please check that the address you have provided is valid.',
+                  }}
                   autoFocus
                   required
                 />
