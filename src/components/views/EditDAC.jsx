@@ -72,7 +72,9 @@ class EditDAC extends Component {
   }
 
   setImage(image) {
-    this.state.dac.image = image;
+    const { dac } = this.state;
+    dac.image = image;
+    this.setState({ dac });
   }
 
   submit() {

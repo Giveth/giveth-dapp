@@ -94,7 +94,9 @@ class EditCampaign extends Component {
   }
 
   setImage(image) {
-    this.state.campaign.image = image;
+    const { campaign } = this.state;
+    campaign.image = image;
+    this.setState({ campaign });
   }
 
   submit() {
@@ -136,9 +138,10 @@ class EditCampaign extends Component {
   }
 
   selectDACs({ target }) {
-    this.state.campaign.dacs = target.value;
+    const { campaign } = this.state;
+    campaign.dacs = target.value;
 
-    this.setState({ campaign: this.state.campaign });
+    this.setState({ campaign });
   }
 
   render() {
