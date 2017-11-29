@@ -7,6 +7,8 @@ import { takeActionAfterWalletUnlock } from '../lib/middleware';
 import User from '../models/User';
 import GivethWallet from '../lib/blockchain/GivethWallet';
 import WalletService from '../services/Wallet';
+import { getGasPrice } from '../lib/helpers';
+
 
 class WithdrawButton extends Component {
   constructor() {
@@ -18,11 +20,20 @@ class WithdrawButton extends Component {
       amount: '',
       modalVisible: false,
       to: '',
+      gas: 4,      
     };
 
     this.submit = this.submit.bind(this);
     this.afterCreate = this.afterCreate.bind(this);
   }
+
+  openDialog() {
+    getGasPrice().then(gas =>
+      this.setState({
+        gas,
+        modalVisible: true,
+      }));
+  }  
 
   afterCreate(etherScanUrl, txHash) {
     this.setState({
@@ -86,7 +97,7 @@ class WithdrawButton extends Component {
       <span style={style}>
         <button
           className="btn btn-info"
-          onClick={() => this.setState({ modalVisible: true })}
+          onClick={() => this.openDialog()}
         >
           Withdraw
         </button>
@@ -117,6 +128,7 @@ class WithdrawButton extends Component {
                   label="To which address do you want to sent ether?"
                   type="text"
                   value={to}
+                  autoFocus
                   required
                 />
               </div>

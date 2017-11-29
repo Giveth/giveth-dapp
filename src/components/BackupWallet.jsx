@@ -34,7 +34,7 @@ class BackupWallet extends Component {
     const { isLoading, keystore } = this.state;
 
     return (
-      <div>
+      <span>
         {isLoading &&
           <div>
             <Loader />
@@ -52,7 +52,7 @@ class BackupWallet extends Component {
             Download Backup File
           </a>
         }
-      </div>
+      </span>
     );
   }
 }
