@@ -5,26 +5,18 @@ import UploadService from '../services/Uploads';
  * The DApp DAC model
  */
 class DAC extends BasicModel {
-  constructor({
-    title = '', description = '', communityUrl = '', summary = '', delegateId = '0', image = '', _id,
-    txHash, totalDonated = '0', donationCount = 0, tokenName = '', tokenSymbol = '', owner,
-  }) {
-    super();
+  static get CANCELED() { return 'Canceled'; }
+  static get PENDING() { return 'Pending'; }
+  static get ACTIVE() { return 'Active'; }
 
-    this.id = _id;
-    this.title = title;
-    this.description = description;
-    this.communityUrl = communityUrl;
-    this.summary = summary;
-    this.delegateId = delegateId;
-    this.image = image;
-    this.txHash = txHash;
-    this.totalDonated = totalDonated;
-    this.donationCount = donationCount;
-    this.tokenName = tokenName;
-    this.tokenSymbol = tokenSymbol;
-    this.newImage = false;
-    this.owner = owner;
+  constructor(data) {
+    super(data);
+
+    this.communityUrl = data.communityUrl || '';
+    this.delegateId = data.delegateId || '';
+    this.tokenName = data.tokenName || '';
+    this.tokenSymbol = data.tokenSymbol || '';
+    this.status = data.status || DAC.PENDING;
   }
 
   toFeathers() {
@@ -58,33 +50,6 @@ class DAC extends BasicModel {
     }
   }
 
-  get id() {
-    return this.myId;
-  }
-
-  set id(value) {
-    this.checkType(value, ['undefined', 'string'], 'id');
-    this.myId = value;
-  }
-
-  get title() {
-    return this.myTitle;
-  }
-
-  set title(value) {
-    this.checkType(value, ['string'], 'title');
-    this.myTitle = value;
-  }
-
-  get description() {
-    return this.myDescription;
-  }
-
-  set description(value) {
-    this.checkType(value, ['string'], 'description');
-    this.myDescription = value;
-  }
-
   get communityUrl() {
     return this.myCommunityUrl;
   }
@@ -94,15 +59,6 @@ class DAC extends BasicModel {
     this.myCommunityUrl = value;
   }
 
-  get summary() {
-    return this.mySummary;
-  }
-
-  set summary(value) {
-    this.checkType(value, ['string'], 'summary');
-    this.mySummary = value;
-  }
-
   get delegateId() {
     return this.myDelegateId;
   }
@@ -110,45 +66,6 @@ class DAC extends BasicModel {
   set delegateId(value) {
     this.checkType(value, ['string'], 'delegateId');
     this.myDelegateId = value;
-
-    this.status = value !== 0 ? 'Accepting donations' : 'Pending';
-  }
-
-  get image() {
-    return this.myImage;
-  }
-
-  set image(value) {
-    this.checkType(value, ['string'], 'image');
-    this.newImage = true;
-    this.myImage = value;
-  }
-
-  get txHash() {
-    return this.myTxHash;
-  }
-
-  set txHash(value) {
-    this.checkType(value, ['undefined', 'string'], 'txHash');
-    this.myTxHash = value;
-  }
-
-  get totalDonated() {
-    return this.myTotalDonated;
-  }
-
-  set totalDonated(value) {
-    this.checkType(value, ['string'], 'totalDonated');
-    this.myTotalDonated = value;
-  }
-
-  get donationCount() {
-    return this.myDonationCount;
-  }
-
-  set donationCount(value) {
-    this.checkType(value, ['number'], 'donationCount');
-    this.myDonationCount = value;
   }
 
   get tokenName() {
@@ -169,22 +86,18 @@ class DAC extends BasicModel {
     this.myTokenSymbol = value;
   }
 
-  get owner() {
-    return this.myOwner;
-  }
-
-  set owner(value) {
-    this.checkType(value, ['undefined', 'object'], 'owner');
-    this.myOwner = value;
-  }
-
   get status() {
+    if (this.delegateId !== '') return DAC.ACTIVE; // TODO: Remove once status is added to feathers
     return this.myStatus;
   }
 
   set status(value) {
-    this.checkType(value, ['string'], 'status');
+    this.checkValue(value, [DAC.PENDING, DAC.ACTIVE, DAC.CANCELED], 'status');
     this.myStatus = value;
+    if (value === DAC.PENDING) this.myOrder = 1;
+    else if (value === DAC.ACTIVE) this.myOrder = 2;
+    else if (value === DAC.CANCELED) this.myOrder = 3;
+    else this.myOrder = 4;
   }
 }
 

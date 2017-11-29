@@ -6,6 +6,7 @@ import JoinGivethCommunity from '../JoinGivethCommunity';
 import CampaignCard from '../CampaignCard';
 import GivethWallet from '../../lib/blockchain/GivethWallet';
 import User from '../../models/User';
+import Campaign from '../../models/Campaign';
 
 /**
  * The Campaigns view mapped to /campaigns
@@ -48,7 +49,7 @@ const Campaigns = ({
             <Masonry gutter="10px">
               { campaigns.data.map(campaign =>
                     (<CampaignCard
-                      key={campaign._id} // eslint-disable-line no-underscore-dangle
+                      key={campaign.id}
                       campaign={campaign}
                       currentUser={currentUser}
                       wallet={wallet}
@@ -78,9 +79,7 @@ Campaigns.propTypes = {
   history: PropTypes.shape({}).isRequired,
   wallet: PropTypes.instanceOf(GivethWallet),
   campaigns: PropTypes.shape({
-    data: PropTypes.arrayOf(PropTypes.shape({
-      _id: PropTypes.string.isRequired,
-    })),
+    data: PropTypes.arrayOf(PropTypes.instanceOf(Campaign)),
     limit: PropTypes.number.isRequired,
     skip: PropTypes.number.isRequired,
     total: PropTypes.number.isRequired,

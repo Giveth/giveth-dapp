@@ -4,6 +4,7 @@ import getWeb3 from '../lib/blockchain/getWeb3';
 import { feathersClient } from '../lib/feathersClient';
 import { displayTransactionError } from '../lib/helpers';
 import DAC from '../models/DAC';
+import Campaign from '../models/Campaign';
 
 class DACservice {
   /**
@@ -26,11 +27,13 @@ class DACservice {
    * @param onError   Callback function if error is encountered
    */
   static subscribe(onSuccess, onError) {
-    feathersClient.service('dacs').watch({ strategy: 'always' }).find({
+    return feathersClient.service('dacs').watch({ strategy: 'always' }).find({
       query: {
         delegateId: {
           $gt: '0', // 0 is a pending dac
         },
+        // TODO: Re-enable once communities have status staved in feathers
+        // status: DAC.ACTIVE,
         $limit: 200,
         $sort: { campaignsCount: -1 },
       },
@@ -47,7 +50,7 @@ class DACservice {
    * Lazy-load DAC Donations by subscribing to donations listener
    *
    * @param id        ID of the DAC which donations should be retrieved
-   * @param onSuccess Callback function once response is obtained successfylly
+   * @param onSuccess Callback function once response is obtained successfully
    * @param onError   Callback function if error is encountered
    */
   static subscribeDonations(id, onSuccess, onError) {
@@ -79,17 +82,17 @@ class DACservice {
         $limit: 200,
       },
     }).subscribe(
-      (resp) => { onSuccess(resp.data); },
+      (resp) => { onSuccess(resp.data.map(c => new Campaign(c))); },
       onError,
     );
   }
 
   /**
-   * Get the user's delegation
+   * Get the user's DACs
    *
-   * @param userAddress Address of the user whose donations should be retrieved
-   *
-   * @return New promise with
+   * @param userAddress Address of the user whose DAC list should be retrieved
+   * @param onSuccess   Callback function once response is obtained successfully
+   * @param onError     Callback function if error is encountered
    */
   static getUserDACs(userAddress, onSuccess, onError) {
     return feathersClient.service('dacs').watch({ strategy: 'always' }).find({ query: { ownerAddress: userAddress } })

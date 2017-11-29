@@ -7,6 +7,7 @@ import CardStats from './CardStats';
 import User from './../models/User';
 import { redirectAfterWalletUnlock, checkWalletBalance } from './../lib/middleware';
 import GivethWallet from '../lib/blockchain/GivethWallet';
+import Campaign from './../models/Campaign';
 
 /**
  * Campaign Card visible in the DACs view.
@@ -24,8 +25,7 @@ class CampaignCard extends Component {
     this.editCampaign = this.editCampaign.bind(this);
   }
   viewCampaign() {
-    // eslint-disable-next-line no-underscore-dangle
-    this.props.history.push(`/campaigns/${this.props.campaign._id}`);
+    this.props.history.push(`/campaigns/${this.props.campaign.id}`);
   }
 
   editCampaign(e) {
@@ -40,8 +40,7 @@ class CampaignCard extends Component {
         buttons: ['Cancel', 'Yes, edit'],
       }).then((isConfirmed) => {
         if (isConfirmed) {
-          // eslint-disable-next-line no-underscore-dangle
-          redirectAfterWalletUnlock(`/campaigns/${this.props.campaign._id}/edit`, this.props.wallet, this.props.history);
+          redirectAfterWalletUnlock(`/campaigns/${this.props.campaign.id}/edit`, this.props.wallet, this.props.history);
         }
       });
     });
@@ -59,7 +58,7 @@ class CampaignCard extends Component {
     return (
       <div
         className="card overview-card"
-        id={campaign._id} // eslint-disable-line no-underscore-dangle
+        id={campaign.id} // eslint-disable-line no-underscore-dangle
         onClick={this.viewCampaign}
         onKeyPress={this.viewCampaign}
         role="button"
@@ -112,12 +111,7 @@ class CampaignCard extends Component {
 }
 
 CampaignCard.propTypes = {
-  campaign: PropTypes.shape({
-    _id: PropTypes.string.isRequired,
-    owner: PropTypes.shape({
-      address: PropTypes.string.isRequired,
-    }).isRequired,
-  }).isRequired,
+  campaign: PropTypes.instanceOf(Campaign).isRequired,
   currentUser: PropTypes.instanceOf(User),
   wallet: PropTypes.instanceOf(GivethWallet),
   history: PropTypes.shape({
