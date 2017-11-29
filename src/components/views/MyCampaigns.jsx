@@ -9,6 +9,7 @@ import User from '../../models/User';
 import { getTruncatedText } from '../../lib/helpers';
 import GivethWallet from '../../lib/blockchain/GivethWallet';
 import CampaignService from '../../services/Campaign';
+import Campaign from '../../models/Campaign';
 
 /**
  * The my campaings view
@@ -125,7 +126,7 @@ class MyCampaigns extends Component {
                       </thead>
                       <tbody>
                         { campaigns.map(c => (
-                          <tr key={c.id} className={c.status === 'pending' ? 'pending' : ''}>
+                          <tr key={c.id} className={c.status === Campaign.PENDING ? 'pending' : ''}>
                             <td className="td-name">
                               <Link to={`/campaigns/${c.id}`}>{getTruncatedText(c.title, 45)}</Link>
                               { c.reviewerAddress === currentUser.address &&
@@ -142,7 +143,7 @@ class MyCampaigns extends Component {
                               : 0}
                             </td>
                             <td className="td-status">
-                              {(c.status === 'pending' || (Object.keys(c).includes('mined') && !c.mined)) &&
+                              {(c.status === Campaign.PENDING || (Object.keys(c).includes('mined') && !c.mined)) &&
                                 <span><i className="fa fa-circle-o-notch fa-spin" />&nbsp;</span> }
                               {c.status}
                             </td>

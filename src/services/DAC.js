@@ -4,6 +4,7 @@ import getWeb3 from '../lib/blockchain/getWeb3';
 import { feathersClient } from '../lib/feathersClient';
 import { displayTransactionError } from '../lib/helpers';
 import DAC from '../models/DAC';
+import Campaign from '../models/Campaign';
 
 class DACservice {
   /**
@@ -31,6 +32,8 @@ class DACservice {
         delegateId: {
           $gt: '0', // 0 is a pending dac
         },
+        // TODO: Re-enable once communities have status staved in feathers
+        // status: DAC.ACTIVE,
         $limit: 200,
         $sort: { campaignsCount: -1 },
       },
@@ -79,7 +82,7 @@ class DACservice {
         $limit: 200,
       },
     }).subscribe(
-      (resp) => { onSuccess(resp.data); },
+      (resp) => { onSuccess(resp.data.map(c => new Campaign(c))); },
       onError,
     );
   }

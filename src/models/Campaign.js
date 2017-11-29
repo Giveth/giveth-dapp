@@ -11,22 +11,6 @@ class Campaign extends BasicModel {
   static get PENDING() { return 'Pending'; }
   static get ACTIVE() { return 'Active'; }
 
-  /**
-   * Compares two campaigns
-   *
-   * @param a First campaign
-   * @param b Second campaign
-   *
-   * @return 1  if a > b
-   *         -1 if a < b
-   *         0  if a = b
-   */
-  static compare(a, b) {
-    if (a.myOrder > b.myOrder) return 1;
-    if (a.myOrder < b.myOrder) return -1;
-    return 0;
-  }
-
   constructor(data) {
     super(data);
 

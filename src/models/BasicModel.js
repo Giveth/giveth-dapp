@@ -4,6 +4,22 @@ import Model from './Model';
  * The DAC, Milestone and Campaign base model containing basic common interface
  */
 class BasicModel extends Model {
+/**
+ * Compares two campaigns
+ *
+ * @param a First campaign
+ * @param b Second campaign
+ *
+ * @return 1  if a > b
+ *         -1 if a < b
+ *         0  if a = b
+ */
+  static compare(a, b) {
+    if (a.myOrder > b.myOrder) return 1;
+    if (a.myOrder < b.myOrder) return -1;
+    return 0;
+  }
+
   constructor({
     _id, title = '', description = '', summary = '', image = '', txHash, owner, totalDonated = '0', donationCount = 0,
   }) {
@@ -19,6 +35,7 @@ class BasicModel extends Model {
     this.owner = owner;
     this.totalDonated = totalDonated;
     this.donationCount = donationCount;
+    this.myOrder = -1;
   }
 
   get id() {

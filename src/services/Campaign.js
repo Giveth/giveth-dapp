@@ -31,7 +31,7 @@ class CampaignService {
         projectId: {
           $gt: '0', // 0 is a pending campaign
         },
-        status: 'Active',
+        status: Campaign.ACTIVE,
         $limit: 200,
         $sort: { milestonesCount: -1 },
       },

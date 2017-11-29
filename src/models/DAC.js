@@ -5,6 +5,10 @@ import UploadService from '../services/Uploads';
  * The DApp DAC model
  */
 class DAC extends BasicModel {
+  static get CANCELED() { return 'Canceled'; }
+  static get PENDING() { return 'Pending'; }
+  static get ACTIVE() { return 'Active'; }
+
   constructor(data) {
     super(data);
 
@@ -12,6 +16,7 @@ class DAC extends BasicModel {
     this.delegateId = data.delegateId || '';
     this.tokenName = data.tokenName || '';
     this.tokenSymbol = data.tokenSymbol || '';
+    this.status = data.status || DAC.PENDING;
   }
 
   toFeathers() {
@@ -61,8 +66,6 @@ class DAC extends BasicModel {
   set delegateId(value) {
     this.checkType(value, ['string'], 'delegateId');
     this.myDelegateId = value;
-
-    this.status = value !== 0 ? 'Accepting donations' : 'Pending';
   }
 
   get tokenName() {
@@ -84,12 +87,17 @@ class DAC extends BasicModel {
   }
 
   get status() {
+    if (this.delegateId !== '') return DAC.ACTIVE; // TODO: Remove once status is added to feathers
     return this.myStatus;
   }
 
   set status(value) {
-    this.checkType(value, ['string'], 'status');
+    this.checkValue(value, [DAC.PENDING, DAC.ACTIVE, DAC.CANCELED], 'status');
     this.myStatus = value;
+    if (value === DAC.PENDING) this.myOrder = 1;
+    else if (value === DAC.ACTIVE) this.myOrder = 2;
+    else if (value === DAC.CANCELED) this.myOrder = 3;
+    else this.myOrder = 4;
   }
 }
 

@@ -255,7 +255,7 @@ class Delegations extends Component {
                       </tbody>
 
                     </table>
-                  </div>                  
+                  </div>
                 }
 
                 { delegations && delegations.length === 0 &&

@@ -136,7 +136,7 @@ class ViewDAC extends Component {
                       { campaigns.map(c =>
 
                         (<CampaignCard
-                          key={c._id} // eslint-disable-line no-underscore-dangle
+                          key={c.id}
                           campaign={c}
                           currentUser={currentUser}
                           wallet={wallet}
