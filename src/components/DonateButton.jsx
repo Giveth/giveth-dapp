@@ -254,6 +254,7 @@ class DonateButton extends Component {
                     lessThan: 'This donation exceeds your wallet balance. Pledge that you also need to pay for the transaction.',
                   }}
                   required
+                  autoFocus
                 />
               </div>
 

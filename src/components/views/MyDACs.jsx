@@ -11,6 +11,7 @@ import Loader from '../Loader';
 import User from '../../models/User';
 import GivethWallet from '../../lib/blockchain/GivethWallet';
 import DACservice from '../../services/DAC';
+import DAC from '../../models/DAC';
 
 /**
  * The my dacs view
@@ -89,13 +90,13 @@ class MyDACs extends Component {
                       </thead>
                       <tbody>
                         { dacs.map(d => (
-                          <tr key={d.id} className={d.status === 'pending' ? 'pending' : ''}>
+                          <tr key={d.id} className={d.status === DAC.PENDING ? 'pending' : ''}>
                             <td className="td-name"><Link to={`/dacs/${d.id}`}>{getTruncatedText(d.title, 45)}</Link></td>
                             <td className="td-donations-number">{d.donationCount}</td>
                             <td className="td-donations-amount">Ξ{utils.fromWei(d.totalDonated)}
                             </td>
                             <td className="td-status">
-                              {d.status === 'pending' &&
+                              {d.status === DAC.PENDING &&
                                 <span><i className="fa fa-circle-o-notch fa-spin" />&nbsp;</span> }
                               {d.status}
                             </td>

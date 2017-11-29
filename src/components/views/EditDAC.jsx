@@ -35,7 +35,7 @@ class EditDAC extends Component {
 
       // DAC model
       dac: new DAC({
-        owner: this.props.currentUser
+        owner: props.currentUser,
       }),
     };
 
@@ -45,11 +45,11 @@ class EditDAC extends Component {
 
   componentDidMount() {
     isAuthenticated(this.props.currentUser, this.props.history, this.props.wallet)
-      .then(() => checkWalletBalance(this.props.wallet, this.props.history))
       .then(() => isInWhitelist(
-        this.props.currentUser,
-        React.whitelist.delegateWhitelist, this.props.history,
+        this.props.currentUser, React.whitelist.delegateWhitelist,
+        this.props.history,
       ))
+      .then(() => checkWalletBalance(this.props.wallet, this.props.history))
       .then(() => {
         if (!this.props.isNew) {
           DACservice.get(this.props.match.params.id).then((dac) => {
@@ -61,9 +61,7 @@ class EditDAC extends Component {
             }
           });
         } else {
-          this.setState({
-            isLoading: false,
-          });
+          this.setState({ isLoading: false });
         }
       });
     this.mounted = true;
@@ -74,7 +72,9 @@ class EditDAC extends Component {
   }
 
   setImage(image) {
-    this.state.dac.image = image;
+    const { dac } = this.state;
+    dac.image = image;
+    this.setState({ dac });
   }
 
   submit() {

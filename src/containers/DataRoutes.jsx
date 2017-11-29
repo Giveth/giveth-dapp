@@ -2,8 +2,6 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { Route } from 'react-router-dom';
 
-import { feathersClient } from '../lib/feathersClient';
-
 import DACs from './../components/views/DACs';
 import Campaigns from './../components/views/Campaigns';
 import Loader from './../components/Loader';
@@ -11,6 +9,7 @@ import Loader from './../components/Loader';
 import User from './../models/User';
 import GivethWallet from '../lib/blockchain/GivethWallet';
 import DACservice from '../services/DAC';
+import CampaignService from '../services/Campaign';
 
 /**
  * These routes load and keep DACs and Campaigns in state for faster switching of routes
@@ -30,31 +29,22 @@ class DataRoutes extends Component {
   }
 
   componentWillMount() {
-    // Load dacs and campaigns. When we receive first data, we finish loading.
-    // This setup is a little ugly, bedac the callback is being called
-    // again and again whenever data changes. Yet the promise will be resolved the first time.
-    // But he, it works! ;-)
-
     // Load all the DACS
-    DACservice.subscribe(
+    this.dacsObserver = DACservice.subscribe(
       dacs => this.setState({ dacs, dacsLoading: false }),
       () => this.setState({ hasError: true, dacsLoading: false }),
     );
 
     // Load all the campaigns
-    feathersClient.service('campaigns').watch({ strategy: 'always' }).find({
-      query: {
-        projectId: {
-          $gt: '0', // 0 is a pending campaign
-        },
-        status: 'Active',
-        $limit: 200,
-        $sort: { milestonesCount: -1 },
-      },
-    }).subscribe(
-      resp => this.setState({ campaigns: resp, campaignsLoading: false }),
+    this.campaignObserver = CampaignService.subscribe(
+      campaigns => this.setState({ campaigns, campaignsLoading: false }),
       () => this.setState({ campaignsLoading: false, hasError: true }),
     );
+  }
+
+  componentWillUnmount() {
+    if (this.dacsObserver) this.dacsObserver.unsubscribe();
+    if (this.campaignObserver) this.campaignObserver.unsubscribe();
   }
 
   render() {

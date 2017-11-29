@@ -1,21 +1,16 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { utils } from 'web3';
-import { LPPCampaign } from 'lpp-campaign';
-import _ from 'underscore';
 import { Link } from 'react-router-dom';
 
-import { feathersClient } from '../../lib/feathersClient';
 import { isAuthenticated, redirectAfterWalletUnlock, takeActionAfterWalletUnlock, checkWalletBalance } from '../../lib/middleware';
 import Loader from '../Loader';
 import User from '../../models/User';
-import { displayTransactionError, getTruncatedText } from '../../lib/helpers';
-import getNetwork from '../../lib/blockchain/getNetwork';
-import getWeb3 from '../../lib/blockchain/getWeb3';
+import { getTruncatedText } from '../../lib/helpers';
 import GivethWallet from '../../lib/blockchain/GivethWallet';
+import CampaignService from '../../services/Campaign';
+import Campaign from '../../models/Campaign';
 
-// TODO Remove the eslint exception and fix feathers to provide id's without underscore
-/* eslint no-underscore-dangle: 0 */
 /**
  * The my campaings view
  */
@@ -34,37 +29,17 @@ class MyCampaigns extends Component {
 
   componentDidMount() {
     isAuthenticated(this.props.currentUser, this.props.history, this.props.wallet).then(() => {
-      this.campaignsObserver = feathersClient.service('campaigns').watch({ strategy: 'always' }).find({
-        query: {
-          $or: [
-            { ownerAddress: this.props.currentUser.address },
-            { reviewerAddress: this.props.currentUser.address },
-          ],
-        },
-      }).subscribe(
-        (resp) => {
-          console.log(resp)
-          this.setState({
-            campaigns: _.sortBy(resp.data, (c) => {
-              if (c.status === 'pending') return 1;
-              if (c.status === 'Active') return 2;
-              if (c.status === 'Canceled') return 3;
-              return 4;
-            }),
-            isLoading: false,
-          });
-        },
-        () =>
-          this.setState({
-            isLoading: false,
-          })
+      this.campaignsObserver = CampaignService.getUserCampaigns(
+        this.props.currentUser.address,
+        campaigns => this.setState({ campaigns, isLoading: false }),
+        () => this.setState({ isLoading: false }),
       );
     });
   }
 
   componentWillUnmount() {
     if (this.campaignsObserver) this.campaignsObserver.unsubscribe();
-  }  
+  }
 
   editCampaign(id) {
     takeActionAfterWalletUnlock(this.props.wallet, () => {
@@ -93,36 +68,24 @@ class MyCampaigns extends Component {
           buttons: ['Dismiss', 'Yes, cancel'],
         }).then((isConfirmed) => {
           if (isConfirmed) {
-            const cancel = (etherScanUrl, txHash) => {
-              feathersClient.service('/campaigns').patch(campaign._id, {
-                status: 'Canceled',
-                mined: false,
-                txHash,
-              }).then(() => {
-                React.toast.info(<p>Campaign cancelation pending...<br /><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>);
-              }).catch((e) => {
-                console.log('Error updating feathers cache ->', e); // eslint-disable-line no-console
-              });
+            const afterCreate = (url) => {
+              const msg = (
+                <p>Campaign cancelation pending...<br />
+                  <a href={url} target="_blank" rel="noopener noreferrer">View transaction</a>
+                </p>);
+              React.toast.info(msg);
             };
 
-            let txHash;
-            let etherScanUrl;
-            Promise.all([getNetwork(), getWeb3()])
-              .then(([network, web3]) => {
-                const lppCampaign = new LPPCampaign(web3, campaign.pluginAddress);
-                etherScanUrl = network.etherscan;
+            const afterMined = (url) => {
+              const msg = (
+                <p>The campaign has been cancelled!<br />
+                  <a href={url} target="_blank" rel="noopener noreferrer">View transaction</a>
+                </p>
+              );
+              React.toast.success(msg);
+            };
 
-                return lppCampaign.cancelCampaign({ from: this.props.currentUser.address })
-                  .once('transactionHash', (hash) => {
-                    txHash = hash;
-                    cancel(etherScanUrl, txHash);
-                  });
-              })
-              .then(() => {
-                React.toast.success(<p>The campaign has been cancelled!<br /><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>);
-              }).catch(() => {
-                displayTransactionError(txHash, etherScanUrl);
-              });
+            campaign.cancel(afterCreate, afterMined);
           }
         });
       });
@@ -163,9 +126,9 @@ class MyCampaigns extends Component {
                       </thead>
                       <tbody>
                         { campaigns.map(c => (
-                          <tr key={c._id} className={c.status === 'pending' ? 'pending' : ''}>
+                          <tr key={c.id} className={c.status === Campaign.PENDING ? 'pending' : ''}>
                             <td className="td-name">
-                              <Link to={`/campaigns/${c._id}`}>{getTruncatedText(c.title, 45)}</Link>
+                              <Link to={`/campaigns/${c.id}`}>{getTruncatedText(c.title, 45)}</Link>
                               { c.reviewerAddress === currentUser.address &&
                                 <span className="badge badge-info">
                                   <i className="fa fa-eye" />
@@ -180,21 +143,22 @@ class MyCampaigns extends Component {
                               : 0}
                             </td>
                             <td className="td-status">
-                              {(c.status === 'pending' || (Object.keys(c).includes('mined') && !c.mined)) &&
+                              {(c.status === Campaign.PENDING || (Object.keys(c).includes('mined') && !c.mined)) &&
                                 <span><i className="fa fa-circle-o-notch fa-spin" />&nbsp;</span> }
                               {c.status}
                             </td>
                             <td className="td-actions">
-                              { c.ownerAddress === currentUser.address && c.status === 'Active' &&
+                              { c.owner.address === currentUser.address && c.isActive &&
                                 <button
                                   className="btn btn-link"
-                                  onClick={() => this.editCampaign(c._id)}
+                                  onClick={() => this.editCampaign(c.id)}
                                 >
                                   <i className="fa fa-edit" />&nbsp;Edit
                                 </button>
                               }
 
-                              { (c.reviewerAddress === currentUser.address || c.ownerAddress === currentUser.address) && c.status === 'Active' &&
+                              { (c.reviewerAddress === currentUser.address ||
+                                c.owner.address === currentUser.address) && c.isActive &&
                                 <button
                                   className="btn btn-danger btn-sm"
                                   onClick={() => this.cancelCampaign(c)}
