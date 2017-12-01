@@ -32,9 +32,9 @@ export const isAuthenticated = (currentUser, history, wallet) => new Promise(res
  *      .then(()=> ...do something when in whitelist)
  */
 
-export const isInWhitelist = (currentUser, whitelist, history) => new Promise(resolve =>
+export const isInWhitelist = (currentUser, whitelist, history) => new Promise((resolve, reject) =>
   (whitelist.length === 0 || (currentUser && currentUser.address && whitelist.indexOf(currentUser.address.toLowerCase()) > -1)
-    ? resolve() : console.log('not in whitelist') && history.goBack()));
+    ? resolve() : reject() && console.log('not in whitelist') && (history && history.goBack())));
 
 
 /**
