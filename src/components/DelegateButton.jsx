@@ -107,20 +107,21 @@ class DelegateButton extends Component {
         const { liquidPledging } = network;
         etherScanUrl = network.etherscan;
 
+        const from = (model.delegate > 0) ? model.delegateEntity.ownerAddress : model.ownerEntity.ownerAddress;
         const senderId = (model.delegate > 0) ? model.delegate : model.owner;
         const receiverId = (admin.type === 'dac') ? admin.delegateId : admin.projectId;
 
         const executeTransfer = () => {
           if (model.ownerType === 'campaign') {
             return new LPPCampaign(web3, model.ownerEntity.pluginAddress)
-              .transfer(model.pledgeId, model.amount, receiverId, { $extraGas: 50000 });
+              .transfer(model.pledgeId, model.amount, receiverId, { $extraGas: 50000, from });
           } else if (model.ownerType === 'giver' && model.delegate > 0) {
             return new LPPDac(web3, model.delegateEntity.pluginAddress)
-              .transfer(model.pledgeId, model.amount, receiverId, { $extraGas: 50000 });
+              .transfer(model.pledgeId, model.amount, receiverId, { $extraGas: 50000, from });
           }
 
           return liquidPledging
-            .transfer(senderId, model.pledgeId, model.amount, receiverId, { $extraGas: 50000 });
+            .transfer(senderId, model.pledgeId, model.amount, receiverId, { $extraGas: 50000, from });
         };
 
         return executeTransfer()
