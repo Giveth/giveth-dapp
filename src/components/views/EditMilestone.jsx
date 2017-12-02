@@ -14,7 +14,7 @@ import { isAuthenticated, checkWalletBalance, isInWhitelist } from '../../lib/mi
 import getNetwork from '../../lib/blockchain/getNetwork';
 import getWeb3 from '../../lib/blockchain/getWeb3';
 import LoaderButton from '../../components/LoaderButton';
-import DatePickerFormsy from './../DatePickerFormsy';
+// import DatePickerFormsy from './../DatePickerFormsy';
 import User from '../../models/User';
 import GivethWallet from '../../lib/blockchain/GivethWallet';
 
@@ -46,10 +46,11 @@ class EditMilestone extends Component {
       maxAmount: '',
       reviewerAddress: getRandomWhitelistAddress(React.whitelist.reviewerWhitelist),
       recipientAddress: '',
-      completionDeadline: '',
+      // completionDeadline: '',
       status: 'pending',
       uploadNewImage: false,
       campaignTitle: '',
+      hasWhitelist: React.whitelist.reviewerWhitelist.length > 0
     };
 
     this.submit = this.submit.bind(this);
@@ -122,9 +123,9 @@ class EditMilestone extends Component {
     this.setState({ image, uploadNewImage: true });
   }
 
-  changeDate(moment) {
-    this.setState({ completionDeadline: moment.format('YYYY/MM/DD') });
-  }
+  // changeDate(moment) {
+  //   this.setState({ completionDeadline: moment.format('YYYY/MM/DD') });
+  // }
 
   submit(model) {
     this.setState({ isSaving: true });
@@ -144,7 +145,7 @@ class EditMilestone extends Component {
         ownerAddress: this.props.currentUser.address,
         reviewerAddress: model.reviewerAddress,
         recipientAddress: model.recipientAddress,
-        completionDeadline: this.state.completionDeadline,
+        // completionDeadline: this.state.completionDeadline,
         campaignReviewerAddress: this.state.campaignReviewerAddress,
         image: file,
         campaignId: this.state.campaignId,
@@ -218,7 +219,7 @@ class EditMilestone extends Component {
     const { isNew, isProposed, history } = this.props;
     const {
       isLoading, isSaving, title, description, image, recipientAddress, reviewerAddress,
-      completionDeadline, formIsValid, maxAmount, campaignTitle,
+      formIsValid, maxAmount, campaignTitle, hasWhitelist
     } = this.state;
 
     return (
@@ -272,7 +273,6 @@ class EditMilestone extends Component {
                     description: inputs.description,
                     reviewerAddress: inputs.reviewerAddress,
                     recipientAddress: inputs.recipientAddress,
-                    completionDeadline: inputs.completionDeadline,
                     maxAmount: inputs.maxAmount,
                   })}
                   onValid={() => this.toggleFormValid(true)}
@@ -332,13 +332,13 @@ class EditMilestone extends Component {
                       type="text"
                       value={reviewerAddress}
                       placeholder="0x0000000000000000000000000000000000000000"
-                      help="The milestone reviewer is automatically assigned while Giveth is in beta."
+                      help={hasWhitelist ? "The milestone reviewer is automatically assigned while Giveth is in beta." : ""}
                       validations="isEtherAddress"
                       validationErrors={{
                         isEtherAddress: 'Please insert a valid Ethereum address.',
                       }}
                       required
-                      disabled
+                      disabled={hasWhitelist}
                     />
                   </div>
 
@@ -359,22 +359,24 @@ class EditMilestone extends Component {
                     />
                   </div>
 
-                  <div className="form-group">
-                    <DatePickerFormsy
-                      name="completionDeadline"
-                      label="Until what date is the milestone achievable?"
-                      type="text"
-                      value={completionDeadline}
-                      changeDate={date => this.changeDate(date)}
-                      placeholder="Select a date"
-                      help="Select a date"
-                      validations="minLength:10"
-                      validationErrors={{
-                        minLength: 'Please provide a date.',
-                      }}
-                      required
-                    />
-                  </div>
+                  {/*
+                    <div className="form-group">
+                      <DatePickerFormsy
+                        name="completionDeadline"
+                        label="Until what date is the milestone achievable?"
+                        type="text"
+                        value={completionDeadline}
+                        changeDate={date => this.changeDate(date)}
+                        placeholder="Select a date"
+                        help="Select a date"
+                        validations="minLength:10"
+                        validationErrors={{
+                          minLength: 'Please provide a date.',
+                        }}
+                        required
+                      />
+                    </div>
+                  */}
 
                   <div className="form-group">
                     <Input

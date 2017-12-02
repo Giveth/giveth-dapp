@@ -94,7 +94,6 @@ class ViewMilestone extends Component {
       description,
       recipientAddress,
       reviewerAddress,
-      completionDeadline,
       image,
       donations,
       isLoadingDonations,
@@ -126,7 +125,6 @@ class ViewMilestone extends Component {
               { this.state.totalDonated >= this.state.maxAmount &&
                 <p>
                   This milestone has reached its funding goal.
-                  Completion deadline {this.state.completionDeadline}
                 </p>
               }
 
@@ -134,7 +132,6 @@ class ViewMilestone extends Component {
                 <p>
                   Ξ{utils.fromWei(this.state.totalDonated)} of
                   Ξ{utils.fromWei(this.state.maxAmount)} raised.
-                  Completion deadline {this.state.completionDeadline}
                 </p>
               }
 
@@ -250,11 +247,13 @@ class ViewMilestone extends Component {
                     &#926;{utils.fromWei(totalDonated)}
                   </div>
 
-                  <div className="form-group">
-                    <label>Completion deadline</label>
-                    <small className="form-text">When the milestone will be completed</small>
-                    {completionDeadline}
-                  </div>
+                  {/*
+                    <div className="form-group">
+                      <label>Completion deadline</label>
+                      <small className="form-text">When the milestone will be completed</small>
+                      {completionDeadline}
+                    </div>
+                  */}
                 </div>
               </div>
 

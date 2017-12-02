@@ -35,6 +35,7 @@ class EditCampaign extends Component {
       isSaving: false,
       formIsValid: false,
       dacsOptions: [],
+      hasWhitelist: React.whitelist.reviewerWhitelist.length > 0,
 
       // Campaign model
       campaign: new Campaign({
@@ -147,7 +148,7 @@ class EditCampaign extends Component {
   render() {
     const { isNew, history } = this.props;
     const {
-      isLoading, isSaving, campaign, formIsValid, dacsOptions,
+      isLoading, isSaving, campaign, formIsValid, dacsOptions, hasWhitelist
     } = this.state;
 
     return (
@@ -303,12 +304,13 @@ class EditCampaign extends Component {
                       type="text"
                       value={campaign.reviewerAddress}
                       placeholder="0x0000000000000000000000000000000000000000"
-                      help="This person or smart contract will be reviewing your campaign to
-                        increase trust for donators. It has been automatically assigned."
+                      help={hasWhitelist 
+                        ? "This person or smart contract will be reviewing your campaign to increase trust for donators. It has been automatically assigned."
+                        : "This person or smart contract will be reviewing your campaign to increase trust for donators."}
                       validations="isEtherAddress"
                       validationErrors={{ isEtherAddress: 'Please enter a valid Ethereum address.' }}
                       required
-                      disabled
+                      disabled={hasWhitelist}
                     />
                   </div>
 
