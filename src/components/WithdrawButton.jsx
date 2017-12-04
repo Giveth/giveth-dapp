@@ -7,7 +7,7 @@ import { takeActionAfterWalletUnlock } from '../lib/middleware';
 import User from '../models/User';
 import GivethWallet from '../lib/blockchain/GivethWallet';
 import WalletService from '../services/Wallet';
-import { getGasPrice } from '../lib/helpers';
+import { getGasPrice, confirmBlockchainTransaction } from '../lib/helpers';
 
 
 class WithdrawButton extends Component {
@@ -69,7 +69,7 @@ class WithdrawButton extends Component {
     takeActionAfterWalletUnlock(this.props.wallet, () => {
       this.setState({ isSaving: true });
 
-      WalletService.withdraw(
+      const withdraw = () => WalletService.withdraw(
         {
           from: this.props.currentUser.address,
           to: model.to,
@@ -80,6 +80,13 @@ class WithdrawButton extends Component {
           React.toast.success(<p>Your withdrawal has been confirmed!<br /><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>);
         },
         (err) => { console.log(err); },
+      );
+
+
+      // Withdraw the money
+      confirmBlockchainTransaction(
+        withdraw,
+        () => this.setState({ isSaving: false }),
       );
     });
   }

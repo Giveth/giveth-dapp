@@ -1,7 +1,7 @@
 import React from 'react';
+import 'whatwg-fetch';
 import { feathersClient } from './feathersClient';
 import DefaultAvatar from './../assets/avatar-100.svg';
-import 'whatwg-fetch';
 
 export const isOwner = (address, currentUser) =>
   address !== undefined && currentUser !== undefined && currentUser.address === address;
@@ -88,10 +88,18 @@ export const getUserAvatar = (owner) => {
 
 export const getRandomWhitelistAddress = wl => wl[Math.floor(Math.random() * wl.length)];
 
-export const getGasPrice = () => {
-  return feathersClient.service('/gasprice').find().then((resp) => { return resp.average * 2 })
-}
+export const getGasPrice = () => feathersClient.service('/gasprice').find().then(resp => resp.average * 2);
 
+export const confirmBlockchainTransaction = (onConfirm, onCancel) => (React.swal({
+  title: 'Send transaction?',
+  text: 'The action you are trying to perform will create a blockchain transaction. Please confirm to make the transaction.',
+  icon: 'warning',
+  dangerMode: true,
+  buttons: ['Cancel', 'Yes, execute transaction'],
+}).then((isConfirmed) => {
+  if (isConfirmed) onConfirm();
+  else onCancel();
+}));
 
 // returns a risk indicator
 export const calculateRiskFactor = (owner, dependencies) => {

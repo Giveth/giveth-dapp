@@ -9,7 +9,7 @@ import Loader from '../Loader';
 import QuillFormsy from '../QuillFormsy';
 import FormsyImageUploader from './../FormsyImageUploader';
 import GoBackButton from '../GoBackButton';
-import { isOwner, getTruncatedText } from '../../lib/helpers';
+import { isOwner, getTruncatedText, confirmBlockchainTransaction } from '../../lib/helpers';
 import { isAuthenticated, checkWalletBalance, isInWhitelist } from '../../lib/middleware';
 import LoaderButton from '../../components/LoaderButton';
 import User from '../../models/User';
@@ -127,7 +127,11 @@ class EditCampaign extends Component {
       this.props.history.push('/my-campaigns');
     };
 
-    this.state.campaign.save(afterCreate, afterMined);
+    // Save the capaign
+    confirmBlockchainTransaction(
+      () => this.state.campaign.save(afterCreate, afterMined),
+      () => this.setState({ isSaving: false }),
+    );
   }
 
   toggleFormValid(state) {
@@ -148,7 +152,7 @@ class EditCampaign extends Component {
   render() {
     const { isNew, history } = this.props;
     const {
-      isLoading, isSaving, campaign, formIsValid, dacsOptions, hasWhitelist
+      isLoading, isSaving, campaign, formIsValid, dacsOptions, hasWhitelist,
     } = this.state;
 
     return (
@@ -304,9 +308,9 @@ class EditCampaign extends Component {
                       type="text"
                       value={campaign.reviewerAddress}
                       placeholder="0x0000000000000000000000000000000000000000"
-                      help={hasWhitelist 
-                        ? "This person or smart contract will be reviewing your campaign to increase trust for donators. It has been automatically assigned."
-                        : "This person or smart contract will be reviewing your campaign to increase trust for donators."}
+                      help={hasWhitelist
+                        ? 'This person or smart contract will be reviewing your campaign to increase trust for donators. It has been automatically assigned.'
+                        : 'This person or smart contract will be reviewing your campaign to increase trust for donators.'}
                       validations="isEtherAddress"
                       validationErrors={{ isEtherAddress: 'Please enter a valid Ethereum address.' }}
                       required

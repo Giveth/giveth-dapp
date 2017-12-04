@@ -9,7 +9,7 @@ import PropTypes from 'prop-types';
 
 import { feathersClient } from '../lib/feathersClient';
 import { takeActionAfterWalletUnlock, checkWalletBalance } from '../lib/middleware';
-import { displayTransactionError } from '../lib/helpers';
+import { displayTransactionError, confirmBlockchainTransaction } from '../lib/helpers';
 import getNetwork from '../lib/blockchain/getNetwork';
 import getWeb3 from '../lib/blockchain/getWeb3';
 import GivethWallet from '../lib/blockchain/GivethWallet';
@@ -102,7 +102,7 @@ class DelegateButton extends Component {
     let txHash;
     let etherScanUrl;
 
-    Promise.all([getNetwork(), getWeb3()])
+    const doDelegate = () => Promise.all([getNetwork(), getWeb3()])
       .then(([network, web3]) => {
         const { liquidPledging } = network;
         etherScanUrl = network.etherscan;
@@ -136,6 +136,12 @@ class DelegateButton extends Component {
         displayTransactionError(txHash, etherScanUrl);
         this.setState({ isSaving: false });
       });
+
+    // Delegate
+    confirmBlockchainTransaction(
+      doDelegate,
+      () => this.setState({ isSaving: false }),
+    );
   }
 
   resetSkylight() {
