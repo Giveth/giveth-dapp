@@ -61,7 +61,7 @@ class JoinGivethCommunity extends Component {
       <div id="join-giveth-community">
         <div className="vertical-align">
           <center>
-            <h3>Together we will save the world!</h3>
+            <h3>Building the Future of Giving, with You.</h3>
 
             <CommunityButton className="btn btn-success" url="https://giveth.slack.com">
               &nbsp;Join Giveth
