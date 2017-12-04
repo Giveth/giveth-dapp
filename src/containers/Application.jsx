@@ -420,7 +420,7 @@ class Application extends Component {
                 <span aria-hidden="true">&times;</span>
               </button>
               <center>
-                Please note that this is a very early stage of Giveth DApp available only to a currated group
+                Please note that this is a very early stage of the Giveth DApp available only to a curated group
                 of testers.<br/><strong>Do not send in any Ether!</strong> If you have sent Ether please contact us on our&nbsp;
                 <a href="https://slack.giveth.io">Slack</a>.
               </center>
