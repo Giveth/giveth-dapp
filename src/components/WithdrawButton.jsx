@@ -44,7 +44,7 @@ class WithdrawButton extends Component {
     const msg = (
       <div>
         <p>
-            You&apos;re withdrawal is pending,
+            Your withdrawal is pending,
             <a
               href={`${etherScanUrl}tx/${txHash}`}
               target="_blank"
@@ -132,7 +132,7 @@ class WithdrawButton extends Component {
                 <Input
                   name="to"
                   id="to-input"
-                  label="To which address do you want to sent ether?"
+                  label="To which address do you want to send ether?"
                   type="text"
                   value={to}
                   validations="isEtherAddress"
@@ -156,7 +156,7 @@ class WithdrawButton extends Component {
                   }}
                   validationErrors={{
                     greaterThan: 'Minimum value must be at least Ξ0.01',
-                    lessThan: 'This withdraw amount exceeds your wallet balance.',
+                    lessThan: 'This withdrawal amount exceeds your wallet balance.',
                   }}
                   required
                 />
