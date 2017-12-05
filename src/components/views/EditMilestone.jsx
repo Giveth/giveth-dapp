@@ -388,7 +388,7 @@ class EditMilestone extends Component {
                       placeholder="10"
                       validations="greaterThan:0.1"
                       validationErrors={{
-                        greaterThan: 'Minimum value must be at least &#926;0.1',
+                        greaterThan: 'Minimum value must be at least &#926; 0.1',
                       }}
                       required
                     />
