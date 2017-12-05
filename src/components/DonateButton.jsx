@@ -115,12 +115,12 @@ class DonateButton extends Component {
             msg = (
               <div>
                 <p>
-                  You&apos;re donation is pending,
+                  Your donation is pending,
                   <a
                     href={`${etherScanUrl}tx/${txHash}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                  > view the transaction here.
+                  > view the transaction here. 
                   </a>
                   You have full control of this donation and
                   <strong> can take it back at any time</strong>. You will also have a
@@ -139,12 +139,12 @@ class DonateButton extends Component {
           } else {
             msg = (
               <div>
-                <p>You&apos;re donation is pending,
+                <p>Your donation is pending,
                 <a
                   href={`${etherScanUrl}tx/${txHash}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                > view the transaction here.
+                > view the transaction here. 
                 </a>
                 </p>
                 <p>Do make sure to
