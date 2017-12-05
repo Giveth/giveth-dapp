@@ -51,7 +51,7 @@ class DelegateButton extends Component {
 
     // TODO find a more friendly way to do this.
     if (admin.type === 'milestone' && toBN(admin.maxAmount).lt(toBN(admin.totalDonated || 0).add(toBN(model.amount)))) {
-      React.toast.error('That milestone has reached its funding goal. Please pick another');
+      React.toast.error('That milestone has reached its funding goal. Please pick another.');
       return;
     }
 
@@ -80,12 +80,12 @@ class DelegateButton extends Component {
 
           let msg;
           if (admin.type === 'milestone' || 'campaign') {
-            msg = (<p>The donation has been delegated, <a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">view the transaction here.</a>
+            msg = (<p>This donation has been delegated, <a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">view the transaction here.</a>
               The giver has <strong>3 days</strong> to reject your delegation before the money
               gets locked.
                    </p>);
           } else {
-            msg = <p>The donation has been delegated, <a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">view the transaction here.</a> The donator has been notified.</p>;
+            msg = <p>This donation has been delegated, <a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">view the transaction here.</a> The donator has been notified.</p>;
           }
 
           React.swal({
@@ -173,11 +173,11 @@ class DelegateButton extends Component {
         >
 
           { milestoneOnly &&
-            <p>Select a Milestone to delegate this donation to</p>
+            <p>Select a Milestone to delegate this donation to:</p>
           }
 
           { !milestoneOnly &&
-            <p>Select a DAC, Campaign or Milestone to delegate this donation to</p>
+            <p>Select a DAC, Campaign or Milestone to delegate this donation to:</p>
           }
 
           <Form onSubmit={this.submit} layout="vertical">

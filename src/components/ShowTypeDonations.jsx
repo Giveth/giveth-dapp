@@ -76,7 +76,7 @@ class ShowTypeDonations extends Component {
             }
 
             { donations && donations.length === 0 &&
-              <p>No donations have been made yet. Be the first, donate now!</p>
+              <p>No donations have been made yet. Be the first to donate now!</p>
             }
           </div>
         }

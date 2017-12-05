@@ -76,7 +76,7 @@ class UnlockWallet extends Component {
 
         <h2>Unlock your wallet to continue</h2>
         <p className="small">
-          Note: for security reasons your wallet auto-locks whenever the Giveth dapp reloads.
+          Note: For security reasons, your wallet auto-locks whenever the Giveth dapp reloads.
         </p>
 
         <UnlockWalletForm

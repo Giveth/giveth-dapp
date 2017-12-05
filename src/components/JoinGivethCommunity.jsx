@@ -28,7 +28,7 @@ class JoinGivethCommunity extends Component {
           React.swal({
             title: "You're almost there...",
             content: React.swal.msg(<p>
-                Great to see that you want to start a Decentralized Altruistic Community, or DAC.
+                It&#8217;s great to see that you want to start a Decentralized Altruistic Community, or DAC.
                 To get started, please sign up (or sign in) first.
                                     </p>),
             icon: 'info',
@@ -42,7 +42,7 @@ class JoinGivethCommunity extends Component {
         React.swal({
           title: 'Sorry, Giveth is in beta...',
           content: React.swal.msg(<p>
-              Great to see that you want to start a Decentralized Altruistic Community, or DAC!
+              It&#8217;s great to see that you want to start a Decentralized Altruistic Community, or DAC!
               However, Giveth is still in beta and we only allow a select group of people to start DACs<br />
               Please <strong>contact us on our Slack</strong>, or keep browsing the dApp.
                                   </p>),
@@ -63,7 +63,7 @@ class JoinGivethCommunity extends Component {
           React.swal({
             title: "You're almost there...",
             content: React.swal.msg(<p>
-                Great to see that you want to start a campaign.
+                It&#8217;s great to see that you want to start a campaign.
                 To get started, please sign up (or sign in) first.
                                     </p>),
             icon: 'info',
@@ -77,8 +77,8 @@ class JoinGivethCommunity extends Component {
         React.swal({
           title: 'Sorry, Giveth is in beta...',
           content: React.swal.msg(<p>
-              Great to see that you want to start a campaign!
-              However, Giveth is still in beta and we only allow a select group of people to start campaigns<br />
+              It&#8217;s great to see that you want to start a campaign,
+              however, Giveth is still in beta and we only allow a select group of people to start campaigns<br />
               Please <strong>contact us on our Slack</strong>, or keep browsing the dApp.
                                   </p>),
           icon: 'info',
