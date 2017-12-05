@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import ReactDOM from 'react-dom';
 
-import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
+import { Router, Route, Switch } from 'react-router-dom';
 import localforage from 'localforage';
 
 import { ToastContainer, toast } from 'react-toastify';
@@ -16,6 +16,7 @@ import DataRoutes from './DataRoutes';
 
 import GivethWallet from '../lib/blockchain/GivethWallet';
 import getWeb3 from '../lib/blockchain/getWeb3';
+import { history } from '../lib/helpers';
 
 // views
 import Profile from './../components/views/Profile';
@@ -200,7 +201,7 @@ class Application extends Component {
     } = this.state;
 
     return (
-      <Router>
+      <Router history={history}>
         <div>
           {isLoading &&
           <Loader className="fixed" />

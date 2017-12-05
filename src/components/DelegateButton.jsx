@@ -9,7 +9,7 @@ import PropTypes from 'prop-types';
 
 import { feathersClient } from '../lib/feathersClient';
 import { takeActionAfterWalletUnlock, checkWalletBalance } from '../lib/middleware';
-import { displayTransactionError } from '../lib/helpers';
+import { displayTransactionError, confirmBlockchainTransaction } from '../lib/helpers';
 import getNetwork from '../lib/blockchain/getNetwork';
 import getWeb3 from '../lib/blockchain/getWeb3';
 import GivethWallet from '../lib/blockchain/GivethWallet';
@@ -51,7 +51,7 @@ class DelegateButton extends Component {
 
     // TODO find a more friendly way to do this.
     if (admin.type === 'milestone' && toBN(admin.maxAmount).lt(toBN(admin.totalDonated || 0).add(toBN(model.amount)))) {
-      React.toast.error('That milestone has reached its funding goal. Please pick another');
+      React.toast.error('That milestone has reached its funding goal. Please pick another.');
       return;
     }
 
@@ -102,25 +102,26 @@ class DelegateButton extends Component {
     let txHash;
     let etherScanUrl;
 
-    Promise.all([getNetwork(), getWeb3()])
+    const doDelegate = () => Promise.all([getNetwork(), getWeb3()])
       .then(([network, web3]) => {
         const { liquidPledging } = network;
         etherScanUrl = network.etherscan;
 
+        const from = (model.delegate > 0) ? model.delegateEntity.ownerAddress : model.ownerEntity.ownerAddress;
         const senderId = (model.delegate > 0) ? model.delegate : model.owner;
         const receiverId = (admin.type === 'dac') ? admin.delegateId : admin.projectId;
 
         const executeTransfer = () => {
           if (model.ownerType === 'campaign') {
             return new LPPCampaign(web3, model.ownerEntity.pluginAddress)
-              .transfer(model.pledgeId, model.amount, receiverId, { $extraGas: 50000 });
+              .transfer(model.pledgeId, model.amount, receiverId, { $extraGas: 50000, from });
           } else if (model.ownerType === 'giver' && model.delegate > 0) {
             return new LPPDac(web3, model.delegateEntity.pluginAddress)
-              .transfer(model.pledgeId, model.amount, receiverId, { $extraGas: 50000 });
+              .transfer(model.pledgeId, model.amount, receiverId, { $extraGas: 50000, from });
           }
 
           return liquidPledging
-            .transfer(senderId, model.pledgeId, model.amount, receiverId, { $extraGas: 50000 });
+            .transfer(senderId, model.pledgeId, model.amount, receiverId, { $extraGas: 50000, from });
         };
 
         return executeTransfer()
@@ -135,6 +136,12 @@ class DelegateButton extends Component {
         displayTransactionError(txHash, etherScanUrl);
         this.setState({ isSaving: false });
       });
+
+    // Delegate
+    confirmBlockchainTransaction(
+      doDelegate,
+      () => this.setState({ isSaving: false }),
+    );
   }
 
   resetSkylight() {
@@ -166,11 +173,11 @@ class DelegateButton extends Component {
         >
 
           { milestoneOnly &&
-            <p>Select a Milestone to delegate this donation to</p>
+            <p>Select a Milestone to delegate this donation to:</p>
           }
 
           { !milestoneOnly &&
-            <p>Select a DAC, Campaign or Milestone to delegate this donation to</p>
+            <p>Select a DAC, Campaign or Milestone to delegate this donation to:</p>
           }
 
           <Form onSubmit={this.submit} layout="vertical">

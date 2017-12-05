@@ -29,7 +29,7 @@ class MyDACs extends Component {
   }
 
   componentDidMount() {
-    isAuthenticated(this.props.currentUser, this.props.history, this.props.wallet).then(() => {
+    isAuthenticated(this.props.currentUser, this.props.wallet).then(() => {
       this.dacsObserver = DACservice.getUserDACs(
         this.props.currentUser.address,
         dacs => this.setState({ dacs, isLoading: false }),

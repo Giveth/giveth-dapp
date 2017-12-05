@@ -9,7 +9,7 @@ import { isAuthenticated, checkWalletBalance } from '../../lib/middleware';
 import LoaderButton from '../../components/LoaderButton';
 import getNetwork from '../../lib/blockchain/getNetwork';
 import User from '../../models/User';
-import { displayTransactionError } from '../../lib/helpers';
+import { displayTransactionError, confirmBlockchainTransaction } from '../../lib/helpers';
 import GivethWallet from '../../lib/blockchain/GivethWallet';
 
 /**
@@ -42,8 +42,8 @@ class EditProfile extends Component {
   }
 
   componentDidMount() {
-    isAuthenticated(this.props.currentUser, this.props.history, this.props.wallet)
-      .then(() => checkWalletBalance(this.props.wallet))
+    isAuthenticated(this.props.currentUser, this.props.wallet)
+      .then(() => checkWalletBalance(this.props.wallet, this.props.history))
       .then(() => this.setState({ isLoading: false }))
       .catch((err) => {
         if (err === 'noBalance') this.props.history.goBack();
@@ -112,14 +112,19 @@ class EditProfile extends Component {
       }
     };
 
-
-    if (this.state.uploadNewAvatar) {
-      feathersClient.service('/uploads').create({ uri: this.state.avatar }).then((file) => {
-        updateUser(file.url);
-      });
-    } else {
-      updateUser();
-    }
+    // Save user profile
+    confirmBlockchainTransaction(
+      () => {
+        if (this.state.uploadNewAvatar) {
+          feathersClient.service('/uploads').create({ uri: this.state.avatar }).then((file) => {
+            updateUser(file.url);
+          });
+        } else {
+          updateUser();
+        }
+      },
+      () => this.setState({ isSaving: false }),
+    );
   }
 
   togglePristine(currentValues, isChanged) {
