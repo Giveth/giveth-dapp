@@ -19,7 +19,7 @@ import User from '../../models/User';
 import GivethWallet from '../../lib/blockchain/GivethWallet';
 
 /**
- * Create or edit a milestone
+ * Create or edit a Milestone
  *
  *  @props
  *    isNew (bool):
@@ -165,7 +165,7 @@ class EditMilestone extends Component {
             donationCount: 0,
             campaignOwnerAddress: this.state.campaignOwnerAddress,
           });
-          React.toast.info(<p>Your milestone is being proposed to the campaign owner.</p>);
+          React.toast.info(<p>Your Milestone is being proposed to the Campaign Owner.</p>);
         } else {
           let etherScanUrl;
           Promise.all([getNetwork(), getWeb3()])
@@ -184,10 +184,10 @@ class EditMilestone extends Component {
                     totalDonated: '0',
                     donationCount: '0',
                   });
-                  React.toast.info(<p>Your milestone is pending....<br /><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>);
+                  React.toast.info(<p>Your Milestone is pending....<br /><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>);
                 })
                 .then(() => {
-                  React.toast.success(<p>Your milestone has been created!<br /><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>);
+                  React.toast.success(<p>Your Milestone has been created!<br /><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>);
                 });
             })
             .catch(() => {
@@ -245,23 +245,23 @@ class EditMilestone extends Component {
                       }
 
                   { isNew && isProposed &&
-                  <h3>Propose a milestone</h3>
+                  <h3>Propose a Milestone</h3>
                       }
 
                   <h6>Campaign: <strong>{getTruncatedText(campaignTitle, 100)}</strong></h6>
 
                   <p>
                     <i className="fa fa-question-circle" />
-                    A milestone is a single accomplishment within a project. In the end, all
-                    donations end up in milestones. Once milestones are completed, you can
-                    request payout.
+                    A Milestone is a single accomplishment within a project. In the end, all
+                    donations end up in Milestones. Once your Milestone is completed, you can
+                    request a payout.
                   </p>
 
                   { isProposed &&
                     <p>
                       <i className="fa fa-exclamation-triangle" />
-                      You are proposing a milestone to the campaign owner.
-                      The campaign owner can accept or reject your milestone
+                      You are proposing a Milestone to the Campaign Owner.
+                      The Campaign Owner can accept or reject your Milestone
                     </p>
                   }
                 </div>
@@ -282,12 +282,12 @@ class EditMilestone extends Component {
 
                   <Input
                     name="title"
-                    label="What are you going to accomplish in this milestone."
+                    label="What are you going to accomplish in this Milestone?"
                     id="title-input"
                     type="text"
                     value={title}
                     placeholder="E.g. buying goods"
-                    help="Describe your milestone in 1 sentence."
+                    help="Describe your Milestone in 1 sentence."
                     validations="minLength:3"
                     validationErrors={{
                       minLength: 'Please provide at least 3 characters.',
@@ -303,11 +303,11 @@ class EditMilestone extends Component {
                       helpText="Make it as extensive as necessary. Your goal is to build trust,
                         so that people donate Ether to your campaign."
                       value={description}
-                      placeholder="Describe how you're going to execute your milestone successfully
+                      placeholder="Describe how you're going to execute your Milestone successfully
                         ..."
                       onTextChanged={content => this.constructSummary(content)}
                       validations="minLength:3"
-                      help="Describe your milestone."
+                      help="Describe your Milestone."
                       validationErrors={{
                         minLength: 'Please provide at least 3 characters.',
                       }}
@@ -327,12 +327,12 @@ class EditMilestone extends Component {
                     <Input
                       name="reviewerAddress"
                       id="title-input"
-                      label="Each milestone needs a reviewer who verifies that the milestone is
+                      label="Each Milestone needs a reviewer who verifies that the Milestone is
                         completed successfully"
                       type="text"
                       value={reviewerAddress}
                       placeholder="0x0000000000000000000000000000000000000000"
-                      help={hasWhitelist ? "The milestone reviewer is automatically assigned while Giveth is in beta." : ""}
+                      help={hasWhitelist ? "The Milestone reviewer is automatically assigned while Giveth is in beta." : ""}
                       validations="isEtherAddress"
                       validationErrors={{
                         isEtherAddress: 'Please insert a valid Ethereum address.',
@@ -363,7 +363,7 @@ class EditMilestone extends Component {
                     <div className="form-group">
                       <DatePickerFormsy
                         name="completionDeadline"
-                        label="Until what date is the milestone achievable?"
+                        label="Until what date is the Milestone achievable?"
                         type="text"
                         value={completionDeadline}
                         changeDate={date => this.changeDate(date)}
@@ -383,7 +383,7 @@ class EditMilestone extends Component {
                       name="maxAmount"
                       id="maxamount-input"
                       type="number"
-                      label="Maximum amount of &#926; required for this milestone"
+                      label="Maximum amount of &#926; required for this Milestone"
                       value={maxAmount}
                       placeholder="10"
                       validations="greaterThan:0.1"
