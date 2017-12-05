@@ -125,14 +125,14 @@ class DonateButton extends Component {
                   You have full control of this donation and
                   <strong> can take it back at any time</strong>. You will also have a
                   <strong> 3 day window</strong> to veto the use of these funds upon delegation by
-                  the dac.
+                  the DAC.
                 </p>
                 <p>Do make sure to
                   <a
                     href={this.props.communityUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                  > join the community
+                  > join the Community
                   </a> to follow the progress of this DAC.
                 </p>
               </div>);
@@ -152,7 +152,7 @@ class DonateButton extends Component {
                     href={this.props.communityUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                  > join the community
+                  > join the Community
                   </a> to follow the progress of this Campaign.
                 </p>
               </div>);
@@ -251,7 +251,7 @@ class DonateButton extends Component {
                   }}
                   validationErrors={{
                     greaterThan: 'Minimum value must be at least Ξ0.1',
-                    lessThan: 'This donation exceeds your wallet balance. Pledge that you also need to pay for the transaction.',
+                    lessThan: 'This donation exceeds your Giveth wallet balance. Please top up your wallet or donate with MyEtherWallet.',
                   }}
                   required
                   autoFocus
