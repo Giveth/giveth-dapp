@@ -144,10 +144,10 @@ class EditProfile extends Component {
                 <h3>Edit your profile</h3>
                 <p>
                   <i className="fa fa-question-circle" />
-                  Trust is important to run successful communities or campaigns.
+                  Trust is important to run successful Communities or Campaigns.
                   Without trust you will likely not receive donations.
-                  Therefore, we strongly recommend that you <strong>fill out your profile</strong>
-                  when you want to start communities or campaigns on Giveth.
+                  Therefore, we strongly recommend that you <strong>fill out your profile</strong> 
+                  when you want to start Communities or Campaigns on Giveth.
                 </p>
 
                 <Form
@@ -186,7 +186,7 @@ class EditProfile extends Component {
                       validations="isEmail"
                       help="Please enter your email address."
                       validationErrors={{
-                        isEmail: "That's not a valid email address.",
+                        isEmail: "Oops, that's not a valid email address.",
                       }}
                       required
                     />
@@ -197,15 +197,14 @@ class EditProfile extends Component {
                   <div className="form-group">
                     <Input
                       name="linkedIn"
-                      label="LinkedIn Profile"
+                      label="Your Profile"
                       type="text"
                       value={linkedIn}
-                      placeholder="Your linkedIn profile url"
-                      help="Fill this out so that people can check your LinkedIn profile and ask
-                        for references."
+                      placeholder="Your profile url"
+                      help="Provide a link to some more info about you, this will help to build trust. You could add your LinkedIn profile, Twitter account or a relevant website."
                       validations="isUrl"
                       validationErrors={{
-                        isUrl: 'Please enter your linkedin profile url',
+                        isUrl: 'Please enter a valid url',
                       }}
                     />
                   </div>
