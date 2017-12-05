@@ -60,7 +60,7 @@ class DonateButton extends Component {
       React.swal({
         title: "You're almost there...",
         content: React.swal.msg(<p>
-            It's great to see that you want to donate, however, you first need to sign up (or sign in).
+            It&#8217;s great to see that you want to donate, however, you first need to sign up (or sign in).
             Also make sure to transfer some Ether to your Giveth wallet before donating.<br /><br />
             Alternatively, you can donate with MyEtherWallet
                                 </p>),
