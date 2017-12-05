@@ -301,7 +301,7 @@ class EditMilestone extends Component {
                       name="description"
                       label="Explain how you are going to do this successfully."
                       helpText="Make it as extensive as necessary. Your goal is to build trust,
-                        so that people donate Ether to your campaign."
+                        so that people donate Ether to your Campaign."
                       value={description}
                       placeholder="Describe how you're going to execute your Milestone successfully
                         ..."
@@ -332,7 +332,7 @@ class EditMilestone extends Component {
                       type="text"
                       value={reviewerAddress}
                       placeholder="0x0000000000000000000000000000000000000000"
-                      help={hasWhitelist ? "The Milestone reviewer is automatically assigned while Giveth is in beta." : ""}
+                      help={hasWhitelist ? "The Milestone Reviewer is automatically assigned while Giveth is in beta." : ""}
                       validations="isEtherAddress"
                       validationErrors={{
                         isEtherAddress: 'Please insert a valid Ethereum address.',
