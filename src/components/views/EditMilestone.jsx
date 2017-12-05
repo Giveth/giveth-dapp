@@ -301,7 +301,7 @@ class EditMilestone extends Component {
                       name="description"
                       label="Explain how you are going to do this successfully."
                       helpText="Make it as extensive as necessary. Your goal is to build trust,
-                        so that people donate Ether to your Campaign."
+                        so that people donate Ether to your Campaign. Don't hesitate to add a detailed budget for this Milestone"
                       value={description}
                       placeholder="Describe how you're going to execute your Milestone successfully
                         ..."
@@ -327,7 +327,7 @@ class EditMilestone extends Component {
                     <Input
                       name="reviewerAddress"
                       id="title-input"
-                      label="Each Milestone needs a reviewer who verifies that the Milestone is
+                      label="Each Milestone needs a Reviewer who verifies that the Milestone is
                         completed successfully"
                       type="text"
                       value={reviewerAddress}
