@@ -39,7 +39,7 @@ class MyMilestones extends Component {
   componentDidMount() {
     const myAddress = this.props.currentUser.address;
 
-    isAuthenticated(this.props.currentUser, this.props.history, this.props.wallet).then(() => {
+    isAuthenticated(this.props.currentUser, this.props.wallet).then(() => {
       this.milestonesObserver = feathersClient.service('milestones').watch({ strategy: 'always' }).find({
         query: {
           $or: [

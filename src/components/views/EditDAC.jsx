@@ -44,7 +44,7 @@ class EditDAC extends Component {
   }
 
   componentDidMount() {
-    isAuthenticated(this.props.currentUser, this.props.history, this.props.wallet)
+    isAuthenticated(this.props.currentUser, this.props.wallet)
       .then(() => isInWhitelist(
         this.props.currentUser, React.whitelist.delegateWhitelist,
         this.props.history,

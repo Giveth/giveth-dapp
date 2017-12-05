@@ -61,7 +61,7 @@ class EditMilestone extends Component {
 
   componentDidMount() {
     console.log(this.props.isProposed);
-    isAuthenticated(this.props.currentUser, this.props.history, this.props.wallet)
+    isAuthenticated(this.props.currentUser, this.props.wallet)
       .then(() => {
         if (!this.props.isProposed) checkWalletBalance(this.props.wallet, this.props.history);
       })

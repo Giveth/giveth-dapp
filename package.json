@@ -16,6 +16,7 @@
     "formsy-react": "^0.19.5",
     "formsy-react-components": "^0.10.1",
     "giveth-react-scripts": "1.0.12",
+    "history": "^4.7.2",
     "liquidpledging": "git://github.com/giveth/liquidpledging.git#395d243",
     "localforage": "^1.5.0",
     "lpp-campaign": "0.0.13",

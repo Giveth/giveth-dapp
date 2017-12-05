@@ -1,5 +1,6 @@
 import React from 'react';
 import 'whatwg-fetch';
+import { createBrowserHistory } from 'history';
 import { feathersClient } from './feathersClient';
 import DefaultAvatar from './../assets/avatar-100.svg';
 
@@ -139,3 +140,5 @@ export const calculateRiskFactor = (owner, dependencies) => {
 
   return reasons;
 };
+
+export const history = createBrowserHistory();
