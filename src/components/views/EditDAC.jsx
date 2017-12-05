@@ -135,7 +135,7 @@ class EditDAC extends Component {
 
                 <div className="form-header">
                   { isNew &&
-                  <h3>Start a Decentralized Altruistic Community (DAC)!</h3>
+                  <h3>Start a Decentralized Altruistic Community (DAC)</h3>
                       }
 
                   { !isNew &&
@@ -143,8 +143,8 @@ class EditDAC extends Component {
                       }
 
                   <p><i className="fa fa-question-circle" />A DAC aims to solve a cause by building
-                    a community, raising funds and delegating those funds to campaigns that solve
-                    its cause.
+                    a Community, raising funds and delegating those funds to Campaigns that solve
+                    its cause. Should you create a Campaign or Community? Read more [here.](http://wiki.giveth.io)
                   </p>
                 </div>
 
@@ -183,7 +183,7 @@ class EditDAC extends Component {
                       name="description"
                       label="Explain how you are going to solve this your cause"
                       helpText="Make it as extensive as necessary. Your goal is to build trust,
-                        so that people join your community and/or donate Ether."
+                        so that people join your Community and/or donate Ether."
                       value={dac.description}
                       placeholder="Describe how you're going to solve your cause..."
                       validations="minLength:20"
