@@ -9,7 +9,8 @@ import Loader from './../Loader';
 import QuillFormsy from './../QuillFormsy';
 import FormsyImageUploader from './../FormsyImageUploader';
 import GoBackButton from '../GoBackButton';
-import { isOwner, displayTransactionError, getRandomWhitelistAddress, getTruncatedText } from '../../lib/helpers';
+import { isOwner, displayTransactionError, getRandomWhitelistAddress, getTruncatedText,
+  confirmBlockchainTransaction } from '../../lib/helpers';
 import { isAuthenticated, checkWalletBalance, isInWhitelist } from '../../lib/middleware';
 import getNetwork from '../../lib/blockchain/getNetwork';
 import getWeb3 from '../../lib/blockchain/getWeb3';
@@ -50,7 +51,7 @@ class EditMilestone extends Component {
       status: 'pending',
       uploadNewImage: false,
       campaignTitle: '',
-      hasWhitelist: React.whitelist.reviewerWhitelist.length > 0
+      hasWhitelist: React.whitelist.reviewerWhitelist.length > 0,
     };
 
     this.submit = this.submit.bind(this);
@@ -60,7 +61,7 @@ class EditMilestone extends Component {
 
   componentDidMount() {
     console.log(this.props.isProposed);
-    isAuthenticated(this.props.currentUser, this.props.history, this.props.wallet)
+    isAuthenticated(this.props.currentUser, this.props.wallet)
       .then(() => {
         if (!this.props.isProposed) checkWalletBalance(this.props.wallet, this.props.history);
       })
@@ -200,11 +201,17 @@ class EditMilestone extends Component {
       }
     };
 
-    if (this.state.uploadNewImage) {
-      feathersClient.service('/uploads').create({ uri: this.state.image }).then(file => updateMilestone(file.url));
-    } else {
-      updateMilestone();
-    }
+    // Save the Milestone
+    confirmBlockchainTransaction(
+      () => {
+        if (this.state.uploadNewImage) {
+          feathersClient.service('/uploads').create({ uri: this.state.image }).then(file => updateMilestone(file.url));
+        } else {
+          updateMilestone();
+        }
+      },
+      () => this.setState({ isSaving: false }),
+    );
   }
 
   toggleFormValid(state) {
@@ -219,7 +226,7 @@ class EditMilestone extends Component {
     const { isNew, isProposed, history } = this.props;
     const {
       isLoading, isSaving, title, description, image, recipientAddress, reviewerAddress,
-      formIsValid, maxAmount, campaignTitle, hasWhitelist
+      formIsValid, maxAmount, campaignTitle, hasWhitelist,
     } = this.state;
 
     return (
@@ -332,7 +339,7 @@ class EditMilestone extends Component {
                       type="text"
                       value={reviewerAddress}
                       placeholder="0x0000000000000000000000000000000000000000"
-                      help={hasWhitelist ? "The milestone reviewer is automatically assigned while Giveth is in beta." : ""}
+                      help={hasWhitelist ? 'The milestone reviewer is automatically assigned while Giveth is in beta.' : ''}
                       validations="isEtherAddress"
                       validationErrors={{
                         isEtherAddress: 'Please insert a valid Ethereum address.',

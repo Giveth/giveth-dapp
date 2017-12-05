@@ -1,4 +1,5 @@
 import React from 'react';
+import { history } from '../lib/helpers';
 
 /**
  * Check if currentUser is authenticated. If not, routes back. If yes, resolves returned promise
@@ -10,12 +11,14 @@ import React from 'react';
  * @return new Promise
  *
  * usage:
- *    isAuthenticated(currentUser)
+ *    isAuthenticated(currentUser, wallet)
  *      .then(()=> ...do something when authenticated)
  */
 
-export const isAuthenticated = (currentUser, history, wallet) => new Promise(resolve =>
-  (currentUser && currentUser.address && wallet && wallet.unlocked ? resolve() : history.goBack()));
+export const isAuthenticated = (currentUser, wallet) => new Promise((resolve) => {
+  if (currentUser && currentUser.address && wallet && wallet.unlocked) resolve();
+  else history.goBack();
+});
 
 /**
  * check if the currentUser is in a particular whitelist. If not, route back.
@@ -65,9 +68,8 @@ export const redirectAfterWalletUnlock = (to, wallet, history) => {
 export const takeActionAfterWalletUnlock = (wallet, action) => {
   if (!wallet || (wallet && !wallet.unlocked)) {
     React.unlockWallet();
-  } else {
-    action.call();
   }
+  action();
 };
 
 

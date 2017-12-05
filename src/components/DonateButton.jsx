@@ -8,7 +8,7 @@ import getNetwork from '../lib/blockchain/getNetwork';
 import { feathersClient } from '../lib/feathersClient';
 import { takeActionAfterWalletUnlock } from '../lib/middleware';
 import User from '../models/User';
-import { displayTransactionError, getGasPrice } from '../lib/helpers';
+import { displayTransactionError, getGasPrice, confirmBlockchainTransaction } from '../lib/helpers';
 import GivethWallet from '../lib/blockchain/GivethWallet';
 
 class DonateButton extends Component {
@@ -168,28 +168,35 @@ class DonateButton extends Component {
 
     let txHash;
     let etherScanUrl;
-    getNetwork()
-      .then((network) => {
-        const { liquidPledging } = network;
-        etherScanUrl = network.etherscan;
+    const doDonate = () =>
+      getNetwork()
+        .then((network) => {
+          const { liquidPledging } = network;
+          etherScanUrl = network.etherscan;
 
-        return liquidPledging.donate(
-          this.props.currentUser.giverId || '0',
-          this.props.model.adminId, { value: amount },
-        )
-          .once('transactionHash', (hash) => {
-            txHash = hash;
-            donate(etherScanUrl, txHash);
-          });
-      })
-      .then(() => {
-        React.toast.success(<p>Your donation has been confirmed!<br /><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>);
-      }).catch((e) => {
-        console.error(e);
-        displayTransactionError(txHash, etherScanUrl);
+          return liquidPledging.donate(
+            this.props.currentUser.giverId || '0',
+            this.props.model.adminId, { value: amount },
+          )
+            .once('transactionHash', (hash) => {
+              txHash = hash;
+              donate(etherScanUrl, txHash);
+            });
+        })
+        .then(() => {
+          React.toast.success(<p>Your donation has been confirmed!<br /><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>);
+        }).catch((e) => {
+          console.error(e);
+          displayTransactionError(txHash, etherScanUrl);
 
-        this.setState({ isSaving: false });
-      });
+          this.setState({ isSaving: false });
+        });
+
+    // Donate
+    confirmBlockchainTransaction(
+      doDonate,
+      () => this.setState({ isSaving: false }),
+    );
   }
 
   render() {

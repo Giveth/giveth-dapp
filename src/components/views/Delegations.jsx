@@ -33,7 +33,7 @@ class Delegations extends Component {
   }
 
   componentDidMount() {
-    isAuthenticated(this.props.currentUser, this.props.history, this.props.wallet).then(() => {
+    isAuthenticated(this.props.currentUser, this.props.wallet).then(() => {
       /**
       Load all DACs/campaigns/milestones
       TO DO: We should really move this to a single service

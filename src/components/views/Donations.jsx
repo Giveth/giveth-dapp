@@ -60,7 +60,7 @@ class Donations extends Component {
   }
 
   componentDidMount() {
-    isAuthenticated(this.props.currentUser, this.props.history, this.props.wallet).then(() => {
+    isAuthenticated(this.props.currentUser, this.props.wallet).then(() => {
       this.donationsObserver = feathersClient.service('donations').watch({ strategy: 'always' }).find(paramsForServer({
         schema: 'includeTypeDetails',
         query: {
