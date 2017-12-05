@@ -60,7 +60,7 @@ class DonateButton extends Component {
       React.swal({
         title: "You're almost there...",
         content: React.swal.msg(<p>
-            Great to see that you want to donate!! However you first need to sign up (or sign in).
+            It&#8217;s great to see that you want to donate, however, you first need to sign up (or sign in).
             Also make sure to transfer some Ether to your Giveth wallet before donating.<br /><br />
             Alternatively, you can donate with MyEtherWallet
                                 </p>),
@@ -115,7 +115,7 @@ class DonateButton extends Component {
             msg = (
               <div>
                 <p>
-                  You&apos;re donation is pending,
+                  Your donation is pending,
                   <a
                     href={`${etherScanUrl}tx/${txHash}`}
                     target="_blank"
@@ -139,7 +139,7 @@ class DonateButton extends Component {
           } else {
             msg = (
               <div>
-                <p>You&apos;re donation is pending,
+                <p>Your donation is pending,
                 <a
                   href={`${etherScanUrl}tx/${txHash}`}
                   target="_blank"
@@ -258,7 +258,7 @@ class DonateButton extends Component {
                   }}
                   validationErrors={{
                     greaterThan: 'Minimum value must be at least Ξ0.1',
-                    lessThan: 'This donation exceeds your wallet balance. Pledge that you also need to pay for the transaction.',
+                    lessThan: 'This donation exceeds your wallet balance. Please remember that you must also pay the transaction fee.',
                   }}
                   required
                   autoFocus
