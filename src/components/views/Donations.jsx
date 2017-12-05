@@ -101,7 +101,7 @@ class Donations extends Component {
       checkWalletBalance(this.props.wallet, this.props.history).then(() =>
         React.swal({
           title: 'Commit your donation?',
-          text: 'Your donation will go to this milestone. After committing you cannot take back your money anymore.',
+          text: 'Your donation will go to this Milestone. After committing you can no longer take back your money.',
           icon: 'warning',
           buttons: ['Cancel', 'Yes, commit'],
         }).then((isConfirmed) => {
@@ -162,7 +162,7 @@ class Donations extends Component {
       checkWalletBalance(this.props.wallet, this.props.history).then(() =>
         React.swal({
           title: 'Reject your donation?',
-          text: 'Your donation will not go to this milestone. You will still be in control of you funds and the dac can still delegate you donation.',
+          text: 'Your donation will not go to this Milestone. You will still be in control of you funds and the DAC can still delegate you donation.',
           icon: 'warning',
           dangerMode: true,
           buttons: ['Cancel', 'Yes, reject'],
@@ -217,13 +217,13 @@ class Donations extends Component {
     takeActionAfterWalletUnlock(this.props.wallet, () =>
       checkWalletBalance(this.props.wallet, this.props.history).then(() =>
         React.swal({
-          title: 'Refund your donation?',
-          text: 'Your donation will be cancelled and the a payment will be authorized for you to withdraw your ETH. All withdrawls' +
-          ' must be confirmed for security reasons and may take a day or two. Upon confirmation, your &#926; will be' +
+          title: 'Revoke your donation?',
+          text: 'Your donation will be cancelled and the payment will be authorized for you to withdraw your ETH. All withdrawals' +
+          ' must be confirmed for security reasons and may take a day or two. Upon confirmation, your ETH will be' +
           ' transferred to your wallet.',
           icon: 'warning',
           dangerMode: true,
-          buttons: ['Cancel', 'Yes, refund'],
+          buttons: ['Cancel', 'Yes, revoke'],
         }).then((isConfirmed) => {
           if (isConfirmed) {
             this.setState({ isRefunding: true });
