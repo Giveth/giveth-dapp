@@ -37,6 +37,7 @@ class Campaign extends BasicModel {
       txHash: this.txHash,
       totalDonated: this.totalDonated,
       donationCount: this.donationCount,
+      peopleCount: this.peopleCount,
       tokenName: this.tokenName,
       tokenSymbol: this.tokenSymbol,
       dacs: this.dacs,

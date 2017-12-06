@@ -37,7 +37,9 @@ class CampaignService {
       },
     }).subscribe(
       (resp) => {
+        console.log('resp', resp);
         const newResp = Object.assign({}, resp, { data: resp.data.map(c => new Campaign(c)) });
+        console.log(newResp);
         onSuccess(newResp);
       },
       onError,

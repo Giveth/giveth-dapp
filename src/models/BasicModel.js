@@ -21,7 +21,7 @@ class BasicModel extends Model {
   }
 
   constructor({
-    _id, title = '', description = '', summary = '', image = '', txHash, owner, totalDonated = '0', donationCount = 0,
+    _id, title = '', description = '', summary = '', image = '', txHash, owner, totalDonated = '0', donationCount = 0, peopleCount = 0,
   }) {
     super();
 
@@ -35,6 +35,7 @@ class BasicModel extends Model {
     this.owner = owner;
     this.totalDonated = totalDonated;
     this.donationCount = donationCount;
+    this.peopleCount = peopleCount;
     this.myOrder = -1;
   }
 
@@ -118,6 +119,15 @@ class BasicModel extends Model {
   set donationCount(value) {
     this.checkType(value, ['number'], 'donationCount');
     this.myDonationCount = value;
+  }
+
+  get peopleCount() {
+    return this.myPeopleCount;
+  }  
+
+  set peopleCount(value) {
+    this.checkType(value, ['number'], 'peopleCount');
+    this.myPeopleCount = value;
   }
 }
 
