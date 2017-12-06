@@ -29,7 +29,7 @@ class SignUp extends Component {
   }
 
   onBackup() {
-    this.props.history.push('/profile');
+    this.props.history.push('/wallet');
   }
 
   submit({ password }) {

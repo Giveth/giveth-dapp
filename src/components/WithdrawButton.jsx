@@ -152,7 +152,7 @@ class WithdrawButton extends Component {
                   value={amount}
                   validations={{
                     lessThan: wallet.getBalance() - 0.1,
-                    greaterThan: 0.01,
+                    greaterThan: 0.0099999999999,
                   }}
                   validationErrors={{
                     greaterThan: 'Minimum value must be at least Ξ0.01',

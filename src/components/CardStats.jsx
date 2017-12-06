@@ -8,11 +8,11 @@ import PropTypes from 'prop-types';
  * TODO: Check the properties that are passed, sometimes they are number, sometimes strings...
  */
 const CardStats = ({
-  totalDonated, donationCount, maxAmount, campaignsCount, milestonesCount, type, status,
+  totalDonated, peopleCount, maxAmount, campaignsCount, milestonesCount, type, status,
 }) => (
   <div className="row card-stats">
     <div className="col-4 text-left">
-      <span><i className="fa fa-male" />{donationCount}</span>
+      <span><i className="fa fa-male" />{peopleCount}</span>
       <p>people</p>
     </div>
 
