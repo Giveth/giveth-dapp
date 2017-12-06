@@ -68,8 +68,9 @@ export const redirectAfterWalletUnlock = (to, wallet, history) => {
 export const takeActionAfterWalletUnlock = (wallet, action) => {
   if (!wallet || (wallet && !wallet.unlocked)) {
     React.unlockWallet();
+  } else {
+    action();
   }
-  action();
 };
 
 

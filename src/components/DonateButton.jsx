@@ -254,7 +254,7 @@ class DonateButton extends Component {
                   placeholder="10"
                   validations={{
                     lessThan: wallet.getBalance() - 0.5,
-                    greaterThan: 0.1,
+                    greaterThan: 0.00000000009,
                   }}
                   validationErrors={{
                     greaterThan: 'Minimum value must be at least Ξ0.1',

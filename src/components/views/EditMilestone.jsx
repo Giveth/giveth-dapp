@@ -393,7 +393,7 @@ class EditMilestone extends Component {
                       label="Maximum amount of &#926; required for this milestone"
                       value={maxAmount}
                       placeholder="10"
-                      validations="greaterThan:0.1"
+                      validations="greaterThan:0.0099999999999"
                       validationErrors={{
                         greaterThan: 'Minimum value must be at least &#926;0.1',
                       }}
