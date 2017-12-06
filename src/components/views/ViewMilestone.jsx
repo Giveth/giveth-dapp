@@ -179,7 +179,7 @@ class ViewMilestone extends Component {
                     <label>Reviewer</label>
                     <small
                       className="form-text"
-                    >This person will review the actual completion of the milestone
+                    >This person will review the actual completion of the Milestone
                     </small>
 
                     <table className="table-responsive">
@@ -206,7 +206,7 @@ class ViewMilestone extends Component {
                     <label>Recipient</label>
                     <small
                       className="form-text"
-                    >Where the Ether goes after successful completion of the milestone
+                    >Where the Ether goes after successful completion of the Milestone
                     </small>
 
                     <table className="table-responsive">
@@ -233,7 +233,7 @@ class ViewMilestone extends Component {
                     <label>Max amount to raise</label>
                     <small
                       className="form-text"
-                    >The maximum amount of &#926; that can be donated to this milestone
+                    >The maximum amount of &#926; (Ether) that can be donated to this Milestone
                     </small>
                     &#926;{utils.fromWei(maxAmount)}
                   </div>
@@ -242,7 +242,7 @@ class ViewMilestone extends Component {
                     <label>Amount donated</label>
                     <small
                       className="form-text"
-                    >The amount of &#926; currently donated to this milestone
+                    >The amount of &#926; (Ether) currently donated to this Milestone
                     </small>
                     &#926;{utils.fromWei(totalDonated)}
                   </div>
@@ -250,7 +250,7 @@ class ViewMilestone extends Component {
                   {/*
                     <div className="form-group">
                       <label>Completion deadline</label>
-                      <small className="form-text">When the milestone will be completed</small>
+                      <small className="form-text">When the Milestone will be completed</small>
                       {completionDeadline}
                     </div>
                   */}

@@ -120,19 +120,19 @@ class DonateButton extends Component {
                     href={`${etherScanUrl}tx/${txHash}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                  > view the transaction here.
+                  > view the transaction here. 
                   </a>
                   You have full control of this donation and
                   <strong> can take it back at any time</strong>. You will also have a
                   <strong> 3 day window</strong> to veto the use of these funds upon delegation by
-                  the dac.
+                  the DAC.
                 </p>
                 <p>Do make sure to
                   <a
                     href={this.props.communityUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                  > join the community
+                  > join the Community
                   </a> to follow the progress of this DAC.
                 </p>
               </div>);
@@ -144,7 +144,7 @@ class DonateButton extends Component {
                   href={`${etherScanUrl}tx/${txHash}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                > view the transaction here.
+                > view the transaction here. 
                 </a>
                 </p>
                 <p>Do make sure to
@@ -152,7 +152,7 @@ class DonateButton extends Component {
                     href={this.props.communityUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                  > join the community
+                  > join the Community
                   </a> to follow the progress of this Campaign.
                 </p>
               </div>);
@@ -258,7 +258,7 @@ class DonateButton extends Component {
                   }}
                   validationErrors={{
                     greaterThan: 'Minimum value must be at least Ξ0.1',
-                    lessThan: 'This donation exceeds your wallet balance. Please remember that you must also pay the transaction fee.',
+                    lessThan: 'This donation exceeds your Giveth wallet balance. Please top up your wallet or donate with MyEtherWallet.',
                   }}
                   required
                   autoFocus

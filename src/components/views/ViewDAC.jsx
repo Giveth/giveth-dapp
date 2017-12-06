@@ -124,8 +124,8 @@ class ViewDAC extends Component {
 
               <div className="row spacer-top-50 spacer-bottom-50">
                 <div className="col-md-8 m-auto card-view">
-                  <h4>{campaigns ? campaigns.length : 0} campaign(s)</h4>
-                  <p>These campaigns are working hard to solve the cause of this DAC</p>
+                  <h4>{campaigns ? campaigns.length : 0} Campaign(s)</h4>
+                  <p>These Campaigns are working hard to solve the cause of this Community (DAC) </p>
 
                   { campaigns && campaigns.length > 0 && isLoadingCampaigns &&
                     <Loader className="small" />

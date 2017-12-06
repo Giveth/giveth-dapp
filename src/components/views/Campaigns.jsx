@@ -34,7 +34,7 @@ const Campaigns = ({
           <center>
             <p>
               These campaigns work hard to solve causes.
-              Help them realise their goals by giving Ether!
+              Help them realise their goals by giving Ether.
             </p>
           </center>
 

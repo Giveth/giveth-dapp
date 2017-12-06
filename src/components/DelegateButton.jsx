@@ -80,12 +80,12 @@ class DelegateButton extends Component {
 
           let msg;
           if (admin.type === 'milestone' || 'campaign') {
-            msg = (<p>This donation has been delegated, <a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">view the transaction here.</a>
-              The giver has <strong>3 days</strong> to reject your delegation before the money
+            msg = (<p>The donation has been delegated, <a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">view the transaction here.</a>
+              The Giver has <strong>3 days</strong> to reject your delegation before the money
               gets locked.
                    </p>);
           } else {
-            msg = <p>This donation has been delegated, <a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">view the transaction here.</a> The donator has been notified.</p>;
+            msg = <p>The donation has been delegated, <a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">view the transaction here.</a> The Giver has been notified.</p>;
           }
 
           React.swal({
@@ -184,7 +184,7 @@ class DelegateButton extends Component {
             <div className="form-group">
               <InputToken
                 name="campaigns"
-                placeholder={milestoneOnly ? 'Select a milestone' : 'Select a campaign or milestone'}
+                placeholder={milestoneOnly ? 'Select a Milestone' : 'Select a Campaign or Milestone'}
                 value={objectsToDelegateTo}
                 options={types}
                 onSelect={this.selectedObject}

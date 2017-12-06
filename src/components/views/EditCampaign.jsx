@@ -179,8 +179,8 @@ class EditCampaign extends Component {
                   <p>
                     <i className="fa fa-question-circle" />
                       A campaign solves a specific cause by executing a project via
-                      its milestones. Funds raised by a campaign need to be delegated
-                      to its milestones in order to be paid out.
+                      its Milestones. Funds raised by a campaign need to be delegated
+                      to its Milestones in order to be paid out.
                   </p>
                 </div>
 
@@ -238,14 +238,14 @@ class EditCampaign extends Component {
                   <div className="form-group">
                     <label htmlFor="dac">
                       Relate your campaign to a community
-                      <small className="form-text" >By relating your campaign to a
-                        community, Ether from that community can be delegated to your campaign.
-                        This increases your chances of successfully funding your campaign.
+                      <small className="form-text" >By linking your Campaign to a
+                        Community, Ether from that community can be delegated to your Campaign.
+                        This increases your chances of successfully funding your Campaign.
                       </small>
                       <InputToken
                         name="dac"
                         id="dac"
-                        placeholder="Select one or more communities (DACs)"
+                        placeholder="Select one or more Communities (DACs)"
                         value={campaign.dacs}
                         options={dacsOptions}
                         onSelect={this.selectDACs}
@@ -257,11 +257,11 @@ class EditCampaign extends Component {
                     <Input
                       name="communityUrl"
                       id="community-url"
-                      label="Url to join your community"
+                      label="Url to join your Community"
                       type="text"
                       value={campaign.communityUrl}
                       placeholder="https://slack.giveth.com"
-                      help="Where can people join your community? Giveth redirect people there."
+                      help="Where can people join your Community? Giveth redirects people there."
                       validations="isUrl"
                       validationErrors={{ isUrl: 'Please provide a url.' }}
                     />
@@ -275,8 +275,8 @@ class EditCampaign extends Component {
                       type="text"
                       value={campaign.tokenName}
                       placeholder={campaign.title}
-                      help="The name of the token that givers will receive when they
-                        donate to this campaign."
+                      help="The name of the token that Givers will receive when they
+                        donate to this Campaign."
                       validations="minLength:3"
                       validationErrors={{ minLength: 'Please provide at least 3 characters.' }}
                       required
@@ -291,8 +291,8 @@ class EditCampaign extends Component {
                       label="Token Symbol"
                       type="text"
                       value={campaign.tokenSymbol}
-                      help="The symbol of the token that givers will receive when
-                        they donate to this campaign."
+                      help="The symbol of the token that Givers will receive when
+                        they donate to this Campaign."
                       validations="minLength:2"
                       validationErrors={{ minLength: 'Please provide at least 2 characters.' }}
                       required
@@ -308,9 +308,9 @@ class EditCampaign extends Component {
                       type="text"
                       value={campaign.reviewerAddress}
                       placeholder="0x0000000000000000000000000000000000000000"
-                      help={hasWhitelist
-                        ? 'This person or smart contract will be reviewing your campaign to increase trust for donators. It has been automatically assigned.'
-                        : 'This person or smart contract will be reviewing your campaign to increase trust for donators.'}
+                      help={hasWhitelist 
+                        ? "This person or smart contract will be reviewing your Campaign to increase trust for Givers. It has been automatically assigned."
+                        : "This person or smart contract will be reviewing your Campaign to increase trust for Givers."}
                       validations="isEtherAddress"
                       validationErrors={{ isEtherAddress: 'Please enter a valid Ethereum address.' }}
                       required
