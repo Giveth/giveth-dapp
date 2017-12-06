@@ -15,7 +15,8 @@
         "ignoreRestSiblings": true,
         "argsIgnorePattern": "^_"
       }
-    ]
+    ],
+    "linebreak-style": "off"
   },
   "env": {
     "jest": true
