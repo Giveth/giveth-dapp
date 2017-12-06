@@ -219,7 +219,7 @@ class Donations extends Component {
         React.swal({
           title: 'Refund your donation?',
           text: 'Your donation will be cancelled and the a payment will be authorized for you to withdraw your ETH. All withdrawls' +
-          ' must be confirmed for security reasons and may take a day or two. Upon confirmation, your &#926; will be' +
+          ' must be confirmed for security reasons and may take a day or two. Upon confirmation, your Ξ will be' +
           ' transferred to your wallet.',
           icon: 'warning',
           dangerMode: true,
