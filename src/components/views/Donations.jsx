@@ -218,7 +218,7 @@ class Donations extends Component {
       checkWalletBalance(this.props.wallet, this.props.history).then(() =>
         React.swal({
           title: 'Refund your donation?',
-          text: 'Your donation will be cancelled and the a payment will be authorized for you to withdraw your ETH. All withdrawls' +
+          text: 'Your donation will be cancelled and a payment will be authorized to refund your ETH. All withdrawals' +
           ' must be confirmed for security reasons and may take a day or two. Upon confirmation, your &#926; will be' +
           ' transferred to your wallet.',
           icon: 'warning',
