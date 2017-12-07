@@ -34,9 +34,12 @@ class DonateButton extends Component {
 
       const donate = liquidPledging.$contract.methods.donate(0, this.props.model.adminId);
       const data = donate.encodeABI();
-      const gasLimit = donate.estimateGas({ from: this.props.currentUser.address });
+      donate.estimateGas({ from: this.props.currentUser.address, value: 1 })
+        .then(gasLimit => this.setState({
+          MEWurl: `https://www.myetherwallet.com/?to=${liquidPledging.$address.toUpperCase()}&gaslimit=${gasLimit}&data=${data}`,
+        }));
 
-      this.setState({ MEWurl: `https://www.myetherwallet.com/?to=${liquidPledging.$address.toUpperCase()}&gaslimit=${gasLimit}&data=${data}` });
+      this.setState({ MEWurl: `https://www.myetherwallet.com/?to=${liquidPledging.$address.toUpperCase()}&gaslimit=550000&data=${data}` });
     });
   }
 

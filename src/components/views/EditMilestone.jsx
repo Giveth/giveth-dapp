@@ -176,7 +176,7 @@ class EditMilestone extends Component {
 
               const from = this.props.currentUser.address;
               new LPPMilestoneFactory(web3, network.milestoneFactoryAddress)
-                .deploy(liquidPledging.$address, model.title, '', this.state.campaignProjectId, model.recipientAddress, constructedModel.maxAmount, model.reviewerAddress, constructedModel.campaignReviewerAddress, { gas: 1500000, from })
+                .deploy(liquidPledging.$address, model.title, '', this.state.campaignProjectId, model.recipientAddress, constructedModel.maxAmount, model.reviewerAddress, constructedModel.campaignReviewerAddress, from, from, { gas: 2000000, from })
                 .on('transactionHash', (hash) => {
                   txHash = hash;
                   createMilestone({
@@ -220,6 +220,14 @@ class EditMilestone extends Component {
 
   constructSummary(text) {
     this.setState({ summary: text });
+  }
+
+  btnText() {
+    if (this.props.isNew) {
+      return this.props.isProposed ? 'Propose Milestone' : 'Create Milestone';
+    }
+
+    return 'Update Milestone';
   }
 
   render() {
@@ -339,7 +347,7 @@ class EditMilestone extends Component {
                       type="text"
                       value={reviewerAddress}
                       placeholder="0x0000000000000000000000000000000000000000"
-                      help={hasWhitelist ? "The Milestone Reviewer is automatically assigned while Giveth is in beta." : ""}
+                      help={hasWhitelist ? 'The Milestone Reviewer is automatically assigned while Giveth is in beta.' : ''}
                       validations="isEtherAddress"
                       validationErrors={{
                         isEtherAddress: 'Please insert a valid Ethereum address.',
@@ -414,14 +422,7 @@ class EditMilestone extends Component {
                         isLoading={isSaving}
                         loadingText="Saving..."
                       >
-                        { isNew && isProposed &&
-                          <span>Propose Milestone</span>
-                        }
-
-                        { (!isProposed || !isNew) &&
-                          <span>Update Milestone</span>
-                        }
-
+                        <span>{this.btnText()}</span>
                       </LoaderButton>
                     </div>
                   </div>
