@@ -13,7 +13,7 @@ const CardStats = ({
   <div className="row card-stats">
     <div className="col-4 text-left">
       <span><i className="fa fa-male" />{donationCount}</span>
-      <p>people</p>
+      <p>Giver(s)</p>
     </div>
 
     <div className="col-4 text-center">
@@ -26,7 +26,7 @@ const CardStats = ({
       { !maxAmount &&
       <span>&#926; {totalDonated && utils.fromWei(totalDonated)}</span>
           }
-      <p>donated</p>
+      <p>Donated</p>
     </div>
 
     <div className="col-4 text-right">
@@ -40,7 +40,7 @@ const CardStats = ({
       {type === 'campaign' &&
       <div>
         <span><i className="fa fa-check-circle" />{milestonesCount}</span>
-        <p>milestone(s)</p>
+        <p>Milestone(s)</p>
       </div>
           }
 
