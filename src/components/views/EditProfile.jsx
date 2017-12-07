@@ -144,10 +144,10 @@ class EditProfile extends Component {
                 <h3>Edit your profile</h3>
                 <p>
                   <i className="fa fa-question-circle" />
-                  Trust is important to run successful communities or campaigns.
+                  Trust is important to run successful Communities or Campaigns.
                   Without trust you will likely not receive donations.
-                  Therefore, we strongly recommend that you <strong>fill out your profile</strong>
-                  when you want to start communities or campaigns on Giveth.
+                  Therefore, we strongly recommend that you <strong>fill out your profile </strong>
+                  when you want to start Communities or Campaigns on Giveth.
                 </p>
 
                 <Form
