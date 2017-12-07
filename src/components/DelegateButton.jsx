@@ -61,12 +61,15 @@ class DelegateButton extends Component {
         status: 'pending',
       };
 
-      if (admin.type.toLowerCase() === 'dac') {
+      if (model.ownerType.toLowerCase() === 'campaign') {
+        // campaign is the owner, so they transfer the donation, not propose
         Object.assign(mutation, {
-          delegate: admin.delegateId,
-          delegateId: admin._id,
+          owner: admin.projectId,
+          ownerId: admin._id,
+          ownerType: admin.type,
         });
       } else {
+        // dac proposes a delegation
         Object.assign(mutation, {
           intendedProject: admin.projectId,
           intendedProjectId: admin._id,
@@ -79,7 +82,7 @@ class DelegateButton extends Component {
           this.resetSkylight();
 
           let msg;
-          if (admin.type === 'milestone' || 'campaign') {
+          if (model.delegate > 0) {
             msg = (<p>The donation has been delegated, <a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">view the transaction here.</a>
               The Giver has <strong>3 days</strong> to reject your delegation before the money
               gets locked.
@@ -177,7 +180,7 @@ class DelegateButton extends Component {
           }
 
           { !milestoneOnly &&
-            <p>Select a DAC, Campaign or Milestone to delegate this donation to:</p>
+            <p>Select a Campaign or Milestone to delegate this donation to:</p>
           }
 
           <Form onSubmit={this.submit} layout="vertical">
