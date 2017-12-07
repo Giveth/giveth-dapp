@@ -29,8 +29,15 @@ class DonateButton extends Component {
   }
 
   componentDidMount() {
-    getNetwork().then(network =>
-      this.setState({ MEWurl: `https://www.myetherwallet.com/?to=${network.liquidPledgingAddress.toUpperCase()}&gaslimit=550000&idGiver=0&idReciever=${this.props.model.adminId}` }));
+    getNetwork().then((network) => {
+      const { liquidPledging } = network;
+
+      const donate = liquidPledging.$contract.methods.donate(0, this.props.model.adminId);
+      const data = donate.encodeABI();
+      const gasLimit = donate.estimateGas({ from: this.props.currentUser.address });
+
+      this.setState({ MEWurl: `https://www.myetherwallet.com/?to=${liquidPledging.$address.toUpperCase()}&gaslimit=${gasLimit}&data=${data}` });
+    });
   }
 
 
@@ -120,7 +127,7 @@ class DonateButton extends Component {
                     href={`${etherScanUrl}tx/${txHash}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                  > view the transaction here. 
+                  > view the transaction here.
                   </a>
                   You have full control of this donation and
                   <strong> can take it back at any time</strong>. You will also have a
@@ -144,7 +151,7 @@ class DonateButton extends Component {
                   href={`${etherScanUrl}tx/${txHash}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                > view the transaction here. 
+                > view the transaction here.
                 </a>
                 </p>
                 <p>Do make sure to
