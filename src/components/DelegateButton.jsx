@@ -117,14 +117,14 @@ class DelegateButton extends Component {
         const executeTransfer = () => {
           if (model.ownerType === 'campaign') {
             return new LPPCampaign(web3, model.ownerEntity.pluginAddress)
-              .transfer(model.pledgeId, model.amount, receiverId, { $extraGas: 50000, from });
+              .transfer(model.pledgeId, model.amount, receiverId, { from });
           } else if (model.ownerType === 'giver' && model.delegate > 0) {
             return new LPPDac(web3, model.delegateEntity.pluginAddress)
-              .transfer(model.pledgeId, model.amount, receiverId, { $extraGas: 50000, from });
+              .transfer(model.pledgeId, model.amount, receiverId, { from });
           }
 
           return liquidPledging
-            .transfer(senderId, model.pledgeId, model.amount, receiverId, { $extraGas: 50000, from });
+            .transfer(senderId, model.pledgeId, model.amount, receiverId, { from });
         };
 
         return executeTransfer()
