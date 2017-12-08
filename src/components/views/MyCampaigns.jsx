@@ -28,7 +28,7 @@ class MyCampaigns extends Component {
   }
 
   componentDidMount() {
-    isAuthenticated(this.props.currentUser, this.props.history, this.props.wallet).then(() => {
+    isAuthenticated(this.props.currentUser, this.props.wallet).then(() => {
       this.campaignsObserver = CampaignService.getUserCampaigns(
         this.props.currentUser.address,
         campaigns => this.setState({ campaigns, isLoading: false }),
@@ -85,7 +85,7 @@ class MyCampaigns extends Component {
               React.toast.success(msg);
             };
 
-            campaign.cancel(afterCreate, afterMined);
+            campaign.cancel(this.props.currentUser.address, afterCreate, afterMined);
           }
         });
       });

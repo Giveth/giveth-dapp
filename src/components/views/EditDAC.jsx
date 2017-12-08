@@ -1,12 +1,12 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-
 import { Form, Input } from 'formsy-react-components';
+
 import Loader from '../Loader';
 import QuillFormsy from '../QuillFormsy';
 import FormsyImageUploader from './../FormsyImageUploader';
 import GoBackButton from '../GoBackButton';
-import { isOwner, getTruncatedText } from '../../lib/helpers';
+import { isOwner, getTruncatedText, confirmBlockchainTransaction } from '../../lib/helpers';
 import { isAuthenticated, checkWalletBalance, isInWhitelist } from '../../lib/middleware';
 import LoaderButton from '../../components/LoaderButton';
 
@@ -44,7 +44,7 @@ class EditDAC extends Component {
   }
 
   componentDidMount() {
-    isAuthenticated(this.props.currentUser, this.props.history, this.props.wallet)
+    isAuthenticated(this.props.currentUser, this.props.wallet)
       .then(() => isInWhitelist(
         this.props.currentUser, React.whitelist.delegateWhitelist,
         this.props.history,
@@ -103,7 +103,11 @@ class EditDAC extends Component {
       this.props.history.push('/my-dacs');
     };
 
-    this.state.dac.save(afterCreate, afterMined);
+    // Save the DAC
+    confirmBlockchainTransaction(
+      () => this.state.dac.save(afterCreate, afterMined),
+      () => this.setState({ isSaving: false }),
+    );
   }
 
   toggleFormValid(state) {
@@ -135,7 +139,7 @@ class EditDAC extends Component {
 
                 <div className="form-header">
                   { isNew &&
-                  <h3>Start a Decentralized Altruistic Community (DAC)!</h3>
+                  <h3>Start a Decentralized Altruistic Community (DAC)</h3>
                       }
 
                   { !isNew &&
@@ -143,8 +147,8 @@ class EditDAC extends Component {
                       }
 
                   <p><i className="fa fa-question-circle" />A DAC aims to solve a cause by building
-                    a community, raising funds and delegating those funds to campaigns that solve
-                    its cause.
+                    a Community, raising funds and delegating those funds to Campaigns that solve
+                    its cause. Should you create a Campaign or Community? Read more [here.](http://wiki.giveth.io)
                   </p>
                 </div>
 
@@ -183,7 +187,7 @@ class EditDAC extends Component {
                       name="description"
                       label="Explain how you are going to solve this your cause"
                       helpText="Make it as extensive as necessary. Your goal is to build trust,
-                        so that people join your community and/or donate Ether."
+                        so that people join your Community and/or donate Ether."
                       value={dac.description}
                       placeholder="Describe how you're going to solve your cause..."
                       validations="minLength:20"

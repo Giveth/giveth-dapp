@@ -7,7 +7,7 @@ import { takeActionAfterWalletUnlock } from '../lib/middleware';
 import User from '../models/User';
 import GivethWallet from '../lib/blockchain/GivethWallet';
 import WalletService from '../services/Wallet';
-import { getGasPrice } from '../lib/helpers';
+import { getGasPrice, confirmBlockchainTransaction } from '../lib/helpers';
 
 
 class WithdrawButton extends Component {
@@ -44,7 +44,7 @@ class WithdrawButton extends Component {
     const msg = (
       <div>
         <p>
-            You&apos;re withdrawal is pending,
+            Your withdrawal is pending,
             <a
               href={`${etherScanUrl}tx/${txHash}`}
               target="_blank"
@@ -69,7 +69,7 @@ class WithdrawButton extends Component {
     takeActionAfterWalletUnlock(this.props.wallet, () => {
       this.setState({ isSaving: true });
 
-      WalletService.withdraw(
+      const withdraw = () => WalletService.withdraw(
         {
           from: this.props.currentUser.address,
           to: model.to,
@@ -80,6 +80,13 @@ class WithdrawButton extends Component {
           React.toast.success(<p>Your withdrawal has been confirmed!<br /><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>);
         },
         (err) => { console.log(err); },
+      );
+
+
+      // Withdraw the money
+      confirmBlockchainTransaction(
+        withdraw,
+        () => this.setState({ isSaving: false }),
       );
     });
   }
@@ -125,7 +132,7 @@ class WithdrawButton extends Component {
                 <Input
                   name="to"
                   id="to-input"
-                  label="To which address do you want to sent ether?"
+                  label="To which address do you want to send ether?"
                   type="text"
                   value={to}
                   validations="isEtherAddress"
@@ -145,11 +152,11 @@ class WithdrawButton extends Component {
                   value={amount}
                   validations={{
                     lessThan: wallet.getBalance() - 0.1,
-                    greaterThan: 0.01,
+                    greaterThan: 0.0099999999999,
                   }}
                   validationErrors={{
                     greaterThan: 'Minimum value must be at least Ξ0.01',
-                    lessThan: 'This withdraw amount exceeds your wallet balance.',
+                    lessThan: 'This withdrawal amount exceeds your wallet balance.',
                   }}
                   required
                 />

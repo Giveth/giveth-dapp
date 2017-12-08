@@ -29,7 +29,7 @@ class MyDACs extends Component {
   }
 
   componentDidMount() {
-    isAuthenticated(this.props.currentUser, this.props.history, this.props.wallet).then(() => {
+    isAuthenticated(this.props.currentUser, this.props.wallet).then(() => {
       this.dacsObserver = DACservice.getUserDACs(
         this.props.currentUser.address,
         dacs => this.setState({ dacs, isLoading: false }),
@@ -67,7 +67,7 @@ class MyDACs extends Component {
             <div className="col-md-10 m-auto">
 
               { (isLoading || (dacs && dacs.length > 0)) &&
-                <h1>Your DACs</h1>
+                <h1>Your Communities (DACs)</h1>
               }
 
               { isLoading &&
@@ -115,7 +115,7 @@ class MyDACs extends Component {
                     <div>
                       <center>
                         <h3>
-                          You didn&apos;t create any decentralized altruistic communities (DACs)
+                          You didn&apos;t create any Decentralized Altruistic Communities (DACs)
                           yet!
                         </h3>
                         <img className="empty-state-img" src={`${process.env.PUBLIC_URL}/img/community.svg`} width="200px" height="200px" alt="no-dacs-icon" />

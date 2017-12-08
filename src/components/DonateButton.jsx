@@ -8,7 +8,7 @@ import getNetwork from '../lib/blockchain/getNetwork';
 import { feathersClient } from '../lib/feathersClient';
 import { takeActionAfterWalletUnlock } from '../lib/middleware';
 import User from '../models/User';
-import { displayTransactionError, getGasPrice } from '../lib/helpers';
+import { displayTransactionError, getGasPrice, confirmBlockchainTransaction } from '../lib/helpers';
 import GivethWallet from '../lib/blockchain/GivethWallet';
 
 class DonateButton extends Component {
@@ -29,8 +29,18 @@ class DonateButton extends Component {
   }
 
   componentDidMount() {
-    getNetwork().then(network =>
-      this.setState({ MEWurl: `https://www.myetherwallet.com/?to=${network.liquidPledgingAddress.toUpperCase()}&gaslimit=550000&idGiver=0&idReciever=${this.props.model.adminId}` }));
+    getNetwork().then((network) => {
+      const { liquidPledging } = network;
+
+      const donate = liquidPledging.$contract.methods.donate(0, this.props.model.adminId);
+      const data = donate.encodeABI();
+      donate.estimateGas({ from: this.props.currentUser.address, value: 1 })
+        .then(gasLimit => this.setState({
+          MEWurl: `https://www.myetherwallet.com/?to=${liquidPledging.$address.toUpperCase()}&gaslimit=${gasLimit}&data=${data}`,
+        }));
+
+      this.setState({ MEWurl: `https://www.myetherwallet.com/?to=${liquidPledging.$address.toUpperCase()}&gaslimit=550000&data=${data}` });
+    });
   }
 
 
@@ -60,7 +70,7 @@ class DonateButton extends Component {
       React.swal({
         title: "You're almost there...",
         content: React.swal.msg(<p>
-            Great to see that you want to donate!! However you first need to sign up (or sign in).
+            It&#8217;s great to see that you want to donate, however, you first need to sign up (or sign in).
             Also make sure to transfer some Ether to your Giveth wallet before donating.<br /><br />
             Alternatively, you can donate with MyEtherWallet
                                 </p>),
@@ -115,7 +125,7 @@ class DonateButton extends Component {
             msg = (
               <div>
                 <p>
-                  You&apos;re donation is pending,
+                  Your donation is pending,
                   <a
                     href={`${etherScanUrl}tx/${txHash}`}
                     target="_blank"
@@ -125,21 +135,21 @@ class DonateButton extends Component {
                   You have full control of this donation and
                   <strong> can take it back at any time</strong>. You will also have a
                   <strong> 3 day window</strong> to veto the use of these funds upon delegation by
-                  the dac.
+                  the DAC.
                 </p>
                 <p>Do make sure to
                   <a
                     href={this.props.communityUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                  > join the community
+                  > join the Community
                   </a> to follow the progress of this DAC.
                 </p>
               </div>);
           } else {
             msg = (
               <div>
-                <p>You&apos;re donation is pending,
+                <p>Your donation is pending,
                 <a
                   href={`${etherScanUrl}tx/${txHash}`}
                   target="_blank"
@@ -152,7 +162,7 @@ class DonateButton extends Component {
                     href={this.props.communityUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                  > join the community
+                  > join the Community
                   </a> to follow the progress of this Campaign.
                 </p>
               </div>);
@@ -168,28 +178,35 @@ class DonateButton extends Component {
 
     let txHash;
     let etherScanUrl;
-    getNetwork()
-      .then((network) => {
-        const { liquidPledging } = network;
-        etherScanUrl = network.etherscan;
+    const doDonate = () =>
+      getNetwork()
+        .then((network) => {
+          const { liquidPledging } = network;
+          etherScanUrl = network.etherscan;
 
-        return liquidPledging.donate(
-          this.props.currentUser.giverId || '0',
-          this.props.model.adminId, { value: amount },
-        )
-          .once('transactionHash', (hash) => {
-            txHash = hash;
-            donate(etherScanUrl, txHash);
-          });
-      })
-      .then(() => {
-        React.toast.success(<p>Your donation has been confirmed!<br /><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>);
-      }).catch((e) => {
-        console.error(e);
-        displayTransactionError(txHash, etherScanUrl);
+          return liquidPledging.donate(
+            this.props.currentUser.giverId || '0',
+            this.props.model.adminId, { value: amount },
+          )
+            .once('transactionHash', (hash) => {
+              txHash = hash;
+              donate(etherScanUrl, txHash);
+            });
+        })
+        .then(() => {
+          React.toast.success(<p>Your donation has been confirmed!<br /><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>);
+        }).catch((e) => {
+          console.error(e);
+          displayTransactionError(txHash, etherScanUrl);
 
-        this.setState({ isSaving: false });
-      });
+          this.setState({ isSaving: false });
+        });
+
+    // Donate
+    confirmBlockchainTransaction(
+      doDonate,
+      () => this.setState({ isSaving: false }),
+    );
   }
 
   render() {
@@ -247,11 +264,11 @@ class DonateButton extends Component {
                   placeholder="10"
                   validations={{
                     lessThan: wallet.getBalance() - 0.5,
-                    greaterThan: 0.1,
+                    greaterThan: 0.00000000009,
                   }}
                   validationErrors={{
                     greaterThan: 'Minimum value must be at least Ξ0.1',
-                    lessThan: 'This donation exceeds your wallet balance. Pledge that you also need to pay for the transaction.',
+                    lessThan: 'This donation exceeds your Giveth wallet balance. Please top up your wallet or donate with MyEtherWallet.',
                   }}
                   required
                   autoFocus

@@ -98,7 +98,7 @@ class CampaignCard extends Component {
           <div className="card-footer">
             <CardStats
               type="campaign"
-              donationCount={campaign.donationCount}
+              peopleCount={campaign.peopleCount}
               totalDonated={campaign.totalDonated}
               milestonesCount={campaign.milestonesCount}
             />

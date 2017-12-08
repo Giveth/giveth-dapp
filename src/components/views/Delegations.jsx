@@ -33,7 +33,7 @@ class Delegations extends Component {
   }
 
   componentDidMount() {
-    isAuthenticated(this.props.currentUser, this.props.history, this.props.wallet).then(() => {
+    isAuthenticated(this.props.currentUser, this.props.wallet).then(() => {
       /**
       Load all DACs/campaigns/milestones
       TO DO: We should really move this to a single service
@@ -261,7 +261,7 @@ class Delegations extends Component {
                 { delegations && delegations.length === 0 &&
                 <div>
                   <center>
-                    <h3>There&apos;s nothing to delegate yet!</h3>
+                    <h3>There&apos;s nothing to delegate (yet)!</h3>
                     <img className="empty-state-img" src={`${process.env.PUBLIC_URL}/img/delegation.svg`} width="200px" height="200px" alt="no-delegations-icon" />
                   </center>
                 </div>

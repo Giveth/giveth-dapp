@@ -18,7 +18,6 @@ import getNetwork from '../../lib/blockchain/getNetwork';
  * The Wallet view showing the wallet address and balance
  *
  * @param currentUser  Currently logged in user information
- * @param history      Browser history object
  * @param wallet       Wallet object with the balance and all keystores
  */
 
@@ -42,12 +41,12 @@ class UserWallet extends Component {
   }
 
   componentWillMount() {
-    isAuthenticated(this.props.currentUser, this.props.history, this.props.wallet)
+    isAuthenticated(this.props.currentUser, this.props.wallet)
       .then(() => takeActionAfterWalletUnlock(this.props.wallet, () => {
         this.setState({ isLoadingWallet: false });
 
         // load tokens
-        feathersClient.service('/tokens').find()
+        feathersClient.service('/tokens').find({ query: { userAddress: this.props.currentUser.myAddress }})
           .then((resp) => {
             this.setState({
               tokens: resp.data,
@@ -124,7 +123,7 @@ class UserWallet extends Component {
                 <Loader className="small" />
               }
 
-              { !isLoadingTokens &&
+              { !isLoadingTokens && tokens.length > 0 &&
                 <div className="table-container">
                   <table className="table table-responsive table-striped table-hover">
                     <thead>
@@ -198,7 +197,6 @@ class UserWallet extends Component {
 UserWallet.propTypes = {
   wallet: PropTypes.instanceOf(GivethWallet).isRequired,
   currentUser: PropTypes.instanceOf(User).isRequired,
-  history: PropTypes.shape({}).isRequired,
 };
 
 export default UserWallet;
