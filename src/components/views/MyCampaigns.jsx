@@ -85,7 +85,7 @@ class MyCampaigns extends Component {
               React.toast.success(msg);
             };
 
-            campaign.cancel(afterCreate, afterMined);
+            campaign.cancel(this.props.currentUser.address, afterCreate, afterMined);
           }
         });
       });

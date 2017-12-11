@@ -142,31 +142,31 @@ class MainMenu extends Component {
                     className="dropdown-item"
                     to="/donations"
                     wallet={wallet}
-                  >Donations
+                  >My Donations
                   </AuthenticatedLink>
                   <AuthenticatedLink
                     className="dropdown-item"
                     to="/delegations"
                     wallet={wallet}
-                  >Delegations
+                  >My Delegations
                   </AuthenticatedLink>
                   <AuthenticatedLink
                     className="dropdown-item"
                     to="/my-dacs"
                     wallet={wallet}
-                  >Communities
+                  >My Communities
                   </AuthenticatedLink>
                   <AuthenticatedLink
                     className="dropdown-item"
                     to="/my-campaigns"
                     wallet={wallet}
-                  >Campaigns
+                  >My Campaigns
                   </AuthenticatedLink>
                   <AuthenticatedLink
                     className="dropdown-item"
                     to="/my-milestones"
                     wallet={wallet}
-                  >Milestones
+                  >My Milestones
                   </AuthenticatedLink>
                 </div>
               </li>

@@ -123,7 +123,7 @@ class DACservice {
           etherScanUrl = network.etherscan;
 
           new LPPDacFactory(web3, network.dacFactoryAddress)
-            .deploy(liquidPledging.$address, dac.title, '', 0, dac.tokenName, dac.tokenSymbol, { from })
+            .deploy(liquidPledging.$address, dac.title, '', 0, dac.tokenName, dac.tokenSymbol, from, from, { from })
             .once('transactionHash', (hash) => {
               txHash = hash;
               dac.txHash = txHash;
