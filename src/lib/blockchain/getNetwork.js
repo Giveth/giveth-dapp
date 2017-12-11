@@ -28,11 +28,11 @@ const networks = {
   },
   rinkeby: {
     title: 'Rinkeby',
-    liquidPledgingAddress: '0x0',
-    dacFactoryAddress: '0x0',
-    campaignFactoryAddress: '0x0',
-    milestoneFactoryAddress: '0x0',
-    etherscan: '',
+    liquidPledgingAddress: '0x1B8F84E443668C81FeE5BEc266bc098e3c7fBC00',
+    dacFactoryAddress: '0xdE97f5541522619c152b55289091A7114defEE58',
+    campaignFactoryAddress: '0xBcDE1c9bAdcd99D87a2c20E5B7D0C5E190479C53',
+    milestoneFactoryAddress: '0xBd7EcfF944386bC9A02c53CB201F812572671e45',
+    etherscan: 'https://rinkeby.etherscan.io/',
   },
   kovan: {
     title: 'Kovan',
