@@ -175,8 +175,9 @@ class EditMilestone extends Component {
               etherScanUrl = network.txHash;
 
               const from = this.props.currentUser.address;
+              const recipient = model.recipientAddress;
               new LPPMilestoneFactory(web3, network.milestoneFactoryAddress)
-                .deploy(liquidPledging.$address, model.title, '', this.state.campaignProjectId, model.recipientAddress, constructedModel.maxAmount, model.reviewerAddress, constructedModel.campaignReviewerAddress, from, from, { gas: 2000000, from })
+                .deploy(liquidPledging.$address, model.title, '', this.state.campaignProjectId, recipient, constructedModel.maxAmount, model.reviewerAddress, constructedModel.campaignReviewerAddress, recipient, recipient, { gas: 2000000, from })
                 .on('transactionHash', (hash) => {
                   txHash = hash;
                   createMilestone({
