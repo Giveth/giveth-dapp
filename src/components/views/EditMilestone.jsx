@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { LPPMilestoneFactory } from 'lpp-milestone';
+import { LPPCappedMilestones } from 'lpp-capped-milestone';
 import { utils } from 'web3';
 
 import { Form, Input } from 'formsy-react-components';
@@ -171,13 +171,12 @@ class EditMilestone extends Component {
           let etherScanUrl;
           Promise.all([getNetwork(), getWeb3()])
             .then(([network, web3]) => {
-              const { liquidPledging } = network;
               etherScanUrl = network.txHash;
 
               const from = this.props.currentUser.address;
               const recipient = model.recipientAddress;
-              new LPPMilestoneFactory(web3, network.milestoneFactoryAddress)
-                .deploy(liquidPledging.$address, model.title, '', this.state.campaignProjectId, recipient, constructedModel.maxAmount, model.reviewerAddress, constructedModel.campaignReviewerAddress, recipient, recipient, { gas: 2000000, from })
+              new LPPCappedMilestones(web3, network.cappedMilestoneAddress)
+                .addMilestone(model.title, '', constructedModel.maxAmount, this.state.campaignProjectId, recipient, model.reviewerAddress, constructedModel.campaignReviewerAddress, { from })
                 .on('transactionHash', (hash) => {
                   txHash = hash;
                   createMilestone({
