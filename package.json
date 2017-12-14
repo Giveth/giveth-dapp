@@ -20,7 +20,7 @@
     "liquidpledging": "git://github.com/giveth/liquidpledging.git#28313ee",
     "localforage": "^1.5.0",
     "lpp-campaign": "0.0.14",
-    "lpp-capped-milestone": "0.0.2",
+    "lpp-capped-milestone": "0.0.3",
     "lpp-dac": "0.0.5",
     "moment": "^2.19.2",
     "node-sass-chokidar": "^0.0.3",
