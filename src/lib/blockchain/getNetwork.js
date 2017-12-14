@@ -31,7 +31,7 @@ const networks = {
     liquidPledgingAddress: '0x1B8F84E443668C81FeE5BEc266bc098e3c7fBC00',
     dacFactoryAddress: '0xdE97f5541522619c152b55289091A7114defEE58',
     campaignFactoryAddress: '0xBcDE1c9bAdcd99D87a2c20E5B7D0C5E190479C53',
-    cappedMilestoneAddress: '0x0',
+    cappedMilestoneAddress: '0x137802c8F48294331654108dd64d8acD48b3321d',
     etherscan: 'https://rinkeby.etherscan.io/',
   },
   kovan: {
