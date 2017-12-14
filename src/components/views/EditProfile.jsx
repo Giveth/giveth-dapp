@@ -32,6 +32,7 @@ class EditProfile extends Component {
       avatar: props.currentUser.avatar,
       email: props.currentUser.email,
       linkedIn: props.currentUser.linkedIn,
+      giverId: props.currentUser.giverId,
       uploadNewAvatar: false,
       isPristine: true,
     };
