@@ -153,14 +153,16 @@ class SignUp extends Component {
                   { wallet &&
                     <div>
                       <center>
-                        <h1>Backup your new Wallet!</h1>
+                        <h1>Back up your new Wallet!</h1>
                       </center>
 
                       <p>
                         We <strong>highly</strong> recommend that you download this backup
-                        file and keep it in a safe place. If you loose this file
+                        file and keep it in a safe place. If you lose this file
                         or forget your wallet password, you will not be able to access
-                        this account and all funds associated with it.
+                        this account and all funds associated with it. Both this file and 
+                        your password are handled locally on your pc and in your browser: we 
+                        cannot help you recover anything, so please take a minute to do this now.   
                       </p>
 
                       <BackupWallet onBackup={() => this.onBackup()} wallet={wallet} />
