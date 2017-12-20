@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { utils } from 'web3';
-import { LPPMilestone } from 'lpp-milestone';
+import { LPPCappedMilestones } from 'lpp-capped-milestone';
 import { Link } from 'react-router-dom';
 
 import { feathersClient } from '../../lib/feathersClient';
@@ -133,10 +133,10 @@ class MyMilestones extends Component {
             let etherScanUrl;
             Promise.all([getNetwork(), getWeb3()])
               .then(([network, web3]) => {
-                const lppMilestone = new LPPMilestone(web3, milestone.pluginAddress);
                 etherScanUrl = network.etherscan;
 
-                return lppMilestone.cancelMilestone({ from: this.props.currentUser.address })
+                return new LPPCappedMilestones(web3, network.cappedMilestoneAddress)
+                  .cancelMilestone(milestone.projectId, { from: this.props.currentUser.address })
                   .once('transactionHash', (hash) => {
                     txHash = hash;
                     cancel(etherScanUrl, txHash);
@@ -176,7 +176,7 @@ class MyMilestones extends Component {
                 React.toast.info(<p>Accepting this milestone is pending...<br /><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>);
               }).catch((e) => {
                 console.log('Error updating feathers cache ->', e); // eslint-disable-line no-console
-                React.toast.error('Oh no! Something went wrong with the transaction. Please try again.');                
+                React.toast.error('Oh no! Something went wrong with the transaction. Please try again.');
               });
             };
 
@@ -184,13 +184,20 @@ class MyMilestones extends Component {
             let etherScanUrl;
             Promise.all([getNetwork(), getWeb3()])
               .then(([network, web3]) => {
-                console.log('creating milestone tx')
-
-                const { liquidPledging } = network;
+                console.log('creating milestone tx');
                 etherScanUrl = network.txHash;
 
-                // web3, lp address, name, parentProject, recipient, maxAmount, reviewer
-                LPPMilestone.new(web3, liquidPledging.$address, milestone.title, '', milestone.campaign.projectId, milestone.recipientAddress, milestone.maxAmount, milestone.reviewerAddress)
+                return new LPPCappedMilestones(web3, network.cappedMilestoneAddress)
+                  .addMilestone(
+                    milestone.title,
+                    '',
+                    milestone.maxAmount,
+                    milestone.campaign.projectId,
+                    milestone.recipientAddress,
+                    milestone.reviewerAddress,
+                    milestone.campaignReviewerAddress,
+                    { from: this.props.currentUser.address }
+                  )
                   .on('transactionHash', (hash) => {
                     txHash = hash;
                     console.log('creating milestone in feathers')
@@ -198,12 +205,13 @@ class MyMilestones extends Component {
                     createMilestone(etherScanUrl, txHash);
                   })
               })
-              .catch(() => {
+              .catch((e) => {
+                console.error(e);
                 displayTransactionError(txHash, etherScanUrl);
               });
           }
         }));
-    });    
+    });
   }
 
  rejectProposedMilestone(milestone) {
@@ -223,7 +231,7 @@ class MyMilestones extends Component {
           React.toast.info(<p>The milestone has been rejected.</p>);
         }).catch((e) => {
           console.log('Error updating feathers cache ->', e); // eslint-disable-line no-console
-          React.toast.error('Oh no! Something went wrong. Please try again.');                
+          React.toast.error('Oh no! Something went wrong. Please try again.');
         });
       }
     });
@@ -257,12 +265,10 @@ class MyMilestones extends Component {
             let etherScanUrl;
             Promise.all([getNetwork(), getWeb3()])
               .then(([network, web3]) => {
-                const lppMilestone = new LPPMilestone(web3, milestone.pluginAddress);
                 etherScanUrl = network.etherscan;
 
-                // Only uses 14,xxx gas, but will throw out of gas error if given anything less
-                // then 30000
-                return lppMilestone.acceptMilestone({ from: this.props.currentUser.address })
+                return new LPPCappedMilestones(web3, network.cappedMilestoneAddress)
+                  .acceptMilestone(milestone.projectId, { from: this.props.currentUser.address })
                   .once('transactionHash', (hash) => {
                     txHash = hash;
                     approve(etherScanUrl, txHash);
@@ -375,10 +381,10 @@ class MyMilestones extends Component {
               let etherScanUrl;
               Promise.all([getNetwork(), getWeb3(), getPledges()])
                 .then(([network, web3, pledges]) => {
-                  const lppMilestone = new LPPMilestone(web3, milestone.pluginAddress);
                   etherScanUrl = network.etherscan;
 
-                  return lppMilestone.mWithdraw(pledges, { from: this.props.currentUser.address })
+                  return new LPPCappedMilestones(web3, network.cappedMilestoneAddress)
+                    .mWithdraw(pledges, { from: this.props.currentUser.address })
                     .once('transactionHash', (hash) => {
                       txHash = hash;
                       withdraw(etherScanUrl, txHash);
@@ -441,10 +447,10 @@ class MyMilestones extends Component {
               let etherScanUrl;
               Promise.all([getNetwork(), getWeb3()])
                 .then(([network, web3]) => {
-                  const lppMilestone = new LPPMilestone(web3, milestone.pluginAddress);
                   etherScanUrl = network.etherscan;
 
-                  return lppMilestone.collect({ from: this.props.currentUser.address })
+                  return new LPPCappedMilestones(web3, network.cappedMilestoneAddress)
+                    .collect(milestone.projectId, { from: this.props.currentUser.address, $extraGas: 100000 })
                     .once('transactionHash', (hash) => {
                       txHash = hash;
                       collect(etherScanUrl, txHash);
@@ -533,9 +539,9 @@ class MyMilestones extends Component {
                                     onClick={() => this.rejectProposedMilestone(m)}
                                   >
                                     <i className="fa fa-times-circle-o" />&nbsp;Reject
-                                  </button>    
-                                </span>                            
-                              }                              
+                                  </button>
+                                </span>
+                              }
 
                               { m.recipientAddress === currentUser.address && m.status === 'InProgress' && m.mined &&
                                 <button

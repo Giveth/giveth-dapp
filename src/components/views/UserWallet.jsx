@@ -46,7 +46,7 @@ class UserWallet extends Component {
         this.setState({ isLoadingWallet: false });
 
         // load tokens
-        feathersClient.service('/tokens').find()
+        feathersClient.service('/tokens').find({ query: { userAddress: this.props.currentUser.myAddress }})
           .then((resp) => {
             this.setState({
               tokens: resp.data,
@@ -123,7 +123,7 @@ class UserWallet extends Component {
                 <Loader className="small" />
               }
 
-              { !isLoadingTokens &&
+              { !isLoadingTokens && tokens.length > 0 &&
                 <div className="table-container">
                   <table className="table table-responsive table-striped table-hover">
                     <thead>

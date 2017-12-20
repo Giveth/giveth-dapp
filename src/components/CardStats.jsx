@@ -8,12 +8,12 @@ import PropTypes from 'prop-types';
  * TODO: Check the properties that are passed, sometimes they are number, sometimes strings...
  */
 const CardStats = ({
-  totalDonated, donationCount, maxAmount, campaignsCount, milestonesCount, type, status,
+  totalDonated, peopleCount, maxAmount, campaignsCount, milestonesCount, type, status,
 }) => (
   <div className="row card-stats">
     <div className="col-4 text-left">
-      <span><i className="fa fa-male" />{donationCount}</span>
-      <p>people</p>
+      <span><i className="fa fa-male" />{peopleCount}</span>
+      <p>Giver(s)</p>
     </div>
 
     <div className="col-4 text-center">
@@ -26,7 +26,7 @@ const CardStats = ({
       { !maxAmount &&
       <span>&#926; {totalDonated && utils.fromWei(totalDonated)}</span>
           }
-      <p>donated</p>
+      <p>Donated</p>
     </div>
 
     <div className="col-4 text-right">
@@ -40,7 +40,7 @@ const CardStats = ({
       {type === 'campaign' &&
       <div>
         <span><i className="fa fa-check-circle" />{milestonesCount}</span>
-        <p>milestone(s)</p>
+        <p>Milestone(s)</p>
       </div>
           }
 

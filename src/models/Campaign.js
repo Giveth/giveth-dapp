@@ -37,6 +37,7 @@ class Campaign extends BasicModel {
       txHash: this.txHash,
       totalDonated: this.totalDonated,
       donationCount: this.donationCount,
+      peopleCount: this.peopleCount,
       tokenName: this.tokenName,
       tokenSymbol: this.tokenSymbol,
       dacs: this.dacs,
@@ -71,11 +72,12 @@ class Campaign extends BasicModel {
   /**
    * Cancel the campaign in feathers and blockchain
    *
+   * @param from        Either the owner or reviewer. Whoever is canceling the campaign
    * @param afterCreate Callback function once a transaction is created
    * @param afterMined  Callback function once the transaction is mined and feathers updated
    */
-  cancel(afterCreate, afterMined) {
-    CampaignService.cancel(this, this.owner.address, afterCreate, afterMined);
+  cancel(from, afterCreate, afterMined) {
+    CampaignService.cancel(this, from, afterCreate, afterMined);
   }
 
   get communityUrl() {

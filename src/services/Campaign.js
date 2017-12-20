@@ -37,7 +37,9 @@ class CampaignService {
       },
     }).subscribe(
       (resp) => {
+        console.log('resp', resp);
         const newResp = Object.assign({}, resp, { data: resp.data.map(c => new Campaign(c)) });
+        console.log(newResp);
         onSuccess(newResp);
       },
       onError,
@@ -134,7 +136,7 @@ class CampaignService {
           new LPPCampaignFactory(web3, network.campaignFactoryAddress)
             .deploy(
               liquidPledging.$address, campaign.title, '', 0, campaign.reviewerAddress,
-              campaign.tokenName, campaign.tokenSymbol, { from },
+              campaign.tokenName, campaign.tokenSymbol, from, from, { from },
             )
             .once('transactionHash', (hash) => {
               txHash = hash;

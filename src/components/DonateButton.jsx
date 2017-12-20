@@ -29,8 +29,18 @@ class DonateButton extends Component {
   }
 
   componentDidMount() {
-    getNetwork().then(network =>
-      this.setState({ MEWurl: `https://www.myetherwallet.com/?to=${network.liquidPledgingAddress.toUpperCase()}&gaslimit=550000&idGiver=0&idReciever=${this.props.model.adminId}` }));
+    getNetwork().then((network) => {
+      const { liquidPledging } = network;
+
+      const donate = liquidPledging.$contract.methods.donate(0, this.props.model.adminId);
+      const data = donate.encodeABI();
+      donate.estimateGas({ from: this.props.currentUser.address, value: 1 })
+        .then(gasLimit => this.setState({
+          MEWurl: `https://www.myetherwallet.com/?to=${liquidPledging.$address.toUpperCase()}&gaslimit=${gasLimit}&data=${data}`,
+        }));
+
+      this.setState({ MEWurl: `https://www.myetherwallet.com/?to=${liquidPledging.$address.toUpperCase()}&gaslimit=550000&data=${data}` });
+    });
   }
 
 
@@ -125,14 +135,14 @@ class DonateButton extends Component {
                   You have full control of this donation and
                   <strong> can take it back at any time</strong>. You will also have a
                   <strong> 3 day window</strong> to veto the use of these funds upon delegation by
-                  the dac.
+                  the DAC.
                 </p>
                 <p>Do make sure to
                   <a
                     href={this.props.communityUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                  > join the community
+                  > join the Community
                   </a> to follow the progress of this DAC.
                 </p>
               </div>);
@@ -152,7 +162,7 @@ class DonateButton extends Component {
                     href={this.props.communityUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                  > join the community
+                  > join the Community
                   </a> to follow the progress of this Campaign.
                 </p>
               </div>);
@@ -254,11 +264,11 @@ class DonateButton extends Component {
                   placeholder="10"
                   validations={{
                     lessThan: wallet.getBalance() - 0.5,
-                    greaterThan: 0.1,
+                    greaterThan: 0.00000000009,
                   }}
                   validationErrors={{
                     greaterThan: 'Minimum value must be at least Ξ0.1',
-                    lessThan: 'This donation exceeds your wallet balance. Please remember that you must also pay the transaction fee.',
+                    lessThan: 'This donation exceeds your Giveth wallet balance. Please top up your wallet or donate with MyEtherWallet.',
                   }}
                   required
                   autoFocus

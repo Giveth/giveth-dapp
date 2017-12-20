@@ -33,7 +33,7 @@ const DACs = ({
         <div>
           <center>
             <p>
-            These communities are solving causes.
+            These Communities are solving causes.
             Help them realise their goals by joining them and giving Ether!
             </p>
           </center>

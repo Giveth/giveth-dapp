@@ -97,7 +97,7 @@ class DacCard extends Component {
           <div className="card-footer">
             <CardStats
               type="dac"
-              donationCount={dac.donationCount}
+              peopleCount={dac.peopleCount}
               totalDonated={dac.totalDonated}
               campaignsCount={dac.campaignsCount}
             />

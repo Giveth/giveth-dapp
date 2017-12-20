@@ -61,12 +61,15 @@ class DelegateButton extends Component {
         status: 'pending',
       };
 
-      if (admin.type.toLowerCase() === 'dac') {
+      if (model.ownerType.toLowerCase() === 'campaign') {
+        // campaign is the owner, so they transfer the donation, not propose
         Object.assign(mutation, {
-          delegate: admin.delegateId,
-          delegateId: admin._id,
+          owner: admin.projectId,
+          ownerId: admin._id,
+          ownerType: admin.type,
         });
       } else {
+        // dac proposes a delegation
         Object.assign(mutation, {
           intendedProject: admin.projectId,
           intendedProjectId: admin._id,
@@ -79,13 +82,13 @@ class DelegateButton extends Component {
           this.resetSkylight();
 
           let msg;
-          if (admin.type === 'milestone' || 'campaign') {
-            msg = (<p>This donation has been delegated, <a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">view the transaction here.</a>
-              The giver has <strong>3 days</strong> to reject your delegation before the money
+          if (model.delegate > 0) {
+            msg = (<p>The donation has been delegated, <a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">view the transaction here.</a>
+              The Giver has <strong>3 days</strong> to reject your delegation before the money
               gets locked.
                    </p>);
           } else {
-            msg = <p>This donation has been delegated, <a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">view the transaction here.</a> The donator has been notified.</p>;
+            msg = <p>The donation has been delegated, <a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">view the transaction here.</a> The Giver has been notified.</p>;
           }
 
           React.swal({
@@ -114,14 +117,14 @@ class DelegateButton extends Component {
         const executeTransfer = () => {
           if (model.ownerType === 'campaign') {
             return new LPPCampaign(web3, model.ownerEntity.pluginAddress)
-              .transfer(model.pledgeId, model.amount, receiverId, { $extraGas: 50000, from });
+              .transfer(model.pledgeId, model.amount, receiverId, { from, $extraGas: 100000 });
           } else if (model.ownerType === 'giver' && model.delegate > 0) {
             return new LPPDac(web3, model.delegateEntity.pluginAddress)
-              .transfer(model.pledgeId, model.amount, receiverId, { $extraGas: 50000, from });
+              .transfer(model.pledgeId, model.amount, receiverId, { from, $extraGas: 100000 });
           }
 
           return liquidPledging
-            .transfer(senderId, model.pledgeId, model.amount, receiverId, { $extraGas: 50000, from });
+            .transfer(senderId, model.pledgeId, model.amount, receiverId, { from, $extraGas: 100000 }); // need to supply extraGas b/c https://github.com/trufflesuite/ganache-core/issues/26
         };
 
         return executeTransfer()
@@ -177,14 +180,14 @@ class DelegateButton extends Component {
           }
 
           { !milestoneOnly &&
-            <p>Select a DAC, Campaign or Milestone to delegate this donation to:</p>
+            <p>Select a Campaign or Milestone to delegate this donation to:</p>
           }
 
           <Form onSubmit={this.submit} layout="vertical">
             <div className="form-group">
               <InputToken
                 name="campaigns"
-                placeholder={milestoneOnly ? 'Select a milestone' : 'Select a campaign or milestone'}
+                placeholder={milestoneOnly ? 'Select a Milestone' : 'Select a Campaign or Milestone'}
                 value={objectsToDelegateTo}
                 options={types}
                 onSelect={this.selectedObject}
