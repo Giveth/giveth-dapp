@@ -2,7 +2,6 @@ import React, { Component } from 'react';
 import { SkyLightStateless } from 'react-skylight';
 import { utils } from 'web3';
 import { LPPCampaign } from 'lpp-campaign';
-import { LPPDac } from 'lpp-dac';
 import { Form } from 'formsy-react-components';
 import InputToken from 'react-input-token';
 import PropTypes from 'prop-types';
@@ -107,7 +106,7 @@ class DelegateButton extends Component {
 
     const doDelegate = () => Promise.all([getNetwork(), getWeb3()])
       .then(([network, web3]) => {
-        const { liquidPledging } = network;
+        const { lppDacs, liquidPledging } = network;
         etherScanUrl = network.etherscan;
 
         const from = (model.delegate > 0) ? model.delegateEntity.ownerAddress : model.ownerEntity.ownerAddress;
@@ -119,8 +118,7 @@ class DelegateButton extends Component {
             return new LPPCampaign(web3, model.ownerEntity.pluginAddress)
               .transfer(model.pledgeId, model.amount, receiverId, { from, $extraGas: 100000 });
           } else if (model.ownerType === 'giver' && model.delegate > 0) {
-            return new LPPDac(web3, model.delegateEntity.pluginAddress)
-              .transfer(model.pledgeId, model.amount, receiverId, { from, $extraGas: 100000 });
+            return lppDacs.transfer(model.delegate, model.pledgeId, model.amount, receiverId, { from, $extraGas: 100000 });
           }
 
           return liquidPledging
