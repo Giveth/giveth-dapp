@@ -4,16 +4,16 @@ import Model from './Model';
  * The DAC, Milestone and Campaign base model containing basic common interface
  */
 class BasicModel extends Model {
-/**
- * Compares two campaigns
- *
- * @param a First campaign
- * @param b Second campaign
- *
- * @return 1  if a > b
- *         -1 if a < b
- *         0  if a = b
- */
+  /**
+   * Compares two campaigns
+   *
+   * @param a First campaign
+   * @param b Second campaign
+   *
+   * @return 1  if a > b
+   *         -1 if a < b
+   *         0  if a = b
+   */
   static compare(a, b) {
     if (a.myOrder > b.myOrder) return 1;
     if (a.myOrder < b.myOrder) return -1;
@@ -21,7 +21,16 @@ class BasicModel extends Model {
   }
 
   constructor({
-    _id, title = '', description = '', summary = '', image = '', txHash, owner, totalDonated = '0', donationCount = 0, peopleCount = 0,
+    _id,
+    title = '',
+    description = '',
+    summary = '',
+    image = '',
+    txHash,
+    owner,
+    totalDonated = '0',
+    donationCount = 0,
+    peopleCount = 0,
   }) {
     super();
 
@@ -123,7 +132,7 @@ class BasicModel extends Model {
 
   get peopleCount() {
     return this.myPeopleCount;
-  }  
+  }
 
   set peopleCount(value) {
     this.checkType(value, ['number'], 'peopleCount');

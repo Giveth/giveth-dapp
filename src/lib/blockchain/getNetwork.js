@@ -65,33 +65,36 @@ let network;
 export default () => {
   if (network) return Promise.resolve(network);
 
-  return getWeb3()
-    .then(web3 => web3.eth.net.getId()
-      .then((id) => {
-        switch (id) {
-          case 1:
-            network = Object.assign({}, networks.main);
-            break;
-          case 2:
-            network = Object.assign({}, networks.morden);
-            break;
-          case 3:
-            network = Object.assign({}, networks.ropsten);
-            break;
-          case 4:
-            network = Object.assign({}, networks.rinkeby);
-            break;
-          case 33:
-            network = Object.assign({}, networks.giveth);
-            break;
-          case 42:
-            network = Object.assign({}, networks.kovan);
-            break;
-          default:
-            network = Object.assign({}, networks.default);
-            break;
-        }
-        network.liquidPledging = new LiquidPledging(web3, network.liquidPledgingAddress);
-        return network;
-      }));
+  return getWeb3().then(web3 =>
+    web3.eth.net.getId().then(id => {
+      switch (id) {
+        case 1:
+          network = Object.assign({}, networks.main);
+          break;
+        case 2:
+          network = Object.assign({}, networks.morden);
+          break;
+        case 3:
+          network = Object.assign({}, networks.ropsten);
+          break;
+        case 4:
+          network = Object.assign({}, networks.rinkeby);
+          break;
+        case 33:
+          network = Object.assign({}, networks.giveth);
+          break;
+        case 42:
+          network = Object.assign({}, networks.kovan);
+          break;
+        default:
+          network = Object.assign({}, networks.default);
+          break;
+      }
+      network.liquidPledging = new LiquidPledging(
+        web3,
+        network.liquidPledgingAddress,
+      );
+      return network;
+    }),
+  );
 };

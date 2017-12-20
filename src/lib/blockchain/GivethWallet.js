@@ -24,7 +24,8 @@ class GivethWallet {
    *                      retrieve chainId, gasPrice, and nonce automatically
    */
   constructor(keystores, provider) {
-    if (!Array.isArray(keystores) || keystores.length === 0) throw new Error('keystores is required. and must be an array');
+    if (!Array.isArray(keystores) || keystores.length === 0)
+      throw new Error('keystores is required. and must be an array');
 
     const accounts = new Accounts(provider);
     mapSet.call(mapAccounts, this, accounts);
@@ -41,7 +42,9 @@ class GivethWallet {
    * @return {String}
    */
   getBalance(unit) {
-    return (this.balance) ? utils.fromWei(this.balance, unit || 'ether') : undefined;
+    return this.balance
+      ? utils.fromWei(this.balance, unit || 'ether')
+      : undefined;
   }
 
   /**
@@ -53,7 +56,8 @@ class GivethWallet {
   signTransaction(txData) {
     if (!this.unlocked) throw new Error('Locked Wallet');
 
-    if (!txData.gasPrice || !txData.nonce || !txData.chainId) throw new Error('gasPrice, nonce, and chainId are required');
+    if (!txData.gasPrice || !txData.nonce || !txData.chainId)
+      throw new Error('gasPrice, nonce, and chainId are required');
 
     const accounts = mapGet.call(mapAccounts, this);
 
@@ -131,7 +135,9 @@ class GivethWallet {
       return addrs;
     }
 
-    return this.keystores.map(account => GivethWallet.fixAddress(account.address));
+    return this.keystores.map(account =>
+      GivethWallet.fixAddress(account.address),
+    );
   }
 
   /**
@@ -145,7 +151,7 @@ class GivethWallet {
    * normalize an address to the 0x form
    */
   static fixAddress(addr) {
-    return (addr.toLowerCase().startsWith('0x')) ? addr : `0x${addr}`;
+    return addr.toLowerCase().startsWith('0x') ? addr : `0x${addr}`;
   }
 
   static createGivethWallet(keystore, provider, password) {
@@ -162,9 +168,11 @@ class GivethWallet {
    * @param password - password to encrypt the wallet with
    */
   static createWallet(provider, password) {
-    return new Promise((resolve) => {
+    return new Promise(resolve => {
       const createWallet = () => {
-        const keystore = new Accounts(provider).wallet.create(1).encrypt(password);
+        const keystore = new Accounts(provider).wallet
+          .create(1)
+          .encrypt(password);
         resolve(GivethWallet.createGivethWallet(keystore, provider, password));
       };
 
@@ -189,19 +197,22 @@ class GivethWallet {
       modifiedKeystore = [keystore];
     }
 
-    return GivethWallet.createGivethWallet(modifiedKeystore, provider, password);
+    return GivethWallet.createGivethWallet(
+      modifiedKeystore,
+      provider,
+      password,
+    );
   }
 
   /**
    * fetches the locally cached keystore from storage
    */
   static getCachedKeystore() {
-    return localforage.getItem(STORAGE_KEY)
-      .then((ks) => {
-        if (ks && ks.length > 0) return ks;
+    return localforage.getItem(STORAGE_KEY).then(ks => {
+      if (ks && ks.length > 0) return ks;
 
-        throw new Error('No keystore found');
-      });
+      throw new Error('No keystore found');
+    });
   }
 
   /**
