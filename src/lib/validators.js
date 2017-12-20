@@ -4,14 +4,19 @@ import Web3 from 'web3';
 // Formsy validations
 
 // Greater than number
-Formsy.addValidationRule('greaterThan', (formValues, inputValue, value) =>
-  parseFloat(inputValue) > value);
+Formsy.addValidationRule(
+  'greaterThan',
+  (formValues, inputValue, value) => parseFloat(inputValue) > value,
+);
 
 // Less than number
-Formsy.addValidationRule('lessThan', (formValues, inputValue, value) =>
-  parseFloat(inputValue) < value);
+Formsy.addValidationRule(
+  'lessThan',
+  (formValues, inputValue, value) => parseFloat(inputValue) < value,
+);
 
 // Checks if input is a valid Ether address
 // TO DO: Does not support ENS! (It's hard, ENS returns promises)
 Formsy.addValidationRule('isEtherAddress', (formValues, inputValue, _value) =>
-  Web3.utils.isAddress(inputValue));
+  Web3.utils.isAddress(inputValue),
+);

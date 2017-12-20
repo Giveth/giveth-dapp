@@ -14,14 +14,20 @@ export const socket = io(process.env.REACT_APP_FEATHERJS_CONNECTION_URL, {
 
 // socket IO error events
 socket.on('connect_error', _e => console.log('Could not connect to FeatherJS'));
-socket.on('connect_timeout', _e => console.log('Could not connect to FeatherJS: Timeout'));
-socket.on('reconnect_attempt', _e => console.log('Trying to reconnect to FeatherJS: Timeout'));
+socket.on('connect_timeout', _e =>
+  console.log('Could not connect to FeatherJS: Timeout'),
+);
+socket.on('reconnect_attempt', _e =>
+  console.log('Trying to reconnect to FeatherJS: Timeout'),
+);
 
 export const feathersClient = feathers()
   .configure(socketio(socket, { timeout: 5000 }))
   .configure(auth({ storage: localforage }))
   .configure(hooks())
-  .configure(rx({
-    idField: '_id',
-    matcher,
-  }));
+  .configure(
+    rx({
+      idField: '_id',
+      matcher,
+    }),
+  );

@@ -10,7 +10,9 @@ export default class GasPriceProvider extends SubProvider {
     this.opts = opts || {};
   }
 
-  handleRequest(payload, next, _end) { // eslint-disable-line class-methods-use-this
+  /* eslint-disable class-methods-use-this */
+  handleRequest(payload, next, _end) {
+    // eslint-disable-line class-methods-use-this
     if (payload.method !== 'eth_gasPrice') {
       return next();
     }
@@ -20,8 +22,8 @@ export default class GasPriceProvider extends SubProvider {
     // TODO re-enable this when deployed to mainnet
     return next();
 
-
     // getGasPrice().then((gas) =>
     //   end(null, utils.toHex(utils.toWei(gas, 'gwei'))));
   }
+  /* eslint-enable class-methods-use-this */
 }

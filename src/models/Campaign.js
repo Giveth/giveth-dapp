@@ -7,9 +7,15 @@ import { getRandomWhitelistAddress } from '../lib/helpers';
  * The DApp Campaign model
  */
 class Campaign extends BasicModel {
-  static get CANCELED() { return 'Canceled'; }
-  static get PENDING() { return 'Pending'; }
-  static get ACTIVE() { return 'Active'; }
+  static get CANCELED() {
+    return 'Canceled';
+  }
+  static get PENDING() {
+    return 'Pending';
+  }
+  static get ACTIVE() {
+    return 'Active';
+  }
 
   constructor(data) {
     super(data);
@@ -19,9 +25,11 @@ class Campaign extends BasicModel {
     this.tokenName = data.tokenName || '';
     this.tokenSymbol = data.tokenSymbol || '';
     this.dacs = data.dacs || [];
-    this.reviewerAddress = data.reviewerAddress ||
+    this.reviewerAddress =
+      data.reviewerAddress ||
       getRandomWhitelistAddress(React.whitelist.reviewerWhitelist);
-    this.pluginAddress = data.pluginAddress || '0x0000000000000000000000000000000000000000';
+    this.pluginAddress =
+      data.pluginAddress || '0x0000000000000000000000000000000000000000';
     this.status = data.status || Campaign.PENDING;
   }
 
@@ -57,7 +65,7 @@ class Campaign extends BasicModel {
    */
   save(afterCreate, afterMined) {
     if (this.newImage) {
-      UploadService.save(this.image).then((file) => {
+      UploadService.save(this.image).then(file => {
         // Save the new image address and mark it as old
         this.image = file.url;
         this.newImage = false;
@@ -121,7 +129,11 @@ class Campaign extends BasicModel {
   }
 
   set status(value) {
-    this.checkValue(value, [Campaign.PENDING, Campaign.ACTIVE, Campaign.CANCELED], 'status');
+    this.checkValue(
+      value,
+      [Campaign.PENDING, Campaign.ACTIVE, Campaign.CANCELED],
+      'status',
+    );
     this.myStatus = value;
     if (value === Campaign.PENDING) this.myOrder = 1;
     else if (value === Campaign.ACTIVE) this.myOrder = 2;

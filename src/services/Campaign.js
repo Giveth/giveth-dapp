@@ -13,8 +13,12 @@ class CampaignService {
    */
   static get(id) {
     return new Promise((resolve, reject) => {
-      feathersClient.service('campaigns').find({ query: { _id: id } })
-        .then((resp) => { resolve(new Campaign(resp.data[0])); })
+      feathersClient
+        .service('campaigns')
+        .find({ query: { _id: id } })
+        .then(resp => {
+          resolve(new Campaign(resp.data[0]));
+        })
         .catch(reject);
     });
   }
@@ -26,24 +30,27 @@ class CampaignService {
    * @param onError   Callback function if error is encountered
    */
   static subscribe(onSuccess, onError) {
-    return feathersClient.service('campaigns').watch({ strategy: 'always' }).find({
-      query: {
-        projectId: {
-          $gt: '0', // 0 is a pending campaign
+    return feathersClient
+      .service('campaigns')
+      .watch({ strategy: 'always' })
+      .find({
+        query: {
+          projectId: {
+            $gt: '0', // 0 is a pending campaign
+          },
+          status: Campaign.ACTIVE,
+          $limit: 200,
+          $sort: { milestonesCount: -1 },
         },
-        status: Campaign.ACTIVE,
-        $limit: 200,
-        $sort: { milestonesCount: -1 },
-      },
-    }).subscribe(
-      (resp) => {
+      })
+      .subscribe(resp => {
         console.log('resp', resp);
-        const newResp = Object.assign({}, resp, { data: resp.data.map(c => new Campaign(c)) });
+        const newResp = Object.assign({}, resp, {
+          data: resp.data.map(c => new Campaign(c)),
+        });
         console.log(newResp);
         onSuccess(newResp);
-      },
-      onError,
-    );
+      }, onError);
   }
 
   /**
@@ -54,18 +61,19 @@ class CampaignService {
    * @param onError   Callback function if error is encountered
    */
   static subscribeMilestones(id, onSuccess, onError) {
-    return feathersClient.service('milestones').watch({ strategy: 'always' }).find({
-      query: {
-        campaignId: id,
-        projectId: {
-          $gt: '0', // 0 is a pending milestone
+    return feathersClient
+      .service('milestones')
+      .watch({ strategy: 'always' })
+      .find({
+        query: {
+          campaignId: id,
+          projectId: {
+            $gt: '0', // 0 is a pending milestone
+          },
+          $sort: { completionDeadline: 1 },
         },
-        $sort: { completionDeadline: 1 },
-      },
-    }).subscribe(
-      resp => onSuccess(resp.data),
-      onError,
-    );
+      })
+      .subscribe(resp => onSuccess(resp.data), onError);
   }
 
   /**
@@ -76,15 +84,16 @@ class CampaignService {
    * @param onError   Callback function if error is encountered
    */
   static subscribeDonations(id, onSuccess, onError) {
-    return feathersClient.service('donations/history').watch({ listStrategy: 'always' }).find({
-      query: {
-        ownerId: id,
-        $sort: { createdAt: -1 },
-      },
-    }).subscribe(
-      resp => onSuccess(resp.data),
-      onError,
-    );
+    return feathersClient
+      .service('donations/history')
+      .watch({ listStrategy: 'always' })
+      .find({
+        query: {
+          ownerId: id,
+          $sort: { createdAt: -1 },
+        },
+      })
+      .subscribe(resp => onSuccess(resp.data), onError);
   }
 
   /**
@@ -96,7 +105,9 @@ class CampaignService {
    */
   static getUserCampaigns(userAddress, onSuccess, onError) {
     return feathersClient
-      .service('campaigns').watch({ strategy: 'always' }).find({
+      .service('campaigns')
+      .watch({ strategy: 'always' })
+      .find({
         query: {
           $or: [
             { ownerAddress: userAddress },
@@ -105,9 +116,12 @@ class CampaignService {
         },
       })
       .subscribe(
-        resp => onSuccess(resp.data
-          .map(campaign => new Campaign(campaign))
-          .sort(Campaign.compare)),
+        resp =>
+          onSuccess(
+            resp.data
+              .map(campaign => new Campaign(campaign))
+              .sort(Campaign.compare),
+          ),
         onError,
       );
   }
@@ -123,7 +137,9 @@ class CampaignService {
    */
   static save(campaign, from, afterCreate = () => {}, afterMined = () => {}) {
     if (campaign.id) {
-      feathersClient.service('campaigns').patch(campaign.id, campaign.toFeathers())
+      feathersClient
+        .service('campaigns')
+        .patch(campaign.id, campaign.toFeathers())
         .then(() => afterMined());
     } else {
       let txHash;
@@ -135,24 +151,34 @@ class CampaignService {
 
           new LPPCampaignFactory(web3, network.campaignFactoryAddress)
             .deploy(
-              liquidPledging.$address, campaign.title, '', 0, campaign.reviewerAddress,
-              campaign.tokenName, campaign.tokenSymbol, from, from, { from },
+              liquidPledging.$address,
+              campaign.title,
+              '',
+              0,
+              campaign.reviewerAddress,
+              campaign.tokenName,
+              campaign.tokenSymbol,
+              from,
+              from,
+              { from },
             )
-            .once('transactionHash', (hash) => {
+            .once('transactionHash', hash => {
               txHash = hash;
               campaign.txHash = txHash;
-              feathersClient.service('campaigns').create(campaign.toFeathers())
+              feathersClient
+                .service('campaigns')
+                .create(campaign.toFeathers())
                 .then(() => afterCreate(`${etherScanUrl}tx/${txHash}`));
             })
             .then(() => {
               afterMined(`${etherScanUrl}tx/${txHash}`);
             })
-            .catch((err) => {
+            .catch(err => {
               console.log('New Campaign transaction failed:', err); // eslint-disable-line no-console
               displayTransactionError(txHash, etherScanUrl);
             });
         })
-        .catch((err) => {
+        .catch(err => {
           console.log('New Campaign transaction failed:', err); // eslint-disable-line no-console
           displayTransactionError(txHash, etherScanUrl);
         });
@@ -176,26 +202,29 @@ class CampaignService {
         const lppCampaign = new LPPCampaign(web3, campaign.pluginAddress);
         etherScanUrl = network.etherscan;
 
-        lppCampaign.cancelCampaign({ from })
-          .once('transactionHash', (hash) => {
+        lppCampaign
+          .cancelCampaign({ from })
+          .once('transactionHash', hash => {
             txHash = hash;
-            feathersClient.service('/campaigns').patch(campaign.id, {
-              status: Campaign.CANCELED,
-              mined: false,
-              txHash,
-            })
+            feathersClient
+              .service('/campaigns')
+              .patch(campaign.id, {
+                status: Campaign.CANCELED,
+                mined: false,
+                txHash,
+              })
               .then(afterCreate(`${etherScanUrl}tx/${txHash}`))
-              .catch((err) => {
+              .catch(err => {
                 console.log('Failed to update feathers:', err); // eslint-disable-line no-console
               });
           })
           .then(() => afterMined(`${etherScanUrl}tx/${txHash}`))
-          .catch((err) => {
+          .catch(err => {
             console.log('Cancel Campaign failed:', err); // eslint-disable-line no-console
             displayTransactionError(txHash, etherScanUrl);
           });
       })
-      .catch((err) => {
+      .catch(err => {
         console.log('Cancel Campaign failed:', err); // eslint-disable-line no-console
         displayTransactionError(txHash, etherScanUrl);
       });
