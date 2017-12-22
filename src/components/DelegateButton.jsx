@@ -2,7 +2,6 @@ import React, { Component } from 'react';
 import { SkyLightStateless } from 'react-skylight';
 import { utils } from 'web3';
 import { LPPCampaign } from 'lpp-campaign';
-import { LPPDac } from 'lpp-dac';
 import { Form } from 'formsy-react-components';
 import InputToken from 'react-input-token';
 import PropTypes from 'prop-types';
@@ -145,77 +144,39 @@ class DelegateButton extends Component {
 
     let txHash;
     let etherScanUrl;
+    const doDelegate = () => Promise.all([getNetwork(), getWeb3()])
+      .then(([network, web3]) => {
+        const { lppDacs, liquidPledging } = network;
+        etherScanUrl = network.etherscan;
 
-    const doDelegate = () =>
-      Promise.all([getNetwork(), getWeb3()])
-        .then(([network, web3]) => {
-          const { liquidPledging } = network;
-          etherScanUrl = network.etherscan;
+        const from = (model.delegate > 0) ? model.delegateEntity.ownerAddress : model.ownerEntity.ownerAddress;
+        const senderId = (model.delegate > 0) ? model.delegate : model.owner;
+        const receiverId = (admin.type === 'dac') ? admin.delegateId : admin.projectId;
 
-          const from =
-            model.delegate > 0
-              ? model.delegateEntity.ownerAddress
-              : model.ownerEntity.ownerAddress;
-          const senderId = model.delegate > 0 ? model.delegate : model.owner;
-          const receiverId =
-            admin.type === 'dac' ? admin.delegateId : admin.projectId;
+        const executeTransfer = () => {
+          if (model.ownerType === 'campaign') {
+            return new LPPCampaign(web3, model.ownerEntity.pluginAddress)
+              .transfer(model.pledgeId, model.amount, receiverId, { from, $extraGas: 100000 });
+          } else if (model.ownerType === 'giver' && model.delegate > 0) {
+            return lppDacs.transfer(model.delegate, model.pledgeId, model.amount, receiverId, { from, $extraGas: 100000 });
+          }
 
-          const executeTransfer = () => {
-            if (model.ownerType === 'campaign') {
-              return new LPPCampaign(
-                web3,
-                model.ownerEntity.pluginAddress,
-              ).transfer(model.pledgeId, model.amount, receiverId, {
-                from,
-                $extraGas: 100000,
-              });
-            } else if (model.ownerType === 'giver' && model.delegate > 0) {
-              return new LPPDac(
-                web3,
-                model.delegateEntity.pluginAddress,
-              ).transfer(model.pledgeId, model.amount, receiverId, {
-                from,
-                $extraGas: 100000,
-              });
-            }
+          return liquidPledging
+            .transfer(senderId, model.pledgeId, model.amount, receiverId, { from, $extraGas: 100000 }); // need to supply extraGas b/c https://github.com/trufflesuite/ganache-core/issues/26
+        };
 
-            return liquidPledging.transfer(
-              senderId,
-              model.pledgeId,
-              model.amount,
-              receiverId,
-              {
-                from,
-                $extraGas: 100000,
-              },
-            ); // need to supply extraGas b/c https://github.com/trufflesuite/ganache-core/issues/26
-          };
-
-          return executeTransfer()
-            .once('transactionHash', hash => {
-              txHash = hash;
-              delegate(etherScanUrl, txHash);
-            })
-            .on('error', console.error); // eslint-disable-line no-console
-        })
-        .then(() => {
-          React.toast.success(
-            <p>
-              Your donation has been confirmed!<br />
-              <a
-                href={`${etherScanUrl}tx/${txHash}`}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                View transaction
-              </a>
-            </p>,
-          );
-        })
-        .catch(() => {
-          displayTransactionError(txHash, etherScanUrl);
-          this.setState({ isSaving: false });
-        });
+        return executeTransfer()
+          .once('transactionHash', (hash) => {
+            txHash = hash;
+            delegate(etherScanUrl, txHash);
+          }).on('error', console.error); // eslint-disable-line no-console
+      })
+      .then(() => {
+        React.toast.success(<p>Your donation has been confirmed!<br /><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>);
+      }).catch(() => {
+        displayTransactionError(txHash, etherScanUrl);
+        this.setState({ isSaving: false });
+      });
 
     // Delegate
     confirmBlockchainTransaction(doDelegate, () =>
