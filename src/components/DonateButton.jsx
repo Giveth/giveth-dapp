@@ -264,11 +264,11 @@ class DonateButton extends Component {
                   placeholder="10"
                   validations={{
                     lessThan: wallet.getBalance(),
-                    greaterThan: 0.09,
+                    greaterEqualThan: 0.1,
                   }}
                   validationErrors={{
                     lessThan: 'This donation exceeds your Giveth wallet balance. Please top up your wallet or donate with MyEtherWallet.',
-                    greaterThan: 'Minimum value must be at least Ξ0.1',
+                    greaterEqualThan: 'Minimum value must be at least Ξ0.1',
                   }}
                   required
                   autoFocus
