@@ -91,7 +91,9 @@ export const getRandomWhitelistAddress = wl => wl[Math.floor(Math.random() * wl.
 
 export const getGasPrice = () => feathersClient.service('/gasprice').find().then(resp => {
   const gasPrice = resp.safeLow * 1.1;
-  return (gasPrice > resp.average) ? resp.average : gasPrice;
+  // div by 10 b/c https://ethgasstation.info/json/ethgasAPI.json returns price in gwei * 10
+  // we're only interested in gwei
+  return (gasPrice > resp.average) ? resp.average / 10 : gasPrice / 10;
 });
 
 export const confirmBlockchainTransaction = (onConfirm, onCancel) => (React.swal({
