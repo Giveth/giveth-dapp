@@ -89,7 +89,10 @@ export const getUserAvatar = (owner) => {
 
 export const getRandomWhitelistAddress = wl => wl[Math.floor(Math.random() * wl.length)];
 
-export const getGasPrice = () => feathersClient.service('/gasprice').find().then(resp => resp.average * 2);
+export const getGasPrice = () => feathersClient.service('/gasprice').find().then(resp => {
+  const gasPrice = resp.safeLow * 1.1;
+  return (gasPrice > resp.average) ? resp.average : gasPrice;
+});
 
 export const confirmBlockchainTransaction = (onConfirm, onCancel) => (React.swal({
   title: 'Send transaction?',
