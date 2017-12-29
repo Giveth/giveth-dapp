@@ -6,7 +6,7 @@ const networks = {
   main: {
     title: 'Main',
     liquidPledgingAddress: '0x3f45D2D5FeB6b4b000d2d3B84442eeDDF54A735a',
-    dacsAddress: '0x869ed845F8D4B436fFE778ADC0E9ab253E53f0F2',
+    dacsAddress: '0x79bddecb728afda275923998701bac34d277fb19',
     campaignFactoryAddress: '0xB22D042896Cd46D073d3Bf7b487522bBe1eeb5E7',
     cappedMilestoneAddress: '0x61Dc072691041d411bDa8CE5B4090feb45788a8C',
     etherscan: 'https://etherscan.io/',
