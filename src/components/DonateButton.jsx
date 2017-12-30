@@ -263,12 +263,12 @@ class DonateButton extends Component {
                   onChange={(name, value) => this.setState({ mewAmount: value })}
                   placeholder="10"
                   validations={{
-                    lessThan: wallet.getBalance() - 0.5,
-                    greaterThan: 0.00000000009,
+                    lessThan: wallet.getBalance() + (gas * 1000000000),
+                    greaterEqualThan: 0.1,
                   }}
                   validationErrors={{
-                    greaterThan: 'Minimum value must be at least Ξ0.1',
-                    lessThan: 'This donation exceeds your Giveth wallet balance. Please top up your wallet or donate with MyEtherWallet.',
+                    lessThan: 'This donation exceeds your Giveth wallet balance (plus gas price). Please top up your wallet or donate with MyEtherWallet.',
+                    greaterEqualThan: 'Minimum value must be at least Ξ0.1',
                   }}
                   required
                   autoFocus

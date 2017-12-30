@@ -7,6 +7,10 @@ import Web3 from 'web3';
 Formsy.addValidationRule('greaterThan', (formValues, inputValue, value) =>
   parseFloat(inputValue) > value);
 
+// Greater than number
+Formsy.addValidationRule('greaterEqualThan', (formValues, inputValue, value) =>
+  parseFloat(inputValue) >= value);
+
 // Less than number
 Formsy.addValidationRule('lessThan', (formValues, inputValue, value) =>
   parseFloat(inputValue) < value);
