@@ -132,12 +132,13 @@ class DACservice {
       let txHash;
       let etherScanUrl;
       getNetwork()
-        .then((network) => {
+        .then(network => {
           const { lppDacs } = network;
           etherScanUrl = network.etherscan;
 
-          lppDacs.addDac(dac.title, '', 0, dac.tokenName, dac.tokenSymbol, { from })
-            .once('transactionHash', (hash) => {
+          lppDacs
+            .addDac(dac.title, '', 0, dac.tokenName, dac.tokenSymbol, { from })
+            .once('transactionHash', hash => {
               txHash = hash;
               dac.txHash = txHash;
               feathersClient
