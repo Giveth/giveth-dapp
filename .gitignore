@@ -28,4 +28,4 @@ src/**/*.css
 .idea
 *.iml
 
-/vscode
+.vscode/settings.json
