@@ -1,9 +1,0 @@
-{
-    "prettier.eslintIntegration": true,
-    "prettier.singleQuote": true,
-    "prettier.trailingComma": "all",
-    "eslint.enable": true,
-    "eslint.autoFixOnSave": true,
-    "editor.tabSize": 2,
-    "editor.detectIndentation": false
-}

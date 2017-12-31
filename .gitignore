@@ -27,3 +27,5 @@ src/**/*.css
 *.sublime-workspace
 .idea
 *.iml
+
+/vscode
