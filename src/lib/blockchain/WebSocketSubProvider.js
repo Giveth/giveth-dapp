@@ -1,7 +1,6 @@
 import createPayload from 'web3-provider-engine/util/create-payload';
 import Subprovider from 'web3-provider-engine/subproviders/subprovider';
 
-
 class WebSocketSubProvider extends Subprovider {
   constructor(opts) {
     super();

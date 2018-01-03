@@ -49,11 +49,14 @@
   "devDependencies": {
     "eslint": "^4.10.0",
     "eslint-config-airbnb": "^16.1.0",
+    "eslint-config-prettier": "^2.9.0",
     "eslint-loader": "^1.9.0",
     "eslint-plugin-import": "^2.8.0",
     "eslint-plugin-jsx-a11y": "^6.0.2",
     "eslint-plugin-react": "^7.4.0",
-    "lerna": "^2.2.0"
+    "eslint-plugin-prettier": "^2.4.0",
+    "lerna": "^2.2.0",
+    "prettier": "1.9.2"
   },
   "scripts": {
     "build-css": "node-sass-chokidar --include-path ./src --include-path ./node_modules src/ -o src/",
@@ -62,8 +65,11 @@
     "start": "npm-run-all -p watch-css start-js",
     "build": "npm run build-css && react-scripts build",
     "test": "npm run eslint && react-scripts test --env=jsdom",
-    "eslint": "eslint src/. test/.",
-    "eject": "react-scripts eject"
+    "eslint": "eslint src/**/**.js*",
+    "eslint:fix": "eslint src/**/**.js* --fix",
+    "eject": "react-scripts eject",
+    "prettier": "prettier src/**/**.js* --single-quote --trailing-comma all -l",
+    "prettier:write": "prettier app/**/**.js --single-quote --trailing-comma all --write"
   },
   "repository": {
     "type": "git",

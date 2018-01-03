@@ -12,8 +12,12 @@ class DACservice {
    */
   static get(id) {
     return new Promise((resolve, reject) => {
-      feathersClient.service('dacs').find({ query: { _id: id } })
-        .then((resp) => { resolve(new DAC(resp.data[0])); })
+      feathersClient
+        .service('dacs')
+        .find({ query: { _id: id } })
+        .then(resp => {
+          resolve(new DAC(resp.data[0]));
+        })
         .catch(err => reject(err));
     });
   }
@@ -25,23 +29,26 @@ class DACservice {
    * @param onError   Callback function if error is encountered
    */
   static subscribe(onSuccess, onError) {
-    return feathersClient.service('dacs').watch({ strategy: 'always' }).find({
-      query: {
-        delegateId: {
-          $gt: '0', // 0 is a pending dac
+    return feathersClient
+      .service('dacs')
+      .watch({ strategy: 'always' })
+      .find({
+        query: {
+          delegateId: {
+            $gt: '0', // 0 is a pending dac
+          },
+          // TODO: Re-enable once communities have status staved in feathers
+          // status: DAC.ACTIVE,
+          $limit: 200,
+          $sort: { campaignsCount: -1 },
         },
-        // TODO: Re-enable once communities have status staved in feathers
-        // status: DAC.ACTIVE,
-        $limit: 200,
-        $sort: { campaignsCount: -1 },
-      },
-    }).subscribe(
-      (resp) => {
-        const newResp = Object.assign({}, resp, { data: resp.data.map(d => new DAC(d)) });
+      })
+      .subscribe(resp => {
+        const newResp = Object.assign({}, resp, {
+          data: resp.data.map(d => new DAC(d)),
+        });
         onSuccess(newResp);
-      },
-      onError,
-    );
+      }, onError);
   }
 
   /**
@@ -52,15 +59,16 @@ class DACservice {
    * @param onError   Callback function if error is encountered
    */
   static subscribeDonations(id, onSuccess, onError) {
-    return feathersClient.service('donations/history').watch({ listStrategy: 'always' }).find({
-      query: {
-        delegateId: id,
-        $sort: { createdAt: -1 },
-      },
-    }).subscribe(
-      resp => onSuccess(resp.data),
-      onError,
-    );
+    return feathersClient
+      .service('donations/history')
+      .watch({ listStrategy: 'always' })
+      .find({
+        query: {
+          delegateId: id,
+          $sort: { createdAt: -1 },
+        },
+      })
+      .subscribe(resp => onSuccess(resp.data), onError);
   }
 
   /**
@@ -71,18 +79,21 @@ class DACservice {
    * @param onError   Callback function if error is encountered
    */
   static subscribeCampaigns(id, onSuccess, onError) {
-    return feathersClient.service('campaigns').watch({ strategy: 'always' }).find({
-      query: {
-        projectId: {
-          $gt: '0', // 0 is a pending campaign
+    return feathersClient
+      .service('campaigns')
+      .watch({ strategy: 'always' })
+      .find({
+        query: {
+          projectId: {
+            $gt: '0', // 0 is a pending campaign
+          },
+          dacs: id,
+          $limit: 200,
         },
-        dacs: id,
-        $limit: 200,
-      },
-    }).subscribe(
-      (resp) => { onSuccess(resp.data.map(c => new Campaign(c))); },
-      onError,
-    );
+      })
+      .subscribe(resp => {
+        onSuccess(resp.data.map(c => new Campaign(c)));
+      }, onError);
   }
 
   /**
@@ -93,7 +104,10 @@ class DACservice {
    * @param onError     Callback function if error is encountered
    */
   static getUserDACs(userAddress, onSuccess, onError) {
-    return feathersClient.service('dacs').watch({ strategy: 'always' }).find({ query: { ownerAddress: userAddress } })
+    return feathersClient
+      .service('dacs')
+      .watch({ strategy: 'always' })
+      .find({ query: { ownerAddress: userAddress } })
       .subscribe(
         resp => onSuccess(resp.data.map(dac => new DAC(dac))),
         onError,
@@ -110,7 +124,9 @@ class DACservice {
    */
   static save(dac, from, afterCreate = () => {}, afterMined = () => {}) {
     if (dac.id) {
-      feathersClient.service('dacs').patch(dac.id, dac.toFeathers())
+      feathersClient
+        .service('dacs')
+        .patch(dac.id, dac.toFeathers())
         .then(() => afterMined());
     } else {
       let txHash;
@@ -124,14 +140,16 @@ class DACservice {
             .once('transactionHash', (hash) => {
               txHash = hash;
               dac.txHash = txHash;
-              feathersClient.service('dacs').create(dac.toFeathers())
+              feathersClient
+                .service('dacs')
+                .create(dac.toFeathers())
                 .then(() => afterCreate(`${etherScanUrl}tx/${txHash}`));
             })
             .then(() => {
               afterMined(`${etherScanUrl}tx/${txHash}`);
             });
         })
-        .catch((err) => {
+        .catch(err => {
           console.log('New DAC transaction failed:', err); // eslint-disable-line no-console
           displayTransactionError(txHash, etherScanUrl);
         });
