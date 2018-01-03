@@ -7,8 +7,8 @@ import './styles/application.css';
 
 /* global document */
 ReactDOM.render(
-  <Application /> // eslint-disable-line react/jsx-filename-extension
-  , document.getElementById('root'),
+  <Application />, // eslint-disable-line react/jsx-filename-extension
+  document.getElementById('root'),
 );
 
 registerServiceWorker();
