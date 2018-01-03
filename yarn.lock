@@ -475,7 +475,7 @@ async-eventemitter@^0.2.2:
   dependencies:
     async "^2.4.0"
 
-"async-eventemitter@github:ahultgren/async-eventemitter#fa06e39e56786ba541c180061dbf2c0a5bbf951c":
+async-eventemitter@ahultgren/async-eventemitter#fa06e39e56786ba541c180061dbf2c0a5bbf951c:
   version "0.2.3"
   resolved "https://codeload.github.com/ahultgren/async-eventemitter/tar.gz/fa06e39e56786ba541c180061dbf2c0a5bbf951c"
   dependencies:
@@ -6288,9 +6288,9 @@ lpp-capped-milestone@0.0.3:
     liquidpledging "git://github.com/giveth/liquidpledging.git#28313ee"
     minimetoken "^0.2.0"
 
-lpp-dacs@0.0.2:
-  version "0.0.2"
-  resolved "https://registry.yarnpkg.com/lpp-dacs/-/lpp-dacs-0.0.2.tgz#0259b41900cafee41b94c223f151c91c58b67caf"
+lpp-dacs@0.0.3:
+  version "0.0.3"
+  resolved "https://registry.yarnpkg.com/lpp-dacs/-/lpp-dacs-0.0.3.tgz#54cd3a71044bcef49413c9f6b9563f6da1afaa62"
   dependencies:
     chai "^4.1.2"
     eth-contract-class "0.0.6"
