@@ -15,10 +15,12 @@ import { history } from '../lib/helpers';
  *      .then(()=> ...do something when authenticated)
  */
 
-export const isAuthenticated = (currentUser, wallet) => new Promise((resolve) => {
-  if (currentUser && currentUser.address && wallet && wallet.unlocked) resolve();
-  else history.goBack();
-});
+export const isAuthenticated = (currentUser, wallet) =>
+  new Promise(resolve => {
+    if (currentUser && currentUser.address && wallet && wallet.unlocked)
+      resolve();
+    else history.goBack();
+  });
 
 /**
  * check if the currentUser is in a particular whitelist. If not, route back.
@@ -35,10 +37,18 @@ export const isAuthenticated = (currentUser, wallet) => new Promise((resolve) =>
  *      .then(()=> ...do something when in whitelist)
  */
 
-export const isInWhitelist = (currentUser, whitelist, history) => new Promise((resolve, reject) =>
-  (whitelist.length === 0 || (currentUser && currentUser.address && whitelist.indexOf(currentUser.address.toLowerCase()) > -1)
-    ? resolve() : reject() && console.log('not in whitelist') && (history && history.goBack())));
-
+export const isInWhitelist = (currentUser, whitelist, history) =>
+  new Promise(
+    (resolve, reject) =>
+      whitelist.length === 0 ||
+      (currentUser &&
+        currentUser.address &&
+        whitelist.indexOf(currentUser.address.toLowerCase()) > -1)
+        ? resolve()
+        : reject() &&
+          console.log('not in whitelist') &&
+          (history && history.goBack()),
+  );
 
 /**
  * If the wallet is locked, asks the user to unlock his wallet before redirecting to a route
@@ -56,7 +66,6 @@ export const redirectAfterWalletUnlock = (to, wallet, history) => {
   }
 };
 
-
 /**
  * If the wallet is locked, asks the user to unlock his wallet, otherwise performs the action
  *
@@ -73,7 +82,6 @@ export const takeActionAfterWalletUnlock = (wallet, action) => {
   }
 };
 
-
 /**
  * Checks for sufficient wallet balance.
  *
@@ -81,21 +89,25 @@ export const takeActionAfterWalletUnlock = (wallet, action) => {
  * @param history {object} Standard history object
  *
  */
-export const checkWalletBalance = (wallet, history) => new Promise((resolve, reject) => {
-  if (wallet.getBalance() >= React.minimumWalletBalance) {
-    resolve();
-  } else {
-    React.swal({
-      title: 'Insufficient wallet balance',
-      content: React.swal.msg(<p>
-            Unfortunately you need at least Ξ{React.minimumWalletBalance} in your wallet to
-            continue. Please transfer some Ξ to your Giveth wallet first.
-                              </p>),
-      icon: 'warning',
-      buttons: ['OK', 'View wallet info'],
-    }).then((isConfirmed) => {
-      if (isConfirmed) history.push('/wallet');
-      reject(new Error('noBalance'));
-    });
-  }
-});
+export const checkWalletBalance = (wallet, history) =>
+  new Promise((resolve, reject) => {
+    if (wallet.getBalance() >= React.minimumWalletBalance) {
+      resolve();
+    } else {
+      React.swal({
+        title: 'Insufficient wallet balance',
+        content: React.swal.msg(
+          <p>
+            Unfortunately you need at least Ξ{React.minimumWalletBalance} in
+            your wallet to continue. Please transfer some Ξ to your Giveth
+            wallet first.
+          </p>,
+        ),
+        icon: 'warning',
+        buttons: ['OK', 'View wallet info'],
+      }).then(isConfirmed => {
+        if (isConfirmed) history.push('/wallet');
+        reject(new Error('noBalance'));
+      });
+    }
+  });

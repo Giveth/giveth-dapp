@@ -151,8 +151,16 @@ class CampaignService {
 
           new LPPCampaignFactory(web3, network.campaignFactoryAddress)
             .deploy(
-              liquidPledging.$address, campaign.title, '', 0, campaign.reviewerAddress,
-              campaign.tokenName, campaign.tokenSymbol, from, from, { from, gasPrice },
+              liquidPledging.$address,
+              campaign.title,
+              '',
+              0,
+              campaign.reviewerAddress,
+              campaign.tokenName,
+              campaign.tokenSymbol,
+              from,
+              from,
+              { from, gasPrice },
             )
             .once('transactionHash', hash => {
               txHash = hash;
@@ -194,8 +202,9 @@ class CampaignService {
         const lppCampaign = new LPPCampaign(web3, campaign.pluginAddress);
         etherScanUrl = network.etherscan;
 
-        lppCampaign.cancelCampaign({ from, gasPrice })
-          .once('transactionHash', (hash) => {
+        lppCampaign
+          .cancelCampaign({ from, gasPrice })
+          .once('transactionHash', hash => {
             txHash = hash;
             feathersClient
               .service('/campaigns')

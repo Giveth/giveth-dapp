@@ -35,23 +35,29 @@ class BackupWallet extends Component {
 
     return (
       <span>
-        {isLoading &&
+        {isLoading && (
           <div>
             <Loader />
             Loading wallet...
           </div>
-        }
+        )}
 
-        {!isLoading &&
+        {!isLoading && (
           <a
             className="btn btn-success"
             onClick={this.handleClick}
-            href={URL.createObjectURL(new Blob([JSON.stringify(keystore)], { type: 'application/json' }))}
-            download={`UTC--${new Date().toISOString()}-${keystore.address}.json`}
+            href={URL.createObjectURL(
+              new Blob([JSON.stringify(keystore)], {
+                type: 'application/json',
+              }),
+            )}
+            download={`UTC--${new Date().toISOString()}-${
+              keystore.address
+            }.json`}
           >
             Download Backup File
           </a>
-        }
+        )}
       </span>
     );
   }
