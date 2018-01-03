@@ -51,6 +51,11 @@ const getWeb3 = () =>
     if (!givethWeb3) {
       givethWeb3 = new Web3(process.env.REACT_APP_ETH_NODE_CONNECTION_URL);
 
+      // hack to keep the ws connection from timing-out
+      setInterval(() => {
+        givethWeb3.eth.net.getId();
+      }, 30000); // every 30 seconds
+
       // web3 1.0 expects the chainId to be no longer then 1 byte. If the chainId is longer
       // then 1 byte, an error will be thrown. Testrpc by default uses the timestamp for the
       // networkId, thus causing an error to be thrown. Here we override getId if necessary
