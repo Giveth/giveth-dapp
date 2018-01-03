@@ -8,7 +8,7 @@ import PropTypes from 'prop-types';
 
 import { feathersClient } from '../lib/feathersClient';
 import { takeActionAfterWalletUnlock, checkWalletBalance } from '../lib/middleware';
-import { displayTransactionError, confirmBlockchainTransaction } from '../lib/helpers';
+import { displayTransactionError, confirmBlockchainTransaction, getGasPrice } from '../lib/helpers';
 import getNetwork from '../lib/blockchain/getNetwork';
 import getWeb3 from '../lib/blockchain/getWeb3';
 import GivethWallet from '../lib/blockchain/GivethWallet';
@@ -104,8 +104,8 @@ class DelegateButton extends Component {
     let txHash;
     let etherScanUrl;
 
-    const doDelegate = () => Promise.all([getNetwork(), getWeb3()])
-      .then(([network, web3]) => {
+    const doDelegate = () => Promise.all([getNetwork(), getWeb3(), getGasPrice()])
+      .then(([network, web3, gasPrice]) => {
         const { lppDacs, liquidPledging } = network;
         etherScanUrl = network.etherscan;
 
@@ -116,13 +116,13 @@ class DelegateButton extends Component {
         const executeTransfer = () => {
           if (model.ownerType === 'campaign') {
             return new LPPCampaign(web3, model.ownerEntity.pluginAddress)
-              .transfer(model.pledgeId, model.amount, receiverId, { from, $extraGas: 100000 });
+              .transfer(model.pledgeId, model.amount, receiverId, { from, $extraGas: 100000, gasPrice });
           } else if (model.ownerType === 'giver' && model.delegate > 0) {
-            return lppDacs.transfer(model.delegate, model.pledgeId, model.amount, receiverId, { from, $extraGas: 100000 });
+            return lppDacs.transfer(model.delegate, model.pledgeId, model.amount, receiverId, { from, $extraGas: 100000, gasPrice });
           }
 
           return liquidPledging
-            .transfer(senderId, model.pledgeId, model.amount, receiverId, { from, $extraGas: 100000 }); // need to supply extraGas b/c https://github.com/trufflesuite/ganache-core/issues/26
+            .transfer(senderId, model.pledgeId, model.amount, receiverId, { from, $extraGas: 100000, gasPrice }); // need to supply extraGas b/c https://github.com/trufflesuite/ganache-core/issues/26
         };
 
         return executeTransfer()

@@ -9,8 +9,10 @@ import Loader from './../Loader';
 import QuillFormsy from './../QuillFormsy';
 import FormsyImageUploader from './../FormsyImageUploader';
 import GoBackButton from '../GoBackButton';
-import { isOwner, displayTransactionError, getRandomWhitelistAddress, getTruncatedText,
-  confirmBlockchainTransaction } from '../../lib/helpers';
+import {
+  isOwner, displayTransactionError, getRandomWhitelistAddress, getTruncatedText,
+  confirmBlockchainTransaction, getGasPrice,
+} from '../../lib/helpers';
 import { isAuthenticated, checkWalletBalance, isInWhitelist } from '../../lib/middleware';
 import getNetwork from '../../lib/blockchain/getNetwork';
 import getWeb3 from '../../lib/blockchain/getWeb3';
@@ -169,14 +171,14 @@ class EditMilestone extends Component {
           React.toast.info(<p>Your Milestone is being proposed to the Campaign Owner.</p>);
         } else {
           let etherScanUrl;
-          Promise.all([getNetwork(), getWeb3()])
-            .then(([network, web3]) => {
+          Promise.all([getNetwork(), getWeb3(), getGasPrice()])
+            .then(([network, web3, gasPrice]) => {
               etherScanUrl = network.txHash;
 
               const from = this.props.currentUser.address;
               const recipient = model.recipientAddress;
               new LPPCappedMilestones(web3, network.cappedMilestoneAddress)
-                .addMilestone(model.title, '', constructedModel.maxAmount, this.state.campaignProjectId, recipient, model.reviewerAddress, constructedModel.campaignReviewerAddress, { from })
+                .addMilestone(model.title, '', constructedModel.maxAmount, this.state.campaignProjectId, recipient, model.reviewerAddress, constructedModel.campaignReviewerAddress, { from, gasPrice })
                 .on('transactionHash', (hash) => {
                   txHash = hash;
                   createMilestone({

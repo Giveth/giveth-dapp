@@ -1,6 +1,6 @@
 import getNetwork from '../lib/blockchain/getNetwork';
 import { feathersClient } from '../lib/feathersClient';
-import { displayTransactionError } from '../lib/helpers';
+import { displayTransactionError, getGasPrice } from '../lib/helpers';
 import DAC from '../models/DAC';
 import Campaign from '../models/Campaign';
 
@@ -115,12 +115,12 @@ class DACservice {
     } else {
       let txHash;
       let etherScanUrl;
-      getNetwork()
-        .then((network) => {
+      Promise.all([getNetwork(), getGasPrice()])
+        .then(([network, gasPrice]) => {
           const { lppDacs } = network;
           etherScanUrl = network.etherscan;
 
-          lppDacs.addDac(dac.title, '', 0, dac.tokenName, dac.tokenSymbol, { from })
+          lppDacs.addDac(dac.title, '', 0, dac.tokenName, dac.tokenSymbol, { from, gasPrice })
             .once('transactionHash', (hash) => {
               txHash = hash;
               dac.txHash = txHash;

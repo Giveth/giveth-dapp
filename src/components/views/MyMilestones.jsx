@@ -10,7 +10,7 @@ import getNetwork from '../../lib/blockchain/getNetwork';
 import getWeb3 from '../../lib/blockchain/getWeb3';
 import Loader from '../Loader';
 import User from '../../models/User';
-import { displayTransactionError, getTruncatedText } from '../../lib/helpers';
+import { displayTransactionError, getGasPrice, getTruncatedText } from '../../lib/helpers';
 import GivethWallet from '../../lib/blockchain/GivethWallet';
 
 // TODO Remove the eslint exception and fix feathers to provide id's without underscore
@@ -131,12 +131,12 @@ class MyMilestones extends Component {
 
             let txHash;
             let etherScanUrl;
-            Promise.all([getNetwork(), getWeb3()])
-              .then(([network, web3]) => {
+            Promise.all([getNetwork(), getWeb3(), getGasPrice()])
+              .then(([network, web3, gasPrice]) => {
                 etherScanUrl = network.etherscan;
 
                 return new LPPCappedMilestones(web3, network.cappedMilestoneAddress)
-                  .cancelMilestone(milestone.projectId, { from: this.props.currentUser.address })
+                  .cancelMilestone(milestone.projectId, { from: this.props.currentUser.address, gasPrice })
                   .once('transactionHash', (hash) => {
                     txHash = hash;
                     cancel(etherScanUrl, txHash);
@@ -182,8 +182,8 @@ class MyMilestones extends Component {
 
             let txHash;
             let etherScanUrl;
-            Promise.all([getNetwork(), getWeb3()])
-              .then(([network, web3]) => {
+            Promise.all([getNetwork(), getWeb3(), getGasPrice()])
+              .then(([network, web3, gasPrice]) => {
                 console.log('creating milestone tx');
                 etherScanUrl = network.txHash;
 
@@ -196,7 +196,7 @@ class MyMilestones extends Component {
                     milestone.recipientAddress,
                     milestone.reviewerAddress,
                     milestone.campaignReviewerAddress,
-                    { from: this.props.currentUser.address }
+                    { from: this.props.currentUser.address, gasPrice }
                   )
                   .on('transactionHash', (hash) => {
                     txHash = hash;
@@ -263,12 +263,12 @@ class MyMilestones extends Component {
 
             let txHash;
             let etherScanUrl;
-            Promise.all([getNetwork(), getWeb3()])
-              .then(([network, web3]) => {
+            Promise.all([getNetwork(), getWeb3(), getGasPrice()])
+              .then(([network, web3, gasPrice]) => {
                 etherScanUrl = network.etherscan;
 
                 return new LPPCappedMilestones(web3, network.cappedMilestoneAddress)
-                  .acceptMilestone(milestone.projectId, { from: this.props.currentUser.address })
+                  .acceptMilestone(milestone.projectId, { from: this.props.currentUser.address, gasPrice })
                   .once('transactionHash', (hash) => {
                     txHash = hash;
                     approve(etherScanUrl, txHash);
@@ -379,12 +379,12 @@ class MyMilestones extends Component {
 
               let txHash;
               let etherScanUrl;
-              Promise.all([getNetwork(), getWeb3(), getPledges()])
-                .then(([network, web3, pledges]) => {
+              Promise.all([getNetwork(), getWeb3(), getPledges(), getGasPrice()])
+                .then(([network, web3, pledges, gasPrice]) => {
                   etherScanUrl = network.etherscan;
 
                   return new LPPCappedMilestones(web3, network.cappedMilestoneAddress)
-                    .mWithdraw(pledges, { from: this.props.currentUser.address })
+                    .mWithdraw(pledges, { from: this.props.currentUser.address, gasPrice })
                     .once('transactionHash', (hash) => {
                       txHash = hash;
                       withdraw(etherScanUrl, txHash);
@@ -445,12 +445,12 @@ class MyMilestones extends Component {
 
               let txHash;
               let etherScanUrl;
-              Promise.all([getNetwork(), getWeb3()])
-                .then(([network, web3]) => {
+              Promise.all([getNetwork(), getWeb3(), getGasPrice()])
+                .then(([network, web3, gasPrice]) => {
                   etherScanUrl = network.etherscan;
 
                   return new LPPCappedMilestones(web3, network.cappedMilestoneAddress)
-                    .collect(milestone.projectId, { from: this.props.currentUser.address, $extraGas: 100000 })
+                    .collect(milestone.projectId, { from: this.props.currentUser.address, $extraGas: 100000, gasPrice })
                     .once('transactionHash', (hash) => {
                       txHash = hash;
                       collect(etherScanUrl, txHash);
