@@ -3,6 +3,7 @@ import 'whatwg-fetch';
 import { createBrowserHistory } from 'history';
 import { feathersClient } from './feathersClient';
 import DefaultAvatar from './../assets/avatar-100.svg';
+import { utils } from 'web3';
 
 export const isOwner = (address, currentUser) =>
   address !== undefined &&
@@ -100,10 +101,11 @@ export const getGasPrice = () =>
     .service('/gasprice')
     .find()
     .then(resp => {
-      const gasPrice = resp.safeLow * 1.1;
+      let gasPrice = resp.safeLow * 1.1;
       // div by 10 b/c https://ethgasstation.info/json/ethgasAPI.json returns price in gwei * 10
       // we're only interested in gwei
-      return gasPrice > resp.average ? resp.average / 10 : gasPrice / 10;
+      gasPrice = gasPrice > resp.average ? resp.average / 10 : gasPrice / 10;
+      return utils.toWei(`${gasPrice}`, 'gwei');
     });
 
 export const confirmBlockchainTransaction = (onConfirm, onCancel) =>
