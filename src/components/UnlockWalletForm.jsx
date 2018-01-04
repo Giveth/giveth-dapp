@@ -47,6 +47,7 @@ class UnlockWalletForm extends Component {
           <div className="form-group">
             <Input
               autoFocus
+              autocomplete="current-password"
               value={password}
               name="password"
               id="password-input"
