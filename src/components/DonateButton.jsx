@@ -21,7 +21,7 @@ class DonateButton extends Component {
       amount: '',
       mewAmount: '0',
       modalVisible: false,
-      gas: 4,
+      gasPrice: utils.toWei('4', 'gwei'),
     };
 
     this.submit = this.submit.bind(this);
@@ -45,9 +45,9 @@ class DonateButton extends Component {
 
 
   openDialog() {
-    getGasPrice().then(gas =>
+    getGasPrice().then(gasPrice =>
       this.setState({
-        gas,
+        gasPrice,
         modalVisible: true,
       }));
   }
@@ -212,7 +212,7 @@ class DonateButton extends Component {
   render() {
     const { type, model, wallet } = this.props;
     const {
-      isSaving, amount, formIsValid, gas, MEWurl, mewAmount,
+      isSaving, amount, formIsValid, gasPrice, MEWurl, mewAmount,
     } = this.state;
     const style = {
       display: 'inline-block',
@@ -243,7 +243,7 @@ class DonateButton extends Component {
             }
 
             <p>Your wallet balance: <em>&#926;{wallet.getBalance()}</em><br />
-              Gas price: <em>{gas} Gwei</em>
+              Gas price: <em>{utils.fromWei(gasPrice, 'gwei')} Gwei</em>
             </p>
 
             <Form
