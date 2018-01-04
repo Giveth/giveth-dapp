@@ -95,7 +95,7 @@ export const getGasPrice = () => feathersClient.service('/gasprice').find().then
   // div by 10 b/c https://ethgasstation.info/json/ethgasAPI.json returns price in gwei * 10
   // we're only interested in gwei
   gasPrice = (gasPrice > resp.average) ? resp.average / 10 : gasPrice / 10;
-  return utils.toWei(gasPrice, 'gwei');
+  return utils.toWei(`${gasPrice}`, 'gwei');
 });
 
 export const confirmBlockchainTransaction = (onConfirm, onCancel) => (React.swal({
