@@ -300,6 +300,7 @@ class MyMilestones extends Component {
         }).then((isConfirmed) => {
           if (isConfirmed) {
             feathersClient.service('/milestones').patch(milestone._id, {
+              prevStatus: 'NeedsReview',
               status: 'InProgress',
             }).then(() => {
               React.toast.info(<p>You have rejected this milestone...</p>);
