@@ -170,6 +170,7 @@ class MyMilestones extends Component {
             const createMilestone = (etherScanUrl, txHash) => {
               feathersClient.service('/milestones').patch(milestone._id, {
                 status: 'pending',
+                prevStatus: 'proposed',
                 mined: false,
                 txHash,
               }).then(() => {
@@ -227,6 +228,7 @@ class MyMilestones extends Component {
 
         feathersClient.service('/milestones').patch(milestone._id, {
           status: 'rejected',
+          prevStatus: 'proposed'         
         }).then(() => {
           React.toast.info(<p>The milestone has been rejected.</p>);
         }).catch((e) => {
