@@ -14,6 +14,8 @@ import {
   confirmBlockchainTransaction,
 } from '../lib/helpers';
 import GivethWallet from '../lib/blockchain/GivethWallet';
+import getWeb3 from '../lib/blockchain/getWeb3';
+import { MiniMeToken } from 'minimetoken';
 
 class DonateButton extends Component {
   constructor() {
@@ -34,27 +36,27 @@ class DonateButton extends Component {
 
   componentDidMount() {
     getNetwork().then(network => {
-      const { liquidPledging } = network;
+      // const { liquidPledging } = network;
 
-      const donate = liquidPledging.$contract.methods.donate(
-        0,
-        this.props.model.adminId,
-      );
-      const data = donate.encodeABI();
-      donate
-        .estimateGas({
-          from: '0x0000000000000000000000000000000000000000',
-          value: 1,
-        })
-        .then(gasLimit =>
-          this.setState({
-            MEWurl: `https://www.myetherwallet.com/?to=${liquidPledging.$address.toUpperCase()}&gaslimit=${gasLimit}&data=${data}`,
-          }),
-        );
-
-      this.setState({
-        MEWurl: `https://www.myetherwallet.com/?to=${liquidPledging.$address.toUpperCase()}&gaslimit=550000&data=${data}`,
-      });
+      // const donate = liquidPledging.$contract.methods.donate(
+      //   0,
+      //   this.props.model.adminId,
+      // );
+      // const data = donate.encodeABI();
+      // donate
+      //   .estimateGas({
+      //     from: '0x0000000000000000000000000000000000000000',
+      //     value: 1,
+      //   })
+      //   .then(gasLimit =>
+      //     this.setState({
+      //       MEWurl: `https://www.myetherwallet.com/?to=${liquidPledging.$address.toUpperCase()}&gaslimit=${gasLimit}&data=${data}`,
+      //     }),
+      //   );
+      //
+      // this.setState({
+      //   MEWurl: `https://www.myetherwallet.com/?to=${liquidPledging.$address.toUpperCase()}&gaslimit=550000&data=${data}`,
+      // });
     });
   }
 
@@ -211,17 +213,19 @@ class DonateButton extends Component {
     let txHash;
     let etherScanUrl;
     const doDonate = () =>
-      getNetwork()
-        .then(network => {
-          const { liquidPledging } = network;
+      Promise.all([getNetwork(), getWeb3()])
+        .then(([network, web3]) => {
+          const { tokenAddress, liquidPledgingAddress } = network;
           etherScanUrl = network.etherscan;
+          const token = new MiniMeToken(web3, tokenAddress);
 
-          return liquidPledging
-            .donate(
-              this.props.currentUser.giverId || '0',
-              this.props.model.adminId,
-              { value: amount },
-            )
+          const giverId = this.props.currentUser.giverId || '0';
+          const { adminId } = this.props.model;
+
+          const data = `0x${utils.padLeft(utils.toHex(giverId).substring(2), 16,)}${utils.padLeft(utils.toHex(adminId).substring(2), 16)}`;
+
+          return token
+            .approveAndCall(liquidPledgingAddress, amount, data, {from: this.props.currentUser.address, gas: 1000000})
             .once('transactionHash', hash => {
               txHash = hash;
               donate(etherScanUrl, txHash);
@@ -268,95 +272,96 @@ class DonateButton extends Component {
       display: 'inline-block',
     };
 
-    return (
-      <span style={style}>
-        <button className="btn btn-success" onClick={this.openDialog}>
-          Donate
-        </button>
-
-        {wallet && (
-          <SkyLightStateless
-            isVisible={this.state.modalVisible}
-            onCloseClicked={() => {
-              this.setState({ modalVisible: false });
-            }}
-            onOverlayClicked={() => {
-              this.setState({ modalVisible: false });
-            }}
-            title={`Support this ${type}!`}
-          >
-            <strong>
-              Give Ether to support <em>{model.title}</em>
-            </strong>
-
-            {['DAC', 'campaign'].indexOf(type) > -1 && (
-              <p>
-                Pledge: as long as the {type} owner does not lock your money you
-                can take it back any time.
-              </p>
-            )}
-
-            <p>
-              Your wallet balance: <em>&#926;{wallet.getBalance()}</em>
-              <br />
-              Gas price: <em>{utils.fromWei(gasPrice, 'gwei')} Gwei</em>
-            </p>
-
-            <Form
-              onSubmit={this.submit}
-              mapping={this.mapInputs}
-              onValid={() => this.toggleFormValid(true)}
-              onInvalid={() => this.toggleFormValid(false)}
-              layout="vertical"
-            >
-              <div className="form-group">
-                <Input
-                  name="amount"
-                  id="amount-input"
-                  label="How much Ξ do you want to donate?"
-                  type="number"
-                  value={amount}
-                  onChange={(name, value) =>
-                    this.setState({ mewAmount: value })
-                  }
-                  placeholder="10"
-                  validations={{
-                    lessThan: wallet.getBalance() - 0.5,
-                    greaterThan: 0.00000000009,
-                  }}
-                  validationErrors={{
-                    greaterThan: 'Minimum value must be at least Ξ0.1',
-                    lessThan:
-                      'This donation exceeds your Giveth wallet balance. Please top up your wallet or donate with MyEtherWallet.',
-                  }}
-                  required
-                  autoFocus
-                />
-              </div>
-
-              <button
-                className="btn btn-success"
-                formNoValidate
-                type="submit"
-                disabled={isSaving || !formIsValid}
-              >
-                {isSaving ? 'Donating...' : 'Donate Ξ with Giveth'}
-              </button>
-
-              <a
-                className={`btn btn-secondary ${isSaving ? 'disabled' : ''}`}
-                disabled={isSaving}
-                href={`${MEWurl}&value=${mewAmount}#send-transaction`}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                Donate with MyEtherWallet
-              </a>
-            </Form>
-          </SkyLightStateless>
-        )}
-      </span>
-    );
+    return (<div></div>);
+    // return (
+    //   <span style={style}>
+    //     <button className="btn btn-success" onClick={this.openDialog}>
+    //       Donate
+    //     </button>
+    //
+    //     {wallet && (
+    //       <SkyLightStateless
+    //         isVisible={this.state.modalVisible}
+    //         onCloseClicked={() => {
+    //           this.setState({ modalVisible: false });
+    //         }}
+    //         onOverlayClicked={() => {
+    //           this.setState({ modalVisible: false });
+    //         }}
+    //         title={`Support this ${type}!`}
+    //       >
+    //         <strong>
+    //           Give Ether to support <em>{model.title}</em>
+    //         </strong>
+    //
+    //         {['DAC', 'campaign'].indexOf(type) > -1 && (
+    //           <p>
+    //             Pledge: as long as the {type} owner does not lock your money you
+    //             can take it back any time.
+    //           </p>
+    //         )}
+    //
+    //         {/*<p>*/}
+    //           {/*Your wallet balance: <em>&#926;{wallet.getTokenBalance()}</em>*/}
+    //           {/*<br />*/}
+    //           {/*Gas price: <em>{utils.fromWei(gasPrice, 'gwei')} Gwei</em>*/}
+    //         {/*</p>*/}
+    //
+    //         <Form
+    //           onSubmit={this.submit}
+    //           mapping={this.mapInputs}
+    //           onValid={() => this.toggleFormValid(true)}
+    //           onInvalid={() => this.toggleFormValid(false)}
+    //           layout="vertical"
+    //         >
+    //           <div className="form-group">
+    //             <Input
+    //               name="amount"
+    //               id="amount-input"
+    //               label="How much Ξ do you want to donate?"
+    //               type="number"
+    //               value={amount}
+    //               onChange={(name, value) =>
+    //                 this.setState({ mewAmount: value })
+    //               }
+    //               placeholder="10"
+    //               validations={{
+    //                 // lessThan: wallet.getTokenBalance() - 0.5,
+    //                 greaterThan: 0.00000000009,
+    //               }}
+    //               validationErrors={{
+    //                 greaterThan: 'Minimum value must be at least Ξ0.1',
+    //                 lessThan:
+    //                   'This donation exceeds your Giveth wallet balance. Please top up your wallet or donate with MyEtherWallet.',
+    //               }}
+    //               required
+    //               autoFocus
+    //             />
+    //           </div>
+    //
+    //           {/*<button*/}
+    //             {/*className="btn btn-success"*/}
+    //             {/*formNoValidate*/}
+    //             {/*type="submit"*/}
+    //             {/*disabled={isSaving || !formIsValid}*/}
+    //           {/*>*/}
+    //             {/*{isSaving ? 'Donating...' : 'Donate Ξ with Giveth'}*/}
+    //           {/*</button>*/}
+    //
+    //           <a
+    //             className={`btn btn-secondary ${isSaving ? 'disabled' : ''}`}
+    //             disabled={isSaving}
+    //             href={`${MEWurl}&value=${mewAmount}#send-transaction`}
+    //             target="_blank"
+    //             rel="noopener noreferrer"
+    //           >
+    //             Donate with MyEtherWallet
+    //           </a>
+    //         </Form>
+    //       </SkyLightStateless>
+    //     )}
+    //   </span>
+    // );
   }
 }
 

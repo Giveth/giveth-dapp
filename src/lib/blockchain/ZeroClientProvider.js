@@ -2,7 +2,7 @@ import ProviderEngine from 'web3-provider-engine';
 import HookedWalletSubprovider from 'web3-provider-engine/subproviders/hooked-wallet';
 import DefaultFixture from 'web3-provider-engine/subproviders/default-fixture';
 import NonceTrackerSubprovider from 'web3-provider-engine/subproviders/nonce-tracker';
-import CacheSubprovider from 'web3-provider-engine/subproviders/cache';
+// import CacheSubprovider from 'web3-provider-engine/subproviders/cache';
 import FilterSubprovider from 'web3-provider-engine/subproviders/filters';
 import InflightCacheSubprovider from 'web3-provider-engine/subproviders/inflight-cache';
 import SanitizingSubprovider from 'web3-provider-engine/subproviders/sanitizer';
@@ -35,9 +35,10 @@ export default options => {
   const sanitizer = new SanitizingSubprovider();
   engine.addProvider(sanitizer);
 
+  //TODO the block isn't updated with ws connection, so this cache is never invalidated
   // cache layer
-  const cacheSubprovider = new CacheSubprovider();
-  engine.addProvider(cacheSubprovider);
+  // const cacheSubprovider = new CacheSubprovider();
+  // engine.addProvider(cacheSubprovider);
 
   // filters
   const filterSubprovider = new FilterSubprovider();

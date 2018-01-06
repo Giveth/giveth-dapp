@@ -1,4 +1,4 @@
-import { LiquidPledging } from 'giveth-liquidpledging';
+import { LiquidPledging } from 'giveth-liquidpledging-token';
 import { LPPDacs } from 'lpp-dacs';
 import getWeb3 from './getWeb3';
 
@@ -9,6 +9,7 @@ const networks = {
     dacsAddress: '0x79bddecb728afda275923998701bac34d277fb19',
     campaignFactoryAddress: '0xB22D042896Cd46D073d3Bf7b487522bBe1eeb5E7',
     cappedMilestoneAddress: '0x61Dc072691041d411bDa8CE5B4090feb45788a8C',
+    tokenAddress: '0x0',
     etherscan: 'https://etherscan.io/',
   },
   morden: {
@@ -17,6 +18,7 @@ const networks = {
     dacsAddress: '0x0',
     campaignFactoryAddress: '0x0',
     cappedMilestoneAddress: '0x0',
+    tokenAddress: '0x0',
     etherscan: '',
   },
   ropsten: {
@@ -25,14 +27,16 @@ const networks = {
     dacsAddress: '0x0',
     campaignFactoryAddress: '0x0',
     cappedMilestoneAddress: '0x0',
+    tokenAddress: '0x0',
     etherscan: 'https://ropsten.etherscan.io/',
   },
   rinkeby: {
     title: 'Rinkeby',
-    liquidPledgingAddress: '0x40de47F30Bac30dDB151948591030fe543Cdd43D',
-    dacsAddress: '0x55D8284F19A70955b9785a2a06d410C789474B5b',
-    campaignFactoryAddress: '0x2D3cd1A70978F208Edbf3E9a2722912A1d3753d2',
-    cappedMilestoneAddress: '0xfd39a5C81452C061e28B7aeD4E05a7bB9105c462',
+    liquidPledgingAddress: '0x5625220088cA4Df67F15f96595546D10e9970B3A',
+    dacsAddress: '0xc2Cef51f91dE37739F0a105fEDb058E235BB7354',
+    campaignFactoryAddress: '0x2Af51064E9042E62aB09870B4FDe67a1Ba7FEd69',
+    cappedMilestoneAddress: '0x19Bd4E0DEdb9E5Ee9762391893d1f661404b561f',
+    tokenAddress: '0xb991657107F2F12899938B0985572449400C57d5',
     etherscan: 'https://rinkeby.etherscan.io/',
   },
   kovan: {
@@ -41,6 +45,7 @@ const networks = {
     dacsAddress: '0x0',
     campaignFactoryAddress: '0x0',
     cappedMilestoneAddress: '0x0',
+    tokenAddress: '0x0',
     etherscan: '',
   },
   giveth: {
@@ -49,14 +54,16 @@ const networks = {
     dacsAddress: '0x0',
     campaignFactoryAddress: '0x0',
     cappedMilestoneAddress: '0x0',
+    tokenAddress: '0x0',
     etherscan: 'http://network_explorer.giveth.io/',
   },
   default: {
     title: 'TestRPC',
-    liquidPledgingAddress: '0x5b1869D9A4C187F2EAa108f3062412ecf0526b24',
-    dacsAddress: '0x254dffcd3277C0b1660F6d42EFbB754edaBAbC2B',
-    campaignFactoryAddress: '0xC89Ce4735882C9F0f0FE26686c53074E09B0D550',
-    cappedMilestoneAddress: '0xD833215cBcc3f914bD1C9ece3EE7BF8B14f841bb',
+    liquidPledgingAddress: '0x254dffcd3277C0b1660F6d42EFbB754edaBAbC2B',
+    dacsAddress: '0xD833215cBcc3f914bD1C9ece3EE7BF8B14f841bb',
+    campaignFactoryAddress: '0x9561C133DD8580860B6b7E504bC5Aa500f0f06a7',
+    cappedMilestoneAddress: '0xe982E462b094850F12AF94d21D470e21bE9D0E9C',
+    tokenAddress: '0x5b1869D9A4C187F2EAa108f3062412ecf0526b24',
     etherscan: 'https://etherscan.io/', // this won't work for. only here so we can see links during development
   },
 };

@@ -1,9 +1,12 @@
+import { MiniMeToken } from 'minimetoken';
 import Web3 from 'web3';
 import ZeroClientProvider from './ZeroClientProvider';
+import getNetwork from './getNetwork';
 
 let givethWeb3;
 /* ///////////// custom Web3 Functions ///////////// */
 
+let intervalId;
 function setWallet(wallet) {
   if (!wallet) throw new Error('a wallet is required');
 
@@ -35,16 +38,33 @@ function setWallet(wallet) {
   });
 
   const getBalance = () =>
-    getWeb3() // eslint-disable-line no-use-before-define
-      .then(web3 => {
+    Promise.all([getWeb3(), getNetwork()]) // eslint-disable-line no-use-before-define
+      .then(([web3, network]) => {
+        const { tokenAddress } = network;
         const addr = wallet.getAddresses()[0];
-        return addr ? web3.eth.getBalance(addr) : undefined;
+
+        const tokenBal = () => addr
+          ? new MiniMeToken(web3, tokenAddress).balanceOf(addr)
+          : undefined;
+        const bal = () => addr
+          ? web3.eth.getBalance(addr)
+          : undefined;
+
+        return Promise.all([tokenBal(), bal()])
       })
-      .then(balance => (wallet.balance = balance)) // eslint-disable-line no-return-assign
+      .then(([tokenBalance, balance]) => {
+        wallet.balance = balance;
+        wallet.tokenBalance = tokenBalance;
+      })
       .catch(console.error); // eslint-disable-line no-console
 
   getBalance();
-  engine.on('block', getBalance);
+  // engine.on('block', getBalance); //TODO get this to work
+  if (intervalId > 0) {
+    clearInterval(intervalId);
+  }
+  // TODO if removing this interval, need to uncomment the ws timeout fix below
+  intervalId = setInterval(getBalance, 15000);
   this.setProvider(engine);
 }
 
@@ -54,9 +74,10 @@ const getWeb3 = () =>
       givethWeb3 = new Web3(process.env.REACT_APP_ETH_NODE_CONNECTION_URL);
 
       // hack to keep the ws connection from timing-out
-      setInterval(() => {
-        givethWeb3.eth.net.getId();
-      }, 30000); // every 30 seconds
+      // I commented this out b/c we have the getBalance interval above
+      // setInterval(() => {
+      //   givethWeb3.eth.net.getId();
+      // }, 30000); // every 30 seconds
 
       // web3 1.0 expects the chainId to be no longer then 1 byte. If the chainId is longer
       // then 1 byte, an error will be thrown. Testrpc by default uses the timestamp for the

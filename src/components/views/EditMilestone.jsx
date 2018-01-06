@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { LPPCappedMilestones } from 'lpp-capped-milestone';
+import { LPPCappedMilestones } from 'lpp-capped-milestone-token';
 import { utils } from 'web3';
 
 import { Form, Input } from 'formsy-react-components';
