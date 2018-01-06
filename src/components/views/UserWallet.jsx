@@ -119,7 +119,9 @@ class UserWallet extends Component {
               <p> balance: &#926;{this.props.wallet.getBalance()}</p>
               {etherScanUrl &&
               <p><a
-                href={`${etherScanUrl}token/${tokenAddress}?a=${this.props.currentUser.address}`}>GivETH</a> balance: &#926;{this.props.wallet.getTokenBalance()}
+                href={`${etherScanUrl}token/${tokenAddress}?a=${this.props.currentUser.address}`}
+                target="_blank"
+                rel="noopener noreferrer">GivETH</a> balance: &#926;{this.props.wallet.getTokenBalance()}
               </p>
               }
               {!etherScanUrl &&
