@@ -10,10 +10,10 @@ import { feathersClient } from '../lib/feathersClient';
 import {
   takeActionAfterWalletUnlock,
   checkWalletBalance,
+  confirmBlockchainTransaction
 } from '../lib/middleware';
 import {
   displayTransactionError,
-  confirmBlockchainTransaction,
   getGasPrice,
 } from '../lib/helpers';
 import getNetwork from '../lib/blockchain/getNetwork';

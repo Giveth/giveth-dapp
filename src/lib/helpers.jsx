@@ -104,22 +104,10 @@ export const getGasPrice = () =>
       let gasPrice = resp.safeLow * 1.1;
       // div by 10 b/c https://ethgasstation.info/json/ethgasAPI.json returns price in gwei * 10
       // we're only interested in gwei
-      gasPrice = gasPrice > resp.average ? resp.average / 10 : gasPrice / 10;
+      gasPrice = parseFloat((gasPrice > resp.average ? resp.average / 10 : gasPrice / 10).toFixed(10));
       return utils.toWei(`${gasPrice}`, 'gwei');
     });
 
-export const confirmBlockchainTransaction = (onConfirm, onCancel) =>
-  React.swal({
-    title: 'Send transaction?',
-    text:
-      'The action you are trying to perform will create a blockchain transaction. Please confirm to make the transaction.',
-    icon: 'warning',
-    dangerMode: true,
-    buttons: ['Cancel', 'Yes, execute transaction'],
-  }).then(isConfirmed => {
-    if (isConfirmed) onConfirm();
-    else onCancel();
-  });
 
 // returns a risk indicator
 export const calculateRiskFactor = (owner, dependencies) => {

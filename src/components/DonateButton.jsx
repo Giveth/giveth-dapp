@@ -6,12 +6,11 @@ import { Form, Input } from 'formsy-react-components';
 
 import getNetwork from '../lib/blockchain/getNetwork';
 import { feathersClient } from '../lib/feathersClient';
-import { takeActionAfterWalletUnlock } from '../lib/middleware';
+import { takeActionAfterWalletUnlock, confirmBlockchainTransaction } from '../lib/middleware';
 import User from '../models/User';
 import {
   displayTransactionError,
-  getGasPrice,
-  confirmBlockchainTransaction,
+  getGasPrice
 } from '../lib/helpers';
 import GivethWallet from '../lib/blockchain/GivethWallet';
 

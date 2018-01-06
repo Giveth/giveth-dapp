@@ -111,3 +111,24 @@ export const checkWalletBalance = (wallet, history) =>
       });
     }
   });
+
+/**
+ * Confirms blockchain tx with user before making the tx
+ *
+ * @param wallet  {object} Wallet object
+ * @param history {object} Standard history object
+ *
+ */
+export const confirmBlockchainTransaction = (onConfirm, onCancel) =>
+  React.swal({
+    title: 'Send transaction?',
+    text:
+      'The action you are trying to perform will create a blockchain transaction. Please confirm to make the transaction.',
+    icon: 'warning',
+    dangerMode: true,
+    buttons: ['Cancel', 'Yes, execute transaction'],
+  }).then(isConfirmed => {
+    if (isConfirmed) onConfirm();
+    else onCancel();
+  });
+

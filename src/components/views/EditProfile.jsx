@@ -5,11 +5,11 @@ import { Form, Input } from 'formsy-react-components';
 import { feathersClient } from '../../lib/feathersClient';
 import Loader from '../Loader';
 import FormsyImageUploader from './../FormsyImageUploader';
-import { isAuthenticated, checkWalletBalance } from '../../lib/middleware';
+import { isAuthenticated, checkWalletBalance, confirmBlockchainTransaction } from '../../lib/middleware';
 import LoaderButton from '../../components/LoaderButton';
 import getNetwork from '../../lib/blockchain/getNetwork';
 import User from '../../models/User';
-import { displayTransactionError, confirmBlockchainTransaction, getGasPrice } from '../../lib/helpers';
+import { displayTransactionError, getGasPrice } from '../../lib/helpers';
 import GivethWallet from '../../lib/blockchain/GivethWallet';
 
 /**

@@ -110,7 +110,7 @@ class SignUp extends Component {
                         <div className="form-group">
                           <Input
                             name="password"
-                            autocomplete="new-password"
+                            autoComplete="new-password"
                             id="password-input"
                             label="Wallet Password"
                             type="password"
@@ -124,7 +124,7 @@ class SignUp extends Component {
                           <Input
                             name="password2"
                             id="password2-input"
-                            autocomplete="new-password"
+                            autoComplete="new-password"
                             label="Confirm Wallet Password"
                             type="password"
                             value={this.state.pass2}
