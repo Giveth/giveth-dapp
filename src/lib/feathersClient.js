@@ -22,12 +22,7 @@ socket.on('reconnect_attempt', _e =>
 );
 
 export const feathersClient = feathers()
-  .configure(socketio(socket, { timeout: 5000 }))
+  .configure(socketio(socket, { timeout: 15000 }))
   .configure(auth({ storage: localforage }))
   .configure(hooks())
-  .configure(
-    rx({
-      idField: '_id',
-      matcher,
-    }),
-  );
+  .configure(rx({ idField: '_id', matcher }));
