@@ -63,7 +63,6 @@ describe('Edit DAC form', () => {
   />);
 
   it('should check user is authenticated', () => {
-    middleware.isAuthenticated = () => mockPromise;
     // call submit
     component.instance().submit();
     // check if mock is authenticated was called
@@ -71,7 +70,6 @@ describe('Edit DAC form', () => {
   });
 
   it('should confirm blockchain transaction', () => {
-    middleware.isAuthenticated = () => mockPromise;
     // call submit
     component.instance().submit();
     // check if mock confirm blockchain transaction was called
