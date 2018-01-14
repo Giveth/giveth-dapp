@@ -32,7 +32,9 @@ React.whitelist = { delegateWhitelist: {} };
 // test Join Giveth call to action banner
 describe('Join Giveth call to action banner', () => {
   // use fakes to make shallow instance of component
-  const component = shallow(<JoinGivethCommunity history={hist} currentUser={currentUser} />);
+  const component = shallow(
+    <JoinGivethCommunity history={hist} currentUser={currentUser} />,
+  );
 
   it('should check if in whitelist when creating DAC', () => {
     // call create DAC
@@ -47,7 +49,8 @@ describe('Join Giveth call to action banner', () => {
     // update shallow component
     component.update();
     // find button within component html and simulate click
-    component.findWhere(n => n.type() === 'button' && n.contains('Create a Community'))
+    component
+      .findWhere(n => n.type() === 'button' && n.contains('Create a Community'))
       .simulate('click');
     // check if mock create DAC was called
     expect(component.instance().createDAC).toHaveBeenCalled();

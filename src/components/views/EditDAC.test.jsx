@@ -55,12 +55,14 @@ React.swal.msg = reactNode => {
 // test edit DAC form
 describe('Edit DAC form', () => {
   // use fakes to make shallow instance of component
-  const component = shallow(<EditDAC
-    history={hist}
-    currentUser={currentUser}
-    wallet={wallet}
-    match={match}
-  />);
+  const component = shallow(
+    <EditDAC
+      history={hist}
+      currentUser={currentUser}
+      wallet={wallet}
+      match={match}
+    />,
+  );
 
   it('should check user is authenticated', () => {
     // call submit
