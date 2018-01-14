@@ -71,11 +71,8 @@ class JoinGivethCommunity extends Component {
       .then(() => {
         if (this.props.currentUser) {
           takeActionAfterWalletUnlock(this.props.wallet, () => {
-            checkWalletBalance(this.props.wallet, this.props.history).then(
-              () => {
-                this.props.history.push('/campaigns/new');
-              },
-            );
+            checkWalletBalance(this.props.wallet, this.props.history)
+              .then(() => { this.props.history.push('/campaigns/new'); });
           });
         } else {
           React.swal({

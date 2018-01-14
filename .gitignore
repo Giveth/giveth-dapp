@@ -23,6 +23,7 @@ yarn-error.log*
 
 src/**/*.css
 
+# IDE folders
 *.sublime-project
 *.sublime-workspace
 .idea

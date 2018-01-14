@@ -15,9 +15,9 @@
     "feathers-socketio": "^2.0.1",
     "formsy-react": "^0.19.5",
     "formsy-react-components": "^0.10.1",
+    "giveth-liquidpledging": "0.0.10",
     "giveth-react-scripts": "1.0.12",
     "history": "^4.7.2",
-    "giveth-liquidpledging": "0.0.10",
     "localforage": "^1.5.0",
     "lpp-campaign": "0.0.14",
     "lpp-capped-milestone": "0.0.3",
@@ -39,6 +39,7 @@
     "react-skylight": "^0.4.2",
     "react-toastify": "2.1.7",
     "socket.io-client": "^2.0.4",
+    "swal": "^0.1.0",
     "sweetalert": "^2.0",
     "underscore": "^1.8.3",
     "web3": "^1.0.0-beta.26",
@@ -47,16 +48,30 @@
     "whatwg-fetch": "^2.0.3"
   },
   "devDependencies": {
+    "babel-core": "^6.26.0",
+    "babel-jest": "^22.0.4",
+    "babel-plugin-transform-es2015-modules-commonjs": "^6.26.0",
+    "enzyme": "^3.3.0",
+    "enzyme-adapter-react-15.4": "^1.0.5",
     "eslint": "^4.10.0",
     "eslint-config-airbnb": "^16.1.0",
     "eslint-config-prettier": "^2.9.0",
     "eslint-loader": "^1.9.0",
     "eslint-plugin-import": "^2.8.0",
     "eslint-plugin-jsx-a11y": "^6.0.2",
-    "eslint-plugin-react": "^7.4.0",
     "eslint-plugin-prettier": "^2.4.0",
+    "eslint-plugin-react": "^7.4.0",
+    "jest": "^22.0.4",
     "lerna": "^2.2.0",
-    "prettier": "1.9.2"
+    "prettier": "1.9.2",
+    "react-addons-test-utils": "^15.6.2",
+    "regenerator-runtime": "^0.11.1"
+  },
+  "jest": {
+    "moduleNameMapper": {
+      "\\.(jpg|jpeg|png|gif|eot|otf|webp|svg|ttf|woff|woff2|mp4|webm|wav|mp3|m4a|aac|oga)$": "<rootDir>/__mocks__/fileMock.js",
+      "\\.(css|less)$": "<rootDir>/__mocks__/styleMock.js"
+    }
   },
   "scripts": {
     "build-css": "node-sass-chokidar --include-path ./src --include-path ./node_modules src/ -o src/",
@@ -64,7 +79,7 @@
     "start-js": "react-scripts start",
     "start": "npm-run-all -p watch-css start-js",
     "build": "npm run build-css && react-scripts build",
-    "test": "npm run eslint && react-scripts test --env=jsdom",
+    "test": "jest && npm run eslint && react-scripts test --env=jsdom",
     "eslint": "eslint src/**/**.js*",
     "eslint:fix": "eslint src/**/**.js* --fix",
     "eject": "react-scripts eject",
