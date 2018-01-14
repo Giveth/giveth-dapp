@@ -52,7 +52,7 @@ class EditDAC extends Component {
       .then(() => checkWalletBalance(this.props.wallet, this.props.history))
       .then(() => {
         if (!this.props.isNew) {
-          DACservice.get(this.props.match.params.id).then((dac) => {
+          DACservice.get(this.props.match.params.id).then(dac => {
             // The user is not an owner, hence can not change the DAC
             if (!isOwner(dac.owner.address, this.props.currentUser)) {
               this.props.history.goBack();
