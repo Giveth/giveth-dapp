@@ -76,6 +76,7 @@ describe('Edit DAC form', () => {
     component.instance().submit();
     // check if mock confirm blockchain transaction was called
     expect(countConfirmBlockchainTransaction > 0);
+    // this would be nice but can't get work without errors
     // expect(middleware.confirmBlockchainTransaction).toHaveBeenCalled();
   });
 
