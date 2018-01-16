@@ -2,7 +2,7 @@ import { LPPCampaignFactory, LPPCampaign } from 'lpp-campaign';
 import getNetwork from '../lib/blockchain/getNetwork';
 import getWeb3 from '../lib/blockchain/getWeb3';
 import { feathersClient } from '../lib/feathersClient';
-import { displayTransactionError } from '../lib/helpers';
+import { displayTransactionError, getGasPrice } from '../lib/helpers';
 import Campaign from '../models/Campaign';
 
 class CampaignService {
@@ -128,15 +128,15 @@ class CampaignService {
     } else {
       let txHash;
       let etherScanUrl;
-      Promise.all([getNetwork(), getWeb3()])
-        .then(([network, web3]) => {
+      Promise.all([getNetwork(), getWeb3(), getGasPrice()])
+        .then(([network, web3, gasPrice]) => {
           const { liquidPledging } = network;
           etherScanUrl = network.etherscan;
 
           new LPPCampaignFactory(web3, network.campaignFactoryAddress)
             .deploy(
               liquidPledging.$address, campaign.title, '', 0, campaign.reviewerAddress,
-              campaign.tokenName, campaign.tokenSymbol, from, from, { from },
+              campaign.tokenName, campaign.tokenSymbol, from, from, { from, gasPrice },
             )
             .once('transactionHash', (hash) => {
               txHash = hash;
@@ -171,12 +171,12 @@ class CampaignService {
   static cancel(campaign, from, afterCreate = () => {}, afterMined = () => {}) {
     let txHash;
     let etherScanUrl;
-    Promise.all([getNetwork(), getWeb3()])
-      .then(([network, web3]) => {
+    Promise.all([getNetwork(), getWeb3(), getGasPrice()])
+      .then(([network, web3, gasPrice]) => {
         const lppCampaign = new LPPCampaign(web3, campaign.pluginAddress);
         etherScanUrl = network.etherscan;
 
-        lppCampaign.cancelCampaign({ from })
+        lppCampaign.cancelCampaign({ from, gasPrice })
           .once('transactionHash', (hash) => {
             txHash = hash;
             feathersClient.service('/campaigns').patch(campaign.id, {
