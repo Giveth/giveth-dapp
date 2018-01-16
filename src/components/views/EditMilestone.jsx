@@ -349,7 +349,7 @@ class EditMilestone extends Component {
                       type="text"
                       value={reviewerAddress}
                       placeholder="0x0000000000000000000000000000000000000000"
-                      help={hasWhitelist ? 'The Milestone Reviewer is automatically assigned while Giveth is in beta.' : ''}
+                      help={hasWhitelist ? 'The Milestone Reviewer is automatically assigned while Giveth is in alpha.' : ''}
                       validations="isEtherAddress"
                       validationErrors={{
                         isEtherAddress: 'Please insert a valid Ethereum address.',

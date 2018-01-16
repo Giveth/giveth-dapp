@@ -40,10 +40,10 @@ class JoinGivethCommunity extends Component {
       })
       .catch(() => {
         React.swal({
-          title: 'Sorry, Giveth is in beta...',
+          title: 'Sorry, Giveth is in alpha...',
           content: React.swal.msg(<p>
               It&#8217;s great to see that you want to start a Decentralized Altruistic Community, or DAC!
-              However, Giveth is still in beta and we only allow a select group of people to start DACs<br />
+              However, Giveth is still in alpha and we only allow a select group of people to start DACs<br />
               Please <strong>contact us on our Slack</strong>, or keep browsing the dApp.
                                   </p>),
           icon: 'info',
@@ -75,10 +75,10 @@ class JoinGivethCommunity extends Component {
       })
       .catch(() => {
         React.swal({
-          title: 'Sorry, Giveth is in beta...',
+          title: 'Sorry, Giveth is in alpha...',
           content: React.swal.msg(<p>
               It&#8217;s great to see that you want to start a campaign,
-              however, Giveth is still in beta and we only allow a select group of people to start campaigns<br />
+              however, Giveth is still in alpha and we only allow a select group of people to start campaigns<br />
               Please <strong>contact us on our Slack</strong>, or keep browsing the dApp.
                                   </p>),
           icon: 'info',
