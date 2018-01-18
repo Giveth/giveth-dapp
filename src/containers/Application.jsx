@@ -13,7 +13,7 @@ import { feathersClient } from '../lib/feathersClient';
 
 import DataRoutes from './DataRoutes';
 
-import GivethWallet from '../lib/blockchain/GivethWallet';
+import BaseWallet from '../lib/blockchain/BaseWallet';
 import getWeb3 from '../lib/blockchain/getWeb3';
 import { history } from '../lib/helpers';
 
@@ -143,21 +143,31 @@ class Application extends Component {
         this.setState({ isLoading: false, hasError: false });
       });
 
-    GivethWallet.getCachedKeystore()
-      .then(keystore => {
-        // TODO change to getWeb3() when implemented. actually remove provider from GivethWallet
-        const provider = this.state.web3
-          ? this.state.web3.currentProvider
-          : undefined;
-        return GivethWallet.loadWallet(keystore, provider);
-      })
-      .then(wallet => {
-        getWeb3().then(web3 => web3.setWallet(wallet));
-        this.setState({ wallet });
-      })
-      .catch(err => {
-        if (err.message !== 'No keystore found') console.error(err); // eslint-disable-line no-console
-      });
+    // Check if Web3 has been injected by the browser:
+    if (typeof web3 !== 'undefined') {
+      // You have a web3 browser! Continue below!
+      const wallet = new BaseWallet();
+      getWeb3().then(web3 => web3.setWallet(wallet));
+      this.setState({ wallet });
+    } else {
+      // Warn the user that they need to get a web3 browser
+      // Or install MetaMask, maybe with a nice graphic.
+      GivethWallet.getCachedKeystore()
+        .then(keystore => {
+          // TODO change to getWeb3() when implemented. actually remove provider from GivethWallet
+          const provider = this.state.web3
+            ? this.state.web3.currentProvider
+            : undefined;
+          return GivethWallet.loadWallet(keystore, provider);
+        })
+        .then(wallet => {
+          getWeb3().then(web3 => web3.setWallet(wallet));
+          this.setState({ wallet });
+        })
+        .catch(err => {
+          if (err.message !== 'No keystore found') console.error(err); // eslint-disable-line no-console
+        });
+    }
   }
 
   onSignOut() {

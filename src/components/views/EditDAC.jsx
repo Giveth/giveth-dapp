@@ -13,7 +13,7 @@ import LoaderButton from '../../components/LoaderButton';
 import DACservice from '../../services/DAC';
 import DAC from '../../models/DAC';
 import User from '../../models/User';
-import GivethWallet from '../../lib/blockchain/GivethWallet';
+import BaseWallet from '../../lib/blockchain/BaseWallet';
 
 /**
   * View to create or edit a DAC
@@ -297,7 +297,7 @@ EditDAC.propTypes = {
     push: PropTypes.func.isRequired,
   }).isRequired,
   isNew: PropTypes.bool,
-  wallet: PropTypes.instanceOf(GivethWallet).isRequired,
+  wallet: PropTypes.instanceOf(BaseWallet).isRequired,
   match: PropTypes.shape({
     params: PropTypes.shape({
       id: PropTypes.string,

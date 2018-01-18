@@ -9,8 +9,8 @@ import { isAuthenticated, checkWalletBalance, confirmBlockchainTransaction } fro
 import LoaderButton from '../../components/LoaderButton';
 import getNetwork from '../../lib/blockchain/getNetwork';
 import User from '../../models/User';
+import BaseWallet from '../../lib/blockchain/BaseWallet';
 import { displayTransactionError, getGasPrice } from '../../lib/helpers';
-import GivethWallet from '../../lib/blockchain/GivethWallet';
 
 /**
  * The edit user profile view mapped to /profile/
@@ -239,7 +239,7 @@ class EditProfile extends Component {
 }
 
 EditProfile.propTypes = {
-  wallet: PropTypes.instanceOf(GivethWallet).isRequired,
+  wallet: PropTypes.instanceOf(BaseWallet).isRequired,
   currentUser: PropTypes.instanceOf(User),
   history: PropTypes.shape({
     goBack: PropTypes.func.isRequired,

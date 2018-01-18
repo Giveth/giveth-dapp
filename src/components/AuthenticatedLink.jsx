@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link, withRouter } from 'react-router-dom';
 import PropTypes from 'prop-types';
-import GivethWallet from '../lib/blockchain/GivethWallet';
+import BaseWallet from '../lib/blockchain/BaseWallet';
 
 const AuthenticatedLink = ({ className, to, wallet, children }) => {
   if (wallet && wallet.unlocked) {
@@ -19,7 +19,7 @@ const AuthenticatedLink = ({ className, to, wallet, children }) => {
 };
 
 AuthenticatedLink.propTypes = {
-  wallet: PropTypes.instanceOf(GivethWallet),
+  wallet: PropTypes.instanceOf(BaseWallet),
   to: PropTypes.string.isRequired,
   children: PropTypes.node.isRequired,
   className: PropTypes.string,

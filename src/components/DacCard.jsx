@@ -10,11 +10,11 @@ import {
 } from './../lib/helpers';
 import CardStats from './CardStats';
 import User from './../models/User';
+import BaseWallet from '../lib/blockchain/BaseWallet';
 import {
   redirectAfterWalletUnlock,
   checkWalletBalance,
 } from './../lib/middleware';
-import GivethWallet from '../lib/blockchain/GivethWallet';
 import DAC from '../models/DAC';
 
 /**
@@ -127,7 +127,7 @@ class DacCard extends Component {
 DacCard.propTypes = {
   dac: PropTypes.instanceOf(DAC).isRequired,
   currentUser: PropTypes.instanceOf(User),
-  wallet: PropTypes.instanceOf(GivethWallet),
+  wallet: PropTypes.instanceOf(BaseWallet),
   history: PropTypes.shape({
     push: PropTypes.func.isRequired,
   }).isRequired,

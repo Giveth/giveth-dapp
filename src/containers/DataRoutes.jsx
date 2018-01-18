@@ -7,7 +7,7 @@ import Campaigns from './../components/views/Campaigns';
 import Loader from './../components/Loader';
 
 import User from './../models/User';
-import GivethWallet from '../lib/blockchain/GivethWallet';
+import BaseWallet from '../lib/blockchain/BaseWallet';
 import DACservice from '../services/DAC';
 import CampaignService from '../services/Campaign';
 
@@ -120,7 +120,7 @@ class DataRoutes extends Component {
 
 DataRoutes.propTypes = {
   currentUser: PropTypes.instanceOf(User),
-  wallet: PropTypes.instanceOf(GivethWallet),
+  wallet: PropTypes.instanceOf(BaseWallet),
 };
 
 DataRoutes.defaultProps = {
