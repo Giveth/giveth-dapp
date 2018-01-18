@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 
 import Loader from './Loader';
-import GivethWallet from '../lib/blockchain/GivethWallet';
+import BaseWallet from '../lib/blockchain/BaseWallet';
 
 /* global URL, Blob */
 /**
@@ -64,7 +64,7 @@ class BackupWallet extends Component {
 }
 
 BackupWallet.propTypes = {
-  wallet: PropTypes.instanceOf(GivethWallet).isRequired,
+  wallet: PropTypes.instanceOf(BaseWallet).isRequired,
   onBackup: PropTypes.func,
 };
 

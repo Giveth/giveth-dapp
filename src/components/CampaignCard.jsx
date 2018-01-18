@@ -14,7 +14,7 @@ import {
   redirectAfterWalletUnlock,
   checkWalletBalance,
 } from './../lib/middleware';
-import GivethWallet from '../lib/blockchain/GivethWallet';
+import BaseWallet from '../lib/blockchain/BaseWallet';
 import Campaign from './../models/Campaign';
 
 /**
@@ -127,7 +127,7 @@ class CampaignCard extends Component {
 CampaignCard.propTypes = {
   campaign: PropTypes.instanceOf(Campaign).isRequired,
   currentUser: PropTypes.instanceOf(User),
-  wallet: PropTypes.instanceOf(GivethWallet),
+  wallet: PropTypes.instanceOf(BaseWallet),
   history: PropTypes.shape({
     push: PropTypes.func.isRequired,
   }).isRequired,

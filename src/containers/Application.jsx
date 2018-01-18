@@ -13,6 +13,11 @@ import { feathersClient } from '../lib/feathersClient';
 
 import DataRoutes from './DataRoutes';
 
+<<<<<<< HEAD
+=======
+
+import BaseWallet from '../lib/blockchain/BaseWallet';
+>>>>>>> base wallet
 import GivethWallet from '../lib/blockchain/GivethWallet';
 import getWeb3 from '../lib/blockchain/getWeb3';
 import { history } from '../lib/helpers';
@@ -143,21 +148,39 @@ class Application extends Component {
         this.setState({ isLoading: false, hasError: false });
       });
 
-    GivethWallet.getCachedKeystore()
-      .then(keystore => {
-        // TODO change to getWeb3() when implemented. actually remove provider from GivethWallet
-        const provider = this.state.web3
-          ? this.state.web3.currentProvider
-          : undefined;
-        return GivethWallet.loadWallet(keystore, provider);
-      })
-      .then(wallet => {
-        getWeb3().then(web3 => web3.setWallet(wallet));
-        this.setState({ wallet });
-      })
-      .catch(err => {
-        if (err.message !== 'No keystore found') console.error(err); // eslint-disable-line no-console
-      });
+
+
+    // TODO: move and isolate this code to some place nice
+    // check if web3 has been injected into dom window
+    if (typeof web3 !== 'undefined') {
+      // if yes use base wallet
+      // this line seems dumb as provider is always undefined
+      const provider = undefined;
+      // declare web3 from window
+      const { web3 } = window;
+      // create base wallet
+      const web3js = new Web3(web3.currentProvider);
+      const wallet = new BaseWallet(provider, web3js); // eslint-disable-line no-console
+      // add wallet to application state
+      this.setState({ wallet });
+    } else {
+      // if not web3 is not injected use same Giveth wallet as before
+      GivethWallet.getCachedKeystore()
+        .then(keystore => {
+          // TODO change to getWeb3() when implemented. actually remove provider from GivethWallet
+          const provider = this.state.web3
+            ? this.state.web3.currentProvider
+            : undefined;
+          return GivethWallet.loadWallet(keystore, provider);
+        })
+        .then(wallet => {
+          getWeb3().then(web3 => web3.setWallet(wallet));
+          this.setState({ wallet });
+        })
+        .catch(err => {
+          if (err.message !== 'No keystore found') console.error(err); // eslint-disable-line no-console
+        });
+    }
   }
 
   onSignOut() {
