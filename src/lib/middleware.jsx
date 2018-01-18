@@ -43,7 +43,7 @@ export const isInWhitelist = (currentUser, whitelist, history) =>
       whitelist.length === 0 ||
       (currentUser &&
         currentUser.address &&
-        whitelist.indexOf(currentUser.address.toLowerCase()) > -1)
+        whitelist.find((u) => u.address === currentUser.address.toLowerCase()))
         ? resolve()
         : reject() &&
           console.log('not in whitelist') &&
