@@ -4,7 +4,7 @@ import PropTypes from 'prop-types';
 import CommunityButton from './CommunityButton';
 import User from '../models/User';
 import { takeActionAfterWalletUnlock, checkWalletBalance, isInWhitelist } from '../lib/middleware';
-import GivethWallet from '../lib/blockchain/GivethWallet';
+import BaseWallet from '../lib/blockchain/BaseWallet';
 
 /**
  * The join Giveth community top-bar
@@ -125,7 +125,7 @@ JoinGivethCommunity.propTypes = {
     push: PropTypes.func.isRequired,
   }).isRequired,
   currentUser: PropTypes.instanceOf(User),
-  wallet: PropTypes.instanceOf(GivethWallet),
+  wallet: PropTypes.instanceOf(BaseWallet),
 };
 
 JoinGivethCommunity.defaultProps = {

@@ -11,7 +11,7 @@ import getWeb3 from '../../lib/blockchain/getWeb3';
 import Loader from '../Loader';
 import User from '../../models/User';
 import { displayTransactionError, getTruncatedText } from '../../lib/helpers';
-import GivethWallet from '../../lib/blockchain/GivethWallet';
+import BaseWallet from '../../lib/blockchain/BaseWallet';
 
 // TODO Remove the eslint exception and fix feathers to provide id's without underscore
 /* eslint no-underscore-dangle: 0 */
@@ -630,7 +630,7 @@ class MyMilestones extends Component {
 MyMilestones.propTypes = {
   currentUser: PropTypes.instanceOf(User).isRequired,
   history: PropTypes.shape({}).isRequired,
-  wallet: PropTypes.instanceOf(GivethWallet).isRequired,
+  wallet: PropTypes.instanceOf(BaseWallet).isRequired,
 };
 
 export default MyMilestones;

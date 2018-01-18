@@ -9,7 +9,7 @@ import { feathersClient } from '../lib/feathersClient';
 import { takeActionAfterWalletUnlock } from '../lib/middleware';
 import User from '../models/User';
 import { displayTransactionError, getGasPrice, confirmBlockchainTransaction } from '../lib/helpers';
-import GivethWallet from '../lib/blockchain/GivethWallet';
+import BaseWallet from '../lib/blockchain/BaseWallet';
 
 class DonateButton extends Component {
   constructor() {
@@ -317,7 +317,7 @@ DonateButton.propTypes = {
   }).isRequired,
   currentUser: PropTypes.instanceOf(User),
   communityUrl: PropTypes.string,
-  wallet: PropTypes.instanceOf(GivethWallet),
+  wallet: PropTypes.instanceOf(BaseWallet),
 };
 
 DonateButton.defaultProps = {
