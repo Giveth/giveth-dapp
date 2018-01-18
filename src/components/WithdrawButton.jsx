@@ -3,12 +3,11 @@ import PropTypes from 'prop-types';
 import { SkyLightStateless } from 'react-skylight';
 import { Form, Input } from 'formsy-react-components';
 
-import { takeActionAfterWalletUnlock } from '../lib/middleware';
+import { takeActionAfterWalletUnlock, confirmBlockchainTransaction } from '../lib/middleware';
 import User from '../models/User';
 import BaseWallet from '../lib/blockchain/BaseWallet';
 import WalletService from '../services/Wallet';
-import { getGasPrice, confirmBlockchainTransaction } from '../lib/helpers';
-
+import { getGasPrice } from '../lib/helpers';
 
 class WithdrawButton extends Component {
   constructor() {
@@ -32,7 +31,8 @@ class WithdrawButton extends Component {
       this.setState({
         gas,
         modalVisible: true,
-      }));
+      }),
+    );
   }
 
   afterCreate(etherScanUrl, txHash) {
@@ -44,15 +44,18 @@ class WithdrawButton extends Component {
     const msg = (
       <div>
         <p>
-            Your withdrawal is pending,
-            <a
-              href={`${etherScanUrl}tx/${txHash}`}
-              target="_blank"
-              rel="noopener noreferrer"
-            > view the transaction here.
-            </a>
+          Your withdrawal is pending,
+          <a
+            href={`${etherScanUrl}tx/${txHash}`}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            {' '}
+            view the transaction here.
+          </a>
         </p>
-      </div>);
+      </div>
+    );
 
     React.swal({
       title: 'Withdrawing money',
@@ -69,55 +72,68 @@ class WithdrawButton extends Component {
     takeActionAfterWalletUnlock(this.props.wallet, () => {
       this.setState({ isSaving: true });
 
-      const withdraw = () => WalletService.withdraw(
-        {
-          from: this.props.currentUser.address,
-          to: model.to,
-          value: `${model.amount}`,
-        },
-        this.afterCreate,
-        (etherScanUrl, txHash) => {
-          React.toast.success(<p>Your withdrawal has been confirmed!<br /><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>);
-        },
-        (err) => { console.log(err); },
-      );
-
+      const withdraw = () =>
+        WalletService.withdraw(
+          {
+            from: this.props.currentUser.address,
+            to: model.to,
+            value: `${model.amount}`,
+          },
+          this.afterCreate,
+          (etherScanUrl, txHash) => {
+            React.toast.success(
+              <p>
+                Your withdrawal has been confirmed!<br />
+                <a
+                  href={`${etherScanUrl}tx/${txHash}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  View transaction
+                </a>
+              </p>,
+            );
+          },
+          err => {
+            console.log(err);
+          },
+        );
 
       // Withdraw the money
-      confirmBlockchainTransaction(
-        withdraw,
-        () => this.setState({ isSaving: false }),
+      confirmBlockchainTransaction(withdraw, () =>
+        this.setState({ isSaving: false }),
       );
     });
   }
 
   render() {
     const { wallet } = this.props;
-    const {
-      isSaving, amount, formIsValid, gas, to,
-    } = this.state;
+    const { isSaving, amount, formIsValid, gas, to } = this.state;
     const style = {
       display: 'inline-block',
     };
 
     return (
       <span style={style}>
-        <button
-          className="btn btn-info"
-          onClick={() => this.openDialog()}
-        >
+        <button className="btn btn-info" onClick={() => this.openDialog()}>
           Withdraw
         </button>
 
-        {wallet &&
+        {wallet && (
           <SkyLightStateless
             isVisible={this.state.modalVisible}
-            onCloseClicked={() => { this.setState({ modalVisible: false }); }}
-            onOverlayClicked={() => { this.setState({ modalVisible: false }); }}
+            onCloseClicked={() => {
+              this.setState({ modalVisible: false });
+            }}
+            onOverlayClicked={() => {
+              this.setState({ modalVisible: false });
+            }}
           >
             <strong>Withdrawing from your Giveth wallet</strong>
 
-            <p>Your wallet balance: <em>&#926;{wallet.getBalance()}</em><br />
+            <p>
+              Your wallet balance: <em>&#926;{wallet.getBalance()}</em>
+              <br />
               Gas price: <em>{gas} Gwei</em>
             </p>
 
@@ -137,7 +153,8 @@ class WithdrawButton extends Component {
                   value={to}
                   validations="isEtherAddress"
                   validationErrors={{
-                    isEtherAddress: 'Please check that the address you have provided is valid.',
+                    isEtherAddress:
+                      'Please check that the address you have provided is valid.',
                   }}
                   autoFocus
                   required
@@ -156,7 +173,8 @@ class WithdrawButton extends Component {
                   }}
                   validationErrors={{
                     greaterThan: 'Minimum value must be at least Ξ0.01',
-                    lessThan: 'This withdrawal amount exceeds your wallet balance.',
+                    lessThan:
+                      'This withdrawal amount exceeds your wallet balance.',
                   }}
                   required
                 />
@@ -171,9 +189,8 @@ class WithdrawButton extends Component {
                 {isSaving ? 'Withdrawing...' : 'Withdraw Ξ'}
               </button>
             </Form>
-
           </SkyLightStateless>
-        }
+        )}
       </span>
     );
   }

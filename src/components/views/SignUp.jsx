@@ -110,6 +110,7 @@ class SignUp extends Component {
                         <div className="form-group">
                           <Input
                             name="password"
+                            autoComplete="new-password"
                             id="password-input"
                             label="Wallet Password"
                             type="password"
@@ -123,6 +124,7 @@ class SignUp extends Component {
                           <Input
                             name="password2"
                             id="password2-input"
+                            autoComplete="new-password"
                             label="Confirm Wallet Password"
                             type="password"
                             value={this.state.pass2}
@@ -160,9 +162,9 @@ class SignUp extends Component {
                         We <strong>highly</strong> recommend that you download this backup
                         file and keep it in a safe place. If you lose this file
                         or forget your wallet password, you will not be able to access
-                        this account and all funds associated with it. Both this file and 
-                        your password are handled locally on your pc and in your browser: we 
-                        cannot help you recover anything, so please take a minute to do this now.   
+                        this account and all funds associated with it. Both this file and
+                        your password are handled locally on your pc and in your browser: we
+                        cannot help you recover anything, so please take a minute to do this now.
                       </p>
 
                       <BackupWallet onBackup={() => this.onBackup()} wallet={wallet} />

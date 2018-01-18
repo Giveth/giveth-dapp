@@ -2,11 +2,19 @@ import React, { Component } from 'react';
 import Avatar from 'react-avatar';
 import PropTypes from 'prop-types';
 
-import { isOwner, getTruncatedText, getUserName, getUserAvatar } from './../lib/helpers';
+import {
+  isOwner,
+  getTruncatedText,
+  getUserName,
+  getUserAvatar,
+} from './../lib/helpers';
 import CardStats from './CardStats';
 import User from './../models/User';
-import { redirectAfterWalletUnlock, checkWalletBalance } from './../lib/middleware';
 import BaseWallet from '../lib/blockchain/BaseWallet';
+import {
+  redirectAfterWalletUnlock,
+  checkWalletBalance,
+} from './../lib/middleware';
 import Campaign from './../models/Campaign';
 
 /**
@@ -38,9 +46,13 @@ class CampaignCard extends Component {
         icon: 'warning',
         dangerMode: true,
         buttons: ['Cancel', 'Yes, edit'],
-      }).then((isConfirmed) => {
+      }).then(isConfirmed => {
         if (isConfirmed) {
-          redirectAfterWalletUnlock(`/campaigns/${this.props.campaign.id}/edit`, this.props.wallet, this.props.history);
+          redirectAfterWalletUnlock(
+            `/campaigns/${this.props.campaign.id}/edit`,
+            this.props.wallet,
+            this.props.history,
+          );
         }
       });
     });
@@ -50,7 +62,6 @@ class CampaignCard extends Component {
     e.stopPropagation();
     this.props.history.push(`/profile/${this.props.campaign.owner.address}`);
   }
-
 
   render() {
     const { campaign, currentUser } = this.props;
@@ -72,11 +83,10 @@ class CampaignCard extends Component {
             role="button"
             tabIndex="0"
           >
-
             <Avatar size={30} src={getUserAvatar(campaign.owner)} round />
             <span className="owner-name">{getUserName(campaign.owner)}</span>
 
-            { isOwner(campaign.owner.address, currentUser) &&
+            {isOwner(campaign.owner.address, currentUser) && (
               <span className="pull-right">
                 <button
                   className="btn btn-link btn-edit"
@@ -85,13 +95,18 @@ class CampaignCard extends Component {
                   <i className="fa fa-edit" />
                 </button>
               </span>
-            }
+            )}
           </div>
 
-          <div className="card-img" style={{ backgroundImage: `url(${campaign.image})` }} />
+          <div
+            className="card-img"
+            style={{ backgroundImage: `url(${campaign.image})` }}
+          />
 
           <div className="card-content">
-            <h4 className="card-title">{getTruncatedText(campaign.title, 30)}</h4>
+            <h4 className="card-title">
+              {getTruncatedText(campaign.title, 30)}
+            </h4>
             <div className="card-text">{campaign.summary}</div>
           </div>
 
@@ -103,7 +118,6 @@ class CampaignCard extends Component {
               milestonesCount={campaign.milestonesCount}
             />
           </div>
-
         </div>
       </div>
     );

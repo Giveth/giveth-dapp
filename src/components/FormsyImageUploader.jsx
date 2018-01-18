@@ -28,38 +28,46 @@ class FormsyImageUploader extends Component {
 
   loadAndPreviewImage() {
     const reader = new FileReader();
-    reader.onload = (e) => {
+    reader.onload = e => {
       this.setState({ image: e.target.result });
       this.props.setImage(e.target.result);
     };
 
-    ImageTools.resize(this.imagePreview.element.files[0], {
-      width: 800,
-      height: 600,
-    }, (blob, didItResize) => {
-      reader.readAsDataURL(didItResize ? blob : this.imagePreview.element.files[0]);
-    });
+    ImageTools.resize(
+      this.imagePreview.element.files[0],
+      {
+        width: 800,
+        height: 600,
+      },
+      (blob, didItResize) => {
+        reader.readAsDataURL(
+          didItResize ? blob : this.imagePreview.element.files[0],
+        );
+      },
+    );
   }
 
   render() {
     return (
       <div>
-        { (this.props.previewImage || this.previewImage) &&
+        {(this.props.previewImage || this.previewImage) && (
           <div id="image-preview">
             <img src={this.state.image} alt="Preview of uploaded file" />
           </div>
-        }
+        )}
 
-        { this.props.avatar &&
+        {this.props.avatar && (
           <Avatar size={100} src={this.props.avatar} round />
-        }
+        )}
 
         <File
           label="Add a picture"
           name="picture"
           accept=".png,.jpeg,.jpg"
           onChange={() => this.loadAndPreviewImage()}
-          ref={(c) => { this.imagePreview = c; }}
+          ref={c => {
+            this.imagePreview = c;
+          }}
           help="A picture says more than a thousand words. Select a png or jpg file."
           validations="minLength: 1"
           validationErrors={{

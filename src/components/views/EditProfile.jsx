@@ -5,12 +5,12 @@ import { Form, Input } from 'formsy-react-components';
 import { feathersClient } from '../../lib/feathersClient';
 import Loader from '../Loader';
 import FormsyImageUploader from './../FormsyImageUploader';
-import { isAuthenticated, checkWalletBalance } from '../../lib/middleware';
+import { isAuthenticated, checkWalletBalance, confirmBlockchainTransaction } from '../../lib/middleware';
 import LoaderButton from '../../components/LoaderButton';
 import getNetwork from '../../lib/blockchain/getNetwork';
 import User from '../../models/User';
-import { displayTransactionError, confirmBlockchainTransaction } from '../../lib/helpers';
 import BaseWallet from '../../lib/blockchain/BaseWallet';
+import { displayTransactionError, getGasPrice } from '../../lib/helpers';
 
 /**
  * The edit user profile view mapped to /profile/
@@ -81,12 +81,13 @@ class EditProfile extends Component {
       // TODO if (giverId > 0), need to send tx if commitTime or name has changed
       // TODO store user profile on ipfs and add Giver in liquidpledging contract
       if (this.state.giverId === undefined) {
-        getNetwork()
-          .then((network) => {
+        Promise.all([getNetwork(), getGasPrice()])
+          .then(([network, gasPrice]) => {
             const { liquidPledging } = network;
+            const from = this.props.currentUser.address;
 
             let txHash;
-            liquidPledging.addGiver(model.name, '', 259200, '0x0', { $extraGas: 50000 }) // 3 days commitTime. TODO allow user to set commitTime
+            liquidPledging.addGiver(model.name, '', 259200, '0x0', { $extraGas: 50000, gasPrice, from }) // 3 days commitTime. TODO allow user to set commitTime
               .once('transactionHash', (hash) => {
                 txHash = hash;
                 feathersClient.service('/users').patch(this.props.currentUser.address, constructedModel)

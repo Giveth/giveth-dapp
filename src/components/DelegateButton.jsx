@@ -7,8 +7,15 @@ import InputToken from 'react-input-token';
 import PropTypes from 'prop-types';
 
 import { feathersClient } from '../lib/feathersClient';
-import { takeActionAfterWalletUnlock, checkWalletBalance } from '../lib/middleware';
-import { displayTransactionError, confirmBlockchainTransaction } from '../lib/helpers';
+import {
+  takeActionAfterWalletUnlock,
+  checkWalletBalance,
+  confirmBlockchainTransaction
+} from '../lib/middleware';
+import {
+  displayTransactionError,
+  getGasPrice,
+} from '../lib/helpers';
 import getNetwork from '../lib/blockchain/getNetwork';
 import getWeb3 from '../lib/blockchain/getWeb3';
 import BaseWallet from '../lib/blockchain/BaseWallet';
@@ -31,14 +38,15 @@ class DelegateButton extends Component {
 
   openDialog() {
     takeActionAfterWalletUnlock(this.props.wallet, () =>
-      checkWalletBalance(this.props.wallet, this.props.history)
-        .then(() => this.setState({ modalVisible: true })));
+      checkWalletBalance(this.props.wallet, this.props.history).then(() =>
+        this.setState({ modalVisible: true }),
+      ),
+    );
   }
 
   selectedObject({ target }) {
     this.setState({ objectsToDelegateTo: target.value });
   }
-
 
   submit() {
     const { toBN } = utils;
@@ -46,11 +54,20 @@ class DelegateButton extends Component {
     this.setState({ isSaving: true });
 
     // find the type of where we delegate to
-    const admin = this.props.types.find(t => t.id === this.state.objectsToDelegateTo[0]);
+    const admin = this.props.types.find(
+      t => t.id === this.state.objectsToDelegateTo[0],
+    );
 
     // TODO find a more friendly way to do this.
-    if (admin.type === 'milestone' && toBN(admin.maxAmount).lt(toBN(admin.totalDonated || 0).add(toBN(model.amount)))) {
-      React.toast.error('That milestone has reached its funding goal. Please pick another.');
+    if (
+      admin.type === 'milestone' &&
+      toBN(admin.maxAmount).lt(
+        toBN(admin.totalDonated || 0).add(toBN(model.amount)),
+      )
+    ) {
+      React.toast.error(
+        'That milestone has reached its funding goal. Please pick another.',
+      );
       return;
     }
 
@@ -76,18 +93,42 @@ class DelegateButton extends Component {
         });
       }
 
-      feathersClient.service('/donations').patch(model._id, mutation)
+      feathersClient
+        .service('/donations')
+        .patch(model._id, mutation)
         .then(() => {
           this.resetSkylight();
 
           let msg;
           if (model.delegate > 0) {
-            msg = (<p>The donation has been delegated, <a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">view the transaction here.</a>
-              The Giver has <strong>3 days</strong> to reject your delegation before the money
-              gets locked.
-                   </p>);
+            msg = (
+              <p>
+                The donation has been delegated,{' '}
+                <a
+                  href={`${etherScanUrl}tx/${txHash}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  view the transaction here.
+                </a>
+                The Giver has <strong>3 days</strong> to reject your delegation
+                before the money gets locked.
+              </p>
+            );
           } else {
-            msg = <p>The donation has been delegated, <a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">view the transaction here.</a> The Giver has been notified.</p>;
+            msg = (
+              <p>
+                The donation has been delegated,{' '}
+                <a
+                  href={`${etherScanUrl}tx/${txHash}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  view the transaction here.
+                </a>{' '}
+                The Giver has been notified.
+              </p>
+            );
           }
 
           React.swal({
@@ -95,7 +136,8 @@ class DelegateButton extends Component {
             content: React.swal.msg(msg),
             icon: 'success',
           });
-        }).catch(() => {
+        })
+        .catch(() => {
           displayTransactionError(txHash, etherScanUrl);
           this.setState({ isSaving: false });
         });
@@ -104,44 +146,78 @@ class DelegateButton extends Component {
     let txHash;
     let etherScanUrl;
 
-    const doDelegate = () => Promise.all([getNetwork(), getWeb3()])
-      .then(([network, web3]) => {
-        const { lppDacs, liquidPledging } = network;
-        etherScanUrl = network.etherscan;
+    const doDelegate = () =>
+      Promise.all([getNetwork(), getWeb3(), getGasPrice()])
+        .then(([network, web3, gasPrice]) => {
+          const { lppDacs, liquidPledging } = network;
+          etherScanUrl = network.etherscan;
 
-        const from = (model.delegate > 0) ? model.delegateEntity.ownerAddress : model.ownerEntity.ownerAddress;
-        const senderId = (model.delegate > 0) ? model.delegate : model.owner;
-        const receiverId = (admin.type === 'dac') ? admin.delegateId : admin.projectId;
+          const from =
+            model.delegate > 0
+              ? model.delegateEntity.ownerAddress
+              : model.ownerEntity.ownerAddress;
+          const senderId = model.delegate > 0 ? model.delegate : model.owner;
+          const receiverId =
+            admin.type === 'dac' ? admin.delegateId : admin.projectId;
 
-        const executeTransfer = () => {
-          if (model.ownerType === 'campaign') {
-            return new LPPCampaign(web3, model.ownerEntity.pluginAddress)
-              .transfer(model.pledgeId, model.amount, receiverId, { from, $extraGas: 100000 });
-          } else if (model.ownerType === 'giver' && model.delegate > 0) {
-            return lppDacs.transfer(model.delegate, model.pledgeId, model.amount, receiverId, { from, $extraGas: 100000 });
-          }
+          const executeTransfer = () => {
+            if (model.ownerType === 'campaign') {
+              return new LPPCampaign(
+                web3,
+                model.ownerEntity.pluginAddress,
+              ).transfer(model.pledgeId, model.amount, receiverId, {
+                from,
+                $extraGas: 100000,
+                gasPrice,
+              });
+            } else if (model.ownerType === 'giver' && model.delegate > 0) {
+              return lppDacs.transfer(
+                model.delegate,
+                model.pledgeId,
+                model.amount,
+                receiverId,
+                { from, $extraGas: 100000, gasPrice },
+              );
+            }
 
-          return liquidPledging
-            .transfer(senderId, model.pledgeId, model.amount, receiverId, { from, $extraGas: 100000 }); // need to supply extraGas b/c https://github.com/trufflesuite/ganache-core/issues/26
-        };
+            return liquidPledging.transfer(
+              senderId,
+              model.pledgeId,
+              model.amount,
+              receiverId,
+              { from, $extraGas: 100000, gasPrice },
+            ); // need to supply extraGas b/c https://github.com/trufflesuite/ganache-core/issues/26
+          };
 
-        return executeTransfer()
-          .once('transactionHash', (hash) => {
-            txHash = hash;
-            delegate(etherScanUrl, txHash);
-          }).on('error', console.error); // eslint-disable-line no-console
-      })
-      .then(() => {
-        React.toast.success(<p>Your donation has been confirmed!<br /><a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>);
-      }).catch(() => {
-        displayTransactionError(txHash, etherScanUrl);
-        this.setState({ isSaving: false });
-      });
+          return executeTransfer()
+            .once('transactionHash', hash => {
+              txHash = hash;
+              delegate(etherScanUrl, txHash);
+            })
+            .on('error', console.error); // eslint-disable-line no-console
+        })
+        .then(() => {
+          React.toast.success(
+            <p>
+              Your donation has been confirmed!<br />
+              <a
+                href={`${etherScanUrl}tx/${txHash}`}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                View transaction
+              </a>
+            </p>,
+          );
+        })
+        .catch(() => {
+          displayTransactionError(txHash, etherScanUrl);
+          this.setState({ isSaving: false });
+        });
 
     // Delegate
-    confirmBlockchainTransaction(
-      doDelegate,
-      () => this.setState({ isSaving: false }),
+    confirmBlockchainTransaction(doDelegate, () =>
+      this.setState({ isSaving: false }),
     );
   }
 
@@ -152,7 +228,6 @@ class DelegateButton extends Component {
     });
   }
 
-
   render() {
     const { types, milestoneOnly } = this.props;
     const { isSaving, objectsToDelegateTo } = this.state;
@@ -160,32 +235,42 @@ class DelegateButton extends Component {
 
     return (
       <span style={style}>
-        <button className="btn btn-success btn-sm" onClick={() => this.openDialog()}>
+        <button
+          className="btn btn-success btn-sm"
+          onClick={() => this.openDialog()}
+        >
           Delegate
         </button>
 
         <SkyLightStateless
           isVisible={this.state.modalVisible}
-          onCloseClicked={() => { this.setState({ modalVisible: false }); }}
-          onOverlayClicked={() => { this.setState({ modalVisible: false }); }}
+          onCloseClicked={() => {
+            this.setState({ modalVisible: false });
+          }}
+          onOverlayClicked={() => {
+            this.setState({ modalVisible: false });
+          }}
           hideOnOverlayClicked
           title="Delegate Donation"
           afterClose={() => this.resetSkylight()}
         >
-
-          { milestoneOnly &&
+          {milestoneOnly && (
             <p>Select a Milestone to delegate this donation to:</p>
-          }
+          )}
 
-          { !milestoneOnly &&
+          {!milestoneOnly && (
             <p>Select a Campaign or Milestone to delegate this donation to:</p>
-          }
+          )}
 
           <Form onSubmit={this.submit} layout="vertical">
             <div className="form-group">
               <InputToken
                 name="campaigns"
-                placeholder={milestoneOnly ? 'Select a Milestone' : 'Select a Campaign or Milestone'}
+                placeholder={
+                  milestoneOnly
+                    ? 'Select a Milestone'
+                    : 'Select a Campaign or Milestone'
+                }
                 value={objectsToDelegateTo}
                 options={types}
                 onSelect={this.selectedObject}
@@ -202,7 +287,6 @@ class DelegateButton extends Component {
               {isSaving ? 'Delegating...' : 'Delegate here'}
             </button>
           </Form>
-
         </SkyLightStateless>
       </span>
     );

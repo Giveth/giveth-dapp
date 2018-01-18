@@ -1,5 +1,5 @@
 {
-  "extends": "airbnb",
+  "extends": ["airbnb", "plugin:prettier/recommended"],
   "rules": {
     "jsx-a11y/anchor-is-valid": [ "error", {
         "components": [ "Link" ],
@@ -16,7 +16,11 @@
         "argsIgnorePattern": "^_"
       }
     ],
-    "linebreak-style": "off"
+    "linebreak-style": "off",
+    "prettier/prettier": ["error", {
+      "singleQuote": true,
+      "trailingComma": "all"
+    }]
   },
   "env": {
     "jest": true

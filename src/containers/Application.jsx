@@ -13,9 +13,7 @@ import { feathersClient } from '../lib/feathersClient';
 
 import DataRoutes from './DataRoutes';
 
-
 import BaseWallet from '../lib/blockchain/BaseWallet';
-import GivethWallet from '../lib/blockchain/GivethWallet';
 import getWeb3 from '../lib/blockchain/getWeb3';
 import { history } from '../lib/helpers';
 
@@ -41,7 +39,6 @@ import EditCampaign from './../components/views/EditCampaign';
 import ViewCampaign from './../components/views/ViewCampaign';
 import EditMilestone from './../components/views/EditMilestone';
 
-
 // components
 import MainMenu from './../components/MainMenu';
 import Loader from './../components/Loader';
@@ -60,7 +57,7 @@ import './../lib/validators';
 React.swal = Sweetalert;
 
 // Construct a dom node to be used as content for sweet alert
-React.swal.msg = (reactNode) => {
+React.swal.msg = reactNode => {
   const wrapper = document.createElement('span');
   ReactDOM.render(reactNode, wrapper);
   return wrapper.firstChild;
@@ -76,10 +73,12 @@ React.minimumWalletBalance = 0.02;
 React.whitelist = {};
 
 // Fetch whitelist
-feathersClient.service('/whitelist').find().then((res) => {
-  React.whitelist = res;
-});
-
+feathersClient
+  .service('/whitelist')
+  .find()
+  .then(res => {
+    React.whitelist = res;
+  });
 
 /**
  * This container holds the application and its routes.
@@ -89,9 +88,11 @@ feathersClient.service('/whitelist').find().then((res) => {
  */
 class Application extends Component {
   static getUserProfile(address) {
-    return feathersClient.service('/users').get(address)
+    return feathersClient
+      .service('/users')
+      .get(address)
       .then(user => user)
-      .catch((err) => {
+      .catch(err => {
         console.error(err); // eslint-disable-line no-console
       });
   }
@@ -121,18 +122,23 @@ class Application extends Component {
 
   componentWillMount() {
     //  Load the wallet if it is cached
-    feathersClient.passport.getJWT()
-      .then((token) => {
+    feathersClient.passport
+      .getJWT()
+      .then(token => {
         if (token) return feathersClient.passport.verifyJWT(token);
         return null;
       })
       .then(payload => Application.getUserProfile(payload.userId))
-      .then((user) => {
+      .then(user => {
         if (!user) throw new Error('No User');
         feathersClient.authenticate(); // need to authenticate the socket connection
-        this.setState({ isLoading: false, hasError: false, currentUser: new User(user) });
+        this.setState({
+          isLoading: false,
+          hasError: false,
+          currentUser: new User(user),
+        });
       })
-      .catch((e) => {
+      .catch(e => {
         console.error(e); // eslint-disable-line no-console
         this.setState({ isLoading: false, hasError: false });
       });
@@ -147,16 +153,18 @@ class Application extends Component {
       // Warn the user that they need to get a web3 browser
       // Or install MetaMask, maybe with a nice graphic.
       GivethWallet.getCachedKeystore()
-        .then((keystore) => {
+        .then(keystore => {
           // TODO change to getWeb3() when implemented. actually remove provider from GivethWallet
-          const provider = this.state.web3 ? this.state.web3.currentProvider : undefined;
+          const provider = this.state.web3
+            ? this.state.web3.currentProvider
+            : undefined;
           return GivethWallet.loadWallet(keystore, provider);
         })
-        .then((wallet) => {
+        .then(wallet => {
           getWeb3().then(web3 => web3.setWallet(wallet));
           this.setState({ wallet });
         })
-        .catch((err) => {
+        .catch(err => {
           if (err.message !== 'No keystore found') console.error(err); // eslint-disable-line no-console
         });
     }
@@ -171,9 +179,9 @@ class Application extends Component {
 
   onSignIn() {
     const address = this.state.wallet.getAddresses()[0];
-    return Application.getUserProfile(address)
-      .then(user =>
-        this.setState({ currentUser: new User(user) }));
+    return Application.getUserProfile(address).then(user =>
+      this.setState({ currentUser: new User(user) }),
+    );
   }
 
   handleWalletChange(wallet) {
@@ -182,12 +190,12 @@ class Application extends Component {
 
     getWeb3().then(web3 => web3.setWallet(wallet));
 
-    Application.getUserProfile(address)
-      .then(user =>
-        this.setState({
-          wallet,
-          currentUser: new User(user),
-        }));
+    Application.getUserProfile(address).then(user =>
+      this.setState({
+        wallet,
+        currentUser: new User(user),
+      }),
+    );
   }
 
   unlockWallet(redirectAfter) {
@@ -196,256 +204,352 @@ class Application extends Component {
 
   walletUnlocked() {
     this.hideUnlockWalletModal();
-    React.toast.success(<p>Your wallet has been unlocked.<br />
+    React.toast.success(
+      <p>
+        Your wallet has been unlocked.<br />
         Note that your wallet will <strong>auto-lock</strong> upon page refresh.
-                        </p>);
+      </p>,
+    );
   }
 
   hideUnlockWalletModal() {
     this.setState({ showUnlockWalletModal: false, redirectAfter: undefined });
   }
 
-
   render() {
     const {
-      wallet, currentUser, web3, isLoading, hasError, showUnlockWalletModal, redirectAfter,
+      wallet,
+      currentUser,
+      web3,
+      isLoading,
+      hasError,
+      showUnlockWalletModal,
+      redirectAfter,
     } = this.state;
 
     return (
       <Router history={history}>
         <div>
-          {isLoading &&
-          <Loader className="fixed" />
-        }
+          {isLoading && <Loader className="fixed" />}
 
-          {wallet && showUnlockWalletModal &&
-          <UnlockWallet
-            wallet={wallet}
-            redirectAfter={redirectAfter}
-            onClose={() => this.walletUnlocked()}
-            onCloseClicked={() => this.hideUnlockWalletModal()}
-          />
-        }
+          {wallet &&
+            showUnlockWalletModal && (
+              <UnlockWallet
+                wallet={wallet}
+                redirectAfter={redirectAfter}
+                onClose={() => this.walletUnlocked()}
+                onCloseClicked={() => this.hideUnlockWalletModal()}
+              />
+            )}
 
-          {!isLoading && !hasError &&
-          <div>
-            <MainMenu
-              onSignOut={this.onSignOut}
-              wallet={wallet}
-              currentUser={currentUser}
-            />
+          {!isLoading &&
+            !hasError && (
+              <div>
+                <MainMenu
+                  onSignOut={this.onSignOut}
+                  wallet={wallet}
+                  currentUser={currentUser}
+                />
 
-
-            <Switch>
-
-              {/* Routes are defined here. Persistent data is set as props on components
+                <Switch>
+                  {/* Routes are defined here. Persistent data is set as props on components
                   NOTE order matters, wrong order breaks routes!
                */}
 
-              <Route
-                exact
-                path="/dacs/new"
-                component={props =>
-                  <EditDAC isNew currentUser={currentUser} wallet={wallet} {...props} />}
-              />
-              <Route
-                exact
-                path="/dacs/:id"
-                component={props => (<ViewDAC
-                  currentUser={currentUser}
-                  wallet={wallet}
-                  {...props}
-                />)}
-              />
-              <Route
-                exact
-                path="/dacs/:id/edit"
-                component={props => (<EditDAC
-                  currentUser={currentUser}
-                  wallet={wallet}
-                  {...props}
-                />)}
-              />
+                  <Route
+                    exact
+                    path="/dacs/new"
+                    component={props => (
+                      <EditDAC
+                        isNew
+                        currentUser={currentUser}
+                        wallet={wallet}
+                        {...props}
+                      />
+                    )}
+                  />
+                  <Route
+                    exact
+                    path="/dacs/:id"
+                    component={props => (
+                      <ViewDAC
+                        currentUser={currentUser}
+                        wallet={wallet}
+                        {...props}
+                      />
+                    )}
+                  />
+                  <Route
+                    exact
+                    path="/dacs/:id/edit"
+                    component={props => (
+                      <EditDAC
+                        currentUser={currentUser}
+                        wallet={wallet}
+                        {...props}
+                      />
+                    )}
+                  />
 
-              <Route
-                exact
-                path="/campaigns/new"
-                component={props => (<EditCampaign
-                  isNew
-                  currentUser={currentUser}
-                  wallet={wallet}
-                  {...props}
-                />)}
-              />
-              <Route
-                exact
-                path="/campaigns/:id"
-                component={props => (<ViewCampaign
-                  currentUser={currentUser}
-                  wallet={wallet}
-                  {...props}
-                />)}
-              />
-              <Route
-                exact
-                path="/campaigns/:id/edit"
-                component={props =>
-                  <EditCampaign currentUser={currentUser} wallet={wallet} {...props} />}
-              />
+                  <Route
+                    exact
+                    path="/campaigns/new"
+                    component={props => (
+                      <EditCampaign
+                        isNew
+                        currentUser={currentUser}
+                        wallet={wallet}
+                        {...props}
+                      />
+                    )}
+                  />
+                  <Route
+                    exact
+                    path="/campaigns/:id"
+                    component={props => (
+                      <ViewCampaign
+                        currentUser={currentUser}
+                        wallet={wallet}
+                        {...props}
+                      />
+                    )}
+                  />
+                  <Route
+                    exact
+                    path="/campaigns/:id/edit"
+                    component={props => (
+                      <EditCampaign
+                        currentUser={currentUser}
+                        wallet={wallet}
+                        {...props}
+                      />
+                    )}
+                  />
 
-              <Route
-                exact
-                path="/campaigns/:id/milestones/new"
-                component={props =>
-                  <EditMilestone isNew currentUser={currentUser} wallet={wallet} {...props} />}
-              />
-              <Route
-                exact
-                path="/campaigns/:id/milestones/propose"
-                component={props =>
-                  (<EditMilestone
-                    isNew
-                    isProposed
-                    currentUser={currentUser}
-                    wallet={wallet}
-                    {...props}
-                  />)}
-              />
-              <Route
-                exact
-                path="/campaigns/:id/milestones/:milestoneId"
-                component={props =>
-                  <ViewMilestone currentUser={currentUser} wallet={wallet} {...props} />}
-              />
-              <Route
-                exact
-                path="/campaigns/:id/milestones/:milestoneId/edit"
-                component={props =>
-                  <EditMilestone currentUser={currentUser} wallet={wallet} {...props} />}
-              />
-              <Route
-                exact
-                path="/milestones/:milestoneId/edit"
-                component={props =>
-                  <EditMilestone currentUser={currentUser} wallet={wallet} {...props} />}
-              />
+                  <Route
+                    exact
+                    path="/campaigns/:id/milestones/new"
+                    component={props => (
+                      <EditMilestone
+                        isNew
+                        currentUser={currentUser}
+                        wallet={wallet}
+                        {...props}
+                      />
+                    )}
+                  />
+                  <Route
+                    exact
+                    path="/campaigns/:id/milestones/propose"
+                    component={props => (
+                      <EditMilestone
+                        isNew
+                        isProposed
+                        currentUser={currentUser}
+                        wallet={wallet}
+                        {...props}
+                      />
+                    )}
+                  />
+                  <Route
+                    exact
+                    path="/campaigns/:id/milestones/:milestoneId"
+                    component={props => (
+                      <ViewMilestone
+                        currentUser={currentUser}
+                        wallet={wallet}
+                        {...props}
+                      />
+                    )}
+                  />
+                  <Route
+                    exact
+                    path="/campaigns/:id/milestones/:milestoneId/edit"
+                    component={props => (
+                      <EditMilestone
+                        currentUser={currentUser}
+                        wallet={wallet}
+                        {...props}
+                      />
+                    )}
+                  />
+                  <Route
+                    exact
+                    path="/milestones/:milestoneId/edit"
+                    component={props => (
+                      <EditMilestone
+                        currentUser={currentUser}
+                        wallet={wallet}
+                        {...props}
+                      />
+                    )}
+                  />
 
-              <Route
-                exact
-                path="/donations"
-                component={props =>
-                  <Donations currentUser={currentUser} wallet={wallet} {...props} />}
-              />
-              <Route
-                exact
-                path="/delegations"
-                component={props =>
-                  <Delegations currentUser={currentUser} wallet={wallet} {...props} />}
-              />
-              <Route
-                exact
-                path="/my-dacs"
-                component={props =>
-                  <MyDACs currentUser={currentUser} wallet={wallet} {...props} />}
-              />
-              <Route
-                exact
-                path="/my-campaigns"
-                component={props =>
-                  <MyCampaigns currentUser={currentUser} wallet={wallet} {...props} />}
-              />
-              <Route
-                exact
-                path="/my-milestones"
-                component={props =>
-                  <MyMilestones currentUser={currentUser} wallet={wallet} {...props} />}
-              />
+                  <Route
+                    exact
+                    path="/donations"
+                    component={props => (
+                      <Donations
+                        currentUser={currentUser}
+                        wallet={wallet}
+                        {...props}
+                      />
+                    )}
+                  />
+                  <Route
+                    exact
+                    path="/delegations"
+                    component={props => (
+                      <Delegations
+                        currentUser={currentUser}
+                        wallet={wallet}
+                        {...props}
+                      />
+                    )}
+                  />
+                  <Route
+                    exact
+                    path="/my-dacs"
+                    component={props => (
+                      <MyDACs
+                        currentUser={currentUser}
+                        wallet={wallet}
+                        {...props}
+                      />
+                    )}
+                  />
+                  <Route
+                    exact
+                    path="/my-campaigns"
+                    component={props => (
+                      <MyCampaigns
+                        currentUser={currentUser}
+                        wallet={wallet}
+                        {...props}
+                      />
+                    )}
+                  />
+                  <Route
+                    exact
+                    path="/my-milestones"
+                    component={props => (
+                      <MyMilestones
+                        currentUser={currentUser}
+                        wallet={wallet}
+                        {...props}
+                      />
+                    )}
+                  />
 
-              <Route
-                exact
-                path="/signin"
-                component={props =>
-                  (<SignIn
-                    wallet={wallet}
-                    cachedWallet={wallet}
-                    onSignIn={this.onSignIn}
-                    {...props}
-                  />)}
-              />
+                  <Route
+                    exact
+                    path="/signin"
+                    component={props => (
+                      <SignIn
+                        wallet={wallet}
+                        cachedWallet={wallet}
+                        onSignIn={this.onSignIn}
+                        {...props}
+                      />
+                    )}
+                  />
 
-              <Route
-                exact
-                path="/signup"
-                render={props =>
-                (<Signup
-                  provider={web3 ? web3.currentProvider : undefined}
-                  walletCreated={this.handleWalletChange}
-                  {...props}
-                />)}
-              />
+                  <Route
+                    exact
+                    path="/signup"
+                    render={props => (
+                      <Signup
+                        provider={web3 ? web3.currentProvider : undefined}
+                        walletCreated={this.handleWalletChange}
+                        {...props}
+                      />
+                    )}
+                  />
 
-              <Route
-                exact
-                path="/change-account"
-                render={props =>
-                (<ChangeAccount
-                  provider={web3 ? web3.currentProvider : undefined}
-                  handleWalletChange={this.handleWalletChange}
-                  {...props}
-                />)}
-              />
+                  <Route
+                    exact
+                    path="/change-account"
+                    render={props => (
+                      <ChangeAccount
+                        provider={web3 ? web3.currentProvider : undefined}
+                        handleWalletChange={this.handleWalletChange}
+                        {...props}
+                      />
+                    )}
+                  />
 
-              <Route
-                exact
-                path="/wallet"
-                component={props =>
-                  <UserWallet currentUser={currentUser} wallet={wallet} {...props} />}
-              />
-              <Route
-                exact
-                path="/profile"
-                component={props =>
-                  <EditProfile currentUser={currentUser} wallet={wallet} {...props} />}
-              />
-              <Route
-                exact
-                path="/profile/:userAddress"
-                component={props => <Profile {...props} />}
-              />
+                  <Route
+                    exact
+                    path="/wallet"
+                    component={props => (
+                      <UserWallet
+                        currentUser={currentUser}
+                        wallet={wallet}
+                        {...props}
+                      />
+                    )}
+                  />
+                  <Route
+                    exact
+                    path="/profile"
+                    component={props => (
+                      <EditProfile
+                        currentUser={currentUser}
+                        wallet={wallet}
+                        {...props}
+                      />
+                    )}
+                  />
+                  <Route
+                    exact
+                    path="/profile/:userAddress"
+                    component={props => <Profile {...props} />}
+                  />
 
-              <DataRoutes currentUser={currentUser} wallet={wallet} />
+                  <DataRoutes currentUser={currentUser} wallet={wallet} />
 
-              <Route component={NotFound} />
-            </Switch>
+                  <Route component={NotFound} />
+                </Switch>
 
-            <div
-              className="alert alert-warning alert-dismissible fade show"
-              role="alert"
-              style={{
-                  position: 'fixed',
-                  top: '80px',
-                  left: '2%',
-                  width: '96%',
-              }}
-            >
-              <button type="button" className="close" data-dismiss="alert" aria-label="Close">
-                <span aria-hidden="true">&times;</span>
-              </button>
+                <div
+                  className="alert alert-warning alert-dismissible fade show"
+                  role="alert"
+                  style={{
+                    position: 'fixed',
+                    top: '80px',
+                    left: '2%',
+                    width: '96%',
+                  }}
+                >
+                  <button
+                    type="button"
+                    className="close"
+                    data-dismiss="alert"
+                    aria-label="Close"
+                  >
+                    <span aria-hidden="true">&times;</span>
+                  </button>
+                  <center>
+                    Please note that this is a very early stage of the Giveth
+                    DApp available only to a curated group of testers.<br />
+                    <strong>Do not send in any Ether!</strong> If you have sent
+                    Ether please contact us on &nbsp;
+                    <a href="http://join.giveth.io">Slack or Riot</a>.
+                  </center>
+                </div>
+              </div>
+            )}
+
+          {!isLoading &&
+            hasError && (
               <center>
-                Please note that this is a very early stage of the Giveth DApp available only to a curated group
-                of testers.<br/><strong>Do not send in any Ether!</strong> If you have sent Ether please contact us on &nbsp;
-                <a href="http://join.giveth.io">Slack or Riot</a>.
+                <h2>Oops, something went wrong...</h2>
+                <p>
+                  The Giveth dapp could not load for some reason. Please try
+                  again...
+                </p>
               </center>
-            </div>
-          </div>
-        }
-
-          { !isLoading && hasError &&
-          <center>
-            <h2>Oops, something went wrong...</h2>
-            <p>The Giveth dapp could not load for some reason. Please try again...</p>
-          </center>
-        }
+            )}
 
           <ToastContainer
             position="top-right"

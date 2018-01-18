@@ -34,7 +34,11 @@ class MainMenu extends Component {
   }
 
   componentWillReceiveProps(nextProps) {
-    if (nextProps.wallet && nextProps.wallet.unlocked && this.state.walletLocked) {
+    if (
+      nextProps.wallet &&
+      nextProps.wallet.unlocked &&
+      this.state.walletLocked
+    ) {
       this.setState({
         walletLocked: false,
       });
@@ -51,11 +55,12 @@ class MainMenu extends Component {
 
     React.swal({
       title: 'Lock your wallet?',
-      text: "You will be redirected to the home page. Any changes you have made will be lost.",
+      text:
+        'You will be redirected to the home page. Any changes you have made will be lost.',
       icon: 'warning',
       dangerMode: true,
       buttons: ['Cancel', 'Yes, lock wallet!'],
-    }).then((isConfirmed) => {
+    }).then(isConfirmed => {
       if (isConfirmed) {
         this.props.wallet.lock();
         this.setState({ walletLocked: true });
@@ -73,47 +78,61 @@ class MainMenu extends Component {
     const { showMobileMenu } = this.state;
 
     return (
-      <nav id="main-menu" className={`navbar navbar-expand-lg fixed-top ${showMobileMenu ? 'show' : ''} `}>
+      <nav
+        id="main-menu"
+        className={`navbar navbar-expand-lg fixed-top ${
+          showMobileMenu ? 'show' : ''
+        } `}
+      >
         <button
           className="navbar-toggler navbar-toggler-right"
           type="button"
           onClick={() => this.toggleMobileMenu()}
         >
-          <i className={`navbar-toggler-icon fa ${showMobileMenu ? 'fa-close' : 'fa-bars'}`} />
+          <i
+            className={`navbar-toggler-icon fa ${
+              showMobileMenu ? 'fa-close' : 'fa-bars'
+            }`}
+          />
         </button>
 
         <ul className="navbar-nav mobile-wallet-lock">
-          { this.props.currentUser && this.props.wallet && this.state.walletLocked &&
-            <li className="nav-item mr-sm-2">
-              <AuthenticatedNavLink className="nav-link" to="#">
-                <i className="fa fa-lock" />
-                Wallet
-              </AuthenticatedNavLink>
-            </li>
-          }
-          { this.props.currentUser && this.props.wallet && !this.state.walletLocked &&
-            <li className="nav-item mr-sm-2">
-              <NavLink className="nav-link" to="#" onClick={this.lockWallet}>
-                <i className="fa fa-unlock" />
-                Wallet
-              </NavLink>
-            </li>
-          }
+          {this.props.currentUser &&
+            this.props.wallet &&
+            this.state.walletLocked && (
+              <li className="nav-item mr-sm-2">
+                <AuthenticatedNavLink className="nav-link" to="#">
+                  <i className="fa fa-lock" />
+                  Wallet
+                </AuthenticatedNavLink>
+              </li>
+            )}
+          {this.props.currentUser &&
+            this.props.wallet &&
+            !this.state.walletLocked && (
+              <li className="nav-item mr-sm-2">
+                <NavLink className="nav-link" to="#" onClick={this.lockWallet}>
+                  <i className="fa fa-unlock" />
+                  Wallet
+                </NavLink>
+              </li>
+            )}
         </ul>
 
         <Link className="navbar-brand" to="/">
           <img src="/img/Giveth-typelogo.svg" width="70px" alt="Giveth logo" />
         </Link>
 
-
-        <div className={`collapse navbar-collapse ${showMobileMenu ? 'show' : ''} `} id="navbarSupportedContent">
+        <div
+          className={`collapse navbar-collapse ${
+            showMobileMenu ? 'show' : ''
+          } `}
+          id="navbarSupportedContent"
+        >
           <ul className="navbar-nav mr-auto">
             <li className="nav-item">
-              <NavLink
-                className="nav-link"
-                to="/dacs"
-                activeClassName="active"
-              >Communities
+              <NavLink className="nav-link" to="/dacs" activeClassName="active">
+                Communities
               </NavLink>
             </li>
             <li className="nav-item">
@@ -121,11 +140,12 @@ class MainMenu extends Component {
                 className="nav-link"
                 to="/campaigns"
                 activeClassName="active"
-              >Campaigns
+              >
+                Campaigns
               </NavLink>
             </li>
 
-            {this.props.currentUser &&
+            {this.props.currentUser && (
               <li className="nav-item dropdown">
                 <NavLink
                   className="nav-link dropdown-toggle"
@@ -135,62 +155,78 @@ class MainMenu extends Component {
                   data-toggle="dropdown"
                   aria-haspopup="true"
                   aria-expanded="false"
-                >Manage
+                >
+                  Manage
                 </NavLink>
-                <div className={`dropdown-menu ${showMobileMenu ? 'show' : ''} `} aria-labelledby="navbarDropdownDashboard">
+                <div
+                  className={`dropdown-menu ${showMobileMenu ? 'show' : ''} `}
+                  aria-labelledby="navbarDropdownDashboard"
+                >
                   <AuthenticatedLink
                     className="dropdown-item"
                     to="/donations"
                     wallet={wallet}
-                  >My Donations
+                  >
+                    My Donations
                   </AuthenticatedLink>
                   <AuthenticatedLink
                     className="dropdown-item"
                     to="/delegations"
                     wallet={wallet}
-                  >My Delegations
+                  >
+                    My Delegations
                   </AuthenticatedLink>
                   <AuthenticatedLink
                     className="dropdown-item"
                     to="/my-dacs"
                     wallet={wallet}
-                  >My Communities
+                  >
+                    My Communities
                   </AuthenticatedLink>
                   <AuthenticatedLink
                     className="dropdown-item"
                     to="/my-campaigns"
                     wallet={wallet}
-                  >My Campaigns
+                  >
+                    My Campaigns
                   </AuthenticatedLink>
                   <AuthenticatedLink
                     className="dropdown-item"
                     to="/my-milestones"
                     wallet={wallet}
-                  >My Milestones
+                  >
+                    My Milestones
                   </AuthenticatedLink>
                 </div>
               </li>
-            }
-
+            )}
           </ul>
 
           <ul className="navbar-nav ml-auto mr-sm-2">
-            { this.props.currentUser && this.props.wallet && this.state.walletLocked &&
-            <li className="nav-item mr-sm-2">
-              <AuthenticatedNavLink className="nav-link" to="#">
-                <i className="fa fa-lock" />
-                &nbsp;UnLock Wallet
-              </AuthenticatedNavLink>
-            </li>
-            }
-            { this.props.currentUser && this.props.wallet && !this.state.walletLocked &&
-              <li className="nav-item mr-sm-2">
-                <NavLink className="nav-link" to="#" onClick={this.lockWallet}>
-                  <i className="fa fa-unlock" />
-                  &nbsp;Lock Wallet
-                </NavLink>
-              </li>
-            }
+            {this.props.currentUser &&
+              this.props.wallet &&
+              this.state.walletLocked && (
+                <li className="nav-item mr-sm-2">
+                  <AuthenticatedNavLink className="nav-link" to="#">
+                    <i className="fa fa-lock" />
+                    &nbsp;UnLock Wallet
+                  </AuthenticatedNavLink>
+                </li>
+              )}
+            {this.props.currentUser &&
+              this.props.wallet &&
+              !this.state.walletLocked && (
+                <li className="nav-item mr-sm-2">
+                  <NavLink
+                    className="nav-link"
+                    to="#"
+                    onClick={this.lockWallet}
+                  >
+                    <i className="fa fa-unlock" />
+                    &nbsp;Lock Wallet
+                  </NavLink>
+                </li>
+              )}
           </ul>
           {/*
           <form id="search-form" className="form-inline my-2 my-lg-0">
@@ -200,14 +236,26 @@ class MainMenu extends Component {
         */}
 
           <ul className="navbar-nav">
-            { !this.props.currentUser &&
-              <NavLink className="nav-link" to="/signin" activeClassName="active">Sign In</NavLink>
-            }
-            { !this.props.currentUser &&
-              <NavLink className="nav-link" to="/signup" activeClassName="active">Sign Up</NavLink>
-            }
+            {!this.props.currentUser && (
+              <NavLink
+                className="nav-link"
+                to="/signin"
+                activeClassName="active"
+              >
+                Sign In
+              </NavLink>
+            )}
+            {!this.props.currentUser && (
+              <NavLink
+                className="nav-link"
+                to="/signup"
+                activeClassName="active"
+              >
+                Sign Up
+              </NavLink>
+            )}
 
-            { this.props.currentUser &&
+            {this.props.currentUser && (
               <li className="nav-item dropdown">
                 <Link
                   className="nav-link dropdown-toggle"
@@ -217,40 +265,48 @@ class MainMenu extends Component {
                   aria-haspopup="true"
                   aria-expanded="false"
                 >
-                  { currentUser && currentUser.avatar &&
-                    <Avatar className="menu-avatar" size={30} src={currentUser.avatar} round />
-                  }
+                  {currentUser &&
+                    currentUser.avatar && (
+                      <Avatar
+                        className="menu-avatar"
+                        size={30}
+                        src={currentUser.avatar}
+                        round
+                      />
+                    )}
 
-                  { currentUser && currentUser.name &&
-                    <span>{currentUser.name}</span>
-                  }
+                  {currentUser &&
+                    currentUser.name && <span>{currentUser.name}</span>}
 
-                  { currentUser && !currentUser.name &&
-                    <span>Hi, you!</span>
-                  }
+                  {currentUser && !currentUser.name && <span>Hi, you!</span>}
                 </Link>
                 <div
-                  className={`dropdown-menu dropdown-profile ${showMobileMenu ? 'show' : ''}`}
+                  className={`dropdown-menu dropdown-profile ${
+                    showMobileMenu ? 'show' : ''
+                  }`}
                   aria-labelledby="navbarDropdownYou"
                 >
                   <AuthenticatedLink
                     className="dropdown-item"
                     to="/profile"
                     wallet={wallet}
-                  >Profile
+                  >
+                    Profile
                   </AuthenticatedLink>
                   <AuthenticatedLink
                     className="dropdown-item"
                     to="/wallet"
                     wallet={wallet}
-                  >Wallet
+                  >
+                    Wallet
                   </AuthenticatedLink>
-                  <button className="dropdown-item" onClick={this.signout}>Sign out</button>
+                  <button className="dropdown-item" onClick={this.signout}>
+                    Sign out
+                  </button>
                 </div>
               </li>
-            }
+            )}
           </ul>
-
         </div>
       </nav>
     );

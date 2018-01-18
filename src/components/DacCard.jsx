@@ -2,11 +2,19 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import Avatar from 'react-avatar';
 
-import { getTruncatedText, getUserAvatar, isOwner, getUserName } from './../lib/helpers';
+import {
+  getTruncatedText,
+  getUserAvatar,
+  isOwner,
+  getUserName,
+} from './../lib/helpers';
 import CardStats from './CardStats';
 import User from './../models/User';
-import { redirectAfterWalletUnlock, checkWalletBalance } from './../lib/middleware';
 import BaseWallet from '../lib/blockchain/BaseWallet';
+import {
+  redirectAfterWalletUnlock,
+  checkWalletBalance,
+} from './../lib/middleware';
 import DAC from '../models/DAC';
 
 /**
@@ -40,13 +48,18 @@ class DacCard extends Component {
     checkWalletBalance(this.props.wallet, this.props.history).then(() => {
       React.swal({
         title: 'Edit Community?',
-        text: 'Are you sure you want to edit the description of this Community?',
+        text:
+          'Are you sure you want to edit the description of this Community?',
         icon: 'warning',
         buttons: ['Cancel', 'Yes, edit'],
         dangerMode: true,
-      }).then((isConfirmed) => {
+      }).then(isConfirmed => {
         if (isConfirmed) {
-          redirectAfterWalletUnlock(`/dacs/${this.props.dac.id}/edit`, this.props.wallet, this.props.history);
+          redirectAfterWalletUnlock(
+            `/dacs/${this.props.dac.id}/edit`,
+            this.props.wallet,
+            this.props.history,
+          );
         }
       });
     });
@@ -75,7 +88,7 @@ class DacCard extends Component {
             <Avatar size={30} src={getUserAvatar(dac.owner)} round />
             <span className="owner-name">{getUserName(dac.owner)}</span>
 
-            { isOwner(dac.owner.address, currentUser) &&
+            {isOwner(dac.owner.address, currentUser) && (
               <span className="pull-right">
                 <button
                   className="btn btn-link btn-edit"
@@ -84,10 +97,13 @@ class DacCard extends Component {
                   <i className="fa fa-edit" />
                 </button>
               </span>
-            }
+            )}
           </div>
 
-          <div className="card-img" style={{ backgroundImage: `url(${dac.image})` }} />
+          <div
+            className="card-img"
+            style={{ backgroundImage: `url(${dac.image})` }}
+          />
 
           <div className="card-content">
             <h4 className="card-title">{getTruncatedText(dac.title, 30)}</h4>
@@ -102,7 +118,6 @@ class DacCard extends Component {
               campaignsCount={dac.campaignsCount}
             />
           </div>
-
         </div>
       </div>
     );

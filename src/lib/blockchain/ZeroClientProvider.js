@@ -15,7 +15,7 @@ import CleanserSubProvider from './CleanserSubProvider';
 ProviderEngine.prototype.send = ProviderEngine.prototype.sendAsync;
 
 // web3-provider-engine ZeroClientProvider with a ProviderEngine override to work with web3 1.0
-export default (options) => {
+export default options => {
   const opts = options || {};
 
   // TODO rewrite ProviderEngine to use pubsub instead of EthBlockTracker

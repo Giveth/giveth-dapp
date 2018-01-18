@@ -17,29 +17,31 @@ function setWallet(wallet) {
     signTransaction: (txData, cb) => {
       // provide chainId as GivethWallet.Account does not have a provider set. If we don't provide
       // a chainId, the account will attempt to fetch it via the provider.
-      const getId = (txData.chainId) ? Promise.resolve(txData.chainId) : this.eth.net.getId;
+      const getId = txData.chainId
+        ? Promise.resolve(txData.chainId)
+        : this.eth.net.getId;
 
-      getId()
-        .then((id) => {
-          txData.chainId = id;
+      getId().then(id => {
+        txData.chainId = id;
 
-          try {
-            const sig = wallet.signTransaction(txData);
-            cb(null, sig.rawTransaction);
-          } catch (err) {
-            cb(err);
-          }
-        });
+        try {
+          const sig = wallet.signTransaction(txData);
+          cb(null, sig.rawTransaction);
+        } catch (err) {
+          cb(err);
+        }
+      });
     },
   });
 
-  const getBalance = () => getWeb3() // eslint-disable-line no-use-before-define
-    .then((web3) => {
-      const addr = wallet.getAddresses()[0];
-      return (addr) ? web3.eth.getBalance(addr) : undefined;
-    })
-    .then(balance => wallet.balance = balance) // eslint-disable-line no-return-assign
-    .catch(console.error); // eslint-disable-line no-console
+  const getBalance = () =>
+    getWeb3() // eslint-disable-line no-use-before-define
+      .then(web3 => {
+        const addr = wallet.getAddresses()[0];
+        return addr ? web3.eth.getBalance(addr) : undefined;
+      })
+      .then(balance => (wallet.balance = balance)) // eslint-disable-line no-return-assign
+      .catch(console.error); // eslint-disable-line no-console
 
   getBalance();
   engine.on('block', getBalance);
@@ -47,9 +49,14 @@ function setWallet(wallet) {
 }
 
 const getWeb3 = () =>
-  new Promise((resolve) => {
+  new Promise(resolve => {
     if (!givethWeb3) {
       givethWeb3 = new Web3(process.env.REACT_APP_ETH_NODE_CONNECTION_URL);
+
+      // hack to keep the ws connection from timing-out
+      setInterval(() => {
+        givethWeb3.eth.net.getId();
+      }, 30000); // every 30 seconds
 
       // web3 1.0 expects the chainId to be no longer then 1 byte. If the chainId is longer
       // then 1 byte, an error will be thrown. Testrpc by default uses the timestamp for the
@@ -58,17 +65,16 @@ const getWeb3 = () =>
       // (Nat.toNumber(tx.chainId || "0x1") * 2 + 35), and that number is added to the
       // signature.recoveryParam the max value the network ID can be is
       // 110 (110 * 2 + 35 === 255) - recoveryParam
-      givethWeb3.eth.net.getId()
-        .then((id) => {
-          if (id > 110) {
-            const msg = `Web3 will throw errors when signing transactions if the networkId > 255 (1 byte).
+      givethWeb3.eth.net.getId().then(id => {
+        if (id > 110) {
+          const msg = `Web3 will throw errors when signing transactions if the networkId > 255 (1 byte).
           networkID = ${id}. Overriding eth.net.getId() to return 100`;
 
-            console.warn(msg); // eslint-disable-line no-console
+          console.warn(msg); // eslint-disable-line no-console
 
-            givethWeb3.eth.net.getId = () => Promise.resolve(100);
-          }
-        });
+          givethWeb3.eth.net.getId = () => Promise.resolve(100);
+        }
+      });
 
       givethWeb3.setWallet = setWallet;
     }
@@ -77,4 +83,3 @@ const getWeb3 = () =>
   });
 
 export default getWeb3;
-

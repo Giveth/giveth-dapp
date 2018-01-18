@@ -10,7 +10,7 @@ import { feathersClient } from '../../lib/feathersClient';
 import Loader from '../Loader';
 import { isAuthenticated, takeActionAfterWalletUnlock, checkWalletBalance } from '../../lib/middleware';
 import getNetwork from '../../lib/blockchain/getNetwork';
-import { displayTransactionError, getTruncatedText } from '../../lib/helpers';
+import { displayTransactionError, getGasPrice, getTruncatedText } from '../../lib/helpers';
 import User from '../../models/User';
 import BaseWallet from '../../lib/blockchain/BaseWallet';
 
@@ -134,14 +134,15 @@ class Donations extends Component {
 
             let txHash;
             let etherScanUrl;
-            getNetwork()
-              .then((network) => {
+            Promise.all([getNetwork(), getGasPrice()])
+              .then(([network, gasPrice]) => {
                 const { liquidPledging } = network;
                 etherScanUrl = network.etherscan;
+                const from = this.props.currentUser.address;
 
                 return liquidPledging.transfer(
                   donation.owner, donation.pledgeId, donation.amount,
-                  donation.intendedProject, { $extraGas: 50000 },
+                  donation.intendedProject, { $extraGas: 50000, gasPrice, from },
                 )
                   .once('transactionHash', (hash) => {
                     txHash = hash;
@@ -190,14 +191,15 @@ class Donations extends Component {
 
             let txHash;
             let etherScanUrl;
-            getNetwork()
-              .then((network) => {
+            Promise.all([getNetwork(), getGasPrice()])
+              .then(([network, gasPrice]) => {
                 const { liquidPledging } = network;
                 etherScanUrl = network.etherscan;
+                const from = this.props.currentUser.address;
 
                 return liquidPledging.transfer(
                   donation.owner, donation.pledgeId, donation.amount,
-                  donation.delegate, { $extraGas: 50000 },
+                  donation.delegate, { $extraGas: 50000, gasPrice, from},
                 )
                   .once('transactionHash', (hash) => {
                     txHash = hash;
@@ -252,13 +254,14 @@ class Donations extends Component {
 
             let txHash;
             let etherScanUrl;
-            getNetwork()
-              .then((network) => {
+            Promise.all([getNetwork(), getGasPrice()])
+              .then(([network, gasPrice]) => {
                 const { liquidPledging } = network;
                 etherScanUrl = network.etherscan;
+                const from = this.props.currentUser.address;
 
                 return liquidPledging
-                  .withdraw(donation.pledgeId, donation.amount, { $extraGas: 50000 })
+                  .withdraw(donation.pledgeId, donation.amount, { $extraGas: 50000, from, gasPrice })
                   .once('transactionHash', (hash) => {
                     txHash = hash;
                     doRefund(etherScanUrl, txHash);

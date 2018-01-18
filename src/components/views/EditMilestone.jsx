@@ -9,9 +9,11 @@ import Loader from './../Loader';
 import QuillFormsy from './../QuillFormsy';
 import FormsyImageUploader from './../FormsyImageUploader';
 import GoBackButton from '../GoBackButton';
-import { isOwner, displayTransactionError, getRandomWhitelistAddress, getTruncatedText,
-  confirmBlockchainTransaction } from '../../lib/helpers';
-import { isAuthenticated, checkWalletBalance, isInWhitelist } from '../../lib/middleware';
+import {
+  isOwner, displayTransactionError, getRandomWhitelistAddress, getTruncatedText,
+  getGasPrice,
+} from '../../lib/helpers';
+import { isAuthenticated, checkWalletBalance, isInWhitelist, confirmBlockchainTransaction } from '../../lib/middleware';
 import getNetwork from '../../lib/blockchain/getNetwork';
 import getWeb3 from '../../lib/blockchain/getWeb3';
 import LoaderButton from '../../components/LoaderButton';
@@ -169,14 +171,14 @@ class EditMilestone extends Component {
           React.toast.info(<p>Your Milestone is being proposed to the Campaign Owner.</p>);
         } else {
           let etherScanUrl;
-          Promise.all([getNetwork(), getWeb3()])
-            .then(([network, web3]) => {
+          Promise.all([getNetwork(), getWeb3(), getGasPrice()])
+            .then(([network, web3, gasPrice]) => {
               etherScanUrl = network.txHash;
 
               const from = this.props.currentUser.address;
               const recipient = model.recipientAddress;
               new LPPCappedMilestones(web3, network.cappedMilestoneAddress)
-                .addMilestone(model.title, '', constructedModel.maxAmount, this.state.campaignProjectId, recipient, model.reviewerAddress, constructedModel.campaignReviewerAddress, { from })
+                .addMilestone(model.title, '', constructedModel.maxAmount, this.state.campaignProjectId, recipient, model.reviewerAddress, constructedModel.campaignReviewerAddress, { from, gasPrice })
                 .on('transactionHash', (hash) => {
                   txHash = hash;
                   createMilestone({
@@ -201,17 +203,33 @@ class EditMilestone extends Component {
       }
     };
 
-    // Save the Milestone
-    confirmBlockchainTransaction(
-      () => {
-        if (this.state.uploadNewImage) {
-          feathersClient.service('/uploads').create({ uri: this.state.image }).then(file => updateMilestone(file.url));
-        } else {
-          updateMilestone();
-        }
-      },
-      () => this.setState({ isSaving: false }),
-    );
+    const saveMilestone = () => {
+      if (this.state.uploadNewImage) {
+        feathersClient.service('/uploads').create({ uri: this.state.image }).then(file => updateMilestone(file.url));
+      } else {
+        updateMilestone();
+      }
+    }    
+
+    if(this.props.isProposed) {
+      React.swal({
+        title: 'Propose milestone?',
+        text:
+          'The milestone will be proposed to the campaign owner and he or she might approve or reject your milestone.',
+        icon: 'warning',
+        dangerMode: true,
+        buttons: ['Cancel', 'Yes, propose'],
+      }).then(isConfirmed => {
+        if (isConfirmed) saveMilestone()
+      }); 
+    } else {
+      // Save the Milestone
+      confirmBlockchainTransaction(
+        saveMilestone(),
+        () => this.setState({ isSaving: false }),
+        this.props.isProposed
+      );
+    }
   }
 
   toggleFormValid(state) {
