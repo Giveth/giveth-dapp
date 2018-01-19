@@ -53,6 +53,7 @@ class EditMilestone extends Component {
       status: 'pending',
       uploadNewImage: false,
       campaignTitle: '',
+      projectId: undefined,
       hasWhitelist: React.whitelist.reviewerWhitelist.length > 0,
     };
 
@@ -209,7 +210,7 @@ class EditMilestone extends Component {
       } else {
         updateMilestone();
       }
-    }    
+    }
 
     if(this.props.isProposed) {
       React.swal({
@@ -220,15 +221,16 @@ class EditMilestone extends Component {
         dangerMode: true,
         buttons: ['Cancel', 'Yes, propose'],
       }).then(isConfirmed => {
-        if (isConfirmed) saveMilestone()
-      }); 
-    } else {
+        if (isConfirmed) saveMilestone();
+      });
+    } else if (this.props.isNew) {
       // Save the Milestone
       confirmBlockchainTransaction(
-        saveMilestone(),
+        () => saveMilestone(),
         () => this.setState({ isSaving: false }),
-        this.props.isProposed
       );
+    } else {
+      saveMilestone();
     }
   }
 
@@ -252,7 +254,7 @@ class EditMilestone extends Component {
     const { isNew, isProposed, history } = this.props;
     const {
       isLoading, isSaving, title, description, image, recipientAddress, reviewerAddress,
-      formIsValid, maxAmount, campaignTitle, hasWhitelist,
+      formIsValid, maxAmount, campaignTitle, hasWhitelist, projectId,
     } = this.state;
 
     return (
@@ -389,6 +391,7 @@ class EditMilestone extends Component {
                         isEtherAddress: 'Please insert a valid Ethereum address.',
                       }}
                       required
+                      disabled={projectId}
                     />
                   </div>
 
@@ -424,6 +427,7 @@ class EditMilestone extends Component {
                         greaterThan: 'Minimum value must be at least Ξ 0.1',
                       }}
                       required
+                      disabled={projectId}
                     />
                   </div>
 
