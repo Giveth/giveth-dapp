@@ -7,6 +7,7 @@ import { Form, Input } from 'formsy-react-components';
 import { feathersClient } from './../../lib/feathersClient';
 import Loader from './../Loader';
 import QuillFormsy from './../QuillFormsy';
+import SelectFormsy from './../SelectFormsy';
 import FormsyImageUploader from './../FormsyImageUploader';
 import GoBackButton from '../GoBackButton';
 import {
@@ -47,14 +48,19 @@ class EditMilestone extends Component {
       description: '',
       image: '',
       maxAmount: '',
-      reviewerAddress: getRandomWhitelistAddress(React.whitelist.reviewerWhitelist),
+      reviewerAddress: getRandomWhitelistAddress(React.whitelist.reviewerWhitelist).address,
       recipientAddress: '',
       // completionDeadline: '',
       status: 'pending',
       uploadNewImage: false,
       campaignTitle: '',
       hasWhitelist: React.whitelist.reviewerWhitelist.length > 0,
+      whitelistReviewerOptions: React.whitelist.reviewerWhitelist.map(r => ({
+          value: r.address,
+          title: (r.name ? r.name : 'Anomynous user') + " - " + r.address
+        }))      
     };
+
 
     this.submit = this.submit.bind(this);
     this.setImage = this.setImage.bind(this);
@@ -62,7 +68,6 @@ class EditMilestone extends Component {
 
 
   componentDidMount() {
-    console.log(this.props.isProposed);
     isAuthenticated(this.props.currentUser, this.props.wallet)
       .then(() => {
         if (!this.props.isProposed) checkWalletBalance(this.props.wallet, this.props.history);
@@ -225,9 +230,8 @@ class EditMilestone extends Component {
     } else {
       // Save the Milestone
       confirmBlockchainTransaction(
-        saveMilestone(),
-        () => this.setState({ isSaving: false }),
-        this.props.isProposed
+        saveMilestone,
+        () => this.setState({ isSaving: false })
       );
     }
   }
@@ -252,7 +256,7 @@ class EditMilestone extends Component {
     const { isNew, isProposed, history } = this.props;
     const {
       isLoading, isSaving, title, description, image, recipientAddress, reviewerAddress,
-      formIsValid, maxAmount, campaignTitle, hasWhitelist,
+      formIsValid, maxAmount, campaignTitle, hasWhitelist, whitelistReviewerOptions
     } = this.state;
 
     return (
@@ -357,22 +361,41 @@ class EditMilestone extends Component {
                   </div>
 
                   <div className="form-group">
-                    <Input
-                      name="reviewerAddress"
-                      id="title-input"
-                      label="Each Milestone needs a Reviewer who verifies that the Milestone is
-                        completed successfully"
-                      type="text"
-                      value={reviewerAddress}
-                      placeholder="0x0000000000000000000000000000000000000000"
-                      help={hasWhitelist ? 'The Milestone Reviewer is automatically assigned while Giveth is in beta.' : ''}
-                      validations="isEtherAddress"
-                      validationErrors={{
-                        isEtherAddress: 'Please insert a valid Ethereum address.',
-                      }}
-                      required
-                      disabled={hasWhitelist}
-                    />
+                    { hasWhitelist &&
+                      <SelectFormsy
+                        name="reviewerAddress"
+                        id="reviewer-select"
+                        label="Select a reviewer"
+                        helpText="Each milestone needs a reviewer who verifies that the milestone is
+                          completed successfully"
+                        value={reviewerAddress}
+                        cta="--- Select a reviewer ---"
+                        options={whitelistReviewerOptions}
+                        validations="isEtherAddress"
+                        validationErrors={{
+                          isEtherAddress: 'Please select a reviewer.',
+                        }}
+                        required  
+                        disabled={!isNew && !isProposed}                      
+                      />
+                    } 
+
+                    { !hasWhitelist && 
+                      <Input
+                        name="reviewerAddress"
+                        id="title-input"
+                        label="Each Milestone needs a Reviewer who verifies that the Milestone is
+                          completed successfully"
+                        type="text"
+                        value={reviewerAddress}
+                        placeholder="0x0000000000000000000000000000000000000000"
+                        validations="isEtherAddress"
+                        validationErrors={{
+                          isEtherAddress: 'Please insert a valid Ethereum address.',
+                        }}
+                        required
+                      />
+                    }
                   </div>
 
                   <div className="form-group">
