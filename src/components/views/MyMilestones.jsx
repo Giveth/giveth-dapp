@@ -494,9 +494,11 @@ class MyMilestones extends Component {
                       <thead>
                         <tr>
                           <th className="td-name">Name</th>
+                          <th className="td-donations-number">Requested</th>
                           <th className="td-donations-number">Donations</th>
-                          <th className="td-donations-amount">Amount</th>
+                          <th className="td-donations-amount">Donated</th>
                           <th className="td-status">Status</th>
+                          <th className="td-reviewer">Reviewer</th>
                           <th className="td-actions" />
                         </tr>
                       </thead>
@@ -509,6 +511,7 @@ class MyMilestones extends Component {
                               <i className="fa fa-arrow-right" />
                               <Link to={`/campaigns/${m.campaign._id}/milestones/${m._id}`}>MILESTONE <em>{getTruncatedText(m.title, 35)}</em></Link>
                             </td>
+                            <td className="td-donations-number">Ξ{utils.fromWei(m.maxAmount) || 0}</td>                            
                             <td className="td-donations-number">{m.donationCount || 0}</td>
                             <td
                               className="td-donations-amount"
@@ -518,6 +521,11 @@ class MyMilestones extends Component {
                               {(m.status === 'pending' || (Object.keys(m).includes('mined') && !m.mined)) &&
                                 <span><i className="fa fa-circle-o-notch fa-spin" />&nbsp;</span> }
                               {m.status}
+                            </td>
+                            <td className="td-reviewer">
+                              <Link to={`/profile/${m.reviewer.address}`}>
+                                {m.reviewer.name || 'Anomynous user'}
+                              </Link>
                             </td>
                             <td className="td-actions">
                               { m.ownerAddress === currentUser.address &&
