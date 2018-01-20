@@ -1,6 +1,8 @@
 import React, { Component } from 'react';
 import ReactDOM from 'react-dom';
 
+import Web3 from 'web3';
+
 import { Router, Route, Switch } from 'react-router-dom';
 import localforage from 'localforage';
 
@@ -13,11 +15,7 @@ import { feathersClient } from '../lib/feathersClient';
 
 import DataRoutes from './DataRoutes';
 
-<<<<<<< HEAD
-=======
-
 import BaseWallet from '../lib/blockchain/BaseWallet';
->>>>>>> base wallet
 import GivethWallet from '../lib/blockchain/GivethWallet';
 import getWeb3 from '../lib/blockchain/getWeb3';
 import { history } from '../lib/helpers';
@@ -147,8 +145,6 @@ class Application extends Component {
         console.error(e); // eslint-disable-line no-console
         this.setState({ isLoading: false, hasError: false });
       });
-
-
 
     // TODO: move and isolate this code to some place nice
     // check if web3 has been injected into dom window

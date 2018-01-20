@@ -21,7 +21,7 @@ import {
   getTruncatedText,
   getReadableStatus,
 } from '../../lib/helpers';
-import BaseWallet from '../lib/blockchain/BaseWallet';
+import BaseWallet from '../../lib/blockchain/BaseWallet';
 import moment from 'moment';
 import _ from 'underscore';
 // TODO Remove the eslint exception and fix feathers to provide id's without underscore

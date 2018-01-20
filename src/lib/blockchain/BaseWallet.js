@@ -20,7 +20,6 @@ class BaseWallet {
     // to add accout to wallet
     // need to prepend the "0x" for it to work
     const testprcAddress1 = this.accounts.wallet.add('0x6cbed15c793ce57650b9877cf6fa156fbef513c4e6134f022a85b1ffdd59b2a1');
-    debugger;
   }
 
   /**
@@ -58,7 +57,6 @@ class BaseWallet {
    */
   signTransaction(txData) {
     if (!txData.gasPrice || !txData.nonce || !txData.chainId) throw new Error('gasPrice, nonce, and chainId are required');
-    debugger;
     // here is another place where we want meta mask to take over
     return this.accounts.wallet[0].signTransaction(txData);
   }

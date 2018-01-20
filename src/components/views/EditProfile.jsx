@@ -14,7 +14,7 @@ import LoaderButton from '../../components/LoaderButton';
 import getNetwork from '../../lib/blockchain/getNetwork';
 import User from '../../models/User';
 import { displayTransactionError, getGasPrice } from '../../lib/helpers';
-import BaseWallet from '../lib/blockchain/BaseWallet';
+import BaseWallet from '../../lib/blockchain/BaseWallet';
 
 /**
  * The edit user profile view mapped to /profile/

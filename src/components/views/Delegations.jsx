@@ -15,7 +15,7 @@ import {
   getUserAvatar,
   getTruncatedText,
 } from '../../lib/helpers';
-import BaseWallet from '../lib/blockchain/BaseWallet';
+import BaseWallet from '../../lib/blockchain/BaseWallet';
 import User from '../../models/User';
 
 // TODO Remove the eslint exception and fix feathers to provide id's without underscore
