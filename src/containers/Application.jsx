@@ -14,6 +14,7 @@ import { feathersClient } from '../lib/feathersClient';
 import DataRoutes from './DataRoutes';
 
 import BaseWallet from '../lib/blockchain/BaseWallet';
+import GivethWallet from '../lib/blockchain/GivethWallet';
 import getWeb3 from '../lib/blockchain/getWeb3';
 import { history } from '../lib/helpers';
 
