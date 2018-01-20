@@ -25,7 +25,7 @@ class GivethWallet extends BaseWallet {
    *                      retrieve chainId, gasPrice, and nonce automatically
    */
   constructor(keystores, provider) {
-    super();
+    super(provider);
     if (!Array.isArray(keystores) || keystores.length === 0)
       throw new Error('keystores is required. and must be an array');
 
