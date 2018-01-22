@@ -94,7 +94,7 @@ export const getUserAvatar = owner => {
 };
 
 export const getRandomWhitelistAddress = wl =>
-  wl[Math.floor(Math.random() * wl.length)];
+  wl[Math.floor(Math.random() * wl.length)].address;
 
 export const getGasPrice = () =>
   feathersClient

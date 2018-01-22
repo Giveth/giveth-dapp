@@ -5,7 +5,11 @@ import { Form, Input } from 'formsy-react-components';
 import { feathersClient } from '../../lib/feathersClient';
 import Loader from '../Loader';
 import FormsyImageUploader from './../FormsyImageUploader';
-import { isAuthenticated, checkWalletBalance, confirmBlockchainTransaction } from '../../lib/middleware';
+import {
+  isAuthenticated,
+  checkWalletBalance,
+  confirmBlockchainTransaction,
+} from '../../lib/middleware';
 import LoaderButton from '../../components/LoaderButton';
 import getNetwork from '../../lib/blockchain/getNetwork';
 import User from '../../models/User';
@@ -46,11 +50,10 @@ class EditProfile extends Component {
     isAuthenticated(this.props.currentUser, this.props.wallet)
       .then(() => checkWalletBalance(this.props.wallet, this.props.history))
       .then(() => this.setState({ isLoading: false }))
-      .catch((err) => {
+      .catch(err => {
         if (err === 'noBalance') this.props.history.goBack();
-
-        // set giverId to '0'. This way we don't create 2 Givers for the same user
         else {
+          // set giverId to '0'. This way we don't create 2 Givers for the same user
           this.setState({
             giverId: '0',
             isLoading: false,
@@ -66,8 +69,7 @@ class EditProfile extends Component {
   submit(model) {
     this.setState({ isSaving: true });
 
-
-    const updateUser = (file) => {
+    const updateUser = file => {
       const constructedModel = {
         name: model.name,
         email: model.email,
@@ -81,31 +83,64 @@ class EditProfile extends Component {
       // TODO if (giverId > 0), need to send tx if commitTime or name has changed
       // TODO store user profile on ipfs and add Giver in liquidpledging contract
       if (this.state.giverId === undefined) {
-        Promise.all([getNetwork(), getGasPrice()])
-          .then(([network, gasPrice]) => {
+        Promise.all([getNetwork(), getGasPrice()]).then(
+          ([network, gasPrice]) => {
             const { liquidPledging } = network;
             const from = this.props.currentUser.address;
 
             let txHash;
-            liquidPledging.addGiver(model.name, '', 259200, '0x0', { $extraGas: 50000, gasPrice, from }) // 3 days commitTime. TODO allow user to set commitTime
-              .once('transactionHash', (hash) => {
+            liquidPledging
+              .addGiver(model.name || '', '', 259200, '0x0', {
+                $extraGas: 50000,
+                gasPrice,
+                from,
+              }) // 3 days commitTime. TODO allow user to set commitTime
+              .once('transactionHash', hash => {
                 txHash = hash;
-                feathersClient.service('/users').patch(this.props.currentUser.address, constructedModel)
-                  .then((user) => {
-                    React.toast.success(<p>Your profile was created!<br /><a href={`${network.etherscan}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>);
+                feathersClient
+                  .service('/users')
+                  .patch(this.props.currentUser.address, constructedModel)
+                  .then(user => {
+                    React.toast.success(
+                      <p>
+                        Your profile was created!<br />
+                        <a
+                          href={`${network.etherscan}tx/${txHash}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          View transaction
+                        </a>
+                      </p>,
+                    );
                     this.setState(Object.assign({}, user, { isSaving: false }));
                   });
               })
               .then(() =>
-                React.toast.success(<p>You are now a registered user<br /><a href={`${network.etherscan}tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></p>))
+                React.toast.success(
+                  <p>
+                    You are now a registered user<br />
+                    <a
+                      href={`${network.etherscan}tx/${txHash}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      View transaction
+                    </a>
+                  </p>,
+                ),
+              )
               .catch(() => {
                 // TODO: Actually inform the user about error
                 displayTransactionError(txHash, network.etherscan);
               });
-          });
+          },
+        );
       } else {
-        feathersClient.service('/users').patch(this.props.currentUser.address, constructedModel)
-          .then((user) => {
+        feathersClient
+          .service('/users')
+          .patch(this.props.currentUser.address, constructedModel)
+          .then(user => {
             React.toast.success('Your profile has been updated.');
             this.setState(Object.assign({}, user, { isSaving: false }));
           })
@@ -118,9 +153,12 @@ class EditProfile extends Component {
     confirmBlockchainTransaction(
       () => {
         if (this.state.uploadNewAvatar) {
-          feathersClient.service('/uploads').create({ uri: this.state.avatar }).then((file) => {
-            updateUser(file.url);
-          });
+          feathersClient
+            .service('/uploads')
+            .create({ uri: this.state.avatar })
+            .then(file => {
+              updateUser(file.url);
+            });
         } else {
           updateUser();
         }
@@ -135,25 +173,30 @@ class EditProfile extends Component {
 
   render() {
     const {
-      isLoading, isSaving, name, email, linkedIn, avatar, isPristine,
+      isLoading,
+      isSaving,
+      name,
+      email,
+      linkedIn,
+      avatar,
+      isPristine,
     } = this.state;
 
     return (
       <div id="edit-cause-view" className="container-fluid page-layout">
         <div className="row">
           <div className="col-md-8 m-auto">
-            {isLoading &&
-            <Loader className="fixed" />
-            }
+            {isLoading && <Loader className="fixed" />}
 
-            { !isLoading &&
+            {!isLoading && (
               <div>
                 <h3>Edit your profile</h3>
                 <p>
                   <i className="fa fa-question-circle" />
                   Trust is important to run successful Communities or Campaigns.
                   Without trust you will likely not receive donations.
-                  Therefore, we strongly recommend that you <strong>fill out your profile </strong>
+                  Therefore, we strongly recommend that you{' '}
+                  <strong>fill out your profile </strong>
                   when you want to start Communities or Campaigns on Giveth.
                 </p>
 
@@ -199,7 +242,10 @@ class EditProfile extends Component {
                     />
                   </div>
 
-                  <FormsyImageUploader setImage={this.setImage} avatar={avatar} />
+                  <FormsyImageUploader
+                    setImage={this.setImage}
+                    avatar={avatar}
+                  />
 
                   <div className="form-group">
                     <Input
@@ -226,11 +272,9 @@ class EditProfile extends Component {
                   >
                     Save profile
                   </LoaderButton>
-
                 </Form>
               </div>
-            }
-
+            )}
           </div>
         </div>
       </div>
