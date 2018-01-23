@@ -228,7 +228,7 @@ class MyMilestones extends Component {
 
         feathersClient.service('/milestones').patch(milestone._id, {
           status: 'rejected',
-          prevStatus: 'proposed'         
+          prevStatus: 'proposed'
         }).then(() => {
           React.toast.info(<p>The milestone has been rejected.</p>);
         }).catch((e) => {
@@ -511,7 +511,7 @@ class MyMilestones extends Component {
                               <i className="fa fa-arrow-right" />
                               <Link to={`/campaigns/${m.campaign._id}/milestones/${m._id}`}>MILESTONE <em>{getTruncatedText(m.title, 35)}</em></Link>
                             </td>
-                            <td className="td-donations-number">Ξ{utils.fromWei(m.maxAmount) || 0}</td>                            
+                            <td className="td-donations-number">Ξ{utils.fromWei(m.maxAmount) || 0}</td>
                             <td className="td-donations-number">{m.donationCount || 0}</td>
                             <td
                               className="td-donations-amount"
@@ -540,7 +540,7 @@ class MyMilestones extends Component {
                               { (m.campaignOwnerAddress === currentUser.address) && m.status === 'proposed' &&
                                 <span>
                                   <button
-                                    className="btn btn-link"
+                                    className="btn btn-success btn-sm"
                                     onClick={() => this.acceptProposedMilestone(m)}
                                   >
                                     <i className="fa fa-check-square-o" />&nbsp;Accept
@@ -563,7 +563,7 @@ class MyMilestones extends Component {
                                 </button>
                               }
 
-                              { m.reviewerAddress === currentUser.address && ['InProgress', 'NeedReview'].includes(m.status) && m.mined &&
+                              { [m.reviewerAddress, m.campaignReviewerAddress, m.recipientAddress].includes(currentUser.address) && ['InProgress', 'NeedReview'].includes(m.status) && m.mined &&
                                 <button
                                   className="btn btn-danger btn-sm"
                                   onClick={() => this.cancelMilestone(m)}
