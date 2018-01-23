@@ -554,7 +554,7 @@ class MyMilestones extends Component {
                                 </span>
                               }
 
-                              { m.recipientAddress === currentUser.address && m.status === 'InProgress' && m.mined &&
+                              { [m.recipientAddress, m.ownerAddress].includes(currentUser.address) && m.status === 'InProgress' && m.mined &&
                                 <button
                                   className="btn btn-success btn-sm"
                                   onClick={() => this.markComplete(m)}
