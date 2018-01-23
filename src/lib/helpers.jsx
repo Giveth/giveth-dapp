@@ -102,9 +102,11 @@ export const getGasPrice = () =>
     .find()
     .then(resp => {
       let gasPrice = resp.safeLow * 1.1;
+      gasPrice = gasPrice > resp.average ? resp.average : gasPrice;
       // div by 10 b/c https://ethgasstation.info/json/ethgasAPI.json returns price in gwei * 10
-      // we're only interested in gwei
-      gasPrice = parseFloat((gasPrice > resp.average ? resp.average / 10 : gasPrice / 10).toFixed(10));
+      // we're only interested in gwei.
+      // we round to prevent errors relating to too many decimals
+      gasPrice = Math.round(gasPrice) / 10;
       return utils.toWei(`${gasPrice}`, 'gwei');
     });
 

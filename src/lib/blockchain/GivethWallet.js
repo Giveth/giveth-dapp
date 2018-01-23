@@ -33,6 +33,7 @@ class GivethWallet {
     this.keystores = keystores;
     this.unlocked = false;
     this.balance = undefined;
+    this.tokenBalance = undefined;
   }
 
   /**
@@ -44,6 +45,12 @@ class GivethWallet {
   getBalance(unit) {
     return this.balance
       ? utils.fromWei(this.balance, unit || 'ether')
+      : undefined;
+  }
+
+  getTokenBalance(unit) {
+    return this.tokenBalance
+      ? utils.fromWei(this.tokenBalance, unit || 'ether')
       : undefined;
   }
 
