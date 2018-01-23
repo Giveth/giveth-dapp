@@ -94,8 +94,6 @@ class ViewMilestone extends Component {
       projectId,
       title,
       description,
-      recipientAddress,
-      reviewerAddress,
       image,
       donations,
       isLoadingDonations,
@@ -104,6 +102,7 @@ class ViewMilestone extends Component {
       maxAmount,
       totalDonated,
       recipient,
+      reviewer,
       etherScanUrl,
     } = this.state;
 
@@ -188,16 +187,16 @@ class ViewMilestone extends Component {
                       <tbody>
                         <tr>
                           <td className="td-user">
-                            <Link to={`/profile/${reviewerAddress}`}>
-                              <Avatar size={30} src={getUserAvatar(recipient)} round />
-                              <span>{getUserName(recipient)}</span>
+                            <Link to={`/profile/${reviewer.address}`}>
+                              <Avatar size={30} src={getUserAvatar(reviewer)} round />
+                              <span>{getUserName(reviewer)}</span>
                             </Link>
                           </td>
                           {etherScanUrl &&
-                            <td className="td-address"> - <a href={`${etherScanUrl}address/${reviewerAddress}`}>{reviewerAddress}</a></td>
+                            <td className="td-address"> - <a href={`${etherScanUrl}address/${reviewer.address}`}>{reviewer.address}</a></td>
                           }
                           {!etherScanUrl &&
-                            <td className="td-address"> - {reviewerAddress}</td>
+                            <td className="td-address"> - {reviewer.address}</td>
                           }
                         </tr>
                       </tbody>
@@ -215,16 +214,16 @@ class ViewMilestone extends Component {
                       <tbody>
                         <tr>
                           <td className="td-user">
-                            <Link to={`/profile/${recipientAddress}`}>
+                            <Link to={`/profile/${recipient.address}`}>
                               <Avatar size={30} src={getUserAvatar(recipient)} round />
                               <span>{getUserName(recipient)}</span>
                             </Link>
                           </td>
                           {etherScanUrl &&
-                            <td className="td-address"> - <a href={`${etherScanUrl}address/${recipientAddress}`}>{recipientAddress}</a></td>
+                            <td className="td-address"> - <a href={`${etherScanUrl}address/${recipient.address}`}>{recipient.address}</a></td>
                           }
                           {!etherScanUrl &&
-                            <td className="td-address"> - {recipientAddress}</td>
+                            <td className="td-address"> - {recipient.address}</td>
                           }
                         </tr>
                       </tbody>
