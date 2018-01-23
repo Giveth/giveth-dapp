@@ -102,7 +102,9 @@ class ViewMilestone extends Component {
       maxAmount,
       totalDonated,
       recipient,
+      recipientAddress,
       reviewer,
+      reviewerAddress,
       etherScanUrl,
     } = this.state;
 
@@ -187,16 +189,16 @@ class ViewMilestone extends Component {
                       <tbody>
                         <tr>
                           <td className="td-user">
-                            <Link to={`/profile/${reviewer.address}`}>
+                            <Link to={`/profile/${reviewerAddress}`}>
                               <Avatar size={30} src={getUserAvatar(reviewer)} round />
                               <span>{getUserName(reviewer)}</span>
                             </Link>
                           </td>
                           {etherScanUrl &&
-                            <td className="td-address"> - <a href={`${etherScanUrl}address/${reviewer.address}`}>{reviewer.address}</a></td>
+                            <td className="td-address"> - <a href={`${etherScanUrl}address/${reviewerAddress}`}>{reviewerAddress}</a></td>
                           }
                           {!etherScanUrl &&
-                            <td className="td-address"> - {reviewer.address}</td>
+                            <td className="td-address"> - {reviewerAddress}</td>
                           }
                         </tr>
                       </tbody>
@@ -214,16 +216,16 @@ class ViewMilestone extends Component {
                       <tbody>
                         <tr>
                           <td className="td-user">
-                            <Link to={`/profile/${recipient.address}`}>
+                            <Link to={`/profile/${recipientAddress}`}>
                               <Avatar size={30} src={getUserAvatar(recipient)} round />
                               <span>{getUserName(recipient)}</span>
                             </Link>
                           </td>
                           {etherScanUrl &&
-                            <td className="td-address"> - <a href={`${etherScanUrl}address/${recipient.address}`}>{recipient.address}</a></td>
+                            <td className="td-address"> - <a href={`${etherScanUrl}address/${recipientAddress}`}>{recipientAddress}</a></td>
                           }
                           {!etherScanUrl &&
-                            <td className="td-address"> - {recipient.address}</td>
+                            <td className="td-address"> - {recipientAddress}</td>
                           }
                         </tr>
                       </tbody>
