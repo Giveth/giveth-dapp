@@ -6,8 +6,9 @@ class BaseWallet {
    * @param provider      optional. This is necessary when signing a transaction to
    *                      retrieve chainId, gasPrice, and nonce automatically
    */
-  constructor(provider) {
+  constructor(provider, web3 = () => {}) {
     // these are harcoded defaults
+    this.web3 = web3;
     this.unlocked = true;
     this.balance = '10000000000000000000';
     this.address = '0xFFcf8FDEE72ac11b5c542428B35EEF5769C409f0';
@@ -36,10 +37,12 @@ class BaseWallet {
     this.unlocked = true;
   }
 
-  unlock(paassword) {
-    if (paassword || !paassword) {
-      this.unlocked = true;
-    }
+  unlock(password) {
+    return new Promise((resolve, reject) => {
+      if (this.unlocked || !this.unlocked) {
+        return resolve(true);
+      }
+    });
   }
 
   /**
@@ -58,7 +61,8 @@ class BaseWallet {
   signTransaction(txData) {
     if (!txData.gasPrice || !txData.nonce || !txData.chainId) throw new Error('gasPrice, nonce, and chainId are required');
     // here is another place where we want meta mask to take over
-    return this.accounts.wallet[0].signTransaction(txData);
+    return this.web3.eth.sendTransaction(txData);
+    // return this.accounts.wallet[0].signTransaction(txData);
   }
 
   /**
@@ -71,7 +75,12 @@ class BaseWallet {
     if (!this.unlocked) throw new Error('Locked Wallet');
 
     // TODO: web3 version of this wallet code
-
+    const from = this.web3.eth.accounts[0];
+    debugger;
+    this.web3.eth.sign(from, msg, function (err, result) {
+      if (err) return console.error(err)
+      console.log('SIGNED:' + result)
+    })
     // const accounts = mapGet.call(mapAccounts, this);
 
     // return accounts.wallet[0].sign(msg || '');

@@ -144,15 +144,20 @@ class Application extends Component {
         this.setState({ isLoading: false, hasError: false });
       });
 
-    // check if Web3 has been injected by the browser
+    // TODO: move and isolate this code to some place nice
+    // check if web3 has been injected into dom window
     if (typeof web3 !== 'undefined') {
       // if yes use base wallet
+      // this line seems dumb as provider is always undefined
       const provider = this.state.web3 ? this.state.web3.currentProvider : undefined;
-      const wallet = new BaseWallet(provider);
-      getWeb3().then(web3 => web3.setWallet(wallet));
+      // declare web3 from window
+      const { web3 } = window;
+      // create base wallet
+      const wallet = new BaseWallet(provider, web3); // eslint-disable-line no-console
+      // add wallet to application state
       this.setState({ wallet });
     } else {
-      // if not use giveth wallet same as before
+      // if not web3 is not injected, use same Giveth wallet as before
       GivethWallet.getCachedKeystore()
         .then(keystore => {
           // TODO change to getWeb3() when implemented. actually remove provider from GivethWallet
