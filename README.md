@@ -87,7 +87,7 @@ Welcome to the code for Giveth's dapp. This is an open source effort to realize 
     ```
     PORT=3010
     REACT_APP_FEATHERJS_CONNECTION_URL=http://localhost:3030
-    REACT_APP_ETH_NODE_CONNECTION_URL=ws://localhost:8546
+    REACT_APP_ETH_NODE_CONNECTION_URL=ws://localhost:8545
     ```
 
 3. Start the dapp.
