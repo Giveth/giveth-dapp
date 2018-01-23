@@ -151,16 +151,15 @@ class Application extends Component {
     if (typeof web3 !== 'undefined') {
       // if yes use base wallet
       // this line seems dumb as provider is always undefined
-      const provider = undefined;
+      const provider = this.state.web3 ? this.state.web3.currentProvider : undefined;
       // declare web3 from window
       const { web3 } = window;
       // create base wallet
-      const web3js = new Web3(web3.currentProvider);
-      const wallet = new BaseWallet(provider, web3js); // eslint-disable-line no-console
+      const wallet = new BaseWallet(provider, web3); // eslint-disable-line no-console
       // add wallet to application state
       this.setState({ wallet });
     } else {
-      // if not web3 is not injected use same Giveth wallet as before
+      // if not web3 is not injected, use same Giveth wallet as before
       GivethWallet.getCachedKeystore()
         .then(keystore => {
           // TODO change to getWeb3() when implemented. actually remove provider from GivethWallet
