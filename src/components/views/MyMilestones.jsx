@@ -782,8 +782,10 @@ class MyMilestones extends Component {
                                 {m.status}
                               </td>
                               <td className="td-reviewer">
-                                <Link to={`/profile/${m.reviewer.address}`}>
-                                  {m.reviewer.name || 'Anomynous user'}
+                                <Link to={`/profile/${m.reviewerAddress}`}>
+                                  {m.reviewer && m.reviewer.name
+                                    ? m.reviewer.name
+                                    : 'Anonymous user'}
                                 </Link>
                               </td>
                               <td className="td-actions">

@@ -68,7 +68,7 @@ class EditMilestone extends Component {
       hasWhitelist: React.whitelist.reviewerWhitelist.length > 0,
       whitelistReviewerOptions: React.whitelist.reviewerWhitelist.map(r => ({
         value: r.address,
-        title: `${r.name ? r.name : 'Anomynous user'} - ${r.address}`,
+        title: `${r.name ? r.name : 'Anonymous user'} - ${r.address}`,
       })),
     };
 
