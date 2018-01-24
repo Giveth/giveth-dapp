@@ -9,11 +9,11 @@ import Loader from '../Loader';
 import { getUserName, getUserAvatar } from '../../lib/helpers';
 
 /**
-  * The user profile view mapped to /profile/{userAddress}
-  *
-  * @param history      Browser history object
-  * @param wallet       Wallet object with the balance and all keystores
-  */
+ * The user profile view mapped to /profile/{userAddress}
+ *
+ * @param history      Browser history object
+ * @param wallet       Wallet object with the balance and all keystores
+ */
 class Profile extends Component {
   constructor(props) {
     super(props);
@@ -24,33 +24,52 @@ class Profile extends Component {
       etherScanUrl: '',
     };
 
-    getNetwork()
-      .then((network) => {
-        this.setState({
-          etherScanUrl: network.etherscan,
-        });
+    getNetwork().then(network => {
+      this.setState({
+        etherScanUrl: network.etherscan,
       });
+    });
   }
 
   componentDidMount() {
-    feathersClient.service('users').find({ query: { address: this.props.match.params.userAddress } })
+    feathersClient
+      .service('users')
+      .find({ query: { address: this.props.match.params.userAddress } })
       .then(resp =>
-        this.setState(Object.assign({}, resp.data[0], {
-          isLoading: false,
-          hasError: false,
-        })))
+        this.setState(
+          Object.assign(
+            {},
+            {
+              address: this.props.match.params.userAddress,
+            },
+            resp.data[0],
+            {
+              isLoading: false,
+              hasError: false,
+            },
+          ),
+        ),
+      )
       .catch(() =>
         this.setState({
           address: this.props.match.params.userAddress,
           isLoading: false,
           hasError: true,
-        }));
+        }),
+      );
   }
 
   render() {
     const { history } = this.props;
     const {
-      isLoading, hasError, avatar, name, address, email, linkedIn, etherScanUrl,
+      isLoading,
+      hasError,
+      avatar,
+      name,
+      address,
+      email,
+      linkedIn,
+      etherScanUrl,
     } = this.state;
     const user = {
       name,
@@ -62,28 +81,29 @@ class Profile extends Component {
         <div className="container-fluid page-layout">
           <div className="row">
             <div className="col-md-8 m-auto">
-              { isLoading &&
-                <Loader className="fixed" />
-              }
+              {isLoading && <Loader className="fixed" />}
 
-              { !isLoading && !hasError &&
-                <div>
-                  <GoBackButton history={history} />
+              {!isLoading &&
+                !hasError && (
+                  <div>
+                    <GoBackButton history={history} />
 
-                  <center>
-                    <Avatar size={100} src={getUserAvatar(user)} round />
-                    <h1>{getUserName(user)}</h1>
-                    {etherScanUrl &&
-                      <p><a href={`${etherScanUrl}address/${address}`}>{address}</a></p>
-                    }
-                    {!etherScanUrl &&
-                      <p>{address}</p>
-                    }
-                    <p>{email}</p>
-                    <p>{linkedIn}</p>
-                  </center>
-                </div>
-              }
+                    <center>
+                      <Avatar size={100} src={getUserAvatar(user)} round />
+                      <h1>{getUserName(user)}</h1>
+                      {etherScanUrl && (
+                        <p>
+                          <a href={`${etherScanUrl}address/${address}`}>
+                            {address}
+                          </a>
+                        </p>
+                      )}
+                      {!etherScanUrl && <p>{address}</p>}
+                      <p>{email}</p>
+                      <p>{linkedIn}</p>
+                    </center>
+                  </div>
+                )}
             </div>
           </div>
         </div>
