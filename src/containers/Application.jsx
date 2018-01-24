@@ -240,7 +240,7 @@ class Application extends Component {
                   wallet={wallet}
                   currentUser={currentUser}
                 />
-
+                
                 <Switch>
                   {/* Routes are defined here. Persistent data is set as props on components
                   NOTE order matters, wrong order breaks routes!
@@ -500,33 +500,6 @@ class Application extends Component {
 
                   <Route component={NotFound} />
                 </Switch>
-
-                <div
-                  className="alert alert-warning alert-dismissible fade show"
-                  role="alert"
-                  style={{
-                    position: 'fixed',
-                    top: '80px',
-                    left: '2%',
-                    width: '96%',
-                  }}
-                >
-                  <button
-                    type="button"
-                    className="close"
-                    data-dismiss="alert"
-                    aria-label="Close"
-                  >
-                    <span aria-hidden="true">&times;</span>
-                  </button>
-                  <center>
-                    Please note that this is a very early stage of the Giveth
-                    DApp available only to a curated group of testers.<br />
-                    <strong>Do not send in any Ether!</strong> If you have sent
-                    Ether please contact us on &nbsp;
-                    <a href="http://join.giveth.io">Slack or Riot</a>.
-                  </center>
-                </div>
               </div>
             )}
 
