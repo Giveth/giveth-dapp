@@ -2,6 +2,7 @@ import { LiquidPledging } from 'giveth-liquidpledging-token';
 import { LPPDacs } from 'lpp-dacs';
 import getWeb3 from './getWeb3';
 
+// The networks look like sparse 2D matrix organised as [networkName][environmentName]
 const networks = {
   default: {
     master: {
