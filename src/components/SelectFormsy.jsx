@@ -1,7 +1,8 @@
 import React from 'react';
+import createReactClass from 'create-react-class';
 import Formsy from 'formsy-react';
 
-const SelectFormsy = React.createClass({
+const SelectFormsy = createReactClass({
   mixins: [Formsy.Mixin],
 
   changeValue(event) {
@@ -11,10 +12,7 @@ const SelectFormsy = React.createClass({
   render() {
     const className = 'form-group' + (this.props.className || ' ') +
       (this.showRequired() ? 'required' : this.showError() ? 'error' : '');
-
-    const errorClass = this.isPristine()
-      ? ''
-      : this.isValid() ? 'is-valid' : 'has-error';      
+   
     
     const errorMessage = this.getErrorMessage();
 
@@ -31,7 +29,7 @@ const SelectFormsy = React.createClass({
     }
 
     return (
-      <div className={`form-group ${errorClass}`}>
+      <div className={`form-group ${className}`}>
         <label>
           {this.props.label} {this.isRequired() ? '*' : null}
         </label>

@@ -31,3 +31,5 @@ export const feathersClient = feathers()
       matcher,
     }),
   );
+
+feathersClient.service('/uploads').timeout = 10000;
