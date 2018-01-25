@@ -29,6 +29,8 @@ import LoaderButton from '../../components/LoaderButton';
 // import DatePickerFormsy from './../DatePickerFormsy';
 import User from '../../models/User';
 import GivethWallet from '../../lib/blockchain/GivethWallet';
+import ExpenseRow from '../../components/ExpenseRow';
+import moment from 'moment';
 
 /**
  * Create or edit a Milestone
@@ -45,6 +47,15 @@ import GivethWallet from '../../lib/blockchain/GivethWallet';
 class EditMilestone extends Component {
   constructor() {
     super();
+
+    this.expense = {
+      date: moment(),
+      description: '',
+      selectedFiatType: 'EUR',
+      fiatAmount: 0,
+      etherAmount: 0,
+      image: ''
+    }    
 
     this.state = {
       isLoading: true,
@@ -70,10 +81,14 @@ class EditMilestone extends Component {
         value: r.address,
         title: `${r.name ? r.name : 'Anonymous user'} - ${r.address}`,
       })),
+      expenses: [this.expense]
     };
 
     this.submit = this.submit.bind(this);
     this.setImage = this.setImage.bind(this);
+    this.addExpense = this.addExpense.bind(this);
+    // this.removeExpense = this.removeExpense.bind(this);
+
   }
 
   componentDidMount() {
@@ -163,6 +178,10 @@ class EditMilestone extends Component {
       this.props.history.goBack();
     };
     let txHash;
+
+    console.log(model);
+    return
+
 
     const updateMilestone = file => {
       const constructedModel = {
@@ -317,6 +336,42 @@ class EditMilestone extends Component {
     return 'Update Milestone';
   }
 
+  addExpense() {
+    this.setState({ expenses: this.state.expenses.concat(this.expense)});
+  }
+
+  removeExpense(index) {
+    let expenses = this.state.expenses;
+    delete expenses[index];
+    this.setState({ expenses: expenses.filter(x => true) });
+  }
+
+  mapInputs(inputs) {
+    let data = {
+      title: inputs.title,
+      description: inputs.description,
+      reviewerAddress: inputs.reviewerAddress,
+      recipientAddress: inputs.recipientAddress,
+      maxAmount: inputs.maxAmount,
+      expenses: []
+    }
+
+    // Formsy does not support nested forms, 
+    // so we basically fetch the nested forms (expenses in this case) manually
+    // and construct the expenses array
+    for(let i=0; i < this.state.expenses.length; i++) {
+      const expense = Object.keys(inputs)
+        .filter((key) => key.indexOf(`-${i}`) > -1)
+        .reduce((obj, key) => {
+          obj[key.split('-')[0]] = inputs[key];
+          return obj;
+        }, {});
+
+      data.expenses.push(expense);
+    }
+    return data
+  }
+
   render() {
     const { isNew, isProposed, history } = this.props;
     const {
@@ -333,6 +388,7 @@ class EditMilestone extends Component {
       hasWhitelist,
       whitelistReviewerOptions,
       projectId,
+      expenses
     } = this.state;
 
     return (
@@ -376,13 +432,7 @@ class EditMilestone extends Component {
 
                   <Form
                     onSubmit={this.submit}
-                    mapping={inputs => ({
-                      title: inputs.title,
-                      description: inputs.description,
-                      reviewerAddress: inputs.reviewerAddress,
-                      recipientAddress: inputs.recipientAddress,
-                      maxAmount: inputs.maxAmount,
-                    })}
+                    mapping={inputs => this.mapInputs(inputs)}
                     onValid={() => this.toggleFormValid(true)}
                     onInvalid={() => this.toggleFormValid(false)}
                     layout="vertical"
@@ -525,6 +575,35 @@ class EditMilestone extends Component {
                         disabled={projectId}
                       />
                     </div>
+
+                    <table className="table table-responsive table-hover">
+                      <thead>
+                        <tr>
+                          <th className="td-expense-date">Date</th>                        
+                          <th className="td-expense-description">Description</th>
+                          <th className="td-expense-fiat-type">Currency</th>
+                          <th className="td-expense-fiat-amount">Amount</th>
+                          <th className="td-expense-ether-amount">Amount in Ether</th>
+                          <th className="td-expense-file-upload">Attach receipt</th>
+                          <th className="td-expense-action"></th>                          
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {expenses.map((exp, i) => (
+                          <ExpenseRow 
+                            key={i}
+                            index={i}
+                            isNew={isNew}
+                            isProposed={isProposed}
+                            expense={exp}
+                            removeExpense={()=>this.removeExpense(i)}
+                          />
+                        ))}
+                      </tbody>
+                    </table>
+                    <button className="btn btn-sm btn-secondary" onClick={this.addExpense}>
+                      Add another expense
+                    </button>
 
                     <div className="form-group row">
                       <div className="col-6">
