@@ -5,10 +5,11 @@ import io from 'socket.io-client/dist/socket.io';
 import auth from 'feathers-authentication-client';
 import localforage from 'localforage';
 import rx from 'feathers-reactive';
+import config from '../configuration';
 
 import matcher from './matcher';
 
-export const socket = io(process.env.REACT_APP_FEATHERJS_CONNECTION_URL, {
+export const socket = io(config.feathersConnection, {
   transports: ['websocket'],
 });
 
