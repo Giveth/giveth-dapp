@@ -40,8 +40,8 @@ class EditCampaign extends Component {
       reviewerAddress: getRandomWhitelistAddress(React.whitelist.projectOwnerWhitelist).address,
       whitelistOptions: React.whitelist.projectOwnerWhitelist.map(r => ({
           value: r.address,
-          title: (r.name ? r.name : 'Anomynous user') + " - " + r.address
-        })),  
+          title: (r.name ? r.name : 'Anonymous user') + " - " + r.address
+        })),
       // Campaign model
       campaign: new Campaign({
         owner: props.currentUser,
@@ -319,12 +319,12 @@ class EditCampaign extends Component {
                         validationErrors={{
                           isEtherAddress: 'Please select a reviewer.',
                         }}
-                        required   
-                        disabled={!isNew}                     
+                        required
+                        disabled={!isNew}
                       />
-                    } 
+                    }
 
-                    { !hasWhitelist && 
+                    { !hasWhitelist &&
                       <Input
                         name="reviewerAddress"
                         id="title-input"

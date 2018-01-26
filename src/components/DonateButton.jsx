@@ -1,8 +1,8 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { SkyLightStateless } from 'react-skylight';
+// import { SkyLightStateless } from 'react-skylight';
 import { utils } from 'web3';
-import { Form, Input } from 'formsy-react-components';
+// import { Form, Input } from 'formsy-react-components';
 
 import getNetwork from '../lib/blockchain/getNetwork';
 import { feathersClient } from '../lib/feathersClient';
@@ -258,18 +258,18 @@ class DonateButton extends Component {
   }
 
   render() {
-    const { type, model, wallet } = this.props;
-    const {
-      isSaving,
-      amount,
-      formIsValid,
-      gasPrice,
-      MEWurl,
-      mewAmount,
-    } = this.state;
-    const style = {
-      display: 'inline-block',
-    };
+    // const { type, model, wallet } = this.props;
+    // const {
+    //   isSaving,
+    //   amount,
+    //   formIsValid,
+    //   gasPrice,
+    //   MEWurl,
+    //   mewAmount,
+    // } = this.state;
+    // const style = {
+    //   display: 'inline-block',
+    // };
 
     return (<div></div>);
     // return (

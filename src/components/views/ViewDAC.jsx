@@ -114,9 +114,8 @@ class ViewDAC extends Component {
 
                   <div className="card content-card">
                     <div className="card-body content">
-                      <div dangerouslySetInnerHTML={{ __html: dac.description }}>
-                        { /* TODO: Find an alternative to dangerouslySetInnerHTML */ }
-                      </div>
+                      { /* TODO: Find an alternative to dangerouslySetInnerHTML */ }
+                      <div dangerouslySetInnerHTML={{ __html: dac.description }}/>
                     </div>
                   </div>
                 </div>

@@ -10,9 +10,10 @@ import getNetwork from '../../lib/blockchain/getNetwork';
 import getWeb3 from '../../lib/blockchain/getWeb3';
 import Loader from '../Loader';
 import User from '../../models/User';
-import { displayTransactionError, getGasPrice, getTruncatedText } from '../../lib/helpers';
+import { displayTransactionError, getGasPrice, getTruncatedText, getReadableStatus } from '../../lib/helpers';
 import GivethWallet from '../../lib/blockchain/GivethWallet';
-
+import moment from 'moment';
+import _ from 'underscore';
 // TODO Remove the eslint exception and fix feathers to provide id's without underscore
 /* eslint no-underscore-dangle: 0 */
 /**
@@ -51,9 +52,19 @@ class MyMilestones extends Component {
               { status: 'proposed' }
             ]}
           ],
+          $sort: {
+            createdAt: -1
+          }          
         },
       }).subscribe(
-        resp => this.setState({ milestones: resp.data, isLoading: false }),
+        resp => this.setState({ milestones: _.sortBy(resp.data, (d) => {
+              if (d.status === 'NeedsReview') return 1;
+              if (d.status === 'InProgress') return 2;
+              if (d.status === 'Proposed') return 3;
+              if (d.status === 'Completed') return 4;
+              if (d.status === 'Canceled') return 5;
+              return 8;
+            }), isLoading: false }),
         () => this.setState({ isLoading: false }),
       );
     });
@@ -469,6 +480,10 @@ class MyMilestones extends Component {
     });
   }
 
+  reviewDue(updatedAt){
+    return moment().subtract(3, 'd').isAfter(moment(updatedAt));
+  }
+
   render() {
     const { milestones, isLoading } = this.state;
     const { currentUser } = this.props;
@@ -493,11 +508,12 @@ class MyMilestones extends Component {
                     <table className="table table-responsive table-striped table-hover">
                       <thead>
                         <tr>
+                          <th className="td-created-at">Created</th>                        
                           <th className="td-name">Name</th>
+                          <th className="td-status">Status</th>                          
                           <th className="td-donations-number">Requested</th>
                           <th className="td-donations-number">Donations</th>
                           <th className="td-donations-amount">Donated</th>
-                          <th className="td-status">Status</th>
                           <th className="td-reviewer">Reviewer</th>
                           <th className="td-actions" />
                         </tr>
@@ -505,26 +521,35 @@ class MyMilestones extends Component {
                       <tbody>
                         { milestones.map(m => (
                           <tr key={m._id} className={m.status === 'pending' ? 'pending' : ''}>
-                            <td className="td-name">
-                              <Link to={`/campaigns/${m.campaign._id}`}>CAMPAIGN <em>{getTruncatedText(m.campaign.title, 40)}</em></Link>
-                              <br />
-                              <i className="fa fa-arrow-right" />
-                              <Link to={`/campaigns/${m.campaign._id}/milestones/${m._id}`}>MILESTONE <em>{getTruncatedText(m.title, 35)}</em></Link>
+                            <td clasName="td-created-at">
+                              { m.createdAt &&
+                                <span>{moment(m.createdAt).format('Do MMM YYYY - HH:mm a')}</span>
+                              }
                             </td>
+                            <td className="td-name">
+                              <strong>
+                                <Link to={`/campaigns/${m.campaign._id}/milestones/${m._id}`}>MILESTONE <em>{getTruncatedText(m.title, 35)}</em></Link>
+                              </strong>
+                              <br />  
+                              <i className="fa fa-arrow-right" />
+                              <Link className="secondary-link" to={`/campaigns/${m.campaign._id}`}>CAMPAIGN <em>{getTruncatedText(m.campaign.title, 40)}</em></Link>
+                            </td>
+                            <td className="td-status">
+                              {(m.status === 'pending' || (Object.keys(m).includes('mined') && !m.mined)) &&
+                                <span><i className="fa fa-circle-o-notch fa-spin" />&nbsp;</span> }
+                              {(m.status === 'NeedsReview' && this.reviewDue(m.updatedAt)) &&
+                                <span><i className="fa fa-exclamation-triangle" />&nbsp;</span> }
+                              {getReadableStatus(m.status)}
+                            </td>                            
                             <td className="td-donations-number">Ξ{utils.fromWei(m.maxAmount) || 0}</td>
                             <td className="td-donations-number">{m.donationCount || 0}</td>
                             <td
                               className="td-donations-amount"
                             >Ξ{(m.totalDonated) ? utils.fromWei(m.totalDonated) : 0}
                             </td>
-                            <td className="td-status">
-                              {(m.status === 'pending' || (Object.keys(m).includes('mined') && !m.mined)) &&
-                                <span><i className="fa fa-circle-o-notch fa-spin" />&nbsp;</span> }
-                              {m.status}
-                            </td>
                             <td className="td-reviewer">
-                              <Link to={`/profile/${m.reviewerAddress}`}>
-                                {(m.reviewer && m.reviewer.name) ? m.reviewer.name : 'Anomynous user'}
+                              <Link to={`/profile/${m.reviewer.address}`}>
+                                {m.reviewer.name || 'Anomynous user'}
                               </Link>
                             </td>
                             <td className="td-actions">
@@ -554,7 +579,7 @@ class MyMilestones extends Component {
                                 </span>
                               }
 
-                              { [m.recipientAddress, m.ownerAddress].includes(currentUser.address) && m.status === 'InProgress' && m.mined &&
+                              { m.recipientAddress === currentUser.address && m.status === 'InProgress' && m.mined &&
                                 <button
                                   className="btn btn-success btn-sm"
                                   onClick={() => this.markComplete(m)}

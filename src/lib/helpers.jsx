@@ -110,6 +110,16 @@ export const getGasPrice = () =>
       return utils.toWei(`${gasPrice}`, 'gwei');
     });
 
+export const getReadableStatus = (status) => {
+ switch(status) {
+  case 'InProgress':
+    return 'In progress'
+  case 'NeedsReview':
+    return 'Needs review'
+  default:
+    return status
+  }
+}
 
 // returns a risk indicator
 export const calculateRiskFactor = (owner, dependencies) => {

@@ -5,7 +5,7 @@ import { utils } from 'web3';
 
 import BackupWallet from '../BackupWallet';
 import { isAuthenticated, takeActionAfterWalletUnlock } from '../../lib/middleware';
-import WithdrawButton from '../WithdrawButton';
+// import WithdrawButton from '../WithdrawButton';
 import User from '../../models/User';
 import GivethWallet from '../../lib/blockchain/GivethWallet';
 import Loader from '../Loader';

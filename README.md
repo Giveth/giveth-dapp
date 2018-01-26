@@ -26,7 +26,7 @@ Welcome to the code for Giveth's dapp. This is an open source effort to realize 
 
 ### Install
 1. Click **Star** on this repo near the top-right corner of this web page (if you want to).
-2. Join our [slack](http://slack.giveth.io) if you haven't already.
+2. Join us on [Riot or Slack](http://join.giveth.io) if you haven't already.
 3. Fork this repo by clicking **Fork** button in top-right corner of this web page. Continue to follow instruction steps from your own giveth-dapp repo.
 4. Clone your own "giveth-dapp" repo. Copy the link from the "Clone or download" button near the top right of this repo's home page.
 5. The rest of these steps must be done from your machine's command line. See the [OSX and Linux](#for-osx-and-linux) or [Windows](#for-windows) section to continue.
@@ -83,19 +83,12 @@ Welcome to the code for Giveth's dapp. This is an open source effort to realize 
 
 ### Run dapp
 1. The Giveth dapp will need to connect to a [feathers-giveth](https://github.com/Giveth/feathers-giveth) server. Follow the feathers-giveth readme instructions to install and run server before proceeding further.
-2. From the giveth-dapp directory, create a filed called `.env.local` with these configs.
-    ```
-    PORT=3010
-    REACT_APP_FEATHERJS_CONNECTION_URL=http://localhost:3030
-    REACT_APP_ETH_NODE_CONNECTION_URL=ws://localhost:8546
-    ```
-
-3. Start the dapp.
+2. Start the dapp.
     ```
     npm start
     ```
-4. Once the dapp is up in your browser, click "Sign In" from the main menu.
-5. For testing locally, choose any of the wallet files found in the `giveth-dapp/keystores/` folder using the wallet password: `password`. **DO NOT USE THESE ON MAINNET ETHEREUM.**
+3. Once the dapp is up in your browser, click "Sign In" from the main menu.
+4. For testing locally, choose any of the wallet files found in the `giveth-dapp/keystores/` folder using the wallet password: `password`. **DO NOT USE THESE ON MAINNET ETHEREUM.**
 
 ### Video Walkthrough
 Video tutorial walkthrough here: https://tinyurl.com/y9lx6jrl
@@ -112,7 +105,7 @@ go to line 300, and add:
 ```
   mangle: {
     safari10: true,
-  },  
+  },
 ```
 
 now the build will work in Safari
@@ -147,7 +140,7 @@ THESE ON MAINNET ETHEREUM.**
 ## Testing Environments and CI
 
 ### master to Ropsten
-1. The Giveth Dapp is auto deployed from the master branch and is live on Ropsten and can be reached here: https://alpha.giveth.io  
+1. The Giveth Dapp is auto deployed from the master branch and is live on Ropsten and can be reached here: https://alpha.giveth.io
 2. In order to use the dapp you will need ETH on the Ropsten network. You can use this faucet to get some: http://faucet.ropsten.be:3001/
 3. "sign up" on the dapp to create an account.
 4. Go to the "wallet" page to see your new address (0x..). Copy and past that address into the faucet link above and you will have Ropsten network ETH for testing.

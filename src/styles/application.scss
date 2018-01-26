@@ -65,6 +65,10 @@ body {
 
 a, button {
   cursor: pointer;
+
+  &.secondary-link {
+    color: $secondary-link;
+  }
 }
 
 label {

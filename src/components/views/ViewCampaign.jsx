@@ -127,9 +127,8 @@ class ViewCampaign extends Component {
 
                   <div className="card content-card ">
                     <div className="card-body content">
-                      <div dangerouslySetInnerHTML={{ __html: campaign.description }}>
-                        {/* TODO: Find more sensible way of showing the description */}
-                      </div>
+                      {/* TODO: Find more sensible way of showing the description */}
+                      <div dangerouslySetInnerHTML={{ __html: campaign.description }}/>
                     </div>
                   </div>
 
