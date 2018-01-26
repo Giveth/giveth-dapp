@@ -112,7 +112,11 @@ class MainMenu extends Component {
               this.props.wallet &&
               !this.state.walletLocked && (
                 <li className="nav-item mr-sm-2">
-                  <NavLink className="nav-link" to="#" onClick={this.lockWallet}>
+                  <NavLink
+                    className="nav-link"
+                    to="#"
+                    onClick={this.lockWallet}
+                  >
                     <i className="fa fa-unlock" />
                     Wallet
                   </NavLink>
@@ -121,7 +125,11 @@ class MainMenu extends Component {
           </ul>
 
           <Link className="navbar-brand" to="/">
-            <img src="/img/Giveth-typelogo.svg" width="70px" alt="Giveth logo" />
+            <img
+              src="/img/Giveth-typelogo.svg"
+              width="70px"
+              alt="Giveth logo"
+            />
           </Link>
 
           <div
@@ -132,7 +140,11 @@ class MainMenu extends Component {
           >
             <ul className="navbar-nav mr-auto">
               <li className="nav-item">
-                <NavLink className="nav-link" to="/dacs" activeClassName="active">
+                <NavLink
+                  className="nav-link"
+                  to="/dacs"
+                  activeClassName="active"
+                >
                   Communities
                 </NavLink>
               </li>
@@ -169,7 +181,7 @@ class MainMenu extends Component {
                       wallet={wallet}
                     >
                       My Milestones
-                    </AuthenticatedLink>                
+                    </AuthenticatedLink>
                     {/*
                       <AuthenticatedLink
                         className="dropdown-item"
@@ -313,15 +325,14 @@ class MainMenu extends Component {
           </div>
         </nav>
 
-
         <div
           className="alert alert-warning alert-dismissible fade show"
           role="alert"
           style={{
             marginTop: '60px',
             marginBottom: '0',
-            borderRadius: '0'
-          }}          
+            borderRadius: '0',
+          }}
         >
           <button
             type="button"
@@ -332,15 +343,13 @@ class MainMenu extends Component {
             <span aria-hidden="true">&times;</span>
           </button>
           <center>
-            Please note that this is a very early stage of the Giveth
-            DApp available only to a curated group of testers.<br />
-            <strong>Do not send in any Ether!</strong> If you have sent
-            Ether please contact us on &nbsp;
+            Please note that this is a very early stage of the Giveth DApp
+            available only to a curated group of testers.<br />
+            <strong>Do not send in any Ether!</strong> If you have sent Ether
+            please contact us on &nbsp;
             <a href="http://join.giveth.io">Slack or Riot</a>.
           </center>
-        </div>                
-
-
+        </div>
       </div>
     );
   }

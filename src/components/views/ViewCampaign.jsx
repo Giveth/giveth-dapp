@@ -47,20 +47,22 @@ class ViewCampaign extends Component {
 
     this.milestoneObserver = CampaignService.subscribeMilestones(
       campaignId,
-      milestones => this.setState({
-        milestones,
-        isLoadingMilestones: false,
-      }),
+      milestones =>
+        this.setState({
+          milestones,
+          isLoadingMilestones: false,
+        }),
       () => this.setState({ isLoadingMilestones: false }),
     );
 
     // Lazy load donations
     this.donationsObserver = CampaignService.subscribeDonations(
       campaignId,
-      donations => this.setState({
-        donations,
-        isLoadingDonations: false,
-      }),
+      donations =>
+        this.setState({
+          donations,
+          isLoadingDonations: false,
+        }),
       () => this.setState({ isLoadingDonations: false }),
     );
   }
@@ -87,24 +89,30 @@ class ViewCampaign extends Component {
   render() {
     const { history, currentUser, wallet } = this.props;
     const {
-      isLoading, campaign, milestones, donations, isLoadingDonations,
+      isLoading,
+      campaign,
+      milestones,
+      donations,
+      isLoadingDonations,
     } = this.state;
 
     return (
       <div id="view-campaign-view">
-        { isLoading &&
-          <Loader className="fixed" />
-        }
+        {isLoading && <Loader className="fixed" />}
 
-        { !isLoading &&
+        {!isLoading && (
           <div>
-            <BackgroundImageHeader image={campaign.image} height={300} >
+            <BackgroundImageHeader image={campaign.image} height={300}>
               <h6>Campaign</h6>
               <h1>{campaign.title}</h1>
 
               <DonateButton
                 type="campaign"
-                model={{ title: campaign.title, id: campaign.id, adminId: campaign.projectId }}
+                model={{
+                  title: campaign.title,
+                  id: campaign.id,
+                  adminId: campaign.projectId,
+                }}
                 wallet={wallet}
                 currentUser={currentUser}
                 history={history}
@@ -112,15 +120,17 @@ class ViewCampaign extends Component {
             </BackgroundImageHeader>
 
             <div className="container-fluid">
-
               <div className="row">
                 <div className="col-md-8 m-auto">
-
                   <GoBackButton history={history} />
 
                   <center>
                     <Link to={`/profile/${campaign.owner.address}`}>
-                      <Avatar size={50} src={getUserAvatar(campaign.owner)} round />
+                      <Avatar
+                        size={50}
+                        src={getUserAvatar(campaign.owner)}
+                        round
+                      />
                       <p className="small">{getUserName(campaign.owner)}</p>
                     </Link>
                   </center>
@@ -128,22 +138,38 @@ class ViewCampaign extends Component {
                   <div className="card content-card ">
                     <div className="card-body content">
                       {/* TODO: Find more sensible way of showing the description */}
-                      <div dangerouslySetInnerHTML={{ __html: campaign.description }}/>
+                      <div
+                        dangerouslySetInnerHTML={{
+                          __html: campaign.description,
+                        }}
+                      />
                     </div>
                   </div>
 
                   <div className="milestone-header spacer-top-50 card-view">
                     <h3>Milestones</h3>
-                    { isOwner(campaign.owner.address, currentUser) &&
-                      <AuthenticatedLink className="btn btn-primary btn-sm pull-right" to={`/campaigns/${campaign.id}/milestones/new`} wallet={wallet}>Add Milestone</AuthenticatedLink>
-                    }
+                    {isOwner(campaign.owner.address, currentUser) && (
+                      <AuthenticatedLink
+                        className="btn btn-primary btn-sm pull-right"
+                        to={`/campaigns/${campaign.id}/milestones/new`}
+                        wallet={wallet}
+                      >
+                        Add Milestone
+                      </AuthenticatedLink>
+                    )}
 
-                    { !isOwner(campaign.owner.address, currentUser) &&
-                      <AuthenticatedLink className="btn btn-primary btn-sm pull-right" to={`/campaigns/${campaign.id}/milestones/propose`} wallet={wallet}>Propose Milestone</AuthenticatedLink>
-                    }
+                    {!isOwner(campaign.owner.address, currentUser) && (
+                      <AuthenticatedLink
+                        className="btn btn-primary btn-sm pull-right"
+                        to={`/campaigns/${campaign.id}/milestones/propose`}
+                        wallet={wallet}
+                      >
+                        Propose Milestone
+                      </AuthenticatedLink>
+                    )}
 
-                    {milestones.map(m =>
-                      (<MilestoneCard
+                    {milestones.map(m => (
+                      <MilestoneCard
                         milestone={m}
                         currentUser={currentUser}
                         key={m._id} // eslint-disable-line no-underscore-dangle
@@ -151,7 +177,8 @@ class ViewCampaign extends Component {
                         wallet={wallet}
                         // eslint-disable-next-line no-underscore-dangle
                         removeMilestone={() => this.removeMilestone(m._id)}
-                      />))}
+                      />
+                    ))}
                   </div>
                 </div>
               </div>
@@ -159,20 +186,26 @@ class ViewCampaign extends Component {
               <div className="row spacer-top-50 spacer-bottom-50">
                 <div className="col-md-8 m-auto">
                   <h4>Donations</h4>
-                  <ShowTypeDonations donations={donations} isLoading={isLoadingDonations} />
+                  <ShowTypeDonations
+                    donations={donations}
+                    isLoading={isLoadingDonations}
+                  />
                   <DonateButton
                     type="campaign"
-                    model={{ title: campaign.title, id: campaign.id, adminId: campaign.projectId }}
+                    model={{
+                      title: campaign.title,
+                      id: campaign.id,
+                      adminId: campaign.projectId,
+                    }}
                     wallet={wallet}
                     currentUser={currentUser}
                     history={history}
                   />
                 </div>
               </div>
-
             </div>
           </div>
-        }
+        )}
       </div>
     );
   }

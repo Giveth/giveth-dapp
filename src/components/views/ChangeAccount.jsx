@@ -54,7 +54,7 @@ class ChangeAccount extends Component {
 
     const reader = new FileReader();
 
-    reader.onload = (e) => {
+    reader.onload = e => {
       let parsedKeystore;
       let wallet;
 
@@ -70,30 +70,36 @@ class ChangeAccount extends Component {
 
       // Attempt to load and decrypt the parsed wallet
       GivethWallet.loadWallet(parsedKeystore, this.props.provider, password)
-        .then((w) => { wallet = w; return wallet; })
+        .then(w => {
+          wallet = w;
+          return wallet;
+        })
         .then(authenticate)
-        .then((token) => {
+        .then(token => {
           this.props.handleWalletChange(wallet);
           return feathersClient.passport.verifyJWT(token);
         })
-        .then((payload) => {
+        .then(payload => {
           if (payload.newUser) {
             // needs some time to fetch wallet balance and sign in the user
             setTimeout(
               () =>
-                ((wallet.getBalance() >= React.minimumWalletBalance) ? this.props.history.push('/profile') : this.props.history.push('/wallet'))
-              , 500,
+                wallet.getBalance() >= React.minimumWalletBalance
+                  ? this.props.history.push('/profile')
+                  : this.props.history.push('/wallet'),
+              500,
             );
           } else {
             this.props.history.push('/');
           }
         })
-        .catch((error) => {
+        .catch(error => {
           if (typeof error === 'object') {
             this.setState({
-              error: (error.type && error.type === 'FeathersError') ?
-                'Authentication error' :
-                'Error unlocking wallet. Possibly an invalid password.',
+              error:
+                error.type && error.type === 'FeathersError'
+                  ? 'Authentication error'
+                  : 'Error unlocking wallet. Possibly an invalid password.',
               isLoading: false,
             });
           }
@@ -114,9 +120,7 @@ class ChangeAccount extends Component {
               <center>
                 <h1>Sign in with an existing wallet</h1>
 
-                {error &&
-                  <div className="alert alert-danger">{error}</div>
-                }
+                {error && <div className="alert alert-danger">{error}</div>}
 
                 <Form
                   className="sign-in-form"
@@ -162,7 +166,6 @@ class ChangeAccount extends Component {
                       <Link to="/signup">Sign up instead!</Link>
                     </p>
                   </div>
-
                 </Form>
               </center>
             </div>

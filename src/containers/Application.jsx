@@ -240,7 +240,7 @@ class Application extends Component {
                   wallet={wallet}
                   currentUser={currentUser}
                 />
-                
+
                 <Switch>
                   {/* Routes are defined here. Persistent data is set as props on components
                   NOTE order matters, wrong order breaks routes!

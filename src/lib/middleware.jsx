@@ -43,7 +43,9 @@ export const isInWhitelist = (currentUser, whitelist, history) =>
       whitelist.length === 0 ||
       (currentUser &&
         currentUser.address &&
-        whitelist.find((u) => u.address.toLowerCase() === currentUser.address.toLowerCase()))
+        whitelist.find(
+          u => u.address.toLowerCase() === currentUser.address.toLowerCase(),
+        ))
         ? resolve()
         : reject() &&
           console.log('not in whitelist') &&
@@ -131,4 +133,3 @@ export const confirmBlockchainTransaction = (onConfirm, onCancel) =>
     if (isConfirmed) onConfirm();
     else onCancel();
   });
-

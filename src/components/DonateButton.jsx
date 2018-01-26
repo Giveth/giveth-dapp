@@ -6,12 +6,12 @@ import { utils } from 'web3';
 
 import getNetwork from '../lib/blockchain/getNetwork';
 import { feathersClient } from '../lib/feathersClient';
-import { takeActionAfterWalletUnlock, confirmBlockchainTransaction } from '../lib/middleware';
-import User from '../models/User';
 import {
-  displayTransactionError,
-  getGasPrice
-} from '../lib/helpers';
+  takeActionAfterWalletUnlock,
+  confirmBlockchainTransaction,
+} from '../lib/middleware';
+import User from '../models/User';
+import { displayTransactionError, getGasPrice } from '../lib/helpers';
 import GivethWallet from '../lib/blockchain/GivethWallet';
 import getWeb3 from '../lib/blockchain/getWeb3';
 import { MiniMeToken } from 'minimetoken';
@@ -35,27 +35,26 @@ class DonateButton extends Component {
 
   componentDidMount() {
     // getNetwork().then(network => {
-      // const { liquidPledging } = network;
-
-      // const donate = liquidPledging.$contract.methods.donate(
-      //   0,
-      //   this.props.model.adminId,
-      // );
-      // const data = donate.encodeABI();
-      // donate
-      //   .estimateGas({
-      //     from: '0x0000000000000000000000000000000000000000',
-      //     value: 1,
-      //   })
-      //   .then(gasLimit =>
-      //     this.setState({
-      //       MEWurl: `https://www.myetherwallet.com/?to=${liquidPledging.$address.toUpperCase()}&gaslimit=${gasLimit}&data=${data}`,
-      //     }),
-      //   );
-      //
-      // this.setState({
-      //   MEWurl: `https://www.myetherwallet.com/?to=${liquidPledging.$address.toUpperCase()}&gaslimit=550000&data=${data}`,
-      // });
+    // const { liquidPledging } = network;
+    // const donate = liquidPledging.$contract.methods.donate(
+    //   0,
+    //   this.props.model.adminId,
+    // );
+    // const data = donate.encodeABI();
+    // donate
+    //   .estimateGas({
+    //     from: '0x0000000000000000000000000000000000000000',
+    //     value: 1,
+    //   })
+    //   .then(gasLimit =>
+    //     this.setState({
+    //       MEWurl: `https://www.myetherwallet.com/?to=${liquidPledging.$address.toUpperCase()}&gaslimit=${gasLimit}&data=${data}`,
+    //     }),
+    //   );
+    //
+    // this.setState({
+    //   MEWurl: `https://www.myetherwallet.com/?to=${liquidPledging.$address.toUpperCase()}&gaslimit=550000&data=${data}`,
+    // });
     // });
   }
 
@@ -221,10 +220,16 @@ class DonateButton extends Component {
           const giverId = this.props.currentUser.giverId || '0';
           const { adminId } = this.props.model;
 
-          const data = `0x${utils.padLeft(utils.toHex(giverId).substring(2), 16,)}${utils.padLeft(utils.toHex(adminId).substring(2), 16)}`;
+          const data = `0x${utils.padLeft(
+            utils.toHex(giverId).substring(2),
+            16,
+          )}${utils.padLeft(utils.toHex(adminId).substring(2), 16)}`;
 
           return token
-            .approveAndCall(liquidPledgingAddress, amount, data, {from: this.props.currentUser.address, gas: 1000000})
+            .approveAndCall(liquidPledgingAddress, amount, data, {
+              from: this.props.currentUser.address,
+              gas: 1000000,
+            })
             .once('transactionHash', hash => {
               txHash = hash;
               donate(etherScanUrl, txHash);
@@ -271,7 +276,7 @@ class DonateButton extends Component {
     //   display: 'inline-block',
     // };
 
-    return (<div></div>);
+    return <div />;
     // return (
     //   <span style={style}>
     //     <button className="btn btn-success" onClick={this.openDialog}>
