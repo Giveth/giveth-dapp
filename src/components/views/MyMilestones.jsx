@@ -47,10 +47,12 @@ class MyMilestones extends Component {
             { ownerAddress: myAddress },
             { reviewerAddress: myAddress },
             { recipientAddress: myAddress },
-            { $and: [
-              { campaignOwnerAddress: myAddress },
-              { status: 'proposed' }
-            ]}
+            {
+              $and: [
+                { campaignOwnerAddress: myAddress },
+                { status: 'proposed' },
+              ],
+            },
           ],
           $sort: {
             createdAt: -1
@@ -176,7 +178,7 @@ class MyMilestones extends Component {
           buttons: ['Cancel', 'Yes, accept'],
         }).then((isConfirmed) => {
           if (isConfirmed) {
-            console.log('creating milestone for real')
+            console.log('creating milestone for real');
 
             const createMilestone = (etherScanUrl, txHash) => {
               feathersClient.service('/milestones').patch(milestone._id, {
@@ -208,14 +210,14 @@ class MyMilestones extends Component {
                     milestone.recipientAddress,
                     milestone.reviewerAddress,
                     milestone.campaignReviewerAddress,
-                    { from: this.props.currentUser.address, gasPrice }
+                    { from: this.props.currentUser.address, gasPrice },
                   )
                   .on('transactionHash', (hash) => {
                     txHash = hash;
-                    console.log('creating milestone in feathers')
+                    console.log('creating milestone in feathers');
 
                     createMilestone(etherScanUrl, txHash);
-                  })
+                  });
               })
               .catch((e) => {
                 console.error(e);
@@ -226,7 +228,7 @@ class MyMilestones extends Component {
     });
   }
 
- rejectProposedMilestone(milestone) {
+  rejectProposedMilestone(milestone) {
     React.swal({
       title: 'Reject Milestone?',
       text: 'Are you sure you want to reject this Milestone?',
@@ -235,7 +237,7 @@ class MyMilestones extends Component {
       buttons: ['Cancel', 'Yes, reject'],
     }).then((isConfirmed) => {
       if (isConfirmed) {
-        console.log('rejecting milestone')
+        console.log('rejecting milestone');
 
         feathersClient.service('/milestones').patch(milestone._id, {
           status: 'rejected',
@@ -579,7 +581,7 @@ class MyMilestones extends Component {
                                 </span>
                               }
 
-                              { m.recipientAddress === currentUser.address && m.status === 'InProgress' && m.mined &&
+                              { (m.ownerAddress === currentUser.address || m.recipientAddress === currentUser.address) && m.status === 'InProgress' && m.mined &&
                                 <button
                                   className="btn btn-success btn-sm"
                                   onClick={() => this.markComplete(m)}
