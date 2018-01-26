@@ -11,17 +11,6 @@ const {
 } = process.env;
 
 const configurations = {
-  default: {
-    title: 'unknown',
-    liquidPledgingAddress: '0x0',
-    dacsAddress: '0x0',
-    campaignFactoryAddress: '0x0',
-    cappedMilestoneAddress: '0x0',
-    tokenAddress: '0x0',
-    etherscan: '',
-    feathersConnection: 'http://localhost:3030',
-    nodeConnection: 'ws://localhost:8546',
-  },
   localhost: {
     title: 'TestRPC',
     liquidPledgingAddress: '0x254dffcd3277C0b1660F6d42EFbB754edaBAbC2B',
@@ -89,7 +78,7 @@ if (configurations[REACT_APP_ENVIRONMENT] === undefined)
 // Create config object based on environment setup
 const config = Object.assign(
   {},
-  configurations.default,
+  configurations.localhost,
   configurations[REACT_APP_ENVIRONMENT],
 );
 
