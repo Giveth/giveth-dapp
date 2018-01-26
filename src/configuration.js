@@ -20,7 +20,7 @@ const configurations = {
     tokenAddress: '0x5b1869D9A4C187F2EAa108f3062412ecf0526b24',
     etherscan: 'https://etherscan.io/', // this won't work, only here so we can see links during development
     feathersConnection: 'http://localhost:3030',
-    nodeConnection: 'ws://localhost:8546',
+    nodeConnection: 'http://localhost:8545',
   },
   develop: {
     title: 'develop',
@@ -31,7 +31,7 @@ const configurations = {
     cappedMilestoneAddress: '0xbfb48a8817de49f259a71d2Aa07fC1c95EC24265',
     etherscan: 'https://rinkeby.etherscan.io/',
     feathersConnection: 'https://feathers.develop.giveth.io/',
-    nodeConnection: 'wss://rinkeby.giveth.io:8546/',
+    nodeConnection: 'https://rinkeby.giveth.io:8545/',
   },
   release: {
     title: 'release',
@@ -42,17 +42,13 @@ const configurations = {
     cappedMilestoneAddress: '0x9d8a74f03c7765d689171ffb4004670d2bf30a62',
     etherscan: 'https://rinkeby.etherscan.io/',
     feathersConnection: 'https://feathers.release.giveth.io/',
-    nodeConnection: 'wss://mew.giveth.io/ws/',
+    nodeConnection: 'https://rinkeby.giveth.io:8545/',
   },
   mainnet: {
-    title: 'release',
-    liquidPledgingAddress: '0x3f45D2D5FeB6b4b000d2d3B84442eeDDF54A735a',
-    dacsAddress: '0x79bddecb728afda275923998701bac34d277fb19',
-    campaignFactoryAddress: '0xB22D042896Cd46D073d3Bf7b487522bBe1eeb5E7',
-    cappedMilestoneAddress: '0x61Dc072691041d411bDa8CE5B4090feb45788a8C',
+    title: 'mainnet',
     etherscan: 'https://etherscan.io/',
     feathersConnection: 'https://feathers.mainnet.giveth.io/',
-    nodeConnection: 'wss://rinkeby.giveth.io:8546/',
+    nodeConnection: 'https://mew.giveth.io',
   },
   alpha: {
     title: 'alpha',
@@ -62,8 +58,8 @@ const configurations = {
     cappedMilestoneAddress: '0x19Bd4E0DEdb9E5Ee9762391893d1f661404b561f',
     tokenAddress: '0xb991657107F2F12899938B0985572449400C57d5',
     etherscan: 'https://rinkeby.etherscan.io/',
-    feathersConnection: 'https://feathers.mainnet.giveth.io',
-    nodeConnection: 'wss://rinkeby.giveth.io:8546/',
+    feathersConnection: 'https://feathers.alpha.giveth.io',
+    nodeConnection: 'https://rinkeby.giveth.io:8545/',
   },
 };
 
@@ -76,11 +72,7 @@ if (configurations[REACT_APP_ENVIRONMENT] === undefined)
   );
 
 // Create config object based on environment setup
-const config = Object.assign(
-  {},
-  configurations.localhost,
-  configurations[REACT_APP_ENVIRONMENT],
-);
+const config = Object.assign({}, configurations[REACT_APP_ENVIRONMENT]);
 
 // Overwrite the environment values with parameters
 config.liquidPledgingAddress =
