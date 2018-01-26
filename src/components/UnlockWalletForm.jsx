@@ -30,16 +30,12 @@ class UnlockWalletForm extends Component {
   }
 
   render() {
-    const {
-      error, label, buttonText, unlocking,
-    } = this.props;
+    const { error, label, buttonText, unlocking } = this.props;
     const { formIsValid, password } = this.state;
 
     return (
       <span id="account-view">
-        {error &&
-          <div className="alert alert-danger">{error}</div>
-        }
+        {error && <div className="alert alert-danger">{error}</div>}
 
         <Form
           className="unlock-wallet-form"
@@ -48,10 +44,10 @@ class UnlockWalletForm extends Component {
           onInvalid={() => this.toggleFormValid(false)}
           layout="vertical"
         >
-
           <div className="form-group">
             <Input
               autoFocus
+              autoComplete="current-password"
               value={password}
               name="password"
               id="password-input"
@@ -74,7 +70,6 @@ class UnlockWalletForm extends Component {
           </LoaderButton>
 
           {this.props.children}
-
         </Form>
       </span>
     );

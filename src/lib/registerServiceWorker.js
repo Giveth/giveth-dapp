@@ -9,16 +9,20 @@
 // This link also includes instructions on opting out of this behavior.
 
 /* global window, URL, navigator, fetch */
-const isLocalhost = Boolean(window.location.hostname === 'localhost' ||
+const isLocalhost = Boolean(
+  window.location.hostname === 'localhost' ||
     // [::1] is the IPv6 localhost address.
     window.location.hostname === '[::1]' ||
     // 127.0.0.1/8 is considered localhost for IPv4.
-    window.location.hostname.match(/^127(?:\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}$/));
+    window.location.hostname.match(
+      /^127(?:\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}$/,
+    ),
+);
 
 function registerValidSW(swUrl) {
   navigator.serviceWorker
     .register(swUrl)
-    .then((registration) => {
+    .then(registration => {
       registration.onupdatefound = () => {
         const installingWorker = registration.installing;
         installingWorker.onstatechange = () => {
@@ -39,7 +43,7 @@ function registerValidSW(swUrl) {
         };
       };
     })
-    .catch((error) => {
+    .catch(error => {
       console.error('Error during service worker registration:', error);
     });
 }
@@ -47,14 +51,14 @@ function registerValidSW(swUrl) {
 function checkValidServiceWorker(swUrl) {
   // Check if the service worker can be found. If it can't reload the page.
   fetch(swUrl)
-    .then((response) => {
+    .then(response => {
       // Ensure service worker exists, and that we really are getting a JS file.
       if (
         response.status === 404 ||
         response.headers.get('content-type').indexOf('javascript') === -1
       ) {
         // No service worker found. Probably a different app. Reload the page.
-        navigator.serviceWorker.ready.then((registration) => {
+        navigator.serviceWorker.ready.then(registration => {
           registration.unregister().then(window.location.reload);
         });
       } else {
@@ -63,13 +67,15 @@ function checkValidServiceWorker(swUrl) {
       }
     })
     .catch(() => {
-      console.log('No internet connection found. App is running in offline mode.');
+      console.log(
+        'No internet connection found. App is running in offline mode.',
+      );
     });
 }
 
 export function unregister() {
   if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.ready.then((registration) => {
+    navigator.serviceWorker.ready.then(registration => {
       registration.unregister();
     });
   }

@@ -4,21 +4,18 @@ import PropTypes from 'prop-types';
 
 import GivethWallet from '../lib/blockchain/GivethWallet';
 
-const AuthenticatedNavLink = ({
-  className, to, wallet, children,
-}) => {
+const AuthenticatedNavLink = ({ className, to, wallet, children }) => {
   if (wallet && wallet.unlocked) {
     return (
-      <NavLink className={className} to={to}>{children}</NavLink>
+      <NavLink className={className} to={to}>
+        {children}
+      </NavLink>
     );
   }
   return (
     <div>
-      <a
-        className={className}
-        href={to}
-        onClick={() => React.unlockWallet(to)}
-      >{children}
+      <a className={className} href={to} onClick={() => React.unlockWallet(to)}>
+        {children}
       </a>
     </div>
   );

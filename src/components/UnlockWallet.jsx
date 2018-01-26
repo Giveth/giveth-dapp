@@ -23,34 +23,41 @@ class UnlockWallet extends Component {
   }
 
   submit(password) {
-    this.setState({
-      unlocking: true,
-    }, () => {
-      const unlock = () => {
-        this.props.wallet.unlock(password)
-          .then(() => {
-            this.setState({
-              unlocking: false,
-            }, () => {
-              this.props.onClose();
+    this.setState(
+      {
+        unlocking: true,
+      },
+      () => {
+        const unlock = () => {
+          this.props.wallet
+            .unlock(password)
+            .then(() => {
+              this.setState(
+                {
+                  unlocking: false,
+                },
+                () => {
+                  this.props.onClose();
 
-              // if requested, redirect after successfully unlocking the wallet
-              if (this.props.redirectAfter) this.props.history.push(this.props.redirectAfter);
+                  // if requested, redirect after successfully unlocking the wallet
+                  if (this.props.redirectAfter)
+                    this.props.history.push(this.props.redirectAfter);
+                },
+              );
+            })
+            .catch(() => {
+              this.setState({
+                error: 'Error unlocking wallet. Possibly an invalid password.',
+                unlocking: false,
+              });
             });
-          })
-          .catch(() => {
-            this.setState({
-              error: 'Error unlocking wallet. Possibly an invalid password.',
-              unlocking: false,
-            });
-          });
-      };
+        };
 
-      // web3 blocks all rendering, so we need to request an animation frame
-      window.requestAnimationFrame(unlock);
-    });
+        // web3 blocks all rendering, so we need to request an animation frame
+        window.requestAnimationFrame(unlock);
+      },
+    );
   }
-
 
   render() {
     const { onClose, onCloseClicked } = this.props;
@@ -63,7 +70,6 @@ class UnlockWallet extends Component {
         onCloseClicked={onCloseClicked}
         afterClose={onClose}
       >
-
         <center>
           <image
             className="empty-state-img reduce-margin"
@@ -76,7 +82,8 @@ class UnlockWallet extends Component {
 
         <h2>Unlock your wallet to continue</h2>
         <p className="small">
-          Note: For security reasons, your wallet auto-locks whenever the Giveth dapp reloads.
+          Note: For security reasons, your wallet auto-locks whenever the Giveth
+          dapp reloads.
         </p>
 
         <UnlockWalletForm
@@ -86,7 +93,6 @@ class UnlockWallet extends Component {
           unlocking={unlocking}
           buttonText="Unlock"
         />
-
       </SkyLightStateless>
     );
   }

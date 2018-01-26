@@ -12,9 +12,7 @@ import Model from './Model';
  * @attribute name        Name of the user
  */
 class User extends Model {
-  constructor({
-    address, avatar, commitTime, email, giverId, linkedin, name,
-  }) {
+  constructor({ address, avatar, commitTime, email, giverId, linkedin, name }) {
     super();
     this.address = address;
     this.avatar = avatar;

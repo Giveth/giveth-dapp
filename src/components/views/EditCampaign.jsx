@@ -7,10 +7,11 @@ import { Form, Input } from 'formsy-react-components';
 import { feathersClient } from '../../lib/feathersClient';
 import Loader from '../Loader';
 import QuillFormsy from '../QuillFormsy';
+import SelectFormsy from './../SelectFormsy';
 import FormsyImageUploader from './../FormsyImageUploader';
 import GoBackButton from '../GoBackButton';
-import { isOwner, getTruncatedText, confirmBlockchainTransaction } from '../../lib/helpers';
-import { isAuthenticated, checkWalletBalance, isInWhitelist } from '../../lib/middleware';
+import { isOwner, getTruncatedText, getRandomWhitelistAddress } from '../../lib/helpers';
+import { isAuthenticated, checkWalletBalance, isInWhitelist, confirmBlockchainTransaction } from '../../lib/middleware';
 import LoaderButton from '../../components/LoaderButton';
 import User from '../../models/User';
 import GivethWallet from '../../lib/blockchain/GivethWallet';
@@ -36,7 +37,11 @@ class EditCampaign extends Component {
       formIsValid: false,
       dacsOptions: [],
       hasWhitelist: React.whitelist.reviewerWhitelist.length > 0,
-
+      reviewerAddress: getRandomWhitelistAddress(React.whitelist.projectOwnerWhitelist).address,
+      whitelistOptions: React.whitelist.projectOwnerWhitelist.map(r => ({
+          value: r.address,
+          title: (r.name ? r.name : 'Anomynous user') + " - " + r.address
+        })),  
       // Campaign model
       campaign: new Campaign({
         owner: props.currentUser,
@@ -152,7 +157,7 @@ class EditCampaign extends Component {
   render() {
     const { isNew, history } = this.props;
     const {
-      isLoading, isSaving, campaign, formIsValid, dacsOptions, hasWhitelist,
+      isLoading, isSaving, campaign, formIsValid, dacsOptions, hasWhitelist, whitelistOptions, reviewerAddress
     } = this.state;
 
     return (
@@ -301,21 +306,38 @@ class EditCampaign extends Component {
                   </div>
 
                   <div className="form-group">
-                    <Input
-                      name="reviewerAddress"
-                      id="title-input"
-                      label="Reviewer Address"
-                      type="text"
-                      value={campaign.reviewerAddress}
-                      placeholder="0x0000000000000000000000000000000000000000"
-                      help={hasWhitelist 
-                        ? "This person or smart contract will be reviewing your Campaign to increase trust for Givers. It has been automatically assigned."
-                        : "This person or smart contract will be reviewing your Campaign to increase trust for Givers."}
-                      validations="isEtherAddress"
-                      validationErrors={{ isEtherAddress: 'Please enter a valid Ethereum address.' }}
-                      required
-                      disabled={hasWhitelist}
-                    />
+                    { hasWhitelist &&
+                      <SelectFormsy
+                        name="reviewerAddress"
+                        id="reviewer-select"
+                        label="Select a reviewer"
+                        helpText="This person or smart contract will be reviewing your Campaign to increase trust for Givers."
+                        value={reviewerAddress}
+                        cta="--- Select a reviewer ---"
+                        options={whitelistOptions}
+                        validations="isEtherAddress"
+                        validationErrors={{
+                          isEtherAddress: 'Please select a reviewer.',
+                        }}
+                        required   
+                        disabled={!isNew}                     
+                      />
+                    } 
+
+                    { !hasWhitelist && 
+                      <Input
+                        name="reviewerAddress"
+                        id="title-input"
+                        label="Reviewer Address"
+                        type="text"
+                        value={reviewerAddress}
+                        placeholder="0x0000000000000000000000000000000000000000"
+                        help={"This person or smart contract will be reviewing your Campaign to increase trust for Givers."}
+                        validations="isEtherAddress"
+                        validationErrors={{ isEtherAddress: 'Please enter a valid Ethereum address.' }}
+                        required
+                      />
+                    }
                   </div>
 
                   <div className="form-group row">

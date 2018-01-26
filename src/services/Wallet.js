@@ -18,7 +18,12 @@ class WalletService {
    * @param afterMined  Callback function after the transaction has been mined
    * @param onError     Callback function for an onError
    */
-  static withdraw(data, afterCreate = () => {}, afterMined = () => {}, onError = () => {}) {
+  static withdraw(
+    data,
+    afterCreate = () => {},
+    afterMined = () => {},
+    onError = () => {},
+  ) {
     let txHash;
     let etherScanUrl;
 
@@ -31,11 +36,10 @@ class WalletService {
         });
         etherScanUrl = network.etherscan;
 
-        return web3.eth.sendTransaction(dt)
-          .once('transactionHash', (hash) => {
-            txHash = hash;
-            afterCreate(etherScanUrl, txHash);
-          });
+        return web3.eth.sendTransaction(dt).once('transactionHash', hash => {
+          txHash = hash;
+          afterCreate(etherScanUrl, txHash);
+        });
       })
       .then(afterMined)
       .catch(onError);

@@ -50,49 +50,69 @@ class DataRoutes extends Component {
   render() {
     const { currentUser, wallet } = this.props;
     const {
-      dacs, campaigns, dacsLoading, campaignsLoading, hasError,
+      dacs,
+      campaigns,
+      dacsLoading,
+      campaignsLoading,
+      hasError,
     } = this.state;
 
     return (
       <div>
-        {(dacsLoading || campaignsLoading) &&
-          <Loader className="fixed" />
-        }
+        {(dacsLoading || campaignsLoading) && <Loader className="fixed" />}
 
-        {!(dacsLoading || campaignsLoading) && !hasError &&
-          <div>
-            <Route
-              exact
-              path="/"
-              render={props =>
-                <DACs dacs={dacs} currentUser={currentUser} wallet={wallet} {...props} />}
-            />
-            <Route
-              exact
-              path="/dacs"
-              render={props =>
-                <DACs dacs={dacs} currentUser={currentUser} wallet={wallet} {...props} />}
-            />
-            <Route
-              exact
-              path="/campaigns"
-              render={props => (<Campaigns
-                campaigns={campaigns}
-                currentUser={currentUser}
-                wallet={wallet}
-                {...props}
-              />)}
-            />
-          </div>
-        }
+        {!(dacsLoading || campaignsLoading) &&
+          !hasError && (
+            <div>
+              <Route
+                exact
+                path="/"
+                render={props => (
+                  <DACs
+                    dacs={dacs}
+                    currentUser={currentUser}
+                    wallet={wallet}
+                    {...props}
+                  />
+                )}
+              />
+              <Route
+                exact
+                path="/dacs"
+                render={props => (
+                  <DACs
+                    dacs={dacs}
+                    currentUser={currentUser}
+                    wallet={wallet}
+                    {...props}
+                  />
+                )}
+              />
+              <Route
+                exact
+                path="/campaigns"
+                render={props => (
+                  <Campaigns
+                    campaigns={campaigns}
+                    currentUser={currentUser}
+                    wallet={wallet}
+                    {...props}
+                  />
+                )}
+              />
+            </div>
+          )}
 
-        { !(dacsLoading || campaignsLoading) && hasError &&
-          <center>
-            <h2>Oops, something went wrong...</h2>
-            <p>The Giveth dapp could not load for some reason. Please try again...</p>
-          </center>
-        }
-
+        {!(dacsLoading || campaignsLoading) &&
+          hasError && (
+            <center>
+              <h2>Oops, something went wrong...</h2>
+              <p>
+                The Giveth dapp could not load for some reason. Please try
+                again...
+              </p>
+            </center>
+          )}
       </div>
     );
   }

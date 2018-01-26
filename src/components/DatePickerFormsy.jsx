@@ -6,7 +6,6 @@ import moment from 'moment';
 import PropTypes from 'prop-types';
 import 'react-datepicker/dist/react-datepicker.css';
 
-
 const DatePickerFormsy = createReactClass({
   mixins: [Formsy.Mixin],
 
@@ -14,9 +13,9 @@ const DatePickerFormsy = createReactClass({
     return { startDate: undefined };
   },
 
-  handleChange(moment) {
-    this.setState({ startDate: moment });
-    this.props.changeDate(moment);
+  handleChange(m) {
+    this.setState({ startDate: m });
+    this.props.changeDate(m);
   },
 
   render() {
@@ -25,7 +24,9 @@ const DatePickerFormsy = createReactClass({
     // when the value is empty and the required prop is
     // passed to the input. showError() is true when the
     // value typed is invalid
-    const className = this.showRequired() ? 'required' : this.showError() ? 'error' : null;
+    const className = this.showRequired()
+      ? 'required'
+      : this.showError() ? 'error' : null;
 
     // An error message is returned ONLY if the component is invalid
     // or the server has returned an error message
@@ -52,6 +53,8 @@ const DatePickerFormsy = createReactClass({
 
 DatePickerFormsy.propTypes = {
   placeholder: PropTypes.string.isRequired,
+  changeDate: PropTypes.func.isRequired,
+  label: PropTypes.string.isRequired,
 };
 
 export default DatePickerFormsy;
