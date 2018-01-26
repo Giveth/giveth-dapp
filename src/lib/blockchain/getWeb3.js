@@ -2,6 +2,7 @@ import { MiniMeToken } from 'minimetoken';
 import Web3 from 'web3';
 import ZeroClientProvider from './ZeroClientProvider';
 import getNetwork from './getNetwork';
+import config from '../../configuration';
 
 let givethWeb3;
 /* ///////////// custom Web3 Functions ///////////// */
@@ -43,14 +44,13 @@ function setWallet(wallet) {
         const { tokenAddress } = network;
         const addr = wallet.getAddresses()[0];
 
-        const tokenBal = () => addr
-          ? new MiniMeToken(web3, tokenAddress).balanceOf(addr)
-          : undefined;
-        const bal = () => addr
-          ? web3.eth.getBalance(addr)
-          : undefined;
+        const tokenBal = () =>
+          addr
+            ? new MiniMeToken(web3, tokenAddress).balanceOf(addr)
+            : undefined;
+        const bal = () => (addr ? web3.eth.getBalance(addr) : undefined);
 
-        return Promise.all([tokenBal(), bal()])
+        return Promise.all([tokenBal(), bal()]);
       })
       .then(([tokenBalance, balance]) => {
         wallet.balance = balance;
@@ -71,7 +71,7 @@ function setWallet(wallet) {
 const getWeb3 = () =>
   new Promise(resolve => {
     if (!givethWeb3) {
-      givethWeb3 = new Web3(process.env.REACT_APP_ETH_NODE_CONNECTION_URL);
+      givethWeb3 = new Web3(config.nodeConnection);
 
       // hack to keep the ws connection from timing-out
       // I commented this out b/c we have the getBalance interval above
