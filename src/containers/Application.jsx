@@ -1,6 +1,8 @@
 import React, { Component } from 'react';
 import ReactDOM from 'react-dom';
 
+import Web3 from 'web3';
+
 import { Router, Route, Switch } from 'react-router-dom';
 import localforage from 'localforage';
 
@@ -149,11 +151,12 @@ class Application extends Component {
     if (typeof web3 !== 'undefined') {
       // if yes use base wallet
       // this line seems dumb as provider is always undefined
-      const provider = this.state.web3 ? this.state.web3.currentProvider : undefined;
+      const provider = undefined;
       // declare web3 from window
       const { web3 } = window;
       // create base wallet
-      const wallet = new BaseWallet(provider, web3); // eslint-disable-line no-console
+      const web3js = new Web3(web3.currentProvider);
+      const wallet = new BaseWallet(provider, web3js); // eslint-disable-line no-console
       // add wallet to application state
       this.setState({ wallet });
     } else {
