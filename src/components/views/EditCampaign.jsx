@@ -70,7 +70,6 @@ class EditCampaign extends Component {
         isInWhitelist(
           this.props.currentUser,
           React.whitelist.projectOwnerWhitelist,
-          this.props.history,
         ),
       )
       .then(() => checkWalletBalance(this.props.wallet, this.props.history))

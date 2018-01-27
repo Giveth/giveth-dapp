@@ -87,7 +87,6 @@ class EditMilestone extends Component {
           isInWhitelist(
             this.props.currentUser,
             React.whitelist.projectOwnerWhitelist,
-            this.props.history,
           );
         }
       })

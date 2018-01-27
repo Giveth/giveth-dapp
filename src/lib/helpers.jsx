@@ -1,9 +1,9 @@
 import React from 'react';
 import 'whatwg-fetch';
+import { utils } from 'web3';
 import { createBrowserHistory } from 'history';
 import { feathersClient } from './feathersClient';
 import DefaultAvatar from './../assets/avatar-100.svg';
-import { utils } from 'web3';
 
 export const isOwner = (address, currentUser) =>
   address !== undefined &&
