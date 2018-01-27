@@ -1,5 +1,4 @@
 import { utils } from 'web3';
-import Accounts from 'web3-eth-accounts';
 
 class BaseWallet {
   /**
@@ -7,20 +6,25 @@ class BaseWallet {
    *                      retrieve chainId, gasPrice, and nonce automatically
    */
   constructor(provider, web3 = () => {}) {
-    // these are harcoded defaults
+    // metamask account address is only made available within call back
+    // https://ethereum.stackexchange.com/questions/16962/metamask-web3-geth-account0-is-undefined
+    web3.eth.getAccounts((error, accounts) => {
+      // TODO: handle error
+      if (error) alert('error getting eth accounts');
+      // TODO: error if zero length accounts returned
+      if (accounts.length === 0)
+        alert(
+          '0 accounts found in provided web3 object. Perhaps you need to log into you web3 browser or extension.'
+        );
+      // define from address property
+      this.fromAddress = accounts[0];
+    });
+    // add this here for convenience but perhaps should just be relied upon from browser
     this.web3 = web3;
+    // hardcoded wallet fields depended upon somewhere
+    // faking these until I learn more and come up with idea to handle
     this.unlocked = true;
-    this.balance = '10000000000000000000';
-    this.address = '0xFFcf8FDEE72ac11b5c542428B35EEF5769C409f0';
     this.keystores = [''];
-    // this sets up the web3 account (not super sure we need this for metamask)
-    this.accounts = new Accounts(provider);
-    // this the private key provided by "testrpc -d"
-    // meta mask and status will keep key, not us
-    // so probably need to stop depending on this next line
-    // to add accout to wallet
-    // need to prepend the "0x" for it to work
-    const testprcAddress1 = this.accounts.wallet.add('0x6cbed15c793ce57650b9877cf6fa156fbef513c4e6134f022a85b1ffdd59b2a1');
   }
 
   /**
@@ -30,13 +34,28 @@ class BaseWallet {
    * @return {String}
    */
   getBalance(unit) {
-    return (this.balance) ? utils.fromWei(this.balance, unit || 'ether') : undefined;
+    // return (this.balance) ? utils.fromWei(this.balance, unit || 'ether') : undefined;
+    // no idea of this works but figured it should look something like this maybe
+    // TODO: test this at least once
+    return this.web3.eth.getBalance(this.fromAddress, (error, result) => {
+      if (!error) {
+        console.log(result.toNumber());
+        return utils.fromWei(result, unit || 'ether');
+      }
+      console.error(error);
+      return undefined;
+    });
   }
 
+  // fake function to satisfy dapp expectations on internal wallet
+  // TODO: think about this more and figure out solution
   lock() {
     this.unlocked = true;
   }
 
+
+  // fake function to satisfy dapp expectations on internal wallet
+  // TODO: think about this more and figure out solution
   unlock(password) {
     return new Promise((resolve, reject) => {
       if (this.unlocked || !this.unlocked) {
@@ -49,7 +68,8 @@ class BaseWallet {
    * @return {Array} of addresses in this wallet
    */
   getAddresses() {
-    return [this.address];
+    // might make sense to add a check for valid address and error if not
+    return [this.fromAddress];
   }
 
   /**
@@ -59,10 +79,9 @@ class BaseWallet {
    * @returns   signature object. https://web3js.readthedocs.io/en/1.0/web3-eth-accounts.html#signtransaction
    */
   signTransaction(txData) {
-    if (!txData.gasPrice || !txData.nonce || !txData.chainId) throw new Error('gasPrice, nonce, and chainId are required');
-    // here is another place where we want meta mask to take over
-    return this.web3.eth.sendTransaction(txData);
-    // return this.accounts.wallet[0].signTransaction(txData);
+    if (!txData.gasPrice || !txData.nonce || !txData.chainId)
+      throw new Error('gasPrice, nonce, and chainId are required');
+    return this.web3.eth.signTransaction(txData);
   }
 
   /**
@@ -72,18 +91,8 @@ class BaseWallet {
    * @returns     object containing signature data. https://web3js.readthedocs.io/en/1.0/web3-eth-accounts.html#sign
    */
   signMessage(msg) {
-    if (!this.unlocked) throw new Error('Locked Wallet');
-
-    // TODO: web3 version of this wallet code
-    const from = this.web3.eth.accounts[0];
-    debugger;
-    this.web3.eth.sign(from, msg, function (err, result) {
-      if (err) return console.error(err)
-      console.log('SIGNED:' + result)
-    })
-    // const accounts = mapGet.call(mapAccounts, this);
-
-    // return accounts.wallet[0].sign(msg || '');
+    // msg and from are in different order in web3-1.x from previous versions
+    return this.web3.eth.sign(msg, this.fromAddress);
   }
 }
 
