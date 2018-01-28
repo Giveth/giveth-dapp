@@ -1,4 +1,5 @@
 import { utils } from 'web3';
+import localforage from 'localforage';
 
 class BaseWallet {
   /**
@@ -6,19 +7,21 @@ class BaseWallet {
    *                      retrieve chainId, gasPrice, and nonce automatically
    */
   constructor(provider, web3 = () => {}) {
-    // metamask account address is only made available within call back
-    // https://ethereum.stackexchange.com/questions/16962/metamask-web3-geth-account0-is-undefined
-    web3.eth.getAccounts((error, accounts) => {
-      // TODO: handle error
-      if (error) alert('error getting eth accounts');
-      // TODO: error if zero length accounts returned
-      if (accounts.length === 0)
-        alert(
-          '0 accounts found in provided web3 object. Perhaps you need to log into you web3 browser or extension.'
-        );
-      // define from address property
-      this.fromAddress = accounts[0];
-    });
+    if (web3.eth) {
+      // metamask account address is only made available within call back
+      // https://ethereum.stackexchange.com/questions/16962/metamask-web3-geth-account0-is-undefined
+      web3.eth.getAccounts((error, accounts) => {
+        // TODO: handle error
+        if (error) alert('error getting eth accounts');
+        // TODO: error if zero length accounts returned
+        if (accounts.length === 0)
+          alert(
+            'Zero accounts found in provided web3 object. You may need to log into a web3 browser or extension.',
+          );
+        // define from address property
+        this.fromAddress = accounts[0];
+      });
+    }
     // add this here for convenience but perhaps should just be relied upon from browser
     this.web3 = web3;
     // hardcoded wallet fields depended upon somewhere
@@ -93,6 +96,29 @@ class BaseWallet {
   signMessage(msg) {
     // msg and from are in different order in web3-1.x from previous versions
     return this.web3.eth.sign(msg, this.fromAddress);
+  }
+
+  /**
+   * generate a dapp wallet representation of web injected wallet
+   * @param provider - optional
+   * @param password - password to encrypt the wallet with
+   */
+  static createWallet(provider, password) {
+    // declare web3 from window
+    const { web3 } = window;
+    const wallet = new BaseWallet(provider, web3);
+    return new Promise(resolve => {
+      resolve(Promise.resolve(wallet));
+    });
+  }
+
+  /**
+   * some type checking thing broke
+   * so I put this here to copy GivethWallet
+   * locally caches the keystores in storage
+   */
+  cacheKeystore() {
+    localforage.setItem('keystore', this.keystores);
   }
 }
 
