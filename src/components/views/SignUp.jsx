@@ -61,11 +61,9 @@ class SignUp extends Component {
               isSaving: false,
               wallet,
             });
-            debugger;
             this.props.walletCreated(wallet);
           })
           .catch((err) => {
-            debugger; 
             let error;
             if (typeof err === 'object') {
               error = (err.type && err.type === 'FeathersError') ? 'authentication error' :

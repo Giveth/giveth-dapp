@@ -195,16 +195,33 @@ class Application extends Component {
 
   handleWalletChange(wallet) {
     wallet.cacheKeystore();
-    const address = wallet.getAddresses()[0];
-
-    getWeb3().then(web3 => web3.setWallet(wallet));
-
-    Application.getUserProfile(address).then(user =>
-      this.setState({
-        wallet,
-        currentUser: new User(user),
-      }),
-    );
+    let address;
+    if (typeof web3 !== 'undefined') {
+      window.web3.eth.getAccounts((error, accounts) => {
+        if (error) alert('error getting eth accounts');
+        if (accounts.length === 0)
+          alert(
+            'Zero accounts found in provided web3 object. You may need to log into a web3 browser or extension.',
+          );
+        address = accounts[0];
+        Application.getUserProfile(address).then(user =>
+          this.setState({
+            wallet,
+            currentUser: new User(user),
+          }),
+        );
+      });
+    } else {
+      address = wallet.getAddresses()[0];
+      getWeb3().then(web3 => web3.setWallet(wallet));
+      Application.getUserProfile(address).then(user =>
+        this.setState({
+          wallet,
+          currentUser: new User(user),
+        }),
+      );
+    }
+    // Unhandled Rejection (TypeError): Cannot read property 'address' of undefined
   }
 
   unlockWallet(redirectAfter) {
