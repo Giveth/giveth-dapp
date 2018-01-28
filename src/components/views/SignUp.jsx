@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { Form, Input } from 'formsy-react-components';
 
+import BaseWallet from '../../lib/blockchain/BaseWallet';
 import GivethWallet from '../../lib/blockchain/GivethWallet';
 import BackupWallet from '../BackupWallet';
 import { authenticate } from '../../lib/helpers';
@@ -32,6 +33,14 @@ class SignUp extends Component {
     this.props.history.push('/wallet');
   }
 
+  // TODO: move this some place better
+  createAppropriateWallet(provider, password) {
+    if (typeof web3 !== 'undefined') {
+      return BaseWallet.createWallet(provider, password)
+    }
+    return GivethWallet.createWallet(provider, password)
+  }
+
   submit({ password }) {
     this.setState({
       isSaving: true,
@@ -39,18 +48,24 @@ class SignUp extends Component {
     }, () => {
       function createWallet() {
         let wallet;
-        GivethWallet.createWallet(this.props.provider, password)
-          .then((w) => { wallet = w; return wallet; })
-          .then(authenticate)
+        this.createAppropriateWallet(this.props.provider, password)
+          .then((w) => {
+            wallet = w; 
+            return wallet; 
+          })
+          .then((wallet) => {
+            authenticate(wallet);
+          })
           .then(() => {
             this.setState({
               isSaving: false,
               wallet,
             });
-
+            debugger;
             this.props.walletCreated(wallet);
           })
           .catch((err) => {
+            debugger; 
             let error;
             if (typeof err === 'object') {
               error = (err.type && err.type === 'FeathersError') ? 'authentication error' :
@@ -63,7 +78,6 @@ class SignUp extends Component {
             });
           });
       }
-
       // web3 blocks all rendering, so we need to request an animation frame
       window.requestAnimationFrame(createWallet.bind(this));
     });
