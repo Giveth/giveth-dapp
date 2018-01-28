@@ -5,8 +5,10 @@ class BaseWallet {
   /**
    * @param provider      optional. This is necessary when signing a transaction to
    *                      retrieve chainId, gasPrice, and nonce automatically
+   * @param web3          optional. Using dependency injection for testability
    */
-  constructor(provider, web3 = () => {}) {
+  constructor(provider, web3 = {}) {
+    debugger;
     if (web3.eth) {
       // metamask account address is only made available within call back
       // https://ethereum.stackexchange.com/questions/16962/metamask-web3-geth-account0-is-undefined
@@ -18,11 +20,15 @@ class BaseWallet {
           alert(
             'Zero accounts found in provided web3 object. You may need to log into a web3 browser or extension.',
           );
+        // TODO: this isn't working fromAddress is undefined sometimes
+        // need to bind fromAddress to wallet correctly
         // define from address property
         this.fromAddress = accounts[0];
+        debugger;
       });
+    } else {
+      alert('web3.eth is not defined');
     }
-    // add this here for convenience but perhaps should just be relied upon from browser
     this.web3 = web3;
     // hardcoded wallet fields depended upon somewhere
     // faking these until I learn more and come up with idea to handle
@@ -40,9 +46,9 @@ class BaseWallet {
     // return (this.balance) ? utils.fromWei(this.balance, unit || 'ether') : undefined;
     // no idea of this works but figured it should look something like this maybe
     // TODO: test this at least once
+    debugger;
     return this.web3.eth.getBalance(this.fromAddress, (error, result) => {
       if (!error) {
-        console.log(result.toNumber());
         return utils.fromWei(result, unit || 'ether');
       }
       console.error(error);
