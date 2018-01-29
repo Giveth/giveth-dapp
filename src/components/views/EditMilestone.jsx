@@ -32,6 +32,9 @@ import GivethWallet from '../../lib/blockchain/GivethWallet';
 import ExpenseRow from '../../components/ExpenseRow';
 import moment from 'moment';
 
+import Toggle from 'react-toggle'
+import AddMilestoneItem from '../../components/AddMilestoneItem';
+
 /**
  * Create or edit a Milestone
  *
@@ -81,7 +84,8 @@ class EditMilestone extends Component {
         value: r.address,
         title: `${r.name ? r.name : 'Anonymous user'} - ${r.address}`,
       })),
-      expenses: [this.expense]
+      expenses: [this.expense],
+      itemizeState: true
     };
 
     this.submit = this.submit.bind(this);
@@ -372,6 +376,10 @@ class EditMilestone extends Component {
     return data
   }
 
+  toggleItemize () {
+    this.setState({ itemizeState: !this.state.itemizeState })
+  }
+
   render() {
     const { isNew, isProposed, history } = this.props;
     const {
@@ -388,7 +396,8 @@ class EditMilestone extends Component {
       hasWhitelist,
       whitelistReviewerOptions,
       projectId,
-      expenses
+      expenses,
+      itemizeState
     } = this.state;
 
     return (
@@ -559,51 +568,64 @@ class EditMilestone extends Component {
                     </div>
                   */}
 
-                    <div className="form-group">
-                      <Input
-                        name="maxAmount"
-                        id="maxamount-input"
-                        type="number"
-                        label="Maximum amount of &#926; required for this Milestone"
-                        value={maxAmount}
-                        placeholder="10"
-                        validations="greaterThan:0.0099999999999"
-                        validationErrors={{
-                          greaterThan: 'Minimum value must be at least Ξ 0.1',
-                        }}
-                        required
-                        disabled={projectId}
-                      />
-                    </div>
+                    <Toggle
+                      id='itemize-state'
+                      defaultChecked={this.state.itemizeState}
+                      onChange={()=>this.toggleItemize()} />
+                    <label htmlFor='itemize-state'>Itemize milestone</label>
 
-                    <table className="table table-responsive table-hover">
-                      <thead>
-                        <tr>
-                          <th className="td-expense-date">Date</th>                        
-                          <th className="td-expense-description">Description</th>
-                          <th className="td-expense-fiat-type">Currency</th>
-                          <th className="td-expense-fiat-amount">Amount</th>
-                          <th className="td-expense-ether-amount">Amount in Ether</th>
-                          <th className="td-expense-file-upload">Attach receipt</th>
-                          <th className="td-expense-action"></th>                          
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {expenses.map((exp, i) => (
-                          <ExpenseRow 
-                            key={i}
-                            index={i}
-                            isNew={isNew}
-                            isProposed={isProposed}
-                            expense={exp}
-                            removeExpense={()=>this.removeExpense(i)}
-                          />
-                        ))}
-                      </tbody>
-                    </table>
-                    <button className="btn btn-sm btn-secondary" onClick={this.addExpense}>
-                      Add another expense
-                    </button>
+                    { !itemizeState &&
+                      <div className="form-group">
+                        <Input
+                          name="maxAmount"
+                          id="maxamount-input"
+                          type="number"
+                          label="Maximum amount of &#926; required for this Milestone"
+                          value={maxAmount}
+                          placeholder="10"
+                          validations="greaterThan:0.0099999999999"
+                          validationErrors={{
+                            greaterThan: 'Minimum value must be at least Ξ 0.1',
+                          }}
+                          required
+                          disabled={projectId}
+                        />
+                      </div>
+                    }
+
+                    { itemizeState && 
+                      <div>
+                        <table className="table table-responsive table-hover">
+                          <thead>
+                            <tr>
+                              <th className="td-expense-date">Date</th>                        
+                              <th className="td-expense-description">Description</th>
+                              <th className="td-expense-fiat-type">Currency</th>
+                              <th className="td-expense-fiat-amount">Amount</th>
+                              <th className="td-expense-ether-amount">Amount in Ether</th>
+                              <th className="td-expense-file-upload">Attach receipt</th>
+                              <th className="td-expense-action"></th>                          
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {expenses.map((exp, i) => (
+                              <ExpenseRow 
+                                key={i}
+                                index={i}
+                                isNew={isNew}
+                                isProposed={isProposed}
+                                expense={exp}
+                                removeExpense={()=>this.removeExpense(i)}
+                              />
+                            ))}
+                          </tbody>
+                        </table>
+                        <AddMilestoneItem/>
+                        <button className="btn btn-sm btn-secondary" onClick={this.addExpense}>
+                          Add another expense
+                        </button>
+                      </div>
+                    }
 
                     <div className="form-group row">
                       <div className="col-6">
