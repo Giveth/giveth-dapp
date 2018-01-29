@@ -90,9 +90,6 @@ class EditMilestone extends Component {
 
     this.submit = this.submit.bind(this);
     this.setImage = this.setImage.bind(this);
-    this.addExpense = this.addExpense.bind(this);
-    // this.removeExpense = this.removeExpense.bind(this);
-
   }
 
   componentDidMount() {
@@ -340,8 +337,9 @@ class EditMilestone extends Component {
     return 'Update Milestone';
   }
 
-  addExpense() {
-    this.setState({ expenses: this.state.expenses.concat(this.expense)});
+  addItem(item) {
+    console.log(item);
+    this.setState({ expenses: this.state.expenses.concat(item)});
   }
 
   removeExpense(index) {
@@ -620,10 +618,7 @@ class EditMilestone extends Component {
                             ))}
                           </tbody>
                         </table>
-                        <AddMilestoneItem/>
-                        <button className="btn btn-sm btn-secondary" onClick={this.addExpense}>
-                          Add another expense
-                        </button>
+                        <AddMilestoneItem onAddItem={(item)=>this.addItem(item)}/>
                       </div>
                     }
 

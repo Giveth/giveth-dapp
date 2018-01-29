@@ -9,6 +9,11 @@ import FormsyImageUploader from './FormsyImageUploader';
 import moment from 'moment'
 import { Portal } from 'react-portal';
 
+Formsy.addValidationRule('isMoment', function (values, value, array) {
+  return value.isMoment();
+});
+
+
 class AddMilestoneItem extends Component {
   constructor() {
     super();
@@ -44,7 +49,7 @@ class AddMilestoneItem extends Component {
 
   save() {
     this.setState({ modalVisible: false });
-    console.log(this.refs.itemForm.getModel());
+    this.props.onAddItem(this.refs.itemForm.getModel());
   }
 
 
@@ -53,7 +58,7 @@ class AddMilestoneItem extends Component {
   }
 
   setDate(moment) {
-    this.setState({ date: moment.format('YYYY/MM/DD') });
+    this.setState({ date: moment });
   }
 
   toggleFormValid(state) {
@@ -62,7 +67,7 @@ class AddMilestoneItem extends Component {
 
   mapInputs(inputs) {
     return {
-      date: this.state.date,
+      date: this.state.date.format(),
       description: inputs.description,
       selectedFiatType: this.state.selectedFiatType,
       fiatAmount: inputs.fiatAmount,
@@ -108,10 +113,11 @@ class AddMilestoneItem extends Component {
                 name="date"
                 type="text"
                 value={date}
+                startDate={date}
                 changeDate={date => this.setDate(date)}
                 placeholder="Select a date"
                 help="Select a date"
-                validations="minLength:10"
+                validations="minLength:8"
                 validationErrors={{
                   minLength: 'Please provide a date.',
                 }}
@@ -128,6 +134,7 @@ class AddMilestoneItem extends Component {
                   minLength: 'Provide description',
                 }}
                 required
+                autoFocus                
               />     
               
               <SelectFormsy
