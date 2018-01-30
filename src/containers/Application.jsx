@@ -149,16 +149,30 @@ class Application extends Component {
     // TODO: move and isolate this code to some place nice
     // check if web3 has been injected into dom window
     if (typeof web3 !== 'undefined') {
-      // if yes use base wallet
-      // this line seems dumb as provider is always undefined
-      const provider = undefined;
+      // if web3 exists use base wallet
       // declare web3 from window
       const { web3 } = window;
-      // create base wallet
-      const web3js = new Web3(web3.currentProvider);
-      const wallet = new BaseWallet(provider, web3js); // eslint-disable-line no-console
-      // add wallet to application state
-      this.setState({ wallet });
+      // check if eth object is defined
+      if (web3.eth) {
+        // metamask account address is only made available within call back
+        web3.eth.getAccounts((error, accounts) => {
+          // TODO: handle error
+          if (error) alert('error getting eth accounts');
+          // TODO: error if zero length accounts returned
+          if (accounts.length === 0)
+            alert(
+              'Zero accounts found in provided web3 object. You may need to log into a web3 browser or extension.',
+            );
+          // define from address as first account
+          const fromAddress = accounts[0];
+          // create base wallet
+          const wallet = new BaseWallet(web3, fromAddress); // eslint-disable-line no-console
+          // add wallet to application state
+          this.setState({ wallet });
+        });
+      } else {
+        alert('web3.eth is not defined');
+      }
     } else {
       // if not web3 is not injected, use same Giveth wallet as before
       GivethWallet.getCachedKeystore()
@@ -195,33 +209,14 @@ class Application extends Component {
 
   handleWalletChange(wallet) {
     wallet.cacheKeystore();
-    let address;
-    if (typeof web3 !== 'undefined') {
-      window.web3.eth.getAccounts((error, accounts) => {
-        if (error) alert('error getting eth accounts');
-        if (accounts.length === 0)
-          alert(
-            'Zero accounts found in provided web3 object. You may need to log into a web3 browser or extension.',
-          );
-        address = accounts[0];
-        Application.getUserProfile(address).then(user =>
-          this.setState({
-            wallet,
-            currentUser: new User(user),
-          }),
-        );
-      });
-    } else {
-      address = wallet.getAddresses()[0];
-      getWeb3().then(web3 => web3.setWallet(wallet));
-      Application.getUserProfile(address).then(user =>
-        this.setState({
-          wallet,
-          currentUser: new User(user),
-        }),
-      );
-    }
-    // Unhandled Rejection (TypeError): Cannot read property 'address' of undefined
+    const address = wallet.getAddresses()[0];
+    getWeb3().then(web3 => web3.setWallet(wallet));
+    Application.getUserProfile(address).then(user =>
+      this.setState({
+        wallet,
+        currentUser: new User(user),
+      }),
+    );
   }
 
   unlockWallet(redirectAfter) {

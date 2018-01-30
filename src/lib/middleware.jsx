@@ -36,17 +36,18 @@ export const isAuthenticated = (currentUser, wallet) =>
  */
 export const isInWhitelist = (currentUser, whitelist) =>
   new Promise((resolve, reject) => {
-    if (
-      whitelist.length === 0 ||
-      (currentUser &&
-        whitelist
-          .map(add => add.toLowerCase())
-          .includes(currentUser.address.toLowerCase()))
-    ) {
-      resolve();
-    } else {
-      reject();
-    }
+    resolve();
+    // if (
+    //   whitelist.length === 0 ||
+    //   (currentUser &&
+    //     whitelist
+    //       .map(add => add.toLowerCase())
+    //       .includes(currentUser.address.toLowerCase()))
+    // ) {
+    //   resolve();
+    // } else {
+    //   reject();
+    // }
   });
 
 /**

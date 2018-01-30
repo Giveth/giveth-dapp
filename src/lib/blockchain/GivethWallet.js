@@ -28,7 +28,7 @@ class GivethWallet extends BaseWallet {
     if (!Array.isArray(keystores) || keystores.length === 0)
       throw new Error('keystores is required. and must be an array');
 
-    super(provider);
+    super();
 
     const accounts = new Accounts(provider);
     mapSet.call(mapAccounts, this, accounts);

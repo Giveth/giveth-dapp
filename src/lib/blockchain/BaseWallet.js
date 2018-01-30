@@ -3,33 +3,13 @@ import localforage from 'localforage';
 
 class BaseWallet {
   /**
-   * @param provider      optional. This is necessary when signing a transaction to
-   *                      retrieve chainId, gasPrice, and nonce automatically
    * @param web3          optional. Using dependency injection for testability
+   * @param fromAddress   optional. Was too lazy to make subclass to hold these
+   *                      mandatory arguments. Will cleanup later.
    */
-  constructor(provider, web3 = {}) {
-    debugger;
-    if (web3.eth) {
-      // metamask account address is only made available within call back
-      // https://ethereum.stackexchange.com/questions/16962/metamask-web3-geth-account0-is-undefined
-      web3.eth.getAccounts((error, accounts) => {
-        // TODO: handle error
-        if (error) alert('error getting eth accounts');
-        // TODO: error if zero length accounts returned
-        if (accounts.length === 0)
-          alert(
-            'Zero accounts found in provided web3 object. You may need to log into a web3 browser or extension.',
-          );
-        // TODO: this isn't working fromAddress is undefined sometimes
-        // need to bind fromAddress to wallet correctly
-        // define from address property
-        this.fromAddress = accounts[0];
-        debugger;
-      });
-    } else {
-      alert('web3.eth is not defined');
-    }
+  constructor(web3 = {}, fromAddress = '') {
     this.web3 = web3;
+    this.fromAddress = fromAddress;
     // hardcoded wallet fields depended upon somewhere
     // faking these until I learn more and come up with idea to handle
     this.unlocked = true;
