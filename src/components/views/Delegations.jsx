@@ -15,7 +15,7 @@ import {
   getUserAvatar,
   getTruncatedText,
 } from '../../lib/helpers';
-import GivethWallet from '../../lib/blockchain/GivethWallet';
+import BaseWallet from '../../lib/blockchain/BaseWallet';
 import User from '../../models/User';
 
 // TODO Remove the eslint exception and fix feathers to provide id's without underscore
@@ -355,7 +355,7 @@ class Delegations extends Component {
 Delegations.propTypes = {
   currentUser: PropTypes.instanceOf(User).isRequired,
   history: PropTypes.shape({}).isRequired,
-  wallet: PropTypes.instanceOf(GivethWallet).isRequired,
+  wallet: PropTypes.instanceOf(BaseWallet).isRequired,
 };
 
 export default Delegations;

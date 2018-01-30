@@ -12,7 +12,7 @@ import {
 } from '../lib/middleware';
 import User from '../models/User';
 import { displayTransactionError, getGasPrice } from '../lib/helpers';
-import GivethWallet from '../lib/blockchain/GivethWallet';
+import BaseWallet from '../lib/blockchain/BaseWallet';
 import getWeb3 from '../lib/blockchain/getWeb3';
 import { MiniMeToken } from 'minimetoken';
 
@@ -384,7 +384,7 @@ DonateButton.propTypes = {
   }).isRequired,
   currentUser: PropTypes.instanceOf(User),
   communityUrl: PropTypes.string,
-  wallet: PropTypes.instanceOf(GivethWallet),
+  wallet: PropTypes.instanceOf(BaseWallet),
 };
 
 DonateButton.defaultProps = {

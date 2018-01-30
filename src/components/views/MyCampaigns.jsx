@@ -12,7 +12,7 @@ import {
 import Loader from '../Loader';
 import User from '../../models/User';
 import { getTruncatedText } from '../../lib/helpers';
-import GivethWallet from '../../lib/blockchain/GivethWallet';
+import BaseWallet from '../../lib/blockchain/BaseWallet';
 import CampaignService from '../../services/Campaign';
 import Campaign from '../../models/Campaign';
 
@@ -235,7 +235,7 @@ class MyCampaigns extends Component {
 MyCampaigns.propTypes = {
   currentUser: PropTypes.instanceOf(User).isRequired,
   history: PropTypes.shape({}).isRequired,
-  wallet: PropTypes.instanceOf(GivethWallet).isRequired,
+  wallet: PropTypes.instanceOf(BaseWallet).isRequired,
 };
 
 export default MyCampaigns;

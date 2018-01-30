@@ -15,7 +15,6 @@ export const authenticate = wallet => {
     strategy: 'web3',
     address: wallet.getAddresses()[0],
   };
-
   return new Promise((resolve, reject) => {
     feathersClient.authenticate(authData).catch(response => {
       // normal flow will issue a 401 with a challenge message we need to sign and send to

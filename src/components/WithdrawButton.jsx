@@ -8,7 +8,7 @@ import {
   confirmBlockchainTransaction,
 } from '../lib/middleware';
 import User from '../models/User';
-import GivethWallet from '../lib/blockchain/GivethWallet';
+import BaseWallet from '../lib/blockchain/BaseWallet';
 import WalletService from '../services/Wallet';
 import { getGasPrice } from '../lib/helpers';
 
@@ -201,7 +201,7 @@ class WithdrawButton extends Component {
 
 WithdrawButton.propTypes = {
   currentUser: PropTypes.instanceOf(User).isRequired,
-  wallet: PropTypes.instanceOf(GivethWallet).isRequired,
+  wallet: PropTypes.instanceOf(BaseWallet).isRequired,
 };
 
 export default WithdrawButton;

@@ -15,7 +15,7 @@ import ShowTypeDonations from '../ShowTypeDonations';
 import AuthenticatedLink from '../AuthenticatedLink';
 
 import User from '../../models/User';
-import GivethWallet from '../../lib/blockchain/GivethWallet';
+import BaseWallet from '../../lib/blockchain/BaseWallet';
 import CampaignService from '../../services/Campaign';
 
 /**
@@ -222,7 +222,7 @@ ViewCampaign.propTypes = {
       id: PropTypes.string,
     }).isRequired,
   }).isRequired,
-  wallet: PropTypes.instanceOf(GivethWallet),
+  wallet: PropTypes.instanceOf(BaseWallet),
 };
 
 ViewCampaign.defaultProps = {
