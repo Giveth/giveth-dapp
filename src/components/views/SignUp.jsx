@@ -34,11 +34,36 @@ class SignUp extends Component {
   }
 
   // TODO: move this some place better
-  createAppropriateWallet(provider, password) {
-    if (typeof web3 !== 'undefined') {
-      return BaseWallet.createWallet(provider, password)
-    }
-    return GivethWallet.createWallet(provider, password)
+  createAppropriateWallet(provider, password) { // eslint-disable-line class-methods-use-this
+    return new Promise((resolve, reject) => {
+      if (typeof web3 !== 'undefined') {
+        // if web3 exists use base wallet
+        // declare web3 from window
+        const { web3 } = window;
+        // check if eth object is defined
+        if (web3.eth) {
+          // metamask account address is only made available within call back
+          web3.eth.getAccounts((error, accounts) => {
+            // TODO: handle error
+            if (error) alert('error getting eth accounts');
+            // TODO: error if zero length accounts returned
+            if (accounts.length === 0)
+              alert(
+                'Zero accounts found in provided web3 object. You may need to log into a web3 browser or extension.',
+              );
+            // define from address as first account
+            const fromAddress = accounts[0];
+            // create base wallet
+            return resolve(new BaseWallet(web3, fromAddress)); // eslint-disable-line no-console
+          });
+        } else {
+          // TODO: return propper error
+          return reject(alert('web3.eth is not defined'));
+        }
+      } else {
+        return resolve(GivethWallet.createWallet(provider, password));
+      }
+    });
   }
 
   submit({ password }) {
@@ -50,6 +75,8 @@ class SignUp extends Component {
       () => {
         function createWallet() {
           let wallet;
+          // This times out on authenticate not sure why yet
+          // could be config, feathers server, or base wallet issue
           this.createAppropriateWallet(this.props.provider, password)
             .then(w => {
               wallet = w;
