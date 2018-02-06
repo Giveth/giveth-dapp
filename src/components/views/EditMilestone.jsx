@@ -8,6 +8,8 @@ import { feathersClient } from './../../lib/feathersClient';
 import Loader from './../Loader';
 import QuillFormsy from './../QuillFormsy';
 import SelectFormsy from './../SelectFormsy';
+import DatePickerFormsy from './../DatePickerFormsy';
+
 import FormsyImageUploader from './../FormsyImageUploader';
 import GoBackButton from '../GoBackButton';
 import {
@@ -26,10 +28,9 @@ import {
 import getNetwork from '../../lib/blockchain/getNetwork';
 import getWeb3 from '../../lib/blockchain/getWeb3';
 import LoaderButton from '../../components/LoaderButton';
-// import DatePickerFormsy from './../DatePickerFormsy';
 import User from '../../models/User';
 import GivethWallet from '../../lib/blockchain/GivethWallet';
-import ExpenseRow from '../../components/ExpenseRow';
+import MilestoneItem from '../../components/MilestoneItem';
 import moment from 'moment';
 
 import Toggle from 'react-toggle'
@@ -49,16 +50,7 @@ import AddMilestoneItem from '../../components/AddMilestoneItem';
 
 class EditMilestone extends Component {
   constructor() {
-    super();
-
-    this.expense = {
-      date: moment(),
-      description: '',
-      selectedFiatType: 'EUR',
-      fiatAmount: 0,
-      etherAmount: 0,
-      image: ''
-    }    
+    super(); 
 
     this.state = {
       isLoading: true,
@@ -70,6 +62,7 @@ class EditMilestone extends Component {
       description: '',
       image: '',
       maxAmount: '',
+      fiatAmount: 10,
       reviewerAddress: getRandomWhitelistAddress(
         React.whitelist.reviewerWhitelist,
       ).address,
@@ -84,12 +77,27 @@ class EditMilestone extends Component {
         value: r.address,
         title: `${r.name ? r.name : 'Anonymous user'} - ${r.address}`,
       })),
-      expenses: [this.expense],
-      itemizeState: true
+      items: [],
+      itemizeState: true,
+      conversionRates: [],
+      currentRate: undefined,
+      date: moment(),
+      fiatTypes: [
+        {value: 'USD', title: 'USD'},
+        {value: 'EUR', title: 'EUR'},
+        {value: 'GBP', title: 'GBP'},
+        {value: 'CHF', title: 'CHF'},
+        {value: 'MXN', title: 'MXN'},
+        {value: 'THB', title: 'THB'}
+      ], 
+      selectedFiatType: 'EUR',
     };
 
     this.submit = this.submit.bind(this);
     this.setImage = this.setImage.bind(this);
+    this.setMaxAmount = this.setMaxAmount.bind(this);
+    this.setFiatAmount = this.setFiatAmount.bind(this);
+    this.changeSelectedFiat = this.changeSelectedFiat.bind(this);
   }
 
   componentDidMount() {
@@ -107,6 +115,10 @@ class EditMilestone extends Component {
           );
         }
       })
+      .then(() =>
+        // load eth conversion for today
+        this.getEthConversion()
+      )
       .then(() => {
         this.setState({
           campaignId: this.props.match.params.id,
@@ -167,9 +179,18 @@ class EditMilestone extends Component {
     this.setState({ image, uploadNewImage: true });
   }
 
-  // changeDate(moment) {
-  //   this.setState({ completionDeadline: moment.format('YYYY/MM/DD') });
-  // }
+  setDate(moment) {
+    this.setState({ date: moment });
+    this.getEthConversion(moment).then((resp) => {
+      // update all the input fields
+      const rate = resp.rates[this.state.selectedFiatType];
+      
+      this.setState({ 
+        currentRate: resp,
+        maxAmount: this.state.fiatAmount / rate
+      })
+    });
+  }
 
   submit(model) {
     this.setState({ isSaving: true });
@@ -181,15 +202,13 @@ class EditMilestone extends Component {
     let txHash;
 
     console.log(model);
-    return
-
 
     const updateMilestone = file => {
       const constructedModel = {
         title: model.title,
         description: model.description,
         summary: getTruncatedText(this.state.summary, 100),
-        maxAmount: utils.toWei(model.maxAmount),
+        maxAmount: utils.toWei(model.maxAmount.toFixed(18)),
         ownerAddress: this.props.currentUser.address,
         reviewerAddress: model.reviewerAddress,
         recipientAddress: model.recipientAddress,
@@ -201,6 +220,9 @@ class EditMilestone extends Component {
           this.props.isProposed || this.state.status === 'rejected'
             ? 'proposed'
             : this.state.status, // make sure not to change status!
+        items: this.state.items,
+        ethConversionRateTimestamp: this.state.currentRate.timestamp,
+        selectedFiatType: this.state.selectedFiatType
       };
 
       if (this.props.isNew) {
@@ -289,13 +311,38 @@ class EditMilestone extends Component {
     };
 
     const saveMilestone = () => {
-      if (this.state.uploadNewImage) {
-        feathersClient
-          .service('/uploads')
-          .create({ uri: this.state.image })
-          .then(file => updateMilestone(file.url));
+
+      const uploadMilestoneImage = () => {
+        if (this.state.uploadNewImage) {
+          feathersClient
+            .service('/uploads')
+            .create({ uri: this.state.image })
+            .then(file => updateMilestone(file.url));
+        } else {
+          updateMilestone();
+        }      
+      }
+
+      if(this.state.itemizeState) {
+        let uploadPromises = [];
+
+        // upload all the item images
+        const uploadItemImages = new Promise((resolve, reject) => 
+          this.state.items.forEach((item, index) =>
+            feathersClient
+              .service('/uploads')
+              .create({ uri: item.image })
+              .then((file) => {
+                item.image = file.url;
+                if(index === 0) resolve('done');
+              })
+            )
+          )
+        
+        uploadItemImages.then(() => uploadMilestoneImage());
+
       } else {
-        updateMilestone();
+        uploadMilestoneImage();
       }
     };
 
@@ -339,13 +386,13 @@ class EditMilestone extends Component {
 
   addItem(item) {
     console.log(item);
-    this.setState({ expenses: this.state.expenses.concat(item)});
+    this.setState({ items: this.state.items.concat(item)});
   }
 
-  removeExpense(index) {
-    let expenses = this.state.expenses;
-    delete expenses[index];
-    this.setState({ expenses: expenses.filter(x => true) });
+  removeItem(index) {
+    let items = this.state.items;
+    delete items[index];
+    this.setState({ items: items.filter(x => true) });
   }
 
   mapInputs(inputs) {
@@ -354,29 +401,75 @@ class EditMilestone extends Component {
       description: inputs.description,
       reviewerAddress: inputs.reviewerAddress,
       recipientAddress: inputs.recipientAddress,
-      maxAmount: inputs.maxAmount,
-      expenses: []
+      items: this.state.items,
+      maxAmount: 0     
     }
 
-    // Formsy does not support nested forms, 
-    // so we basically fetch the nested forms (expenses in this case) manually
-    // and construct the expenses array
-    for(let i=0; i < this.state.expenses.length; i++) {
-      const expense = Object.keys(inputs)
-        .filter((key) => key.indexOf(`-${i}`) > -1)
-        .reduce((obj, key) => {
-          obj[key.split('-')[0]] = inputs[key];
-          return obj;
-        }, {});
-
-      data.expenses.push(expense);
+    // in itemized mode, we calculate the maxAmount from the items
+    if(this.state.itemizeState) {
+      this.state.items.forEach((item) => data.maxAmount += parseFloat(item.etherAmount))
+    } else {
+      data.maxAmount = inputs.maxAmount;
     }
-    return data
+
+    return data;
   }
 
   toggleItemize () {
     this.setState({ itemizeState: !this.state.itemizeState })
   }
+
+  getEthConversion (date) {
+    return feathersClient
+      .service('ethconversion')
+      .find({query: { date: date }})
+      .then(resp => {
+        const conversionRates = this.state.conversionRates
+        
+        if(conversionRates.filter((c) => c.timestamp === resp.timestamp).length === 0) {
+          this.setState({ 
+            conversionRates: conversionRates.concat(resp),
+            maxAmount: this.state.fiatAmount / resp.rates[this.state.selectedFiatType],
+            currentRate: resp 
+          })            
+        }
+
+        return resp;
+      })   
+  }
+
+  setMaxAmount(e) {
+    const fiatAmount = parseFloat(this.refs.fiatAmount.getValue())
+    const conversionRate = this.state.currentRate.rates[this.state.selectedFiatType];
+    console.log(fiatAmount, conversionRate)
+    if(conversionRate && fiatAmount >= 0) {
+      this.setState({ 
+        maxAmount: fiatAmount / conversionRate,
+        fiatAmount: fiatAmount
+      })
+    }
+  }
+
+  setFiatAmount(e) {
+    const maxAmount = parseFloat(this.refs.maxAmount.getValue())
+    const conversionRate = this.state.currentRate.rates[this.state.selectedFiatType];
+
+    if(conversionRate && maxAmount >= 0) {
+      this.setState({ 
+        fiatAmount: maxAmount * conversionRate,
+        maxAmount: maxAmount
+      })
+    }
+  } 
+
+  changeSelectedFiat(fiatType) {
+    const conversionRate = this.state.currentRate.rates[fiatType];
+    this.setState({ 
+      maxAmount: this.state.fiatAmount / conversionRate,
+      selectedFiatType: fiatType
+    })    
+  }  
+
 
   render() {
     const { isNew, isProposed, history } = this.props;
@@ -394,8 +487,13 @@ class EditMilestone extends Component {
       hasWhitelist,
       whitelistReviewerOptions,
       projectId,
-      expenses,
-      itemizeState
+      items,
+      itemizeState,
+      conversionRates,
+      fiatAmount,
+      date,
+      selectedFiatType,
+      fiatTypes
     } = this.state;
 
     return (
@@ -573,52 +671,110 @@ class EditMilestone extends Component {
                     <label htmlFor='itemize-state'>Itemize milestone</label>
 
                     { !itemizeState &&
-                      <div className="form-group">
-                        <Input
-                          name="maxAmount"
-                          id="maxamount-input"
-                          type="number"
-                          label="Maximum amount of &#926; required for this Milestone"
-                          value={maxAmount}
-                          placeholder="10"
-                          validations="greaterThan:0.0099999999999"
-                          validationErrors={{
-                            greaterThan: 'Minimum value must be at least Ξ 0.1',
-                          }}
-                          required
-                          disabled={projectId}
-                        />
-                      </div>
+                      <span>
+                        <div className="form-group row">
+                          <div className="col-12">
+                            <DatePickerFormsy
+                              name="date"
+                              type="text"
+                              value={date}
+                              startDate={date}
+                              label="Milestone date"
+                              changeDate={date => this.setDate(date)}
+                              placeholder="Select a date"
+                              help="Select a date"
+                              validations="minLength:8"
+                              validationErrors={{
+                                minLength: 'Please provide a date.',
+                              }}
+                              required
+                            />
+                          </div>
+                        </div>
+
+                        <div className="form-group row">
+                          <div className="col-4">
+                            <SelectFormsy
+                              name="fiatType"
+                              label="Select fiat currency for milestone"
+                              value={selectedFiatType}
+                              options={fiatTypes}
+                              onChange={this.changeSelectedFiat}
+                              required
+                            />  
+                          </div>
+
+                          <div className="col-4">
+                            <Input
+                              name="fiatAmount"
+                              id="fiatamount-input"
+                              type="number"
+                              ref="fiatAmount"
+                              label="Maximum fiat amount required for this Milestone"
+                              value={fiatAmount}
+                              placeholder="10"
+                              validations="greaterThan:1"
+                              validationErrors={{
+                                greaterThan: 'Minimum value must be at least 1',
+                              }}
+                              disabled={projectId}
+                              onKeyUp={this.setMaxAmount}                
+                            />
+                          </div>
+
+                          <div className="col-4">
+                            <Input
+                              name="maxAmount"
+                              id="maxamount-input"
+                              type="number"
+                              ref="maxAmount"
+                              label="Maximum amount of &#926; required for this Milestone"
+                              value={maxAmount}
+                              placeholder="10"
+                              validations="greaterThan:0.0099999999999"
+                              validationErrors={{
+                                greaterThan: 'Minimum value must be at least Ξ 0.1',
+                              }}
+                              required
+                              disabled={projectId}
+                              onKeyUp={this.setFiatAmount}                
+                            />
+                          </div>
+                        </div>
+                      </span>
                     }
 
                     { itemizeState && 
-                      <div>
-                        <table className="table table-responsive table-hover">
-                          <thead>
-                            <tr>
-                              <th className="td-expense-date">Date</th>                        
-                              <th className="td-expense-description">Description</th>
-                              <th className="td-expense-fiat-type">Currency</th>
-                              <th className="td-expense-fiat-amount">Amount</th>
-                              <th className="td-expense-ether-amount">Amount in Ether</th>
-                              <th className="td-expense-file-upload">Attach receipt</th>
-                              <th className="td-expense-action"></th>                          
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {expenses.map((exp, i) => (
-                              <ExpenseRow 
-                                key={i}
-                                index={i}
-                                isNew={isNew}
-                                isProposed={isProposed}
-                                expense={exp}
-                                removeExpense={()=>this.removeExpense(i)}
-                              />
-                            ))}
-                          </tbody>
-                        </table>
-                        <AddMilestoneItem onAddItem={(item)=>this.addItem(item)}/>
+                      <div className="form-group row">
+                        <div className="col-12">
+                          <table className="table table-responsive table-hover">
+                            <thead>
+                              <tr>
+                                <th className="td-item-date">Date</th>                        
+                                <th className="td-item-description">Description</th>
+                                <th className="td-item-amount-fiat">Amount Fiat</th>
+                                <th className="td-item-fiat-amount">Amount Ether</th>
+                                <th className="td-item-file-upload">Attached proof</th>
+                                <th className="td-item-action"></th>                          
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {items.map((item, i) => (
+                                <MilestoneItem 
+                                  key={i}
+                                  index={i}
+                                  item={item}
+                                  removeItem={()=>this.removeItem(i)}
+                                />
+                              ))}
+                            </tbody>
+                          </table>
+                          <AddMilestoneItem 
+                            onAddItem={(item)=>this.addItem(item)} 
+                            conversionRate={conversionRates[0]}
+                            getEthConversion={(date)=>this.getEthConversion(date)}
+                          />
+                        </div>
                       </div>
                     }
 

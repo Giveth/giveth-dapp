@@ -13,43 +13,56 @@ Formsy.addValidationRule('isMoment', function (values, value, array) {
   return value.isMoment();
 });
 
+const initialState = {
+  modalVisible: false,
+  date: moment(),
+  fiatTypes: [
+    {value: 'USD', title: 'USD'},
+    {value: 'EUR', title: 'EUR'},
+    {value: 'GBP', title: 'GBP'},
+    {value: 'CHF', title: 'CHF'},
+    {value: 'MXN', title: 'MXN'},
+    {value: 'THB', title: 'THB'}
+  ],
+  description: '',
+  selectedFiatType: 'EUR',
+  fiatAmount: 1,
+  etherAmount: 0,
+  image: '',
+  uploadNewImage: false,
+  formIsValid: false
+}
+
 
 class AddMilestoneItem extends Component {
   constructor() {
     super();
 
-    this.state = {
-      modalVisible: false,
-      date: moment(),
-      fiatTypes: [
-        {value: 'USD', title: 'USD'},
-        {value: 'EUR', title: 'EUR'},
-        {value: 'POUND', title: 'POUND'}
-      ],
-      description: '',
-      selectedFiatType: 'EUR',
-      fiatAmount: 0,
-      etherAmount: 0,
-      image: '',
-      uploadNewImage: false,
-      formIsValid: false      
-    }
+    this.state = initialState;
 
     this.setImage = this.setImage.bind(this);   
-    this.save = this.save.bind(this);     
+    this.save = this.save.bind(this);  
+    this.setEtherAmount = this.setEtherAmount.bind(this);
+    this.setFiatAmount = this.setFiatAmount.bind(this);   
+    this.changeSelectedFiat = this.changeSelectedFiat.bind(this);
   }
 
   openDialog() {
-    this.setState({ modalVisible: true })
+    this.setState({ 
+      modalVisible: true, 
+      conversionRate: this.props.conversionRate,
+      etherAmount: this.state.fiatAmount / this.props.conversionRate.rates[this.state.selectedFiatType] 
+    })
   }
 
   closeDialog() {
-    this.setState({ modalVisible: false })
+    this.setState(initialState)
   }  
 
   save() {
-    this.setState({ modalVisible: false });
+    // this.setState({ modalVisible: false });
     this.props.onAddItem(this.refs.itemForm.getModel());
+    this.setState(initialState)
   }
 
 
@@ -59,6 +72,15 @@ class AddMilestoneItem extends Component {
 
   setDate(moment) {
     this.setState({ date: moment });
+    this.props.getEthConversion(moment).then((resp) => {
+      // update all the input fields
+      const rate = resp.rates[this.state.selectedFiatType];
+
+      this.setState({ 
+        conversionRate: resp,
+        etherAmount: this.state.fiatAmount / rate
+      })
+    });
   }
 
   toggleFormValid(state) {
@@ -70,10 +92,43 @@ class AddMilestoneItem extends Component {
       date: this.state.date.format(),
       description: inputs.description,
       selectedFiatType: this.state.selectedFiatType,
-      fiatAmount: inputs.fiatAmount,
-      etherAmount: inputs.etherAmount,
-      image: this.state.image
+      fiatAmount: this.state.fiatAmount,
+      etherAmount: this.state.etherAmount,
+      image: this.state.image,
+      ethConversionRateTimestamp: this.state.conversionRate.timestamp
     }    
+  }
+
+  setEtherAmount(e) {
+    const fiatAmount = parseFloat(this.refs.fiatAmount.getValue())
+    const conversionRate = this.state.conversionRate.rates[this.state.selectedFiatType];
+
+    if(conversionRate && fiatAmount >= 0) {
+      this.setState({ 
+        etherAmount: fiatAmount / conversionRate,
+        fiatAmount: fiatAmount
+      })
+    }
+  }
+
+  setFiatAmount(e) {
+    const etherAmount = parseFloat(this.refs.etherAmount.getValue())
+    const conversionRate = this.state.conversionRate.rates[this.state.selectedFiatType];
+
+    if(conversionRate && etherAmount >= 0) {
+      this.setState({ 
+        fiatAmount: etherAmount * conversionRate,
+        etherAmount: etherAmount
+      })
+    }
+  }  
+
+  changeSelectedFiat(fiatType) {
+    const conversionRate = this.state.conversionRate.rates[fiatType];
+    this.setState({ 
+      etherAmount: this.state.fiatAmount / conversionRate,
+      selectedFiatType: fiatType
+    })    
   }
 
   render() {
@@ -85,14 +140,15 @@ class AddMilestoneItem extends Component {
       fiatTypes, 
       selectedFiatType, 
       fiatAmount, 
-      etherAmount 
+      etherAmount,
+      image 
     } = this.state;
 
     return (
       <span>
-        <button className="btn btn-primary btn-sm" onClick={()=>this.openDialog()}>
+        <a className="btn btn-primary btn-sm" onClick={()=>this.openDialog()}>
           Add item
-        </button>
+        </a>
 
         <Portal>
 
@@ -125,6 +181,7 @@ class AddMilestoneItem extends Component {
               />
 
               <Input
+                label="description"
                 name="description"
                 type="text"
                 value={description}
@@ -141,11 +198,14 @@ class AddMilestoneItem extends Component {
                 name="fiatType"
                 value={selectedFiatType}
                 options={fiatTypes}
+                onChange={this.changeSelectedFiat}
                 required
               />  
               
               <Input
+                label="Amount in fiat"
                 name="fiatAmount"
+                ref="fiatAmount"
                 type="number"
                 value={fiatAmount}
                 placeholder="10"
@@ -153,10 +213,13 @@ class AddMilestoneItem extends Component {
                 validationErrors={{
                   greaterThan: 'Enter value',
                 }}
+                onKeyUp={this.setEtherAmount}                
                 required
               />  
 
               <Input
+                label="Amount in ether" 
+                ref="etherAmount"             
                 name="etherAmount"
                 type="number"
                 value={etherAmount}
@@ -165,11 +228,13 @@ class AddMilestoneItem extends Component {
                 validationErrors={{
                   greaterThan: 'Enter value',
                 }}
+                onKeyUp={this.setFiatAmount}                
                 required
               />                                   
 
               <FormsyImageUploader
                 name="image"
+                // previewImage={image}
                 setImage={this.setImage}
               /> 
 
