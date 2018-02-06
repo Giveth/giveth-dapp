@@ -33,40 +33,48 @@ class SignUp extends Component {
   }
 
   submit({ password }) {
-    this.setState({
-      isSaving: true,
-      error: undefined,
-    }, () => {
-      function createWallet() {
-        let wallet;
-        GivethWallet.createWallet(this.props.provider, password)
-          .then((w) => { wallet = w; return wallet; })
-          .then(authenticate)
-          .then(() => {
-            this.setState({
-              isSaving: false,
-              wallet,
+    this.setState(
+      {
+        isSaving: true,
+        error: undefined,
+      },
+      () => {
+        function createWallet() {
+          let wallet;
+          GivethWallet.createWallet(this.props.provider, password)
+            .then(w => {
+              wallet = w;
+              return wallet;
+            })
+            .then(authenticate)
+            .then(() => {
+              this.setState({
+                isSaving: false,
+                wallet,
+              });
+
+              this.props.walletCreated(wallet);
+            })
+            .catch(err => {
+              let error;
+              if (typeof err === 'object') {
+                error =
+                  err.type && err.type === 'FeathersError'
+                    ? 'authentication error'
+                    : 'Error creating wallet.';
+              }
+
+              this.setState({
+                isSaving: false,
+                error,
+              });
             });
+        }
 
-            this.props.walletCreated(wallet);
-          })
-          .catch((err) => {
-            let error;
-            if (typeof err === 'object') {
-              error = (err.type && err.type === 'FeathersError') ? 'authentication error' :
-                'Error creating wallet.';
-            }
-
-            this.setState({
-              isSaving: false,
-              error,
-            });
-          });
-      }
-
-      // web3 blocks all rendering, so we need to request an animation frame
-      window.requestAnimationFrame(createWallet.bind(this));
-    });
+        // web3 blocks all rendering, so we need to request an animation frame
+        window.requestAnimationFrame(createWallet.bind(this));
+      },
+    );
   }
 
   toggleFormValid(state) {
@@ -74,31 +82,23 @@ class SignUp extends Component {
   }
 
   render() {
-    const {
-      wallet, error, formIsValid, isSaving,
-    } = this.state;
+    const { wallet, error, formIsValid, isSaving } = this.state;
 
     return (
       <div id="account-view" className="container-fluid page-layout">
         <div className="row">
           <div className="col-md-8 m-auto">
             <div>
-
               <div className={`card ${wallet ? 'bg-warning' : ''} `}>
                 <center>
-
-                  { !wallet &&
+                  {!wallet && (
                     <div>
-
                       <h1>SignUp</h1>
                       <p>
-                        Your wallet is your account. Create a wallet to get
-                        started with Giveth.
+                        Your wallet is your account. Create a wallet to get started with Giveth.
                       </p>
 
-                      {error &&
-                        <div className="alert alert-danger">{error}</div>
-                      }
+                      {error && <div className="alert alert-danger">{error}</div>}
 
                       <Form
                         className="sign-up-form"
@@ -147,30 +147,28 @@ class SignUp extends Component {
                         >
                           Sign up
                         </LoaderButton>
-
                       </Form>
                     </div>
-                  }
+                  )}
 
-                  { wallet &&
+                  {wallet && (
                     <div>
                       <center>
                         <h1>Back up your new Wallet!</h1>
                       </center>
 
                       <p>
-                        We <strong>highly</strong> recommend that you download this backup
-                        file and keep it in a safe place. If you lose this file
-                        or forget your wallet password, you will not be able to access
-                        this account and all funds associated with it. Both this file and
-                        your password are handled locally on your pc and in your browser: we
-                        cannot help you recover anything, so please take a minute to do this now.
+                        We <strong>highly</strong> recommend that you download this backup file and
+                        keep it in a safe place. If you lose this file or forget your wallet
+                        password, you will not be able to access this account and all funds
+                        associated with it. Both this file and your password are handled locally on
+                        your pc and in your browser: we cannot help you recover anything, so please
+                        take a minute to do this now.
                       </p>
 
                       <BackupWallet onBackup={() => this.onBackup()} wallet={wallet} />
                     </div>
-                  }
-
+                  )}
                 </center>
               </div>
             </div>
@@ -180,7 +178,6 @@ class SignUp extends Component {
     );
   }
 }
-
 
 SignUp.propTypes = {
   history: PropTypes.shape({

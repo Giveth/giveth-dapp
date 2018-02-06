@@ -14,11 +14,9 @@ import { history } from '../lib/helpers';
  *    isAuthenticated(currentUser, wallet)
  *      .then(()=> ...do something when authenticated)
  */
-
 export const isAuthenticated = (currentUser, wallet) =>
   new Promise(resolve => {
-    if (currentUser && currentUser.address && wallet && wallet.unlocked)
-      resolve();
+    if (currentUser && currentUser.address && wallet && wallet.unlocked) resolve();
     else history.goBack();
   });
 
@@ -28,7 +26,6 @@ export const isAuthenticated = (currentUser, wallet) =>
  *
  * @param currentUser {object} Current User object
  * @param whitelist   {array}  Array of whitelisted addresses
- * @param history     {object} Standard browser history object
  *
  * @return new Promise
  *
@@ -36,19 +33,18 @@ export const isAuthenticated = (currentUser, wallet) =>
  *    isInWhitelist(currentUser, whitelist)
  *      .then(()=> ...do something when in whitelist)
  */
-
-export const isInWhitelist = (currentUser, whitelist, history) =>
-  new Promise(
-    (resolve, reject) =>
+export const isInWhitelist = (currentUser, whitelist) =>
+  new Promise((resolve, reject) => {
+    if (
       whitelist.length === 0 ||
       (currentUser &&
-        currentUser.address &&
-        whitelist.find((u) => u.address.toLowerCase() === currentUser.address.toLowerCase()))
-        ? resolve()
-        : reject() &&
-          console.log('not in whitelist') &&
-          (history && history.goBack()),
-  );
+        whitelist.map(add => add.toLowerCase()).includes(currentUser.address.toLowerCase()))
+    ) {
+      resolve();
+    } else {
+      reject();
+    }
+  });
 
 /**
  * If the wallet is locked, asks the user to unlock his wallet before redirecting to a route
@@ -57,7 +53,6 @@ export const isInWhitelist = (currentUser, whitelist, history) =>
  * @param history {object} Standard history object
  * @param to      {string} Route to which the user should be redirected
  */
-
 export const redirectAfterWalletUnlock = (to, wallet, history) => {
   if (!wallet || (wallet && !wallet.unlocked)) {
     React.unlockWallet(to);
@@ -73,7 +68,6 @@ export const redirectAfterWalletUnlock = (to, wallet, history) => {
  * @param action {function} Function to call when the wallet is unlocked
  *
  */
-
 export const takeActionAfterWalletUnlock = (wallet, action) => {
   if (!wallet || (wallet && !wallet.unlocked)) {
     React.unlockWallet();
@@ -98,9 +92,8 @@ export const checkWalletBalance = (wallet, history) =>
         title: 'Insufficient wallet balance',
         content: React.swal.msg(
           <p>
-            Unfortunately you need at least Ξ{React.minimumWalletBalance} in
-            your wallet to continue. Please transfer some Ξ to your Giveth
-            wallet first.
+            Unfortunately you need at least Ξ{React.minimumWalletBalance} in your wallet to
+            continue. Please transfer some Ξ to your Giveth wallet first.
           </p>,
         ),
         icon: 'warning',
@@ -131,4 +124,3 @@ export const confirmBlockchainTransaction = (onConfirm, onCancel) =>
     if (isConfirmed) onConfirm();
     else onCancel();
   });
-

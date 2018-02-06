@@ -16,8 +16,7 @@ class CommunityButton extends Component {
 
     if (u.indexOf('slack') > -1) this.setState({ icon: 'fa-slack' });
     if (u.indexOf('reddit') > -1) this.setState({ icon: 'fa-reddit' });
-    if (u.indexOf('facebook') > -1)
-      this.setState({ icon: 'fa-facebook-square' });
+    if (u.indexOf('facebook') > -1) this.setState({ icon: 'fa-facebook-square' });
     if (u.indexOf('github') > -1) this.setState({ icon: 'fa-github' });
     if (u.indexOf('twitter') > -1) this.setState({ icon: 'fa-twitter' });
     if (u.indexOf('linkedin') > -1) this.setState({ icon: 'fa-linkedin' });
@@ -41,10 +40,7 @@ class CommunityButton extends Component {
 CommunityButton.propTypes = {
   url: PropTypes.string.isRequired,
   className: PropTypes.string,
-  children: PropTypes.oneOfType([
-    PropTypes.arrayOf(PropTypes.node),
-    PropTypes.node,
-  ]).isRequired,
+  children: PropTypes.oneOfType([PropTypes.arrayOf(PropTypes.node), PropTypes.node]).isRequired,
 };
 
 CommunityButton.defaultProps = {

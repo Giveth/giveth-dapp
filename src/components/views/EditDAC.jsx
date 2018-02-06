@@ -7,7 +7,12 @@ import QuillFormsy from '../QuillFormsy';
 import FormsyImageUploader from './../FormsyImageUploader';
 import GoBackButton from '../GoBackButton';
 import { isOwner, getTruncatedText } from '../../lib/helpers';
-import { isAuthenticated, checkWalletBalance, isInWhitelist, confirmBlockchainTransaction } from '../../lib/middleware';
+import {
+  isAuthenticated,
+  checkWalletBalance,
+  isInWhitelist,
+  confirmBlockchainTransaction,
+} from '../../lib/middleware';
 import LoaderButton from '../../components/LoaderButton';
 
 import DACservice from '../../services/DAC';
@@ -16,14 +21,14 @@ import User from '../../models/User';
 import GivethWallet from '../../lib/blockchain/GivethWallet';
 
 /**
-  * View to create or edit a DAC
-  *
-  * @param isNew    If set, component will load an empty model.
-  *                 Otherwise component expects an id param and will load a DAC object
-  * @param id       URL parameter which is an id of a campaign object
-  * @param history  Browser history object
-  * @param wallet   Wallet object with the balance and all keystores
-  */
+ * View to create or edit a DAC
+ *
+ * @param isNew    If set, component will load an empty model.
+ *                 Otherwise component expects an id param and will load a DAC object
+ * @param id       URL parameter which is an id of a campaign object
+ * @param history  Browser history object
+ * @param wallet   Wallet object with the balance and all keystores
+ */
 class EditDAC extends Component {
   constructor(props) {
     super(props);
@@ -45,14 +50,11 @@ class EditDAC extends Component {
 
   componentDidMount() {
     isAuthenticated(this.props.currentUser, this.props.wallet)
-      .then(() => isInWhitelist(
-        this.props.currentUser, React.whitelist.delegateWhitelist,
-        this.props.history,
-      ))
+      .then(() => isInWhitelist(this.props.currentUser, React.whitelist.delegateWhitelist))
       .then(() => checkWalletBalance(this.props.wallet, this.props.history))
       .then(() => {
         if (!this.props.isNew) {
-          DACservice.get(this.props.match.params.id).then((dac) => {
+          DACservice.get(this.props.match.params.id).then(dac => {
             // The user is not an owner, hence can not change the DAC
             if (!isOwner(dac.owner.address, this.props.currentUser)) {
               this.props.history.goBack();
@@ -80,12 +82,16 @@ class EditDAC extends Component {
   submit() {
     this.setState({ isSaving: true });
 
-    const afterMined = (url) => {
+    const afterMined = url => {
       if (url) {
         const msg = (
-          <p>Your DAC has been created!<br />
-            <a href={url} target="_blank" rel="noopener noreferrer">View transaction</a>
-          </p>);
+          <p>
+            Your DAC has been created!<br />
+            <a href={url} target="_blank" rel="noopener noreferrer">
+              View transaction
+            </a>
+          </p>
+        );
         React.toast.success(msg);
       } else {
         if (this.mounted) this.setState({ isSaving: false });
@@ -93,12 +99,16 @@ class EditDAC extends Component {
         this.props.history.push(`/dacs/${this.state.dac.id}`);
       }
     };
-    const afterCreate = (url) => {
+    const afterCreate = url => {
       if (this.mounted) this.setState({ isSaving: false });
       const msg = (
-        <p>Your DAC is pending....<br />
-          <a href={url} target="_blank" rel="noopener noreferrer">View transaction</a>
-        </p>);
+        <p>
+          Your DAC is pending....<br />
+          <a href={url} target="_blank" rel="noopener noreferrer">
+            View transaction
+          </a>
+        </p>
+      );
       React.toast.info(msg);
       this.props.history.push('/my-dacs');
     };
@@ -120,168 +130,160 @@ class EditDAC extends Component {
 
   render() {
     const { isNew, history } = this.props;
-    const {
-      isLoading, isSaving, dac, formIsValid,
-    } = this.state;
+    const { isLoading, isSaving, dac, formIsValid } = this.state;
 
     return (
       <div id="edit-dac-view">
         <div className="container-fluid page-layout edit-view">
           <div>
             <div className="col-md-8 m-auto">
-              { isLoading &&
-              <Loader className="fixed" />
-                }
+              {isLoading && <Loader className="fixed" />}
 
-              { !isLoading &&
-              <div>
-                <GoBackButton history={history} />
+              {!isLoading && (
+                <div>
+                  <GoBackButton history={history} />
 
-                <div className="form-header">
-                  { isNew &&
-                  <h3>Start a Decentralized Altruistic Community (DAC)</h3>
-                      }
+                  <div className="form-header">
+                    {isNew && <h3>Start a Decentralized Altruistic Community (DAC)</h3>}
 
-                  { !isNew &&
-                  <h3>Edit DAC</h3>
-                      }
+                    {!isNew && <h3>Edit DAC</h3>}
 
-                  <p><i className="fa fa-question-circle" />A DAC aims to solve a cause by building
-                    a Community, raising funds and delegating those funds to Campaigns that solve
-                    its cause. Should you create a Campaign or Community? Read more [here.](http://wiki.giveth.io)
-                  </p>
-                </div>
-
-                <Form
-                  onSubmit={this.submit}
-                  mapping={(inputs) => {
-                    dac.title = inputs.title;
-                    dac.description = inputs.description;
-                    dac.communityUrl = inputs.communityUrl;
-                    dac.tokenName = inputs.tokenName;
-                    dac.tokenSymbol = inputs.tokenSymbol;
-                    dac.summary = getTruncatedText(inputs.description, 100);
-                  }}
-                  onValid={() => this.toggleFormValid(true)}
-                  onInvalid={() => this.toggleFormValid(false)}
-                  layout="vertical"
-                >
-                  <Input
-                    name="title"
-                    id="title-input"
-                    label="Community cause"
-                    type="text"
-                    value={dac.title}
-                    placeholder="e.g. Hurricane relief."
-                    help="Describe your Decentralized Altruistic Community (DAC) in 1 sentence."
-                    validations="minLength:3"
-                    validationErrors={{
-                            minLength: 'Please provide at least 3 characters.',
-                        }}
-                    required
-                    autoFocus
-                  />
-
-                  <div className="form-group">
-                    <QuillFormsy
-                      name="description"
-                      label="Explain how you are going to solve this your cause"
-                      helpText="Make it as extensive as necessary. Your goal is to build trust,
-                        so that people join your Community and/or donate Ether."
-                      value={dac.description}
-                      placeholder="Describe how you're going to solve your cause..."
-                      validations="minLength:20"
-                      help="Describe your dac."
-                      validationErrors={{
-                              minLength: 'Please provide at least 10 characters.',
-                          }}
-                      required
-                    />
+                    <p>
+                      <i className="fa fa-question-circle" />A DAC aims to solve a cause by building
+                      a Community, raising funds and delegating those funds to Campaigns that solve
+                      its cause. Should you create a Campaign or Community? Read more
+                      [here.](http://wiki.giveth.io)
+                    </p>
                   </div>
 
-                  <div className="form-group">
-                    <FormsyImageUploader
-                      name="image"
-                      setImage={this.setImage}
-                      previewImage={dac.image}
-                      isRequired={isNew}
-                    />
-                  </div>
-
-                  <div className="form-group">
+                  <Form
+                    onSubmit={this.submit}
+                    mapping={inputs => {
+                      dac.title = inputs.title;
+                      dac.description = inputs.description;
+                      dac.communityUrl = inputs.communityUrl;
+                      dac.tokenName = inputs.tokenName;
+                      dac.tokenSymbol = inputs.tokenSymbol;
+                      dac.summary = getTruncatedText(inputs.description, 100);
+                    }}
+                    onValid={() => this.toggleFormValid(true)}
+                    onInvalid={() => this.toggleFormValid(false)}
+                    layout="vertical"
+                  >
                     <Input
-                      name="communityUrl"
-                      id="community-url"
-                      label="Url to join your community"
+                      name="title"
+                      id="title-input"
+                      label="Community cause"
                       type="text"
-                      value={dac.communityUrl}
-                      placeholder="https://slack.giveth.com"
-                      help="Where can people join your community? Giveth redirect people there."
-                      validations="isUrl"
-                      validationErrors={{
-                            isUrl: 'Please provide a url.',
-                          }}
-                    />
-                  </div>
-
-                  <div className="form-group">
-                    <Input
-                      name="tokenName"
-                      id="token-name-input"
-                      label="Token Name"
-                      type="text"
-                      value={dac.tokenName}
-                      help="The name of the token that givers will receive when they donate to
-                        this dac."
+                      value={dac.title}
+                      placeholder="e.g. Hurricane relief."
+                      help="Describe your Decentralized Altruistic Community (DAC) in 1 sentence."
                       validations="minLength:3"
                       validationErrors={{
-                            minLength: 'Please provide at least 3 characters.',
-                          }}
+                        minLength: 'Please provide at least 3 characters.',
+                      }}
                       required
-                      disabled={!isNew}
+                      autoFocus
                     />
-                  </div>
 
-                  <div className="form-group">
-                    <Input
-                      name="tokenSymbol"
-                      id="token-symbol-input"
-                      label="Token Symbol"
-                      type="text"
-                      value={dac.tokenSymbol}
-                      help="The symbol of the token that givers will receive when they donate to
+                    <div className="form-group">
+                      <QuillFormsy
+                        name="description"
+                        label="Explain how you are going to solve this your cause"
+                        helpText="Make it as extensive as necessary. Your goal is to build trust,
+                        so that people join your Community and/or donate Ether."
+                        value={dac.description}
+                        placeholder="Describe how you're going to solve your cause..."
+                        validations="minLength:20"
+                        help="Describe your dac."
+                        validationErrors={{
+                          minLength: 'Please provide at least 10 characters.',
+                        }}
+                        required
+                      />
+                    </div>
+
+                    <div className="form-group">
+                      <FormsyImageUploader
+                        name="image"
+                        setImage={this.setImage}
+                        previewImage={dac.image}
+                        isRequired={isNew}
+                      />
+                    </div>
+
+                    <div className="form-group">
+                      <Input
+                        name="communityUrl"
+                        id="community-url"
+                        label="Url to join your community"
+                        type="text"
+                        value={dac.communityUrl}
+                        placeholder="https://slack.giveth.com"
+                        help="Where can people join your community? Giveth redirect people there."
+                        validations="isUrl"
+                        validationErrors={{
+                          isUrl: 'Please provide a url.',
+                        }}
+                      />
+                    </div>
+
+                    <div className="form-group">
+                      <Input
+                        name="tokenName"
+                        id="token-name-input"
+                        label="Token Name"
+                        type="text"
+                        value={dac.tokenName}
+                        help="The name of the token that givers will receive when they donate to
                         this dac."
-                      validations="minLength:2"
-                      validationErrors={{
-                            minLength: 'Please provide at least 2 characters.',
-                          }}
-                      required
-                      disabled={!isNew}
-                    />
-                  </div>
-
-                  <div className="form-group row">
-                    <div className="col-6">
-                      <GoBackButton history={history} />
+                        validations="minLength:3"
+                        validationErrors={{
+                          minLength: 'Please provide at least 3 characters.',
+                        }}
+                        required
+                        disabled={!isNew}
+                      />
                     </div>
-                    <div className="col-6">
-                      <LoaderButton
-                        className="btn btn-success pull-right"
-                        formNoValidate
-                        type="submit"
-                        disabled={isSaving || !formIsValid}
-                        isLoading={isSaving}
-                        loadingText="Saving..."
-                      >
-                        { isNew ? 'Create DAC' : 'Update DAC'}
-                      </LoaderButton>
+
+                    <div className="form-group">
+                      <Input
+                        name="tokenSymbol"
+                        id="token-symbol-input"
+                        label="Token Symbol"
+                        type="text"
+                        value={dac.tokenSymbol}
+                        help="The symbol of the token that givers will receive when they donate to
+                        this dac."
+                        validations="minLength:2"
+                        validationErrors={{
+                          minLength: 'Please provide at least 2 characters.',
+                        }}
+                        required
+                        disabled={!isNew}
+                      />
                     </div>
-                  </div>
 
-                </Form>
-              </div>
-                }
-
+                    <div className="form-group row">
+                      <div className="col-6">
+                        <GoBackButton history={history} />
+                      </div>
+                      <div className="col-6">
+                        <LoaderButton
+                          className="btn btn-success pull-right"
+                          formNoValidate
+                          type="submit"
+                          disabled={isSaving || !formIsValid}
+                          isLoading={isSaving}
+                          loadingText="Saving..."
+                        >
+                          {isNew ? 'Create DAC' : 'Update DAC'}
+                        </LoaderButton>
+                      </div>
+                    </div>
+                  </Form>
+                </div>
+              )}
             </div>
           </div>
         </div>

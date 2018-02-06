@@ -22,12 +22,7 @@ const LoaderButton = ({
   loadingText,
   children,
 }) => (
-  <button
-    className={className}
-    formNoValidate={formNoValidate}
-    type={type}
-    disabled={disabled}
-  >
+  <button className={className} formNoValidate={formNoValidate} type={type} disabled={disabled}>
     {isLoading && (
       <span>
         <Loader className="small btn-loader" />

@@ -36,7 +36,7 @@ class ViewMilestone extends Component {
       etherScanUrl: '',
     };
 
-    getNetwork().then((network) => {
+    getNetwork().then(network => {
       this.setState({
         etherScanUrl: network.etherscan,
       });
@@ -46,17 +46,21 @@ class ViewMilestone extends Component {
   componentDidMount() {
     const milestoneId = this.props.match.params.milestoneId;
 
-    feathersClient.service('milestones').find({ query: { _id: milestoneId } })
+    feathersClient
+      .service('milestones')
+      .find({ query: { _id: milestoneId } })
       .then(resp =>
-        this.setState(Object.assign({}, resp.data[0], {
-          isLoading: false,
-          hasError: false,
-          totalDonated: utils.fromWei(resp.data[0].totalDonated),
-          maxAmount: utils.fromWei(resp.data[0].maxAmount),
-          id: milestoneId,
-        })))
-      .catch(() =>
-        this.setState({ isLoading: false }));
+        this.setState(
+          Object.assign({}, resp.data[0], {
+            isLoading: false,
+            hasError: false,
+            totalDonated: utils.fromWei(resp.data[0].totalDonated),
+            maxAmount: utils.fromWei(resp.data[0].maxAmount),
+            id: milestoneId,
+          }),
+        ),
+      )
+      .catch(() => this.setState({ isLoading: false }));
 
     // lazy load donations
     // TODO fetch "non comitted" donations? add "intendedProjectId: milestoneId" to query to get
@@ -67,14 +71,18 @@ class ViewMilestone extends Component {
       $sort: { createdAt: -1 },
     });
 
-    this.donationsObserver = feathersClient.service('donations').watch({ listStrategy: 'always' }).find(query).subscribe(
-      resp =>
-        this.setState({
-          donations: resp.data,
-          isLoadingDonations: false,
-        }),
-      () => this.setState({ isLoadingDonations: false }),
-    );
+    this.donationsObserver = feathersClient
+      .service('donations')
+      .watch({ listStrategy: 'always' })
+      .find(query)
+      .subscribe(
+        resp =>
+          this.setState({
+            donations: resp.data,
+            isLoadingDonations: false,
+          }),
+        () => this.setState({ isLoadingDonations: false }),
+      );
   }
 
   componentWillUnmount() {
@@ -110,35 +118,27 @@ class ViewMilestone extends Component {
 
     return (
       <div id="view-milestone-view">
-        { isLoading &&
-          <Loader className="fixed" />
-        }
+        {isLoading && <Loader className="fixed" />}
 
-        { !isLoading &&
+        {!isLoading && (
           <div>
-            <BackgroundImageHeader image={image} height={300} >
+            <BackgroundImageHeader image={image} height={300}>
               <h6>Milestone</h6>
               <h1>{title}</h1>
 
+              {!this.state.status === 'InProgress' && <p>This milestone is not active anymore</p>}
 
-              { !this.state.status === 'InProgress' &&
-                <p>This milestone is not active anymore</p>
-              }
+              {this.state.totalDonated >= this.state.maxAmount && (
+                <p>This milestone has reached its funding goal.</p>
+              )}
 
-              { this.state.totalDonated >= this.state.maxAmount &&
+              {this.state.totalDonated < this.state.maxAmount && (
                 <p>
-                  This milestone has reached its funding goal.
+                  Ξ{this.state.totalDonated} of Ξ{this.state.maxAmount} raised.
                 </p>
-              }
+              )}
 
-              { this.state.totalDonated < this.state.maxAmount &&
-                <p>
-                  Ξ{this.state.totalDonated} of
-                  Ξ{this.state.maxAmount} raised.
-                </p>
-              }
-
-              { this.isActiveMilestone() &&
+              {this.isActiveMilestone() && (
                 <DonateButton
                   type="milestone"
                   model={{ title, id, adminId: projectId }}
@@ -146,13 +146,10 @@ class ViewMilestone extends Component {
                   currentUser={currentUser}
                   history={history}
                 />
-              }
-
-
+              )}
             </BackgroundImageHeader>
 
             <div className="container-fluid">
-
               <div className="row">
                 <div className="col-md-8 m-auto">
                   <div>
@@ -180,9 +177,8 @@ class ViewMilestone extends Component {
 
                   <div className="form-group">
                     <label>Reviewer</label>
-                    <small
-                      className="form-text"
-                    >This person will review the actual completion of the Milestone
+                    <small className="form-text">
+                      This person will review the actual completion of the Milestone
                     </small>
 
                     <table className="table-responsive">
@@ -194,12 +190,16 @@ class ViewMilestone extends Component {
                               <span>{getUserName(reviewer)}</span>
                             </Link>
                           </td>
-                          {etherScanUrl &&
-                            <td className="td-address"> - <a href={`${etherScanUrl}address/${reviewerAddress}`}>{reviewerAddress}</a></td>
-                          }
-                          {!etherScanUrl &&
-                            <td className="td-address"> - {reviewerAddress}</td>
-                          }
+                          {etherScanUrl && (
+                            <td className="td-address">
+                              {' '}
+                              -{' '}
+                              <a href={`${etherScanUrl}address/${reviewerAddress}`}>
+                                {reviewerAddress}
+                              </a>
+                            </td>
+                          )}
+                          {!etherScanUrl && <td className="td-address"> - {reviewerAddress}</td>}
                         </tr>
                       </tbody>
                     </table>
@@ -207,9 +207,8 @@ class ViewMilestone extends Component {
 
                   <div className="form-group">
                     <label>Recipient</label>
-                    <small
-                      className="form-text"
-                    >Where the Ether goes after successful completion of the Milestone
+                    <small className="form-text">
+                      Where the Ether goes after successful completion of the Milestone
                     </small>
 
                     <table className="table-responsive">
@@ -221,12 +220,16 @@ class ViewMilestone extends Component {
                               <span>{getUserName(recipient)}</span>
                             </Link>
                           </td>
-                          {etherScanUrl &&
-                            <td className="td-address"> - <a href={`${etherScanUrl}address/${recipientAddress}`}>{recipientAddress}</a></td>
-                          }
-                          {!etherScanUrl &&
-                            <td className="td-address"> - {recipientAddress}</td>
-                          }
+                          {etherScanUrl && (
+                            <td className="td-address">
+                              {' '}
+                              -{' '}
+                              <a href={`${etherScanUrl}address/${recipientAddress}`}>
+                                {recipientAddress}
+                              </a>
+                            </td>
+                          )}
+                          {!etherScanUrl && <td className="td-address"> - {recipientAddress}</td>}
                         </tr>
                       </tbody>
                     </table>
@@ -234,18 +237,16 @@ class ViewMilestone extends Component {
 
                   <div className="form-group">
                     <label>Max amount to raise</label>
-                    <small
-                      className="form-text"
-                    >The maximum amount of &#926; (Ether) that can be donated to this Milestone
+                    <small className="form-text">
+                      The maximum amount of &#926; (Ether) that can be donated to this Milestone
                     </small>
                     &#926;{maxAmount}
                   </div>
 
                   <div className="form-group">
                     <label>Amount donated</label>
-                    <small
-                      className="form-text"
-                    >The amount of &#926; (Ether) currently donated to this Milestone
+                    <small className="form-text">
+                      The amount of &#926; (Ether) currently donated to this Milestone
                     </small>
                     &#926;{totalDonated}
                   </div>
@@ -264,7 +265,7 @@ class ViewMilestone extends Component {
                 <div className="col-md-8 m-auto">
                   <h4>Donations</h4>
                   <ShowTypeDonations donations={donations} isLoading={isLoadingDonations} />
-                  { this.isActiveMilestone() &&
+                  {this.isActiveMilestone() && (
                     <DonateButton
                       type="milestone"
                       model={{ title, id, adminId: projectId }}
@@ -272,13 +273,12 @@ class ViewMilestone extends Component {
                       currentUser={currentUser}
                       history={history}
                     />
-                  }
+                  )}
                 </div>
               </div>
-
             </div>
           </div>
-        }
+        )}
       </div>
     );
   }

@@ -26,10 +26,8 @@ class Campaign extends BasicModel {
     this.tokenSymbol = data.tokenSymbol || '';
     this.dacs = data.dacs || [];
     this.reviewerAddress =
-      data.reviewerAddress ||
-      getRandomWhitelistAddress(React.whitelist.reviewerWhitelist);
-    this.pluginAddress =
-      data.pluginAddress || '0x0000000000000000000000000000000000000000';
+      data.reviewerAddress || getRandomWhitelistAddress(React.whitelist.reviewerWhitelist);
+    this.pluginAddress = data.pluginAddress || '0x0000000000000000000000000000000000000000';
     this.status = data.status || Campaign.PENDING;
   }
 
@@ -129,11 +127,7 @@ class Campaign extends BasicModel {
   }
 
   set status(value) {
-    this.checkValue(
-      value,
-      [Campaign.PENDING, Campaign.ACTIVE, Campaign.CANCELED],
-      'status',
-    );
+    this.checkValue(value, [Campaign.PENDING, Campaign.ACTIVE, Campaign.CANCELED], 'status');
     this.myStatus = value;
     if (value === Campaign.PENDING) this.myOrder = 1;
     else if (value === Campaign.ACTIVE) this.myOrder = 2;

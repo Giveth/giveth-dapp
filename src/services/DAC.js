@@ -108,10 +108,7 @@ class DACservice {
       .service('dacs')
       .watch({ strategy: 'always' })
       .find({ query: { ownerAddress: userAddress } })
-      .subscribe(
-        resp => onSuccess(resp.data.map(dac => new DAC(dac))),
-        onError,
-      );
+      .subscribe(resp => onSuccess(resp.data.map(dac => new DAC(dac))), onError);
   }
 
   /**

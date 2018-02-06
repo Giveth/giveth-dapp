@@ -11,7 +11,12 @@ import SelectFormsy from './../SelectFormsy';
 import FormsyImageUploader from './../FormsyImageUploader';
 import GoBackButton from '../GoBackButton';
 import { isOwner, getTruncatedText, getRandomWhitelistAddress } from '../../lib/helpers';
-import { isAuthenticated, checkWalletBalance, isInWhitelist, confirmBlockchainTransaction } from '../../lib/middleware';
+import {
+  isAuthenticated,
+  checkWalletBalance,
+  isInWhitelist,
+  confirmBlockchainTransaction,
+} from '../../lib/middleware';
 import LoaderButton from '../../components/LoaderButton';
 import User from '../../models/User';
 import GivethWallet from '../../lib/blockchain/GivethWallet';
@@ -39,9 +44,9 @@ class EditCampaign extends Component {
       hasWhitelist: React.whitelist.reviewerWhitelist.length > 0,
       reviewerAddress: getRandomWhitelistAddress(React.whitelist.projectOwnerWhitelist).address,
       whitelistOptions: React.whitelist.projectOwnerWhitelist.map(r => ({
-          value: r.address,
-          title: (r.name ? r.name : 'Anomynous user') + " - " + r.address
-        })),  
+        value: r.address,
+        title: `${r.name ? r.name : 'Anonymous user'} - ${r.address}`,
+      })),
       // Campaign model
       campaign: new Campaign({
         owner: props.currentUser,
@@ -55,13 +60,11 @@ class EditCampaign extends Component {
 
   componentDidMount() {
     isAuthenticated(this.props.currentUser, this.props.wallet)
-      .then(() => isInWhitelist(
-        this.props.currentUser, React.whitelist.projectOwnerWhitelist,
-        this.props.history,
-      ))
+      .then(() => isInWhitelist(this.props.currentUser, React.whitelist.projectOwnerWhitelist))
       .then(() => checkWalletBalance(this.props.wallet, this.props.history))
       .then(() => {
-        this.dacsObserver = feathersClient.service('dacs')
+        this.dacsObserver = feathersClient
+          .service('dacs')
           .watch({ strategy: 'always' })
           .find({ query: { $select: ['title', '_id'] } })
           .subscribe(
@@ -81,9 +84,8 @@ class EditCampaign extends Component {
 
         // Load this Campaign
         if (!this.props.isNew) {
-          CampaignService
-            .get(this.props.match.params.id)
-            .then((campaign) => {
+          CampaignService.get(this.props.match.params.id)
+            .then(campaign => {
               if (isOwner(campaign.owner.address, this.props.currentUser)) {
                 this.setState({ campaign, isLoading: false });
               } else this.props.history.goBack();
@@ -108,12 +110,16 @@ class EditCampaign extends Component {
   submit() {
     this.setState({ isSaving: true });
 
-    const afterMined = (url) => {
+    const afterMined = url => {
       if (url) {
         const msg = (
-          <p>Your Campaign has been created!<br />
-            <a href={url} target="_blank" rel="noopener noreferrer">View transaction</a>
-          </p>);
+          <p>
+            Your Campaign has been created!<br />
+            <a href={url} target="_blank" rel="noopener noreferrer">
+              View transaction
+            </a>
+          </p>
+        );
         React.toast.success(msg);
       } else {
         if (this.mounted) this.setState({ isSaving: false });
@@ -122,12 +128,16 @@ class EditCampaign extends Component {
       }
     };
 
-    const afterCreate = (url) => {
+    const afterCreate = url => {
       if (this.mounted) this.setState({ isSaving: false });
       const msg = (
-        <p>Your Campaign is pending....<br />
-          <a href={url} target="_blank" rel="noopener noreferrer">View transaction</a>
-        </p>);
+        <p>
+          Your Campaign is pending....<br />
+          <a href={url} target="_blank" rel="noopener noreferrer">
+            View transaction
+          </a>
+        </p>
+      );
       React.toast.info(msg);
       this.props.history.push('/my-campaigns');
     };
@@ -157,7 +167,14 @@ class EditCampaign extends Component {
   render() {
     const { isNew, history } = this.props;
     const {
-      isLoading, isSaving, campaign, formIsValid, dacsOptions, hasWhitelist, whitelistOptions, reviewerAddress
+      isLoading,
+      isSaving,
+      campaign,
+      formIsValid,
+      dacsOptions,
+      hasWhitelist,
+      whitelistOptions,
+      reviewerAddress,
     } = this.state;
 
     return (
@@ -165,202 +182,205 @@ class EditCampaign extends Component {
         <div className="container-fluid page-layout edit-view">
           <div>
             <div className="col-md-8 m-auto">
-              { isLoading &&
-              <Loader className="fixed" />
-                }
+              {isLoading && <Loader className="fixed" />}
 
-              { !isLoading &&
-              <div>
-                <GoBackButton history={history} />
+              {!isLoading && (
+                <div>
+                  <GoBackButton history={history} />
 
-                <div className="form-header">
-                  { isNew &&
-                  <h3>Start a new campaign!</h3>
-                      }
+                  <div className="form-header">
+                    {isNew && <h3>Start a new campaign!</h3>}
 
-                  { !isNew &&
-                  <h3>Edit campaign {campaign.title}</h3>
-                      }
-                  <p>
-                    <i className="fa fa-question-circle" />
-                      A campaign solves a specific cause by executing a project via
-                      its Milestones. Funds raised by a campaign need to be delegated
-                      to its Milestones in order to be paid out.
-                  </p>
-                </div>
-
-
-                <Form
-                  onSubmit={this.submit}
-                  mapping={(inputs) => {
-                    campaign.title = inputs.title;
-                    campaign.description = inputs.description;
-                    campaign.communityUrl = inputs.communityUrl;
-                    campaign.reviewerAddress = inputs.reviewerAddress;
-                    campaign.tokenName = inputs.tokenName;
-                    campaign.tokenSymbol = inputs.tokenSymbol;
-                    campaign.summary = getTruncatedText(inputs.description, 100);
-                  }}
-                  onValid={() => this.toggleFormValid(true)}
-                  onInvalid={() => this.toggleFormValid(false)}
-                  layout="vertical"
-                >
-                  <Input
-                    name="title"
-                    id="title-input"
-                    label="What are you working on?"
-                    type="text"
-                    value={campaign.title}
-                    placeholder="E.g. Installing 1000 solar panels."
-                    help="Describe your campaign in 1 sentence."
-                    validations="minLength:3"
-                    validationErrors={{ minLength: 'Please provide at least 3 characters.' }}
-                    required
-                    autoFocus
-                  />
-
-                  <QuillFormsy
-                    name="description"
-                    label="Explain how you are going to do this successfully."
-                    helpText="Make it as extensive as necessary.
-                      Your goal is to build trust, so that people donate Ether to your campaign."
-                    value={campaign.description}
-                    placeholder="Describe how you're going to execute your campaign successfully..."
-                    validations="minLength:20"
-                    help="Describe your campaign."
-                    validationErrors={{ minLength: 'Please provide at least 10 characters.' }}
-                    required
-                  />
-
-                  <div className="form-group">
-                    <FormsyImageUploader
-                      setImage={this.setImage}
-                      previewImage={campaign.image}
-                      isRequired={isNew}
-                    />
+                    {!isNew && <h3>Edit campaign {campaign.title}</h3>}
+                    <p>
+                      <i className="fa fa-question-circle" />
+                      A campaign solves a specific cause by executing a project via its Milestones.
+                      Funds raised by a campaign need to be delegated to its Milestones in order to
+                      be paid out.
+                    </p>
                   </div>
 
-                  <div className="form-group">
-                    <label htmlFor="dac">
-                      Relate your campaign to a community
-                      <small className="form-text" >By linking your Campaign to a
-                        Community, Ether from that community can be delegated to your Campaign.
-                        This increases your chances of successfully funding your Campaign.
-                      </small>
-                      <InputToken
-                        name="dac"
-                        id="dac"
-                        placeholder="Select one or more Communities (DACs)"
-                        value={campaign.dacs}
-                        options={dacsOptions}
-                        onSelect={this.selectDACs}
-                      />
-                    </label>
-                  </div>
-
-                  <div className="form-group">
+                  <Form
+                    onSubmit={this.submit}
+                    mapping={inputs => {
+                      campaign.title = inputs.title;
+                      campaign.description = inputs.description;
+                      campaign.communityUrl = inputs.communityUrl;
+                      campaign.reviewerAddress = inputs.reviewerAddress;
+                      campaign.tokenName = inputs.tokenName;
+                      campaign.tokenSymbol = inputs.tokenSymbol;
+                      campaign.summary = getTruncatedText(inputs.description, 100);
+                    }}
+                    onValid={() => this.toggleFormValid(true)}
+                    onInvalid={() => this.toggleFormValid(false)}
+                    layout="vertical"
+                  >
                     <Input
-                      name="communityUrl"
-                      id="community-url"
-                      label="Url to join your Community"
+                      name="title"
+                      id="title-input"
+                      label="What are you working on?"
                       type="text"
-                      value={campaign.communityUrl}
-                      placeholder="https://slack.giveth.com"
-                      help="Where can people join your Community? Giveth redirects people there."
-                      validations="isUrl"
-                      validationErrors={{ isUrl: 'Please provide a url.' }}
-                    />
-                  </div>
-
-                  <div className="form-group">
-                    <Input
-                      name="tokenName"
-                      id="token-name-input"
-                      label="Token Name"
-                      type="text"
-                      value={campaign.tokenName}
-                      placeholder={campaign.title}
-                      help="The name of the token that Givers will receive when they
-                        donate to this Campaign."
+                      value={campaign.title}
+                      placeholder="E.g. Installing 1000 solar panels."
+                      help="Describe your campaign in 1 sentence."
                       validations="minLength:3"
-                      validationErrors={{ minLength: 'Please provide at least 3 characters.' }}
+                      validationErrors={{
+                        minLength: 'Please provide at least 3 characters.',
+                      }}
                       required
-                      disabled={!isNew}
+                      autoFocus
                     />
-                  </div>
 
-                  <div className="form-group">
-                    <Input
-                      name="tokenSymbol"
-                      id="token-symbol-input"
-                      label="Token Symbol"
-                      type="text"
-                      value={campaign.tokenSymbol}
-                      help="The symbol of the token that Givers will receive when
-                        they donate to this Campaign."
-                      validations="minLength:2"
-                      validationErrors={{ minLength: 'Please provide at least 2 characters.' }}
+                    <QuillFormsy
+                      name="description"
+                      label="Explain how you are going to do this successfully."
+                      helpText="Make it as extensive as necessary.
+                      Your goal is to build trust, so that people donate Ether to your campaign."
+                      value={campaign.description}
+                      placeholder="Describe how you're going to execute your campaign successfully..."
+                      validations="minLength:20"
+                      help="Describe your campaign."
+                      validationErrors={{
+                        minLength: 'Please provide at least 10 characters.',
+                      }}
                       required
-                      disabled={!isNew}
                     />
-                  </div>
 
-                  <div className="form-group">
-                    { hasWhitelist &&
-                      <SelectFormsy
-                        name="reviewerAddress"
-                        id="reviewer-select"
-                        label="Select a reviewer"
-                        helpText="This person or smart contract will be reviewing your Campaign to increase trust for Givers."
-                        value={reviewerAddress}
-                        cta="--- Select a reviewer ---"
-                        options={whitelistOptions}
-                        validations="isEtherAddress"
-                        validationErrors={{
-                          isEtherAddress: 'Please select a reviewer.',
-                        }}
-                        required   
-                        disabled={!isNew}                     
+                    <div className="form-group">
+                      <FormsyImageUploader
+                        setImage={this.setImage}
+                        previewImage={campaign.image}
+                        isRequired={isNew}
                       />
-                    } 
+                    </div>
 
-                    { !hasWhitelist && 
+                    <div className="form-group">
+                      <label htmlFor="dac">
+                        Relate your campaign to a community
+                        <small className="form-text">
+                          By linking your Campaign to a Community, Ether from that community can be
+                          delegated to your Campaign. This increases your chances of successfully
+                          funding your Campaign.
+                        </small>
+                        <InputToken
+                          name="dac"
+                          id="dac"
+                          placeholder="Select one or more Communities (DACs)"
+                          value={campaign.dacs}
+                          options={dacsOptions}
+                          onSelect={this.selectDACs}
+                        />
+                      </label>
+                    </div>
+
+                    <div className="form-group">
                       <Input
-                        name="reviewerAddress"
-                        id="title-input"
-                        label="Reviewer Address"
+                        name="communityUrl"
+                        id="community-url"
+                        label="Url to join your Community"
                         type="text"
-                        value={reviewerAddress}
-                        placeholder="0x0000000000000000000000000000000000000000"
-                        help={"This person or smart contract will be reviewing your Campaign to increase trust for Givers."}
-                        validations="isEtherAddress"
-                        validationErrors={{ isEtherAddress: 'Please enter a valid Ethereum address.' }}
-                        required
+                        value={campaign.communityUrl}
+                        placeholder="https://slack.giveth.com"
+                        help="Where can people join your Community? Giveth redirects people there."
+                        validations="isUrl"
+                        validationErrors={{ isUrl: 'Please provide a url.' }}
                       />
-                    }
-                  </div>
-
-                  <div className="form-group row">
-                    <div className="col-md-6">
-                      <GoBackButton history={history} />
                     </div>
-                    <div className="col-md-6">
-                      <LoaderButton
-                        className="btn btn-success pull-right"
-                        formNoValidate
-                        type="submit"
-                        disabled={isSaving || !formIsValid}
-                        isLoading={isSaving}
-                        loadingText="Saving..."
-                      >
-                        {isNew ? 'Create' : 'Update'} Campaign
-                      </LoaderButton>
-                    </div>
-                  </div>
 
-                </Form>
-              </div>
-                }
+                    <div className="form-group">
+                      <Input
+                        name="tokenName"
+                        id="token-name-input"
+                        label="Token Name"
+                        type="text"
+                        value={campaign.tokenName}
+                        placeholder={campaign.title}
+                        help="The name of the token that Givers will receive when they
+                        donate to this Campaign."
+                        validations="minLength:3"
+                        validationErrors={{
+                          minLength: 'Please provide at least 3 characters.',
+                        }}
+                        required
+                        disabled={!isNew}
+                      />
+                    </div>
+
+                    <div className="form-group">
+                      <Input
+                        name="tokenSymbol"
+                        id="token-symbol-input"
+                        label="Token Symbol"
+                        type="text"
+                        value={campaign.tokenSymbol}
+                        help="The symbol of the token that Givers will receive when
+                        they donate to this Campaign."
+                        validations="minLength:2"
+                        validationErrors={{
+                          minLength: 'Please provide at least 2 characters.',
+                        }}
+                        required
+                        disabled={!isNew}
+                      />
+                    </div>
+
+                    <div className="form-group">
+                      {hasWhitelist && (
+                        <SelectFormsy
+                          name="reviewerAddress"
+                          id="reviewer-select"
+                          label="Select a reviewer"
+                          helpText="This person or smart contract will be reviewing your Campaign to increase trust for Givers."
+                          value={reviewerAddress}
+                          cta="--- Select a reviewer ---"
+                          options={whitelistOptions}
+                          validations="isEtherAddress"
+                          validationErrors={{
+                            isEtherAddress: 'Please select a reviewer.',
+                          }}
+                          required
+                          disabled={!isNew}
+                        />
+                      )}
+
+                      {!hasWhitelist && (
+                        <Input
+                          name="reviewerAddress"
+                          id="title-input"
+                          label="Reviewer Address"
+                          type="text"
+                          value={reviewerAddress}
+                          placeholder="0x0000000000000000000000000000000000000000"
+                          help="This person or smart contract will be reviewing your Campaign to increase trust for Givers."
+                          validations="isEtherAddress"
+                          validationErrors={{
+                            isEtherAddress: 'Please enter a valid Ethereum address.',
+                          }}
+                          required
+                        />
+                      )}
+                    </div>
+
+                    <div className="form-group row">
+                      <div className="col-md-6">
+                        <GoBackButton history={history} />
+                      </div>
+                      <div className="col-md-6">
+                        <LoaderButton
+                          className="btn btn-success pull-right"
+                          formNoValidate
+                          type="submit"
+                          disabled={isSaving || !formIsValid}
+                          isLoading={isSaving}
+                          loadingText="Saving..."
+                        >
+                          {isNew ? 'Create' : 'Update'} Campaign
+                        </LoaderButton>
+                      </div>
+                    </div>
+                  </Form>
+                </div>
+              )}
             </div>
           </div>
         </div>
