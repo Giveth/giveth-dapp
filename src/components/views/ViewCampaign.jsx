@@ -88,13 +88,7 @@ class ViewCampaign extends Component {
 
   render() {
     const { history, currentUser, wallet } = this.props;
-    const {
-      isLoading,
-      campaign,
-      milestones,
-      donations,
-      isLoadingDonations,
-    } = this.state;
+    const { isLoading, campaign, milestones, donations, isLoadingDonations } = this.state;
 
     return (
       <div id="view-campaign-view">
@@ -126,11 +120,7 @@ class ViewCampaign extends Component {
 
                   <center>
                     <Link to={`/profile/${campaign.owner.address}`}>
-                      <Avatar
-                        size={50}
-                        src={getUserAvatar(campaign.owner)}
-                        round
-                      />
+                      <Avatar size={50} src={getUserAvatar(campaign.owner)} round />
                       <p className="small">{getUserName(campaign.owner)}</p>
                     </Link>
                   </center>
@@ -186,10 +176,7 @@ class ViewCampaign extends Component {
               <div className="row spacer-top-50 spacer-bottom-50">
                 <div className="col-md-8 m-auto">
                   <h4>Donations</h4>
-                  <ShowTypeDonations
-                    donations={donations}
-                    isLoading={isLoadingDonations}
-                  />
+                  <ShowTypeDonations donations={donations} isLoading={isLoadingDonations} />
                   <DonateButton
                     type="campaign"
                     model={{

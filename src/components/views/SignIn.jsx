@@ -38,10 +38,7 @@ class SignIn extends Component {
   handleProps(props) {
     if (!props.cachedWallet) {
       this.props.history.push('/change-account');
-    } else if (
-      props.wallet &&
-      (!this.state.address || props.wallet !== this.props.wallet)
-    ) {
+    } else if (props.wallet && (!this.state.address || props.wallet !== this.props.wallet)) {
       this.setState(
         {
           address: props.wallet.getAddresses()[0],
@@ -155,9 +152,7 @@ class SignIn extends Component {
                         <div className="form-group">
                           <p className="small">
                             <Link to="/signup">Not you</Link>, or&nbsp;
-                            <Link to="/change-account">
-                              want to change wallet?
-                            </Link>
+                            <Link to="/change-account">want to change wallet?</Link>
                           </p>
                         </div>
                       </UnlockWalletForm>

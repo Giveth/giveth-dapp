@@ -50,12 +50,7 @@ class EditDAC extends Component {
 
   componentDidMount() {
     isAuthenticated(this.props.currentUser, this.props.wallet)
-      .then(() =>
-        isInWhitelist(
-          this.props.currentUser,
-          React.whitelist.delegateWhitelist,
-        ),
-      )
+      .then(() => isInWhitelist(this.props.currentUser, React.whitelist.delegateWhitelist))
       .then(() => checkWalletBalance(this.props.wallet, this.props.history))
       .then(() => {
         if (!this.props.isNew) {
@@ -149,17 +144,14 @@ class EditDAC extends Component {
                   <GoBackButton history={history} />
 
                   <div className="form-header">
-                    {isNew && (
-                      <h3>Start a Decentralized Altruistic Community (DAC)</h3>
-                    )}
+                    {isNew && <h3>Start a Decentralized Altruistic Community (DAC)</h3>}
 
                     {!isNew && <h3>Edit DAC</h3>}
 
                     <p>
-                      <i className="fa fa-question-circle" />A DAC aims to solve
-                      a cause by building a Community, raising funds and
-                      delegating those funds to Campaigns that solve its cause.
-                      Should you create a Campaign or Community? Read more
+                      <i className="fa fa-question-circle" />A DAC aims to solve a cause by building
+                      a Community, raising funds and delegating those funds to Campaigns that solve
+                      its cause. Should you create a Campaign or Community? Read more
                       [here.](http://wiki.giveth.io)
                     </p>
                   </div>

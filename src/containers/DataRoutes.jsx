@@ -49,13 +49,7 @@ class DataRoutes extends Component {
 
   render() {
     const { currentUser, wallet } = this.props;
-    const {
-      dacs,
-      campaigns,
-      dacsLoading,
-      campaignsLoading,
-      hasError,
-    } = this.state;
+    const { dacs, campaigns, dacsLoading, campaignsLoading, hasError } = this.state;
 
     return (
       <div>
@@ -68,24 +62,14 @@ class DataRoutes extends Component {
                 exact
                 path="/"
                 render={props => (
-                  <DACs
-                    dacs={dacs}
-                    currentUser={currentUser}
-                    wallet={wallet}
-                    {...props}
-                  />
+                  <DACs dacs={dacs} currentUser={currentUser} wallet={wallet} {...props} />
                 )}
               />
               <Route
                 exact
                 path="/dacs"
                 render={props => (
-                  <DACs
-                    dacs={dacs}
-                    currentUser={currentUser}
-                    wallet={wallet}
-                    {...props}
-                  />
+                  <DACs dacs={dacs} currentUser={currentUser} wallet={wallet} {...props} />
                 )}
               />
               <Route
@@ -107,10 +91,7 @@ class DataRoutes extends Component {
           hasError && (
             <center>
               <h2>Oops, something went wrong...</h2>
-              <p>
-                The Giveth dapp could not load for some reason. Please try
-                again...
-              </p>
+              <p>The Giveth dapp could not load for some reason. Please try again...</p>
             </center>
           )}
       </div>

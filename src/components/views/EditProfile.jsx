@@ -83,59 +83,57 @@ class EditProfile extends Component {
       // TODO if (giverId > 0), need to send tx if commitTime or name has changed
       // TODO store user profile on ipfs and add Giver in liquidpledging contract
       if (this.state.giverId === undefined) {
-        Promise.all([getNetwork(), getGasPrice()]).then(
-          ([network, gasPrice]) => {
-            const { liquidPledging } = network;
-            const from = this.props.currentUser.address;
+        Promise.all([getNetwork(), getGasPrice()]).then(([network, gasPrice]) => {
+          const { liquidPledging } = network;
+          const from = this.props.currentUser.address;
 
-            let txHash;
-            liquidPledging
-              .addGiver(model.name || '', '', 259200, '0x0', {
-                $extraGas: 50000,
-                gasPrice,
-                from,
-              }) // 3 days commitTime. TODO allow user to set commitTime
-              .once('transactionHash', hash => {
-                txHash = hash;
-                feathersClient
-                  .service('/users')
-                  .patch(this.props.currentUser.address, constructedModel)
-                  .then(user => {
-                    React.toast.success(
-                      <p>
-                        Your profile was created!<br />
-                        <a
-                          href={`${network.etherscan}tx/${txHash}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          View transaction
-                        </a>
-                      </p>,
-                    );
-                    this.setState(Object.assign({}, user, { isSaving: false }));
-                  });
-              })
-              .then(() =>
-                React.toast.success(
-                  <p>
-                    You are now a registered user<br />
-                    <a
-                      href={`${network.etherscan}tx/${txHash}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      View transaction
-                    </a>
-                  </p>,
-                ),
-              )
-              .catch(() => {
-                // TODO: Actually inform the user about error
-                displayTransactionError(txHash, network.etherscan);
-              });
-          },
-        );
+          let txHash;
+          liquidPledging
+            .addGiver(model.name || '', '', 259200, '0x0', {
+              $extraGas: 50000,
+              gasPrice,
+              from,
+            }) // 3 days commitTime. TODO allow user to set commitTime
+            .once('transactionHash', hash => {
+              txHash = hash;
+              feathersClient
+                .service('/users')
+                .patch(this.props.currentUser.address, constructedModel)
+                .then(user => {
+                  React.toast.success(
+                    <p>
+                      Your profile was created!<br />
+                      <a
+                        href={`${network.etherscan}tx/${txHash}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        View transaction
+                      </a>
+                    </p>,
+                  );
+                  this.setState(Object.assign({}, user, { isSaving: false }));
+                });
+            })
+            .then(() =>
+              React.toast.success(
+                <p>
+                  You are now a registered user<br />
+                  <a
+                    href={`${network.etherscan}tx/${txHash}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    View transaction
+                  </a>
+                </p>,
+              ),
+            )
+            .catch(() => {
+              // TODO: Actually inform the user about error
+              displayTransactionError(txHash, network.etherscan);
+            });
+        });
       } else {
         feathersClient
           .service('/users')
@@ -172,15 +170,7 @@ class EditProfile extends Component {
   }
 
   render() {
-    const {
-      isLoading,
-      isSaving,
-      name,
-      email,
-      linkedIn,
-      avatar,
-      isPristine,
-    } = this.state;
+    const { isLoading, isSaving, name, email, linkedIn, avatar, isPristine } = this.state;
 
     return (
       <div id="edit-cause-view" className="container-fluid page-layout">
@@ -193,9 +183,8 @@ class EditProfile extends Component {
                 <h3>Edit your profile</h3>
                 <p>
                   <i className="fa fa-question-circle" />
-                  Trust is important to run successful Communities or Campaigns.
-                  Without trust you will likely not receive donations.
-                  Therefore, we strongly recommend that you{' '}
+                  Trust is important to run successful Communities or Campaigns. Without trust you
+                  will likely not receive donations. Therefore, we strongly recommend that you{' '}
                   <strong>fill out your profile </strong>
                   when you want to start Communities or Campaigns on Giveth.
                 </p>
@@ -242,10 +231,7 @@ class EditProfile extends Component {
                     />
                   </div>
 
-                  <FormsyImageUploader
-                    setImage={this.setImage}
-                    avatar={avatar}
-                  />
+                  <FormsyImageUploader setImage={this.setImage} avatar={avatar} />
 
                   <div className="form-group">
                     <Input

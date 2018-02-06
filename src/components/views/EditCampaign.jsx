@@ -10,11 +10,7 @@ import QuillFormsy from '../QuillFormsy';
 import SelectFormsy from './../SelectFormsy';
 import FormsyImageUploader from './../FormsyImageUploader';
 import GoBackButton from '../GoBackButton';
-import {
-  isOwner,
-  getTruncatedText,
-  getRandomWhitelistAddress,
-} from '../../lib/helpers';
+import { isOwner, getTruncatedText, getRandomWhitelistAddress } from '../../lib/helpers';
 import {
   isAuthenticated,
   checkWalletBalance,
@@ -46,9 +42,7 @@ class EditCampaign extends Component {
       formIsValid: false,
       dacsOptions: [],
       hasWhitelist: React.whitelist.reviewerWhitelist.length > 0,
-      reviewerAddress: getRandomWhitelistAddress(
-        React.whitelist.projectOwnerWhitelist,
-      ).address,
+      reviewerAddress: getRandomWhitelistAddress(React.whitelist.projectOwnerWhitelist).address,
       whitelistOptions: React.whitelist.projectOwnerWhitelist.map(r => ({
         value: r.address,
         title: `${r.name ? r.name : 'Anonymous user'} - ${r.address}`,
@@ -66,12 +60,7 @@ class EditCampaign extends Component {
 
   componentDidMount() {
     isAuthenticated(this.props.currentUser, this.props.wallet)
-      .then(() =>
-        isInWhitelist(
-          this.props.currentUser,
-          React.whitelist.projectOwnerWhitelist,
-        ),
-      )
+      .then(() => isInWhitelist(this.props.currentUser, React.whitelist.projectOwnerWhitelist))
       .then(() => checkWalletBalance(this.props.wallet, this.props.history))
       .then(() => {
         this.dacsObserver = feathersClient
@@ -205,9 +194,9 @@ class EditCampaign extends Component {
                     {!isNew && <h3>Edit campaign {campaign.title}</h3>}
                     <p>
                       <i className="fa fa-question-circle" />
-                      A campaign solves a specific cause by executing a project
-                      via its Milestones. Funds raised by a campaign need to be
-                      delegated to its Milestones in order to be paid out.
+                      A campaign solves a specific cause by executing a project via its Milestones.
+                      Funds raised by a campaign need to be delegated to its Milestones in order to
+                      be paid out.
                     </p>
                   </div>
 
@@ -220,10 +209,7 @@ class EditCampaign extends Component {
                       campaign.reviewerAddress = inputs.reviewerAddress;
                       campaign.tokenName = inputs.tokenName;
                       campaign.tokenSymbol = inputs.tokenSymbol;
-                      campaign.summary = getTruncatedText(
-                        inputs.description,
-                        100,
-                      );
+                      campaign.summary = getTruncatedText(inputs.description, 100);
                     }}
                     onValid={() => this.toggleFormValid(true)}
                     onInvalid={() => this.toggleFormValid(false)}
@@ -272,10 +258,9 @@ class EditCampaign extends Component {
                       <label htmlFor="dac">
                         Relate your campaign to a community
                         <small className="form-text">
-                          By linking your Campaign to a Community, Ether from
-                          that community can be delegated to your Campaign. This
-                          increases your chances of successfully funding your
-                          Campaign.
+                          By linking your Campaign to a Community, Ether from that community can be
+                          delegated to your Campaign. This increases your chances of successfully
+                          funding your Campaign.
                         </small>
                         <InputToken
                           name="dac"
@@ -369,8 +354,7 @@ class EditCampaign extends Component {
                           help="This person or smart contract will be reviewing your Campaign to increase trust for Givers."
                           validations="isEtherAddress"
                           validationErrors={{
-                            isEtherAddress:
-                              'Please enter a valid Ethereum address.',
+                            isEtherAddress: 'Please enter a valid Ethereum address.',
                           }}
                           required
                         />

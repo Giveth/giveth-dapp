@@ -18,11 +18,7 @@ import DAC from '../../models/DAC';
  */
 const DACs = ({ currentUser, wallet, dacs, history }) => (
   <div id="dacs-view" className="card-view">
-    <JoinGivethCommunity
-      currentUser={currentUser}
-      wallet={wallet}
-      history={history}
-    />
+    <JoinGivethCommunity currentUser={currentUser} wallet={wallet} history={history} />
 
     <div className="container-fluid page-layout reduced-padding">
       {// There are some Campaigns in the system, show them
@@ -31,8 +27,8 @@ const DACs = ({ currentUser, wallet, dacs, history }) => (
           <div>
             <center>
               <p>
-                These Communities are solving causes. Help them realise their
-                goals by joining them and giving Ether!
+                These Communities are solving causes. Help them realise their goals by joining them
+                and giving Ether!
               </p>
             </center>
 
@@ -66,9 +62,7 @@ const DACs = ({ currentUser, wallet, dacs, history }) => (
         dacs.data.length === 0 && (
           <div>
             <center>
-              <p>
-                There are no decentralized altruistic communities (DACs) yet!
-              </p>
+              <p>There are no decentralized altruistic communities (DACs) yet!</p>
               <img
                 className="empty-state-img"
                 src={`${process.env.PUBLIC_URL}/img/community.svg`}

@@ -15,12 +15,8 @@ export const socket = io(config.feathersConnection, {
 
 // socket IO error events
 socket.on('connect_error', _e => console.log('Could not connect to FeatherJS'));
-socket.on('connect_timeout', _e =>
-  console.log('Could not connect to FeatherJS: Timeout'),
-);
-socket.on('reconnect_attempt', _e =>
-  console.log('Trying to reconnect to FeatherJS: Timeout'),
-);
+socket.on('connect_timeout', _e => console.log('Could not connect to FeatherJS: Timeout'));
+socket.on('reconnect_attempt', _e => console.log('Trying to reconnect to FeatherJS: Timeout'));
 
 export const feathersClient = feathers()
   .configure(socketio(socket, { timeout: 5000 }))

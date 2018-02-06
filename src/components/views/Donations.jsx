@@ -14,11 +14,7 @@ import {
   checkWalletBalance,
 } from '../../lib/middleware';
 import getNetwork from '../../lib/blockchain/getNetwork';
-import {
-  displayTransactionError,
-  getGasPrice,
-  getTruncatedText,
-} from '../../lib/helpers';
+import { displayTransactionError, getGasPrice, getTruncatedText } from '../../lib/helpers';
 import User from '../../models/User';
 import GivethWallet from '../../lib/blockchain/GivethWallet';
 
@@ -266,13 +262,11 @@ class Donations extends Component {
                 const from = this.props.currentUser.address;
 
                 return liquidPledging
-                  .transfer(
-                    donation.owner,
-                    donation.pledgeId,
-                    donation.amount,
-                    donation.delegate,
-                    { $extraGas: 50000, gasPrice, from },
-                  )
+                  .transfer(donation.owner, donation.pledgeId, donation.amount, donation.delegate, {
+                    $extraGas: 50000,
+                    gasPrice,
+                    from,
+                  })
                   .once('transactionHash', hash => {
                     txHash = hash;
                     doReject(etherScanUrl, txHash);
@@ -414,9 +408,7 @@ class Donations extends Component {
         <div className="container-fluid page-layout dashboard-table-view">
           <div className="row">
             <div className="col-md-10 m-auto">
-              {(isLoading || (donations && donations.length > 0)) && (
-                <h1>Your donations</h1>
-              )}
+              {(isLoading || (donations && donations.length > 0)) && <h1>Your donations</h1>}
 
               {isLoading && <Loader className="fixed" />}
 
@@ -437,12 +429,7 @@ class Donations extends Component {
                         </thead>
                         <tbody>
                           {donations.map(d => (
-                            <tr
-                              key={d._id}
-                              className={
-                                d.status === 'pending' ? 'pending' : ''
-                              }
-                            >
+                            <tr key={d._id} className={d.status === 'pending' ? 'pending' : ''}>
                               <td className="td-date">
                                 {moment(d.createdAt).format('MM/DD/YYYY')}
                               </td>
@@ -458,53 +445,25 @@ class Donations extends Component {
                                 {d.delegate > 0 &&
                                   d.delegateEntity && (
                                     <Link to={`/dacs/${d.delegateEntity._id}`}>
-                                      DAC{' '}
-                                      <em>
-                                        {getTruncatedText(
-                                          d.delegateEntity.title,
-                                          45,
-                                        )}
-                                      </em>
+                                      DAC <em>{getTruncatedText(d.delegateEntity.title, 45)}</em>
                                     </Link>
                                   )}
 
                                 {d.ownerType === 'campaign' &&
                                   d.ownerEntity && (
-                                    <Link
-                                      to={`/${d.ownerType}s/${
-                                        d.ownerEntity._id
-                                      }`}
-                                    >
-                                      CAMPAIGN{' '}
-                                      <em>
-                                        {getTruncatedText(
-                                          d.ownerEntity.title,
-                                          45,
-                                        )}
-                                      </em>
+                                    <Link to={`/${d.ownerType}s/${d.ownerEntity._id}`}>
+                                      CAMPAIGN <em>{getTruncatedText(d.ownerEntity.title, 45)}</em>
                                     </Link>
                                   )}
 
                                 {d.ownerType === 'milestone' &&
                                   d.ownerEntity && (
-                                    <Link
-                                      to={`/${d.ownerType}s/${
-                                        d.ownerEntity._id
-                                      }`}
-                                    >
-                                      MILESTONE{' '}
-                                      <em>
-                                        {getTruncatedText(
-                                          d.ownerEntity.title,
-                                          45,
-                                        )}
-                                      </em>
+                                    <Link to={`/${d.ownerType}s/${d.ownerEntity._id}`}>
+                                      MILESTONE <em>{getTruncatedText(d.ownerEntity.title, 45)}</em>
                                     </Link>
                                   )}
                               </td>
-                              <td className="td-donations-amount">
-                                Ξ{utils.fromWei(d.amount)}
-                              </td>
+                              <td className="td-donations-amount">Ξ{utils.fromWei(d.amount)}</td>
 
                               <td className="td-transaction-status">
                                 {d.status === 'pending' && (
@@ -517,20 +476,12 @@ class Donations extends Component {
 
                               {etherScanUrl && (
                                 <td className="td-tx-address">
-                                  <a
-                                    href={`${etherScanUrl}address/${
-                                      d.giverAddress
-                                    }`}
-                                  >
+                                  <a href={`${etherScanUrl}address/${d.giverAddress}`}>
                                     {d.giverAddress}
                                   </a>
                                 </td>
                               )}
-                              {!etherScanUrl && (
-                                <td className="td-tx-address">
-                                  {d.giverAddress}
-                                </td>
-                              )}
+                              {!etherScanUrl && <td className="td-tx-address">{d.giverAddress}</td>}
 
                               <td className="td-actions">
                                 {d.ownerId === currentUser.address &&

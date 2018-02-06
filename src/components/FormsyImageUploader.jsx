@@ -40,9 +40,7 @@ class FormsyImageUploader extends Component {
         height: 600,
       },
       (blob, didItResize) => {
-        reader.readAsDataURL(
-          didItResize ? blob : this.imagePreview.element.files[0],
-        );
+        reader.readAsDataURL(didItResize ? blob : this.imagePreview.element.files[0]);
       },
     );
   }
@@ -56,9 +54,7 @@ class FormsyImageUploader extends Component {
           </div>
         )}
 
-        {this.props.avatar && (
-          <Avatar size={100} src={this.props.avatar} round />
-        )}
+        {this.props.avatar && <Avatar size={100} src={this.props.avatar} round />}
 
         <File
           label="Add a picture"

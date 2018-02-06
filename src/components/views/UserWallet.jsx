@@ -4,10 +4,7 @@ import { Link } from 'react-router-dom';
 import { utils } from 'web3';
 
 import BackupWallet from '../BackupWallet';
-import {
-  isAuthenticated,
-  takeActionAfterWalletUnlock,
-} from '../../lib/middleware';
+import { isAuthenticated, takeActionAfterWalletUnlock } from '../../lib/middleware';
 // import WithdrawButton from '../WithdrawButton';
 import User from '../../models/User';
 import GivethWallet from '../../lib/blockchain/GivethWallet';
@@ -93,9 +90,7 @@ class UserWallet extends Component {
         this.setState({
           tokens: this.state.tokens.map(t => {
             const matchingDac = dacs.find(d => d.tokenSymbol === t.tokenSymbol);
-            const matchingCampaign = campaigns.find(
-              c => c.tokenSymbol === t.tokenSymbol,
-            );
+            const matchingCampaign = campaigns.find(c => c.tokenSymbol === t.tokenSymbol);
 
             t.meta = matchingDac || matchingCampaign;
             if (matchingDac) t.type = 'dac';
@@ -123,10 +118,7 @@ class UserWallet extends Component {
     } = this.state;
 
     return (
-      <div
-        id="profile-view"
-        className="container-fluid page-layout dashboard-table-view"
-      >
+      <div id="profile-view" className="container-fluid page-layout dashboard-table-view">
         <center>
           <img
             className="empty-state-img"
@@ -160,9 +152,7 @@ class UserWallet extends Component {
                   </p>
                 )}
                 {!etherScanUrl && (
-                  <p>
-                    GivETH balance: &#926;{this.props.wallet.getTokenBalance()}
-                  </p>
+                  <p>GivETH balance: &#926;{this.props.wallet.getTokenBalance()}</p>
                 )}
                 {/* <WithdrawButton wallet={this.props.wallet} currentUser={this.props.currentUser} /> */}
                 <BackupWallet wallet={this.props.wallet} />
@@ -179,28 +169,20 @@ class UserWallet extends Component {
                             <th className="td-token-symbol">Symbol</th>
                             <th className="td-donations-amount">Amount</th>
                             <th className="td-tx-address">Token address</th>
-                            <th className="td-name">
-                              Received from a donation to
-                            </th>
+                            <th className="td-name">Received from a donation to</th>
                           </tr>
                         </thead>
                         <tbody>
                           {tokens.map(t => (
                             <tr key={t._id}>
                               <td className="td-token-name">{t.tokenName}</td>
-                              <td className="td-token-symbol">
-                                {t.tokenSymbol}
-                              </td>
+                              <td className="td-token-symbol">{t.tokenSymbol}</td>
                               <td className="td-donations-amount">
                                 {t.balance ? utils.fromWei(t.balance) : 0}
                               </td>
                               <td className="td-tx-address">
                                 {etherScanUrl && (
-                                  <a
-                                    href={`${etherScanUrl}address/${
-                                      t.tokenAddress
-                                    }`}
-                                  >
+                                  <a href={`${etherScanUrl}address/${t.tokenAddress}`}>
                                     {t.tokenAddress}
                                   </a>
                                 )}
@@ -219,9 +201,7 @@ class UserWallet extends Component {
                                     {getTruncatedText(t.meta.title, 45)}
                                   </Link>
                                 )}
-                                {t.type === 'revomed' && (
-                                  <span>Does not exist anymore</span>
-                                )}
+                                {t.type === 'revomed' && <span>Does not exist anymore</span>}
                               </td>
                             </tr>
                           ))}
@@ -236,8 +216,8 @@ class UserWallet extends Component {
             hasError && (
               <div>
                 <h1>
-                  Oops, something went wrong loading your wallet. Please refresh
-                  the page to try again
+                  Oops, something went wrong loading your wallet. Please refresh the page to try
+                  again
                 </h1>
               </div>
             )}

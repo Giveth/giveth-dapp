@@ -40,8 +40,7 @@ class UnlockWallet extends Component {
                   this.props.onClose();
 
                   // if requested, redirect after successfully unlocking the wallet
-                  if (this.props.redirectAfter)
-                    this.props.history.push(this.props.redirectAfter);
+                  if (this.props.redirectAfter) this.props.history.push(this.props.redirectAfter);
                 },
               );
             })
@@ -82,8 +81,7 @@ class UnlockWallet extends Component {
 
         <h2>Unlock your wallet to continue</h2>
         <p className="small">
-          Note: For security reasons, your wallet auto-locks whenever the Giveth
-          dapp reloads.
+          Note: For security reasons, your wallet auto-locks whenever the Giveth dapp reloads.
         </p>
 
         <UnlockWalletForm

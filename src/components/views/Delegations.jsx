@@ -10,11 +10,7 @@ import { feathersClient } from '../../lib/feathersClient';
 import Loader from '../Loader';
 import { isAuthenticated } from '../../lib/middleware';
 import DelegateButton from '../../components/DelegateButton';
-import {
-  getUserName,
-  getUserAvatar,
-  getTruncatedText,
-} from '../../lib/helpers';
+import { getUserName, getUserAvatar, getTruncatedText } from '../../lib/helpers';
 import GivethWallet from '../../lib/blockchain/GivethWallet';
 import User from '../../models/User';
 
@@ -221,9 +217,7 @@ class Delegations extends Component {
         <div className="container-fluid page-layout dashboard-table-view">
           <div className="row">
             <div className="col-md-10 m-auto">
-              {(isLoading || (delegations && delegations.length > 0)) && (
-                <h1>Your delegations</h1>
-              )}
+              {(isLoading || (delegations && delegations.length > 0)) && <h1>Your delegations</h1>}
 
               {isLoading && <Loader className="fixed" />}
 
@@ -256,25 +250,16 @@ class Delegations extends Component {
                                     <Link
                                       to={`/dacs/${d._id}`} // eslint-disable-line no-underscore-dangle
                                     >
-                                      DAC{' '}
-                                      <em>
-                                        {getTruncatedText(
-                                          d.delegateEntity.title,
-                                          45,
-                                        )}
-                                      </em>
+                                      DAC <em>{getTruncatedText(d.delegateEntity.title, 45)}</em>
                                     </Link>
                                   </td>
                                 )}
                                 {!d.delegate && (
                                   <td className="td-donated-to">
                                     <Link
-                                      to={`/${d.ownerType}s/${
-                                        d.ownerEntity._id
-                                      }`} // eslint-disable-line no-underscore-dangle
+                                      to={`/${d.ownerType}s/${d.ownerEntity._id}`} // eslint-disable-line no-underscore-dangle
                                     >
-                                      {d.ownerType.toUpperCase()}{' '}
-                                      <em>{d.ownerEntity.title}</em>
+                                      {d.ownerType.toUpperCase()} <em>{d.ownerEntity.title}</em>
                                     </Link>
                                   </td>
                                 )}
@@ -282,22 +267,15 @@ class Delegations extends Component {
                                   &#926;{utils.fromWei(d.amount)}
                                 </td>
                                 <td className="td-user">
-                                  <Avatar
-                                    size={30}
-                                    src={getUserAvatar(d.giver)}
-                                    round
-                                  />
+                                  <Avatar size={30} src={getUserAvatar(d.giver)} round />
                                   {getUserName(d.giver)}
                                 </td>
-                                <td className="td-tx-address">
-                                  {d.giverAddress}
-                                </td>
+                                <td className="td-tx-address">{d.giverAddress}</td>
                                 <td className="td-status">{d.status}</td>
                                 <td className="td-actions">
                                   {/* When donated to a dac, allow delegation
                                       to campaigns and milestones */}
-                                  {(d.delegate > 0 ||
-                                    d.ownerId === currentUser.address) && (
+                                  {(d.delegate > 0 || d.ownerId === currentUser.address) && (
                                     <DelegateButton
                                       types={campaigns.concat(milestones)}
                                       model={d}
@@ -310,9 +288,7 @@ class Delegations extends Component {
                                       to milestones of that campaign */}
                                   {d.ownerType === 'campaign' && (
                                     <DelegateButton
-                                      types={milestones.filter(
-                                        m => m.campaignId === d.ownerId,
-                                      )}
+                                      types={milestones.filter(m => m.campaignId === d.ownerId)}
                                       model={d}
                                       milestoneOnly
                                       wallet={wallet}

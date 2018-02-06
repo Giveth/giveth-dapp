@@ -17,9 +17,7 @@ const QuillFormsy = createReactClass({
     // when the value is empty and the required prop is
     // passed to the input. showError() is true when the
     // value typed is invalid
-    const errorClass = this.isPristine()
-      ? ''
-      : this.isValid() ? 'is-valid' : 'has-error';
+    const errorClass = this.isPristine() ? '' : this.isValid() ? 'is-valid' : 'has-error';
 
     // An error message is returned ONLY if the component is invalid
     // or the server has returned an error message
@@ -29,12 +27,7 @@ const QuillFormsy = createReactClass({
       toolbar: [
         [{ header: [1, 2, false] }],
         ['bold', 'italic', 'underline', 'strike', 'blockquote'],
-        [
-          { list: 'ordered' },
-          { list: 'bullet' },
-          { indent: '-1' },
-          { indent: '+1' },
-        ],
+        [{ list: 'ordered' }, { list: 'bullet' }, { indent: '-1' }, { indent: '+1' }],
         ['link', 'image', 'video'],
         ['clean'],
       ],

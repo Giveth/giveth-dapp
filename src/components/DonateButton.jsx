@@ -6,10 +6,7 @@ import { utils } from 'web3';
 
 import getNetwork from '../lib/blockchain/getNetwork';
 import { feathersClient } from '../lib/feathersClient';
-import {
-  takeActionAfterWalletUnlock,
-  confirmBlockchainTransaction,
-} from '../lib/middleware';
+import { takeActionAfterWalletUnlock, confirmBlockchainTransaction } from '../lib/middleware';
 import User from '../models/User';
 import { displayTransactionError, getGasPrice } from '../lib/helpers';
 import GivethWallet from '../lib/blockchain/GivethWallet';
@@ -84,9 +81,8 @@ class DonateButton extends Component {
         title: "You're almost there...",
         content: React.swal.msg(
           <p>
-            It&#8217;s great to see that you want to donate, however, you first
-            need to sign up (or sign in). Also make sure to transfer some Ether
-            to your Giveth wallet before donating.<br />
+            It&#8217;s great to see that you want to donate, however, you first need to sign up (or
+            sign in). Also make sure to transfer some Ether to your Giveth wallet before donating.<br />
             <br />
             Alternatively, you can donate with MyEtherWallet
           </p>,
@@ -142,27 +138,18 @@ class DonateButton extends Component {
             <div>
               <p>
                 Your donation is pending,
-                <a
-                  href={`${etherScanUrl}tx/${txHash}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
+                <a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">
                   {' '}
                   view the transaction here.
                 </a>
                 You have full control of this donation and
-                <strong> can take it back at any time</strong>. You will also
-                have a
-                <strong> 3 day window</strong> to veto the use of these funds
-                upon delegation by the DAC.
+                <strong> can take it back at any time</strong>. You will also have a
+                <strong> 3 day window</strong> to veto the use of these funds upon delegation by the
+                DAC.
               </p>
               <p>
                 Do make sure to
-                <a
-                  href={this.props.communityUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
+                <a href={this.props.communityUrl} target="_blank" rel="noopener noreferrer">
                   {' '}
                   join the Community
                 </a>{' '}
@@ -175,22 +162,14 @@ class DonateButton extends Component {
             <div>
               <p>
                 Your donation is pending,
-                <a
-                  href={`${etherScanUrl}tx/${txHash}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
+                <a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">
                   {' '}
                   view the transaction here.
                 </a>
               </p>
               <p>
                 Do make sure to
-                <a
-                  href={this.props.communityUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
+                <a href={this.props.communityUrl} target="_blank" rel="noopener noreferrer">
                   {' '}
                   join the Community
                 </a>{' '}
@@ -220,10 +199,10 @@ class DonateButton extends Component {
           const giverId = this.props.currentUser.giverId || '0';
           const { adminId } = this.props.model;
 
-          const data = `0x${utils.padLeft(
-            utils.toHex(giverId).substring(2),
+          const data = `0x${utils.padLeft(utils.toHex(giverId).substring(2), 16)}${utils.padLeft(
+            utils.toHex(adminId).substring(2),
             16,
-          )}${utils.padLeft(utils.toHex(adminId).substring(2), 16)}`;
+          )}`;
 
           return token
             .approveAndCall(liquidPledgingAddress, amount, data, {
@@ -239,11 +218,7 @@ class DonateButton extends Component {
           React.toast.success(
             <p>
               Your donation has been confirmed!<br />
-              <a
-                href={`${etherScanUrl}tx/${txHash}`}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
+              <a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">
                 View transaction
               </a>
             </p>,
@@ -257,9 +232,7 @@ class DonateButton extends Component {
         });
 
     // Donate
-    confirmBlockchainTransaction(doDonate, () =>
-      this.setState({ isSaving: false }),
-    );
+    confirmBlockchainTransaction(doDonate, () => this.setState({ isSaving: false }));
   }
 
   render() {

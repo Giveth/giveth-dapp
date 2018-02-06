@@ -20,16 +20,12 @@ function getWeb3() {
         web3 = new Web3(web3.currentProvider);
       } else {
         // fallback - use your fallback strategy (local node / hosted node + in-dapp id mgmt / fail)
-        web3 = new Web3(
-          new Web3.providers.HttpProvider('http://localhost:8545'),
-        );
+        web3 = new Web3(new Web3.providers.HttpProvider('http://localhost:8545'));
       }
 
       if (!web3.isConnected()) {
         // TODO setup giveth node and use that
-        web3 = new Web3(
-          new Web3.providers.HttpProvider('https://giveth.psdev.io:8545'),
-        );
+        web3 = new Web3(new Web3.providers.HttpProvider('https://giveth.psdev.io:8545'));
       }
 
       web3.eth.getTransactionReceiptMined = getTransactionReceiptMined;
@@ -99,10 +95,7 @@ class Web3Monitor {
         });
       }
     } else {
-      this.handleAccounts(
-        ethAccounts.map(account => account.address),
-        recheckBalances,
-      );
+      this.handleAccounts(ethAccounts.map(account => account.address), recheckBalances);
     }
   }
 
@@ -115,9 +108,7 @@ class Web3Monitor {
   handleAccounts(addresses, recheckBalances) {
     Promise.all(
       addresses.map(addr => {
-        const accountIdx = this.state.accounts.findIndex(
-          account => account.address === addr,
-        );
+        const accountIdx = this.state.accounts.findIndex(account => account.address === addr);
 
         // only check balance for new accounts or recheckBalances is true
         if (recheckBalances || accountIdx === -1) {
@@ -136,8 +127,7 @@ class Web3Monitor {
           accounts.some((newAccount, index) => {
             const account = this.state.accounts[index];
             return (
-              newAccount.address !== account.address ||
-              !newAccount.balance.equals(account.balance)
+              newAccount.address !== account.address || !newAccount.balance.equals(account.balance)
             );
           });
 

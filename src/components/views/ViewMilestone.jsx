@@ -90,10 +90,7 @@ class ViewMilestone extends Component {
   }
 
   isActiveMilestone() {
-    return (
-      this.state.status === 'InProgress' &&
-      this.state.totalDonated < this.state.maxAmount
-    );
+    return this.state.status === 'InProgress' && this.state.totalDonated < this.state.maxAmount;
   }
 
   render() {
@@ -129,9 +126,7 @@ class ViewMilestone extends Component {
               <h6>Milestone</h6>
               <h1>{title}</h1>
 
-              {!this.state.status === 'InProgress' && (
-                <p>This milestone is not active anymore</p>
-              )}
+              {!this.state.status === 'InProgress' && <p>This milestone is not active anymore</p>}
 
               {this.state.totalDonated >= this.state.maxAmount && (
                 <p>This milestone has reached its funding goal.</p>
@@ -169,9 +164,7 @@ class ViewMilestone extends Component {
 
                     <div className="card content-card">
                       <div className="card-body content">
-                        <div
-                          dangerouslySetInnerHTML={{ __html: description }}
-                        />
+                        <div dangerouslySetInnerHTML={{ __html: description }} />
                       </div>
                     </div>
                   </div>
@@ -185,8 +178,7 @@ class ViewMilestone extends Component {
                   <div className="form-group">
                     <label>Reviewer</label>
                     <small className="form-text">
-                      This person will review the actual completion of the
-                      Milestone
+                      This person will review the actual completion of the Milestone
                     </small>
 
                     <table className="table-responsive">
@@ -194,11 +186,7 @@ class ViewMilestone extends Component {
                         <tr>
                           <td className="td-user">
                             <Link to={`/profile/${reviewerAddress}`}>
-                              <Avatar
-                                size={30}
-                                src={getUserAvatar(reviewer)}
-                                round
-                              />
+                              <Avatar size={30} src={getUserAvatar(reviewer)} round />
                               <span>{getUserName(reviewer)}</span>
                             </Link>
                           </td>
@@ -206,16 +194,12 @@ class ViewMilestone extends Component {
                             <td className="td-address">
                               {' '}
                               -{' '}
-                              <a
-                                href={`${etherScanUrl}address/${reviewerAddress}`}
-                              >
+                              <a href={`${etherScanUrl}address/${reviewerAddress}`}>
                                 {reviewerAddress}
                               </a>
                             </td>
                           )}
-                          {!etherScanUrl && (
-                            <td className="td-address"> - {reviewerAddress}</td>
-                          )}
+                          {!etherScanUrl && <td className="td-address"> - {reviewerAddress}</td>}
                         </tr>
                       </tbody>
                     </table>
@@ -224,8 +208,7 @@ class ViewMilestone extends Component {
                   <div className="form-group">
                     <label>Recipient</label>
                     <small className="form-text">
-                      Where the Ether goes after successful completion of the
-                      Milestone
+                      Where the Ether goes after successful completion of the Milestone
                     </small>
 
                     <table className="table-responsive">
@@ -233,11 +216,7 @@ class ViewMilestone extends Component {
                         <tr>
                           <td className="td-user">
                             <Link to={`/profile/${recipientAddress}`}>
-                              <Avatar
-                                size={30}
-                                src={getUserAvatar(recipient)}
-                                round
-                              />
+                              <Avatar size={30} src={getUserAvatar(recipient)} round />
                               <span>{getUserName(recipient)}</span>
                             </Link>
                           </td>
@@ -245,19 +224,12 @@ class ViewMilestone extends Component {
                             <td className="td-address">
                               {' '}
                               -{' '}
-                              <a
-                                href={`${etherScanUrl}address/${recipientAddress}`}
-                              >
+                              <a href={`${etherScanUrl}address/${recipientAddress}`}>
                                 {recipientAddress}
                               </a>
                             </td>
                           )}
-                          {!etherScanUrl && (
-                            <td className="td-address">
-                              {' '}
-                              - {recipientAddress}
-                            </td>
-                          )}
+                          {!etherScanUrl && <td className="td-address"> - {recipientAddress}</td>}
                         </tr>
                       </tbody>
                     </table>
@@ -266,8 +238,7 @@ class ViewMilestone extends Component {
                   <div className="form-group">
                     <label>Max amount to raise</label>
                     <small className="form-text">
-                      The maximum amount of &#926; (Ether) that can be donated
-                      to this Milestone
+                      The maximum amount of &#926; (Ether) that can be donated to this Milestone
                     </small>
                     &#926;{maxAmount}
                   </div>
@@ -275,8 +246,7 @@ class ViewMilestone extends Component {
                   <div className="form-group">
                     <label>Amount donated</label>
                     <small className="form-text">
-                      The amount of &#926; (Ether) currently donated to this
-                      Milestone
+                      The amount of &#926; (Ether) currently donated to this Milestone
                     </small>
                     &#926;{totalDonated}
                   </div>
@@ -294,10 +264,7 @@ class ViewMilestone extends Component {
               <div className="row spacer-top-50 spacer-bottom-50">
                 <div className="col-md-8 m-auto">
                   <h4>Donations</h4>
-                  <ShowTypeDonations
-                    donations={donations}
-                    isLoading={isLoadingDonations}
-                  />
+                  <ShowTypeDonations donations={donations} isLoading={isLoadingDonations} />
                   {this.isActiveMilestone() && (
                     <DonateButton
                       type="milestone"

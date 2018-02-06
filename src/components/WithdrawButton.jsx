@@ -3,10 +3,7 @@ import PropTypes from 'prop-types';
 import { SkyLightStateless } from 'react-skylight';
 import { Form, Input } from 'formsy-react-components';
 
-import {
-  takeActionAfterWalletUnlock,
-  confirmBlockchainTransaction,
-} from '../lib/middleware';
+import { takeActionAfterWalletUnlock, confirmBlockchainTransaction } from '../lib/middleware';
 import User from '../models/User';
 import GivethWallet from '../lib/blockchain/GivethWallet';
 import WalletService from '../services/Wallet';
@@ -48,11 +45,7 @@ class WithdrawButton extends Component {
       <div>
         <p>
           Your withdrawal is pending,
-          <a
-            href={`${etherScanUrl}tx/${txHash}`}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
+          <a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">
             {' '}
             view the transaction here.
           </a>
@@ -87,11 +80,7 @@ class WithdrawButton extends Component {
             React.toast.success(
               <p>
                 Your withdrawal has been confirmed!<br />
-                <a
-                  href={`${etherScanUrl}tx/${txHash}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
+                <a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">
                   View transaction
                 </a>
               </p>,
@@ -103,9 +92,7 @@ class WithdrawButton extends Component {
         );
 
       // Withdraw the money
-      confirmBlockchainTransaction(withdraw, () =>
-        this.setState({ isSaving: false }),
-      );
+      confirmBlockchainTransaction(withdraw, () => this.setState({ isSaving: false }));
     });
   }
 
@@ -156,8 +143,7 @@ class WithdrawButton extends Component {
                   value={to}
                   validations="isEtherAddress"
                   validationErrors={{
-                    isEtherAddress:
-                      'Please check that the address you have provided is valid.',
+                    isEtherAddress: 'Please check that the address you have provided is valid.',
                   }}
                   autoFocus
                   required
@@ -176,8 +162,7 @@ class WithdrawButton extends Component {
                   }}
                   validationErrors={{
                     greaterThan: 'Minimum value must be at least Ξ0.01',
-                    lessThan:
-                      'This withdrawal amount exceeds your wallet balance.',
+                    lessThan: 'This withdrawal amount exceeds your wallet balance.',
                   }}
                   required
                 />

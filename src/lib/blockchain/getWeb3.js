@@ -21,9 +21,7 @@ function setWallet(wallet) {
     signTransaction: (txData, cb) => {
       // provide chainId as GivethWallet.Account does not have a provider set. If we don't provide
       // a chainId, the account will attempt to fetch it via the provider.
-      const getId = txData.chainId
-        ? Promise.resolve(txData.chainId)
-        : this.eth.net.getId;
+      const getId = txData.chainId ? Promise.resolve(txData.chainId) : this.eth.net.getId;
 
       getId().then(id => {
         txData.chainId = id;
@@ -45,9 +43,7 @@ function setWallet(wallet) {
         const addr = wallet.getAddresses()[0];
 
         const tokenBal = () =>
-          addr
-            ? new MiniMeToken(web3, tokenAddress).balanceOf(addr)
-            : undefined;
+          addr ? new MiniMeToken(web3, tokenAddress).balanceOf(addr) : undefined;
         const bal = () => (addr ? web3.eth.getBalance(addr) : undefined);
 
         return Promise.all([tokenBal(), bal()]);

@@ -106,10 +106,7 @@ class ViewDAC extends Component {
                 history={history}
               />
               {communityUrl && (
-                <CommunityButton
-                  className="btn btn-secondary"
-                  url={communityUrl}
-                >
+                <CommunityButton className="btn btn-secondary" url={communityUrl}>
                   &nbsp;Join our community
                 </CommunityButton>
               )}
@@ -130,9 +127,7 @@ class ViewDAC extends Component {
                   <div className="card content-card">
                     <div className="card-body content">
                       {/* TODO: Find an alternative to dangerouslySetInnerHTML */}
-                      <div
-                        dangerouslySetInnerHTML={{ __html: dac.description }}
-                      />
+                      <div dangerouslySetInnerHTML={{ __html: dac.description }} />
                     </div>
                   </div>
                 </div>
@@ -142,8 +137,7 @@ class ViewDAC extends Component {
                 <div className="col-md-8 m-auto card-view">
                   <h4>{campaigns ? campaigns.length : 0} Campaign(s)</h4>
                   <p>
-                    These Campaigns are working hard to solve the cause of this
-                    Community (DAC){' '}
+                    These Campaigns are working hard to solve the cause of this Community (DAC){' '}
                   </p>
 
                   {campaigns &&
@@ -171,10 +165,7 @@ class ViewDAC extends Component {
               <div className="row spacer-top-50 spacer-bottom-50">
                 <div className="col-md-8 m-auto">
                   <h4>Donations</h4>
-                  <ShowTypeDonations
-                    donations={donations}
-                    isLoading={isLoadingDonations}
-                  />
+                  <ShowTypeDonations donations={donations} isLoading={isLoadingDonations} />
                   <DonateButton
                     type="DAC"
                     model={{

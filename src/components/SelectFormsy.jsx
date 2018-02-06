@@ -46,13 +46,9 @@ const SelectFormsy = createReactClass({
           {options}
         </select>
 
-        {!errorMessage && (
-          <small className="help-block">{this.props.helpText}</small>
-        )}
+        {!errorMessage && <small className="help-block">{this.props.helpText}</small>}
 
-        {errorMessage && (
-          <span className="help-block validation-message">{errorMessage}</span>
-        )}
+        {errorMessage && <span className="help-block validation-message">{errorMessage}</span>}
       </div>
     );
   },

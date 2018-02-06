@@ -61,10 +61,7 @@ class MyMilestones extends Component {
               { reviewerAddress: myAddress },
               { recipientAddress: myAddress },
               {
-                $and: [
-                  { campaignOwnerAddress: myAddress },
-                  { status: 'proposed' },
-                ],
+                $and: [{ campaignOwnerAddress: myAddress }, { status: 'proposed' }],
               },
             ],
             $sort: {
@@ -132,9 +129,7 @@ class MyMilestones extends Component {
                 status: 'NeedsReview',
               })
               .then(() => {
-                React.toast.info(
-                  <p>Your milestone has been marked as complete...</p>,
-                );
+                React.toast.info(<p>Your milestone has been marked as complete...</p>);
               })
               .catch(e => {
                 console.error('Error marking milestone complete ->', e); // eslint-disable-line no-console
@@ -195,10 +190,7 @@ class MyMilestones extends Component {
               .then(([network, web3, gasPrice]) => {
                 etherScanUrl = network.etherscan;
 
-                return new LPPCappedMilestones(
-                  web3,
-                  network.cappedMilestoneAddress,
-                )
+                return new LPPCappedMilestones(web3, network.cappedMilestoneAddress)
                   .cancelMilestone(milestone.projectId, {
                     from: this.props.currentUser.address,
                     gasPrice,
@@ -284,10 +276,7 @@ class MyMilestones extends Component {
                 console.log('creating milestone tx');
                 etherScanUrl = network.txHash;
 
-                return new LPPCappedMilestones(
-                  web3,
-                  network.cappedMilestoneAddress,
-                )
+                return new LPPCappedMilestones(web3, network.cappedMilestoneAddress)
                   .addMilestone(
                     milestone.title,
                     '',
@@ -387,10 +376,7 @@ class MyMilestones extends Component {
               .then(([network, web3, gasPrice]) => {
                 etherScanUrl = network.etherscan;
 
-                return new LPPCappedMilestones(
-                  web3,
-                  network.cappedMilestoneAddress,
-                )
+                return new LPPCappedMilestones(web3, network.cappedMilestoneAddress)
                   .acceptMilestone(milestone.projectId, {
                     from: this.props.currentUser.address,
                     gasPrice,
@@ -530,19 +516,14 @@ class MyMilestones extends Component {
                     },
                   })
                   .then(({ data }) => {
-                    if (data.length === 0)
-                      throw new Error('No donations found to withdraw');
+                    if (data.length === 0) throw new Error('No donations found to withdraw');
 
                     const pledges = [];
                     data.forEach(donation => {
-                      const pledge = pledges.find(
-                        n => n.id === donation.pledgeId,
-                      );
+                      const pledge = pledges.find(n => n.id === donation.pledgeId);
 
                       if (pledge) {
-                        pledge.amount = pledge.amount.add(
-                          utils.toBN(donation.amount),
-                        );
+                        pledge.amount = pledge.amount.add(utils.toBN(donation.amount));
                       } else {
                         pledges.push({
                           id: donation.pledgeId,
@@ -556,28 +537,17 @@ class MyMilestones extends Component {
                         `0x${utils.padLeft(
                           utils.toHex(note.amount).substring(2),
                           48,
-                        )}${utils.padLeft(
-                          utils.toHex(note.id).substring(2),
-                          16,
-                        )}`,
+                        )}${utils.padLeft(utils.toHex(note.id).substring(2), 16)}`,
                     );
                   });
 
               let txHash;
               let etherScanUrl;
-              Promise.all([
-                getNetwork(),
-                getWeb3(),
-                getPledges(),
-                getGasPrice(),
-              ])
+              Promise.all([getNetwork(), getWeb3(), getPledges(), getGasPrice()])
                 .then(([network, web3, pledges, gasPrice]) => {
                   etherScanUrl = network.etherscan;
 
-                  return new LPPCappedMilestones(
-                    web3,
-                    network.cappedMilestoneAddress,
-                  )
+                  return new LPPCappedMilestones(web3, network.cappedMilestoneAddress)
                     .mWithdraw(pledges, {
                       from: this.props.currentUser.address,
                       gasPrice,
@@ -621,18 +591,10 @@ class MyMilestones extends Component {
                       </p>
                     );
                   } else if (e.message === 'No donations found to withdraw') {
-                    msg = (
-                      <p>
-                        Nothing to withdraw. There are no donations to this
-                        milestone.
-                      </p>
-                    );
+                    msg = <p>Nothing to withdraw. There are no donations to this milestone.</p>;
                   } else {
                     msg = (
-                      <p>
-                        Something went wrong with the transaction. Is your
-                        wallet unlocked?
-                      </p>
+                      <p>Something went wrong with the transaction. Is your wallet unlocked?</p>
                     );
                   }
 
@@ -694,10 +656,7 @@ class MyMilestones extends Component {
                 .then(([network, web3, gasPrice]) => {
                   etherScanUrl = network.etherscan;
 
-                  return new LPPCappedMilestones(
-                    web3,
-                    network.cappedMilestoneAddress,
-                  )
+                  return new LPPCappedMilestones(web3, network.cappedMilestoneAddress)
                     .collect(milestone.projectId, {
                       from: this.props.currentUser.address,
                       $extraGas: 100000,
@@ -734,9 +693,7 @@ class MyMilestones extends Component {
         <div className="container-fluid page-layout dashboard-table-view">
           <div className="row">
             <div className="col-md-10 m-auto">
-              {(isLoading || (milestones && milestones.length > 0)) && (
-                <h1>Your milestones</h1>
-              )}
+              {(isLoading || (milestones && milestones.length > 0)) && <h1>Your milestones</h1>}
 
               {isLoading && <Loader className="fixed" />}
 
@@ -759,30 +716,16 @@ class MyMilestones extends Component {
                         </thead>
                         <tbody>
                           {milestones.map(m => (
-                            <tr
-                              key={m._id}
-                              className={
-                                m.status === 'pending' ? 'pending' : ''
-                              }
-                            >
+                            <tr key={m._id} className={m.status === 'pending' ? 'pending' : ''}>
                               <td clasName="td-created-at">
                                 {m.createdAt && (
-                                  <span>
-                                    {moment(m.createdAt).format(
-                                      'Do MMM YYYY - HH:mm a',
-                                    )}
-                                  </span>
+                                  <span>{moment(m.createdAt).format('Do MMM YYYY - HH:mm a')}</span>
                                 )}
                               </td>
                               <td className="td-name">
                                 <strong>
-                                  <Link
-                                    to={`/campaigns/${
-                                      m.campaign._id
-                                    }/milestones/${m._id}`}
-                                  >
-                                    MILESTONE{' '}
-                                    <em>{getTruncatedText(m.title, 35)}</em>
+                                  <Link to={`/campaigns/${m.campaign._id}/milestones/${m._id}`}>
+                                    MILESTONE <em>{getTruncatedText(m.title, 35)}</em>
                                   </Link>
                                 </strong>
                                 <br />
@@ -791,17 +734,13 @@ class MyMilestones extends Component {
                                   className="secondary-link"
                                   to={`/campaigns/${m.campaign._id}`}
                                 >
-                                  CAMPAIGN{' '}
-                                  <em>
-                                    {getTruncatedText(m.campaign.title, 40)}
-                                  </em>
+                                  CAMPAIGN <em>{getTruncatedText(m.campaign.title, 40)}</em>
                                 </Link>
                               </td>
                               <td className="td-status">
                                 {(m.status === 'pending' ||
-                                  (Object.keys(m).includes('mined') &&
-                                    !m.mined)) && (
-                                    <span>
+                                  (Object.keys(m).includes('mined') && !m.mined)) && (
+                                  <span>
                                     <i className="fa fa-circle-o-notch fa-spin" />&nbsp;
                                   </span>
                                 )}
@@ -816,13 +755,9 @@ class MyMilestones extends Component {
                               <td className="td-donations-number">
                                 Ξ{utils.fromWei(m.maxAmount) || 0}
                               </td>
-                              <td className="td-donations-number">
-                                {m.donationCount || 0}
-                              </td>
+                              <td className="td-donations-number">{m.donationCount || 0}</td>
                               <td className="td-donations-amount">
-                                Ξ{m.totalDonated
-                                  ? utils.fromWei(m.totalDonated)
-                                  : 0}
+                                Ξ{m.totalDonated ? utils.fromWei(m.totalDonated) : 0}
                               </td>
                               <td className="td-reviewer">
                                 <Link to={`/profile/${m.reviewer.address}`}>
@@ -839,23 +774,18 @@ class MyMilestones extends Component {
                                   </button>
                                 )}
 
-                                {m.campaignOwnerAddress ===
-                                  currentUser.address &&
+                                {m.campaignOwnerAddress === currentUser.address &&
                                   m.status === 'proposed' && (
                                     <span>
                                       <button
                                         className="btn btn-success btn-sm"
-                                        onClick={() =>
-                                          this.acceptProposedMilestone(m)
-                                        }
+                                        onClick={() => this.acceptProposedMilestone(m)}
                                       >
                                         <i className="fa fa-check-square-o" />&nbsp;Accept
                                       </button>
                                       <button
                                         className="btn btn-danger btn-sm"
-                                        onClick={() =>
-                                          this.rejectProposedMilestone(m)
-                                        }
+                                        onClick={() => this.rejectProposedMilestone(m)}
                                       >
                                         <i className="fa fa-times-circle-o" />&nbsp;Reject
                                       </button>
@@ -871,8 +801,7 @@ class MyMilestones extends Component {
                                       className="btn btn-success btn-sm"
                                       onClick={() => this.markComplete(m)}
                                     >
-                                      <i className="fa fa-check-square-o" />&nbsp;Mark
-                                      complete
+                                      <i className="fa fa-check-square-o" />&nbsp;Mark complete
                                     </button>
                                   )}
 
@@ -881,9 +810,7 @@ class MyMilestones extends Component {
                                   m.campaignReviewerAddress,
                                   m.recipientAddress,
                                 ].includes(currentUser.address) &&
-                                  ['InProgress', 'NeedReview'].includes(
-                                    m.status,
-                                  ) &&
+                                  ['InProgress', 'NeedReview'].includes(m.status) &&
                                   m.mined && (
                                     <button
                                       className="btn btn-danger btn-sm"
@@ -921,17 +848,15 @@ class MyMilestones extends Component {
                                       className="btn btn-success btn-sm"
                                       onClick={() => this.requestWithdrawal(m)}
                                     >
-                                      <i className="fa fa-usd" />&nbsp;Request
-                                      Withdrawal
+                                      <i className="fa fa-usd" />&nbsp;Request Withdrawal
                                     </button>
                                   )}
 
                                 {m.recipientAddress === currentUser.address &&
                                   m.status === 'Paying' && (
                                     <p>
-                                      Withdraw authorization pending. You will
-                                      be able to collect the funds when
-                                      confirmed.
+                                      Withdraw authorization pending. You will be able to collect
+                                      the funds when confirmed.
                                     </p>
                                   )}
 

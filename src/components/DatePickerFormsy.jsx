@@ -24,9 +24,7 @@ const DatePickerFormsy = createReactClass({
     // when the value is empty and the required prop is
     // passed to the input. showError() is true when the
     // value typed is invalid
-    const className = this.showRequired()
-      ? 'required'
-      : this.showError() ? 'error' : null;
+    const className = this.showRequired() ? 'required' : this.showError() ? 'error' : null;
 
     // An error message is returned ONLY if the component is invalid
     // or the server has returned an error message

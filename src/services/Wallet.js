@@ -18,12 +18,7 @@ class WalletService {
    * @param afterMined  Callback function after the transaction has been mined
    * @param onError     Callback function for an onError
    */
-  static withdraw(
-    data,
-    afterCreate = () => {},
-    afterMined = () => {},
-    onError = () => {},
-  ) {
+  static withdraw(data, afterCreate = () => {}, afterMined = () => {}, onError = () => {}) {
     let txHash;
     let etherScanUrl;
 

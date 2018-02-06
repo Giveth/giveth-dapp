@@ -18,11 +18,7 @@ import Campaign from '../../models/Campaign';
  */
 const Campaigns = ({ campaigns, currentUser, history, wallet }) => (
   <div id="campaigns-view" className="card-view">
-    <JoinGivethCommunity
-      currentUser={currentUser}
-      wallet={wallet}
-      history={history}
-    />
+    <JoinGivethCommunity currentUser={currentUser} wallet={wallet} history={history} />
 
     <div className="container-fluid page-layout reduced-padding">
       {// There are some Campaigns in the system, show them
@@ -31,8 +27,8 @@ const Campaigns = ({ campaigns, currentUser, history, wallet }) => (
           <div>
             <center>
               <p>
-                These Campaigns work hard to solve causes. Help them realise
-                their goals by giving Ether!
+                These Campaigns work hard to solve causes. Help them realise their goals by giving
+                Ether!
               </p>
             </center>
 

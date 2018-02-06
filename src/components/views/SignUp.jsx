@@ -95,13 +95,10 @@ class SignUp extends Component {
                     <div>
                       <h1>SignUp</h1>
                       <p>
-                        Your wallet is your account. Create a wallet to get
-                        started with Giveth.
+                        Your wallet is your account. Create a wallet to get started with Giveth.
                       </p>
 
-                      {error && (
-                        <div className="alert alert-danger">{error}</div>
-                      )}
+                      {error && <div className="alert alert-danger">{error}</div>}
 
                       <Form
                         className="sign-up-form"
@@ -161,20 +158,15 @@ class SignUp extends Component {
                       </center>
 
                       <p>
-                        We <strong>highly</strong> recommend that you download
-                        this backup file and keep it in a safe place. If you
-                        lose this file or forget your wallet password, you will
-                        not be able to access this account and all funds
-                        associated with it. Both this file and your password are
-                        handled locally on your pc and in your browser: we
-                        cannot help you recover anything, so please take a
-                        minute to do this now.
+                        We <strong>highly</strong> recommend that you download this backup file and
+                        keep it in a safe place. If you lose this file or forget your wallet
+                        password, you will not be able to access this account and all funds
+                        associated with it. Both this file and your password are handled locally on
+                        your pc and in your browser: we cannot help you recover anything, so please
+                        take a minute to do this now.
                       </p>
 
-                      <BackupWallet
-                        onBackup={() => this.onBackup()}
-                        wallet={wallet}
-                      />
+                      <BackupWallet onBackup={() => this.onBackup()} wallet={wallet} />
                     </div>
                   )}
                 </center>

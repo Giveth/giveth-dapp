@@ -102,11 +102,7 @@ class MyCampaigns extends Component {
               React.toast.success(msg);
             };
 
-            campaign.cancel(
-              this.props.currentUser.address,
-              afterCreate,
-              afterMined,
-            );
+            campaign.cancel(this.props.currentUser.address, afterCreate, afterMined);
           }
         });
       });
@@ -122,9 +118,7 @@ class MyCampaigns extends Component {
         <div className="container-fluid page-layout dashboard-table-view">
           <div className="row">
             <div className="col-md-10 m-auto">
-              {(isLoading || (campaigns && campaigns.length > 0)) && (
-                <h1>Your campaigns</h1>
-              )}
+              {(isLoading || (campaigns && campaigns.length > 0)) && <h1>Your campaigns</h1>}
 
               {isLoading && <Loader className="fixed" />}
 
@@ -146,9 +140,7 @@ class MyCampaigns extends Component {
                           {campaigns.map(c => (
                             <tr
                               key={c.id}
-                              className={
-                                c.status === Campaign.PENDING ? 'pending' : ''
-                              }
+                              className={c.status === Campaign.PENDING ? 'pending' : ''}
                             >
                               <td className="td-name">
                                 <Link to={`/campaigns/${c.id}`}>
@@ -161,19 +153,14 @@ class MyCampaigns extends Component {
                                   </span>
                                 )}
                               </td>
-                              <td className="td-donations-number">
-                                {c.donationCount || 0}
-                              </td>
+                              <td className="td-donations-number">{c.donationCount || 0}</td>
                               <td className="td-donations-amount">
-                                Ξ{c.totalDonated
-                                  ? utils.fromWei(c.totalDonated)
-                                  : 0}
+                                Ξ{c.totalDonated ? utils.fromWei(c.totalDonated) : 0}
                               </td>
                               <td className="td-status">
                                 {(c.status === Campaign.PENDING ||
-                                  (Object.keys(c).includes('mined') &&
-                                    !c.mined)) && (
-                                    <span>
+                                  (Object.keys(c).includes('mined') && !c.mined)) && (
+                                  <span>
                                     <i className="fa fa-circle-o-notch fa-spin" />&nbsp;
                                   </span>
                                 )}

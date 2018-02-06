@@ -52,18 +52,13 @@ class MyDACs extends Component {
       checkWalletBalance(this.props.wallet, this.props.history).then(() =>
         React.swal({
           title: 'Edit Community?',
-          text:
-            'Are you sure you want to edit the description of this community?',
+          text: 'Are you sure you want to edit the description of this community?',
           icon: 'warning',
           dangerMode: true,
           buttons: ['Cancel', 'Yes, edit'],
         }).then(isConfirmed => {
           if (isConfirmed)
-            redirectAfterWalletUnlock(
-              `/dacs/${id}/edit`,
-              this.props.wallet,
-              this.props.history,
-            );
+            redirectAfterWalletUnlock(`/dacs/${id}/edit`, this.props.wallet, this.props.history);
         }),
       );
     });
@@ -77,9 +72,7 @@ class MyDACs extends Component {
         <div className="container-fluid page-layout dashboard-table-view">
           <div className="row">
             <div className="col-md-10 m-auto">
-              {(isLoading || (dacs && dacs.length > 0)) && (
-                <h1>Your Communities (DACs)</h1>
-              )}
+              {(isLoading || (dacs && dacs.length > 0)) && <h1>Your Communities (DACs)</h1>}
 
               {isLoading && <Loader className="fixed" />}
 
@@ -91,32 +84,19 @@ class MyDACs extends Component {
                         <thead>
                           <tr>
                             <th className="td-name">Name</th>
-                            <th className="td-donations-number">
-                              Number of donations
-                            </th>
-                            <th className="td-donations-amount">
-                              Amount donated
-                            </th>
+                            <th className="td-donations-number">Number of donations</th>
+                            <th className="td-donations-amount">Amount donated</th>
                             <th className="td-status">Status</th>
                             <th className="td-actions" />
                           </tr>
                         </thead>
                         <tbody>
                           {dacs.map(d => (
-                            <tr
-                              key={d.id}
-                              className={
-                                d.status === DAC.PENDING ? 'pending' : ''
-                              }
-                            >
+                            <tr key={d.id} className={d.status === DAC.PENDING ? 'pending' : ''}>
                               <td className="td-name">
-                                <Link to={`/dacs/${d.id}`}>
-                                  {getTruncatedText(d.title, 45)}
-                                </Link>
+                                <Link to={`/dacs/${d.id}`}>{getTruncatedText(d.title, 45)}</Link>
                               </td>
-                              <td className="td-donations-number">
-                                {d.donationCount}
-                              </td>
+                              <td className="td-donations-number">{d.donationCount}</td>
                               <td className="td-donations-amount">
                                 Ξ{utils.fromWei(d.totalDonated)}
                               </td>
@@ -129,10 +109,7 @@ class MyDACs extends Component {
                                 {d.status}
                               </td>
                               <td className="td-actions">
-                                <button
-                                  className="btn btn-link"
-                                  onClick={() => this.editDAC(d.id)}
-                                >
+                                <button className="btn btn-link" onClick={() => this.editDAC(d.id)}>
                                   <i className="fa fa-edit" />
                                 </button>
                               </td>
@@ -147,8 +124,8 @@ class MyDACs extends Component {
                       <div>
                         <center>
                           <h3>
-                            You didn&apos;t create any Decentralized Altruistic
-                            Communities (DACs) yet!
+                            You didn&apos;t create any Decentralized Altruistic Communities (DACs)
+                            yet!
                           </h3>
                           <img
                             className="empty-state-img"

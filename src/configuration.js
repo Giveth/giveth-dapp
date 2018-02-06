@@ -75,18 +75,13 @@ if (configurations[REACT_APP_ENVIRONMENT] === undefined)
 const config = Object.assign({}, configurations[REACT_APP_ENVIRONMENT]);
 
 // Overwrite the environment values with parameters
-config.liquidPledgingAddress =
-  REACT_APP_LIQUIDPLEDGING_ADDRESS || config.liquidPledgingAddress;
+config.liquidPledgingAddress = REACT_APP_LIQUIDPLEDGING_ADDRESS || config.liquidPledgingAddress;
 config.dacsAddress = REACT_APP_DACS_ADDRESS || config.dacsAddress;
-config.campaignFactoryAddress =
-  REACT_APP_CAMPAIGN_FACTORY_ADDRESS || config.campaignFactoryAddress;
-config.cappedMilestoneAddress =
-  REACT_APP_CAPPED_MILESTONE_ADDRESS || config.cappedMilestoneAddress;
+config.campaignFactoryAddress = REACT_APP_CAMPAIGN_FACTORY_ADDRESS || config.campaignFactoryAddress;
+config.cappedMilestoneAddress = REACT_APP_CAPPED_MILESTONE_ADDRESS || config.cappedMilestoneAddress;
 config.tokenAddress = REACT_APP_TOKEN_ADDRESS || config.tokenAddress;
 config.etherscan = REACT_APP_BLOCKEXPLORER || config.etherscan;
-config.feathersConnection =
-  REACT_APP_FEATHERJS_CONNECTION_URL || config.feathersConnection;
-config.nodeConnection =
-  REACT_APP_ETH_NODE_CONNECTION_URL || config.nodeConnection;
+config.feathersConnection = REACT_APP_FEATHERJS_CONNECTION_URL || config.feathersConnection;
+config.nodeConnection = REACT_APP_ETH_NODE_CONNECTION_URL || config.nodeConnection;
 
 export default config;

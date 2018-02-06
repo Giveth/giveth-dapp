@@ -130,12 +130,7 @@ class ChangeAccount extends Component {
                   layout="vertical"
                 >
                   <div className="form-group">
-                    <File
-                      id="keystore"
-                      label="Wallet File"
-                      name="keystore"
-                      required
-                    />
+                    <File id="keystore" label="Wallet File" name="keystore" required />
                   </div>
                   <div className="form-group">
                     <Input

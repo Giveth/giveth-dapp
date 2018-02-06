@@ -28,14 +28,11 @@ const CardStats = ({
     <div className="col-4 text-center">
       {maxAmount && (
         <span>
-          &#926;{totalDonated && utils.fromWei(totalDonated)} of &#926;{' '}
-          {utils.fromWei(maxAmount)}
+          &#926;{totalDonated && utils.fromWei(totalDonated)} of &#926; {utils.fromWei(maxAmount)}
         </span>
       )}
 
-      {!maxAmount && (
-        <span>&#926; {totalDonated && utils.fromWei(totalDonated)}</span>
-      )}
+      {!maxAmount && <span>&#926; {totalDonated && utils.fromWei(totalDonated)}</span>}
       <p>Donated</p>
     </div>
 
@@ -76,8 +73,7 @@ const CardStats = ({
 CardStats.propTypes = {
   type: PropTypes.string.isRequired,
   peopleCount: PropTypes.number.isRequired,
-  totalDonated: PropTypes.oneOfType([PropTypes.string, PropTypes.number])
-    .isRequired,
+  totalDonated: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
   campaignsCount: PropTypes.number,
   milestonesCount: PropTypes.number,
   status: PropTypes.string,

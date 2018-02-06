@@ -16,8 +16,7 @@ import { history } from '../lib/helpers';
  */
 export const isAuthenticated = (currentUser, wallet) =>
   new Promise(resolve => {
-    if (currentUser && currentUser.address && wallet && wallet.unlocked)
-      resolve();
+    if (currentUser && currentUser.address && wallet && wallet.unlocked) resolve();
     else history.goBack();
   });
 
@@ -39,9 +38,7 @@ export const isInWhitelist = (currentUser, whitelist) =>
     if (
       whitelist.length === 0 ||
       (currentUser &&
-        whitelist
-          .map(add => add.toLowerCase())
-          .includes(currentUser.address.toLowerCase()))
+        whitelist.map(add => add.toLowerCase()).includes(currentUser.address.toLowerCase()))
     ) {
       resolve();
     } else {
@@ -95,9 +92,8 @@ export const checkWalletBalance = (wallet, history) =>
         title: 'Insufficient wallet balance',
         content: React.swal.msg(
           <p>
-            Unfortunately you need at least Ξ{React.minimumWalletBalance} in
-            your wallet to continue. Please transfer some Ξ to your Giveth
-            wallet first.
+            Unfortunately you need at least Ξ{React.minimumWalletBalance} in your wallet to
+            continue. Please transfer some Ξ to your Giveth wallet first.
           </p>,
         ),
         icon: 'warning',
