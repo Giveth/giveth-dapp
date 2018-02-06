@@ -862,7 +862,9 @@ class MyMilestones extends Component {
                                     </span>
                                   )}
 
-                                {m.recipientAddress === currentUser.address &&
+                                {[m.recipientAddress, m.ownerAddress].includes(
+                                  currentUser.address,
+                                ) &&
                                   m.status === 'InProgress' &&
                                   m.mined && (
                                     <button

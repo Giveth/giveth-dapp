@@ -69,8 +69,8 @@
     "eslint": "eslint 'src/**/*.js*'",
     "eslint:fix": "eslint 'src/**/*.js*' --fix",
     "eject": "react-scripts eject",
-    "prettier": "prettier 'src/**/*.js*' --single-quote --trailing-comma all -l",
-    "prettier:write": "prettier 'src/app/**/*.js' --single-quote --trailing-comma all --write"
+    "prettier": "prettier 'src/**/*.js*' -l",
+    "prettier:write": "prettier 'src/app/**/*.js' --write"
   },
   "repository": {
     "type": "git",
