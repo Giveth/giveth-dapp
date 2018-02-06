@@ -3,16 +3,18 @@ import { Link, withRouter } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import GivethWallet from '../lib/blockchain/GivethWallet';
 
-const AuthenticatedLink = ({
-  className, to, wallet, children,
-}) => {
+const AuthenticatedLink = ({ className, to, wallet, children }) => {
   if (wallet && wallet.unlocked) {
     return (
-      <Link className={className} to={to}>{children}</Link>
+      <Link className={className} to={to}>
+        {children}
+      </Link>
     );
   }
   return (
-    <button className={className} onClick={() => React.unlockWallet(to)}>{children}</button>
+    <button className={className} onClick={() => React.unlockWallet(to)}>
+      {children}
+    </button>
   );
 };
 

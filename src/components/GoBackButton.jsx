@@ -10,7 +10,7 @@ const GoBackButton = ({ history }) => (
     className="go-back-button"
   >
     <i className="fa fa-long-arrow-left" />
-        back
+    back
   </div>
 );
 

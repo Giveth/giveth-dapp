@@ -41,6 +41,7 @@ class Profile extends Component {
         })))
       .catch(() =>
         this.setState({
+          address: this.props.match.params.userAddress,
           isLoading: false,
           hasError: true,
         }));

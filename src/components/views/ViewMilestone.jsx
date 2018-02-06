@@ -47,10 +47,12 @@ class ViewMilestone extends Component {
     const milestoneId = this.props.match.params.milestoneId;
 
     feathersClient.service('milestones').find({ query: { _id: milestoneId } })
-      .then(resp => 
+      .then(resp =>
         this.setState(Object.assign({}, resp.data[0], {
           isLoading: false,
           hasError: false,
+          totalDonated: utils.fromWei(resp.data[0].totalDonated),
+          maxAmount: utils.fromWei(resp.data[0].maxAmount),
           id: milestoneId,
         })))
       .catch(() =>
@@ -92,8 +94,6 @@ class ViewMilestone extends Component {
       projectId,
       title,
       description,
-      recipientAddress,
-      reviewerAddress,
       image,
       donations,
       isLoadingDonations,
@@ -102,6 +102,9 @@ class ViewMilestone extends Component {
       maxAmount,
       totalDonated,
       recipient,
+      recipientAddress,
+      reviewer,
+      reviewerAddress,
       etherScanUrl,
     } = this.state;
 
@@ -130,8 +133,8 @@ class ViewMilestone extends Component {
 
               { this.state.totalDonated < this.state.maxAmount &&
                 <p>
-                  Ξ{utils.fromWei(this.state.totalDonated)} of
-                  Ξ{utils.fromWei(this.state.maxAmount)} raised.
+                  Ξ{this.state.totalDonated} of
+                  Ξ{this.state.maxAmount} raised.
                 </p>
               }
 
@@ -187,8 +190,8 @@ class ViewMilestone extends Component {
                         <tr>
                           <td className="td-user">
                             <Link to={`/profile/${reviewerAddress}`}>
-                              <Avatar size={30} src={getUserAvatar(recipient)} round />
-                              <span>{getUserName(recipient)}</span>
+                              <Avatar size={30} src={getUserAvatar(reviewer)} round />
+                              <span>{getUserName(reviewer)}</span>
                             </Link>
                           </td>
                           {etherScanUrl &&
@@ -235,7 +238,7 @@ class ViewMilestone extends Component {
                       className="form-text"
                     >The maximum amount of &#926; (Ether) that can be donated to this Milestone
                     </small>
-                    &#926;{utils.fromWei(maxAmount)}
+                    &#926;{maxAmount}
                   </div>
 
                   <div className="form-group">
@@ -244,7 +247,7 @@ class ViewMilestone extends Component {
                       className="form-text"
                     >The amount of &#926; (Ether) currently donated to this Milestone
                     </small>
-                    &#926;{utils.fromWei(totalDonated)}
+                    &#926;{totalDonated}
                   </div>
 
                   {/*

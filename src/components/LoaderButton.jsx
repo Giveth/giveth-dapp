@@ -14,19 +14,28 @@ import Loader from './Loader';
  *  @param children       Elements / text showing when state is not loading
  */
 const LoaderButton = ({
-  className, formNoValidate, type, disabled, isLoading, loadingText, children,
+  className,
+  formNoValidate,
+  type,
+  disabled,
+  isLoading,
+  loadingText,
+  children,
 }) => (
-  <button className={className} formNoValidate={formNoValidate} type={type} disabled={disabled}>
-    {isLoading &&
-    <span>
-      <Loader className="small btn-loader" />
-      {loadingText}
-    </span>
-        }
+  <button
+    className={className}
+    formNoValidate={formNoValidate}
+    type={type}
+    disabled={disabled}
+  >
+    {isLoading && (
+      <span>
+        <Loader className="small btn-loader" />
+        {loadingText}
+      </span>
+    )}
 
-    {!isLoading &&
-    <span>{children}</span>
-        }
+    {!isLoading && <span>{children}</span>}
   </button>
 );
 

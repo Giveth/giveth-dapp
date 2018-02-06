@@ -31,11 +31,13 @@ class UserWallet extends Component {
       tokens: [],
       hasError: false,
       etherScanUrl: '',
+      tokenAddress: ''
     };
 
     getNetwork().then((network) => {
       this.setState({
         etherScanUrl: network.etherscan,
+        tokenAddress: network.tokenAddress,
       });
     });
   }
@@ -97,7 +99,7 @@ class UserWallet extends Component {
 
   render() {
     const {
-      isLoadingWallet, isLoadingTokens, tokens, hasError, etherScanUrl,
+      isLoadingWallet, isLoadingTokens, tokens, hasError, etherScanUrl, tokenAddress,
     } = this.state;
 
     return (
@@ -115,7 +117,17 @@ class UserWallet extends Component {
             <div>
               <p>{this.props.currentUser.address}</p>
               <p> balance: &#926;{this.props.wallet.getBalance()}</p>
-              <WithdrawButton wallet={this.props.wallet} currentUser={this.props.currentUser} />
+              {etherScanUrl &&
+              <p><a
+                href={`${etherScanUrl}token/${tokenAddress}?a=${this.props.currentUser.address}`}
+                target="_blank"
+                rel="noopener noreferrer">GivETH</a> balance: &#926;{this.props.wallet.getTokenBalance()}
+              </p>
+              }
+              {!etherScanUrl &&
+                <p>GivETH balance: &#926;{this.props.wallet.getTokenBalance()}</p>
+              }
+              {/*<WithdrawButton wallet={this.props.wallet} currentUser={this.props.currentUser} />*/}
               <BackupWallet wallet={this.props.wallet} />
 
 

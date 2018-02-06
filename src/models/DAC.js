@@ -5,9 +5,15 @@ import UploadService from '../services/Uploads';
  * The DApp DAC model
  */
 class DAC extends BasicModel {
-  static get CANCELED() { return 'Canceled'; }
-  static get PENDING() { return 'Pending'; }
-  static get ACTIVE() { return 'Active'; }
+  static get CANCELED() {
+    return 'Canceled';
+  }
+  static get PENDING() {
+    return 'Pending';
+  }
+  static get ACTIVE() {
+    return 'Active';
+  }
 
   constructor(data) {
     super(data);
@@ -38,7 +44,7 @@ class DAC extends BasicModel {
 
   save(onCreated, afterEmit) {
     if (this.newImage) {
-      UploadService.save(this.image).then((file) => {
+      UploadService.save(this.image).then(file => {
         // Save the new image address and mark it as old
         this.image = file.url;
         this.newImage = false;

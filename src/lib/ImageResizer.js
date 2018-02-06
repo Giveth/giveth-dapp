@@ -14,27 +14,40 @@
  * Credits:
  * https://gist.githubusercontent.com/dcollien/312bce1270a5f511bf4a/raw/9bb680a9d30f0df8046a78f7335abfaf5c026135/ImageTools.es6
  */
-const hasBlobConstructor = typeof (Blob) !== 'undefined' && (function createBlob() {
-  try {
-    return Boolean(new Blob());
-  } catch (e) {
-    return false;
-  }
-}());
+const hasBlobConstructor =
+  typeof Blob !== 'undefined' &&
+  (function createBlob() {
+    try {
+      return Boolean(new Blob());
+    } catch (e) {
+      return false;
+    }
+  })();
 
-const hasArrayBufferViewSupport = hasBlobConstructor && typeof (Uint8Array) !== 'undefined' && (function createArrayBuffer() {
-  try {
-    return new Blob([new Uint8Array(100)]).size === 100;
-  } catch (e) {
-    return false;
-  }
-}());
+const hasArrayBufferViewSupport =
+  hasBlobConstructor &&
+  typeof Uint8Array !== 'undefined' &&
+  (function createArrayBuffer() {
+    try {
+      return new Blob([new Uint8Array(100)]).size === 100;
+    } catch (e) {
+      return false;
+    }
+  })();
 
-const hasToBlobSupport = (typeof HTMLCanvasElement !== 'undefined' ? HTMLCanvasElement.prototype.toBlob : false);
+const hasToBlobSupport =
+  typeof HTMLCanvasElement !== 'undefined'
+    ? HTMLCanvasElement.prototype.toBlob
+    : false;
 
-const hasBlobSupport = (hasToBlobSupport || (typeof Uint8Array !== 'undefined' && typeof ArrayBuffer !== 'undefined' && typeof atob !== 'undefined'));
+const hasBlobSupport =
+  hasToBlobSupport ||
+  (typeof Uint8Array !== 'undefined' &&
+    typeof ArrayBuffer !== 'undefined' &&
+    typeof atob !== 'undefined');
 
-const hasReaderSupport = (typeof FileReader !== 'undefined' || typeof URL !== 'undefined');
+const hasReaderSupport =
+  typeof FileReader !== 'undefined' || typeof URL !== 'undefined';
 
 export default class ImageTools {
   static resize(file, md, cb) {
@@ -93,7 +106,7 @@ export default class ImageTools {
       ctx.drawImage(image, 0, 0, width, height);
 
       if (hasToBlobSupport) {
-        canvas.toBlob((blob) => {
+        canvas.toBlob(blob => {
           callback(blob, true);
         }, file.type);
       } else {
@@ -128,10 +141,9 @@ export default class ImageTools {
     let blob = null;
 
     if (hasBlobConstructor) {
-      blob = new Blob(
-        [hasArrayBufferViewSupport ? intArray : arrayBuffer],
-        { type: mimeString },
-      );
+      blob = new Blob([hasArrayBufferViewSupport ? intArray : arrayBuffer], {
+        type: mimeString,
+      });
     } else {
       const bb = new Blob();
       bb.append(arrayBuffer);
@@ -142,24 +154,28 @@ export default class ImageTools {
   }
 
   static loadImage(image, file, callback) {
-    if (typeof (URL) === 'undefined') {
+    if (typeof URL === 'undefined') {
       const reader = new FileReader();
-      reader.onload = (evt) => {
+      reader.onload = evt => {
         image.src = evt.target.result;
-        if (callback) { callback(); }
+        if (callback) {
+          callback();
+        }
       };
       reader.readAsDataURL(file);
     } else {
       image.src = URL.createObjectURL(file);
-      if (callback) { callback(); }
+      if (callback) {
+        callback();
+      }
     }
   }
 
   static isSupported() {
     return (
-      (typeof (HTMLCanvasElement) !== 'undefined')
-            && hasBlobSupport
-            && hasReaderSupport
+      typeof HTMLCanvasElement !== 'undefined' &&
+      hasBlobSupport &&
+      hasReaderSupport
     );
   }
 }
