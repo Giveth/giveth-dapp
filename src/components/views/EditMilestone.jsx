@@ -420,22 +420,37 @@ class EditMilestone extends Component {
   }
 
   getEthConversion (date) {
-    return feathersClient
-      .service('ethconversion')
-      .find({query: { date: date }})
-      .then(resp => {
-        const conversionRates = this.state.conversionRates
-        
-        if(conversionRates.filter((c) => c.timestamp === resp.timestamp).length === 0) {
+    // generate utc timestamp, set at start of day
+    const utcDate = new Date(date).setUTCHours(0,0,0,0);
+    const timestamp = Math.round(utcDate) / 1000; 
+
+    const conversionRates = this.state.conversionRates;
+    const cachedConversionRate = conversionRates.filter((c) => c.timestamp === timestamp);
+
+    if(cachedConversionRate.length === 0) {
+      // we don't have the conversion rate in cache, fetch from feathers
+      return feathersClient
+        .service('ethconversion')
+        .find({query: { date: date }})
+        .then(resp => {
+          
           this.setState({ 
             conversionRates: conversionRates.concat(resp),
             maxAmount: this.state.fiatAmount / resp.rates[this.state.selectedFiatType],
             currentRate: resp 
           })            
-        }
 
-        return resp;
-      })   
+          return resp;
+        })   
+    } else {  
+      // we have the conversion rate in cache
+      return new Promise((resolve, reject) => {
+        this.setState(
+          {currentRate: cachedConversionRate[0]}, 
+          () => resolve(cachedConversionRate[0])
+        );
+      });
+    }
   }
 
   setMaxAmount(e) {
@@ -493,7 +508,8 @@ class EditMilestone extends Component {
       fiatAmount,
       date,
       selectedFiatType,
-      fiatTypes
+      fiatTypes,
+      currentRate
     } = this.state;
 
     return (
@@ -694,23 +710,12 @@ class EditMilestone extends Component {
 
                         <div className="form-group row">
                           <div className="col-4">
-                            <SelectFormsy
-                              name="fiatType"
-                              label="Select fiat currency for milestone"
-                              value={selectedFiatType}
-                              options={fiatTypes}
-                              onChange={this.changeSelectedFiat}
-                              required
-                            />  
-                          </div>
-
-                          <div className="col-4">
                             <Input
                               name="fiatAmount"
                               id="fiatamount-input"
                               type="number"
                               ref="fiatAmount"
-                              label="Maximum fiat amount required for this Milestone"
+                              label="Maximum amount in fiat"
                               value={fiatAmount}
                               placeholder="10"
                               validations="greaterThan:1"
@@ -723,12 +728,24 @@ class EditMilestone extends Component {
                           </div>
 
                           <div className="col-4">
+                            <SelectFormsy
+                              name="fiatType"
+                              label="Currency"
+                              value={selectedFiatType}
+                              options={fiatTypes}
+                              onChange={this.changeSelectedFiat}
+                              helpText={`1 Eth = ${currentRate.rates[selectedFiatType]} ${selectedFiatType}`}
+                              required
+                            /> 
+                          </div>                          
+
+                          <div className="col-4">
                             <Input
                               name="maxAmount"
                               id="maxamount-input"
                               type="number"
                               ref="maxAmount"
-                              label="Maximum amount of &#926; required for this Milestone"
+                              label="Maximum amount in &#926;"
                               value={maxAmount}
                               placeholder="10"
                               validations="greaterThan:0.0099999999999"

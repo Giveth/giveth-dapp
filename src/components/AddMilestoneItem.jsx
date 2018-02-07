@@ -47,6 +47,10 @@ class AddMilestoneItem extends Component {
     this.changeSelectedFiat = this.changeSelectedFiat.bind(this);
   }
 
+  componentWillMount() {
+    this.setState({ conversionRate: this.props.conversionRate })
+  }
+
   openDialog() {
     this.setState({ 
       modalVisible: true, 
@@ -141,7 +145,8 @@ class AddMilestoneItem extends Component {
       selectedFiatType, 
       fiatAmount, 
       etherAmount,
-      image 
+      image,
+      conversionRate
     } = this.state;
 
     return (
@@ -199,6 +204,7 @@ class AddMilestoneItem extends Component {
                 value={selectedFiatType}
                 options={fiatTypes}
                 onChange={this.changeSelectedFiat}
+                helpText={conversionRate ? `1 Eth = ${conversionRate.rates[selectedFiatType]} ${selectedFiatType}` : ''}
                 required
               />  
               
