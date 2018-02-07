@@ -127,20 +127,21 @@ class EditMilestone extends Component {
             .service('milestones')
             .find({ query: { _id: this.props.match.params.milestoneId } })
             .then(resp => {
-              const milestone = resp.data[0]
-              const date = milestone.date ? moment(milestone.date) : moment()
+              const milestone = resp.data[0];
+              const date = milestone.date ? moment(milestone.date) : moment();
               
               if (
                 !isOwner(milestone.owner.address, this.props.currentUser)
               ) {
                 this.props.history.goBack();
-              } else {
+              } 
+              else {
                 this.setState(
                   Object.assign({}, milestone, {
                     id: this.props.match.params.milestoneId,
                     maxAmount: utils.fromWei(milestone.maxAmount),
                     date: date,
-                    itemizeState: milestone.items.length > 0,
+                    itemizeState: milestone.items && milestone.items.length > 0,
                     selectedFiatType: milestone.selectedFiatType || "EUR"
                   })
                 );
@@ -182,10 +183,11 @@ class EditMilestone extends Component {
                 isLoading: false
               })
             )
-            .catch((e) => console.error(e))             
+            .catch((e) => console.log(e))             
         }
       })     
       .catch(err => {
+        console.log('err', err);
         if (err === 'noBalance') this.props.history.goBack();
       });
   }
@@ -466,9 +468,9 @@ class EditMilestone extends Component {
     const timestamp = Math.round(utcDate) / 1000; 
 
     const conversionRates = this.state.conversionRates;
-    const cachedConversionRate = conversionRates.filter((c) => c.timestamp === timestamp);
+    const cachedConversionRate = conversionRates.find((c) => c.timestamp === timestamp);
 
-    if(cachedConversionRate.length === 0) {
+    if(!cachedConversionRate) {
       // we don't have the conversion rate in cache, fetch from feathers
       return feathersClient
         .service('ethconversion')
@@ -488,8 +490,8 @@ class EditMilestone extends Component {
       // we have the conversion rate in cache
       return new Promise((resolve, reject) => {
         this.setState(
-          { currentRate: cachedConversionRate[0] }, 
-          () => resolve(cachedConversionRate[0])
+          { currentRate: cachedConversionRate }, 
+          () => resolve(cachedConversionRate)
         );
       });
     }
@@ -831,7 +833,6 @@ class EditMilestone extends Component {
                           </table>
                           <AddMilestoneItem 
                             onAddItem={(item)=>this.addItem(item)} 
-                            conversionRate={conversionRates[0]}
                             getEthConversion={(date)=>this.getEthConversion(date)}
                             fiatTypes={fiatTypes}
                           />
