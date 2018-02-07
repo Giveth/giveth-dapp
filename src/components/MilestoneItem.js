@@ -5,7 +5,7 @@ import { getTruncatedText } from './../lib/helpers';
 
 class MilestoneItem extends Component {
   render(){
-    const { removeItem, item } = this.props;
+    const { removeItem, item, isEditMode } = this.props;
 
     return(
       <tr>
@@ -19,7 +19,8 @@ class MilestoneItem extends Component {
         </td>
 
         <td className="td-item-amount-fiat">
-          {item.selectedFiatType}{item.fiatAmount}
+          {item.selectedFiatType}{item.fiatAmount}<br/>
+          <span className="help-block">{`1 ETH = ${item.conversionRate} ${item.selectedFiatType}`}</span>
         </td>           
 
         <td className="td-item-amount-ether"> 
@@ -34,11 +35,13 @@ class MilestoneItem extends Component {
           }
         </td> 
 
-        <td className="td-item-remove">
-          <button className="btn btn-link" onClick={removeItem}>
-            X
-          </button>
-        </td>         
+        {isEditMode && 
+          <td className="td-item-remove">
+            <button className="btn btn-link" onClick={removeItem}>
+              X
+            </button>
+          </td>   
+        }      
       </tr>
     )
   }

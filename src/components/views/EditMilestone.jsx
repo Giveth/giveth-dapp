@@ -115,10 +115,6 @@ class EditMilestone extends Component {
           );
         }
       })
-      .then(() =>
-        // load eth conversion for today
-        this.getEthConversion()
-      )
       .then(() => {
         this.setState({
           campaignId: this.props.match.params.id,
@@ -131,26 +127,36 @@ class EditMilestone extends Component {
             .service('milestones')
             .find({ query: { _id: this.props.match.params.milestoneId } })
             .then(resp => {
+              const milestone = resp.data[0]
+              const date = milestone.date ? moment(milestone.date) : moment()
+              
               if (
-                !isOwner(resp.data[0].owner.address, this.props.currentUser)
+                !isOwner(milestone.owner.address, this.props.currentUser)
               ) {
                 this.props.history.goBack();
               } else {
                 this.setState(
-                  Object.assign({}, resp.data[0], {
+                  Object.assign({}, milestone, {
                     id: this.props.match.params.milestoneId,
-                    maxAmount: utils.fromWei(resp.data[0].maxAmount),
-                    isLoading: false,
-                    hasError: false,
-                  }),
+                    maxAmount: utils.fromWei(milestone.maxAmount),
+                    date: date,
+                    itemizeState: milestone.items.length > 0,
+                    selectedFiatType: milestone.selectedFiatType || "EUR"
+                  })
                 );
+                return(date)
               }
             })
-            .catch(() =>
+            .then((date) => 
+              this.getEthConversion(date)
+            )
+            .then(() =>
               this.setState({
-                isLoading: false,
-              }),
-            );
+                hasError: false,
+                isLoading: false
+              })
+            )
+            .catch((e) => console.error(e))             
         } else {
           feathersClient
             .service('campaigns')
@@ -164,12 +170,21 @@ class EditMilestone extends Component {
                   campaignProjectId: campaign.projectId,
                   campaignReviewerAddress: campaign.reviewerAddress,
                   campaignOwnerAddress: campaign.ownerAddress,
-                  isLoading: false,
                 });
               }
-            });
+            })
+            .then(() => 
+              this.getEthConversion(this.state.date)
+            ) 
+            .then(() =>
+              this.setState({
+                hasError: false,
+                isLoading: false
+              })
+            )
+            .catch((e) => console.error(e))             
         }
-      })
+      })     
       .catch(err => {
         if (err === 'noBalance') this.props.history.goBack();
       });
@@ -201,9 +216,16 @@ class EditMilestone extends Component {
     };
     let txHash;
 
-    console.log(model);
-
     const updateMilestone = file => {
+      // in itemized mode, we calculate the maxAmount from the items
+
+      if(this.state.itemizeState) {
+        model.maxAmount = 0;
+        this.state.items.forEach((item) => model.maxAmount += parseFloat(item.etherAmount));
+      }
+
+      console.log(model);
+
       const constructedModel = {
         title: model.title,
         description: model.description,
@@ -220,17 +242,32 @@ class EditMilestone extends Component {
           this.props.isProposed || this.state.status === 'rejected'
             ? 'proposed'
             : this.state.status, // make sure not to change status!
-        items: this.state.items,
+        items: this.state.itemizeState ? this.state.items : [],
         ethConversionRateTimestamp: this.state.currentRate.timestamp,
-        selectedFiatType: this.state.selectedFiatType
+        selectedFiatType: this.state.selectedFiatType,
+        date: this.state.date,
+        fiatAmount: this.state.fiatAmount,
+        conversionRate: this.state.currentRate.rates[this.state.selectedFiatType]
       };
 
       if (this.props.isNew) {
-        const createMilestone = txData => {
+        const createMilestone = (txData, callback) => {
           feathersClient
             .service('milestones')
             .create(Object.assign({}, constructedModel, txData))
-            .then(() => afterEmit(true));
+            .then(() => {
+              afterEmit(true);
+              callback()
+            })
+            .catch((err) => {
+              console.log(err);
+              this.setState({ isSaving: false})
+              React.swal({
+                title: 'Oh no!',
+                content: "Something went wrong, please try again or contact support.",
+                icon: 'error',
+              });              
+            })
         };
 
         if (this.props.isProposed) {
@@ -239,10 +276,11 @@ class EditMilestone extends Component {
             totalDonated: '0',
             donationCount: 0,
             campaignOwnerAddress: this.state.campaignOwnerAddress,
-          });
-          React.toast.info(
-            <p>Your Milestone is being proposed to the Campaign Owner.</p>,
-          );
+          }, () =>
+            React.toast.info(
+              <p>Your Milestone is being proposed to the Campaign Owner.</p>,
+            )
+          )
         } else {
           let etherScanUrl;
           Promise.all([getNetwork(), getWeb3(), getGasPrice()])
@@ -269,19 +307,20 @@ class EditMilestone extends Component {
                     pluginAddress: '0x0000000000000000000000000000000000000000',
                     totalDonated: '0',
                     donationCount: '0',
-                  });
-                  React.toast.info(
-                    <p>
-                      Your Milestone is pending....<br />
-                      <a
-                        href={`${etherScanUrl}tx/${txHash}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        View transaction
-                      </a>
-                    </p>,
-                  );
+                  }, () =>
+                    React.toast.info(
+                      <p>
+                        Your Milestone is pending....<br />
+                        <a
+                          href={`${etherScanUrl}tx/${txHash}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          View transaction
+                        </a>
+                      </p>,
+                    )
+                  )
                 })
                 .then(() => {
                   React.toast.success(
@@ -306,7 +345,15 @@ class EditMilestone extends Component {
         feathersClient
           .service('milestones')
           .patch(this.state.id, constructedModel)
-          .then(() => afterEmit());
+          .then(() => {
+            React.toast.success(
+              <p>
+                Your Milestone has been updated!<br />
+              </p>
+            );
+
+            afterEmit()
+          });
       }
     };
 
@@ -324,20 +371,22 @@ class EditMilestone extends Component {
       }
 
       if(this.state.itemizeState) {
-        let uploadPromises = [];
-
         // upload all the item images
         const uploadItemImages = new Promise((resolve, reject) => 
-          this.state.items.forEach((item, index) =>
-            feathersClient
-              .service('/uploads')
-              .create({ uri: item.image })
-              .then((file) => {
-                item.image = file.url;
-                if(index === 0) resolve('done');
-              })
-            )
-          )
+          this.state.items.forEach((item, index) => {
+            if(item.image) {
+              feathersClient
+                .service('/uploads')
+                .create({ uri: item.image })
+                .then((file) => {
+                  item.image = file.url;
+                  if(index === 0) resolve('done');
+                })
+            } else {
+              if(index === 0) resolve('done');
+            }
+          })
+        );
         
         uploadItemImages.then(() => uploadMilestoneImage());
 
@@ -396,23 +445,14 @@ class EditMilestone extends Component {
   }
 
   mapInputs(inputs) {
-    let data = {
+    return {
       title: inputs.title,
       description: inputs.description,
       reviewerAddress: inputs.reviewerAddress,
       recipientAddress: inputs.recipientAddress,
       items: this.state.items,
-      maxAmount: 0     
+      maxAmount: inputs.maxAmount    
     }
-
-    // in itemized mode, we calculate the maxAmount from the items
-    if(this.state.itemizeState) {
-      this.state.items.forEach((item) => data.maxAmount += parseFloat(item.etherAmount))
-    } else {
-      data.maxAmount = inputs.maxAmount;
-    }
-
-    return data;
   }
 
   toggleItemize () {
@@ -420,8 +460,9 @@ class EditMilestone extends Component {
   }
 
   getEthConversion (date) {
+    console.log('getting rate for date', moment(date).toDate())
     // generate utc timestamp, set at start of day
-    const utcDate = new Date(date).setUTCHours(0,0,0,0);
+    const utcDate = moment(date).toDate().setUTCHours(0,0,0,0);
     const timestamp = Math.round(utcDate) / 1000; 
 
     const conversionRates = this.state.conversionRates;
@@ -441,12 +482,13 @@ class EditMilestone extends Component {
           })            
 
           return resp;
-        })   
+        }) 
+        .catch((e) => console.error(e))  
     } else {  
       // we have the conversion rate in cache
       return new Promise((resolve, reject) => {
         this.setState(
-          {currentRate: cachedConversionRate[0]}, 
+          { currentRate: cachedConversionRate[0] }, 
           () => resolve(cachedConversionRate[0])
         );
       });
@@ -782,6 +824,7 @@ class EditMilestone extends Component {
                                   index={i}
                                   item={item}
                                   removeItem={()=>this.removeItem(i)}
+                                  isEditMode={true}
                                 />
                               ))}
                             </tbody>
@@ -790,6 +833,7 @@ class EditMilestone extends Component {
                             onAddItem={(item)=>this.addItem(item)} 
                             conversionRate={conversionRates[0]}
                             getEthConversion={(date)=>this.getEthConversion(date)}
+                            fiatTypes={fiatTypes}
                           />
                         </div>
                       </div>

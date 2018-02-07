@@ -14,9 +14,11 @@ import BackgroundImageHeader from '../BackgroundImageHeader';
 import DonateButton from '../DonateButton';
 import ShowTypeDonations from '../ShowTypeDonations';
 import getNetwork from './../../lib/blockchain/getNetwork';
+import MilestoneItem from './../MilestoneItem';
 
 import GivethWallet from '../../lib/blockchain/GivethWallet';
 import User from '../../models/User';
+import moment from 'moment';
 
 /**
   Loads and shows a single milestone
@@ -106,6 +108,10 @@ class ViewMilestone extends Component {
       reviewer,
       reviewerAddress,
       etherScanUrl,
+      items,
+      date,
+      fiatAmount,
+      selectedFiatType
     } = this.state;
 
     return (
@@ -174,6 +180,35 @@ class ViewMilestone extends Component {
                 </div>
               </div>
 
+              { items.length > 0 &&
+                <div className="row spacer-top-50">
+                  <div className="col-md-8 m-auto">
+                    <h4>Milestone items</h4>
+
+                    <table className="table table-responsive table-hover">
+                      <thead>
+                        <tr>
+                          <th className="td-item-date">Date</th>                        
+                          <th className="td-item-description">Description</th>
+                          <th className="td-item-amount-fiat">Amount Fiat</th>
+                          <th className="td-item-fiat-amount">Amount Ether</th>
+                          <th className="td-item-file-upload">Attached proof</th>
+                          <th className="td-item-action"></th>                          
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {items.map((item, i) => (
+                          <MilestoneItem 
+                            key={i}
+                            item={item}
+                          />
+                        ))}
+                      </tbody>
+                    </table>                
+                  </div>
+                </div>
+              }
+
               <div className="row spacer-top-50">
                 <div className="col-md-8 m-auto">
                   <h4>Details</h4>
@@ -232,13 +267,21 @@ class ViewMilestone extends Component {
                     </table>
                   </div>
 
+                  { items.length === 0 && 
+                    <div className="form-group">
+                      <label>Date of milestone</label>
+                      <small className="form-text">This date defines the eth-fiat conversion rate</small>
+                      {moment(date).format("Do MMM YYYY - HH:MMa(Z)" )}
+                    </div>
+                  }
+
                   <div className="form-group">
                     <label>Max amount to raise</label>
                     <small
                       className="form-text"
-                    >The maximum amount of &#926; (Ether) that can be donated to this Milestone
+                    >The maximum amount of &#926; (Ether) that can be donated to this Milestone. Based on the requested amount in fiat.
                     </small>
-                    &#926;{maxAmount}
+                    &#926;{maxAmount} ({fiatAmount} {selectedFiatType})
                   </div>
 
                   <div className="form-group">

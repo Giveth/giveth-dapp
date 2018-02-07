@@ -521,7 +521,7 @@ class MyMilestones extends Component {
                       <tbody>
                         { milestones.map(m => (
                           <tr key={m._id} className={m.status === 'pending' ? 'pending' : ''}>
-                            <td clasName="td-created-at">
+                            <td className="td-created-at">
                               { m.createdAt &&
                                 <span>{moment(m.createdAt).format('Do MMM YYYY - HH:mm a')}</span>
                               }

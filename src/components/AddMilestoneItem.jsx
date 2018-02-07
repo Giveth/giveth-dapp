@@ -1,13 +1,14 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { SkyLightStateless } from 'react-skylight';
-import { Form, Input } from 'formsy-react-components';
+import { Input } from 'formsy-react-components';
 import Formsy from 'formsy-react';
 import SelectFormsy from './SelectFormsy';
 import DatePickerFormsy from './DatePickerFormsy';
 import FormsyImageUploader from './FormsyImageUploader';
 import moment from 'moment'
 import { Portal } from 'react-portal';
+import { utils } from 'web3';
 
 Formsy.addValidationRule('isMoment', function (values, value, array) {
   return value.isMoment();
@@ -16,14 +17,6 @@ Formsy.addValidationRule('isMoment', function (values, value, array) {
 const initialState = {
   modalVisible: false,
   date: moment(),
-  fiatTypes: [
-    {value: 'USD', title: 'USD'},
-    {value: 'EUR', title: 'EUR'},
-    {value: 'GBP', title: 'GBP'},
-    {value: 'CHF', title: 'CHF'},
-    {value: 'MXN', title: 'MXN'},
-    {value: 'THB', title: 'THB'}
-  ],
   description: '',
   selectedFiatType: 'EUR',
   fiatAmount: 1,
@@ -48,15 +41,19 @@ class AddMilestoneItem extends Component {
   }
 
   componentWillMount() {
-    this.setState({ conversionRate: this.props.conversionRate })
+    this.props.getEthConversion(this.state.date).then((resp) =>
+      this.setState({ conversionRate: resp.rates })      
+    )
   }
 
   openDialog() {
-    this.setState({ 
-      modalVisible: true, 
-      conversionRate: this.props.conversionRate,
-      etherAmount: this.state.fiatAmount / this.props.conversionRate.rates[this.state.selectedFiatType] 
-    })
+    this.props.getEthConversion(this.state.date).then((resp) =>
+      this.setState({ 
+        modalVisible: true, 
+        conversionRate: resp.rates,
+        etherAmount: this.state.fiatAmount / resp.rates[this.state.selectedFiatType] 
+      })
+    )
   }
 
   closeDialog() {
@@ -98,6 +95,8 @@ class AddMilestoneItem extends Component {
       selectedFiatType: this.state.selectedFiatType,
       fiatAmount: this.state.fiatAmount,
       etherAmount: this.state.etherAmount,
+      wei: utils.toWei(this.state.etherAmount.toFixed(18)),
+      conversionRate: this.state.conversionRate.rates[this.state.selectedFiatType],
       image: this.state.image,
       ethConversionRateTimestamp: this.state.conversionRate.timestamp
     }    
@@ -141,13 +140,14 @@ class AddMilestoneItem extends Component {
       formIsValid, 
       date, 
       description, 
-      fiatTypes, 
       selectedFiatType, 
       fiatAmount, 
       etherAmount,
       image,
       conversionRate
     } = this.state;
+
+    const { fiatTypes } = this.props
 
     return (
       <span>
@@ -158,7 +158,7 @@ class AddMilestoneItem extends Component {
         <Portal>
 
           <SkyLightStateless
-            isVisible={this.state.modalVisible}
+            isVisible={modalVisible}
             onCloseClicked={() => this.closeDialog()}
             title={`Add an item to this milestone`}
           >   
@@ -204,7 +204,7 @@ class AddMilestoneItem extends Component {
                 value={selectedFiatType}
                 options={fiatTypes}
                 onChange={this.changeSelectedFiat}
-                helpText={conversionRate ? `1 Eth = ${conversionRate.rates[selectedFiatType]} ${selectedFiatType}` : ''}
+                helpText={conversionRate && conversionRate.rates ? `1 Eth = ${conversionRate.rates[selectedFiatType]} ${selectedFiatType}` : ''}
                 required
               />  
               
@@ -240,7 +240,7 @@ class AddMilestoneItem extends Component {
 
               <FormsyImageUploader
                 name="image"
-                // previewImage={image}
+                previewImage={image}
                 setImage={this.setImage}
               /> 
 
