@@ -38,17 +38,20 @@ export const isAuthenticated = (currentUser, wallet) =>
  */
 
 export const isInWhitelist = (currentUser, whitelist, history) =>
-  new Promise(
-    (resolve, reject) =>
-      whitelist.length === 0 ||
-      (currentUser &&
-        currentUser.address &&
-        whitelist.find((u) => u.address.toLowerCase() === currentUser.address.toLowerCase()))
-        ? resolve()
-        : reject() &&
-          console.log('not in whitelist') &&
-          (history && history.goBack()),
-  );
+  new Promise((resolve, reject) => {
+    if(whitelist.length > 0 && currentUser && currentUser.address) {
+      const whitelistedUser = whitelist.find((u) => u.address.toLowerCase() === currentUser.address.toLowerCase())
+
+      if(whitelistedUser) {
+        resolve()
+      } else {
+        console.error('you are not in the whitelist');
+        if(history) history.goBack();
+        reject('not in whitelist');
+      }
+
+    }
+  });
 
 /**
  * If the wallet is locked, asks the user to unlock his wallet before redirecting to a route
