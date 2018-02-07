@@ -84,7 +84,7 @@ class MyMilestones extends Component {
           dangerMode: true,
           buttons: ['Cancel', 'Yes, edit'],
         }).then((isConfirmed) => {
-          if (isConfirmed) redirectAfterWalletUnlock(`/milestones/${id}/edit`, this.props.wallet, this.props.history);
+          if (isConfirmed) redirectAfterWalletUnlock(`/milestones/${id}/edit/proposed`, this.props.wallet, this.props.history);
         }));
     });
   }

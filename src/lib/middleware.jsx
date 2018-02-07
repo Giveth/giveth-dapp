@@ -45,7 +45,7 @@ export const isInWhitelist = (currentUser, whitelist, history) =>
       if(whitelistedUser) {
         resolve()
       } else {
-        console.error('you are not in the whitelist');
+        console.log('you are not in the whitelist');
         if(history) history.goBack();
         reject('not in whitelist');
       }
