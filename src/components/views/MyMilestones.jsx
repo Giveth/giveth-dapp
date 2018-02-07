@@ -54,7 +54,8 @@ class MyMilestones extends Component {
           ],
           $sort: {
             createdAt: -1
-          }          
+          },
+          $limit: 200          
         },
       }).subscribe(
         resp => this.setState({ milestones: _.sortBy(resp.data, (d) => {
@@ -74,7 +75,7 @@ class MyMilestones extends Component {
     if (this.milestonesObserver) this.milestonesObserver.unsubscribe();
   }
 
-  editMilestone(id) {
+  editMilestone(milestone) {
     takeActionAfterWalletUnlock(this.props.wallet, () => {
       checkWalletBalance(this.props.wallet, this.props.history).then(() =>
         React.swal({
@@ -84,7 +85,13 @@ class MyMilestones extends Component {
           dangerMode: true,
           buttons: ['Cancel', 'Yes, edit'],
         }).then((isConfirmed) => {
-          if (isConfirmed) redirectAfterWalletUnlock(`/milestones/${id}/edit/proposed`, this.props.wallet, this.props.history);
+          if (isConfirmed) {
+            if(milestone.status === 'proposed') {
+              redirectAfterWalletUnlock(`/milestones/${milestone._id}/edit/proposed`, this.props.wallet, this.props.history);
+            } else {
+              redirectAfterWalletUnlock(`/milestones/${milestone._id}/edit`, this.props.wallet, this.props.history);
+            }
+          }
         }));
     });
   }
@@ -556,7 +563,7 @@ class MyMilestones extends Component {
                               { m.ownerAddress === currentUser.address &&
                                 <button
                                   className="btn btn-link"
-                                  onClick={() => this.editMilestone(m._id)}
+                                  onClick={() => this.editMilestone(m)}
                                 >
                                   <i className="fa fa-edit" />&nbsp;Edit
                                 </button>

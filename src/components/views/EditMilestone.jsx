@@ -748,6 +748,7 @@ class EditMilestone extends Component {
                                 minLength: 'Please provide a date.',
                               }}
                               required
+                              disabled={projectId}                              
                             />
                           </div>
                         </div>
@@ -779,6 +780,7 @@ class EditMilestone extends Component {
                               options={fiatTypes}
                               onChange={this.changeSelectedFiat}
                               helpText={`1 Eth = ${currentRate.rates[selectedFiatType]} ${selectedFiatType}`}
+                              disabled={projectId}                                                            
                               required
                             /> 
                           </div>                          

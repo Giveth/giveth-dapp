@@ -49,6 +49,7 @@ const DatePickerFormsy = createReactClass({
           placeholderText={this.props.placeholder}
           onChange={this.handleChange}
           className="form-control"
+          disabled={this.props.disabled}
         />
         <span>{errorMessage}</span>
       </div>

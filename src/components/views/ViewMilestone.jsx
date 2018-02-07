@@ -180,7 +180,7 @@ class ViewMilestone extends Component {
                 </div>
               </div>
 
-              { items.length > 0 &&
+              { items && items.length > 0 &&
                 <div className="row spacer-top-50">
                   <div className="col-md-8 m-auto">
                     <h4>Milestone items</h4>
@@ -267,7 +267,7 @@ class ViewMilestone extends Component {
                     </table>
                   </div>
 
-                  { items.length === 0 && 
+                  { date && 
                     <div className="form-group">
                       <label>Date of milestone</label>
                       <small className="form-text">This date defines the eth-fiat conversion rate</small>
@@ -281,7 +281,10 @@ class ViewMilestone extends Component {
                       className="form-text"
                     >The maximum amount of &#926; (Ether) that can be donated to this Milestone. Based on the requested amount in fiat.
                     </small>
-                    &#926;{maxAmount} ({fiatAmount} {selectedFiatType})
+                    &#926;{maxAmount} 
+                    { fiatAmount && 
+                      <span>({fiatAmount} {selectedFiatType})</span>
+                    }
                   </div>
 
                   <div className="form-group">
