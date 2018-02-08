@@ -139,3 +139,9 @@
   -moz-box-shadow: 0px 0px 5px 5px #0099E0;
   box-shadow: 0px 0px 5px 5px #0099E0;
 }
+
+.react-toggle-container label {
+  position: relative;
+  top: -7px;
+  left: 5px;
+}

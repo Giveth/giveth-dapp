@@ -78,7 +78,7 @@ class EditMilestone extends Component {
         title: `${r.name ? r.name : 'Anonymous user'} - ${r.address}`,
       })),
       items: [],
-      itemizeState: true,
+      itemizeState: false,
       conversionRates: [],
       currentRate: undefined,
       date: moment(),
@@ -420,7 +420,11 @@ class EditMilestone extends Component {
   }
 
   toggleFormValid(state) {
-    this.setState({ formIsValid: state });
+    if(this.state.itemizeState) {
+      this.setState({ formIsValid: state && this.state.items.length > 0 });
+    } else {
+      this.setState({ formIsValid: state });
+    }
   }
 
   constructSummary(text) {
@@ -436,7 +440,6 @@ class EditMilestone extends Component {
   }
 
   addItem(item) {
-    console.log(item);
     this.setState({ items: this.state.items.concat(item)});
   }
 
@@ -529,7 +532,6 @@ class EditMilestone extends Component {
     })    
   }  
 
-
   render() {
     const { isNew, isProposed, history } = this.props;
     const {
@@ -548,7 +550,6 @@ class EditMilestone extends Component {
       projectId,
       items,
       itemizeState,
-      conversionRates,
       fiatAmount,
       date,
       selectedFiatType,
@@ -724,120 +725,149 @@ class EditMilestone extends Component {
                     </div>
                   */}
 
-                    <Toggle
-                      id='itemize-state'
-                      defaultChecked={this.state.itemizeState}
-                      onChange={()=>this.toggleItemize()} />
-                    <label htmlFor='itemize-state'>Itemize milestone</label>
+                    <div className="react-toggle-container">
+                      <Toggle
+                        id='itemize-state'
+                        defaultChecked={this.state.itemizeState}
+                        onChange={()=>this.toggleItemize()} />
+                      <label htmlFor='itemize-state'>Add multiple expenses, invoices or items</label>
+                    </div>
 
                     { !itemizeState &&
-                      <span>
-                        <div className="form-group row">
-                          <div className="col-12">
-                            <DatePickerFormsy
-                              name="date"
-                              type="text"
-                              value={date}
-                              startDate={date}
-                              label="Milestone date"
-                              changeDate={date => this.setDate(date)}
-                              placeholder="Select a date"
-                              help="Select a date"
-                              validations="minLength:8"
-                              validationErrors={{
-                                minLength: 'Please provide a date.',
-                              }}
-                              required
-                              disabled={projectId}                              
-                            />
+                      <div className="card milestone-items-card">
+                        <div className="card-body">
+                          <div className="form-group row">
+                            <div className="col-12">
+                              <DatePickerFormsy
+                                name="date"
+                                type="text"
+                                value={date}
+                                startDate={date}
+                                label="Milestone date"
+                                changeDate={date => this.setDate(date)}
+                                placeholder="Select a date"
+                                help="Select a date"
+                                validations="minLength:8"
+                                validationErrors={{
+                                  minLength: 'Please provide a date.',
+                                }}
+                                required
+                                disabled={projectId}                              
+                              />
+                            </div>
+                          </div>
+
+                          <div className="form-group row">
+                            <div className="col-4">
+                              <Input
+                                name="fiatAmount"
+                                id="fiatamount-input"
+                                type="number"
+                                ref="fiatAmount"
+                                label="Maximum amount in fiat"
+                                value={fiatAmount}
+                                placeholder="10"
+                                validations="greaterThan:1"
+                                validationErrors={{
+                                  greaterThan: 'Minimum value must be at least 1',
+                                }}
+                                disabled={projectId}
+                                onKeyUp={this.setMaxAmount}                
+                              />
+                            </div>
+
+                            <div className="col-4">
+                              <SelectFormsy
+                                name="fiatType"
+                                label="Currency"
+                                value={selectedFiatType}
+                                options={fiatTypes}
+                                onChange={this.changeSelectedFiat}
+                                helpText={`1 Eth = ${currentRate.rates[selectedFiatType]} ${selectedFiatType}`}
+                                disabled={projectId}                                                            
+                                required
+                              /> 
+                            </div>                          
+
+                            <div className="col-4">
+                              <Input
+                                name="maxAmount"
+                                id="maxamount-input"
+                                type="number"
+                                ref="maxAmount"
+                                label="Maximum amount in &#926;"
+                                value={maxAmount}
+                                placeholder="10"
+                                validations="greaterThan:0.0099999999999"
+                                validationErrors={{
+                                  greaterThan: 'Minimum value must be at least Ξ 0.1',
+                                }}
+                                required
+                                disabled={projectId}
+                                onKeyUp={this.setFiatAmount}                
+                              />
+                            </div>
                           </div>
                         </div>
-
-                        <div className="form-group row">
-                          <div className="col-4">
-                            <Input
-                              name="fiatAmount"
-                              id="fiatamount-input"
-                              type="number"
-                              ref="fiatAmount"
-                              label="Maximum amount in fiat"
-                              value={fiatAmount}
-                              placeholder="10"
-                              validations="greaterThan:1"
-                              validationErrors={{
-                                greaterThan: 'Minimum value must be at least 1',
-                              }}
-                              disabled={projectId}
-                              onKeyUp={this.setMaxAmount}                
-                            />
-                          </div>
-
-                          <div className="col-4">
-                            <SelectFormsy
-                              name="fiatType"
-                              label="Currency"
-                              value={selectedFiatType}
-                              options={fiatTypes}
-                              onChange={this.changeSelectedFiat}
-                              helpText={`1 Eth = ${currentRate.rates[selectedFiatType]} ${selectedFiatType}`}
-                              disabled={projectId}                                                            
-                              required
-                            /> 
-                          </div>                          
-
-                          <div className="col-4">
-                            <Input
-                              name="maxAmount"
-                              id="maxamount-input"
-                              type="number"
-                              ref="maxAmount"
-                              label="Maximum amount in &#926;"
-                              value={maxAmount}
-                              placeholder="10"
-                              validations="greaterThan:0.0099999999999"
-                              validationErrors={{
-                                greaterThan: 'Minimum value must be at least Ξ 0.1',
-                              }}
-                              required
-                              disabled={projectId}
-                              onKeyUp={this.setFiatAmount}                
-                            />
-                          </div>
-                        </div>
-                      </span>
+                      </div>
                     }
 
                     { itemizeState && 
-                      <div className="form-group row">
+                      <div className="form-group row dashboard-table-view">
                         <div className="col-12">
-                          <table className="table table-responsive table-hover">
-                            <thead>
-                              <tr>
-                                <th className="td-item-date">Date</th>                        
-                                <th className="td-item-description">Description</th>
-                                <th className="td-item-amount-fiat">Amount Fiat</th>
-                                <th className="td-item-fiat-amount">Amount Ether</th>
-                                <th className="td-item-file-upload">Attached proof</th>
-                                <th className="td-item-action"></th>                          
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {items.map((item, i) => (
-                                <MilestoneItem 
-                                  key={i}
-                                  index={i}
-                                  item={item}
-                                  removeItem={()=>this.removeItem(i)}
-                                  isEditMode={true}
+                          <div className="card milestone-items-card">
+                            <div className="card-body">                        
+                              { items.length > 0 && 
+                                <div className="table-container">
+                                  <table className="table table-responsive table-striped table-hover">
+                                    <thead>
+                                      <tr>
+                                        <th className="td-item-date">Date</th>                        
+                                        <th className="td-item-description">Description</th>
+                                        <th className="td-item-amount-fiat">Amount Fiat</th>
+                                        <th className="td-item-fiat-amount">Amount Ether</th>
+                                        <th className="td-item-file-upload">Attached proof</th>
+                                        <th className="td-item-action"></th>                          
+                                      </tr>
+                                    </thead>
+                                    <tbody>
+                                      {items.map((item, i) => (
+                                        <MilestoneItem 
+                                          name={`milestoneItem-${i}`}
+                                          key={i}
+                                          index={i}
+                                          item={item}
+                                          removeItem={()=>this.removeItem(i)}
+                                          isEditMode={true}
+                                        />
+                                      ))}
+                                    </tbody>
+                                  </table>
+                                </div>
+                              }
+
+                              { items.length > 0 &&
+                                <AddMilestoneItem 
+                                  onAddItem={(item)=>this.addItem(item)} 
+                                  getEthConversion={(date)=>this.getEthConversion(date)}
+                                  fiatTypes={fiatTypes}
                                 />
-                              ))}
-                            </tbody>
-                          </table>
-                          <AddMilestoneItem 
-                            onAddItem={(item)=>this.addItem(item)} 
-                            getEthConversion={(date)=>this.getEthConversion(date)}
-                            fiatTypes={fiatTypes}
-                          />
+                              }
+
+                              { items.length === 0 &&
+                                <div className="text-center">
+                                  <p>Add you first item now. This can be an expense, invoice or anything else that needs to be paid.</p>
+                                  <AddMilestoneItem 
+                                    onAddItem={(item)=>this.addItem(item)} 
+                                    getEthConversion={(date)=>this.getEthConversion(date)}
+                                    fiatTypes={fiatTypes}
+                                  />
+                                </div>
+                              }                              
+
+
+                            </div>
+                          </div>
                         </div>
                       </div>
                     }

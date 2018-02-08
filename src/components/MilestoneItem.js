@@ -1,9 +1,29 @@
-import React, { Component } from 'react';
+import React from 'react';
+import createReactClass from 'create-react-class';
+import Formsy from 'formsy-react';
 import PropTypes from 'prop-types';
 import moment from 'moment';
 import { getTruncatedText } from './../lib/helpers';
 
-class MilestoneItem extends Component {
+
+/***
+ * NOTE: This component is created as a Formsy form component
+ * That way we can perform validation on editing milestones
+ * based on milestone items being added
+ *
+ * This also means that this component needs to be wrapped in a 
+ * Formsy Form component or it won't mount
+ *
+ * See EditMilestone component
+ ***/
+
+const MilestoneItem = createReactClass({
+  mixins: [Formsy.Mixin],
+
+  componentDidMount() {
+    this.setValue(true); // required for validation being true
+  },
+
   render(){
     const { removeItem, item, isEditMode } = this.props;
 
@@ -28,9 +48,17 @@ class MilestoneItem extends Component {
         </td> 
 
         <td className="td-item-file-upload"> 
-          {item.image &&     
-            <div id="image-preview">
+          {item.image && isEditMode &&    
+            <div className="image-preview">
               <img src={item.image} alt="Preview of uploaded file" />
+            </div>
+          }
+
+          {item.image && !isEditMode &&
+            <div className="image-preview">
+              <a href={item.image} target="_blank" rel="noopener noreferrer">
+                <img src={item.image} alt="View uploaded file" />
+              </a>
             </div>
           }
         </td> 
@@ -45,6 +73,6 @@ class MilestoneItem extends Component {
       </tr>
     )
   }
-}
+})
 
 export default MilestoneItem;

@@ -26,6 +26,15 @@ const initialState = {
   formIsValid: false
 }
 
+var addMilestoneModalStyle = {
+  width: '70% !important',
+  height: '700px !important',
+  marginTop: '-350px',
+  maxHeight: '700px',
+  overflowY: 'scroll',
+  textAlign: 'left',
+};
+
 
 class AddMilestoneItem extends Component {
   constructor() {
@@ -42,7 +51,7 @@ class AddMilestoneItem extends Component {
 
   componentWillMount() {
     this.props.getEthConversion(this.state.date).then((resp) =>
-      this.setState({ conversionRate: resp.rates })      
+      this.setState({ conversionRate: resp })      
     )
   }
 
@@ -50,7 +59,7 @@ class AddMilestoneItem extends Component {
     this.props.getEthConversion(this.state.date).then((resp) =>
       this.setState({ 
         modalVisible: true, 
-        conversionRate: resp.rates,
+        conversionRate: resp,
         etherAmount: this.state.fiatAmount / resp.rates[this.state.selectedFiatType] 
       })
     )
@@ -150,17 +159,18 @@ class AddMilestoneItem extends Component {
     const { fiatTypes } = this.props
 
     return (
-      <span>
-        <a className="btn btn-primary btn-sm" onClick={()=>this.openDialog()}>
+      <div className="add-milestone-item">
+        <a className="btn btn-primary btn-sm btn-add-milestone-item" onClick={()=>this.openDialog()}>
           Add item
         </a>
 
-        <Portal>
+        <Portal className="add-milestone-item-skylight">
 
           <SkyLightStateless
             isVisible={modalVisible}
             onCloseClicked={() => this.closeDialog()}
             title={`Add an item to this milestone`}
+            dialogStyles={addMilestoneModalStyle}
           >   
 
             <Formsy.Form
@@ -171,6 +181,7 @@ class AddMilestoneItem extends Component {
             > 
 
               <DatePickerFormsy
+                label="Date of item"
                 name="date"
                 type="text"
                 value={date}
@@ -186,7 +197,7 @@ class AddMilestoneItem extends Component {
               />
 
               <Input
-                label="description"
+                label="Description"
                 name="description"
                 type="text"
                 value={description}
@@ -197,46 +208,54 @@ class AddMilestoneItem extends Component {
                 }}
                 required
                 autoFocus                
-              />     
-              
-              <SelectFormsy
-                name="fiatType"
-                value={selectedFiatType}
-                options={fiatTypes}
-                onChange={this.changeSelectedFiat}
-                helpText={conversionRate && conversionRate.rates ? `1 Eth = ${conversionRate.rates[selectedFiatType]} ${selectedFiatType}` : ''}
-                required
-              />  
-              
-              <Input
-                label="Amount in fiat"
-                name="fiatAmount"
-                ref="fiatAmount"
-                type="number"
-                value={fiatAmount}
-                placeholder="10"
-                validations="greaterThan:0"
-                validationErrors={{
-                  greaterThan: 'Enter value',
-                }}
-                onKeyUp={this.setEtherAmount}                
-                required
               />  
 
-              <Input
-                label="Amount in ether" 
-                ref="etherAmount"             
-                name="etherAmount"
-                type="number"
-                value={etherAmount}
-                placeholder="10"
-                validations="greaterThan:0"
-                validationErrors={{
-                  greaterThan: 'Enter value',
-                }}
-                onKeyUp={this.setFiatAmount}                
-                required
-              />                                   
+              <div className="row">
+                <div className="col-4">
+                  <Input
+                    label="Amount in fiat"
+                    name="fiatAmount"
+                    ref="fiatAmount"
+                    type="number"
+                    value={fiatAmount}
+                    placeholder="10"
+                    validations="greaterThan:0"
+                    validationErrors={{
+                      greaterThan: 'Enter value',
+                    }}
+                    onKeyUp={this.setEtherAmount}                
+                    required
+                  />  
+                </div>
+
+                <div className="col-4">
+                  <SelectFormsy
+                    name="fiatType"
+                    value={selectedFiatType}
+                    options={fiatTypes}
+                    onChange={this.changeSelectedFiat}
+                    helpText={conversionRate && conversionRate.rates ? `1 Eth = ${conversionRate.rates[selectedFiatType]} ${selectedFiatType}` : ''}
+                    required
+                  />  
+                </div>                
+                
+                <div className="col-4">
+                  <Input
+                    label="Amount in ether" 
+                    ref="etherAmount"             
+                    name="etherAmount"
+                    type="number"
+                    value={etherAmount}
+                    placeholder="10"
+                    validations="greaterThan:0"
+                    validationErrors={{
+                      greaterThan: 'Enter value',
+                    }}
+                    onKeyUp={this.setFiatAmount}                
+                    required
+                  />                                   
+                </div>
+              </div>
 
               <FormsyImageUploader
                 name="image"
@@ -264,7 +283,7 @@ class AddMilestoneItem extends Component {
             </Formsy.Form>           
           </SkyLightStateless>   
         </Portal> 
-      </span>
+      </div>
     )
   }
 }
