@@ -93,9 +93,7 @@ class Profile extends Component {
                       <h1>{getUserName(user)}</h1>
                       {etherScanUrl && (
                         <p>
-                          <a href={`${etherScanUrl}address/${address}`}>
-                            {address}
-                          </a>
+                          <a href={`${etherScanUrl}address/${address}`}>{address}</a>
                         </p>
                       )}
                       {!etherScanUrl && <p>{address}</p>}

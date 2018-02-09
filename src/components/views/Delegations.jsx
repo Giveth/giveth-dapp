@@ -43,67 +43,113 @@ class Delegations extends Component {
 
       Promise.all([
         new Promise((resolve, reject) => {
-          this.dacsObserver = feathersClient.service('dacs').watch({ strategy: 'always' }).find({ query: { delegateId: { $gt: '0' }, $select: ['ownerAddress', 'title', '_id', 'delegateId'] } }).subscribe(
-            resp =>
-              this.setState({
-                dacs: resp.data.map((c) => {
-                  c.type = 'dac';
-                  c.name = c.title;
-                  c.id = c._id; // eslint-disable-line no-underscore-dangle
-                  c.element = <span>{c.title} <em>DAC</em></span>;
-                  return c;
-                }),
-              }, resolve()),
-            () => reject(),
-          );
-        }),
-        new Promise((resolve, reject) => {
-          this.campaignsObserver = feathersClient.service('campaigns').watch({ strategy: 'always' }).find({
-            query: {
-              projectId: {
-                $gt: '0',
+          this.dacsObserver = feathersClient
+            .service('dacs')
+            .watch({ strategy: 'always' })
+            .find({
+              query: {
+                delegateId: { $gt: '0' },
+                $select: ['ownerAddress', 'title', '_id', 'delegateId'],
               },
-              status: 'Active',
-              $select: ['ownerAddress', 'title', '_id', 'projectId'],
-            },
-          }).subscribe(
-            resp =>
-              this.setState({
-                campaigns: resp.data.map((c) => {
-                  c.type = 'campaign';
-                  c.name = c.title;
-                  c.id = c._id; // eslint-disable-line no-underscore-dangle
-                  c.element = <span>{c.title} <em>Campaign</em></span>;
-                  return c;
-                }),
-
-              }, resolve()),
-            () => reject(),
-          );
+            })
+            .subscribe(
+              resp =>
+                this.setState(
+                  {
+                    dacs: resp.data.map(c => {
+                      c.type = 'dac';
+                      c.name = c.title;
+                      c.id = c._id; // eslint-disable-line no-underscore-dangle
+                      c.element = (
+                        <span>
+                          {c.title} <em>DAC</em>
+                        </span>
+                      );
+                      return c;
+                    }),
+                  },
+                  resolve(),
+                ),
+              () => reject(),
+            );
         }),
         new Promise((resolve, reject) => {
-          this.milestoneObserver = feathersClient.service('milestones').watch({ strategy: 'always' }).find({
-            query: {
-              projectId: { $gt: '0' },
-              status: 'InProgress',
-              $select: ['title', '_id', 'projectId', 'campaignId', 'maxAmount', 'totalDonated', 'status'],
-            },
-          }).subscribe(
-            (resp) => {
-              this.setState({
-                milestones: resp.data.map((m) => {
-                  m.type = 'milestone';
-                  m.name = m.title;
-                  m.id = m._id; // eslint-disable-line no-underscore-dangle
-                  m.element = <span>{m.title} <em>Milestone</em></span>;
-                  return m;
-                }), // .filter((m) => m.totalDonated < m.maxAmount)
-              }, resolve());
-            },
-            () => reject(),
-          );
+          this.campaignsObserver = feathersClient
+            .service('campaigns')
+            .watch({ strategy: 'always' })
+            .find({
+              query: {
+                projectId: {
+                  $gt: '0',
+                },
+                status: 'Active',
+                $select: ['ownerAddress', 'title', '_id', 'projectId'],
+              },
+            })
+            .subscribe(
+              resp =>
+                this.setState(
+                  {
+                    campaigns: resp.data.map(c => {
+                      c.type = 'campaign';
+                      c.name = c.title;
+                      c.id = c._id; // eslint-disable-line no-underscore-dangle
+                      c.element = (
+                        <span>
+                          {c.title} <em>Campaign</em>
+                        </span>
+                      );
+                      return c;
+                    }),
+                  },
+                  resolve(),
+                ),
+              () => reject(),
+            );
         }),
-      ]).then(() => this.getAndWatchDonations())
+        new Promise((resolve, reject) => {
+          this.milestoneObserver = feathersClient
+            .service('milestones')
+            .watch({ strategy: 'always' })
+            .find({
+              query: {
+                projectId: { $gt: '0' },
+                status: 'InProgress',
+                $select: [
+                  'title',
+                  '_id',
+                  'projectId',
+                  'campaignId',
+                  'maxAmount',
+                  'totalDonated',
+                  'status',
+                ],
+              },
+            })
+            .subscribe(
+              resp => {
+                this.setState(
+                  {
+                    milestones: resp.data.map(m => {
+                      m.type = 'milestone';
+                      m.name = m.title;
+                      m.id = m._id; // eslint-disable-line no-underscore-dangle
+                      m.element = (
+                        <span>
+                          {m.title} <em>Milestone</em>
+                        </span>
+                      );
+                      return m;
+                    }), // .filter((m) => m.totalDonated < m.maxAmount)
+                  },
+                  resolve(),
+                );
+              },
+              () => reject(),
+            );
+        }),
+      ])
+        .then(() => this.getAndWatchDonations())
         .catch(() => this.setState({ isLoading: false }));
     });
   }
@@ -133,7 +179,10 @@ class Delegations extends Component {
         $or: [
           { ownerId: { $in: campaignIds } },
           { delegateId: { $in: dacsIds } },
-          { ownerId: this.props.currentUser.address, $not: { delegateId: { $gt: '0' } } },
+          {
+            ownerId: this.props.currentUser.address,
+            $not: { delegateId: { $gt: '0' } },
+          },
         ],
         status: {
           $in: ['waiting', 'committed'],
@@ -143,132 +192,134 @@ class Delegations extends Component {
       schema: 'includeTypeAndGiverDetails',
     });
 
-      // start watching donations, this will re-run when donations change or are added
-    this.donationsObserver = feathersClient.service('donations').watch({ listStrategy: 'always' }).find(query).subscribe(
-      (resp) => {
-        this.setState({
-          delegations: resp.data,
-          isLoading: false,
-        });
-      },
-      () => this.setState({ isLoading: false }),
-    );
+    // start watching donations, this will re-run when donations change or are added
+    this.donationsObserver = feathersClient
+      .service('donations')
+      .watch({ listStrategy: 'always' })
+      .find(query)
+      .subscribe(
+        resp => {
+          this.setState({
+            delegations: resp.data,
+            isLoading: false,
+          });
+        },
+        () => this.setState({ isLoading: false }),
+      );
   }
 
   render() {
     const { wallet, currentUser, history } = this.props;
-    const {
-      delegations, isLoading, campaigns, milestones,
-    } = this.state;
+    const { delegations, isLoading, campaigns, milestones } = this.state;
 
     return (
       <div id="delegations-view">
         <div className="container-fluid page-layout dashboard-table-view">
           <div className="row">
             <div className="col-md-10 m-auto">
+              {(isLoading || (delegations && delegations.length > 0)) && <h1>Your delegations</h1>}
 
-              { (isLoading || (delegations && delegations.length > 0)) &&
-              <h1>Your delegations</h1>
-                }
+              {isLoading && <Loader className="fixed" />}
 
-              { isLoading &&
-              <Loader className="fixed" />
-                }
-
-              { !isLoading &&
-              <div>
-                { delegations && delegations.length > 0 &&
-                  <div className="table-container">
-                    <table className="table table-responsive table-striped table-hover">
-                      <thead>
-                        <tr>
-                          <th className="td-date">Date</th>
-                          <th className="td-donated-to">Donated to</th>
-                          <th className="td-donations-amount">Amount</th>
-                          <th className="td-user">Received from</th>
-                          <th className="td-tx-address">Address</th>
-                          <th className="td-status">Status</th>
-                          <th className="td-actions" />
-                        </tr>
-                      </thead>
-                      <tbody>
-                        { delegations.map(d =>
-                                (
-                                  <tr key={d._id}>
-                                    <td className="td-date">{moment(d.createdAt).format('MM/DD/YYYY')}</td>
-
-                                    {d.delegate > 0 &&
-                                    <td className="td-donated-to">
-                                      <Link
-                                        to={`/dacs/${d._id}`} // eslint-disable-line no-underscore-dangle
-                                      >
-                                        DAC <em>{getTruncatedText(d.delegateEntity.title, 45)}</em>
-                                      </Link>
-                                    </td>
-                                  }
-                                    {!d.delegate &&
-                                    <td className="td-donated-to">
-                                      <Link
-                                        to={`/${d.ownerType}s/${d.ownerEntity._id}`} // eslint-disable-line no-underscore-dangle
-                                      >
-                                        {d.ownerType.toUpperCase()} <em>{d.ownerEntity.title}</em>
-                                      </Link>
-                                    </td>
-                                  }
-                                    <td className="td-donations-amount">
-                                    &#926;{utils.fromWei(d.amount)}
-                                    </td>
-                                    <td className="td-user">
-                                      <Avatar size={30} src={getUserAvatar(d.giver)} round />
-                                      {getUserName(d.giver)}
-                                    </td>
-                                    <td className="td-tx-address">{d.giverAddress}</td>
-                                    <td className="td-status">{d.status}</td>
-                                    <td className="td-actions">
-
-                                      {/* When donated to a dac, allow delegation
-                                      to campaigns and milestones */}
-                                      {(d.delegate > 0 || d.ownerId === currentUser.address) &&
-                                      <DelegateButton
-                                        types={campaigns.concat(milestones)}
-                                        model={d}
-                                        wallet={wallet}
-                                        history={history}
-                                      />
-                                    }
-
-                                      {/* When donated to a campaign, only allow delegation
-                                      to milestones of that campaign */}
-                                      {d.ownerType === 'campaign' &&
-                                      <DelegateButton
-                                        types={milestones.filter(m => m.campaignId === d.ownerId)}
-                                        model={d}
-                                        milestoneOnly
-                                        wallet={wallet}
-                                        history={history}
-                                      />
-                                    }
-
-                                    </td>
-                                  </tr>))}
-
-                      </tbody>
-
-                    </table>
-                  </div>
-                }
-
-                { delegations && delegations.length === 0 &&
+              {!isLoading && (
                 <div>
-                  <center>
-                    <h3>There&apos;s nothing to delegate (yet)!</h3>
-                    <img className="empty-state-img" src={`${process.env.PUBLIC_URL}/img/delegation.svg`} width="200px" height="200px" alt="no-delegations-icon" />
-                  </center>
-                </div>
-                    }
+                  {delegations &&
+                    delegations.length > 0 && (
+                      <div className="table-container">
+                        <table className="table table-responsive table-striped table-hover">
+                          <thead>
+                            <tr>
+                              <th className="td-date">Date</th>
+                              <th className="td-donated-to">Donated to</th>
+                              <th className="td-donations-amount">Amount</th>
+                              <th className="td-user">Received from</th>
+                              <th className="td-tx-address">Address</th>
+                              <th className="td-status">Status</th>
+                              <th className="td-actions" />
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {delegations.map(d => (
+                              <tr key={d._id}>
+                                <td className="td-date">
+                                  {moment(d.createdAt).format('MM/DD/YYYY')}
+                                </td>
 
-              </div>
-                }
+                                {d.delegate > 0 && (
+                                  <td className="td-donated-to">
+                                    <Link
+                                      to={`/dacs/${d._id}`} // eslint-disable-line no-underscore-dangle
+                                    >
+                                      DAC <em>{getTruncatedText(d.delegateEntity.title, 45)}</em>
+                                    </Link>
+                                  </td>
+                                )}
+                                {!d.delegate && (
+                                  <td className="td-donated-to">
+                                    <Link
+                                      to={`/${d.ownerType}s/${d.ownerEntity._id}`} // eslint-disable-line no-underscore-dangle
+                                    >
+                                      {d.ownerType.toUpperCase()} <em>{d.ownerEntity.title}</em>
+                                    </Link>
+                                  </td>
+                                )}
+                                <td className="td-donations-amount">
+                                  &#926;{utils.fromWei(d.amount)}
+                                </td>
+                                <td className="td-user">
+                                  <Avatar size={30} src={getUserAvatar(d.giver)} round />
+                                  {getUserName(d.giver)}
+                                </td>
+                                <td className="td-tx-address">{d.giverAddress}</td>
+                                <td className="td-status">{d.status}</td>
+                                <td className="td-actions">
+                                  {/* When donated to a dac, allow delegation
+                                      to campaigns and milestones */}
+                                  {(d.delegate > 0 || d.ownerId === currentUser.address) && (
+                                    <DelegateButton
+                                      types={campaigns.concat(milestones)}
+                                      model={d}
+                                      wallet={wallet}
+                                      history={history}
+                                    />
+                                  )}
+
+                                  {/* When donated to a campaign, only allow delegation
+                                      to milestones of that campaign */}
+                                  {d.ownerType === 'campaign' && (
+                                    <DelegateButton
+                                      types={milestones.filter(m => m.campaignId === d.ownerId)}
+                                      model={d}
+                                      milestoneOnly
+                                      wallet={wallet}
+                                      history={history}
+                                    />
+                                  )}
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
+
+                  {delegations &&
+                    delegations.length === 0 && (
+                      <div>
+                        <center>
+                          <h3>There&apos;s nothing to delegate (yet)!</h3>
+                          <img
+                            className="empty-state-img"
+                            src={`${process.env.PUBLIC_URL}/img/delegation.svg`}
+                            width="200px"
+                            height="200px"
+                            alt="no-delegations-icon"
+                          />
+                        </center>
+                      </div>
+                    )}
+                </div>
+              )}
             </div>
           </div>
         </div>

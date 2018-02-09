@@ -103,16 +103,11 @@ class EditMilestone extends Component {
   componentDidMount() {
     isAuthenticated(this.props.currentUser, this.props.wallet)
       .then(() => {
-        if (!this.props.isProposed)
-          checkWalletBalance(this.props.wallet, this.props.history);
+        if (!this.props.isProposed) checkWalletBalance(this.props.wallet, this.props.history);
       })
       .then(() => {
         if (!this.props.isProposed) {
-          isInWhitelist(
-            this.props.currentUser,
-            React.whitelist.projectOwnerWhitelist,
-            this.props.history,
-          );
+          isInWhitelist(this.props.currentUser, React.whitelist.projectOwnerWhitelist);
         }
       })
       .then(() => {
@@ -410,10 +405,7 @@ class EditMilestone extends Component {
       });
     } else if (this.props.isNew) {
       // Save the Milestone
-      confirmBlockchainTransaction(
-        () => saveMilestone(),
-        () => this.setState({ isSaving: false }),
-      );
+      confirmBlockchainTransaction(() => saveMilestone(), () => this.setState({ isSaving: false }));
     } else {
       saveMilestone();
     }
@@ -576,22 +568,21 @@ class EditMilestone extends Component {
                     {isNew && isProposed && <h3>Propose a Milestone</h3>}
 
                     <h6>
-                      Campaign:{' '}
-                      <strong>{getTruncatedText(campaignTitle, 100)}</strong>
+                      Campaign: <strong>{getTruncatedText(campaignTitle, 100)}</strong>
                     </h6>
 
                     <p>
                       <i className="fa fa-question-circle" />
-                      A Milestone is a single accomplishment within a project.
-                      In the end, all donations end up in Milestones. Once your
-                      Milestone is completed, you can request a payout.
+                      A Milestone is a single accomplishment within a project. In the end, all
+                      donations end up in Milestones. Once your Milestone is completed, you can
+                      request a payout.
                     </p>
 
                     {isProposed && (
                       <p>
                         <i className="fa fa-exclamation-triangle" />
-                        You are proposing a Milestone to the Campaign Owner. The
-                        Campaign Owner can accept or reject your Milestone
+                        You are proposing a Milestone to the Campaign Owner. The Campaign Owner can
+                        accept or reject your Milestone
                       </p>
                     )}
                   </div>
@@ -628,9 +619,7 @@ class EditMilestone extends Component {
                         value={description}
                         placeholder="Describe how you're going to execute your Milestone successfully
                         ..."
-                        onTextChanged={content =>
-                          this.constructSummary(content)
-                        }
+                        onTextChanged={content => this.constructSummary(content)}
                         validations="minLength:3"
                         help="Describe your Milestone."
                         validationErrors={{
@@ -679,8 +668,7 @@ class EditMilestone extends Component {
                           placeholder="0x0000000000000000000000000000000000000000"
                           validations="isEtherAddress"
                           validationErrors={{
-                            isEtherAddress:
-                              'Please insert a valid Ethereum address.',
+                            isEtherAddress: 'Please insert a valid Ethereum address.',
                           }}
                           required
                         />
@@ -698,8 +686,7 @@ class EditMilestone extends Component {
                         help="Enter an Ethereum address."
                         validations="isEtherAddress"
                         validationErrors={{
-                          isEtherAddress:
-                            'Please insert a valid Ethereum address.',
+                          isEtherAddress: 'Please insert a valid Ethereum address.',
                         }}
                         required
                         disabled={projectId}

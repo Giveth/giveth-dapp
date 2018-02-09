@@ -16,60 +16,63 @@ import DAC from '../../models/DAC';
  * @param history      Browser history object
  * @param wallet       Wallet object with the balance and all keystores
  */
-const DACs = ({
-  currentUser, wallet, dacs, history,
-}) => (
+const DACs = ({ currentUser, wallet, dacs, history }) => (
   <div id="dacs-view" className="card-view">
-    <JoinGivethCommunity
-      currentUser={currentUser}
-      wallet={wallet}
-      history={history}
-    />
+    <JoinGivethCommunity currentUser={currentUser} wallet={wallet} history={history} />
 
     <div className="container-fluid page-layout reduced-padding">
+      {// There are some Campaigns in the system, show them
+      dacs.data &&
+        dacs.data.length > 0 && (
+          <div>
+            <center>
+              <p>
+                These Communities are solving causes. Help them realise their goals by joining them
+                and giving Ether!
+              </p>
+            </center>
 
-      { // There are some Campaigns in the system, show them
-        dacs.data && dacs.data.length > 0 &&
-        <div>
-          <center>
-            <p>
-            These Communities are solving causes.
-            Help them realise their goals by joining them and giving Ether!
-            </p>
-          </center>
+            <ResponsiveMasonry
+              columnsCountBreakPoints={{
+                350: 1,
+                750: 2,
+                900: 3,
+                1024: 3,
+                1470: 4,
+              }}
+            >
+              <Masonry gutter="10px">
+                {dacs.data.map(dac => (
+                  <DacCard
+                    key={dac.id}
+                    dac={dac}
+                    removeDAC={this.removeDAC}
+                    currentUser={currentUser}
+                    wallet={wallet}
+                    history={history}
+                  />
+                ))}
+              </Masonry>
+            </ResponsiveMasonry>
+          </div>
+        )}
 
-
-          <ResponsiveMasonry columnsCountBreakPoints={{
- 350: 1, 750: 2, 900: 3, 1024: 3, 1470: 4,
-}}
-          >
-            <Masonry gutter="10px">
-              { dacs.data.map(dac =>
-
-                    (<DacCard
-                      key={dac.id}
-                      dac={dac}
-                      removeDAC={this.removeDAC}
-                      currentUser={currentUser}
-                      wallet={wallet}
-                      history={history}
-                    />))}
-            </Masonry>
-          </ResponsiveMasonry>
-        </div>
-          }
-
-
-      { // There are no Campaigns, show empty state
-        dacs.data && dacs.data.length === 0 &&
-        <div>
-          <center>
-            <p>There are no decentralized altruistic communities (DACs) yet!</p>
-            <img className="empty-state-img" src={`${process.env.PUBLIC_URL}/img/community.svg`} width="200px" height="200px" alt="no-dacs-icon" />
-          </center>
-        </div>
-          }
-
+      {// There are no Campaigns, show empty state
+      dacs.data &&
+        dacs.data.length === 0 && (
+          <div>
+            <center>
+              <p>There are no decentralized altruistic communities (DACs) yet!</p>
+              <img
+                className="empty-state-img"
+                src={`${process.env.PUBLIC_URL}/img/community.svg`}
+                width="200px"
+                height="200px"
+                alt="no-dacs-icon"
+              />
+            </center>
+          </div>
+        )}
     </div>
   </div>
 );

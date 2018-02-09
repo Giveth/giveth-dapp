@@ -35,7 +35,7 @@ export default options => {
   const sanitizer = new SanitizingSubprovider();
   engine.addProvider(sanitizer);
 
-  //TODO the block isn't updated with ws connection, so this cache is never invalidated
+  // TODO the block isn't updated with ws connection, so this cache is never invalidated
   // cache layer
   // const cacheSubprovider = new CacheSubprovider();
   // engine.addProvider(cacheSubprovider);

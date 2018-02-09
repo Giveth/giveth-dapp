@@ -10,12 +10,9 @@ import { feathersClient } from '../lib/feathersClient';
 import {
   takeActionAfterWalletUnlock,
   checkWalletBalance,
-  confirmBlockchainTransaction
+  confirmBlockchainTransaction,
 } from '../lib/middleware';
-import {
-  displayTransactionError,
-  getGasPrice,
-} from '../lib/helpers';
+import { displayTransactionError, getGasPrice } from '../lib/helpers';
 import getNetwork from '../lib/blockchain/getNetwork';
 import getWeb3 from '../lib/blockchain/getWeb3';
 import GivethWallet from '../lib/blockchain/GivethWallet';
@@ -54,20 +51,14 @@ class DelegateButton extends Component {
     this.setState({ isSaving: true });
 
     // find the type of where we delegate to
-    const admin = this.props.types.find(
-      t => t.id === this.state.objectsToDelegateTo[0],
-    );
+    const admin = this.props.types.find(t => t.id === this.state.objectsToDelegateTo[0]);
 
     // TODO find a more friendly way to do this.
     if (
       admin.type === 'milestone' &&
-      toBN(admin.maxAmount).lt(
-        toBN(admin.totalDonated || 0).add(toBN(model.amount)),
-      )
+      toBN(admin.maxAmount).lt(toBN(admin.totalDonated || 0).add(toBN(model.amount)))
     ) {
-      React.toast.error(
-        'That milestone has reached its funding goal. Please pick another.',
-      );
+      React.toast.error('That milestone has reached its funding goal. Please pick another.');
       return;
     }
 
@@ -104,26 +95,18 @@ class DelegateButton extends Component {
             msg = (
               <p>
                 The donation has been delegated,{' '}
-                <a
-                  href={`${etherScanUrl}tx/${txHash}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
+                <a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">
                   view the transaction here.
                 </a>
-                The Giver has <strong>3 days</strong> to reject your delegation
-                before the money gets locked.
+                The Giver has <strong>3 days</strong> to reject your delegation before the money
+                gets locked.
               </p>
             );
           } else {
             msg = (
               <p>
                 The donation has been delegated,{' '}
-                <a
-                  href={`${etherScanUrl}tx/${txHash}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
+                <a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">
                   view the transaction here.
                 </a>{' '}
                 The Giver has been notified.
@@ -153,40 +136,35 @@ class DelegateButton extends Component {
           etherScanUrl = network.etherscan;
 
           const from =
-            model.delegate > 0
-              ? model.delegateEntity.ownerAddress
-              : model.ownerEntity.ownerAddress;
+            model.delegate > 0 ? model.delegateEntity.ownerAddress : model.ownerEntity.ownerAddress;
           const senderId = model.delegate > 0 ? model.delegate : model.owner;
-          const receiverId =
-            admin.type === 'dac' ? admin.delegateId : admin.projectId;
+          const receiverId = admin.type === 'dac' ? admin.delegateId : admin.projectId;
 
           const executeTransfer = () => {
             if (model.ownerType === 'campaign') {
-              return new LPPCampaign(
-                web3,
-                model.ownerEntity.pluginAddress,
-              ).transfer(model.pledgeId, model.amount, receiverId, {
+              return new LPPCampaign(web3, model.ownerEntity.pluginAddress).transfer(
+                model.pledgeId,
+                model.amount,
+                receiverId,
+                {
+                  from,
+                  $extraGas: 100000,
+                  gasPrice,
+                },
+              );
+            } else if (model.ownerType === 'giver' && model.delegate > 0) {
+              return lppDacs.transfer(model.delegate, model.pledgeId, model.amount, receiverId, {
                 from,
                 $extraGas: 100000,
                 gasPrice,
               });
-            } else if (model.ownerType === 'giver' && model.delegate > 0) {
-              return lppDacs.transfer(
-                model.delegate,
-                model.pledgeId,
-                model.amount,
-                receiverId,
-                { from, $extraGas: 100000, gasPrice },
-              );
             }
 
-            return liquidPledging.transfer(
-              senderId,
-              model.pledgeId,
-              model.amount,
-              receiverId,
-              { from, $extraGas: 100000, gasPrice },
-            ); // need to supply extraGas b/c https://github.com/trufflesuite/ganache-core/issues/26
+            return liquidPledging.transfer(senderId, model.pledgeId, model.amount, receiverId, {
+              from,
+              $extraGas: 100000,
+              gasPrice,
+            }); // need to supply extraGas b/c https://github.com/trufflesuite/ganache-core/issues/26
           };
 
           return executeTransfer()
@@ -200,11 +178,7 @@ class DelegateButton extends Component {
           React.toast.success(
             <p>
               Your donation has been confirmed!<br />
-              <a
-                href={`${etherScanUrl}tx/${txHash}`}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
+              <a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">
                 View transaction
               </a>
             </p>,
@@ -216,9 +190,7 @@ class DelegateButton extends Component {
         });
 
     // Delegate
-    confirmBlockchainTransaction(doDelegate, () =>
-      this.setState({ isSaving: false }),
-    );
+    confirmBlockchainTransaction(doDelegate, () => this.setState({ isSaving: false }));
   }
 
   resetSkylight() {
@@ -235,10 +207,7 @@ class DelegateButton extends Component {
 
     return (
       <span style={style}>
-        <button
-          className="btn btn-success btn-sm"
-          onClick={() => this.openDialog()}
-        >
+        <button className="btn btn-success btn-sm" onClick={() => this.openDialog()}>
           Delegate
         </button>
 
@@ -254,22 +223,16 @@ class DelegateButton extends Component {
           title="Delegate Donation"
           afterClose={() => this.resetSkylight()}
         >
-          {milestoneOnly && (
-            <p>Select a Milestone to delegate this donation to:</p>
-          )}
+          {milestoneOnly && <p>Select a Milestone to delegate this donation to:</p>}
 
-          {!milestoneOnly && (
-            <p>Select a Campaign or Milestone to delegate this donation to:</p>
-          )}
+          {!milestoneOnly && <p>Select a Campaign or Milestone to delegate this donation to:</p>}
 
           <Form onSubmit={this.submit} layout="vertical">
             <div className="form-group">
               <InputToken
                 name="campaigns"
                 placeholder={
-                  milestoneOnly
-                    ? 'Select a Milestone'
-                    : 'Select a Campaign or Milestone'
+                  milestoneOnly ? 'Select a Milestone' : 'Select a Campaign or Milestone'
                 }
                 value={objectsToDelegateTo}
                 options={types}

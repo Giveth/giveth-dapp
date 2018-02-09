@@ -54,37 +54,21 @@ class ShowTypeDonations extends Component {
                     <tbody>
                       {donations.map(d => (
                         <tr key={d._id}>
-                          <td className="td-date">
-                            {moment(d.createdAt).format('MM/DD/YYYY')}
-                          </td>
+                          <td className="td-date">{moment(d.createdAt).format('MM/DD/YYYY')}</td>
 
-                          <td className="td-donations-amount">
-                            Ξ{utils.fromWei(d.amount)}
-                          </td>
+                          <td className="td-donations-amount">Ξ{utils.fromWei(d.amount)}</td>
                           <td className="td-user">
-                            {d.giver && (
-                              <Avatar
-                                size={30}
-                                src={getUserAvatar(d.giver)}
-                                round
-                              />
-                            )}
+                            {d.giver && <Avatar size={30} src={getUserAvatar(d.giver)} round />}
                             <span>{getUserName(d.giver)}</span>
                           </td>
                           {etherScanUrl && d.giver ? (
                             <td className="td-tx-address">
-                              <a
-                                href={`${etherScanUrl}address/${
-                                  d.giver.address
-                                }`}
-                              >
+                              <a href={`${etherScanUrl}address/${d.giver.address}`}>
                                 {d.giver.address}
                               </a>
                             </td>
                           ) : (
-                            <td className="td-tx-address">
-                              {d.giver && d.giver.address}
-                            </td>
+                            <td className="td-tx-address">{d.giver && d.giver.address}</td>
                           )}
                         </tr>
                       ))}
@@ -95,9 +79,7 @@ class ShowTypeDonations extends Component {
 
             {donations &&
               donations.length === 0 && (
-                <p>
-                  No donations have been made yet. Be the first to donate now!
-                </p>
+                <p>No donations have been made yet. Be the first to donate now!</p>
               )}
           </div>
         )}
