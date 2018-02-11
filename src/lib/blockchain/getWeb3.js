@@ -25,16 +25,17 @@ function setWallet(wallet) {
         ? Promise.resolve(txData.chainId)
         : this.eth.net.getId;
 
-      getId().then(id => {
-        txData.chainId = id;
-
-        try {
-          const sig = wallet.signTransaction(txData);
+      getId()
+        .then(id => {
+          txData.chainId = id;
+          return wallet.signTransaction(txData);
+        })
+        .then(sig => {
           cb(null, sig.rawTransaction);
-        } catch (err) {
+        })
+        .catch(err => {
           cb(err);
-        }
-      });
+        });
     },
   });
 
