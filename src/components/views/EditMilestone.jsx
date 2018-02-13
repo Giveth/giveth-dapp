@@ -219,16 +219,16 @@ class EditMilestone extends Component {
 
       if(this.state.itemizeState) {
         model.maxAmount = 0;
-        this.state.items.forEach((item) => model.maxAmount += parseFloat(item.etherAmount));
+        this.state.items.forEach((item) => model.maxAmount += item.etherAmount);
       }
 
-      console.log(model);
+      model.maxAmount = model.maxAmount.toString().substr(0, 18)
 
       const constructedModel = {
         title: model.title,
         description: model.description,
         summary: getTruncatedText(this.state.summary, 100),
-        maxAmount: utils.toWei(model.maxAmount.toFixed(18)),
+        maxAmount: utils.toWei(model.maxAmount.toString()),
         ownerAddress: this.props.currentUser.address,
         reviewerAddress: model.reviewerAddress,
         recipientAddress: model.recipientAddress,
@@ -449,7 +449,7 @@ class EditMilestone extends Component {
       reviewerAddress: inputs.reviewerAddress,
       recipientAddress: inputs.recipientAddress,
       items: this.state.items,
-      maxAmount: inputs.maxAmount    
+      maxAmount: inputs.maxAmount ? inputs.maxAmount.toString() : '0'
     }
   }
 
@@ -494,25 +494,24 @@ class EditMilestone extends Component {
   }
 
   setMaxAmount(e) {
-    const fiatAmount = parseFloat(this.refs.fiatAmount.getValue())
+    const fiatAmount = utils.BN(this.refs.fiatAmount.getValue())
     const conversionRate = this.state.currentRate.rates[this.state.selectedFiatType];
-    console.log(fiatAmount, conversionRate)
-    if(conversionRate && fiatAmount >= 0) {
+    if(conversionRate && fiatAmount.gta(0)) {
       this.setState({ 
-        maxAmount: fiatAmount / conversionRate,
-        fiatAmount: fiatAmount
+        maxAmount: fiatAmount.mul(conversionRate).toNumber(),
+        fiatAmount: fiatAmount.toNumber()
       })
     }
   }
 
   setFiatAmount(e) {
-    const maxAmount = parseFloat(this.refs.maxAmount.getValue())
+    const maxAmount = utils.BN(this.refs.maxAmount.getValue())
     const conversionRate = this.state.currentRate.rates[this.state.selectedFiatType];
 
-    if(conversionRate && maxAmount >= 0) {
+    if(conversionRate && maxAmount.gte(0)) {
       this.setState({ 
-        fiatAmount: maxAmount * conversionRate,
-        maxAmount: maxAmount
+        fiatAmount: maxAmount.mul(conversionRate).toNumber(),
+        maxAmount: maxAmount.toNumber()
       })
     }
   } 
@@ -520,7 +519,7 @@ class EditMilestone extends Component {
   changeSelectedFiat(fiatType) {
     const conversionRate = this.state.currentRate.rates[fiatType];
     this.setState({ 
-      maxAmount: this.state.fiatAmount / conversionRate,
+      maxAmount: utils.BN(this.state.fiatAmount / conversionRate).toString(),
       selectedFiatType: fiatType
     })    
   }  
