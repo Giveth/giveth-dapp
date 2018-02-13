@@ -48,8 +48,11 @@ const DatePickerFormsy = createReactClass({
           selected={this.state.startDate}
           placeholderText={this.props.placeholder}
           onChange={this.handleChange}
+          onChangeRaw={this.handleRaw}
           className="form-control"
           disabled={this.props.disabled}
+          maxDate={moment()}
+          readOnly={true}
         />
         <span>{errorMessage}</span>
       </div>

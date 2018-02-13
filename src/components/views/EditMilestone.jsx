@@ -194,6 +194,7 @@ class EditMilestone extends Component {
   setDate(moment) {
     this.setState({ date: moment });
     this.getEthConversion(moment).then((resp) => {
+      console.log(resp)
       // update all the input fields
       const rate = resp.rates[this.state.selectedFiatType];
       
@@ -692,25 +693,6 @@ class EditMilestone extends Component {
                         disabled={projectId}
                       />
                     </div>
-
-                    {/*
-                    <div className="form-group">
-                      <DatePickerFormsy
-                        name="completionDeadline"
-                        label="Until what date is the Milestone achievable?"
-                        type="text"
-                        value={completionDeadline}
-                        changeDate={date => this.changeDate(date)}
-                        placeholder="Select a date"
-                        help="Select a date"
-                        validations="minLength:10"
-                        validationErrors={{
-                          minLength: 'Please provide a date.',
-                        }}
-                        required
-                      />
-                    </div>
-                  */}
 
                     <div className="react-toggle-container">
                       <Toggle
