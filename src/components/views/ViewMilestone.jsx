@@ -192,7 +192,7 @@ class ViewMilestone extends Component {
                               <th className="td-item-date">Date</th>                        
                               <th className="td-item-description">Description</th>
                               <th className="td-item-amount-fiat">Amount Fiat</th>
-                              <th className="td-item-fiat-amount">Amount Ether</th>
+                              <th className="td-item-amount-ether">Amount Ether</th>
                               <th className="td-item-file-upload">Attached proof</th>
                               <th className="td-item-action"></th>                          
                             </tr>
