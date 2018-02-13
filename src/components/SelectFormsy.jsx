@@ -7,6 +7,7 @@ const SelectFormsy = createReactClass({
 
   changeValue(event) {
     this.setValue(event.currentTarget.value);
+    this.props.onChange && this.props.onChange(event.currentTarget.value);
   },
 
   render() {

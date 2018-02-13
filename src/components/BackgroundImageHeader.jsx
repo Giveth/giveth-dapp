@@ -19,7 +19,7 @@ const BackgroundImageHeader = props => {
 export default BackgroundImageHeader;
 
 BackgroundImageHeader.propTypes = {
-  image: PropTypes.string.isRequired,
+  image: PropTypes.string,
   height: PropTypes.number,
   children: PropTypes.node,
 };

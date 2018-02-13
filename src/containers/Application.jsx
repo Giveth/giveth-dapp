@@ -325,7 +325,18 @@ class Application extends Component {
                       <EditMilestone currentUser={currentUser} wallet={wallet} {...props} />
                     )}
                   />
-
+                  <Route
+                    exact
+                    path="/milestones/:milestoneId/edit/proposed"
+                    component={props => (
+                      <EditMilestone
+                        currentUser={currentUser}
+                        wallet={wallet}
+                        isProposed={true}
+                        {...props}
+                      />
+                    )}
+                  />
                   <Route
                     exact
                     path="/donations"
