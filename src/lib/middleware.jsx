@@ -37,7 +37,7 @@ export const isInWhitelist = (currentUser, whitelist) =>
   new Promise((resolve, reject) => {
     if (
       whitelist.length === 0 ||
-      (currentUser && currentUser.address
+      (currentUser && currentUser.address &&
         whitelist.find((u) => u.address.toLowerCase() === currentUser.address.toLowerCase()))
     ) {
       resolve();
