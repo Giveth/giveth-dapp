@@ -23,16 +23,17 @@ function setWallet(wallet) {
       // a chainId, the account will attempt to fetch it via the provider.
       const getId = txData.chainId ? Promise.resolve(txData.chainId) : this.eth.net.getId;
 
-      getId().then(id => {
-        txData.chainId = id;
-
-        try {
-          const sig = wallet.signTransaction(txData);
+      getId()
+        .then(id => {
+          txData.chainId = id;
+          return wallet.signTransaction(txData);
+        })
+        .then(sig => {
           cb(null, sig.rawTransaction);
-        } catch (err) {
+        })
+        .catch(err => {
           cb(err);
-        }
-      });
+        });
     },
   });
 

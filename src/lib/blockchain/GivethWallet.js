@@ -57,10 +57,10 @@ class GivethWallet {
    * @returns   signature object. https://web3js.readthedocs.io/en/1.0/web3-eth-accounts.html#signtransaction
    */
   signTransaction(txData) {
-    if (!this.unlocked) throw new Error('Locked Wallet');
+    if (!this.unlocked) return Promise.reject(new Error('Locked Wallet'));
 
     if (!txData.gasPrice || !txData.nonce || !txData.chainId)
-      throw new Error('gasPrice, nonce, and chainId are required');
+      return Promise.reject(new Error('gasPrice, nonce, and chainId are required'));
 
     const accounts = mapGet.call(mapAccounts, this);
 

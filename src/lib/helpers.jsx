@@ -4,6 +4,7 @@ import { utils } from 'web3';
 import { createBrowserHistory } from 'history';
 import { feathersClient } from './feathersClient';
 import DefaultAvatar from './../assets/avatar-100.svg';
+import config from '../configuration';
 
 export const isOwner = (address, currentUser) =>
   address !== undefined && currentUser !== undefined && currentUser.address === address;
@@ -47,11 +48,12 @@ export const getTruncatedText = (text, maxLength) => {
 // displays a sweet alert with an error when the transaction goes wrong
 export const displayTransactionError = txHash => {
   let msg;
+  const { etherScanUrl } = config;
   if (txHash) {
     msg = (
       <p>
         Something went wrong with the transaction.
-        <a href={`{etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">
+        <a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">
           View transaction
         </a>
       </p>

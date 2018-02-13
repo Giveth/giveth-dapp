@@ -20,7 +20,7 @@ const configurations = {
     tokenAddress: '0x5b1869D9A4C187F2EAa108f3062412ecf0526b24',
     etherscan: 'https://etherscan.io/', // this won't work, only here so we can see links during development
     feathersConnection: 'http://localhost:3030',
-    nodeConnection: 'http://localhost:8545',
+    nodeConnection: 'ws://localhost:8545',
   },
   develop: {
     title: 'develop',
@@ -31,7 +31,7 @@ const configurations = {
     cappedMilestoneAddress: '0xbfb48a8817de49f259a71d2Aa07fC1c95EC24265',
     etherscan: 'https://rinkeby.etherscan.io/',
     feathersConnection: 'https://feathers.develop.giveth.io/',
-    nodeConnection: 'https://rinkeby.giveth.io:8545/',
+    nodeConnection: 'wss://rinkeby.giveth.io:8546/',
   },
   release: {
     title: 'release',
@@ -42,13 +42,13 @@ const configurations = {
     cappedMilestoneAddress: '0x9d8a74f03c7765d689171ffb4004670d2bf30a62',
     etherscan: 'https://rinkeby.etherscan.io/',
     feathersConnection: 'https://feathers.release.giveth.io/',
-    nodeConnection: 'https://rinkeby.giveth.io:8545/',
+    nodeConnection: 'wss://rinkeby.giveth.io:8546/',
   },
   mainnet: {
     title: 'mainnet',
     etherscan: 'https://etherscan.io/',
     feathersConnection: 'https://feathers.mainnet.giveth.io/',
-    nodeConnection: 'https://mew.giveth.io',
+    nodeConnection: 'wss://mew.giveth.io/ws',
   },
   alpha: {
     title: 'alpha',
@@ -59,7 +59,7 @@ const configurations = {
     tokenAddress: '0xb991657107F2F12899938B0985572449400C57d5',
     etherscan: 'https://rinkeby.etherscan.io/',
     feathersConnection: 'https://feathers.alpha.giveth.io',
-    nodeConnection: 'https://rinkeby.giveth.io:8545/',
+    nodeConnection: 'wss://rinkeby.giveth.io:8546/',
   },
 };
 
