@@ -9,6 +9,8 @@ import FormsyImageUploader from './FormsyImageUploader';
 import moment from 'moment'
 import { Portal } from 'react-portal';
 import { utils } from 'web3';
+const BigNumber = require('bignumber.js');
+BigNumber.config({ DECIMAL_PLACES: 1 });
 
 Formsy.addValidationRule('isMoment', function (values, value, array) {
   return value.isMoment();
@@ -19,8 +21,8 @@ const initialState = {
   date: moment(),
   description: '',
   selectedFiatType: 'EUR',
-  fiatAmount: 1,
-  etherAmount: 0,
+  fiatAmount: new BigNumber(1),
+  etherAmount: new BigNumber(0),
   image: '',
   uploadNewImage: false,
   formIsValid: false
@@ -60,7 +62,7 @@ class AddMilestoneItem extends Component {
       this.setState({ 
         modalVisible: true, 
         conversionRate: resp,
-        etherAmount: this.state.fiatAmount / resp.rates[this.state.selectedFiatType] 
+        etherAmount: this.state.fiatAmount.div(resp.rates[this.state.selectedFiatType])
       })
     )
   }
@@ -71,6 +73,7 @@ class AddMilestoneItem extends Component {
 
   save() {
     // this.setState({ modalVisible: false });
+    console.log(this.refs.itemForm.getModel())
     this.props.onAddItem(this.refs.itemForm.getModel());
     this.setState(initialState)
   }
@@ -88,7 +91,7 @@ class AddMilestoneItem extends Component {
 
       this.setState({ 
         conversionRate: resp,
-        etherAmount: this.state.fiatAmount / rate
+        etherAmount: this.state.fiatAmount.div(rate)
       })
     });
   }
@@ -102,8 +105,8 @@ class AddMilestoneItem extends Component {
       date: this.state.date.format(),
       description: inputs.description,
       selectedFiatType: this.state.selectedFiatType,
-      fiatAmount: this.state.fiatAmount,
-      etherAmount: this.state.etherAmount,
+      fiatAmount: this.state.fiatAmount.toFixed(),
+      etherAmount: this.state.etherAmount.toFixed(18),
       wei: utils.toWei(this.state.etherAmount.toFixed(18)),
       conversionRate: this.state.conversionRate.rates[this.state.selectedFiatType],
       image: this.state.image,
@@ -112,33 +115,37 @@ class AddMilestoneItem extends Component {
   }
 
   setEtherAmount(e) {
-    const fiatAmount = parseFloat(this.refs.fiatAmount.getValue())
-    const conversionRate = this.state.conversionRate.rates[this.state.selectedFiatType];
+    if(this.refs.fiatAmount.getValue()) {
+      const fiatAmount = new BigNumber(this.refs.fiatAmount.getValue())
+      const conversionRate = this.state.conversionRate.rates[this.state.selectedFiatType];
 
-    if(conversionRate && fiatAmount >= 0) {
-      this.setState({ 
-        etherAmount: fiatAmount / conversionRate,
-        fiatAmount: fiatAmount
-      })
+      if(conversionRate && fiatAmount.gte(0)) {
+        this.setState({ 
+          etherAmount: fiatAmount.div(conversionRate),
+          fiatAmount: fiatAmount
+        })
+      }
     }
   }
 
   setFiatAmount(e) {
-    const etherAmount = parseFloat(this.refs.etherAmount.getValue())
-    const conversionRate = this.state.conversionRate.rates[this.state.selectedFiatType];
+    if(this.refs.etherAmount.getValue()) {
+      const etherAmount = new BigNumber(this.refs.etherAmount.getValue())
+      const conversionRate = this.state.conversionRate.rates[this.state.selectedFiatType];
 
-    if(conversionRate && etherAmount >= 0) {
-      this.setState({ 
-        fiatAmount: etherAmount * conversionRate,
-        etherAmount: etherAmount
-      })
+      if(conversionRate && etherAmount.gte(0)) {
+        this.setState({ 
+          fiatAmount: etherAmount.times(conversionRate),
+          etherAmount: etherAmount
+        })
+      }
     }
   }  
 
   changeSelectedFiat(fiatType) {
     const conversionRate = this.state.conversionRate.rates[fiatType];
     this.setState({ 
-      etherAmount: this.state.fiatAmount / conversionRate,
+      etherAmount: this.state.fiatAmount.div(conversionRate),
       selectedFiatType: fiatType
     })    
   }
