@@ -82,7 +82,7 @@ class EditMilestone extends Component {
       itemizeState: false,
       conversionRates: [],
       currentRate: undefined,
-      date: moment(),
+      date: moment().subtract(1, 'd'),
       fiatTypes: [
         {value: 'USD', title: 'USD'},
         {value: 'EUR', title: 'EUR'},

@@ -51,7 +51,7 @@ const DatePickerFormsy = createReactClass({
           onChangeRaw={this.handleRaw}
           className="form-control"
           disabled={this.props.disabled}
-          maxDate={moment().subtract(1, 'd')}
+          maxDate={moment().subtract(1, 'd').startOf('day')}
           readOnly={true}
         />
         <span>{errorMessage}</span>

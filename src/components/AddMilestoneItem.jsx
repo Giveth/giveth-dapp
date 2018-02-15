@@ -18,7 +18,7 @@ Formsy.addValidationRule('isMoment', function (values, value, array) {
 
 const initialState = {
   modalVisible: false,
-  date: moment(),
+  date: moment().subtract(1, 'd'),
   description: '',
   selectedFiatType: 'EUR',
   fiatAmount: new BigNumber(1),
