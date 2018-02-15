@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "bignumber.js": "^4.1.0",
+    "bignumber.js": "^6.0.0",
     "create-react-class": "^15.6.0",
     "feathers": "^2.2.3",
     "feathers-authentication-client": "^0.3.3",
