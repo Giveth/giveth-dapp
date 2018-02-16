@@ -3,4 +3,9 @@
     background-color: white;
     cursor: pointer;
   }
+
+  .form-control:disabled {
+    cursor: not-allowed;
+    background-color: #e9ecef;
+  }
 }

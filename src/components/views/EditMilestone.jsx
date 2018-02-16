@@ -125,6 +125,10 @@ class EditMilestone extends Component {
             .then(resp => {
               const milestone = resp.data[0];
               const date = milestone.date ? moment(milestone.date) : moment();
+
+              // convert amounts to BigNumbers
+              milestone.maxAmount = new BigNumber(milestone.maxAmount)
+              milestone.fiatAmount = new BigNumber(milestone.fiatAmount)
               
               if (
                 !isOwner(milestone.owner.address, this.props.currentUser)
@@ -135,7 +139,6 @@ class EditMilestone extends Component {
                 this.setState(
                   Object.assign({}, milestone, {
                     id: this.props.match.params.milestoneId,
-                    maxAmount: utils.fromWei(milestone.maxAmount),
                     date: date,
                     itemizeState: milestone.items && milestone.items.length > 0,
                     selectedFiatType: milestone.selectedFiatType || "EUR"
@@ -700,7 +703,9 @@ class EditMilestone extends Component {
                       <Toggle
                         id='itemize-state'
                         defaultChecked={this.state.itemizeState}
-                        onChange={()=>this.toggleItemize()} />
+                        onChange={()=>this.toggleItemize()} 
+                        disabled={!isNew && !isProposed}
+                      />
                       <label htmlFor='itemize-state'>Add multiple expenses, invoices or items</label>
                     </div>
 
@@ -802,16 +807,18 @@ class EditMilestone extends Component {
                                       </tr>
                                     </thead>
                                     <tbody>
-                                      {items.map((item, i) => (
-                                        <MilestoneItem 
-                                          name={`milestoneItem-${i}`}
-                                          key={i}
-                                          index={i}
-                                          item={item}
-                                          removeItem={()=>this.removeItem(i)}
-                                          isEditMode={true}
-                                        />
-                                      ))}
+                                      {items.map((item, i) => {
+                                        return (
+                                          <MilestoneItem 
+                                            name={`milestoneItem-${i}`}
+                                            key={i}
+                                            index={i}
+                                            item={item}
+                                            removeItem={()=>this.removeItem(i)}
+                                            isEditMode={isNew || isProposed}
+                                          />
+                                        )
+                                      })}
                                     </tbody>
                                   </table>
                                 </div>
