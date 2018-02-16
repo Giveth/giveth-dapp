@@ -42,16 +42,22 @@ class EditCampaign extends Component {
       formIsValid: false,
       dacsOptions: [],
       hasWhitelist: React.whitelist.reviewerWhitelist.length > 0,
-      reviewerAddress: getRandomWhitelistAddress(React.whitelist.projectOwnerWhitelist).address,
       whitelistOptions: React.whitelist.projectOwnerWhitelist.map(r => ({
         value: r.address,
         title: `${r.name ? r.name : 'Anonymous user'} - ${r.address}`,
       })),
+      reviewers: [],      
       // Campaign model
       campaign: new Campaign({
         owner: props.currentUser,
       }),
     };
+
+    if(React.whitelist.projectOwnerWhitelist.length > 0) {
+      this.state.reviewerAddress = getRandomWhitelistAddress(
+        React.whitelist.projectOwnerWhitelist,
+      ).address
+    }    
 
     this.submit = this.submit.bind(this);
     this.setImage = this.setImage.bind(this);
@@ -62,6 +68,7 @@ class EditCampaign extends Component {
     isAuthenticated(this.props.currentUser, this.props.wallet)
       .then(() => isInWhitelist(this.props.currentUser, React.whitelist.projectOwnerWhitelist))
       .then(() => checkWalletBalance(this.props.wallet, this.props.history))
+      .then(() => { if(!this.state.hasWhitelist) this.getReviewers()})
       .then(() => {
         this.dacsObserver = feathersClient
           .service('dacs')
@@ -100,6 +107,25 @@ class EditCampaign extends Component {
   componentWillUnmount() {
     if (this.dacsObserver) this.dacsObserver.unsubscribe();
   }
+
+  getReviewers() {
+    return feathersClient
+      .service('/users')
+      .find({
+        query: {
+          email: { $exists: true },
+          $select: ['_id', 'name', 'address'],
+        },
+      })
+      .then(resp =>
+        this.setState({
+          reviewers: resp.data.map(r => ({
+            value: r.address,
+            title: `${r.name ? r.name : 'Anonymous user'} - ${r.address}`,
+          }))
+        })
+      )
+  }  
 
   setImage(image) {
     const { campaign } = this.state;
@@ -175,6 +201,7 @@ class EditCampaign extends Component {
       hasWhitelist,
       whitelistOptions,
       reviewerAddress,
+      reviewers,
     } = this.state;
 
     return (
@@ -344,21 +371,22 @@ class EditCampaign extends Component {
                       )}
 
                       {!hasWhitelist && (
-                        <Input
+                        <SelectFormsy
                           name="reviewerAddress"
-                          id="title-input"
-                          label="Reviewer Address"
-                          type="text"
+                          id="reviewer-select"
+                          label="Select a reviewer"
+                          helpText="This person or smart contract will be reviewing your Campaign to increase trust for Givers."
                           value={reviewerAddress}
-                          placeholder="0x0000000000000000000000000000000000000000"
-                          help="This person or smart contract will be reviewing your Campaign to increase trust for Givers."
+                          cta="--- Select a reviewer ---"
+                          options={reviewers}
                           validations="isEtherAddress"
                           validationErrors={{
-                            isEtherAddress: 'Please enter a valid Ethereum address.',
+                            isEtherAddress: 'Please select a reviewer.',
                           }}
                           required
+                          disabled={!isNew}
                         />
-                      )}
+                      )}                      
                     </div>
 
                     <div className="form-group row">

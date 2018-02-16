@@ -25,10 +25,14 @@ class Campaign extends BasicModel {
     this.tokenName = data.tokenName || '';
     this.tokenSymbol = data.tokenSymbol || '';
     this.dacs = data.dacs || [];
-    this.reviewerAddress =
-      data.reviewerAddress || getRandomWhitelistAddress(React.whitelist.reviewerWhitelist);
     this.pluginAddress = data.pluginAddress || '0x0000000000000000000000000000000000000000';
     this.status = data.status || Campaign.PENDING;
+    this.reviewerAddress = data.reviewerAddress;
+
+    if(React.whitelist.projectOwnerWhitelist.length > 0) {
+      this.reviewerAddress =
+        data.reviewerAddress || getRandomWhitelistAddress(React.whitelist.reviewerWhitelist);        
+    }
   }
 
   toFeathers() {

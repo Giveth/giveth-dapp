@@ -64,9 +64,6 @@ class EditMilestone extends Component {
       image: '',
       maxAmount: new BigNumber(0),
       fiatAmount: new BigNumber(10),
-      reviewerAddress: getRandomWhitelistAddress(
-        React.whitelist.reviewerWhitelist,
-      ).address,
       recipientAddress: '',
       // completionDeadline: '',
       status: 'pending',
@@ -78,6 +75,8 @@ class EditMilestone extends Component {
         value: r.address,
         title: `${r.name ? r.name : 'Anonymous user'} - ${r.address}`,
       })),
+      reviewers: [],
+      reviewerAddress: '',
       items: [],
       itemizeState: false,
       conversionRates: [],
@@ -93,6 +92,12 @@ class EditMilestone extends Component {
       ], 
       selectedFiatType: 'EUR',
     };
+
+    if(React.whitelist.reviewerWhitelist.length > 0) {
+      this.state.reviewerAddress = getRandomWhitelistAddress(
+        React.whitelist.reviewerWhitelist,
+      ).address
+    }
 
     this.submit = this.submit.bind(this);
     this.setImage = this.setImage.bind(this);
@@ -150,6 +155,9 @@ class EditMilestone extends Component {
             .then((date) => 
               this.getEthConversion(date)
             )
+            .then(() => {
+              if(!this.state.hasWhitelist) this.getReviewers()  
+            })
             .then(() =>
               this.setState({
                 hasError: false,
@@ -176,6 +184,9 @@ class EditMilestone extends Component {
             .then(() => 
               this.getEthConversion(this.state.date)
             ) 
+            .then(() => {
+              if(!this.state.hasWhitelist) this.getReviewers()
+            })
             .then(() =>
               this.setState({
                 hasError: false,
@@ -189,6 +200,25 @@ class EditMilestone extends Component {
         console.log('err', err);
         if (err === 'noBalance') this.props.history.goBack();
       });
+  }
+
+  getReviewers() {
+    return feathersClient
+      .service('/users')
+      .find({
+        query: {
+          email: { $exists: true },
+          $select: ['_id', 'name', 'address'],
+        },
+      })
+      .then(resp =>
+        this.setState({
+          reviewers: resp.data.map(r => ({
+            value: r.address,
+            title: `${r.name ? r.name : 'Anonymous user'} - ${r.address}`,
+          }))
+        })
+      )
   }
 
   setImage(image) {
@@ -552,7 +582,8 @@ class EditMilestone extends Component {
       date,
       selectedFiatType,
       fiatTypes,
-      currentRate
+      currentRate,
+      reviewers,
     } = this.state;
 
     return (
@@ -664,19 +695,21 @@ class EditMilestone extends Component {
                       )}
 
                       {!hasWhitelist && (
-                        <Input
+                        <SelectFormsy
                           name="reviewerAddress"
-                          id="title-input"
-                          label="Each Milestone needs a Reviewer who verifies that the Milestone is
+                          id="reviewer-select"
+                          label="Select a reviewer"
+                          helpText="Each milestone needs a reviewer who verifies that the milestone is
                           completed successfully"
-                          type="text"
                           value={reviewerAddress}
-                          placeholder="0x0000000000000000000000000000000000000000"
+                          cta="--- Select a reviewer ---"
+                          options={reviewers}
                           validations="isEtherAddress"
                           validationErrors={{
-                            isEtherAddress: 'Please insert a valid Ethereum address.',
+                            isEtherAddress: 'Please select a reviewer.',
                           }}
                           required
+                          disabled={!isNew && !isProposed}
                         />
                       )}
                     </div>
