@@ -88,7 +88,9 @@ class EditMilestone extends Component {
         {value: 'GBP', title: 'GBP'},
         {value: 'CHF', title: 'CHF'},
         {value: 'MXN', title: 'MXN'},
-        {value: 'THB', title: 'THB'}
+        {value: 'THB', title: 'THB'},
+        {value: 'BRL', title: 'BRL'},
+        {value: 'CZK', title: 'CZK'}
       ], 
       selectedFiatType: 'EUR',
     };
