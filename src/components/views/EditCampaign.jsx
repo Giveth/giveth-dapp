@@ -46,18 +46,18 @@ class EditCampaign extends Component {
         value: r.address,
         title: `${r.name ? r.name : 'Anonymous user'} - ${r.address}`,
       })),
-      reviewers: [],      
+      reviewers: [],
       // Campaign model
       campaign: new Campaign({
         owner: props.currentUser,
       }),
     };
 
-    if(React.whitelist.projectOwnerWhitelist.length > 0) {
+    if (React.whitelist.projectOwnerWhitelist.length > 0) {
       this.state.reviewerAddress = getRandomWhitelistAddress(
         React.whitelist.projectOwnerWhitelist,
-      ).address
-    }    
+      ).address;
+    }
 
     this.submit = this.submit.bind(this);
     this.setImage = this.setImage.bind(this);
@@ -68,7 +68,9 @@ class EditCampaign extends Component {
     isAuthenticated(this.props.currentUser, this.props.wallet)
       .then(() => isInWhitelist(this.props.currentUser, React.whitelist.projectOwnerWhitelist))
       .then(() => checkWalletBalance(this.props.wallet, this.props.history))
-      .then(() => { if(!this.state.hasWhitelist) this.getReviewers()})
+      .then(() => {
+        if (!this.state.hasWhitelist) this.getReviewers();
+      })
       .then(() => {
         this.dacsObserver = feathersClient
           .service('dacs')
@@ -122,10 +124,10 @@ class EditCampaign extends Component {
           reviewers: resp.data.map(r => ({
             value: r.address,
             title: `${r.name ? r.name : 'Anonymous user'} - ${r.address}`,
-          }))
-        })
-      )
-  }  
+          })),
+        }),
+      );
+  }
 
   setImage(image) {
     const { campaign } = this.state;
@@ -386,7 +388,7 @@ class EditCampaign extends Component {
                           required
                           disabled={!isNew}
                         />
-                      )}                      
+                      )}
                     </div>
 
                     <div className="form-group row">

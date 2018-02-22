@@ -29,9 +29,9 @@ class Campaign extends BasicModel {
     this.status = data.status || Campaign.PENDING;
     this.reviewerAddress = data.reviewerAddress;
 
-    if(React.whitelist.projectOwnerWhitelist.length > 0) {
+    if (React.whitelist.projectOwnerWhitelist.length > 0) {
       this.reviewerAddress =
-        data.reviewerAddress || getRandomWhitelistAddress(React.whitelist.reviewerWhitelist);        
+        data.reviewerAddress || getRandomWhitelistAddress(React.whitelist.reviewerWhitelist);
     }
   }
 

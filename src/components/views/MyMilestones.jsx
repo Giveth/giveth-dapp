@@ -3,6 +3,8 @@ import PropTypes from 'prop-types';
 import { utils } from 'web3';
 import { LPPCappedMilestones } from 'lpp-capped-milestone-token';
 import { Link } from 'react-router-dom';
+import moment from 'moment';
+import _ from 'underscore';
 
 import { feathersClient } from '../../lib/feathersClient';
 import {
@@ -22,8 +24,6 @@ import {
   getReadableStatus,
 } from '../../lib/helpers';
 import GivethWallet from '../../lib/blockchain/GivethWallet';
-import moment from 'moment';
-import _ from 'underscore';
 // TODO Remove the eslint exception and fix feathers to provide id's without underscore
 /* eslint no-underscore-dangle: 0 */
 /**
@@ -51,33 +51,40 @@ class MyMilestones extends Component {
     const myAddress = this.props.currentUser.address;
 
     isAuthenticated(this.props.currentUser, this.props.wallet).then(() => {
-      this.milestonesObserver = feathersClient.service('milestones').watch({ strategy: 'always' }).find({
-        query: {
-          $or: [
-            { ownerAddress: myAddress },
-            { reviewerAddress: myAddress },
-            { recipientAddress: myAddress },
-            { $and: [
-              { campaignOwnerAddress: myAddress },
-              { status: 'proposed' }
-            ]}
-          ],
-          $sort: {
-            createdAt: -1
+      this.milestonesObserver = feathersClient
+        .service('milestones')
+        .watch({ strategy: 'always' })
+        .find({
+          query: {
+            $or: [
+              { ownerAddress: myAddress },
+              { reviewerAddress: myAddress },
+              { recipientAddress: myAddress },
+              {
+                $and: [{ campaignOwnerAddress: myAddress }, { status: 'proposed' }],
+              },
+            ],
+            $sort: {
+              createdAt: -1,
+            },
+            $limit: 200,
           },
-          $limit: 200          
-        },
-      }).subscribe(
-        resp => this.setState({ milestones: _.sortBy(resp.data, (d) => {
-              if (d.status === 'NeedsReview') return 1;
-              if (d.status === 'InProgress') return 2;
-              if (d.status === 'Proposed') return 3;
-              if (d.status === 'Completed') return 4;
-              if (d.status === 'Canceled') return 5;
-              return 8;
-            }), isLoading: false }),
-        () => this.setState({ isLoading: false }),
-      );
+        })
+        .subscribe(
+          resp =>
+            this.setState({
+              milestones: _.sortBy(resp.data, d => {
+                if (d.status === 'NeedsReview') return 1;
+                if (d.status === 'InProgress') return 2;
+                if (d.status === 'Proposed') return 3;
+                if (d.status === 'Completed') return 4;
+                if (d.status === 'Canceled') return 5;
+                return 8;
+              }),
+              isLoading: false,
+            }),
+          () => this.setState({ isLoading: false }),
+        );
     });
   }
 
@@ -94,15 +101,24 @@ class MyMilestones extends Component {
           icon: 'warning',
           dangerMode: true,
           buttons: ['Cancel', 'Yes, edit'],
-        }).then((isConfirmed) => {
+        }).then(isConfirmed => {
           if (isConfirmed) {
-            if(milestone.status === 'proposed') {
-              redirectAfterWalletUnlock(`/milestones/${milestone._id}/edit/proposed`, this.props.wallet, this.props.history);
+            if (milestone.status === 'proposed') {
+              redirectAfterWalletUnlock(
+                `/milestones/${milestone._id}/edit/proposed`,
+                this.props.wallet,
+                this.props.history,
+              );
             } else {
-              redirectAfterWalletUnlock(`/milestones/${milestone._id}/edit`, this.props.wallet, this.props.history);
+              redirectAfterWalletUnlock(
+                `/milestones/${milestone._id}/edit`,
+                this.props.wallet,
+                this.props.history,
+              );
             }
           }
-        }));
+        }),
+      );
     });
   }
 
@@ -693,95 +709,115 @@ class MyMilestones extends Component {
 
               {!isLoading && (
                 <div className="table-container">
-                  { milestones && milestones.length > 0 &&
-                    <table className="table table-responsive table-striped table-hover">
-                      <thead>
-                        <tr>
-                          <th className="td-created-at">Created</th>                        
-                          <th className="td-name">Name</th>
-                          <th className="td-status">Status</th>                          
-                          <th className="td-donations-number">Requested</th>
-                          <th className="td-donations-number">Donations</th>
-                          <th className="td-donations-amount">Donated</th>
-                          <th className="td-reviewer">Reviewer</th>
-                          <th className="td-actions" />
-                        </tr>
-                      </thead>
-                      <tbody>
-                        { milestones.map(m => (
-                          <tr key={m._id} className={m.status === 'pending' ? 'pending' : ''}>
-                            <td className="td-created-at">
-                              { m.createdAt &&
-                                <span>{moment(m.createdAt).format('Do MMM YYYY - HH:mm a')}</span>
-                              }
-                            </td>
-                            <td className="td-name">
-                              <strong>
-                                <Link to={`/campaigns/${m.campaign._id}/milestones/${m._id}`}>MILESTONE <em>{getTruncatedText(m.title, 35)}</em></Link>
-                              </strong>
-                              <br />  
-                              <i className="fa fa-arrow-right" />
-                              <Link className="secondary-link" to={`/campaigns/${m.campaign._id}`}>CAMPAIGN <em>{getTruncatedText(m.campaign.title, 40)}</em></Link>
-                            </td>
-                            <td className="td-status">
-                              {(m.status === 'pending' || (Object.keys(m).includes('mined') && !m.mined)) &&
-                                <span><i className="fa fa-circle-o-notch fa-spin" />&nbsp;</span> }
-                              {(m.status === 'NeedsReview' && this.reviewDue(m.updatedAt)) &&
-                                <span><i className="fa fa-exclamation-triangle" />&nbsp;</span> }
-                              {getReadableStatus(m.status)}
-                            </td>                            
-                            <td className="td-donations-number">Ξ{utils.fromWei(m.maxAmount) || 0}</td>
-                            <td className="td-donations-number">{m.donationCount || 0}</td>
-                            <td
-                              className="td-donations-amount"
-                            >Ξ{(m.totalDonated) ? utils.fromWei(m.totalDonated) : 0}
-                            </td>
-                            <td className="td-reviewer">
-                              <Link to={`/profile/${m.reviewer.address}`}>
-                                {m.reviewer.name || 'Anomynous user'}
-                              </Link>
-                            </td>
-                            <td className="td-actions">
-                              { m.ownerAddress === currentUser.address &&
-                                <button
-                                  className="btn btn-link"
-                                  onClick={() => this.editMilestone(m)}
-                                >
-                                  <i className="fa fa-edit" />&nbsp;Edit
-                                </button>
-                              }
-
-                              { (m.campaignOwnerAddress === currentUser.address) && m.status === 'proposed' &&
-                                <span>
-                                  <button
-                                    className="btn btn-success btn-sm"
-                                    onClick={() => this.acceptProposedMilestone(m)}
-                                  >
-                                    <i className="fa fa-check-square-o" />&nbsp;Accept
-                                  </button>
-                                  <button
-                                    className="btn btn-danger btn-sm"
-                                    onClick={() => this.rejectProposedMilestone(m)}
-                                  >
-                                    <i className="fa fa-times-circle-o" />&nbsp;Reject
-                                  </button>
-                                </span>
-                              }
-
-                              { m.recipientAddress === currentUser.address && m.status === 'InProgress' && m.mined &&
-                                <button
-                                  className="btn btn-success btn-sm"
-                                  onClick={() => this.markComplete(m)}
-                                >
-                                  Mark complete
-                                </button>
-                              }
-                            </td>
+                  {milestones &&
+                    milestones.length > 0 && (
+                      <table className="table table-responsive table-striped table-hover">
+                        <thead>
+                          <tr>
+                            <th className="td-created-at">Created</th>
+                            <th className="td-name">Name</th>
+                            <th className="td-status">Status</th>
+                            <th className="td-donations-number">Requested</th>
+                            <th className="td-donations-number">Donations</th>
+                            <th className="td-donations-amount">Donated</th>
+                            <th className="td-reviewer">Reviewer</th>
+                            <th className="td-actions" />
                           </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  }
+                        </thead>
+                        <tbody>
+                          {milestones.map(m => (
+                            <tr key={m._id} className={m.status === 'pending' ? 'pending' : ''}>
+                              <td className="td-created-at">
+                                {m.createdAt && (
+                                  <span>{moment(m.createdAt).format('Do MMM YYYY - HH:mm a')}</span>
+                                )}
+                              </td>
+                              <td className="td-name">
+                                <strong>
+                                  <Link to={`/campaigns/${m.campaign._id}/milestones/${m._id}`}>
+                                    MILESTONE <em>{getTruncatedText(m.title, 35)}</em>
+                                  </Link>
+                                </strong>
+                                <br />
+                                <i className="fa fa-arrow-right" />
+                                <Link
+                                  className="secondary-link"
+                                  to={`/campaigns/${m.campaign._id}`}
+                                >
+                                  CAMPAIGN <em>{getTruncatedText(m.campaign.title, 40)}</em>
+                                </Link>
+                              </td>
+                              <td className="td-status">
+                                {(m.status === 'pending' ||
+                                  (Object.keys(m).includes('mined') && !m.mined)) && (
+                                  <span>
+                                    <i className="fa fa-circle-o-notch fa-spin" />&nbsp;
+                                  </span>
+                                )}
+                                {m.status === 'NeedsReview' &&
+                                  this.reviewDue(m.updatedAt) && (
+                                    <span>
+                                      <i className="fa fa-exclamation-triangle" />&nbsp;
+                                    </span>
+                                  )}
+                                {getReadableStatus(m.status)}
+                              </td>
+                              <td className="td-donations-number">
+                                Ξ{utils.fromWei(m.maxAmount) || 0}
+                              </td>
+                              <td className="td-donations-number">{m.donationCount || 0}</td>
+                              <td className="td-donations-amount">
+                                Ξ{m.totalDonated ? utils.fromWei(m.totalDonated) : 0}
+                              </td>
+                              <td className="td-reviewer">
+                                <Link to={`/profile/${m.reviewer.address}`}>
+                                  {m.reviewer.name || 'Anomynous user'}
+                                </Link>
+                              </td>
+                              <td className="td-actions">
+                                {m.ownerAddress === currentUser.address && (
+                                  <button
+                                    className="btn btn-link"
+                                    onClick={() => this.editMilestone(m)}
+                                  >
+                                    <i className="fa fa-edit" />&nbsp;Edit
+                                  </button>
+                                )}
+
+                                {m.campaignOwnerAddress === currentUser.address &&
+                                  m.status === 'proposed' && (
+                                    <span>
+                                      <button
+                                        className="btn btn-success btn-sm"
+                                        onClick={() => this.acceptProposedMilestone(m)}
+                                      >
+                                        <i className="fa fa-check-square-o" />&nbsp;Accept
+                                      </button>
+                                      <button
+                                        className="btn btn-danger btn-sm"
+                                        onClick={() => this.rejectProposedMilestone(m)}
+                                      >
+                                        <i className="fa fa-times-circle-o" />&nbsp;Reject
+                                      </button>
+                                    </span>
+                                  )}
+
+                                {m.recipientAddress === currentUser.address &&
+                                  m.status === 'InProgress' &&
+                                  m.mined && (
+                                    <button
+                                      className="btn btn-success btn-sm"
+                                      onClick={() => this.markComplete(m)}
+                                    >
+                                      Mark complete
+                                    </button>
+                                  )}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    )}
 
                   {milestones &&
                     milestones.length === 0 && (
