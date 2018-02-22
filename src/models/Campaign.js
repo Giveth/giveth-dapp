@@ -28,8 +28,9 @@ class Campaign extends BasicModel {
     this.pluginAddress = data.pluginAddress || '0x0000000000000000000000000000000000000000';
     this.status = data.status || Campaign.PENDING;
 
-    this.reviewerAddress =
-      data.reviewerAddress || getRandomWhitelistAddress(React.whitelist.reviewerWhitelist);
+    this.reviewerAddress = data.reviewerAddress;
+    if (!data.reviewerAddress && React.whitelist.reviewerWhitelist.length > 0)
+      getRandomWhitelistAddress(React.whitelist.reviewerWhitelist);
   }
 
   toFeathers() {
@@ -159,7 +160,7 @@ class Campaign extends BasicModel {
   }
 
   set reviewerAddress(value) {
-    this.checkType(value, ['string'], 'reviewerAddress');
+    this.checkType(value, ['string', 'undefined'], 'reviewerAddress');
     this.myReviewerAddress = value;
   }
 }

@@ -351,7 +351,7 @@ class EditMilestone extends Component {
 
       if (this.state.itemizeState) {
         model.maxAmount = this.state.items.reduce(
-          item => model.maxAmount.plus(new BigNumber(item.etherAmount)),
+          (accumulator, item) => accumulator.plus(new BigNumber(item.etherAmount)),
           new BigNumber(0),
         );
       }
@@ -767,9 +767,9 @@ class EditMilestone extends Component {
                                 label="Maximum amount in fiat"
                                 value={fiatAmount}
                                 placeholder="10"
-                                validations="greaterThan:1"
+                                validations="greaterEqualTo:1"
                                 validationErrors={{
-                                  greaterThan: 'Minimum value must be at least 1',
+                                  greaterEqualTo: 'Minimum value must be at least 1',
                                 }}
                                 disabled={projectId}
                                 onKeyUp={this.setMaxAmount}
@@ -800,9 +800,9 @@ class EditMilestone extends Component {
                                 label="Maximum amount in &#926;"
                                 value={maxAmount}
                                 placeholder="10"
-                                validations="greaterThan:0.0099999999999"
+                                validations="greaterEqualTo:0.01"
                                 validationErrors={{
-                                  greaterThan: 'Minimum value must be at least Ξ 0.1',
+                                  greaterEqualTo: 'Minimum value must be at least Ξ 0.01',
                                 }}
                                 required
                                 disabled={projectId}
