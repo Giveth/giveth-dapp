@@ -81,7 +81,9 @@ class EditMilestone extends Component {
       itemizeState: false,
       conversionRates: [],
       currentRate: undefined,
-      date: moment().subtract(1, 'd'),
+      date: moment()
+        .subtract(1, 'd')
+        .startOf('day'),
       fiatTypes: [
         { value: 'USD', title: 'USD' },
         { value: 'EUR', title: 'EUR' },
@@ -233,8 +235,6 @@ class EditMilestone extends Component {
   }
 
   getEthConversion(date) {
-    console.log('getting rate for date', moment(date).toDate());
-    // generate utc timestamp, set at start of day
     const utcDate = moment(date)
       .toDate()
       .setUTCHours(0, 0, 0, 0);
@@ -744,7 +744,7 @@ class EditMilestone extends Component {
                                 value={date}
                                 startDate={date}
                                 label="Milestone date"
-                                changeDate={dt => this.setDate(dt)}
+                                changeDate={dt => this.setDate(dt.startOf('day'))}
                                 placeholder="Select a date"
                                 help="Select a date"
                                 validations="minLength:8"
