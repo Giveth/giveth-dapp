@@ -88,7 +88,14 @@ class ViewCampaign extends Component {
 
   render() {
     const { history, currentUser, wallet } = this.props;
-    const { isLoading, campaign, milestones, donations, isLoadingDonations } = this.state;
+    const {
+      isLoading,
+      campaign,
+      milestones,
+      donations,
+      isLoadingDonations,
+      isLoadingMilestones,
+    } = this.state;
 
     return (
       <div id="view-campaign-view">
@@ -158,6 +165,7 @@ class ViewCampaign extends Component {
                       </AuthenticatedLink>
                     )}
 
+                    {isLoadingMilestones && <Loader />}
                     {milestones.map(m => (
                       <MilestoneCard
                         milestone={m}

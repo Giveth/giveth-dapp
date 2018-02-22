@@ -10,7 +10,7 @@ import QuillFormsy from '../QuillFormsy';
 import SelectFormsy from './../SelectFormsy';
 import FormsyImageUploader from './../FormsyImageUploader';
 import GoBackButton from '../GoBackButton';
-import { isOwner, getTruncatedText, getRandomWhitelistAddress } from '../../lib/helpers';
+import { isOwner, getTruncatedText } from '../../lib/helpers';
 import {
   isAuthenticated,
   checkWalletBalance,
@@ -52,12 +52,6 @@ class EditCampaign extends Component {
         owner: props.currentUser,
       }),
     };
-
-    if (React.whitelist.projectOwnerWhitelist.length > 0) {
-      this.state.reviewerAddress = getRandomWhitelistAddress(
-        React.whitelist.projectOwnerWhitelist,
-      ).address;
-    }
 
     this.submit = this.submit.bind(this);
     this.setImage = this.setImage.bind(this);
@@ -202,7 +196,6 @@ class EditCampaign extends Component {
       dacsOptions,
       hasWhitelist,
       whitelistOptions,
-      reviewerAddress,
       reviewers,
     } = this.state;
 
@@ -360,7 +353,7 @@ class EditCampaign extends Component {
                           id="reviewer-select"
                           label="Select a reviewer"
                           helpText="This person or smart contract will be reviewing your Campaign to increase trust for Givers."
-                          value={reviewerAddress}
+                          value={campaign.reviewerAddress}
                           cta="--- Select a reviewer ---"
                           options={whitelistOptions}
                           validations="isEtherAddress"
@@ -378,7 +371,7 @@ class EditCampaign extends Component {
                           id="reviewer-select"
                           label="Select a reviewer"
                           helpText="This person or smart contract will be reviewing your Campaign to increase trust for Givers."
-                          value={reviewerAddress}
+                          value={campaign.reviewerAddress}
                           cta="--- Select a reviewer ---"
                           options={reviewers}
                           validations="isEtherAddress"
