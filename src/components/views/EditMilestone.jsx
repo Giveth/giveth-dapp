@@ -265,30 +265,26 @@ class EditMilestone extends Component {
     });
   }
 
-  setMaxAmount() {
-    if (this.refs.fiatAmount.getValue()) {
-      const fiatAmount = new BigNumber(this.refs.fiatAmount.getValue());
-      const conversionRate = this.state.currentRate.rates[this.state.selectedFiatType];
-      if (conversionRate && fiatAmount.gte(0)) {
-        this.setState({
-          maxAmount: fiatAmount.div(conversionRate),
-          fiatAmount,
-        });
-      }
+  setMaxAmount(name, value) {
+    const fiatAmount = new BigNumber(value || '0');
+    const conversionRate = this.state.currentRate.rates[this.state.selectedFiatType];
+    if (conversionRate && fiatAmount.gte(0)) {
+      this.setState({
+        maxAmount: fiatAmount.div(conversionRate),
+        fiatAmount,
+      });
     }
   }
 
-  setFiatAmount() {
-    if (this.refs.maxAmount.getValue()) {
-      const maxAmount = new BigNumber(this.refs.maxAmount.getValue());
-      const conversionRate = this.state.currentRate.rates[this.state.selectedFiatType];
+  setFiatAmount(name, value) {
+    const maxAmount = new BigNumber(value || '0');
+    const conversionRate = this.state.currentRate.rates[this.state.selectedFiatType];
 
-      if (conversionRate && maxAmount.gte(0)) {
-        this.setState({
-          fiatAmount: maxAmount.times(conversionRate),
-          maxAmount: maxAmount.toNumber(),
-        });
-      }
+    if (conversionRate && maxAmount.gte(0)) {
+      this.setState({
+        fiatAmount: maxAmount.times(conversionRate),
+        maxAmount: maxAmount.toNumber(),
+      });
     }
   }
 
@@ -761,9 +757,9 @@ class EditMilestone extends Component {
                             <div className="col-4">
                               <Input
                                 name="fiatAmount"
+                                min="0"
                                 id="fiatamount-input"
                                 type="number"
-                                ref="fiatAmount"
                                 label="Maximum amount in fiat"
                                 value={fiatAmount}
                                 placeholder="10"
@@ -772,7 +768,7 @@ class EditMilestone extends Component {
                                   greaterEqualTo: 'Minimum value must be at least 1',
                                 }}
                                 disabled={projectId}
-                                onKeyUp={this.setMaxAmount}
+                                onChange={this.setMaxAmount}
                               />
                             </div>
 
@@ -794,9 +790,9 @@ class EditMilestone extends Component {
                             <div className="col-4">
                               <Input
                                 name="maxAmount"
+                                min="0"
                                 id="maxamount-input"
                                 type="number"
-                                ref="maxAmount"
                                 label="Maximum amount in &#926;"
                                 value={maxAmount}
                                 placeholder="10"
@@ -806,7 +802,7 @@ class EditMilestone extends Component {
                                 }}
                                 required
                                 disabled={projectId}
-                                onKeyUp={this.setFiatAmount}
+                                onChange={this.setFiatAmount}
                               />
                             </div>
                           </div>
