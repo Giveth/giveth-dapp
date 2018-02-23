@@ -291,12 +291,13 @@ class ViewMilestone extends Component {
                       Based on the requested amount in fiat.
                     </small>
                     &#926;{maxAmount}
-                    {fiatAmount && (
-                      <span>
-                        {' '}
-                        ({fiatAmount} {selectedFiatType})
-                      </span>
-                    )}
+                    {fiatAmount &&
+                      items.length === 0 && (
+                        <span>
+                          {' '}
+                          ({fiatAmount} {selectedFiatType})
+                        </span>
+                      )}
                   </div>
 
                   <div className="form-group">

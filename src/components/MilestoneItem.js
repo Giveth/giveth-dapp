@@ -33,8 +33,7 @@ const MilestoneItem = createReactClass({
         <td className="td-item-description">{getTruncatedText(item.description)}</td>
 
         <td className="td-item-amount-fiat">
-          {item.selectedFiatType}
-          {item.fiatAmount}
+          {item.selectedFiatType} {item.fiatAmount}
           <br />
           <span className="help-block">
             {`1 ETH = ${item.conversionRate} ${item.selectedFiatType}`}
