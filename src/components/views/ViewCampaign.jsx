@@ -165,7 +165,7 @@ class ViewCampaign extends Component {
                       </AuthenticatedLink>
                     )}
 
-                    {isLoadingMilestones && <Loader />}
+                    {isLoadingMilestones && <Loader className="relative" />}
                     {milestones.map(m => (
                       <MilestoneCard
                         milestone={m}

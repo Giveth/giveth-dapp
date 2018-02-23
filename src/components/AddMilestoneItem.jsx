@@ -48,6 +48,7 @@ class AddMilestoneItem extends Component {
     this.setEtherAmount = this.setEtherAmount.bind(this);
     this.setFiatAmount = this.setFiatAmount.bind(this);
     this.changeSelectedFiat = this.changeSelectedFiat.bind(this);
+    this.openDialog = this.openDialog.bind(this);
   }
 
   componentWillMount() {
@@ -56,34 +57,13 @@ class AddMilestoneItem extends Component {
       .then(resp => this.setState({ conversionRate: resp }));
   }
 
-  openDialog() {
-    this.props.getEthConversion(this.state.date).then(resp =>
-      this.setState({
-        modalVisible: true,
-        conversionRate: resp,
-        etherAmount: this.state.fiatAmount.div(resp.rates[this.state.selectedFiatType]),
-      }),
-    );
-  }
-
-  closeDialog() {
-    this.setState(initialState);
-  }
-
-  save() {
-    // this.setState({ modalVisible: false });
-    console.log(this.refs.itemForm.getModel());
-    this.props.onAddItem(this.refs.itemForm.getModel());
-    this.setState(initialState);
-  }
-
   setImage(image) {
     this.setState({ image, uploadNewImage: true });
   }
 
-  setDate(moment) {
-    this.setState({ date: moment });
-    this.props.getEthConversion(moment).then(resp => {
+  setDate(date) {
+    this.setState({ date });
+    this.props.getEthConversion(date).then(resp => {
       // update all the input fields
       const rate = resp.rates[this.state.selectedFiatType];
 
@@ -92,10 +72,6 @@ class AddMilestoneItem extends Component {
         etherAmount: this.state.fiatAmount.div(rate),
       });
     });
-  }
-
-  toggleFormValid(state) {
-    this.setState({ formIsValid: state });
   }
 
   mapInputs(inputs) {
@@ -112,32 +88,47 @@ class AddMilestoneItem extends Component {
     };
   }
 
-  setEtherAmount(e) {
-    if (this.refs.fiatAmount.getValue()) {
-      const fiatAmount = new BigNumber(this.refs.fiatAmount.getValue());
-      const conversionRate = this.state.conversionRate.rates[this.state.selectedFiatType];
+  setEtherAmount(name, value) {
+    const fiatAmount = new BigNumber(value || '0');
+    const conversionRate = this.state.conversionRate.rates[this.state.selectedFiatType];
 
-      if (conversionRate && fiatAmount.gte(0)) {
-        this.setState({
-          etherAmount: fiatAmount.div(conversionRate),
-          fiatAmount,
-        });
-      }
+    if (conversionRate && fiatAmount.gte(0)) {
+      this.setState({
+        etherAmount: fiatAmount.div(conversionRate),
+        fiatAmount,
+      });
     }
   }
 
-  setFiatAmount(e) {
-    if (this.refs.etherAmount.getValue()) {
-      const etherAmount = new BigNumber(this.refs.etherAmount.getValue());
-      const conversionRate = this.state.conversionRate.rates[this.state.selectedFiatType];
+  setFiatAmount(name, value) {
+    const etherAmount = new BigNumber(value || '0');
+    const conversionRate = this.state.conversionRate.rates[this.state.selectedFiatType];
 
-      if (conversionRate && etherAmount.gte(0)) {
-        this.setState({
-          fiatAmount: etherAmount.times(conversionRate),
-          etherAmount,
-        });
-      }
+    if (conversionRate && etherAmount.gte(0)) {
+      this.setState({
+        fiatAmount: etherAmount.times(conversionRate),
+        etherAmount,
+      });
     }
+  }
+
+  closeDialog() {
+    this.setState(initialState);
+  }
+
+  save() {
+    this.props.onAddItem(this.refs.itemForm.getModel());
+    this.setState(initialState);
+  }
+
+  openDialog() {
+    this.props.getEthConversion(this.state.date).then(resp =>
+      this.setState({
+        modalVisible: true,
+        conversionRate: resp,
+        etherAmount: this.state.fiatAmount.div(resp.rates[this.state.selectedFiatType]),
+      }),
+    );
   }
 
   changeSelectedFiat(fiatType) {
@@ -165,10 +156,7 @@ class AddMilestoneItem extends Component {
 
     return (
       <div className="add-milestone-item">
-        <a
-          className="btn btn-primary btn-sm btn-add-milestone-item"
-          onClick={() => this.openDialog()}
-        >
+        <a className="btn btn-primary btn-sm btn-add-milestone-item" onClick={this.openDialog}>
           Add item
         </a>
 
@@ -181,8 +169,8 @@ class AddMilestoneItem extends Component {
           >
             <Formsy.Form
               mapping={inputs => this.mapInputs(inputs)}
-              onValid={() => this.toggleFormValid(true)}
-              onInvalid={() => this.toggleFormValid(false)}
+              onValid={() => this.setState({ formIsValid: true })}
+              onInvalid={() => this.setState({ formIsValid: false })}
               ref="itemForm"
             >
               <DatePickerFormsy
@@ -218,9 +206,9 @@ class AddMilestoneItem extends Component {
               <div className="row">
                 <div className="col-4">
                   <Input
+                    min="0"
                     label="Amount in fiat"
                     name="fiatAmount"
-                    ref="fiatAmount"
                     type="number"
                     value={fiatAmount}
                     placeholder="10"
@@ -228,7 +216,7 @@ class AddMilestoneItem extends Component {
                     validationErrors={{
                       greaterThan: 'Enter value',
                     }}
-                    onKeyUp={this.setEtherAmount}
+                    onChange={this.setEtherAmount}
                     required
                   />
                 </div>
@@ -250,8 +238,8 @@ class AddMilestoneItem extends Component {
 
                 <div className="col-4">
                   <Input
+                    min="0"
                     label="Amount in ether"
-                    ref="etherAmount"
                     name="etherAmount"
                     type="number"
                     value={etherAmount}
@@ -260,7 +248,7 @@ class AddMilestoneItem extends Component {
                     validationErrors={{
                       greaterThan: 'Enter value',
                     }}
-                    onKeyUp={this.setFiatAmount}
+                    onChange={this.setFiatAmount}
                     required
                   />
                 </div>
