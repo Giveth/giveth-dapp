@@ -63,7 +63,7 @@ class EditMilestone extends Component {
       description: '',
       image: '',
       maxAmount: new BigNumber(0),
-      fiatAmount: new BigNumber(10),
+      fiatAmount: new BigNumber(0),
       recipientAddress: '',
       // completionDeadline: '',
       status: 'pending',
