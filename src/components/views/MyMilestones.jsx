@@ -246,8 +246,6 @@ class MyMilestones extends Component {
           buttons: ['Cancel', 'Yes, accept'],
         }).then(isConfirmed => {
           if (isConfirmed) {
-            console.log('creating milestone for real');
-
             const createMilestone = (etherScanUrl, txHash) => {
               feathersClient
                 .service('/milestones')
@@ -283,7 +281,6 @@ class MyMilestones extends Component {
             let etherScanUrl;
             Promise.all([getNetwork(), getWeb3(), getGasPrice()])
               .then(([network, web3, gasPrice]) => {
-                console.log('creating milestone tx');
                 etherScanUrl = network.txHash;
 
                 return new LPPCappedMilestones(web3, network.cappedMilestoneAddress)
@@ -299,13 +296,11 @@ class MyMilestones extends Component {
                   )
                   .on('transactionHash', hash => {
                     txHash = hash;
-                    console.log('creating milestone in feathers');
 
                     createMilestone(etherScanUrl, txHash);
                   });
               })
-              .catch(e => {
-                console.error(e);
+              .catch(() => {
                 displayTransactionError(txHash, etherScanUrl);
               });
           }
@@ -323,8 +318,6 @@ class MyMilestones extends Component {
       buttons: ['Cancel', 'Yes, reject'],
     }).then(isConfirmed => {
       if (isConfirmed) {
-        console.log('rejecting milestone');
-
         feathersClient
           .service('/milestones')
           .patch(milestone._id, {
@@ -812,6 +805,74 @@ class MyMilestones extends Component {
                                       Mark complete
                                     </button>
                                   )}
+                                {[
+                                  m.reviewerAddress,
+                                  m.campaignReviewerAddress,
+                                  m.recipientAddress,
+                                ].includes(currentUser.address) &&
+                                  ['InProgress', 'NeedReview'].includes(m.status) &&
+                                  m.mined && (
+                                    <button
+                                      className="btn btn-danger btn-sm"
+                                      onClick={() => this.cancelMilestone(m)}
+                                    >
+                                      <i className="fa fa-times" />&nbsp;Cancel
+                                    </button>
+                                  )}
+
+                                {m.reviewerAddress === currentUser.address &&
+                                  m.status === 'NeedsReview' &&
+                                  m.mined && (
+                                    <span>
+                                      <button
+                                        className="btn btn-success btn-sm"
+                                        onClick={() => this.approveMilestone(m)}
+                                      >
+                                        <i className="fa fa-thumbs-up" />&nbsp;Approve
+                                      </button>
+
+                                      <button
+                                        className="btn btn-danger btn-sm"
+                                        onClick={() => this.rejectMilestone(m)}
+                                      >
+                                        <i className="fa fa-thumbs-down" />&nbsp;Reject
+                                      </button>
+                                    </span>
+                                  )}
+
+                                {
+                                  // To be added back once users can request payment
+                                  /* {m.recipientAddress === currentUser.address &&
+                                  m.status === 'Completed' &&
+                                  m.mined &&
+                                  m.donationCount > 0 && (
+                                    <button
+                                      className="btn btn-success btn-sm"
+                                      onClick={() => this.requestWithdrawal(m)}
+                                    >
+                                      <i className="fa fa-usd" />&nbsp;Request Withdrawal
+                                    </button>
+                                  )}
+
+                                {m.recipientAddress === currentUser.address &&
+                                  m.status === 'Paying' && (
+                                    <p>
+                                      Withdraw authorization pending. You will be able to collect
+                                      the funds when confirmed.
+                                    </p>
+                                  )}
+
+                                {m.recipientAddress === currentUser.address &&
+                                  m.status === 'CanWithdraw' &&
+                                  m.mined && (
+                                    <button
+                                      className="btn btn-success btn-sm"
+                                      onClick={() => this.collect(m)}
+                                    >
+                                      <i className="fa fa-usd" />&nbsp;Collect
+                                    </button>
+                                  )} */
+                                }
                               </td>
                             </tr>
                           ))}
