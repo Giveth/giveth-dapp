@@ -43,15 +43,11 @@ class GivethWallet {
    * @return {String}
    */
   getBalance(unit) {
-    return this.balance
-      ? utils.fromWei(this.balance, unit || 'ether')
-      : undefined;
+    return this.balance ? utils.fromWei(this.balance, unit || 'ether') : undefined;
   }
 
   getTokenBalance(unit) {
-    return this.tokenBalance
-      ? utils.fromWei(this.tokenBalance, unit || 'ether')
-      : undefined;
+    return this.tokenBalance ? utils.fromWei(this.tokenBalance, unit || 'ether') : undefined;
   }
 
   /**
@@ -61,10 +57,10 @@ class GivethWallet {
    * @returns   signature object. https://web3js.readthedocs.io/en/1.0/web3-eth-accounts.html#signtransaction
    */
   signTransaction(txData) {
-    if (!this.unlocked) throw new Error('Locked Wallet');
+    if (!this.unlocked) return Promise.reject(new Error('Locked Wallet'));
 
     if (!txData.gasPrice || !txData.nonce || !txData.chainId)
-      throw new Error('gasPrice, nonce, and chainId are required');
+      return Promise.reject(new Error('gasPrice, nonce, and chainId are required'));
 
     const accounts = mapGet.call(mapAccounts, this);
 
@@ -142,9 +138,7 @@ class GivethWallet {
       return addrs;
     }
 
-    return this.keystores.map(account =>
-      GivethWallet.fixAddress(account.address),
-    );
+    return this.keystores.map(account => GivethWallet.fixAddress(account.address));
   }
 
   /**
@@ -177,9 +171,7 @@ class GivethWallet {
   static createWallet(provider, password) {
     return new Promise(resolve => {
       const createWallet = () => {
-        const keystore = new Accounts(provider).wallet
-          .create(1)
-          .encrypt(password);
+        const keystore = new Accounts(provider).wallet.create(1).encrypt(password);
         resolve(GivethWallet.createGivethWallet(keystore, provider, password));
       };
 
@@ -204,11 +196,7 @@ class GivethWallet {
       modifiedKeystore = [keystore];
     }
 
-    return GivethWallet.createGivethWallet(
-      modifiedKeystore,
-      provider,
-      password,
-    );
+    return GivethWallet.createGivethWallet(modifiedKeystore, provider, password);
   }
 
   /**

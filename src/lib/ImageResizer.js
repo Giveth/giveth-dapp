@@ -36,9 +36,7 @@ const hasArrayBufferViewSupport =
   })();
 
 const hasToBlobSupport =
-  typeof HTMLCanvasElement !== 'undefined'
-    ? HTMLCanvasElement.prototype.toBlob
-    : false;
+  typeof HTMLCanvasElement !== 'undefined' ? HTMLCanvasElement.prototype.toBlob : false;
 
 const hasBlobSupport =
   hasToBlobSupport ||
@@ -46,8 +44,7 @@ const hasBlobSupport =
     typeof ArrayBuffer !== 'undefined' &&
     typeof atob !== 'undefined');
 
-const hasReaderSupport =
-  typeof FileReader !== 'undefined' || typeof URL !== 'undefined';
+const hasReaderSupport = typeof FileReader !== 'undefined' || typeof URL !== 'undefined';
 
 export default class ImageTools {
   static resize(file, md, cb) {
@@ -172,10 +169,6 @@ export default class ImageTools {
   }
 
   static isSupported() {
-    return (
-      typeof HTMLCanvasElement !== 'undefined' &&
-      hasBlobSupport &&
-      hasReaderSupport
-    );
+    return typeof HTMLCanvasElement !== 'undefined' && hasBlobSupport && hasReaderSupport;
   }
 }

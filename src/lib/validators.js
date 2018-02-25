@@ -15,8 +15,14 @@ Formsy.addValidationRule(
   (formValues, inputValue, value) => parseFloat(inputValue) < value,
 );
 
+// Greater than number
+Formsy.addValidationRule(
+  'greaterEqualTo',
+  (formValues, inputValue, value) => parseFloat(inputValue) >= value,
+);
+
 // Checks if input is a valid Ether address
-// TO DO: Does not support ENS! (It's hard, ENS returns promises)
+// TODO: Does not support ENS! (It's hard, ENS returns promises)
 Formsy.addValidationRule('isEtherAddress', (formValues, inputValue, _value) =>
   Web3.utils.isAddress(inputValue),
 );

@@ -109,19 +109,11 @@ class CampaignService {
       .watch({ strategy: 'always' })
       .find({
         query: {
-          $or: [
-            { ownerAddress: userAddress },
-            { reviewerAddress: userAddress },
-          ],
+          $or: [{ ownerAddress: userAddress }, { reviewerAddress: userAddress }],
         },
       })
       .subscribe(
-        resp =>
-          onSuccess(
-            resp.data
-              .map(campaign => new Campaign(campaign))
-              .sort(Campaign.compare),
-          ),
+        resp => onSuccess(resp.data.map(campaign => new Campaign(campaign)).sort(Campaign.compare)),
         onError,
       );
   }

@@ -40,9 +40,7 @@ class FormsyImageUploader extends Component {
         height: 600,
       },
       (blob, didItResize) => {
-        reader.readAsDataURL(
-          didItResize ? blob : this.imagePreview.element.files[0],
-        );
+        reader.readAsDataURL(didItResize ? blob : this.imagePreview.element.files[0]);
       },
     );
   }
@@ -51,14 +49,12 @@ class FormsyImageUploader extends Component {
     return (
       <div>
         {(this.props.previewImage || this.previewImage) && (
-          <div id="image-preview">
+          <div className="image-preview">
             <img src={this.state.image} alt="Preview of uploaded file" />
           </div>
         )}
 
-        {this.props.avatar && (
-          <Avatar size={100} src={this.props.avatar} round />
-        )}
+        {this.props.avatar && <Avatar size={100} src={this.props.avatar} round />}
 
         <File
           label="Add a picture"

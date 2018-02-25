@@ -2,16 +2,8 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import Avatar from 'react-avatar';
 
-import {
-  getTruncatedText,
-  isOwner,
-  getUserAvatar,
-  getUserName,
-} from './../lib/helpers';
-import {
-  redirectAfterWalletUnlock,
-  checkWalletBalance,
-} from './../lib/middleware';
+import { getTruncatedText, isOwner, getUserAvatar, getUserName } from './../lib/helpers';
+import { redirectAfterWalletUnlock, checkWalletBalance } from './../lib/middleware';
 import User from '../models/User';
 import CardStats from './CardStats';
 import GivethWallet from '../lib/blockchain/GivethWallet';
@@ -32,9 +24,7 @@ class MilestoneCard extends Component {
 
   viewMilestone() {
     this.props.history.push(
-      `/campaigns/${this.props.milestone.campaignId}/milestones/${
-        this.props.milestone._id
-      }`,
+      `/campaigns/${this.props.milestone.campaignId}/milestones/${this.props.milestone._id}`,
     );
   }
 
@@ -91,26 +81,18 @@ class MilestoneCard extends Component {
 
             {isOwner(milestone.owner.address, currentUser) && (
               <span className="pull-right">
-                <button
-                  className="btn btn-link btn-edit"
-                  onClick={e => this.editMilestone(e)}
-                >
+                <button className="btn btn-link btn-edit" onClick={e => this.editMilestone(e)}>
                   <i className="fa fa-edit" />
                 </button>
               </span>
             )}
           </div>
 
-          <div
-            className="card-img"
-            style={{ backgroundImage: `url(${milestone.image})` }}
-          />
+          <div className="card-img" style={{ backgroundImage: `url(${milestone.image})` }} />
 
           <div className="card-content">
             <small>deadline: {milestone.completionDeadline}</small>
-            <h4 className="card-title">
-              {getTruncatedText(milestone.title, 30)}
-            </h4>
+            <h4 className="card-title">{getTruncatedText(milestone.title, 30)}</h4>
             <div className="card-text">{milestone.summary}</div>
           </div>
 

@@ -76,8 +76,9 @@ React.whitelist = {};
 feathersClient
   .service('/whitelist')
   .find()
-  .then(res => {
-    React.whitelist = res;
+  .then(whitelist => {
+    console.log(whitelist);
+    React.whitelist = whitelist;
   });
 
 /**
@@ -146,9 +147,7 @@ class Application extends Component {
     GivethWallet.getCachedKeystore()
       .then(keystore => {
         // TODO change to getWeb3() when implemented. actually remove provider from GivethWallet
-        const provider = this.state.web3
-          ? this.state.web3.currentProvider
-          : undefined;
+        const provider = this.state.web3 ? this.state.web3.currentProvider : undefined;
         return GivethWallet.loadWallet(keystore, provider);
       })
       .then(wallet => {
@@ -235,11 +234,7 @@ class Application extends Component {
           {!isLoading &&
             !hasError && (
               <div>
-                <MainMenu
-                  onSignOut={this.onSignOut}
-                  wallet={wallet}
-                  currentUser={currentUser}
-                />
+                <MainMenu onSignOut={this.onSignOut} wallet={wallet} currentUser={currentUser} />
 
                 <Switch>
                   {/* Routes are defined here. Persistent data is set as props on components
@@ -250,34 +245,21 @@ class Application extends Component {
                     exact
                     path="/dacs/new"
                     component={props => (
-                      <EditDAC
-                        isNew
-                        currentUser={currentUser}
-                        wallet={wallet}
-                        {...props}
-                      />
+                      <EditDAC isNew currentUser={currentUser} wallet={wallet} {...props} />
                     )}
                   />
                   <Route
                     exact
                     path="/dacs/:id"
                     component={props => (
-                      <ViewDAC
-                        currentUser={currentUser}
-                        wallet={wallet}
-                        {...props}
-                      />
+                      <ViewDAC currentUser={currentUser} wallet={wallet} {...props} />
                     )}
                   />
                   <Route
                     exact
                     path="/dacs/:id/edit"
                     component={props => (
-                      <EditDAC
-                        currentUser={currentUser}
-                        wallet={wallet}
-                        {...props}
-                      />
+                      <EditDAC currentUser={currentUser} wallet={wallet} {...props} />
                     )}
                   />
 
@@ -285,34 +267,21 @@ class Application extends Component {
                     exact
                     path="/campaigns/new"
                     component={props => (
-                      <EditCampaign
-                        isNew
-                        currentUser={currentUser}
-                        wallet={wallet}
-                        {...props}
-                      />
+                      <EditCampaign isNew currentUser={currentUser} wallet={wallet} {...props} />
                     )}
                   />
                   <Route
                     exact
                     path="/campaigns/:id"
                     component={props => (
-                      <ViewCampaign
-                        currentUser={currentUser}
-                        wallet={wallet}
-                        {...props}
-                      />
+                      <ViewCampaign currentUser={currentUser} wallet={wallet} {...props} />
                     )}
                   />
                   <Route
                     exact
                     path="/campaigns/:id/edit"
                     component={props => (
-                      <EditCampaign
-                        currentUser={currentUser}
-                        wallet={wallet}
-                        {...props}
-                      />
+                      <EditCampaign currentUser={currentUser} wallet={wallet} {...props} />
                     )}
                   />
 
@@ -320,12 +289,7 @@ class Application extends Component {
                     exact
                     path="/campaigns/:id/milestones/new"
                     component={props => (
-                      <EditMilestone
-                        isNew
-                        currentUser={currentUser}
-                        wallet={wallet}
-                        {...props}
-                      />
+                      <EditMilestone isNew currentUser={currentUser} wallet={wallet} {...props} />
                     )}
                   />
                   <Route
@@ -345,89 +309,68 @@ class Application extends Component {
                     exact
                     path="/campaigns/:id/milestones/:milestoneId"
                     component={props => (
-                      <ViewMilestone
-                        currentUser={currentUser}
-                        wallet={wallet}
-                        {...props}
-                      />
+                      <ViewMilestone currentUser={currentUser} wallet={wallet} {...props} />
                     )}
                   />
                   <Route
                     exact
                     path="/campaigns/:id/milestones/:milestoneId/edit"
                     component={props => (
-                      <EditMilestone
-                        currentUser={currentUser}
-                        wallet={wallet}
-                        {...props}
-                      />
+                      <EditMilestone currentUser={currentUser} wallet={wallet} {...props} />
                     )}
                   />
                   <Route
                     exact
                     path="/milestones/:milestoneId/edit"
                     component={props => (
+                      <EditMilestone currentUser={currentUser} wallet={wallet} {...props} />
+                    )}
+                  />
+                  <Route
+                    exact
+                    path="/milestones/:milestoneId/edit/proposed"
+                    component={props => (
                       <EditMilestone
                         currentUser={currentUser}
                         wallet={wallet}
+                        isProposed
                         {...props}
                       />
                     )}
                   />
-
                   <Route
                     exact
                     path="/donations"
                     component={props => (
-                      <Donations
-                        currentUser={currentUser}
-                        wallet={wallet}
-                        {...props}
-                      />
+                      <Donations currentUser={currentUser} wallet={wallet} {...props} />
                     )}
                   />
                   <Route
                     exact
                     path="/delegations"
                     component={props => (
-                      <Delegations
-                        currentUser={currentUser}
-                        wallet={wallet}
-                        {...props}
-                      />
+                      <Delegations currentUser={currentUser} wallet={wallet} {...props} />
                     )}
                   />
                   <Route
                     exact
                     path="/my-dacs"
                     component={props => (
-                      <MyDACs
-                        currentUser={currentUser}
-                        wallet={wallet}
-                        {...props}
-                      />
+                      <MyDACs currentUser={currentUser} wallet={wallet} {...props} />
                     )}
                   />
                   <Route
                     exact
                     path="/my-campaigns"
                     component={props => (
-                      <MyCampaigns
-                        currentUser={currentUser}
-                        wallet={wallet}
-                        {...props}
-                      />
+                      <MyCampaigns currentUser={currentUser} wallet={wallet} {...props} />
                     )}
                   />
                   <Route
                     exact
                     path="/my-milestones"
                     component={props => (
-                      <MyMilestones
-                        currentUser={currentUser}
-                        wallet={wallet}
-                        {...props}
-                      />
+                      <MyMilestones currentUser={currentUser} wallet={wallet} {...props} />
                     )}
                   />
 
@@ -472,22 +415,14 @@ class Application extends Component {
                     exact
                     path="/wallet"
                     component={props => (
-                      <UserWallet
-                        currentUser={currentUser}
-                        wallet={wallet}
-                        {...props}
-                      />
+                      <UserWallet currentUser={currentUser} wallet={wallet} {...props} />
                     )}
                   />
                   <Route
                     exact
                     path="/profile"
                     component={props => (
-                      <EditProfile
-                        currentUser={currentUser}
-                        wallet={wallet}
-                        {...props}
-                      />
+                      <EditProfile currentUser={currentUser} wallet={wallet} {...props} />
                     )}
                   />
                   <Route
@@ -500,33 +435,6 @@ class Application extends Component {
 
                   <Route component={NotFound} />
                 </Switch>
-
-                <div
-                  className="alert alert-warning alert-dismissible fade show"
-                  role="alert"
-                  style={{
-                    position: 'fixed',
-                    top: '80px',
-                    left: '2%',
-                    width: '96%',
-                  }}
-                >
-                  <button
-                    type="button"
-                    className="close"
-                    data-dismiss="alert"
-                    aria-label="Close"
-                  >
-                    <span aria-hidden="true">&times;</span>
-                  </button>
-                  <center>
-                    Please note that this is a very early stage of the Giveth
-                    DApp available only to a curated group of testers.<br />
-                    <strong>Do not send in any Ether!</strong> If you have sent
-                    Ether please contact us on &nbsp;
-                    <a href="http://join.giveth.io">Slack or Riot</a>.
-                  </center>
-                </div>
               </div>
             )}
 
@@ -534,10 +442,7 @@ class Application extends Component {
             hasError && (
               <center>
                 <h2>Oops, something went wrong...</h2>
-                <p>
-                  The Giveth dapp could not load for some reason. Please try
-                  again...
-                </p>
+                <p>The Giveth dapp could not load for some reason. Please try again...</p>
               </center>
             )}
 

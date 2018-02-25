@@ -25,12 +25,12 @@ class Campaign extends BasicModel {
     this.tokenName = data.tokenName || '';
     this.tokenSymbol = data.tokenSymbol || '';
     this.dacs = data.dacs || [];
-    this.reviewerAddress =
-      data.reviewerAddress ||
-      getRandomWhitelistAddress(React.whitelist.reviewerWhitelist);
-    this.pluginAddress =
-      data.pluginAddress || '0x0000000000000000000000000000000000000000';
+    this.pluginAddress = data.pluginAddress || '0x0000000000000000000000000000000000000000';
     this.status = data.status || Campaign.PENDING;
+
+    this.reviewerAddress = data.reviewerAddress;
+    if (!data.reviewerAddress && React.whitelist.reviewerWhitelist.length > 0)
+      getRandomWhitelistAddress(React.whitelist.reviewerWhitelist);
   }
 
   toFeathers() {
@@ -129,11 +129,7 @@ class Campaign extends BasicModel {
   }
 
   set status(value) {
-    this.checkValue(
-      value,
-      [Campaign.PENDING, Campaign.ACTIVE, Campaign.CANCELED],
-      'status',
-    );
+    this.checkValue(value, [Campaign.PENDING, Campaign.ACTIVE, Campaign.CANCELED], 'status');
     this.myStatus = value;
     if (value === Campaign.PENDING) this.myOrder = 1;
     else if (value === Campaign.ACTIVE) this.myOrder = 2;
@@ -155,8 +151,17 @@ class Campaign extends BasicModel {
   }
 
   set pluginAddress(value) {
-    this.checkType(value, ['string'], 'dacs');
+    this.checkType(value, ['string'], 'pluginAddress');
     this.myPluginAddress = value;
+  }
+
+  get reviewerAddress() {
+    return this.myReviewerAddress;
+  }
+
+  set reviewerAddress(value) {
+    this.checkType(value, ['string', 'undefined'], 'reviewerAddress');
+    this.myReviewerAddress = value;
   }
 }
 

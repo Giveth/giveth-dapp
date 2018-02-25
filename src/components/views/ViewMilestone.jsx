@@ -4,6 +4,8 @@ import { Link } from 'react-router-dom';
 import { utils } from 'web3';
 import { paramsForServer } from 'feathers-hooks-common';
 import Avatar from 'react-avatar';
+import moment from 'moment';
+import { Form } from 'formsy-react-components';
 
 import { feathersClient } from './../../lib/feathersClient';
 import { getUserName, getUserAvatar } from '../../lib/helpers';
@@ -14,6 +16,7 @@ import BackgroundImageHeader from '../BackgroundImageHeader';
 import DonateButton from '../DonateButton';
 import ShowTypeDonations from '../ShowTypeDonations';
 import getNetwork from './../../lib/blockchain/getNetwork';
+import MilestoneItem from './../MilestoneItem';
 
 import GivethWallet from '../../lib/blockchain/GivethWallet';
 import User from '../../models/User';
@@ -36,7 +39,7 @@ class ViewMilestone extends Component {
       etherScanUrl: '',
     };
 
-    getNetwork().then((network) => {
+    getNetwork().then(network => {
       this.setState({
         etherScanUrl: network.etherscan,
       });
@@ -44,19 +47,23 @@ class ViewMilestone extends Component {
   }
 
   componentDidMount() {
-    const milestoneId = this.props.match.params.milestoneId;
+    const { milestoneId } = this.props.match.params;
 
-    feathersClient.service('milestones').find({ query: { _id: milestoneId } })
+    feathersClient
+      .service('milestones')
+      .find({ query: { _id: milestoneId } })
       .then(resp =>
-        this.setState(Object.assign({}, resp.data[0], {
-          isLoading: false,
-          hasError: false,
-          totalDonated: utils.fromWei(resp.data[0].totalDonated),
-          maxAmount: utils.fromWei(resp.data[0].maxAmount),
-          id: milestoneId,
-        })))
-      .catch(() =>
-        this.setState({ isLoading: false }));
+        this.setState(
+          Object.assign({}, resp.data[0], {
+            isLoading: false,
+            hasError: false,
+            totalDonated: utils.fromWei(resp.data[0].totalDonated),
+            maxAmount: utils.fromWei(resp.data[0].maxAmount),
+            id: milestoneId,
+          }),
+        ),
+      )
+      .catch(() => this.setState({ isLoading: false }));
 
     // lazy load donations
     // TODO fetch "non comitted" donations? add "intendedProjectId: milestoneId" to query to get
@@ -67,14 +74,18 @@ class ViewMilestone extends Component {
       $sort: { createdAt: -1 },
     });
 
-    this.donationsObserver = feathersClient.service('donations').watch({ listStrategy: 'always' }).find(query).subscribe(
-      resp =>
-        this.setState({
-          donations: resp.data,
-          isLoadingDonations: false,
-        }),
-      () => this.setState({ isLoadingDonations: false }),
-    );
+    this.donationsObserver = feathersClient
+      .service('donations')
+      .watch({ listStrategy: 'always' })
+      .find(query)
+      .subscribe(
+        resp =>
+          this.setState({
+            donations: resp.data,
+            isLoadingDonations: false,
+          }),
+        () => this.setState({ isLoadingDonations: false }),
+      );
   }
 
   componentWillUnmount() {
@@ -106,39 +117,35 @@ class ViewMilestone extends Component {
       reviewer,
       reviewerAddress,
       etherScanUrl,
+      items,
+      date,
+      fiatAmount,
+      selectedFiatType,
     } = this.state;
 
     return (
       <div id="view-milestone-view">
-        { isLoading &&
-          <Loader className="fixed" />
-        }
+        {isLoading && <Loader className="fixed" />}
 
-        { !isLoading &&
+        {!isLoading && (
           <div>
-            <BackgroundImageHeader image={image} height={300} >
+            <BackgroundImageHeader image={image} height={300}>
               <h6>Milestone</h6>
               <h1>{title}</h1>
 
+              {!this.state.status === 'InProgress' && <p>This milestone is not active anymore</p>}
 
-              { !this.state.status === 'InProgress' &&
-                <p>This milestone is not active anymore</p>
-              }
+              {this.state.totalDonated >= this.state.maxAmount && (
+                <p>This milestone has reached its funding goal.</p>
+              )}
 
-              { this.state.totalDonated >= this.state.maxAmount &&
+              {this.state.totalDonated < this.state.maxAmount && (
                 <p>
-                  This milestone has reached its funding goal.
+                  Ξ{this.state.totalDonated} of Ξ{this.state.maxAmount} raised.
                 </p>
-              }
+              )}
 
-              { this.state.totalDonated < this.state.maxAmount &&
-                <p>
-                  Ξ{this.state.totalDonated} of
-                  Ξ{this.state.maxAmount} raised.
-                </p>
-              }
-
-              { this.isActiveMilestone() &&
+              {this.isActiveMilestone() && (
                 <DonateButton
                   type="milestone"
                   model={{ title, id, adminId: projectId }}
@@ -146,13 +153,10 @@ class ViewMilestone extends Component {
                   currentUser={currentUser}
                   history={history}
                 />
-              }
-
-
+              )}
             </BackgroundImageHeader>
 
             <div className="container-fluid">
-
               <div className="row">
                 <div className="col-md-8 m-auto">
                   <div>
@@ -174,15 +178,46 @@ class ViewMilestone extends Component {
                 </div>
               </div>
 
+              {items &&
+                items.length > 0 && (
+                  <div className="row spacer-top-50 dashboard-table-view">
+                    <div className="col-md-8 m-auto">
+                      <h4>Milestone items</h4>
+
+                      {/* MilesteneItem needs to be wrapped in a form or it won't mount */}
+                      <Form>
+                        <div className="table-container">
+                          <table className="table table-responsive table-striped table-hover">
+                            <thead>
+                              <tr>
+                                <th className="td-item-date">Date</th>
+                                <th className="td-item-description">Description</th>
+                                <th className="td-item-amount-fiat">Amount Fiat</th>
+                                <th className="td-item-amount-ether">Amount Ether</th>
+                                <th className="td-item-file-upload">Attached proof</th>
+                                <th className="td-item-action" />
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {items.map((item, i) => (
+                                <MilestoneItem name={`milestoneItem-${i}`} key={i} item={item} />
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      </Form>
+                    </div>
+                  </div>
+                )}
+
               <div className="row spacer-top-50">
                 <div className="col-md-8 m-auto">
                   <h4>Details</h4>
 
                   <div className="form-group">
                     <label>Reviewer</label>
-                    <small
-                      className="form-text"
-                    >This person will review the actual completion of the Milestone
+                    <small className="form-text">
+                      This person will review the actual completion of the Milestone
                     </small>
 
                     <table className="table-responsive">
@@ -194,12 +229,16 @@ class ViewMilestone extends Component {
                               <span>{getUserName(reviewer)}</span>
                             </Link>
                           </td>
-                          {etherScanUrl &&
-                            <td className="td-address"> - <a href={`${etherScanUrl}address/${reviewerAddress}`}>{reviewerAddress}</a></td>
-                          }
-                          {!etherScanUrl &&
-                            <td className="td-address"> - {reviewerAddress}</td>
-                          }
+                          {etherScanUrl && (
+                            <td className="td-address">
+                              {' '}
+                              -{' '}
+                              <a href={`${etherScanUrl}address/${reviewerAddress}`}>
+                                {reviewerAddress}
+                              </a>
+                            </td>
+                          )}
+                          {!etherScanUrl && <td className="td-address"> - {reviewerAddress}</td>}
                         </tr>
                       </tbody>
                     </table>
@@ -207,9 +246,8 @@ class ViewMilestone extends Component {
 
                   <div className="form-group">
                     <label>Recipient</label>
-                    <small
-                      className="form-text"
-                    >Where the Ether goes after successful completion of the Milestone
+                    <small className="form-text">
+                      Where the Ether goes after successful completion of the Milestone
                     </small>
 
                     <table className="table-responsive">
@@ -221,31 +259,51 @@ class ViewMilestone extends Component {
                               <span>{getUserName(recipient)}</span>
                             </Link>
                           </td>
-                          {etherScanUrl &&
-                            <td className="td-address"> - <a href={`${etherScanUrl}address/${recipientAddress}`}>{recipientAddress}</a></td>
-                          }
-                          {!etherScanUrl &&
-                            <td className="td-address"> - {recipientAddress}</td>
-                          }
+                          {etherScanUrl && (
+                            <td className="td-address">
+                              {' '}
+                              -{' '}
+                              <a href={`${etherScanUrl}address/${recipientAddress}`}>
+                                {recipientAddress}
+                              </a>
+                            </td>
+                          )}
+                          {!etherScanUrl && <td className="td-address"> - {recipientAddress}</td>}
                         </tr>
                       </tbody>
                     </table>
                   </div>
 
+                  {date && (
+                    <div className="form-group">
+                      <label>Date of milestone</label>
+                      <small className="form-text">
+                        This date defines the eth-fiat conversion rate
+                      </small>
+                      {moment(date).format('Do MMM YYYY')}
+                    </div>
+                  )}
+
                   <div className="form-group">
                     <label>Max amount to raise</label>
-                    <small
-                      className="form-text"
-                    >The maximum amount of &#926; (Ether) that can be donated to this Milestone
+                    <small className="form-text">
+                      The maximum amount of &#926; (Ether) that can be donated to this Milestone.
+                      Based on the requested amount in fiat.
                     </small>
                     &#926;{maxAmount}
+                    {fiatAmount &&
+                      items.length === 0 && (
+                        <span>
+                          {' '}
+                          ({fiatAmount} {selectedFiatType})
+                        </span>
+                      )}
                   </div>
 
                   <div className="form-group">
                     <label>Amount donated</label>
-                    <small
-                      className="form-text"
-                    >The amount of &#926; (Ether) currently donated to this Milestone
+                    <small className="form-text">
+                      The amount of &#926; (Ether) currently donated to this Milestone
                     </small>
                     &#926;{totalDonated}
                   </div>
@@ -264,7 +322,7 @@ class ViewMilestone extends Component {
                 <div className="col-md-8 m-auto">
                   <h4>Donations</h4>
                   <ShowTypeDonations donations={donations} isLoading={isLoadingDonations} />
-                  { this.isActiveMilestone() &&
+                  {this.isActiveMilestone() && (
                     <DonateButton
                       type="milestone"
                       model={{ title, id, adminId: projectId }}
@@ -272,13 +330,12 @@ class ViewMilestone extends Component {
                       currentUser={currentUser}
                       history={history}
                     />
-                  }
+                  )}
                 </div>
               </div>
-
             </div>
           </div>
-        }
+        )}
       </div>
     );
   }

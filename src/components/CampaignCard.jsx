@@ -2,18 +2,10 @@ import React, { Component } from 'react';
 import Avatar from 'react-avatar';
 import PropTypes from 'prop-types';
 
-import {
-  isOwner,
-  getTruncatedText,
-  getUserName,
-  getUserAvatar,
-} from './../lib/helpers';
+import { isOwner, getTruncatedText, getUserName, getUserAvatar } from './../lib/helpers';
 import CardStats from './CardStats';
 import User from './../models/User';
-import {
-  redirectAfterWalletUnlock,
-  checkWalletBalance,
-} from './../lib/middleware';
+import { redirectAfterWalletUnlock, checkWalletBalance } from './../lib/middleware';
 import GivethWallet from '../lib/blockchain/GivethWallet';
 import Campaign from './../models/Campaign';
 
@@ -88,25 +80,17 @@ class CampaignCard extends Component {
 
             {isOwner(campaign.owner.address, currentUser) && (
               <span className="pull-right">
-                <button
-                  className="btn btn-link btn-edit"
-                  onClick={this.editCampaign}
-                >
+                <button className="btn btn-link btn-edit" onClick={this.editCampaign}>
                   <i className="fa fa-edit" />
                 </button>
               </span>
             )}
           </div>
 
-          <div
-            className="card-img"
-            style={{ backgroundImage: `url(${campaign.image})` }}
-          />
+          <div className="card-img" style={{ backgroundImage: `url(${campaign.image})` }} />
 
           <div className="card-content">
-            <h4 className="card-title">
-              {getTruncatedText(campaign.title, 30)}
-            </h4>
+            <h4 className="card-title">{getTruncatedText(campaign.title, 30)}</h4>
             <div className="card-text">{campaign.summary}</div>
           </div>
 

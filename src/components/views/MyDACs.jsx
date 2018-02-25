@@ -3,7 +3,12 @@ import PropTypes from 'prop-types';
 import { utils } from 'web3';
 import { Link } from 'react-router-dom';
 
-import { isAuthenticated, redirectAfterWalletUnlock, takeActionAfterWalletUnlock, checkWalletBalance } from '../../lib/middleware';
+import {
+  isAuthenticated,
+  redirectAfterWalletUnlock,
+  takeActionAfterWalletUnlock,
+  checkWalletBalance,
+} from '../../lib/middleware';
 import { getTruncatedText } from '../../lib/helpers';
 
 import Loader from '../Loader';
@@ -51,9 +56,11 @@ class MyDACs extends Component {
           icon: 'warning',
           dangerMode: true,
           buttons: ['Cancel', 'Yes, edit'],
-        }).then((isConfirmed) => {
-          if (isConfirmed) redirectAfterWalletUnlock(`/dacs/${id}/edit`, this.props.wallet, this.props.history);
-        }));
+        }).then(isConfirmed => {
+          if (isConfirmed)
+            redirectAfterWalletUnlock(`/dacs/${id}/edit`, this.props.wallet, this.props.history);
+        }),
+      );
     });
   }
 
@@ -65,65 +72,73 @@ class MyDACs extends Component {
         <div className="container-fluid page-layout dashboard-table-view">
           <div className="row">
             <div className="col-md-10 m-auto">
+              {(isLoading || (dacs && dacs.length > 0)) && <h1>Your Communities (DACs)</h1>}
 
-              { (isLoading || (dacs && dacs.length > 0)) &&
-                <h1>Your Communities (DACs)</h1>
-              }
+              {isLoading && <Loader className="fixed" />}
 
-              { isLoading &&
-                <Loader className="fixed" />
-              }
-
-              { !isLoading &&
+              {!isLoading && (
                 <div>
+                  {dacs &&
+                    dacs.length > 0 && (
+                      <table className="table table-responsive table-striped table-hover">
+                        <thead>
+                          <tr>
+                            <th className="td-name">Name</th>
+                            <th className="td-donations-number">Number of donations</th>
+                            <th className="td-donations-amount">Amount donated</th>
+                            <th className="td-status">Status</th>
+                            <th className="td-actions" />
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {dacs.map(d => (
+                            <tr key={d.id} className={d.status === DAC.PENDING ? 'pending' : ''}>
+                              <td className="td-name">
+                                <Link to={`/dacs/${d.id}`}>{getTruncatedText(d.title, 45)}</Link>
+                              </td>
+                              <td className="td-donations-number">{d.donationCount}</td>
+                              <td className="td-donations-amount">
+                                Ξ{utils.fromWei(d.totalDonated)}
+                              </td>
+                              <td className="td-status">
+                                {d.status === DAC.PENDING && (
+                                  <span>
+                                    <i className="fa fa-circle-o-notch fa-spin" />&nbsp;
+                                  </span>
+                                )}
+                                {d.status}
+                              </td>
+                              <td className="td-actions">
+                                <button className="btn btn-link" onClick={() => this.editDAC(d.id)}>
+                                  <i className="fa fa-edit" />
+                                </button>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    )}
 
-                  { dacs && dacs.length > 0 &&
-                    <table className="table table-responsive table-striped table-hover">
-                      <thead>
-                        <tr>
-                          <th className="td-name">Name</th>
-                          <th className="td-donations-number">Number of donations</th>
-                          <th className="td-donations-amount">Amount donated</th>
-                          <th className="td-status">Status</th>
-                          <th className="td-actions" />
-                        </tr>
-                      </thead>
-                      <tbody>
-                        { dacs.map(d => (
-                          <tr key={d.id} className={d.status === DAC.PENDING ? 'pending' : ''}>
-                            <td className="td-name"><Link to={`/dacs/${d.id}`}>{getTruncatedText(d.title, 45)}</Link></td>
-                            <td className="td-donations-number">{d.donationCount}</td>
-                            <td className="td-donations-amount">Ξ{utils.fromWei(d.totalDonated)}
-                            </td>
-                            <td className="td-status">
-                              {d.status === DAC.PENDING &&
-                                <span><i className="fa fa-circle-o-notch fa-spin" />&nbsp;</span> }
-                              {d.status}
-                            </td>
-                            <td className="td-actions">
-                              <button className="btn btn-link" onClick={() => this.editDAC(d.id)}>
-                                <i className="fa fa-edit" />
-                              </button>
-                            </td>
-                          </tr>))}
-                      </tbody>
-                    </table>
-                  }
-
-
-                  { dacs && dacs.length === 0 &&
-                    <div>
-                      <center>
-                        <h3>
-                          You didn&apos;t create any Decentralized Altruistic Communities (DACs)
-                          yet!
-                        </h3>
-                        <img className="empty-state-img" src={`${process.env.PUBLIC_URL}/img/community.svg`} width="200px" height="200px" alt="no-dacs-icon" />
-                      </center>
-                    </div>
-                  }
+                  {dacs &&
+                    dacs.length === 0 && (
+                      <div>
+                        <center>
+                          <h3>
+                            You didn&apos;t create any Decentralized Altruistic Communities (DACs)
+                            yet!
+                          </h3>
+                          <img
+                            className="empty-state-img"
+                            src={`${process.env.PUBLIC_URL}/img/community.svg`}
+                            width="200px"
+                            height="200px"
+                            alt="no-dacs-icon"
+                          />
+                        </center>
+                      </div>
+                    )}
                 </div>
-              }
+              )}
             </div>
           </div>
         </div>

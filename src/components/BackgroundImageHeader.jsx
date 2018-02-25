@@ -3,9 +3,7 @@ import PropTypes from 'prop-types';
 
 const BackgroundImageHeader = props => {
   const backgroundStyle = {
-    background: `linear-gradient( rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.9) ), url(${
-      props.image
-    })`,
+    background: `linear-gradient( rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.9) ), url(${props.image})`,
     height: props.height,
   };
 
@@ -21,7 +19,7 @@ const BackgroundImageHeader = props => {
 export default BackgroundImageHeader;
 
 BackgroundImageHeader.propTypes = {
-  image: PropTypes.string.isRequired,
+  image: PropTypes.string,
   height: PropTypes.number,
   children: PropTypes.node,
 };

@@ -51,9 +51,7 @@ class BackupWallet extends Component {
                 type: 'application/json',
               }),
             )}
-            download={`UTC--${new Date().toISOString()}-${
-              keystore.address
-            }.json`}
+            download={`UTC--${new Date().toISOString()}-${keystore.address}.json`}
           >
             Download Backup File
           </a>

@@ -1,14 +1,13 @@
 import React from 'react';
 import 'whatwg-fetch';
+import { utils } from 'web3';
 import { createBrowserHistory } from 'history';
 import { feathersClient } from './feathersClient';
 import DefaultAvatar from './../assets/avatar-100.svg';
-import { utils } from 'web3';
+import config from '../configuration';
 
 export const isOwner = (address, currentUser) =>
-  address !== undefined &&
-  currentUser !== undefined &&
-  currentUser.address === address;
+  address !== undefined && currentUser !== undefined && currentUser.address === address;
 
 export const authenticate = wallet => {
   const authData = {
@@ -49,15 +48,12 @@ export const getTruncatedText = (text, maxLength) => {
 // displays a sweet alert with an error when the transaction goes wrong
 export const displayTransactionError = txHash => {
   let msg;
+  const { etherScanUrl } = config;
   if (txHash) {
     msg = (
       <p>
         Something went wrong with the transaction.
-        <a
-          href={`{etherScanUrl}tx/${txHash}`}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
+        <a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">
           View transaction
         </a>
       </p>
@@ -65,9 +61,7 @@ export const displayTransactionError = txHash => {
     // TODO update or remove from feathers? maybe don't remove, so we can inform the user that the
     // tx failed and retry
   } else {
-    msg = (
-      <p>Something went wrong with the transaction. Is your wallet unlocked?</p>
-    );
+    msg = <p>Something went wrong with the transaction. Is your wallet unlocked?</p>;
   }
 
   React.swal({
@@ -93,8 +87,7 @@ export const getUserAvatar = owner => {
   return DefaultAvatar;
 };
 
-export const getRandomWhitelistAddress = wl =>
-  wl[Math.floor(Math.random() * wl.length)].address;
+export const getRandomWhitelistAddress = wl => wl[Math.floor(Math.random() * wl.length)].address;
 
 export const getGasPrice = () =>
   feathersClient
@@ -110,6 +103,16 @@ export const getGasPrice = () =>
       return utils.toWei(`${gasPrice}`, 'gwei');
     });
 
+export const getReadableStatus = status => {
+  switch (status) {
+    case 'InProgress':
+      return 'In progress';
+    case 'NeedsReview':
+      return 'Needs review';
+    default:
+      return status;
+  }
+};
 
 // returns a risk indicator
 export const calculateRiskFactor = (owner, dependencies) => {
