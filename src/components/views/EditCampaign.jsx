@@ -10,7 +10,7 @@ import QuillFormsy from '../QuillFormsy';
 import SelectFormsy from './../SelectFormsy';
 import FormsyImageUploader from './../FormsyImageUploader';
 import GoBackButton from '../GoBackButton';
-import { isOwner, getTruncatedText, getRandomWhitelistAddress } from '../../lib/helpers';
+import { isOwner, getTruncatedText } from '../../lib/helpers';
 import {
   isAuthenticated,
   checkWalletBalance,
@@ -46,18 +46,12 @@ class EditCampaign extends Component {
         value: r.address,
         title: `${r.name ? r.name : 'Anonymous user'} - ${r.address}`,
       })),
-      reviewers: [],      
+      reviewers: [],
       // Campaign model
       campaign: new Campaign({
         owner: props.currentUser,
       }),
     };
-
-    if(React.whitelist.projectOwnerWhitelist.length > 0) {
-      this.state.reviewerAddress = getRandomWhitelistAddress(
-        React.whitelist.projectOwnerWhitelist,
-      ).address
-    }    
 
     this.submit = this.submit.bind(this);
     this.setImage = this.setImage.bind(this);
@@ -68,7 +62,9 @@ class EditCampaign extends Component {
     isAuthenticated(this.props.currentUser, this.props.wallet)
       .then(() => isInWhitelist(this.props.currentUser, React.whitelist.projectOwnerWhitelist))
       .then(() => checkWalletBalance(this.props.wallet, this.props.history))
-      .then(() => { if(!this.state.hasWhitelist) this.getReviewers()})
+      .then(() => {
+        if (!this.state.hasWhitelist) this.getReviewers();
+      })
       .then(() => {
         this.dacsObserver = feathersClient
           .service('dacs')
@@ -122,10 +118,10 @@ class EditCampaign extends Component {
           reviewers: resp.data.map(r => ({
             value: r.address,
             title: `${r.name ? r.name : 'Anonymous user'} - ${r.address}`,
-          }))
-        })
-      )
-  }  
+          })),
+        }),
+      );
+  }
 
   setImage(image) {
     const { campaign } = this.state;
@@ -200,7 +196,6 @@ class EditCampaign extends Component {
       dacsOptions,
       hasWhitelist,
       whitelistOptions,
-      reviewerAddress,
       reviewers,
     } = this.state;
 
@@ -358,7 +353,7 @@ class EditCampaign extends Component {
                           id="reviewer-select"
                           label="Select a reviewer"
                           helpText="This person or smart contract will be reviewing your Campaign to increase trust for Givers."
-                          value={reviewerAddress}
+                          value={campaign.reviewerAddress}
                           cta="--- Select a reviewer ---"
                           options={whitelistOptions}
                           validations="isEtherAddress"
@@ -376,7 +371,7 @@ class EditCampaign extends Component {
                           id="reviewer-select"
                           label="Select a reviewer"
                           helpText="This person or smart contract will be reviewing your Campaign to increase trust for Givers."
-                          value={reviewerAddress}
+                          value={campaign.reviewerAddress}
                           cta="--- Select a reviewer ---"
                           options={reviewers}
                           validations="isEtherAddress"
@@ -386,7 +381,7 @@ class EditCampaign extends Component {
                           required
                           disabled={!isNew}
                         />
-                      )}                      
+                      )}
                     </div>
 
                     <div className="form-group row">

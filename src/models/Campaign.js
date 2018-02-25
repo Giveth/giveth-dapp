@@ -27,12 +27,10 @@ class Campaign extends BasicModel {
     this.dacs = data.dacs || [];
     this.pluginAddress = data.pluginAddress || '0x0000000000000000000000000000000000000000';
     this.status = data.status || Campaign.PENDING;
-    this.reviewerAddress = data.reviewerAddress;
 
-    if(React.whitelist.projectOwnerWhitelist.length > 0) {
-      this.reviewerAddress =
-        data.reviewerAddress || getRandomWhitelistAddress(React.whitelist.reviewerWhitelist);        
-    }
+    this.reviewerAddress = data.reviewerAddress;
+    if (!data.reviewerAddress && React.whitelist.reviewerWhitelist.length > 0)
+      getRandomWhitelistAddress(React.whitelist.reviewerWhitelist);
   }
 
   toFeathers() {
@@ -153,8 +151,17 @@ class Campaign extends BasicModel {
   }
 
   set pluginAddress(value) {
-    this.checkType(value, ['string'], 'dacs');
+    this.checkType(value, ['string'], 'pluginAddress');
     this.myPluginAddress = value;
+  }
+
+  get reviewerAddress() {
+    return this.myReviewerAddress;
+  }
+
+  set reviewerAddress(value) {
+    this.checkType(value, ['string', 'undefined'], 'reviewerAddress');
+    this.myReviewerAddress = value;
   }
 }
 

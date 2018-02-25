@@ -10,14 +10,14 @@ const DatePickerFormsy = createReactClass({
   mixins: [Formsy.Mixin],
 
   getInitialState() {
-    return { 
-      startDate: this.props.startDate
+    return {
+      startDate: this.props.startDate,
     };
   },
 
-  componentDidMount(){
-    this.setState({ _isValid: true })    
-    this.setValue(moment(this.props.startDate).format("YYYY/MM/DD"));
+  componentDidMount() {
+    this.setState({ _isValid: true });
+    this.setValue(moment(this.props.startDate).format('YYYY/MM/DD'));
   },
 
   handleChange(m) {
@@ -31,8 +31,9 @@ const DatePickerFormsy = createReactClass({
     // when the value is empty and the required prop is
     // passed to the input. showError() is true when the
     // value typed is invalid
-    const className = 'form-group' + (this.props.className || ' ') +
-      (this.showRequired() ? 'required' : this.showError() ? 'error' : '');
+    const className = `form-group${this.props.className || ' '}${
+      this.showRequired() ? 'required' : this.showError() ? 'error' : ''
+    }`;
 
     // An error message is returned ONLY if the component is invalid
     // or the server has returned an error message
@@ -51,8 +52,11 @@ const DatePickerFormsy = createReactClass({
           onChangeRaw={this.handleRaw}
           className="form-control"
           disabled={this.props.disabled}
-          maxDate={moment().subtract(1, 'd').startOf('day')}
-          readOnly={true}
+          minDate={moment('2017-01-01', 'YYYY-MM-DD')}
+          maxDate={moment()
+            .subtract(1, 'd')
+            .startOf('day')}
+          readOnly
         />
         <span>{errorMessage}</span>
       </div>

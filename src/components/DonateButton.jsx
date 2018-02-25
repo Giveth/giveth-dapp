@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 // import { SkyLightStateless } from 'react-skylight';
 import { utils } from 'web3';
+import { MiniMeToken } from 'minimetoken';
 // import { Form, Input } from 'formsy-react-components';
 
 import getNetwork from '../lib/blockchain/getNetwork';
@@ -11,7 +12,6 @@ import User from '../models/User';
 import { displayTransactionError, getGasPrice } from '../lib/helpers';
 import GivethWallet from '../lib/blockchain/GivethWallet';
 import getWeb3 from '../lib/blockchain/getWeb3';
-import { MiniMeToken } from 'minimetoken';
 
 class DonateButton extends Component {
   constructor() {

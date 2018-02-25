@@ -77,7 +77,7 @@ feathersClient
   .service('/whitelist')
   .find()
   .then(whitelist => {
-    console.log(whitelist)
+    console.log(whitelist);
     React.whitelist = whitelist;
   });
 
@@ -333,7 +333,7 @@ class Application extends Component {
                       <EditMilestone
                         currentUser={currentUser}
                         wallet={wallet}
-                        isProposed={true}
+                        isProposed
                         {...props}
                       />
                     )}
