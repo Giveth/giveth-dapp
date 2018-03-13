@@ -7,7 +7,7 @@ import Toggle from 'react-toggle';
 import BigNumber from 'bignumber.js';
 
 import { Form, Input } from 'formsy-react-components';
-import { feathersClient } from './../../lib/feathersClient';
+import { feathersClient, feathersRest } from './../../lib/feathersClient';
 import Loader from './../Loader';
 import QuillFormsy from './../QuillFormsy';
 import SelectFormsy from './../SelectFormsy';
@@ -217,7 +217,7 @@ class EditMilestone extends Component {
   }
 
   setImage(image) {
-    this.setState({ image, uploadNewImage: true });
+    this.setState({ image: image, uploadNewImage: true });
   }
 
   setDate(date) {
@@ -487,10 +487,20 @@ class EditMilestone extends Component {
     const saveMilestone = () => {
       const uploadMilestoneImage = () => {
         if (this.state.uploadNewImage) {
-          feathersClient
-            .service('/uploads')
-            .create({ uri: this.state.image })
-            .then(file => updateMilestone(file.url));
+          feathersRest
+            .authenticate()
+            .then((res) => {
+              console.log('res', res)
+
+              feathersRest
+                .service('/uploads')
+                .create({ 
+                  uri: this.state.image 
+                }, {
+                  headers: { 'Authorization': res.accessToken }
+                })
+                .then(file => updateMilestone(file.url))
+            })
         } else {
           updateMilestone();
         }
@@ -501,7 +511,7 @@ class EditMilestone extends Component {
         const uploadItemImages = new Promise(resolve =>
           this.state.items.forEach((item, index) => {
             if (item.image) {
-              feathersClient
+              feathersRest
                 .service('/uploads')
                 .create({ uri: item.image })
                 .then(file => {
