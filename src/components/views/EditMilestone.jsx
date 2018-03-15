@@ -500,21 +500,23 @@ class EditMilestone extends Component {
 
       if (this.state.itemizeState) {
         // upload all the item images
-        const uploadItemImages = new Promise(resolve =>
-          this.state.items.forEach((item, index) => {
+        const uploadItemImages = 
+          this.state.items.map((item, index) => {
             if (item.image) {
-              feathersRest
-                .service('/uploads')
-                .create({ uri: item.image })
-                .then(file => {
-                  item.image = file.url;
-                  if (index === 0) resolve('done');
-                });
-            } else if (index === 0) resolve('done');
-          }),
-        );
-
-        uploadItemImages.then(() => uploadMilestoneImage());
+              return new Promise(resolve => {
+                feathersRest
+                  .service('/uploads')
+                  .create({ uri: item.image })
+                  .then(file => {
+                    item.image = file.url;
+                    resolve('done');
+                  });
+              });
+            }
+          });
+      
+        Promise.all(uploadItemImages).then(() => uploadMilestoneImage());
+        
       } else {
         uploadMilestoneImage();
       }
