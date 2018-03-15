@@ -5,7 +5,7 @@ import { LPPCappedMilestones } from 'lpp-capped-milestone-token';
 import { Link } from 'react-router-dom';
 import moment from 'moment';
 import _ from 'underscore';
-import Pagination from "react-js-pagination";
+import Pagination from 'react-js-pagination';
 
 import { feathersClient } from '../../lib/feathersClient';
 import {
@@ -40,7 +40,7 @@ class MyMilestones extends Component {
       visiblePages: 10,
       itemsPerPage: 50,
       skipPages: 0,
-      totalResults: 0
+      totalResults: 0,
     };
 
     this.handlePageChanged = this.handlePageChanged.bind(this);
@@ -55,7 +55,7 @@ class MyMilestones extends Component {
   }
 
   componentDidMount() {
-    isAuthenticated(this.props.currentUser, this.props.wallet).then(() => this.loadMileStones())
+    isAuthenticated(this.props.currentUser, this.props.wallet).then(() => this.loadMileStones());
   }
 
   componentWillUnmount() {
@@ -64,7 +64,7 @@ class MyMilestones extends Component {
 
   loadMileStones() {
     const myAddress = this.props.currentUser.address;
-    
+
     this.milestonesObserver = feathersClient
       .service('milestones')
       .watch({ strategy: 'always' })
@@ -82,31 +82,30 @@ class MyMilestones extends Component {
             createdAt: -1,
           },
           $limit: this.state.itemsPerPage,
-          $skip: this.state.skipPages * this.state.itemsPerPage
+          $skip: this.state.skipPages * this.state.itemsPerPage,
         },
       })
-      .subscribe(
-        resp =>
-          this.setState({
-            milestones: _.sortBy(resp.data, d => {
-              if (d.status === 'NeedsReview') return 1;
-              if (d.status === 'InProgress') return 2;
-              if (d.status === 'Proposed') return 3;
-              if (d.status === 'Completed') return 4;
-              if (d.status === 'Canceled') return 5;
-              return 8;
-            }),
-            itemsPerPage: resp.limit,
-            skipPages: resp.skip,
-            totalResults: resp.total,
-            isLoading: false
-          })
+      .subscribe(resp =>
+        this.setState({
+          milestones: _.sortBy(resp.data, d => {
+            if (d.status === 'NeedsReview') return 1;
+            if (d.status === 'InProgress') return 2;
+            if (d.status === 'Proposed') return 3;
+            if (d.status === 'Completed') return 4;
+            if (d.status === 'Canceled') return 5;
+            return 8;
+          }),
+          itemsPerPage: resp.limit,
+          skipPages: resp.skip,
+          totalResults: resp.total,
+          isLoading: false,
+        }),
       );
   }
 
   handlePageChanged(newPage) {
-    this.setState({ skipPages: newPage - 1 }, () => this.loadMileStones())
-  }  
+    this.setState({ skipPages: newPage - 1 }, () => this.loadMileStones());
+  }
 
   editMilestone(milestone) {
     takeActionAfterWalletUnlock(this.props.wallet, () => {
@@ -704,7 +703,14 @@ class MyMilestones extends Component {
   }
 
   render() {
-    const { milestones, isLoading, totalResults, skipPages, itemsPerPage, visiblePages } = this.state;
+    const {
+      milestones,
+      isLoading,
+      totalResults,
+      skipPages,
+      itemsPerPage,
+      visiblePages,
+    } = this.state;
     const { currentUser } = this.props;
 
     return (
@@ -739,7 +745,9 @@ class MyMilestones extends Component {
                               <tr key={m._id} className={m.status === 'pending' ? 'pending' : ''}>
                                 <td className="td-created-at">
                                   {m.createdAt && (
-                                    <span>{moment(m.createdAt).format('Do MMM YYYY - HH:mm a')}</span>
+                                    <span>
+                                      {moment(m.createdAt).format('Do MMM YYYY - HH:mm a')}
+                                    </span>
                                   )}
                                 </td>
                                 <td className="td-name">
@@ -780,11 +788,12 @@ class MyMilestones extends Component {
                                   Ξ{m.totalDonated ? utils.fromWei(m.totalDonated) : 0}
                                 </td>
                                 <td className="td-reviewer">
-                                  {m.reviewer && m.reviewer.address && 
-                                    <Link to={`/profile/${m.reviewer.address}`}>
-                                      {m.reviewer.name || 'Anomynous user'}
-                                    </Link>
-                                  }
+                                  {m.reviewer &&
+                                    m.reviewer.address && (
+                                      <Link to={`/profile/${m.reviewer.address}`}>
+                                        {m.reviewer.name || 'Anomynous user'}
+                                      </Link>
+                                    )}
                                 </td>
                                 <td className="td-actions">
                                   {m.ownerAddress === currentUser.address && (
@@ -906,10 +915,8 @@ class MyMilestones extends Component {
                             totalItemsCount={totalResults}
                             pageRangeDisplayed={visiblePages}
                             onChange={this.handlePageChanged}
-                          />    
-                        </center>                    
-                                    
-
+                          />
+                        </center>
                       </div>
                     )}
 
