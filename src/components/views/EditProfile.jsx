@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 
 import { Form, Input } from 'formsy-react-components';
-import { feathersClient } from '../../lib/feathersClient';
+import { feathersClient, feathersRest } from '../../lib/feathersClient';
 import Loader from '../Loader';
 import FormsyImageUploader from './../FormsyImageUploader';
 import {
@@ -151,7 +151,7 @@ class EditProfile extends Component {
     confirmBlockchainTransaction(
       () => {
         if (this.state.uploadNewAvatar) {
-          feathersClient
+          feathersRest
             .service('/uploads')
             .create({ uri: this.state.avatar })
             .then(file => {
