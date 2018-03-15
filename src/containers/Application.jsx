@@ -9,7 +9,7 @@ import 'react-toastify/dist/ReactToastify.min.css';
 
 import Sweetalert from 'sweetalert';
 
-import { feathersClient } from '../lib/feathersClient';
+import { feathersClient, feathersRest } from '../lib/feathersClient';
 
 import DataRoutes from './DataRoutes';
 
@@ -133,6 +133,7 @@ class Application extends Component {
       .then(user => {
         if (!user) throw new Error('No User');
         feathersClient.authenticate(); // need to authenticate the socket connection
+        feathersRest.authenticate(); // need to authenticate the rest connection
         this.setState({
           isLoading: false,
           hasError: false,
