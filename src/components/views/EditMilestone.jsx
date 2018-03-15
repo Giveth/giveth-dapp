@@ -488,19 +488,11 @@ class EditMilestone extends Component {
       const uploadMilestoneImage = () => {
         if (this.state.uploadNewImage) {
           feathersRest
-            .authenticate()
-            .then((res) => {
-              console.log('res', res)
-
-              feathersRest
-                .service('/uploads')
-                .create({ 
-                  uri: this.state.image 
-                }, {
-                  headers: { 'Authorization': res.accessToken }
-                })
-                .then(file => updateMilestone(file.url))
+            .service('/uploads')
+            .create({
+              uri: this.state.image,
             })
+            .then(file => updateMilestone(file.url));
         } else {
           updateMilestone();
         }

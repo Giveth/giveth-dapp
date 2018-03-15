@@ -133,7 +133,7 @@ class Application extends Component {
       .then(user => {
         if (!user) throw new Error('No User');
         feathersClient.authenticate(); // need to authenticate the socket connection
-        feathersRest.authenticate(); // need to authenticate the rest connection
+
         this.setState({
           isLoading: false,
           hasError: false,
