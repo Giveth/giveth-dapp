@@ -283,7 +283,7 @@ class EditMilestone extends Component {
     if (conversionRate && maxAmount.gte(0)) {
       this.setState({
         fiatAmount: maxAmount.times(conversionRate),
-        maxAmount: maxAmount.toNumber(),
+        maxAmount,
       });
     }
   }
