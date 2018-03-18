@@ -9,7 +9,7 @@ import 'react-toastify/dist/ReactToastify.min.css';
 
 import Sweetalert from 'sweetalert';
 
-import { feathersClient, feathersRest } from '../lib/feathersClient';
+import { feathersClient } from '../lib/feathersClient';
 
 import DataRoutes from './DataRoutes';
 

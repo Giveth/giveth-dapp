@@ -217,7 +217,7 @@ class EditMilestone extends Component {
   }
 
   setImage(image) {
-    this.setState({ image: image, uploadNewImage: true });
+    this.setState({ image, uploadNewImage: true });
   }
 
   setDate(date) {
@@ -500,23 +500,21 @@ class EditMilestone extends Component {
 
       if (this.state.itemizeState) {
         // upload all the item images
-        const uploadItemImages = 
-          this.state.items.map((item, index) => {
-            if (item.image) {
-              return new Promise(resolve => {
-                feathersRest
-                  .service('/uploads')
-                  .create({ uri: item.image })
-                  .then(file => {
-                    item.image = file.url;
-                    resolve('done');
-                  });
-              });
-            }
-          });
-      
+        const uploadItemImages = this.state.items.map((item, index) => {
+          if (item.image) {
+            return new Promise(resolve => {
+              feathersRest
+                .service('/uploads')
+                .create({ uri: item.image })
+                .then(file => {
+                  item.image = file.url;
+                  resolve('done');
+                });
+            });
+          }
+        });
+
         Promise.all(uploadItemImages).then(() => uploadMilestoneImage());
-        
       } else {
         uploadMilestoneImage();
       }
