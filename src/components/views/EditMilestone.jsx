@@ -7,7 +7,7 @@ import Toggle from 'react-toggle';
 import BigNumber from 'bignumber.js';
 
 import { Form, Input } from 'formsy-react-components';
-import { feathersClient } from './../../lib/feathersClient';
+import { feathersClient, feathersRest } from './../../lib/feathersClient';
 import Loader from './../Loader';
 import QuillFormsy from './../QuillFormsy';
 import SelectFormsy from './../SelectFormsy';
@@ -410,7 +410,7 @@ class EditMilestone extends Component {
           let etherScanUrl;
           Promise.all([getNetwork(), getWeb3(), getGasPrice()])
             .then(([network, web3, gasPrice]) => {
-              etherScanUrl = network.txHash;
+              etherScanUrl = network.etherscan;
 
               const from = this.props.currentUser.address;
               const recipient = model.recipientAddress;
@@ -487,9 +487,11 @@ class EditMilestone extends Component {
     const saveMilestone = () => {
       const uploadMilestoneImage = () => {
         if (this.state.uploadNewImage) {
-          feathersClient
+          feathersRest
             .service('/uploads')
-            .create({ uri: this.state.image })
+            .create({
+              uri: this.state.image,
+            })
             .then(file => updateMilestone(file.url));
         } else {
           updateMilestone();
@@ -498,21 +500,21 @@ class EditMilestone extends Component {
 
       if (this.state.itemizeState) {
         // upload all the item images
-        const uploadItemImages = new Promise(resolve =>
-          this.state.items.forEach((item, index) => {
-            if (item.image) {
-              feathersClient
+        const uploadItemImages = this.state.items.map((item, index) => {
+          if (item.image) {
+            return new Promise(resolve => {
+              feathersRest
                 .service('/uploads')
                 .create({ uri: item.image })
                 .then(file => {
                   item.image = file.url;
-                  if (index === 0) resolve('done');
+                  resolve('done');
                 });
-            } else if (index === 0) resolve('done');
-          }),
-        );
+            });
+          }
+        });
 
-        uploadItemImages.then(() => uploadMilestoneImage());
+        Promise.all(uploadItemImages).then(() => uploadMilestoneImage());
       } else {
         uploadMilestoneImage();
       }
