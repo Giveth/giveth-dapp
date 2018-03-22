@@ -171,6 +171,19 @@ i {
     }
 }
 
+.nav-tabs {
+    margin-top: 50px;
+
+    .nav-link { 
+        font-size: 0.8rem;
+
+        &.active {
+            background-color: #f9f9f9;            
+            border-bottom-color: #f9f9f9;
+        }
+    }
+}
+
 .image-preview {
     background-color: #f9f9f9;
     padding: 5px;
