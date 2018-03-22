@@ -296,7 +296,7 @@ class MyMilestones extends Component {
             let etherScanUrl;
             Promise.all([getNetwork(), getWeb3(), getGasPrice()])
               .then(([network, web3, gasPrice]) => {
-                etherScanUrl = network.txHash;
+                etherScanUrl = network.etherscan;
 
                 return new LPPCappedMilestones(web3, network.cappedMilestoneAddress)
                   .addMilestone(

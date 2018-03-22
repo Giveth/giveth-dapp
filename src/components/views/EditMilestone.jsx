@@ -410,7 +410,7 @@ class EditMilestone extends Component {
           let etherScanUrl;
           Promise.all([getNetwork(), getWeb3(), getGasPrice()])
             .then(([network, web3, gasPrice]) => {
-              etherScanUrl = network.txHash;
+              etherScanUrl = network.etherscan;
 
               const from = this.props.currentUser.address;
               const recipient = model.recipientAddress;
