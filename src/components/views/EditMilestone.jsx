@@ -488,7 +488,7 @@ class EditMilestone extends Component {
       const uploadMilestoneImage = () => {
         if (this.state.uploadNewImage) {
           feathersRest
-            .service('/uploads')
+            .service('uploads')
             .create({
               uri: this.state.image,
             })
@@ -504,7 +504,7 @@ class EditMilestone extends Component {
           if (item.image) {
             return new Promise(resolve => {
               feathersRest
-                .service('/uploads')
+                .service('uploads')
                 .create({ uri: item.image })
                 .then(file => {
                   item.image = file.url;
