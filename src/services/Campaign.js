@@ -70,7 +70,7 @@ class CampaignService {
           projectId: {
             $gt: '0', // 0 is a pending milestone
           },
-          $sort: { completionDeadline: 1 },
+          $sort: { createdAt: -1 },
         },
       })
       .subscribe(resp => onSuccess(resp.data), onError);
