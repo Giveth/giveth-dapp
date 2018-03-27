@@ -45,5 +45,5 @@ export const feathersClient = feathers()
   )
   .on('authenticated', feathersRest.passport.setJWT); // set token on feathersRest whenever it is changed
 
-feathersClient.service('/uploads').timeout = 10000;
-feathersRest.service('/uploads').timeout = 10000;
+feathersClient.service('uploads').timeout = 10000;
+feathersRest.service('uploads').timeout = 10000;

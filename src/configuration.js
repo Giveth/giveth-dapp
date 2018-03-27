@@ -30,8 +30,8 @@ const configurations = {
     campaignFactoryAddress: '0xa6E585A9481aF710026993818c0B4c5c32ae2F36',
     cappedMilestoneAddress: '0xbfb48a8817de49f259a71d2Aa07fC1c95EC24265',
     etherscan: 'https://rinkeby.etherscan.io/',
-    feathersConnection: 'https://feathers.develop.giveth.io/',
-    nodeConnection: 'wss://rinkeby.giveth.io:8546/',
+    feathersConnection: 'https://feathers.develop.giveth.io',
+    nodeConnection: 'wss://rinkeby.giveth.io:8546',
   },
   release: {
     title: 'release',
@@ -41,13 +41,13 @@ const configurations = {
     campaignFactoryAddress: '0x523c1713fa80bb695ca25f85ee4a06533dceef76',
     cappedMilestoneAddress: '0x9d8a74f03c7765d689171ffb4004670d2bf30a62',
     etherscan: 'https://rinkeby.etherscan.io/',
-    feathersConnection: 'https://feathers.release.giveth.io/',
-    nodeConnection: 'wss://rinkeby.giveth.io:8546/',
+    feathersConnection: 'https://feathers.release.giveth.io',
+    nodeConnection: 'wss://rinkeby.giveth.io:8546',
   },
   mainnet: {
     title: 'mainnet',
     etherscan: 'https://etherscan.io/',
-    feathersConnection: 'https://feathers.mainnet.giveth.io/',
+    feathersConnection: 'https://feathers.mainnet.giveth.io',
     nodeConnection: 'wss://mew.giveth.io/ws',
   },
   alpha: {
@@ -59,7 +59,7 @@ const configurations = {
     tokenAddress: '0xb991657107F2F12899938B0985572449400C57d5',
     etherscan: 'https://rinkeby.etherscan.io/',
     feathersConnection: 'https://feathers.alpha.giveth.io',
-    nodeConnection: 'wss://rinkeby.giveth.io:8546/',
+    nodeConnection: 'wss://rinkeby.giveth.io:8546',
   },
 };
 

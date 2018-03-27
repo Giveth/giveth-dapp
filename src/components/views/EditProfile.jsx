@@ -152,7 +152,7 @@ class EditProfile extends Component {
       () => {
         if (this.state.uploadNewAvatar) {
           feathersRest
-            .service('/uploads')
+            .service('uploads')
             .create({ uri: this.state.avatar })
             .then(file => {
               updateUser(file.url);
