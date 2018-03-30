@@ -4,7 +4,6 @@ import { utils } from 'web3';
 import { LPPCappedMilestones } from 'lpp-capped-milestone-token';
 import { Link } from 'react-router-dom';
 import moment from 'moment';
-import _ from 'underscore';
 import Pagination from 'react-js-pagination';
 
 import { feathersClient } from '../../lib/feathersClient';
@@ -41,9 +40,10 @@ class MyMilestones extends Component {
       itemsPerPage: 50,
       skipPages: 0,
       totalResults: 0,
-      loadedStatus: 'NeedsReview'
+      loadedStatus: 'Active',
     };
 
+    this.milestoneTabs = ['Active', 'Completed', 'Canceled'];
     this.handlePageChanged = this.handlePageChanged.bind(this);
 
     this.editMilestone = this.editMilestone.bind(this);
@@ -66,7 +66,7 @@ class MyMilestones extends Component {
   loadMileStones() {
     const myAddress = this.props.currentUser.address;
 
-    let query = {
+    const query = {
       query: {
         $sort: {
           createdAt: -1,
@@ -74,59 +74,32 @@ class MyMilestones extends Component {
         $limit: this.state.itemsPerPage,
         $skip: this.state.skipPages * this.state.itemsPerPage,
       },
+    };
+
+    if (['Completed', 'Canceled'].includes(this.state.loadedStatus)) {
+      query.query.$and = [
+        {
+          $or: [
+            { ownerAddress: myAddress },
+            // { reviewerAddress: myAddress }, // Not really "My Milestones"
+            { recipientAddress: myAddress },
+          ],
+        },
+        { status: this.state.loadedStatus },
+      ];
+    } else {
+      query.query.$and = [
+        {
+          $or: [
+            { ownerAddress: myAddress },
+            { reviewerAddress: myAddress },
+            { recipientAddress: myAddress },
+            { $and: [{ campaignOwnerAddress: myAddress }, { status: 'proposed' }] },
+          ],
+        },
+        { status: { $nin: ['Completed', 'Canceled'] } },
+      ];
     }
-
-    if(this.state.loadedStatus === 'proposed') {
-      query.query.$and = [
-        { ownerAddress: myAddress },
-        { status: 'proposed' }
-      ]
-    }
-
-    if(this.state.loadedStatus === 'NeedsAcceptation') {
-      query.query.$and = [
-        { campaignOwnerAddress: myAddress },
-        { status: 'proposed' }
-      ]
-    }    
-
-    if(this.state.loadedStatus === 'InProgress') {
-      query.query.$and = [
-        { $or: [
-          { ownerAddress: myAddress },
-          { recipientAddress: myAddress }   
-        ]}, 
-        { status: 'InProgress' }
-      ]
-    }
-
-    if(['NeedsReview', 'Completed', 'Canceled'].includes(this.state.loadedStatus)) {
-      query.query.$and = [
-        { $or: [
-          { ownerAddress: myAddress },
-          { recipientAddress: myAddress },
-        ]}, 
-        { status: this.state.loadedStatus }
-      ]
-    }
-
-    if(this.state.loadedStatus === 'NeedsReview') {
-      query.query.$and = [
-        { reviewerAddress: myAddress },               
-        { status: 'NeedsReview' }
-      ]
-    }
-
-    if(this.state.loadedStatus === 'InReview') {
-      query.query.$and = [
-        { $or: [
-          { ownerAddress: myAddress },
-          { recipientAddress: myAddress },
-        ]}, 
-        { status: 'NeedsReview' }
-      ]
-    }    
-
 
     this.milestonesObserver = feathersClient
       .service('milestones')
@@ -148,14 +121,17 @@ class MyMilestones extends Component {
   }
 
   changeTab(newStatus) {
-    this.setState({ 
-      isLoading: true,
-      loadedStatus: newStatus,
-      skipPages: 0
-    }, () => {
-      if(this.milestonesObserver) this.milestonesObserver.unsubscribe()
-      this.loadMileStones()      
-    })
+    this.setState(
+      {
+        isLoading: true,
+        loadedStatus: newStatus,
+        skipPages: 0,
+      },
+      () => {
+        if (this.milestonesObserver) this.milestonesObserver.unsubscribe();
+        this.loadMileStones();
+      },
+    );
   }
 
   editMilestone(milestone) {
@@ -769,33 +745,21 @@ class MyMilestones extends Component {
         <div className="container-fluid page-layout dashboard-table-view">
           <div className="row">
             <div className="col-md-10 m-auto">
-
               <h1>Your milestones</h1>
 
               <ul className="nav nav-tabs">
-                <li className="nav-item">
-                  <a className={`nav-link ${this.state.loadedStatus === 'NeedsReview' ? 'active' : ''}`} href="#" onClick={()=> this.changeTab('NeedsReview')}>Please review</a>
-                </li>
-                <li className="nav-item">
-                  <a className={`nav-link ${this.state.loadedStatus === 'NeedsAcceptation' ? 'active' : ''}`} href="#" onClick={()=> this.changeTab('NeedsAcceptation')}>Please accept</a>
-                </li>                                   
-                <li className="nav-item">
-                  <a className={`nav-link ${this.state.loadedStatus === 'InReview' ? 'active' : ''}`} href="#" onClick={()=> this.changeTab('InReview')}>In review</a>
-                </li>    
-                <li className="nav-item">
-                  <a className={`nav-link ${this.state.loadedStatus === 'proposed' ? 'active' : ''}`} href="#" onClick={()=> this.changeTab('proposed')}>Proposed by you</a>
-                </li>                                  
-                <li className="nav-item">
-                  <a className={`nav-link ${this.state.loadedStatus === 'InProgress' ? 'active' : ''}`} href="#" onClick={()=> this.changeTab('InProgress')}>In progress</a>
-                </li>
-                <li className="nav-item">
-                  <a className={`nav-link ${this.state.loadedStatus === 'Completed' ? 'active' : ''}`} href="#" onClick={()=> this.changeTab('Completed')}>Completed</a>
-                </li>
-                <li className="nav-item">
-                  <a className={`nav-link ${this.state.loadedStatus === 'Canceled' ? 'active' : ''}`} href="#" onClick={()=> this.changeTab('Canceled')}>Canceled</a>
-                </li>                
+                {this.milestoneTabs.map(st => (
+                  <li className="nav-item">
+                    <a
+                      className={`nav-link ${this.state.loadedStatus === st ? 'active' : ''}`}
+                      href="#"
+                      onClick={() => this.changeTab(st)}
+                    >
+                      {st}
+                    </a>
+                  </li>
+                ))}
               </ul>
-
 
               {isLoading && <Loader className="fixed" />}
 

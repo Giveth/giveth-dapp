@@ -13,8 +13,22 @@ class JoinGivethCommunity extends Component {
   constructor(props) {
     super(props);
 
+    this.state = {
+      canCreateCampaign: false,
+      canCreateDAC: false,
+    };
+
     this.createDAC = this.createDAC.bind(this);
     this.createCampaign = this.createCampaign.bind(this);
+  }
+
+  componentDidMount() {
+    isInWhitelist(this.props.currentUser, React.whitelist.delegateWhitelist).then(() => {
+      this.setState({ canCreateCampaign: true });
+    });
+    isInWhitelist(this.props.currentUser, React.whitelist.projectOwnerWhitelist).then(() => {
+      this.setState({ canCreateDAC: true });
+    });
   }
 
   createDAC() {
@@ -110,12 +124,16 @@ class JoinGivethCommunity extends Component {
               &nbsp;Join Giveth
             </CommunityButton>
             &nbsp;
-            <button className="btn btn-info" onClick={() => this.createDAC()}>
-              Create a Community
-            </button>
-            <button className="btn btn-info" onClick={() => this.createCampaign()}>
-              Start a Campaign
-            </button>
+            {this.state.canCreateCampaign && (
+              <button className="btn btn-info" onClick={() => this.createDAC()}>
+                Create a Community
+              </button>
+            )}
+            {this.state.canCreateDAC && (
+              <button className="btn btn-info" onClick={() => this.createCampaign()}>
+                Start a Campaign
+              </button>
+            )}
           </center>
         </div>
       </div>
