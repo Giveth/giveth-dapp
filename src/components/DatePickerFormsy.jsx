@@ -6,6 +6,8 @@ import moment from 'moment';
 import PropTypes from 'prop-types';
 import 'react-datepicker/dist/react-datepicker.css';
 
+import { getStartOfDayUTC } from '../lib/helpers';
+
 const DatePickerFormsy = createReactClass({
   mixins: [Formsy.Mixin],
 
@@ -17,12 +19,13 @@ const DatePickerFormsy = createReactClass({
 
   componentDidMount() {
     this.setState({ _isValid: true });
-    this.setValue(moment(this.props.startDate).format('YYYY/MM/DD'));
+    this.setValue(getStartOfDayUTC(this.props.startDate).format('YYYY/MM/DD'));
   },
 
   handleChange(m) {
-    this.setState({ startDate: m });
-    this.props.changeDate(m);
+    const dt = getStartOfDayUTC(m);
+    this.setState({ startDate: dt });
+    this.props.changeDate(dt);
   },
 
   render() {

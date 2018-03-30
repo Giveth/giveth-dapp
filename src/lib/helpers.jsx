@@ -2,6 +2,8 @@ import React from 'react';
 import 'whatwg-fetch';
 import { utils } from 'web3';
 import { createBrowserHistory } from 'history';
+import moment from 'moment';
+
 import { feathersClient } from './feathersClient';
 import DefaultAvatar from './../assets/avatar-100.svg';
 import config from '../configuration';
@@ -154,3 +156,6 @@ export const calculateRiskFactor = (owner, dependencies) => {
 };
 
 export const history = createBrowserHistory();
+
+// Get start of the day in UTC for a given date or start of current day in UTC
+export const getStartOfDayUTC = date => moment.utc(date || moment()).startOf('day');

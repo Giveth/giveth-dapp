@@ -2,11 +2,10 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { LPPCappedMilestones } from 'lpp-capped-milestone-token';
 import { utils } from 'web3';
-import moment from 'moment';
 import Toggle from 'react-toggle';
 import BigNumber from 'bignumber.js';
-
 import { Form, Input } from 'formsy-react-components';
+
 import { feathersClient, feathersRest } from './../../lib/feathersClient';
 import Loader from './../Loader';
 import QuillFormsy from './../QuillFormsy';
@@ -21,6 +20,7 @@ import {
   getRandomWhitelistAddress,
   getTruncatedText,
   getGasPrice,
+  getStartOfDayUTC,
 } from '../../lib/helpers';
 import {
   isAuthenticated,
@@ -37,9 +37,6 @@ import MilestoneItem from '../../components/MilestoneItem';
 import AddMilestoneItem from '../../components/AddMilestoneItem';
 
 BigNumber.config({ DECIMAL_PLACES: 18 });
-
-// Get start of the day in UTC for a given date or start of current day in UTC
-const getStartOfDayUTC = date => moment.utc(date || moment()).startOf('day');
 
 /**
  * Create or edit a Milestone
@@ -236,7 +233,7 @@ class EditMilestone extends Component {
   }
 
   getEthConversion(date) {
-    const dtUTC = getStartOfDayUTC(date);
+    const dtUTC = getStartOfDayUTC(date); // Should not be necessary as the datepicker should provide UTC, but just to be sure
     const timestamp = Math.round(dtUTC.toDate()) / 1000;
 
     const { conversionRates } = this.state;
