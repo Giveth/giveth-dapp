@@ -155,15 +155,16 @@ class ViewCampaign extends Component {
                       </AuthenticatedLink>
                     )}
 
-                    {!isOwner(campaign.owner.address, currentUser) && (
-                      <AuthenticatedLink
-                        className="btn btn-primary btn-sm pull-right"
-                        to={`/campaigns/${campaign.id}/milestones/propose`}
-                        wallet={wallet}
-                      >
-                        Propose Milestone
-                      </AuthenticatedLink>
-                    )}
+                    {!isOwner(campaign.owner.address, currentUser) &&
+                      currentUser && (
+                        <AuthenticatedLink
+                          className="btn btn-primary btn-sm pull-right"
+                          to={`/campaigns/${campaign.id}/milestones/propose`}
+                          wallet={wallet}
+                        >
+                          Propose Milestone
+                        </AuthenticatedLink>
+                      )}
 
                     {isLoadingMilestones && <Loader className="relative" />}
                     {milestones.map(m => (
