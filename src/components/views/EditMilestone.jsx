@@ -2,11 +2,10 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { LPPCappedMilestones } from 'lpp-capped-milestone-token';
 import { utils } from 'web3';
-import moment from 'moment';
 import Toggle from 'react-toggle';
 import BigNumber from 'bignumber.js';
-
 import { Form, Input } from 'formsy-react-components';
+
 import { feathersClient, feathersRest } from './../../lib/feathersClient';
 import Loader from './../Loader';
 import QuillFormsy from './../QuillFormsy';
@@ -21,6 +20,7 @@ import {
   getRandomWhitelistAddress,
   getTruncatedText,
   getGasPrice,
+  getStartOfDayUTC,
 } from '../../lib/helpers';
 import {
   isAuthenticated,
@@ -37,6 +37,7 @@ import MilestoneItem from '../../components/MilestoneItem';
 import AddMilestoneItem from '../../components/AddMilestoneItem';
 
 BigNumber.config({ DECIMAL_PLACES: 18 });
+
 /**
  * Create or edit a Milestone
  *
@@ -48,7 +49,6 @@ BigNumber.config({ DECIMAL_PLACES: 18 });
  *  @params
  *    id (string): an id of a milestone object
  */
-
 class EditMilestone extends Component {
   constructor() {
     super();
@@ -81,9 +81,7 @@ class EditMilestone extends Component {
       itemizeState: false,
       conversionRates: [],
       currentRate: undefined,
-      date: moment()
-        .subtract(1, 'd')
-        .startOf('day'),
+      date: getStartOfDayUTC().subtract(1, 'd'),
       fiatTypes: [
         { value: 'USD', title: 'USD' },
         { value: 'EUR', title: 'EUR' },
@@ -133,7 +131,7 @@ class EditMilestone extends Component {
             .find({ query: { _id: this.props.match.params.milestoneId } })
             .then(resp => {
               const milestone = resp.data[0];
-              const date = milestone.date ? moment(milestone.date) : moment();
+              const date = getStartOfDayUTC(milestone.date);
 
               // convert amounts to BigNumbers
               milestone.maxAmount = new BigNumber(milestone.maxAmount);
@@ -235,10 +233,8 @@ class EditMilestone extends Component {
   }
 
   getEthConversion(date) {
-    const utcDate = moment(date)
-      .toDate()
-      .setUTCHours(0, 0, 0, 0);
-    const timestamp = Math.round(utcDate) / 1000;
+    const dtUTC = getStartOfDayUTC(date); // Should not be necessary as the datepicker should provide UTC, but just to be sure
+    const timestamp = Math.round(dtUTC.toDate()) / 1000;
 
     const { conversionRates } = this.state;
     const cachedConversionRate = conversionRates.find(c => c.timestamp === timestamp);
@@ -247,7 +243,7 @@ class EditMilestone extends Component {
       // we don't have the conversion rate in cache, fetch from feathers
       return feathersClient
         .service('ethconversion')
-        .find({ query: { date } })
+        .find({ query: { date: dtUTC } })
         .then(resp => {
           this.setState({
             conversionRates: conversionRates.concat(resp),
@@ -500,7 +496,7 @@ class EditMilestone extends Component {
 
       if (this.state.itemizeState) {
         // upload all the item images
-        const uploadItemImages = this.state.items.map((item, index) => {
+        const uploadItemImages = this.state.items.map(item => {
           if (item.image) {
             return new Promise(resolve => {
               feathersRest
@@ -742,7 +738,7 @@ class EditMilestone extends Component {
                                 value={date}
                                 startDate={date}
                                 label="Milestone date"
-                                changeDate={dt => this.setDate(dt.startOf('day'))}
+                                changeDate={dt => this.setDate(dt)}
                                 placeholder="Select a date"
                                 help="Select a date"
                                 validations="minLength:8"
