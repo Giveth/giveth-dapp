@@ -786,9 +786,7 @@ class MyMilestones extends Component {
                               <tr key={m._id} className={m.status === 'pending' ? 'pending' : ''}>
                                 <td className="td-created-at">
                                   {m.createdAt && (
-                                    <span>
-                                      {moment(m.createdAt).format('Do MMM YYYY - HH:mm a')}
-                                    </span>
+                                    <span>{moment.utc(m.createdAt).format('Do MMM YYYY')}</span>
                                   )}
                                 </td>
                                 <td className="td-name">

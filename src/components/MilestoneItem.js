@@ -28,7 +28,7 @@ const MilestoneItem = createReactClass({
 
     return (
       <tr>
-        <td className="td-item-date">{moment(item.date).format('Do MMM YYYY')}</td>
+        <td className="td-item-date">{moment.utc(item.date).format('Do MMM YYYY')}</td>
 
         <td className="td-item-description">{getTruncatedText(item.description)}</td>
 

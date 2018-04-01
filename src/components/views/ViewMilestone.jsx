@@ -280,7 +280,7 @@ class ViewMilestone extends Component {
                       <small className="form-text">
                         This date defines the eth-fiat conversion rate
                       </small>
-                      {moment(date).format('Do MMM YYYY')}
+                      {moment.utc(date).format('Do MMM YYYY')}
                     </div>
                   )}
 
