@@ -1,5 +1,4 @@
 import React, { Component } from 'react';
-import moment from 'moment';
 import { Portal } from 'react-portal';
 import { utils } from 'web3';
 
@@ -10,6 +9,8 @@ import SelectFormsy from './SelectFormsy';
 import DatePickerFormsy from './DatePickerFormsy';
 import FormsyImageUploader from './FormsyImageUploader';
 
+import { getStartOfDayUTC } from '../lib/helpers';
+
 const BigNumber = require('bignumber.js');
 
 BigNumber.config({ DECIMAL_PLACES: 1 });
@@ -18,7 +19,7 @@ Formsy.addValidationRule('isMoment', (values, value) => value.isMoment());
 
 const initialState = {
   modalVisible: false,
-  date: moment().subtract(1, 'd'),
+  date: getStartOfDayUTC().subtract(1, 'd'),
   description: '',
   selectedFiatType: 'EUR',
   fiatAmount: new BigNumber(1),
@@ -179,7 +180,7 @@ class AddMilestoneItem extends Component {
                 type="text"
                 value={date}
                 startDate={date}
-                changeDate={dt => this.setDate(dt)}
+                changeDate={dt => this.setDate(getStartOfDayUTC(dt))}
                 placeholder="Select a date"
                 help="Select a date"
                 validations="minLength:8"
