@@ -351,6 +351,29 @@ class MyMilestones extends Component {
     });
   }
 
+  deleteProposedMilestone(milestone) {
+    React.swal({
+      title: 'Delete Milestone?',
+      text: 'Are you sure you want to delete this Milestone?',
+      icon: 'warning',
+      dangerMode: true,
+      buttons: ['Cancel', 'Yes, delete'],
+    }).then(isConfirmed => {
+      if (isConfirmed) {
+        feathersClient
+          .service('/milestones')
+          .remove(milestone._id)
+          .then(() => {
+            React.toast.info(<p>The milestone has been deleted.</p>);
+          })
+          .catch(e => {
+            console.log('Error updating feathers cache ->', e); // eslint-disable-line no-console
+            React.toast.error('Oh no! Something went wrong. Please try again.');
+          });
+      }
+    });
+  }
+
   rejectProposedMilestone(milestone) {
     React.swal({
       title: 'Reject Milestone?',
@@ -886,6 +909,18 @@ class MyMilestones extends Component {
                                       >
                                         <i className="fa fa-times" />&nbsp;Cancel
                                       </button>
+                                    )}
+
+                                  {m.ownerAddress === currentUser.address &&
+                                    ['proposed', 'rejected'].includes(m.status) && (
+                                      <span>
+                                        <button
+                                          className="btn btn-danger btn-sm"
+                                          onClick={() => this.deleteProposedMilestone(m)}
+                                        >
+                                          <i className="fa fa-times-circle-o" />&nbsp;Delete
+                                        </button>
+                                      </span>
                                     )}
 
                                   {m.reviewerAddress === currentUser.address &&
