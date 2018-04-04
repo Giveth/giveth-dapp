@@ -858,14 +858,21 @@ class MyMilestones extends Component {
                                     )}
                                 </td>
                                 <td className="td-actions">
-                                  {m.ownerAddress === currentUser.address && (
-                                    <button
-                                      className="btn btn-link"
-                                      onClick={() => this.editMilestone(m)}
-                                    >
-                                      <i className="fa fa-edit" />&nbsp;Edit
-                                    </button>
-                                  )}
+                                  {m.ownerAddress === currentUser.address &&
+                                    [
+                                      'proposed',
+                                      'rejected',
+                                      'InProgress',
+                                      'NeedReview',
+                                      'InReview',
+                                    ].includes(m.status) && (
+                                      <button
+                                        className="btn btn-link"
+                                        onClick={() => this.editMilestone(m)}
+                                      >
+                                        <i className="fa fa-edit" />&nbsp;Edit
+                                      </button>
+                                    )}
 
                                   {m.campaignOwnerAddress === currentUser.address &&
                                     m.status === 'proposed' && (
