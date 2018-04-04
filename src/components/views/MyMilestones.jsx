@@ -145,7 +145,7 @@ class MyMilestones extends Component {
           buttons: ['Cancel', 'Yes, edit'],
         }).then(isConfirmed => {
           if (isConfirmed) {
-            if (milestone.status === 'proposed') {
+            if (['proposed', 'rejected'].includes(milestone.status)) {
               redirectAfterWalletUnlock(
                 `/milestones/${milestone._id}/edit/proposed`,
                 this.props.wallet,

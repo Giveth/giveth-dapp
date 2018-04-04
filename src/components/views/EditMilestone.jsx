@@ -842,27 +842,29 @@ class EditMilestone extends Component {
                                 </div>
                               )}
 
-                              {items.length > 0 && (
-                                <AddMilestoneItem
-                                  onAddItem={item => this.addItem(item)}
-                                  getEthConversion={dt => this.getEthConversion(dt)}
-                                  fiatTypes={fiatTypes}
-                                />
-                              )}
-
-                              {items.length === 0 && (
-                                <div className="text-center">
-                                  <p>
-                                    Add you first item now. This can be an expense, invoice or
-                                    anything else that needs to be paid.
-                                  </p>
+                              {items.length > 0 &&
+                                (isNew || isProposed) && (
                                   <AddMilestoneItem
                                     onAddItem={item => this.addItem(item)}
                                     getEthConversion={dt => this.getEthConversion(dt)}
                                     fiatTypes={fiatTypes}
                                   />
-                                </div>
-                              )}
+                                )}
+
+                              {items.length === 0 &&
+                                (isNew || isProposed) && (
+                                  <div className="text-center">
+                                    <p>
+                                      Add you first item now. This can be an expense, invoice or
+                                      anything else that needs to be paid.
+                                    </p>
+                                    <AddMilestoneItem
+                                      onAddItem={item => this.addItem(item)}
+                                      getEthConversion={dt => this.getEthConversion(dt)}
+                                      fiatTypes={fiatTypes}
+                                    />
+                                  </div>
+                                )}
                             </div>
                           </div>
                         </div>
