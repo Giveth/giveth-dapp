@@ -25,15 +25,15 @@ const CardStats = ({
       <p>Giver(s)</p>
     </div>
 
-    <div className="col-4 text-center">
+    <div className="col-4 text-center" style={ maxAmount ? {display: 'flex', alignItems: 'center', justifyContent: 'center'} : {}}>
       {maxAmount && (
         <span>
-          &#926;{totalDonated && utils.fromWei(totalDonated)} of &#926; {utils.fromWei(maxAmount)}
+          Requested amount: {utils.fromWei(maxAmount)} ETH
         </span>
       )}
 
-      {!maxAmount && <span>&#926; {totalDonated && utils.fromWei(totalDonated)}</span>}
-      <p>Donated</p>
+      {!maxAmount && <span>{totalDonated && utils.fromWei(totalDonated)} ETH</span>}
+      {!maxAmount && <p>Donated</p>}
     </div>
 
     <div className="col-4 text-right">

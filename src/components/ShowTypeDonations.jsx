@@ -56,7 +56,7 @@ class ShowTypeDonations extends Component {
                         <tr key={d._id}>
                           <td className="td-date">{moment(d.createdAt).format('MM/DD/YYYY')}</td>
 
-                          <td className="td-donations-amount">Ξ{utils.fromWei(d.amount)}</td>
+                          <td className="td-donations-amount">{utils.fromWei(d.amount)} ETH</td>
                           <td className="td-user">
                             {d.giver && <Avatar size={30} src={getUserAvatar(d.giver)} round />}
                             <span>{getUserName(d.giver)}</span>

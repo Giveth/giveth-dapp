@@ -136,7 +136,7 @@ class UserWallet extends Component {
             !hasError && (
               <div>
                 <p>{this.props.currentUser.address}</p>
-                <p> balance: &#926;{this.props.wallet.getBalance()}</p>
+                <p> balance: {this.props.wallet.getBalance()} ETH</p>
                 {etherScanUrl && (
                   <p>
                     <a
@@ -148,11 +148,11 @@ class UserWallet extends Component {
                     >
                       GivETH
                     </a>{' '}
-                    balance: &#926;{this.props.wallet.getTokenBalance()}
+                    balance: {this.props.wallet.getTokenBalance()} ETH
                   </p>
                 )}
                 {!etherScanUrl && (
-                  <p>GivETH balance: &#926;{this.props.wallet.getTokenBalance()}</p>
+                  <p>GivETH balance: {this.props.wallet.getTokenBalance()} ETH</p>
                 )}
                 {/* <WithdrawButton wallet={this.props.wallet} currentUser={this.props.currentUser} /> */}
                 <BackupWallet wallet={this.props.wallet} />
