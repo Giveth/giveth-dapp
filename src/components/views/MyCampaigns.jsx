@@ -155,7 +155,7 @@ class MyCampaigns extends Component {
                               </td>
                               <td className="td-donations-number">{c.donationCount || 0}</td>
                               <td className="td-donations-amount">
-                                Ξ{c.totalDonated ? utils.fromWei(c.totalDonated) : 0}
+                                {c.totalDonated ? utils.fromWei(c.totalDonated) : 0} ETH
                               </td>
                               <td className="td-status">
                                 {(c.status === Campaign.PENDING ||
