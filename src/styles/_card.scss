@@ -1,11 +1,14 @@
 // Card used in campaign / milestone views
 .overview-card {
-  height: 390px;
+  min-width: 320px;
+  height: 600px;
   position: relative;
 
   .card-img {
-    height: 150px;
+    width: auto;
+    min-height: 350px;
     background-size: cover;
+    background-repeat: no-repeat;
     background-position: 50% 50%;
     border-radius: 0;    
   }
