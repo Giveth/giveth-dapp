@@ -136,7 +136,7 @@ class UserWallet extends Component {
             !hasError && (
               <div>
                 <p>{this.props.currentUser.address}</p>
-                <p> balance: {this.props.wallet.getBalance()} ETH</p>
+                <p> <strong>Rinkeby ETH</strong> balance: {this.props.wallet.getBalance()} ETH</p>
                 {etherScanUrl && (
                   <p>
                     <a
