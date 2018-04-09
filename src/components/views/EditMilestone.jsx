@@ -791,12 +791,12 @@ class EditMilestone extends Component {
                                 min="0"
                                 id="maxamount-input"
                                 type="number"
-                                label="Maximum amount in &#926;"
+                                label="Maximum amount in ETH"
                                 value={maxAmount}
                                 placeholder="10"
                                 validations="greaterEqualTo:0.01"
                                 validationErrors={{
-                                  greaterEqualTo: 'Minimum value must be at least Ξ 0.01',
+                                  greaterEqualTo: 'Minimum value must be at least 0.01 ETH',
                                 }}
                                 required
                                 disabled={projectId}

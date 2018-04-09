@@ -264,7 +264,7 @@ class Delegations extends Component {
                                   </td>
                                 )}
                                 <td className="td-donations-amount">
-                                  &#926;{utils.fromWei(d.amount)}
+                                  {utils.fromWei(d.amount)} ETH
                                 </td>
                                 <td className="td-user">
                                   <Avatar size={30} src={getUserAvatar(d.giver)} round />

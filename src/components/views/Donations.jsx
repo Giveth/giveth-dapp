@@ -302,7 +302,7 @@ class Donations extends Component {
           title: 'Refund your donation?',
           text:
             'Your donation will be cancelled and a payment will be authorized to refund your ETH. All withdrawals' +
-            ' must be confirmed for security reasons and may take a day or two. Upon confirmation, your Ξ will be' +
+            ' must be confirmed for security reasons and may take a day or two. Upon confirmation, your ETH will be' +
             ' transferred to your wallet.',
           icon: 'warning',
           dangerMode: true,
@@ -463,7 +463,7 @@ class Donations extends Component {
                                     </Link>
                                   )}
                               </td>
-                              <td className="td-donations-amount">Ξ{utils.fromWei(d.amount)}</td>
+                              <td className="td-donations-amount">ETH{utils.fromWei(d.amount)}</td>
 
                               <td className="td-transaction-status">
                                 {d.status === 'pending' && (

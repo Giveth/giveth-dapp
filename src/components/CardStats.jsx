@@ -28,11 +28,11 @@ const CardStats = ({
     <div className="col-4 text-center">
       {maxAmount && (
         <span>
-          &#926;{totalDonated && utils.fromWei(totalDonated)} of &#926; {utils.fromWei(maxAmount)}
+          {totalDonated && utils.fromWei(totalDonated)} ETH of {utils.fromWei(maxAmount)} ETH
         </span>
       )}
 
-      {!maxAmount && <span>&#926; {totalDonated && utils.fromWei(totalDonated)}</span>}
+      {!maxAmount && <span>{totalDonated && utils.fromWei(totalDonated)} ETH</span>}
       <p>Donated</p>
     </div>
 
