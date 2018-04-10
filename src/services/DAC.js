@@ -14,7 +14,12 @@ class DACservice {
     return new Promise((resolve, reject) => {
       feathersClient
         .service('dacs')
-        .find({ query: { _id: id } })
+        .find({
+          query: {
+            _id: id,
+            status: DAC.ACTIVE,
+          },
+        })
         .then(resp => {
           resolve(new DAC(resp.data[0]));
         })
