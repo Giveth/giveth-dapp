@@ -34,6 +34,7 @@
     "react-avatar": "^2.3.0",
     "react-datepicker": "^0.54.0",
     "react-dom": "^15.6.1",
+    "react-html-parser": "^2.0.2",
     "react-input-token": "^1.1.2",
     "react-js-pagination": "^3.0.1",
     "react-portal": "^4.1.2",

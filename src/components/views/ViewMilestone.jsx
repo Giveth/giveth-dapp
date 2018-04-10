@@ -6,6 +6,7 @@ import { paramsForServer } from 'feathers-hooks-common';
 import Avatar from 'react-avatar';
 import moment from 'moment';
 import { Form } from 'formsy-react-components';
+import ReactHtmlParser, { convertNodeToElement } from 'react-html-parser';
 
 import { feathersClient } from './../../lib/feathersClient';
 import { getUserName, getUserAvatar } from '../../lib/helpers';
@@ -20,7 +21,6 @@ import MilestoneItem from './../MilestoneItem';
 
 import GivethWallet from '../../lib/blockchain/GivethWallet';
 import User from '../../models/User';
-
 /**
   Loads and shows a single milestone
 
@@ -96,6 +96,21 @@ class ViewMilestone extends Component {
     return this.state.status === 'InProgress' && this.state.totalDonated < this.state.maxAmount;
   }
 
+  renderDescription() {
+    return ReactHtmlParser(this.state.description, {
+      transform(node, index) {
+        if (node.attribs && node.attribs.class === 'ql-video') {
+          return (
+            <div className="video-wrapper" key={index}>
+              {convertNodeToElement(node, index)}
+            </div>
+          );
+        }
+        return undefined;
+      },
+    });
+  }
+
   render() {
     const { history, wallet, currentUser } = this.props;
 
@@ -104,7 +119,6 @@ class ViewMilestone extends Component {
       id,
       projectId,
       title,
-      description,
       image,
       donations,
       isLoadingDonations,
@@ -170,9 +184,7 @@ class ViewMilestone extends Component {
                     </center>
 
                     <div className="card content-card">
-                      <div className="card-body content">
-                        <div dangerouslySetInnerHTML={{ __html: description }} />
-                      </div>
+                      <div className="card-body content">{this.renderDescription()}</div>
                     </div>
                   </div>
                 </div>
