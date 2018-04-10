@@ -32,7 +32,7 @@ class CampaignService {
   static subscribe(onSuccess, onError) {
     return feathersClient
       .service('campaigns')
-      .watch({ strategy: 'always' })
+      .watch({ listStrategy: 'always' })
       .find({
         query: {
           projectId: {
@@ -63,7 +63,7 @@ class CampaignService {
   static subscribeMilestones(id, onSuccess, onError) {
     return feathersClient
       .service('milestones')
-      .watch({ strategy: 'always' })
+      .watch({ listStrategy: 'always' })
       .find({
         query: {
           campaignId: id,
@@ -106,7 +106,7 @@ class CampaignService {
   static getUserCampaigns(userAddress, onSuccess, onError) {
     return feathersClient
       .service('campaigns')
-      .watch({ strategy: 'always' })
+      .watch({ listStrategy: 'always' })
       .find({
         query: {
           $or: [{ ownerAddress: userAddress }, { reviewerAddress: userAddress }],

@@ -68,7 +68,7 @@ class EditCampaign extends Component {
       .then(() => {
         this.dacsObserver = feathersClient
           .service('dacs')
-          .watch({ strategy: 'always' })
+          .watch({ listStrategy: 'always' })
           .find({ query: { $select: ['title', '_id'] } })
           .subscribe(
             resp =>
