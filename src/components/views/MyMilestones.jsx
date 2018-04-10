@@ -43,7 +43,7 @@ class MyMilestones extends Component {
       loadedStatus: 'Active',
     };
 
-    this.milestoneTabs = ['Active', 'Completed', 'Canceled'];
+    this.milestoneTabs = ['Active', 'Completed', 'Canceled', 'Rejected'];
     this.handlePageChanged = this.handlePageChanged.bind(this);
 
     this.editMilestone = this.editMilestone.bind(this);
@@ -87,6 +87,17 @@ class MyMilestones extends Component {
         },
         { status: this.state.loadedStatus },
       ];
+    } else if (this.state.loadedStatus === 'Rejected') {
+      query.query.$and = [
+        {
+          $or: [
+            { ownerAddress: myAddress },
+            // { reviewerAddress: myAddress }, // Not really "My Milestones"
+            { recipientAddress: myAddress },
+          ],
+        },
+        { status: 'rejected' },
+      ];
     } else {
       query.query.$and = [
         {
@@ -97,7 +108,7 @@ class MyMilestones extends Component {
             { $and: [{ campaignOwnerAddress: myAddress }, { status: 'proposed' }] },
           ],
         },
-        { status: { $nin: ['Completed', 'Canceled'] } },
+        { status: { $nin: ['Completed', 'Canceled', 'rejected'] } },
       ];
     }
 
