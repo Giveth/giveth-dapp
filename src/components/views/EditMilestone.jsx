@@ -284,10 +284,6 @@ class EditMilestone extends Component {
     }
   }
 
-  constructSummary(text) {
-    this.setState({ summary: text });
-  }
-
   btnText() {
     if (this.props.isNew) {
       return this.props.isProposed ? 'Propose Milestone' : 'Create Milestone';
@@ -351,7 +347,7 @@ class EditMilestone extends Component {
       const constructedModel = {
         title: model.title,
         description: model.description,
-        summary: getTruncatedText(this.state.summary, 100),
+        summary: getTruncatedText(model.description, 100),
         maxAmount: utils.toWei(model.maxAmount.toFixed(18)),
         ownerAddress: this.props.currentUser.address,
         reviewerAddress: model.reviewerAddress,

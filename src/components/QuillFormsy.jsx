@@ -3,78 +3,66 @@ import PropTypes from 'prop-types';
 import { withFormsy } from 'formsy-react';
 import ReactQuill from 'react-quill';
 
-class QuillFormsy extends React.Component {
-  constructor(props) {
-    super(props);
-
-    this.changeValue = this.changeValue.bind(this);
+const QuillFormsy = props => {
+  // Set a specific className based on the validation
+  // state of this component. showRequired() is true
+  // when the value is empty and the required prop is
+  // passed to the input. showError() is true when the
+  // value typed is invalid
+  let errorClass = '';
+  if (!props.isPristine()) {
+    if (props.isValid()) errorClass = 'is-valid';
+    else errorClass = 'has-error';
   }
 
-  changeValue(desc) {
-    this.props.setValue(desc);
-  }
+  // An error message is returned ONLY if the component is invalid
+  // or the server has returned an error message
+  const errorMessage = props.getErrorMessage();
 
-  render() {
-    // Set a specific className based on the validation
-    // state of this component. showRequired() is true
-    // when the value is empty and the required prop is
-    // passed to the input. showError() is true when the
-    // value typed is invalid
-    let errorClass = '';
-    if (!this.props.isPristine()) {
-      if (this.props.isValid()) errorClass = 'is-valid';
-      else errorClass = 'has-error';
-    }
+  const modules = {
+    toolbar: [
+      [{ header: [1, 2, false] }],
+      ['bold', 'italic', 'underline', 'strike', 'blockquote'],
+      [{ list: 'ordered' }, { list: 'bullet' }, { indent: '-1' }, { indent: '+1' }],
+      ['link', 'image', 'video'],
+      ['clean'],
+    ],
+  };
 
-    // An error message is returned ONLY if the component is invalid
-    // or the server has returned an error message
-    const errorMessage = this.props.getErrorMessage();
+  const formats = [
+    'header',
+    'bold',
+    'italic',
+    'underline',
+    'strike',
+    'blockquote',
+    'list',
+    'bullet',
+    'indent',
+    'link',
+    'image',
+    'video',
+  ];
 
-    const modules = {
-      toolbar: [
-        [{ header: [1, 2, false] }],
-        ['bold', 'italic', 'underline', 'strike', 'blockquote'],
-        [{ list: 'ordered' }, { list: 'bullet' }, { indent: '-1' }, { indent: '+1' }],
-        ['link', 'image', 'video'],
-        ['clean'],
-      ],
-    };
-
-    const formats = [
-      'header',
-      'bold',
-      'italic',
-      'underline',
-      'strike',
-      'blockquote',
-      'list',
-      'bullet',
-      'indent',
-      'link',
-      'image',
-      'video',
-    ];
-
-    return (
-      <div className={`form-group ${errorClass}`}>
-        <label>
-          {this.props.label} {this.props.isRequired() ? '*' : null}
-        </label>
-        <small className="form-text">{this.props.helpText}</small>
-        <ReactQuill
-          height="200px"
-          modules={modules}
-          formats={formats}
-          value={this.props.getValue()}
-          name="description"
-          placeholder={this.props.placeholder}
-          onChange={this.changeValue}
-        />
-        <span className="help-block validation-message">{errorMessage}</span>
-      </div>
-    );
-  }
-}
+  return (
+    <div className={`form-group ${errorClass}`}>
+      <label>
+        {props.label} {props.isRequired() ? '*' : null}
+      </label>
+      <small className="form-text">{props.helpText}</small>
+      <ReactQuill
+        height="200px"
+        modules={modules}
+        formats={formats}
+        value={props.getValue()}
+        name="description"
+        placeholder={props.placeholder}
+        onChange={props.setValue}
+      />
+      <span className="help-block validation-message">{errorMessage}</span>
+    </div>
+  );
+};
 
 QuillFormsy.propTypes = {
   // Formsy proptypes
