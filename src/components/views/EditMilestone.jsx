@@ -249,7 +249,7 @@ class EditMilestone extends Component {
         .then(resp => {
           this.setState({
             conversionRates: conversionRates.concat(resp),
-            maxAmount: this.state.fiatAmount / resp.rates[this.state.selectedFiatType],
+            maxAmount: this.state.fiatAmount.div(resp.rates[this.state.selectedFiatType]),
             currentRate: resp,
           });
 
