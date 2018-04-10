@@ -97,9 +97,7 @@ class EditMilestone extends Component {
 
     if (React.whitelist.reviewerWhitelist.length > 0) {
       this.setState({
-        reviewerAddress: getRandomWhitelistAddress(
-          React.whitelist.reviewerWhitelist,
-        ).address
+        reviewerAddress: getRandomWhitelistAddress(React.whitelist.reviewerWhitelist).address,
       });
     }
 
@@ -743,9 +741,9 @@ class EditMilestone extends Component {
                                 changeDate={dt => this.setDate(dt)}
                                 placeholder="Select a date"
                                 help="Select a date"
-                                validations="minLength:8"
+                                validations="isMoment"
                                 validationErrors={{
-                                  minLength: 'Please provide a date.',
+                                  isMoment: 'Please provide a date.',
                                 }}
                                 required
                                 disabled={projectId}

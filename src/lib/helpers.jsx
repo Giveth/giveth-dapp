@@ -33,10 +33,7 @@ export const authenticate = wallet => {
       authData.signature = signature;
       return feathersClient.authenticate(authData);
     })
-    .then(response => {
-      console.log('Authenticated!');
-      return response.accessToken;
-    });
+    .then(response => response.accessToken);
 };
 
 export const getTruncatedText = (text, maxLength) => {

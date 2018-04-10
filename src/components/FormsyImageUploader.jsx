@@ -26,7 +26,7 @@ class FormsyImageUploader extends Component {
     this.setState({ image: this.props.previewImage });
   }
 
-  loadAndPreviewImage() {
+  loadAndPreviewImage(name, files) {
     const reader = new FileReader();
     reader.onload = e => {
       this.setState({ image: e.target.result });
@@ -34,13 +34,13 @@ class FormsyImageUploader extends Component {
     };
 
     ImageTools.resize(
-      this.imagePreview.element.files[0],
+      files[0],
       {
         width: 800,
         height: 600,
       },
       (blob, didItResize) => {
-        reader.readAsDataURL(didItResize ? blob : this.imagePreview.element.files[0]);
+        reader.readAsDataURL(didItResize ? blob : files[0]);
       },
     );
   }
@@ -60,10 +60,7 @@ class FormsyImageUploader extends Component {
           label="Add a picture"
           name="picture"
           accept=".png,.jpeg,.jpg"
-          onChange={() => this.loadAndPreviewImage()}
-          ref={c => {
-            this.imagePreview = c;
-          }}
+          onChange={this.loadAndPreviewImage}
           help="A picture says more than a thousand words. Select a png or jpg file."
           validations="minLength: 1"
           validationErrors={{

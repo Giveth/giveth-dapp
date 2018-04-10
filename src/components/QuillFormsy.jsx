@@ -1,15 +1,18 @@
 import React from 'react';
-import createReactClass from 'create-react-class';
-import Formsy from 'formsy-react';
+import PropTypes from 'prop-types';
+import { withFormsy } from 'formsy-react';
 import ReactQuill from 'react-quill';
 
-const QuillFormsy = createReactClass({
-  mixins: [Formsy.Mixin],
+class QuillFormsy extends React.Component {
+  constructor(props) {
+    super(props);
 
-  changeValue(value, delta, source, editor) {
-    this.setValue(value);
-    this.props.onTextChanged && this.props.onTextChanged(editor.getText());
-  },
+    this.changeValue = this.changeValue.bind(this);
+  }
+
+  changeValue(desc) {
+    this.props.setValue(desc);
+  }
 
   render() {
     // Set a specific className based on the validation
@@ -17,11 +20,15 @@ const QuillFormsy = createReactClass({
     // when the value is empty and the required prop is
     // passed to the input. showError() is true when the
     // value typed is invalid
-    const errorClass = this.isPristine() ? '' : this.isValid() ? 'is-valid' : 'has-error';
+    let errorClass = '';
+    if (!this.props.isPristine()) {
+      if (this.props.isValid()) errorClass = 'is-valid';
+      else errorClass = 'has-error';
+    }
 
     // An error message is returned ONLY if the component is invalid
     // or the server has returned an error message
-    const errorMessage = this.getErrorMessage();
+    const errorMessage = this.props.getErrorMessage();
 
     const modules = {
       toolbar: [
@@ -51,23 +58,42 @@ const QuillFormsy = createReactClass({
     return (
       <div className={`form-group ${errorClass}`}>
         <label>
-          {this.props.label} {this.isRequired() ? '*' : null}
+          {this.props.label} {this.props.isRequired() ? '*' : null}
         </label>
         <small className="form-text">{this.props.helpText}</small>
         <ReactQuill
           height="200px"
           modules={modules}
           formats={formats}
-          value={this.getValue()}
+          value={this.props.getValue()}
           name="description"
-          tabIndex={2}
           placeholder={this.props.placeholder}
           onChange={this.changeValue}
         />
         <span className="help-block validation-message">{errorMessage}</span>
       </div>
     );
-  },
-});
+  }
+}
 
-export default QuillFormsy;
+QuillFormsy.propTypes = {
+  // Formsy proptypes
+  getValue: PropTypes.func.isRequired,
+  setValue: PropTypes.func.isRequired,
+  isRequired: PropTypes.func.isRequired,
+  isPristine: PropTypes.func.isRequired,
+  isValid: PropTypes.func.isRequired,
+  getErrorMessage: PropTypes.func.isRequired,
+
+  helpText: PropTypes.string,
+  placeholder: PropTypes.string,
+  label: PropTypes.string,
+};
+
+QuillFormsy.defaultProps = {
+  helpText: '',
+  placeholder: '',
+  label: '',
+};
+
+export default withFormsy(QuillFormsy);

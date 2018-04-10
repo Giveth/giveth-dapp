@@ -1,8 +1,9 @@
 import React from 'react';
-import createReactClass from 'create-react-class';
-import Formsy from 'formsy-react';
+import { withFormsy } from 'formsy-react';
 import PropTypes from 'prop-types';
 import moment from 'moment';
+import BigNumber from 'bignumber.js';
+
 import { getTruncatedText } from './../lib/helpers';
 
 /** *
@@ -16,12 +17,10 @@ import { getTruncatedText } from './../lib/helpers';
  * See EditMilestone component
  ** */
 
-const MilestoneItem = createReactClass({
-  mixins: [Formsy.Mixin],
-
+class MilestoneItem extends React.Component {
   componentDidMount() {
-    this.setValue(true); // required for validation being true
-  },
+    this.props.setValue(true); // required for validation being true
+  }
 
   render() {
     const { removeItem, item, isEditMode } = this.props;
@@ -69,7 +68,27 @@ const MilestoneItem = createReactClass({
         )}
       </tr>
     );
-  },
-});
+  }
+}
 
-export default MilestoneItem;
+MilestoneItem.propTypes = {
+  setValue: PropTypes.func.isRequired,
+
+  removeItem: PropTypes.func.isRequired,
+  item: PropTypes.shape({
+    date: PropTypes.string.isRequired,
+    description: PropTypes.string.isRequired,
+    selectedFiatType: PropTypes.string.isRequired,
+    fiatAmount: PropTypes.string.isRequired,
+    conversionRate: PropTypes.number.isRequired,
+    etherAmount: PropTypes.string.isRequired,
+    image: PropTypes.string,
+  }).isRequired,
+  isEditMode: PropTypes.bool,
+};
+
+MilestoneItem.defaultProps = {
+  isEditMode: false,
+};
+
+export default withFormsy(MilestoneItem);
