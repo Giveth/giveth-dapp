@@ -74,7 +74,7 @@ class MilestoneItem extends React.Component {
 MilestoneItem.propTypes = {
   setValue: PropTypes.func.isRequired,
 
-  removeItem: PropTypes.func.isRequired,
+  removeItem: PropTypes.func,
   item: PropTypes.shape({
     date: PropTypes.string.isRequired,
     description: PropTypes.string.isRequired,
@@ -89,6 +89,7 @@ MilestoneItem.propTypes = {
 
 MilestoneItem.defaultProps = {
   isEditMode: false,
+  removeItem: () => {},
 };
 
 export default withFormsy(MilestoneItem);
