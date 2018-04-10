@@ -133,10 +133,11 @@ class ViewMilestone extends Component {
       etherScanUrl,
       items,
       date,
+      status,
       fiatAmount,
       selectedFiatType,
     } = this.state;
-    
+
     return (
       <div id="view-milestone-view">
         {isLoading && <Loader className="fixed" />}
@@ -154,9 +155,7 @@ class ViewMilestone extends Component {
               )}
 
               {this.state.totalDonated < this.state.maxAmount && (
-                <p>
-                  Amount requested: {this.state.maxAmount} ETH
-                </p>
+                <p>Amount requested: {this.state.maxAmount} ETH</p>
               )}
 
               {this.isActiveMilestone() && (
@@ -299,8 +298,8 @@ class ViewMilestone extends Component {
                   <div className="form-group">
                     <label>Max amount to raise</label>
                     <small className="form-text">
-                      The maximum amount of ETH that can be donated to this Milestone.
-                      Based on the requested amount in fiat.
+                      The maximum amount of ETH that can be donated to this Milestone. Based on the
+                      requested amount in fiat.
                     </small>
                     {maxAmount} ETH
                     {fiatAmount &&
@@ -318,6 +317,12 @@ class ViewMilestone extends Component {
                       The amount of ETH currently donated to this Milestone
                     </small>
                     {totalDonated} ETH
+                  </div>
+
+                  <div className="form-group">
+                    <label>Status</label>
+                    <br />
+                    {status}
                   </div>
 
                   {/*
