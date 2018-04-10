@@ -17,7 +17,6 @@ class DACservice {
         .find({
           query: {
             _id: id,
-            status: DAC.ACTIVE,
           },
         })
         .then(resp => {
