@@ -98,7 +98,7 @@ class MyDACs extends Component {
                               </td>
                               <td className="td-donations-number">{d.donationCount}</td>
                               <td className="td-donations-amount">
-                                Ξ{utils.fromWei(d.totalDonated)}
+                                {utils.fromWei(d.totalDonated)} ETH
                               </td>
                               <td className="td-status">
                                 {d.status === DAC.PENDING && (

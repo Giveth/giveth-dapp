@@ -843,11 +843,11 @@ class MyMilestones extends Component {
                                   {getReadableStatus(m.status)}
                                 </td>
                                 <td className="td-donations-number">
-                                  Ξ{utils.fromWei(m.maxAmount) || 0}
+                                  {utils.fromWei(m.maxAmount) || 0} ETH
                                 </td>
                                 <td className="td-donations-number">{m.donationCount || 0}</td>
                                 <td className="td-donations-amount">
-                                  Ξ{m.totalDonated ? utils.fromWei(m.totalDonated) : 0}
+                                  {m.totalDonated ? utils.fromWei(m.totalDonated) : 0} ETH
                                 </td>
                                 <td className="td-reviewer">
                                   {m.reviewer &&
