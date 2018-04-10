@@ -96,9 +96,11 @@ class EditMilestone extends Component {
     };
 
     if (React.whitelist.reviewerWhitelist.length > 0) {
-      this.state.reviewerAddress = getRandomWhitelistAddress(
-        React.whitelist.reviewerWhitelist,
-      ).address;
+      this.setState({
+        reviewerAddress: getRandomWhitelistAddress(
+          React.whitelist.reviewerWhitelist,
+        ).address
+      });
     }
 
     this.submit = this.submit.bind(this);
