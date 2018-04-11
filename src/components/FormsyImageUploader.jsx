@@ -41,6 +41,7 @@ class FormsyImageUploader extends Component {
       this.setState({ image: e.target.result });
       this.props.setImage(e.target.result);
     };
+
     ImageTools.resize(
       this.imagePreview.element.files[0],
       {
