@@ -2306,6 +2306,10 @@ create-server@~1.0.1:
   dependencies:
     connected "0.0.x"
 
+cropperjs@v1.0.0-rc.3:
+  version "1.0.0-rc.3"
+  resolved "https://registry.yarnpkg.com/cropperjs/-/cropperjs-1.0.0-rc.3.tgz#50a7c7611befc442702f845ede77d7df4572e82b"
+
 cross-spawn@5.1.0, cross-spawn@^5.0.1, cross-spawn@^5.1.0:
   version "5.1.0"
   resolved "https://registry.yarnpkg.com/cross-spawn/-/cross-spawn-5.1.0.tgz#e8bd0efee58fcff6f8f94510a0a554bbfa235449"
@@ -7891,6 +7895,13 @@ react-avatar@^2.3.0:
     babel-runtime ">=5.0.0"
     is-retina "^1.0.3"
     md5 "^2.0.0"
+
+react-cropper@^1.0.1:
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/react-cropper/-/react-cropper-1.0.1.tgz#6e5595abb8576088ab3e51ecfdcfe5f865d0340f"
+  dependencies:
+    cropperjs v1.0.0-rc.3
+    prop-types "^15.5.8"
 
 react-datepicker@^0.54.0:
   version "0.54.0"
