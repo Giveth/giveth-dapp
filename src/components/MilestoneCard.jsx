@@ -21,7 +21,6 @@ class MilestoneCard extends Component {
     this.viewMilestone = this.viewMilestone.bind(this);
     this.editMilestone = this.editMilestone.bind(this);
     this.viewProfile = this.viewProfile.bind(this);
-    this.getImageUrl = this.getImageUrl.bind(this);
   }
 
   viewMilestone() {
