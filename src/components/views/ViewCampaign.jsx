@@ -170,11 +170,10 @@ class ViewCampaign extends Component {
                     {isLoadingMilestones && <Loader className="relative" />}
                     <ResponsiveMasonry
                       columnsCountBreakPoints={{
-                        350: 1,
-                        750: 2,
+                        0: 1,
+                        470: 2,
                         900: 3,
-                        1024: 3,
-                        1470: 4,
+                        1200: 4,
                       }}
                     >
                       <Masonry gutter="10px">

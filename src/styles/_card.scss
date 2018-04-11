@@ -1,8 +1,16 @@
 // Card used in campaign / milestone views
+.cards-grid-container{
+    display: grid;
+    grid-template-columns: repeat( auto-fill, minmax(300px, 1fr) );
+    grid-gap: 10px;
+    width: 100%;
+    justify-content: space-around;
+}
+
 .overview-card {
-  max-width: 350px;
   position: relative;
-  margin: auto;
+  width: 100%;
+  overflow: hidden;
 
   .card-img {
     width: 100%;

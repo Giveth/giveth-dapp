@@ -41,7 +41,6 @@ class FormsyImageUploader extends Component {
       this.setState({ image: e.target.result });
       this.props.setImage(e.target.result);
     };
-
     ImageTools.resize(
       this.imagePreview.element.files[0],
       {
@@ -57,27 +56,23 @@ class FormsyImageUploader extends Component {
   render() {
     return (
       <div>
-        {(this.props.previewImage || this.previewImage) && (
-          <div>
-            <div style={{ width: '100%' }}>
-              <Cropper
-                style={{ height: 400, width: '100%' }}
-                guides={false}
-                aspectRatio={this.props.aspectRatio}
-                preview=".image-preview"
-                src={this.state.image}
-                ref={cropper => {
-                  this.cropper = cropper;
-                }}
-                crop={this.cropImage}
-              />
+        {(this.props.previewImage || this.previewImage) &&
+          this.props.resize && (
+            <div>
+              <div style={{ width: '100%' }}>
+                <Cropper
+                  style={{ height: 400, width: '100%' }}
+                  guides={false}
+                  aspectRatio={this.props.aspectRatio}
+                  src={this.state.image}
+                  ref={cropper => {
+                    this.cropper = cropper;
+                  }}
+                  cropend={this.cropImage}
+                />
+              </div>
             </div>
-            <div className="image-preview-container">
-              <span id="image-preview-label">Preview</span>
-              <div className="image-preview" />
-            </div>
-          </div>
-        )}
+          )}
 
         {this.props.avatar && <Avatar size={100} src={this.props.avatar} round />}
 
@@ -107,6 +102,7 @@ FormsyImageUploader.propTypes = {
   setImage: PropTypes.func.isRequired,
   previewImage: PropTypes.string,
   aspectRatio: PropTypes.number,
+  resize: PropTypes.bool,
 };
 
 FormsyImageUploader.defaultProps = {
@@ -114,6 +110,7 @@ FormsyImageUploader.defaultProps = {
   avatar: undefined,
   previewImage: undefined,
   aspectRatio: 4 / 3,
+  resize: true,
 };
 
 export default FormsyImageUploader;

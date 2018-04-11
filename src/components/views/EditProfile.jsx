@@ -231,7 +231,7 @@ class EditProfile extends Component {
                     />
                   </div>
 
-                  <FormsyImageUploader setImage={this.setImage} avatar={avatar} aspectRatio={1} />
+                  <FormsyImageUploader setImage={this.setImage} avatar={avatar} resize={false} />
 
                   <div className="form-group">
                     <Input

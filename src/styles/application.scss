@@ -9,6 +9,7 @@
 @import 'viewCauseView.scss';
 @import 'viewCampaignView.scss';
 @import 'viewMilestoneView.scss';
+@import 'campaignsView';
 @import 'accountView.scss';
 @import 'dashboard.scss';
 @import 'edit-view.scss';
@@ -192,21 +193,8 @@ i {
     border: 1px solid #e2e2e2;
     border-radius: 3px;
     margin-bottom: 10px;
-    height: 300px;
-    width: 100%;
-    overflow: hidden;
-
-    img{
-        display: block;
-        min-width: 0px;
-    }
-}
-
-.image-preview-container{
-    padding-top: 30px;
-
-    #image-preview-label{
-        font-size: 0.9em;
-        font-weight: 600;
+    img {
+        max-width: 100%;
+        max-height: 300px;
     }
 }

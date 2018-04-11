@@ -1,6 +1,5 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import Masonry, { ResponsiveMasonry } from 'react-responsive-masonry';
 
 import JoinGivethCommunity from '../JoinGivethCommunity';
 import CampaignCard from '../CampaignCard';
@@ -31,28 +30,17 @@ const Campaigns = ({ campaigns, currentUser, history, wallet }) => (
                 Ether!
               </p>
             </center>
-
-            <ResponsiveMasonry
-              columnsCountBreakPoints={{
-                350: 1,
-                750: 2,
-                900: 3,
-                1024: 3,
-                1470: 4,
-              }}
-            >
-              <Masonry gutter="10px">
-                {campaigns.data.map(campaign => (
-                  <CampaignCard
-                    key={campaign.id}
-                    campaign={campaign}
-                    currentUser={currentUser}
-                    wallet={wallet}
-                    history={history}
-                  />
-                ))}
-              </Masonry>
-            </ResponsiveMasonry>
+            <div className="cards-grid-container">
+              {campaigns.data.map(campaign => (
+                <CampaignCard
+                  key={campaign.id}
+                  campaign={campaign}
+                  currentUser={currentUser}
+                  wallet={wallet}
+                  history={history}
+                />
+              ))}
+            </div>
           </div>
         )}
 
