@@ -2,7 +2,6 @@ import React from 'react';
 import { withFormsy } from 'formsy-react';
 import PropTypes from 'prop-types';
 import moment from 'moment';
-import BigNumber from 'bignumber.js';
 
 import { getTruncatedText } from './../lib/helpers';
 
