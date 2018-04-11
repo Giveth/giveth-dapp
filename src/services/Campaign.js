@@ -32,7 +32,7 @@ class CampaignService {
   static subscribe(onSuccess, onError) {
     return feathersClient
       .service('campaigns')
-      .watch({ strategy: 'always' })
+      .watch({ listStrategy: 'always' })
       .find({
         query: {
           projectId: {
@@ -44,11 +44,9 @@ class CampaignService {
         },
       })
       .subscribe(resp => {
-        console.log('resp', resp);
         const newResp = Object.assign({}, resp, {
           data: resp.data.map(c => new Campaign(c)),
         });
-        console.log(newResp);
         onSuccess(newResp);
       }, onError);
   }
@@ -63,13 +61,14 @@ class CampaignService {
   static subscribeMilestones(id, onSuccess, onError) {
     return feathersClient
       .service('milestones')
-      .watch({ strategy: 'always' })
+      .watch({ listStrategy: 'always' })
       .find({
         query: {
           campaignId: id,
           projectId: {
             $gt: '0', // 0 is a pending milestone
           },
+          status: { $nin: ['Canceled'] },
           $sort: { createdAt: -1 },
         },
       })
@@ -106,7 +105,7 @@ class CampaignService {
   static getUserCampaigns(userAddress, onSuccess, onError) {
     return feathersClient
       .service('campaigns')
-      .watch({ strategy: 'always' })
+      .watch({ listStrategy: 'always' })
       .find({
         query: {
           $or: [{ ownerAddress: userAddress }, { reviewerAddress: userAddress }],

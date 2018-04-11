@@ -114,7 +114,7 @@ class MyMilestones extends Component {
 
     this.milestonesObserver = feathersClient
       .service('milestones')
-      .watch({ strategy: 'always' })
+      .watch({ listStrategy: 'always' })
       .find(query)
       .subscribe(resp =>
         this.setState({

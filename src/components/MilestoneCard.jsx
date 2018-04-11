@@ -7,6 +7,7 @@ import { redirectAfterWalletUnlock, checkWalletBalance } from './../lib/middlewa
 import User from '../models/User';
 import CardStats from './CardStats';
 import GivethWallet from '../lib/blockchain/GivethWallet';
+import GivethLogo from '../assets/Giveth-logo-purple.png';
 
 // TODO Remove the eslint exception and fix feathers to provide id's without underscore
 /* eslint no-underscore-dangle: 0 */
@@ -88,7 +89,10 @@ class MilestoneCard extends Component {
             )}
           </div>
 
-          <div className="card-img" style={{ backgroundImage: `url(${milestone.image})` }} />
+          <div
+            className="card-img"
+            style={{ backgroundImage: `url(${milestone.image || GivethLogo})` }}
+          />
 
           <div className="card-content">
             <small>deadline: {milestone.completionDeadline}</small>

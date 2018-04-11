@@ -35,7 +35,7 @@ class DACservice {
   static subscribe(onSuccess, onError) {
     return feathersClient
       .service('dacs')
-      .watch({ strategy: 'always' })
+      .watch({ listStrategy: 'always' })
       .find({
         query: {
           delegateId: {
@@ -85,7 +85,7 @@ class DACservice {
   static subscribeCampaigns(id, onSuccess, onError) {
     return feathersClient
       .service('campaigns')
-      .watch({ strategy: 'always' })
+      .watch({ listStrategy: 'always' })
       .find({
         query: {
           projectId: {
@@ -110,7 +110,7 @@ class DACservice {
   static getUserDACs(userAddress, onSuccess, onError) {
     return feathersClient
       .service('dacs')
-      .watch({ strategy: 'always' })
+      .watch({ listStrategy: 'always' })
       .find({ query: { ownerAddress: userAddress } })
       .subscribe(resp => onSuccess(resp.data.map(dac => new DAC(dac))), onError);
   }
