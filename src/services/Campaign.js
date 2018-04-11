@@ -44,11 +44,9 @@ class CampaignService {
         },
       })
       .subscribe(resp => {
-        console.log('resp', resp);
         const newResp = Object.assign({}, resp, {
           data: resp.data.map(c => new Campaign(c)),
         });
-        console.log(newResp);
         onSuccess(newResp);
       }, onError);
   }
@@ -70,6 +68,7 @@ class CampaignService {
           projectId: {
             $gt: '0', // 0 is a pending milestone
           },
+          status: { $nin: ['Canceled'] },
           $sort: { createdAt: -1 },
         },
       })
