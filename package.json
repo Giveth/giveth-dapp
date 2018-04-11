@@ -32,6 +32,7 @@
     "react": "^15.6.1",
     "react-addons-shallow-compare": "^15.6.0",
     "react-avatar": "^2.3.0",
+    "react-cropper": "^1.0.1",
     "react-datepicker": "^0.54.0",
     "react-dom": "^15.6.1",
     "react-html-parser": "^2.0.2",
