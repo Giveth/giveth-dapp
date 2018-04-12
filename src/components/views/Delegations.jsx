@@ -45,7 +45,7 @@ class Delegations extends Component {
         new Promise((resolve, reject) => {
           this.dacsObserver = feathersClient
             .service('dacs')
-            .watch({ strategy: 'always' })
+            .watch({ listStrategy: 'always' })
             .find({
               query: {
                 delegateId: { $gt: '0' },
@@ -76,7 +76,7 @@ class Delegations extends Component {
         new Promise((resolve, reject) => {
           this.campaignsObserver = feathersClient
             .service('campaigns')
-            .watch({ strategy: 'always' })
+            .watch({ listStrategy: 'always' })
             .find({
               query: {
                 projectId: {
@@ -110,7 +110,7 @@ class Delegations extends Component {
         new Promise((resolve, reject) => {
           this.milestoneObserver = feathersClient
             .service('milestones')
-            .watch({ strategy: 'always' })
+            .watch({ listStrategy: 'always' })
             .find({
               query: {
                 projectId: { $gt: '0' },
@@ -264,7 +264,7 @@ class Delegations extends Component {
                                   </td>
                                 )}
                                 <td className="td-donations-amount">
-                                  &#926;{utils.fromWei(d.amount)}
+                                  {utils.fromWei(d.amount)} ETH
                                 </td>
                                 <td className="td-user">
                                   <Avatar size={30} src={getUserAvatar(d.giver)} round />

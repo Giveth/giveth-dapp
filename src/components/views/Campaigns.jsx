@@ -37,8 +37,8 @@ const Campaigns = ({ campaigns, currentUser, history, wallet }) => (
                 350: 1,
                 750: 2,
                 900: 3,
-                1024: 4,
-                1470: 5,
+                1024: 3,
+                1470: 4,
               }}
             >
               <Masonry gutter="10px">

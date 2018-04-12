@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
+
 import { Link } from 'react-router-dom';
 import Avatar from 'react-avatar';
 
@@ -139,7 +140,6 @@ class ViewDAC extends Component {
                   <p>
                     These Campaigns are working hard to solve the cause of this Community (DAC){' '}
                   </p>
-
                   {campaigns &&
                     campaigns.length > 0 &&
                     isLoadingCampaigns && <Loader className="small" />}

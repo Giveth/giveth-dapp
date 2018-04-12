@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 import Avatar from 'react-avatar';
+import Masonry, { ResponsiveMasonry } from 'react-responsive-masonry';
 
 import { feathersClient } from '../../lib/feathersClient';
 import Loader from '../Loader';
@@ -167,17 +168,29 @@ class ViewCampaign extends Component {
                       )}
 
                     {isLoadingMilestones && <Loader className="relative" />}
-                    {milestones.map(m => (
-                      <MilestoneCard
-                        milestone={m}
-                        currentUser={currentUser}
-                        key={m._id} // eslint-disable-line no-underscore-dangle
-                        history={history}
-                        wallet={wallet}
-                        // eslint-disable-next-line no-underscore-dangle
-                        removeMilestone={() => this.removeMilestone(m._id)}
-                      />
-                    ))}
+                    <ResponsiveMasonry
+                      columnsCountBreakPoints={{
+                        350: 1,
+                        750: 2,
+                        900: 3,
+                        1024: 3,
+                        1470: 4,
+                      }}
+                    >
+                      <Masonry gutter="10px">
+                        {milestones.map(m => (
+                          <MilestoneCard
+                            milestone={m}
+                            currentUser={currentUser}
+                            key={m._id} // eslint-disable-line no-underscore-dangle
+                            history={history}
+                            wallet={wallet}
+                            // eslint-disable-next-line no-underscore-dangle
+                            removeMilestone={() => this.removeMilestone(m._id)}
+                          />
+                        ))}
+                      </Masonry>
+                    </ResponsiveMasonry>
                   </div>
                 </div>
               </div>

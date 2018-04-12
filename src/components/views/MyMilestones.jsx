@@ -43,7 +43,7 @@ class MyMilestones extends Component {
       loadedStatus: 'Active',
     };
 
-    this.milestoneTabs = ['Active', 'Completed', 'Canceled'];
+    this.milestoneTabs = ['Active', 'Completed', 'Canceled', 'Rejected'];
     this.handlePageChanged = this.handlePageChanged.bind(this);
 
     this.editMilestone = this.editMilestone.bind(this);
@@ -87,6 +87,17 @@ class MyMilestones extends Component {
         },
         { status: this.state.loadedStatus },
       ];
+    } else if (this.state.loadedStatus === 'Rejected') {
+      query.query.$and = [
+        {
+          $or: [
+            { ownerAddress: myAddress },
+            // { reviewerAddress: myAddress }, // Not really "My Milestones"
+            { recipientAddress: myAddress },
+          ],
+        },
+        { status: 'rejected' },
+      ];
     } else {
       query.query.$and = [
         {
@@ -97,13 +108,13 @@ class MyMilestones extends Component {
             { $and: [{ campaignOwnerAddress: myAddress }, { status: 'proposed' }] },
           ],
         },
-        { status: { $nin: ['Completed', 'Canceled'] } },
+        { status: { $nin: ['Completed', 'Canceled', 'rejected'] } },
       ];
     }
 
     this.milestonesObserver = feathersClient
       .service('milestones')
-      .watch({ strategy: 'always' })
+      .watch({ listStrategy: 'always' })
       .find(query)
       .subscribe(resp =>
         this.setState({
@@ -843,11 +854,11 @@ class MyMilestones extends Component {
                                   {getReadableStatus(m.status)}
                                 </td>
                                 <td className="td-donations-number">
-                                  Ξ{utils.fromWei(m.maxAmount) || 0}
+                                  {utils.fromWei(m.maxAmount) || 0} ETH
                                 </td>
                                 <td className="td-donations-number">{m.donationCount || 0}</td>
                                 <td className="td-donations-amount">
-                                  Ξ{m.totalDonated ? utils.fromWei(m.totalDonated) : 0}
+                                  {m.totalDonated ? utils.fromWei(m.totalDonated) : 0} ETH
                                 </td>
                                 <td className="td-reviewer">
                                   {m.reviewer &&

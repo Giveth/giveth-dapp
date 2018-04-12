@@ -7,6 +7,7 @@ import Avatar from 'react-avatar';
 import moment from 'moment';
 import { Form } from 'formsy-react-components';
 import BigNumber from 'bignumber.js';
+import ReactHtmlParser, { convertNodeToElement } from 'react-html-parser';
 
 import { feathersClient } from './../../lib/feathersClient';
 import { getUserName, getUserAvatar } from '../../lib/helpers';
@@ -100,6 +101,21 @@ class ViewMilestone extends Component {
     return this.state.status === 'InProgress' && this.state.totalDonated < this.state.maxAmount;
   }
 
+  renderDescription() {
+    return ReactHtmlParser(this.state.description, {
+      transform(node, index) {
+        if (node.attribs && node.attribs.class === 'ql-video') {
+          return (
+            <div className="video-wrapper" key={index}>
+              {convertNodeToElement(node, index)}
+            </div>
+          );
+        }
+        return undefined;
+      },
+    });
+  }
+
   render() {
     const { history, wallet, currentUser } = this.props;
 
@@ -108,7 +124,6 @@ class ViewMilestone extends Component {
       id,
       projectId,
       title,
-      description,
       image,
       donations,
       isLoadingDonations,
@@ -123,6 +138,7 @@ class ViewMilestone extends Component {
       etherScanUrl,
       items,
       date,
+      status,
       fiatAmount,
       selectedFiatType,
     } = this.state;
@@ -143,9 +159,7 @@ class ViewMilestone extends Component {
               )}
 
               {this.state.totalDonated < this.state.maxAmount && (
-                <p>
-                  Amount requested: {this.state.maxAmount} ETH
-                </p>
+                <p>Amount requested: {this.state.maxAmount} ETH</p>
               )}
 
               {this.isActiveMilestone() && (
@@ -173,9 +187,7 @@ class ViewMilestone extends Component {
                     </center>
 
                     <div className="card content-card">
-                      <div className="card-body content">
-                        <div dangerouslySetInnerHTML={{ __html: description }} />
-                      </div>
+                      <div className="card-body content">{this.renderDescription()}</div>
                     </div>
                   </div>
                 </div>
@@ -290,8 +302,8 @@ class ViewMilestone extends Component {
                   <div className="form-group">
                     <label>Max amount to raise</label>
                     <small className="form-text">
-                      The maximum amount of ETH that can be donated to this Milestone.
-                      Based on the requested amount in fiat.
+                      The maximum amount of ETH that can be donated to this Milestone. Based on the
+                      requested amount in fiat.
                     </small>
                     {maxAmount} ETH
                     {fiatAmount &&
@@ -309,6 +321,12 @@ class ViewMilestone extends Component {
                       The amount of ETH currently donated to this Milestone
                     </small>
                     {totalDonated} ETH
+                  </div>
+
+                  <div className="form-group">
+                    <label>Status</label>
+                    <br />
+                    {status}
                   </div>
 
                   {/*
