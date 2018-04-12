@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { utils } from 'web3';
 import { Link } from 'react-router-dom';
 
 import {
@@ -11,7 +10,7 @@ import {
 } from '../../lib/middleware';
 import Loader from '../Loader';
 import User from '../../models/User';
-import { getTruncatedText } from '../../lib/helpers';
+import { getTruncatedText, convertEthHelper } from '../../lib/helpers';
 import GivethWallet from '../../lib/blockchain/GivethWallet';
 import CampaignService from '../../services/Campaign';
 import Campaign from '../../models/Campaign';
@@ -155,7 +154,7 @@ class MyCampaigns extends Component {
                               </td>
                               <td className="td-donations-number">{c.donationCount || 0}</td>
                               <td className="td-donations-amount">
-                                {c.totalDonated ? utils.fromWei(c.totalDonated) : 0} ETH
+                                {convertEthHelper(c.totalDonated)} ETH
                               </td>
                               <td className="td-status">
                                 {(c.status === Campaign.PENDING ||

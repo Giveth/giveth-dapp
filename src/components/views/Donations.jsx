@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { utils } from 'web3';
 import { Link } from 'react-router-dom';
 import _ from 'underscore';
 import moment from 'moment';
@@ -14,7 +13,12 @@ import {
   checkWalletBalance,
 } from '../../lib/middleware';
 import getNetwork from '../../lib/blockchain/getNetwork';
-import { displayTransactionError, getGasPrice, getTruncatedText } from '../../lib/helpers';
+import {
+  displayTransactionError,
+  getGasPrice,
+  getTruncatedText,
+  convertEthHelper,
+} from '../../lib/helpers';
 import User from '../../models/User';
 import GivethWallet from '../../lib/blockchain/GivethWallet';
 
@@ -463,7 +467,9 @@ class Donations extends Component {
                                     </Link>
                                   )}
                               </td>
-                              <td className="td-donations-amount">{utils.fromWei(d.amount)}ETH</td>
+                              <td className="td-donations-amount">
+                                {convertEthHelper(d.amount)} ETH
+                              </td>
 
                               <td className="td-transaction-status">
                                 {d.status === 'pending' && (

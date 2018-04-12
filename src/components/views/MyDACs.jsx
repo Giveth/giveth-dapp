@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { utils } from 'web3';
 import { Link } from 'react-router-dom';
 
 import {
@@ -9,7 +8,7 @@ import {
   takeActionAfterWalletUnlock,
   checkWalletBalance,
 } from '../../lib/middleware';
-import { getTruncatedText } from '../../lib/helpers';
+import { getTruncatedText, convertEthHelper } from '../../lib/helpers';
 
 import Loader from '../Loader';
 
@@ -98,7 +97,7 @@ class MyDACs extends Component {
                               </td>
                               <td className="td-donations-number">{d.donationCount}</td>
                               <td className="td-donations-amount">
-                                {utils.fromWei(d.totalDonated)} ETH
+                                {convertEthHelper(d.totalDonated)} ETH
                               </td>
                               <td className="td-status">
                                 {d.status === DAC.PENDING && (

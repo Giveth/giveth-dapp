@@ -1,5 +1,6 @@
 const {
   REACT_APP_ENVIRONMENT = 'localhost', // optional
+  REACT_APP_DECIMALS = 8, // optional
   REACT_APP_FEATHERJS_CONNECTION_URL,
   REACT_APP_ETH_NODE_CONNECTION_URL,
   REACT_APP_LIQUIDPLEDGING_ADDRESS,
@@ -83,5 +84,6 @@ config.tokenAddress = REACT_APP_TOKEN_ADDRESS || config.tokenAddress;
 config.etherscan = REACT_APP_BLOCKEXPLORER || config.etherscan;
 config.feathersConnection = REACT_APP_FEATHERJS_CONNECTION_URL || config.feathersConnection;
 config.nodeConnection = REACT_APP_ETH_NODE_CONNECTION_URL || config.nodeConnection;
+config.decimals = REACT_APP_DECIMALS;
 
 export default config;

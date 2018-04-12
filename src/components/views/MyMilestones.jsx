@@ -22,6 +22,7 @@ import {
   getGasPrice,
   getTruncatedText,
   getReadableStatus,
+  convertEthHelper,
 } from '../../lib/helpers';
 import GivethWallet from '../../lib/blockchain/GivethWallet';
 // TODO Remove the eslint exception and fix feathers to provide id's without underscore
@@ -854,11 +855,11 @@ class MyMilestones extends Component {
                                   {getReadableStatus(m.status)}
                                 </td>
                                 <td className="td-donations-number">
-                                  {utils.fromWei(m.maxAmount) || 0} ETH
+                                  {convertEthHelper(m.maxAmount)} ETH
                                 </td>
                                 <td className="td-donations-number">{m.donationCount || 0}</td>
                                 <td className="td-donations-amount">
-                                  {m.totalDonated ? utils.fromWei(m.totalDonated) : 0} ETH
+                                  {convertEthHelper(m.totalDonated)} ETH
                                 </td>
                                 <td className="td-reviewer">
                                   {m.reviewer &&
