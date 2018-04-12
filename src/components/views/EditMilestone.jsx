@@ -97,9 +97,7 @@ class EditMilestone extends Component {
 
     if (React.whitelist.reviewerWhitelist.length > 0) {
       this.setState({
-        reviewerAddress: getRandomWhitelistAddress(
-          React.whitelist.reviewerWhitelist,
-        ).address
+        reviewerAddress: getRandomWhitelistAddress(React.whitelist.reviewerWhitelist).address,
       });
     }
 
@@ -286,10 +284,6 @@ class EditMilestone extends Component {
     }
   }
 
-  constructSummary(text) {
-    this.setState({ summary: text });
-  }
-
   btnText() {
     if (this.props.isNew) {
       return this.props.isProposed ? 'Propose Milestone' : 'Create Milestone';
@@ -353,7 +347,7 @@ class EditMilestone extends Component {
       const constructedModel = {
         title: model.title,
         description: model.description,
-        summary: getTruncatedText(this.state.summary, 100),
+        summary: getTruncatedText(model.description, 100),
         maxAmount: utils.toWei(model.maxAmount.toFixed(18)),
         ownerAddress: this.props.currentUser.address,
         reviewerAddress: model.reviewerAddress,
@@ -743,9 +737,9 @@ class EditMilestone extends Component {
                                 changeDate={dt => this.setDate(dt)}
                                 placeholder="Select a date"
                                 help="Select a date"
-                                validations="minLength:8"
+                                validations="isMoment"
                                 validationErrors={{
-                                  minLength: 'Please provide a date.',
+                                  isMoment: 'Please provide a date.',
                                 }}
                                 required
                                 disabled={projectId}
