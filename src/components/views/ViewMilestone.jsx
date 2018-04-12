@@ -6,6 +6,7 @@ import { paramsForServer } from 'feathers-hooks-common';
 import Avatar from 'react-avatar';
 import moment from 'moment';
 import { Form } from 'formsy-react-components';
+import BigNumber from 'bignumber.js';
 
 import { feathersClient } from './../../lib/feathersClient';
 import { getUserName, getUserAvatar } from '../../lib/helpers';
@@ -20,6 +21,8 @@ import MilestoneItem from './../MilestoneItem';
 
 import GivethWallet from '../../lib/blockchain/GivethWallet';
 import User from '../../models/User';
+
+import { convertEthHelper } from '../../utils';
 
 /**
   Loads and shows a single milestone
@@ -52,16 +55,17 @@ class ViewMilestone extends Component {
     feathersClient
       .service('milestones')
       .find({ query: { _id: milestoneId } })
-      .then(resp =>
+      .then(resp => 
         this.setState(
           Object.assign({}, resp.data[0], {
             isLoading: false,
             hasError: false,
             totalDonated: utils.fromWei(resp.data[0].totalDonated),
-            maxAmount: utils.fromWei(resp.data[0].maxAmount),
+            maxAmount: convertEthHelper(resp.data[0].maxAmount),
             id: milestoneId,
+            fiatAmount: new BigNumber(resp.data[0].fiatAmount).toFixed(2),
           }),
-        ),
+        )
       )
       .catch(() => this.setState({ isLoading: false }));
 
@@ -122,7 +126,6 @@ class ViewMilestone extends Component {
       fiatAmount,
       selectedFiatType,
     } = this.state;
-
     return (
       <div id="view-milestone-view">
         {isLoading && <Loader className="fixed" />}
@@ -141,7 +144,7 @@ class ViewMilestone extends Component {
 
               {this.state.totalDonated < this.state.maxAmount && (
                 <p>
-                  Ξ{this.state.totalDonated} of Ξ{this.state.maxAmount} raised.
+                  Amount requested: {this.state.maxAmount} ETH
                 </p>
               )}
 
@@ -287,10 +290,10 @@ class ViewMilestone extends Component {
                   <div className="form-group">
                     <label>Max amount to raise</label>
                     <small className="form-text">
-                      The maximum amount of &#926; (Ether) that can be donated to this Milestone.
+                      The maximum amount of ETH that can be donated to this Milestone.
                       Based on the requested amount in fiat.
                     </small>
-                    &#926;{maxAmount}
+                    {maxAmount} ETH
                     {fiatAmount &&
                       items.length === 0 && (
                         <span>
@@ -303,9 +306,9 @@ class ViewMilestone extends Component {
                   <div className="form-group">
                     <label>Amount donated</label>
                     <small className="form-text">
-                      The amount of &#926; (Ether) currently donated to this Milestone
+                      The amount of ETH currently donated to this Milestone
                     </small>
-                    &#926;{totalDonated}
+                    {totalDonated} ETH
                   </div>
 
                   {/*
