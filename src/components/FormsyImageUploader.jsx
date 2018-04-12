@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import Avatar from 'react-avatar';
 
 import { File } from 'formsy-react-components';
 import Cropper from 'react-cropper';
@@ -25,7 +24,7 @@ class FormsyImageUploader extends Component {
   }
 
   componentWillMount() {
-    this.setState({ image: this.props.previewImage });
+    this.setState({ image: this.props.previewImage || this.props.avatar });
   }
 
   cropImage() {
@@ -62,7 +61,7 @@ class FormsyImageUploader extends Component {
             <div>
               <div style={{ width: '100%' }}>
                 <Cropper
-                  style={{ height: 400, width: '100%' }}
+                  style={{ maxHeight: 300 }}
                   guides={false}
                   aspectRatio={this.props.aspectRatio}
                   src={this.state.image}
@@ -70,12 +69,41 @@ class FormsyImageUploader extends Component {
                     this.cropper = cropper;
                   }}
                   cropend={this.cropImage}
+                  modal={false}
+                  highlight={false}
+                  autoCropArea={1}
+                  zoomOnWheel={false}
                 />
               </div>
             </div>
           )}
-
-        {this.props.avatar && <Avatar size={100} src={this.props.avatar} round />}
+        {this.props.avatar &&
+          this.props.resize && (
+            <div>
+              <div style={{ width: '100%' }}>
+                <Cropper
+                  style={{ maxHeight: 300 }}
+                  guides={false}
+                  aspectRatio={this.props.aspectRatio}
+                  src={this.state.image}
+                  ref={cropper => {
+                    this.cropper = cropper;
+                  }}
+                  cropend={this.cropImage}
+                  modal={false}
+                  highlight={false}
+                  autoCropArea={1}
+                  zoomOnWheel={false}
+                />
+              </div>
+            </div>
+          )}
+        {!this.props.resize &&
+          (this.props.previewImage || this.previewImage) && (
+            <div className="image-preview">
+              <img src={this.state.image} alt="Preview of uploaded file" />
+            </div>
+          )}
 
         <File
           label="Add a picture"
@@ -110,7 +138,7 @@ FormsyImageUploader.defaultProps = {
   isRequired: false,
   avatar: undefined,
   previewImage: undefined,
-  aspectRatio: 4 / 3,
+  aspectRatio: 16 / 9,
   resize: true,
 };
 

@@ -9,6 +9,10 @@
   position: relative;
   touch-action: none;
   user-select: none;
+  border-radius: 3px;
+  border: 1px solid rgba(0,0,0,.15);
+  background-color: white;
+  max-width: 100%;
 
   & img {
     /* Avoid margin top issue (Occur only when margin-top <= -height) */
@@ -46,8 +50,8 @@
 }
 
 .cropper-modal {
-  background-color: #000;
-  opacity: .5;
+  border-radius: 3px;
+  border: 1px solid rgba(0,0,0,.15);
 }
 
 .cropper-view-box {
@@ -259,7 +263,6 @@
 }
 
 .cropper-bg {
-  background-image: url('/img/bg.png');
 }
 
 .cropper-hide {

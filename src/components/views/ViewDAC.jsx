@@ -147,7 +147,7 @@ class ViewDAC extends Component {
                   {campaigns &&
                     campaigns.length > 0 &&
                     !isLoadingCampaigns && (
-                      <div className="card-deck">
+                      <div className="cards-grid-container">
                         {campaigns.map(c => (
                           <CampaignCard
                             key={c.id}
