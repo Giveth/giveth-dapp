@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { utils } from 'web3';
 import { Link } from 'react-router-dom';
 import { paramsForServer } from 'feathers-hooks-common';
 import Avatar from 'react-avatar';
@@ -10,7 +9,7 @@ import { feathersClient } from '../../lib/feathersClient';
 import Loader from '../Loader';
 import { isAuthenticated } from '../../lib/middleware';
 import DelegateButton from '../../components/DelegateButton';
-import { getUserName, getUserAvatar, getTruncatedText } from '../../lib/helpers';
+import { getUserName, getUserAvatar, getTruncatedText, convertEthHelper } from '../../lib/helpers';
 import GivethWallet from '../../lib/blockchain/GivethWallet';
 import User from '../../models/User';
 
@@ -264,7 +263,7 @@ class Delegations extends Component {
                                   </td>
                                 )}
                                 <td className="td-donations-amount">
-                                  {utils.fromWei(d.amount)} ETH
+                                  {convertEthHelper(d.amount)} ETH
                                 </td>
                                 <td className="td-user">
                                   <Avatar size={30} src={getUserAvatar(d.giver)} round />

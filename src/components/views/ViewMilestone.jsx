@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
-import { utils } from 'web3';
 import { paramsForServer } from 'feathers-hooks-common';
 import Avatar from 'react-avatar';
 import moment from 'moment';
@@ -10,7 +9,7 @@ import BigNumber from 'bignumber.js';
 import ReactHtmlParser, { convertNodeToElement } from 'react-html-parser';
 
 import { feathersClient } from './../../lib/feathersClient';
-import { getUserName, getUserAvatar } from '../../lib/helpers';
+import { getUserName, getUserAvatar, convertEthHelper } from '../../lib/helpers';
 
 import Loader from './../Loader';
 import GoBackButton from '../GoBackButton';
@@ -22,8 +21,6 @@ import MilestoneItem from './../MilestoneItem';
 
 import GivethWallet from '../../lib/blockchain/GivethWallet';
 import User from '../../models/User';
-
-import { convertEthHelper } from '../../utils';
 
 /**
   Loads and shows a single milestone
@@ -61,7 +58,7 @@ class ViewMilestone extends Component {
           Object.assign({}, resp.data[0], {
             isLoading: false,
             hasError: false,
-            totalDonated: utils.fromWei(resp.data[0].totalDonated),
+            totalDonated: convertEthHelper(resp.data[0].totalDonated),
             maxAmount: convertEthHelper(resp.data[0].maxAmount),
             id: milestoneId,
             fiatAmount: new BigNumber(resp.data[0].fiatAmount).toFixed(2),
