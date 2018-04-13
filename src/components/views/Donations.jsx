@@ -554,7 +554,6 @@ class Donations extends Component {
 
 Donations.propTypes = {
   currentUser: PropTypes.instanceOf(User).isRequired,
-  history: PropTypes.shape({}).isRequired,
   wallet: PropTypes.instanceOf(GivethWallet).isRequired,
 };
 

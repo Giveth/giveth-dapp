@@ -147,7 +147,6 @@ class MyDACs extends Component {
 
 MyDACs.propTypes = {
   currentUser: PropTypes.instanceOf(User).isRequired,
-  history: PropTypes.shape({}).isRequired,
   wallet: PropTypes.instanceOf(GivethWallet).isRequired,
 };
 

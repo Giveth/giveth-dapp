@@ -13,6 +13,9 @@ import { feathersClient } from '../../lib/feathersClient';
 import { getTruncatedText } from '../../lib/helpers';
 import getNetwork from '../../lib/blockchain/getNetwork';
 
+// TODO Remove the eslint exception after extracting to model
+/* eslint no-underscore-dangle: 0 */
+
 /**
  * The Wallet view showing the wallet address and balance
  *
@@ -136,7 +139,10 @@ class UserWallet extends Component {
             !hasError && (
               <div>
                 <p>{this.props.currentUser.address}</p>
-                <p> <strong>Rinkeby ETH</strong> balance: {this.props.wallet.getBalance()} ETH</p>
+                <p>
+                  {' '}
+                  <strong>Rinkeby ETH</strong> balance: {this.props.wallet.getBalance()} ETH
+                </p>
                 {etherScanUrl && (
                   <p>
                     <a
@@ -151,9 +157,7 @@ class UserWallet extends Component {
                     balance: {this.props.wallet.getTokenBalance()} ETH
                   </p>
                 )}
-                {!etherScanUrl && (
-                  <p>GivETH balance: {this.props.wallet.getTokenBalance()} ETH</p>
-                )}
+                {!etherScanUrl && <p>GivETH balance: {this.props.wallet.getTokenBalance()} ETH</p>}
                 {/* <WithdrawButton wallet={this.props.wallet} currentUser={this.props.currentUser} /> */}
                 <BackupWallet wallet={this.props.wallet} />
 

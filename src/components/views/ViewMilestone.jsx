@@ -53,7 +53,7 @@ class ViewMilestone extends Component {
     feathersClient
       .service('milestones')
       .find({ query: { _id: milestoneId } })
-      .then(resp => 
+      .then(resp =>
         this.setState(
           Object.assign({}, resp.data[0], {
             isLoading: false,
@@ -63,7 +63,7 @@ class ViewMilestone extends Component {
             id: milestoneId,
             fiatAmount: new BigNumber(resp.data[0].fiatAmount).toFixed(2),
           }),
-        )
+        ),
       )
       .catch(() => this.setState({ isLoading: false }));
 

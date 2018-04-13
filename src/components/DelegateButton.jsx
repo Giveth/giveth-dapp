@@ -35,9 +35,7 @@ class DelegateButton extends Component {
 
   openDialog() {
     takeActionAfterWalletUnlock(this.props.wallet, () =>
-      checkWalletBalance(this.props.wallet).then(() =>
-        this.setState({ modalVisible: true }),
-      ),
+      checkWalletBalance(this.props.wallet).then(() => this.setState({ modalVisible: true })),
     );
   }
 
@@ -257,7 +255,6 @@ class DelegateButton extends Component {
 }
 
 DelegateButton.propTypes = {
-  history: PropTypes.shape({}).isRequired,
   wallet: PropTypes.instanceOf(GivethWallet).isRequired,
   types: PropTypes.arrayOf(PropTypes.shape({})).isRequired,
   milestoneOnly: PropTypes.bool,

@@ -25,6 +25,61 @@ import {
   convertEthHelper,
 } from '../../lib/helpers';
 import GivethWallet from '../../lib/blockchain/GivethWallet';
+
+const deleteProposedMilestone = milestone => {
+  React.swal({
+    title: 'Delete Milestone?',
+    text: 'Are you sure you want to delete this Milestone?',
+    icon: 'warning',
+    dangerMode: true,
+    buttons: ['Cancel', 'Yes, delete'],
+  }).then(isConfirmed => {
+    if (isConfirmed) {
+      feathersClient
+        .service('/milestones')
+        .remove(milestone._id)
+        .then(() => {
+          React.toast.info(<p>The milestone has been deleted.</p>);
+        })
+        .catch(e => {
+          console.log('Error updating feathers cache ->', e); // eslint-disable-line no-console
+          React.toast.error('Oh no! Something went wrong. Please try again.');
+        });
+    }
+  });
+};
+
+const rejectProposedMilestone = milestone => {
+  React.swal({
+    title: 'Reject Milestone?',
+    text: 'Are you sure you want to reject this Milestone?',
+    icon: 'warning',
+    dangerMode: true,
+    buttons: ['Cancel', 'Yes, reject'],
+  }).then(isConfirmed => {
+    if (isConfirmed) {
+      feathersClient
+        .service('/milestones')
+        .patch(milestone._id, {
+          status: 'rejected',
+          prevStatus: 'proposed',
+        })
+        .then(() => {
+          React.toast.info(<p>The milestone has been rejected.</p>);
+        })
+        .catch(e => {
+          console.log('Error updating feathers cache ->', e); // eslint-disable-line no-console
+          React.toast.error('Oh no! Something went wrong. Please try again.');
+        });
+    }
+  });
+};
+
+const reviewDue = updatedAt =>
+  moment()
+    .subtract(3, 'd')
+    .isAfter(moment(updatedAt));
+
 // TODO Remove the eslint exception and fix feathers to provide id's without underscore
 /* eslint no-underscore-dangle: 0 */
 /**
@@ -355,55 +410,6 @@ class MyMilestones extends Component {
           }
         }),
       );
-    });
-  }
-
-  deleteProposedMilestone(milestone) {
-    React.swal({
-      title: 'Delete Milestone?',
-      text: 'Are you sure you want to delete this Milestone?',
-      icon: 'warning',
-      dangerMode: true,
-      buttons: ['Cancel', 'Yes, delete'],
-    }).then(isConfirmed => {
-      if (isConfirmed) {
-        feathersClient
-          .service('/milestones')
-          .remove(milestone._id)
-          .then(() => {
-            React.toast.info(<p>The milestone has been deleted.</p>);
-          })
-          .catch(e => {
-            console.log('Error updating feathers cache ->', e); // eslint-disable-line no-console
-            React.toast.error('Oh no! Something went wrong. Please try again.');
-          });
-      }
-    });
-  }
-
-  rejectProposedMilestone(milestone) {
-    React.swal({
-      title: 'Reject Milestone?',
-      text: 'Are you sure you want to reject this Milestone?',
-      icon: 'warning',
-      dangerMode: true,
-      buttons: ['Cancel', 'Yes, reject'],
-    }).then(isConfirmed => {
-      if (isConfirmed) {
-        feathersClient
-          .service('/milestones')
-          .patch(milestone._id, {
-            status: 'rejected',
-            prevStatus: 'proposed',
-          })
-          .then(() => {
-            React.toast.info(<p>The milestone has been rejected.</p>);
-          })
-          .catch(e => {
-            console.log('Error updating feathers cache ->', e); // eslint-disable-line no-console
-            React.toast.error('Oh no! Something went wrong. Please try again.');
-          });
-      }
     });
   }
 
@@ -753,12 +759,6 @@ class MyMilestones extends Component {
     });
   }
 
-  reviewDue(updatedAt) {
-    return moment()
-      .subtract(3, 'd')
-      .isAfter(moment(updatedAt));
-  }
-
   render() {
     const {
       milestones,
@@ -842,7 +842,7 @@ class MyMilestones extends Component {
                                     </span>
                                   )}
                                   {m.status === 'NeedsReview' &&
-                                    this.reviewDue(m.updatedAt) && (
+                                    reviewDue(m.updatedAt) && (
                                       <span>
                                         <i className="fa fa-exclamation-triangle" />&nbsp;
                                       </span>
@@ -892,7 +892,7 @@ class MyMilestones extends Component {
                                         </button>
                                         <button
                                           className="btn btn-danger btn-sm"
-                                          onClick={() => this.rejectProposedMilestone(m)}
+                                          onClick={() => rejectProposedMilestone(m)}
                                         >
                                           <i className="fa fa-times-circle-o" />&nbsp;Reject
                                         </button>
@@ -930,7 +930,7 @@ class MyMilestones extends Component {
                                       <span>
                                         <button
                                           className="btn btn-danger btn-sm"
-                                          onClick={() => this.deleteProposedMilestone(m)}
+                                          onClick={() => deleteProposedMilestone(m)}
                                         >
                                           <i className="fa fa-times-circle-o" />&nbsp;Delete
                                         </button>
@@ -1035,7 +1035,6 @@ class MyMilestones extends Component {
 
 MyMilestones.propTypes = {
   currentUser: PropTypes.instanceOf(User).isRequired,
-  history: PropTypes.shape({}).isRequired,
   wallet: PropTypes.instanceOf(GivethWallet).isRequired,
 };
 
