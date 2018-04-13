@@ -96,9 +96,9 @@ class EditMilestone extends Component {
     };
 
     if (React.whitelist.reviewerWhitelist.length > 0) {
-      this.state.reviewerAddress = getRandomWhitelistAddress(
-        React.whitelist.reviewerWhitelist,
-      ).address;
+      this.setState({
+        reviewerAddress: getRandomWhitelistAddress(React.whitelist.reviewerWhitelist).address,
+      });
     }
 
     this.submit = this.submit.bind(this);
@@ -247,7 +247,7 @@ class EditMilestone extends Component {
         .then(resp => {
           this.setState({
             conversionRates: conversionRates.concat(resp),
-            maxAmount: this.state.fiatAmount / resp.rates[this.state.selectedFiatType],
+            maxAmount: this.state.fiatAmount.div(resp.rates[this.state.selectedFiatType]),
             currentRate: resp,
           });
 
@@ -282,10 +282,6 @@ class EditMilestone extends Component {
         maxAmount,
       });
     }
-  }
-
-  constructSummary(text) {
-    this.setState({ summary: text });
   }
 
   btnText() {
@@ -351,7 +347,7 @@ class EditMilestone extends Component {
       const constructedModel = {
         title: model.title,
         description: model.description,
-        summary: getTruncatedText(this.state.summary, 100),
+        summary: getTruncatedText(model.description, 100),
         maxAmount: utils.toWei(model.maxAmount.toFixed(18)),
         ownerAddress: this.props.currentUser.address,
         reviewerAddress: model.reviewerAddress,
@@ -741,9 +737,9 @@ class EditMilestone extends Component {
                                 changeDate={dt => this.setDate(dt)}
                                 placeholder="Select a date"
                                 help="Select a date"
-                                validations="minLength:8"
+                                validations="isMoment"
                                 validationErrors={{
-                                  minLength: 'Please provide a date.',
+                                  isMoment: 'Please provide a date.',
                                 }}
                                 required
                                 disabled={projectId}
@@ -791,12 +787,12 @@ class EditMilestone extends Component {
                                 min="0"
                                 id="maxamount-input"
                                 type="number"
-                                label="Maximum amount in &#926;"
+                                label="Maximum amount in ETH"
                                 value={maxAmount}
                                 placeholder="10"
                                 validations="greaterEqualTo:0.01"
                                 validationErrors={{
-                                  greaterEqualTo: 'Minimum value must be at least Ξ 0.01',
+                                  greaterEqualTo: 'Minimum value must be at least 0.01 ETH',
                                 }}
                                 required
                                 disabled={projectId}
@@ -842,27 +838,29 @@ class EditMilestone extends Component {
                                 </div>
                               )}
 
-                              {items.length > 0 && (
-                                <AddMilestoneItem
-                                  onAddItem={item => this.addItem(item)}
-                                  getEthConversion={dt => this.getEthConversion(dt)}
-                                  fiatTypes={fiatTypes}
-                                />
-                              )}
-
-                              {items.length === 0 && (
-                                <div className="text-center">
-                                  <p>
-                                    Add you first item now. This can be an expense, invoice or
-                                    anything else that needs to be paid.
-                                  </p>
+                              {items.length > 0 &&
+                                (isNew || isProposed) && (
                                   <AddMilestoneItem
                                     onAddItem={item => this.addItem(item)}
                                     getEthConversion={dt => this.getEthConversion(dt)}
                                     fiatTypes={fiatTypes}
                                   />
-                                </div>
-                              )}
+                                )}
+
+                              {items.length === 0 &&
+                                (isNew || isProposed) && (
+                                  <div className="text-center">
+                                    <p>
+                                      Add you first item now. This can be an expense, invoice or
+                                      anything else that needs to be paid.
+                                    </p>
+                                    <AddMilestoneItem
+                                      onAddItem={item => this.addItem(item)}
+                                      getEthConversion={dt => this.getEthConversion(dt)}
+                                      fiatTypes={fiatTypes}
+                                    />
+                                  </div>
+                                )}
                             </div>
                           </div>
                         </div>

@@ -1,6 +1,5 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import Masonry, { ResponsiveMasonry } from 'react-responsive-masonry';
 
 import JoinGivethCommunity from '../JoinGivethCommunity';
 import DacCard from '../DacCard';
@@ -31,29 +30,18 @@ const DACs = ({ currentUser, wallet, dacs, history }) => (
                 and giving Ether!
               </p>
             </center>
-
-            <ResponsiveMasonry
-              columnsCountBreakPoints={{
-                350: 1,
-                750: 2,
-                900: 3,
-                1024: 3,
-                1470: 4,
-              }}
-            >
-              <Masonry gutter="10px">
-                {dacs.data.map(dac => (
-                  <DacCard
-                    key={dac.id}
-                    dac={dac}
-                    removeDAC={this.removeDAC}
-                    currentUser={currentUser}
-                    wallet={wallet}
-                    history={history}
-                  />
-                ))}
-              </Masonry>
-            </ResponsiveMasonry>
+            <div className="cards-grid-container">
+              {dacs.data.map(dac => (
+                <DacCard
+                  key={dac.id}
+                  dac={dac}
+                  removeDAC={this.removeDAC}
+                  currentUser={currentUser}
+                  wallet={wallet}
+                  history={history}
+                />
+              ))}
+            </div>
           </div>
         )}
 

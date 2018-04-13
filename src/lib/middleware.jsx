@@ -93,8 +93,8 @@ export const checkWalletBalance = (wallet, history) =>
         title: 'Insufficient wallet balance',
         content: React.swal.msg(
           <p>
-            Unfortunately you need at least Ξ{React.minimumWalletBalance} in your wallet to
-            continue. Please transfer some Ξ to your Giveth wallet first.
+            Unfortunately you need at least {React.minimumWalletBalance} ETH in your wallet to
+            continue. Please transfer some ETH to your Giveth wallet first.
           </p>,
         ),
         icon: 'warning',

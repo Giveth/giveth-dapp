@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { utils } from 'web3';
 import { Link } from 'react-router-dom';
 import _ from 'underscore';
 import moment from 'moment';
@@ -14,7 +13,12 @@ import {
   checkWalletBalance,
 } from '../../lib/middleware';
 import getNetwork from '../../lib/blockchain/getNetwork';
-import { displayTransactionError, getGasPrice, getTruncatedText } from '../../lib/helpers';
+import {
+  displayTransactionError,
+  getGasPrice,
+  getTruncatedText,
+  convertEthHelper,
+} from '../../lib/helpers';
 import User from '../../models/User';
 import GivethWallet from '../../lib/blockchain/GivethWallet';
 
@@ -67,7 +71,7 @@ class Donations extends Component {
     isAuthenticated(this.props.currentUser, this.props.wallet).then(() => {
       this.donationsObserver = feathersClient
         .service('donations')
-        .watch({ strategy: 'always' })
+        .watch({ listStrategy: 'always' })
         .find(
           paramsForServer({
             schema: 'includeTypeDetails',
@@ -302,7 +306,7 @@ class Donations extends Component {
           title: 'Refund your donation?',
           text:
             'Your donation will be cancelled and a payment will be authorized to refund your ETH. All withdrawals' +
-            ' must be confirmed for security reasons and may take a day or two. Upon confirmation, your Ξ will be' +
+            ' must be confirmed for security reasons and may take a day or two. Upon confirmation, your ETH will be' +
             ' transferred to your wallet.',
           icon: 'warning',
           dangerMode: true,
@@ -463,7 +467,9 @@ class Donations extends Component {
                                     </Link>
                                   )}
                               </td>
-                              <td className="td-donations-amount">Ξ{utils.fromWei(d.amount)}</td>
+                              <td className="td-donations-amount">
+                                {convertEthHelper(d.amount)} ETH
+                              </td>
 
                               <td className="td-transaction-status">
                                 {d.status === 'pending' && (

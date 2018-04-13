@@ -1,6 +1,6 @@
 import React from 'react';
-import { utils } from 'web3';
 import PropTypes from 'prop-types';
+import { convertEthHelper } from '../lib/helpers';
 
 /**
  * Shows the statistics on DACs, Campaigns and milestonesCount
@@ -25,15 +25,11 @@ const CardStats = ({
       <p>Giver(s)</p>
     </div>
 
-    <div className="col-4 text-center">
-      {maxAmount && (
-        <span>
-          &#926;{totalDonated && utils.fromWei(totalDonated)} of &#926; {utils.fromWei(maxAmount)}
-        </span>
-      )}
+    <div className={`col-4 text-center ${maxAmount ? 'card-center' : ''}`}>
+      {maxAmount && <span>Requested amount: {convertEthHelper(maxAmount)} ETH</span>}
 
-      {!maxAmount && <span>&#926; {totalDonated && utils.fromWei(totalDonated)}</span>}
-      <p>Donated</p>
+      {!maxAmount && <span>{totalDonated && convertEthHelper(totalDonated)} ETH</span>}
+      {!maxAmount && <p>Donated</p>}
     </div>
 
     <div className="col-4 text-right">

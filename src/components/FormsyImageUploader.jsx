@@ -1,8 +1,8 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import Avatar from 'react-avatar';
 
 import { File } from 'formsy-react-components';
+import Cropper from 'react-cropper';
 import ImageTools from './../lib/ImageResizer';
 
 /* global FileReader */
@@ -19,14 +19,22 @@ class FormsyImageUploader extends Component {
       image: undefined,
     };
 
+    this.cropImage = this.cropImage.bind(this);
     this.loadAndPreviewImage = this.loadAndPreviewImage.bind(this);
   }
 
   componentWillMount() {
-    this.setState({ image: this.props.previewImage });
+    this.setState({ image: this.props.previewImage || this.props.avatar });
   }
 
-  loadAndPreviewImage() {
+  cropImage() {
+    if (!this.cropper) {
+      return;
+    }
+    this.props.setImage(this.cropper.getCroppedCanvas().toDataURL());
+  }
+
+  loadAndPreviewImage(name, files) {
     const reader = new FileReader();
     reader.onload = e => {
       this.setState({ image: e.target.result });
@@ -34,13 +42,13 @@ class FormsyImageUploader extends Component {
     };
 
     ImageTools.resize(
-      this.imagePreview.element.files[0],
+      files[0],
       {
         width: 800,
         height: 600,
       },
       (blob, didItResize) => {
-        reader.readAsDataURL(didItResize ? blob : this.imagePreview.element.files[0]);
+        reader.readAsDataURL(didItResize ? blob : files[0]);
       },
     );
   }
@@ -48,22 +56,60 @@ class FormsyImageUploader extends Component {
   render() {
     return (
       <div>
-        {(this.props.previewImage || this.previewImage) && (
-          <div className="image-preview">
-            <img src={this.state.image} alt="Preview of uploaded file" />
-          </div>
-        )}
-
-        {this.props.avatar && <Avatar size={100} src={this.props.avatar} round />}
+        {(this.props.previewImage || this.previewImage) &&
+          this.props.resize && (
+            <div>
+              <div style={{ width: '100%' }}>
+                <Cropper
+                  style={{ maxHeight: 300 }}
+                  guides={false}
+                  aspectRatio={this.props.aspectRatio}
+                  src={this.state.image}
+                  ref={cropper => {
+                    this.cropper = cropper;
+                  }}
+                  cropend={this.cropImage}
+                  modal={false}
+                  highlight={false}
+                  autoCropArea={1}
+                  zoomOnWheel={false}
+                />
+              </div>
+            </div>
+          )}
+        {this.props.avatar &&
+          this.props.resize && (
+            <div>
+              <div style={{ width: '100%' }}>
+                <Cropper
+                  style={{ maxHeight: 300 }}
+                  guides={false}
+                  aspectRatio={this.props.aspectRatio}
+                  src={this.state.image}
+                  ref={cropper => {
+                    this.cropper = cropper;
+                  }}
+                  cropend={this.cropImage}
+                  modal={false}
+                  highlight={false}
+                  autoCropArea={1}
+                  zoomOnWheel={false}
+                />
+              </div>
+            </div>
+          )}
+        {!this.props.resize &&
+          (this.props.previewImage || this.previewImage) && (
+            <div className="image-preview">
+              <img src={this.state.image} alt="Preview of uploaded file" />
+            </div>
+          )}
 
         <File
           label="Add a picture"
           name="picture"
           accept=".png,.jpeg,.jpg"
-          onChange={() => this.loadAndPreviewImage()}
-          ref={c => {
-            this.imagePreview = c;
-          }}
+          onChange={this.loadAndPreviewImage}
           help="A picture says more than a thousand words. Select a png or jpg file."
           validations="minLength: 1"
           validationErrors={{
@@ -81,12 +127,16 @@ FormsyImageUploader.propTypes = {
   avatar: PropTypes.string,
   setImage: PropTypes.func.isRequired,
   previewImage: PropTypes.string,
+  aspectRatio: PropTypes.number,
+  resize: PropTypes.bool,
 };
 
 FormsyImageUploader.defaultProps = {
   isRequired: false,
   avatar: undefined,
   previewImage: undefined,
+  aspectRatio: 16 / 9,
+  resize: true,
 };
 
 export default FormsyImageUploader;

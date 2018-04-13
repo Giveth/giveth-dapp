@@ -9,6 +9,7 @@
 @import 'viewCauseView.scss';
 @import 'viewCampaignView.scss';
 @import 'viewMilestoneView.scss';
+@import 'campaignsView';
 @import 'accountView.scss';
 @import 'dashboard.scss';
 @import 'edit-view.scss';
@@ -29,6 +30,7 @@
 @import 'react-toggle.scss';
 @import 'react-datepicker.scss';
 @import 'pagination.scss';
+@import 'cropper.scss';
 // overrides
 @import 'card.scss';
 html,
@@ -191,8 +193,12 @@ i {
     border: 1px solid #e2e2e2;
     border-radius: 3px;
     margin-bottom: 10px;
-    img {
-        max-width: 100%;
-        max-height: 300px;
+    max-width: 150px;
+    img{
+        width: 100%;
     }
+}
+
+.image-preview.small{
+    max-width: 100px;
 }

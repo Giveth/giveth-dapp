@@ -22,6 +22,7 @@ import {
   getGasPrice,
   getTruncatedText,
   getReadableStatus,
+  convertEthHelper,
 } from '../../lib/helpers';
 import GivethWallet from '../../lib/blockchain/GivethWallet';
 // TODO Remove the eslint exception and fix feathers to provide id's without underscore
@@ -43,7 +44,7 @@ class MyMilestones extends Component {
       loadedStatus: 'Active',
     };
 
-    this.milestoneTabs = ['Active', 'Completed', 'Canceled'];
+    this.milestoneTabs = ['Active', 'Completed', 'Canceled', 'Rejected'];
     this.handlePageChanged = this.handlePageChanged.bind(this);
 
     this.editMilestone = this.editMilestone.bind(this);
@@ -87,6 +88,17 @@ class MyMilestones extends Component {
         },
         { status: this.state.loadedStatus },
       ];
+    } else if (this.state.loadedStatus === 'Rejected') {
+      query.query.$and = [
+        {
+          $or: [
+            { ownerAddress: myAddress },
+            // { reviewerAddress: myAddress }, // Not really "My Milestones"
+            { recipientAddress: myAddress },
+          ],
+        },
+        { status: 'rejected' },
+      ];
     } else {
       query.query.$and = [
         {
@@ -97,13 +109,13 @@ class MyMilestones extends Component {
             { $and: [{ campaignOwnerAddress: myAddress }, { status: 'proposed' }] },
           ],
         },
-        { status: { $nin: ['Completed', 'Canceled'] } },
+        { status: { $nin: ['Completed', 'Canceled', 'rejected'] } },
       ];
     }
 
     this.milestonesObserver = feathersClient
       .service('milestones')
-      .watch({ strategy: 'always' })
+      .watch({ listStrategy: 'always' })
       .find(query)
       .subscribe(resp =>
         this.setState({
@@ -145,7 +157,7 @@ class MyMilestones extends Component {
           buttons: ['Cancel', 'Yes, edit'],
         }).then(isConfirmed => {
           if (isConfirmed) {
-            if (milestone.status === 'proposed') {
+            if (['proposed', 'rejected'].includes(milestone.status)) {
               redirectAfterWalletUnlock(
                 `/milestones/${milestone._id}/edit/proposed`,
                 this.props.wallet,
@@ -348,6 +360,29 @@ class MyMilestones extends Component {
           }
         }),
       );
+    });
+  }
+
+  deleteProposedMilestone(milestone) {
+    React.swal({
+      title: 'Delete Milestone?',
+      text: 'Are you sure you want to delete this Milestone?',
+      icon: 'warning',
+      dangerMode: true,
+      buttons: ['Cancel', 'Yes, delete'],
+    }).then(isConfirmed => {
+      if (isConfirmed) {
+        feathersClient
+          .service('/milestones')
+          .remove(milestone._id)
+          .then(() => {
+            React.toast.info(<p>The milestone has been deleted.</p>);
+          })
+          .catch(e => {
+            console.log('Error updating feathers cache ->', e); // eslint-disable-line no-console
+            React.toast.error('Oh no! Something went wrong. Please try again.');
+          });
+      }
     });
   }
 
@@ -820,11 +855,11 @@ class MyMilestones extends Component {
                                   {getReadableStatus(m.status)}
                                 </td>
                                 <td className="td-donations-number">
-                                  Ξ{utils.fromWei(m.maxAmount) || 0}
+                                  {convertEthHelper(m.maxAmount)} ETH
                                 </td>
                                 <td className="td-donations-number">{m.donationCount || 0}</td>
                                 <td className="td-donations-amount">
-                                  Ξ{m.totalDonated ? utils.fromWei(m.totalDonated) : 0}
+                                  {convertEthHelper(m.totalDonated)} ETH
                                 </td>
                                 <td className="td-reviewer">
                                   {m.reviewer &&
@@ -835,14 +870,21 @@ class MyMilestones extends Component {
                                     )}
                                 </td>
                                 <td className="td-actions">
-                                  {m.ownerAddress === currentUser.address && (
-                                    <button
-                                      className="btn btn-link"
-                                      onClick={() => this.editMilestone(m)}
-                                    >
-                                      <i className="fa fa-edit" />&nbsp;Edit
-                                    </button>
-                                  )}
+                                  {m.ownerAddress === currentUser.address &&
+                                    [
+                                      'proposed',
+                                      'rejected',
+                                      'InProgress',
+                                      'NeedReview',
+                                      'InReview',
+                                    ].includes(m.status) && (
+                                      <button
+                                        className="btn btn-link"
+                                        onClick={() => this.editMilestone(m)}
+                                      >
+                                        <i className="fa fa-edit" />&nbsp;Edit
+                                      </button>
+                                    )}
 
                                   {m.campaignOwnerAddress === currentUser.address &&
                                     m.status === 'proposed' && (
@@ -886,6 +928,18 @@ class MyMilestones extends Component {
                                       >
                                         <i className="fa fa-times" />&nbsp;Cancel
                                       </button>
+                                    )}
+
+                                  {m.ownerAddress === currentUser.address &&
+                                    ['proposed', 'rejected'].includes(m.status) && (
+                                      <span>
+                                        <button
+                                          className="btn btn-danger btn-sm"
+                                          onClick={() => this.deleteProposedMilestone(m)}
+                                        >
+                                          <i className="fa fa-times-circle-o" />&nbsp;Delete
+                                        </button>
+                                      </span>
                                     )}
 
                                   {m.reviewerAddress === currentUser.address &&

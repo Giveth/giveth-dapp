@@ -1,28 +1,25 @@
-import Formsy from 'formsy-react';
+import { addValidationRule } from 'formsy-react';
+import moment from 'moment';
 import Web3 from 'web3';
 
 // Formsy validations
 
 // Greater than number
-Formsy.addValidationRule(
-  'greaterThan',
-  (formValues, inputValue, value) => parseFloat(inputValue) > value,
-);
+addValidationRule('greaterThan', (formValues, inputValue, value) => parseFloat(inputValue) > value);
 
 // Less than number
-Formsy.addValidationRule(
-  'lessThan',
-  (formValues, inputValue, value) => parseFloat(inputValue) < value,
-);
+addValidationRule('lessThan', (formValues, inputValue, value) => parseFloat(inputValue) < value);
 
 // Greater than number
-Formsy.addValidationRule(
+addValidationRule(
   'greaterEqualTo',
   (formValues, inputValue, value) => parseFloat(inputValue) >= value,
 );
 
+addValidationRule('isMoment', (formValues, inputValue) => moment.isMoment(inputValue));
+
 // Checks if input is a valid Ether address
 // TODO: Does not support ENS! (It's hard, ENS returns promises)
-Formsy.addValidationRule('isEtherAddress', (formValues, inputValue, _value) =>
+addValidationRule('isEtherAddress', (formValues, inputValue, _value) =>
   Web3.utils.isAddress(inputValue),
 );

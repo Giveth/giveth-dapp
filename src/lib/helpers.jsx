@@ -3,6 +3,7 @@ import 'whatwg-fetch';
 import { utils } from 'web3';
 import { createBrowserHistory } from 'history';
 import moment from 'moment';
+import BigNumber from 'bignumber.js';
 
 import { feathersClient } from './feathersClient';
 import DefaultAvatar from './../assets/avatar-100.svg';
@@ -33,10 +34,7 @@ export const authenticate = wallet => {
       authData.signature = signature;
       return feathersClient.authenticate(authData);
     })
-    .then(response => {
-      console.log('Authenticated!');
-      return response.accessToken;
-    });
+    .then(response => response.accessToken);
 };
 
 export const getTruncatedText = (text, maxLength) => {
@@ -159,3 +157,14 @@ export const history = createBrowserHistory();
 
 // Get start of the day in UTC for a given date or start of current day in UTC
 export const getStartOfDayUTC = date => moment.utc(date || moment()).startOf('day');
+
+export const convertEthHelper = amount => {
+  if (!amount) return 0;
+
+  const eth = utils.fromWei(amount);
+  if (eth.includes('.') && eth.split('.')[1].length > config.decimals) {
+    return new BigNumber(eth).toFixed(config.decimals);
+  }
+
+  return eth;
+};
