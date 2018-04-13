@@ -63,7 +63,7 @@ class EditProfile extends Component {
   }
 
   setImage(image) {
-    this.setState({ avatar: image, uploadNewAvatar: true });
+    this.setState({ avatar: image, uploadNewAvatar: true, isPristine: false });
   }
 
   submit(model) {

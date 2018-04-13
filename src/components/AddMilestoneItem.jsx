@@ -117,7 +117,12 @@ class AddMilestoneItem extends Component {
 
               <RateConvertor getEthConversion={this.props.getEthConversion} />
 
-              <FormsyImageUploader name="image" previewImage={image} setImage={this.setImage} />
+              <FormsyImageUploader
+                name="image"
+                previewImage={image}
+                setImage={this.setImage}
+                resize={false}
+              />
 
               <button
                 className="btn btn-primary"

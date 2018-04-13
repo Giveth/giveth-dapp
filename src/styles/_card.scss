@@ -1,13 +1,22 @@
-// Card used in campaign / milestone views
+$aspect-ratio: percentage(9/16); //16:9 ratio
+
+.cards-grid-container{
+    display: grid;
+    grid-template-columns: repeat( auto-fill, minmax(250px, 1fr) );
+    grid-gap: 10px;
+    width: 100%;
+    justify-content: space-around;
+}
+
 .overview-card {
-  max-width: 350px;
   position: relative;
-  margin: auto;
+  width: 100%;
+  max-width: 400px;
 
   .card-img {
     width: 100%;
     height: 0;
-    padding-top: 75%; //4:3 aspect ratio
+    padding-top: ($aspect-ratio);
     background-size: cover;
     background-position: 50% 50%;
     background-repeat: no-repeat;
