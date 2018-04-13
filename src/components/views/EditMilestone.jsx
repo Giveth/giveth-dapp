@@ -139,17 +139,16 @@ class EditMilestone extends Component {
 
               if (!isOwner(milestone.owner.address, this.props.currentUser)) {
                 this.props.history.goBack();
-              } else {
-                this.setState(
-                  Object.assign({}, milestone, {
-                    id: this.props.match.params.milestoneId,
-                    date,
-                    itemizeState: milestone.items && milestone.items.length > 0,
-                    selectedFiatType: milestone.selectedFiatType || 'EUR',
-                  }),
-                );
-                return date;
               }
+              this.setState(
+                Object.assign({}, milestone, {
+                  id: this.props.match.params.milestoneId,
+                  date,
+                  itemizeState: milestone.items && milestone.items.length > 0,
+                  selectedFiatType: milestone.selectedFiatType || 'EUR',
+                }),
+              );
+              return date;
             })
             .then(date => this.getEthConversion(date))
             .then(() => {
@@ -492,17 +491,20 @@ class EditMilestone extends Component {
 
       if (this.state.itemizeState) {
         // upload all the item images
-        const uploadItemImages = this.state.items.map(item => {
+        const uploadItemImages = [];
+        this.state.items.forEach(item => {
           if (item.image) {
-            return new Promise(resolve => {
-              feathersRest
-                .service('uploads')
-                .create({ uri: item.image })
-                .then(file => {
-                  item.image = file.url;
-                  resolve('done');
-                });
-            });
+            uploadItemImages.push(
+              Promise(resolve => {
+                feathersRest
+                  .service('uploads')
+                  .create({ uri: item.image })
+                  .then(file => {
+                    item.image = file.url;
+                    resolve('done');
+                  });
+              }),
+            );
           }
         });
 
