@@ -783,6 +783,8 @@ class MyMilestones extends Component {
                     <span
                       role="button"
                       className={`nav-link ${this.state.loadedStatus === st ? 'active' : ''}`}
+                      onKeyPress={() => this.changeTab(st)}
+                      tabIndex={0}
                       onClick={() => this.changeTab(st)}
                     >
                       {st}

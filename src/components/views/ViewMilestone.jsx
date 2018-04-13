@@ -212,7 +212,7 @@ class ViewMilestone extends Component {
                             </thead>
                             <tbody>
                               {items.map((item, i) => (
-                                <MilestoneItem name={`milestoneItem-${i}`} key={i} item={item} />
+                                <MilestoneItem name={`milestoneItem-${i}`} item={item} />
                               ))}
                             </tbody>
                           </table>

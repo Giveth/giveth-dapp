@@ -826,7 +826,6 @@ class EditMilestone extends Component {
                                       {items.map((item, i) => (
                                         <MilestoneItem
                                           name={`milestoneItem-${i}`}
-                                          key={i}
                                           index={i}
                                           item={item}
                                           removeItem={() => this.removeItem(i)}
