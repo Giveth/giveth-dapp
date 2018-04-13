@@ -193,9 +193,12 @@ i {
     border: 1px solid #e2e2e2;
     border-radius: 3px;
     margin-bottom: 10px;
-    max-width: 100px;
-    max-height: 100px;
-    img {
+    max-width: 150px;
+    img{
         width: 100%;
     }
+}
+
+.image-preview.small{
+    max-width: 100px;
 }

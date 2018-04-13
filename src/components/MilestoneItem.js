@@ -45,14 +45,14 @@ const MilestoneItem = createReactClass({
         <td className="td-item-file-upload">
           {item.image &&
             isEditMode && (
-              <div className="image-preview">
+              <div className="image-preview small">
                 <img src={item.image} alt="Preview of uploaded file" />
               </div>
             )}
 
           {item.image &&
             !isEditMode && (
-              <div className="image-preview">
+              <div className="image-preview small">
                 <a href={item.image} target="_blank" rel="noopener noreferrer">
                   <img src={item.image} alt="View uploaded file" />
                 </a>
