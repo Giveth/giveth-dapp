@@ -35,6 +35,7 @@ import User from '../../models/User';
 import GivethWallet from '../../lib/blockchain/GivethWallet';
 import MilestoneItem from '../../components/MilestoneItem';
 import AddMilestoneItem from '../../components/AddMilestoneItem';
+import ErrorPopup from '../ErrorPopup';
 
 BigNumber.config({ DECIMAL_PLACES: 18 });
 
@@ -159,7 +160,12 @@ class EditMilestone extends Component {
                 isLoading: false,
               }),
             )
-            .catch(console.error);
+            .catch(err => {
+              ErrorPopup(
+                'Sadly we were unable to load the requested milestone details. Please try again.',
+                err,
+              );
+            });
         } else {
           feathersClient
             .service('campaigns')
@@ -185,12 +191,23 @@ class EditMilestone extends Component {
                 isLoading: false,
               }),
             )
-            .catch(console.log);
+            .catch(err => {
+              ErrorPopup(
+                'Sadly we were unable to load the campaign in which this milestone was created. Please try again.',
+                err,
+              );
+            });
         }
       })
       .catch(err => {
-        console.log('err', err);
+        // TODO: This is not super user friendly, fix it
         if (err === 'noBalance') this.props.history.goBack();
+        else {
+          ErrorPopup(
+            'Sadly we were unable to load the campaign in which this milestone was created. Please try again.',
+            err,
+          );
+        }
       });
   }
 
@@ -220,7 +237,6 @@ class EditMilestone extends Component {
   setDate(date) {
     this.setState({ date });
     this.getEthConversion(date).then(resp => {
-      console.log(resp);
       // update all the input fields
       const rate = resp.rates[this.state.selectedFiatType];
 
@@ -252,7 +268,12 @@ class EditMilestone extends Component {
 
           return resp;
         })
-        .catch(e => console.error(e));
+        .catch(err => {
+          ErrorPopup(
+            'Sadly we were unable to get the exchange rate. Please try again after refresh.',
+            err,
+          );
+        });
     }
     // we have the conversion rate in cache
     return new Promise(resolve => {
@@ -377,13 +398,8 @@ class EditMilestone extends Component {
               callback();
             })
             .catch(err => {
-              console.log(err);
               this.setState({ isSaving: false });
-              React.swal({
-                title: 'Oh no!',
-                content: 'Something went wrong, please try again or contact support.',
-                icon: 'error',
-              });
+              ErrorPopup('There has been an issue creating the milestone', err);
             });
         };
 
@@ -508,7 +524,14 @@ class EditMilestone extends Component {
           }
         });
 
-        Promise.all(uploadItemImages).then(() => uploadMilestoneImage());
+        Promise.all(uploadItemImages)
+          .then(() => uploadMilestoneImage())
+          .catch(err => {
+            ErrorPopup(
+              'There has been an issue uploading one of the proof items. Please refresh the page and try again.',
+              err,
+            );
+          });
       } else {
         uploadMilestoneImage();
       }

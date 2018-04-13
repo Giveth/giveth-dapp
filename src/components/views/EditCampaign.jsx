@@ -10,7 +10,7 @@ import QuillFormsy from '../QuillFormsy';
 import SelectFormsy from './../SelectFormsy';
 import FormsyImageUploader from './../FormsyImageUploader';
 import GoBackButton from '../GoBackButton';
-import { isOwner, getTruncatedText } from '../../lib/helpers';
+import { isOwner, getTruncatedText, history } from '../../lib/helpers';
 import {
   isAuthenticated,
   checkWalletBalance,
@@ -22,6 +22,7 @@ import User from '../../models/User';
 import GivethWallet from '../../lib/blockchain/GivethWallet';
 import Campaign from '../../models/Campaign';
 import CampaignService from '../../services/Campaign';
+import ErrorPopup from '../ErrorPopup';
 
 /**
  * View to create or edit a Campaign
@@ -29,7 +30,6 @@ import CampaignService from '../../services/Campaign';
  * @param isNew    If set, component will load an empty model.
  *                 Otherwise component expects an id param and will load a campaign object
  * @param id       URL parameter which is an id of a campaign object
- * @param history  Browser history object
  * @param wallet   Wallet object with the balance and all keystores
  */
 class EditCampaign extends Component {
@@ -73,7 +73,7 @@ class EditCampaign extends Component {
           .subscribe(
             resp =>
               this.setState({
-                // TODO: should we filter the available cuases to those that have been mined?
+                // TODO: should we filter the available causes to those that have been mined?
                 // It is possible that a createCause tx will fail and the dac will not be
                 // available
                 dacsOptions: resp.data.map(({ _id, title }) => ({
@@ -91,9 +91,15 @@ class EditCampaign extends Component {
             .then(campaign => {
               if (isOwner(campaign.owner.address, this.props.currentUser)) {
                 this.setState({ campaign, isLoading: false });
-              } else this.props.history.goBack();
+              } else history.goBack();
             })
-            .catch(() => this.setState({ isLoading: false }));
+            .catch(() => err => {
+              this.setState({ isLoading: false });
+              ErrorPopup(
+                'There has been a problem loading the Campaign. Please refresh the page and try again.',
+                err,
+              );
+            });
         } else {
           this.setState({ isLoading: false });
         }
@@ -120,7 +126,13 @@ class EditCampaign extends Component {
             title: `${r.name ? r.name : 'Anonymous user'} - ${r.address}`,
           })),
         }),
-      );
+      )
+      .catch(err => {
+        ErrorPopup(
+          'Unable to load Campaign reviewers. Please refresh the page and try again.',
+          err,
+        );
+      });
   }
 
   setImage(image) {
@@ -146,7 +158,7 @@ class EditCampaign extends Component {
       } else {
         if (this.mounted) this.setState({ isSaving: false });
         React.toast.success('Your Campaign has been updated!');
-        this.props.history.push(`/campaigns/${this.state.campaign.id}`);
+        history.push(`/campaigns/${this.state.campaign.id}`);
       }
     };
 
@@ -161,7 +173,7 @@ class EditCampaign extends Component {
         </p>
       );
       React.toast.info(msg);
-      this.props.history.push('/my-campaigns');
+      history.push('/my-campaigns');
     };
 
     // Save the capaign
@@ -175,10 +187,6 @@ class EditCampaign extends Component {
     this.setState({ formIsValid: state });
   }
 
-  goBack() {
-    this.props.history.push('/campaigns');
-  }
-
   selectDACs({ target }) {
     const { campaign } = this.state;
     campaign.dacs = target.value;
@@ -187,7 +195,7 @@ class EditCampaign extends Component {
   }
 
   render() {
-    const { isNew, history } = this.props;
+    const { isNew } = this.props;
     const {
       isLoading,
       isSaving,
@@ -414,10 +422,6 @@ class EditCampaign extends Component {
 
 EditCampaign.propTypes = {
   currentUser: PropTypes.instanceOf(User).isRequired,
-  history: PropTypes.shape({
-    goBack: PropTypes.func.isRequired,
-    push: PropTypes.func.isRequired,
-  }).isRequired,
   isNew: PropTypes.bool,
   wallet: PropTypes.instanceOf(GivethWallet).isRequired,
   match: PropTypes.shape({
