@@ -9,7 +9,7 @@ import CardStats from './CardStats';
 import GivethWallet from '../lib/blockchain/GivethWallet';
 import GivethLogo from '../assets/Giveth-logo-purple.png';
 
-// TODO Remove the eslint exception and fix feathers to provide id's without underscore
+// TODO: Remove once rewritten to model
 /* eslint no-underscore-dangle: 0 */
 /**
  * A single milestone

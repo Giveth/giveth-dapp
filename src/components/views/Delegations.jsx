@@ -13,7 +13,7 @@ import { getUserName, getUserAvatar, getTruncatedText, convertEthHelper } from '
 import GivethWallet from '../../lib/blockchain/GivethWallet';
 import User from '../../models/User';
 
-// TODO Remove the eslint exception and fix feathers to provide id's without underscore
+// TODO: Remove once rewritten to model
 /* eslint no-underscore-dangle: 0 */
 /**
  * The my delegations view

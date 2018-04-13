@@ -80,7 +80,7 @@ const reviewDue = updatedAt =>
     .subtract(3, 'd')
     .isAfter(moment(updatedAt));
 
-// TODO Remove the eslint exception and fix feathers to provide id's without underscore
+// TODO: Remove once rewritten to model
 /* eslint no-underscore-dangle: 0 */
 /**
  * The my campaings view
@@ -657,7 +657,7 @@ class MyMilestones extends Component {
 
                   let msg;
                   if (txHash) {
-                    // TODO need to update feathers to reset the donations to previous state as this
+                    // TODO: need to update feathers to reset the donations to previous state as this
                     // tx failed.
                     msg = (
                       <p>
@@ -780,13 +780,13 @@ class MyMilestones extends Component {
               <ul className="nav nav-tabs">
                 {this.milestoneTabs.map(st => (
                   <li className="nav-item">
-                    <a
+                    <span
+                      role="button"
                       className={`nav-link ${this.state.loadedStatus === st ? 'active' : ''}`}
-                      href="#"
                       onClick={() => this.changeTab(st)}
                     >
                       {st}
-                    </a>
+                    </span>
                   </li>
                 ))}
               </ul>

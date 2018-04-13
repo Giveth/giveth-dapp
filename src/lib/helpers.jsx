@@ -58,7 +58,7 @@ export const displayTransactionError = txHash => {
         </a>
       </p>
     );
-    // TODO update or remove from feathers? maybe don't remove, so we can inform the user that the
+    // TODO: update or remove from feathers? maybe don't remove, so we can inform the user that the
     // tx failed and retry
   } else {
     msg = <p>Something went wrong with the transaction. Is your wallet unlocked?</p>;

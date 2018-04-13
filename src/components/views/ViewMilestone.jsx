@@ -68,7 +68,7 @@ class ViewMilestone extends Component {
       .catch(() => this.setState({ isLoading: false }));
 
     // lazy load donations
-    // TODO fetch "non comitted" donations? add "intendedProjectId: milestoneId" to query to get
+    // TODO: fetch "non comitted" donations? add "intendedProjectId: milestoneId" to query to get
     // all "pending aproval" donations for this milestone
     const query = paramsForServer({
       query: { ownerId: milestoneId },

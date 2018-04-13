@@ -22,7 +22,7 @@ import {
 import User from '../../models/User';
 import GivethWallet from '../../lib/blockchain/GivethWallet';
 
-// TODO Remove the eslint exception and fix feathers to provide id's without underscore
+// TODO: Remove once rewritten to model
 /* eslint no-underscore-dangle: 0 */
 /**
  * The my donations view

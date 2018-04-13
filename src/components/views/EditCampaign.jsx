@@ -73,7 +73,7 @@ class EditCampaign extends Component {
           .subscribe(
             resp =>
               this.setState({
-                // TODO should we filter the available cuases to those that have been mined?
+                // TODO: should we filter the available cuases to those that have been mined?
                 // It is possible that a createCause tx will fail and the dac will not be
                 // available
                 dacsOptions: resp.data.map(({ _id, title }) => ({

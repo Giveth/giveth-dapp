@@ -80,8 +80,8 @@ class EditProfile extends Component {
         giverId: this.state.giverId || '0',
       };
 
-      // TODO if (giverId > 0), need to send tx if commitTime or name has changed
-      // TODO store user profile on ipfs and add Giver in liquidpledging contract
+      // TODO: if (giverId > 0), need to send tx if commitTime or name has changed
+      // TODO: store user profile on ipfs and add Giver in liquidpledging contract
       if (this.state.giverId === undefined) {
         Promise.all([getNetwork(), getGasPrice()]).then(([network, gasPrice]) => {
           const { liquidPledging } = network;

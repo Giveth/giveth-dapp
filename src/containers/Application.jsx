@@ -147,7 +147,7 @@ class Application extends Component {
 
     GivethWallet.getCachedKeystore()
       .then(keystore => {
-        // TODO change to getWeb3() when implemented. actually remove provider from GivethWallet
+        // TODO: change to getWeb3() when implemented. actually remove provider from GivethWallet
         const provider = this.state.web3 ? this.state.web3.currentProvider : undefined;
         return GivethWallet.loadWallet(keystore, provider);
       })
