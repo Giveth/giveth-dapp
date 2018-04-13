@@ -112,7 +112,7 @@ class Donations extends Component {
 
   commit(donation) {
     takeActionAfterWalletUnlock(this.props.wallet, () =>
-      checkWalletBalance(this.props.wallet, this.props.history).then(() =>
+      checkWalletBalance(this.props.wallet).then(() =>
         React.swal({
           title: 'Commit your donation?',
           text:
@@ -210,7 +210,7 @@ class Donations extends Component {
 
   reject(donation) {
     takeActionAfterWalletUnlock(this.props.wallet, () =>
-      checkWalletBalance(this.props.wallet, this.props.history).then(() =>
+      checkWalletBalance(this.props.wallet).then(() =>
         React.swal({
           title: 'Reject your donation?',
           text:
@@ -301,7 +301,7 @@ class Donations extends Component {
 
   refund(donation) {
     takeActionAfterWalletUnlock(this.props.wallet, () =>
-      checkWalletBalance(this.props.wallet, this.props.history).then(() =>
+      checkWalletBalance(this.props.wallet).then(() =>
         React.swal({
           title: 'Refund your donation?',
           text:

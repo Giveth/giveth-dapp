@@ -48,7 +48,7 @@ class EditProfile extends Component {
 
   componentDidMount() {
     isAuthenticated(this.props.currentUser, this.props.wallet)
-      .then(() => checkWalletBalance(this.props.wallet, this.props.history))
+      .then(() => checkWalletBalance(this.props.wallet))
       .then(() => this.setState({ isLoading: false }))
       .catch(err => {
         if (err === 'noBalance') this.props.history.goBack();

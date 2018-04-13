@@ -37,7 +37,7 @@ class MilestoneCard extends Component {
   editMilestone(e) {
     e.stopPropagation();
 
-    checkWalletBalance(this.props.wallet, this.props.history).then(() => {
+    checkWalletBalance(this.props.wallet).then(() => {
       React.swal({
         title: 'Edit Milestone?',
         text: 'Are you sure you want to edit this milestone?',
@@ -51,7 +51,6 @@ class MilestoneCard extends Component {
               this.props.milestone._id
             }/edit`,
             this.props.wallet,
-            this.props.history,
           );
         }
       });

@@ -41,20 +41,23 @@ class DatePickerFormsy extends React.Component {
 
     return (
       <div className={`form-group ${className}`}>
-        <label>{this.props.label}</label>
-        <DatePicker
-          dateFormat="YYYY/MM/DD"
-          name="description"
-          selected={this.props.getValue() || getStartOfDayUTC().subtract(1, 'd')}
-          placeholderText={this.props.placeholder}
-          onChange={this.handleChange}
-          onChangeRaw={this.handleRaw}
-          className="form-control"
-          disabled={this.props.disabled}
-          minDate={getStartOfDayUTC(moment('2017-01-01', 'YYYY-MM-DD'))}
-          maxDate={getStartOfDayUTC().subtract(1, 'd')}
-          readOnly
-        />
+        <label htmlFor="datePicker">
+          {this.props.label}
+          <DatePicker
+            id="datePicker"
+            dateFormat="YYYY/MM/DD"
+            name="description"
+            selected={this.props.getValue() || getStartOfDayUTC().subtract(1, 'd')}
+            placeholderText={this.props.placeholder}
+            onChange={this.handleChange}
+            onChangeRaw={this.handleRaw}
+            className="form-control"
+            disabled={this.props.disabled}
+            minDate={getStartOfDayUTC(moment('2017-01-01', 'YYYY-MM-DD'))}
+            maxDate={getStartOfDayUTC().subtract(1, 'd')}
+            readOnly
+          />
+        </label>
         <span>{errorMessage}</span>
       </div>
     );

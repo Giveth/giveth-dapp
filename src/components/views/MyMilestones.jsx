@@ -148,7 +148,7 @@ class MyMilestones extends Component {
 
   editMilestone(milestone) {
     takeActionAfterWalletUnlock(this.props.wallet, () => {
-      checkWalletBalance(this.props.wallet, this.props.history).then(() =>
+      checkWalletBalance(this.props.wallet).then(() =>
         React.swal({
           title: 'Edit Milestone?',
           text: 'Are you sure you want to edit this Milestone?',
@@ -161,14 +161,9 @@ class MyMilestones extends Component {
               redirectAfterWalletUnlock(
                 `/milestones/${milestone._id}/edit/proposed`,
                 this.props.wallet,
-                this.props.history,
               );
             } else {
-              redirectAfterWalletUnlock(
-                `/milestones/${milestone._id}/edit`,
-                this.props.wallet,
-                this.props.history,
-              );
+              redirectAfterWalletUnlock(`/milestones/${milestone._id}/edit`, this.props.wallet);
             }
           }
         }),
@@ -178,7 +173,7 @@ class MyMilestones extends Component {
 
   markComplete(milestone) {
     takeActionAfterWalletUnlock(this.props.wallet, () => {
-      checkWalletBalance(this.props.wallet, this.props.history).then(() =>
+      checkWalletBalance(this.props.wallet).then(() =>
         React.swal({
           title: 'Mark as complete?',
           text: 'Are you sure you want to mark this Milestone as complete?',
@@ -212,7 +207,7 @@ class MyMilestones extends Component {
 
   cancelMilestone(milestone) {
     takeActionAfterWalletUnlock(this.props.wallet, () => {
-      checkWalletBalance(this.props.wallet, this.props.history).then(() =>
+      checkWalletBalance(this.props.wallet).then(() =>
         React.swal({
           title: 'Cancel Milestone?',
           text: 'Are you sure you want to cancel this Milestone?',
@@ -291,7 +286,7 @@ class MyMilestones extends Component {
 
   acceptProposedMilestone(milestone) {
     takeActionAfterWalletUnlock(this.props.wallet, () => {
-      checkWalletBalance(this.props.wallet, this.props.history).then(() =>
+      checkWalletBalance(this.props.wallet).then(() =>
         React.swal({
           title: 'Accept Milestone?',
           text: 'Are you sure you want to accept this Milestone?',
@@ -414,7 +409,7 @@ class MyMilestones extends Component {
 
   approveMilestone(milestone) {
     takeActionAfterWalletUnlock(this.props.wallet, () => {
-      checkWalletBalance(this.props.wallet, this.props.history).then(() =>
+      checkWalletBalance(this.props.wallet).then(() =>
         React.swal({
           title: 'Approve Milestone?',
           text: 'Are you sure you want to approve this Milestone?',
@@ -493,7 +488,7 @@ class MyMilestones extends Component {
 
   rejectMilestone(milestone) {
     takeActionAfterWalletUnlock(this.props.wallet, () => {
-      checkWalletBalance(this.props.wallet, this.props.history).then(() =>
+      checkWalletBalance(this.props.wallet).then(() =>
         React.swal({
           title: 'Reject Milestone?',
           text: 'Are you sure you want to reject this Milestone?',
@@ -528,7 +523,7 @@ class MyMilestones extends Component {
 
   requestWithdrawal(milestone) {
     takeActionAfterWalletUnlock(this.props.wallet, () => {
-      checkWalletBalance(this.props.wallet, this.props.history).then(() =>
+      checkWalletBalance(this.props.wallet).then(() =>
         React.swal({
           title: 'Request Withdrawal',
           text:
@@ -693,7 +688,7 @@ class MyMilestones extends Component {
 
   collect(milestone) {
     takeActionAfterWalletUnlock(this.props.wallet, () => {
-      checkWalletBalance(this.props.wallet, this.props.history).then(() =>
+      checkWalletBalance(this.props.wallet).then(() =>
         React.swal({
           title: 'Collect Funds',
           text: 'The funds will be transferred to you wallet.',

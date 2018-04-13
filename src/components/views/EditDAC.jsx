@@ -51,7 +51,7 @@ class EditDAC extends Component {
   componentDidMount() {
     isAuthenticated(this.props.currentUser, this.props.wallet)
       .then(() => isInWhitelist(this.props.currentUser, React.whitelist.delegateWhitelist))
-      .then(() => checkWalletBalance(this.props.wallet, this.props.history))
+      .then(() => checkWalletBalance(this.props.wallet))
       .then(() => {
         if (!this.props.isNew) {
           DACservice.get(this.props.match.params.id).then(dac => {

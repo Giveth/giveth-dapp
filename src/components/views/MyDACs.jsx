@@ -48,7 +48,7 @@ class MyDACs extends Component {
 
   editDAC(id) {
     takeActionAfterWalletUnlock(this.props.wallet, () => {
-      checkWalletBalance(this.props.wallet, this.props.history).then(() =>
+      checkWalletBalance(this.props.wallet).then(() =>
         React.swal({
           title: 'Edit Community?',
           text: 'Are you sure you want to edit the description of this community?',
@@ -56,8 +56,7 @@ class MyDACs extends Component {
           dangerMode: true,
           buttons: ['Cancel', 'Yes, edit'],
         }).then(isConfirmed => {
-          if (isConfirmed)
-            redirectAfterWalletUnlock(`/dacs/${id}/edit`, this.props.wallet, this.props.history);
+          if (isConfirmed) redirectAfterWalletUnlock(`/dacs/${id}/edit`, this.props.wallet);
         }),
       );
     });
