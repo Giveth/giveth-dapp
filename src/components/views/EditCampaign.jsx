@@ -277,7 +277,7 @@ class EditCampaign extends Component {
                     </div>
 
                     <div className="form-group">
-                      <label htmlFor="dac">
+                      <label htmlFor>
                         Relate your campaign to a community
                         <small className="form-text">
                           By linking your Campaign to a Community, Ether from that community can be

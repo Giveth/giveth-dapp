@@ -718,9 +718,7 @@ class EditMilestone extends Component {
                         onChange={() => this.toggleItemize()}
                         disabled={!isNew && !isProposed}
                       />
-                      <label htmlFor="itemize-state">
-                        Add multiple expenses, invoices or items
-                      </label>
+                      <span className="label">Add multiple expenses, invoices or items</span>
                     </div>
 
                     {!itemizeState && (

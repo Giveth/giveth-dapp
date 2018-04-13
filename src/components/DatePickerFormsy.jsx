@@ -41,7 +41,7 @@ class DatePickerFormsy extends React.Component {
 
     return (
       <div className={`form-group ${className}`}>
-        <label htmlFor="datePicker">
+        <label htmlFor>
           {this.props.label}
           <DatePicker
             id="datePicker"

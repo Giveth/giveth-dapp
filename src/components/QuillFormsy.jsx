@@ -46,9 +46,10 @@ const QuillFormsy = props => {
 
   return (
     <div className={`form-group ${errorClass}`}>
-      <label>
+      <span className="label">
         {props.label} {props.isRequired() ? '*' : null}
-      </label>
+      </span>
+
       <small className="form-text">{props.helpText}</small>
       <ReactQuill
         height="200px"

@@ -227,7 +227,7 @@ class ViewMilestone extends Component {
                   <h4>Details</h4>
 
                   <div className="form-group">
-                    <label>Reviewer</label>
+                    <span className="label">Reviewer</span>
                     <small className="form-text">
                       This person will review the actual completion of the Milestone
                     </small>
@@ -257,7 +257,7 @@ class ViewMilestone extends Component {
                   </div>
 
                   <div className="form-group">
-                    <label>Recipient</label>
+                    <span className="label">Recipient</span>
                     <small className="form-text">
                       Where the Ether goes after successful completion of the Milestone
                     </small>
@@ -288,7 +288,7 @@ class ViewMilestone extends Component {
 
                   {date && (
                     <div className="form-group">
-                      <label>Date of milestone</label>
+                      <span className="label">Date of milestone</span>
                       <small className="form-text">
                         This date defines the eth-fiat conversion rate
                       </small>
@@ -297,7 +297,7 @@ class ViewMilestone extends Component {
                   )}
 
                   <div className="form-group">
-                    <label>Max amount to raise</label>
+                    <span className="label">Max amount to raise</span>
                     <small className="form-text">
                       The maximum amount of ETH that can be donated to this Milestone. Based on the
                       requested amount in fiat.
@@ -313,7 +313,7 @@ class ViewMilestone extends Component {
                   </div>
 
                   <div className="form-group">
-                    <label>Amount donated</label>
+                    <span className="label">Amount donated</span>
                     <small className="form-text">
                       The amount of ETH currently donated to this Milestone
                     </small>
@@ -321,7 +321,7 @@ class ViewMilestone extends Component {
                   </div>
 
                   <div className="form-group">
-                    <label>Status</label>
+                    <span className="label">Status</span>
                     <br />
                     {status}
                   </div>
