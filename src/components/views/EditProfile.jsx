@@ -13,13 +13,13 @@ import {
 import LoaderButton from '../../components/LoaderButton';
 import getNetwork from '../../lib/blockchain/getNetwork';
 import User from '../../models/User';
-import { displayTransactionError, getGasPrice } from '../../lib/helpers';
+import { displayTransactionError, getGasPrice, history } from '../../lib/helpers';
 import GivethWallet from '../../lib/blockchain/GivethWallet';
+import ErrorPopup from '../ErrorPopup';
 
 /**
  * The edit user profile view mapped to /profile/
  *
- * @param history      Browser history object
  * @param wallet       Wallet object with the balance and all keystores
  * @param currentUser  The current user's address
  */
@@ -51,7 +51,7 @@ class EditProfile extends Component {
       .then(() => checkWalletBalance(this.props.wallet))
       .then(() => this.setState({ isLoading: false }))
       .catch(err => {
-        if (err === 'noBalance') this.props.history.goBack();
+        if (err === 'noBalance') history.goBack();
         else {
           // set giverId to '0'. This way we don't create 2 Givers for the same user
           this.setState({
@@ -113,6 +113,12 @@ class EditProfile extends Component {
                     </p>,
                   );
                   this.setState(Object.assign({}, user, { isSaving: false }));
+                })
+                .catch(err => {
+                  ErrorPopup(
+                    'There has been a problem creating your user profile. Please refresh the page and try again.',
+                    err,
+                  );
                 });
             })
             .then(() =>
@@ -143,7 +149,12 @@ class EditProfile extends Component {
             this.setState(Object.assign({}, user, { isSaving: false }));
           })
           // TODO: Actually inform the user about error
-          .catch(err => console.error('update profile error -> ', err)); // eslint-disable-line no-console
+          .catch(err => {
+            ErrorPopup(
+              'There has been a problem updating your user profile. Please refresh the page and try again.',
+              err,
+            );
+          });
       }
     };
 
@@ -156,6 +167,12 @@ class EditProfile extends Component {
             .create({ uri: this.state.avatar })
             .then(file => {
               updateUser(file.url);
+            })
+            .catch(err => {
+              ErrorPopup(
+                'We could not upload your new profile image. Please refresh the page and try again.',
+                err,
+              );
             });
         } else {
           updateUser();
@@ -271,9 +288,6 @@ class EditProfile extends Component {
 EditProfile.propTypes = {
   wallet: PropTypes.instanceOf(GivethWallet).isRequired,
   currentUser: PropTypes.instanceOf(User),
-  history: PropTypes.shape({
-    goBack: PropTypes.func.isRequired,
-  }).isRequired,
 };
 
 EditProfile.defaultProps = {
