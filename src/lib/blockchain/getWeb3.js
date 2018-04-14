@@ -15,7 +15,7 @@ function setWallet(wallet) {
     wsProvider: this.currentProvider,
     getAccounts: cb => cb(null, wallet.getAddresses()),
     approveTransaction: (txParams, cb) => {
-      // TODO handle locked wallet here?
+      // TODO: handle locked wallet here?
       cb(null, true);
     },
     signTransaction: (txData, cb) => {
@@ -60,7 +60,7 @@ function setWallet(wallet) {
   if (intervalId > 0) {
     clearInterval(intervalId);
   }
-  // TODO if removing this interval, need to uncomment the ws timeout fix below
+  // TODO: if removing this interval, need to uncomment the ws timeout fix below
   intervalId = setInterval(getBalance, 15000);
   this.setProvider(engine);
 }

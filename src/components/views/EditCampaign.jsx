@@ -61,7 +61,7 @@ class EditCampaign extends Component {
   componentDidMount() {
     isAuthenticated(this.props.currentUser, this.props.wallet)
       .then(() => isInWhitelist(this.props.currentUser, React.whitelist.projectOwnerWhitelist))
-      .then(() => checkWalletBalance(this.props.wallet, this.props.history))
+      .then(() => checkWalletBalance(this.props.wallet))
       .then(() => {
         if (!this.state.hasWhitelist) this.getReviewers();
       })
@@ -73,7 +73,7 @@ class EditCampaign extends Component {
           .subscribe(
             resp =>
               this.setState({
-                // TODO should we filter the available cuases to those that have been mined?
+                // TODO: should we filter the available cuases to those that have been mined?
                 // It is possible that a createCause tx will fail and the dac will not be
                 // available
                 dacsOptions: resp.data.map(({ _id, title }) => ({
@@ -277,7 +277,7 @@ class EditCampaign extends Component {
                     </div>
 
                     <div className="form-group">
-                      <label htmlFor="dac">
+                      <label htmlFor>
                         Relate your campaign to a community
                         <small className="form-text">
                           By linking your Campaign to a Community, Ether from that community can be
