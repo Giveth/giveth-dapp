@@ -36,7 +36,7 @@ class JoinGivethCommunity extends Component {
       .then(() => {
         if (this.props.currentUser) {
           takeActionAfterWalletUnlock(this.props.wallet, () => {
-            checkWalletBalance(this.props.wallet, this.props.history).then(() => {
+            checkWalletBalance(this.props.wallet).then(() => {
               this.props.history.push('/dacs/new');
             });
           });
@@ -78,7 +78,7 @@ class JoinGivethCommunity extends Component {
       .then(() => {
         if (this.props.currentUser) {
           takeActionAfterWalletUnlock(this.props.wallet, () => {
-            checkWalletBalance(this.props.wallet, this.props.history).then(() => {
+            checkWalletBalance(this.props.wallet).then(() => {
               this.props.history.push('/campaigns/new');
             });
           });

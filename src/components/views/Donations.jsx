@@ -22,7 +22,7 @@ import {
 import User from '../../models/User';
 import GivethWallet from '../../lib/blockchain/GivethWallet';
 
-// TODO Remove the eslint exception and fix feathers to provide id's without underscore
+// TODO: Remove once rewritten to model
 /* eslint no-underscore-dangle: 0 */
 /**
  * The my donations view
@@ -112,7 +112,7 @@ class Donations extends Component {
 
   commit(donation) {
     takeActionAfterWalletUnlock(this.props.wallet, () =>
-      checkWalletBalance(this.props.wallet, this.props.history).then(() =>
+      checkWalletBalance(this.props.wallet).then(() =>
         React.swal({
           title: 'Commit your donation?',
           text:
@@ -210,7 +210,7 @@ class Donations extends Component {
 
   reject(donation) {
     takeActionAfterWalletUnlock(this.props.wallet, () =>
-      checkWalletBalance(this.props.wallet, this.props.history).then(() =>
+      checkWalletBalance(this.props.wallet).then(() =>
         React.swal({
           title: 'Reject your donation?',
           text:
@@ -301,7 +301,7 @@ class Donations extends Component {
 
   refund(donation) {
     takeActionAfterWalletUnlock(this.props.wallet, () =>
-      checkWalletBalance(this.props.wallet, this.props.history).then(() =>
+      checkWalletBalance(this.props.wallet).then(() =>
         React.swal({
           title: 'Refund your donation?',
           text:
@@ -554,7 +554,6 @@ class Donations extends Component {
 
 Donations.propTypes = {
   currentUser: PropTypes.instanceOf(User).isRequired,
-  history: PropTypes.shape({}).isRequired,
   wallet: PropTypes.instanceOf(GivethWallet).isRequired,
 };
 

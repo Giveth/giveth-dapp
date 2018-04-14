@@ -37,7 +37,7 @@ class DacCard extends Component {
   editDAC(e) {
     e.stopPropagation();
 
-    checkWalletBalance(this.props.wallet, this.props.history).then(() => {
+    checkWalletBalance(this.props.wallet).then(() => {
       React.swal({
         title: 'Edit Community?',
         text: 'Are you sure you want to edit the description of this Community?',
@@ -46,11 +46,7 @@ class DacCard extends Component {
         dangerMode: true,
       }).then(isConfirmed => {
         if (isConfirmed) {
-          redirectAfterWalletUnlock(
-            `/dacs/${this.props.dac.id}/edit`,
-            this.props.wallet,
-            this.props.history,
-          );
+          redirectAfterWalletUnlock(`/dacs/${this.props.dac.id}/edit`, this.props.wallet);
         }
       });
     });

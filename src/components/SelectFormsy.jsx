@@ -39,21 +39,21 @@ class SelectFormsy extends React.Component {
 
     return (
       <div className={`form-group ${className}`}>
-        <label>
+        <label htmlFor>
           {this.props.label} {this.props.isRequired() ? '*' : null}
+          <select
+            className="form-control"
+            name={this.props.name}
+            onChange={this.changeValue}
+            value={this.props.getValue()}
+            defaultValue={this.props.getValue()}
+            disabled={this.props.disabled}
+          >
+            {options}
+          </select>
         </label>
-        <select
-          className="form-control"
-          name={this.props.name}
-          onChange={this.changeValue}
-          value={this.props.getValue()}
-          defaultValue={this.props.getValue()}
-          disabled={this.props.disabled}
-        >
-          {options}
-        </select>
 
-        {!errorMessage && <small className="help-block">{this.props.helpText}</small>}
+        <p>{!errorMessage && <small className="help-block">{this.props.helpText}</small>}</p>
 
         {errorMessage && <span className="help-block validation-message">{errorMessage}</span>}
       </div>
