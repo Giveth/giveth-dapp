@@ -1,28 +1,33 @@
 ![Giveth Dapp](./readme-header.png)
 
 
-> Dapp for donating ether without losing ownership
+> DApp - Donation Application for charitable giving without losing ownership
 
 
-Welcome to the code for Giveth's dapp. This is an open source effort to realize the potential of ethereum smart contracts. More specifically, the Giveth dapp provides an alternative to traditional donation.
+Welcome to the code for Giveth's DApp. This is an open source effort to realize the potential of ethereum smart contracts. More specifically, the Giveth dapp provides an alternative to traditional donation.
 
 ## Table of content
 
 - [Getting Started](#getting-started)
     - [Install](#install)
-    - [For OSX and Linux](#for-osx-and-linux)
-    - [For Windows](#for-windows)
-    - [Run Dapp](#run-dapp)
-    - [Video Walkthrough](#video-walkthrough)
-- [Build](#build)
-- [Dependencies](#dependencies)
-- [Where are the config files?](#where-are-the-config-files)
-- [You don't use Redux?](#you-dont-use-redux)
-- [Local Development with TestRPC](#local-development-with-testrpc)
-- [Testing Environments and CI](#testing-environments-and-ci)
+      - [OSX and Linux](#osx-and-linux)
+      - [Windows](#windows)
+    - [Run](#run)
+    - [Build](#build)
+    - [Configuration](#configuration)
+- [Contributing](#contributing)
+  - [Local Development](#local-development)
+  - [Development and PR Testing](#development-and-pr-testing)
+  - [Deployment Environments](#deploy-environments)
+  - [Release Process](#release-process)
 - [Help](#help)
 
 ## Getting Started
+In the following sections you will learn all you need to know to run the DApp locally and to start contributing. All the steps are also described in this amazing [Video Tutorial Walkthrough](https://tinyurl.com/y9lx6jrl) by Oz.
+
+#### Prerequisities
+- You need to use Node > v6
+- You need to use npm 4.x, or npm >= 5.3, or yarn to correctly install the dependencies.
 
 ### Install
 1. Click **Star** on this repo near the top-right corner of this web page (if you want to).
@@ -31,7 +36,7 @@ Welcome to the code for Giveth's dapp. This is an open source effort to realize 
 4. Clone your own "giveth-dapp" repo. Copy the link from the "Clone or download" button near the top right of this repo's home page.
 5. The rest of these steps must be done from your machine's command line. See the [OSX and Linux](#for-osx-and-linux) or [Windows](#for-windows) section to continue.
 
-### For OSX and Linux
+#### OSX and Linux
 1. From the desired directory you wish to copy the "giveth-dapp" folder with source files to.
     ```
     git clone {paste your own repo link here}
@@ -49,9 +54,9 @@ Welcome to the code for Giveth's dapp. This is an open source effort to realize 
     ```
     npm install
     ```
-5. That is it, you are now ready to run the giveth-dapp! Head to the [Run dapp](#run-dapp) section for further instructions.
+5. That is it, you are now ready to run the giveth-dapp! Head to the [Run DApp](#run-dapp) section for further instructions.
 
-### For Windows
+#### Windows
 1. Make sure you have the LTS version of [64-bit NodeJS](https://nodejs.org/en/download/current) (v8.9.1)
 2. Run the node-v8.9.1-x64.msi installer and then continue through the installation as normal. Be sure to have the "Enable in PATH" option enabled before installing.
 3. Open the command line in administrator mode by right clicking on the cmd.exe application and selecting "Run as administrator"
@@ -81,8 +86,8 @@ Welcome to the code for Giveth's dapp. This is an open source effort to realize 
    ```
 10. That is it, you are now ready to run the giveth-dapp! Head to the [Run dapp](#run-dapp) section for further instructions.
 
-### Run dapp
-1. The Giveth dapp will need to connect to a [feathers-giveth](https://github.com/Giveth/feathers-giveth) server. Follow the feathers-giveth readme instructions to install and run server before proceeding further.
+### Run
+1. The Giveth dapp will need to connect to a [feathers-giveth](https://github.com/Giveth/feathers-giveth) server. Follow the feathers-giveth readme instructions to install and run server before proceeding further. Alternatively, you could change the configuration to connect to one of our environments, see the [Configuration](#configuration) section.
 2. Start the dapp.
     ```
     npm start
@@ -90,11 +95,10 @@ Welcome to the code for Giveth's dapp. This is an open source effort to realize 
 3. Once the dapp is up in your browser, click "Sign In" from the main menu.
 4. For testing locally, choose any of the wallet files found in the `giveth-dapp/keystores/` folder using the wallet password: `password`. **DO NOT USE THESE ON MAINNET ETHEREUM.**
 
-### Video Walkthrough
-Video tutorial walkthrough here: https://tinyurl.com/y9lx6jrl
-
-## Build
-`npm run build`
+### Build
+    ```
+    npm run build
+    ```
 
 NOTE: due to a bug in Safari create-react-app's output does not work in Safari (and any iPhone browser)
 To fix this:
@@ -110,49 +114,62 @@ go to line 300, and add:
 
 now the build will work in Safari
 
-## Issues?
-- You need to use Node > v6
-- You need to use npm 4.x, or npm >= 5.3, or yarn to correctly install the dependencies
-- Don't use NPM? All commands can be used using Yarn.
-- Don't like port 3010? Change it in `.env`
+### Configuration
+The DApp has several node environment variables which can be used to alter the DApp behaviour without changing the code. You can set them through `.env` or `.env.local` files in the DApp folder.
 
-## Dependencies
-- Bootstrap 4 (via CDN)
-- Font Awesome (via CDN)
-- Sass
+Variable name | Default Value | Description |
+---|---|---|
+PORT | 3010 | Port on which the DApp runs |
+REACT_APP_ENVIRONMENT | 'localhost' | To which feathers environment should the DApp connect. By default it connects to localhost feathers. Allowed values are: `localhost`, `develop`, `release`, `alpha`, `mainnet`. See [Deployment Environments](#deploy-environments). |
+REACT_APP_DECIMALS | 8 | How many decimal should be shown for ETH values. Note that the calculations are still done with 18 decimals. |
+REACT_APP_FEATHERJS_CONNECTION_URL | Differs per REACT_APP_ENVIRONMENT | Overwrites the environment injected feathers connection URL. |
+REACT_APP_ETH_NODE_CONNECTION_URL | Differs per REACT_APP_ENVIRONMENT | Overwrites the ethereum node connection URL for making ethereum transactions. |
+REACT_APP_LIQUIDPLEDGING_ADDRESS | Differs per REACT_APP_ENVIRONMENT | Overwrites the Liquid Pledging contract address. |
+REACT_APP_DACS_ADDRESS | Differs per REACT_APP_ENVIRONMENT | Overwrites the DACs contract address. |
+REACT_APP_CAMPAIGN_FACTORY_ADDRESS | Differs per REACT_APP_ENVIRONMENT | Overwrites the Campaign Factory contract address. |
+REACT_APP_CAPPED_MILESTONE_ADDRESS | Differs per REACT_APP_ENVIRONMENT | Overwrites the Milestone contract address. |
+REACT_APP_TOKEN_ADDRESS | Differs per REACT_APP_ENVIRONMENT | Overwrites the Token emitting contract address. |
+REACT_APP_BLOCKEXPLORER | Differs per REACT_APP_ENVIRONMENT | Overwrites the block explorer base URL. The DApp assumes such blockexplorer api is `\<BLOCKEXPLORER\>/tx/\<TRANSACTION_HASH\>` |
 
-All dependencies can be found in package.json, however here are the most important ones:
-- React Router
+Example of `.env.local` file that makes the DApp run on port 8080, connects to the **develop** environment and uses custom blockexplorer:
+```
+PORT=8080
+REACT_APP_ENVIRONMENT='develop'
+REACT_APP_BLOCKEXPLORER='www.awesomeopensourceexplorer.io'
+```
 
-## Where are the config files?
-This project is setup using [Create React App](https://github.com/facebookincubator/create-react-app). It can do almost everything (config via package.json) and best, it just works! :-)
-If required you can 'eject' the project by running `npm run eject`. Note that there's no way back!
+## Contributing
+The DApp is fully open-source software, and we would love to have your helping hand! See [CONTRIBUTING.md](CONTRIBUTING.md) for more information on what we're looking for and how to get started. You can then look for issues labeled [good first issue](https://github.com/Giveth/giveth-dapp/labels/good%20first%20issue) or [help wanted](https://github.com/Giveth/giveth-dapp/labels/help%20wanted). We regularly reward contributions with ether using the Reward DAO.
 
-## You don't use Redux?
-Nope. We use container architecture instead. So persistent data is loaded in containers, for example `Application.js`, and passed on as props to its children.
-As long as a container is rendered the data is persistent.
+If you are not a developer, you can still help us by testing new releases periodically. See the [Release Process](#release-process) section.
 
-## Local Development with TestRPC
-When running `testrpc` locally and in `deterministic` mode, you can use any of the keystores in the `keystores` when loading your wallet.
-This will provide you access to the testrpc accounts for local development. Each keystore uses the same password: `password`. **DO NOT USE
-THESE ON MAINNET ETHEREUM.**
+If you want to better understand how does the development process works, please refer to our [wiki pages](https://wiki.giveth.io/documentation/DApp), especially to the [Product Definition](https://wiki.giveth.io/documentation/DApp/product-definition/), [Product Roadmap](https://wiki.giveth.io/documentation/DApp/product-roadmap/) and [Development Process & Quality Assurance](https://wiki.giveth.io/documentation/DApp/product-development-testing/).
 
-## Testing Environments and CI
+### Local Development
+At first you would like to run the DApp locally. When running `testrpc` locally in `deterministic` mode, you can use any of the keystores in the `giveth-dapp/keystores` as your wallet.
+This will provide you access to the testrpc accounts for local development. Each keystore uses the same password: `password`. **DO NOT USE THESE ON MAINNET ETHEREUM**
 
-### master to Ropsten
-1. The Giveth Dapp is auto deployed from the master branch and is live on Ropsten and can be reached here: https://alpha.giveth.io
-2. In order to use the dapp you will need ETH on the Ropsten network. You can use this faucet to get some: http://faucet.ropsten.be:3001/
-3. "sign up" on the dapp to create an account.
-4. Go to the "wallet" page to see your new address (0x..). Copy and past that address into the faucet link above and you will have Ropsten network ETH for testing.
+### Development and PR Testing
+1. The Giveth Dapp is auto deployed from the develop branch and is live on Rinkeby [develop.giveth.io](https://develop.giveth.io). All pull requests are autodeployed and the PR preview will be generated upon submission. To learn how to access PR previews see [Development Process & Quality Assurance](https://wiki.giveth.io/documentation/DApp/product-development-testing/) on our wiki.
+2. In order to use the dapp you will need to create account. If this is your first time, click "sign up" to create an account. If you already have a valid keychain file, use it to sign in.
+4. You will need test ether on the Rinkeby network. Go to the "wallet" page to see your new address (0x..). Copy that address and use the faucet to get some: https://faucet.rinkeby.io/
 
-### develop to remote testprc
-1. The Giveth Dapp is auto deployed from the develop branch to a remote testrpc instance and can be reached here: https://giveth-develop.netlify.com/
-2. In order to use the dapp you will need ETH on testrpc. You can do this by downloading a testrpc wallet from here: https://drive.google.com/open?id=1EU3U2dFkFD0MuSQqN2GjZIosvuaP4u_S
-3. You can use one of the downloaded json files to "sign in" on the dapp.  The password is: password
-4. **Never use this wallet anywhere except for testing.** It should have ETH if you run testrpc locally or here on the develop environment: https://giveth-develop.netlify.com/
-5. Sometimes testrpc crashes. You can check if it's up by seeing if there is an error here: https://feathers3.giveth.io/get-state/
-6. If you see pretty json, then you're looking at the state of the running testrpc blockchain. If you see an error message, than testrpc needs to be restarted. Reach out to @oz on [slack](slack.giveth.io).
-7. We are hoping to replace remote testrpc with private geth node via [puppeth](https://modalduality.org/posts/puppeth/), as soon as we figure it out :)
+
+
+### Deployment Environments
+At Giveth, we are using the [gitflow](http://nvie.com/posts/a-successful-git-branching-model/) branching model to deploy to 4 different environments.
+
+Name | Blockchain | Branch Deployed | Auto Deploy | Use |
+-----|------------|-----------------|-------------|-----|
+[mainnet](https://mainnet.giveth.io) | Ethereum Main Network | master | no | Main network deployment for now abandoned due to high transaction costs until sustainable solution is found.
+[alpha](https://alpha.giveth.io)  | Rinkeby Test Network | master | no | Environment used as a production version until scalability is resolved.
+[release](https://release.giveth.io) | Rinkeby Test Network | release | yes | Environment for release candidate quality control testing by non-devs.
+[develop](https://develop.giveth.io) | Rinkeby Test Network | develop | yes | Development environment for integrating new features. Feature and pull request branches are also automatically deployed to this environment.
+
+You can change the environment to which the DApp connects through the node environment variables. See the [Configuration](#Configuration) section for more details.
+
+### Release Process
+The development uses the Gitflow process with 2 weeks long sprints. This means there is new release to be tested every fortnight. We invite contributors to help us test the DApp in the release environment before we merge it to the master branch and deploy to production environments. If you are intereste, write to the DApp Development channel on [Riot or Slack](https://join.giveth.io). You can read more about the release planning on [our wiki](https://wiki.giveth.io/documentation/DApp/product-development-testing/).
 
 ## Help
-Reach out to us on [slack](http://slack.giveth.io) for any help or to share ideas.
+Reach out to us on [Riot or Slack](https://join.giveth.io) for any help or to share ideas.
