@@ -76,9 +76,13 @@ class EditMilestone extends Component {
         title: `${r.name ? r.name : 'Anonymous user'} - ${r.address}`,
       })),
       reviewers: [],
-      reviewerAddress: '',
+      reviewerAddress:
+        React.whitelist.reviewerWhitelist.length > 0
+          ? getRandomWhitelistAddress(React.whitelist.reviewerWhitelist).address
+          : '',
       items: [],
       itemizeState: false,
+      showRecipientAddress: false,
       conversionRates: [],
       currentRate: undefined,
       date: getStartOfDayUTC().subtract(1, 'd'),
@@ -94,18 +98,12 @@ class EditMilestone extends Component {
       ],
       selectedFiatType: 'EUR',
     };
-
-    if (React.whitelist.reviewerWhitelist.length > 0) {
-      this.setState({
-        reviewerAddress: getRandomWhitelistAddress(React.whitelist.reviewerWhitelist).address,
-      });
-    }
-
     this.submit = this.submit.bind(this);
     this.setImage = this.setImage.bind(this);
     this.setMaxAmount = this.setMaxAmount.bind(this);
     this.setFiatAmount = this.setFiatAmount.bind(this);
     this.changeSelectedFiat = this.changeSelectedFiat.bind(this);
+    this.toggleShowRecipientAddress = this.toggleShowRecipientAddress.bind(this);
   }
 
   componentDidMount() {
@@ -121,7 +119,6 @@ class EditMilestone extends Component {
       .then(() => {
         this.setState({
           campaignId: this.props.match.params.id,
-          recipientAddress: this.props.currentUser.address,
         });
 
         // load a single milestones (when editing)
@@ -317,6 +314,10 @@ class EditMilestone extends Component {
     this.setState({ itemizeState: !this.state.itemizeState });
   }
 
+  toggleShowRecipientAddress() {
+    this.setState({ showRecipientAddress: !this.state.showRecipientAddress });
+  }
+
   toggleFormValid(state) {
     if (this.state.itemizeState) {
       this.setState({ formIsValid: state && this.state.items.length > 0 });
@@ -342,6 +343,10 @@ class EditMilestone extends Component {
           (accumulator, item) => accumulator.plus(new BigNumber(item.etherAmount)),
           new BigNumber(0),
         );
+      }
+
+      if (!this.state.showRecipientAddress) {
+        model.recipientAddress = this.props.currentUser.address;
       }
 
       const constructedModel = {
@@ -692,24 +697,42 @@ class EditMilestone extends Component {
                         />
                       )}
                     </div>
+                    {!this.state.showRecipientAddress && (
+                      <label>Where will the money go after completion?</label>
+                    )}
 
-                    <div className="form-group">
-                      <Input
-                        name="recipientAddress"
-                        id="title-input"
-                        label="Where will the money go after completion?"
-                        type="text"
-                        value={recipientAddress}
-                        placeholder="0x0000000000000000000000000000000000000000"
-                        help="Enter an Ethereum address."
-                        validations="isEtherAddress"
-                        validationErrors={{
-                          isEtherAddress: 'Please insert a valid Ethereum address.',
-                        }}
-                        required
-                        disabled={projectId}
+                    <div className="react-toggle-container">
+                      <Toggle
+                        id="show-recipient-address"
+                        defaultChecked={this.state.showRecipientAddress}
+                        onChange={() => this.toggleShowRecipientAddress()}
+                        disabled={!isNew && !isProposed}
                       />
+                      <label htmlFor="show-recipient-address">
+                        Recipient address is different from my address
+                      </label>
                     </div>
+                    {this.state.showRecipientAddress && (
+                      <div className="form-group">
+                        <Input
+                          name="recipientAddress"
+                          id="title-input"
+                          label="Where will the money go after completion?"
+                          type="text"
+                          value={recipientAddress}
+                          placeholder="0x0000000000000000000000000000000000000000"
+                          help="Enter an Ethereum address."
+                          validations="isEtherAddress"
+                          validationErrors={{
+                            isEtherAddress: 'Please insert a valid Ethereum address.',
+                          }}
+                          required={this.state.showRecipientAddress}
+                          disabled={projectId}
+                        />
+                      </div>
+                    )}
+                    <br />
+                    <br />
 
                     <div className="react-toggle-container">
                       <Toggle
@@ -741,7 +764,7 @@ class EditMilestone extends Component {
                                 validationErrors={{
                                   isMoment: 'Please provide a date.',
                                 }}
-                                required
+                                required={!itemizeState}
                                 disabled={projectId}
                               />
                             </div>
