@@ -8041,9 +8041,9 @@ react-router@^4.1.2, react-router@^4.2.0:
     prop-types "^15.5.4"
     warning "^3.0.0"
 
-react-skylight@^0.4.2:
-  version "0.4.2"
-  resolved "https://registry.yarnpkg.com/react-skylight/-/react-skylight-0.4.2.tgz#939b8972705ccd39fda3186e34708010e0b1cf17"
+react-skylight@0.5.1:
+  version "0.5.1"
+  resolved "https://registry.yarnpkg.com/react-skylight/-/react-skylight-0.5.1.tgz#bf7f9d7f2929a83fe16cac8edacdeda025218d40"
   dependencies:
     prop-types "^15.5.10"
 
