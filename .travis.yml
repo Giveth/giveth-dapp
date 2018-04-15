@@ -2,7 +2,11 @@ language: node_js
 node_js:
   - 8.5.0
 
+install:
+  - npm install yarn
+  - yarn install --pure-lockfile
+
 script:
-  - npm run eslint
-  - npm run build
-  - npm test
+  - yarn build
+  - yarn eslint
+  - yarn test
