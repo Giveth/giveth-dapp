@@ -33,7 +33,7 @@
     "react-addons-shallow-compare": "^15.6.0",
     "react-avatar": "^2.3.0",
     "react-cropper": "^1.0.1",
-    "react-datepicker": "^0.54.0",
+    "react-datepicker": "1.4.1",
     "react-dom": "16.3.1",
     "react-html-parser": "^2.0.2",
     "react-input-token": "^1.1.2",
