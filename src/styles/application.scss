@@ -65,7 +65,8 @@ button {
     }
 }
 
-label {
+label,
+.label {
     font-weight: 600;
     margin-bottom: 2px;
     font-size: 0.9rem;
@@ -114,7 +115,7 @@ i {
     margin-top: 50px;
 }
 
-// 
+//
 .form-group {
     // $valid-green: darken($green, 2%);
     label {
@@ -135,7 +136,7 @@ i {
     //   .ql-container {
     //     border-bottom-color: $valid-green;
     //     border-right-color: $valid-green;
-    //     border-left-color: $valid-green; 
+    //     border-left-color: $valid-green;
     //   }
     // }
     &.has-error {
@@ -176,11 +177,11 @@ i {
 .nav-tabs {
     margin-top: 50px;
 
-    .nav-link { 
+    .nav-link {
         font-size: 0.8rem;
 
         &.active {
-            background-color: #f9f9f9;            
+            background-color: #f9f9f9;
             border-bottom-color: #f9f9f9;
         }
     }

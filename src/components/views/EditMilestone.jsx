@@ -109,7 +109,7 @@ class EditMilestone extends Component {
   componentDidMount() {
     isAuthenticated(this.props.currentUser, this.props.wallet)
       .then(() => {
-        if (!this.props.isProposed) checkWalletBalance(this.props.wallet, this.props.history);
+        if (!this.props.isProposed) checkWalletBalance(this.props.wallet);
       })
       .then(() => {
         if (!this.props.isProposed) {
@@ -136,17 +136,16 @@ class EditMilestone extends Component {
 
               if (!isOwner(milestone.owner.address, this.props.currentUser)) {
                 this.props.history.goBack();
-              } else {
-                this.setState(
-                  Object.assign({}, milestone, {
-                    id: this.props.match.params.milestoneId,
-                    date,
-                    itemizeState: milestone.items && milestone.items.length > 0,
-                    selectedFiatType: milestone.selectedFiatType || 'EUR',
-                  }),
-                );
-                return date;
               }
+              this.setState(
+                Object.assign({}, milestone, {
+                  id: this.props.match.params.milestoneId,
+                  date,
+                  itemizeState: milestone.items && milestone.items.length > 0,
+                  selectedFiatType: milestone.selectedFiatType || 'EUR',
+                }),
+              );
+              return date;
             })
             .then(date => this.getEthConversion(date))
             .then(() => {
@@ -497,17 +496,20 @@ class EditMilestone extends Component {
 
       if (this.state.itemizeState) {
         // upload all the item images
-        const uploadItemImages = this.state.items.map(item => {
+        const uploadItemImages = [];
+        this.state.items.forEach(item => {
           if (item.image) {
-            return new Promise(resolve => {
-              feathersRest
-                .service('uploads')
-                .create({ uri: item.image })
-                .then(file => {
-                  item.image = file.url;
-                  resolve('done');
-                });
-            });
+            uploadItemImages.push(
+              Promise(resolve => {
+                feathersRest
+                  .service('uploads')
+                  .create({ uri: item.image })
+                  .then(file => {
+                    item.image = file.url;
+                    resolve('done');
+                  });
+              }),
+            );
           }
         });
 
@@ -741,9 +743,7 @@ class EditMilestone extends Component {
                         onChange={() => this.toggleItemize()}
                         disabled={!isNew && !isProposed}
                       />
-                      <label htmlFor="itemize-state">
-                        Add multiple expenses, invoices or items
-                      </label>
+                      <span className="label">Add multiple expenses, invoices or items</span>
                     </div>
 
                     {!itemizeState && (
@@ -849,7 +849,6 @@ class EditMilestone extends Component {
                                       {items.map((item, i) => (
                                         <MilestoneItem
                                           name={`milestoneItem-${i}`}
-                                          key={i}
                                           index={i}
                                           item={item}
                                           removeItem={() => this.removeItem(i)}

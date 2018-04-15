@@ -43,7 +43,7 @@ export const isInWhitelist = (currentUser, whitelist) =>
     ) {
       resolve();
     } else {
-      reject('not in whitelist');
+      reject(new Error('not in whitelist'));
     }
   });
 
@@ -54,7 +54,7 @@ export const isInWhitelist = (currentUser, whitelist) =>
  * @param history {object} Standard history object
  * @param to      {string} Route to which the user should be redirected
  */
-export const redirectAfterWalletUnlock = (to, wallet, history) => {
+export const redirectAfterWalletUnlock = (to, wallet) => {
   if (!wallet || (wallet && !wallet.unlocked)) {
     React.unlockWallet(to);
   } else {
@@ -84,7 +84,7 @@ export const takeActionAfterWalletUnlock = (wallet, action) => {
  * @param history {object} Standard history object
  *
  */
-export const checkWalletBalance = (wallet, history) =>
+export const checkWalletBalance = wallet =>
   new Promise((resolve, reject) => {
     if (wallet.getBalance() >= React.minimumWalletBalance) {
       resolve();
