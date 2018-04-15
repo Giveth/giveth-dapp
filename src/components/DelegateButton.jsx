@@ -17,7 +17,7 @@ import getNetwork from '../lib/blockchain/getNetwork';
 import getWeb3 from '../lib/blockchain/getWeb3';
 import GivethWallet from '../lib/blockchain/GivethWallet';
 
-// TODO Remove the eslint exception and fix feathers to provide id's without underscore
+// TODO: Remove once rewritten to model
 /* eslint no-underscore-dangle: 0 */
 class DelegateButton extends Component {
   constructor() {
@@ -35,9 +35,7 @@ class DelegateButton extends Component {
 
   openDialog() {
     takeActionAfterWalletUnlock(this.props.wallet, () =>
-      checkWalletBalance(this.props.wallet, this.props.history).then(() =>
-        this.setState({ modalVisible: true }),
-      ),
+      checkWalletBalance(this.props.wallet).then(() => this.setState({ modalVisible: true })),
     );
   }
 
@@ -53,7 +51,7 @@ class DelegateButton extends Component {
     // find the type of where we delegate to
     const admin = this.props.types.find(t => t.id === this.state.objectsToDelegateTo[0]);
 
-    // TODO find a more friendly way to do this.
+    // TODO: find a more friendly way to do this.
     if (
       admin.type === 'milestone' &&
       toBN(admin.maxAmount).lt(toBN(admin.totalDonated || 0).add(toBN(model.amount)))
@@ -257,7 +255,6 @@ class DelegateButton extends Component {
 }
 
 DelegateButton.propTypes = {
-  history: PropTypes.shape({}).isRequired,
   wallet: PropTypes.instanceOf(GivethWallet).isRequired,
   types: PropTypes.arrayOf(PropTypes.shape({})).isRequired,
   milestoneOnly: PropTypes.bool,

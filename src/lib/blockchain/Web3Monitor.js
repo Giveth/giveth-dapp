@@ -6,7 +6,7 @@ import Web3 from './getWeb3';
 
 const ONE_SECOND = 1000;
 
-// TODO maybe move this to separate lib and don't include web3 object in state.
+// TODO: maybe move this to separate lib and don't include web3 object in state.
 // Depends on how we make on chain calls
 function getWeb3() {
   // console.log('only once');
@@ -24,7 +24,7 @@ function getWeb3() {
       }
 
       if (!web3.isConnected()) {
-        // TODO setup giveth node and use that
+        // TODO: setup giveth node and use that
         web3 = new Web3(new Web3.providers.HttpProvider('https://giveth.psdev.io:8545'));
       }
 

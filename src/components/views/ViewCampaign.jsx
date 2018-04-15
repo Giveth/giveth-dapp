@@ -74,7 +74,7 @@ class ViewCampaign extends Component {
   }
 
   removeMilestone(id) {
-    checkWalletBalance(this.props.wallet, this.props.history).then(() => {
+    checkWalletBalance(this.props.wallet).then(() => {
       React.swal({
         title: 'Delete Milestone?',
         text: 'You will not be able to recover this milestone!',

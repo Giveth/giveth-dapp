@@ -18,7 +18,7 @@ ProviderEngine.prototype.send = ProviderEngine.prototype.sendAsync;
 export default options => {
   const opts = options || {};
 
-  // TODO rewrite ProviderEngine to use pubsub instead of EthBlockTracker
+  // TODO: rewrite ProviderEngine to use pubsub instead of EthBlockTracker
   const engine = new ProviderEngine();
 
   // remove undefined properties from txParams object
@@ -35,7 +35,7 @@ export default options => {
   const sanitizer = new SanitizingSubprovider();
   engine.addProvider(sanitizer);
 
-  // TODO the block isn't updated with ws connection, so this cache is never invalidated
+  // TODO: the block isn't updated with ws connection, so this cache is never invalidated
   // cache layer
   // const cacheSubprovider = new CacheSubprovider();
   // engine.addProvider(cacheSubprovider);
@@ -74,7 +74,7 @@ export default options => {
   });
   engine.addProvider(idmgmtSubprovider);
 
-  // TODO support http connections as well as urls
+  // TODO: support http connections as well as urls
   // data source
   const fetchSubprovider = new WebSocketSubProvider({
     wsProvider: opts.wsProvider,

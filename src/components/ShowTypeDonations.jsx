@@ -11,7 +11,7 @@ import User from '../models/User';
 /**
  * Shows a table of donations for a given type (dac, campaign, milestone)
  */
-// TODO Remove the eslint exception and fix feathers to provide id's without underscore
+// TODO: Remove once rewritten to model
 /* eslint no-underscore-dangle: 0 */
 class ShowTypeDonations extends Component {
   constructor() {
