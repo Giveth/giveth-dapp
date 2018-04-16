@@ -525,7 +525,7 @@ class EditMilestone extends Component {
         });
 
         Promise.all(uploadItemImages)
-          .then(() => updateMilestone())
+          .then(() => uploadMilestoneImage())
           .catch(err => {
             ErrorPopup(
               'There has been an issue uploading one of the proof items. Please refresh the page and try again.',
