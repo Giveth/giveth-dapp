@@ -1,8 +1,10 @@
 // Global classes are defined here
 @import '~react-input-token/lib/style.css';
+@import 'mixins';
 @import 'layout.scss';
 @import 'colors.scss';
 @import 'typography.scss';
+
 // views
 @import 'causesView.scss';
 @import 'editCausesView.scss';
@@ -203,3 +205,6 @@ i {
 .image-preview.small{
     max-width: 100px;
 }
+
+
+

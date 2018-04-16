@@ -9,6 +9,8 @@
     margin: 10px 0;
 
     .card-body {
+      @include bullet-styling(8);
+
       // padding-bottom: 0;
 
       .form-group {
