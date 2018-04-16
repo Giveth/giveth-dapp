@@ -107,10 +107,6 @@ class QuillFormsy extends Component {
 
     return (
       <div className={`form-group ${errorClass}`}>
-        <label>
-          {label} {isRequired() ? '*' : null}
-        </label>
-        <small className="form-text">{helpText}</small>
         <input
           style={{ display: 'none' }}
           type="file"
@@ -119,6 +115,10 @@ class QuillFormsy extends Component {
             this.imageUploader = e;
           }}
         />
+        <div className="label">
+          {label} {isRequired() ? '*' : null}
+        </div>
+        <small className="form-text">{helpText}</small>
         <ReactQuill
           height="200px"
           ref={el => {
@@ -130,6 +130,7 @@ class QuillFormsy extends Component {
           name="description"
           placeholder={placeholder}
           onChange={setValue}
+          id="quill-formsy"
         />
         <span className="help-block validation-message">{errorMessage}</span>
       </div>

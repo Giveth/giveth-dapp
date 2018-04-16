@@ -700,7 +700,7 @@ class EditMilestone extends Component {
                       )}
                     </div>
                     {!this.state.showRecipientAddress && (
-                      <label>Where will the money go after completion?</label>
+                      <div className="label">Where will the money go after completion?</div>
                     )}
 
                     <div className="react-toggle-container">
@@ -710,9 +710,7 @@ class EditMilestone extends Component {
                         onChange={() => this.toggleShowRecipientAddress()}
                         disabled={!isNew && !isProposed}
                       />
-                      <label htmlFor="show-recipient-address">
-                        Recipient address is different from my address
-                      </label>
+                      <span className="label">Recipient address is different from my address</span>
                     </div>
                     {this.state.showRecipientAddress && (
                       <div className="form-group">
