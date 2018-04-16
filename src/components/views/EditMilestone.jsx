@@ -508,7 +508,7 @@ class EditMilestone extends Component {
           }
         });
 
-        Promise.all(uploadItemImages).then(() => updateMilestone());
+        Promise.all(uploadItemImages).then(() => uploadMilestoneImage());
       } else {
         uploadMilestoneImage();
       }
