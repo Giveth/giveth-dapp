@@ -22,6 +22,8 @@
   }
 
   .card-body.content{
+    @include bullet-styling(8);
+    
     .video-wrapper{
       position: relative;
       padding-bottom: 56.25%;
