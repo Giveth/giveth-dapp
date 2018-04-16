@@ -497,7 +497,7 @@ class EditMilestone extends Component {
         this.state.items.forEach(item => {
           if (item.image) {
             uploadItemImages.push(
-              Promise(resolve => {
+              new Promise(resolve => {
                 feathersRest
                   .service('uploads')
                   .create({ uri: item.image })
