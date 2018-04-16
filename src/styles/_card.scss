@@ -28,6 +28,7 @@ $aspect-ratio: percentage(9/16); //16:9 ratio
   }
 
   .card-body {
+    @include bullet-styling(8);
     box-shadow: 0 0 20px darken($page-background, 10%);
     padding: 0;
 
@@ -80,6 +81,8 @@ $aspect-ratio: percentage(9/16); //16:9 ratio
   position: relative;
 
   .card-body {
+    @include bullet-styling(8);
+    
     box-shadow: none;
     border: none;
   }
