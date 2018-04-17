@@ -699,10 +699,10 @@ class EditMilestone extends Component {
                         />
                       )}
                     </div>
-                    {!this.state.showRecipientAddress && (
-                      <div className="label">Where will the money go after completion?</div>
-                    )}
-
+                    <div className="label">
+                      Where will the money go after completion?{' '}
+                      {this.state.showRecipientAddress ? '*' : ''}
+                    </div>
                     <div className="react-toggle-container">
                       <Toggle
                         id="show-recipient-address"
@@ -710,14 +710,13 @@ class EditMilestone extends Component {
                         onChange={() => this.toggleShowRecipientAddress()}
                         disabled={!isNew && !isProposed}
                       />
-                      <span className="label">Recipient address is different from my address</span>
+                      <div className="label">Recipient address is different from my address</div>
                     </div>
                     {this.state.showRecipientAddress && (
-                      <div className="form-group">
+                      <div className="form-group recipient-address-container">
                         <Input
                           name="recipientAddress"
                           id="title-input"
-                          label="Where will the money go after completion?"
                           type="text"
                           value={recipientAddress}
                           placeholder="0x0000000000000000000000000000000000000000"
@@ -731,8 +730,12 @@ class EditMilestone extends Component {
                         />
                       </div>
                     )}
-                    <br />
-                    <br />
+                    {!this.state.showRecipientAddress && (
+                      <div>
+                        <br />
+                        <br />
+                      </div>
+                    )}
 
                     <div className="react-toggle-container">
                       <Toggle
