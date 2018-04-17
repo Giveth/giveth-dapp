@@ -35,6 +35,8 @@
 @import 'cropper.scss';
 // overrides
 @import 'card.scss';
+@import 'formsyOverrides.scss';
+
 html,
 body {
     font-family: 'Quicksand', sans-serif;
@@ -73,6 +75,7 @@ label,
     margin-bottom: 2px;
     font-size: 0.9rem;
 }
+
 
 table {
     overflow-x: scroll;
@@ -204,6 +207,14 @@ i {
 
 .image-preview.small{
     max-width: 100px;
+}
+
+.react-toggle-container{
+    display: flex;
+
+    .label{
+        margin-left: 10px;
+    }
 }
 
 
