@@ -499,26 +499,28 @@ class EditMilestone extends Component {
             .create({
               uri: this.state.image,
             })
-            .then(file => updateMilestone(file.url));
+            .then(file => updateMilestone(file.url))
+            .catch(() => this.setState({ isSaving: false }));
         } else {
           updateMilestone();
         }
       };
 
-      if (this.state.itemizeState) {
+      if (this.state.itemizeState && this.props.isNew) {
         // upload all the item images
         const uploadItemImages = [];
         this.state.items.forEach(item => {
           if (item.image) {
             uploadItemImages.push(
-              Promise(resolve => {
+              new Promise((resolve, reject) => {
                 feathersRest
                   .service('uploads')
                   .create({ uri: item.image })
                   .then(file => {
                     item.image = file.url;
                     resolve('done');
-                  });
+                  })
+                  .catch(() => reject(new Error('could not upload item image')));
               }),
             );
           }
@@ -527,6 +529,7 @@ class EditMilestone extends Component {
         Promise.all(uploadItemImages)
           .then(() => uploadMilestoneImage())
           .catch(err => {
+            this.setState({ isSaving: false })
             ErrorPopup(
               'There has been an issue uploading one of the proof items. Please refresh the page and try again.',
               err,
