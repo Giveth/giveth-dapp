@@ -7,15 +7,7 @@ import { convertEthHelper } from '../lib/helpers';
  *
  * TODO: Check the properties that are passed, sometimes they are number, sometimes strings...
  */
-const CardStats = ({
-  totalDonated,
-  peopleCount,
-  maxAmount,
-  campaignsCount,
-  milestonesCount,
-  type,
-  status,
-}) => (
+const CardStats = ({ peopleCount, maxAmount, campaignsCount, milestonesCount, type, status }) => (
   <div className="row card-stats">
     <div className="col-4 text-left">
       <span>
@@ -27,10 +19,6 @@ const CardStats = ({
 
     <div className={`col-4 text-center ${maxAmount ? 'card-center' : ''}`}>
       {maxAmount && <span>Amount requested: {convertEthHelper(maxAmount)} ETH</span>}
-
-      {/*
-        {!maxAmount && <span>{totalDonated && convertEthHelper(totalDonated)} ETH</span>}
-      */}
 
       {!maxAmount && <p>Donated</p>}
     </div>
@@ -72,7 +60,6 @@ const CardStats = ({
 CardStats.propTypes = {
   type: PropTypes.string.isRequired,
   peopleCount: PropTypes.number.isRequired,
-  totalDonated: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
   campaignsCount: PropTypes.number,
   milestonesCount: PropTypes.number,
   status: PropTypes.string,
