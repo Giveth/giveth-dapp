@@ -1,18 +1,17 @@
 import React, { Component } from 'react';
 import Avatar from 'react-avatar';
 import PropTypes from 'prop-types';
-import { utils } from 'web3';
 import moment from 'moment';
 
 import Loader from './Loader';
 import getNetwork from '../lib/blockchain/getNetwork';
-import { getUserName, getUserAvatar } from '../lib/helpers';
+import { getUserName, getUserAvatar, convertEthHelper } from '../lib/helpers';
 import User from '../models/User';
 
 /**
  * Shows a table of donations for a given type (dac, campaign, milestone)
  */
-// TODO Remove the eslint exception and fix feathers to provide id's without underscore
+// TODO: Remove once rewritten to model
 /* eslint no-underscore-dangle: 0 */
 class ShowTypeDonations extends Component {
   constructor() {
@@ -56,7 +55,7 @@ class ShowTypeDonations extends Component {
                         <tr key={d._id}>
                           <td className="td-date">{moment(d.createdAt).format('MM/DD/YYYY')}</td>
 
-                          <td className="td-donations-amount">Ξ{utils.fromWei(d.amount)}</td>
+                          <td className="td-donations-amount">{convertEthHelper(d.amount)} ETH</td>
                           <td className="td-user">
                             {d.giver && <Avatar size={30} src={getUserAvatar(d.giver)} round />}
                             <span>{getUserName(d.giver)}</span>

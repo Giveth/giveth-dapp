@@ -3,7 +3,7 @@ import { getGasPrice } from './../helpers';
 
 // import { utils } from "web3";
 
-// TODO use http://ethgasstation.info/json/ethgasAPI.json to get gas price
+// TODO: use http://ethgasstation.info/json/ethgasAPI.json to get gas price
 export default class GasPriceProvider extends SubProvider {
   constructor(opts) {
     super();
@@ -19,7 +19,7 @@ export default class GasPriceProvider extends SubProvider {
 
     getGasPrice().then(gas => console.log(gas));
 
-    // TODO re-enable this when deployed to mainnet
+    // TODO: re-enable this when deployed to mainnet
     return next();
 
     // getGasPrice().then((gas) =>

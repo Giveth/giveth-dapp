@@ -1,13 +1,26 @@
-// Card used in campaign / milestone views
+$aspect-ratio: percentage(9/16); //16:9 ratio
+
+.cards-grid-container{
+    display: grid;
+    grid-template-columns: repeat( auto-fill, minmax(250px, 1fr) );
+    grid-gap: 10px;
+    width: 100%;
+    justify-content: space-around;
+}
+
 .overview-card {
-  height: 390px;
   position: relative;
+  width: 100%;
+  max-width: 400px;
 
   .card-img {
-    height: 150px;
+    width: 100%;
+    height: 0;
+    padding-top: ($aspect-ratio);
     background-size: cover;
     background-position: 50% 50%;
-    border-radius: 0;    
+    background-repeat: no-repeat;
+    border-radius: 0;
   }
 
   i.fa.fa-edit:hover {
@@ -15,6 +28,7 @@
   }
 
   .card-body {
+    @include bullet-styling(8);
     box-shadow: 0 0 20px darken($page-background, 10%);
     padding: 0;
 
@@ -38,6 +52,7 @@
 
     .card-content {
       padding: 20px;
+      height: 250px;
 
       .card-title {
         font-weight: 700;
@@ -47,7 +62,6 @@
 
       .card-text {
         color: lighten($link-color, 50%);
-        max-height: 200px;
         overflow: hidden;
         font-size: 0.8rem;
       }
@@ -67,6 +81,8 @@
   position: relative;
 
   .card-body {
+    @include bullet-styling(8);
+    
     box-shadow: none;
     border: none;
   }
@@ -120,4 +136,10 @@
   p {
     margin: 0;
   }
+}
+
+.card-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }

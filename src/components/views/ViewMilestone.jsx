@@ -1,14 +1,15 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
-import { utils } from 'web3';
 import { paramsForServer } from 'feathers-hooks-common';
 import Avatar from 'react-avatar';
 import moment from 'moment';
 import { Form } from 'formsy-react-components';
+import BigNumber from 'bignumber.js';
+import ReactHtmlParser, { convertNodeToElement } from 'react-html-parser';
 
 import { feathersClient } from './../../lib/feathersClient';
-import { getUserName, getUserAvatar } from '../../lib/helpers';
+import { getUserName, getUserAvatar, convertEthHelper } from '../../lib/helpers';
 
 import Loader from './../Loader';
 import GoBackButton from '../GoBackButton';
@@ -57,16 +58,17 @@ class ViewMilestone extends Component {
           Object.assign({}, resp.data[0], {
             isLoading: false,
             hasError: false,
-            totalDonated: utils.fromWei(resp.data[0].totalDonated),
-            maxAmount: utils.fromWei(resp.data[0].maxAmount),
+            totalDonated: convertEthHelper(resp.data[0].totalDonated),
+            maxAmount: convertEthHelper(resp.data[0].maxAmount),
             id: milestoneId,
+            fiatAmount: new BigNumber(resp.data[0].fiatAmount).toFixed(2),
           }),
         ),
       )
       .catch(() => this.setState({ isLoading: false }));
 
     // lazy load donations
-    // TODO fetch "non comitted" donations? add "intendedProjectId: milestoneId" to query to get
+    // TODO: fetch "non comitted" donations? add "intendedProjectId: milestoneId" to query to get
     // all "pending aproval" donations for this milestone
     const query = paramsForServer({
       query: { ownerId: milestoneId },
@@ -96,6 +98,21 @@ class ViewMilestone extends Component {
     return this.state.status === 'InProgress' && this.state.totalDonated < this.state.maxAmount;
   }
 
+  renderDescription() {
+    return ReactHtmlParser(this.state.description, {
+      transform(node, index) {
+        if (node.attribs && node.attribs.class === 'ql-video') {
+          return (
+            <div className="video-wrapper" key={index}>
+              {convertNodeToElement(node, index)}
+            </div>
+          );
+        }
+        return undefined;
+      },
+    });
+  }
+
   render() {
     const { history, wallet, currentUser } = this.props;
 
@@ -104,7 +121,6 @@ class ViewMilestone extends Component {
       id,
       projectId,
       title,
-      description,
       image,
       donations,
       isLoadingDonations,
@@ -119,10 +135,10 @@ class ViewMilestone extends Component {
       etherScanUrl,
       items,
       date,
+      status,
       fiatAmount,
       selectedFiatType,
     } = this.state;
-
     return (
       <div id="view-milestone-view">
         {isLoading && <Loader className="fixed" />}
@@ -140,9 +156,7 @@ class ViewMilestone extends Component {
               )}
 
               {this.state.totalDonated < this.state.maxAmount && (
-                <p>
-                  Ξ{this.state.totalDonated} of Ξ{this.state.maxAmount} raised.
-                </p>
+                <p>Amount requested: {this.state.maxAmount} ETH</p>
               )}
 
               {this.isActiveMilestone() && (
@@ -170,9 +184,7 @@ class ViewMilestone extends Component {
                     </center>
 
                     <div className="card content-card">
-                      <div className="card-body content">
-                        <div dangerouslySetInnerHTML={{ __html: description }} />
-                      </div>
+                      <div className="card-body content">{this.renderDescription()}</div>
                     </div>
                   </div>
                 </div>
@@ -200,7 +212,7 @@ class ViewMilestone extends Component {
                             </thead>
                             <tbody>
                               {items.map((item, i) => (
-                                <MilestoneItem name={`milestoneItem-${i}`} key={i} item={item} />
+                                <MilestoneItem name={`milestoneItem-${i}`} item={item} />
                               ))}
                             </tbody>
                           </table>
@@ -215,7 +227,7 @@ class ViewMilestone extends Component {
                   <h4>Details</h4>
 
                   <div className="form-group">
-                    <label>Reviewer</label>
+                    <span className="label">Reviewer</span>
                     <small className="form-text">
                       This person will review the actual completion of the Milestone
                     </small>
@@ -245,7 +257,7 @@ class ViewMilestone extends Component {
                   </div>
 
                   <div className="form-group">
-                    <label>Recipient</label>
+                    <span className="label">Recipient</span>
                     <small className="form-text">
                       Where the Ether goes after successful completion of the Milestone
                     </small>
@@ -276,7 +288,7 @@ class ViewMilestone extends Component {
 
                   {date && (
                     <div className="form-group">
-                      <label>Date of milestone</label>
+                      <span className="label">Date of milestone</span>
                       <small className="form-text">
                         This date defines the eth-fiat conversion rate
                       </small>
@@ -285,12 +297,12 @@ class ViewMilestone extends Component {
                   )}
 
                   <div className="form-group">
-                    <label>Max amount to raise</label>
+                    <span className="label">Max amount to raise</span>
                     <small className="form-text">
-                      The maximum amount of &#926; (Ether) that can be donated to this Milestone.
-                      Based on the requested amount in fiat.
+                      The maximum amount of ETH that can be donated to this Milestone. Based on the
+                      requested amount in fiat.
                     </small>
-                    &#926;{maxAmount}
+                    {maxAmount} ETH
                     {fiatAmount &&
                       items.length === 0 && (
                         <span>
@@ -301,11 +313,17 @@ class ViewMilestone extends Component {
                   </div>
 
                   <div className="form-group">
-                    <label>Amount donated</label>
+                    <span className="label">Amount donated</span>
                     <small className="form-text">
-                      The amount of &#926; (Ether) currently donated to this Milestone
+                      The amount of ETH currently donated to this Milestone
                     </small>
-                    &#926;{totalDonated}
+                    {totalDonated} ETH
+                  </div>
+
+                  <div className="form-group">
+                    <span className="label">Status</span>
+                    <br />
+                    {status}
                   </div>
 
                   {/*

@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { utils } from 'web3';
 import { Link } from 'react-router-dom';
 
 import {
@@ -9,7 +8,7 @@ import {
   takeActionAfterWalletUnlock,
   checkWalletBalance,
 } from '../../lib/middleware';
-import { getTruncatedText } from '../../lib/helpers';
+import { getTruncatedText, convertEthHelper } from '../../lib/helpers';
 
 import Loader from '../Loader';
 
@@ -49,7 +48,7 @@ class MyDACs extends Component {
 
   editDAC(id) {
     takeActionAfterWalletUnlock(this.props.wallet, () => {
-      checkWalletBalance(this.props.wallet, this.props.history).then(() =>
+      checkWalletBalance(this.props.wallet).then(() =>
         React.swal({
           title: 'Edit Community?',
           text: 'Are you sure you want to edit the description of this community?',
@@ -57,8 +56,7 @@ class MyDACs extends Component {
           dangerMode: true,
           buttons: ['Cancel', 'Yes, edit'],
         }).then(isConfirmed => {
-          if (isConfirmed)
-            redirectAfterWalletUnlock(`/dacs/${id}/edit`, this.props.wallet, this.props.history);
+          if (isConfirmed) redirectAfterWalletUnlock(`/dacs/${id}/edit`, this.props.wallet);
         }),
       );
     });
@@ -98,7 +96,7 @@ class MyDACs extends Component {
                               </td>
                               <td className="td-donations-number">{d.donationCount}</td>
                               <td className="td-donations-amount">
-                                Ξ{utils.fromWei(d.totalDonated)}
+                                {convertEthHelper(d.totalDonated)} ETH
                               </td>
                               <td className="td-status">
                                 {d.status === DAC.PENDING && (
@@ -149,7 +147,6 @@ class MyDACs extends Component {
 
 MyDACs.propTypes = {
   currentUser: PropTypes.instanceOf(User).isRequired,
-  history: PropTypes.shape({}).isRequired,
   wallet: PropTypes.instanceOf(GivethWallet).isRequired,
 };
 

@@ -22,9 +22,65 @@ import {
   getGasPrice,
   getTruncatedText,
   getReadableStatus,
+  convertEthHelper,
 } from '../../lib/helpers';
 import GivethWallet from '../../lib/blockchain/GivethWallet';
-// TODO Remove the eslint exception and fix feathers to provide id's without underscore
+
+const deleteProposedMilestone = milestone => {
+  React.swal({
+    title: 'Delete Milestone?',
+    text: 'Are you sure you want to delete this Milestone?',
+    icon: 'warning',
+    dangerMode: true,
+    buttons: ['Cancel', 'Yes, delete'],
+  }).then(isConfirmed => {
+    if (isConfirmed) {
+      feathersClient
+        .service('/milestones')
+        .remove(milestone._id)
+        .then(() => {
+          React.toast.info(<p>The milestone has been deleted.</p>);
+        })
+        .catch(e => {
+          console.log('Error updating feathers cache ->', e); // eslint-disable-line no-console
+          React.toast.error('Oh no! Something went wrong. Please try again.');
+        });
+    }
+  });
+};
+
+const rejectProposedMilestone = milestone => {
+  React.swal({
+    title: 'Reject Milestone?',
+    text: 'Are you sure you want to reject this Milestone?',
+    icon: 'warning',
+    dangerMode: true,
+    buttons: ['Cancel', 'Yes, reject'],
+  }).then(isConfirmed => {
+    if (isConfirmed) {
+      feathersClient
+        .service('/milestones')
+        .patch(milestone._id, {
+          status: 'rejected',
+          prevStatus: 'proposed',
+        })
+        .then(() => {
+          React.toast.info(<p>The milestone has been rejected.</p>);
+        })
+        .catch(e => {
+          console.log('Error updating feathers cache ->', e); // eslint-disable-line no-console
+          React.toast.error('Oh no! Something went wrong. Please try again.');
+        });
+    }
+  });
+};
+
+const reviewDue = updatedAt =>
+  moment()
+    .subtract(3, 'd')
+    .isAfter(moment(updatedAt));
+
+// TODO: Remove once rewritten to model
 /* eslint no-underscore-dangle: 0 */
 /**
  * The my campaings view
@@ -43,7 +99,7 @@ class MyMilestones extends Component {
       loadedStatus: 'Active',
     };
 
-    this.milestoneTabs = ['Active', 'Completed', 'Canceled'];
+    this.milestoneTabs = ['Active', 'Completed', 'Canceled', 'Rejected'];
     this.handlePageChanged = this.handlePageChanged.bind(this);
 
     this.editMilestone = this.editMilestone.bind(this);
@@ -87,6 +143,17 @@ class MyMilestones extends Component {
         },
         { status: this.state.loadedStatus },
       ];
+    } else if (this.state.loadedStatus === 'Rejected') {
+      query.query.$and = [
+        {
+          $or: [
+            { ownerAddress: myAddress },
+            // { reviewerAddress: myAddress }, // Not really "My Milestones"
+            { recipientAddress: myAddress },
+          ],
+        },
+        { status: 'rejected' },
+      ];
     } else {
       query.query.$and = [
         {
@@ -97,13 +164,13 @@ class MyMilestones extends Component {
             { $and: [{ campaignOwnerAddress: myAddress }, { status: 'proposed' }] },
           ],
         },
-        { status: { $nin: ['Completed', 'Canceled'] } },
+        { status: { $nin: ['Completed', 'Canceled', 'rejected'] } },
       ];
     }
 
     this.milestonesObserver = feathersClient
       .service('milestones')
-      .watch({ strategy: 'always' })
+      .watch({ listStrategy: 'always' })
       .find(query)
       .subscribe(resp =>
         this.setState({
@@ -136,7 +203,7 @@ class MyMilestones extends Component {
 
   editMilestone(milestone) {
     takeActionAfterWalletUnlock(this.props.wallet, () => {
-      checkWalletBalance(this.props.wallet, this.props.history).then(() =>
+      checkWalletBalance(this.props.wallet).then(() =>
         React.swal({
           title: 'Edit Milestone?',
           text: 'Are you sure you want to edit this Milestone?',
@@ -145,18 +212,13 @@ class MyMilestones extends Component {
           buttons: ['Cancel', 'Yes, edit'],
         }).then(isConfirmed => {
           if (isConfirmed) {
-            if (milestone.status === 'proposed') {
+            if (['proposed', 'rejected'].includes(milestone.status)) {
               redirectAfterWalletUnlock(
                 `/milestones/${milestone._id}/edit/proposed`,
                 this.props.wallet,
-                this.props.history,
               );
             } else {
-              redirectAfterWalletUnlock(
-                `/milestones/${milestone._id}/edit`,
-                this.props.wallet,
-                this.props.history,
-              );
+              redirectAfterWalletUnlock(`/milestones/${milestone._id}/edit`, this.props.wallet);
             }
           }
         }),
@@ -166,7 +228,7 @@ class MyMilestones extends Component {
 
   markComplete(milestone) {
     takeActionAfterWalletUnlock(this.props.wallet, () => {
-      checkWalletBalance(this.props.wallet, this.props.history).then(() =>
+      checkWalletBalance(this.props.wallet).then(() =>
         React.swal({
           title: 'Mark as complete?',
           text: 'Are you sure you want to mark this Milestone as complete?',
@@ -200,7 +262,7 @@ class MyMilestones extends Component {
 
   cancelMilestone(milestone) {
     takeActionAfterWalletUnlock(this.props.wallet, () => {
-      checkWalletBalance(this.props.wallet, this.props.history).then(() =>
+      checkWalletBalance(this.props.wallet).then(() =>
         React.swal({
           title: 'Cancel Milestone?',
           text: 'Are you sure you want to cancel this Milestone?',
@@ -279,7 +341,7 @@ class MyMilestones extends Component {
 
   acceptProposedMilestone(milestone) {
     takeActionAfterWalletUnlock(this.props.wallet, () => {
-      checkWalletBalance(this.props.wallet, this.props.history).then(() =>
+      checkWalletBalance(this.props.wallet).then(() =>
         React.swal({
           title: 'Accept Milestone?',
           text: 'Are you sure you want to accept this Milestone?',
@@ -351,35 +413,9 @@ class MyMilestones extends Component {
     });
   }
 
-  rejectProposedMilestone(milestone) {
-    React.swal({
-      title: 'Reject Milestone?',
-      text: 'Are you sure you want to reject this Milestone?',
-      icon: 'warning',
-      dangerMode: true,
-      buttons: ['Cancel', 'Yes, reject'],
-    }).then(isConfirmed => {
-      if (isConfirmed) {
-        feathersClient
-          .service('/milestones')
-          .patch(milestone._id, {
-            status: 'rejected',
-            prevStatus: 'proposed',
-          })
-          .then(() => {
-            React.toast.info(<p>The milestone has been rejected.</p>);
-          })
-          .catch(e => {
-            console.log('Error updating feathers cache ->', e); // eslint-disable-line no-console
-            React.toast.error('Oh no! Something went wrong. Please try again.');
-          });
-      }
-    });
-  }
-
   approveMilestone(milestone) {
     takeActionAfterWalletUnlock(this.props.wallet, () => {
-      checkWalletBalance(this.props.wallet, this.props.history).then(() =>
+      checkWalletBalance(this.props.wallet).then(() =>
         React.swal({
           title: 'Approve Milestone?',
           text: 'Are you sure you want to approve this Milestone?',
@@ -458,7 +494,7 @@ class MyMilestones extends Component {
 
   rejectMilestone(milestone) {
     takeActionAfterWalletUnlock(this.props.wallet, () => {
-      checkWalletBalance(this.props.wallet, this.props.history).then(() =>
+      checkWalletBalance(this.props.wallet).then(() =>
         React.swal({
           title: 'Reject Milestone?',
           text: 'Are you sure you want to reject this Milestone?',
@@ -493,7 +529,7 @@ class MyMilestones extends Component {
 
   requestWithdrawal(milestone) {
     takeActionAfterWalletUnlock(this.props.wallet, () => {
-      checkWalletBalance(this.props.wallet, this.props.history).then(() =>
+      checkWalletBalance(this.props.wallet).then(() =>
         React.swal({
           title: 'Request Withdrawal',
           text:
@@ -621,7 +657,7 @@ class MyMilestones extends Component {
 
                   let msg;
                   if (txHash) {
-                    // TODO need to update feathers to reset the donations to previous state as this
+                    // TODO: need to update feathers to reset the donations to previous state as this
                     // tx failed.
                     msg = (
                       <p>
@@ -658,7 +694,7 @@ class MyMilestones extends Component {
 
   collect(milestone) {
     takeActionAfterWalletUnlock(this.props.wallet, () => {
-      checkWalletBalance(this.props.wallet, this.props.history).then(() =>
+      checkWalletBalance(this.props.wallet).then(() =>
         React.swal({
           title: 'Collect Funds',
           text: 'The funds will be transferred to you wallet.',
@@ -723,12 +759,6 @@ class MyMilestones extends Component {
     });
   }
 
-  reviewDue(updatedAt) {
-    return moment()
-      .subtract(3, 'd')
-      .isAfter(moment(updatedAt));
-  }
-
   render() {
     const {
       milestones,
@@ -750,13 +780,15 @@ class MyMilestones extends Component {
               <ul className="nav nav-tabs">
                 {this.milestoneTabs.map(st => (
                   <li className="nav-item">
-                    <a
+                    <span
+                      role="button"
                       className={`nav-link ${this.state.loadedStatus === st ? 'active' : ''}`}
-                      href="#"
+                      onKeyPress={() => this.changeTab(st)}
+                      tabIndex={0}
                       onClick={() => this.changeTab(st)}
                     >
                       {st}
-                    </a>
+                    </span>
                   </li>
                 ))}
               </ul>
@@ -812,7 +844,7 @@ class MyMilestones extends Component {
                                     </span>
                                   )}
                                   {m.status === 'NeedsReview' &&
-                                    this.reviewDue(m.updatedAt) && (
+                                    reviewDue(m.updatedAt) && (
                                       <span>
                                         <i className="fa fa-exclamation-triangle" />&nbsp;
                                       </span>
@@ -820,11 +852,11 @@ class MyMilestones extends Component {
                                   {getReadableStatus(m.status)}
                                 </td>
                                 <td className="td-donations-number">
-                                  Ξ{utils.fromWei(m.maxAmount) || 0}
+                                  {convertEthHelper(m.maxAmount)} ETH
                                 </td>
                                 <td className="td-donations-number">{m.donationCount || 0}</td>
                                 <td className="td-donations-amount">
-                                  Ξ{m.totalDonated ? utils.fromWei(m.totalDonated) : 0}
+                                  {convertEthHelper(m.totalDonated)} ETH
                                 </td>
                                 <td className="td-reviewer">
                                   {m.reviewer &&
@@ -835,14 +867,21 @@ class MyMilestones extends Component {
                                     )}
                                 </td>
                                 <td className="td-actions">
-                                  {m.ownerAddress === currentUser.address && (
-                                    <button
-                                      className="btn btn-link"
-                                      onClick={() => this.editMilestone(m)}
-                                    >
-                                      <i className="fa fa-edit" />&nbsp;Edit
-                                    </button>
-                                  )}
+                                  {m.ownerAddress === currentUser.address &&
+                                    [
+                                      'proposed',
+                                      'rejected',
+                                      'InProgress',
+                                      'NeedReview',
+                                      'InReview',
+                                    ].includes(m.status) && (
+                                      <button
+                                        className="btn btn-link"
+                                        onClick={() => this.editMilestone(m)}
+                                      >
+                                        <i className="fa fa-edit" />&nbsp;Edit
+                                      </button>
+                                    )}
 
                                   {m.campaignOwnerAddress === currentUser.address &&
                                     m.status === 'proposed' && (
@@ -855,7 +894,7 @@ class MyMilestones extends Component {
                                         </button>
                                         <button
                                           className="btn btn-danger btn-sm"
-                                          onClick={() => this.rejectProposedMilestone(m)}
+                                          onClick={() => rejectProposedMilestone(m)}
                                         >
                                           <i className="fa fa-times-circle-o" />&nbsp;Reject
                                         </button>
@@ -886,6 +925,18 @@ class MyMilestones extends Component {
                                       >
                                         <i className="fa fa-times" />&nbsp;Cancel
                                       </button>
+                                    )}
+
+                                  {m.ownerAddress === currentUser.address &&
+                                    ['proposed', 'rejected'].includes(m.status) && (
+                                      <span>
+                                        <button
+                                          className="btn btn-danger btn-sm"
+                                          onClick={() => deleteProposedMilestone(m)}
+                                        >
+                                          <i className="fa fa-times-circle-o" />&nbsp;Delete
+                                        </button>
+                                      </span>
                                     )}
 
                                   {m.reviewerAddress === currentUser.address &&
@@ -986,7 +1037,6 @@ class MyMilestones extends Component {
 
 MyMilestones.propTypes = {
   currentUser: PropTypes.instanceOf(User).isRequired,
-  history: PropTypes.shape({}).isRequired,
   wallet: PropTypes.instanceOf(GivethWallet).isRequired,
 };
 

@@ -1,8 +1,6 @@
-import React from 'react';
 import BasicModel from './BasicModel';
 import CampaignService from '../services/Campaign';
 import UploadService from '../services/Uploads';
-import { getRandomWhitelistAddress } from '../lib/helpers';
 /**
  * The DApp Campaign model
  */
@@ -27,10 +25,7 @@ class Campaign extends BasicModel {
     this.dacs = data.dacs || [];
     this.pluginAddress = data.pluginAddress || '0x0000000000000000000000000000000000000000';
     this.status = data.status || Campaign.PENDING;
-
     this.reviewerAddress = data.reviewerAddress;
-    if (!data.reviewerAddress && React.whitelist.reviewerWhitelist.length > 0)
-      getRandomWhitelistAddress(React.whitelist.reviewerWhitelist);
   }
 
   toFeathers() {

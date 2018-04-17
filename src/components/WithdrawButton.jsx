@@ -122,7 +122,7 @@ class WithdrawButton extends Component {
             <strong>Withdrawing from your Giveth wallet</strong>
 
             <p>
-              Your wallet balance: <em>&#926;{wallet.getBalance()}</em>
+              Your wallet balance: <em>{wallet.getBalance()} ETH</em>
               <br />
               Gas price: <em>{gas} Gwei</em>
             </p>
@@ -153,7 +153,7 @@ class WithdrawButton extends Component {
                 <Input
                   name="amount"
                   id="amount-input"
-                  label="How much Ξ do you want to withdraw?"
+                  label="How much ETH do you want to withdraw?"
                   type="number"
                   value={amount}
                   validations={{
@@ -161,7 +161,7 @@ class WithdrawButton extends Component {
                     greaterThan: 0.0099999999999,
                   }}
                   validationErrors={{
-                    greaterThan: 'Minimum value must be at least Ξ0.01',
+                    greaterThan: 'Minimum value must be at least 0.01 ETH',
                     lessThan: 'This withdrawal amount exceeds your wallet balance.',
                   }}
                   required
@@ -174,7 +174,7 @@ class WithdrawButton extends Component {
                 type="submit"
                 disabled={isSaving || !formIsValid}
               >
-                {isSaving ? 'Withdrawing...' : 'Withdraw Ξ'}
+                {isSaving ? 'Withdrawing...' : 'Withdraw ETH'}
               </button>
             </Form>
           </SkyLightStateless>

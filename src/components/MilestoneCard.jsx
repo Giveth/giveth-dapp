@@ -7,8 +7,9 @@ import { redirectAfterWalletUnlock, checkWalletBalance } from './../lib/middlewa
 import User from '../models/User';
 import CardStats from './CardStats';
 import GivethWallet from '../lib/blockchain/GivethWallet';
+import GivethLogo from '../assets/Giveth-logo-purple.png';
 
-// TODO Remove the eslint exception and fix feathers to provide id's without underscore
+// TODO: Remove once rewritten to model
 /* eslint no-underscore-dangle: 0 */
 /**
  * A single milestone
@@ -36,7 +37,7 @@ class MilestoneCard extends Component {
   editMilestone(e) {
     e.stopPropagation();
 
-    checkWalletBalance(this.props.wallet, this.props.history).then(() => {
+    checkWalletBalance(this.props.wallet).then(() => {
       React.swal({
         title: 'Edit Milestone?',
         text: 'Are you sure you want to edit this milestone?',
@@ -50,7 +51,6 @@ class MilestoneCard extends Component {
               this.props.milestone._id
             }/edit`,
             this.props.wallet,
-            this.props.history,
           );
         }
       });
@@ -88,7 +88,10 @@ class MilestoneCard extends Component {
             )}
           </div>
 
-          <div className="card-img" style={{ backgroundImage: `url(${milestone.image})` }} />
+          <div
+            className="card-img"
+            style={{ backgroundImage: `url(${milestone.image || GivethLogo})` }}
+          />
 
           <div className="card-content">
             <small>deadline: {milestone.completionDeadline}</small>

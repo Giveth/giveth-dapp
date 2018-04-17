@@ -1,9 +1,9 @@
 import React from 'react';
-import createReactClass from 'create-react-class';
-import Formsy from 'formsy-react';
+import { withFormsy } from 'formsy-react';
 import PropTypes from 'prop-types';
 import moment from 'moment';
-import { getTruncatedText } from './../lib/helpers';
+
+import { getTruncatedText, convertEthHelper } from './../lib/helpers';
 
 /** *
  * NOTE: This component is created as a Formsy form component
@@ -16,12 +16,10 @@ import { getTruncatedText } from './../lib/helpers';
  * See EditMilestone component
  ** */
 
-const MilestoneItem = createReactClass({
-  mixins: [Formsy.Mixin],
-
+class MilestoneItem extends React.Component {
   componentDidMount() {
-    this.setValue(true); // required for validation being true
-  },
+    this.props.setValue(true); // required for validation being true
+  }
 
   render() {
     const { removeItem, item, isEditMode } = this.props;
@@ -40,19 +38,19 @@ const MilestoneItem = createReactClass({
           </span>
         </td>
 
-        <td className="td-item-amount-ether">{item.etherAmount}</td>
+        <td className="td-item-amount-ether">{convertEthHelper(item.wei)}</td>
 
         <td className="td-item-file-upload">
           {item.image &&
             isEditMode && (
-              <div className="image-preview">
+              <div className="image-preview small">
                 <img src={item.image} alt="Preview of uploaded file" />
               </div>
             )}
 
           {item.image &&
             !isEditMode && (
-              <div className="image-preview">
+              <div className="image-preview small">
                 <a href={item.image} target="_blank" rel="noopener noreferrer">
                   <img src={item.image} alt="View uploaded file" />
                 </a>
@@ -69,7 +67,28 @@ const MilestoneItem = createReactClass({
         )}
       </tr>
     );
-  },
-});
+  }
+}
 
-export default MilestoneItem;
+MilestoneItem.propTypes = {
+  setValue: PropTypes.func.isRequired,
+
+  removeItem: PropTypes.func,
+  item: PropTypes.shape({
+    date: PropTypes.string.isRequired,
+    description: PropTypes.string.isRequired,
+    selectedFiatType: PropTypes.string.isRequired,
+    fiatAmount: PropTypes.string.isRequired,
+    conversionRate: PropTypes.number.isRequired,
+    wei: PropTypes.string.isRequired,
+    image: PropTypes.string,
+  }).isRequired,
+  isEditMode: PropTypes.bool,
+};
+
+MilestoneItem.defaultProps = {
+  isEditMode: false,
+  removeItem: () => {},
+};
+
+export default withFormsy(MilestoneItem);

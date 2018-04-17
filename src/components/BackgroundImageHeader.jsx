@@ -27,4 +27,5 @@ BackgroundImageHeader.propTypes = {
 BackgroundImageHeader.defaultProps = {
   height: 0,
   children: null,
+  image: '',
 };

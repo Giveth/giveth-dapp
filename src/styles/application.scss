@@ -1,14 +1,17 @@
 // Global classes are defined here
 @import '~react-input-token/lib/style.css';
+@import 'mixins';
 @import 'layout.scss';
 @import 'colors.scss';
 @import 'typography.scss';
+
 // views
 @import 'causesView.scss';
 @import 'editCausesView.scss';
 @import 'viewCauseView.scss';
 @import 'viewCampaignView.scss';
 @import 'viewMilestoneView.scss';
+@import 'campaignsView';
 @import 'accountView.scss';
 @import 'dashboard.scss';
 @import 'edit-view.scss';
@@ -29,6 +32,7 @@
 @import 'react-toggle.scss';
 @import 'react-datepicker.scss';
 @import 'pagination.scss';
+@import 'cropper.scss';
 // overrides
 @import 'card.scss';
 html,
@@ -63,7 +67,8 @@ button {
     }
 }
 
-label {
+label,
+.label {
     font-weight: 600;
     margin-bottom: 2px;
     font-size: 0.9rem;
@@ -112,7 +117,7 @@ i {
     margin-top: 50px;
 }
 
-// 
+//
 .form-group {
     // $valid-green: darken($green, 2%);
     label {
@@ -133,7 +138,7 @@ i {
     //   .ql-container {
     //     border-bottom-color: $valid-green;
     //     border-right-color: $valid-green;
-    //     border-left-color: $valid-green; 
+    //     border-left-color: $valid-green;
     //   }
     // }
     &.has-error {
@@ -174,11 +179,11 @@ i {
 .nav-tabs {
     margin-top: 50px;
 
-    .nav-link { 
+    .nav-link {
         font-size: 0.8rem;
 
         &.active {
-            background-color: #f9f9f9;            
+            background-color: #f9f9f9;
             border-bottom-color: #f9f9f9;
         }
     }
@@ -191,8 +196,15 @@ i {
     border: 1px solid #e2e2e2;
     border-radius: 3px;
     margin-bottom: 10px;
-    img {
-        max-width: 100%;
-        max-height: 300px;
+    max-width: 150px;
+    img{
+        width: 100%;
     }
 }
+
+.image-preview.small{
+    max-width: 100px;
+}
+
+
+

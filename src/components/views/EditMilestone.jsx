@@ -96,9 +96,9 @@ class EditMilestone extends Component {
     };
 
     if (React.whitelist.reviewerWhitelist.length > 0) {
-      this.state.reviewerAddress = getRandomWhitelistAddress(
-        React.whitelist.reviewerWhitelist,
-      ).address;
+      this.setState({
+        reviewerAddress: getRandomWhitelistAddress(React.whitelist.reviewerWhitelist).address,
+      });
     }
 
     this.submit = this.submit.bind(this);
@@ -111,7 +111,7 @@ class EditMilestone extends Component {
   componentDidMount() {
     isAuthenticated(this.props.currentUser, this.props.wallet)
       .then(() => {
-        if (!this.props.isProposed) checkWalletBalance(this.props.wallet, this.props.history);
+        if (!this.props.isProposed) checkWalletBalance(this.props.wallet);
       })
       .then(() => {
         if (!this.props.isProposed) {
@@ -139,17 +139,16 @@ class EditMilestone extends Component {
 
               if (!isOwner(milestone.owner.address, this.props.currentUser)) {
                 this.props.history.goBack();
-              } else {
-                this.setState(
-                  Object.assign({}, milestone, {
-                    id: this.props.match.params.milestoneId,
-                    date,
-                    itemizeState: milestone.items && milestone.items.length > 0,
-                    selectedFiatType: milestone.selectedFiatType || 'EUR',
-                  }),
-                );
-                return date;
               }
+              this.setState(
+                Object.assign({}, milestone, {
+                  id: this.props.match.params.milestoneId,
+                  date,
+                  itemizeState: milestone.items && milestone.items.length > 0,
+                  selectedFiatType: milestone.selectedFiatType || 'EUR',
+                }),
+              );
+              return date;
             })
             .then(date => this.getEthConversion(date))
             .then(() => {
@@ -284,10 +283,6 @@ class EditMilestone extends Component {
     }
   }
 
-  constructSummary(text) {
-    this.setState({ summary: text });
-  }
-
   btnText() {
     if (this.props.isNew) {
       return this.props.isProposed ? 'Propose Milestone' : 'Create Milestone';
@@ -346,12 +341,14 @@ class EditMilestone extends Component {
           (accumulator, item) => accumulator.plus(new BigNumber(item.etherAmount)),
           new BigNumber(0),
         );
+      } else {
+        model.maxAmount = this.state.maxAmount;
       }
 
       const constructedModel = {
         title: model.title,
         description: model.description,
-        summary: getTruncatedText(this.state.summary, 100),
+        summary: getTruncatedText(model.description, 100),
         maxAmount: utils.toWei(model.maxAmount.toFixed(18)),
         ownerAddress: this.props.currentUser.address,
         reviewerAddress: model.reviewerAddress,
@@ -488,29 +485,36 @@ class EditMilestone extends Component {
             .create({
               uri: this.state.image,
             })
-            .then(file => updateMilestone(file.url));
+            .then(file => updateMilestone(file.url))
+            .catch(() => this.setState({ isSaving: false }));
         } else {
           updateMilestone();
         }
       };
 
-      if (this.state.itemizeState) {
+      if (this.state.itemizeState && this.props.isNew) {
         // upload all the item images
-        const uploadItemImages = this.state.items.map(item => {
+        const uploadItemImages = [];
+        this.state.items.forEach(item => {
           if (item.image) {
-            return new Promise(resolve => {
-              feathersRest
-                .service('uploads')
-                .create({ uri: item.image })
-                .then(file => {
-                  item.image = file.url;
-                  resolve('done');
-                });
-            });
+            uploadItemImages.push(
+              new Promise((resolve, reject) => {
+                feathersRest
+                  .service('uploads')
+                  .create({ uri: item.image })
+                  .then(file => {
+                    item.image = file.url;
+                    resolve('done');
+                  })
+                  .catch(() => reject(new Error('could not upload item image')));
+              }),
+            );
           }
         });
 
-        Promise.all(uploadItemImages).then(() => uploadMilestoneImage());
+        Promise.all(uploadItemImages)
+          .then(() => uploadMilestoneImage())
+          .catch(() => this.setState({ isSaving: false }));
       } else {
         uploadMilestoneImage();
       }
@@ -722,9 +726,7 @@ class EditMilestone extends Component {
                         onChange={() => this.toggleItemize()}
                         disabled={!isNew && !isProposed}
                       />
-                      <label htmlFor="itemize-state">
-                        Add multiple expenses, invoices or items
-                      </label>
+                      <span className="label">Add multiple expenses, invoices or items</span>
                     </div>
 
                     {!itemizeState && (
@@ -741,9 +743,9 @@ class EditMilestone extends Component {
                                 changeDate={dt => this.setDate(dt)}
                                 placeholder="Select a date"
                                 help="Select a date"
-                                validations="minLength:8"
+                                validations="isMoment"
                                 validationErrors={{
-                                  minLength: 'Please provide a date.',
+                                  isMoment: 'Please provide a date.',
                                 }}
                                 required
                                 disabled={projectId}
@@ -791,12 +793,12 @@ class EditMilestone extends Component {
                                 min="0"
                                 id="maxamount-input"
                                 type="number"
-                                label="Maximum amount in &#926;"
+                                label="Maximum amount in ETH"
                                 value={maxAmount}
                                 placeholder="10"
                                 validations="greaterEqualTo:0.01"
                                 validationErrors={{
-                                  greaterEqualTo: 'Minimum value must be at least Ξ 0.01',
+                                  greaterEqualTo: 'Minimum value must be at least 0.01 ETH',
                                 }}
                                 required
                                 disabled={projectId}
@@ -830,7 +832,6 @@ class EditMilestone extends Component {
                                       {items.map((item, i) => (
                                         <MilestoneItem
                                           name={`milestoneItem-${i}`}
-                                          key={i}
                                           index={i}
                                           item={item}
                                           removeItem={() => this.removeItem(i)}
@@ -842,27 +843,29 @@ class EditMilestone extends Component {
                                 </div>
                               )}
 
-                              {items.length > 0 && (
-                                <AddMilestoneItem
-                                  onAddItem={item => this.addItem(item)}
-                                  getEthConversion={dt => this.getEthConversion(dt)}
-                                  fiatTypes={fiatTypes}
-                                />
-                              )}
-
-                              {items.length === 0 && (
-                                <div className="text-center">
-                                  <p>
-                                    Add you first item now. This can be an expense, invoice or
-                                    anything else that needs to be paid.
-                                  </p>
+                              {items.length > 0 &&
+                                (isNew || isProposed) && (
                                   <AddMilestoneItem
                                     onAddItem={item => this.addItem(item)}
                                     getEthConversion={dt => this.getEthConversion(dt)}
                                     fiatTypes={fiatTypes}
                                   />
-                                </div>
-                              )}
+                                )}
+
+                              {items.length === 0 &&
+                                (isNew || isProposed) && (
+                                  <div className="text-center">
+                                    <p>
+                                      Add you first item now. This can be an expense, invoice or
+                                      anything else that needs to be paid.
+                                    </p>
+                                    <AddMilestoneItem
+                                      onAddItem={item => this.addItem(item)}
+                                      getEthConversion={dt => this.getEthConversion(dt)}
+                                      fiatTypes={fiatTypes}
+                                    />
+                                  </div>
+                                )}
                             </div>
                           </div>
                         </div>

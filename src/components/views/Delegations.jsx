@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { utils } from 'web3';
 import { Link } from 'react-router-dom';
 import { paramsForServer } from 'feathers-hooks-common';
 import Avatar from 'react-avatar';
@@ -10,11 +9,11 @@ import { feathersClient } from '../../lib/feathersClient';
 import Loader from '../Loader';
 import { isAuthenticated } from '../../lib/middleware';
 import DelegateButton from '../../components/DelegateButton';
-import { getUserName, getUserAvatar, getTruncatedText } from '../../lib/helpers';
+import { getUserName, getUserAvatar, getTruncatedText, convertEthHelper } from '../../lib/helpers';
 import GivethWallet from '../../lib/blockchain/GivethWallet';
 import User from '../../models/User';
 
-// TODO Remove the eslint exception and fix feathers to provide id's without underscore
+// TODO: Remove once rewritten to model
 /* eslint no-underscore-dangle: 0 */
 /**
  * The my delegations view
@@ -45,7 +44,7 @@ class Delegations extends Component {
         new Promise((resolve, reject) => {
           this.dacsObserver = feathersClient
             .service('dacs')
-            .watch({ strategy: 'always' })
+            .watch({ listStrategy: 'always' })
             .find({
               query: {
                 delegateId: { $gt: '0' },
@@ -76,7 +75,7 @@ class Delegations extends Component {
         new Promise((resolve, reject) => {
           this.campaignsObserver = feathersClient
             .service('campaigns')
-            .watch({ strategy: 'always' })
+            .watch({ listStrategy: 'always' })
             .find({
               query: {
                 projectId: {
@@ -110,7 +109,7 @@ class Delegations extends Component {
         new Promise((resolve, reject) => {
           this.milestoneObserver = feathersClient
             .service('milestones')
-            .watch({ strategy: 'always' })
+            .watch({ listStrategy: 'always' })
             .find({
               query: {
                 projectId: { $gt: '0' },
@@ -264,7 +263,7 @@ class Delegations extends Component {
                                   </td>
                                 )}
                                 <td className="td-donations-amount">
-                                  &#926;{utils.fromWei(d.amount)}
+                                  {convertEthHelper(d.amount)} ETH
                                 </td>
                                 <td className="td-user">
                                   <Avatar size={30} src={getUserAvatar(d.giver)} round />

@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { utils } from 'web3';
 import { Link } from 'react-router-dom';
 
 import {
@@ -11,7 +10,7 @@ import {
 } from '../../lib/middleware';
 import Loader from '../Loader';
 import User from '../../models/User';
-import { getTruncatedText } from '../../lib/helpers';
+import { getTruncatedText, convertEthHelper } from '../../lib/helpers';
 import GivethWallet from '../../lib/blockchain/GivethWallet';
 import CampaignService from '../../services/Campaign';
 import Campaign from '../../models/Campaign';
@@ -48,7 +47,7 @@ class MyCampaigns extends Component {
 
   editCampaign(id) {
     takeActionAfterWalletUnlock(this.props.wallet, () => {
-      checkWalletBalance(this.props.wallet, this.props.history).then(() => {
+      checkWalletBalance(this.props.wallet).then(() => {
         React.swal({
           title: 'Edit Campaign?',
           text: 'Are you sure you want to edit this Campaign?',
@@ -56,12 +55,7 @@ class MyCampaigns extends Component {
           dangerMode: true,
           buttons: ['Cancel', 'Yes, edit'],
         }).then(isConfirmed => {
-          if (isConfirmed)
-            redirectAfterWalletUnlock(
-              `/campaigns/${id}/edit`,
-              this.props.wallet,
-              this.props.history,
-            );
+          if (isConfirmed) redirectAfterWalletUnlock(`/campaigns/${id}/edit`, this.props.wallet);
         });
       });
     });
@@ -69,7 +63,7 @@ class MyCampaigns extends Component {
 
   cancelCampaign(campaign) {
     takeActionAfterWalletUnlock(this.props.wallet, () => {
-      checkWalletBalance(this.props.wallet, this.props.history).then(() => {
+      checkWalletBalance(this.props.wallet).then(() => {
         React.swal({
           title: 'Cancel Campaign?',
           text: 'Are you sure you want to cancel this Campaign?',
@@ -155,7 +149,7 @@ class MyCampaigns extends Component {
                               </td>
                               <td className="td-donations-number">{c.donationCount || 0}</td>
                               <td className="td-donations-amount">
-                                Ξ{c.totalDonated ? utils.fromWei(c.totalDonated) : 0}
+                                {convertEthHelper(c.totalDonated)} ETH
                               </td>
                               <td className="td-status">
                                 {(c.status === Campaign.PENDING ||
@@ -221,7 +215,6 @@ class MyCampaigns extends Component {
 
 MyCampaigns.propTypes = {
   currentUser: PropTypes.instanceOf(User).isRequired,
-  history: PropTypes.shape({}).isRequired,
   wallet: PropTypes.instanceOf(GivethWallet).isRequired,
 };
 
