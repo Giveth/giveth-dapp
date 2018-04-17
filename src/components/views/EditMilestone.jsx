@@ -483,32 +483,36 @@ class EditMilestone extends Component {
             .create({
               uri: this.state.image,
             })
-            .then(file => updateMilestone(file.url));
+            .then(file => updateMilestone(file.url))
+            .catch(() => this.setState({ isSaving: false }));
         } else {
           updateMilestone();
         }
       };
 
-      if (this.state.itemizeState) {
+      if (this.state.itemizeState && this.props.isNew) {
         // upload all the item images
         const uploadItemImages = [];
         this.state.items.forEach(item => {
           if (item.image) {
             uploadItemImages.push(
-              Promise(resolve => {
+              new Promise((resolve, reject) => {
                 feathersRest
                   .service('uploads')
                   .create({ uri: item.image })
                   .then(file => {
                     item.image = file.url;
                     resolve('done');
-                  });
+                  })
+                  .catch(() => reject(new Error('could not upload item image')));
               }),
             );
           }
         });
 
-        Promise.all(uploadItemImages).then(() => uploadMilestoneImage());
+        Promise.all(uploadItemImages)
+          .then(() => uploadMilestoneImage())
+          .catch(() => this.setState({ isSaving: false }));
       } else {
         uploadMilestoneImage();
       }
