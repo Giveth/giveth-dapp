@@ -23,12 +23,12 @@ class JoinGivethCommunity extends Component {
   }
 
   componentDidMount() {
-    isInWhitelist(this.props.currentUser, React.whitelist.delegateWhitelist).then(() => {
-      this.setState({ canCreateCampaign: true });
-    });
-    isInWhitelist(this.props.currentUser, React.whitelist.projectOwnerWhitelist).then(() => {
-      this.setState({ canCreateDAC: true });
-    });
+    isInWhitelist(this.props.currentUser, React.whitelist.delegateWhitelist)
+      .then(() => this.setState({ canCreateCampaign: true }))
+      .catch(()=> {} ); //nothing
+    isInWhitelist(this.props.currentUser, React.whitelist.projectOwnerWhitelist)
+      .then(() => this.setState({ canCreateDAC: true }))
+      .catch(()=> {}); //nothing      
   }
 
   createDAC() {
