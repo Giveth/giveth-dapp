@@ -157,7 +157,10 @@ class DACservice {
             });
         })
         .catch(err => {
-          ErrorPopup('Something went wrong with the DAC creation. Is your wallet unlocked?', etherScanUrl+'tx/'+txHash);
+          ErrorPopup(
+            'Something went wrong with the DAC creation. Is your wallet unlocked?',
+            etherScanUrl + 'tx/' + txHash,
+          );
         });
     }
   }

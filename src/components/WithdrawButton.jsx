@@ -89,7 +89,10 @@ class WithdrawButton extends Component {
             );
           },
           err => {
-            ErrorPopup('Something went wrong with withdrawal. Please try again after refresh.', err);
+            ErrorPopup(
+              'Something went wrong with withdrawal. Please try again after refresh.',
+              err,
+            );
           },
         );
 

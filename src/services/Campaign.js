@@ -167,11 +167,17 @@ class CampaignService {
               afterMined(`${etherScanUrl}tx/${txHash}`);
             })
             .catch(err => {
-              ErrorPopup('Something went wrong with the transaction. Is your wallet unlocked?', etherScanUrl+'tx/'+txHash);
+              ErrorPopup(
+                'Something went wrong with the transaction. Is your wallet unlocked?',
+                etherScanUrl + 'tx/' + txHash,
+              );
             });
         })
         .catch(err => {
-          ErrorPopup('Something went wrong with the transaction. Is your wallet unlocked?', etherScanUrl+'tx/'+txHash);
+          ErrorPopup(
+            'Something went wrong with the transaction. Is your wallet unlocked?',
+            etherScanUrl + 'tx/' + txHash,
+          );
         });
     }
   }
@@ -211,11 +217,17 @@ class CampaignService {
           })
           .then(() => afterMined(`${etherScanUrl}tx/${txHash}`))
           .catch(err => {
-            ErrorPopup('Something went wrong with cancelling your campaign', etherScanUrl+'tx/'+txHash);
+            ErrorPopup(
+              'Something went wrong with cancelling your campaign',
+              etherScanUrl + 'tx/' + txHash,
+            );
           });
       })
       .catch(err => {
-        ErrorPopup('Something went wrong with cancelling your campaign', etherScanUrl+'tx/'+txHash);
+        ErrorPopup(
+          'Something went wrong with cancelling your campaign',
+          etherScanUrl + 'tx/' + txHash,
+        );
       });
   }
 }

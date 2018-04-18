@@ -322,7 +322,10 @@ class MyMilestones extends Component {
                 );
               })
               .catch(e => {
-                ErrorPopup('Something went wrong with the transaction. Is your wallet unlocked?', etherScanUrl+'tx/'+txHash);
+                ErrorPopup(
+                  'Something went wrong with the transaction. Is your wallet unlocked?',
+                  etherScanUrl + 'tx/' + txHash,
+                );
               });
           }
         }),
@@ -393,7 +396,10 @@ class MyMilestones extends Component {
                   });
               })
               .catch(() => {
-                ErrorPopup('Something went wrong with the transaction. Is your wallet unlocked?', etherScanUrl+'tx/'+txHash);
+                ErrorPopup(
+                  'Something went wrong with the transaction. Is your wallet unlocked?',
+                  etherScanUrl + 'tx/' + txHash,
+                );
               });
           }
         }),
@@ -470,7 +476,10 @@ class MyMilestones extends Component {
                 );
               })
               .catch(e => {
-                ErrorPopup('Something went wrong with the transaction. Is your wallet unlocked?', etherScanUrl+'tx/'+txHash);
+                ErrorPopup(
+                  'Something went wrong with the transaction. Is your wallet unlocked?',
+                  etherScanUrl + 'tx/' + txHash,
+                );
               });
           }
         }),
@@ -499,7 +508,10 @@ class MyMilestones extends Component {
                 React.toast.info(<p>You have rejected this milestone...</p>);
               })
               .catch(e => {
-                ErrorPopup('Something went wrong with the transaction. Is your wallet unlocked?', e);
+                ErrorPopup(
+                  'Something went wrong with the transaction. Is your wallet unlocked?',
+                  e,
+                );
               });
           }
         }),
@@ -729,7 +741,10 @@ class MyMilestones extends Component {
                     });
                 })
                 .catch(e => {
-                  ErrorPopup('Something went wrong with the transaction. Is your wallet unlocked?', etherScanUrl+'tx/'+txHash);
+                  ErrorPopup(
+                    'Something went wrong with the transaction. Is your wallet unlocked?',
+                    etherScanUrl + 'tx/' + txHash,
+                  );
                 });
             }
           }

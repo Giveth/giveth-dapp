@@ -56,8 +56,11 @@ function setWallet(wallet) {
         wallet.tokenBalance = tokenBalance;
       })
       .catch(err => {
-        ErrorPopup('Something went wrong with getting the balance. Please try again after refresh.', err);
-      })
+        ErrorPopup(
+          'Something went wrong with getting the balance. Please try again after refresh.',
+          err,
+        );
+      });
 
   getBalance();
   // engine.on('block', getBalance); //TODO get this to work

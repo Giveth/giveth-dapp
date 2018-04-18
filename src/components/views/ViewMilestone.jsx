@@ -69,7 +69,7 @@ class ViewMilestone extends Component {
       )
       .catch(err => {
         ErrorPopup('Something went wrong with viewing the milestone. Please try a refresh.', err);
-        this.setState({ isLoading: false })
+        this.setState({ isLoading: false });
       });
 
     // lazy load donations

@@ -138,8 +138,11 @@ class Web3Monitor {
         }
       })
       .catch(err => {
-        ErrorPopup('Something went wrong with fetching balances of accounts. Please try again after refresh.', err);
-      })
+        ErrorPopup(
+          'Something went wrong with fetching balances of accounts. Please try again after refresh.',
+          err,
+        );
+      });
   }
 
   getBalance(address) {

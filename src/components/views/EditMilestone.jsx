@@ -404,7 +404,10 @@ class EditMilestone extends Component {
             })
             .catch(err => {
               this.setState({ isSaving: false });
-              ErrorPopup('There has been an issue creating the milestone. Please try again after refresh.', err);
+              ErrorPopup(
+                'There has been an issue creating the milestone. Please try again after refresh.',
+                err,
+              );
             });
         };
 
@@ -477,7 +480,10 @@ class EditMilestone extends Component {
                 });
             })
             .catch(() => {
-              ErrorPopup('Something went wrong with the transaction. Is your wallet unlocked?', etherScanUrl+'tx/'+txHash);
+              ErrorPopup(
+                'Something went wrong with the transaction. Is your wallet unlocked?',
+                etherScanUrl + 'tx/' + txHash,
+              );
             });
         }
       } else {
@@ -506,8 +512,11 @@ class EditMilestone extends Component {
             })
             .then(file => updateMilestone(file.url))
             .catch(err => {
-              ErrorPopup('Something went wrong when uploading your image. Please try again after refresh.', err);
-              this.setState({ isSaving: false })
+              ErrorPopup(
+                'Something went wrong when uploading your image. Please try again after refresh.',
+                err,
+              );
+              this.setState({ isSaving: false });
             });
         } else {
           updateMilestone();
@@ -537,7 +546,7 @@ class EditMilestone extends Component {
         Promise.all(uploadItemImages)
           .then(() => uploadMilestoneImage())
           .catch(err => {
-            this.setState({ isSaving: false })
+            this.setState({ isSaving: false });
             ErrorPopup(
               'There has been an issue uploading one of the proof items. Please refresh the page and try again.',
               err,

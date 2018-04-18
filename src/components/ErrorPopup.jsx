@@ -2,8 +2,7 @@ import React from 'react';
 // /* global window */
 
 export default (shortDescription, error) => {
-  const errorHandler = (value) => {
-
+  const errorHandler = value => {
     let body;
     if (error instanceof Error) {
       body = `
@@ -35,7 +34,11 @@ export default (shortDescription, error) => {
     if (value === 'email') {
       window.open(`mailto:bugs@giveth.io?subject=Error in DApp&body=${encodeURIComponent(body)}`);
     } else if (value === 'gmail') {
-      window.open(`https://mail.google.com/mail/u/0/?view=cm&fs=1&tf=1&to=bugs@giveth.io&su=Error in DApp&body=${encodeURIComponent(body)}`)
+      window.open(
+        `https://mail.google.com/mail/u/0/?view=cm&fs=1&tf=1&to=bugs@giveth.io&su=Error in DApp&body=${encodeURIComponent(
+          body,
+        )}`,
+      );
     }
   };
 
@@ -46,28 +49,28 @@ export default (shortDescription, error) => {
       icon: 'error',
       buttons: {
         ok: {
-          text: "Close",
+          text: 'Close',
           value: null,
           visible: true,
           className: 'bg-success',
           closeModal: true,
         },
         email: {
-          text: "Report",
+          text: 'Report',
           value: 'email',
           visible: true,
-          closeModal: true
+          closeModal: true,
         },
         gmail: {
-          text: "Report in Gmail",
+          text: 'Report in Gmail',
           value: 'gmail',
           visible: true,
-          closeModal: true
+          closeModal: true,
         },
-      }
+      },
     }).then(value => {
       if (value) {
-        errorHandler(value)
+        errorHandler(value);
       }
     });
   } else {

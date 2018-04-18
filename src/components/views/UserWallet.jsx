@@ -13,7 +13,7 @@ import { feathersClient } from '../../lib/feathersClient';
 import { getTruncatedText } from '../../lib/helpers';
 import getNetwork from '../../lib/blockchain/getNetwork';
 
-import ErrorPopup from '../ErrorPopup'
+import ErrorPopup from '../ErrorPopup';
 // TODO: Remove the eslint exception after extracting to model
 /* eslint no-underscore-dangle: 0 */
 

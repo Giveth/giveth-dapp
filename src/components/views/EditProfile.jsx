@@ -133,7 +133,10 @@ class EditProfile extends Component {
             )
             .catch(() => {
               // TODO: Actually inform the user about error
-              ErrorPopup('Something went wrong with the transaction. Is your wallet unlocked?', network.etherscan+'tx/'+txHash);
+              ErrorPopup(
+                'Something went wrong with the transaction. Is your wallet unlocked?',
+                network.etherscan + 'tx/' + txHash,
+              );
             });
         });
       } else {

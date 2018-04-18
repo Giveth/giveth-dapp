@@ -121,7 +121,10 @@ class DelegateButton extends Component {
           });
         })
         .catch(() => {
-          ErrorPopup('Something went wrong with the transaction. Is your wallet unlocked?', etherScanUrl+'tx/'+txHash);
+          ErrorPopup(
+            'Something went wrong with the transaction. Is your wallet unlocked?',
+            etherScanUrl + 'tx/' + txHash,
+          );
           this.setState({ isSaving: false });
         });
     };
@@ -185,7 +188,10 @@ class DelegateButton extends Component {
           );
         })
         .catch(() => {
-          ErrorPopup('Something went wrong with the transaction. Is your wallet unlocked?', etherScanUrl+'tx/'+txHash);
+          ErrorPopup(
+            'Something went wrong with the transaction. Is your wallet unlocked?',
+            etherScanUrl + 'tx/' + txHash,
+          );
           this.setState({ isSaving: false });
         });
 

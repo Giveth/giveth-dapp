@@ -13,14 +13,10 @@ import {
   checkWalletBalance,
 } from '../../lib/middleware';
 import getNetwork from '../../lib/blockchain/getNetwork';
-import {
-  getGasPrice,
-  getTruncatedText,
-  convertEthHelper,
-} from '../../lib/helpers';
+import { getGasPrice, getTruncatedText, convertEthHelper } from '../../lib/helpers';
 import User from '../../models/User';
 import GivethWallet from '../../lib/blockchain/GivethWallet';
-import ErrorPopup from '../ErrorPopup'
+import ErrorPopup from '../ErrorPopup';
 // TODO: Remove once rewritten to model
 /* eslint no-underscore-dangle: 0 */
 /**
@@ -197,7 +193,10 @@ class Donations extends Component {
                 );
               })
               .catch(() => {
-                ErrorPopup('Something went wrong with the transaction. Is your wallet unlocked?', etherScanUrl+'tx/'+txHash);
+                ErrorPopup(
+                  'Something went wrong with the transaction. Is your wallet unlocked?',
+                  etherScanUrl + 'tx/' + txHash,
+                );
               });
           }
         }),
@@ -286,7 +285,10 @@ class Donations extends Component {
                 );
               })
               .catch(() => {
-                ErrorPopup('Something went wrong with the transaction. Is your wallet unlocked?', etherScanUrl+'tx/'+txHash);
+                ErrorPopup(
+                  'Something went wrong with the transaction. Is your wallet unlocked?',
+                  etherScanUrl + 'tx/' + txHash,
+                );
               });
           }
         }),
@@ -381,7 +383,10 @@ class Donations extends Component {
                 );
               })
               .catch(() => {
-                ErrorPopup('Something went wrong with the transaction. Is your wallet unlocked?', etherScanUrl+'tx/'+txHash);
+                ErrorPopup(
+                  'Something went wrong with the transaction. Is your wallet unlocked?',
+                  etherScanUrl + 'tx/' + txHash,
+                );
               });
           }
         }),

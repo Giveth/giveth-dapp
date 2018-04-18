@@ -95,7 +95,10 @@ class Application extends Component {
       .get(address)
       .then(user => user)
       .catch(err => {
-        ErrorPopup('Something went wrong with getting user profile. Please try again after refresh.', err);
+        ErrorPopup(
+          'Something went wrong with getting user profile. Please try again after refresh.',
+          err,
+        );
       });
   }
   constructor() {
@@ -142,7 +145,10 @@ class Application extends Component {
         });
       })
       .catch(err => {
-        ErrorPopup('Something went wrong with viewing the DAC. Please try again after refresh.', err);
+        ErrorPopup(
+          'Something went wrong with viewing the DAC. Please try again after refresh.',
+          err,
+        );
         this.setState({ isLoading: false, hasError: false });
       });
 
@@ -158,7 +164,10 @@ class Application extends Component {
       })
       .catch(err => {
         if (err.message !== 'No keystore found') {
-          ErrorPopup('Something went wrong with getting the cached keystore. Please try again after refresh.', err);
+          ErrorPopup(
+            'Something went wrong with getting the cached keystore. Please try again after refresh.',
+            err,
+          );
         }
       });
   }
