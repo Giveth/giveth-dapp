@@ -22,6 +22,8 @@
   }
 
   .card-body.content{
+    @include bullet-styling(8);
+    
     .video-wrapper{
       position: relative;
       padding-bottom: 56.25%;
@@ -34,6 +36,13 @@
         width: 100%;
         height: 100%;
       }
+    }
+
+    img{
+      max-width: 100%;
+      width: auto;
+      box-sizing: border-box;
+      display: block;
     }
   }
 }
