@@ -35,6 +35,8 @@ import User from '../../models/User';
 import GivethWallet from '../../lib/blockchain/GivethWallet';
 import MilestoneItem from '../../components/MilestoneItem';
 import AddMilestoneItem from '../../components/AddMilestoneItem';
+import AddMilestoneItemModal from '../../components/AddMilestoneItemModal';
+
 
 BigNumber.config({ DECIMAL_PLACES: 18 });
 
@@ -50,8 +52,8 @@ BigNumber.config({ DECIMAL_PLACES: 18 });
  *    id (string): an id of a milestone object
  */
 class EditMilestone extends Component {
-  constructor() {
-    super();
+  constructor(props) {
+    super(props);
 
     this.state = {
       isLoading: true,
@@ -231,7 +233,7 @@ class EditMilestone extends Component {
     });
   }
 
-  getEthConversion(date) {
+  getEthConversion = (date) => {
     const dtUTC = getStartOfDayUTC(date); // Should not be necessary as the datepicker should provide UTC, but just to be sure
     const timestamp = Math.round(dtUTC.toDate()) / 1000;
 
@@ -291,7 +293,7 @@ class EditMilestone extends Component {
     return 'Update Milestone';
   }
 
-  addItem(item) {
+  addItem = (item) => {
     this.setState({ items: this.state.items.concat(item) });
   }
 
@@ -312,7 +314,8 @@ class EditMilestone extends Component {
     };
   }
 
-  toggleItemize() {
+  toggleItemize = () => {
+    console.log(this.state.itemizeState);
     this.setState({ itemizeState: !this.state.itemizeState });
   }
 
@@ -721,7 +724,7 @@ class EditMilestone extends Component {
                       <Toggle
                         id="itemize-state"
                         defaultChecked={this.state.itemizeState}
-                        onChange={() => this.toggleItemize()}
+                        onChange={this.toggleItemize}
                         disabled={!isNew && !isProposed}
                       />
                       <span className="label">Add multiple expenses, invoices or items</span>
@@ -842,9 +845,7 @@ class EditMilestone extends Component {
                               {items.length > 0 &&
                                 (isNew || isProposed) && (
                                   <AddMilestoneItem
-                                    onAddItem={item => this.addItem(item)}
-                                    getEthConversion={dt => this.getEthConversion(dt)}
-                                    fiatTypes={fiatTypes}
+                                    onClick={this.toggleAddMilestoneItemModal}
                                   />
                                 )}
 
@@ -856,9 +857,7 @@ class EditMilestone extends Component {
                                       anything else that needs to be paid.
                                     </p>
                                     <AddMilestoneItem
-                                      onAddItem={item => this.addItem(item)}
-                                      getEthConversion={dt => this.getEthConversion(dt)}
-                                      fiatTypes={fiatTypes}
+                                      onClick={this.toggleAddMilestoneItemModal}
                                     />
                                   </div>
                                 )}
@@ -891,8 +890,25 @@ class EditMilestone extends Component {
             </div>
           </div>
         </div>
+        <AddMilestoneItemModal
+          visible={this.state.addMilestoneItemModalVisible}
+          onClose={this.toggleAddMilestoneItemModal}
+          getEthConversion={this.getEthConversion}
+          onAddItem={this.onAddItem}
+          fiatTypes={fiatTypes}
+        />
       </div>
     );
+  }
+
+  toggleAddMilestoneItemModal = () =>
+    this.setState({
+      addMilestoneItemModalVisible: !this.state.addMilestoneItemModalVisible
+    })
+
+  onAddItem = (item) => {
+    this.addItem(item);
+    this.setState({ addMilestoneItemModalVisible: false });
   }
 }
 
