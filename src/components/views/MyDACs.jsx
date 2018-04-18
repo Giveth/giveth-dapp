@@ -13,7 +13,7 @@ import { getTruncatedText, convertEthHelper } from '../../lib/helpers';
 import Loader from '../Loader';
 
 import User from '../../models/User';
-import GivethWallet from '../../lib/blockchain/GivethWallet';
+import BaseWallet from '../../lib/blockchain/BaseWallet';
 import DACservice from '../../services/DAC';
 import DAC from '../../models/DAC';
 
@@ -147,7 +147,7 @@ class MyDACs extends Component {
 
 MyDACs.propTypes = {
   currentUser: PropTypes.instanceOf(User).isRequired,
-  wallet: PropTypes.instanceOf(GivethWallet).isRequired,
+  wallet: PropTypes.instanceOf(BaseWallet).isRequired,
 };
 
 export default MyDACs;

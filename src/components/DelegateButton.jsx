@@ -15,7 +15,7 @@ import {
 import { displayTransactionError, getGasPrice } from '../lib/helpers';
 import getNetwork from '../lib/blockchain/getNetwork';
 import getWeb3 from '../lib/blockchain/getWeb3';
-import GivethWallet from '../lib/blockchain/GivethWallet';
+import BaseWallet from '../lib/blockchain/BaseWallet';
 
 // TODO: Remove once rewritten to model
 /* eslint no-underscore-dangle: 0 */
@@ -255,7 +255,7 @@ class DelegateButton extends Component {
 }
 
 DelegateButton.propTypes = {
-  wallet: PropTypes.instanceOf(GivethWallet).isRequired,
+  wallet: PropTypes.instanceOf(BaseWallet).isRequired,
   types: PropTypes.arrayOf(PropTypes.shape({})).isRequired,
   milestoneOnly: PropTypes.bool,
   model: PropTypes.shape({}).isRequired,

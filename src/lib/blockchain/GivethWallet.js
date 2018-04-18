@@ -2,6 +2,7 @@
 import localforage from 'localforage';
 import Accounts from 'web3-eth-accounts';
 import { utils } from 'web3';
+import BaseWallet from './BaseWallet';
 
 const STORAGE_KEY = 'keystore';
 
@@ -17,13 +18,14 @@ const mapPassword = new WeakMap();
  *
  * TODO: allow account specification for signing tx/messages
  */
-class GivethWallet {
+class GivethWallet extends BaseWallet {
   /**
    * @param keystores     array of keystores to add to the wallet
    * @param provider      optional. This is necessary when signing a transaction to
    *                      retrieve chainId, gasPrice, and nonce automatically
    */
   constructor(keystores, provider) {
+    super(provider);
     if (!Array.isArray(keystores) || keystores.length === 0)
       throw new Error('keystores is required. and must be an array');
 

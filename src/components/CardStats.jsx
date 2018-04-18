@@ -22,7 +22,6 @@ const CardStats = ({ peopleCount, maxAmount, campaignsCount, milestonesCount, ty
 
       {!maxAmount && <p>Donated</p>}
     </div>
-
     <div className="col-4 text-right">
       {type === 'dac' && (
         <div>

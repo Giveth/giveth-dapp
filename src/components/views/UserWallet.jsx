@@ -7,7 +7,7 @@ import BackupWallet from '../BackupWallet';
 import { isAuthenticated, takeActionAfterWalletUnlock } from '../../lib/middleware';
 // import WithdrawButton from '../WithdrawButton';
 import User from '../../models/User';
-import GivethWallet from '../../lib/blockchain/GivethWallet';
+import BaseWallet from '../../lib/blockchain/BaseWallet';
 import Loader from '../Loader';
 import { feathersClient } from '../../lib/feathersClient';
 import { getTruncatedText } from '../../lib/helpers';
@@ -232,7 +232,7 @@ class UserWallet extends Component {
 }
 
 UserWallet.propTypes = {
-  wallet: PropTypes.instanceOf(GivethWallet).isRequired,
+  wallet: PropTypes.instanceOf(BaseWallet).isRequired,
   currentUser: PropTypes.instanceOf(User).isRequired,
 };
 

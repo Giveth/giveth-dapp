@@ -5,8 +5,8 @@ import PropTypes from 'prop-types';
 import { isOwner, getTruncatedText, getUserName, getUserAvatar } from './../lib/helpers';
 import CardStats from './CardStats';
 import User from './../models/User';
+import BaseWallet from '../lib/blockchain/BaseWallet';
 import { redirectAfterWalletUnlock, checkWalletBalance } from './../lib/middleware';
-import GivethWallet from '../lib/blockchain/GivethWallet';
 import Campaign from './../models/Campaign';
 
 /**
@@ -107,7 +107,7 @@ class CampaignCard extends Component {
 CampaignCard.propTypes = {
   campaign: PropTypes.instanceOf(Campaign).isRequired,
   currentUser: PropTypes.instanceOf(User),
-  wallet: PropTypes.instanceOf(GivethWallet),
+  wallet: PropTypes.instanceOf(BaseWallet),
   history: PropTypes.shape({
     push: PropTypes.func.isRequired,
   }).isRequired,

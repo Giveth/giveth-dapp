@@ -6,7 +6,7 @@ import { getTruncatedText, isOwner, getUserAvatar, getUserName } from './../lib/
 import { redirectAfterWalletUnlock, checkWalletBalance } from './../lib/middleware';
 import User from '../models/User';
 import CardStats from './CardStats';
-import GivethWallet from '../lib/blockchain/GivethWallet';
+import BaseWallet from '../lib/blockchain/BaseWallet';
 import GivethLogo from '../assets/Giveth-logo-purple.png';
 
 // TODO: Remove once rewritten to model
@@ -124,7 +124,7 @@ MilestoneCard.propTypes = {
     }).isRequired,
   }).isRequired,
   currentUser: PropTypes.instanceOf(User),
-  wallet: PropTypes.instanceOf(GivethWallet),
+  wallet: PropTypes.instanceOf(BaseWallet),
   history: PropTypes.shape({
     push: PropTypes.func.isRequired,
   }).isRequired,

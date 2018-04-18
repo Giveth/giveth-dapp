@@ -1,6 +1,8 @@
 import React, { Component } from 'react';
 import ReactDOM from 'react-dom';
 
+import Web3 from 'web3';
+
 import { Router, Route, Switch } from 'react-router-dom';
 import localforage from 'localforage';
 
@@ -13,6 +15,7 @@ import { feathersClient } from '../lib/feathersClient';
 
 import DataRoutes from './DataRoutes';
 
+import BaseWallet from '../lib/blockchain/BaseWallet';
 import GivethWallet from '../lib/blockchain/GivethWallet';
 import getWeb3 from '../lib/blockchain/getWeb3';
 import { history } from '../lib/helpers';
@@ -49,7 +52,7 @@ import User from '../models/User';
 
 import './../lib/validators';
 
-/* global document */
+/* global document, window, alert */
 /**
  * Here we hack to make stuff globally available
  */
@@ -145,19 +148,35 @@ class Application extends Component {
         this.setState({ isLoading: false, hasError: false });
       });
 
-    GivethWallet.getCachedKeystore()
-      .then(keystore => {
-        // TODO: change to getWeb3() when implemented. actually remove provider from GivethWallet
-        const provider = this.state.web3 ? this.state.web3.currentProvider : undefined;
-        return GivethWallet.loadWallet(keystore, provider);
-      })
-      .then(wallet => {
-        getWeb3().then(web3 => web3.setWallet(wallet));
-        this.setState({ wallet });
-      })
-      .catch(err => {
-        if (err.message !== 'No keystore found') console.error(err); // eslint-disable-line no-console
-      });
+    // TODO: move and isolate this code to some place nice
+    // check if web3 has been injected into dom window
+    if (typeof web3 !== 'undefined') {
+      // if yes use base wallet
+      // this line seems dumb as provider is always undefined
+      const provider = undefined;
+      // declare web3 from window
+      const { web3 } = window;
+      // create base wallet
+      const web3js = new Web3(web3.currentProvider);
+      const wallet = new BaseWallet(provider, web3js); // eslint-disable-line no-console
+      // add wallet to application state
+      this.setState({ wallet });
+    } else {
+      // if not web3 is not injected, use same Giveth wallet as before
+      GivethWallet.getCachedKeystore()
+        .then(keystore => {
+          // TODO change to getWeb3() when implemented. actually remove provider from GivethWallet
+          const provider = this.state.web3 ? this.state.web3.currentProvider : undefined;
+          return GivethWallet.loadWallet(keystore, provider);
+        })
+        .then(wallet => {
+          getWeb3().then(web3 => web3.setWallet(wallet));
+          this.setState({ wallet });
+        })
+        .catch(err => {
+          if (err.message !== 'No keystore found') console.error(err); // eslint-disable-line no-console
+        });
+    }
   }
 
   onSignOut() {
@@ -176,16 +195,33 @@ class Application extends Component {
 
   handleWalletChange(wallet) {
     wallet.cacheKeystore();
-    const address = wallet.getAddresses()[0];
-
-    getWeb3().then(web3 => web3.setWallet(wallet));
-
-    Application.getUserProfile(address).then(user =>
-      this.setState({
-        wallet,
-        currentUser: new User(user),
-      }),
-    );
+    let address;
+    if (typeof web3 !== 'undefined') {
+      window.web3.eth.getAccounts((error, accounts) => {
+        if (error) alert('error getting eth accounts');
+        if (accounts.length === 0)
+          alert(
+            'Zero accounts found in provided web3 object. You may need to log into a web3 browser or extension.',
+          );
+        [address] = accounts;
+        Application.getUserProfile(address).then(user =>
+          this.setState({
+            wallet,
+            currentUser: new User(user),
+          }),
+        );
+      });
+    } else {
+      [address] = wallet.getAddresses();
+      getWeb3().then(web3 => web3.setWallet(wallet));
+      Application.getUserProfile(address).then(user =>
+        this.setState({
+          wallet,
+          currentUser: new User(user),
+        }),
+      );
+    }
+    // Unhandled Rejection (TypeError): Cannot read property 'address' of undefined
   }
 
   unlockWallet(redirectAfter) {

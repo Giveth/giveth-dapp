@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 
 import JoinGivethCommunity from '../JoinGivethCommunity';
 import DacCard from '../DacCard';
-import GivethWallet from '../../lib/blockchain/GivethWallet';
+import BaseWallet from '../../lib/blockchain/BaseWallet';
 import User from '../../models/User';
 import DAC from '../../models/DAC';
 
@@ -74,7 +74,7 @@ DACs.propTypes = {
     total: PropTypes.number.isRequired,
   }).isRequired,
   history: PropTypes.shape({}).isRequired,
-  wallet: PropTypes.instanceOf(GivethWallet),
+  wallet: PropTypes.instanceOf(BaseWallet),
 };
 
 DACs.defaultProps = {

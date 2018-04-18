@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { Form, Input } from 'formsy-react-components';
 
+import BaseWallet from '../../lib/blockchain/BaseWallet';
 import GivethWallet from '../../lib/blockchain/GivethWallet';
 import BackupWallet from '../BackupWallet';
 import { authenticate } from '../../lib/helpers';
@@ -33,6 +34,14 @@ class SignUp extends Component {
   }
 
   submit({ password }) {
+    // TODO: move this some place better
+    const createAppropriateWallet = (provider, pwd) => {
+      if (typeof web3 !== 'undefined') {
+        return BaseWallet.createWallet(provider, pwd);
+      }
+      return GivethWallet.createWallet(provider, pwd);
+    };
+
     this.setState(
       {
         isSaving: true,
@@ -41,18 +50,19 @@ class SignUp extends Component {
       () => {
         function createWallet() {
           let wallet;
-          GivethWallet.createWallet(this.props.provider, password)
+          createAppropriateWallet(this.props.provider, password)
             .then(w => {
               wallet = w;
               return wallet;
             })
-            .then(authenticate)
+            .then(wlt => {
+              authenticate(wlt);
+            })
             .then(() => {
               this.setState({
                 isSaving: false,
                 wallet,
               });
-
               this.props.walletCreated(wallet);
             })
             .catch(err => {
@@ -70,7 +80,6 @@ class SignUp extends Component {
               });
             });
         }
-
         // web3 blocks all rendering, so we need to request an animation frame
         window.requestAnimationFrame(createWallet.bind(this));
       },

@@ -19,7 +19,7 @@ import {
 } from '../../lib/middleware';
 import LoaderButton from '../../components/LoaderButton';
 import User from '../../models/User';
-import GivethWallet from '../../lib/blockchain/GivethWallet';
+import BaseWallet from '../../lib/blockchain/BaseWallet';
 import Campaign from '../../models/Campaign';
 import CampaignService from '../../services/Campaign';
 
@@ -419,7 +419,7 @@ EditCampaign.propTypes = {
     push: PropTypes.func.isRequired,
   }).isRequired,
   isNew: PropTypes.bool,
-  wallet: PropTypes.instanceOf(GivethWallet).isRequired,
+  wallet: PropTypes.instanceOf(BaseWallet).isRequired,
   match: PropTypes.shape({
     params: PropTypes.shape({
       id: PropTypes.string,

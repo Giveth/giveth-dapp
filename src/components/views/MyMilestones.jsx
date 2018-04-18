@@ -24,7 +24,7 @@ import {
   getReadableStatus,
   convertEthHelper,
 } from '../../lib/helpers';
-import GivethWallet from '../../lib/blockchain/GivethWallet';
+import BaseWallet from '../../lib/blockchain/BaseWallet';
 
 const deleteProposedMilestone = milestone => {
   React.swal({
@@ -1037,7 +1037,7 @@ class MyMilestones extends Component {
 
 MyMilestones.propTypes = {
   currentUser: PropTypes.instanceOf(User).isRequired,
-  wallet: PropTypes.instanceOf(GivethWallet).isRequired,
+  wallet: PropTypes.instanceOf(BaseWallet).isRequired,
 };
 
 export default MyMilestones;

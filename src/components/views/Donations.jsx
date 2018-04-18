@@ -20,7 +20,7 @@ import {
   convertEthHelper,
 } from '../../lib/helpers';
 import User from '../../models/User';
-import GivethWallet from '../../lib/blockchain/GivethWallet';
+import BaseWallet from '../../lib/blockchain/BaseWallet';
 
 // TODO: Remove once rewritten to model
 /* eslint no-underscore-dangle: 0 */
@@ -554,7 +554,7 @@ class Donations extends Component {
 
 Donations.propTypes = {
   currentUser: PropTypes.instanceOf(User).isRequired,
-  wallet: PropTypes.instanceOf(GivethWallet).isRequired,
+  wallet: PropTypes.instanceOf(BaseWallet).isRequired,
 };
 
 export default Donations;
