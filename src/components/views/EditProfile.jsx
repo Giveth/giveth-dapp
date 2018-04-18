@@ -5,11 +5,7 @@ import { Form, Input } from 'formsy-react-components';
 import { feathersClient, feathersRest } from '../../lib/feathersClient';
 import Loader from '../Loader';
 import FormsyImageUploader from './../FormsyImageUploader';
-import {
-  isAuthenticated,
-  checkWalletBalance,
-  confirmBlockchainTransaction,
-} from '../../lib/middleware';
+import { isLoggedIn, checkWalletBalance, confirmBlockchainTransaction } from '../../lib/middleware';
 import LoaderButton from '../../components/LoaderButton';
 import getNetwork from '../../lib/blockchain/getNetwork';
 import User from '../../models/User';
@@ -47,7 +43,7 @@ class EditProfile extends Component {
   }
 
   componentDidMount() {
-    isAuthenticated(this.props.currentUser, this.props.wallet)
+    isLoggedIn(this.props.currentUser)
       .then(() => checkWalletBalance(this.props.wallet))
       .then(() => this.setState({ isLoading: false }))
       .catch(err => {
