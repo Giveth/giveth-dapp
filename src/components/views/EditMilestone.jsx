@@ -482,7 +482,7 @@ class EditMilestone extends Component {
             .catch(() => {
               ErrorPopup(
                 'Something went wrong with the transaction. Is your wallet unlocked?',
-                etherScanUrl + 'tx/' + txHash,
+                `${etherScanUrl}tx/${txHash}`,
               );
             });
         }

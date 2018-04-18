@@ -156,10 +156,10 @@ class DACservice {
               afterMined(`${etherScanUrl}tx/${txHash}`);
             });
         })
-        .catch(err => {
+        .catch(() => {
           ErrorPopup(
             'Something went wrong with the DAC creation. Is your wallet unlocked?',
-            etherScanUrl + 'tx/' + txHash,
+            `${etherScanUrl}tx/${txHash}`,
           );
         });
     }

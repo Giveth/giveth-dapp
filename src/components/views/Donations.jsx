@@ -195,7 +195,7 @@ class Donations extends Component {
               .catch(() => {
                 ErrorPopup(
                   'Something went wrong with the transaction. Is your wallet unlocked?',
-                  etherScanUrl + 'tx/' + txHash,
+                  `${etherScanUrl}tx/${txHash}`,
                 );
               });
           }
@@ -287,7 +287,7 @@ class Donations extends Component {
               .catch(() => {
                 ErrorPopup(
                   'Something went wrong with the transaction. Is your wallet unlocked?',
-                  etherScanUrl + 'tx/' + txHash,
+                  `${etherScanUrl}tx/${txHash}`,
                 );
               });
           }
@@ -385,7 +385,7 @@ class Donations extends Component {
               .catch(() => {
                 ErrorPopup(
                   'Something went wrong with the transaction. Is your wallet unlocked?',
-                  etherScanUrl + 'tx/' + txHash,
+                  `${etherScanUrl}tx/${txHash}`,
                 );
               });
           }

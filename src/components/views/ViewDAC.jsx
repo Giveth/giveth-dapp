@@ -45,7 +45,7 @@ class ViewDAC extends Component {
       .then(dac => {
         this.setState({ dac, isLoading: false });
       })
-      .catch(err => {
+      .catch(() => {
         this.setState({ isLoading: false });
       }); // TODO: inform user of error
 

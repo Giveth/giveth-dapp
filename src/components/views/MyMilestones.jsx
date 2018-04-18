@@ -321,10 +321,10 @@ class MyMilestones extends Component {
                   </p>,
                 );
               })
-              .catch(e => {
+              .catch(() => {
                 ErrorPopup(
                   'Something went wrong with the transaction. Is your wallet unlocked?',
-                  etherScanUrl + 'tx/' + txHash,
+                  `${etherScanUrl}tx/${txHash}`,
                 );
               });
           }
@@ -398,7 +398,7 @@ class MyMilestones extends Component {
               .catch(() => {
                 ErrorPopup(
                   'Something went wrong with the transaction. Is your wallet unlocked?',
-                  etherScanUrl + 'tx/' + txHash,
+                  `${etherScanUrl}tx/${txHash}`,
                 );
               });
           }
@@ -475,10 +475,10 @@ class MyMilestones extends Component {
                   </p>,
                 );
               })
-              .catch(e => {
+              .catch(() => {
                 ErrorPopup(
                   'Something went wrong with the transaction. Is your wallet unlocked?',
-                  etherScanUrl + 'tx/' + txHash,
+                  `${etherScanUrl}tx/${txHash}`,
                 );
               });
           }
@@ -740,10 +740,10 @@ class MyMilestones extends Component {
                       collect(etherScanUrl, txHash);
                     });
                 })
-                .catch(e => {
+                .catch(() => {
                   ErrorPopup(
                     'Something went wrong with the transaction. Is your wallet unlocked?',
-                    etherScanUrl + 'tx/' + txHash,
+                    `${etherScanUrl}tx/${txHash}`,
                   );
                 });
             }

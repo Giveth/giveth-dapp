@@ -78,7 +78,6 @@ feathersClient
   .service('/whitelist')
   .find()
   .then(whitelist => {
-    console.log(whitelist);
     React.whitelist = whitelist;
   });
 
@@ -144,7 +143,7 @@ class Application extends Component {
           currentUser: new User(user),
         });
       })
-      .catch(err => {
+      .catch(() => {
         this.setState({ isLoading: false, hasError: false });
       });
 

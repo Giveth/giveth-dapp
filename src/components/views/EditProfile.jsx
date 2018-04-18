@@ -135,7 +135,7 @@ class EditProfile extends Component {
               // TODO: Actually inform the user about error
               ErrorPopup(
                 'Something went wrong with the transaction. Is your wallet unlocked?',
-                network.etherscan + 'tx/' + txHash,
+                `${network.etherscan}tx/${txHash}`,
               );
             });
         });
