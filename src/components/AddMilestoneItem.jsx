@@ -29,8 +29,8 @@ const addMilestoneModalStyle = {
 };
 
 class AddMilestoneItem extends Component {
-  constructor() {
-    super();
+  constructor(props) {
+    super(props);
 
     this.state = initialState;
 
@@ -84,6 +84,7 @@ class AddMilestoneItem extends Component {
         </button>
 
         <Portal className="add-milestone-item-skylight">
+        {modalVisible && (
           <SkyLightStateless
             isVisible={modalVisible}
             onCloseClicked={() => this.closeDialog()}
@@ -138,6 +139,7 @@ class AddMilestoneItem extends Component {
               </button>
             </Form>
           </SkyLightStateless>
+        )}
         </Portal>
       </div>
     );

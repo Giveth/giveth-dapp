@@ -727,7 +727,7 @@ class EditMilestone extends Component {
                       <span className="label">Add multiple expenses, invoices or items</span>
                     </div>
 
-                    {!itemizeState && (
+                    {!itemizeState ? (
                       <div className="card milestone-items-card">
                         <div className="card-body">
                           <div className="form-group row">
@@ -806,9 +806,7 @@ class EditMilestone extends Component {
                           </div>
                         </div>
                       </div>
-                    )}
-
-                    {itemizeState && (
+                    ) : (
                       <div className="form-group row dashboard-table-view">
                         <div className="col-12">
                           <div className="card milestone-items-card">
