@@ -145,10 +145,6 @@ class Application extends Component {
         });
       })
       .catch(err => {
-        ErrorPopup(
-          'Something went wrong with viewing the DAC. Please try again after refresh.',
-          err,
-        );
         this.setState({ isLoading: false, hasError: false });
       });
 

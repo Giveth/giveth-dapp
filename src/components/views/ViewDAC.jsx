@@ -16,7 +16,6 @@ import CampaignCard from '../CampaignCard';
 import { getUserName, getUserAvatar } from '../../lib/helpers';
 import GivethWallet from '../../lib/blockchain/GivethWallet';
 import DACservice from '../../services/DAC';
-import ErrorPopup from '../ErrorPopup';
 
 /**
  * The DAC detail view mapped to /dac/id
