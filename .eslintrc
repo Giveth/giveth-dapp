@@ -24,5 +24,8 @@
   },
   "env": {
     "jest": true
+  },
+  "globals": {
+    "FileReader": true,
   }
 }

@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 
 import { Link } from 'react-router-dom';
 import Avatar from 'react-avatar';
+import ReactHtmlParser from 'react-html-parser';
 
 import Loader from '../Loader';
 import GoBackButton from '../GoBackButton';
@@ -127,10 +128,7 @@ class ViewDAC extends Component {
                   </center>
 
                   <div className="card content-card">
-                    <div className="card-body content">
-                      {/* TODO: Find an alternative to dangerouslySetInnerHTML */}
-                      <div dangerouslySetInnerHTML={{ __html: dac.description }} />
-                    </div>
+                    <div className="card-body content">{ReactHtmlParser(dac.description)}</div>
                   </div>
                 </div>
               </div>

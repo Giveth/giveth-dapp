@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 import Avatar from 'react-avatar';
 import Masonry, { ResponsiveMasonry } from 'react-responsive-masonry';
+import ReactHtmlParser from 'react-html-parser';
 
 import { feathersClient } from '../../lib/feathersClient';
 import Loader from '../Loader';
@@ -139,14 +140,7 @@ class ViewCampaign extends Component {
                   </center>
 
                   <div className="card content-card ">
-                    <div className="card-body content">
-                      {/* TODO: Find more sensible way of showing the description */}
-                      <div
-                        dangerouslySetInnerHTML={{
-                          __html: campaign.description,
-                        }}
-                      />
-                    </div>
+                    <div className="card-body content">{ReactHtmlParser(campaign.description)}</div>
                   </div>
 
                   <div className="milestone-header spacer-top-50 card-view">

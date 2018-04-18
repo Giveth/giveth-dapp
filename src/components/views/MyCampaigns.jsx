@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 
 import {
-  isAuthenticated,
+  isLoggedIn,
   redirectAfterWalletUnlock,
   takeActionAfterWalletUnlock,
   checkWalletBalance,
@@ -32,7 +32,7 @@ class MyCampaigns extends Component {
   }
 
   componentDidMount() {
-    isAuthenticated(this.props.currentUser, this.props.wallet).then(() => {
+    isLoggedIn(this.props.currentUser).then(() => {
       this.campaignsObserver = CampaignService.getUserCampaigns(
         this.props.currentUser.address,
         campaigns => this.setState({ campaigns, isLoading: false }),

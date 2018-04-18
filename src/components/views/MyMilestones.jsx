@@ -8,7 +8,7 @@ import Pagination from 'react-js-pagination';
 
 import { feathersClient } from '../../lib/feathersClient';
 import {
-  isAuthenticated,
+  isLoggedIn,
   redirectAfterWalletUnlock,
   takeActionAfterWalletUnlock,
   checkWalletBalance,
@@ -111,7 +111,7 @@ class MyMilestones extends Component {
   }
 
   componentDidMount() {
-    isAuthenticated(this.props.currentUser, this.props.wallet).then(() => this.loadMileStones());
+    isLoggedIn(this.props.currentUser).then(() => this.loadMileStones());
   }
 
   componentWillUnmount() {
