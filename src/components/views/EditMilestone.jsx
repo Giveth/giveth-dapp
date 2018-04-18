@@ -16,7 +16,6 @@ import FormsyImageUploader from './../FormsyImageUploader';
 import GoBackButton from '../GoBackButton';
 import {
   isOwner,
-  displayTransactionError,
   getRandomWhitelistAddress,
   getTruncatedText,
   getGasPrice,
@@ -399,7 +398,7 @@ class EditMilestone extends Component {
             })
             .catch(err => {
               this.setState({ isSaving: false });
-              ErrorPopup('There has been an issue creating the milestone', err);
+              ErrorPopup('There has been an issue creating the milestone. Please try again after refresh.', err);
             });
         };
 
@@ -472,7 +471,7 @@ class EditMilestone extends Component {
                 });
             })
             .catch(() => {
-              displayTransactionError(txHash, etherScanUrl);
+              ErrorPopup('Something went wrong with the transaction. Is your wallet unlocked?', etherScanUrl+'tx/'+txHash);
             });
         }
       } else {
@@ -500,7 +499,10 @@ class EditMilestone extends Component {
               uri: this.state.image,
             })
             .then(file => updateMilestone(file.url))
-            .catch(() => this.setState({ isSaving: false }));
+            .catch(err => {
+              ErrorPopup('Something went wrong when uploading your image. Please try again after refresh.', err);
+              this.setState({ isSaving: false })
+            });
         } else {
           updateMilestone();
         }

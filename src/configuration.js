@@ -1,5 +1,5 @@
 const {
-  REACT_APP_ENVIRONMENT = 'localhost', // optional
+  REACT_APP_ENVIRONMENT = 'develop', // optional
   REACT_APP_DECIMALS = 8, // optional
   REACT_APP_FEATHERJS_CONNECTION_URL,
   REACT_APP_ETH_NODE_CONNECTION_URL,

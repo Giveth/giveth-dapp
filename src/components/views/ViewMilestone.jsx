@@ -22,6 +22,8 @@ import MilestoneItem from './../MilestoneItem';
 import GivethWallet from '../../lib/blockchain/GivethWallet';
 import User from '../../models/User';
 
+import ErrorPopup from '../ErrorPopup';
+
 /**
   Loads and shows a single milestone
 
@@ -65,7 +67,10 @@ class ViewMilestone extends Component {
           }),
         ),
       )
-      .catch(() => this.setState({ isLoading: false }));
+      .catch(err => {
+        ErrorPopup('Something went wrong with viewing the milestone. Please try a refresh.', err);
+        this.setState({ isLoading: false })
+      });
 
     // lazy load donations
     // TODO: fetch "non comitted" donations? add "intendedProjectId: milestoneId" to query to get

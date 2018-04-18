@@ -4,6 +4,8 @@ import ZeroClientProvider from './ZeroClientProvider';
 import getNetwork from './getNetwork';
 import config from '../../configuration';
 
+import ErrorPopup from '../../components/ErrorPopup';
+
 let givethWeb3;
 /* ///////////// custom Web3 Functions ///////////// */
 
@@ -53,7 +55,9 @@ function setWallet(wallet) {
         wallet.balance = balance;
         wallet.tokenBalance = tokenBalance;
       })
-      .catch(console.error); // eslint-disable-line no-console
+      .catch(err => {
+        ErrorPopup('Something went wrong with getting the balance. Please try again after refresh.', err);
+      })
 
   getBalance();
   // engine.on('block', getBalance); //TODO get this to work

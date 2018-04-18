@@ -19,15 +19,15 @@ export const socket = io(config.feathersConnection, {
 });
 
 // socket IO error events
-socket.on('connect_error', () => ErrorPopup('Could not connect to FeatherJS'));
+socket.on('connect_error', err => ErrorPopup('Could not connect to FeatherJS', err));
 socket.on('connect_timeout', () =>
   ErrorPopup('Could not connect to FeatherJS: Timeout. Please try and refresh the page.'),
 );
 socket.on('reconnect_attempt', () =>
   ErrorPopup('Trying to reconnect to FeatherJS: Timeout. Please try and refresh the page.'),
 );
-socket.on('error', () =>
-  ErrorPopup('Trying to reconnect to FeatherJS: Timeout. Please try and refresh the page.'),
+socket.on('error', err =>
+  ErrorPopup('Trying to reconnect to FeatherJS: Timeout. Please try and refresh the page.', err),
 );
 
 export const feathersRest = feathers()

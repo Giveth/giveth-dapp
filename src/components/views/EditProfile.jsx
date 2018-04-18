@@ -13,7 +13,7 @@ import {
 import LoaderButton from '../../components/LoaderButton';
 import getNetwork from '../../lib/blockchain/getNetwork';
 import User from '../../models/User';
-import { displayTransactionError, getGasPrice, history } from '../../lib/helpers';
+import { getGasPrice, history } from '../../lib/helpers';
 import GivethWallet from '../../lib/blockchain/GivethWallet';
 import ErrorPopup from '../ErrorPopup';
 
@@ -137,7 +137,7 @@ class EditProfile extends Component {
             )
             .catch(() => {
               // TODO: Actually inform the user about error
-              displayTransactionError(txHash, network.etherscan);
+              ErrorPopup('Something went wrong with the transaction. Is your wallet unlocked?', network.etherscan+'tx/'+txHash);
             });
         });
       } else {

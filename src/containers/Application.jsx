@@ -43,6 +43,7 @@ import EditMilestone from './../components/views/EditMilestone';
 import MainMenu from './../components/MainMenu';
 import Loader from './../components/Loader';
 import UnlockWallet from '../components/UnlockWallet';
+import ErrorPopup from '../components/ErrorPopup';
 
 // models
 import User from '../models/User';
@@ -94,7 +95,7 @@ class Application extends Component {
       .get(address)
       .then(user => user)
       .catch(err => {
-        console.error(err); // eslint-disable-line no-console
+        ErrorPopup('Something went wrong with getting user profile. Please try again after refresh.', err);
       });
   }
   constructor() {
@@ -140,8 +141,8 @@ class Application extends Component {
           currentUser: new User(user),
         });
       })
-      .catch(e => {
-        console.error(e); // eslint-disable-line no-console
+      .catch(err => {
+        ErrorPopup('Something went wrong with viewing the DAC. Please try again after refresh.', err);
         this.setState({ isLoading: false, hasError: false });
       });
 
@@ -156,7 +157,9 @@ class Application extends Component {
         this.setState({ wallet });
       })
       .catch(err => {
-        if (err.message !== 'No keystore found') console.error(err); // eslint-disable-line no-console
+        if (err.message !== 'No keystore found') {
+          ErrorPopup('Something went wrong with getting the cached keystore. Please try again after refresh.', err);
+        }
       });
   }
 

@@ -14,14 +14,13 @@ import {
 } from '../../lib/middleware';
 import getNetwork from '../../lib/blockchain/getNetwork';
 import {
-  displayTransactionError,
   getGasPrice,
   getTruncatedText,
   convertEthHelper,
 } from '../../lib/helpers';
 import User from '../../models/User';
 import GivethWallet from '../../lib/blockchain/GivethWallet';
-
+import ErrorPopup from '../ErrorPopup'
 // TODO: Remove once rewritten to model
 /* eslint no-underscore-dangle: 0 */
 /**
@@ -156,10 +155,8 @@ class Donations extends Component {
                     </p>,
                   );
                 })
-                .catch(() => {
-                  React.toast.error(
-                    'Oh no! Something went wrong with the transaction. Please try again.',
-                  );
+                .catch(err => {
+                  ErrorPopup('Something went wrong while comitting your donation.', err);
                   this.setState({ isCommitting: false });
                 });
             };
@@ -200,7 +197,7 @@ class Donations extends Component {
                 );
               })
               .catch(() => {
-                displayTransactionError(txHash, etherScanUrl);
+                ErrorPopup('Something went wrong with the transaction. Is your wallet unlocked?', etherScanUrl+'tx/'+txHash);
               });
           }
         }),
@@ -249,10 +246,8 @@ class Donations extends Component {
                     </p>,
                   );
                 })
-                .catch(() => {
-                  React.toast.error(
-                    'Oh no! Something went wrong with the transaction. Please try again.',
-                  );
+                .catch(err => {
+                  ErrorPopup('Something went wrong while rejecting the donation.', err);
                   this.setState({ isRejecting: false });
                 });
             };
@@ -291,7 +286,7 @@ class Donations extends Component {
                 );
               })
               .catch(() => {
-                displayTransactionError(txHash, etherScanUrl);
+                ErrorPopup('Something went wrong with the transaction. Is your wallet unlocked?', etherScanUrl+'tx/'+txHash);
               });
           }
         }),
@@ -346,10 +341,8 @@ class Donations extends Component {
                     </p>,
                   );
                 })
-                .catch(() => {
-                  React.toast.error(
-                    'Oh no! Something went wrong with the transaction. Please try again.',
-                  );
+                .catch(err => {
+                  ErrorPopup('Something went wrong while revoking your donation.', err);
                   this.setState({ isRefunding: false });
                 });
             };
@@ -388,7 +381,7 @@ class Donations extends Component {
                 );
               })
               .catch(() => {
-                displayTransactionError(txHash, etherScanUrl);
+                ErrorPopup('Something went wrong with the transaction. Is your wallet unlocked?', etherScanUrl+'tx/'+txHash);
               });
           }
         }),

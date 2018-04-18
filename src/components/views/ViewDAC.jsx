@@ -15,6 +15,7 @@ import CampaignCard from '../CampaignCard';
 import { getUserName, getUserAvatar } from '../../lib/helpers';
 import GivethWallet from '../../lib/blockchain/GivethWallet';
 import DACservice from '../../services/DAC';
+import ErrorPopup from '../ErrorPopup';
 
 /**
  * The DAC detail view mapped to /dac/id
@@ -44,7 +45,7 @@ class ViewDAC extends Component {
       .then(dac => {
         this.setState({ dac, isLoading: false });
       })
-      .catch(() => {
+      .catch(err => {
         this.setState({ isLoading: false });
       }); // TODO: inform user of error
 

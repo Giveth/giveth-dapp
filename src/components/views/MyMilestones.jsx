@@ -18,13 +18,14 @@ import getWeb3 from '../../lib/blockchain/getWeb3';
 import Loader from '../Loader';
 import User from '../../models/User';
 import {
-  displayTransactionError,
   getGasPrice,
   getTruncatedText,
   getReadableStatus,
   convertEthHelper,
 } from '../../lib/helpers';
 import GivethWallet from '../../lib/blockchain/GivethWallet';
+
+import ErrorPopup from '../ErrorPopup';
 
 const deleteProposedMilestone = milestone => {
   React.swal({
@@ -42,8 +43,7 @@ const deleteProposedMilestone = milestone => {
           React.toast.info(<p>The milestone has been deleted.</p>);
         })
         .catch(e => {
-          console.log('Error updating feathers cache ->', e); // eslint-disable-line no-console
-          React.toast.error('Oh no! Something went wrong. Please try again.');
+          ErrorPopup('Something went wrong with deleting your milestone', e);
         });
     }
   });
@@ -68,8 +68,7 @@ const rejectProposedMilestone = milestone => {
           React.toast.info(<p>The milestone has been rejected.</p>);
         })
         .catch(e => {
-          console.log('Error updating feathers cache ->', e); // eslint-disable-line no-console
-          React.toast.error('Oh no! Something went wrong. Please try again.');
+          ErrorPopup('Something went wrong with rejecting your milestone', e);
         });
     }
   });
@@ -246,13 +245,7 @@ class MyMilestones extends Component {
                 React.toast.info(<p>Your milestone has been marked as complete...</p>);
               })
               .catch(e => {
-                console.error('Error marking milestone complete ->', e); // eslint-disable-line no-console
-                React.swal({
-                  title: 'Oh no!',
-                  content:
-                    '<p>Something went wrong with the transaction. Is your wallet unlocked?</p>',
-                  icon: 'error',
-                });
+                ErrorPopup('Something went wrong with marking your milestone complete', e);
               });
           }
         }),
@@ -294,7 +287,7 @@ class MyMilestones extends Component {
                   );
                 })
                 .catch(e => {
-                  console.error('Error updating feathers cache ->', e); // eslint-disable-line no-console
+                  ErrorPopup('Something went wrong with cancelling your milestone', e);
                 });
             };
 
@@ -329,9 +322,7 @@ class MyMilestones extends Component {
                 );
               })
               .catch(e => {
-                console.error(e); // eslint-disable-line no-console
-
-                displayTransactionError(txHash, etherScanUrl);
+                ErrorPopup('Something went wrong with the transaction. Is your wallet unlocked?', etherScanUrl+'tx/'+txHash);
               });
           }
         }),
@@ -374,10 +365,7 @@ class MyMilestones extends Component {
                   );
                 })
                 .catch(e => {
-                  console.log('Error updating feathers cache ->', e); // eslint-disable-line no-console
-                  React.toast.error(
-                    'Oh no! Something went wrong with the transaction. Please try again.',
-                  );
+                  ErrorPopup('Something went wrong with the transaction. Please try again.', e);
                 });
             };
 
@@ -405,7 +393,7 @@ class MyMilestones extends Component {
                   });
               })
               .catch(() => {
-                displayTransactionError(txHash, etherScanUrl);
+                ErrorPopup('Something went wrong with the transaction. Is your wallet unlocked?', etherScanUrl+'tx/'+txHash);
               });
           }
         }),
@@ -447,7 +435,7 @@ class MyMilestones extends Component {
                   );
                 })
                 .catch(e => {
-                  console.log('Error updating feathers cache ->', e); // eslint-disable-line no-console
+                  ErrorPopup('Something went wrong with approving your milestone', e);
                 });
             };
 
@@ -482,9 +470,7 @@ class MyMilestones extends Component {
                 );
               })
               .catch(e => {
-                console.error(e); // eslint-disable-line no-console
-
-                displayTransactionError(txHash, etherScanUrl);
+                ErrorPopup('Something went wrong with the transaction. Is your wallet unlocked?', etherScanUrl+'tx/'+txHash);
               });
           }
         }),
@@ -513,13 +499,7 @@ class MyMilestones extends Component {
                 React.toast.info(<p>You have rejected this milestone...</p>);
               })
               .catch(e => {
-                console.error('Error rejecting completed milestone ->', e); // eslint-disable-line no-console
-                React.swal({
-                  title: 'Oh no!',
-                  content:
-                    '<p>Something went wrong with the transaction. Is your wallet unlocked?</p>',
-                  icon: 'error',
-                });
+                ErrorPopup('Something went wrong with the transaction. Is your wallet unlocked?', e);
               });
           }
         }),
@@ -563,7 +543,7 @@ class MyMilestones extends Component {
                     );
                   })
                   .catch(e => {
-                    console.log('Error updating feathers cache ->', e); // eslint-disable-line no-console
+                    ErrorPopup('Something went wrong doing the withdrawal', e);
                   });
 
                 feathersClient
@@ -583,7 +563,7 @@ class MyMilestones extends Component {
                     },
                   )
                   .catch(e => {
-                    console.log('Error updating feathers cache ->', e); // eslint-disable-line no-console
+                    ErrorPopup('Something went wrong doing the withdrawal', e);
                   });
               };
 
@@ -727,7 +707,7 @@ class MyMilestones extends Component {
                     );
                   })
                   .catch(e => {
-                    console.log('Error updating feathers cache ->', e); // eslint-disable-line no-console
+                    ErrorPopup('Something went wrong with collecting your funds', e);
                   });
               };
 
@@ -749,8 +729,7 @@ class MyMilestones extends Component {
                     });
                 })
                 .catch(e => {
-                  console.error(e); // eslint-disable-line no-console
-                  displayTransactionError(txHash, etherScanUrl);
+                  ErrorPopup('Something went wrong with the transaction. Is your wallet unlocked?', etherScanUrl+'tx/'+txHash);
                 });
             }
           }
