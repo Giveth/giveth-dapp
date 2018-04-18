@@ -1,5 +1,5 @@
 const {
-  REACT_APP_ENVIRONMENT = 'develop', // optional
+  REACT_APP_ENVIRONMENT = 'localhost', // optional
   REACT_APP_DECIMALS = 8, // optional
   REACT_APP_FEATHERJS_CONNECTION_URL,
   REACT_APP_ETH_NODE_CONNECTION_URL,
@@ -9,6 +9,7 @@ const {
   REACT_APP_CAPPED_MILESTONE_ADDRESS,
   REACT_APP_TOKEN_ADDRESS,
   REACT_APP_BLOCKEXPLORER,
+  REACT_APP_BUGS_EMAIL = 'bugs@giveth.io',
 } = process.env;
 
 const configurations = {
@@ -85,5 +86,6 @@ config.etherscan = REACT_APP_BLOCKEXPLORER || config.etherscan;
 config.feathersConnection = REACT_APP_FEATHERJS_CONNECTION_URL || config.feathersConnection;
 config.nodeConnection = REACT_APP_ETH_NODE_CONNECTION_URL || config.nodeConnection;
 config.decimals = REACT_APP_DECIMALS;
+config.bugsEmail = REACT_APP_BUGS_EMAIL;
 
 export default config;

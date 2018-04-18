@@ -1,4 +1,5 @@
 import React from 'react';
+import config from '../configuration';
 // /* global window */
 
 export default (shortDescription, error) => {
@@ -32,12 +33,14 @@ export default (shortDescription, error) => {
     }
 
     if (value === 'email') {
-      window.open(`mailto:bugs@giveth.io?subject=Error in DApp&body=${encodeURIComponent(body)}`);
+      window.open(
+        `mailto:${config.bugsEmail}?subject=Error in DApp&body=${encodeURIComponent(body)}`,
+      );
     } else if (value === 'gmail') {
       window.open(
-        `https://mail.google.com/mail/u/0/?view=cm&fs=1&tf=1&to=bugs@giveth.io&su=Error in DApp&body=${encodeURIComponent(
-          body,
-        )}`,
+        `https://mail.google.com/mail/u/0/?view=cm&fs=1&tf=1&to=${
+          config.bugsEmail
+        }&su=Error in DApp&body=${encodeURIComponent(body)}`,
       );
     }
   };
@@ -45,7 +48,12 @@ export default (shortDescription, error) => {
   if (error) {
     React.swal({
       title: 'Oh no!',
-      content: React.swal.msg(<p>{shortDescription}</p>),
+      content: React.swal.msg(
+        <div>
+          <p>{shortDescription}</p>
+          <p>Is this a recurring problem? Click Report.</p>
+        </div>,
+      ),
       icon: 'error',
       buttons: {
         ok: {
