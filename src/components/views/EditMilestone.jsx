@@ -5,13 +5,11 @@ import { utils } from 'web3';
 import Toggle from 'react-toggle';
 import BigNumber from 'bignumber.js';
 import { Form, Input } from 'formsy-react-components';
-
 import { feathersClient, feathersRest } from './../../lib/feathersClient';
 import Loader from './../Loader';
 import QuillFormsy from './../QuillFormsy';
 import SelectFormsy from './../SelectFormsy';
 import DatePickerFormsy from './../DatePickerFormsy';
-
 import FormsyImageUploader from './../FormsyImageUploader';
 import GoBackButton from '../GoBackButton';
 import {
@@ -36,7 +34,6 @@ import GivethWallet from '../../lib/blockchain/GivethWallet';
 import MilestoneItem from '../../components/MilestoneItem';
 import AddMilestoneItem from '../../components/AddMilestoneItem';
 import AddMilestoneItemModal from '../../components/AddMilestoneItemModal';
-
 
 BigNumber.config({ DECIMAL_PLACES: 18 });
 
@@ -194,6 +191,11 @@ class EditMilestone extends Component {
       });
   }
 
+  onAddItem(item) {
+    this.addItem(item);
+    this.setState({ addMilestoneItemModalVisible: false });
+  }
+
   getReviewers() {
     return feathersClient
       .service('/users')
@@ -213,25 +215,7 @@ class EditMilestone extends Component {
       );
   }
 
-  setImage(image) {
-    this.setState({ image, uploadNewImage: true });
-  }
-
-  setDate(date) {
-    this.setState({ date });
-    this.getEthConversion(date).then(resp => {
-      console.log(resp);
-      // update all the input fields
-      const rate = resp.rates[this.state.selectedFiatType];
-
-      this.setState({
-        currentRate: resp,
-        maxAmount: this.state.fiatAmount.div(rate),
-      });
-    });
-  }
-
-  getEthConversion = (date) => {
+  getEthConversion(date) {
     const dtUTC = getStartOfDayUTC(date); // Should not be necessary as the datepicker should provide UTC, but just to be sure
     const timestamp = Math.round(dtUTC.toDate()) / 1000;
 
@@ -260,15 +244,18 @@ class EditMilestone extends Component {
     });
   }
 
-  setMaxAmount(name, value) {
-    const fiatAmount = new BigNumber(value || '0');
-    const conversionRate = this.state.currentRate.rates[this.state.selectedFiatType];
-    if (conversionRate && fiatAmount.gte(0)) {
+  setDate(date) {
+    this.setState({ date });
+    this.getEthConversion(date).then(resp => {
+      console.log(resp);
+      // update all the input fields
+      const rate = resp.rates[this.state.selectedFiatType];
+
       this.setState({
-        maxAmount: fiatAmount.div(conversionRate),
-        fiatAmount,
+        currentRate: resp,
+        maxAmount: this.state.fiatAmount.div(rate),
       });
-    }
+    });
   }
 
   setFiatAmount(name, value) {
@@ -283,16 +270,19 @@ class EditMilestone extends Component {
     }
   }
 
-  btnText() {
-    if (this.props.isNew) {
-      return this.props.isProposed ? 'Propose Milestone' : 'Create Milestone';
-    }
-
-    return 'Update Milestone';
+  setImage(image) {
+    this.setState({ image, uploadNewImage: true });
   }
 
-  addItem = (item) => {
-    this.setState({ items: this.state.items.concat(item) });
+  setMaxAmount(name, value) {
+    const fiatAmount = new BigNumber(value || '0');
+    const conversionRate = this.state.currentRate.rates[this.state.selectedFiatType];
+    if (conversionRate && fiatAmount.gte(0)) {
+      this.setState({
+        maxAmount: fiatAmount.div(conversionRate),
+        fiatAmount,
+      });
+    }
   }
 
   removeItem(index) {
@@ -312,9 +302,12 @@ class EditMilestone extends Component {
     };
   }
 
-  toggleItemize = () => {
-    console.log(this.state.itemizeState);
-    this.setState({ itemizeState: !this.state.itemizeState });
+  changeSelectedFiat(fiatType) {
+    const conversionRate = this.state.currentRate.rates[fiatType];
+    this.setState({
+      maxAmount: this.state.fiatAmount.div(conversionRate),
+      selectedFiatType: fiatType,
+    });
   }
 
   toggleShowRecipientAddress() {
@@ -546,12 +539,14 @@ class EditMilestone extends Component {
     }
   }
 
-  changeSelectedFiat(fiatType) {
-    const conversionRate = this.state.currentRate.rates[fiatType];
+  toggleAddMilestoneItemModal() {
     this.setState({
-      maxAmount: this.state.fiatAmount.div(conversionRate),
-      selectedFiatType: fiatType,
+      addMilestoneItemModalVisible: !this.state.addMilestoneItemModalVisible,
     });
+  }
+
+  toggleItemize() {
+    this.setState({ itemizeState: !this.state.itemizeState });
   }
 
   render() {
@@ -749,7 +744,7 @@ class EditMilestone extends Component {
                       <Toggle
                         id="itemize-state"
                         defaultChecked={this.state.itemizeState}
-                        onChange={this.toggleItemize}
+                        onChange={() => this.toggleItemize()}
                         disabled={!isNew && !isProposed}
                       />
                       <span className="label">Add multiple expenses, invoices or items</span>
@@ -870,7 +865,7 @@ class EditMilestone extends Component {
                               {items.length > 0 &&
                                 (isNew || isProposed) && (
                                   <AddMilestoneItem
-                                    onClick={this.toggleAddMilestoneItemModal}
+                                    onClick={() => this.toggleAddMilestoneItemModal()}
                                   />
                                 )}
 
@@ -882,7 +877,7 @@ class EditMilestone extends Component {
                                       anything else that needs to be paid.
                                     </p>
                                     <AddMilestoneItem
-                                      onClick={this.toggleAddMilestoneItemModal}
+                                      onClick={() => this.toggleAddMilestoneItemModal()}
                                     />
                                   </div>
                                 )}
@@ -917,23 +912,13 @@ class EditMilestone extends Component {
         </div>
         <AddMilestoneItemModal
           visible={this.state.addMilestoneItemModalVisible}
-          onClose={this.toggleAddMilestoneItemModal}
-          getEthConversion={this.getEthConversion}
-          onAddItem={this.onAddItem}
+          onClose={() => this.toggleAddMilestoneItemModal()}
+          getEthConversion={d => this.getEthConversion(d)}
+          onAddItem={item => this.onAddItem(item)}
           fiatTypes={fiatTypes}
         />
       </div>
     );
-  }
-
-  toggleAddMilestoneItemModal = () =>
-    this.setState({
-      addMilestoneItemModalVisible: !this.state.addMilestoneItemModalVisible
-    })
-
-  onAddItem = (item) => {
-    this.addItem(item);
-    this.setState({ addMilestoneItemModalVisible: false });
   }
 }
 
