@@ -285,6 +285,18 @@ class EditMilestone extends Component {
     }
   }
 
+  addItem(item) {
+    this.setState({ items: this.state.items.concat(item) });
+  }
+
+  btnText() {
+    if (this.props.isNew) {
+      return this.props.isProposed ? 'Propose Milestone' : 'Create Milestone';
+    }
+
+    return 'Update Milestone';
+  }
+
   removeItem(index) {
     const { items } = this.state;
     delete items[index];
