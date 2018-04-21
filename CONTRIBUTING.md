@@ -40,7 +40,7 @@ In order to get the repositories setup before contributions refer to the [README
 
 8. *Create a Pull Request*
 
-    At this point you should either have a forked repository with your issue fixes or you should have a properly labeled branch. Either way now is time to put in a PR. Make sure that your PR has something like `addresses #26` or `closes #26` The most important thing is that it has the relevant issue number referenced in the body of the PR.
+    At this point you should either have a forked repository with your issue fixes and it is time to put in a PR. Make sure that your PR has something like `addresses #26` or `closes #26` The most important thing is that it has the relevant issue number referenced in the body of the PR.
 
 9. *Make noise!*
 
