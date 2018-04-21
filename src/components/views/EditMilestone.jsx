@@ -351,6 +351,8 @@ class EditMilestone extends Component {
           (accumulator, item) => accumulator.plus(new BigNumber(item.etherAmount)),
           new BigNumber(0),
         );
+      } else {
+        model.maxAmount = this.state.maxAmount;
       }
 
       if (!this.state.showRecipientAddress) {
