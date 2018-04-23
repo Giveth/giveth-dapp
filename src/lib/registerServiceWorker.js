@@ -8,8 +8,6 @@
 // To learn more about the benefits of this model, read https://goo.gl/KwvDNy.
 // This link also includes instructions on opting out of this behavior.
 
-import ErrorPopup from '../components/ErrorPopup';
-
 /* global window, URL, navigator, fetch */
 const isLocalhost = Boolean(
   window.location.hostname === 'localhost' ||
@@ -43,8 +41,8 @@ function registerValidSW(swUrl) {
         };
       };
     })
-    .catch(err => {
-      ErrorPopup('Something went wrong during service worker registration.', err);
+    .catch(error => {
+      console.error('Error during service worker registration:', error);
     });
 }
 
@@ -66,8 +64,8 @@ function checkValidServiceWorker(swUrl) {
         registerValidSW(swUrl);
       }
     })
-    .catch(err => {
-      ErrorPopup('No internet connection found. App is running in offline mode.', err);
+    .catch(() => {
+      console.log('No internet connection found. App is running in offline mode.');
     });
 }
 

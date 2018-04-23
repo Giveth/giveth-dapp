@@ -7,7 +7,6 @@ import localforage from 'localforage';
 import rx from 'feathers-reactive';
 import config from '../configuration';
 import matcher from './matcher';
-import ErrorPopup from '../components/ErrorPopup';
 
 const rest = require('feathers-rest/client');
 
@@ -19,16 +18,9 @@ export const socket = io(config.feathersConnection, {
 });
 
 // socket IO error events
-socket.on('connect_error', err => ErrorPopup('Could not connect to FeatherJS', err));
-socket.on('connect_timeout', () =>
-  ErrorPopup('Could not connect to FeatherJS: Timeout. Please try and refresh the page.'),
-);
-socket.on('reconnect_attempt', () =>
-  ErrorPopup('Trying to reconnect to FeatherJS: Timeout. Please try and refresh the page.'),
-);
-socket.on('error', err =>
-  ErrorPopup('Trying to reconnect to FeatherJS: Timeout. Please try and refresh the page.', err),
-);
+socket.on('connect_error', _e => console.log('Could not connect to FeatherJS'));
+socket.on('connect_timeout', _e => console.log('Could not connect to FeatherJS: Timeout'));
+socket.on('reconnect_attempt', _e => console.log('Trying to reconnect to FeatherJS: Timeout'));
 
 export const feathersRest = feathers()
   .configure(restClient.fetch(fetch))
