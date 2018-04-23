@@ -40,6 +40,7 @@ class ViewMilestone extends Component {
       isLoadingDonations: true,
       donations: [],
       etherScanUrl: '',
+      items: [],
     };
 
     getNetwork().then(network => {
@@ -59,11 +60,10 @@ class ViewMilestone extends Component {
         this.setState(
           Object.assign({}, resp.data[0], {
             isLoading: false,
-            hasError: false,
+            id: milestoneId,
+            fiatAmount: new BigNumber(resp.data[0].fiatAmount || '0').toFixed(2),
             totalDonated: convertEthHelper(resp.data[0].totalDonated),
             maxAmount: convertEthHelper(resp.data[0].maxAmount),
-            id: milestoneId,
-            fiatAmount: new BigNumber(resp.data[0].fiatAmount).toFixed(2),
           }),
         ),
       )
@@ -309,6 +309,7 @@ class ViewMilestone extends Component {
                     </small>
                     {maxAmount} ETH
                     {fiatAmount &&
+                      selectedFiatType &&
                       items.length === 0 && (
                         <span>
                           {' '}

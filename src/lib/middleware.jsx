@@ -61,7 +61,8 @@ export const isInWhitelist = (currentUser, whitelist) =>
     ) {
       resolve();
     } else {
-      reject(new Error('not in whitelist'));
+      // TODO: Not in whitelist, should handle the exception
+      reject();
     }
   });
 
