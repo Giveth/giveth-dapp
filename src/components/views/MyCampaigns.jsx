@@ -193,7 +193,7 @@ class MyCampaigns extends Component {
                       <div>
                         <center>
                           <h3>You didn&apos;t create any campaigns yet!</h3>
-                          <image
+                          <img
                             className="empty-state-img"
                             src={`${process.env.PUBLIC_URL}/img/campaign.svg`}
                             width="200px"
