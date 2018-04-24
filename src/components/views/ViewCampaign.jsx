@@ -104,8 +104,6 @@ class ViewCampaign extends Component {
       isLoadingMilestones,
     } = this.state;
 
-    ErrorPopup('asdasd', new Error('123123'));
-
     return (
       <div id="view-campaign-view">
         {isLoading && <Loader className="fixed" />}
