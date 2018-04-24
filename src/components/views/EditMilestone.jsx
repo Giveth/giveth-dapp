@@ -439,7 +439,7 @@ class EditMilestone extends Component {
 
               const from = this.props.currentUser.address;
               const recipient = model.recipientAddress;
-              new LPPCappedMilestones(web3, network.cappedMilestoneAddress)
+              new LPPCappedMilestones(web3, network.cappedMilestoneFactoryAddress)
                 .addMilestone(
                   model.title,
                   '',

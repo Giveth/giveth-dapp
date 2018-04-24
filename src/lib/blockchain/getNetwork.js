@@ -11,7 +11,7 @@ export default () => {
   return getWeb3().then(web3 => {
     network = Object.assign({}, config);
     network.liquidPledging = new LiquidPledging(web3, network.liquidPledgingAddress);
-    network.lppDacs = new LPPDacs(web3, network.dacsAddress);
+    network.lppDacs = new LPPDacs(web3, network.dacFactoryAddress);
 
     return network;
   });
