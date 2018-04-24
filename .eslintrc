@@ -26,6 +26,6 @@
     "jest": true
   },
   "globals": {
-    "FileReader": true,
+    "FileReader": true
   }
 }
