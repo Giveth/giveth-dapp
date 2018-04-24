@@ -14,11 +14,13 @@ export default () => {
   return getWeb3().then(web3 => {
     network = Object.assign({}, config);
     // network.liquidPledging = new LiquidPledging(web3, network.liquidPledgingAddress);
-    network.lppDac = new LPPDacFactory(web3, network.lppDacFactoryAddress);
+    network.lppDacFactory = new LPPDacFactory(web3, network.lppDacFactoryAddress);
     network.LPPCampaignFactory = new LPPCampaignFactory(web3, network.lppCampaignFactoryAddress);
-    network.LPPCappedMilestoneFactory = new LPPCappedMilestoneFactory(web3, network.lppCappedMilestoneFactoryAddress);
+    network.LPPCappedMilestoneFactory = new LPPCappedMilestoneFactory(
+      web3,
+      network.lppCappedMilestoneFactoryAddress,
+    );
 
-    console.log(network)
     return network;
   });
 };

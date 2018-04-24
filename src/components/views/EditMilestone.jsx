@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { LPPCappedMilestones } from 'lpp-capped-milestone-token';
+import { LPPCappedMilestones } from 'lpp-capped-milestone';
 import { utils } from 'web3';
 import Toggle from 'react-toggle';
 import BigNumber from 'bignumber.js';
