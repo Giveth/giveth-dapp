@@ -79,8 +79,10 @@ const config = Object.assign({}, configurations[REACT_APP_ENVIRONMENT]);
 // Overwrite the environment values with parameters
 config.liquidPledgingAddress = REACT_APP_LIQUIDPLEDGING_ADDRESS || config.liquidPledgingAddress;
 config.dacFactoryAddress = REACT_APP_DAC_FACTORY_ADDRESS || config.lppDacFactoryAddress;
-config.campaignFactoryAddress = REACT_APP_CAMPAIGN_FACTORY_ADDRESS || config.lppCampaignFactoryAddress;
-config.cappedMilestoneFactoryAddress = REACT_APP_CAPPED_MILESTONE_FACTORY_ADDRESS || config.lppCappedMilestoneFactoryAddress;
+config.campaignFactoryAddress =
+  REACT_APP_CAMPAIGN_FACTORY_ADDRESS || config.lppCampaignFactoryAddress;
+config.cappedMilestoneFactoryAddress =
+  REACT_APP_CAPPED_MILESTONE_FACTORY_ADDRESS || config.lppCappedMilestoneFactoryAddress;
 config.tokenAddress = REACT_APP_TOKEN_ADDRESS || config.tokenAddress;
 config.etherscan = REACT_APP_BLOCKEXPLORER || config.etherscan;
 config.feathersConnection = REACT_APP_FEATHERJS_CONNECTION_URL || config.feathersConnection;
