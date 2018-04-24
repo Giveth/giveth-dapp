@@ -13,6 +13,7 @@ import { feathersClient } from '../../lib/feathersClient';
 import { getTruncatedText } from '../../lib/helpers';
 import getNetwork from '../../lib/blockchain/getNetwork';
 
+import ErrorPopup from '../ErrorPopup';
 // TODO: Remove the eslint exception after extracting to model
 /* eslint no-underscore-dangle: 0 */
 
@@ -63,7 +64,8 @@ class UserWallet extends Component {
             this.getObjectsByTokenSymbol(),
           );
         })
-        .catch(() => {
+        .catch(e => {
+          ErrorPopup('Something went wrong with loading tokens', e);
           this.setState({ hasError: true });
         });
     });

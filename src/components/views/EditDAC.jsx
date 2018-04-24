@@ -6,7 +6,7 @@ import Loader from '../Loader';
 import QuillFormsy from '../QuillFormsy';
 import FormsyImageUploader from './../FormsyImageUploader';
 import GoBackButton from '../GoBackButton';
-import { isOwner, getTruncatedText } from '../../lib/helpers';
+import { isOwner, getTruncatedText, history } from '../../lib/helpers';
 import {
   isAuthenticated,
   checkWalletBalance,
@@ -19,6 +19,7 @@ import DACservice from '../../services/DAC';
 import DAC from '../../models/DAC';
 import User from '../../models/User';
 import GivethWallet from '../../lib/blockchain/GivethWallet';
+import ErrorPopup from '../ErrorPopup';
 
 /**
  * View to create or edit a DAC
@@ -54,17 +55,31 @@ class EditDAC extends Component {
       .then(() => checkWalletBalance(this.props.wallet))
       .then(() => {
         if (!this.props.isNew) {
-          DACservice.get(this.props.match.params.id).then(dac => {
-            // The user is not an owner, hence can not change the DAC
-            if (!isOwner(dac.owner.address, this.props.currentUser)) {
-              this.props.history.goBack();
-            } else {
-              this.setState({ isLoading: false, dac });
-            }
-          });
+          DACservice.get(this.props.match.params.id)
+            .then(dac => {
+              // The user is not an owner, hence can not change the DAC
+              if (!isOwner(dac.owner.address, this.props.currentUser)) {
+                // TODO: Not really user friendly
+                history.goBack();
+              } else {
+                this.setState({ isLoading: false, dac });
+              }
+            })
+            .catch(err => {
+              ErrorPopup(
+                'Sadly we were unable to load the DAC. Please refresh the page and try again.',
+                err,
+              );
+            });
         } else {
           this.setState({ isLoading: false });
         }
+      })
+      .catch(err => {
+        ErrorPopup(
+          'There has been a problem loading the DAC. Please refresh the page and try again.',
+          err,
+        );
       });
     this.mounted = true;
   }
@@ -96,7 +111,7 @@ class EditDAC extends Component {
       } else {
         if (this.mounted) this.setState({ isSaving: false });
         React.toast.success('Your DAC has been updated!');
-        this.props.history.push(`/dacs/${this.state.dac.id}`);
+        history.push(`/dacs/${this.state.dac.id}`);
       }
     };
     const afterCreate = url => {
@@ -110,7 +125,7 @@ class EditDAC extends Component {
         </p>
       );
       React.toast.info(msg);
-      this.props.history.push('/my-dacs');
+      history.push('/my-dacs');
     };
 
     // Save the DAC
@@ -124,12 +139,8 @@ class EditDAC extends Component {
     this.setState({ formIsValid: state });
   }
 
-  goBack() {
-    this.props.history.push('/dacs');
-  }
-
   render() {
-    const { isNew, history } = this.props;
+    const { isNew } = this.props;
     const { isLoading, isSaving, dac, formIsValid } = this.state;
 
     return (
@@ -294,10 +305,6 @@ class EditDAC extends Component {
 
 EditDAC.propTypes = {
   currentUser: PropTypes.instanceOf(User).isRequired,
-  history: PropTypes.shape({
-    goBack: PropTypes.func.isRequired,
-    push: PropTypes.func.isRequired,
-  }).isRequired,
   isNew: PropTypes.bool,
   wallet: PropTypes.instanceOf(GivethWallet).isRequired,
   match: PropTypes.shape({

@@ -14,7 +14,6 @@ import FormsyImageUploader from './../FormsyImageUploader';
 import GoBackButton from '../GoBackButton';
 import {
   isOwner,
-  displayTransactionError,
   getRandomWhitelistAddress,
   getTruncatedText,
   getGasPrice,
@@ -33,6 +32,7 @@ import User from '../../models/User';
 import GivethWallet from '../../lib/blockchain/GivethWallet';
 import MilestoneItem from '../../components/MilestoneItem';
 import AddMilestoneItem from '../../components/AddMilestoneItem';
+import ErrorPopup from '../ErrorPopup';
 import AddMilestoneItemModal from '../../components/AddMilestoneItemModal';
 
 BigNumber.config({ DECIMAL_PLACES: 18 });
@@ -156,7 +156,12 @@ class EditMilestone extends Component {
                 isLoading: false,
               }),
             )
-            .catch(console.error);
+            .catch(err => {
+              ErrorPopup(
+                'Sadly we were unable to load the requested milestone details. Please try again.',
+                err,
+              );
+            });
         } else {
           feathersClient
             .service('campaigns')
@@ -182,12 +187,23 @@ class EditMilestone extends Component {
                 isLoading: false,
               }),
             )
-            .catch(console.log);
+            .catch(err => {
+              ErrorPopup(
+                'Sadly we were unable to load the campaign in which this milestone was created. Please try again.',
+                err,
+              );
+            });
         }
       })
       .catch(err => {
-        console.log('err', err);
+        // TODO: This is not super user friendly, fix it
         if (err === 'noBalance') this.props.history.goBack();
+        else {
+          ErrorPopup(
+            'Sadly we were unable to load the campaign in which this milestone was created. Please try again.',
+            err,
+          );
+        }
       });
   }
 
@@ -215,6 +231,23 @@ class EditMilestone extends Component {
       );
   }
 
+  setImage(image) {
+    this.setState({ image, uploadNewImage: true });
+  }
+
+  setDate(date) {
+    this.setState({ date });
+    this.getEthConversion(date).then(resp => {
+      // update all the input fields
+      const rate = resp.rates[this.state.selectedFiatType];
+
+      this.setState({
+        currentRate: resp,
+        maxAmount: this.state.fiatAmount.div(rate),
+      });
+    });
+  }
+
   getEthConversion(date) {
     const dtUTC = getStartOfDayUTC(date); // Should not be necessary as the datepicker should provide UTC, but just to be sure
     const timestamp = Math.round(dtUTC.toDate()) / 1000;
@@ -236,25 +269,16 @@ class EditMilestone extends Component {
 
           return resp;
         })
-        .catch(e => console.error(e));
+        .catch(err => {
+          ErrorPopup(
+            'Sadly we were unable to get the exchange rate. Please try again after refresh.',
+            err,
+          );
+        });
     }
     // we have the conversion rate in cache
     return new Promise(resolve => {
       this.setState({ currentRate: cachedConversionRate }, () => resolve(cachedConversionRate));
-    });
-  }
-
-  setDate(date) {
-    this.setState({ date });
-    this.getEthConversion(date).then(resp => {
-      console.log(resp);
-      // update all the input fields
-      const rate = resp.rates[this.state.selectedFiatType];
-
-      this.setState({
-        currentRate: resp,
-        maxAmount: this.state.fiatAmount.div(rate),
-      });
     });
   }
 
@@ -268,10 +292,6 @@ class EditMilestone extends Component {
         maxAmount,
       });
     }
-  }
-
-  setImage(image) {
-    this.setState({ image, uploadNewImage: true });
   }
 
   setMaxAmount(name, value) {
@@ -393,13 +413,11 @@ class EditMilestone extends Component {
               callback();
             })
             .catch(err => {
-              console.log(err);
               this.setState({ isSaving: false });
-              React.swal({
-                title: 'Oh no!',
-                content: 'Something went wrong, please try again or contact support.',
-                icon: 'error',
-              });
+              ErrorPopup(
+                'There has been an issue creating the milestone. Please try again after refresh.',
+                err,
+              );
             });
         };
 
@@ -472,7 +490,10 @@ class EditMilestone extends Component {
                 });
             })
             .catch(() => {
-              displayTransactionError(txHash, etherScanUrl);
+              ErrorPopup(
+                'Something went wrong with the transaction. Is your wallet unlocked?',
+                `${etherScanUrl}tx/${txHash}`,
+              );
             });
         }
       } else {
@@ -500,7 +521,13 @@ class EditMilestone extends Component {
               uri: this.state.image,
             })
             .then(file => updateMilestone(file.url))
-            .catch(() => this.setState({ isSaving: false }));
+            .catch(err => {
+              ErrorPopup(
+                'Something went wrong when uploading your image. Please try again after refresh.',
+                err,
+              );
+              this.setState({ isSaving: false });
+            });
         } else {
           updateMilestone();
         }
@@ -528,7 +555,13 @@ class EditMilestone extends Component {
 
         Promise.all(uploadItemImages)
           .then(() => uploadMilestoneImage())
-          .catch(() => this.setState({ isSaving: false }));
+          .catch(err => {
+            this.setState({ isSaving: false });
+            ErrorPopup(
+              'There has been an issue uploading one of the proof items. Please refresh the page and try again.',
+              err,
+            );
+          });
       } else {
         uploadMilestoneImage();
       }

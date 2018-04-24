@@ -1,8 +1,10 @@
 import getNetwork from '../lib/blockchain/getNetwork';
 import { feathersClient } from '../lib/feathersClient';
-import { displayTransactionError, getGasPrice } from '../lib/helpers';
+import { getGasPrice } from '../lib/helpers';
 import DAC from '../models/DAC';
 import Campaign from '../models/Campaign';
+
+import ErrorPopup from '../components/ErrorPopup';
 
 class DACservice {
   /**
@@ -154,9 +156,11 @@ class DACservice {
               afterMined(`${etherScanUrl}tx/${txHash}`);
             });
         })
-        .catch(err => {
-          console.log('New DAC transaction failed:', err); // eslint-disable-line no-console
-          displayTransactionError(txHash, etherScanUrl);
+        .catch(() => {
+          ErrorPopup(
+            'Something went wrong with the DAC creation. Is your wallet unlocked?',
+            `${etherScanUrl}tx/${txHash}`,
+          );
         });
     }
   }

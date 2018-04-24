@@ -20,6 +20,8 @@ import User from '../../models/User';
 import GivethWallet from '../../lib/blockchain/GivethWallet';
 import CampaignService from '../../services/Campaign';
 
+import ErrorPopup from '../ErrorPopup';
+
 /**
  * The Campaign detail view mapped to /campaing/id
  *
@@ -45,7 +47,10 @@ class ViewCampaign extends Component {
 
     CampaignService.get(campaignId)
       .then(campaign => this.setState({ campaign, isLoading: false }))
-      .catch(() => this.setState({ isLoading: false })); // TODO: inform user of error
+      .catch(err => {
+        ErrorPopup('Something went wrong loading campaign. Please try refresh the page.', err);
+        this.setState({ isLoading: false });
+      }); // TODO: inform user of error
 
     this.milestoneObserver = CampaignService.subscribeMilestones(
       campaignId,
@@ -98,6 +103,8 @@ class ViewCampaign extends Component {
       isLoadingDonations,
       isLoadingMilestones,
     } = this.state;
+
+    ErrorPopup('asdasd', new Error('123123'));
 
     return (
       <div id="view-campaign-view">
