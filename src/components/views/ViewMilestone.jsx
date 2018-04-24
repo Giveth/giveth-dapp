@@ -120,7 +120,6 @@ class ViewMilestone extends Component {
 
   render() {
     const { history, wallet, currentUser } = this.props;
-
     const {
       isLoading,
       id,
@@ -143,6 +142,7 @@ class ViewMilestone extends Component {
       status,
       fiatAmount,
       selectedFiatType,
+      campaign,
     } = this.state;
     return (
       <div id="view-milestone-view">
@@ -163,6 +163,7 @@ class ViewMilestone extends Component {
               {this.state.totalDonated < this.state.maxAmount && (
                 <p>Amount requested: {this.state.maxAmount} ETH</p>
               )}
+              <p>Campaign: {campaign.title} </p>
 
               {this.isActiveMilestone() && (
                 <DonateButton
@@ -324,6 +325,12 @@ class ViewMilestone extends Component {
                       The amount of ETH currently donated to this Milestone
                     </small>
                     {totalDonated} ETH
+                  </div>
+
+                  <div className="form-group">
+                    <span className="label">Campaign</span>
+                    <small className="form-text">The campaign this milestone belongs to.</small>
+                    {campaign.title}
                   </div>
 
                   <div className="form-group">
