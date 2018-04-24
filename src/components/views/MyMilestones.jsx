@@ -322,7 +322,7 @@ class MyMilestones extends Component {
               .then(([network, web3, gasPrice]) => {
                 etherScanUrl = network.etherscan;
 
-                return new LPPCappedMilestones(web3, network.cappedMilestoneAddress)
+                return new LPPCappedMilestones(web3, network.cappedMilestoneFactoryAddress)
                   .cancelMilestone(milestone.projectId, {
                     from: this.props.currentUser.address,
                     gasPrice,
@@ -403,7 +403,7 @@ class MyMilestones extends Component {
               .then(([network, web3, gasPrice]) => {
                 etherScanUrl = network.etherscan;
 
-                return new LPPCappedMilestones(web3, network.cappedMilestoneAddress)
+                return new LPPCappedMilestones(web3, network.cappedMilestoneFactoryAddress)
                   .addMilestone(
                     milestone.title,
                     '',
@@ -476,7 +476,7 @@ class MyMilestones extends Component {
               .then(([network, web3, gasPrice]) => {
                 etherScanUrl = network.etherscan;
 
-                return new LPPCappedMilestones(web3, network.cappedMilestoneAddress)
+                return new LPPCappedMilestones(web3, network.cappedMilestoneFactoryAddress)
                   .acceptMilestone(milestone.projectId, {
                     from: this.props.currentUser.address,
                     gasPrice,
@@ -645,7 +645,7 @@ class MyMilestones extends Component {
                 .then(([network, web3, pledges, gasPrice]) => {
                   etherScanUrl = network.etherscan;
 
-                  return new LPPCappedMilestones(web3, network.cappedMilestoneAddress)
+                  return new LPPCappedMilestones(web3, network.cappedMilestoneFactoryAddress)
                     .mWithdraw(pledges, {
                       from: this.props.currentUser.address,
                       gasPrice,
@@ -754,7 +754,7 @@ class MyMilestones extends Component {
                 .then(([network, web3, gasPrice]) => {
                   etherScanUrl = network.etherscan;
 
-                  return new LPPCappedMilestones(web3, network.cappedMilestoneAddress)
+                  return new LPPCappedMilestones(web3, network.cappedMilestoneFactoryAddress)
                     .collect(milestone.projectId, {
                       from: this.props.currentUser.address,
                       $extraGas: 100000,
