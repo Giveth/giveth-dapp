@@ -4,7 +4,6 @@
   "private": true,
   "dependencies": {
     "bignumber.js": "^6.0.0",
-    "create-react-class": "^15.6.0",
     "feathers": "^2.2.3",
     "feathers-authentication-client": "^0.3.3",
     "feathers-client": "^2.3.0",
@@ -29,12 +28,12 @@
     "node-sass-chokidar": "^0.0.3",
     "npm-run-all": "^4.0.2",
     "prop-types": "^15.5.10",
-    "react": "^15.6.1",
+    "react": "16.3.1",
     "react-addons-shallow-compare": "^15.6.0",
     "react-avatar": "^2.3.0",
     "react-cropper": "^1.0.1",
-    "react-datepicker": "^0.54.0",
-    "react-dom": "^15.6.1",
+    "react-datepicker": "1.4.1",
+    "react-dom": "16.3.1",
     "react-html-parser": "^2.0.2",
     "react-input-token": "^1.1.2",
     "react-js-pagination": "^3.0.1",
@@ -43,7 +42,7 @@
     "react-responsive-masonry": "^1.5.0",
     "react-router": "^4.1.2",
     "react-router-dom": "^4.1.2",
-    "react-skylight": "^0.4.2",
+    "react-skylight": "0.5.1",
     "react-toastify": "2.1.7",
     "react-toggle": "^4.0.2",
     "socket.io-client": "^2.0.4",
@@ -61,9 +60,11 @@
     "eslint-loader": "^1.9.0",
     "eslint-plugin-import": "^2.8.0",
     "eslint-plugin-jsx-a11y": "^6.0.2",
-    "eslint-plugin-react": "^7.4.0",
     "eslint-plugin-prettier": "^2.4.0",
+    "eslint-plugin-react": "^7.4.0",
+    "husky": "^1.0.0-rc.2",
     "lerna": "^2.2.0",
+    "lint-staged": "^7.0.4",
     "prettier": "1.9.2"
   },
   "scripts": {
@@ -74,10 +75,21 @@
     "build": "npm run build-css && react-scripts build",
     "test": "react-scripts test --env=jsdom",
     "eslint": "eslint 'src/**/*.js*'",
-    "eslint:fix": "eslint 'src/**/*.js*' --fix",
+    "eslint:fix": "npm run eslint --fix",
     "eject": "react-scripts eject",
-    "prettier": "prettier 'src/**/*.js*' -l",
-    "prettier:write": "prettier 'src/app/**/*.js' --write"
+    "prettify": "prettier --write 'src/**/*.js*'"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
+  },
+  "lint-staged": {
+    "src/**/*.{js,jsx}": [
+      "prettier --write",
+      "eslint --fix",
+      "git add"
+    ]
   },
   "repository": {
     "type": "git",
