@@ -1,4 +1,4 @@
-import { LPPCampaignFactory, LPPCampaign } from 'lpp-campaign';
+import { LPPCampaign } from 'lpp-campaign';
 import getNetwork from '../lib/blockchain/getNetwork';
 import getWeb3 from '../lib/blockchain/getWeb3';
 import { feathersClient } from '../lib/feathersClient';
@@ -139,39 +139,51 @@ class CampaignService {
       let etherScanUrl;
       Promise.all([getNetwork(), getWeb3(), getGasPrice()])
         .then(([network, web3, gasPrice]) => {
-          const { liquidPledging } = network;
+          const { liquidPledging, LPPCampaignFactory } = network;
           etherScanUrl = network.etherscan;
 
-          new LPPCampaignFactory(web3, network.campaignFactoryAddress)
-            .deploy(
-              liquidPledging.$address,
-              campaign.title,
-              '',
-              0,
-              campaign.reviewerAddress,
-              campaign.tokenName,
-              campaign.tokenSymbol,
-              from,
-              from,
-              { from, gasPrice },
-            )
-            .once('transactionHash', hash => {
-              txHash = hash;
-              campaign.txHash = txHash;
-              feathersClient
-                .service('campaigns')
-                .create(campaign.toFeathers())
-                .then(() => afterCreate(`${etherScanUrl}tx/${txHash}`));
-            })
-            .then(() => {
-              afterMined(`${etherScanUrl}tx/${txHash}`);
-            })
-            .catch(() => {
-              ErrorPopup(
-                'Something went wrong with the transaction. Is your wallet unlocked?',
-                `${etherScanUrl}tx/${txHash}`,
-              );
-            });
+          /**
+          LPPCampaignFactory params:
+          
+          string name,
+          string url,
+          uint64 parentProject,
+          address reviewer,
+          string tokenName,
+          string tokenSymbol,
+          address escapeHatchCaller,
+          address escapeHatchDestination
+          **/
+
+          LPPCampaignFactory.newCampaign(
+            campaign.title,
+            "",  
+            0,          
+            campaign.reviewerAddress,
+            campaign.tokenName,
+            campaign.tokenSymbol,
+            from,
+            from,
+            { from, gasPrice, $extraGas: 200000 },
+          )
+          .once('transactionHash', hash => {
+            console.log('hash', hash)
+            txHash = hash;
+            campaign.txHash = txHash;
+            feathersClient
+              .service('campaigns')
+              .create(campaign.toFeathers())
+              .then(() => afterCreate(`${etherScanUrl}tx/${txHash}`));
+          })
+          .then(() => {
+            afterMined(`${etherScanUrl}tx/${txHash}`);
+          })
+          .catch((e) => {
+            ErrorPopup(
+              'Something went wrong with the transaction. Is your wallet unlocked?',
+              `${etherScanUrl}tx/${txHash}`,
+            );
+          });
         })
         .catch(() => {
           ErrorPopup(
