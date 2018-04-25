@@ -438,56 +438,80 @@ class EditMilestone extends Component {
               etherScanUrl = network.etherscan;
 
               const from = this.props.currentUser.address;
-              const recipient = model.recipientAddress;
-              new LPPCappedMilestones(web3, network.cappedMilestoneFactoryAddress)
-                .addMilestone(
-                  model.title,
-                  '',
-                  constructedModel.maxAmount,
-                  this.state.campaignProjectId,
-                  recipient,
-                  model.reviewerAddress,
-                  constructedModel.campaignReviewerAddress,
-                  { from, gasPrice },
-                )
-                .on('transactionHash', hash => {
-                  txHash = hash;
-                  createMilestone(
-                    {
-                      txHash,
-                      pluginAddress: '0x0000000000000000000000000000000000000000',
-                      totalDonated: '0',
-                      donationCount: '0',
-                    },
-                    () =>
-                      React.toast.info(
-                        <p>
-                          Your Milestone is pending....<br />
-                          <a
-                            href={`${etherScanUrl}tx/${txHash}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                          >
-                            View transaction
-                          </a>
-                        </p>,
-                      ),
-                  );
-                })
-                .then(() => {
-                  React.toast.success(
-                    <p>
-                      Your Milestone has been created!<br />
-                      <a
-                        href={`${etherScanUrl}tx/${txHash}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        View transaction
-                      </a>
-                    </p>,
-                  );
-                });
+              const { title, recipientAddress, reviewerAddress, campaignReviewerAddress, maxAmount } = constructedModel;
+
+              /**
+              lppCappedMilestoneFactory params
+
+              string _name,
+              string _url,
+              uint64 _parentProject,
+              address _reviewer,
+              address _escapeHatchCaller,
+              address _escapeHatchDestination,
+              address _recipient,
+              address _campaignReviewer,
+              address _milestoneManager,
+              uint _maxAmount,
+              address _acceptedToken,        
+              uint _reviewTimeoutSeconds              
+              **/
+
+              console.log(title, recipientAddress, reviewerAddress, campaignReviewerAddress, maxAmount);
+  
+              network.lppCappedMilestoneFactory.newMilestone(
+                title,
+                "",
+                0,
+                reviewerAddress,
+                from,
+                from,
+                recipientAddress,
+                campaignReviewerAddress,
+                from,
+                maxAmount,
+                0,
+                5 * 24 * 60 * 60, // 5 days in seconds
+                { from, gasPrice, $extraGas: 200000 },
+              )
+              .on('transactionHash', hash => {
+                txHash = hash;
+                createMilestone(
+                  {
+                    txHash,
+                    pluginAddress: '0x0000000000000000000000000000000000000000',
+                    totalDonated: '0',
+                    donationCount: '0',
+                  },
+                  () =>
+                    React.toast.info(
+                      <p>
+                        Your Milestone is pending....<br />
+                        <a
+                          href={`${etherScanUrl}tx/${txHash}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          View transaction
+                        </a>
+                      </p>,
+                    ),
+                );
+              })
+              .then(() => {
+                React.toast.success(
+                  <p>
+                    Your Milestone has been created!<br />
+                    <a
+                      href={`${etherScanUrl}tx/${txHash}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      View transaction
+                    </a>
+                  </p>,
+                );
+              });
             })
             .catch(() => {
               ErrorPopup(

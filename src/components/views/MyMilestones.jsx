@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { utils } from 'web3';
-import { LPPCappedMilestones } from 'lpp-capped-milestone';
+import { LPPCappedMilestone } from 'lpp-capped-milestone';
 import { Link } from 'react-router-dom';
 import moment from 'moment';
 import Pagination from 'react-js-pagination';
@@ -236,16 +236,70 @@ class MyMilestones extends Component {
           buttons: ['Cancel', 'Yes, mark complete'],
         }).then(isConfirmed => {
           if (isConfirmed) {
-            feathersClient
-              .service('/milestones')
-              .patch(milestone._id, {
-                status: 'NeedsReview',
+            const _markComplete = (etherScanUrl, txHash) => {
+              feathersClient
+                .service('/milestones')
+                .patch(milestone._id, {
+                  status: 'NeedsReview',
+                })
+                .then(() => {
+                  React.toast.info(
+                    <p>
+                      Marking this milestone as complete is pending...<br />
+                      <a
+                        href={`${etherScanUrl}tx/${txHash}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        View transaction
+                      </a>
+                    </p>,
+                  );
+                })
+                .catch(e => {
+                  ErrorPopup('Something went wrong with marking your milestone as complete', e);
+                });
+            };
+
+            let txHash;
+            let etherScanUrl;
+            Promise.all([getNetwork(), getWeb3(), getGasPrice()])
+              .then(([network, web3, gasPrice]) => {
+                etherScanUrl = network.etherscan;
+
+                const cappedMilestone =  new LPPCappedMilestone(web3, network.cappedMilestoneFactoryAddress)
+                const from = this.props.currentUser.address
+
+                cappedMilestone
+                  .requestMarkAsComplete(milestone.projectId, {
+                    from,
+                    gasPrice,
+                    $extraGas: 4000000
+                  })
+                  .once('transactionHash', hash => {
+                    txHash = hash;
+                    _markComplete(etherScanUrl, txHash);
+                  });
               })
               .then(() => {
-                React.toast.info(<p>Your milestone has been marked as complete...</p>);
+                React.toast.success(
+                  <p>
+                    The milestone has been marked as complete!<br />
+                    <a
+                      href={`${etherScanUrl}tx/${txHash}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      View transaction
+                    </a>
+                  </p>,
+                );
               })
-              .catch(e => {
-                ErrorPopup('Something went wrong with marking your milestone complete', e);
+              .catch(() => {
+                ErrorPopup(
+                  'Something went wrong with the transaction. Is your wallet unlocked?',
+                  `${etherScanUrl}tx/${txHash}`,
+                );
               });
           }
         }),
@@ -297,7 +351,7 @@ class MyMilestones extends Component {
               .then(([network, web3, gasPrice]) => {
                 etherScanUrl = network.etherscan;
 
-                return new LPPCappedMilestones(web3, network.cappedMilestoneFactoryAddress)
+                network.lppCappedMilestoneFactory
                   .cancelMilestone(milestone.projectId, {
                     from: this.props.currentUser.address,
                     gasPrice,
@@ -378,16 +432,24 @@ class MyMilestones extends Component {
               .then(([network, web3, gasPrice]) => {
                 etherScanUrl = network.etherscan;
 
-                return new LPPCappedMilestones(web3, network.cappedMilestoneFactoryAddress)
-                  .addMilestone(
-                    milestone.title,
-                    '',
-                    milestone.maxAmount,
-                    milestone.campaign.projectId,
-                    milestone.recipientAddress,
-                    milestone.reviewerAddress,
-                    milestone.campaignReviewerAddress,
-                    { from: this.props.currentUser.address, gasPrice },
+                const {title, maxAmount, projectId, recipientAddress, reviewerAddress, campaignReviewerAddress } = milestone;
+                const from = this.props.currentUser.address;
+
+                return network.lppCappedMilestoneFactory
+                  .newMilestone(
+                    title,
+                    "",
+                    projectId,
+                    reviewerAddress,
+                    from,
+                    from,
+                    recipientAddress,
+                    campaignReviewerAddress,
+                    from,
+                    maxAmount,
+                    0,
+                    5 * 24 * 60 * 60, // 5 days in seconds
+                    { from, gasPrice, $extraGas: 200000 }
                   )
                   .on('transactionHash', hash => {
                     txHash = hash;
@@ -451,10 +513,18 @@ class MyMilestones extends Component {
               .then(([network, web3, gasPrice]) => {
                 etherScanUrl = network.etherscan;
 
-                return new LPPCappedMilestones(web3, network.cappedMilestoneFactoryAddress)
-                  .acceptMilestone(milestone.projectId, {
+                const cappedMilestone =  new LPPCappedMilestone(web3, network.cappedMilestoneFactoryAddress)
+                console.log(cappedMilestone, milestone.projectId)
+
+                Promise.all([
+                  cappedMilestone.requestComplete(),
+                  cappedMilestone.reviewer()
+                ]).then((res) => console.log(res))
+
+                return cappedMilestone.approveMilestoneCompleted(milestone.projectId, {
                     from: this.props.currentUser.address,
                     gasPrice,
+                    $extraGas: 4000000
                   })
                   .once('transactionHash', hash => {
                     txHash = hash;
@@ -620,7 +690,7 @@ class MyMilestones extends Component {
                 .then(([network, web3, pledges, gasPrice]) => {
                   etherScanUrl = network.etherscan;
 
-                  return new LPPCappedMilestones(web3, network.cappedMilestoneFactoryAddress)
+                  return new LPPCappedMilestone(web3, network.cappedMilestoneFactoryAddress)
                     .mWithdraw(pledges, {
                       from: this.props.currentUser.address,
                       gasPrice,
@@ -729,7 +799,7 @@ class MyMilestones extends Component {
                 .then(([network, web3, gasPrice]) => {
                   etherScanUrl = network.etherscan;
 
-                  return new LPPCappedMilestones(web3, network.cappedMilestoneFactoryAddress)
+                  return new LPPCappedMilestone(web3, network.cappedMilestoneFactoryAddress)
                     .collect(milestone.projectId, {
                       from: this.props.currentUser.address,
                       $extraGas: 100000,
