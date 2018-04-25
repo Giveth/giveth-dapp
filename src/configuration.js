@@ -69,7 +69,7 @@ const configurations = {
     lppDacFactoryAddress: '0x537a9660B517450236aA7ecA654d6e6028374F65',
     lppCampaignFactoryAddress: '0xb9E828CDAC59905FD42C9Bc9A4DC0502194Af8ce',
     lppCappedMilestoneFactoryAddress: '0x286f1D6754D9C5931034B335e662be2700a9704A',
-    tokenAddress: '0x0',
+    tokenAddress: '0xb991657107F2F12899938B0985572449400C57d5',
     etherscan: 'https://rinkeby.etherscan.io/',
     feathersConnection: 'https://feathers.bridge.giveth.io',
     nodeConnection: 'wss://rinkeby.giveth.io:8546',
