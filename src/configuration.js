@@ -63,15 +63,15 @@ const configurations = {
     feathersConnection: 'https://feathers.alpha.giveth.io',
     nodeConnection: 'wss://rinkeby.giveth.io:8546',
   },
-  aragon: {
-    title: 'aragon',
+  bridge: {
+    title: 'bridge',
     liquidPledgingAddress: '0x1ce25E5Db192BB0804aA75D0cA3C7A4f2788Fe10',
     lppDacFactoryAddress: '0x537a9660B517450236aA7ecA654d6e6028374F65',
     lppCampaignFactoryAddress: '0xb9E828CDAC59905FD42C9Bc9A4DC0502194Af8ce',
     lppCappedMilestoneFactoryAddress: '0x286f1D6754D9C5931034B335e662be2700a9704A',
     tokenAddress: '0x0',
     etherscan: 'https://rinkeby.etherscan.io/',
-    feathersConnection: 'https://feathers.aragon.giveth.io',
+    feathersConnection: 'https://feathers.bridge.giveth.io',
     nodeConnection: 'wss://rinkeby.giveth.io:8546',
   },
 };
