@@ -3,7 +3,6 @@ import PropTypes from 'prop-types';
 import Avatar from 'react-avatar';
 import { Link, NavLink, withRouter } from 'react-router-dom';
 
-import AuthenticatedLink from './AuthenticatedLink';
 import AuthenticatedNavLink from './AuthenticatedNavLink';
 import User from '../models/User';
 import BaseWallet from '../lib/blockchain/BaseWallet';
@@ -59,7 +58,6 @@ class MainMenu extends Component {
       if (isConfirmed) {
         this.props.wallet.lock();
         this.setState({ walletLocked: true });
-        this.props.history.push('/');
       }
     });
   }
@@ -69,7 +67,7 @@ class MainMenu extends Component {
   }
 
   render() {
-    const { currentUser, wallet } = this.props;
+    const { currentUser } = this.props;
     const { showMobileMenu } = this.state;
 
     return (
@@ -146,13 +144,9 @@ class MainMenu extends Component {
                     className={`dropdown-menu ${showMobileMenu ? 'show' : ''} `}
                     aria-labelledby="navbarDropdownDashboard"
                   >
-                    <AuthenticatedLink
-                      className="dropdown-item"
-                      to="/my-milestones"
-                      wallet={wallet}
-                    >
+                    <NavLink className="dropdown-item" to="/my-milestones">
                       My Milestones
-                    </AuthenticatedLink>
+                    </NavLink>
                     {/*
                       <AuthenticatedLink
                         className="dropdown-item"
@@ -169,18 +163,18 @@ class MainMenu extends Component {
                         My Delegations
                       </AuthenticatedLink>
                     */}
-                    <AuthenticatedLink className="dropdown-item" to="/my-dacs" wallet={wallet}>
+                    <NavLink className="dropdown-item" to="/my-dacs">
                       My Communities
-                    </AuthenticatedLink>
-                    <AuthenticatedLink className="dropdown-item" to="/my-campaigns" wallet={wallet}>
+                    </NavLink>
+                    <NavLink className="dropdown-item" to="/my-campaigns">
                       My Campaigns
-                    </AuthenticatedLink>
+                    </NavLink>
                   </div>
                 </li>
               )}
             </ul>
 
-            <ul className="navbar-nav ml-auto mr-sm-2">
+            {this.props.wallet && !this.props.wallet.web3 && <ul className="navbar-nav ml-auto mr-sm-2">
               {this.props.currentUser &&
                 this.props.wallet &&
                 this.state.walletLocked && (
@@ -201,7 +195,7 @@ class MainMenu extends Component {
                     </NavLink>
                   </li>
                 )}
-            </ul>
+            </ul>}
             {/*
             <form id="search-form" className="form-inline my-2 my-lg-0">
               <input className="form-control mr-sm-2" type="text" placeholder="E.g. save the whales"/>
@@ -244,12 +238,12 @@ class MainMenu extends Component {
                     className={`dropdown-menu dropdown-profile ${showMobileMenu ? 'show' : ''}`}
                     aria-labelledby="navbarDropdownYou"
                   >
-                    <AuthenticatedLink className="dropdown-item" to="/profile" wallet={wallet}>
+                    <NavLink className="dropdown-item" to="/profile">
                       Profile
-                    </AuthenticatedLink>
-                    <AuthenticatedLink className="dropdown-item" to="/wallet" wallet={wallet}>
+                    </NavLink>
+                    <NavLink className="dropdown-item" to="/wallet">
                       Wallet
-                    </AuthenticatedLink>
+                    </NavLink>
                     <button className="dropdown-item" onClick={this.signout}>
                       Sign out
                     </button>

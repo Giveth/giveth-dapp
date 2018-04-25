@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 
 import {
-  isAuthenticated,
+  isLoggedIn,
   redirectAfterWalletUnlock,
   takeActionAfterWalletUnlock,
   checkWalletBalance,
@@ -33,7 +33,7 @@ class MyDACs extends Component {
   }
 
   componentDidMount() {
-    isAuthenticated(this.props.currentUser, this.props.wallet).then(() => {
+    isLoggedIn(this.props.currentUser).then(() => {
       this.dacsObserver = DACservice.getUserDACs(
         this.props.currentUser.address,
         dacs => this.setState({ dacs, isLoading: false }),

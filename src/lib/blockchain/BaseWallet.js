@@ -1,5 +1,6 @@
 import { utils } from 'web3';
 import localforage from 'localforage';
+import Accounts from 'web3-eth-accounts';
 
 /* global alert, window */
 
@@ -9,31 +10,16 @@ class BaseWallet {
    *                      retrieve chainId, gasPrice, and nonce automatically
    * @param web3          optional. Using dependency injection for testability
    */
-  constructor(provider, web3 = {}) {
-    if (web3.eth) {
-      // metamask account address is only made available within call back
-      // https://ethereum.stackexchange.com/questions/16962/metamask-web3-geth-account0-is-undefined
-      web3.eth.getAccounts((error, accounts) => {
-        // TODO: handle error
-        if (error) alert('error getting eth accounts');
-        // TODO: error if zero length accounts returned
-        if (accounts.length === 0)
-          alert(
-            'Zero accounts found in provided web3 object. You may need to log into a web3 browser or extension.',
-          );
-        // TODO: this isn't working fromAddress is undefined sometimes
-        // need to bind fromAddress to wallet correctly
-        // define from address property
-        [this.fromAddress] = accounts;
-      });
-    } else {
-      alert('web3.eth is not defined');
-    }
+  constructor(address, web3 = {}) {
+    this.util = new Accounts()
     this.web3 = web3;
     // hardcoded wallet fields depended upon somewhere
     // faking these until I learn more and come up with idea to handle
     this.unlocked = true;
     this.keystores = [''];
+    this.balance = undefined;
+    this.tokenBalance = undefined;
+    this.address = address;
   }
 
   /**
@@ -42,24 +28,22 @@ class BaseWallet {
    * @param unit (optional) ether, finney, wei, etc
    * @return {String}
    */
-  getBalance(unit) {
-    // return (this.balance) ? utils.fromWei(this.balance, unit || 'ether') : undefined;
+  getBalance (unit) {
+    return (this.balance) ? utils.fromWei(this.balance, unit || 'ether') : undefined;
     // no idea of this works but figured it should look something like this maybe
     // TODO: test this at least once
-
-    return this.web3.eth.getBalance(this.fromAddress, (error, result) => {
-      if (!error) {
-        return utils.fromWei(result, unit || 'ether');
-      }
-      console.error(error);
-      return undefined;
-    });
+    // const balance = this.web3.eth.getBalance(this.fromAddress);
+    // if (balance) return utils.fromWei(balance, unit || 'ether');
+    // return undefined;
   }
-
+  
+  getTokenBalance(unit) {
+    return this.tokenBalance ? utils.fromWei(this.tokenBalance, unit || 'ether') : undefined;
+  }
   // fake function to satisfy dapp expectations on internal wallet
   // TODO: think about this more and figure out solution
   lock() {
-    this.unlocked = true;
+    this.unlocked = false;
   }
 
   // fake function to satisfy dapp expectations on internal wallet
@@ -78,7 +62,7 @@ class BaseWallet {
    */
   getAddresses() {
     // might make sense to add a check for valid address and error if not
-    return [this.fromAddress];
+    return [this.address];
   }
 
   /**
@@ -90,7 +74,7 @@ class BaseWallet {
   signTransaction(txData) {
     if (!txData.gasPrice || !txData.nonce || !txData.chainId)
       throw new Error('gasPrice, nonce, and chainId are required');
-    return this.web3.eth.signTransaction(txData);
+    return this.web3.eth.sendTransaction(txData);
   }
 
   /**
@@ -99,9 +83,9 @@ class BaseWallet {
    * @param msg   the message to sign
    * @returns     object containing signature data. https://web3js.readthedocs.io/en/1.0/web3-eth-accounts.html#sign
    */
-  signMessage(msg) {
+  signMessage(msg, acc) {
     // msg and from are in different order in web3-1.x from previous versions
-    return this.web3.eth.sign(msg, this.fromAddress);
+    return this.web3.eth.sign(this.web3.utils.sha3(msg));
   }
 
   /**
