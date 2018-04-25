@@ -167,16 +167,27 @@ class UserProvider extends Component {
       redirectAfter,
     } = this.state;
 
+    const { onSignIn, onSignOut, walletUnlocked, hideUnlockWalletModal, handleWalletChange } = this;
+
     return (
       <Provider
         value={{
-          currentUser,
-          wallet,
-          web3,
-          isLoading,
-          hasError,
-          showUnlockWalletModal,
-          redirectAfter,
+          state: {
+            currentUser,
+            wallet,
+            web3,
+            isLoading,
+            hasError,
+            showUnlockWalletModal,
+            redirectAfter,
+          },
+          actions: {
+            onSignIn,
+            onSignOut,
+            walletUnlocked,
+            hideUnlockWalletModal,
+            handleWalletChange,
+          },
         }}
       >
         {this.props.children}
