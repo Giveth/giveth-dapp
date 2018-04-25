@@ -31,7 +31,18 @@ class FormsyImageUploader extends Component {
     if (!this.cropper) {
       return;
     }
-    this.props.setImage(this.cropper.getCroppedCanvas().toDataURL());
+    const imgResized = this.cropper.getCroppedCanvas().toDataURL();
+
+    ImageTools.resize(
+      imgResized,
+      {
+        width: 1000,
+        height: 1000,
+      },
+      (blob, didItResize) => {
+        this.props.setImage(didItResize ? blob : imgResized);
+      },
+    );
   }
 
   loadAndPreviewImage(name, files) {
@@ -44,8 +55,8 @@ class FormsyImageUploader extends Component {
     ImageTools.resize(
       files[0],
       {
-        width: 800,
-        height: 600,
+        width: 1000,
+        height: 1000,
       },
       (blob, didItResize) => {
         reader.readAsDataURL(didItResize ? blob : files[0]);

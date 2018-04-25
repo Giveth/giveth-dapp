@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import { utils } from 'web3';
 
 import BackupWallet from '../BackupWallet';
-import { isAuthenticated, takeActionAfterWalletUnlock } from '../../lib/middleware';
+import { isLoggedIn } from '../../lib/middleware';
 // import WithdrawButton from '../WithdrawButton';
 import User from '../../models/User';
 import GivethWallet from '../../lib/blockchain/GivethWallet';
@@ -13,6 +13,7 @@ import { feathersClient } from '../../lib/feathersClient';
 import { getTruncatedText } from '../../lib/helpers';
 import getNetwork from '../../lib/blockchain/getNetwork';
 
+import ErrorPopup from '../ErrorPopup';
 // TODO: Remove the eslint exception after extracting to model
 /* eslint no-underscore-dangle: 0 */
 
@@ -45,30 +46,29 @@ class UserWallet extends Component {
   }
 
   componentWillMount() {
-    isAuthenticated(this.props.currentUser, this.props.wallet).then(() =>
-      takeActionAfterWalletUnlock(this.props.wallet, () => {
-        this.setState({ isLoadingWallet: false });
+    isLoggedIn(this.props.currentUser).then(() => {
+      this.setState({ isLoadingWallet: false });
 
-        // load tokens
-        feathersClient
-          .service('/tokens')
-          .find({ query: { userAddress: this.props.currentUser.myAddress } })
-          .then(resp => {
-            this.setState(
-              {
-                tokens: resp.data,
-                isLoadingTokens: false,
-                hasError: false,
-                tokenSymbols: resp.data.map(t => t.tokenSymbol),
-              },
-              this.getObjectsByTokenSymbol(),
-            );
-          })
-          .catch(() => {
-            this.setState({ hasError: true });
-          });
-      }),
-    );
+      // load tokens
+      feathersClient
+        .service('/tokens')
+        .find({ query: { userAddress: this.props.currentUser.myAddress } })
+        .then(resp => {
+          this.setState(
+            {
+              tokens: resp.data,
+              isLoadingTokens: false,
+              hasError: false,
+              tokenSymbols: resp.data.map(t => t.tokenSymbol),
+            },
+            this.getObjectsByTokenSymbol(),
+          );
+        })
+        .catch(e => {
+          ErrorPopup('Something went wrong with loading tokens', e);
+          this.setState({ hasError: true });
+        });
+    });
   }
 
   getObjectsByTokenSymbol() {

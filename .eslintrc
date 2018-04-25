@@ -27,5 +27,6 @@
   },
   "globals": {
     "FileReader": true,
+    "window": true
   }
 }

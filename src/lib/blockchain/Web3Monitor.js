@@ -4,6 +4,8 @@
 import BigNumber from 'bignumber.js';
 import Web3 from './getWeb3';
 
+import ErrorPopup from '../../components/ErrorPopup';
+
 const ONE_SECOND = 1000;
 
 // TODO: maybe move this to separate lib and don't include web3 object in state.
@@ -135,7 +137,12 @@ class Web3Monitor {
           this.updateStateAndNotify({ accounts });
         }
       })
-      .catch(err => console.log('Web3Monitor -> err checking balances', err)); // eslint-disable-line no-console
+      .catch(err => {
+        ErrorPopup(
+          'Something went wrong with fetching balances of accounts. Please try again after refresh.',
+          err,
+        );
+      });
   }
 
   getBalance(address) {

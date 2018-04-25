@@ -1,4 +1,4 @@
-/* global FileReader, URL, Blob, HTMLCanvasElement, document, atob */
+/* global FileReader, URL, Blob, HTMLCanvasElement, document, atob, Image */
 /* Resizes an image
  *
  *  @params
@@ -53,27 +53,27 @@ export default class ImageTools {
     if (typeof maxDimensions === 'function') {
       callback = md;
       maxDimensions = {
-        width: 640,
-        height: 480,
+        width: 1000,
+        height: 1000,
       };
     }
 
-    if (!ImageTools.isSupported() || !file.type.match(/image.*/)) {
+    if (!ImageTools.isSupported() || (file.type && !file.type.match(/image.*/))) {
       callback(file, false);
       return false;
     }
 
-    if (file.type.match(/image\/gif/)) {
+    if (file.type && file.type.match(/image\/gif/)) {
       // Not attempting, could be an animated gif
       callback(file, false);
       // TODO: use https://github.com/antimatter15/whammy to convert gif to webm
       return false;
     }
 
-    const image = document.createElement('img');
+    const image = new Image();
 
     image.onload = () => {
-      let { width, height } = image.width;
+      let { width, height } = image;
       let isTooLarge = false;
 
       if (width >= height && width > maxDimensions.width) {
@@ -161,7 +161,7 @@ export default class ImageTools {
       };
       reader.readAsDataURL(file);
     } else {
-      image.src = URL.createObjectURL(file);
+      image.src = typeof file === 'string' ? file : URL.createObjectURL(file);
       if (callback) {
         callback();
       }

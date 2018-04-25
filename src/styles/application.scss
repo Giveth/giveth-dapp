@@ -36,6 +36,7 @@
 // overrides
 @import 'card.scss';
 @import 'formsyOverrides.scss';
+@import 'myMilestones.scss';
 
 html,
 body {
@@ -216,10 +217,6 @@ i {
         margin-left: 10px;
     }
 }
-
 .inline{
     display: inline;
 }
-
-
-

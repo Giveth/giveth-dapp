@@ -23,6 +23,8 @@ import MilestoneItem from './../MilestoneItem';
 import GivethWallet from '../../lib/blockchain/GivethWallet';
 import User from '../../models/User';
 
+import ErrorPopup from '../ErrorPopup';
+
 /**
   Loads and shows a single milestone
 
@@ -39,6 +41,7 @@ class ViewMilestone extends Component {
       isLoadingDonations: true,
       donations: [],
       etherScanUrl: '',
+      items: [],
     };
 
     this.editMilestone = this.editMilestone.bind(this);
@@ -60,15 +63,17 @@ class ViewMilestone extends Component {
         this.setState(
           Object.assign({}, resp.data[0], {
             isLoading: false,
-            hasError: false,
+            id: milestoneId,
+            fiatAmount: new BigNumber(resp.data[0].fiatAmount || '0').toFixed(2),
             totalDonated: convertEthHelper(resp.data[0].totalDonated),
             maxAmount: convertEthHelper(resp.data[0].maxAmount),
-            id: milestoneId,
-            fiatAmount: new BigNumber(resp.data[0].fiatAmount).toFixed(2),
           }),
         ),
       )
-      .catch(() => this.setState({ isLoading: false }));
+      .catch(err => {
+        ErrorPopup('Something went wrong with viewing the milestone. Please try a refresh.', err);
+        this.setState({ isLoading: false });
+      });
 
     // lazy load donations
     // TODO: fetch "non comitted" donations? add "intendedProjectId: milestoneId" to query to get
@@ -139,7 +144,6 @@ class ViewMilestone extends Component {
 
   render() {
     const { history, wallet, currentUser } = this.props;
-
     const {
       isLoading,
       id,
@@ -162,6 +166,7 @@ class ViewMilestone extends Component {
       status,
       fiatAmount,
       selectedFiatType,
+      campaign,
     } = this.state;
     return (
       <div id="view-milestone-view">
@@ -182,6 +187,7 @@ class ViewMilestone extends Component {
               {this.state.totalDonated < this.state.maxAmount && (
                 <p>Amount requested: {this.state.maxAmount} ETH</p>
               )}
+              <p>Campaign: {campaign.title} </p>
 
               {this.isActiveMilestone() && (
                 <DonateButton
@@ -339,6 +345,7 @@ class ViewMilestone extends Component {
                     </small>
                     {maxAmount} ETH
                     {fiatAmount &&
+                      selectedFiatType &&
                       items.length === 0 && (
                         <span>
                           {' '}
@@ -353,6 +360,12 @@ class ViewMilestone extends Component {
                       The amount of ETH currently donated to this Milestone
                     </small>
                     {totalDonated} ETH
+                  </div>
+
+                  <div className="form-group">
+                    <span className="label">Campaign</span>
+                    <small className="form-text">The campaign this milestone belongs to.</small>
+                    {campaign.title}
                   </div>
 
                   <div className="form-group">
