@@ -134,7 +134,12 @@ class EditMilestone extends Component {
               milestone.maxAmount = new BigNumber(milestone.maxAmount);
               milestone.fiatAmount = new BigNumber(milestone.fiatAmount);
 
-              if (!isOwner(milestone.owner.address, this.props.currentUser)) {
+              if (
+                !(
+                  isOwner(milestone.owner.address, this.props.currentUser) ||
+                  isOwner(milestone.campaignOwnerAddress, this.props.currentUser)
+                )
+              ) {
                 this.props.history.goBack();
               }
               this.setState(

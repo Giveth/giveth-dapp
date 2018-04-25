@@ -861,14 +861,12 @@ class MyMilestones extends Component {
                                     )}
                                 </td>
                                 <td className="td-actions">
-                                  {m.ownerAddress === currentUser.address &&
-                                    [
-                                      'proposed',
-                                      'rejected',
-                                      'InProgress',
-                                      'NeedReview',
-                                      'InReview',
-                                    ].includes(m.status) && (
+                                  {/* Campaign and Milestone managers can edit milestone */}
+                                  {(m.ownerAddress === currentUser.address ||
+                                    m.campaign.ownerAddress === currentUser.address) &&
+                                    ['proposed', 'rejected', 'InProgress', 'NeedsReview'].includes(
+                                      m.status,
+                                    ) && (
                                       <button
                                         className="btn btn-link"
                                         onClick={() => this.editMilestone(m)}
