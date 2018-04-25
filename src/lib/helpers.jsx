@@ -9,6 +9,8 @@ import { feathersClient } from './feathersClient';
 import DefaultAvatar from './../assets/avatar-100.svg';
 import config from '../configuration';
 
+import Accounts from 'web3-eth-accounts';
+
 export const isOwner = (address, currentUser) =>
   address !== undefined && currentUser !== undefined && currentUser.address === address;
 
@@ -24,10 +26,9 @@ export const authenticate = wallet => {
       // verify our identity
       if (response.code === 401 && response.data.startsWith('Challenge =')) {
         const msg = response.data.replace('Challenge =', '').trim();
-
-        return resolve(wallet.signMessage(msg).signature);
+        resolve(wallet.web3.eth.sign(wallet.util.hashMessage(msg), wallet.address));
       }
-      return reject(response);
+      reject(response);
     });
   })
     .then(signature => {

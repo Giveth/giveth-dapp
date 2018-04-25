@@ -174,7 +174,7 @@ class MainMenu extends Component {
               )}
             </ul>
 
-            <ul className="navbar-nav ml-auto mr-sm-2">
+            {this.props.wallet && !this.props.wallet.web3 && <ul className="navbar-nav ml-auto mr-sm-2">
               {this.props.currentUser &&
                 this.props.wallet &&
                 this.state.walletLocked && (
@@ -195,7 +195,7 @@ class MainMenu extends Component {
                     </NavLink>
                   </li>
                 )}
-            </ul>
+            </ul>}
             {/*
             <form id="search-form" className="form-inline my-2 my-lg-0">
               <input className="form-control mr-sm-2" type="text" placeholder="E.g. save the whales"/>

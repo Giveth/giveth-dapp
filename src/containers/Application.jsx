@@ -52,6 +52,8 @@ import User from '../models/User';
 
 import './../lib/validators';
 
+import Accounts from 'web3-eth-accounts';
+
 /* global document, window, alert */
 /**
  * Here we hack to make stuff globally available
@@ -145,22 +147,23 @@ class Application extends Component {
       })
       .catch(e => {
         console.error(e); // eslint-disable-line no-console
+        this.authMetaMask();
         this.setState({ isLoading: false, hasError: false });
       });
 
-    // TODO: move and isolate this code to some place nice
-    // check if web3 has been injected into dom window
-    if (typeof web3 !== 'undefined') {
-      // if yes use base wallet
-      // this line seems dumb as provider is always undefined
-      const provider = undefined;
-      // declare web3 from window
       const { web3 } = window;
-      // create base wallet
-      const web3js = new Web3(web3.currentProvider);
-      const wallet = new BaseWallet(provider, web3js); // eslint-disable-line no-console
-      // add wallet to application state
-      this.setState({ wallet });
+
+      // check if web3 has been injected into dom window
+      if (typeof web3 !== 'undefined') {
+        const web3js = new Web3(web3.currentProvider);
+  
+        web3js.eth.getAccounts((err, acc) => {
+          const wallet = new BaseWallet(acc[0], web3js);
+  
+          // add wallet to application state
+          getWeb3().then(web3 => web3.setWallet(wallet));
+          this.setState({ wallet });
+        })
     } else {
       // if not web3 is not injected, use same Giveth wallet as before
       GivethWallet.getCachedKeystore()
@@ -179,6 +182,50 @@ class Application extends Component {
     }
   }
 
+  authMetaMask() {
+    const { web3 } = window;
+
+    // check if web3 has been injected into dom window
+    if (typeof web3 !== 'undefined') {
+      const web3js = new Web3(web3.currentProvider);
+
+      web3js.eth.getAccounts((err, acc) => {
+        // don't authenticate if there's already a user or if metamask is unlocked
+        if (this.state.currentUser) return; // fix this
+        if (!acc[0]) {
+          console.log('Show message about unlocking metamask')
+          return;
+        };
+
+        const authData = {
+          strategy: 'web3',
+          address: acc[0],
+        };
+        const util = new Accounts();
+        // console.log(test.hashMessage('uRr1tofqbXXG4yAEa2ed'))
+        return new Promise((resolve, reject) => {
+          feathersClient.authenticate(authData).catch(response => {
+            // normal flow will issue a 401 with a challenge message we need to sign and send to
+            // verify our identity
+            if (response.code === 401 && response.data.startsWith('Challenge =')) {
+              const msg = response.data.replace('Challenge =', '').trim();
+              resolve(web3js.eth.sign(util.hashMessage(msg), acc[0]));
+            }
+            reject(response);
+          });
+        })
+          .then(signature => {
+            authData.signature = signature;
+            return feathersClient.authenticate(authData);
+          })
+          .then(response => {
+            this.onSignIn(acc[0]);
+          })
+          .catch(err => console.log(err))
+      })
+    }
+  }
+
   onSignOut() {
     if (this.state.wallet) this.state.wallet.lock();
 
@@ -186,9 +233,9 @@ class Application extends Component {
     this.setState({ currentUser: undefined });
   }
 
-  onSignIn() {
-    const address = this.state.wallet.getAddresses()[0];
-    return Application.getUserProfile(address).then(user =>
+  onSignIn(address) {
+    let currentAddress = address || this.state.wallet.getAddresses()[0];
+    return Application.getUserProfile(currentAddress).then(user =>
       this.setState({ currentUser: new User(user) }),
     );
   }
