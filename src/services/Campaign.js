@@ -139,7 +139,7 @@ class CampaignService {
       let etherScanUrl;
       Promise.all([getNetwork(), getWeb3(), getGasPrice()])
         .then(([network, web3, gasPrice]) => {
-          const { liquidPledging, LPPCampaignFactory } = network;
+          const { liquidPledging, lppCampaignFactory } = network;
           etherScanUrl = network.etherscan;
 
           /**
@@ -155,7 +155,7 @@ class CampaignService {
           address escapeHatchDestination
           **/
 
-          LPPCampaignFactory.newCampaign(
+          lppCampaignFactory.newCampaign(
             campaign.title,
             "",  
             0,          

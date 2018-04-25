@@ -45,6 +45,7 @@ class Campaign extends BasicModel {
       tokenSymbol: this.tokenSymbol,
       dacs: this.dacs,
       reviewerAddress: this.reviewerAddress,
+      status: this.status
     };
   }
 
