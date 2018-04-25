@@ -267,12 +267,11 @@ class MyMilestones extends Component {
               .then(([network, web3, gasPrice]) => {
                 etherScanUrl = network.etherscan;
 
-                const cappedMilestone =  new LPPCappedMilestone(web3, network.cappedMilestoneFactoryAddress)
-                const from = this.props.currentUser.address
+                const cappedMilestone =  new LPPCappedMilestone(web3, milestone.pluginAddress)
 
                 cappedMilestone
                   .requestMarkAsComplete(milestone.projectId, {
-                    from,
+                    from: this.props.currentUser.address,
                     gasPrice,
                     $extraGas: 4000000
                   })
@@ -513,13 +512,7 @@ class MyMilestones extends Component {
               .then(([network, web3, gasPrice]) => {
                 etherScanUrl = network.etherscan;
 
-                const cappedMilestone =  new LPPCappedMilestone(web3, network.cappedMilestoneFactoryAddress)
-                console.log(cappedMilestone, milestone.projectId)
-
-                Promise.all([
-                  cappedMilestone.requestComplete(),
-                  cappedMilestone.reviewer()
-                ]).then((res) => console.log(res))
+                const cappedMilestone =  new LPPCappedMilestone(web3, milestone.pluginAddress)
 
                 return cappedMilestone.approveMilestoneCompleted(milestone.projectId, {
                     from: this.props.currentUser.address,
