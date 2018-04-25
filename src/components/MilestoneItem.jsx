@@ -60,7 +60,7 @@ class MilestoneItem extends React.Component {
 
         {isEditMode && (
           <td className="td-item-remove">
-            <button className="btn btn-link" onClick={removeItem}>
+            <button type="button" className="btn btn-link" onClick={removeItem}>
               X
             </button>
           </td>
