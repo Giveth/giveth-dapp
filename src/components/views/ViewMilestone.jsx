@@ -9,7 +9,8 @@ import BigNumber from 'bignumber.js';
 import ReactHtmlParser, { convertNodeToElement } from 'react-html-parser';
 
 import { feathersClient } from './../../lib/feathersClient';
-import { getUserName, getUserAvatar, convertEthHelper } from '../../lib/helpers';
+import { getUserName, getUserAvatar, convertEthHelper, isOwner } from '../../lib/helpers';
+import { redirectAfterWalletUnlock, checkWalletBalance } from '../../lib/middleware';
 
 import Loader from './../Loader';
 import GoBackButton from '../GoBackButton';
@@ -42,6 +43,8 @@ class ViewMilestone extends Component {
       etherScanUrl: '',
       items: [],
     };
+
+    this.editMilestone = this.editMilestone.bind(this);
 
     getNetwork().then(network => {
       this.setState({
@@ -101,6 +104,27 @@ class ViewMilestone extends Component {
 
   isActiveMilestone() {
     return this.state.status === 'InProgress' && this.state.totalDonated < this.state.maxAmount;
+  }
+
+  editMilestone(e) {
+    e.stopPropagation();
+
+    checkWalletBalance(this.props.wallet).then(() => {
+      React.swal({
+        title: 'Edit Milestone?',
+        text: 'Are you sure you want to edit this milestone?',
+        icon: 'warning',
+        dangerMode: true,
+        buttons: ['Cancel', 'Yes, edit'],
+      }).then(isConfirmed => {
+        if (isConfirmed) {
+          redirectAfterWalletUnlock(
+            `/campaigns/${this.state.campaign.id}/milestones/${this.state.id}/edit`,
+            this.props.wallet,
+          );
+        }
+      });
+    });
   }
 
   renderDescription() {
@@ -180,7 +204,18 @@ class ViewMilestone extends Component {
               <div className="row">
                 <div className="col-md-8 m-auto">
                   <div>
-                    <GoBackButton history={history} />
+                    <GoBackButton history={history} styleName="inline" />
+
+                    {isOwner(ownerAddress, currentUser) && (
+                      <span className="pull-right">
+                        <button
+                          className="btn btn-link btn-edit"
+                          onClick={e => this.editMilestone(e)}
+                        >
+                          <i className="fa fa-edit" />
+                        </button>
+                      </span>
+                    )}
 
                     <center>
                       <Link to={`/profile/${ownerAddress}`}>
