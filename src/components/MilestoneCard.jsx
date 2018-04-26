@@ -100,7 +100,6 @@ class MilestoneCard extends Component {
           />
 
           <div className="card-content">
-            <small>deadline: {milestone.completionDeadline}</small>
             <h4 className="card-title">{getTruncatedText(milestone.title, 30)}</h4>
             <div className="card-text">{milestone.summary}</div>
           </div>
