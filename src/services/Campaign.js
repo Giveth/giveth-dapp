@@ -212,7 +212,7 @@ class CampaignService {
         etherScanUrl = network.etherscan;
 
         lppCampaign
-          .cancelCampaign({ from, gasPrice })
+          .cancelCampaign({ from, gasPrice, $extraGas: 100000 })
           .once('transactionHash', hash => {
             txHash = hash;
             feathersClient
