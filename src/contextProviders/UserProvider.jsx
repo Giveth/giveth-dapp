@@ -62,6 +62,8 @@ class UserProvider extends Component {
     this.onSignOut = this.onSignOut.bind(this);
     this.onSignIn = this.onSignIn.bind(this);
     this.unlockWallet = this.unlockWallet.bind(this);
+    this.walletUnlocked = this.walletUnlocked.bind(this);
+    this.hideUnlockWalletModal = this.hideUnlockWalletModal.bind(this);
 
     // Making unlock wallet global
     React.unlockWallet = this.unlockWallet;

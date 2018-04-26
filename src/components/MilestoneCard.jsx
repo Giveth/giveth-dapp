@@ -81,7 +81,8 @@ class MilestoneCard extends Component {
             <Avatar size={30} src={getUserAvatar(milestone.owner)} round />
             <span className="owner-name">{getUserName(milestone.owner)}</span>
 
-            {isOwner(milestone.owner.address, currentUser) && (
+            {(isOwner(milestone.owner.address, currentUser) ||
+              isOwner(milestone.campaignOwnerAddress, currentUser)) && (
               <span className="pull-right">
                 <button className="btn btn-link btn-edit" onClick={e => this.editMilestone(e)}>
                   <i className="fa fa-edit" />

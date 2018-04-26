@@ -167,6 +167,7 @@ class ViewMilestone extends Component {
       fiatAmount,
       selectedFiatType,
       campaign,
+      campaignOwnerAddress,
     } = this.state;
     return (
       <div id="view-milestone-view">
@@ -206,7 +207,8 @@ class ViewMilestone extends Component {
                   <div>
                     <GoBackButton history={history} styleName="inline" />
 
-                    {isOwner(ownerAddress, currentUser) && (
+                    {(isOwner(ownerAddress, currentUser) ||
+                      isOwner(campaignOwnerAddress, currentUser)) && (
                       <span className="pull-right">
                         <button
                           className="btn btn-link btn-edit"

@@ -148,11 +148,16 @@ class EditMilestone extends Component {
                   date,
                   itemizeState: milestone.items && milestone.items.length > 0,
                   selectedFiatType: milestone.selectedFiatType || 'EUR',
+                  campaignTitle: milestone.campaign.title,
+                  campaignProjectId: milestone.campaign.projectId,
+                  campaignReviewerAddress: milestone.campaign.reviewerAddress,
+                  campaignOwnerAddress: milestone.campaign.ownerAddress,
                 }),
               );
               return date;
             })
             .then(date => this.getEthConversion(date))
+            .then()
             .then(() => {
               if (!this.state.hasWhitelist) this.getReviewers();
             })
