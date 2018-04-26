@@ -2,6 +2,7 @@ import { LiquidPledging } from 'giveth-liquidpledging';
 import { LPPDacFactory } from 'lpp-dac';
 import { LPPCampaignFactory } from 'lpp-campaign';
 import { LPPCappedMilestoneFactory } from 'lpp-capped-milestone';
+import { GivethBridge } from 'giveth-bridge';
 
 import getWeb3 from './getWeb3';
 import config from '../../configuration';
@@ -20,8 +21,9 @@ export default () => {
       web3,
       network.lppCappedMilestoneFactoryAddress,
     );
+    network.givethBridge = new GivethBridge(web3, network.givethBridgeAddress);
 
-    console.log(network)
+    console.log(network);
 
     return network;
   });

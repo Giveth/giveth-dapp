@@ -7,7 +7,7 @@ import moment from 'moment';
 
 import { feathersClient } from '../../lib/feathersClient';
 import Loader from '../Loader';
-import { isAuthenticated } from '../../lib/middleware';
+import { isLoggedIn } from '../../lib/middleware';
 import DelegateButton from '../../components/DelegateButton';
 import { getUserName, getUserAvatar, getTruncatedText, convertEthHelper } from '../../lib/helpers';
 import GivethWallet from '../../lib/blockchain/GivethWallet';
@@ -32,7 +32,7 @@ class Delegations extends Component {
   }
 
   componentDidMount() {
-    isAuthenticated(this.props.currentUser, this.props.wallet).then(() => {
+    isLoggedIn(this.props.currentUser).then(() => {
       /**
       Load all DACs/campaigns/milestones
       TO DO: We should really move this to a single service

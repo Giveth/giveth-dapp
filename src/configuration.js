@@ -19,6 +19,7 @@ const configurations = {
     lppDacFactoryAddress: '0x2612Af3A521c2df9EAF28422Ca335b04AdF3ac66',
     lppCampaignFactoryAddress: '0xe982E462b094850F12AF94d21D470e21bE9D0E9C',
     lppCappedMilestoneFactoryAddress: '0xDb56f2e9369E0D7bD191099125a3f6C370F8ed15',
+    givethBridgeAddress: '0x0',
     tokenAddress: '0x5f8e26fAcC23FA4cbd87b8d9Dbbd33D5047abDE1',
     etherscan: 'https://etherscan.io/', // this won't work, only here so we can see links during development
     feathersConnection: 'http://localhost:3030',
@@ -69,6 +70,7 @@ const configurations = {
     lppDacFactoryAddress: '0x537a9660B517450236aA7ecA654d6e6028374F65',
     lppCampaignFactoryAddress: '0xb9E828CDAC59905FD42C9Bc9A4DC0502194Af8ce',
     lppCappedMilestoneFactoryAddress: '0x286f1D6754D9C5931034B335e662be2700a9704A',
+    givethBridgeAddress: '0x0cB06B291c40c76d7bEe7C9f1fAa4D6A4b338C49',
     tokenAddress: '0xb991657107F2F12899938B0985572449400C57d5',
     etherscan: 'https://rinkeby.etherscan.io/',
     feathersConnection: 'https://feathers.bridge.giveth.io',
