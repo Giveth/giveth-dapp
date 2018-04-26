@@ -62,7 +62,6 @@ const rejectProposedMilestone = milestone => {
         .service('/milestones')
         .patch(milestone._id, {
           status: 'rejected',
-          prevStatus: 'proposed',
         })
         .then(() => {
           React.toast.info(<p>The milestone has been rejected.</p>);
@@ -236,11 +235,15 @@ class MyMilestones extends Component {
           buttons: ['Cancel', 'Yes, mark complete'],
         }).then(isConfirmed => {
           if (isConfirmed) {
+
+            // feathers
             const _requestMarkComplete = (etherScanUrl, txHash) => {
               feathersClient
                 .service('/milestones')
                 .patch(milestone._id, {
                   status: 'NeedsReview',
+                  mined: false,
+                  txHash,                  
                 })
                 .then(() => {
                   React.toast.info(
@@ -261,6 +264,7 @@ class MyMilestones extends Component {
                 });
             };
 
+            // on chain
             let txHash;
             let etherScanUrl;
             Promise.all([getNetwork(), getWeb3(), getGasPrice()])
@@ -318,6 +322,8 @@ class MyMilestones extends Component {
         }).then(isConfirmed => {
           if (isConfirmed) {
             const _cancelMilestone = (etherScanUrl, txHash) => {
+
+              // feathers
               feathersClient
                 .service('/milestones')
                 .patch(milestone._id, {
@@ -344,6 +350,7 @@ class MyMilestones extends Component {
                 });
             };
 
+            // on chain
             let txHash;
             let etherScanUrl;
             Promise.all([getNetwork(), getWeb3(), getGasPrice()])
@@ -407,7 +414,6 @@ class MyMilestones extends Component {
                 .service('/milestones')
                 .patch(milestone._id, {
                   status: 'pending',
-                  prevStatus: 'proposed',
                   mined: false,
                   txHash,
                 })
@@ -484,6 +490,8 @@ class MyMilestones extends Component {
           buttons: ['Cancel', 'Yes, approve'],
         }).then(isConfirmed => {
           if (isConfirmed) {
+
+            // feathers
             const _approveMilestoneCompleted = (etherScanUrl, txHash) =>
               feathersClient
                 .service('/milestones')
@@ -510,6 +518,7 @@ class MyMilestones extends Component {
                   ErrorPopup('Something went wrong with approving your milestone', e);
                 });
 
+            // on chain
             let txHash;
             let etherScanUrl;
             Promise.all([getNetwork(), getWeb3(), getGasPrice()])
@@ -571,8 +580,9 @@ class MyMilestones extends Component {
               feathersClient
                 .service('/milestones')
                 .patch(milestone._id, {
-                  prevStatus: 'NeedsReview',
                   status: 'InProgress',
+                  mined: false,
+                  txHash                  
                 })
                 .then(() => {
                   React.toast.info(<p>You have rejected this milestone's completion...</p>);
