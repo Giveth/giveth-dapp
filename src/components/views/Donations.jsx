@@ -7,11 +7,7 @@ import { paramsForServer } from 'feathers-hooks-common';
 
 import { feathersClient } from '../../lib/feathersClient';
 import Loader from '../Loader';
-import {
-  isAuthenticated,
-  takeActionAfterWalletUnlock,
-  checkWalletBalance,
-} from '../../lib/middleware';
+import { isLoggedIn, takeActionAfterWalletUnlock, checkWalletBalance } from '../../lib/middleware';
 import getNetwork from '../../lib/blockchain/getNetwork';
 import { getGasPrice, getTruncatedText, convertEthHelper } from '../../lib/helpers';
 import User from '../../models/User';
@@ -63,7 +59,7 @@ class Donations extends Component {
   }
 
   componentDidMount() {
-    isAuthenticated(this.props.currentUser, this.props.wallet).then(() => {
+    isLoggedIn(this.props.currentUser).then(() => {
       this.donationsObserver = feathersClient
         .service('donations')
         .watch({ listStrategy: 'always' })
