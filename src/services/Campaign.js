@@ -138,13 +138,13 @@ class CampaignService {
       let txHash;
       let etherScanUrl;
       Promise.all([getNetwork(), getWeb3(), getGasPrice()])
-        .then(([network, web3, gasPrice]) => {
-          const { liquidPledging, lppCampaignFactory } = network;
+        .then(([network, , gasPrice]) => {
+          const { lppCampaignFactory } = network;
           etherScanUrl = network.etherscan;
 
           /**
           LPPCampaignFactory params:
-          
+
           string name,
           string url,
           uint64 parentProject,
@@ -153,37 +153,37 @@ class CampaignService {
           string tokenSymbol,
           address escapeHatchCaller,
           address escapeHatchDestination
-          **/
+          * */
 
-          lppCampaignFactory.newCampaign(
-            campaign.title,
-            "",  
-            0,          
-            campaign.reviewerAddress,
-            campaign.tokenName,
-            campaign.tokenSymbol,
-            from,
-            from,
-            { from, gasPrice, $extraGas: 200000 },
-          )
-          .once('transactionHash', hash => {
-            console.log('hash', hash)
-            txHash = hash;
-            campaign.txHash = txHash;
-            feathersClient
-              .service('campaigns')
-              .create(campaign.toFeathers())
-              .then(() => afterCreate(`${etherScanUrl}tx/${txHash}`));
-          })
-          .then(() => {
-            afterMined(`${etherScanUrl}tx/${txHash}`);
-          })
-          .catch((e) => {
-            ErrorPopup(
-              'Something went wrong with the transaction. Is your wallet unlocked?',
-              `${etherScanUrl}tx/${txHash}`,
-            );
-          });
+          lppCampaignFactory
+            .newCampaign(
+              campaign.title,
+              '',
+              0,
+              campaign.reviewerAddress,
+              campaign.tokenName,
+              campaign.tokenSymbol,
+              from,
+              from,
+              { from, gasPrice, $extraGas: 200000 },
+            )
+            .once('transactionHash', hash => {
+              txHash = hash;
+              campaign.txHash = txHash;
+              feathersClient
+                .service('campaigns')
+                .create(campaign.toFeathers())
+                .then(() => afterCreate(`${etherScanUrl}tx/${txHash}`));
+            })
+            .then(() => {
+              afterMined(`${etherScanUrl}tx/${txHash}`);
+            })
+            .catch(() => {
+              ErrorPopup(
+                'Something went wrong with the transaction. Is your wallet unlocked?',
+                `${etherScanUrl}tx/${txHash}`,
+              );
+            });
         })
         .catch(() => {
           ErrorPopup(
