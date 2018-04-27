@@ -235,7 +235,6 @@ class MyMilestones extends Component {
           buttons: ['Cancel', 'Yes, mark complete'],
         }).then(isConfirmed => {
           if (isConfirmed) {
-
             // feathers
             const _requestMarkComplete = (etherScanUrl, txHash) => {
               feathersClient
@@ -243,7 +242,7 @@ class MyMilestones extends Component {
                 .patch(milestone._id, {
                   status: 'NeedsReview',
                   mined: false,
-                  txHash,                  
+                  txHash,
                 })
                 .then(() => {
                   React.toast.info(
@@ -271,13 +270,13 @@ class MyMilestones extends Component {
               .then(([network, web3, gasPrice]) => {
                 etherScanUrl = network.etherscan;
 
-                const cappedMilestone =  new LPPCappedMilestone(web3, milestone.pluginAddress)
+                const cappedMilestone = new LPPCappedMilestone(web3, milestone.pluginAddress);
 
                 return cappedMilestone
                   .requestMarkAsComplete(milestone.projectId, {
                     from: this.props.currentUser.address,
                     gasPrice,
-                    $extraGas: 4000000
+                    $extraGas: 4000000,
                   })
                   .once('transactionHash', hash => {
                     txHash = hash;
@@ -322,7 +321,6 @@ class MyMilestones extends Component {
         }).then(isConfirmed => {
           if (isConfirmed) {
             const _cancelMilestone = (etherScanUrl, txHash) => {
-
               // feathers
               feathersClient
                 .service('/milestones')
@@ -357,13 +355,13 @@ class MyMilestones extends Component {
               .then(([network, web3, gasPrice]) => {
                 etherScanUrl = network.etherscan;
 
-                const cappedMilestone =  new LPPCappedMilestone(web3, milestone.pluginAddress)
+                const cappedMilestone = new LPPCappedMilestone(web3, milestone.pluginAddress);
 
                 return cappedMilestone
                   .cancelMilestone(milestone.projectId, {
                     from: this.props.currentUser.address,
                     gasPrice,
-                    $extraGas: 4000000                    
+                    $extraGas: 4000000,
                   })
                   .once('transactionHash', hash => {
                     txHash = hash;
@@ -407,7 +405,6 @@ class MyMilestones extends Component {
           buttons: ['Cancel', 'Yes, accept'],
         }).then(isConfirmed => {
           if (isConfirmed) {
-
             // feathers
             const _createMilestone = (etherScanUrl, txHash) =>
               feathersClient
@@ -439,16 +436,23 @@ class MyMilestones extends Component {
             let txHash;
             let etherScanUrl;
             Promise.all([getNetwork(), getWeb3(), getGasPrice()])
-              .then(([network, web3, gasPrice]) => {
+              .then(([network, , gasPrice]) => {
                 etherScanUrl = network.etherscan;
 
-                const {title, maxAmount, projectId, recipientAddress, reviewerAddress, campaignReviewerAddress } = milestone;
+                const {
+                  title,
+                  maxAmount,
+                  projectId,
+                  recipientAddress,
+                  reviewerAddress,
+                  campaignReviewerAddress,
+                } = milestone;
                 const from = this.props.currentUser.address;
 
                 return network.lppCappedMilestoneFactory
                   .newMilestone(
                     title,
-                    "",
+                    '',
                     projectId,
                     reviewerAddress,
                     from,
@@ -459,7 +463,7 @@ class MyMilestones extends Component {
                     maxAmount,
                     0,
                     5 * 24 * 60 * 60, // 5 days in seconds
-                    { from, gasPrice, $extraGas: 200000 }
+                    { from, gasPrice, $extraGas: 200000 },
                   )
                   .on('transactionHash', hash => {
                     txHash = hash;
@@ -490,7 +494,6 @@ class MyMilestones extends Component {
           buttons: ['Cancel', 'Yes, approve'],
         }).then(isConfirmed => {
           if (isConfirmed) {
-
             // feathers
             const _approveMilestoneCompleted = (etherScanUrl, txHash) =>
               feathersClient
@@ -525,12 +528,13 @@ class MyMilestones extends Component {
               .then(([network, web3, gasPrice]) => {
                 etherScanUrl = network.etherscan;
 
-                const cappedMilestone =  new LPPCappedMilestone(web3, milestone.pluginAddress)
+                const cappedMilestone = new LPPCappedMilestone(web3, milestone.pluginAddress);
 
-                return cappedMilestone.approveMilestoneCompleted(milestone.projectId, {
+                return cappedMilestone
+                  .approveMilestoneCompleted(milestone.projectId, {
                     from: this.props.currentUser.address,
                     gasPrice,
-                    $extraGas: 4000000
+                    $extraGas: 4000000,
                   })
                   .once('transactionHash', hash => {
                     txHash = hash;
@@ -568,13 +572,12 @@ class MyMilestones extends Component {
       checkWalletBalance(this.props.wallet).then(() =>
         React.swal({
           title: 'Reject Milestone?',
-          text: 'Are you sure you want to reject this Milestone\'s completion?',
+          text: "Are you sure you want to reject this Milestone's completion?",
           icon: 'warning',
           dangerMode: true,
           buttons: ['Cancel', 'Yes, reject'],
         }).then(isConfirmed => {
           if (isConfirmed) {
-
             // reject in feathers
             const _rejectMilestoneCompletion = (etherScanUrl, txHash) =>
               feathersClient
@@ -582,10 +585,10 @@ class MyMilestones extends Component {
                 .patch(milestone._id, {
                   status: 'InProgress',
                   mined: false,
-                  txHash                  
+                  txHash,
                 })
                 .then(() => {
-                  React.toast.info(<p>You have rejected this milestone's completion...</p>);
+                  React.toast.info(<p>You have rejected this milestone&apos;s completion...</p>);
                 })
                 .catch(e => {
                   ErrorPopup(
@@ -601,12 +604,13 @@ class MyMilestones extends Component {
               .then(([network, web3, gasPrice]) => {
                 etherScanUrl = network.etherscan;
 
-                const cappedMilestone = new LPPCappedMilestone(web3, milestone.pluginAddress)
+                const cappedMilestone = new LPPCappedMilestone(web3, milestone.pluginAddress);
 
-                return cappedMilestone.rejectCompleteRequest(milestone.projectId, {
+                return cappedMilestone
+                  .rejectCompleteRequest(milestone.projectId, {
                     from: this.props.currentUser.address,
                     gasPrice,
-                    $extraGas: 4000000
+                    $extraGas: 4000000,
                   })
                   .once('transactionHash', hash => {
                     txHash = hash;
@@ -632,7 +636,7 @@ class MyMilestones extends Component {
                   'Something went wrong with the transaction. Is your wallet unlocked?',
                   `${etherScanUrl}tx/${txHash}`,
                 );
-              });              
+              });
           }
         }),
       );

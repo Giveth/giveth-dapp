@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { LPPCappedMilestones } from 'lpp-capped-milestone';
 import { utils } from 'web3';
 import Toggle from 'react-toggle';
 import BigNumber from 'bignumber.js';
@@ -172,7 +171,6 @@ class EditMilestone extends Component {
               } else {
                 this.setState({
                   campaignTitle: campaign.title,
-                  campaignProjectId: campaign.projectId,
                   campaignReviewerAddress: campaign.reviewerAddress,
                   campaignOwnerAddress: campaign.ownerAddress,
                 });
@@ -434,11 +432,17 @@ class EditMilestone extends Component {
         } else {
           let etherScanUrl;
           Promise.all([getNetwork(), getWeb3(), getGasPrice()])
-            .then(([network, web3, gasPrice]) => {
+            .then(([network, , gasPrice]) => {
               etherScanUrl = network.etherscan;
 
               const from = this.props.currentUser.address;
-              const { title, recipientAddress, reviewerAddress, campaignReviewerAddress, maxAmount } = constructedModel;
+              const {
+                title,
+                recipientAddress,
+                reviewerAddress,
+                campaignReviewerAddress,
+                maxAmount,
+              } = constructedModel;
 
               /**
               lppCappedMilestoneFactory params
@@ -453,65 +457,72 @@ class EditMilestone extends Component {
               address _campaignReviewer,
               address _milestoneManager,
               uint _maxAmount,
-              address _acceptedToken,        
-              uint _reviewTimeoutSeconds              
-              **/
+              address _acceptedToken,
+              uint _reviewTimeoutSeconds
+              * */
 
-              console.log(title, recipientAddress, reviewerAddress, campaignReviewerAddress, maxAmount);
-  
-              network.lppCappedMilestoneFactory.newMilestone(
+              console.log(
                 title,
-                "",
-                0,
-                reviewerAddress,
-                from,
-                from,
                 recipientAddress,
+                reviewerAddress,
                 campaignReviewerAddress,
-                from,
                 maxAmount,
-                0,
-                5 * 24 * 60 * 60, // 5 days in seconds
-                { from, gasPrice, $extraGas: 200000 },
-              )
-              .on('transactionHash', hash => {
-                txHash = hash;
-                createMilestone(
-                  {
-                    txHash,
-                    pluginAddress: '0x0000000000000000000000000000000000000000',
-                    totalDonated: '0',
-                    donationCount: '0',
-                  },
-                  () =>
-                    React.toast.info(
-                      <p>
-                        Your Milestone is pending....<br />
-                        <a
-                          href={`${etherScanUrl}tx/${txHash}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          View transaction
-                        </a>
-                      </p>,
-                    ),
-                );
-              })
-              .then(() => {
-                React.toast.success(
-                  <p>
-                    Your Milestone has been created!<br />
-                    <a
-                      href={`${etherScanUrl}tx/${txHash}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      View transaction
-                    </a>
-                  </p>,
-                );
-              });
+              );
+
+              network.lppCappedMilestoneFactory
+                .newMilestone(
+                  title,
+                  '',
+                  0,
+                  reviewerAddress,
+                  from,
+                  from,
+                  recipientAddress,
+                  campaignReviewerAddress,
+                  from,
+                  maxAmount,
+                  0,
+                  5 * 24 * 60 * 60, // 5 days in seconds
+                  { from, gasPrice, $extraGas: 200000 },
+                )
+                .on('transactionHash', hash => {
+                  txHash = hash;
+                  createMilestone(
+                    {
+                      txHash,
+                      pluginAddress: '0x0000000000000000000000000000000000000000',
+                      totalDonated: '0',
+                      donationCount: '0',
+                    },
+                    () =>
+                      React.toast.info(
+                        <p>
+                          Your Milestone is pending....<br />
+                          <a
+                            href={`${etherScanUrl}tx/${txHash}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            View transaction
+                          </a>
+                        </p>,
+                      ),
+                  );
+                })
+                .then(() => {
+                  React.toast.success(
+                    <p>
+                      Your Milestone has been created!<br />
+                      <a
+                        href={`${etherScanUrl}tx/${txHash}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        View transaction
+                      </a>
+                    </p>,
+                  );
+                });
             })
             .catch(() => {
               ErrorPopup(
