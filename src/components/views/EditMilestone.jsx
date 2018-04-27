@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { LPPCappedMilestones } from 'lpp-capped-milestone-token';
 import { utils } from 'web3';
 import Toggle from 'react-toggle';
 import BigNumber from 'bignumber.js';
@@ -182,7 +181,6 @@ class EditMilestone extends Component {
               } else {
                 this.setState({
                   campaignTitle: campaign.title,
-                  campaignProjectId: campaign.projectId,
                   campaignReviewerAddress: campaign.reviewerAddress,
                   campaignOwnerAddress: campaign.ownerAddress,
                 });
@@ -444,21 +442,58 @@ class EditMilestone extends Component {
         } else {
           let etherScanUrl;
           Promise.all([getNetwork(), getWeb3(), getGasPrice()])
-            .then(([network, web3, gasPrice]) => {
+            .then(([network, , gasPrice]) => {
               etherScanUrl = network.etherscan;
 
               const from = this.props.currentUser.address;
-              const recipient = model.recipientAddress;
-              new LPPCappedMilestones(web3, network.cappedMilestoneAddress)
-                .addMilestone(
-                  model.title,
+              const {
+                title,
+                recipientAddress,
+                reviewerAddress,
+                campaignReviewerAddress,
+                maxAmount,
+              } = constructedModel;
+
+              /**
+              lppCappedMilestoneFactory params
+
+              string _name,
+              string _url,
+              uint64 _parentProject,
+              address _reviewer,
+              address _escapeHatchCaller,
+              address _escapeHatchDestination,
+              address _recipient,
+              address _campaignReviewer,
+              address _milestoneManager,
+              uint _maxAmount,
+              address _acceptedToken,
+              uint _reviewTimeoutSeconds
+              * */
+
+              console.log(
+                title,
+                recipientAddress,
+                reviewerAddress,
+                campaignReviewerAddress,
+                maxAmount,
+              );
+
+              network.lppCappedMilestoneFactory
+                .newMilestone(
+                  title,
                   '',
-                  constructedModel.maxAmount,
-                  this.state.campaignProjectId,
-                  recipient,
-                  model.reviewerAddress,
-                  constructedModel.campaignReviewerAddress,
-                  { from, gasPrice },
+                  0,
+                  reviewerAddress,
+                  from,
+                  from,
+                  recipientAddress,
+                  campaignReviewerAddress,
+                  from,
+                  maxAmount,
+                  0,
+                  5 * 24 * 60 * 60, // 5 days in seconds
+                  { from, gasPrice, $extraGas: 200000 },
                 )
                 .on('transactionHash', hash => {
                   txHash = hash;

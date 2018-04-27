@@ -67,7 +67,7 @@ class MainMenu extends Component {
   }
 
   render() {
-    const { currentUser } = this.props;
+    const { currentUser, wallet } = this.props;
     const { showMobileMenu } = this.state;
 
     return (
@@ -147,22 +147,12 @@ class MainMenu extends Component {
                     <NavLink className="dropdown-item" to="/my-milestones">
                       My Milestones
                     </NavLink>
-                    {/*
-                      <AuthenticatedLink
-                        className="dropdown-item"
-                        to="/donations"
-                        wallet={wallet}
-                      >
-                        My Donations
-                      </AuthenticatedLink>
-                      <AuthenticatedLink
-                        className="dropdown-item"
-                        to="/delegations"
-                        wallet={wallet}
-                      >
-                        My Delegations
-                      </AuthenticatedLink>
-                    */}
+                    <NavLink className="dropdown-item" to="/donations" wallet={wallet}>
+                      My Donations
+                    </NavLink>
+                    <NavLink className="dropdown-item" to="/delegations" wallet={wallet}>
+                      My Delegations
+                    </NavLink>
                     <NavLink className="dropdown-item" to="/my-dacs">
                       My Communities
                     </NavLink>

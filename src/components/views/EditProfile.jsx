@@ -85,7 +85,7 @@ class EditProfile extends Component {
 
           let txHash;
           liquidPledging
-            .addGiver(model.name || '', '', 259200, '0x0', {
+            .addGiver(model.name || '', '', 259200, 0, {
               $extraGas: 50000,
               gasPrice,
               from,

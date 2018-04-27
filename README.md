@@ -125,9 +125,9 @@ REACT_APP_DECIMALS | 8 | How many decimal should be shown for ETH values. Note t
 REACT_APP_FEATHERJS_CONNECTION_URL | Differs per REACT_APP_ENVIRONMENT | Overwrites the environment injected feathers connection URL. |
 REACT_APP_ETH_NODE_CONNECTION_URL | Differs per REACT_APP_ENVIRONMENT | Overwrites the ethereum node connection URL for making ethereum transactions. |
 REACT_APP_LIQUIDPLEDGING_ADDRESS | Differs per REACT_APP_ENVIRONMENT | Overwrites the Liquid Pledging contract address. |
-REACT_APP_DACS_ADDRESS | Differs per REACT_APP_ENVIRONMENT | Overwrites the DACs contract address. |
+REACT_APP_DAC_FACTORY_ADDRESS | Differs per REACT_APP_ENVIRONMENT | Overwrites the DACs contract address. |
 REACT_APP_CAMPAIGN_FACTORY_ADDRESS | Differs per REACT_APP_ENVIRONMENT | Overwrites the Campaign Factory contract address. |
-REACT_APP_CAPPED_MILESTONE_ADDRESS | Differs per REACT_APP_ENVIRONMENT | Overwrites the Milestone contract address. |
+REACT_APP_CAPPED_MILESTONE_FACTORY_ADDRESS | Differs per REACT_APP_ENVIRONMENT | Overwrites the Milestone contract address. |
 REACT_APP_TOKEN_ADDRESS | Differs per REACT_APP_ENVIRONMENT | Overwrites the Token emitting contract address. |
 REACT_APP_BLOCKEXPLORER | Differs per REACT_APP_ENVIRONMENT | Overwrites the block explorer base URL. The DApp assumes such blockexplorer api is `\<BLOCKEXPLORER\>/tx/\<TRANSACTION_HASH\>` |
 

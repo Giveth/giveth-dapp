@@ -136,11 +136,11 @@ class DACservice {
       let etherScanUrl;
       Promise.all([getNetwork(), getGasPrice()])
         .then(([network, gasPrice]) => {
-          const { lppDacs } = network;
+          const { lppDacFactory } = network;
           etherScanUrl = network.etherscan;
 
-          lppDacs
-            .addDac(dac.title, '', 0, dac.tokenName, dac.tokenSymbol, {
+          lppDacFactory
+            .newDac(dac.title, '', 0, dac.tokenName, dac.tokenSymbol, from, from, {
               from,
               gasPrice,
             })
@@ -156,10 +156,10 @@ class DACservice {
               afterMined(`${etherScanUrl}tx/${txHash}`);
             });
         })
-        .catch(() => {
+        .catch(err => {
           ErrorPopup(
             'Something went wrong with the DAC creation. Is your wallet unlocked?',
-            `${etherScanUrl}tx/${txHash}`,
+            `${etherScanUrl}tx/${txHash} => ${JSON.stringify(err, null, 2)}`,
           );
         });
     }
