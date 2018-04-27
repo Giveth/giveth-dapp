@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import ReactDOM from 'react-dom';
 
-import { Router, Route, Switch } from 'react-router-dom';
+import { Router, Route, Redirect, Switch } from 'react-router-dom';
 import localforage from 'localforage';
 
 import { ToastContainer, toast } from 'react-toastify';
@@ -218,6 +218,11 @@ class Application extends Component {
                           component={props => (
                             <EditMilestone currentUser={currentUser} wallet={wallet} {...props} />
                           )}
+                        />
+                        <Route
+                          exact
+                          path="/campaigns/:id/milestones"
+                          render={({ match }) => <Redirect to={`/campaigns/${match.params.id}`} />}
                         />
                         <Route
                           exact
