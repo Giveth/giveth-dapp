@@ -74,6 +74,31 @@ const rejectProposedMilestone = milestone => {
   });
 };
 
+const reproposeRejectedMilestone = milestone => {
+  React.swal({
+    title: 'Re-propose Milestone?',
+    text: 'Are you sure you want to re-propose this Milestone?',
+    icon: 'warning',
+    dangerMode: true,
+    buttons: ['Cancel', 'Yes, re-propose'],
+  }).then(isConfirmed => {
+    if (isConfirmed) {
+      feathersClient
+        .service('/milestones')
+        .patch(milestone._id, {
+          status: 'proposed',
+          prevStatus: 'rejected',
+        })
+        .then(() => {
+          React.toast.info(<p>The milestone has been re-proposed.</p>);
+        })
+        .catch(e => {
+          ErrorPopup('Something went wrong with re-proposing your milestone', e);
+        });
+    }
+  });
+};
+
 const reviewDue = updatedAt =>
   moment()
     .subtract(3, 'd')
@@ -891,6 +916,15 @@ class MyMilestones extends Component {
                                           <i className="fa fa-times-circle-o" />&nbsp;Reject
                                         </button>
                                       </span>
+                                    )}
+                                  {m.ownerAddress === currentUser.address &&
+                                    m.status === 'rejected' && (
+                                      <button
+                                        className="btn btn-success btn-sm"
+                                        onClick={() => reproposeRejectedMilestone(m)}
+                                      >
+                                        <i className="fa fa-times-square-o" />&nbsp;Re-propose
+                                      </button>
                                     )}
 
                                   {(m.recipientAddress === currentUser.address ||
