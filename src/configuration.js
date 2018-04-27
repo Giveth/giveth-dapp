@@ -19,7 +19,7 @@ const configurations = {
     lppDacFactoryAddress: '0x2612Af3A521c2df9EAF28422Ca335b04AdF3ac66',
     lppCampaignFactoryAddress: '0xe982E462b094850F12AF94d21D470e21bE9D0E9C',
     lppCappedMilestoneFactoryAddress: '0xDb56f2e9369E0D7bD191099125a3f6C370F8ed15',
-    givethBridgeAddress: '0x0',
+    givethBridgeAddress: '0x0000000000000000000000000000000000000000',
     tokenAddress: '0x5f8e26fAcC23FA4cbd87b8d9Dbbd33D5047abDE1',
     etherscan: 'https://etherscan.io/', // this won't work, only here so we can see links during development
     feathersConnection: 'http://localhost:3030',
