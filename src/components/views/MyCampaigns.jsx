@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 
 import {
-  isAuthenticated,
+  isLoggedIn,
   redirectAfterWalletUnlock,
   takeActionAfterWalletUnlock,
   checkWalletBalance,
@@ -32,7 +32,7 @@ class MyCampaigns extends Component {
   }
 
   componentDidMount() {
-    isAuthenticated(this.props.currentUser, this.props.wallet).then(() => {
+    isLoggedIn(this.props.currentUser).then(() => {
       this.campaignsObserver = CampaignService.getUserCampaigns(
         this.props.currentUser.address,
         campaigns => this.setState({ campaigns, isLoading: false }),
@@ -193,7 +193,7 @@ class MyCampaigns extends Component {
                       <div>
                         <center>
                           <h3>You didn&apos;t create any campaigns yet!</h3>
-                          <image
+                          <img
                             className="empty-state-img"
                             src={`${process.env.PUBLIC_URL}/img/campaign.svg`}
                             width="200px"

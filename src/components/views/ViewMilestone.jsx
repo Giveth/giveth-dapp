@@ -9,7 +9,8 @@ import BigNumber from 'bignumber.js';
 import ReactHtmlParser, { convertNodeToElement } from 'react-html-parser';
 
 import { feathersClient } from './../../lib/feathersClient';
-import { getUserName, getUserAvatar, convertEthHelper } from '../../lib/helpers';
+import { getUserName, getUserAvatar, convertEthHelper, isOwner } from '../../lib/helpers';
+import { redirectAfterWalletUnlock, checkWalletBalance } from '../../lib/middleware';
 
 import Loader from './../Loader';
 import GoBackButton from '../GoBackButton';
@@ -21,6 +22,8 @@ import MilestoneItem from './../MilestoneItem';
 
 import GivethWallet from '../../lib/blockchain/GivethWallet';
 import User from '../../models/User';
+
+import ErrorPopup from '../ErrorPopup';
 
 /**
   Loads and shows a single milestone
@@ -38,7 +41,10 @@ class ViewMilestone extends Component {
       isLoadingDonations: true,
       donations: [],
       etherScanUrl: '',
+      items: [],
     };
+
+    this.editMilestone = this.editMilestone.bind(this);
 
     getNetwork().then(network => {
       this.setState({
@@ -57,15 +63,17 @@ class ViewMilestone extends Component {
         this.setState(
           Object.assign({}, resp.data[0], {
             isLoading: false,
-            hasError: false,
+            id: milestoneId,
+            fiatAmount: new BigNumber(resp.data[0].fiatAmount || '0').toFixed(2),
             totalDonated: convertEthHelper(resp.data[0].totalDonated),
             maxAmount: convertEthHelper(resp.data[0].maxAmount),
-            id: milestoneId,
-            fiatAmount: new BigNumber(resp.data[0].fiatAmount).toFixed(2),
           }),
         ),
       )
-      .catch(() => this.setState({ isLoading: false }));
+      .catch(err => {
+        ErrorPopup('Something went wrong with viewing the milestone. Please try a refresh.', err);
+        this.setState({ isLoading: false });
+      });
 
     // lazy load donations
     // TODO: fetch "non comitted" donations? add "intendedProjectId: milestoneId" to query to get
@@ -98,6 +106,27 @@ class ViewMilestone extends Component {
     return this.state.status === 'InProgress' && this.state.totalDonated < this.state.maxAmount;
   }
 
+  editMilestone(e) {
+    e.stopPropagation();
+
+    checkWalletBalance(this.props.wallet).then(() => {
+      React.swal({
+        title: 'Edit Milestone?',
+        text: 'Are you sure you want to edit this milestone?',
+        icon: 'warning',
+        dangerMode: true,
+        buttons: ['Cancel', 'Yes, edit'],
+      }).then(isConfirmed => {
+        if (isConfirmed) {
+          redirectAfterWalletUnlock(
+            `/campaigns/${this.state.campaign.id}/milestones/${this.state.id}/edit`,
+            this.props.wallet,
+          );
+        }
+      });
+    });
+  }
+
   renderDescription() {
     return ReactHtmlParser(this.state.description, {
       transform(node, index) {
@@ -115,7 +144,6 @@ class ViewMilestone extends Component {
 
   render() {
     const { history, wallet, currentUser } = this.props;
-
     const {
       isLoading,
       id,
@@ -138,6 +166,8 @@ class ViewMilestone extends Component {
       status,
       fiatAmount,
       selectedFiatType,
+      campaign,
+      campaignOwnerAddress,
     } = this.state;
     return (
       <div id="view-milestone-view">
@@ -158,6 +188,7 @@ class ViewMilestone extends Component {
               {this.state.totalDonated < this.state.maxAmount && (
                 <p>Amount requested: {this.state.maxAmount} ETH</p>
               )}
+              <p>Campaign: {campaign.title} </p>
 
               {this.isActiveMilestone() && (
                 <DonateButton
@@ -174,7 +205,19 @@ class ViewMilestone extends Component {
               <div className="row">
                 <div className="col-md-8 m-auto">
                   <div>
-                    <GoBackButton history={history} />
+                    <GoBackButton history={history} styleName="inline" />
+
+                    {(isOwner(ownerAddress, currentUser) ||
+                      isOwner(campaignOwnerAddress, currentUser)) && (
+                      <span className="pull-right">
+                        <button
+                          className="btn btn-link btn-edit"
+                          onClick={e => this.editMilestone(e)}
+                        >
+                          <i className="fa fa-edit" />
+                        </button>
+                      </span>
+                    )}
 
                     <center>
                       <Link to={`/profile/${ownerAddress}`}>
@@ -304,6 +347,7 @@ class ViewMilestone extends Component {
                     </small>
                     {maxAmount} ETH
                     {fiatAmount &&
+                      selectedFiatType &&
                       items.length === 0 && (
                         <span>
                           {' '}
@@ -318,6 +362,12 @@ class ViewMilestone extends Component {
                       The amount of ETH currently donated to this Milestone
                     </small>
                     {totalDonated} ETH
+                  </div>
+
+                  <div className="form-group">
+                    <span className="label">Campaign</span>
+                    <small className="form-text">The campaign this milestone belongs to.</small>
+                    {campaign.title}
                   </div>
 
                   <div className="form-group">
