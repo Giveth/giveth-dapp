@@ -168,3 +168,11 @@ export const convertEthHelper = amount => {
 
   return eth;
 };
+
+// removes the last pathname from the url and pushes that location
+export const goBackOnePath = () => {
+  let url = history.location.pathname.split('/');
+  url.pop();
+  url = url.join('/');
+  history.push(url);
+};

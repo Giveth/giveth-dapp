@@ -1,34 +1,14 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import { goBackOnePath } from '../lib/helpers';
 
-const GoBackButton = ({ history, styleName }) => (
+const GoBackButton = ({ styleName }) => (
   <div
     onClick={() => {
-      // ths back button will go a lower nested route inside of the DApp
-      // if the browser history is zero
-      //  this should be the default behavior of the back button
-      if (history.length < 1) {
-        let url = history.location.pathname.split('/');
-        url.pop();
-        url = url.join('/');
-        history.push(url);
-      } else {
-        history.goBack();
-      }
+      // the back button will go one lower nested route inside of the DApp
+      goBackOnePath();
     }}
-    onKeyPress={() => {
-      // ths back button will go a lower nested route inside of the DApp
-      // if the browser history is zero
-      // TODO this should be the default behavior of the back button
-      if (history.length < 1) {
-        let url = history.location.pathname.split('/');
-        url.pop();
-        url = url.join('/');
-        history.push(url);
-      } else {
-        history.goBack();
-      }
-    }}
+    onKeyPress={goBackOnePath}
     role="button"
     tabIndex="0"
     className={`go-back-button ${styleName}`}
@@ -41,9 +21,6 @@ const GoBackButton = ({ history, styleName }) => (
 export default GoBackButton;
 
 GoBackButton.propTypes = {
-  history: PropTypes.shape({
-    goBack: PropTypes.func.isRequired,
-  }).isRequired,
   styleName: PropTypes.string,
 };
 
