@@ -56,12 +56,14 @@ class UserProvider extends Component {
       isLoading: true,
       hasError: false,
       wallet: undefined,
+      walletLocked: true,
     };
 
     this.handleWalletChange = this.handleWalletChange.bind(this);
     this.onSignOut = this.onSignOut.bind(this);
     this.onSignIn = this.onSignIn.bind(this);
     this.unlockWallet = this.unlockWallet.bind(this);
+    this.lockWallet = this.lockWallet.bind(this);
     this.walletUnlocked = this.walletUnlocked.bind(this);
     this.hideUnlockWalletModal = this.hideUnlockWalletModal.bind(this);
 
@@ -144,6 +146,21 @@ class UserProvider extends Component {
     this.setState({ showUnlockWalletModal: true, redirectAfter });
   }
 
+  lockWallet() {
+    React.swal({
+      title: 'Lock your wallet?',
+      text: 'You will be redirected to the home page. Any changes you have made will be lost.',
+      icon: 'warning',
+      dangerMode: true,
+      buttons: ['Cancel', 'Yes, lock wallet!'],
+    }).then(isConfirmed => {
+      if (isConfirmed) {
+        this.state.wallet.lock();
+        this.setState({ walletLocked: true });
+      }
+    });
+  }
+
   walletUnlocked() {
     this.hideUnlockWalletModal();
     React.toast.success(
@@ -152,6 +169,7 @@ class UserProvider extends Component {
         Note that your wallet will <strong>auto-lock</strong> upon page refresh.
       </p>,
     );
+    this.setState({ walletLocked: false });
   }
 
   hideUnlockWalletModal() {
@@ -167,9 +185,17 @@ class UserProvider extends Component {
       hasError,
       showUnlockWalletModal,
       redirectAfter,
+      walletLocked,
     } = this.state;
 
-    const { onSignIn, onSignOut, walletUnlocked, hideUnlockWalletModal, handleWalletChange } = this;
+    const {
+      onSignIn,
+      onSignOut,
+      walletUnlocked,
+      hideUnlockWalletModal,
+      handleWalletChange,
+      lockWallet,
+    } = this;
 
     return (
       <Provider
@@ -182,11 +208,13 @@ class UserProvider extends Component {
             hasError,
             showUnlockWalletModal,
             redirectAfter,
+            walletLocked,
           },
           actions: {
             onSignIn,
             onSignOut,
             walletUnlocked,
+            lockWallet,
             hideUnlockWalletModal,
             handleWalletChange,
           },
