@@ -46,6 +46,7 @@
     "react-skylight": "0.5.1",
     "react-toastify": "2.1.7",
     "react-toggle": "^4.0.2",
+    "request": "^2.85.0",
     "socket.io-client": "^2.0.4",
     "sweetalert": "^2.0",
     "underscore": "^1.8.3",
