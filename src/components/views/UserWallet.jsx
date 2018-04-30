@@ -11,7 +11,7 @@ import GivethWallet from '../../lib/blockchain/GivethWallet';
 import Loader from '../Loader';
 import { feathersClient } from '../../lib/feathersClient';
 import { getTruncatedText } from '../../lib/helpers';
-import getNetwork from '../../lib/blockchain/getNetwork';
+import config from '../../configuration';
 
 import ErrorPopup from '../ErrorPopup';
 // TODO: Remove the eslint exception after extracting to model
@@ -33,16 +33,7 @@ class UserWallet extends Component {
       isLoadingTokens: true,
       tokens: [],
       hasError: false,
-      etherScanUrl: '',
-      tokenAddress: '',
     };
-
-    getNetwork().then(network => {
-      this.setState({
-        etherScanUrl: network.etherscan,
-        tokenAddress: network.tokenAddress,
-      });
-    });
   }
 
   componentWillMount() {
@@ -111,14 +102,8 @@ class UserWallet extends Component {
   }
 
   render() {
-    const {
-      isLoadingWallet,
-      isLoadingTokens,
-      tokens,
-      hasError,
-      etherScanUrl,
-      tokenAddress,
-    } = this.state;
+    const { isLoadingWallet, isLoadingTokens, tokens, hasError } = this.state;
+    const { etherScanUrl, tokenAddresses } = config;
 
     return (
       <div id="profile-view" className="container-fluid page-layout dashboard-table-view">
@@ -143,21 +128,28 @@ class UserWallet extends Component {
                   {' '}
                   <strong>Rinkeby ETH</strong> balance: {this.props.wallet.getBalance()} ETH
                 </p>
-                {etherScanUrl && (
-                  <p>
-                    <a
-                      href={`${etherScanUrl}token/${tokenAddress}?a=${
-                        this.props.currentUser.address
-                      }`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      GivETH
-                    </a>{' '}
-                    balance: {this.props.wallet.getTokenBalance()} ETH
-                  </p>
+                {Object.keys(tokenAddresses).map(
+                  t =>
+                    etherScanUrl ? (
+                      <p>
+                        <a
+                          href={`${etherScanUrl}token/${tokenAddresses[t]}?a=${
+                            this.props.currentUser.address
+                          }`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          <strong>{t}</strong>
+                        </a>
+                        balance: {this.props.wallet.getTokenBalance(tokenAddresses[t])}
+                      </p>
+                    ) : (
+                      <p>
+                        <strong>{t}</strong> balance:{' '}
+                        {this.props.wallet.getTokenBalance(tokenAddresses[t])}
+                      </p>
+                    ),
                 )}
-                {!etherScanUrl && <p>GivETH balance: {this.props.wallet.getTokenBalance()} ETH</p>}
                 {/* <WithdrawButton wallet={this.props.wallet} currentUser={this.props.currentUser} /> */}
                 <BackupWallet wallet={this.props.wallet} />
 
