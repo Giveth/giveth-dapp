@@ -155,9 +155,10 @@ class DonateButton extends React.Component {
           <p>
             It&#8217;s great to see that you want to donate, however we only support donating
             directly in the dapp yet. Use the followng information to donate via
-            <a target="_blank" href={`https://mycrypto.com/${query}#send-transaction`}>
-              MyCrypto
-            </a>, MyEtherWallet, etc.
+            {/* <a target="_blank" href={`https://mycrypto.com/${query}#send-transaction`}> */}
+            {/* MyCrypto */}
+            {/* </a>, MyEtherWallet, etc. */}
+            MyCrypto, MyEtherWallet, etc.
             {/* <a target="_blank" href={`https://myetherwallet.com/${query}#send-transaction`}> */}
             {/* MyEtherWallet, */}
             {/* </a>, etc. */}
@@ -210,7 +211,7 @@ class DonateButton extends React.Component {
         icon: 'info',
         buttons: ['Got it', 'Go to MyCrypto now!'],
       }).then(isConfirmed => {
-        if (isConfirmed) window.location = `https://mycrypto.com/${query}#send-transaction`;
+        if (isConfirmed) window.open(`https://mycrypto.com/${query}#send-transaction`);
       });
     });
   }
