@@ -28,6 +28,7 @@ class BasicModel extends Model {
     image = '',
     txHash,
     owner,
+    reviewer,
     totalDonated = '0',
     donationCount = 0,
     peopleCount = 0,
@@ -42,6 +43,7 @@ class BasicModel extends Model {
     this.newImage = false;
     this.txHash = txHash;
     this.owner = owner;
+    this.reviewer = reviewer;
     this.totalDonated = totalDonated;
     this.donationCount = donationCount;
     this.peopleCount = peopleCount;
@@ -110,6 +112,15 @@ class BasicModel extends Model {
   set owner(value) {
     this.checkType(value, ['undefined', 'object'], 'owner');
     this.myOwner = value;
+  }
+
+  get reviewer() {
+    return this.myReviewer;
+  }
+
+  set reviewer(value) {
+    this.checkType(value, ['undefined', 'object'], 'reviewer');
+    this.myReviewer = value;
   }
 
   get totalDonated() {
