@@ -14,6 +14,7 @@ import { getTruncatedText } from '../../lib/helpers';
 import config from '../../configuration';
 
 import ErrorPopup from '../ErrorPopup';
+import BridgeWithdrawButton from '../BridgeWithdrawButton';
 // TODO: Remove the eslint exception after extracting to model
 /* eslint no-underscore-dangle: 0 */
 
@@ -101,6 +102,10 @@ class UserWallet extends Component {
       });
   }
 
+  canWithdrawToken() {
+    return Object.values(config.tokenAddresses).some(a => this.props.wallet.getTokenBalance(a) > 0);
+  }
+
   render() {
     const { isLoadingWallet, isLoadingTokens, tokens, hasError } = this.state;
     const { etherScanUrl, tokenAddresses } = config;
@@ -151,6 +156,12 @@ class UserWallet extends Component {
                     ),
                 )}
                 {/* <WithdrawButton wallet={this.props.wallet} currentUser={this.props.currentUser} /> */}
+                {this.canWithdrawToken() && (
+                  <BridgeWithdrawButton
+                    wallet={this.props.wallet}
+                    currentUser={this.props.currentUser}
+                  />
+                )}
                 <BackupWallet wallet={this.props.wallet} />
 
                 {isLoadingTokens && <Loader className="small" />}

@@ -438,7 +438,7 @@ class DonateButton extends React.Component {
               </button> */}
 
               <button className="btn btn-success" formNoValidate type="submit">
-                Donate with MyEtherWallet
+                Donate with MyCrypto
               </button>
 
               {/* <a
