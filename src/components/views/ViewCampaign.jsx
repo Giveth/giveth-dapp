@@ -103,7 +103,6 @@ class ViewCampaign extends Component {
       isLoadingDonations,
       isLoadingMilestones,
     } = this.state;
-
     return (
       <div id="view-campaign-view">
         {isLoading && <Loader className="fixed" />}
@@ -210,6 +209,14 @@ class ViewCampaign extends Component {
                   />
                 </div>
               </div>
+              <div className="row spacer-top-50 spacer-bottom-50">
+                <div className="col-md-8 m-auto">
+                  <h4>Campaign Reviewer</h4>
+                          <Link to={`/profile/${campaign.reviewer.address}`}>
+                         {getUserName(campaign.reviewer)}
+                          </Link>
+                </div>
+              </div>   
             </div>
           </div>
         )}
