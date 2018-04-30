@@ -1,7 +1,6 @@
 import { MiniMeToken } from 'minimetoken';
 import Web3 from 'web3';
 import ZeroClientProvider from './ZeroClientProvider';
-import getNetwork from './getNetwork';
 import config from '../../configuration';
 
 import ErrorPopup from '../../components/ErrorPopup';
@@ -40,20 +39,28 @@ function setWallet(wallet) {
   });
 
   const getBalance = () =>
-    Promise.all([getWeb3(), getNetwork()]) // eslint-disable-line no-use-before-define
-      .then(([web3, network]) => {
-        const { tokenAddress } = network;
+    getWeb3() // eslint-disable-line no-use-before-define
+      .then(web3 => {
+        const { tokenAddresses } = config;
         const addr = wallet.getAddresses()[0];
 
-        const tokenBal = () =>
-          addr ? new MiniMeToken(web3, tokenAddress).balanceOf(addr) : undefined;
+        const tokenBal = tAddr =>
+          tAddr
+            ? new MiniMeToken(web3, tAddr).balanceOf(addr).then(bal => ({
+                address: tAddr,
+                bal,
+              }))
+            : undefined;
         const bal = () => (addr ? web3.eth.getBalance(addr) : undefined);
 
-        return Promise.all([tokenBal(), bal()]);
+        return Promise.all([bal(), ...Object.values(tokenAddresses).map(a => tokenBal(a))]);
       })
-      .then(([tokenBalance, balance]) => {
+      .then(([balance, ...tokenBalances]) => {
         wallet.balance = balance;
-        wallet.tokenBalance = tokenBalance;
+        wallet.tokenBalances = tokenBalances.reduce((val, t) => {
+          val[t.address] = t.bal;
+          return val;
+        }, {});
       })
       .catch(err => {
         ErrorPopup(
