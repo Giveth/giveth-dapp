@@ -132,7 +132,7 @@ class MyMilestones extends Component {
     this.approveMilestoneCompleted = this.approveMilestoneCompleted.bind(this);
     this.rejectMilestoneCompletion = this.rejectMilestoneCompletion.bind(this);
     this.requestWithdrawal = this.withdrawal.bind(this);
-    this.collect = this.collect.bind(this);
+    // this.collect = this.collect.bind(this);
   }
 
   componentDidMount() {
@@ -468,26 +468,26 @@ class MyMilestones extends Component {
                 const {
                   title,
                   maxAmount,
-                  projectId,
                   recipientAddress,
                   reviewerAddress,
                   campaignReviewerAddress,
                 } = milestone;
+                const parentProjectId = milestone.campaign.projectId;
                 const from = this.props.currentUser.address;
 
                 return network.lppCappedMilestoneFactory
                   .newMilestone(
                     title,
                     '',
-                    projectId,
+                    parentProjectId,
                     reviewerAddress,
-                    from,
-                    from,
+                    recipientAddress,
+                    recipientAddress,
                     recipientAddress,
                     campaignReviewerAddress,
                     from,
                     maxAmount,
-                    0,
+                    Object.values(config.tokenAddresses)[0], // TODO make this a form param
                     5 * 24 * 60 * 60, // 5 days in seconds
                     { from, gasPrice, $extraGas: 200000 },
                   )
@@ -497,10 +497,10 @@ class MyMilestones extends Component {
                     return _createMilestone(etherScanUrl, txHash);
                   });
               })
-              .catch(() => {
+              .catch(err => {
                 ErrorPopup(
                   'Something went wrong with the transaction. Is your wallet unlocked?',
-                  `${etherScanUrl}tx/${txHash}`,
+                  `${etherScanUrl}tx/${txHash} => ${JSON.stringify(err, null, 2)}`,
                 );
               });
           }
@@ -830,73 +830,73 @@ class MyMilestones extends Component {
     });
   }
 
-  collect(milestone) {
-    takeActionAfterWalletUnlock(this.props.wallet, () => {
-      checkWalletBalance(this.props.wallet).then(() =>
-        React.swal({
-          title: 'Collect Funds',
-          text: 'The funds will be transferred to you wallet.',
-          icon: 'warning',
-          dangerMode: true,
-          buttons: ['Cancel', 'Yes, collect'],
-        }).then(isConfirmed => {
-          if (isConfirmed) {
-            const collect = (etherScanUrl, txHash) => {
-              feathersClient
-                .service('/milestones')
-                .patch(milestone._id, {
-                  status: 'Paid',
-                  mined: false,
-                  txHash,
-                })
-                .then(() => {
-                  React.toast.info(
-                    <p>
-                      Collecting funds from milestone...<br />
-                      <a
-                        href={`${etherScanUrl}tx/${txHash}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        View transaction
-                      </a>
-                    </p>,
-                  );
-                })
-                .catch(e => {
-                  ErrorPopup('Something went wrong with collecting your funds', e);
-                });
-            };
+  // collect(milestone) {
+  //   takeActionAfterWalletUnlock(this.props.wallet, () => {
+  //     checkWalletBalance(this.props.wallet).then(() =>
+  //       React.swal({
+  //         title: 'Collect Funds',
+  //         text: 'The funds will be transferred to you wallet.',
+  //         icon: 'warning',
+  //         dangerMode: true,
+  //         buttons: ['Cancel', 'Yes, collect'],
+  //       }).then(isConfirmed => {
+  //         if (isConfirmed) {
+  //           const collect = (etherScanUrl, txHash) => {
+  //             feathersClient
+  //               .service('/milestones')
+  //               .patch(milestone._id, {
+  //                 status: 'Paid',
+  //                 mined: false,
+  //                 txHash,
+  //               })
+  //               .then(() => {
+  //                 React.toast.info(
+  //                   <p>
+  //                     Collecting funds from milestone...<br />
+  //                     <a
+  //                       href={`${etherScanUrl}tx/${txHash}`}
+  //                       target="_blank"
+  //                       rel="noopener noreferrer"
+  //                     >
+  //                       View transaction
+  //                     </a>
+  //                   </p>,
+  //                 );
+  //               })
+  //               .catch(e => {
+  //                 ErrorPopup('Something went wrong with collecting your funds', e);
+  //               });
+  //           };
 
-            let txHash;
-            let etherScanUrl;
-            Promise.all([getNetwork(), getWeb3(), getGasPrice()])
-              .then(([network, web3, gasPrice]) => {
-                etherScanUrl = network.etherscan;
+  //           let txHash;
+  //           let etherScanUrl;
+  //           Promise.all([getNetwork(), getWeb3(), getGasPrice()])
+  //             .then(([network, web3, gasPrice]) => {
+  //               etherScanUrl = network.etherscan;
 
-                // TODO this should get the token from the milestone
-                return new LPPCappedMilestone(web3, milestone.pluginAddress)
-                  .collect(milestone.projectId, Object.values(config.tokenAddresses)[0], {
-                    from: this.props.currentUser.address,
-                    $extraGas: 100000,
-                    gasPrice,
-                  })
-                  .once('transactionHash', hash => {
-                    txHash = hash;
-                    collect(etherScanUrl, txHash);
-                  });
-              })
-              .catch(() => {
-                ErrorPopup(
-                  'Something went wrong with the transaction. Is your wallet unlocked?',
-                  `${etherScanUrl}tx/${txHash}`,
-                );
-              });
-          }
-        }),
-      );
-    });
-  }
+  //               // TODO this should get the token from the milestone
+  //               return new LPPCappedMilestone(web3, milestone.pluginAddress)
+  //                 .collect(milestone.projectId, Object.values(config.tokenAddresses)[0], {
+  //                   from: this.props.currentUser.address,
+  //                   $extraGas: 100000,
+  //                   gasPrice,
+  //                 })
+  //                 .once('transactionHash', hash => {
+  //                   txHash = hash;
+  //                   collect(etherScanUrl, txHash);
+  //                 });
+  //             })
+  //             .catch(() => {
+  //               ErrorPopup(
+  //                 'Something went wrong with the transaction. Is your wallet unlocked?',
+  //                 `${etherScanUrl}tx/${txHash}`,
+  //               );
+  //             });
+  //         }
+  //       }),
+  //     );
+  //   });
+  // }
 
   render() {
     const {
@@ -1117,7 +1117,7 @@ class MyMilestones extends Component {
                                       </button>
                                     )}
 
-                                  {m.recipientAddress === currentUser.address &&
+                                  {/* {m.recipientAddress === currentUser.address &&
                                     m.status === 'Paying' && (
                                       <p>
                                         Withdraw authorization pending. You will be able to collect
@@ -1134,7 +1134,7 @@ class MyMilestones extends Component {
                                       >
                                         <i className="fa fa-usd" />&nbsp;Collect
                                       </button>
-                                    )}
+                                    )} */}
                                 </td>
                               </tr>
                             ))}
