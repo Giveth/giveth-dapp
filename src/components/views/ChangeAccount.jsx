@@ -68,6 +68,9 @@ class ChangeAccount extends Component {
         return;
       }
 
+      // mew wallets have uppercase crypto which breaks web3 unlocking
+      if ('Crypto' in parsedKeystore) parsedKeystore.crypto = parsedKeystore.Crypto;
+
       // Attempt to load and decrypt the parsed wallet
       GivethWallet.loadWallet(parsedKeystore, this.props.provider, password)
         .then(w => {
