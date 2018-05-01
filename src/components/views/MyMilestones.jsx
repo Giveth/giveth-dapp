@@ -299,7 +299,7 @@ class MyMilestones extends Component {
                 const cappedMilestone = new LPPCappedMilestone(web3, milestone.pluginAddress);
 
                 return cappedMilestone
-                  .requestMarkAsComplete(milestone.projectId, {
+                  .requestMarkAsComplete({
                     from: this.props.currentUser.address,
                     gasPrice,
                     $extraGas: 4000000,
@@ -323,10 +323,10 @@ class MyMilestones extends Component {
                   </p>,
                 );
               })
-              .catch(() => {
+              .catch(err => {
                 ErrorPopup(
                   'Something went wrong with the transaction. Is your wallet unlocked?',
-                  `${etherScanUrl}tx/${txHash}`,
+                  `${etherScanUrl}tx/${txHash} => ${JSON.stringify(err, null, 2)}`,
                 );
               });
           }
@@ -384,7 +384,7 @@ class MyMilestones extends Component {
                 const cappedMilestone = new LPPCappedMilestone(web3, milestone.pluginAddress);
 
                 return cappedMilestone
-                  .cancelMilestone(milestone.projectId, {
+                  .cancelMilestone({
                     from: this.props.currentUser.address,
                     gasPrice,
                     $extraGas: 4000000,
@@ -557,7 +557,7 @@ class MyMilestones extends Component {
                 const cappedMilestone = new LPPCappedMilestone(web3, milestone.pluginAddress);
 
                 return cappedMilestone
-                  .approveMilestoneCompleted(milestone.projectId, {
+                  .approveMilestoneCompleted({
                     from: this.props.currentUser.address,
                     gasPrice,
                     $extraGas: 4000000,
@@ -633,7 +633,7 @@ class MyMilestones extends Component {
                 const cappedMilestone = new LPPCappedMilestone(web3, milestone.pluginAddress);
 
                 return cappedMilestone
-                  .rejectCompleteRequest(milestone.projectId, {
+                  .rejectCompleteRequest({
                     from: this.props.currentUser.address,
                     gasPrice,
                     $extraGas: 4000000,
