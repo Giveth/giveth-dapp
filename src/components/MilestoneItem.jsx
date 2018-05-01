@@ -23,7 +23,6 @@ class MilestoneItem extends React.Component {
 
   render() {
     const { removeItem, item, isEditMode } = this.props;
-
     return (
       <tr>
         <td className="td-item-date">{moment.utc(item.date).format('Do MMM YYYY')}</td>
@@ -38,7 +37,7 @@ class MilestoneItem extends React.Component {
           </span>
         </td>
 
-        <td className="td-item-amount-ether">{convertEthHelper(item.wei)}</td>
+        <td className="td-item-amount-ether">{convertEthHelper(item.etherAmount)}</td>
 
         <td className="td-item-file-upload">
           {item.image &&
@@ -80,7 +79,7 @@ MilestoneItem.propTypes = {
     selectedFiatType: PropTypes.string.isRequired,
     fiatAmount: PropTypes.string.isRequired,
     conversionRate: PropTypes.number.isRequired,
-    wei: PropTypes.string.isRequired,
+    etherAmount: PropTypes.string.isRequired,
     image: PropTypes.string,
   }).isRequired,
   isEditMode: PropTypes.bool,

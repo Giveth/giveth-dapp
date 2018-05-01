@@ -166,6 +166,7 @@ class ViewMilestone extends Component {
       status,
       fiatAmount,
       selectedFiatType,
+      conversionRate,
       campaign,
       campaignOwnerAddress,
     } = this.state;
@@ -255,7 +256,16 @@ class ViewMilestone extends Component {
                             </thead>
                             <tbody>
                               {items.map((item, i) => (
-                                <MilestoneItem name={`milestoneItem-${i}`} item={item} />
+                                <MilestoneItem
+                                  key={item.date}
+                                  name={`milestoneItem-${i}`}
+                                  item={{
+                                    ...item,
+                                    selectedFiatType,
+                                    fiatAmount,
+                                    conversionRate,
+                                  }}
+                                />
                               ))}
                             </tbody>
                           </table>
