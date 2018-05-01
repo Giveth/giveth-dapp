@@ -9,6 +9,8 @@ import GivethWallet from '../lib/blockchain/GivethWallet';
 import WalletService from '../services/Wallet';
 import { getGasPrice } from '../lib/helpers';
 
+import ErrorPopup from './ErrorPopup';
+
 class WithdrawButton extends Component {
   constructor() {
     super();
@@ -87,7 +89,10 @@ class WithdrawButton extends Component {
             );
           },
           err => {
-            console.log(err);
+            ErrorPopup(
+              'Something went wrong with withdrawal. Please try again after refresh.',
+              err,
+            );
           },
         );
 

@@ -5,18 +5,15 @@ import { utils } from 'web3';
 import Toggle from 'react-toggle';
 import BigNumber from 'bignumber.js';
 import { Form, Input } from 'formsy-react-components';
-
 import { feathersClient, feathersRest } from './../../lib/feathersClient';
 import Loader from './../Loader';
 import QuillFormsy from './../QuillFormsy';
 import SelectFormsy from './../SelectFormsy';
 import DatePickerFormsy from './../DatePickerFormsy';
-
 import FormsyImageUploader from './../FormsyImageUploader';
 import GoBackButton from '../GoBackButton';
 import {
   isOwner,
-  displayTransactionError,
   getRandomWhitelistAddress,
   getTruncatedText,
   getGasPrice,
@@ -35,6 +32,8 @@ import User from '../../models/User';
 import GivethWallet from '../../lib/blockchain/GivethWallet';
 import MilestoneItem from '../../components/MilestoneItem';
 import AddMilestoneItem from '../../components/AddMilestoneItem';
+import ErrorPopup from '../ErrorPopup';
+import AddMilestoneItemModal from '../../components/AddMilestoneItemModal';
 
 BigNumber.config({ DECIMAL_PLACES: 18 });
 
@@ -50,8 +49,8 @@ BigNumber.config({ DECIMAL_PLACES: 18 });
  *    id (string): an id of a milestone object
  */
 class EditMilestone extends Component {
-  constructor() {
-    super();
+  constructor(props) {
+    super(props);
 
     this.state = {
       isLoading: true,
@@ -76,36 +75,35 @@ class EditMilestone extends Component {
         title: `${r.name ? r.name : 'Anonymous user'} - ${r.address}`,
       })),
       reviewers: [],
-      reviewerAddress: '',
+      reviewerAddress:
+        React.whitelist.reviewerWhitelist.length > 0
+          ? getRandomWhitelistAddress(React.whitelist.reviewerWhitelist).address
+          : '',
       items: [],
       itemizeState: false,
+      showRecipientAddress: false,
       conversionRates: [],
       currentRate: undefined,
       date: getStartOfDayUTC().subtract(1, 'd'),
       fiatTypes: [
-        { value: 'USD', title: 'USD' },
+        { value: 'BRL', title: 'BRL' },
+        { value: 'CHF', title: 'CHF' },
+        { value: 'CZK', title: 'CZK' },
+        { value: 'ETH', title: 'ETH' },
         { value: 'EUR', title: 'EUR' },
         { value: 'GBP', title: 'GBP' },
-        { value: 'CHF', title: 'CHF' },
         { value: 'MXN', title: 'MXN' },
         { value: 'THB', title: 'THB' },
-        { value: 'BRL', title: 'BRL' },
-        { value: 'CZK', title: 'CZK' },
+        { value: 'USD', title: 'USD' },
       ],
       selectedFiatType: 'EUR',
     };
-
-    if (React.whitelist.reviewerWhitelist.length > 0) {
-      this.setState({
-        reviewerAddress: getRandomWhitelistAddress(React.whitelist.reviewerWhitelist).address,
-      });
-    }
-
     this.submit = this.submit.bind(this);
     this.setImage = this.setImage.bind(this);
     this.setMaxAmount = this.setMaxAmount.bind(this);
     this.setFiatAmount = this.setFiatAmount.bind(this);
     this.changeSelectedFiat = this.changeSelectedFiat.bind(this);
+    this.toggleShowRecipientAddress = this.toggleShowRecipientAddress.bind(this);
   }
 
   componentDidMount() {
@@ -121,7 +119,6 @@ class EditMilestone extends Component {
       .then(() => {
         this.setState({
           campaignId: this.props.match.params.id,
-          recipientAddress: this.props.currentUser.address,
         });
 
         // load a single milestones (when editing)
@@ -137,7 +134,12 @@ class EditMilestone extends Component {
               milestone.maxAmount = new BigNumber(milestone.maxAmount);
               milestone.fiatAmount = new BigNumber(milestone.fiatAmount);
 
-              if (!isOwner(milestone.owner.address, this.props.currentUser)) {
+              if (
+                !(
+                  isOwner(milestone.owner.address, this.props.currentUser) ||
+                  isOwner(milestone.campaignOwnerAddress, this.props.currentUser)
+                )
+              ) {
                 this.props.history.goBack();
               }
               this.setState(
@@ -146,11 +148,16 @@ class EditMilestone extends Component {
                   date,
                   itemizeState: milestone.items && milestone.items.length > 0,
                   selectedFiatType: milestone.selectedFiatType || 'EUR',
+                  campaignTitle: milestone.campaign.title,
+                  campaignProjectId: milestone.campaign.projectId,
+                  campaignReviewerAddress: milestone.campaign.reviewerAddress,
+                  campaignOwnerAddress: milestone.campaign.ownerAddress,
                 }),
               );
               return date;
             })
             .then(date => this.getEthConversion(date))
+            .then()
             .then(() => {
               if (!this.state.hasWhitelist) this.getReviewers();
             })
@@ -159,7 +166,12 @@ class EditMilestone extends Component {
                 isLoading: false,
               }),
             )
-            .catch(console.error);
+            .catch(err => {
+              ErrorPopup(
+                'Sadly we were unable to load the requested milestone details. Please try again.',
+                err,
+              );
+            });
         } else {
           feathersClient
             .service('campaigns')
@@ -185,13 +197,29 @@ class EditMilestone extends Component {
                 isLoading: false,
               }),
             )
-            .catch(console.log);
+            .catch(err => {
+              ErrorPopup(
+                'Sadly we were unable to load the campaign in which this milestone was created. Please try again.',
+                err,
+              );
+            });
         }
       })
       .catch(err => {
-        console.log('err', err);
+        // TODO: This is not super user friendly, fix it
         if (err === 'noBalance') this.props.history.goBack();
+        else {
+          ErrorPopup(
+            'Sadly we were unable to load the campaign in which this milestone was created. Please try again.',
+            err,
+          );
+        }
       });
+  }
+
+  onAddItem(item) {
+    this.addItem(item);
+    this.setState({ addMilestoneItemModalVisible: false });
   }
 
   getReviewers() {
@@ -220,7 +248,6 @@ class EditMilestone extends Component {
   setDate(date) {
     this.setState({ date });
     this.getEthConversion(date).then(resp => {
-      console.log(resp);
       // update all the input fields
       const rate = resp.rates[this.state.selectedFiatType];
 
@@ -252,23 +279,17 @@ class EditMilestone extends Component {
 
           return resp;
         })
-        .catch(e => console.error(e));
+        .catch(err => {
+          ErrorPopup(
+            'Sadly we were unable to get the exchange rate. Please try again after refresh.',
+            err,
+          );
+        });
     }
     // we have the conversion rate in cache
     return new Promise(resolve => {
       this.setState({ currentRate: cachedConversionRate }, () => resolve(cachedConversionRate));
     });
-  }
-
-  setMaxAmount(name, value) {
-    const fiatAmount = new BigNumber(value || '0');
-    const conversionRate = this.state.currentRate.rates[this.state.selectedFiatType];
-    if (conversionRate && fiatAmount.gte(0)) {
-      this.setState({
-        maxAmount: fiatAmount.div(conversionRate),
-        fiatAmount,
-      });
-    }
   }
 
   setFiatAmount(name, value) {
@@ -283,16 +304,27 @@ class EditMilestone extends Component {
     }
   }
 
+  setMaxAmount(name, value) {
+    const fiatAmount = new BigNumber(value || '0');
+    const conversionRate = this.state.currentRate.rates[this.state.selectedFiatType];
+    if (conversionRate && fiatAmount.gte(0)) {
+      this.setState({
+        maxAmount: fiatAmount.div(conversionRate),
+        fiatAmount,
+      });
+    }
+  }
+
+  addItem(item) {
+    this.setState({ items: this.state.items.concat(item) });
+  }
+
   btnText() {
     if (this.props.isNew) {
       return this.props.isProposed ? 'Propose Milestone' : 'Create Milestone';
     }
 
     return 'Update Milestone';
-  }
-
-  addItem(item) {
-    this.setState({ items: this.state.items.concat(item) });
   }
 
   removeItem(index) {
@@ -312,8 +344,16 @@ class EditMilestone extends Component {
     };
   }
 
-  toggleItemize() {
-    this.setState({ itemizeState: !this.state.itemizeState });
+  changeSelectedFiat(fiatType) {
+    const conversionRate = this.state.currentRate.rates[fiatType];
+    this.setState({
+      maxAmount: this.state.fiatAmount.div(conversionRate),
+      selectedFiatType: fiatType,
+    });
+  }
+
+  toggleShowRecipientAddress() {
+    this.setState({ showRecipientAddress: !this.state.showRecipientAddress });
   }
 
   toggleFormValid(state) {
@@ -343,6 +383,10 @@ class EditMilestone extends Component {
         );
       } else {
         model.maxAmount = this.state.maxAmount;
+      }
+
+      if (!this.state.showRecipientAddress) {
+        model.recipientAddress = this.props.currentUser.address;
       }
 
       const constructedModel = {
@@ -379,13 +423,11 @@ class EditMilestone extends Component {
               callback();
             })
             .catch(err => {
-              console.log(err);
               this.setState({ isSaving: false });
-              React.swal({
-                title: 'Oh no!',
-                content: 'Something went wrong, please try again or contact support.',
-                icon: 'error',
-              });
+              ErrorPopup(
+                'There has been an issue creating the milestone. Please try again after refresh.',
+                err,
+              );
             });
         };
 
@@ -458,7 +500,10 @@ class EditMilestone extends Component {
                 });
             })
             .catch(() => {
-              displayTransactionError(txHash, etherScanUrl);
+              ErrorPopup(
+                'Something went wrong with the transaction. Is your wallet unlocked?',
+                `${etherScanUrl}tx/${txHash}`,
+              );
             });
         }
       } else {
@@ -486,7 +531,13 @@ class EditMilestone extends Component {
               uri: this.state.image,
             })
             .then(file => updateMilestone(file.url))
-            .catch(() => this.setState({ isSaving: false }));
+            .catch(err => {
+              ErrorPopup(
+                'Something went wrong when uploading your image. Please try again after refresh.',
+                err,
+              );
+              this.setState({ isSaving: false });
+            });
         } else {
           updateMilestone();
         }
@@ -514,7 +565,13 @@ class EditMilestone extends Component {
 
         Promise.all(uploadItemImages)
           .then(() => uploadMilestoneImage())
-          .catch(() => this.setState({ isSaving: false }));
+          .catch(err => {
+            this.setState({ isSaving: false });
+            ErrorPopup(
+              'There has been an issue uploading one of the proof items. Please refresh the page and try again.',
+              err,
+            );
+          });
       } else {
         uploadMilestoneImage();
       }
@@ -539,12 +596,14 @@ class EditMilestone extends Component {
     }
   }
 
-  changeSelectedFiat(fiatType) {
-    const conversionRate = this.state.currentRate.rates[fiatType];
+  toggleAddMilestoneItemModal() {
     this.setState({
-      maxAmount: this.state.fiatAmount.div(conversionRate),
-      selectedFiatType: fiatType,
+      addMilestoneItemModalVisible: !this.state.addMilestoneItemModalVisible,
     });
+  }
+
+  toggleItemize() {
+    this.setState({ itemizeState: !this.state.itemizeState });
   }
 
   render() {
@@ -700,24 +759,43 @@ class EditMilestone extends Component {
                         />
                       )}
                     </div>
-
-                    <div className="form-group">
-                      <Input
-                        name="recipientAddress"
-                        id="title-input"
-                        label="Where will the money go after completion?"
-                        type="text"
-                        value={recipientAddress}
-                        placeholder="0x0000000000000000000000000000000000000000"
-                        help="Enter an Ethereum address."
-                        validations="isEtherAddress"
-                        validationErrors={{
-                          isEtherAddress: 'Please insert a valid Ethereum address.',
-                        }}
-                        required
-                        disabled={projectId}
-                      />
+                    <div className="label">
+                      Where will the money go after completion?{' '}
+                      {this.state.showRecipientAddress ? '*' : ''}
                     </div>
+                    <div className="react-toggle-container">
+                      <Toggle
+                        id="show-recipient-address"
+                        defaultChecked={this.state.showRecipientAddress}
+                        onChange={() => this.toggleShowRecipientAddress()}
+                        disabled={!isNew && !isProposed}
+                      />
+                      <div className="label">Recipient address is different from my address</div>
+                    </div>
+                    {this.state.showRecipientAddress && (
+                      <div className="form-group recipient-address-container">
+                        <Input
+                          name="recipientAddress"
+                          id="title-input"
+                          type="text"
+                          value={recipientAddress}
+                          placeholder="0x0000000000000000000000000000000000000000"
+                          help="Enter an Ethereum address."
+                          validations="isEtherAddress"
+                          validationErrors={{
+                            isEtherAddress: 'Please insert a valid Ethereum address.',
+                          }}
+                          required={this.state.showRecipientAddress}
+                          disabled={projectId}
+                        />
+                      </div>
+                    )}
+                    {!this.state.showRecipientAddress && (
+                      <div>
+                        <br />
+                        <br />
+                      </div>
+                    )}
 
                     <div className="react-toggle-container">
                       <Toggle
@@ -729,7 +807,7 @@ class EditMilestone extends Component {
                       <span className="label">Add multiple expenses, invoices or items</span>
                     </div>
 
-                    {!itemizeState && (
+                    {!itemizeState ? (
                       <div className="card milestone-items-card">
                         <div className="card-body">
                           <div className="form-group row">
@@ -747,7 +825,7 @@ class EditMilestone extends Component {
                                 validationErrors={{
                                   isMoment: 'Please provide a date.',
                                 }}
-                                required
+                                required={!itemizeState}
                                 disabled={projectId}
                               />
                             </div>
@@ -808,9 +886,7 @@ class EditMilestone extends Component {
                           </div>
                         </div>
                       </div>
-                    )}
-
-                    {itemizeState && (
+                    ) : (
                       <div className="form-group row dashboard-table-view">
                         <div className="col-12">
                           <div className="card milestone-items-card">
@@ -846,9 +922,7 @@ class EditMilestone extends Component {
                               {items.length > 0 &&
                                 (isNew || isProposed) && (
                                   <AddMilestoneItem
-                                    onAddItem={item => this.addItem(item)}
-                                    getEthConversion={dt => this.getEthConversion(dt)}
-                                    fiatTypes={fiatTypes}
+                                    onClick={() => this.toggleAddMilestoneItemModal()}
                                   />
                                 )}
 
@@ -860,9 +934,7 @@ class EditMilestone extends Component {
                                       anything else that needs to be paid.
                                     </p>
                                     <AddMilestoneItem
-                                      onAddItem={item => this.addItem(item)}
-                                      getEthConversion={dt => this.getEthConversion(dt)}
-                                      fiatTypes={fiatTypes}
+                                      onClick={() => this.toggleAddMilestoneItemModal()}
                                     />
                                   </div>
                                 )}
@@ -895,6 +967,13 @@ class EditMilestone extends Component {
             </div>
           </div>
         </div>
+        <AddMilestoneItemModal
+          visible={this.state.addMilestoneItemModalVisible}
+          onClose={() => this.toggleAddMilestoneItemModal()}
+          getEthConversion={d => this.getEthConversion(d)}
+          onAddItem={item => this.onAddItem(item)}
+          fiatTypes={fiatTypes}
+        />
       </div>
     );
   }

@@ -12,14 +12,15 @@ import { getStartOfDayUTC } from '../lib/helpers';
 BigNumber.config({ DECIMAL_PLACES: 18 });
 
 const fiatTypes = [
-  { value: 'USD', title: 'USD' },
+  { value: 'BRL', title: 'BRL' },
+  { value: 'CHF', title: 'CHF' },
+  { value: 'CZK', title: 'CZK' },
+  { value: 'ETH', title: 'ETH' },
   { value: 'EUR', title: 'EUR' },
   { value: 'GBP', title: 'GBP' },
-  { value: 'CHF', title: 'CHF' },
   { value: 'MXN', title: 'MXN' },
   { value: 'THB', title: 'THB' },
-  { value: 'BRL', title: 'BRL' },
-  { value: 'CZK', title: 'CZK' },
+  { value: 'USD', title: 'USD' },
 ];
 
 const numberRegex = RegExp('^[0-9]*[.]?[0-9]*$');

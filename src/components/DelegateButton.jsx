@@ -12,10 +12,12 @@ import {
   checkWalletBalance,
   confirmBlockchainTransaction,
 } from '../lib/middleware';
-import { displayTransactionError, getGasPrice } from '../lib/helpers';
+import { getGasPrice } from '../lib/helpers';
 import getNetwork from '../lib/blockchain/getNetwork';
 import getWeb3 from '../lib/blockchain/getWeb3';
 import GivethWallet from '../lib/blockchain/GivethWallet';
+
+import ErrorPopup from './ErrorPopup';
 
 // TODO: Remove once rewritten to model
 /* eslint no-underscore-dangle: 0 */
@@ -119,7 +121,10 @@ class DelegateButton extends Component {
           });
         })
         .catch(() => {
-          displayTransactionError(txHash, etherScanUrl);
+          ErrorPopup(
+            'Something went wrong with the transaction. Is your wallet unlocked?',
+            `${etherScanUrl}tx/${txHash}`,
+          );
           this.setState({ isSaving: false });
         });
     };
@@ -183,7 +188,10 @@ class DelegateButton extends Component {
           );
         })
         .catch(() => {
-          displayTransactionError(txHash, etherScanUrl);
+          ErrorPopup(
+            'Something went wrong with the transaction. Is your wallet unlocked?',
+            `${etherScanUrl}tx/${txHash}`,
+          );
           this.setState({ isSaving: false });
         });
 

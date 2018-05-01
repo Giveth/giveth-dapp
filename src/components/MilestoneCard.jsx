@@ -7,7 +7,7 @@ import { redirectAfterWalletUnlock, checkWalletBalance } from './../lib/middlewa
 import User from '../models/User';
 import CardStats from './CardStats';
 import GivethWallet from '../lib/blockchain/GivethWallet';
-import GivethLogo from '../assets/Giveth-logo-purple.png';
+import GivethLogo from '../assets/logo.svg';
 
 // TODO: Remove once rewritten to model
 /* eslint no-underscore-dangle: 0 */
@@ -59,6 +59,8 @@ class MilestoneCard extends Component {
 
   render() {
     const { milestone, currentUser } = this.props;
+    const colors = ['#76318f', '#50b0cf', '#1a1588', '#2A6813', '#95d114', '#155388', '#604a7d'];
+    const color = colors[Math.floor(Math.random() * colors.length)];
 
     return (
       <div
@@ -79,7 +81,8 @@ class MilestoneCard extends Component {
             <Avatar size={30} src={getUserAvatar(milestone.owner)} round />
             <span className="owner-name">{getUserName(milestone.owner)}</span>
 
-            {isOwner(milestone.owner.address, currentUser) && (
+            {(isOwner(milestone.owner.address, currentUser) ||
+              isOwner(milestone.campaignOwnerAddress, currentUser)) && (
               <span className="pull-right">
                 <button className="btn btn-link btn-edit" onClick={e => this.editMilestone(e)}>
                   <i className="fa fa-edit" />
@@ -90,11 +93,13 @@ class MilestoneCard extends Component {
 
           <div
             className="card-img"
-            style={{ backgroundImage: `url(${milestone.image || GivethLogo})` }}
+            style={{
+              backgroundColor: milestone.image ? 'white' : color,
+              backgroundImage: `url(${milestone.image || GivethLogo})`,
+            }}
           />
 
           <div className="card-content">
-            <small>deadline: {milestone.completionDeadline}</small>
             <h4 className="card-title">{getTruncatedText(milestone.title, 30)}</h4>
             <div className="card-text">{milestone.summary}</div>
           </div>

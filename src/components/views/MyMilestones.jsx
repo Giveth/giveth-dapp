@@ -8,7 +8,7 @@ import Pagination from 'react-js-pagination';
 
 import { feathersClient } from '../../lib/feathersClient';
 import {
-  isAuthenticated,
+  isLoggedIn,
   redirectAfterWalletUnlock,
   takeActionAfterWalletUnlock,
   checkWalletBalance,
@@ -18,13 +18,14 @@ import getWeb3 from '../../lib/blockchain/getWeb3';
 import Loader from '../Loader';
 import User from '../../models/User';
 import {
-  displayTransactionError,
   getGasPrice,
   getTruncatedText,
   getReadableStatus,
   convertEthHelper,
 } from '../../lib/helpers';
 import GivethWallet from '../../lib/blockchain/GivethWallet';
+
+import ErrorPopup from '../ErrorPopup';
 
 const deleteProposedMilestone = milestone => {
   React.swal({
@@ -42,8 +43,7 @@ const deleteProposedMilestone = milestone => {
           React.toast.info(<p>The milestone has been deleted.</p>);
         })
         .catch(e => {
-          console.log('Error updating feathers cache ->', e); // eslint-disable-line no-console
-          React.toast.error('Oh no! Something went wrong. Please try again.');
+          ErrorPopup('Something went wrong with deleting your milestone', e);
         });
     }
   });
@@ -68,8 +68,32 @@ const rejectProposedMilestone = milestone => {
           React.toast.info(<p>The milestone has been rejected.</p>);
         })
         .catch(e => {
-          console.log('Error updating feathers cache ->', e); // eslint-disable-line no-console
-          React.toast.error('Oh no! Something went wrong. Please try again.');
+          ErrorPopup('Something went wrong with rejecting your milestone', e);
+        });
+    }
+  });
+};
+
+const reproposeRejectedMilestone = milestone => {
+  React.swal({
+    title: 'Re-propose Milestone?',
+    text: 'Are you sure you want to re-propose this Milestone?',
+    icon: 'warning',
+    dangerMode: true,
+    buttons: ['Cancel', 'Yes, re-propose'],
+  }).then(isConfirmed => {
+    if (isConfirmed) {
+      feathersClient
+        .service('/milestones')
+        .patch(milestone._id, {
+          status: 'proposed',
+          prevStatus: 'rejected',
+        })
+        .then(() => {
+          React.toast.info(<p>The milestone has been re-proposed.</p>);
+        })
+        .catch(e => {
+          ErrorPopup('Something went wrong with re-proposing your milestone', e);
         });
     }
   });
@@ -112,7 +136,7 @@ class MyMilestones extends Component {
   }
 
   componentDidMount() {
-    isAuthenticated(this.props.currentUser, this.props.wallet).then(() => this.loadMileStones());
+    isLoggedIn(this.props.currentUser).then(() => this.loadMileStones());
   }
 
   componentWillUnmount() {
@@ -246,13 +270,7 @@ class MyMilestones extends Component {
                 React.toast.info(<p>Your milestone has been marked as complete...</p>);
               })
               .catch(e => {
-                console.error('Error marking milestone complete ->', e); // eslint-disable-line no-console
-                React.swal({
-                  title: 'Oh no!',
-                  content:
-                    '<p>Something went wrong with the transaction. Is your wallet unlocked?</p>',
-                  icon: 'error',
-                });
+                ErrorPopup('Something went wrong with marking your milestone complete', e);
               });
           }
         }),
@@ -294,7 +312,7 @@ class MyMilestones extends Component {
                   );
                 })
                 .catch(e => {
-                  console.error('Error updating feathers cache ->', e); // eslint-disable-line no-console
+                  ErrorPopup('Something went wrong with cancelling your milestone', e);
                 });
             };
 
@@ -328,10 +346,11 @@ class MyMilestones extends Component {
                   </p>,
                 );
               })
-              .catch(e => {
-                console.error(e); // eslint-disable-line no-console
-
-                displayTransactionError(txHash, etherScanUrl);
+              .catch(() => {
+                ErrorPopup(
+                  'Something went wrong with the transaction. Is your wallet unlocked?',
+                  `${etherScanUrl}tx/${txHash}`,
+                );
               });
           }
         }),
@@ -374,10 +393,7 @@ class MyMilestones extends Component {
                   );
                 })
                 .catch(e => {
-                  console.log('Error updating feathers cache ->', e); // eslint-disable-line no-console
-                  React.toast.error(
-                    'Oh no! Something went wrong with the transaction. Please try again.',
-                  );
+                  ErrorPopup('Something went wrong with the transaction. Please try again.', e);
                 });
             };
 
@@ -405,7 +421,10 @@ class MyMilestones extends Component {
                   });
               })
               .catch(() => {
-                displayTransactionError(txHash, etherScanUrl);
+                ErrorPopup(
+                  'Something went wrong with the transaction. Is your wallet unlocked?',
+                  `${etherScanUrl}tx/${txHash}`,
+                );
               });
           }
         }),
@@ -447,7 +466,7 @@ class MyMilestones extends Component {
                   );
                 })
                 .catch(e => {
-                  console.log('Error updating feathers cache ->', e); // eslint-disable-line no-console
+                  ErrorPopup('Something went wrong with approving your milestone', e);
                 });
             };
 
@@ -481,10 +500,11 @@ class MyMilestones extends Component {
                   </p>,
                 );
               })
-              .catch(e => {
-                console.error(e); // eslint-disable-line no-console
-
-                displayTransactionError(txHash, etherScanUrl);
+              .catch(() => {
+                ErrorPopup(
+                  'Something went wrong with the transaction. Is your wallet unlocked?',
+                  `${etherScanUrl}tx/${txHash}`,
+                );
               });
           }
         }),
@@ -513,13 +533,10 @@ class MyMilestones extends Component {
                 React.toast.info(<p>You have rejected this milestone...</p>);
               })
               .catch(e => {
-                console.error('Error rejecting completed milestone ->', e); // eslint-disable-line no-console
-                React.swal({
-                  title: 'Oh no!',
-                  content:
-                    '<p>Something went wrong with the transaction. Is your wallet unlocked?</p>',
-                  icon: 'error',
-                });
+                ErrorPopup(
+                  'Something went wrong with the transaction. Is your wallet unlocked?',
+                  e,
+                );
               });
           }
         }),
@@ -563,7 +580,7 @@ class MyMilestones extends Component {
                     );
                   })
                   .catch(e => {
-                    console.log('Error updating feathers cache ->', e); // eslint-disable-line no-console
+                    ErrorPopup('Something went wrong doing the withdrawal', e);
                   });
 
                 feathersClient
@@ -583,7 +600,7 @@ class MyMilestones extends Component {
                     },
                   )
                   .catch(e => {
-                    console.log('Error updating feathers cache ->', e); // eslint-disable-line no-console
+                    ErrorPopup('Something went wrong doing the withdrawal', e);
                   });
               };
 
@@ -727,7 +744,7 @@ class MyMilestones extends Component {
                     );
                   })
                   .catch(e => {
-                    console.log('Error updating feathers cache ->', e); // eslint-disable-line no-console
+                    ErrorPopup('Something went wrong with collecting your funds', e);
                   });
               };
 
@@ -748,9 +765,11 @@ class MyMilestones extends Component {
                       collect(etherScanUrl, txHash);
                     });
                 })
-                .catch(e => {
-                  console.error(e); // eslint-disable-line no-console
-                  displayTransactionError(txHash, etherScanUrl);
+                .catch(() => {
+                  ErrorPopup(
+                    'Something went wrong with the transaction. Is your wallet unlocked?',
+                    `${etherScanUrl}tx/${txHash}`,
+                  );
                 });
             }
           }
@@ -867,14 +886,12 @@ class MyMilestones extends Component {
                                     )}
                                 </td>
                                 <td className="td-actions">
-                                  {m.ownerAddress === currentUser.address &&
-                                    [
-                                      'proposed',
-                                      'rejected',
-                                      'InProgress',
-                                      'NeedReview',
-                                      'InReview',
-                                    ].includes(m.status) && (
+                                  {/* Campaign and Milestone managers can edit milestone */}
+                                  {(m.ownerAddress === currentUser.address ||
+                                    m.campaign.ownerAddress === currentUser.address) &&
+                                    ['proposed', 'rejected', 'InProgress', 'NeedsReview'].includes(
+                                      m.status,
+                                    ) && (
                                       <button
                                         className="btn btn-link"
                                         onClick={() => this.editMilestone(m)}
@@ -899,6 +916,15 @@ class MyMilestones extends Component {
                                           <i className="fa fa-times-circle-o" />&nbsp;Reject
                                         </button>
                                       </span>
+                                    )}
+                                  {m.ownerAddress === currentUser.address &&
+                                    m.status === 'rejected' && (
+                                      <button
+                                        className="btn btn-success btn-sm"
+                                        onClick={() => reproposeRejectedMilestone(m)}
+                                      >
+                                        <i className="fa fa-times-square-o" />&nbsp;Re-propose
+                                      </button>
                                     )}
 
                                   {(m.recipientAddress === currentUser.address ||

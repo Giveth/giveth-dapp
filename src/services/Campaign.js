@@ -2,8 +2,10 @@ import { LPPCampaignFactory, LPPCampaign } from 'lpp-campaign';
 import getNetwork from '../lib/blockchain/getNetwork';
 import getWeb3 from '../lib/blockchain/getWeb3';
 import { feathersClient } from '../lib/feathersClient';
-import { displayTransactionError, getGasPrice } from '../lib/helpers';
+import { getGasPrice } from '../lib/helpers';
 import Campaign from '../models/Campaign';
+
+import ErrorPopup from '../components/ErrorPopup';
 
 class CampaignService {
   /**
@@ -164,14 +166,18 @@ class CampaignService {
             .then(() => {
               afterMined(`${etherScanUrl}tx/${txHash}`);
             })
-            .catch(err => {
-              console.log('New Campaign transaction failed:', err); // eslint-disable-line no-console
-              displayTransactionError(txHash, etherScanUrl);
+            .catch(() => {
+              ErrorPopup(
+                'Something went wrong with the transaction. Is your wallet unlocked?',
+                `${etherScanUrl}tx/${txHash}`,
+              );
             });
         })
-        .catch(err => {
-          console.log('New Campaign transaction failed:', err); // eslint-disable-line no-console
-          displayTransactionError(txHash, etherScanUrl);
+        .catch(() => {
+          ErrorPopup(
+            'Something went wrong with the transaction. Is your wallet unlocked?',
+            `${etherScanUrl}tx/${txHash}`,
+          );
         });
     }
   }
@@ -206,18 +212,22 @@ class CampaignService {
               })
               .then(afterCreate(`${etherScanUrl}tx/${txHash}`))
               .catch(err => {
-                console.log('Failed to update feathers:', err); // eslint-disable-line no-console
+                ErrorPopup('Something went wrong with updating campaign', err);
               });
           })
           .then(() => afterMined(`${etherScanUrl}tx/${txHash}`))
-          .catch(err => {
-            console.log('Cancel Campaign failed:', err); // eslint-disable-line no-console
-            displayTransactionError(txHash, etherScanUrl);
+          .catch(() => {
+            ErrorPopup(
+              'Something went wrong with cancelling your campaign',
+              `${etherScanUrl}tx/${txHash}`,
+            );
           });
       })
-      .catch(err => {
-        console.log('Cancel Campaign failed:', err); // eslint-disable-line no-console
-        displayTransactionError(txHash, etherScanUrl);
+      .catch(() => {
+        ErrorPopup(
+          'Something went wrong with cancelling your campaign',
+          `${etherScanUrl}tx/${txHash}`,
+        );
       });
   }
 }
