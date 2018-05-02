@@ -27,3 +27,10 @@
     }
   }
 }
+
+.swal-modal {
+  &.swal-huge {
+    max-width: 800px;
+    width: 80%;
+  }
+}
