@@ -142,4 +142,5 @@ $aspect-ratio: percentage(9/16); //16:9 ratio
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-direction: column;
 }

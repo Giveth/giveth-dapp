@@ -13,6 +13,7 @@ import User from '../models/User';
 import { displayTransactionError, getGasPrice } from '../lib/helpers';
 import GivethWallet from '../lib/blockchain/GivethWallet';
 import getWeb3 from '../lib/blockchain/getWeb3';
+import LoaderButton from './LoaderButton';
 
 class DonateButton extends React.Component {
   constructor() {
@@ -22,7 +23,6 @@ class DonateButton extends React.Component {
       isSaving: false,
       formIsValid: false,
       amount: '',
-      mewAmount: '0',
       modalVisible: false,
       // gasPrice: utils.toWei('4', 'gwei'),
       gasPrice: utils.toWei('10', 'gwei'),
@@ -54,17 +54,26 @@ class DonateButton extends React.Component {
   }
 
   openDialog() {
-    // getGasPrice().then(gasPrice =>
+    this.refs.amountInput.resetValue();
     this.setState({
-      // gasPrice,
       modalVisible: true,
-    });
-    // );
+      amount: '',
+      formIsValid: false            
+    })
   }
+
+  closeDialog() {
+    this.setState({
+      modalVisible: false,
+      amount: '',
+      formIsValid: false            
+    });
+  }  
 
   toggleFormValid(state) {
     this.setState({ formIsValid: state });
   }
+
 
   // submit(model) {
   //   console.log(model, this.props.type.toLowerCase(), this.props.model.adminId);
@@ -100,6 +109,12 @@ class DonateButton extends React.Component {
   //     });
   //   }
   // }
+
+  mapInputs(inputs) {
+    return {
+      amount: inputs.amount,
+    };
+  }  
 
   submit(model) {
     console.log(model, this.props.type.toLowerCase(), this.props.model.adminId);
@@ -150,67 +165,72 @@ class DonateButton extends React.Component {
       });
 
       React.swal({
+        className: 'swal-huge',
         title: "You're almost there...",
         content: React.swal.msg(
-          <p>
-            It&#8217;s great to see that you want to donate, however we only support donating
-            directly in the dapp yet. Use the followng information to donate via
-            <a target="_blank" href={`https://mycrypto.com/${query}#send-transaction`}>
-              MyCrypto
-            </a>, MyEtherWallet, etc.
-            {/* <a target="_blank" href={`https://myetherwallet.com/${query}#send-transaction`}> */}
-            {/* MyEtherWallet, */}
-            {/* </a>, etc. */}
-            <br />
-            <br />
-            <b style={{ color: '#e4000b' }}>NOTE: DO NOT SEND MAINNET ETHER.</b>
-            <br />
-            <br />
-            <b style={{ color: '#e4000b' }}>
-              NOTE: You must choose the "Ropsten" network to send the tx
-            </b>
-            <br />
-            <br />
-            <div className="container">
+          <div>
+            <p>
+              It&#8217;s great to see that you want to donate, however we don't support donating
+              directly in the dapp yet. Use the followng information to donate via
+              {/* <a target="_blank" href={`https://mycrypto.com/${query}#send-transaction`}> */}
+              {/* MyCrypto */}
+              {/* </a>, MyEtherWallet, etc. */}
+              MyCrypto, MyEtherWallet, etc.
+              {/* <a target="_blank" href={`https://myetherwallet.com/${query}#send-transaction`}> */}
+              {/* MyEtherWallet, */}
+              {/* </a>, etc. */}
+            </p>
+            <div className="alert alert-danger">
+              <b style={{ color: '#e4000b' }}>NOTE: DO NOT SEND MAINNET ETHER.</b>
+            </div>
+            <div className="alert alert-danger">
+              <b style={{ color: '#e4000b' }}>
+                NOTE: You must choose the "Ropsten" network to send the tx
+              </b>
+            </div>
+            <p>
+              Use the following data to make your transaction:
+            </p>
+            <div className="container alert alert-info text-left">
               <div className="row">
-                <div className="col col-sm-2">
+                <div className="col-sm-2">
                   <b>to:</b>
                 </div>
-                <div className="col" style={{ 'overflow-x': 'auto' }}>
+                <div className="col-sm-10" style={{ 'wordWrap': 'break-word' }}>
                   {to}
                 </div>
               </div>
               <div className="row">
-                <div className="col col-sm-2">
+                <div className="col-sm-2">
                   <b>value:</b>
                 </div>
-                <div className="col" style={{ 'overflow-x': 'auto' }}>
+                <div className="col-sm-10" style={{ 'wordWrap': 'break-word' }}>
                   {value}
                 </div>
               </div>
               <div className="row">
-                <div className="col col-sm-2">
+                <div className="col-sm-2">
                   <b>gasLimit:</b>
                 </div>
-                <div className="col" style={{ 'overflow-x': 'auto' }}>
+                <div className="col-sm-10" style={{ 'wordWrap': 'break-word' }}>
                   {gas}
                 </div>
               </div>
               <div className="row">
-                <div className="col col-sm-2">
+                <div className="col-sm-2">
                   <b>data:</b>
                 </div>
-                <div className="col" style={{ 'overflow-x': 'auto' }}>
+                <div className="col-sm-10" style={{ 'wordWrap': 'break-word' }}>
                   {data}
                 </div>
               </div>
             </div>
-          </p>,
+          </div>,
         ),
         icon: 'info',
-        buttons: ['Got it', 'Go to MyCrypto now!'],
+        buttons: ['I changed my mind', 'Go to MyCrypto now!'],
       }).then(isConfirmed => {
-        if (isConfirmed) window.location = `https://mycrypto.com/${query}#send-transaction`;
+        if (isConfirmed) window.open(`https://mycrypto.com/${query}#send-transaction`);
       });
     });
   }
@@ -357,8 +377,7 @@ class DonateButton extends React.Component {
 
   render() {
     const { type, model, wallet } = this.props;
-    // const { isSaving, amount, formIsValid, gasPrice, MEWurl, mewAmount } = this.state;
-    const { amount, gasPrice } = this.state;
+    const { amount, gasPrice, formIsValid, isSaving } = this.state;
     const style = {
       display: 'inline-block',
     };
@@ -372,12 +391,8 @@ class DonateButton extends React.Component {
         {wallet && (
           <SkyLightStateless
             isVisible={this.state.modalVisible}
-            onCloseClicked={() => {
-              this.setState({ modalVisible: false });
-            }}
-            onOverlayClicked={() => {
-              this.setState({ modalVisible: false });
-            }}
+            onCloseClicked={() => this.closeDialog()}
+            onOverlayClicked={() => this.closeDialog()}
             title={`Support this ${type}!`}
           >
             <strong>
@@ -399,7 +414,7 @@ class DonateButton extends React.Component {
 
             <Form
               onSubmit={this.submit}
-              mapping={this.mapInputs}
+              mapping={inputs => this.mapInputs(inputs)}
               onValid={() => this.toggleFormValid(true)}
               onInvalid={() => this.toggleFormValid(false)}
               layout="vertical"
@@ -407,21 +422,21 @@ class DonateButton extends React.Component {
               <div className="form-group">
                 <Input
                   name="amount"
+                  ref="amountInput"
                   id="amount-input"
                   label="How much Ξ do you want to donate?"
                   type="number"
                   value={amount}
-                  onChange={(name, value) => this.setState({ mewAmount: value })}
-                  placeholder="10"
-                  // validations={{
-                  // lessThan: wallet.getTokenBalance() - 0.5,
-                  // greaterThan: 0.00000000009,
-                  // }}
-                  // validationErrors={{
-                  // greaterThan: 'Minimum value must be at least Ξ0.1',
+                  placeholder="1"
+                  validations={{
+                    // lessThan: wallet.getTokenBalance() - 0.5,
+                    greaterThan: 0.009,
+                  }}
+                  validationErrors={{
+                  greaterThan: 'Minimum value must be at least Ξ0.01',
                   // lessThan:
                   // 'This donation exceeds your Giveth wallet balance. Please top up your wallet or donate with MyEtherWallet.',
-                  // }}
+                  }}
                   required
                   autoFocus
                 />
@@ -436,9 +451,16 @@ class DonateButton extends React.Component {
                 {isSaving ? 'Donating...' : 'Donate Ξ with Giveth'}
               </button> */}
 
-              <button className="btn btn-success" formNoValidate type="submit">
-                Donate with MyEtherWallet
-              </button>
+              <LoaderButton 
+                className="btn btn-success" 
+                formNoValidate 
+                type="submit"
+                disabled={isSaving || !formIsValid}
+                isLoading={isSaving}
+                loadingText="Saving..."                
+              >
+                Donate with MyCrypto
+              </LoaderButton>
 
               {/* <a
                  className={`btn btn-secondary ${isSaving ? 'disabled' : ''}`}

@@ -447,6 +447,18 @@ class Donations extends Component {
                                     </Link>
                                   )}
 
+                                {d.ownerType === 'giver' &&
+                                  !d.delegate && (
+                                    <Link to={`/profile/${d.ownerEntity.address}`}>
+                                      GIVER{' '}
+                                      <em>
+                                        {d.ownerEntity.address === currentUser.address
+                                          ? 'You'
+                                          : d.ownerEntity.name || d.ownerEntity.address}
+                                      </em>
+                                    </Link>
+                                  )}
+
                                 {d.ownerType === 'campaign' &&
                                   d.ownerEntity && (
                                     <Link to={`/${d.ownerType}s/${d.ownerEntity._id}`}>
@@ -471,7 +483,12 @@ class Donations extends Component {
                                     <i className="fa fa-circle-o-notch fa-spin" />&nbsp;
                                   </span>
                                 )}
-                                {Donations.getStatus(d.status)}
+                                {d.status === 'waiting' &&
+                                d.ownerEntity.address === currentUser.address ? (
+                                  <Link to="/delegations">{Donations.getStatus(d.status)}</Link>
+                                ) : (
+                                  Donations.getStatus(d.status)
+                                )}
                               </td>
 
                               {etherScanUrl && (

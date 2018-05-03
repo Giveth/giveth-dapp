@@ -24,6 +24,7 @@ import {
   convertEthHelper,
 } from '../../lib/helpers';
 import GivethWallet from '../../lib/blockchain/GivethWallet';
+import config from '../../configuration';
 
 import ErrorPopup from '../ErrorPopup';
 
@@ -130,8 +131,8 @@ class MyMilestones extends Component {
     this.cancelMilestone = this.cancelMilestone.bind(this);
     this.approveMilestoneCompleted = this.approveMilestoneCompleted.bind(this);
     this.rejectMilestoneCompletion = this.rejectMilestoneCompletion.bind(this);
-    this.requestWithdrawal = this.requestWithdrawal.bind(this);
-    this.collect = this.collect.bind(this);
+    this.requestWithdrawal = this.withdrawal.bind(this);
+    // this.collect = this.collect.bind(this);
   }
 
   componentDidMount() {
@@ -298,7 +299,7 @@ class MyMilestones extends Component {
                 const cappedMilestone = new LPPCappedMilestone(web3, milestone.pluginAddress);
 
                 return cappedMilestone
-                  .requestMarkAsComplete(milestone.projectId, {
+                  .requestMarkAsComplete({
                     from: this.props.currentUser.address,
                     gasPrice,
                     $extraGas: 4000000,
@@ -322,10 +323,10 @@ class MyMilestones extends Component {
                   </p>,
                 );
               })
-              .catch(() => {
+              .catch(err => {
                 ErrorPopup(
                   'Something went wrong with the transaction. Is your wallet unlocked?',
-                  `${etherScanUrl}tx/${txHash}`,
+                  `${etherScanUrl}tx/${txHash} => ${JSON.stringify(err, null, 2)}`,
                 );
               });
           }
@@ -383,7 +384,7 @@ class MyMilestones extends Component {
                 const cappedMilestone = new LPPCappedMilestone(web3, milestone.pluginAddress);
 
                 return cappedMilestone
-                  .cancelMilestone(milestone.projectId, {
+                  .cancelMilestone({
                     from: this.props.currentUser.address,
                     gasPrice,
                     $extraGas: 4000000,
@@ -467,26 +468,26 @@ class MyMilestones extends Component {
                 const {
                   title,
                   maxAmount,
-                  projectId,
                   recipientAddress,
                   reviewerAddress,
                   campaignReviewerAddress,
                 } = milestone;
+                const parentProjectId = milestone.campaign.projectId;
                 const from = this.props.currentUser.address;
 
                 return network.lppCappedMilestoneFactory
                   .newMilestone(
                     title,
                     '',
-                    projectId,
+                    parentProjectId,
                     reviewerAddress,
-                    from,
-                    from,
+                    recipientAddress,
+                    recipientAddress,
                     recipientAddress,
                     campaignReviewerAddress,
                     from,
                     maxAmount,
-                    0,
+                    Object.values(config.tokenAddresses)[0], // TODO make this a form param
                     5 * 24 * 60 * 60, // 5 days in seconds
                     { from, gasPrice, $extraGas: 200000 },
                   )
@@ -496,10 +497,10 @@ class MyMilestones extends Component {
                     return _createMilestone(etherScanUrl, txHash);
                   });
               })
-              .catch(() => {
+              .catch(err => {
                 ErrorPopup(
                   'Something went wrong with the transaction. Is your wallet unlocked?',
-                  `${etherScanUrl}tx/${txHash}`,
+                  `${etherScanUrl}tx/${txHash} => ${JSON.stringify(err, null, 2)}`,
                 );
               });
           }
@@ -556,7 +557,7 @@ class MyMilestones extends Component {
                 const cappedMilestone = new LPPCappedMilestone(web3, milestone.pluginAddress);
 
                 return cappedMilestone
-                  .approveMilestoneCompleted(milestone.projectId, {
+                  .approveMilestoneCompleted({
                     from: this.props.currentUser.address,
                     gasPrice,
                     $extraGas: 4000000,
@@ -632,7 +633,7 @@ class MyMilestones extends Component {
                 const cappedMilestone = new LPPCappedMilestone(web3, milestone.pluginAddress);
 
                 return cappedMilestone
-                  .rejectCompleteRequest(milestone.projectId, {
+                  .rejectCompleteRequest({
                     from: this.props.currentUser.address,
                     gasPrice,
                     $extraGas: 4000000,
@@ -668,121 +669,30 @@ class MyMilestones extends Component {
     });
   }
 
-  requestWithdrawal(milestone) {
+  withdrawal(milestone) {
     takeActionAfterWalletUnlock(this.props.wallet, () => {
       checkWalletBalance(this.props.wallet).then(() =>
         React.swal({
-          title: 'Request Withdrawal',
+          title: 'Withdrawal Fund to Wallet',
           text:
-            "For security reasons, there's a 3 day delay from the moment you request withdrawal before you can actually withdraw the money.",
+            'The funds will be transferred to you wallet. Once you have the funds in your possetion, you can transfer them back across the bridge.',
           icon: 'warning',
           dangerMode: true,
-          buttons: ['Cancel', 'Yes, request withdrawal'],
+          buttons: ['Cancel', 'Yes, withdrawal'],
         }).then(isConfirmed => {
           if (isConfirmed) {
-            if (isConfirmed) {
-              const withdraw = (etherScanUrl, txHash) => {
-                feathersClient
-                  .service('/milestones')
-                  .patch(milestone._id, {
-                    status: 'Paying',
-                    mined: false,
-                    txHash,
-                  })
-                  .then(() => {
-                    React.toast.info(
-                      <p>
-                        Request withdrawal from milestone...<br />
-                        <a
-                          href={`${etherScanUrl}tx/${txHash}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          View transaction
-                        </a>
-                      </p>,
-                    );
-                  })
-                  .catch(e => {
-                    ErrorPopup('Something went wrong doing the withdrawal', e);
-                  });
-
-                feathersClient
-                  .service('donations')
-                  .patch(
-                    null,
-                    {
-                      status: 'pending',
-                      paymentStatus: 'Paying',
-                      txHash,
-                    },
-                    {
-                      query: {
-                        ownerType: 'milestone',
-                        ownerId: milestone._id,
-                      },
-                    },
-                  )
-                  .catch(e => {
-                    ErrorPopup('Something went wrong doing the withdrawal', e);
-                  });
-              };
-
-              const getPledges = () =>
-                feathersClient
-                  .service('donations')
-                  .find({
-                    query: {
-                      ownerType: 'milestone',
-                      ownerId: milestone._id,
-                    },
-                  })
-                  .then(({ data }) => {
-                    if (data.length === 0) throw new Error('No donations found to withdraw');
-
-                    const pledges = [];
-                    data.forEach(donation => {
-                      const pledge = pledges.find(n => n.id === donation.pledgeId);
-
-                      if (pledge) {
-                        pledge.amount = pledge.amount.add(utils.toBN(donation.amount));
-                      } else {
-                        pledges.push({
-                          id: donation.pledgeId,
-                          amount: utils.toBN(donation.amount),
-                        });
-                      }
-                    });
-
-                    return pledges.map(
-                      note =>
-                        `0x${utils.padLeft(
-                          utils.toHex(note.amount).substring(2),
-                          48,
-                        )}${utils.padLeft(utils.toHex(note.id).substring(2), 16)}`,
-                    );
-                  });
-
-              let txHash;
-              let etherScanUrl;
-              Promise.all([getNetwork(), getWeb3(), getPledges(), getGasPrice()])
-                .then(([network, web3, pledges, gasPrice]) => {
-                  etherScanUrl = network.etherscan;
-
-                  return new LPPCappedMilestone(web3, network.cappedMilestoneFactoryAddress)
-                    .mWithdraw(pledges, {
-                      from: this.props.currentUser.address,
-                      gasPrice,
-                    })
-                    .once('transactionHash', hash => {
-                      txHash = hash;
-                      withdraw(etherScanUrl, txHash);
-                    });
+            const withdraw = (etherScanUrl, txHash) => {
+              feathersClient
+                .service('/milestones')
+                .patch(milestone._id, {
+                  status: 'Paying',
+                  mined: false,
+                  txHash,
                 })
                 .then(() => {
                   React.toast.info(
                     <p>
-                      The milestone withdraw has been initiated...<br />
+                      Withdrawal from milestone...<br />
                       <a
                         href={`${etherScanUrl}tx/${txHash}`}
                         target="_blank"
@@ -794,113 +704,199 @@ class MyMilestones extends Component {
                   );
                 })
                 .catch(e => {
-                  console.error(e); // eslint-disable-line no-console
-
-                  let msg;
-                  if (txHash) {
-                    // TODO: need to update feathers to reset the donations to previous state as this
-                    // tx failed.
-                    msg = (
-                      <p>
-                        Something went wrong with the transaction.<br />
-                        <a
-                          href={`${etherScanUrl}tx/${txHash}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          View transaction
-                        </a>
-                      </p>
-                    );
-                  } else if (e.message === 'No donations found to withdraw') {
-                    msg = <p>Nothing to withdraw. There are no donations to this milestone.</p>;
-                  } else {
-                    msg = (
-                      <p>Something went wrong with the transaction. Is your wallet unlocked?</p>
-                    );
-                  }
-
-                  React.swal({
-                    title: 'Oh no!',
-                    content: React.swal.msg(msg),
-                    icon: 'error',
-                  });
+                  ErrorPopup('Something went wrong doing the withdrawal', e);
                 });
-            }
-          }
-        }),
-      );
-    });
-  }
 
-  collect(milestone) {
-    takeActionAfterWalletUnlock(this.props.wallet, () => {
-      checkWalletBalance(this.props.wallet).then(() =>
-        React.swal({
-          title: 'Collect Funds',
-          text: 'The funds will be transferred to you wallet.',
-          icon: 'warning',
-          dangerMode: true,
-          buttons: ['Cancel', 'Yes, collect'],
-        }).then(isConfirmed => {
-          if (isConfirmed) {
-            if (isConfirmed) {
-              const collect = (etherScanUrl, txHash) => {
-                feathersClient
-                  .service('/milestones')
-                  .patch(milestone._id, {
-                    status: 'Paid',
-                    mined: false,
+              feathersClient
+                .service('donations')
+                .patch(
+                  null,
+                  {
+                    status: 'pending',
+                    paymentStatus: 'Paying',
                     txHash,
-                  })
-                  .then(() => {
-                    React.toast.info(
-                      <p>
-                        Collecting funds from milestone...<br />
-                        <a
-                          href={`${etherScanUrl}tx/${txHash}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          View transaction
-                        </a>
-                      </p>,
-                    );
-                  })
-                  .catch(e => {
-                    ErrorPopup('Something went wrong with collecting your funds', e);
-                  });
-              };
+                  },
+                  {
+                    query: {
+                      ownerType: 'milestone',
+                      ownerId: milestone._id,
+                    },
+                  },
+                )
+                .catch(e => {
+                  ErrorPopup('Something went wrong doing the withdrawal', e);
+                });
+            };
 
-              let txHash;
-              let etherScanUrl;
-              Promise.all([getNetwork(), getWeb3(), getGasPrice()])
-                .then(([network, web3, gasPrice]) => {
-                  etherScanUrl = network.etherscan;
-
-                  return new LPPCappedMilestone(web3, network.cappedMilestoneFactoryAddress)
-                    .collect(milestone.projectId, {
-                      from: this.props.currentUser.address,
-                      $extraGas: 100000,
-                      gasPrice,
-                    })
-                    .once('transactionHash', hash => {
-                      txHash = hash;
-                      collect(etherScanUrl, txHash);
-                    });
+            const getPledges = () =>
+              feathersClient
+                .service('donations')
+                .find({
+                  query: {
+                    ownerType: 'milestone',
+                    ownerId: milestone._id,
+                  },
                 })
-                .catch(() => {
-                  ErrorPopup(
-                    'Something went wrong with the transaction. Is your wallet unlocked?',
-                    `${etherScanUrl}tx/${txHash}`,
+                .then(({ data }) => {
+                  if (data.length === 0) throw new Error('No donations found to withdraw');
+
+                  const pledges = [];
+                  data.forEach(donation => {
+                    const pledge = pledges.find(n => n.id === donation.pledgeId);
+
+                    if (pledge) {
+                      pledge.amount = pledge.amount.add(utils.toBN(donation.amount));
+                    } else {
+                      pledges.push({
+                        id: donation.pledgeId,
+                        amount: utils.toBN(donation.amount),
+                      });
+                    }
+                  });
+
+                  return pledges.map(
+                    note =>
+                      `0x${utils.padLeft(utils.toHex(note.amount).substring(2), 48)}${utils.padLeft(
+                        utils.toHex(note.id).substring(2),
+                        16,
+                      )}`,
                   );
                 });
-            }
+
+            let txHash;
+            let etherScanUrl;
+            Promise.all([getNetwork(), getWeb3(), getPledges(), getGasPrice()])
+              .then(([network, web3, pledges, gasPrice]) => {
+                etherScanUrl = network.etherscan;
+
+                return new LPPCappedMilestone(web3, milestone.pluginAddress)
+                  .mWithdraw(pledges, {
+                    from: this.props.currentUser.address,
+                    gasPrice,
+                  })
+                  .once('transactionHash', hash => {
+                    txHash = hash;
+                    withdraw(etherScanUrl, txHash);
+                  });
+              })
+              .then(() => {
+                React.toast.info(
+                  <p>
+                    The milestone withdraw has been initiated...<br />
+                    <a
+                      href={`${etherScanUrl}tx/${txHash}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      View transaction
+                    </a>
+                  </p>,
+                );
+              })
+              .catch(e => {
+                console.error(e); // eslint-disable-line no-console
+
+                let msg;
+                if (txHash) {
+                  // TODO: need to update feathers to reset the donations to previous state as this
+                  // tx failed.
+                  msg = (
+                    <p>
+                      Something went wrong with the transaction.<br />
+                      <a
+                        href={`${etherScanUrl}tx/${txHash}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        View transaction
+                      </a>
+                    </p>
+                  );
+                } else if (e.message === 'No donations found to withdraw') {
+                  msg = <p>Nothing to withdraw. There are no donations to this milestone.</p>;
+                } else {
+                  msg = <p>Something went wrong with the transaction. Is your wallet unlocked?</p>;
+                }
+
+                React.swal({
+                  title: 'Oh no!',
+                  content: React.swal.msg(msg),
+                  icon: 'error',
+                });
+              });
           }
         }),
       );
     });
   }
+
+  // collect(milestone) {
+  //   takeActionAfterWalletUnlock(this.props.wallet, () => {
+  //     checkWalletBalance(this.props.wallet).then(() =>
+  //       React.swal({
+  //         title: 'Collect Funds',
+  //         text: 'The funds will be transferred to you wallet.',
+  //         icon: 'warning',
+  //         dangerMode: true,
+  //         buttons: ['Cancel', 'Yes, collect'],
+  //       }).then(isConfirmed => {
+  //         if (isConfirmed) {
+  //           const collect = (etherScanUrl, txHash) => {
+  //             feathersClient
+  //               .service('/milestones')
+  //               .patch(milestone._id, {
+  //                 status: 'Paid',
+  //                 mined: false,
+  //                 txHash,
+  //               })
+  //               .then(() => {
+  //                 React.toast.info(
+  //                   <p>
+  //                     Collecting funds from milestone...<br />
+  //                     <a
+  //                       href={`${etherScanUrl}tx/${txHash}`}
+  //                       target="_blank"
+  //                       rel="noopener noreferrer"
+  //                     >
+  //                       View transaction
+  //                     </a>
+  //                   </p>,
+  //                 );
+  //               })
+  //               .catch(e => {
+  //                 ErrorPopup('Something went wrong with collecting your funds', e);
+  //               });
+  //           };
+
+  //           let txHash;
+  //           let etherScanUrl;
+  //           Promise.all([getNetwork(), getWeb3(), getGasPrice()])
+  //             .then(([network, web3, gasPrice]) => {
+  //               etherScanUrl = network.etherscan;
+
+  //               // TODO this should get the token from the milestone
+  //               return new LPPCappedMilestone(web3, milestone.pluginAddress)
+  //                 .collect(milestone.projectId, Object.values(config.tokenAddresses)[0], {
+  //                   from: this.props.currentUser.address,
+  //                   $extraGas: 100000,
+  //                   gasPrice,
+  //                 })
+  //                 .once('transactionHash', hash => {
+  //                   txHash = hash;
+  //                   collect(etherScanUrl, txHash);
+  //                 });
+  //             })
+  //             .catch(() => {
+  //               ErrorPopup(
+  //                 'Something went wrong with the transaction. Is your wallet unlocked?',
+  //                 `${etherScanUrl}tx/${txHash}`,
+  //               );
+  //             });
+  //         }
+  //       }),
+  //     );
+  //   });
+  // }
 
   render() {
     const {
@@ -1109,21 +1105,19 @@ class MyMilestones extends Component {
                                       </span>
                                     )}
 
-                                  {
-                                    // To be added back once users can request payment
-                                    /* {m.recipientAddress === currentUser.address &&
+                                  {m.recipientAddress === currentUser.address &&
                                     m.status === 'Completed' &&
                                     m.mined &&
                                     m.donationCount > 0 && (
                                       <button
                                         className="btn btn-success btn-sm"
-                                        onClick={() => this.requestWithdrawal(m)}
+                                        onClick={() => this.withdrawal(m)}
                                       >
-                                        <i className="fa fa-usd" />&nbsp;Request Withdrawal
+                                        <i className="fa fa-usd" />&nbsp;Withdrawal
                                       </button>
                                     )}
 
-                                  {m.recipientAddress === currentUser.address &&
+                                  {/* {m.recipientAddress === currentUser.address &&
                                     m.status === 'Paying' && (
                                       <p>
                                         Withdraw authorization pending. You will be able to collect
@@ -1140,8 +1134,7 @@ class MyMilestones extends Component {
                                       >
                                         <i className="fa fa-usd" />&nbsp;Collect
                                       </button>
-                                    )} */
-                                  }
+                                    )} */}
                                 </td>
                               </tr>
                             ))}
