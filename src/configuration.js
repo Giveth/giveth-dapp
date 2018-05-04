@@ -23,8 +23,8 @@ const configurations = {
     tokenAddresses: {},
     etherscan: 'https://etherscan.io/', // this won't work, only here so we can see links during development
     feathersConnection: 'http://localhost:3030',
-    nodeConnection: 'ws://localhost:8545',
-    ropstenNodeConnection: 'https://ropsten.infura.io/Id3GoVvLrsO08ZNjxiKz'
+    foreignNodeConnection: 'ws://localhost:8545',
+    homeNodeConnection: 'https://ropsten.infura.io/Id3GoVvLrsO08ZNjxiKz',
   },
   develop: {
     title: 'develop',
@@ -37,8 +37,8 @@ const configurations = {
     tokenAddresses: { 'Ropsten ETH': '0x86c194112462cca285a61286114644a293d30157' },
     etherscan: 'https://rinkeby.etherscan.io/',
     feathersConnection: 'https://feathers.develop.giveth.io',
-    nodeConnection: 'wss://rinkeby.giveth.io:8546',
-    ropstenNodeConnection: 'https://ropsten.infura.io/Id3GoVvLrsO08ZNjxiKz'
+    foreignNodeConnection: 'wss://rinkeby.giveth.io:8546',
+    homeNodeConnection: 'https://ropsten.infura.io/Id3GoVvLrsO08ZNjxiKz',
   },
   release: {
     title: 'release',
@@ -49,15 +49,15 @@ const configurations = {
     lppCappedMilestoneFactoryAddress: '0x9d8a74f03c7765d689171ffb4004670d2bf30a62',
     etherscan: 'https://rinkeby.etherscan.io/',
     feathersConnection: 'https://feathers.release.giveth.io',
-    nodeConnection: 'wss://rinkeby.giveth.io:8546',
-    ropstenNodeConnection: 'https://ropsten.infura.io/Id3GoVvLrsO08ZNjxiKz'
+    foreignNodeConnection: 'wss://rinkeby.giveth.io:8546',
+    homeNodeConnection: 'https://ropsten.infura.io/Id3GoVvLrsO08ZNjxiKz',
   },
   mainnet: {
     title: 'mainnet',
     etherscan: 'https://etherscan.io/',
     feathersConnection: 'https://feathers.mainnet.giveth.io',
-    nodeConnection: 'wss://mew.giveth.io/ws',
-    ropstenNodeConnection: 'https://ropsten.infura.io/Id3GoVvLrsO08ZNjxiKz'
+    foreignNodeConnection: 'wss://mew.giveth.io/ws',
+    homeNodeConnection: 'https://ropsten.infura.io/Id3GoVvLrsO08ZNjxiKz',
   },
   alpha: {
     title: 'alpha',
@@ -68,8 +68,8 @@ const configurations = {
     tokenAddresses: {},
     etherscan: 'https://rinkeby.etherscan.io/',
     feathersConnection: 'https://feathers.alpha.giveth.io',
-    nodeConnection: 'wss://rinkeby.giveth.io:8546',
-    ropstenNodeConnection: 'https://ropsten.infura.io/Id3GoVvLrsO08ZNjxiKz'
+    foreignNodeConnection: 'wss://rinkeby.giveth.io:8546',
+    homeNodeConnection: 'https://ropsten.infura.io/Id3GoVvLrsO08ZNjxiKz',
   },
 };
 
@@ -96,7 +96,7 @@ config.tokenAddresses = REACT_APP_TOKEN_ADDRESSES
   : config.tokenAddresses;
 config.etherscan = REACT_APP_BLOCKEXPLORER || config.etherscan;
 config.feathersConnection = REACT_APP_FEATHERJS_CONNECTION_URL || config.feathersConnection;
-config.nodeConnection = REACT_APP_ETH_NODE_CONNECTION_URL || config.nodeConnection;
+config.foreignNodeConnection = REACT_APP_ETH_NODE_CONNECTION_URL || config.foreignNodeConnection;
 config.decimals = REACT_APP_DECIMALS;
 config.bugsEmail = REACT_APP_BUGS_EMAIL;
 config.sendErrors = ['release', 'alpha', 'mainnet'].includes(REACT_APP_ENVIRONMENT);

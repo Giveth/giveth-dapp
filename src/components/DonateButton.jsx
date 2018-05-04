@@ -13,7 +13,7 @@ import { takeActionAfterWalletUnlock, confirmBlockchainTransaction } from '../li
 import User from '../models/User';
 import { displayTransactionError, getGasPrice } from '../lib/helpers';
 import GivethWallet from '../lib/blockchain/GivethWallet';
-import { getWeb3, getRopstenWeb3 } from '../lib/blockchain/getWeb3';
+import { getWeb3, getHomeWeb3 } from '../lib/blockchain/getWeb3';
 import LoaderButton from './LoaderButton';
 
 class DonateButton extends React.Component {
@@ -59,22 +59,21 @@ class DonateButton extends React.Component {
     this.setState({
       modalVisible: true,
       amount: '',
-      formIsValid: false            
-    })
+      formIsValid: false,
+    });
   }
 
   closeDialog() {
     this.setState({
       modalVisible: false,
       amount: '',
-      formIsValid: false            
+      formIsValid: false,
     });
-  }  
+  }
 
   toggleFormValid(state) {
     this.setState({ formIsValid: state });
   }
-
 
   // submit(model) {
   //   console.log(model, this.props.type.toLowerCase(), this.props.model.adminId);
@@ -115,7 +114,7 @@ class DonateButton extends React.Component {
     return {
       amount: inputs.amount,
     };
-  }  
+  }
 
   submit(model) {
     console.log(model, this.props.type.toLowerCase(), this.props.model.adminId);
@@ -150,9 +149,7 @@ class DonateButton extends React.Component {
     const { adminId } = this.props.model;
     const { gasPrice } = this.state;
 
-
-    Promise.all([getNetwork(), getRopstenWeb3()]).then(([network, ropstenWeb3]) => {
-
+    Promise.all([getNetwork(), getHomeWeb3()]).then(([network, homeWeb3]) => {
       console.log('network', network);
 
       const { givethBridge } = network;
@@ -163,8 +160,9 @@ class DonateButton extends React.Component {
       const gas = 25400;
       const data = currentUser.giverId
         ? givethBridge.$contract.methods.donate(currentUser.giverId, adminId).encodeABI()
-        : givethBridge.$contract.methods.donateAndCreateGiver(currentUser.id, adminId).encodeABI();
-
+        : givethBridge.$contract.methods
+            .donateAndCreateGiver(currentUser.address, adminId)
+            .encodeABI();
 
       // ropstenWeb3.eth.getTransactionReceipt("0x295e22539852c1a85620ffddaab9b19c2cbb960b4f4f54ea87307961d246ab01")
       //   .then((res) => console.log('txr', res))
@@ -174,54 +172,54 @@ class DonateButton extends React.Component {
 
       // return;
 
-      ropstenWeb3.eth.net.getId()
-        .then((id) => {
-          ropstenWeb3.eth.getTransactionCount(this.props.currentUser.address)
-            .then((nonce) => {
-              console.log('nonce', nonce)
-              console.log('chainId:', id)
+      Promise.all([
+        homeWeb3.eth.net.getId(),
+        homeWeb3.eth.getTransactionCount(wallet.getAddresses()[0]),
+      ])
+        .then(([id, nonce]) => {
+          console.log('nonce', nonce);
+          console.log('chainId:', id);
 
-              const tx = {
-                from: this.props.currentUser.address,
-                to: to,
-                value: value,
-                gas: gas,
-                gasPrice: gasPrice,
-                data: data,
-                nonce: nonce + 1,
-                chainId: id
-              }
+          const tx = {
+            from: this.props.currentUser.address,
+            to: to,
+            value: value,
+            gas: gas,
+            gasPrice: gasPrice,
+            data: data,
+            nonce: nonce + 1,
+            chainId: id,
+          };
 
-              console.log('tx', tx)
+          console.log('tx', tx);
 
-              const signedTx = wallet.signTransaction(tx);
-              console.log('signedTx', signedTx)
+          wallet.signTransaction(tx).then(signedTx => {
+            console.log('signedTx', signedTx);
 
-              ropstenWeb3.eth.sendSignedTransaction(signedTx.rawTransaction)
-                .then((txHash) => {
-                  console.log('txHash', txHash)
-                })
-                .catch((e) => {
-                  console.log('tx failed')
-                })
+            homeWeb3.eth
+              .sendSignedTransaction(signedTx.rawTransaction)
+              .on('transactionHash', txHash => {
+                console.log('txHash', txHash);
+              })
+              .catch(e => {
+                console.log('tx failed');
+              });
+          });
 
-                // .on('transactionHash', function(hash){
-                //   console.log(hash)
-                // })
-                // .on('receipt', function(receipt){
-                //   console.log(receipt)
-                // })
-                // .on('confirmation', function(confirmationNumber, receipt){               
-                //   console.log(confirmationNumber, receipt);
-                // })
-                // .on('error', console.error); // If a out of gas error, the second parameter is the receipt.
-            })   
-          .catch((e) => {console.log(e)})   
-      })
-      .catch((e) => {console.log(e)})   
-
-
-
+          // .on('transactionHash', function(hash){
+          //   console.log(hash)
+          // })
+          // .on('receipt', function(receipt){
+          //   console.log(receipt)
+          // })
+          // .on('confirmation', function(confirmationNumber, receipt){
+          //   console.log(confirmationNumber, receipt);
+          // })
+          // .on('error', console.error); // If a out of gas error, the second parameter is the receipt.
+        })
+        .catch(e => {
+          console.log(e);
+        });
 
       return;
 
@@ -254,15 +252,13 @@ class DonateButton extends React.Component {
                 NOTE: You must choose the "Ropsten" network to send the tx
               </b>
             </div>
-            <p>
-              Use the following data to make your transaction:
-            </p>
+            <p>Use the following data to make your transaction:</p>
             <div className="container alert alert-info text-left">
               <div className="row">
                 <div className="col-sm-2">
                   <b>to:</b>
                 </div>
-                <div className="col-sm-10" style={{ 'wordWrap': 'break-word' }}>
+                <div className="col-sm-10" style={{ wordWrap: 'break-word' }}>
                   {to}
                 </div>
               </div>
@@ -270,7 +266,7 @@ class DonateButton extends React.Component {
                 <div className="col-sm-2">
                   <b>value:</b>
                 </div>
-                <div className="col-sm-10" style={{ 'wordWrap': 'break-word' }}>
+                <div className="col-sm-10" style={{ wordWrap: 'break-word' }}>
                   {value}
                 </div>
               </div>
@@ -278,7 +274,7 @@ class DonateButton extends React.Component {
                 <div className="col-sm-2">
                   <b>gasLimit:</b>
                 </div>
-                <div className="col-sm-10" style={{ 'wordWrap': 'break-word' }}>
+                <div className="col-sm-10" style={{ wordWrap: 'break-word' }}>
                   {gas}
                 </div>
               </div>
@@ -286,7 +282,7 @@ class DonateButton extends React.Component {
                 <div className="col-sm-2">
                   <b>data:</b>
                 </div>
-                <div className="col-sm-10" style={{ 'wordWrap': 'break-word' }}>
+                <div className="col-sm-10" style={{ wordWrap: 'break-word' }}>
                   {data}
                 </div>
               </div>
@@ -396,7 +392,7 @@ class DonateButton extends React.Component {
     let txHash;
     let etherScanUrl;
     const doDonate = () =>
-      Promise.all([getNetwork(), getWeb3(), getRopstenWeb3()])
+      Promise.all([getNetwork(), getWeb3(), getHomeWeb3()])
         .then(([network, web3, ropstenWeb3]) => {
           const { tokenAddress, liquidPledgingAddress } = network;
           etherScanUrl = network.etherscan;
@@ -499,9 +495,9 @@ class DonateButton extends React.Component {
                     greaterThan: 0.009,
                   }}
                   validationErrors={{
-                  greaterThan: 'Minimum value must be at least Ξ0.01',
-                  // lessThan:
-                  // 'This donation exceeds your Giveth wallet balance. Please top up your wallet or donate with MyEtherWallet.',
+                    greaterThan: 'Minimum value must be at least Ξ0.01',
+                    // lessThan:
+                    // 'This donation exceeds your Giveth wallet balance. Please top up your wallet or donate with MyEtherWallet.',
                   }}
                   required
                   autoFocus
@@ -517,13 +513,13 @@ class DonateButton extends React.Component {
                 {isSaving ? 'Donating...' : 'Donate Ξ with Giveth'}
               </button> */}
 
-              <LoaderButton 
-                className="btn btn-success" 
-                formNoValidate 
+              <LoaderButton
+                className="btn btn-success"
+                formNoValidate
                 type="submit"
                 disabled={isSaving || !formIsValid}
                 isLoading={isSaving}
-                loadingText="Saving..."                
+                loadingText="Saving..."
               >
                 Donate with MyCrypto
               </LoaderButton>
