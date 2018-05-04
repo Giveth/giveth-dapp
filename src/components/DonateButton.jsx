@@ -7,12 +7,13 @@ import { MiniMeToken } from 'minimetoken';
 import { Form, Input } from 'formsy-react-components';
 
 import getNetwork from '../lib/blockchain/getNetwork';
+import getRopstenNetwork from '../lib/blockchain/getRopstenNetwork';
 import { feathersClient } from '../lib/feathersClient';
 import { takeActionAfterWalletUnlock, confirmBlockchainTransaction } from '../lib/middleware';
 import User from '../models/User';
 import { displayTransactionError, getGasPrice } from '../lib/helpers';
 import GivethWallet from '../lib/blockchain/GivethWallet';
-import getWeb3 from '../lib/blockchain/getWeb3';
+import { getWeb3, getRopstenWeb3 } from '../lib/blockchain/getWeb3';
 import LoaderButton from './LoaderButton';
 
 class DonateButton extends React.Component {
@@ -149,15 +150,80 @@ class DonateButton extends React.Component {
     const { adminId } = this.props.model;
     const { gasPrice } = this.state;
 
-    getNetwork().then(network => {
+
+    Promise.all([getNetwork(), getRopstenWeb3()]).then(([network, ropstenWeb3]) => {
+
+      console.log('network', network);
+
       const { givethBridge } = network;
+      const { wallet } = this.props;
 
       const to = givethBridge.$address;
-      const value = model.amount;
+      const value = utils.toWei(model.amount);
       const gas = 25400;
       const data = currentUser.giverId
         ? givethBridge.$contract.methods.donate(currentUser.giverId, adminId).encodeABI()
         : givethBridge.$contract.methods.donateAndCreateGiver(currentUser.id, adminId).encodeABI();
+
+
+      // ropstenWeb3.eth.getTransactionReceipt("0x295e22539852c1a85620ffddaab9b19c2cbb960b4f4f54ea87307961d246ab01")
+      //   .then((res) => console.log('txr', res))
+
+      // ropstenWeb3.eth.getTransaction("0x295e22539852c1a85620ffddaab9b19c2cbb960b4f4f54ea87307961d246ab01")
+      //   .then((res) => console.log('gtx', res))
+
+      // return;
+
+      ropstenWeb3.eth.net.getId()
+        .then((id) => {
+          ropstenWeb3.eth.getTransactionCount(this.props.currentUser.address)
+            .then((nonce) => {
+              console.log('nonce', nonce)
+              console.log('chainId:', id)
+
+              const tx = {
+                from: this.props.currentUser.address,
+                to: to,
+                value: value,
+                gas: gas,
+                gasPrice: gasPrice,
+                data: data,
+                nonce: nonce + 1,
+                chainId: id
+              }
+
+              console.log('tx', tx)
+
+              const signedTx = wallet.signTransaction(tx);
+              console.log('signedTx', signedTx)
+
+              ropstenWeb3.eth.sendSignedTransaction(signedTx.rawTransaction)
+                .then((txHash) => {
+                  console.log('txHash', txHash)
+                })
+                .catch((e) => {
+                  console.log('tx failed')
+                })
+
+                // .on('transactionHash', function(hash){
+                //   console.log(hash)
+                // })
+                // .on('receipt', function(receipt){
+                //   console.log(receipt)
+                // })
+                // .on('confirmation', function(confirmationNumber, receipt){               
+                //   console.log(confirmationNumber, receipt);
+                // })
+                // .on('error', console.error); // If a out of gas error, the second parameter is the receipt.
+            })   
+          .catch((e) => {console.log(e)})   
+      })
+      .catch((e) => {console.log(e)})   
+
+
+
+
+      return;
 
       const query = `?to=${to}&value=${value}&gasLimit=${gas}&data=${data}&gasPrice=${gasPrice}`;
       this.setState({
@@ -330,8 +396,8 @@ class DonateButton extends React.Component {
     let txHash;
     let etherScanUrl;
     const doDonate = () =>
-      Promise.all([getNetwork(), getWeb3()])
-        .then(([network, web3]) => {
+      Promise.all([getNetwork(), getWeb3(), getRopstenWeb3()])
+        .then(([network, web3, ropstenWeb3]) => {
           const { tokenAddress, liquidPledgingAddress } = network;
           etherScanUrl = network.etherscan;
           const token = new MiniMeToken(web3, tokenAddress);

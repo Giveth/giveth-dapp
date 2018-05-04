@@ -1,5 +1,5 @@
 const {
-  REACT_APP_ENVIRONMENT = 'localhost', // optional
+  REACT_APP_ENVIRONMENT = 'develop', // optional
   REACT_APP_DECIMALS = 8, // optional
   REACT_APP_FEATHERJS_CONNECTION_URL,
   REACT_APP_ETH_NODE_CONNECTION_URL,
@@ -24,6 +24,7 @@ const configurations = {
     etherscan: 'https://etherscan.io/', // this won't work, only here so we can see links during development
     feathersConnection: 'http://localhost:3030',
     nodeConnection: 'ws://localhost:8545',
+    ropstenNodeConnection: 'https://ropsten.infura.io/Id3GoVvLrsO08ZNjxiKz'
   },
   develop: {
     title: 'develop',
@@ -37,6 +38,7 @@ const configurations = {
     etherscan: 'https://rinkeby.etherscan.io/',
     feathersConnection: 'https://feathers.develop.giveth.io',
     nodeConnection: 'wss://rinkeby.giveth.io:8546',
+    ropstenNodeConnection: 'https://ropsten.infura.io/Id3GoVvLrsO08ZNjxiKz'
   },
   release: {
     title: 'release',
@@ -48,12 +50,14 @@ const configurations = {
     etherscan: 'https://rinkeby.etherscan.io/',
     feathersConnection: 'https://feathers.release.giveth.io',
     nodeConnection: 'wss://rinkeby.giveth.io:8546',
+    ropstenNodeConnection: 'https://ropsten.infura.io/Id3GoVvLrsO08ZNjxiKz'
   },
   mainnet: {
     title: 'mainnet',
     etherscan: 'https://etherscan.io/',
     feathersConnection: 'https://feathers.mainnet.giveth.io',
     nodeConnection: 'wss://mew.giveth.io/ws',
+    ropstenNodeConnection: 'https://ropsten.infura.io/Id3GoVvLrsO08ZNjxiKz'
   },
   alpha: {
     title: 'alpha',
@@ -65,6 +69,7 @@ const configurations = {
     etherscan: 'https://rinkeby.etherscan.io/',
     feathersConnection: 'https://feathers.alpha.giveth.io',
     nodeConnection: 'wss://rinkeby.giveth.io:8546',
+    ropstenNodeConnection: 'https://ropsten.infura.io/Id3GoVvLrsO08ZNjxiKz'
   },
 };
 
