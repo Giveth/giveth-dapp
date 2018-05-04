@@ -6,7 +6,7 @@ import config from '../../configuration';
 import ErrorPopup from '../../components/ErrorPopup';
 
 let givethWeb3;
-let ropstenWeb3;
+let homeWeb3;
 /* ///////////// custom Web3 Functions ///////////// */
 
 let intervalId;
@@ -83,7 +83,7 @@ function setWallet(wallet) {
 export const getWeb3 = () =>
   new Promise(resolve => {
     if (!givethWeb3) {
-      givethWeb3 = new Web3(config.nodeConnection);
+      givethWeb3 = new Web3(config.foreignNodeConnection);
 
       // hack to keep the ws connection from timing-out
       // I commented this out b/c we have the getBalance interval above
@@ -115,11 +115,10 @@ export const getWeb3 = () =>
     resolve(givethWeb3);
   });
 
-
-export const getRopstenWeb3 = () =>
+export const getHomeWeb3 = () =>
   new Promise(resolve => {
-    if (!ropstenWeb3) {
-      ropstenWeb3 = new Web3(config.ropstenNodeConnection);
+    if (!homeWeb3) {
+      homeWeb3 = new Web3(config.homeNodeConnection);
 
       // hack to keep the ws connection from timing-out
       // I commented this out b/c we have the getBalance interval above
@@ -134,22 +133,21 @@ export const getRopstenWeb3 = () =>
       // (Nat.toNumber(tx.chainId || "0x1") * 2 + 35), and that number is added to the
       // signature.recoveryParam the max value the network ID can be is
       // 110 (110 * 2 + 35 === 255) - recoveryParam
-      ropstenWeb3.eth.net.getId().then(id => {
+      homeWeb3.eth.net.getId().then(id => {
         if (id > 110) {
           const msg = `Web3 will throw errors when signing transactions if the networkId > 255 (1 byte).
           networkID = ${id}. Overriding eth.net.getId() to return 100`;
 
           console.warn(msg); // eslint-disable-line no-console
 
-          ropstenWeb3.eth.net.getId = () => Promise.resolve(100);
+          homeWeb3.eth.net.getId = () => Promise.resolve(100);
         }
       });
 
-      ropstenWeb3.setWallet = setWallet;
+      homeWeb3.setWallet = setWallet;
     }
 
-    resolve(ropstenWeb3);
+    resolve(homeWeb3);
   });
-
 
 export default getWeb3;
