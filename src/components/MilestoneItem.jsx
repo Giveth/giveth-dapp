@@ -1,9 +1,8 @@
-import React from 'react';
 import { withFormsy } from 'formsy-react';
-import PropTypes from 'prop-types';
 import moment from 'moment';
-
-import { getTruncatedText, convertEthHelper } from './../lib/helpers';
+import PropTypes from 'prop-types';
+import React from 'react';
+import { convertEthHelper, getTruncatedText } from './../lib/helpers';
 
 /** *
  * NOTE: This component is created as a Formsy form component
@@ -37,7 +36,7 @@ class MilestoneItem extends React.Component {
           </span>
         </td>
 
-        <td className="td-item-amount-ether">{convertEthHelper(item.etherAmount)}</td>
+        <td className="td-item-amount-ether">{convertEthHelper(item.wei)}</td>
 
         <td className="td-item-file-upload">
           {item.image &&
@@ -79,7 +78,7 @@ MilestoneItem.propTypes = {
     selectedFiatType: PropTypes.string.isRequired,
     fiatAmount: PropTypes.string.isRequired,
     conversionRate: PropTypes.number.isRequired,
-    etherAmount: PropTypes.string.isRequired,
+    wei: PropTypes.string.isRequired,
     image: PropTypes.string,
   }).isRequired,
   isEditMode: PropTypes.bool,
