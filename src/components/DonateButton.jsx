@@ -182,12 +182,12 @@ class DonateButton extends React.Component {
 
           const tx = {
             from: this.props.currentUser.address,
-            to: to,
-            value: value,
-            gas: gas,
-            gasPrice: gasPrice,
-            data: data,
-            nonce: nonce + 1,
+            to,
+            value,
+            gas,
+            gasPrice,
+            data,
+            nonce,
             chainId: id,
           };
 
