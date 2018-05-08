@@ -7,6 +7,7 @@ import React, { Component } from 'react';
 import Avatar from 'react-avatar';
 import ReactHtmlParser, { convertNodeToElement } from 'react-html-parser';
 import { Link } from 'react-router-dom';
+import { utils } from 'web3';
 import GivethWallet from '../../lib/blockchain/GivethWallet';
 import { convertEthHelper, getUserAvatar, getUserName, isOwner } from '../../lib/helpers';
 import { checkWalletBalance, redirectAfterWalletUnlock } from '../../lib/middleware';
@@ -166,6 +167,7 @@ class ViewMilestone extends Component {
       campaign,
       campaignOwnerAddress,
     } = this.state;
+
     return (
       <div id="view-milestone-view">
         {isLoading && <Loader className="fixed" />}
@@ -261,7 +263,7 @@ class ViewMilestone extends Component {
                                     selectedFiatType,
                                     fiatAmount,
                                     conversionRate,
-                                    wei: item.etherAmount,
+                                    wei: utils.toWei(item.etherAmount || '0'),
                                     image: item.image,
                                   }}
                                 />
