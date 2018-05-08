@@ -4,7 +4,7 @@
 > DApp - Donation Application for charitable giving without losing ownership
 
 
-Welcome to the code for Giveth's DApp. This is an open source effort to realize the potential of ethereum smart contracts. More specifically, the Giveth dapp provides an alternative to traditional donation.
+Welcome to the code for Giveth's DApp. This is an open source effort to realize the potential of ethereum smart contracts. More specifically, the Giveth DApp provides an alternative to traditional donation.
 
 ## Table of content
 
