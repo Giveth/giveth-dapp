@@ -193,18 +193,16 @@ class DonateButton extends React.Component {
 
           console.log('tx', tx);
 
-          wallet.signTransaction(tx).then(signedTx => {
-            console.log('signedTx', signedTx);
+          const signedTx = wallet.signTransaction(tx); // does not return a promise!
 
-            homeWeb3.eth
-              .sendSignedTransaction(signedTx.rawTransaction)
-              .on('transactionHash', txHash => {
-                console.log('txHash', txHash);
-              })
-              .catch(e => {
-                console.log('tx failed');
-              });
-          });
+          homeWeb3.eth
+            .sendSignedTransaction(signedTx.rawTransaction)
+            .on('transactionHash', txHash => {
+              console.log('txHash', txHash);
+            })
+            .catch(e => {
+              console.log('tx failed');
+            });
 
           // .on('transactionHash', function(hash){
           //   console.log(hash)
