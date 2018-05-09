@@ -61,7 +61,7 @@ class GivethWallet {
   signTransaction(txData) {
     if (!this.unlocked) return Promise.reject(new Error('Locked Wallet'));
 
-    if (!txData.gasPrice || !txData.nonce || !txData.chainId)
+    if (!txData.gasPrice || (!txData.nonce && txData.nonce < 0) || !txData.chainId)
       return Promise.reject(new Error('gasPrice, nonce, and chainId are required'));
 
     const accounts = mapGet.call(mapAccounts, this);
