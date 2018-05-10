@@ -22,6 +22,7 @@ const configurations = {
     givethBridgeAddress: '0x0000000000000000000000000000000000000000',
     tokenAddresses: {},
     etherscan: 'https://etherscan.io/', // this won't work, only here so we can see links during development
+    foreignEtherscan: 'https://ropsten.etherscan.io/',    
     feathersConnection: 'http://localhost:3030',
     foreignNodeConnection: 'ws://localhost:8545',
     homeNodeConnection: 'https://ropsten.infura.io/Id3GoVvLrsO08ZNjxiKz',
@@ -36,6 +37,7 @@ const configurations = {
     foreignGivethBridgeAddress: '0x97bd4e1b4f647ab5f0a8248dd9c7218ce044ced9',
     tokenAddresses: { 'Ropsten ETH': '0x86c194112462cca285a61286114644a293d30157' },
     etherscan: 'https://rinkeby.etherscan.io/',
+    foreignEtherscan: 'https://ropsten.etherscan.io/',
     feathersConnection: 'https://feathers.develop.giveth.io',
     foreignNodeConnection: 'wss://rinkeby.giveth.io:8546',
     homeNodeConnection: 'https://ropsten.infura.io/Id3GoVvLrsO08ZNjxiKz',
@@ -48,6 +50,7 @@ const configurations = {
     lppCampaignFactoryAddress: '0x523c1713fa80bb695ca25f85ee4a06533dceef76',
     lppCappedMilestoneFactoryAddress: '0x9d8a74f03c7765d689171ffb4004670d2bf30a62',
     etherscan: 'https://rinkeby.etherscan.io/',
+    foreignEtherscan: 'https://ropsten.etherscan.io/',    
     feathersConnection: 'https://feathers.release.giveth.io',
     foreignNodeConnection: 'wss://rinkeby.giveth.io:8546',
     homeNodeConnection: 'https://ropsten.infura.io/Id3GoVvLrsO08ZNjxiKz',
@@ -67,6 +70,7 @@ const configurations = {
     lppCappedMilestoneFactoryAddress: '0x19Bd4E0DEdb9E5Ee9762391893d1f661404b561f',
     tokenAddresses: {},
     etherscan: 'https://rinkeby.etherscan.io/',
+    foreignEtherscan: 'https://ropsten.etherscan.io/',    
     feathersConnection: 'https://feathers.alpha.giveth.io',
     foreignNodeConnection: 'wss://rinkeby.giveth.io:8546',
     homeNodeConnection: 'https://ropsten.infura.io/Id3GoVvLrsO08ZNjxiKz',
@@ -99,6 +103,6 @@ config.feathersConnection = REACT_APP_FEATHERJS_CONNECTION_URL || config.feather
 config.foreignNodeConnection = REACT_APP_ETH_NODE_CONNECTION_URL || config.foreignNodeConnection;
 config.decimals = REACT_APP_DECIMALS;
 config.bugsEmail = REACT_APP_BUGS_EMAIL;
-config.sendErrors = ['release', 'alpha', 'mainnet'].includes(REACT_APP_ENVIRONMENT);
+config.sendErrors = ['develop', 'release', 'alpha', 'mainnet'].includes(REACT_APP_ENVIRONMENT);
 
 export default config;

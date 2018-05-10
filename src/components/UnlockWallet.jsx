@@ -70,7 +70,7 @@ class UnlockWallet extends Component {
         afterClose={onClose}
       >
         <center>
-          <image
+          <img
             className="empty-state-img reduce-margin"
             src={`${process.env.PUBLIC_URL}/img/unlock wallet.svg`}
             width="130px"
