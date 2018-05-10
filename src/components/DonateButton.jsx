@@ -15,6 +15,7 @@ import { displayTransactionError, getGasPrice } from '../lib/helpers';
 import GivethWallet from '../lib/blockchain/GivethWallet';
 import { getWeb3, getHomeWeb3 } from '../lib/blockchain/getWeb3';
 import LoaderButton from './LoaderButton';
+import ErrorPopup from './ErrorPopup';
 
 class DonateButton extends React.Component {
   constructor() {
@@ -144,42 +145,33 @@ class DonateButton extends React.Component {
   }
 
   donateWithBridge(model) {
-    console.log(model);
     const { currentUser } = this.props;
     const { adminId } = this.props.model;
     const { gasPrice } = this.state;
 
     Promise.all([getNetwork(), getHomeWeb3()]).then(([network, homeWeb3]) => {
-      console.log('network', network);
-
       const { givethBridge } = network;
-      const { wallet } = this.props;
-
+      const { wallet } = this.props; 
+      const etherScanUrl = network.foreignEtherscan;
       const to = givethBridge.$address;
       const value = utils.toWei(model.amount);
-      const gas = 25400;
+
+      // 25400 gas will often be rejected by Ropsten!
+      // so increased this a lot to be more reliable for testing
+      const gas = 250000; 
       const data = currentUser.giverId
         ? givethBridge.$contract.methods.donate(currentUser.giverId, adminId).encodeABI()
         : givethBridge.$contract.methods
             .donateAndCreateGiver(currentUser.address, adminId)
             .encodeABI();
 
-      // ropstenWeb3.eth.getTransactionReceipt("0x295e22539852c1a85620ffddaab9b19c2cbb960b4f4f54ea87307961d246ab01")
-      //   .then((res) => console.log('txr', res))
-
-      // ropstenWeb3.eth.getTransaction("0x295e22539852c1a85620ffddaab9b19c2cbb960b4f4f54ea87307961d246ab01")
-      //   .then((res) => console.log('gtx', res))
-
-      // return;
-
       Promise.all([
         homeWeb3.eth.net.getId(),
         homeWeb3.eth.getTransactionCount(wallet.getAddresses()[0]),
       ])
         .then(([id, nonce]) => {
-          console.log('nonce', nonce);
-          console.log('chainId:', id);
 
+          // construct transaction
           const tx = {
             from: this.props.currentUser.address,
             to,
@@ -191,32 +183,109 @@ class DonateButton extends React.Component {
             chainId: id,
           };
 
-          console.log('tx', tx);
-
+          // sign transaction
           const signedTx = wallet.signTransaction(tx); // does not return a promise!
+          console.log('signedTx', signedTx)
 
+          // send transaction
           homeWeb3.eth
             .sendSignedTransaction(signedTx.rawTransaction)
-            .on('transactionHash', txHash => {
-              console.log('txHash', txHash);
+            .on('transactionHash', (txHash) => {
+              console.log('transactionHash', txHash);
+
+              this.closeDialog();
+
+              // Get the tx hash
+              homeWeb3.eth.getTransaction(txHash).then( data => {
+                React.toast.info(
+                  <p>
+                    Awesome! Your donation is pending...<br />
+                    <a
+                      href={`${etherScanUrl}tx/${txHash}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      View transaction
+                    </a>
+                  </p>,
+                );
+              })
+
+              // As Infura doesn't provide receipt events
+              // we poll for the receipt ourselves
+              const _getTransactionReceiptMined = (txHash, blocks) => {
+                let count = 0;
+                const FIFTEEN_SECONDS = 1000 * 15; // the average blocktime
+
+                const _getReceiptAsync = (resolve, reject) => {
+                  if (count > blocks) {
+                    return reject(`Your donation was not mined within ${blocks} blocks`);
+                  }
+
+                  homeWeb3.eth.getTransactionReceipt(txHash, (error, receipt) => {
+                    console.log('receipt', error, receipt);
+                    if (error) {
+                      return reject(error);
+                    } else if (receipt == null) {
+                      setTimeout(
+                        () => _getReceiptAsync(resolve, reject)
+                      , FIFTEEN_SECONDS);                      
+                    } else {
+                      return resolve(receipt);
+                    }
+                  })
+
+                  count++;
+                }
+                return new Promise(_getReceiptAsync);
+              }
+
+              _getTransactionReceiptMined(txHash, 10)
+                .then ( receipt => {
+                  React.toast.success(
+                    <p>
+                      Woot! Woot! Donation received. You are awesome!<br />
+                      <a
+                        href={`${etherScanUrl}tx/${txHash}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        View transaction
+                      </a>
+                    </p>,
+                  );
+                })
+                .catch( e => { 
+                  console.log("receipt error", e);
+                  React.toast.info(
+                    <p>
+                      {`${e}`} Please check the transaction on Etherscan to confirm.<br />
+                      <a
+                        href={`${etherScanUrl}tx/${txHash}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        View transaction
+                      </a>
+                    </p>,
+                  );                  
+                })
             })
             .catch(e => {
-              console.log('tx failed');
-            });
+              console.log('could not send signedTx', e)
 
-          // .on('transactionHash', function(hash){
-          //   console.log(hash)
-          // })
-          // .on('receipt', function(receipt){
-          //   console.log(receipt)
-          // })
-          // .on('confirmation', function(confirmationNumber, receipt){
-          //   console.log(confirmationNumber, receipt);
-          // })
-          // .on('error', console.error); // If a out of gas error, the second parameter is the receipt.
+              // with ropsten infura, this catch always throws, so we filter that one out
+              if (!e.message.includes('newBlockHeaders')) {
+                ErrorPopup(
+                  'Something went wrong with the transaction. Please try again', 
+                  e
+                );            
+              }
+            })  
         })
+        // with ropsten infura, this catch always throws
         .catch(e => {
-          console.log(e);
+          console.error(e);
         });
 
       return;
@@ -469,7 +538,7 @@ class DonateButton extends React.Component {
             <p>
               {/* Your wallet balance: <em>&#926;{wallet.getTokenBalance()}</em> */}
               {/* <br /> */}
-              Gas price: <em>{utils.fromWei(gasPrice, 'gwei')} Gwei</em>
+              Gas price: <em>{utils.fromWei(gasPrice, 'gwei') * 10} Gwei</em>
             </p>
 
             <Form
@@ -519,7 +588,7 @@ class DonateButton extends React.Component {
                 isLoading={isSaving}
                 loadingText="Saving..."
               >
-                Donate with MyCrypto
+                Donate through Ropsten
               </LoaderButton>
 
               {/* <a
