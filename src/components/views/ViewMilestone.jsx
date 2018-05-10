@@ -163,7 +163,6 @@ class ViewMilestone extends Component {
       status,
       fiatAmount,
       selectedFiatType,
-      conversionRate,
       campaign,
       campaignOwnerAddress,
     } = this.state;
@@ -260,9 +259,9 @@ class ViewMilestone extends Component {
                                   item={{
                                     date: item.date,
                                     description: item.description,
-                                    selectedFiatType,
-                                    fiatAmount,
-                                    conversionRate,
+                                    selectedFiatType: item.selectedFiatType,
+                                    fiatAmount: item.fiatAmount,
+                                    conversionRate: item.conversionRate,
                                     wei: utils.toWei(item.etherAmount || '0'),
                                     image: item.image,
                                   }}
