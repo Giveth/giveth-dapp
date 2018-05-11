@@ -1,6 +1,6 @@
 import { LPPCampaign } from 'lpp-campaign';
 import getNetwork from '../lib/blockchain/getNetwork';
-import getWeb3 from '../lib/blockchain/getWeb3';
+import { getWeb3 } from '../lib/blockchain/getWeb3';
 import { feathersClient } from '../lib/feathersClient';
 import { getGasPrice } from '../lib/helpers';
 import Campaign from '../models/Campaign';

@@ -66,6 +66,7 @@ class UserProvider extends Component {
     this.lockWallet = this.lockWallet.bind(this);
     this.walletUnlocked = this.walletUnlocked.bind(this);
     this.hideUnlockWalletModal = this.hideUnlockWalletModal.bind(this);
+    this.getUserData = this.getUserData.bind(this);
 
     // Making unlock wallet global
     React.unlockWallet = this.unlockWallet;
@@ -84,6 +85,7 @@ class UserProvider extends Component {
         if (!user) throw new Error('No User');
         feathersClient.authenticate(); // need to authenticate the socket connection
 
+        this.getUserData();
         this.setState({
           isLoading: false,
           hasError: false,
@@ -103,7 +105,6 @@ class UserProvider extends Component {
       .then(wallet => {
         getWeb3().then(web3 => web3.setWallet(wallet));
         getHomeWeb3().then(web3 => web3.setWallet(wallet));
-        console.log('wallet', wallet);
         this.setState({ wallet });
       })
       .catch(err => {
@@ -128,6 +129,13 @@ class UserProvider extends Component {
     return UserProvider.getUserProfile(address).then(user =>
       this.setState({ currentUser: new User(user) }),
     );
+  }
+
+  getUserData(address) {
+    this.userSubscriber = feathersClient
+      .service('/users')
+      .get(address)
+      .subscribe(data => console.log(data), error => console.error(error));
   }
 
   handleWalletChange(wallet) {

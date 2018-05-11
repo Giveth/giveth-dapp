@@ -1,5 +1,5 @@
 const {
-  REACT_APP_ENVIRONMENT = 'develop', // optional
+  REACT_APP_ENVIRONMENT = 'localhost', // optional
   REACT_APP_DECIMALS = 8, // optional
   REACT_APP_FEATHERJS_CONNECTION_URL,
   REACT_APP_ETH_NODE_CONNECTION_URL,
@@ -22,7 +22,7 @@ const configurations = {
     givethBridgeAddress: '0x0000000000000000000000000000000000000000',
     tokenAddresses: {},
     etherscan: 'https://etherscan.io/', // this won't work, only here so we can see links during development
-    foreignEtherscan: 'https://ropsten.etherscan.io/',    
+    foreignEtherscan: 'https://ropsten.etherscan.io/',
     feathersConnection: 'http://localhost:3030',
     foreignNodeConnection: 'ws://localhost:8545',
     homeNodeConnection: 'https://ropsten.infura.io/Id3GoVvLrsO08ZNjxiKz',
@@ -50,7 +50,7 @@ const configurations = {
     lppCampaignFactoryAddress: '0x523c1713fa80bb695ca25f85ee4a06533dceef76',
     lppCappedMilestoneFactoryAddress: '0x9d8a74f03c7765d689171ffb4004670d2bf30a62',
     etherscan: 'https://rinkeby.etherscan.io/',
-    foreignEtherscan: 'https://ropsten.etherscan.io/',    
+    foreignEtherscan: 'https://ropsten.etherscan.io/',
     feathersConnection: 'https://feathers.release.giveth.io',
     foreignNodeConnection: 'wss://rinkeby.giveth.io:8546',
     homeNodeConnection: 'https://ropsten.infura.io/Id3GoVvLrsO08ZNjxiKz',
@@ -70,7 +70,7 @@ const configurations = {
     lppCappedMilestoneFactoryAddress: '0x19Bd4E0DEdb9E5Ee9762391893d1f661404b561f',
     tokenAddresses: {},
     etherscan: 'https://rinkeby.etherscan.io/',
-    foreignEtherscan: 'https://ropsten.etherscan.io/',    
+    foreignEtherscan: 'https://ropsten.etherscan.io/',
     feathersConnection: 'https://feathers.alpha.giveth.io',
     foreignNodeConnection: 'wss://rinkeby.giveth.io:8546',
     homeNodeConnection: 'https://ropsten.infura.io/Id3GoVvLrsO08ZNjxiKz',

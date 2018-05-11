@@ -149,5 +149,3 @@ export const getHomeWeb3 = () =>
 
     resolve(homeWeb3);
   });
-
-export default getWeb3;
