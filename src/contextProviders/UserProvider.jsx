@@ -110,12 +110,13 @@ class UserProvider extends Component {
     if (this.state.wallet) this.state.wallet.lock();
 
     feathersClient.logout();
-    this.setState({ currentUser: undefined });
+    this.setState({ currentUser: undefined, walletLocked: true });
   }
 
   onSignIn() {
     const address = this.state.wallet.getAddresses()[0];
     this.getUserData(address);
+    this.setState({ walletLocked: false });
   }
 
   getUserData(address) {
@@ -148,7 +149,7 @@ class UserProvider extends Component {
     getHomeWeb3().then(web3 => web3.setWallet(wallet));
 
     this.getUserData(address);
-    this.setState({ wallet });
+    this.setState({ wallet, walletLocked: false });
   }
 
   unlockWallet(redirectAfter) {
