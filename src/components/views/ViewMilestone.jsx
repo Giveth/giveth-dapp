@@ -1,29 +1,26 @@
-import React, { Component } from 'react';
-import PropTypes from 'prop-types';
-import { Link } from 'react-router-dom';
-import { paramsForServer } from 'feathers-hooks-common';
-import Avatar from 'react-avatar';
-import moment from 'moment';
-import { Form } from 'formsy-react-components';
 import BigNumber from 'bignumber.js';
+import { paramsForServer } from 'feathers-hooks-common';
+import { Form } from 'formsy-react-components';
+import moment from 'moment';
+import PropTypes from 'prop-types';
+import React, { Component } from 'react';
+import Avatar from 'react-avatar';
 import ReactHtmlParser, { convertNodeToElement } from 'react-html-parser';
-
-import { feathersClient } from './../../lib/feathersClient';
-import { getUserName, getUserAvatar, convertEthHelper, isOwner } from '../../lib/helpers';
-import { redirectAfterWalletUnlock, checkWalletBalance } from '../../lib/middleware';
-
-import Loader from './../Loader';
-import GoBackButton from '../GoBackButton';
+import { Link } from 'react-router-dom';
+import { utils } from 'web3';
+import GivethWallet from '../../lib/blockchain/GivethWallet';
+import { convertEthHelper, getUserAvatar, getUserName, isOwner } from '../../lib/helpers';
+import { checkWalletBalance, redirectAfterWalletUnlock } from '../../lib/middleware';
+import User from '../../models/User';
 import BackgroundImageHeader from '../BackgroundImageHeader';
 import DonateButton from '../DonateButton';
+import ErrorPopup from '../ErrorPopup';
+import GoBackButton from '../GoBackButton';
 import ShowTypeDonations from '../ShowTypeDonations';
 import getNetwork from './../../lib/blockchain/getNetwork';
+import { feathersClient } from './../../lib/feathersClient';
+import Loader from './../Loader';
 import MilestoneItem from './../MilestoneItem';
-
-import GivethWallet from '../../lib/blockchain/GivethWallet';
-import User from '../../models/User';
-
-import ErrorPopup from '../ErrorPopup';
 
 /**
   Loads and shows a single milestone
@@ -169,6 +166,7 @@ class ViewMilestone extends Component {
       campaign,
       campaignOwnerAddress,
     } = this.state;
+
     return (
       <div id="view-milestone-view">
         {isLoading && <Loader className="fixed" />}
@@ -255,7 +253,19 @@ class ViewMilestone extends Component {
                             </thead>
                             <tbody>
                               {items.map((item, i) => (
-                                <MilestoneItem name={`milestoneItem-${i}`} item={item} />
+                                <MilestoneItem
+                                  key={item.date}
+                                  name={`milestoneItem-${i}`}
+                                  item={{
+                                    date: item.date,
+                                    description: item.description,
+                                    selectedFiatType: item.selectedFiatType,
+                                    fiatAmount: item.fiatAmount,
+                                    conversionRate: item.conversionRate,
+                                    wei: utils.toWei(item.etherAmount || '0'),
+                                    image: item.image,
+                                  }}
+                                />
                               ))}
                             </tbody>
                           </table>
