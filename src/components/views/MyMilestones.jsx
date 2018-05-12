@@ -14,7 +14,7 @@ import {
   checkWalletBalance,
 } from '../../lib/middleware';
 import getNetwork from '../../lib/blockchain/getNetwork';
-import getWeb3 from '../../lib/blockchain/getWeb3';
+import { getWeb3 } from '../../lib/blockchain/getWeb3';
 import Loader from '../Loader';
 import User from '../../models/User';
 import {

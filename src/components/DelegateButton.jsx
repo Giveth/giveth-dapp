@@ -14,7 +14,7 @@ import {
 } from '../lib/middleware';
 import { getGasPrice } from '../lib/helpers';
 import getNetwork from '../lib/blockchain/getNetwork';
-import getWeb3 from '../lib/blockchain/getWeb3';
+import { getWeb3 } from '../lib/blockchain/getWeb3';
 import GivethWallet from '../lib/blockchain/GivethWallet';
 
 import ErrorPopup from './ErrorPopup';

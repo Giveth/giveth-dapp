@@ -25,7 +25,7 @@ import {
   confirmBlockchainTransaction,
 } from '../../lib/middleware';
 import getNetwork from '../../lib/blockchain/getNetwork';
-import getWeb3 from '../../lib/blockchain/getWeb3';
+import { getWeb3 } from '../../lib/blockchain/getWeb3';
 import LoaderButton from '../../components/LoaderButton';
 import User from '../../models/User';
 import GivethWallet from '../../lib/blockchain/GivethWallet';

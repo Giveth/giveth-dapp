@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { feathersClient } from '../lib/feathersClient';
 
 import GivethWallet from '../lib/blockchain/GivethWallet';
-import getWeb3 from '../lib/blockchain/getWeb3';
+import { getWeb3, getHomeWeb3 } from '../lib/blockchain/getWeb3';
 
 import ErrorPopup from '../components/ErrorPopup';
 
@@ -35,18 +35,6 @@ feathersClient
  * if passed as props to children.
  */
 class UserProvider extends Component {
-  static getUserProfile(address) {
-    return feathersClient
-      .service('/users')
-      .get(address)
-      .then(user => user)
-      .catch(err => {
-        ErrorPopup(
-          'Something went wrong with getting user profile. Please try again after refresh.',
-          err,
-        );
-      });
-  }
   constructor() {
     super();
 
@@ -66,6 +54,7 @@ class UserProvider extends Component {
     this.lockWallet = this.lockWallet.bind(this);
     this.walletUnlocked = this.walletUnlocked.bind(this);
     this.hideUnlockWalletModal = this.hideUnlockWalletModal.bind(this);
+    this.getUserData = this.getUserData.bind(this);
 
     // Making unlock wallet global
     React.unlockWallet = this.unlockWallet;
@@ -79,15 +68,13 @@ class UserProvider extends Component {
         if (token) return feathersClient.passport.verifyJWT(token);
         return null;
       })
-      .then(payload => UserProvider.getUserProfile(payload.userId))
-      .then(user => {
-        if (!user) throw new Error('No User');
+      .then(payload => {
+        this.getUserData(payload.userId);
         feathersClient.authenticate(); // need to authenticate the socket connection
 
         this.setState({
           isLoading: false,
           hasError: false,
-          currentUser: new User(user),
         });
       })
       .catch(() => {
@@ -102,6 +89,7 @@ class UserProvider extends Component {
       })
       .then(wallet => {
         getWeb3().then(web3 => web3.setWallet(wallet));
+        getHomeWeb3().then(web3 => web3.setWallet(wallet));
         this.setState({ wallet });
       })
       .catch(err => {
@@ -114,18 +102,43 @@ class UserProvider extends Component {
       });
   }
 
+  componentWillUnmount() {
+    if (this.userSubscriber) this.userSubscriber.unsubscribe();
+  }
+
   onSignOut() {
     if (this.state.wallet) this.state.wallet.lock();
 
     feathersClient.logout();
-    this.setState({ currentUser: undefined });
+    this.setState({ currentUser: undefined, walletLocked: true });
   }
 
   onSignIn() {
     const address = this.state.wallet.getAddresses()[0];
-    return UserProvider.getUserProfile(address).then(user =>
-      this.setState({ currentUser: new User(user) }),
-    );
+    this.getUserData(address);
+    this.setState({ walletLocked: false });
+  }
+
+  getUserData(address) {
+    if (this.userSubscriber) this.userSubscriber.unsubscribe();
+    this.userSubscriber = feathersClient
+      .service('/users')
+      .watch({ listStrategy: 'always' })
+      .find({
+        query: {
+          address,
+        },
+      })
+      .subscribe(
+        resp => {
+          if (resp.total === 1) this.setState({ currentUser: new User(resp.data[0]) });
+        },
+        error =>
+          ErrorPopup(
+            'Something went wrong with getting user profile. Please try again after refresh.',
+            error,
+          ),
+      );
   }
 
   handleWalletChange(wallet) {
@@ -133,13 +146,10 @@ class UserProvider extends Component {
     const address = wallet.getAddresses()[0];
 
     getWeb3().then(web3 => web3.setWallet(wallet));
+    getHomeWeb3().then(web3 => web3.setWallet(wallet));
 
-    UserProvider.getUserProfile(address).then(user =>
-      this.setState({
-        wallet,
-        currentUser: new User(user),
-      }),
-    );
+    this.getUserData(address);
+    this.setState({ wallet, walletLocked: false });
   }
 
   unlockWallet(redirectAfter) {

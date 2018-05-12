@@ -218,6 +218,7 @@ class EditProfile extends Component {
                   <div className="form-group">
                     <Input
                       name="name"
+                      autoComplete="name"
                       id="name-input"
                       label="Your name"
                       type="text"
@@ -235,6 +236,7 @@ class EditProfile extends Component {
                   <div className="form-group">
                     <Input
                       name="email"
+                      autoComplete="email"
                       label="Email"
                       value={email}
                       placeholder="email@example.com"
