@@ -1,4 +1,4 @@
-import getWeb3 from '../lib/blockchain/getWeb3';
+import { getWeb3 } from '../lib/blockchain/getWeb3';
 import getNetwork from '../lib/blockchain/getNetwork';
 import { getGasPrice } from '../lib/helpers';
 
@@ -35,6 +35,38 @@ class WalletService {
           txHash = hash;
           afterCreate(etherScanUrl, txHash);
         });
+      })
+      .then(afterMined)
+      .catch(onError);
+  }
+
+  /**
+   * Withdraw money from an acount via the bridge
+   *
+   * @param data Transaction data containing:
+   *             addr  Address transferring from
+   *             value How much is being transfered
+   *             token Address of the token to transfer
+   * @param afterCreate Callback function once the transaction is broadcasted.
+   *                    The function takes 2 parameters: Etherscan URL and transaction hash
+   * @param afterMined  Callback function after the transaction has been mined
+   * @param onError     Callback function for an onError
+   */
+  static bridgeWithdraw(data, afterCreate = () => {}, afterMined = () => {}, onError = () => {}) {
+    let txHash;
+    let etherScanUrl;
+
+    Promise.all([getGasPrice(), getWeb3(), getNetwork()])
+      .then(([gasPrice, web3, network]) => {
+        const { foreignGivethBridge } = network;
+        etherScanUrl = network.etherscan;
+
+        return foreignGivethBridge
+          .withdraw(data.token, web3.utils.toWei(data.value), { from: data.addr, gasPrice })
+          .once('transactionHash', hash => {
+            txHash = hash;
+            afterCreate(etherScanUrl, txHash);
+          });
       })
       .then(afterMined)
       .catch(onError);

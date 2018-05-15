@@ -1,6 +1,6 @@
 import { LPPCampaign } from 'lpp-campaign';
 import getNetwork from '../lib/blockchain/getNetwork';
-import getWeb3 from '../lib/blockchain/getWeb3';
+import { getWeb3 } from '../lib/blockchain/getWeb3';
 import { feathersClient } from '../lib/feathersClient';
 import { getGasPrice } from '../lib/helpers';
 import Campaign from '../models/Campaign';
@@ -185,10 +185,10 @@ class CampaignService {
               );
             });
         })
-        .catch(() => {
+        .catch(err => {
           ErrorPopup(
             'Something went wrong with the transaction. Is your wallet unlocked?',
-            `${etherScanUrl}tx/${txHash}`,
+            `${etherScanUrl}tx/${txHash} => ${JSON.stringify(err, null, 2)}`,
           );
         });
     }
@@ -228,17 +228,17 @@ class CampaignService {
               });
           })
           .then(() => afterMined(`${etherScanUrl}tx/${txHash}`))
-          .catch(() => {
+          .catch(err => {
             ErrorPopup(
               'Something went wrong with cancelling your campaign',
-              `${etherScanUrl}tx/${txHash}`,
+              `${etherScanUrl}tx/${txHash} => ${JSON.stringify(err, null, 2)}`,
             );
           });
       })
-      .catch(() => {
+      .catch(err => {
         ErrorPopup(
           'Something went wrong with cancelling your campaign',
-          `${etherScanUrl}tx/${txHash}`,
+          `${etherScanUrl}tx/${txHash} => ${JSON.stringify(err, null, 2)}`,
         );
       });
   }

@@ -25,7 +25,7 @@ import {
   confirmBlockchainTransaction,
 } from '../../lib/middleware';
 import getNetwork from '../../lib/blockchain/getNetwork';
-import getWeb3 from '../../lib/blockchain/getWeb3';
+import { getWeb3 } from '../../lib/blockchain/getWeb3';
 import LoaderButton from '../../components/LoaderButton';
 import User from '../../models/User';
 import GivethWallet from '../../lib/blockchain/GivethWallet';
@@ -33,6 +33,7 @@ import MilestoneItem from '../../components/MilestoneItem';
 import AddMilestoneItem from '../../components/AddMilestoneItem';
 import ErrorPopup from '../ErrorPopup';
 import AddMilestoneItemModal from '../../components/AddMilestoneItemModal';
+import config from '../../configuration';
 
 BigNumber.config({ DECIMAL_PLACES: 18 });
 
@@ -491,7 +492,7 @@ class EditMilestone extends Component {
                   campaignReviewerAddress,
                   from,
                   maxAmount,
-                  0,
+                  Object.values(config.tokenAddresses)[0], // TODO make this a form param
                   5 * 24 * 60 * 60, // 5 days in seconds
                   { from, gasPrice, $extraGas: 200000 },
                 )

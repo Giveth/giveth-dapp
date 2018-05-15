@@ -33,7 +33,7 @@ class GivethWallet {
     this.keystores = keystores;
     this.unlocked = false;
     this.balance = undefined;
-    this.tokenBalance = undefined;
+    this.tokenBalances = {};
   }
 
   /**
@@ -46,8 +46,10 @@ class GivethWallet {
     return this.balance ? utils.fromWei(this.balance, unit || 'ether') : undefined;
   }
 
-  getTokenBalance(unit) {
-    return this.tokenBalance ? utils.fromWei(this.tokenBalance, unit || 'ether') : undefined;
+  getTokenBalance(address, unit) {
+    return this.tokenBalances[address]
+      ? utils.fromWei(this.tokenBalances[address], unit || 'ether')
+      : undefined;
   }
 
   /**
@@ -59,7 +61,7 @@ class GivethWallet {
   signTransaction(txData) {
     if (!this.unlocked) return Promise.reject(new Error('Locked Wallet'));
 
-    if (!txData.gasPrice || !txData.nonce || !txData.chainId)
+    if (!txData.gasPrice || (!txData.nonce && txData.nonce < 0) || !txData.chainId)
       return Promise.reject(new Error('gasPrice, nonce, and chainId are required'));
 
     const accounts = mapGet.call(mapAccounts, this);

@@ -31,7 +31,7 @@ class DACservice {
   /**
    * Lazy-load DACs by subscribing to DACs listener
    *
-   * @param onSuccess Callback function once response is obtained successfylly
+   * @param onSuccess Callback function once response is obtained successfully
    * @param onError   Callback function if error is encountered
    */
   static subscribe(onSuccess, onError) {

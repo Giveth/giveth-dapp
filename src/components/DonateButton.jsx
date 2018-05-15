@@ -7,12 +7,15 @@ import { MiniMeToken } from 'minimetoken';
 import { Form, Input } from 'formsy-react-components';
 
 import getNetwork from '../lib/blockchain/getNetwork';
+import getRopstenNetwork from '../lib/blockchain/getRopstenNetwork';
 import { feathersClient } from '../lib/feathersClient';
 import { takeActionAfterWalletUnlock, confirmBlockchainTransaction } from '../lib/middleware';
 import User from '../models/User';
 import { displayTransactionError, getGasPrice } from '../lib/helpers';
 import GivethWallet from '../lib/blockchain/GivethWallet';
-import getWeb3 from '../lib/blockchain/getWeb3';
+import { getWeb3, getHomeWeb3 } from '../lib/blockchain/getWeb3';
+import LoaderButton from './LoaderButton';
+import ErrorPopup from './ErrorPopup';
 
 class DonateButton extends React.Component {
   constructor() {
@@ -22,7 +25,6 @@ class DonateButton extends React.Component {
       isSaving: false,
       formIsValid: false,
       amount: '',
-      mewAmount: '0',
       modalVisible: false,
       // gasPrice: utils.toWei('4', 'gwei'),
       gasPrice: utils.toWei('10', 'gwei'),
@@ -54,12 +56,20 @@ class DonateButton extends React.Component {
   }
 
   openDialog() {
-    // getGasPrice().then(gasPrice =>
+    this.refs.amountInput.resetValue();
     this.setState({
-      // gasPrice,
       modalVisible: true,
+      amount: '',
+      formIsValid: false,
     });
-    // );
+  }
+
+  closeDialog() {
+    this.setState({
+      modalVisible: false,
+      amount: '',
+      formIsValid: false,
+    });
   }
 
   toggleFormValid(state) {
@@ -101,6 +111,12 @@ class DonateButton extends React.Component {
   //   }
   // }
 
+  mapInputs(inputs) {
+    return {
+      amount: inputs.amount,
+    };
+  }
+
   submit(model) {
     console.log(model, this.props.type.toLowerCase(), this.props.model.adminId);
 
@@ -129,20 +145,147 @@ class DonateButton extends React.Component {
   }
 
   donateWithBridge(model) {
-    console.log(model);
     const { currentUser } = this.props;
     const { adminId } = this.props.model;
     const { gasPrice } = this.state;
 
-    getNetwork().then(network => {
+    Promise.all([getNetwork(), getHomeWeb3()]).then(([network, homeWeb3]) => {
       const { givethBridge } = network;
-
+      const { wallet } = this.props;
+      const etherScanUrl = network.foreignEtherscan;
       const to = givethBridge.$address;
-      const value = model.amount;
-      const gas = 25400;
+      const value = utils.toWei(model.amount);
+
+      // 25400 gas will often be rejected by Ropsten!
+      // so increased this a lot to be more reliable for testing
+      const gas = 250000;
       const data = currentUser.giverId
         ? givethBridge.$contract.methods.donate(currentUser.giverId, adminId).encodeABI()
-        : givethBridge.$contract.methods.donateAndCreateGiver(currentUser.id, adminId).encodeABI();
+        : givethBridge.$contract.methods
+            .donateAndCreateGiver(currentUser.address, adminId)
+            .encodeABI();
+
+      Promise.all([
+        homeWeb3.eth.net.getId(),
+        homeWeb3.eth.getTransactionCount(wallet.getAddresses()[0]),
+      ])
+        .then(([id, nonce]) => {
+          // construct transaction
+          const tx = {
+            from: this.props.currentUser.address,
+            to,
+            value,
+            gas,
+            gasPrice,
+            data,
+            nonce,
+            chainId: id,
+          };
+
+          // sign transaction
+          wallet
+            .signTransaction(tx)
+            .then(signedTx => {
+              console.log('signedTx', signedTx);
+
+              // send transaction
+              homeWeb3.eth
+                .sendSignedTransaction(signedTx.rawTransaction)
+                .on('transactionHash', txHash => {
+                  console.log('transactionHash', txHash);
+
+                  this.closeDialog();
+
+                  // Get the tx hash
+                  homeWeb3.eth.getTransaction(txHash).then(data => {
+                    React.toast.info(
+                      <p>
+                        Awesome! Your donation is pending...<br />
+                        <a
+                          href={`${etherScanUrl}tx/${txHash}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          View transaction
+                        </a>
+                      </p>,
+                    );
+                  });
+
+                  // As Infura doesn't provide receipt events
+                  // we poll for the receipt ourselves
+                  const _getTransactionReceiptMined = (txHash, blocks) => {
+                    let count = 0;
+                    const FIFTEEN_SECONDS = 1000 * 15; // the average blocktime
+
+                    const _getReceiptAsync = (resolve, reject) => {
+                      if (count > blocks) {
+                        return reject(`Your donation was not mined within ${blocks} blocks`);
+                      }
+
+                      homeWeb3.eth.getTransactionReceipt(txHash, (error, receipt) => {
+                        console.log('receipt', error, receipt);
+                        if (error) {
+                          return reject(error);
+                        } else if (receipt == null) {
+                          setTimeout(() => _getReceiptAsync(resolve, reject), FIFTEEN_SECONDS);
+                        } else {
+                          return resolve(receipt);
+                        }
+                      });
+
+                      count++;
+                    };
+                    return new Promise(_getReceiptAsync);
+                  };
+
+                  _getTransactionReceiptMined(txHash, 10)
+                    .then(receipt => {
+                      React.toast.success(
+                        <p>
+                          Woot! Woot! Donation received. You are awesome!<br />
+                          <a
+                            href={`${etherScanUrl}tx/${txHash}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            View transaction
+                          </a>
+                        </p>,
+                      );
+                    })
+                    .catch(e => {
+                      console.log('receipt error', e);
+                      React.toast.info(
+                        <p>
+                          {`${e}`} Please check the transaction on Etherscan to confirm.<br />
+                          <a
+                            href={`${etherScanUrl}tx/${txHash}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            View transaction
+                          </a>
+                        </p>,
+                      );
+                    });
+                });
+            })
+            .catch(e => {
+              console.log('could not send signedTx', e);
+
+              // with ropsten infura, this catch always throws, so we filter that one out
+              if (!e.message.includes('newBlockHeaders')) {
+                ErrorPopup('Something went wrong with the transaction. Please try again', e);
+              }
+            });
+        })
+        // with ropsten infura, this catch always throws
+        .catch(e => {
+          console.error(e);
+        });
+
+      return;
 
       const query = `?to=${to}&value=${value}&gasLimit=${gas}&data=${data}&gasPrice=${gasPrice}`;
       this.setState({
@@ -150,66 +293,68 @@ class DonateButton extends React.Component {
       });
 
       React.swal({
+        className: 'swal-huge',
         title: "You're almost there...",
         content: React.swal.msg(
-          <p>
-            It&#8217;s great to see that you want to donate, however we only support donating
-            directly in the dapp yet. Use the followng information to donate via
-            {/* <a target="_blank" href={`https://mycrypto.com/${query}#send-transaction`}> */}
-            {/* MyCrypto */}
-            {/* </a>, MyEtherWallet, etc. */}
-            MyCrypto, MyEtherWallet, etc.
-            {/* <a target="_blank" href={`https://myetherwallet.com/${query}#send-transaction`}> */}
-            {/* MyEtherWallet, */}
-            {/* </a>, etc. */}
-            <br />
-            <br />
-            <b style={{ color: '#e4000b' }}>NOTE: DO NOT SEND MAINNET ETHER.</b>
-            <br />
-            <br />
-            <b style={{ color: '#e4000b' }}>
-              NOTE: You must choose the "Ropsten" network to send the tx
-            </b>
-            <br />
-            <br />
-            <div className="container">
+          <div>
+            <p>
+              It&#8217;s great to see that you want to donate, however we don't support donating
+              directly in the dapp yet. Use the followng information to donate via
+              {/* <a target="_blank" href={`https://mycrypto.com/${query}#send-transaction`}> */}
+              {/* MyCrypto */}
+              {/* </a>, MyEtherWallet, etc. */}
+              MyCrypto, MyEtherWallet, etc.
+              {/* <a target="_blank" href={`https://myetherwallet.com/${query}#send-transaction`}> */}
+              {/* MyEtherWallet, */}
+              {/* </a>, etc. */}
+            </p>
+            <div className="alert alert-danger">
+              <b style={{ color: '#e4000b' }}>NOTE: DO NOT SEND MAINNET ETHER.</b>
+            </div>
+            <div className="alert alert-danger">
+              <b style={{ color: '#e4000b' }}>
+                NOTE: You must choose the "Ropsten" network to send the tx
+              </b>
+            </div>
+            <p>Use the following data to make your transaction:</p>
+            <div className="container alert alert-info text-left">
               <div className="row">
-                <div className="col col-sm-2">
+                <div className="col-sm-2">
                   <b>to:</b>
                 </div>
-                <div className="col" style={{ 'overflow-x': 'auto' }}>
+                <div className="col-sm-10" style={{ wordWrap: 'break-word' }}>
                   {to}
                 </div>
               </div>
               <div className="row">
-                <div className="col col-sm-2">
+                <div className="col-sm-2">
                   <b>value:</b>
                 </div>
-                <div className="col" style={{ 'overflow-x': 'auto' }}>
+                <div className="col-sm-10" style={{ wordWrap: 'break-word' }}>
                   {value}
                 </div>
               </div>
               <div className="row">
-                <div className="col col-sm-2">
+                <div className="col-sm-2">
                   <b>gasLimit:</b>
                 </div>
-                <div className="col" style={{ 'overflow-x': 'auto' }}>
+                <div className="col-sm-10" style={{ wordWrap: 'break-word' }}>
                   {gas}
                 </div>
               </div>
               <div className="row">
-                <div className="col col-sm-2">
+                <div className="col-sm-2">
                   <b>data:</b>
                 </div>
-                <div className="col" style={{ 'overflow-x': 'auto' }}>
+                <div className="col-sm-10" style={{ wordWrap: 'break-word' }}>
                   {data}
                 </div>
               </div>
             </div>
-          </p>,
+          </div>,
         ),
         icon: 'info',
-        buttons: ['Got it', 'Go to MyCrypto now!'],
+        buttons: ['I changed my mind', 'Go to MyCrypto now!'],
       }).then(isConfirmed => {
         if (isConfirmed) window.open(`https://mycrypto.com/${query}#send-transaction`);
       });
@@ -311,8 +456,8 @@ class DonateButton extends React.Component {
     let txHash;
     let etherScanUrl;
     const doDonate = () =>
-      Promise.all([getNetwork(), getWeb3()])
-        .then(([network, web3]) => {
+      Promise.all([getNetwork(), getWeb3(), getHomeWeb3()])
+        .then(([network, web3, ropstenWeb3]) => {
           const { tokenAddress, liquidPledgingAddress } = network;
           etherScanUrl = network.etherscan;
           const token = new MiniMeToken(web3, tokenAddress);
@@ -358,8 +503,7 @@ class DonateButton extends React.Component {
 
   render() {
     const { type, model, wallet } = this.props;
-    // const { isSaving, amount, formIsValid, gasPrice, MEWurl, mewAmount } = this.state;
-    const { amount, gasPrice } = this.state;
+    const { amount, gasPrice, formIsValid, isSaving } = this.state;
     const style = {
       display: 'inline-block',
     };
@@ -370,66 +514,61 @@ class DonateButton extends React.Component {
           Donate
         </button>
 
-        {wallet &&
-          this.state.modalVisible && (
-            <SkyLightStateless
-              isVisible={this.state.modalVisible}
-              onCloseClicked={() => {
-                this.setState({ modalVisible: false });
-              }}
-              onOverlayClicked={() => {
-                this.setState({ modalVisible: false });
-              }}
-              title={`Support this ${type}!`}
-            >
-              <strong>
-                Give Ether to support <em>{model.title}</em>
-              </strong>
+        {wallet && (
+          <SkyLightStateless
+            isVisible={this.state.modalVisible}
+            onCloseClicked={() => this.closeDialog()}
+            onOverlayClicked={() => this.closeDialog()}
+            title={`Support this ${type}!`}
+          >
+            <strong>
+              Give Ether to support <em>{model.title}</em>
+            </strong>
 
-              {type === 'DAC' && (
-                <p>
-                  Pledge: as long as the {type} owner does not lock your money you can take it back
-                  any time.
-                </p>
-              )}
-
+            {type === 'DAC' && (
               <p>
-                {/* Your wallet balance: <em>&#926;{wallet.getTokenBalance()}</em> */}
-                {/* <br /> */}
-                Gas price: <em>{utils.fromWei(gasPrice, 'gwei')} Gwei</em>
+                Pledge: as long as the {type} owner does not lock your money you can take it back
+                any time.
               </p>
+            )}
 
-              <Form
-                onSubmit={this.submit}
-                mapping={this.mapInputs}
-                onValid={() => this.toggleFormValid(true)}
-                onInvalid={() => this.toggleFormValid(false)}
-                layout="vertical"
-              >
-                <div className="form-group">
-                  <Input
-                    name="amount"
-                    // id="amount-input"
-                    label="How much Ξ do you want to donate?"
-                    type="number"
-                    value={amount}
-                    onChange={(name, value) => this.setState({ mewAmount: value })}
-                    placeholder="10"
-                    // validations={{
+            <p>
+              {/* Your wallet balance: <em>&#926;{wallet.getTokenBalance()}</em> */}
+              {/* <br /> */}
+              Gas price: <em>{utils.fromWei(gasPrice, 'gwei') * 10} Gwei</em>
+            </p>
+
+            <Form
+              onSubmit={this.submit}
+              mapping={inputs => this.mapInputs(inputs)}
+              onValid={() => this.toggleFormValid(true)}
+              onInvalid={() => this.toggleFormValid(false)}
+              layout="vertical"
+            >
+              <div className="form-group">
+                <Input
+                  name="amount"
+                  ref="amountInput"
+                  id="amount-input"
+                  label="How much Ξ do you want to donate?"
+                  type="number"
+                  value={amount}
+                  placeholder="1"
+                  validations={{
                     // lessThan: wallet.getTokenBalance() - 0.5,
-                    // greaterThan: 0.00000000009,
-                    // }}
-                    // validationErrors={{
-                    // greaterThan: 'Minimum value must be at least Ξ0.1',
+                    greaterThan: 0.009,
+                  }}
+                  validationErrors={{
+                    greaterThan: 'Minimum value must be at least Ξ0.01',
                     // lessThan:
                     // 'This donation exceeds your Giveth wallet balance. Please top up your wallet or donate with MyEtherWallet.',
-                    // }}
-                    required
-                    autoFocus
-                  />
-                </div>
+                  }}
+                  required
+                  autoFocus
+                />
+              </div>
 
-                {/* <button
+              {/* <button
                 className="btn btn-success"
                 formNoValidate
                 type="submit"
@@ -438,11 +577,18 @@ class DonateButton extends React.Component {
                 {isSaving ? 'Donating...' : 'Donate Ξ with Giveth'}
               </button> */}
 
-                <button className="btn btn-success" formNoValidate type="submit">
-                  Donate with MyEtherWallet
-                </button>
+              <LoaderButton
+                className="btn btn-success"
+                formNoValidate
+                type="submit"
+                disabled={isSaving || !formIsValid}
+                isLoading={isSaving}
+                loadingText="Saving..."
+              >
+                Donate with Giveth
+              </LoaderButton>
 
-                {/* <a
+              {/* <a
                  className={`btn btn-secondary ${isSaving ? 'disabled' : ''}`}
                  disabled={isSaving}
                  href={`${MEWurl}&value=${mewAmount}#send-transaction`}
@@ -451,9 +597,9 @@ class DonateButton extends React.Component {
                >
                 Donate with MyEtherWallet
               </a> */}
-              </Form>
-            </SkyLightStateless>
-          )}
+            </Form>
+          </SkyLightStateless>
+        )}
       </span>
     );
   }

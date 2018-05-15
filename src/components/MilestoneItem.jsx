@@ -1,9 +1,8 @@
-import React from 'react';
 import { withFormsy } from 'formsy-react';
-import PropTypes from 'prop-types';
 import moment from 'moment';
-
-import { getTruncatedText, convertEthHelper } from './../lib/helpers';
+import PropTypes from 'prop-types';
+import React from 'react';
+import { convertEthHelper, getTruncatedText } from './../lib/helpers';
 
 /** *
  * NOTE: This component is created as a Formsy form component
@@ -23,7 +22,6 @@ class MilestoneItem extends React.Component {
 
   render() {
     const { removeItem, item, isEditMode } = this.props;
-
     return (
       <tr>
         <td className="td-item-date">{moment.utc(item.date).format('Do MMM YYYY')}</td>
