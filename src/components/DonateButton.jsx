@@ -370,65 +370,66 @@ class DonateButton extends React.Component {
           Donate
         </button>
 
-        {wallet && (
-          <SkyLightStateless
-            isVisible={this.state.modalVisible}
-            onCloseClicked={() => {
-              this.setState({ modalVisible: false });
-            }}
-            onOverlayClicked={() => {
-              this.setState({ modalVisible: false });
-            }}
-            title={`Support this ${type}!`}
-          >
-            <strong>
-              Give Ether to support <em>{model.title}</em>
-            </strong>
-
-            {type === 'DAC' && (
-              <p>
-                Pledge: as long as the {type} owner does not lock your money you can take it back
-                any time.
-              </p>
-            )}
-
-            <p>
-              {/* Your wallet balance: <em>&#926;{wallet.getTokenBalance()}</em> */}
-              {/* <br /> */}
-              Gas price: <em>{utils.fromWei(gasPrice, 'gwei')} Gwei</em>
-            </p>
-
-            <Form
-              onSubmit={this.submit}
-              mapping={this.mapInputs}
-              onValid={() => this.toggleFormValid(true)}
-              onInvalid={() => this.toggleFormValid(false)}
-              layout="vertical"
+        {wallet &&
+          this.state.modalVisible && (
+            <SkyLightStateless
+              isVisible={this.state.modalVisible}
+              onCloseClicked={() => {
+                this.setState({ modalVisible: false });
+              }}
+              onOverlayClicked={() => {
+                this.setState({ modalVisible: false });
+              }}
+              title={`Support this ${type}!`}
             >
-              <div className="form-group">
-                <Input
-                  name="amount"
-                  id="amount-input"
-                  label="How much Ξ do you want to donate?"
-                  type="number"
-                  value={amount}
-                  onChange={(name, value) => this.setState({ mewAmount: value })}
-                  placeholder="10"
-                  // validations={{
-                  // lessThan: wallet.getTokenBalance() - 0.5,
-                  // greaterThan: 0.00000000009,
-                  // }}
-                  // validationErrors={{
-                  // greaterThan: 'Minimum value must be at least Ξ0.1',
-                  // lessThan:
-                  // 'This donation exceeds your Giveth wallet balance. Please top up your wallet or donate with MyEtherWallet.',
-                  // }}
-                  required
-                  autoFocus
-                />
-              </div>
+              <strong>
+                Give Ether to support <em>{model.title}</em>
+              </strong>
 
-              {/* <button
+              {type === 'DAC' && (
+                <p>
+                  Pledge: as long as the {type} owner does not lock your money you can take it back
+                  any time.
+                </p>
+              )}
+
+              <p>
+                {/* Your wallet balance: <em>&#926;{wallet.getTokenBalance()}</em> */}
+                {/* <br /> */}
+                Gas price: <em>{utils.fromWei(gasPrice, 'gwei')} Gwei</em>
+              </p>
+
+              <Form
+                onSubmit={this.submit}
+                mapping={this.mapInputs}
+                onValid={() => this.toggleFormValid(true)}
+                onInvalid={() => this.toggleFormValid(false)}
+                layout="vertical"
+              >
+                <div className="form-group">
+                  <Input
+                    name="amount"
+                    // id="amount-input"
+                    label="How much Ξ do you want to donate?"
+                    type="number"
+                    value={amount}
+                    onChange={(name, value) => this.setState({ mewAmount: value })}
+                    placeholder="10"
+                    // validations={{
+                    // lessThan: wallet.getTokenBalance() - 0.5,
+                    // greaterThan: 0.00000000009,
+                    // }}
+                    // validationErrors={{
+                    // greaterThan: 'Minimum value must be at least Ξ0.1',
+                    // lessThan:
+                    // 'This donation exceeds your Giveth wallet balance. Please top up your wallet or donate with MyEtherWallet.',
+                    // }}
+                    required
+                    autoFocus
+                  />
+                </div>
+
+                {/* <button
                 className="btn btn-success"
                 formNoValidate
                 type="submit"
@@ -437,11 +438,11 @@ class DonateButton extends React.Component {
                 {isSaving ? 'Donating...' : 'Donate Ξ with Giveth'}
               </button> */}
 
-              <button className="btn btn-success" formNoValidate type="submit">
-                Donate with MyEtherWallet
-              </button>
+                <button className="btn btn-success" formNoValidate type="submit">
+                  Donate with MyEtherWallet
+                </button>
 
-              {/* <a
+                {/* <a
                  className={`btn btn-secondary ${isSaving ? 'disabled' : ''}`}
                  disabled={isSaving}
                  href={`${MEWurl}&value=${mewAmount}#send-transaction`}
@@ -450,9 +451,9 @@ class DonateButton extends React.Component {
                >
                 Donate with MyEtherWallet
               </a> */}
-            </Form>
-          </SkyLightStateless>
-        )}
+              </Form>
+            </SkyLightStateless>
+          )}
       </span>
     );
   }

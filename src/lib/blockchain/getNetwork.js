@@ -23,8 +23,6 @@ export default () => {
     );
     network.givethBridge = new GivethBridge(web3, network.givethBridgeAddress);
 
-    console.log(network);
-
     return network;
   });
 };
