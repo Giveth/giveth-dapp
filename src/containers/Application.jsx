@@ -120,7 +120,7 @@ class Application extends Component {
                 {!isLoading &&
                   !hasError && (
                     <div>
-                      <MainMenu onSignOut={onSignOut} wallet={wallet} currentUser={currentUser} />
+                      <MainMenu onSignOut={onSignOut} />
 
                       <Switch>
                         {/* Routes are defined here. Persistent data is set as props on components
@@ -327,7 +327,7 @@ class Application extends Component {
                           component={props => <Profile {...props} />}
                         />
 
-                        <DataRoutes currentUser={currentUser} wallet={wallet} />
+                        <DataRoutes />
 
                         <Route component={NotFound} />
                       </Switch>

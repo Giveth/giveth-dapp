@@ -1,13 +1,12 @@
 import React, { Component } from 'react';
-import PropTypes from 'prop-types';
 import { Route } from 'react-router-dom';
+
+import { Consumer as UserConsumer } from '../contextProviders/UserProvider';
 
 import DACs from './../components/views/DACs';
 import Campaigns from './../components/views/Campaigns';
 import Loader from './../components/Loader';
 
-import User from './../models/User';
-import GivethWallet from '../lib/blockchain/GivethWallet';
 import DACservice from '../services/DAC';
 import CampaignService from '../services/Campaign';
 
@@ -48,65 +47,46 @@ class DataRoutes extends Component {
   }
 
   render() {
-    const { currentUser, wallet } = this.props;
     const { dacs, campaigns, dacsLoading, campaignsLoading, hasError } = this.state;
 
     return (
-      <div>
-        {(dacsLoading || campaignsLoading) && <Loader className="fixed" />}
+      <UserConsumer>
+        {({ state: { wallet, currentUser } }) => (
+          <div>
+            {(dacsLoading || campaignsLoading) && <Loader className="fixed" />}
 
-        {!(dacsLoading || campaignsLoading) &&
-          !hasError && (
-            <div>
-              <Route
-                exact
-                path="/"
-                render={props => (
-                  <DACs dacs={dacs} currentUser={currentUser} wallet={wallet} {...props} />
-                )}
-              />
-              <Route
-                exact
-                path="/dacs"
-                render={props => (
-                  <DACs dacs={dacs} currentUser={currentUser} wallet={wallet} {...props} />
-                )}
-              />
-              <Route
-                exact
-                path="/campaigns"
-                render={props => (
-                  <Campaigns
-                    campaigns={campaigns}
-                    currentUser={currentUser}
-                    wallet={wallet}
-                    {...props}
+            {!(dacsLoading || campaignsLoading) &&
+              !hasError && (
+                <div>
+                  <Route exact path="/" render={props => <DACs dacs={dacs} {...props} />} />
+                  <Route exact path="/dacs" render={props => <DACs dacs={dacs} {...props} />} />
+                  <Route
+                    exact
+                    path="/campaigns"
+                    render={props => (
+                      <Campaigns
+                        campaigns={campaigns}
+                        currentUser={currentUser}
+                        wallet={wallet}
+                        {...props}
+                      />
+                    )}
                   />
-                )}
-              />
-            </div>
-          )}
+                </div>
+              )}
 
-        {!(dacsLoading || campaignsLoading) &&
-          hasError && (
-            <center>
-              <h2>Oops, something went wrong...</h2>
-              <p>The Giveth dapp could not load for some reason. Please try again...</p>
-            </center>
-          )}
-      </div>
+            {!(dacsLoading || campaignsLoading) &&
+              hasError && (
+                <center>
+                  <h2>Oops, something went wrong...</h2>
+                  <p>The Giveth dapp could not load for some reason. Please try again...</p>
+                </center>
+              )}
+          </div>
+        )}
+      </UserConsumer>
     );
   }
 }
-
-DataRoutes.propTypes = {
-  currentUser: PropTypes.instanceOf(User),
-  wallet: PropTypes.instanceOf(GivethWallet),
-};
-
-DataRoutes.defaultProps = {
-  currentUser: undefined,
-  wallet: undefined,
-};
 
 export default DataRoutes;
