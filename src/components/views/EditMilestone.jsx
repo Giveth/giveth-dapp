@@ -535,7 +535,8 @@ class EditMilestone extends Component {
                   );
                 });
             })
-            .catch(() => {
+            .catch((e) => {
+              this.setState({ isSaving: false });
               ErrorPopup(
                 'Something went wrong with the transaction. Is your wallet unlocked?',
                 `${etherScanUrl}tx/${txHash}`,

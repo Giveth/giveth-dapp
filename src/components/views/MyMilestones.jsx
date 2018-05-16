@@ -258,9 +258,16 @@ class MyMilestones extends Component {
           text: 'Are you sure you want to mark this Milestone as complete?',
           icon: 'warning',
           dangerMode: true,
+          content: {
+            element: "input",
+            attributes: {
+              placeholder: "Add a message for the reviewer",
+            }
+          },
           buttons: ['Cancel', 'Yes, mark complete'],
-        }).then(isConfirmed => {
-          if (isConfirmed) {
+        }).then((message) => {
+          if (message) {
+            console.log('message', message)
             // feathers
             const _requestMarkComplete = (etherScanUrl, txHash) => {
               feathersClient
@@ -268,6 +275,7 @@ class MyMilestones extends Component {
                 .patch(milestone._id, {
                   status: 'NeedsReview',
                   mined: false,
+                  message: message,
                   txHash,
                 })
                 .then(() => {
@@ -330,7 +338,7 @@ class MyMilestones extends Component {
                 );
               });
           }
-        }),
+        })
       );
     });
   }
@@ -344,8 +352,14 @@ class MyMilestones extends Component {
           icon: 'warning',
           buttons: ['I changed my mind', 'Yes, cancel'],
           dangerMode: true,
-        }).then(isConfirmed => {
-          if (isConfirmed) {
+          content: {
+            element: "input",
+            attributes: {
+              placeholder: "Add a reason why you canceled this milestone",
+            }
+          },          
+        }).then(message => {
+          if (message) {
             const _cancelMilestone = (etherScanUrl, txHash) => {
               // feathers
               feathersClient
@@ -353,6 +367,7 @@ class MyMilestones extends Component {
                 .patch(milestone._id, {
                   status: 'Canceled',
                   mined: false,
+                  message: message,
                   txHash,
                 })
                 .then(() => {
@@ -429,8 +444,14 @@ class MyMilestones extends Component {
           icon: 'warning',
           dangerMode: true,
           buttons: ['Cancel', 'Yes, accept'],
-        }).then(isConfirmed => {
-          if (isConfirmed) {
+          content: {
+            element: "input",
+            attributes: {
+              placeholder: "Add a reason why you accept this milestone...",
+            }
+          },           
+        }).then(message => {
+          if (message) {
             // feathers
             const _createMilestone = (etherScanUrl, txHash) =>
               feathersClient
@@ -438,6 +459,7 @@ class MyMilestones extends Component {
                 .patch(milestone._id, {
                   status: 'pending',
                   mined: false,
+                  message: message,
                   txHash,
                 })
                 .then(() => {
@@ -518,8 +540,14 @@ class MyMilestones extends Component {
           icon: 'warning',
           dangerMode: true,
           buttons: ['Cancel', 'Yes, approve'],
-        }).then(isConfirmed => {
-          if (isConfirmed) {
+          content: {
+            element: "input",
+            attributes: {
+              placeholder: "Add a message why you approve this milestone...",
+            }
+          },           
+        }).then(message => {
+          if (message) {
             // feathers
             const _approveMilestoneCompleted = (etherScanUrl, txHash) =>
               feathersClient
@@ -527,6 +555,7 @@ class MyMilestones extends Component {
                 .patch(milestone._id, {
                   status: 'Completed',
                   mined: false,
+                  message: message,
                   txHash,
                 })
                 .then(() => {
@@ -602,8 +631,14 @@ class MyMilestones extends Component {
           icon: 'warning',
           dangerMode: true,
           buttons: ['Cancel', 'Yes, reject'],
-        }).then(isConfirmed => {
-          if (isConfirmed) {
+          content: {
+            element: "input",
+            attributes: {
+              placeholder: "Add a reason why you reject the completion of this milestone...",
+            }
+          },            
+        }).then(message => {
+          if (message) {
             // reject in feathers
             const _rejectMilestoneCompletion = (etherScanUrl, txHash) =>
               feathersClient
@@ -611,6 +646,7 @@ class MyMilestones extends Component {
                 .patch(milestone._id, {
                   status: 'InProgress',
                   mined: false,
+                  message: message,
                   txHash,
                 })
                 .then(() => {
