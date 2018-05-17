@@ -42,7 +42,7 @@ class EditCampaign extends Component {
       formIsValid: false,
       dacsOptions: [],
       hasWhitelist: React.whitelist.reviewerWhitelist.length > 0,
-      whitelistOptions: React.whitelist.projectOwnerWhitelist.map(r => ({
+      whitelistOptions: React.whitelist.reviewerWhitelist.map(r => ({
         value: r.address,
         title: `${r.name ? r.name : 'Anonymous user'} - ${r.address}`,
       })),

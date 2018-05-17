@@ -17,15 +17,15 @@ const configurations = {
     title: 'Ganache',
     liquidPledgingAddress: '0xBeFdf675cb73813952C5A9E4B84ea8B866DBA592',
     lppDacFactoryAddress: '0x2612Af3A521c2df9EAF28422Ca335b04AdF3ac66',
-    lppCampaignFactoryAddress: '0xe982E462b094850F12AF94d21D470e21bE9D0E9C',
-    lppCappedMilestoneFactoryAddress: '0xDb56f2e9369E0D7bD191099125a3f6C370F8ed15',
-    givethBridgeAddress: '0x0000000000000000000000000000000000000000',
-    tokenAddresses: {},
+    lppCampaignFactoryAddress: '0x0290FB167208Af455bB137780163b7B7a9a10C16',
+    lppCappedMilestoneFactoryAddress: '0x6eD79Aa1c71FD7BdBC515EfdA3Bd4e26394435cC',
+    givethBridgeAddress: '0xe78A0F7E598Cc8b0Bb87894B0F60dD2a88d6a8Ab',
+    tokenAddresses: { 'Home ETH': '0xc43d5F3D92Fa39089Fd5E3b67841bFB8d62457F3' },
     etherscan: 'https://etherscan.io/', // this won't work, only here so we can see links during development
-    foreignEtherscan: 'https://ropsten.etherscan.io/',
+    foreignEtherscan: 'https://ropsten.etherscan.io/', // this won't work, only here so we can see links during development
     feathersConnection: 'http://localhost:3030',
-    foreignNodeConnection: 'ws://localhost:8545',
-    homeNodeConnection: 'https://ropsten.infura.io/Id3GoVvLrsO08ZNjxiKz',
+    foreignNodeConnection: 'ws://localhost:8546',
+    homeNodeConnection: 'http://localhost:8545',
   },
   develop: {
     title: 'develop',
