@@ -57,18 +57,25 @@ const rejectProposedMilestone = milestone => {
     icon: 'warning',
     dangerMode: true,
     buttons: ['Cancel', 'Yes, reject'],
-  }).then(isConfirmed => {
-    if (isConfirmed) {
+    content: {
+      element: "input",
+      attributes: {
+        placeholder: "Add a reason why you reject this proposed milestone...",
+      }
+    },      
+  }).then(message => {
+    if (message) {
       feathersClient
         .service('/milestones')
         .patch(milestone._id, {
           status: 'rejected',
+          message: message
         })
         .then(() => {
-          React.toast.info(<p>The milestone has been rejected.</p>);
+          React.toast.info(<p>The proposed milestone has been rejected.</p>);
         })
         .catch(e => {
-          ErrorPopup('Something went wrong with rejecting your milestone', e);
+          ErrorPopup('Something went wrong with rejecting the proposed milestone', e);
         });
     }
   });
@@ -81,13 +88,19 @@ const reproposeRejectedMilestone = milestone => {
     icon: 'warning',
     dangerMode: true,
     buttons: ['Cancel', 'Yes, re-propose'],
-  }).then(isConfirmed => {
-    if (isConfirmed) {
+    content: {
+      element: "input",
+      attributes: {
+        placeholder: "Add a reason why you repropose this milestone...",
+      }
+    },     
+  }).then(message => {
+    if (message) {
       feathersClient
         .service('/milestones')
         .patch(milestone._id, {
           status: 'proposed',
-          prevStatus: 'rejected',
+          message: message
         })
         .then(() => {
           React.toast.info(<p>The milestone has been re-proposed.</p>);
