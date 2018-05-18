@@ -13,6 +13,7 @@ import { getUserName, getUserAvatar, getTruncatedText, convertEthHelper } from '
 import GivethWallet from '../../lib/blockchain/GivethWallet';
 import User from '../../models/User';
 // import WithdrawButton from '../WithdrawButton';
+import Donation from '../../models/Donation';
 
 // TODO: Remove once rewritten to model
 /* eslint no-underscore-dangle: 0 */
@@ -200,7 +201,7 @@ class Delegations extends Component {
       .subscribe(
         resp => {
           this.setState({
-            delegations: resp.data,
+            delegations: resp.data.map(d => new Donation(d)),
             isLoading: false,
           });
         },
