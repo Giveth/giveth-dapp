@@ -121,10 +121,10 @@ class DonateButton extends React.Component {
     console.log(model, this.props.type.toLowerCase(), this.props.model.adminId);
 
     if (this.props.currentUser) {
-      this.donateWithBridge(model);
-      // takeActionAfterWalletUnlock(this.props.wallet, () => {
-      // this.setState({ isSaving: true });
-      // });
+      takeActionAfterWalletUnlock(this.props.wallet, () => {
+        this.donateWithBridge(model);
+        this.setState({ isSaving: true });
+      });
     } else {
       React.swal({
         title: "You're almost there...",
@@ -186,89 +186,53 @@ class DonateButton extends React.Component {
           wallet
             .signTransaction(tx)
             .then(signedTx => {
-              console.log('signedTx', signedTx);
-
               // send transaction
               homeWeb3.eth
                 .sendSignedTransaction(signedTx.rawTransaction)
                 .on('transactionHash', txHash => {
-                  console.log('transactionHash', txHash);
-
                   this.closeDialog();
 
-                  // Get the tx hash
-                  homeWeb3.eth.getTransaction(txHash).then(data => {
-                    React.toast.info(
-                      <p>
-                        Awesome! Your donation is pending...<br />
-                        <a
-                          href={`${etherScanUrl}tx/${txHash}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          View transaction
-                        </a>
-                      </p>,
-                    );
-                  });
-
-                  // As Infura doesn't provide receipt events
-                  // we poll for the receipt ourselves
-                  const _getTransactionReceiptMined = (txHash, blocks) => {
-                    let count = 0;
-                    const FIFTEEN_SECONDS = 1000 * 15; // the average blocktime
-
-                    const _getReceiptAsync = (resolve, reject) => {
-                      if (count > blocks) {
-                        return reject(`Your donation was not mined within ${blocks} blocks`);
-                      }
-
-                      homeWeb3.eth.getTransactionReceipt(txHash, (error, receipt) => {
-                        console.log('receipt', error, receipt);
-                        if (error) {
-                          return reject(error);
-                        } else if (receipt == null) {
-                          setTimeout(() => _getReceiptAsync(resolve, reject), FIFTEEN_SECONDS);
-                        } else {
-                          return resolve(receipt);
-                        }
-                      });
-
-                      count++;
-                    };
-                    return new Promise(_getReceiptAsync);
-                  };
-
-                  _getTransactionReceiptMined(txHash, 10)
-                    .then(receipt => {
-                      React.toast.success(
-                        <p>
-                          Woot! Woot! Donation received. You are awesome!<br />
-                          <a
-                            href={`${etherScanUrl}tx/${txHash}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                          >
-                            View transaction
-                          </a>
-                        </p>,
-                      );
-                    })
-                    .catch(e => {
-                      console.log('receipt error', e);
-                      React.toast.info(
-                        <p>
-                          {`${e}`} Please check the transaction on Etherscan to confirm.<br />
-                          <a
-                            href={`${etherScanUrl}tx/${txHash}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                          >
-                            View transaction
-                          </a>
-                        </p>,
-                      );
-                    });
+                  React.toast.info(
+                    <p>
+                      Awesome! Your donation is pending...<br />
+                      <a
+                        href={`${etherScanUrl}tx/${txHash}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        View transaction
+                      </a>
+                    </p>,
+                  );
+                })
+                .then(receipt => {
+                  React.toast.success(
+                    <p>
+                      Woot! Woot! Donation received. You are awesome!<br />
+                      <a
+                        href={`${etherScanUrl}tx/${txHash}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        View transaction
+                      </a>
+                    </p>,
+                  );
+                })
+                .catch(e => {
+                  console.log('receipt error', e);
+                  React.toast.info(
+                    <p>
+                      {`${e}`} Please check the transaction on Etherscan to confirm.<br />
+                      <a
+                        href={`${etherScanUrl}tx/${txHash}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        View transaction
+                      </a>
+                    </p>,
+                  );
                 });
             })
             .catch(e => {
@@ -588,14 +552,14 @@ class DonateButton extends React.Component {
                 Donate with Giveth
               </LoaderButton>
 
-              {/* <a
+              {/*<a
                  className={`btn btn-secondary ${isSaving ? 'disabled' : ''}`}
                  disabled={isSaving}
                  href={`${MEWurl}&value=${mewAmount}#send-transaction`}
                  target="_blank"
                  rel="noopener noreferrer"
                >
-                Donate with MyEtherWallet
+                Manually Donate (advanced)
               </a> */}
             </Form>
           </SkyLightStateless>

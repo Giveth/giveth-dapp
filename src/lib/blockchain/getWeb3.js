@@ -143,8 +143,6 @@ export const getHomeWeb3 = () =>
           homeWeb3.eth.net.getId = () => Promise.resolve(100);
         }
       });
-
-      homeWeb3.setWallet = setWallet;
     }
 
     resolve(homeWeb3);
