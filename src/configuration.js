@@ -16,7 +16,7 @@ const configurations = {
   localhost: {
     title: 'Ganache',
     liquidPledgingAddress: '0xBeFdf675cb73813952C5A9E4B84ea8B866DBA592',
-    lppDacFactoryAddress: '0x2612Af3A521c2df9EAF28422Ca335b04AdF3ac66',
+    lppDacFactoryAddress: '0x26b4afb60d6c903165150c6f0aa14f8016be4aec',
     lppCampaignFactoryAddress: '0x0290FB167208Af455bB137780163b7B7a9a10C16',
     lppCappedMilestoneFactoryAddress: '0x6eD79Aa1c71FD7BdBC515EfdA3Bd4e26394435cC',
     givethBridgeAddress: '0xe78A0F7E598Cc8b0Bb87894B0F60dD2a88d6a8Ab',
