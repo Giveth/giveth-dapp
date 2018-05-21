@@ -101,12 +101,6 @@ export const getHomeWeb3 = () =>
   new Promise(resolve => {
     if (!homeWeb3) {
       homeWeb3 = new Web3(config.homeNodeConnection);
-
-      // hack to keep the ws connection from timing-out
-      // I commented this out b/c we have the getBalance interval above
-      // setInterval(() => {
-      //   givethWeb3.eth.net.getId();
-      // }, 30000); // every 30 seconds
     }
 
     resolve(homeWeb3);
