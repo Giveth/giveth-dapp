@@ -211,6 +211,8 @@ class DonateButton extends React.Component {
                   React.toast.success(
                     <p>
                       Woot! Woot! Donation received. You are awesome!<br />
+                      Note: because we are bridging networks, there may be a delay before you
+                      donation appears.<br />
                       <a
                         href={`${etherScanUrl}tx/${txHash}`}
                         target="_blank"

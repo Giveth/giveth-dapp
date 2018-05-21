@@ -144,13 +144,13 @@ class UserWallet extends Component {
                           target="_blank"
                           rel="noopener noreferrer"
                         >
-                          <strong>{t}</strong>
+                          <strong>Bridged - {t}</strong>
                         </a>
                         balance: {this.props.wallet.getTokenBalance(tokenAddresses[t])}
                       </p>
                     ) : (
                       <p>
-                        <strong>{t}</strong> balance:{' '}
+                        Bridged - <strong>{t}</strong> balance:{' '}
                         {this.props.wallet.getTokenBalance(tokenAddresses[t])}
                       </p>
                     ),

@@ -1,7 +1,7 @@
 import ProviderEngine from 'web3-provider-engine';
 import HookedWalletSubprovider from 'web3-provider-engine/subproviders/hooked-wallet';
 import DefaultFixture from 'web3-provider-engine/subproviders/default-fixture';
-import NonceTrackerSubprovider from 'web3-provider-engine/subproviders/nonce-tracker';
+// import NonceTrackerSubprovider from 'web3-provider-engine/subproviders/nonce-tracker';
 // import CacheSubprovider from 'web3-provider-engine/subproviders/cache';
 import FilterSubprovider from 'web3-provider-engine/subproviders/filters';
 import InflightCacheSubprovider from 'web3-provider-engine/subproviders/inflight-cache';
@@ -29,7 +29,7 @@ export default options => {
   engine.addProvider(staticSubprovider);
 
   // nonce tracker
-  engine.addProvider(new NonceTrackerSubprovider());
+  // engine.addProvider(new NonceTrackerSubprovider());
 
   // sanitization
   const sanitizer = new SanitizingSubprovider();
