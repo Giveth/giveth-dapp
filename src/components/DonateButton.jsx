@@ -182,6 +182,7 @@ class DonateButton extends React.Component {
             chainId: id,
           };
 
+          let txHash;
           // sign transaction
           wallet
             .signTransaction(tx)
@@ -189,7 +190,8 @@ class DonateButton extends React.Component {
               // send transaction
               homeWeb3.eth
                 .sendSignedTransaction(signedTx.rawTransaction)
-                .on('transactionHash', txHash => {
+                .on('transactionHash', transactionHash => {
+                  txHash = transactionHash;
                   this.closeDialog();
 
                   React.toast.info(
@@ -220,18 +222,10 @@ class DonateButton extends React.Component {
                   );
                 })
                 .catch(e => {
-                  console.log('receipt error', e);
-                  React.toast.info(
-                    <p>
-                      {`${e}`} Please check the transaction on Etherscan to confirm.<br />
-                      <a
-                        href={`${etherScanUrl}tx/${txHash}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        View transaction
-                      </a>
-                    </p>,
+                  e = !(e instanceof Error) ? JSON.stringify(e, null, 2) : e;
+                  ErrorPopup(
+                    'Something went wrong with your donation.',
+                    `${etherScanUrl}tx/${txHash} => ${e}`,
                   );
                 });
             })

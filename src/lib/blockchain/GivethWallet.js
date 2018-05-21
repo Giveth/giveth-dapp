@@ -66,7 +66,8 @@ class GivethWallet {
 
     const accounts = mapGet.call(mapAccounts, this);
 
-    return accounts.wallet[0].signTransaction(txData);
+    // signTransaction returns a promise sometimes, but not always
+    return Promise.resolve(accounts.wallet[0].signTransaction(txData));
   }
 
   /**

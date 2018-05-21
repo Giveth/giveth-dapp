@@ -50,8 +50,8 @@
     "socket.io-client": "^2.0.4",
     "sweetalert": "^2.0",
     "underscore": "^1.8.3",
-    "web3": "1.0.0-beta.29",
-    "web3-eth-accounts": "^1.0.0-beta.18",
+    "web3": "1.0.0-beta.34",
+    "web3-eth-accounts": "1.0.0-beta.34",
     "web3-provider-engine": "^13.3.3",
     "whatwg-fetch": "^2.0.3"
   },
