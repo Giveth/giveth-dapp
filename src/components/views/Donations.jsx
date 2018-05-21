@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
-import _ from 'underscore';
+// import _ from 'underscore';
 import moment from 'moment';
 import { paramsForServer } from 'feathers-hooks-common';
 
@@ -13,6 +13,7 @@ import { getGasPrice, getTruncatedText, convertEthHelper } from '../../lib/helpe
 import User from '../../models/User';
 import GivethWallet from '../../lib/blockchain/GivethWallet';
 import ErrorPopup from '../ErrorPopup';
+import Donation from '../../models/Donation';
 // TODO: Remove once rewritten to model
 /* eslint no-underscore-dangle: 0 */
 /**
@@ -76,16 +77,7 @@ class Donations extends Component {
           resp => {
             this.setState({
               // TODO: Move this to a external class called Donation...
-              donations: _.sortBy(resp.data, d => {
-                if (d.status === 'pending') return 1;
-                if (d.status === 'to_approve') return 2;
-                if (d.status === 'waiting') return 3;
-                if (d.status === 'committed') return 4;
-                if (d.status === 'paying') return 5;
-                if (d.status === 'paid') return 6;
-                if (d.status === 'cancelled') return 7;
-                return 8;
-              }),
+              donations: resp.data.map(d => new Donation(d)),
               isLoading: false,
             });
           },
@@ -117,7 +109,7 @@ class Donations extends Component {
             const doCommit = (etherScanUrl, txHash) => {
               feathersClient
                 .service('/donations')
-                .patch(donation._id, {
+                .patch(donation.id, {
                   status: 'pending',
                   $unset: {
                     pendingProject: true,
@@ -217,7 +209,7 @@ class Donations extends Component {
             const doReject = (etherScanUrl, txHash) => {
               feathersClient
                 .service('/donations')
-                .patch(donation._id, {
+                .patch(donation.id, {
                   status: 'pending',
                   $unset: {
                     pendingProject: true,
@@ -311,7 +303,7 @@ class Donations extends Component {
             const doRefund = (etherScanUrl, txHash) => {
               feathersClient
                 .service('/donations')
-                .patch(donation._id, {
+                .patch(donation.id, {
                   status: 'pending',
                   $unset: {
                     delegate: true,
@@ -351,12 +343,11 @@ class Donations extends Component {
               .then(([network, gasPrice]) => {
                 const { liquidPledging } = network;
                 etherScanUrl = network.etherscan;
-                const from = this.props.currentUser.address;
 
                 return liquidPledging
                   .withdraw(donation.pledgeId, donation.amount, {
                     $extraGas: 50000,
-                    from,
+                    from: this.props.currentUser.address,
                     gasPrice,
                   })
                   .once('transactionHash', hash => {
@@ -427,7 +418,7 @@ class Donations extends Component {
                         </thead>
                         <tbody>
                           {donations.map(d => (
-                            <tr key={d._id} className={d.status === 'pending' ? 'pending' : ''}>
+                            <tr key={d.id} className={d.status === 'pending' ? 'pending' : ''}>
                               <td className="td-date">
                                 {moment(d.createdAt).format('MM/DD/YYYY')}
                               </td>
