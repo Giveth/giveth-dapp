@@ -57,17 +57,23 @@ const setWallet = (rpcUrl, isHomeNetwork = false) =>
       }),
     );
 
+    const minimeTokenCache = {};
+
     const getBalance = () => {
       const { tokenAddresses } = config;
       const addr = wallet.getAddresses()[0];
 
-      const tokenBal = tAddr =>
-        !isHomeNetwork && tAddr
-          ? new MiniMeToken(web3, tAddr).balanceOf(addr).then(bal => ({
-              address: tAddr,
-              bal,
-            }))
-          : undefined;
+      const tokenBal = tAddr => {
+        if (!isHomeNetwork && tAddr) {
+          const token = minimeTokenCache[tAddr] || new MiniMeToken(web3, tAddr);
+          minimeTokenCache[tAddr] = token;
+          return token.balanceOf(addr).then(bal => ({
+            address: tAddr,
+            bal,
+          }));
+        }
+        return undefined;
+      };
       const bal = () => (addr ? web3.eth.getBalance(addr) : undefined);
 
       Promise.all([bal(), ...Object.values(tokenAddresses).map(a => tokenBal(a))])
