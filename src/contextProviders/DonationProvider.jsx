@@ -35,6 +35,7 @@ class DonationProvider extends Component {
     };
 
     this.refund = this.refund.bind(this);
+    this.commit = this.commit.bind(this);
   }
 
   componentWillMount() {
@@ -75,6 +76,59 @@ class DonationProvider extends Component {
   }
 
   /**
+   * Commit donation that has been delegated
+   *
+   * @param donation Donation to be committed
+   */
+  commit(donation) {
+    takeActionAfterWalletUnlock(this.props.wallet, () =>
+      checkWalletBalance(this.props.wallet).then(() =>
+        React.swal({
+          title: 'Commit your donation?',
+          text:
+            'Your donation will go to this Milestone. After committing you can no longer take back your money.',
+          icon: 'warning',
+          buttons: ['Cancel', 'Yes, commit'],
+        }).then(isConfirmed => {
+          if (isConfirmed) {
+            // Inform user after the transaction is created
+            const afterCreate = txLink => {
+              React.toast.success(
+                <p>
+                  The commitment of the donation is pending...<br />
+                  <a href={txLink} target="_blank" rel="noopener noreferrer">
+                    View transaction
+                  </a>
+                </p>,
+              );
+            };
+
+            // Inform user after the commit transaction is mined
+            const afterMined = txLink => {
+              React.toast.success(
+                <p>
+                  Your donation has been committed!<br />
+                  <a href={txLink} target="_blank" rel="noopener noreferrer">
+                    View transaction
+                  </a>
+                </p>,
+              );
+            };
+
+            // Commit the donation's delegation
+            DonationService.commit(
+              donation,
+              this.props.currentUser.address,
+              afterCreate,
+              afterMined,
+            );
+          }
+        }),
+      ),
+    );
+  }
+
+  /**
    * Refund a donation
    *
    * @param donation Donation to be refunded
@@ -91,11 +145,8 @@ class DonationProvider extends Component {
           buttons: ['Cancel', 'Yes, refund'],
         }).then(isConfirmed => {
           if (isConfirmed) {
-            donation.isRefunding = true;
-
             // Inform user after the transaction is created
             const afterCreate = txLink => {
-              donation.isRefunding = false;
               React.toast.success(
                 <p>
                   The refund is pending...<br />
@@ -133,7 +184,7 @@ class DonationProvider extends Component {
 
   render() {
     const { donations, isLoading } = this.state;
-    const { refund } = this;
+    const { refund, commit } = this;
 
     return (
       <Provider
@@ -144,6 +195,7 @@ class DonationProvider extends Component {
           },
           actions: {
             refund,
+            commit,
           },
         }}
       >

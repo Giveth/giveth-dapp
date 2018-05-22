@@ -52,111 +52,6 @@ class Donations extends Component {
       isRefunding: false,
       etherScanUrl: '',
     };
-
-    getNetwork().then(network => {
-      this.setState({
-        etherScanUrl: network.etherscan,
-      });
-    });
-  }
-
-  commit(donation) {
-    takeActionAfterWalletUnlock(this.props.wallet, () =>
-      checkWalletBalance(this.props.wallet).then(() =>
-        React.swal({
-          title: 'Commit your donation?',
-          text:
-            'Your donation will go to this Milestone. After committing you can no longer take back your money.',
-          icon: 'warning',
-          buttons: ['Cancel', 'Yes, commit'],
-        }).then(isConfirmed => {
-          if (isConfirmed) {
-            this.setState({ isCommitting: true });
-
-            const doCommit = (etherScanUrl, txHash) => {
-              feathersClient
-                .service('/donations')
-                .patch(donation.id, {
-                  status: 'pending',
-                  $unset: {
-                    pendingProject: true,
-                    pendingProjectId: true,
-                    pendingProjectType: true,
-                    delegate: true,
-                    delegateType: true,
-                    delegateId: true,
-                  },
-                  txHash,
-                  owner: donation.pendingProject,
-                  ownerId: donation.pendingProjectId,
-                  ownerType: donation.pendingProjectType,
-                })
-                .then(() => {
-                  this.setState({ isCommitting: false });
-                  React.toast.success(
-                    <p>
-                      Your donation has been committed.<br />
-                      <a
-                        href={`${etherScanUrl}tx/${txHash}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        View transaction
-                      </a>
-                    </p>,
-                  );
-                })
-                .catch(err => {
-                  ErrorPopup('Something went wrong while comitting your donation.', err);
-                  this.setState({ isCommitting: false });
-                });
-            };
-
-            let txHash;
-            let etherScanUrl;
-            Promise.all([getNetwork(), getGasPrice()])
-              .then(([network, gasPrice]) => {
-                const { liquidPledging } = network;
-                etherScanUrl = network.etherscan;
-                const from = this.props.currentUser.address;
-
-                return liquidPledging
-                  .transfer(
-                    donation.owner,
-                    donation.pledgeId,
-                    donation.amount,
-                    donation.intendedProject,
-                    { $extraGas: 50000, gasPrice, from },
-                  )
-                  .once('transactionHash', hash => {
-                    txHash = hash;
-                    doCommit(etherScanUrl, txHash);
-                  });
-              })
-              .then(() => {
-                React.toast.success(
-                  <p>
-                    Your donation has been committed.<br />
-                    <a
-                      href={`${etherScanUrl}tx/${txHash}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      View transaction
-                    </a>
-                  </p>,
-                );
-              })
-              .catch(() => {
-                ErrorPopup(
-                  'Something went wrong with the transaction. Is your wallet unlocked?',
-                  `${etherScanUrl}tx/${txHash}`,
-                );
-              });
-          }
-        }),
-      ),
-    );
   }
 
   reject(donation) {
@@ -259,7 +154,7 @@ class Donations extends Component {
         {({ state: { currentUser, wallet } }) => (
           <DonationProvider currentUser={currentUser} wallet={wallet}>
             <DonationConsumer>
-              {({ state: { isLoading, donations }, actions: { refund } }) => (
+              {({ state: { isLoading, donations }, actions: { refund, commit } }) => (
                 <div id="donations-view">
                   <div className="container-fluid page-layout dashboard-table-view">
                     <div className="row">
@@ -389,7 +284,7 @@ class Donations extends Component {
                                               <div>
                                                 <button
                                                   className="btn btn-sm btn-success"
-                                                  onClick={() => this.commit(d)}
+                                                  onClick={() => commit(d)}
                                                   disabled={isCommitting}
                                                 >
                                                   Commit
