@@ -18,7 +18,7 @@ export const authenticate = wallet => {
     address: wallet.getAddresses()[0],
   };
 
-  feathersClient.passport
+  return feathersClient.passport
     .getJWT()
     .then(accessToken => {
       if (accessToken) return feathersClient.logout();
