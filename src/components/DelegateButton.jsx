@@ -54,10 +54,7 @@ class DelegateButton extends Component {
     const admin = this.props.types.find(t => t.id === this.state.objectsToDelegateTo[0]);
 
     // TODO: find a more friendly way to do this.
-    if (
-      admin.type === 'milestone' &&
-      toBN(admin.maxAmount).lt(toBN(admin.totalDonated || 0).add(toBN(model.amount)))
-    ) {
+    if (admin.type === 'milestone' && toBN(admin.maxAmount).lt(toBN(admin.totalDonated || 0))) {
       React.toast.error('That milestone has reached its funding goal. Please pick another.');
       return;
     }
