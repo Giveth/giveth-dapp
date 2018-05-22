@@ -65,6 +65,7 @@
     "eslint-plugin-prettier": "^2.4.0",
     "eslint-plugin-react": "^7.4.0",
     "husky": "^1.0.0-rc.2",
+    "jsdoc": "^3.5.5",
     "lerna": "^2.2.0",
     "lint-staged": "^7.0.4",
     "prettier": "1.9.2"
@@ -79,7 +80,8 @@
     "eslint": "eslint 'src/**/*.js*'",
     "eslint:fix": "npm run eslint --fix",
     "eject": "react-scripts eject",
-    "prettify": "prettier --write 'src/**/*.js*'"
+    "prettify": "prettier --write 'src/**/*.js*'",
+    "doc": "jsdoc src -r -d docs"
   },
   "husky": {
     "hooks": {
