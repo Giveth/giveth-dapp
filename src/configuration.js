@@ -20,6 +20,7 @@ const configurations = {
     lppCampaignFactoryAddress: '0x0290FB167208Af455bB137780163b7B7a9a10C16',
     lppCappedMilestoneFactoryAddress: '0x6eD79Aa1c71FD7BdBC515EfdA3Bd4e26394435cC',
     givethBridgeAddress: '0xe78A0F7E598Cc8b0Bb87894B0F60dD2a88d6a8Ab',
+    foreignGivethBridgeAddress: '0xD86C8F0327494034F60e25074420BcCF560D5610',
     tokenAddresses: { 'Home ETH': '0xc43d5F3D92Fa39089Fd5E3b67841bFB8d62457F3' },
     etherscan: 'https://etherscan.io/', // this won't work, only here so we can see links during development
     foreignEtherscan: 'https://ropsten.etherscan.io/', // this won't work, only here so we can see links during development
