@@ -20,6 +20,7 @@ const configurations = {
     lppCampaignFactoryAddress: '0x0290FB167208Af455bB137780163b7B7a9a10C16',
     lppCappedMilestoneFactoryAddress: '0x6eD79Aa1c71FD7BdBC515EfdA3Bd4e26394435cC',
     givethBridgeAddress: '0xe78A0F7E598Cc8b0Bb87894B0F60dD2a88d6a8Ab',
+    foreignGivethBridgeAddress: '0xD86C8F0327494034F60e25074420BcCF560D5610',
     tokenAddresses: { 'Home ETH': '0xc43d5F3D92Fa39089Fd5E3b67841bFB8d62457F3' },
     etherscan: 'https://etherscan.io/', // this won't work, only here so we can see links during development
     foreignEtherscan: 'https://ropsten.etherscan.io/', // this won't work, only here so we can see links during development
@@ -29,17 +30,17 @@ const configurations = {
   },
   develop: {
     title: 'develop',
-    liquidPledgingAddress: '0x1ce25E5Db192BB0804aA75D0cA3C7A4f2788Fe10',
-    lppDacFactoryAddress: '0x537a9660B517450236aA7ecA654d6e6028374F65',
-    lppCampaignFactoryAddress: '0xb9E828CDAC59905FD42C9Bc9A4DC0502194Af8ce',
-    lppCappedMilestoneFactoryAddress: '0x9576afbbbca8574edb341af15da9ad9ce13a3b32',
-    givethBridgeAddress: '0x0cB06B291c40c76d7bEe7C9f1fAa4D6A4b338C49',
-    foreignGivethBridgeAddress: '0x97bd4e1b4f647ab5f0a8248dd9c7218ce044ced9',
-    tokenAddresses: { 'Ropsten ETH': '0x86c194112462cca285a61286114644a293d30157' },
+    liquidPledgingAddress: '0x06A6743268EbFb2649301f3Ce651C44AbafCC4f5',
+    lppDacFactoryAddress: '0xCD573630fd57d14Ff0f1A653f62Fbe1C8d92a00B',
+    lppCampaignFactoryAddress: '0x2BCaFb4772Ca5525c7b83cEBdd5C48b99183f9f6',
+    lppCappedMilestoneFactoryAddress: '0xb5456EFF4aaA44C60dEb1743caD127Ce1D101466',
+    givethBridgeAddress: '0x8588EE5E97e06bA863FDB2EBc5b523246D459638',
+    foreignGivethBridgeAddress: '0xE91Bf42cb524afa9f01AB56E1804eD162C643d05',
+    tokenAddresses: { 'Ropsten ETH': '0x86c635C10Adf6F982222006B9cc984E1Ccd9c1fC' },
     etherscan: 'https://rinkeby.etherscan.io/',
     foreignEtherscan: 'https://ropsten.etherscan.io/',
     feathersConnection: 'https://feathers.develop.giveth.io',
-    foreignNodeConnection: 'wss://rinkeby.giveth.io:8546',
+    foreignNodeConnection: 'wss://rinkeby.giveth.io/ws',
     homeNodeConnection: 'https://ropsten.infura.io/Id3GoVvLrsO08ZNjxiKz',
   },
   release: {

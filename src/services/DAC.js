@@ -66,7 +66,7 @@ class DACservice {
    */
   static subscribeDonations(id, onSuccess, onError) {
     return feathersClient
-      .service('donations/history')
+      .service('donations')
       .watch({ listStrategy: 'always' })
       .find({
         query: {
