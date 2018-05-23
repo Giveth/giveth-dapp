@@ -123,7 +123,7 @@ class MyMilestones extends Component {
       loadedStatus: 'Active',
     };
 
-    this.milestoneTabs = ['Active', 'Completed', 'Canceled', 'Rejected'];
+    this.milestoneTabs = ['Active', 'Paid', 'Canceled', 'Rejected'];
     this.handlePageChanged = this.handlePageChanged.bind(this);
 
     this.editMilestone = this.editMilestone.bind(this);
@@ -156,7 +156,7 @@ class MyMilestones extends Component {
       },
     };
 
-    if (['Completed', 'Canceled'].includes(this.state.loadedStatus)) {
+    if (['Paid', 'Canceled'].includes(this.state.loadedStatus)) {
       query.query.$and = [
         {
           $or: [
@@ -188,7 +188,7 @@ class MyMilestones extends Component {
             { $and: [{ campaignOwnerAddress: myAddress }, { status: 'proposed' }] },
           ],
         },
-        { status: { $nin: ['Completed', 'Canceled', 'rejected'] } },
+        { status: { $nin: ['Paid', 'Canceled', 'rejected'] } },
       ];
     }
 

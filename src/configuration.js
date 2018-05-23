@@ -19,9 +19,9 @@ const configurations = {
     lppDacFactoryAddress: '0x26b4afb60d6c903165150c6f0aa14f8016be4aec',
     lppCampaignFactoryAddress: '0x0290FB167208Af455bB137780163b7B7a9a10C16',
     lppCappedMilestoneFactoryAddress: '0x6eD79Aa1c71FD7BdBC515EfdA3Bd4e26394435cC',
-    givethBridgeAddress: '0xe78A0F7E598Cc8b0Bb87894B0F60dD2a88d6a8Ab',
-    foreignGivethBridgeAddress: '0xD86C8F0327494034F60e25074420BcCF560D5610',
-    tokenAddresses: { 'Home ETH': '0xc43d5F3D92Fa39089Fd5E3b67841bFB8d62457F3' },
+    givethBridgeAddress: '0x8fed3F9126e7051DeA6c530920cb0BAE5ffa17a8',
+    foreignGivethBridgeAddress: '0x8fed3F9126e7051DeA6c530920cb0BAE5ffa17a8',
+    tokenAddresses: { 'Home ETH': '0x5a42ca500aB159c51312B764bb25C135026e7a31' },
     etherscan: 'https://etherscan.io/', // this won't work, only here so we can see links during development
     foreignEtherscan: 'https://ropsten.etherscan.io/', // this won't work, only here so we can see links during development
     feathersConnection: 'http://localhost:3030',
