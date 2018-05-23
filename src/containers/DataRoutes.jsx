@@ -1,8 +1,6 @@
 import React, { Component } from 'react';
 import { Route } from 'react-router-dom';
 
-import { Consumer as UserConsumer } from '../contextProviders/UserProvider';
-
 import DACs from './../components/views/DACs';
 import Campaigns from './../components/views/Campaigns';
 import Loader from './../components/Loader';
@@ -50,41 +48,30 @@ class DataRoutes extends Component {
     const { dacs, campaigns, dacsLoading, campaignsLoading, hasError } = this.state;
 
     return (
-      <UserConsumer>
-        {({ state: { wallet, currentUser } }) => (
-          <div>
-            {(dacsLoading || campaignsLoading) && <Loader className="fixed" />}
+      <div>
+        {(dacsLoading || campaignsLoading) && <Loader className="fixed" />}
 
-            {!(dacsLoading || campaignsLoading) &&
-              !hasError && (
-                <div>
-                  <Route exact path="/" render={props => <DACs dacs={dacs} {...props} />} />
-                  <Route exact path="/dacs" render={props => <DACs dacs={dacs} {...props} />} />
-                  <Route
-                    exact
-                    path="/campaigns"
-                    render={props => (
-                      <Campaigns
-                        campaigns={campaigns}
-                        currentUser={currentUser}
-                        wallet={wallet}
-                        {...props}
-                      />
-                    )}
-                  />
-                </div>
-              )}
+        {!(dacsLoading || campaignsLoading) &&
+          !hasError && (
+            <div>
+              <Route exact path="/" render={props => <DACs dacs={dacs} {...props} />} />
+              <Route exact path="/dacs" render={props => <DACs dacs={dacs} {...props} />} />
+              <Route
+                exact
+                path="/campaigns"
+                render={props => <Campaigns campaigns={campaigns} {...props} />}
+              />
+            </div>
+          )}
 
-            {!(dacsLoading || campaignsLoading) &&
-              hasError && (
-                <center>
-                  <h2>Oops, something went wrong...</h2>
-                  <p>The Giveth dapp could not load for some reason. Please try again...</p>
-                </center>
-              )}
-          </div>
-        )}
-      </UserConsumer>
+        {!(dacsLoading || campaignsLoading) &&
+          hasError && (
+            <center>
+              <h2>Oops, something went wrong...</h2>
+              <p>The Giveth dapp could not load for some reason. Please try again...</p>
+            </center>
+          )}
+      </div>
     );
   }
 }
