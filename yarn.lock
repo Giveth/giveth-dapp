@@ -8053,9 +8053,9 @@ lpp-campaign@0.1.1:
     giveth-liquidpledging "0.1.0"
     minimetoken "0.2.0"
 
-lpp-capped-milestone@0.1.2:
-  version "0.1.2"
-  resolved "https://registry.yarnpkg.com/lpp-capped-milestone/-/lpp-capped-milestone-0.1.2.tgz#4c8f6bd293f6d8d781ec38e6becd02f841dd2455"
+lpp-capped-milestone@0.1.3:
+  version "0.1.3"
+  resolved "https://registry.yarnpkg.com/lpp-capped-milestone/-/lpp-capped-milestone-0.1.3.tgz#6704be5b76e6928f25114b43be3d9bbdb4b66c16"
   dependencies:
     "@aragon/os" "3.0.4"
     chai "^4.1.2"
