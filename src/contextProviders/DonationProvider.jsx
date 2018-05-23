@@ -268,8 +268,13 @@ class DonationProvider extends Component {
 
 DonationProvider.propTypes = {
   children: PropTypes.oneOfType([PropTypes.arrayOf(PropTypes.node), PropTypes.node]).isRequired,
-  currentUser: PropTypes.instanceOf(User).isRequired,
-  wallet: PropTypes.instanceOf(GivethWallet).isRequired,
+  currentUser: PropTypes.instanceOf(User),
+  wallet: PropTypes.instanceOf(GivethWallet),
+};
+
+DonationProvider.defaultProps = {
+  currentUser: undefined,
+  wallet: undefined,
 };
 
 export default DonationProvider;
