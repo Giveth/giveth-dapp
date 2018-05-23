@@ -39,19 +39,25 @@ function setWallet(wallet) {
     },
   });
 
+  const minimeTokenCache = {};
+
   const getBalance = () =>
     getWeb3() // eslint-disable-line no-use-before-define
       .then(web3 => {
         const { tokenAddresses } = config;
         const addr = wallet.getAddresses()[0];
 
-        const tokenBal = tAddr =>
-          tAddr
-            ? new MiniMeToken(web3, tAddr).balanceOf(addr).then(bal => ({
-                address: tAddr,
-                bal,
-              }))
-            : undefined;
+        const tokenBal = tAddr => {
+          if (tAddr) {
+            const token = minimeTokenCache[tAddr] || new MiniMeToken(web3, tAddr);
+            minimeTokenCache[tAddr] = token;
+            return token.balanceOf(addr).then(bal => ({
+              address: tAddr,
+              bal,
+            }));
+          }
+          return undefined;
+        };
         const bal = () => (addr ? web3.eth.getBalance(addr) : undefined);
 
         return Promise.all([bal(), ...Object.values(tokenAddresses).map(a => tokenBal(a))]);
