@@ -54,6 +54,27 @@ class Donation extends Model {
     this.updatedAt = data.updatedAt;
   }
 
+  get statusDescription() {
+    switch (this.status) {
+      case Donation.PENDING:
+        return 'pending successful transaction';
+      case Donation.TO_APPROVE:
+        return 'pending for your approval to be committed.';
+      case Donation.WAITING:
+        return 'waiting for further delegation';
+      case Donation.COMMITTED:
+        return 'committed';
+      case Donation.PAYING:
+        return 'paying';
+      case Donation.PAID:
+        return 'paid';
+      case Donation.CANCELED:
+        return 'cancelled';
+      default:
+        return 'unknown';
+    }
+  }
+
   // toFeathers() {
   //   return {};
   // }

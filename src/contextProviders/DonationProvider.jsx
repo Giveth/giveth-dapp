@@ -5,6 +5,7 @@ import { paramsForServer } from 'feathers-hooks-common';
 import { takeActionAfterWalletUnlock, checkWalletBalance } from '../lib/middleware';
 import { feathersClient } from '../lib/feathersClient';
 import ErrorPopup from '../components/ErrorPopup';
+import getNetwork from '../lib/blockchain/getNetwork';
 
 // Models
 import Donation from '../models/Donation';
@@ -32,6 +33,7 @@ class DonationProvider extends Component {
     this.state = {
       donations: [],
       isLoading: true,
+      etherScanUrl: undefined,
     };
 
     this.refund = this.refund.bind(this);
@@ -40,6 +42,8 @@ class DonationProvider extends Component {
   }
 
   componentWillMount() {
+    getNetwork().then(network => this.setState({ etherScanUrl: network.etherscan }));
+
     // Get the donations for current user
     if (this.props.currentUser) {
       this.donationsObserver = feathersClient
@@ -238,7 +242,7 @@ class DonationProvider extends Component {
   }
 
   render() {
-    const { donations, isLoading } = this.state;
+    const { donations, isLoading, etherScanUrl } = this.state;
     const { refund, commit, reject } = this;
 
     return (
@@ -247,6 +251,7 @@ class DonationProvider extends Component {
           state: {
             donations,
             isLoading,
+            etherScanUrl,
           },
           actions: {
             refund,
