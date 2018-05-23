@@ -148,6 +148,7 @@ class EditMilestone extends Component {
                   date,
                   itemizeState: milestone.items && milestone.items.length > 0,
                   selectedFiatType: milestone.selectedFiatType || 'EUR',
+                  showRecipientAddress: !!milestone.recipientAddress,
                   campaignTitle: milestone.campaign.title,
                   campaignProjectId: milestone.campaign.projectId,
                   campaignReviewerAddress: milestone.campaign.reviewerAddress,
