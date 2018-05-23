@@ -36,6 +36,7 @@ class DonationProvider extends Component {
 
     this.refund = this.refund.bind(this);
     this.commit = this.commit.bind(this);
+    this.reject = this.reject.bind(this);
   }
 
   componentWillMount() {
@@ -73,6 +74,60 @@ class DonationProvider extends Component {
   componentWillUnmount() {
     // Clean up the observers
     if (this.donationsObserver) this.donationsObserver.unsubscribe();
+  }
+
+  /**
+   * Reject the delegation of the donation
+   *
+   * @param donation Donation which delegation should be rejected
+   */
+  reject(donation) {
+    takeActionAfterWalletUnlock(this.props.wallet, () =>
+      checkWalletBalance(this.props.wallet).then(() =>
+        React.swal({
+          title: 'Reject your donation?',
+          text:
+            'Your donation will not go to this Milestone. You will still be in control of you funds and the DAC can still delegate you donation.',
+          icon: 'warning',
+          dangerMode: true,
+          buttons: ['Cancel', 'Yes, reject'],
+        }).then(isConfirmed => {
+          if (isConfirmed) {
+            // Inform user after the transaction is created
+            const afterCreate = txLink => {
+              React.toast.success(
+                <p>
+                  The refusal of the delegation is pending...<br />
+                  <a href={txLink} target="_blank" rel="noopener noreferrer">
+                    View transaction
+                  </a>
+                </p>,
+              );
+            };
+
+            // Inform user after the refusal transaction is mined
+            const afterMined = txLink => {
+              React.toast.success(
+                <p>
+                  Your donation delegation has been rejected.<br />
+                  <a href={txLink} target="_blank" rel="noopener noreferrer">
+                    View transaction
+                  </a>
+                </p>,
+              );
+            };
+
+            // Reject the delegation of the donation
+            DonationService.reject(
+              donation,
+              this.props.currentUser.address,
+              afterCreate,
+              afterMined,
+            );
+          }
+        }),
+      ),
+    );
   }
 
   /**
@@ -184,7 +239,7 @@ class DonationProvider extends Component {
 
   render() {
     const { donations, isLoading } = this.state;
-    const { refund, commit } = this;
+    const { refund, commit, reject } = this;
 
     return (
       <Provider
@@ -196,6 +251,7 @@ class DonationProvider extends Component {
           actions: {
             refund,
             commit,
+            reject,
           },
         }}
       >

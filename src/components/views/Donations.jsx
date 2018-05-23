@@ -1,17 +1,10 @@
 import React, { Component } from 'react';
-import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 // import _ from 'underscore';
 import moment from 'moment';
 
-import { feathersClient } from '../../lib/feathersClient';
 import Loader from '../Loader';
-import { takeActionAfterWalletUnlock, checkWalletBalance } from '../../lib/middleware';
-import getNetwork from '../../lib/blockchain/getNetwork';
-import { getGasPrice, getTruncatedText, convertEthHelper } from '../../lib/helpers';
-import User from '../../models/User';
-import GivethWallet from '../../lib/blockchain/GivethWallet';
-import ErrorPopup from '../ErrorPopup';
+import { getTruncatedText, convertEthHelper } from '../../lib/helpers';
 import { Consumer as UserConsumer } from '../../contextProviders/UserProvider';
 import DonationProvider, {
   Consumer as DonationConsumer,
@@ -54,98 +47,6 @@ class Donations extends Component {
     };
   }
 
-  reject(donation) {
-    takeActionAfterWalletUnlock(this.props.wallet, () =>
-      checkWalletBalance(this.props.wallet).then(() =>
-        React.swal({
-          title: 'Reject your donation?',
-          text:
-            'Your donation will not go to this Milestone. You will still be in control of you funds and the DAC can still delegate you donation.',
-          icon: 'warning',
-          dangerMode: true,
-          buttons: ['Cancel', 'Yes, reject'],
-        }).then(isConfirmed => {
-          if (isConfirmed) {
-            this.setState({ isRejecting: true });
-
-            const doReject = (etherScanUrl, txHash) => {
-              feathersClient
-                .service('/donations')
-                .patch(donation.id, {
-                  status: 'pending',
-                  $unset: {
-                    pendingProject: true,
-                    pendingProjectId: true,
-                    pendingProjectType: true,
-                  },
-                  txHash,
-                })
-                .then(() => {
-                  this.setState({ isRejecting: false });
-                  React.toast.success(
-                    <p>
-                      Your donation has been rejected.<br />
-                      <a
-                        href={`${etherScanUrl}tx/${txHash}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        View transaction
-                      </a>
-                    </p>,
-                  );
-                })
-                .catch(err => {
-                  ErrorPopup('Something went wrong while rejecting the donation.', err);
-                  this.setState({ isRejecting: false });
-                });
-            };
-
-            let txHash;
-            let etherScanUrl;
-            Promise.all([getNetwork(), getGasPrice()])
-              .then(([network, gasPrice]) => {
-                const { liquidPledging } = network;
-                etherScanUrl = network.etherscan;
-                const from = this.props.currentUser.address;
-
-                return liquidPledging
-                  .transfer(donation.owner, donation.pledgeId, donation.amount, donation.delegate, {
-                    $extraGas: 50000,
-                    gasPrice,
-                    from,
-                  })
-                  .once('transactionHash', hash => {
-                    txHash = hash;
-                    doReject(etherScanUrl, txHash);
-                  });
-              })
-              .then(() => {
-                React.toast.success(
-                  <p>
-                    The delegation has been rejected.<br />
-                    <a
-                      href={`${etherScanUrl}tx/${txHash}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      View transaction
-                    </a>
-                  </p>,
-                );
-              })
-              .catch(() => {
-                ErrorPopup(
-                  'Something went wrong with the transaction. Is your wallet unlocked?',
-                  `${etherScanUrl}tx/${txHash}`,
-                );
-              });
-          }
-        }),
-      ),
-    );
-  }
-
   render() {
     const { etherScanUrl, isRefunding, isCommitting, isRejecting } = this.state;
 
@@ -154,7 +55,7 @@ class Donations extends Component {
         {({ state: { currentUser, wallet } }) => (
           <DonationProvider currentUser={currentUser} wallet={wallet}>
             <DonationConsumer>
-              {({ state: { isLoading, donations }, actions: { refund, commit } }) => (
+              {({ state: { isLoading, donations }, actions: { refund, commit, reject } }) => (
                 <div id="donations-view">
                   <div className="container-fluid page-layout dashboard-table-view">
                     <div className="row">
@@ -291,7 +192,7 @@ class Donations extends Component {
                                                 </button>
                                                 <button
                                                   className="btn btn-sm btn-danger"
-                                                  onClick={() => this.reject(d)}
+                                                  onClick={() => reject(d)}
                                                   disabled={isRejecting}
                                                 >
                                                   Reject
@@ -335,9 +236,6 @@ class Donations extends Component {
   }
 }
 
-Donations.propTypes = {
-  currentUser: PropTypes.instanceOf(User).isRequired,
-  wallet: PropTypes.instanceOf(GivethWallet).isRequired,
-};
+Donations.propTypes = {};
 
 export default Donations;
