@@ -194,13 +194,6 @@ class DonateButton extends React.Component {
         });
 
       return;
-      // console.log('could not send signedTx', e);
-
-      // with ropsten infura, this catch always throws, so we filter that one out
-      // if (!e.message.includes('newBlockHeaders')) {
-      // ErrorPopup('Something went wrong with the transaction. Please try again', e);
-      // }
-      // });
 
       // const gas = 30400;
       // const data = currentUser.giverId
