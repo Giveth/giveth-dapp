@@ -1,4 +1,5 @@
 import { LPPCampaign } from 'lpp-campaign';
+import { LPPDac } from 'lpp-dac';
 
 import getNetwork from '../lib/blockchain/getNetwork';
 import { feathersClient } from '../lib/feathersClient';
@@ -29,7 +30,6 @@ class DonationService {
     let etherScanUrl;
     Promise.all([getNetwork(), getWeb3()])
       .then(([network, web3]) => {
-        const { lppDacs, liquidPledging } = network;
         etherScanUrl = network.etherscan;
 
         const from =
@@ -51,8 +51,7 @@ class DonationService {
               },
             );
           } else if (donation.ownerType === 'giver' && donation.delegate > 0) {
-            return lppDacs.transfer(
-              donation.delegate,
+            return new LPPDac(web3, donation.delegateEntity.pluginAddress).transfer(
               donation.pledgeId,
               donation.amount,
               receiverId,
@@ -63,10 +62,16 @@ class DonationService {
             );
           }
 
-          return liquidPledging.transfer(senderId, donation.pledgeId, donation.amount, receiverId, {
-            from,
-            $extraGas: 100000,
-          }); // need to supply extraGas b/c https://github.com/trufflesuite/ganache-core/issues/26
+          return network.liquidPledging.transfer(
+            senderId,
+            donation.pledgeId,
+            donation.amount,
+            receiverId,
+            {
+              from,
+              $extraGas: 100000,
+            },
+          ); // need to supply extraGas b/c https://github.com/trufflesuite/ganache-core/issues/26
         };
 
         return executeTransfer()
@@ -131,10 +136,9 @@ class DonationService {
     let etherScanUrl;
     getNetwork()
       .then(network => {
-        const { liquidPledging } = network;
         etherScanUrl = network.etherscan;
 
-        return liquidPledging
+        return network.liquidPledging
           .transfer(donation.owner, donation.pledgeId, donation.amount, donation.delegate, {
             $extraGas: 50000,
             from: address,
@@ -188,10 +192,9 @@ class DonationService {
     let etherScanUrl;
     getNetwork()
       .then(network => {
-        const { liquidPledging } = network;
         etherScanUrl = network.etherscan;
 
-        return liquidPledging
+        return network.liquidPledging
           .transfer(donation.owner, donation.pledgeId, donation.amount, donation.intendedProject, {
             $extraGas: 50000,
             from: address,
@@ -252,10 +255,9 @@ class DonationService {
 
     getNetwork()
       .then(network => {
-        const { liquidPledging } = network;
         etherScanUrl = network.etherscan;
 
-        return liquidPledging
+        return network.liquidPledging
           .withdraw(donation.pledgeId, donation.amount, {
             $extraGas: 50000,
             from: address,
