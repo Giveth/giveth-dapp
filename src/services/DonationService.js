@@ -1,9 +1,128 @@
+import { LPPCampaign } from 'lpp-campaign';
+
 import getNetwork from '../lib/blockchain/getNetwork';
 import { feathersClient } from '../lib/feathersClient';
+import { getWeb3 } from '../lib/blockchain/getWeb3';
 
 import ErrorPopup from '../components/ErrorPopup';
 
+// TODO: Remove in future
+/* eslint no-underscore-dangle: 0 */
 class DonationService {
+  /**
+   * Delegate the donation to some entity (either Campaign or Milestone)
+   *
+   * @param {Donation} donation    Donation to be delegated
+   * @param {object}   delegateTo  Entity to which the donation should be delegated
+   * @param {function} onCreated   Callback function after the transaction has been broadcasted to chain and stored in feathers
+   * @param {function} onSuccess   Callback function after the transaction has been mined
+   * @param {function} onError     Callback function after error happened
+   */
+  static delegate(
+    donation,
+    delegateTo,
+    onCreated = () => {},
+    onSuccess = () => {},
+    onError = () => {},
+  ) {
+    let txHash;
+    let etherScanUrl;
+    Promise.all([getNetwork(), getWeb3()])
+      .then(([network, web3]) => {
+        const { lppDacs, liquidPledging } = network;
+        etherScanUrl = network.etherscan;
+
+        const from =
+          donation.delegate > 0
+            ? donation.delegateEntity.ownerAddress
+            : donation.ownerEntity.ownerAddress;
+        const senderId = donation.delegate > 0 ? donation.delegate : donation.owner;
+        const receiverId = delegateTo.type === 'dac' ? delegateTo.delegateId : delegateTo.projectId;
+
+        const executeTransfer = () => {
+          if (donation.ownerType === 'campaign') {
+            return new LPPCampaign(web3, donation.ownerEntity.pluginAddress).transfer(
+              donation.pledgeId,
+              donation.amount,
+              receiverId,
+              {
+                from,
+                $extraGas: 100000,
+              },
+            );
+          } else if (donation.ownerType === 'giver' && donation.delegate > 0) {
+            return lppDacs.transfer(
+              donation.delegate,
+              donation.pledgeId,
+              donation.amount,
+              receiverId,
+              {
+                from,
+                $extraGas: 100000,
+              },
+            );
+          }
+
+          return liquidPledging.transfer(senderId, donation.pledgeId, donation.amount, receiverId, {
+            from,
+            $extraGas: 100000,
+          }); // need to supply extraGas b/c https://github.com/trufflesuite/ganache-core/issues/26
+        };
+
+        return executeTransfer()
+          .once('transactionHash', hash => {
+            txHash = hash;
+            const mutation = {
+              txHash,
+              status: 'pending',
+            };
+
+            if (donation.ownerType.toLowerCase() === 'campaign') {
+              // campaign is the owner, so they transfer the donation, not propose
+              Object.assign(mutation, {
+                owner: delegateTo.projectId,
+                ownerId: delegateTo._id,
+                ownerType: delegateTo.type,
+              });
+            } else {
+              // dac proposes a delegation
+              Object.assign(mutation, {
+                intendedProject: delegateTo.projectId,
+                intendedProjectId: delegateTo._id,
+                intendedProjectType: delegateTo.type,
+              });
+            }
+
+            feathersClient
+              .service('/donations')
+              .patch(donation.id, mutation)
+              .then(() => onCreated(`${etherScanUrl}tx/${txHash}`))
+              .catch(err => {
+                ErrorPopup(
+                  'Something went wrong with the transaction. Is your wallet unlocked?',
+                  err,
+                );
+                onError(err);
+              });
+          })
+          .on('error', err => {
+            ErrorPopup(
+              'Something went wrong with the transaction. Is your wallet unlocked?',
+              `${etherScanUrl}tx/${txHash}`,
+            );
+            onError(err);
+          });
+      })
+      .then(() => onSuccess(`${etherScanUrl}tx/${txHash}`))
+      .catch(err => {
+        ErrorPopup(
+          'Something went wrong with the transaction. Is your wallet unlocked?',
+          `${etherScanUrl}tx/${txHash}`,
+        );
+        onError(err);
+      });
+  }
+
   /**
    * Reject the delegation of the donation
    *

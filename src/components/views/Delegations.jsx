@@ -12,8 +12,6 @@ import DelegationProvider, {
   Consumer as DelegationConsumer,
 } from '../../contextProviders/DelegationProvider';
 
-// TODO: Remove once rewritten to model
-/* eslint no-underscore-dangle: 0 */
 /**
  * The my delegations view
  */
@@ -106,7 +104,7 @@ const Delegations = () => (
                                         {(d.delegate > 0 || d.ownerId === currentUser.address) && (
                                           <DelegateButton
                                             types={campaigns.concat(milestones)}
-                                            model={d}
+                                            donation={d}
                                             wallet={wallet}
                                           />
                                         )}
@@ -124,7 +122,7 @@ const Delegations = () => (
                                             types={milestones.filter(
                                               m => m.campaignId === d.ownerId,
                                             )}
-                                            model={d}
+                                            donation={d}
                                             milestoneOnly
                                             wallet={wallet}
                                           />

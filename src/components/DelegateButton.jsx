@@ -1,20 +1,16 @@
 import React, { Component } from 'react';
 import { SkyLightStateless } from 'react-skylight';
 import { utils } from 'web3';
-import { LPPCampaign } from 'lpp-campaign';
 import { Form } from 'formsy-react-components';
 import InputToken from 'react-input-token';
 import PropTypes from 'prop-types';
 
-import { feathersClient } from '../lib/feathersClient';
 import { checkWalletBalance } from '../lib/middleware';
-import getNetwork from '../lib/blockchain/getNetwork';
-import { getWeb3 } from '../lib/blockchain/getWeb3';
 import GivethWallet from '../lib/blockchain/GivethWallet';
 
-import ErrorPopup from './ErrorPopup';
+import DonationService from '../services/DonationService';
 
-// TODO: Remove once rewritten to model
+// TODO: Remove once rewritten to donation
 /* eslint no-underscore-dangle: 0 */
 class DelegateButton extends Component {
   constructor() {
@@ -40,7 +36,7 @@ class DelegateButton extends Component {
 
   submit() {
     const { toBN } = utils;
-    const { model } = this.props;
+    const { donation } = this.props;
     this.setState({ isSaving: true });
 
     // find the type of where we delegate to
@@ -52,134 +48,45 @@ class DelegateButton extends Component {
       return;
     }
 
-    const delegate = (etherScanUrl, txHash) => {
-      const mutation = {
-        txHash,
-        status: 'pending',
-      };
+    const onCreated = txLink => {
+      this.resetSkylight();
 
-      if (model.ownerType.toLowerCase() === 'campaign') {
-        // campaign is the owner, so they transfer the donation, not propose
-        Object.assign(mutation, {
-          owner: admin.projectId,
-          ownerId: admin._id,
-          ownerType: admin.type,
-        });
-      } else {
-        // dac proposes a delegation
-        Object.assign(mutation, {
-          intendedProject: admin.projectId,
-          intendedProjectId: admin._id,
-          intendedProjectType: admin.type,
-        });
-      }
+      const msg =
+        donation.delegate > 0 ? (
+          <p>
+            The Giver has <strong>3 days</strong> to reject your delegation before the money gets
+            locked
+          </p>
+        ) : (
+          <p>The Giver has been notified.</p>
+        );
 
-      feathersClient
-        .service('/donations')
-        .patch(model._id, mutation)
-        .then(() => {
-          this.resetSkylight();
-
-          let msg;
-          if (model.delegate > 0) {
-            msg = (
-              <p>
-                The donation has been delegated,{' '}
-                <a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">
-                  view the transaction here.
-                </a>
-                The Giver has <strong>3 days</strong> to reject your delegation before the money
-                gets locked.
-              </p>
-            );
-          } else {
-            msg = (
-              <p>
-                The donation has been delegated,{' '}
-                <a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">
-                  view the transaction here.
-                </a>{' '}
-                The Giver has been notified.
-              </p>
-            );
-          }
-
-          React.swal({
-            title: 'Delegated!',
-            content: React.swal.msg(msg),
-            icon: 'success',
-          });
-        })
-        .catch(() => {
-          ErrorPopup(
-            'Something went wrong with the transaction. Is your wallet unlocked?',
-            `${etherScanUrl}tx/${txHash}`,
-          );
-          this.setState({ isSaving: false });
-        });
+      React.swal({
+        title: 'Delegated!',
+        content: React.swal.msg(
+          <p>
+            The donation has been delegated,{' '}
+            <a href={`${txLink}`} target="_blank" rel="noopener noreferrer">
+              view the transaction here.
+            </a>
+            {msg}
+          </p>,
+        ),
+        icon: 'success',
+      });
     };
 
-    let txHash;
-    let etherScanUrl;
-
-    Promise.all([getNetwork(), getWeb3()])
-      .then(([network, web3]) => {
-        const { lppDacs, liquidPledging } = network;
-        etherScanUrl = network.etherscan;
-
-        const from =
-          model.delegate > 0 ? model.delegateEntity.ownerAddress : model.ownerEntity.ownerAddress;
-        const senderId = model.delegate > 0 ? model.delegate : model.owner;
-        const receiverId = admin.type === 'dac' ? admin.delegateId : admin.projectId;
-
-        const executeTransfer = () => {
-          if (model.ownerType === 'campaign') {
-            return new LPPCampaign(web3, model.ownerEntity.pluginAddress).transfer(
-              model.pledgeId,
-              model.amount,
-              receiverId,
-              {
-                from,
-                $extraGas: 100000,
-              },
-            );
-          } else if (model.ownerType === 'giver' && model.delegate > 0) {
-            return lppDacs.transfer(model.delegate, model.pledgeId, model.amount, receiverId, {
-              from,
-              $extraGas: 100000,
-            });
-          }
-
-          return liquidPledging.transfer(senderId, model.pledgeId, model.amount, receiverId, {
-            from,
-            $extraGas: 100000,
-          }); // need to supply extraGas b/c https://github.com/trufflesuite/ganache-core/issues/26
-        };
-
-        return executeTransfer()
-          .once('transactionHash', hash => {
-            txHash = hash;
-            delegate(etherScanUrl, txHash);
-          })
-          .on('error', console.error); // eslint-disable-line no-console
-      })
-      .then(() => {
-        React.toast.success(
-          <p>
-            Your donation has been confirmed!<br />
-            <a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">
-              View transaction
-            </a>
-          </p>,
-        );
-      })
-      .catch(() => {
-        ErrorPopup(
-          'Something went wrong with the transaction. Is your wallet unlocked?',
-          `${etherScanUrl}tx/${txHash}`,
-        );
-        this.setState({ isSaving: false });
-      });
+    const onSuccess = txLink => {
+      React.toast.success(
+        <p>
+          Your donation has been confirmed!<br />
+          <a href={`${txLink}`} target="_blank" rel="noopener noreferrer">
+            View transaction
+          </a>
+        </p>,
+      );
+    };
+    DonationService.delegate(this.props.donation, admin, onCreated, onSuccess);
   }
 
   resetSkylight() {
@@ -249,7 +156,7 @@ DelegateButton.propTypes = {
   wallet: PropTypes.instanceOf(GivethWallet).isRequired,
   types: PropTypes.arrayOf(PropTypes.shape({})).isRequired,
   milestoneOnly: PropTypes.bool,
-  model: PropTypes.shape({}).isRequired,
+  donation: PropTypes.shape({}).isRequired,
 };
 
 DelegateButton.defaultProps = {
