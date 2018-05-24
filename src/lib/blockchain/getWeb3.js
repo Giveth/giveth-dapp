@@ -24,7 +24,7 @@ const providerOpts = rpcUrl => {
   return opts;
 };
 
-const setWallet = rpcUrl =>
+const setWallet = (rpcUrl, isHomeNetwork = false) =>
   function set(wallet) {
     if (!wallet) throw new Error('a wallet is required');
 
@@ -62,7 +62,7 @@ const setWallet = rpcUrl =>
       const addr = wallet.getAddresses()[0];
 
       const tokenBal = tAddr =>
-        tAddr
+        !isHomeNetwork && tAddr
           ? new MiniMeToken(web3, tAddr).balanceOf(addr).then(bal => ({
               address: tAddr,
               bal,
@@ -72,11 +72,14 @@ const setWallet = rpcUrl =>
 
       Promise.all([bal(), ...Object.values(tokenAddresses).map(a => tokenBal(a))])
         .then(([balance, ...tokenBalances]) => {
-          wallet.balance = balance;
-          wallet.tokenBalances = tokenBalances.reduce((val, t) => {
-            val[t.address] = t.bal;
-            return val;
-          }, {});
+          if (isHomeNetwork) wallet.homeBalance = balance;
+          else {
+            wallet.balance = balance;
+            wallet.tokenBalances = tokenBalances.reduce((val, t) => {
+              val[t.address] = t.bal;
+              return val;
+            }, {});
+          }
         })
         .catch(err => {
           ErrorPopup(
@@ -96,7 +99,6 @@ export const getWeb3 = () =>
   new Promise(resolve => {
     if (!givethWeb3) {
       givethWeb3 = new Web3(new ZeroClientProvider(providerOpts(config.foreignNodeConnection)));
-
       givethWeb3.setWallet = setWallet(config.foreignNodeConnection);
     }
 
@@ -107,6 +109,7 @@ export const getHomeWeb3 = () =>
   new Promise(resolve => {
     if (!homeWeb3) {
       homeWeb3 = new Web3(new ZeroClientProvider(providerOpts(config.homeNodeConnection)));
+      homeWeb3.setWallet = setWallet(config.homeNodeConnection, true);
     }
 
     resolve(homeWeb3);

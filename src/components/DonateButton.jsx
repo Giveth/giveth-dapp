@@ -7,7 +7,6 @@ import { MiniMeToken } from 'minimetoken';
 import { Form, Input } from 'formsy-react-components';
 
 import getNetwork from '../lib/blockchain/getNetwork';
-import getRopstenNetwork from '../lib/blockchain/getRopstenNetwork';
 import { feathersClient } from '../lib/feathersClient';
 import { takeActionAfterWalletUnlock, confirmBlockchainTransaction } from '../lib/middleware';
 import User from '../models/User';
@@ -151,103 +150,67 @@ class DonateButton extends React.Component {
 
     Promise.all([getNetwork(), getHomeWeb3()]).then(([network, homeWeb3]) => {
       const { givethBridge } = network;
-      const { wallet } = this.props;
       const etherScanUrl = network.foreignEtherscan;
-      const to = givethBridge.$address;
       const value = utils.toWei(model.amount);
 
-      // 25400 gas will often be rejected by Ropsten!
-      // so increased this a lot to be more reliable for testing
-      const gas = 250000;
-      const data = currentUser.giverId
-        ? givethBridge.$contract.methods.donate(currentUser.giverId, adminId).encodeABI()
-        : givethBridge.$contract.methods
-            .donateAndCreateGiver(currentUser.address, adminId)
-            .encodeABI();
+      const opts = { from: currentUser.address, gasPrice, value };
+      const method = currentUser.giverId
+        ? givethBridge.donate(currentUser.giverId, adminId, opts)
+        : givethBridge.donateAndCreateGiver(currentUser.address, adminId, opts);
 
-      Promise.all([
-        homeWeb3.eth.net.getId(),
-        homeWeb3.eth.getTransactionCount(wallet.getAddresses()[0]),
-      ])
-        .then(([id, nonce]) => {
-          // construct transaction
-          const tx = {
-            from: this.props.currentUser.address,
-            to,
-            value,
-            gas,
-            gasPrice,
-            data,
-            nonce,
-            chainId: id,
-          };
+      let txHash;
+      method
+        .on('transactionHash', transactionHash => {
+          txHash = transactionHash;
+          this.closeDialog();
 
-          let txHash;
-          // sign transaction
-          wallet
-            .signTransaction(tx)
-            .then(signedTx => {
-              // send transaction
-              homeWeb3.eth
-                .sendSignedTransaction(signedTx.rawTransaction)
-                .on('transactionHash', transactionHash => {
-                  txHash = transactionHash;
-                  this.closeDialog();
-
-                  React.toast.info(
-                    <p>
-                      Awesome! Your donation is pending...<br />
-                      <a
-                        href={`${etherScanUrl}tx/${txHash}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        View transaction
-                      </a>
-                    </p>,
-                  );
-                })
-                .then(receipt => {
-                  React.toast.success(
-                    <p>
-                      Woot! Woot! Donation received. You are awesome!<br />
-                      Note: because we are bridging networks, there may be a delay before you
-                      donation appears.<br />
-                      <a
-                        href={`${etherScanUrl}tx/${txHash}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        View transaction
-                      </a>
-                    </p>,
-                  );
-                })
-                .catch(e => {
-                  e = !(e instanceof Error) ? JSON.stringify(e, null, 2) : e;
-                  ErrorPopup(
-                    'Something went wrong with your donation.',
-                    `${etherScanUrl}tx/${txHash} => ${e}`,
-                  );
-                });
-            })
-            .catch(e => {
-              console.log('could not send signedTx', e);
-
-              // with ropsten infura, this catch always throws, so we filter that one out
-              if (!e.message.includes('newBlockHeaders')) {
-                ErrorPopup('Something went wrong with the transaction. Please try again', e);
-              }
-            });
+          React.toast.info(
+            <p>
+              Awesome! Your donation is pending...<br />
+              <a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">
+                View transaction
+              </a>
+            </p>,
+          );
         })
-        // with ropsten infura, this catch always throws
+        .then(receipt => {
+          React.toast.success(
+            <p>
+              Woot! Woot! Donation received. You are awesome!<br />
+              Note: because we are bridging networks, there may be a delay before you donation
+              appears.<br />
+              <a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">
+                View transaction
+              </a>
+            </p>,
+          );
+        })
         .catch(e => {
-          console.error(e);
+          e = !(e instanceof Error) ? JSON.stringify(e, null, 2) : e;
+          ErrorPopup(
+            'Something went wrong with your donation.',
+            `${etherScanUrl}tx/${txHash} => ${e}`,
+          );
         });
 
       return;
+      // console.log('could not send signedTx', e);
 
-      const query = `?to=${to}&value=${value}&gasLimit=${gas}&data=${data}&gasPrice=${gasPrice}`;
+      // with ropsten infura, this catch always throws, so we filter that one out
+      // if (!e.message.includes('newBlockHeaders')) {
+      // ErrorPopup('Something went wrong with the transaction. Please try again', e);
+      // }
+      // });
+
+      // const gas = 30400;
+      // const data = currentUser.giverId
+      // ? givethBridge.$contract.methods.donate(currentUser.giverId, adminId).encodeABI()
+      // : givethBridge.$contract.methods
+      // .donateAndCreateGiver(currentUser.address, adminId)
+      // .encodeABI();
+
+      const to = givethBridge.$address;
+      const query = `?to=${to}&value=${value}&gasLimit=25400&data=${data}&gasPrice=${gasPrice}`;
       this.setState({
         modalVisible: true,
       });

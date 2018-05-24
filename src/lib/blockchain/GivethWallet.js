@@ -33,17 +33,28 @@ class GivethWallet {
     this.keystores = keystores;
     this.unlocked = false;
     this.balance = undefined;
+    this.homeBalance = undefined;
     this.tokenBalances = {};
   }
 
   /**
-   * return the balance of the wallet
+   * return the balance of the wallet on the foreign network
    *
    * @param unit (optional) ether, finney, wei, etc
    * @return {String}
    */
   getBalance(unit) {
     return this.balance ? utils.fromWei(this.balance, unit || 'ether') : undefined;
+  }
+
+  /**
+   * return the balance of the wallet on the home network
+   *
+   * @param unit (optional) ether, finney, wei, etc
+   * @return {String}
+   */
+  getHomeBalance(unit) {
+    return this.homeBalance ? utils.fromWei(this.homeBalance, unit || 'ether') : undefined;
   }
 
   getTokenBalance(address, unit) {

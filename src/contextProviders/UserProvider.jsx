@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { feathersClient } from '../lib/feathersClient';
 
 import GivethWallet from '../lib/blockchain/GivethWallet';
-import { getWeb3 } from '../lib/blockchain/getWeb3';
+import { getWeb3, getHomeWeb3 } from '../lib/blockchain/getWeb3';
 
 import ErrorPopup from '../components/ErrorPopup';
 
@@ -16,7 +16,7 @@ export { Consumer };
 
 // TO DO: This is the minimum transaction view required to:
 // create a DAC / Campaign / Milestone / Profile
-React.minimumWalletBalance = 0.02;
+React.minimumWalletBalance = 0.01;
 
 React.whitelist = {};
 
@@ -89,6 +89,7 @@ class UserProvider extends Component {
       })
       .then(wallet => {
         getWeb3().then(web3 => web3.setWallet(wallet));
+        getHomeWeb3().then(homeWeb3 => homeWeb3.setWallet(wallet));
         this.setState({ wallet });
       })
       .catch(err => {
@@ -145,6 +146,7 @@ class UserProvider extends Component {
     const address = wallet.getAddresses()[0];
 
     getWeb3().then(web3 => web3.setWallet(wallet));
+    getHomeWeb3().then(homeWeb3 => homeWeb3.setWallet(wallet));
 
     this.getUserData(address);
     this.setState({ wallet, walletLocked: false });

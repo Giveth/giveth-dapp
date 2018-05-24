@@ -21,12 +21,14 @@ const configurations = {
     lppCappedMilestoneFactoryAddress: '0x6eD79Aa1c71FD7BdBC515EfdA3Bd4e26394435cC',
     givethBridgeAddress: '0x8fed3F9126e7051DeA6c530920cb0BAE5ffa17a8',
     foreignGivethBridgeAddress: '0x8fed3F9126e7051DeA6c530920cb0BAE5ffa17a8',
-    tokenAddresses: { 'Home ETH': '0x5a42ca500aB159c51312B764bb25C135026e7a31' },
+    tokenAddresses: { 'Home Ganache ETH': '0x5a42ca500aB159c51312B764bb25C135026e7a31' },
     etherscan: 'https://etherscan.io/', // this won't work, only here so we can see links during development
     foreignEtherscan: 'https://ropsten.etherscan.io/', // this won't work, only here so we can see links during development
     feathersConnection: 'http://localhost:3030',
     foreignNodeConnection: 'ws://localhost:8546',
+    foreignNetworkName: 'Foreign Ganache',
     homeNodeConnection: 'http://localhost:8545',
+    homeNetworkName: 'Home Ganache',
   },
   develop: {
     title: 'develop',
@@ -41,7 +43,9 @@ const configurations = {
     foreignEtherscan: 'https://ropsten.etherscan.io/',
     feathersConnection: 'https://feathers.develop.giveth.io',
     foreignNodeConnection: 'wss://rinkeby.giveth.io/ws',
+    foreignNetworkName: 'Rinkeby',
     homeNodeConnection: 'https://ropsten.infura.io/Id3GoVvLrsO08ZNjxiKz',
+    homeNetworkName: 'Ropsten',
   },
   release: {
     title: 'release',
