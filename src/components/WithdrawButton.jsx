@@ -7,6 +7,7 @@ import User from '../models/User';
 import GivethWallet from '../lib/blockchain/GivethWallet';
 import WalletService from '../services/Wallet';
 import { getGasPrice } from '../lib/helpers';
+import { takeActionAfterWalletUnlock, confirmBlockchainTransaction } from '../lib/middleware';
 
 import ErrorPopup from './ErrorPopup';
 
@@ -68,27 +69,34 @@ class WithdrawButton extends Component {
   submit(model) {
     this.setState({ isSaving: true });
 
-    WalletService.withdraw(
-      {
-        from: this.props.currentUser.address,
-        to: model.to,
-        value: `${model.amount}`,
-      },
-      this.afterCreate,
-      (etherScanUrl, txHash) => {
-        React.toast.success(
-          <p>
-            Your withdrawal has been confirmed!<br />
-            <a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">
-              View transaction
-            </a>
-          </p>,
-        );
-      },
-      err => {
-        ErrorPopup('Something went wrong with withdrawal. Please try again after refresh.', err);
-      },
-    );
+    takeActionAfterWalletUnlock(this.props.wallet, () => {
+      confirmBlockchainTransaction(() =>
+        WalletService.withdraw(
+          {
+            from: this.props.currentUser.address,
+            to: model.to,
+            value: `${model.amount}`,
+          },
+          this.afterCreate,
+          (etherScanUrl, txHash) => {
+            React.toast.success(
+              <p>
+                Your withdrawal has been confirmed!<br />
+                <a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">
+                  View transaction
+                </a>
+              </p>,
+            );
+          },
+          err => {
+            ErrorPopup(
+              'Something went wrong with withdrawal. Please try again after refresh.',
+              err,
+            );
+          },
+        ),
+      );
+    });
   }
 
   render() {
