@@ -17,12 +17,7 @@ import getNetwork from '../../lib/blockchain/getNetwork';
 import { getWeb3 } from '../../lib/blockchain/getWeb3';
 import Loader from '../Loader';
 import User from '../../models/User';
-import {
-  getGasPrice,
-  getTruncatedText,
-  getReadableStatus,
-  convertEthHelper,
-} from '../../lib/helpers';
+import { getTruncatedText, getReadableStatus, convertEthHelper } from '../../lib/helpers';
 import GivethWallet from '../../lib/blockchain/GivethWallet';
 import config from '../../configuration';
 
@@ -292,8 +287,8 @@ class MyMilestones extends Component {
             // on chain
             let txHash;
             let etherScanUrl;
-            Promise.all([getNetwork(), getWeb3(), getGasPrice()])
-              .then(([network, web3, gasPrice]) => {
+            Promise.all([getNetwork(), getWeb3()])
+              .then(([network, web3]) => {
                 etherScanUrl = network.etherscan;
 
                 const cappedMilestone = new LPPCappedMilestone(web3, milestone.pluginAddress);
@@ -301,7 +296,6 @@ class MyMilestones extends Component {
                 return cappedMilestone
                   .requestMarkAsComplete({
                     from: this.props.currentUser.address,
-                    gasPrice,
                     $extraGas: 4000000,
                   })
                   .once('transactionHash', hash => {
@@ -377,8 +371,8 @@ class MyMilestones extends Component {
             // on chain
             let txHash;
             let etherScanUrl;
-            Promise.all([getNetwork(), getWeb3(), getGasPrice()])
-              .then(([network, web3, gasPrice]) => {
+            Promise.all([getNetwork(), getWeb3()])
+              .then(([network, web3]) => {
                 etherScanUrl = network.etherscan;
 
                 const cappedMilestone = new LPPCappedMilestone(web3, milestone.pluginAddress);
@@ -386,7 +380,6 @@ class MyMilestones extends Component {
                 return cappedMilestone
                   .cancelMilestone({
                     from: this.props.currentUser.address,
-                    gasPrice,
                     $extraGas: 4000000,
                   })
                   .once('transactionHash', hash => {
@@ -461,8 +454,8 @@ class MyMilestones extends Component {
             // on chain
             let txHash;
             let etherScanUrl;
-            Promise.all([getNetwork(), getWeb3(), getGasPrice()])
-              .then(([network, , gasPrice]) => {
+            getNetwork()
+              .then(network => {
                 etherScanUrl = network.etherscan;
 
                 const {
@@ -489,7 +482,7 @@ class MyMilestones extends Component {
                     maxAmount,
                     Object.values(config.tokenAddresses)[0], // TODO make this a form param
                     5 * 24 * 60 * 60, // 5 days in seconds
-                    { from, gasPrice, $extraGas: 200000 },
+                    { from, $extraGas: 200000 },
                   )
                   .on('transactionHash', hash => {
                     txHash = hash;
@@ -550,8 +543,8 @@ class MyMilestones extends Component {
             // on chain
             let txHash;
             let etherScanUrl;
-            Promise.all([getNetwork(), getWeb3(), getGasPrice()])
-              .then(([network, web3, gasPrice]) => {
+            Promise.all([getNetwork(), getWeb3()])
+              .then(([network, web3]) => {
                 etherScanUrl = network.etherscan;
 
                 const cappedMilestone = new LPPCappedMilestone(web3, milestone.pluginAddress);
@@ -559,7 +552,6 @@ class MyMilestones extends Component {
                 return cappedMilestone
                   .approveMilestoneCompleted({
                     from: this.props.currentUser.address,
-                    gasPrice,
                     $extraGas: 4000000,
                   })
                   .once('transactionHash', hash => {
@@ -626,8 +618,8 @@ class MyMilestones extends Component {
             // reject on chain
             let txHash;
             let etherScanUrl;
-            Promise.all([getNetwork(), getWeb3(), getGasPrice()])
-              .then(([network, web3, gasPrice]) => {
+            Promise.all([getNetwork(), getWeb3()])
+              .then(([network, web3]) => {
                 etherScanUrl = network.etherscan;
 
                 const cappedMilestone = new LPPCappedMilestone(web3, milestone.pluginAddress);
@@ -635,7 +627,6 @@ class MyMilestones extends Component {
                 return cappedMilestone
                   .rejectCompleteRequest({
                     from: this.props.currentUser.address,
-                    gasPrice,
                     $extraGas: 4000000,
                   })
                   .once('transactionHash', hash => {
@@ -765,14 +756,13 @@ class MyMilestones extends Component {
 
             let txHash;
             let etherScanUrl;
-            Promise.all([getNetwork(), getWeb3(), getPledges(), getGasPrice()])
-              .then(([network, web3, pledges, gasPrice]) => {
+            Promise.all([getNetwork(), getWeb3(), getPledges()])
+              .then(([network, web3, pledges]) => {
                 etherScanUrl = network.etherscan;
 
                 return new LPPCappedMilestone(web3, milestone.pluginAddress)
                   .mWithdraw(pledges, {
                     from: this.props.currentUser.address,
-                    gasPrice,
                   })
                   .once('transactionHash', hash => {
                     txHash = hash;
@@ -870,8 +860,8 @@ class MyMilestones extends Component {
 
   //           let txHash;
   //           let etherScanUrl;
-  //           Promise.all([getNetwork(), getWeb3(), getGasPrice()])
-  //             .then(([network, web3, gasPrice]) => {
+  //           Promise.all([getNetwork(), getWeb3()])
+  //             .then(([network, web3]) => {
   //               etherScanUrl = network.etherscan;
 
   //               // TODO this should get the token from the milestone
@@ -879,7 +869,6 @@ class MyMilestones extends Component {
   //                 .collect(milestone.projectId, Object.values(config.tokenAddresses)[0], {
   //                   from: this.props.currentUser.address,
   //                   $extraGas: 100000,
-  //                   gasPrice,
   //                 })
   //                 .once('transactionHash', hash => {
   //                   txHash = hash;

@@ -42,6 +42,7 @@ const setWallet = (rpcUrl, isHomeNetwork = false) =>
           // a chainId, the account will attempt to fetch it via the provider.
           const getId = txData.chainId ? Promise.resolve(txData.chainId) : this.eth.net.getId;
 
+          // note: nonce & gasPrice are set by subproviders
           getId()
             .then(id => {
               txData.chainId = id;

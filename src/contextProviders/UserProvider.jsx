@@ -82,11 +82,7 @@ class UserProvider extends Component {
       });
 
     GivethWallet.getCachedKeystore()
-      .then(keystore => {
-        // TODO: change to getWeb3() when implemented. actually remove provider from GivethWallet
-        const provider = this.state.web3 ? this.state.web3.currentProvider : undefined;
-        return GivethWallet.loadWallet(keystore, provider);
-      })
+      .then(keystore => GivethWallet.loadWallet(keystore))
       .then(wallet => {
         getWeb3().then(web3 => web3.setWallet(wallet));
         getHomeWeb3().then(homeWeb3 => homeWeb3.setWallet(wallet));
@@ -213,7 +209,7 @@ class UserProvider extends Component {
           state: {
             currentUser,
             wallet,
-            web3,
+            web3, // TODO do we need this here?
             isLoading,
             hasError,
             showUnlockWalletModal,

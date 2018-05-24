@@ -12,7 +12,6 @@ import {
   checkWalletBalance,
   confirmBlockchainTransaction,
 } from '../lib/middleware';
-import { getGasPrice } from '../lib/helpers';
 import getNetwork from '../lib/blockchain/getNetwork';
 import { getWeb3 } from '../lib/blockchain/getWeb3';
 import GivethWallet from '../lib/blockchain/GivethWallet';
@@ -130,8 +129,8 @@ class DelegateButton extends Component {
     let etherScanUrl;
 
     const doDelegate = () =>
-      Promise.all([getNetwork(), getWeb3(), getGasPrice()])
-        .then(([network, web3, gasPrice]) => {
+      Promise.all([getNetwork(), getWeb3()])
+        .then(([network, web3]) => {
           const { lppDacs, liquidPledging } = network;
           etherScanUrl = network.etherscan;
 
@@ -149,21 +148,18 @@ class DelegateButton extends Component {
                 {
                   from,
                   $extraGas: 100000,
-                  gasPrice,
                 },
               );
             } else if (model.ownerType === 'giver' && model.delegate > 0) {
               return lppDacs.transfer(model.delegate, model.pledgeId, model.amount, receiverId, {
                 from,
                 $extraGas: 100000,
-                gasPrice,
               });
             }
 
             return liquidPledging.transfer(senderId, model.pledgeId, model.amount, receiverId, {
               from,
               $extraGas: 100000,
-              gasPrice,
             }); // need to supply extraGas b/c https://github.com/trufflesuite/ganache-core/issues/26
           };
 

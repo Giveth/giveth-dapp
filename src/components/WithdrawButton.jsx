@@ -21,7 +21,7 @@ class WithdrawButton extends Component {
       amount: '',
       modalVisible: false,
       to: '',
-      gas: 4,
+      gasPrice: 4,
     };
 
     this.submit = this.submit.bind(this);
@@ -29,9 +29,9 @@ class WithdrawButton extends Component {
   }
 
   openDialog() {
-    getGasPrice().then(gas =>
+    getGasPrice().then(gasPrice =>
       this.setState({
-        gas,
+        gasPrice,
         modalVisible: true,
       }),
     );
@@ -103,7 +103,7 @@ class WithdrawButton extends Component {
 
   render() {
     const { wallet } = this.props;
-    const { isSaving, amount, formIsValid, gas, to } = this.state;
+    const { isSaving, amount, formIsValid, gasPrice, to } = this.state;
     const style = {
       display: 'inline-block',
     };
@@ -129,7 +129,7 @@ class WithdrawButton extends Component {
             <p>
               Your wallet balance: <em>{wallet.getBalance()} ETH</em>
               <br />
-              Gas price: <em>{gas} Gwei</em>
+              Gas price: <em>{gasPrice} Gwei</em>
             </p>
 
             <Form

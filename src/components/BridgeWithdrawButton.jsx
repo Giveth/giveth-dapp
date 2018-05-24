@@ -28,7 +28,7 @@ class BridgeWithdrawButton extends Component {
       })),
       amount: '',
       modalVisible: false,
-      gas: 4,
+      gasPrice: 4,
     };
 
     this.submit = this.submit.bind(this);
@@ -36,9 +36,9 @@ class BridgeWithdrawButton extends Component {
   }
 
   openDialog() {
-    getGasPrice().then(gas =>
+    getGasPrice().then(gasPrice =>
       this.setState({
-        gas: utils.fromWei(gas, 'gwei'),
+        gasPrice: utils.fromWei(gasPrice, 'gwei'),
         modalVisible: true,
       }),
     );
@@ -111,7 +111,7 @@ class BridgeWithdrawButton extends Component {
   render() {
     const { wallet } = this.props;
     const { tokenAddresses } = config;
-    const { isSaving, amount, formIsValid, gas, token, tokenOptions } = this.state;
+    const { isSaving, amount, formIsValid, gasPrice, token, tokenOptions } = this.state;
     const style = {
       display: 'inline-block',
     };
@@ -142,7 +142,7 @@ class BridgeWithdrawButton extends Component {
               </p>
             ))}
             <p>
-              Gas price: <em>{gas} Gwei</em>
+              Gas price: <em>{gasPrice} Gwei</em>
             </p>
 
             <Form

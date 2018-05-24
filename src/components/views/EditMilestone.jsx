@@ -15,7 +15,6 @@ import {
   isOwner,
   getRandomWhitelistAddress,
   getTruncatedText,
-  getGasPrice,
   getStartOfDayUTC,
 } from '../../lib/helpers';
 import {
@@ -25,7 +24,6 @@ import {
   confirmBlockchainTransaction,
 } from '../../lib/middleware';
 import getNetwork from '../../lib/blockchain/getNetwork';
-import { getWeb3 } from '../../lib/blockchain/getWeb3';
 import LoaderButton from '../../components/LoaderButton';
 import User from '../../models/User';
 import GivethWallet from '../../lib/blockchain/GivethWallet';
@@ -443,8 +441,8 @@ class EditMilestone extends Component {
           );
         } else {
           let etherScanUrl;
-          Promise.all([getNetwork(), getWeb3(), getGasPrice()])
-            .then(([network, , gasPrice]) => {
+          Promise.all([getNetwork()])
+            .then(([network]) => {
               etherScanUrl = network.etherscan;
 
               const from = this.props.currentUser.address;
@@ -473,14 +471,6 @@ class EditMilestone extends Component {
               uint _reviewTimeoutSeconds
               * */
 
-              console.log(
-                title,
-                recipientAddress,
-                reviewerAddress,
-                campaignReviewerAddress,
-                maxAmount,
-              );
-
               network.lppCappedMilestoneFactory
                 .newMilestone(
                   title,
@@ -495,7 +485,7 @@ class EditMilestone extends Component {
                   maxAmount,
                   Object.values(config.tokenAddresses)[0], // TODO make this a form param
                   5 * 24 * 60 * 60, // 5 days in seconds
-                  { from, gasPrice, $extraGas: 200000 },
+                  { from, $extraGas: 200000 },
                 )
                 .on('transactionHash', hash => {
                   txHash = hash;

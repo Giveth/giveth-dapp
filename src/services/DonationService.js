@@ -1,5 +1,4 @@
 import getNetwork from '../lib/blockchain/getNetwork';
-import { getGasPrice } from '../lib/helpers';
 import { feathersClient } from '../lib/feathersClient';
 
 import ErrorPopup from '../components/ErrorPopup';
@@ -17,15 +16,14 @@ class DonationService {
   static reject(donation, address, onCreated = () => {}, onSuccess = () => {}, onError = () => {}) {
     let txHash;
     let etherScanUrl;
-    Promise.all([getNetwork(), getGasPrice()])
-      .then(([network, gasPrice]) => {
+    getNetwork()
+      .then(network => {
         const { liquidPledging } = network;
         etherScanUrl = network.etherscan;
 
         return liquidPledging
           .transfer(donation.owner, donation.pledgeId, donation.amount, donation.delegate, {
             $extraGas: 50000,
-            gasPrice,
             from: address,
           })
           .once('transactionHash', hash => {
@@ -75,15 +73,14 @@ class DonationService {
   static commit(donation, address, onCreated = () => {}, onSuccess = () => {}, onError = () => {}) {
     let txHash;
     let etherScanUrl;
-    Promise.all([getNetwork(), getGasPrice()])
-      .then(([network, gasPrice]) => {
+    getNetwork()
+      .then(network => {
         const { liquidPledging } = network;
         etherScanUrl = network.etherscan;
 
         return liquidPledging
           .transfer(donation.owner, donation.pledgeId, donation.amount, donation.intendedProject, {
             $extraGas: 50000,
-            gasPrice,
             from: address,
           })
           .once('transactionHash', hash => {
@@ -140,8 +137,8 @@ class DonationService {
     let txHash;
     let etherScanUrl;
 
-    Promise.all([getNetwork(), getGasPrice()])
-      .then(([network, gasPrice]) => {
+    getNetwork()
+      .then(network => {
         const { liquidPledging } = network;
         etherScanUrl = network.etherscan;
 
@@ -149,7 +146,6 @@ class DonationService {
           .withdraw(donation.pledgeId, donation.amount, {
             $extraGas: 50000,
             from: address,
-            gasPrice,
           })
           .once('transactionHash', hash => {
             txHash = hash;

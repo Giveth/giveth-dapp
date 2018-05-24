@@ -15,6 +15,7 @@ import GivethWallet from '../lib/blockchain/GivethWallet';
 import { getWeb3, getHomeWeb3 } from '../lib/blockchain/getWeb3';
 import LoaderButton from './LoaderButton';
 import ErrorPopup from './ErrorPopup';
+import config from '../configuration';
 
 class DonateButton extends React.Component {
   constructor() {
@@ -25,8 +26,7 @@ class DonateButton extends React.Component {
       formIsValid: false,
       amount: '',
       modalVisible: false,
-      // gasPrice: utils.toWei('4', 'gwei'),
-      gasPrice: utils.toWei('10', 'gwei'),
+      gasPrice: 10,
     };
 
     this.submit = this.submit.bind(this);
@@ -34,6 +34,11 @@ class DonateButton extends React.Component {
   }
 
   componentDidMount() {
+    getGasPrice().then(gasPrice =>
+      this.setState({
+        gasPrice: utils.fromWei(gasPrice, 'gwei'),
+      }),
+    );
     // getNetwork().then(network => {
     //   const { liquidPledging } = network;
     //   const donate = liquidPledging.$contract.methods.donate(0, this.props.model.adminId);
@@ -153,7 +158,9 @@ class DonateButton extends React.Component {
       const etherScanUrl = network.foreignEtherscan;
       const value = utils.toWei(model.amount);
 
-      const opts = { from: currentUser.address, gasPrice, value };
+      // tx only requires 25400 gas, but for some reason we get an out of gas
+      // error in web3 with that amount (even though the tx succeeds)
+      const opts = { from: currentUser.address, value, gas: 30400 };
       const method = currentUser.giverId
         ? givethBridge.donate(currentUser.giverId, adminId, opts)
         : givethBridge.donateAndCreateGiver(currentUser.address, adminId, opts);
@@ -203,7 +210,10 @@ class DonateButton extends React.Component {
       // .encodeABI();
 
       const to = givethBridge.$address;
-      const query = `?to=${to}&value=${value}&gasLimit=25400&data=${data}&gasPrice=${gasPrice}`;
+      const query = `?to=${to}&value=${value}&gasLimit=25400&data=${data}&gasPrice=${utils.toWei(
+        gasPrice,
+        'gwei',
+      )}`;
       this.setState({
         modalVisible: true,
       });
@@ -449,9 +459,9 @@ class DonateButton extends React.Component {
             )}
 
             <p>
-              {/* Your wallet balance: <em>&#926;{wallet.getTokenBalance()}</em> */}
-              {/* <br /> */}
-              Gas price: <em>{utils.fromWei(gasPrice, 'gwei') * 10} Gwei</em>
+              Your {config.homeNetworkName} wallet balance: <em>&#926;{wallet.getHomeBalance()}</em>
+              <br />
+              Gas price: <em>{gasPrice} Gwei</em>
             </p>
 
             <Form

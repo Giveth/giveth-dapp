@@ -90,7 +90,6 @@ class Application extends Component {
               state: {
                 wallet,
                 currentUser,
-                web3,
                 isLoading,
                 hasError,
                 showUnlockWalletModal,
@@ -286,24 +285,14 @@ class Application extends Component {
                         <Route
                           exact
                           path="/signup"
-                          render={props => (
-                            <Signup
-                              provider={web3 ? web3.currentProvider : undefined}
-                              walletCreated={handleWalletChange}
-                              {...props}
-                            />
-                          )}
+                          render={props => <Signup walletCreated={handleWalletChange} {...props} />}
                         />
 
                         <Route
                           exact
                           path="/change-account"
                           render={props => (
-                            <ChangeAccount
-                              provider={web3 ? web3.currentProvider : undefined}
-                              handleWalletChange={handleWalletChange}
-                              {...props}
-                            />
+                            <ChangeAccount handleWalletChange={handleWalletChange} {...props} />
                           )}
                         />
 
