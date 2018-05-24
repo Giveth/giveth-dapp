@@ -10,8 +10,6 @@ import GivethWallet from '../lib/blockchain/GivethWallet';
 
 import DonationService from '../services/DonationService';
 
-// TODO: Remove once rewritten to donation
-/* eslint no-underscore-dangle: 0 */
 class DelegateButton extends Component {
   constructor() {
     super();

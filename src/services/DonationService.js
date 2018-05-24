@@ -98,16 +98,13 @@ class DonationService {
               .patch(donation.id, mutation)
               .then(() => onCreated(`${etherScanUrl}tx/${txHash}`))
               .catch(err => {
-                ErrorPopup(
-                  'Something went wrong with the transaction. Is your wallet unlocked?',
-                  err,
-                );
+                ErrorPopup('Unable to update the donation in feathers', err);
                 onError(err);
               });
           })
           .on('error', err => {
             ErrorPopup(
-              'Something went wrong with the transaction. Is your wallet unlocked?',
+              'Thare was a problem with the delegation transaction.',
               `${etherScanUrl}tx/${txHash}`,
             );
             onError(err);
@@ -115,10 +112,7 @@ class DonationService {
       })
       .then(() => onSuccess(`${etherScanUrl}tx/${txHash}`))
       .catch(err => {
-        ErrorPopup(
-          'Something went wrong with the transaction. Is your wallet unlocked?',
-          `${etherScanUrl}tx/${txHash}`,
-        );
+        ErrorPopup('Unable to initiate the delegation transaction.', err);
         onError(err);
       });
   }
