@@ -11,12 +11,7 @@ import SelectFormsy from './../SelectFormsy';
 import FormsyImageUploader from './../FormsyImageUploader';
 import GoBackButton from '../GoBackButton';
 import { isOwner, getTruncatedText, history } from '../../lib/helpers';
-import {
-  isAuthenticated,
-  checkWalletBalance,
-  isInWhitelist,
-  confirmBlockchainTransaction,
-} from '../../lib/middleware';
+import { isAuthenticated, checkWalletBalance, isInWhitelist } from '../../lib/middleware';
 import LoaderButton from '../../components/LoaderButton';
 import User from '../../models/User';
 import GivethWallet from '../../lib/blockchain/GivethWallet';
@@ -177,10 +172,7 @@ class EditCampaign extends Component {
     };
 
     // Save the capaign
-    confirmBlockchainTransaction(
-      () => this.state.campaign.save(afterCreate, afterMined),
-      () => this.setState({ isSaving: false }),
-    );
+    this.state.campaign.save(afterCreate, afterMined);
   }
 
   toggleFormValid(state) {

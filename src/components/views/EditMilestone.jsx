@@ -17,12 +17,7 @@ import {
   getTruncatedText,
   getStartOfDayUTC,
 } from '../../lib/helpers';
-import {
-  isAuthenticated,
-  checkWalletBalance,
-  isInWhitelist,
-  confirmBlockchainTransaction,
-} from '../../lib/middleware';
+import { isAuthenticated, checkWalletBalance, isInWhitelist } from '../../lib/middleware';
 import getNetwork from '../../lib/blockchain/getNetwork';
 import LoaderButton from '../../components/LoaderButton';
 import User from '../../models/User';
@@ -615,9 +610,6 @@ class EditMilestone extends Component {
       }).then(isConfirmed => {
         if (isConfirmed) saveMilestone();
       });
-    } else if (this.props.isNew) {
-      // Save the Milestone
-      confirmBlockchainTransaction(() => saveMilestone(), () => this.setState({ isSaving: false }));
     } else {
       saveMilestone();
     }

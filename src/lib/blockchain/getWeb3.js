@@ -35,6 +35,9 @@ const setWallet = (rpcUrl, isHomeNetwork = false) =>
       Object.assign(providerOpts(rpcUrl), {
         getAccounts: cb => cb(null, wallet.getAddresses()),
         approveTransaction: (txParams, cb) => {
+          // TODO consolidate wallet unlock & tx confirmation if wallet is lock
+          // 2 popups are currently annoying
+
           // TODO may need to call cb(null, false) if the user doesn't unlock their wallet
           takeActionAfterWalletUnlock(wallet, () => {
             // if we return false, the promise is rejected.
