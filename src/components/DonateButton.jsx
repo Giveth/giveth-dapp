@@ -125,10 +125,10 @@ class DonateButton extends React.Component {
     console.log(model, this.props.type.toLowerCase(), this.props.model.adminId);
 
     if (this.props.currentUser) {
-      takeActionAfterWalletUnlock(this.props.wallet, () => {
-        this.donateWithBridge(model);
-        this.setState({ isSaving: true });
-      });
+      // takeActionAfterWalletUnlock(this.props.wallet, () => {
+      this.donateWithBridge(model);
+      this.setState({ isSaving: true });
+      // });
     } else {
       React.swal({
         title: "You're almost there...",

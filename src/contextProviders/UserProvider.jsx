@@ -148,8 +148,8 @@ class UserProvider extends Component {
     this.setState({ wallet, walletLocked: false });
   }
 
-  unlockWallet(redirectAfter) {
-    this.setState({ showUnlockWalletModal: true, redirectAfter });
+  unlockWallet(actionAfter) {
+    this.setState({ showUnlockWalletModal: true, actionAfter });
   }
 
   lockWallet() {
@@ -179,7 +179,7 @@ class UserProvider extends Component {
   }
 
   hideUnlockWalletModal() {
-    this.setState({ showUnlockWalletModal: false, redirectAfter: undefined });
+    this.setState({ showUnlockWalletModal: false, actionAfter: undefined });
   }
 
   render() {
@@ -190,7 +190,7 @@ class UserProvider extends Component {
       isLoading,
       hasError,
       showUnlockWalletModal,
-      redirectAfter,
+      actionAfter,
       walletLocked,
     } = this.state;
 
@@ -213,7 +213,7 @@ class UserProvider extends Component {
             isLoading,
             hasError,
             showUnlockWalletModal,
-            redirectAfter,
+            actionAfter,
             walletLocked,
           },
           actions: {

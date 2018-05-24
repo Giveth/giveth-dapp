@@ -78,7 +78,7 @@ class Application extends Component {
     });
 
     // Making unlock wallet global
-    React.unlockWallet = this.unlockWallet;
+    // React.unlockWallet = this.unlockWallet;
   }
 
   render() {
@@ -93,7 +93,7 @@ class Application extends Component {
                 isLoading,
                 hasError,
                 showUnlockWalletModal,
-                redirectAfter,
+                actionAfter,
               },
               actions: {
                 onSignIn,
@@ -110,7 +110,7 @@ class Application extends Component {
                   showUnlockWalletModal && (
                     <UnlockWallet
                       wallet={wallet}
-                      redirectAfter={redirectAfter}
+                      actionAfter={actionAfter}
                       onClose={walletUnlocked}
                       onCloseClicked={hideUnlockWalletModal}
                     />
