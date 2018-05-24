@@ -3,7 +3,6 @@ import PropTypes from 'prop-types';
 import { SkyLightStateless } from 'react-skylight';
 import { Form, Input } from 'formsy-react-components';
 
-import { takeActionAfterWalletUnlock, confirmBlockchainTransaction } from '../lib/middleware';
 import User from '../models/User';
 import GivethWallet from '../lib/blockchain/GivethWallet';
 import WalletService from '../services/Wallet';
@@ -67,38 +66,29 @@ class WithdrawButton extends Component {
   }
 
   submit(model) {
-    takeActionAfterWalletUnlock(this.props.wallet, () => {
-      this.setState({ isSaving: true });
+    this.setState({ isSaving: true });
 
-      const withdraw = () =>
-        WalletService.withdraw(
-          {
-            from: this.props.currentUser.address,
-            to: model.to,
-            value: `${model.amount}`,
-          },
-          this.afterCreate,
-          (etherScanUrl, txHash) => {
-            React.toast.success(
-              <p>
-                Your withdrawal has been confirmed!<br />
-                <a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">
-                  View transaction
-                </a>
-              </p>,
-            );
-          },
-          err => {
-            ErrorPopup(
-              'Something went wrong with withdrawal. Please try again after refresh.',
-              err,
-            );
-          },
+    WalletService.withdraw(
+      {
+        from: this.props.currentUser.address,
+        to: model.to,
+        value: `${model.amount}`,
+      },
+      this.afterCreate,
+      (etherScanUrl, txHash) => {
+        React.toast.success(
+          <p>
+            Your withdrawal has been confirmed!<br />
+            <a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">
+              View transaction
+            </a>
+          </p>,
         );
-
-      // Withdraw the money
-      confirmBlockchainTransaction(withdraw, () => this.setState({ isSaving: false }));
-    });
+      },
+      err => {
+        ErrorPopup('Something went wrong with withdrawal. Please try again after refresh.', err);
+      },
+    );
   }
 
   render() {

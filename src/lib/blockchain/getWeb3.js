@@ -2,6 +2,7 @@ import { MiniMeToken } from 'minimetoken';
 import Web3 from 'web3';
 import ZeroClientProvider from './ZeroClientProvider';
 import config from '../../configuration';
+import { takeActionAfterWalletUnlock, confirmBlockchainTransaction } from '../middleware';
 
 import ErrorPopup from '../../components/ErrorPopup';
 
@@ -34,8 +35,12 @@ const setWallet = (rpcUrl, isHomeNetwork = false) =>
       Object.assign(providerOpts(rpcUrl), {
         getAccounts: cb => cb(null, wallet.getAddresses()),
         approveTransaction: (txParams, cb) => {
-          // TODO: handle locked wallet here?
-          cb(null, true);
+          // TODO may need to call cb(null, false) if the user doesn't unlock their wallet
+          takeActionAfterWalletUnlock(wallet, () => {
+            // if we return false, the promise is rejected.
+            // confirmBlockchainTransaction(() => cb(null, true), () => cb(null, false));
+            confirmBlockchainTransaction(() => cb(null, true), () => {});
+          });
         },
         signTransaction: (txData, cb) => {
           // provide chainId as GivethWallet.Account does not have a provider set. If we don't provide

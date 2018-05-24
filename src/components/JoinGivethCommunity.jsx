@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 
 import CommunityButton from './CommunityButton';
 import User from '../models/User';
-import { takeActionAfterWalletUnlock, checkWalletBalance, isInWhitelist } from '../lib/middleware';
+import { checkWalletBalance, isInWhitelist } from '../lib/middleware';
 import GivethWallet from '../lib/blockchain/GivethWallet';
 
 /**
@@ -35,10 +35,8 @@ class JoinGivethCommunity extends Component {
     isInWhitelist(this.props.currentUser, React.whitelist.delegateWhitelist)
       .then(() => {
         if (this.props.currentUser) {
-          takeActionAfterWalletUnlock(this.props.wallet, () => {
-            checkWalletBalance(this.props.wallet).then(() => {
-              this.props.history.push('/dacs/new');
-            });
+          checkWalletBalance(this.props.wallet).then(() => {
+            this.props.history.push('/dacs/new');
           });
         } else {
           React.swal({
@@ -77,10 +75,8 @@ class JoinGivethCommunity extends Component {
     isInWhitelist(this.props.currentUser, React.whitelist.projectOwnerWhitelist)
       .then(() => {
         if (this.props.currentUser) {
-          takeActionAfterWalletUnlock(this.props.wallet, () => {
-            checkWalletBalance(this.props.wallet).then(() => {
-              this.props.history.push('/campaigns/new');
-            });
+          checkWalletBalance(this.props.wallet).then(() => {
+            this.props.history.push('/campaigns/new');
           });
         } else {
           React.swal({

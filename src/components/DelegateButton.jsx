@@ -7,11 +7,7 @@ import InputToken from 'react-input-token';
 import PropTypes from 'prop-types';
 
 import { feathersClient } from '../lib/feathersClient';
-import {
-  takeActionAfterWalletUnlock,
-  checkWalletBalance,
-  confirmBlockchainTransaction,
-} from '../lib/middleware';
+import { checkWalletBalance } from '../lib/middleware';
 import getNetwork from '../lib/blockchain/getNetwork';
 import { getWeb3 } from '../lib/blockchain/getWeb3';
 import GivethWallet from '../lib/blockchain/GivethWallet';
@@ -35,9 +31,7 @@ class DelegateButton extends Component {
   }
 
   openDialog() {
-    takeActionAfterWalletUnlock(this.props.wallet, () =>
-      checkWalletBalance(this.props.wallet).then(() => this.setState({ modalVisible: true })),
-    );
+    checkWalletBalance(this.props.wallet).then(() => this.setState({ modalVisible: true }));
   }
 
   selectedObject({ target }) {
@@ -128,68 +122,64 @@ class DelegateButton extends Component {
     let txHash;
     let etherScanUrl;
 
-    const doDelegate = () =>
-      Promise.all([getNetwork(), getWeb3()])
-        .then(([network, web3]) => {
-          const { lppDacs, liquidPledging } = network;
-          etherScanUrl = network.etherscan;
+    Promise.all([getNetwork(), getWeb3()])
+      .then(([network, web3]) => {
+        const { lppDacs, liquidPledging } = network;
+        etherScanUrl = network.etherscan;
 
-          const from =
-            model.delegate > 0 ? model.delegateEntity.ownerAddress : model.ownerEntity.ownerAddress;
-          const senderId = model.delegate > 0 ? model.delegate : model.owner;
-          const receiverId = admin.type === 'dac' ? admin.delegateId : admin.projectId;
+        const from =
+          model.delegate > 0 ? model.delegateEntity.ownerAddress : model.ownerEntity.ownerAddress;
+        const senderId = model.delegate > 0 ? model.delegate : model.owner;
+        const receiverId = admin.type === 'dac' ? admin.delegateId : admin.projectId;
 
-          const executeTransfer = () => {
-            if (model.ownerType === 'campaign') {
-              return new LPPCampaign(web3, model.ownerEntity.pluginAddress).transfer(
-                model.pledgeId,
-                model.amount,
-                receiverId,
-                {
-                  from,
-                  $extraGas: 100000,
-                },
-              );
-            } else if (model.ownerType === 'giver' && model.delegate > 0) {
-              return lppDacs.transfer(model.delegate, model.pledgeId, model.amount, receiverId, {
+        const executeTransfer = () => {
+          if (model.ownerType === 'campaign') {
+            return new LPPCampaign(web3, model.ownerEntity.pluginAddress).transfer(
+              model.pledgeId,
+              model.amount,
+              receiverId,
+              {
                 from,
                 $extraGas: 100000,
-              });
-            }
-
-            return liquidPledging.transfer(senderId, model.pledgeId, model.amount, receiverId, {
+              },
+            );
+          } else if (model.ownerType === 'giver' && model.delegate > 0) {
+            return lppDacs.transfer(model.delegate, model.pledgeId, model.amount, receiverId, {
               from,
               $extraGas: 100000,
-            }); // need to supply extraGas b/c https://github.com/trufflesuite/ganache-core/issues/26
-          };
+            });
+          }
 
-          return executeTransfer()
-            .once('transactionHash', hash => {
-              txHash = hash;
-              delegate(etherScanUrl, txHash);
-            })
-            .on('error', console.error); // eslint-disable-line no-console
-        })
-        .then(() => {
-          React.toast.success(
-            <p>
-              Your donation has been confirmed!<br />
-              <a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">
-                View transaction
-              </a>
-            </p>,
-          );
-        })
-        .catch(() => {
-          ErrorPopup(
-            'Something went wrong with the transaction. Is your wallet unlocked?',
-            `${etherScanUrl}tx/${txHash}`,
-          );
-          this.setState({ isSaving: false });
-        });
+          return liquidPledging.transfer(senderId, model.pledgeId, model.amount, receiverId, {
+            from,
+            $extraGas: 100000,
+          }); // need to supply extraGas b/c https://github.com/trufflesuite/ganache-core/issues/26
+        };
 
-    // Delegate
-    confirmBlockchainTransaction(doDelegate, () => this.setState({ isSaving: false }));
+        return executeTransfer()
+          .once('transactionHash', hash => {
+            txHash = hash;
+            delegate(etherScanUrl, txHash);
+          })
+          .on('error', console.error); // eslint-disable-line no-console
+      })
+      .then(() => {
+        React.toast.success(
+          <p>
+            Your donation has been confirmed!<br />
+            <a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">
+              View transaction
+            </a>
+          </p>,
+        );
+      })
+      .catch(() => {
+        ErrorPopup(
+          'Something went wrong with the transaction. Is your wallet unlocked?',
+          `${etherScanUrl}tx/${txHash}`,
+        );
+        this.setState({ isSaving: false });
+      });
   }
 
   resetSkylight() {

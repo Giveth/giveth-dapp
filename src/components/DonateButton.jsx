@@ -8,7 +8,6 @@ import { Form, Input } from 'formsy-react-components';
 
 import getNetwork from '../lib/blockchain/getNetwork';
 import { feathersClient } from '../lib/feathersClient';
-import { takeActionAfterWalletUnlock, confirmBlockchainTransaction } from '../lib/middleware';
 import User from '../models/User';
 import { displayTransactionError, getGasPrice } from '../lib/helpers';
 import GivethWallet from '../lib/blockchain/GivethWallet';
@@ -89,10 +88,8 @@ class DonateButton extends React.Component {
 
   //     }
   //   });
-  //     // takeActionAfterWalletUnlock(this.props.wallet, () => {
   //       // this.setState({ isSaving: true });
   //       // this.donateWithGiveth(model);
-  //     // });
   //   } else {
   //     React.swal({
   //       title: "You're almost there...",
@@ -125,10 +122,8 @@ class DonateButton extends React.Component {
     console.log(model, this.props.type.toLowerCase(), this.props.model.adminId);
 
     if (this.props.currentUser) {
-      // takeActionAfterWalletUnlock(this.props.wallet, () => {
       this.donateWithBridge(model);
       this.setState({ isSaving: true });
-      // });
     } else {
       React.swal({
         title: "You're almost there...",
@@ -381,50 +376,46 @@ class DonateButton extends React.Component {
 
     let txHash;
     let etherScanUrl;
-    const doDonate = () =>
-      Promise.all([getNetwork(), getWeb3(), getHomeWeb3()])
-        .then(([network, web3, ropstenWeb3]) => {
-          const { tokenAddress, liquidPledgingAddress } = network;
-          etherScanUrl = network.etherscan;
-          const token = new MiniMeToken(web3, tokenAddress);
+    Promise.all([getNetwork(), getWeb3(), getHomeWeb3()])
+      .then(([network, web3, ropstenWeb3]) => {
+        const { tokenAddress, liquidPledgingAddress } = network;
+        etherScanUrl = network.etherscan;
+        const token = new MiniMeToken(web3, tokenAddress);
 
-          const giverId = this.props.currentUser.giverId || '0';
-          const { adminId } = this.props.model;
+        const giverId = this.props.currentUser.giverId || '0';
+        const { adminId } = this.props.model;
 
-          const data = `0x${utils.padLeft(utils.toHex(giverId).substring(2), 16)}${utils.padLeft(
-            utils.toHex(adminId).substring(2),
-            16,
-          )}`;
+        const data = `0x${utils.padLeft(utils.toHex(giverId).substring(2), 16)}${utils.padLeft(
+          utils.toHex(adminId).substring(2),
+          16,
+        )}`;
 
-          return token
-            .approveAndCall(liquidPledgingAddress, amount, data, {
-              from: this.props.currentUser.address,
-              gas: 1000000,
-            })
-            .once('transactionHash', hash => {
-              txHash = hash;
-              donate(etherScanUrl, txHash);
-            });
-        })
-        .then(() => {
-          React.toast.success(
-            <p>
-              Your donation has been confirmed!<br />
-              <a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">
-                View transaction
-              </a>
-            </p>,
-          );
-        })
-        .catch(e => {
-          console.error(e);
-          displayTransactionError(txHash, etherScanUrl);
+        return token
+          .approveAndCall(liquidPledgingAddress, amount, data, {
+            from: this.props.currentUser.address,
+            gas: 1000000,
+          })
+          .once('transactionHash', hash => {
+            txHash = hash;
+            donate(etherScanUrl, txHash);
+          });
+      })
+      .then(() => {
+        React.toast.success(
+          <p>
+            Your donation has been confirmed!<br />
+            <a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">
+              View transaction
+            </a>
+          </p>,
+        );
+      })
+      .catch(e => {
+        console.error(e);
+        displayTransactionError(txHash, etherScanUrl);
 
-          this.setState({ isSaving: false });
-        });
-
-    // Donate
-    confirmBlockchainTransaction(doDonate, () => this.setState({ isSaving: false }));
+        this.setState({ isSaving: false });
+      });
   }
 
   render() {
