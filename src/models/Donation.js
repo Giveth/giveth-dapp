@@ -34,7 +34,7 @@ class Donation extends Model {
     this.id = data._id;
     this.amount = data.amount;
     this.commitTime = data.commitTime;
-    this.confirmations = data.confirmations;
+    this.confirmations = data.confirmations || 0;
     this.createdAt = data.createdAt;
     this.delegate = data.delegate;
     this.delegateEntity = data.delegateEntity;
