@@ -91,7 +91,7 @@ const reproposeRejectedMilestone = milestone => {
     content: {
       element: "input",
       attributes: {
-        placeholder: "Add a reason why you repropose this milestone...",
+        placeholder: "Add a reason why you repropose this milestone",
       }
     },     
   }).then(message => {
@@ -274,13 +274,13 @@ class MyMilestones extends Component {
           content: {
             element: "input",
             attributes: {
-              placeholder: "Add a message for the reviewer",
+              rows: 3,
+              placeholder: "Add a message for the reviewer (optional)",
             }
           },
           buttons: ['Cancel', 'Yes, mark complete'],
-        }).then((message) => {
-          if (message) {
-            console.log('message', message)
+        }).then((message, cancel) => {
+          if (message !== null) {
             // feathers
             const _requestMarkComplete = (etherScanUrl, txHash) => {
               feathersClient
@@ -368,7 +368,8 @@ class MyMilestones extends Component {
           content: {
             element: "input",
             attributes: {
-              placeholder: "Add a reason why you canceled this milestone",
+              rows: 3,
+              placeholder: "Add a reason why you cancel this milestone",
             }
           },          
         }).then(message => {
@@ -460,11 +461,12 @@ class MyMilestones extends Component {
           content: {
             element: "input",
             attributes: {
-              placeholder: "Add a reason why you accept this milestone...",
+              rows: 3,
+              placeholder: "Add a reason why you accept this milestone (optional)",
             }
           },           
         }).then(message => {
-          if (message) {
+          if (message !== null) {
             // feathers
             const _createMilestone = (etherScanUrl, txHash) =>
               feathersClient
@@ -556,11 +558,12 @@ class MyMilestones extends Component {
           content: {
             element: "input",
             attributes: {
-              placeholder: "Add a message why you approve this milestone...",
+              rows: 3,
+              placeholder: "Add a message why you approve completion (optional)",
             }
           },           
         }).then(message => {
-          if (message) {
+          if (message !== null) {
             // feathers
             const _approveMilestoneCompleted = (etherScanUrl, txHash) =>
               feathersClient
@@ -647,7 +650,8 @@ class MyMilestones extends Component {
           content: {
             element: "input",
             attributes: {
-              placeholder: "Add a reason why you reject the completion of this milestone...",
+              rows: 3,
+              placeholder: "Add a reason why you reject the completion of this milestone",
             }
           },            
         }).then(message => {
