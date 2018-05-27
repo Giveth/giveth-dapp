@@ -5,6 +5,7 @@ import moment from 'moment';
 
 import Loader from '../Loader';
 import { convertEthHelper } from '../../lib/helpers';
+import Donation from '../../models/Donation';
 import { Consumer as UserConsumer } from '../../contextProviders/UserProvider';
 import DonationProvider, {
   Consumer as DonationConsumer,
@@ -51,7 +52,7 @@ const Donations = () => (
                                 {donations.map(d => (
                                   <tr
                                     key={d.id}
-                                    className={d.status === 'pending' ? 'pending' : ''}
+                                    className={d.status === Donation.PENDING ? 'pending' : ''}
                                   >
                                     <td className="td-date">
                                       {moment(d.createdAt).format('MM/DD/YYYY')}
@@ -78,8 +79,7 @@ const Donations = () => (
                                           <i className="fa fa-circle-o-notch fa-spin" />&nbsp;
                                         </span>
                                       )}
-                                      {d.status === 'waiting' &&
-                                      d.ownerEntity.address === currentUser.address ? (
+                                      {d.canDelegate(currentUser) ? (
                                         <Link to="/delegations">{d.statusDescription}</Link>
                                       ) : (
                                         d.statusDescription
@@ -98,33 +98,30 @@ const Donations = () => (
                                     )}
 
                                     <td className="td-actions">
-                                      {d.ownerId === currentUser.address &&
-                                        d.status === 'waiting' && (
+                                      {d.canRefund(currentUser) && (
+                                        <button
+                                          className="btn btn-sm btn-danger"
+                                          onClick={() => refund(d)}
+                                        >
+                                          Refund
+                                        </button>
+                                      )}
+                                      {d.canApproveReject(currentUser) && (
+                                        <div>
+                                          <button
+                                            className="btn btn-sm btn-success"
+                                            onClick={() => commit(d)}
+                                          >
+                                            Commit
+                                          </button>
                                           <button
                                             className="btn btn-sm btn-danger"
-                                            onClick={() => refund(d)}
+                                            onClick={() => reject(d)}
                                           >
-                                            Refund
+                                            Reject
                                           </button>
-                                        )}
-                                      {d.ownerId === currentUser.address &&
-                                        d.status === 'to_approve' &&
-                                        new Date() < new Date(d.commitTime) && (
-                                          <div>
-                                            <button
-                                              className="btn btn-sm btn-success"
-                                              onClick={() => commit(d)}
-                                            >
-                                              Commit
-                                            </button>
-                                            <button
-                                              className="btn btn-sm btn-danger"
-                                              onClick={() => reject(d)}
-                                            >
-                                              Reject
-                                            </button>
-                                          </div>
-                                        )}
+                                        </div>
+                                      )}
                                     </td>
                                   </tr>
                                 ))}
@@ -132,21 +129,20 @@ const Donations = () => (
                             </table>
                           )}
 
-                        {donations &&
-                          donations.length === 0 && (
-                            <div>
-                              <center>
-                                <h3>You didn&apos;t make any donations yet!</h3>
-                                <img
-                                  className="empty-state-img"
-                                  src={`${process.env.PUBLIC_URL}/img/donation.svg`}
-                                  width="200px"
-                                  height="200px"
-                                  alt="no-donations-icon"
-                                />
-                              </center>
-                            </div>
-                          )}
+                        {donations.length === 0 && (
+                          <div>
+                            <center>
+                              <h3>You didn&apos;t make any donations yet!</h3>
+                              <img
+                                className="empty-state-img"
+                                src={`${process.env.PUBLIC_URL}/img/donation.svg`}
+                                width="200px"
+                                height="200px"
+                                alt="no-donations-icon"
+                              />
+                            </center>
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>

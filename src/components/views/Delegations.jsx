@@ -64,8 +64,10 @@ const Delegations = () => (
                                         {convertEthHelper(d.amount)} ETH
                                       </td>
                                       <td className="td-user">
-                                        <Avatar size={30} src={getUserAvatar(d.giver)} round />
-                                        {getUserName(d.giver)}
+                                        <Link to={`profile/${d.giver.address}`}>
+                                          <Avatar size={30} src={getUserAvatar(d.giver)} round />
+                                          {getUserName(d.giver)}
+                                        </Link>
                                       </td>
                                       <td className="td-tx-address">{d.giverAddress}</td>
                                       <td className="td-status">{d.status}</td>

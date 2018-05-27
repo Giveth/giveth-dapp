@@ -4,6 +4,8 @@ import { utils } from 'web3';
 import { Form, Input } from 'formsy-react-components';
 import InputToken from 'react-input-token';
 import PropTypes from 'prop-types';
+import Slider from 'react-rangeslider';
+import 'react-rangeslider/lib/index.css';
 
 import { checkWalletBalance } from '../lib/middleware';
 import GivethWallet from '../lib/blockchain/GivethWallet';
@@ -151,6 +153,21 @@ class DelegateButton extends Component {
                 maxLength={1}
               />
             </div>
+            <span className="label">Amount to delegate:</span>
+
+            <div className="form-group">
+              <Slider
+                type="range"
+                name="amount2"
+                min={0}
+                max={Number(this.state.maxAmount)}
+                step={this.state.maxAmount / 10}
+                value={Number(this.state.amount)}
+                labels={['0', this.state.maxAmount]}
+                format={val => `${val} ETH`}
+                onChange={amount => this.setState({ amount: Number(amount).toFixed(2) })}
+              />
+            </div>
 
             <div className="form-group">
               <Input
@@ -163,20 +180,7 @@ class DelegateButton extends Component {
                   }. Do not input higher amount.`,
                   isNumeric: 'Provide correct number',
                 }}
-                label="Amount to delegate:"
                 name="amount"
-                value={this.state.amount}
-                onChange={(name, amount) => this.setState({ amount })}
-              />
-            </div>
-
-            <div className="form-group">
-              <Input
-                type="range"
-                name="amount2"
-                min={0}
-                max={this.state.maxAmount}
-                step={this.state.maxAmount / 10}
                 value={this.state.amount}
                 onChange={(name, amount) => this.setState({ amount })}
               />

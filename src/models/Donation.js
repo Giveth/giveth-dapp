@@ -30,6 +30,18 @@ class Donation extends Model {
     return 'cancelled';
   }
 
+  static get statuse() {
+    return [
+      Donation.PENDING,
+      Donation.TO_APPROVE,
+      Donation.WAITING,
+      Donation.COMMITTED,
+      Donation.PAYING,
+      Donation.PAID,
+      Donation.CANCELED,
+    ];
+  }
+
   constructor(data) {
     super(data);
 
@@ -128,6 +140,43 @@ class Donation extends Model {
    */
   get donatedTo() {
     return this.myDonatedTo;
+  }
+
+  /**
+   * Check if a user can refund this donation
+   *
+   * @param {User} user User for whom the action should be checked
+   *
+   * @return {boolean} True if given user can refund the donation
+   */
+  canRefund(user) {
+    return this.ownerId === user.address && this.status === Donation.WAITING;
+  }
+
+  /**
+   * Check if a user can approve or reject delegation of this donation
+   *
+   * @param {User} user User for whom the action should be checked
+   *
+   * @return {boolean} True if given user can approve or reject the delegation of the donation
+   */
+  canApproveReject(user) {
+    return (
+      this.ownerId === user.address &&
+      this.status === Donation.TO_APPROVE &&
+      new Date() < new Date(this.commitTime)
+    );
+  }
+
+  /**
+   * Check if a user can delegate this donation
+   *
+   * @param {User} user User for whom the action should be checked
+   *
+   * @return {boolean} True if given user can delegate the donation
+   */
+  canDelegate(user) {
+    return this.status === Donation.WAITING && this.ownerEntity.address === user.address;
   }
 
   get id() {
