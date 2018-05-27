@@ -1,4 +1,6 @@
 import Model from './Model';
+import { getTruncatedText } from '../lib/helpers';
+// import User from './User';
 
 /* eslint no-underscore-dangle: 0 */
 
@@ -52,6 +54,43 @@ class Donation extends Model {
     this.status = data.status;
     this.txHash = data.txHash;
     this.updatedAt = data.updatedAt;
+
+    /**
+     * Get the URL, name and type of the entity to which this donation has been donated to
+     *
+     * URL {string}  URL to the entity
+     * name {string} Title of the entity
+     * type {string} Type of the entity - one of DAC, CAMPAIGN, MILESTONE or GIVER
+     */
+    const donatedTo = {
+      url: '/',
+      name: '',
+      type: '',
+    };
+    if (this.delegate > 0) {
+      // DAC
+      donatedTo.url = `/dacs/${this.delegateEntity._id}`; // eslint-disable-line no-underscore-dangle
+      donatedTo.name = getTruncatedText(this.delegateEntity.title, 45);
+      donatedTo.type = 'DAC';
+    } else if (!this.delegate && this.ownerType === 'campaign') {
+      // Campaing
+      donatedTo.url = `/${this.ownerType}s/${this.ownerEntity._id}`; // eslint-disable-line no-underscore-dangle
+      donatedTo.name = getTruncatedText(this.ownerEntity.title, 45);
+      donatedTo.type = 'CAMPAIGN';
+    } else if (!this.delegate && this.ownerType === 'milestone') {
+      // Milestone
+      donatedTo.url = `/campaigns/${this.ownerEntity.campaign._id}/milestones/${
+        this.ownerEntity._id
+      }`; // eslint-disable-line no-underscore-dangle
+      donatedTo.name = getTruncatedText(this.ownerEntity.title, 45);
+      donatedTo.type = 'MILESTONE';
+    } else {
+      // User
+      donatedTo.url = `/profile/${this.ownerEntity.address}`;
+      donatedTo.name = this.ownerEntity.name || this.ownerEntity.address;
+      donatedTo.type = 'GIVER';
+    }
+    this.myDonatedTo = donatedTo;
   }
 
   get statusDescription() {
@@ -78,6 +117,18 @@ class Donation extends Model {
   // toFeathers() {
   //   return {};
   // }
+
+  /**
+   * Get the URL, name and type of the entity to which this donation has been donated to
+   *
+   * @returns {Object}
+   *                     URL {string}  URL to the entity
+   *                     name {string} Title of the entity
+   *                     type {string} Type of the entity - one of DAC, CAMPAIGN, MILESTONE or GIVER
+   */
+  get donatedTo() {
+    return this.myDonatedTo;
+  }
 
   get id() {
     return this.myId;

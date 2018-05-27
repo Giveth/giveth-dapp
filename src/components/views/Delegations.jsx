@@ -5,7 +5,7 @@ import moment from 'moment';
 
 import Loader from '../Loader';
 import DelegateButton from '../../components/DelegateButton';
-import { getUserName, getUserAvatar, getTruncatedText, convertEthHelper } from '../../lib/helpers';
+import { getUserName, getUserAvatar, convertEthHelper } from '../../lib/helpers';
 
 import { Consumer as UserConsumer } from '../../contextProviders/UserProvider';
 import DelegationProvider, {
@@ -55,40 +55,11 @@ const Delegations = () => (
                                         {moment(d.createdAt).format('MM/DD/YYYY')}
                                       </td>
 
-                                      {d.delegate > 0 && (
-                                        <td className="td-donated-to">
-                                          <Link
-                                            to={`/dacs/${d._id}`} // eslint-disable-line no-underscore-dangle
-                                          >
-                                            DAC{' '}
-                                            <em>{getTruncatedText(d.delegateEntity.title, 45)}</em>
-                                          </Link>
-                                        </td>
-                                      )}
-                                      {!d.delegate &&
-                                        d.ownerType !== 'giver' && (
-                                          <td className="td-donated-to">
-                                            <Link
-                                              to={`/${d.ownerType}s/${d.ownerEntity._id}`} // eslint-disable-line no-underscore-dangle
-                                            >
-                                              {d.ownerType.toUpperCase()}{' '}
-                                              <em>{d.ownerEntity.title}</em>
-                                            </Link>
-                                          </td>
-                                        )}
-                                      {!d.delegate &&
-                                        d.ownerType === 'giver' && (
-                                          <td className="td-donated-to">
-                                            <Link to={`/profile/${d.ownerEntity.address}`}>
-                                              GIVER
-                                              <em>
-                                                {d.ownerEntity.address === currentUser.address
-                                                  ? 'You'
-                                                  : d.ownerEntity.name || d.ownerEntity.address}
-                                              </em>
-                                            </Link>
-                                          </td>
-                                        )}
+                                      <td className="td-donated-to">
+                                        <Link to={d.donatedTo.url}>
+                                          {d.donatedTo.type} <em>{d.donatedTo.name}</em>
+                                        </Link>
+                                      </td>
                                       <td className="td-donations-amount">
                                         {convertEthHelper(d.amount)} ETH
                                       </td>
@@ -108,12 +79,6 @@ const Delegations = () => (
                                             wallet={wallet}
                                           />
                                         )}
-
-                                        {/* TODO enable this, but for lp withdraw to wallet {!d.delegate &&
-                                    d.ownerType === 'giver' &&
-                                    d.ownerEntity.address === currentUser.address && (
-                                      <WithdrawButton currentUser={currentUser} wallet={wallet} />
-                                    )} */}
 
                                         {/* When donated to a campaign, only allow delegation
                                       to milestones of that campaign */}

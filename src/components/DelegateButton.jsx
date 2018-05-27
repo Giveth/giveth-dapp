@@ -105,7 +105,7 @@ class DelegateButton extends Component {
   }
 
   render() {
-    const { types, milestoneOnly } = this.props;
+    const { types, milestoneOnly, donation } = this.props;
     const { isSaving, objectsToDelegateTo } = this.state;
     const style = { display: 'inline-block' };
 
@@ -128,9 +128,14 @@ class DelegateButton extends Component {
           afterClose={() => this.resetSkylight()}
         >
           {milestoneOnly && <p>Select a Milestone to delegate this donation to:</p>}
-
           {!milestoneOnly && <p>Select a Campaign or Milestone to delegate this donation to:</p>}
 
+          <p>
+            You are delegating donation from{' '}
+            <strong>{donation.giver.name || donation.giverAddress}</strong> of a value{' '}
+            <strong>{utils.fromWei(donation.amount)} ETH</strong> that has been donated to{' '}
+            <strong>{donation.donatedTo.name}</strong>
+          </p>
           <Form onSubmit={this.submit} layout="vertical">
             <div className="form-group">
               <span className="label">Delegate to:</span>

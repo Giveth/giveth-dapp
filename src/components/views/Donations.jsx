@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import moment from 'moment';
 
 import Loader from '../Loader';
-import { getTruncatedText, convertEthHelper } from '../../lib/helpers';
+import { convertEthHelper } from '../../lib/helpers';
 import { Consumer as UserConsumer } from '../../contextProviders/UserProvider';
 import DonationProvider, {
   Consumer as DonationConsumer,
@@ -64,42 +64,9 @@ const Donations = () => (
                                           &nbsp;Delegated
                                         </span>
                                       )}
-
-                                      {d.delegate > 0 &&
-                                        d.delegateEntity && (
-                                          <Link to={`/dacs/${d.delegateEntity._id}`}>
-                                            DAC{' '}
-                                            <em>{getTruncatedText(d.delegateEntity.title, 45)}</em>
-                                          </Link>
-                                        )}
-
-                                      {d.ownerType === 'giver' &&
-                                        !d.delegate && (
-                                          <Link to={`/profile/${d.ownerEntity.address}`}>
-                                            GIVER{' '}
-                                            <em>
-                                              {d.ownerEntity.address === currentUser.address
-                                                ? 'You'
-                                                : d.ownerEntity.name || d.ownerEntity.address}
-                                            </em>
-                                          </Link>
-                                        )}
-
-                                      {d.ownerType === 'campaign' &&
-                                        d.ownerEntity && (
-                                          <Link to={`/${d.ownerType}s/${d.ownerEntity._id}`}>
-                                            CAMPAIGN{' '}
-                                            <em>{getTruncatedText(d.ownerEntity.title, 45)}</em>
-                                          </Link>
-                                        )}
-
-                                      {d.ownerType === 'milestone' &&
-                                        d.ownerEntity && (
-                                          <Link to={`/${d.ownerType}s/${d.ownerEntity._id}`}>
-                                            MILESTONE{' '}
-                                            <em>{getTruncatedText(d.ownerEntity.title, 45)}</em>
-                                          </Link>
-                                        )}
+                                      <Link to={d.donatedTo.url}>
+                                        {d.donatedTo.type} <em>{d.donatedTo.name}</em>
+                                      </Link>
                                     </td>
                                     <td className="td-donations-amount">
                                       {convertEthHelper(d.amount)} ETH
