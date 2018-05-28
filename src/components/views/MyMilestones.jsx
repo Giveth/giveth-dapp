@@ -734,6 +734,7 @@ class MyMilestones extends Component {
               return new LPPCappedMilestone(web3, milestone.pluginAddress)
                 .mWithdraw(pledges, {
                   from: this.props.currentUser.address,
+                  $extraGas: 100000,
                 })
                 .once('transactionHash', hash => {
                   txHash = hash;
