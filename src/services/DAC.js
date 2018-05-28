@@ -155,6 +155,7 @@ class DACservice {
             });
         })
         .catch(err => {
+          if (txHash && err.message && err.message.includes('unknown transaction')) return; // bug in web3 seems to constantly fail due to this error, but the tx is correct
           ErrorPopup(
             'Something went wrong with the DAC creation. Is your wallet unlocked?',
             `${etherScanUrl}tx/${txHash} => ${JSON.stringify(err, null, 2)}`,

@@ -521,7 +521,8 @@ class EditMilestone extends Component {
                   );
                 });
             })
-            .catch(() => {
+            .catch(err => {
+              if (txHash && err.message && err.message.includes('unknown transaction')) return; // bug in web3 seems to constantly fail due to this error, but the tx is correct
               ErrorPopup(
                 'Something went wrong with the transaction. Is your wallet unlocked?',
                 `${etherScanUrl}tx/${txHash}`,

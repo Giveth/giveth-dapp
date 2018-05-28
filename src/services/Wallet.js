@@ -36,6 +36,10 @@ class WalletService {
         });
       })
       .then(afterMined)
+      .catch(err => {
+        if (txHash && err.message && err.message.includes('unknown transaction')) return; // bug in web3 seems to constantly fail due to this error, but the tx is correct
+        onError(err);
+      })
       .catch(onError);
   }
 
@@ -68,7 +72,10 @@ class WalletService {
           });
       })
       .then(afterMined)
-      .catch(onError);
+      .catch(err => {
+        if (txHash && err.message && err.message.includes('unknown transaction')) return; // bug in web3 seems to constantly fail due to this error, but the tx is correct
+        onError(err);
+      });
   }
 }
 
