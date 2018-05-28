@@ -14,6 +14,7 @@ class DonationService {
    * Delegate the donation to some entity (either Campaign or Milestone)
    *
    * @param {Donation} donation    Donation to be delegated
+   * @param {string}   amount      Ammount of the donation that is to be delegated - needs to be between 0 and donation amount
    * @param {object}   delegateTo  Entity to which the donation should be delegated
    * @param {function} onCreated   Callback function after the transaction has been broadcasted to chain and stored in feathers
    * @param {function} onSuccess   Callback function after the transaction has been mined
@@ -21,6 +22,7 @@ class DonationService {
    */
   static delegate(
     donation,
+    amount,
     delegateTo,
     onCreated = () => {},
     onSuccess = () => {},
@@ -40,38 +42,25 @@ class DonationService {
         const receiverId = delegateTo.type === 'dac' ? delegateTo.delegateId : delegateTo.projectId;
 
         const executeTransfer = () => {
+          let contract;
+
           if (donation.ownerType === 'campaign') {
-            return new LPPCampaign(web3, donation.ownerEntity.pluginAddress).transfer(
-              donation.pledgeId,
-              donation.amount,
-              receiverId,
-              {
-                from,
-                $extraGas: 100000,
-              },
-            );
+            contract = new LPPCampaign(web3, donation.ownerEntity.pluginAddress);
           } else if (donation.ownerType === 'giver' && donation.delegate > 0) {
-            return new LPPDac(web3, donation.delegateEntity.pluginAddress).transfer(
-              donation.pledgeId,
-              donation.amount,
-              receiverId,
-              {
-                from,
-                $extraGas: 100000,
-              },
-            );
+            contract = new LPPDac(web3, donation.delegateEntity.pluginAddress);
           }
 
-          return network.liquidPledging.transfer(
-            senderId,
-            donation.pledgeId,
-            donation.amount,
-            receiverId,
-            {
+          if (contract) {
+            return contract.transfer(donation.pledgeId, amount, receiverId, {
               from,
               $extraGas: 100000,
-            },
-          ); // need to supply extraGas b/c https://github.com/trufflesuite/ganache-core/issues/26
+            });
+          }
+
+          return network.liquidPledging.transfer(senderId, donation.pledgeId, amount, receiverId, {
+            from,
+            $extraGas: 100000,
+          }); // need to supply extraGas b/c https://github.com/trufflesuite/ganache-core/issues/26
         };
 
         return executeTransfer()
@@ -82,20 +71,22 @@ class DonationService {
               status: 'pending',
             };
 
-            if (donation.ownerType.toLowerCase() === 'campaign') {
-              // campaign is the owner, so they transfer the donation, not propose
-              Object.assign(mutation, {
-                owner: delegateTo.projectId,
-                ownerId: delegateTo._id,
-                ownerType: delegateTo.type,
-              });
-            } else {
-              // dac proposes a delegation
-              Object.assign(mutation, {
-                intendedProject: delegateTo.projectId,
-                intendedProjectId: delegateTo._id,
-                intendedProjectType: delegateTo.type,
-              });
+            if (amount === donation.amount) {
+              if (donation.ownerType.toLowerCase() === 'campaign') {
+                // campaign is the owner, so they transfer the donation, not propose
+                Object.assign(mutation, {
+                  owner: delegateTo.projectId,
+                  ownerId: delegateTo._id,
+                  ownerType: delegateTo.type,
+                });
+              } else {
+                // dac proposes a delegation
+                Object.assign(mutation, {
+                  intendedProject: delegateTo.projectId,
+                  intendedProjectId: delegateTo._id,
+                  intendedProjectType: delegateTo.type,
+                });
+              }
             }
 
             feathersClient

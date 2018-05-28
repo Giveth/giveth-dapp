@@ -1,23 +1,29 @@
 import React, { Component } from 'react';
 import { SkyLightStateless } from 'react-skylight';
 import { utils } from 'web3';
-import { Form } from 'formsy-react-components';
+import { Form, Input } from 'formsy-react-components';
 import InputToken from 'react-input-token';
 import PropTypes from 'prop-types';
+import Slider from 'react-rangeslider';
+import 'react-rangeslider/lib/index.css';
 
 import { checkWalletBalance } from '../lib/middleware';
 import GivethWallet from '../lib/blockchain/GivethWallet';
 
+import Donation from '../models/Donation';
+
 import DonationService from '../services/DonationService';
 
 class DelegateButton extends Component {
-  constructor() {
-    super();
+  constructor(props) {
+    super(props);
 
     this.state = {
       isSaving: false,
       objectsToDelegateTo: [],
       modalVisible: false,
+      amount: utils.fromWei(props.donation.amount),
+      maxAmount: utils.fromWei(props.donation.amount),
     };
 
     this.submit = this.submit.bind(this);
@@ -32,7 +38,7 @@ class DelegateButton extends Component {
     this.setState({ objectsToDelegateTo: target.value });
   }
 
-  submit() {
+  submit(model) {
     const { toBN } = utils;
     const { donation } = this.props;
     this.setState({ isSaving: true });
@@ -84,7 +90,13 @@ class DelegateButton extends Component {
         </p>,
       );
     };
-    DonationService.delegate(this.props.donation, admin, onCreated, onSuccess);
+    DonationService.delegate(
+      this.props.donation,
+      utils.toWei(model.amount),
+      admin,
+      onCreated,
+      onSuccess,
+    );
   }
 
   resetSkylight() {
@@ -95,9 +107,10 @@ class DelegateButton extends Component {
   }
 
   render() {
-    const { types, milestoneOnly } = this.props;
+    const { types, milestoneOnly, donation } = this.props;
     const { isSaving, objectsToDelegateTo } = this.state;
     const style = { display: 'inline-block' };
+    const pStyle = { 'white-space': 'normal' };
 
     return (
       <span style={style}>
@@ -118,13 +131,20 @@ class DelegateButton extends Component {
           afterClose={() => this.resetSkylight()}
         >
           {milestoneOnly && <p>Select a Milestone to delegate this donation to:</p>}
-
           {!milestoneOnly && <p>Select a Campaign or Milestone to delegate this donation to:</p>}
 
+          <p style={pStyle}>
+            You are delegating donation from{' '}
+            <strong>{donation.giver.name || donation.giverAddress}</strong> of a value{' '}
+            <strong>{utils.fromWei(donation.amount)} ETH</strong> that has been donated to{' '}
+            <strong>{donation.donatedTo.name}</strong>
+          </p>
           <Form onSubmit={this.submit} layout="vertical">
             <div className="form-group">
+              <span className="label">Delegate to:</span>
               <InputToken
-                name="campaigns"
+                name="delegateTo"
+                label="Delegate to:"
                 placeholder={
                   milestoneOnly ? 'Select a Milestone' : 'Select a Campaign or Milestone'
                 }
@@ -132,6 +152,38 @@ class DelegateButton extends Component {
                 options={types}
                 onSelect={this.selectedObject}
                 maxLength={1}
+              />
+            </div>
+            <span className="label">Amount to delegate:</span>
+
+            <div className="form-group">
+              <Slider
+                type="range"
+                name="amount2"
+                min={0}
+                max={Number(this.state.maxAmount)}
+                step={this.state.maxAmount / 10}
+                value={Number(this.state.amount)}
+                labels={['0', this.state.maxAmount]}
+                format={val => `${val} ETH`}
+                onChange={amount => this.setState({ amount: Number(amount).toFixed(2) })}
+              />
+            </div>
+
+            <div className="form-group">
+              <Input
+                type="text"
+                validations={`greaterThan:0,isNumeric,lessOrEqualTo:${this.state.maxAmount}`}
+                validationErrors={{
+                  greaterThan: 'Enter value greater than 0',
+                  lessOrEqualTo: `The donation you are delegating has value of ${
+                    this.state.maxAmount
+                  }. Do not input higher amount.`,
+                  isNumeric: 'Provide correct number',
+                }}
+                name="amount"
+                value={this.state.amount}
+                onChange={(name, amount) => this.setState({ amount })}
               />
             </div>
 
@@ -154,7 +206,7 @@ DelegateButton.propTypes = {
   wallet: PropTypes.instanceOf(GivethWallet).isRequired,
   types: PropTypes.arrayOf(PropTypes.shape({})).isRequired,
   milestoneOnly: PropTypes.bool,
-  donation: PropTypes.shape({}).isRequired,
+  donation: PropTypes.instanceOf(Donation).isRequired,
 };
 
 DelegateButton.defaultProps = {
