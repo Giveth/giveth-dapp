@@ -24,6 +24,7 @@ class WalletService {
     Promise.all([getWeb3(), getNetwork()])
       .then(([web3, network]) => {
         const dt = Object.assign({}, data, {
+          from: data.from,
           value: web3.utils.toWei(data.value),
           gas: '21000',
         });
