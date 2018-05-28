@@ -43,7 +43,7 @@ export const authenticate = wallet => {
     .then(response => response.accessToken);
 };
 
-export const getTruncatedText = (text, maxLength) => {
+export const getTruncatedText = (text = '', maxLength = 45) => {
   const txt = text.replace(/<(?:.|\n)*?>/gm, '').trim();
   if (txt.length > maxLength) {
     return `${txt.substr(0, maxLength).trim()}...`;
