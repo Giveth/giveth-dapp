@@ -11,12 +11,7 @@ import SelectFormsy from './../SelectFormsy';
 import FormsyImageUploader from './../FormsyImageUploader';
 import GoBackButton from '../GoBackButton';
 import { isOwner, getTruncatedText, history } from '../../lib/helpers';
-import {
-  isAuthenticated,
-  checkWalletBalance,
-  isInWhitelist,
-  confirmBlockchainTransaction,
-} from '../../lib/middleware';
+import { isAuthenticated, checkWalletBalance, isInWhitelist } from '../../lib/middleware';
 import LoaderButton from '../../components/LoaderButton';
 import User from '../../models/User';
 import GivethWallet from '../../lib/blockchain/GivethWallet';
@@ -42,7 +37,7 @@ class EditCampaign extends Component {
       formIsValid: false,
       dacsOptions: [],
       hasWhitelist: React.whitelist.reviewerWhitelist.length > 0,
-      whitelistOptions: React.whitelist.projectOwnerWhitelist.map(r => ({
+      whitelistOptions: React.whitelist.reviewerWhitelist.map(r => ({
         value: r.address,
         title: `${r.name ? r.name : 'Anonymous user'} - ${r.address}`,
       })),
@@ -177,10 +172,7 @@ class EditCampaign extends Component {
     };
 
     // Save the capaign
-    confirmBlockchainTransaction(
-      () => this.state.campaign.save(afterCreate, afterMined),
-      () => this.setState({ isSaving: false }),
-    );
+    this.state.campaign.save(afterCreate, afterMined);
   }
 
   toggleFormValid(state) {
@@ -285,7 +277,7 @@ class EditCampaign extends Component {
                     </div>
 
                     <div className="form-group">
-                      <label htmlFor>
+                      <label htmlFor="dac">
                         Relate your campaign to a community
                         <small className="form-text">
                           By linking your Campaign to a Community, Ether from that community can be

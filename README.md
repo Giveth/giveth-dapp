@@ -31,7 +31,7 @@ In the following sections you will learn all you need to know to run the DApp lo
 
 ### Install
 1. Click **Star** on this repo near the top-right corner of this web page (if you want to).
-2. Join us on [Riot or Slack](http://join.giveth.io) if you haven't already.
+2. Join us on [Riot](http://join.giveth.io) if you haven't already.
 3. Fork this repo by clicking **Fork** button in top-right corner of this web page. Continue to follow instruction steps from your own giveth-dapp repo.
 4. Clone your own "giveth-dapp" repo. Copy the link from the "Clone or download" button near the top right of this repo's home page.
 5. The rest of these steps must be done from your machine's command line. See the [OSX and Linux](#for-osx-and-linux) or [Windows](#for-windows) section to continue.
@@ -155,7 +155,7 @@ This will provide you access to the testrpc accounts for local development. Each
 ### Development and PR Testing
 1. The Giveth Dapp is auto deployed from the develop branch and is live on Rinkeby [develop.giveth.io](https://develop.giveth.io). All pull requests are autodeployed and the PR preview will be generated upon submission. To learn how to access PR previews see [Development Process & Quality Assurance](https://wiki.giveth.io/documentation/DApp/product-development-testing/) on our wiki.
 2. In order to use the dapp you will need to create account. If this is your first time, click "sign up" to create an account. If you already have a valid keychain file, use it to sign in.
-4. You will need test ether on the Rinkeby network. Go to the "wallet" page to see your new address (0x..). Copy that address and use the faucet to get some: https://faucet.rinkeby.io/
+3. You will need test ether on the Rinkeby network. Go to the "wallet" page to see your new address (0x..). Copy that address and use the faucet to get some: https://faucet.rinkeby.io/
 
 
 
@@ -172,7 +172,7 @@ Name | Blockchain | Branch Deployed | Auto Deploy | Use |
 You can change the environment to which the DApp connects through the node environment variables. See the [Configuration](#Configuration) section for more details.
 
 ### Release Process
-The development uses the Gitflow process with 2 weeks long sprints. This means there is new release to be tested every fortnight. We invite contributors to help us test the DApp in the release environment before we merge it to the master branch and deploy to production environments. If you are intereste, write to the DApp Development channel on [Riot or Slack](https://join.giveth.io). You can read more about the release planning on [our wiki](https://wiki.giveth.io/documentation/DApp/product-development-testing/).
+The development uses the Gitflow process with 2 weeks long sprints. This means there is new release to be tested every fortnight. We invite contributors to help us test the DApp in the release environment before we merge it to the master branch and deploy to production environments. If you are intereste, write to the DApp Development channel on [Riot](https://join.giveth.io). You can read more about the release planning on [our wiki](https://wiki.giveth.io/documentation/DApp/product-development-testing/).
 
 ## Help
-Reach out to us on [Riot or Slack](https://join.giveth.io) for any help or to share ideas.
+Reach out to us on [Riot](https://join.giveth.io) for any help or to share ideas.

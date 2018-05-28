@@ -1,6 +1,5 @@
 import getNetwork from '../lib/blockchain/getNetwork';
 import { feathersClient } from '../lib/feathersClient';
-import { getGasPrice } from '../lib/helpers';
 import DAC from '../models/DAC';
 import Campaign from '../models/Campaign';
 
@@ -66,7 +65,7 @@ class DACservice {
    */
   static subscribeDonations(id, onSuccess, onError) {
     return feathersClient
-      .service('donations/history')
+      .service('donations')
       .watch({ listStrategy: 'always' })
       .find({
         query: {
@@ -134,15 +133,14 @@ class DACservice {
     } else {
       let txHash;
       let etherScanUrl;
-      Promise.all([getNetwork(), getGasPrice()])
-        .then(([network, gasPrice]) => {
+      getNetwork()
+        .then(network => {
           const { lppDacFactory } = network;
           etherScanUrl = network.etherscan;
 
           lppDacFactory
             .newDac(dac.title, '', 0, dac.tokenName, dac.tokenSymbol, from, from, {
               from,
-              gasPrice,
             })
             .once('transactionHash', hash => {
               txHash = hash;

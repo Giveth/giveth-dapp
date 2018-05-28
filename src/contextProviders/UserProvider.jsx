@@ -16,7 +16,7 @@ export { Consumer };
 
 // TO DO: This is the minimum transaction view required to:
 // create a DAC / Campaign / Milestone / Profile
-React.minimumWalletBalance = 0.02;
+React.minimumWalletBalance = 0.01;
 
 React.whitelist = {};
 
@@ -82,14 +82,10 @@ class UserProvider extends Component {
       });
 
     GivethWallet.getCachedKeystore()
-      .then(keystore => {
-        // TODO: change to getWeb3() when implemented. actually remove provider from GivethWallet
-        const provider = this.state.web3 ? this.state.web3.currentProvider : undefined;
-        return GivethWallet.loadWallet(keystore, provider);
-      })
+      .then(keystore => GivethWallet.loadWallet(keystore))
       .then(wallet => {
         getWeb3().then(web3 => web3.setWallet(wallet));
-        getHomeWeb3().then(web3 => web3.setWallet(wallet));
+        getHomeWeb3().then(homeWeb3 => homeWeb3.setWallet(wallet));
         this.setState({ wallet });
       })
       .catch(err => {
@@ -146,14 +142,14 @@ class UserProvider extends Component {
     const address = wallet.getAddresses()[0];
 
     getWeb3().then(web3 => web3.setWallet(wallet));
-    getHomeWeb3().then(web3 => web3.setWallet(wallet));
+    getHomeWeb3().then(homeWeb3 => homeWeb3.setWallet(wallet));
 
     this.getUserData(address);
     this.setState({ wallet, walletLocked: false });
   }
 
-  unlockWallet(redirectAfter) {
-    this.setState({ showUnlockWalletModal: true, redirectAfter });
+  unlockWallet(actionAfter) {
+    this.setState({ showUnlockWalletModal: true, actionAfter });
   }
 
   lockWallet() {
@@ -183,7 +179,7 @@ class UserProvider extends Component {
   }
 
   hideUnlockWalletModal() {
-    this.setState({ showUnlockWalletModal: false, redirectAfter: undefined });
+    this.setState({ showUnlockWalletModal: false, actionAfter: undefined });
   }
 
   render() {
@@ -194,7 +190,7 @@ class UserProvider extends Component {
       isLoading,
       hasError,
       showUnlockWalletModal,
-      redirectAfter,
+      actionAfter,
       walletLocked,
     } = this.state;
 
@@ -213,11 +209,11 @@ class UserProvider extends Component {
           state: {
             currentUser,
             wallet,
-            web3,
+            web3, // TODO do we need this here?
             isLoading,
             hasError,
             showUnlockWalletModal,
-            redirectAfter,
+            actionAfter,
             walletLocked,
           },
           actions: {

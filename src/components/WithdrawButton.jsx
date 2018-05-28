@@ -3,11 +3,11 @@ import PropTypes from 'prop-types';
 import { SkyLightStateless } from 'react-skylight';
 import { Form, Input } from 'formsy-react-components';
 
-import { takeActionAfterWalletUnlock, confirmBlockchainTransaction } from '../lib/middleware';
 import User from '../models/User';
 import GivethWallet from '../lib/blockchain/GivethWallet';
 import WalletService from '../services/Wallet';
 import { getGasPrice } from '../lib/helpers';
+import { takeActionAfterWalletUnlock, confirmBlockchainTransaction } from '../lib/middleware';
 
 import ErrorPopup from './ErrorPopup';
 
@@ -21,7 +21,7 @@ class WithdrawButton extends Component {
       amount: '',
       modalVisible: false,
       to: '',
-      gas: 4,
+      gasPrice: 4,
     };
 
     this.submit = this.submit.bind(this);
@@ -29,9 +29,9 @@ class WithdrawButton extends Component {
   }
 
   openDialog() {
-    getGasPrice().then(gas =>
+    getGasPrice().then(gasPrice =>
       this.setState({
-        gas,
+        gasPrice,
         modalVisible: true,
       }),
     );
@@ -67,10 +67,10 @@ class WithdrawButton extends Component {
   }
 
   submit(model) {
-    takeActionAfterWalletUnlock(this.props.wallet, () => {
-      this.setState({ isSaving: true });
+    this.setState({ isSaving: true });
 
-      const withdraw = () =>
+    takeActionAfterWalletUnlock(this.props.wallet, () => {
+      confirmBlockchainTransaction(() =>
         WalletService.withdraw(
           {
             from: this.props.currentUser.address,
@@ -94,16 +94,14 @@ class WithdrawButton extends Component {
               err,
             );
           },
-        );
-
-      // Withdraw the money
-      confirmBlockchainTransaction(withdraw, () => this.setState({ isSaving: false }));
+        ),
+      );
     });
   }
 
   render() {
     const { wallet } = this.props;
-    const { isSaving, amount, formIsValid, gas, to } = this.state;
+    const { isSaving, amount, formIsValid, gasPrice, to } = this.state;
     const style = {
       display: 'inline-block',
     };
@@ -129,7 +127,7 @@ class WithdrawButton extends Component {
             <p>
               Your wallet balance: <em>{wallet.getBalance()} ETH</em>
               <br />
-              Gas price: <em>{gas} Gwei</em>
+              Gas price: <em>{gasPrice} Gwei</em>
             </p>
 
             <Form

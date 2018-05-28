@@ -131,7 +131,12 @@ class UserWallet extends Component {
                 <p>{this.props.currentUser.address}</p>
                 <p>
                   {' '}
-                  <strong>Rinkeby ETH</strong> balance: {this.props.wallet.getBalance()} ETH
+                  <strong>{config.foreignNetworkName} ETH</strong> balance:{' '}
+                  {this.props.wallet.getBalance()} ETH
+                </p>
+                <p>
+                  <strong>{config.homeNetworkName} ETH</strong> balance:{' '}
+                  {this.props.wallet.getHomeBalance()} ETH
                 </p>
                 {Object.keys(tokenAddresses).map(
                   t =>
@@ -144,13 +149,13 @@ class UserWallet extends Component {
                           target="_blank"
                           rel="noopener noreferrer"
                         >
-                          <strong>{t}</strong>
+                          <strong>Bridged - {t}</strong>
                         </a>
                         balance: {this.props.wallet.getTokenBalance(tokenAddresses[t])}
                       </p>
                     ) : (
                       <p>
-                        <strong>{t}</strong> balance:{' '}
+                        Bridged - <strong>{t}</strong> balance:{' '}
                         {this.props.wallet.getTokenBalance(tokenAddresses[t])}
                       </p>
                     ),

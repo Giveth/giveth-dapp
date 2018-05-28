@@ -2,6 +2,7 @@ import { MiniMeToken } from 'minimetoken';
 import Web3 from 'web3';
 import ZeroClientProvider from './ZeroClientProvider';
 import config from '../../configuration';
+import { takeActionAfterWalletUnlock, confirmBlockchainTransaction } from '../middleware';
 
 import ErrorPopup from '../../components/ErrorPopup';
 
@@ -9,107 +10,111 @@ let givethWeb3;
 let homeWeb3;
 /* ///////////// custom Web3 Functions ///////////// */
 
-let intervalId;
-function setWallet(wallet) {
-  if (!wallet) throw new Error('a wallet is required');
+const providerOpts = rpcUrl => {
+  const opts = { rpcUrl };
 
-  const engine = new ZeroClientProvider({
-    wsProvider: this.currentProvider,
-    getAccounts: cb => cb(null, wallet.getAddresses()),
-    approveTransaction: (txParams, cb) => {
-      // TODO: handle locked wallet here?
-      cb(null, true);
-    },
-    signTransaction: (txData, cb) => {
-      // provide chainId as GivethWallet.Account does not have a provider set. If we don't provide
-      // a chainId, the account will attempt to fetch it via the provider.
-      const getId = txData.chainId ? Promise.resolve(txData.chainId) : this.eth.net.getId;
+  // TODO: this doesn't appear to work
+  // if rpcUrl is a Websocket url, set blockTrackerProvider
+  // so EthBlockTracker will use subscriptions for new blocks instead of polling
+  // if (rpcUrl && /^ws(s)?:\/\//i.test(rpcUrl)) {
+  // const p = new Web3.providers.WebsocketProvider(rpcUrl);
+  // p.sendAsync = p.send;
+  // opts.engineParams = { blockTrackerProvider: p };
+  // }
 
-      getId()
-        .then(id => {
-          txData.chainId = id;
-          return wallet.signTransaction(txData);
-        })
-        .then(sig => {
-          cb(null, sig.rawTransaction);
+  return opts;
+};
+
+const setWallet = (rpcUrl, isHomeNetwork = false) =>
+  function set(wallet) {
+    if (!wallet) throw new Error('a wallet is required');
+
+    const web3 = this;
+
+    const engine = new ZeroClientProvider(
+      Object.assign(providerOpts(rpcUrl), {
+        getAccounts: cb => cb(null, wallet.getAddresses()),
+        approveTransaction: (txParams, cb) => {
+          // TODO consolidate wallet unlock & tx confirmation if wallet is lock
+          // 2 popups are currently annoying
+
+          // TODO may need to call cb(null, false) if the user doesn't unlock their wallet
+          takeActionAfterWalletUnlock(wallet, () => {
+            // if we return false, the promise is rejected.
+            // confirmBlockchainTransaction(() => cb(null, true), () => cb(null, false));
+            confirmBlockchainTransaction(() => cb(null, true), () => {});
+          });
+        },
+        signTransaction: (txData, cb) => {
+          // provide chainId as GivethWallet.Account does not have a provider set. If we don't provide
+          // a chainId, the account will attempt to fetch it via the provider.
+          const getId = txData.chainId ? Promise.resolve(txData.chainId) : this.eth.net.getId;
+
+          // note: nonce & gasPrice are set by subproviders
+          getId()
+            .then(id => {
+              txData.chainId = id;
+              return wallet.signTransaction(txData);
+            })
+            .then(sig => {
+              cb(null, sig.rawTransaction);
+            })
+            .catch(err => {
+              cb(err);
+            });
+        },
+      }),
+    );
+
+    const minimeTokenCache = {};
+
+    const getBalance = () => {
+      const { tokenAddresses } = config;
+      const addr = wallet.getAddresses()[0];
+
+      const tokenBal = tAddr => {
+        if (!isHomeNetwork && tAddr) {
+          const token = minimeTokenCache[tAddr] || new MiniMeToken(web3, tAddr);
+          minimeTokenCache[tAddr] = token;
+          return token.balanceOf(addr).then(bal => ({
+            address: tAddr,
+            bal,
+          }));
+        }
+        return undefined;
+      };
+      const bal = () => (addr ? web3.eth.getBalance(addr) : undefined);
+
+      Promise.all([bal(), ...Object.values(tokenAddresses).map(a => tokenBal(a))])
+        .then(([balance, ...tokenBalances]) => {
+          if (isHomeNetwork) wallet.homeBalance = balance;
+          else {
+            wallet.balance = balance;
+            wallet.tokenBalances = tokenBalances.reduce((val, t) => {
+              val[t.address] = t.bal;
+              return val;
+            }, {});
+          }
         })
         .catch(err => {
-          cb(err);
+          ErrorPopup(
+            'Something went wrong with getting the balance. Please try again after refresh.',
+            err,
+          );
         });
-    },
-  });
+    };
 
-  const getBalance = () =>
-    getWeb3() // eslint-disable-line no-use-before-define
-      .then(web3 => {
-        const { tokenAddresses } = config;
-        const addr = wallet.getAddresses()[0];
+    getBalance();
 
-        const tokenBal = tAddr =>
-          tAddr
-            ? new MiniMeToken(web3, tAddr).balanceOf(addr).then(bal => ({
-                address: tAddr,
-                bal,
-              }))
-            : undefined;
-        const bal = () => (addr ? web3.eth.getBalance(addr) : undefined);
-
-        return Promise.all([bal(), ...Object.values(tokenAddresses).map(a => tokenBal(a))]);
-      })
-      .then(([balance, ...tokenBalances]) => {
-        wallet.balance = balance;
-        wallet.tokenBalances = tokenBalances.reduce((val, t) => {
-          val[t.address] = t.bal;
-          return val;
-        }, {});
-      })
-      .catch(err => {
-        ErrorPopup(
-          'Something went wrong with getting the balance. Please try again after refresh.',
-          err,
-        );
-      });
-
-  getBalance();
-  // engine.on('block', getBalance); //TODO get this to work
-  if (intervalId > 0) {
-    clearInterval(intervalId);
-  }
-  // TODO: if removing this interval, need to uncomment the ws timeout fix below
-  intervalId = setInterval(getBalance, 15000);
-  this.setProvider(engine);
-}
+    engine.on('block', getBalance);
+    this.setProvider(engine);
+  };
 
 export const getWeb3 = () =>
   new Promise(resolve => {
     if (!givethWeb3) {
-      givethWeb3 = new Web3(config.foreignNodeConnection);
-
-      // hack to keep the ws connection from timing-out
-      // I commented this out b/c we have the getBalance interval above
-      // setInterval(() => {
-      //   givethWeb3.eth.net.getId();
-      // }, 30000); // every 30 seconds
-
-      // web3 1.0 expects the chainId to be no longer then 1 byte. If the chainId is longer
-      // then 1 byte, an error will be thrown. Testrpc by default uses the timestamp for the
-      // networkId, thus causing an error to be thrown. Here we override getId if necessary
-      // Since web3-eth-account account.js uses the following formula when signing a tx
-      // (Nat.toNumber(tx.chainId || "0x1") * 2 + 35), and that number is added to the
-      // signature.recoveryParam the max value the network ID can be is
-      // 110 (110 * 2 + 35 === 255) - recoveryParam
-      givethWeb3.eth.net.getId().then(id => {
-        if (id > 110) {
-          const msg = `Web3 will throw errors when signing transactions if the networkId > 255 (1 byte).
-          networkID = ${id}. Overriding eth.net.getId() to return 100`;
-
-          console.warn(msg); // eslint-disable-line no-console
-
-          givethWeb3.eth.net.getId = () => Promise.resolve(100);
-        }
-      });
-
-      givethWeb3.setWallet = setWallet;
+      givethWeb3 = new Web3(new ZeroClientProvider(providerOpts(config.foreignNodeConnection)));
+      givethWeb3.setWallet = setWallet(config.foreignNodeConnection);
     }
 
     resolve(givethWeb3);
@@ -118,33 +123,8 @@ export const getWeb3 = () =>
 export const getHomeWeb3 = () =>
   new Promise(resolve => {
     if (!homeWeb3) {
-      homeWeb3 = new Web3(config.homeNodeConnection);
-
-      // hack to keep the ws connection from timing-out
-      // I commented this out b/c we have the getBalance interval above
-      // setInterval(() => {
-      //   givethWeb3.eth.net.getId();
-      // }, 30000); // every 30 seconds
-
-      // web3 1.0 expects the chainId to be no longer then 1 byte. If the chainId is longer
-      // then 1 byte, an error will be thrown. Testrpc by default uses the timestamp for the
-      // networkId, thus causing an error to be thrown. Here we override getId if necessary
-      // Since web3-eth-account account.js uses the following formula when signing a tx
-      // (Nat.toNumber(tx.chainId || "0x1") * 2 + 35), and that number is added to the
-      // signature.recoveryParam the max value the network ID can be is
-      // 110 (110 * 2 + 35 === 255) - recoveryParam
-      homeWeb3.eth.net.getId().then(id => {
-        if (id > 110) {
-          const msg = `Web3 will throw errors when signing transactions if the networkId > 255 (1 byte).
-          networkID = ${id}. Overriding eth.net.getId() to return 100`;
-
-          console.warn(msg); // eslint-disable-line no-console
-
-          homeWeb3.eth.net.getId = () => Promise.resolve(100);
-        }
-      });
-
-      homeWeb3.setWallet = setWallet;
+      homeWeb3 = new Web3(new ZeroClientProvider(providerOpts(config.homeNodeConnection)));
+      homeWeb3.setWallet = setWallet(config.homeNodeConnection, true);
     }
 
     resolve(homeWeb3);

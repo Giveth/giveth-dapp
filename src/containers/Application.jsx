@@ -78,7 +78,7 @@ class Application extends Component {
     });
 
     // Making unlock wallet global
-    React.unlockWallet = this.unlockWallet;
+    // React.unlockWallet = this.unlockWallet;
   }
 
   render() {
@@ -90,11 +90,10 @@ class Application extends Component {
               state: {
                 wallet,
                 currentUser,
-                web3,
                 isLoading,
                 hasError,
                 showUnlockWalletModal,
-                redirectAfter,
+                actionAfter,
               },
               actions: {
                 onSignIn,
@@ -111,7 +110,7 @@ class Application extends Component {
                   showUnlockWalletModal && (
                     <UnlockWallet
                       wallet={wallet}
-                      redirectAfter={redirectAfter}
+                      actionAfter={actionAfter}
                       onClose={walletUnlocked}
                       onCloseClicked={hideUnlockWalletModal}
                     />
@@ -286,24 +285,14 @@ class Application extends Component {
                         <Route
                           exact
                           path="/signup"
-                          render={props => (
-                            <Signup
-                              provider={web3 ? web3.currentProvider : undefined}
-                              walletCreated={handleWalletChange}
-                              {...props}
-                            />
-                          )}
+                          render={props => <Signup walletCreated={handleWalletChange} {...props} />}
                         />
 
                         <Route
                           exact
                           path="/change-account"
                           render={props => (
-                            <ChangeAccount
-                              provider={web3 ? web3.currentProvider : undefined}
-                              handleWalletChange={handleWalletChange}
-                              {...props}
-                            />
+                            <ChangeAccount handleWalletChange={handleWalletChange} {...props} />
                           )}
                         />
 

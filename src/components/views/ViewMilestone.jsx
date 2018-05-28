@@ -307,7 +307,9 @@ class ViewMilestone extends Component {
                                     </a>
                                   </td>
                                 )}
-                                {!etherScanUrl && <td className="td-address"> - {reviewerAddress}</td>}
+                                {!etherScanUrl && (
+                                  <td className="td-address"> - {reviewerAddress}</td>
+                                )}
                               </tr>
                             </tbody>
                           </table>
@@ -337,7 +339,9 @@ class ViewMilestone extends Component {
                                     </a>
                                   </td>
                                 )}
-                                {!etherScanUrl && <td className="td-address"> - {recipientAddress}</td>}
+                                {!etherScanUrl && (
+                                  <td className="td-address"> - {recipientAddress}</td>
+                                )}
                               </tr>
                             </tbody>
                           </table>
@@ -356,8 +360,8 @@ class ViewMilestone extends Component {
                         <div className="form-group">
                           <span className="label">Max amount to raise</span>
                           <small className="form-text">
-                            The maximum amount of ETH that can be donated to this Milestone. Based on the
-                            requested amount in fiat.
+                            The maximum amount of ETH that can be donated to this Milestone. Based
+                            on the requested amount in fiat.
                           </small>
                           {maxAmount} ETH
                           {fiatAmount &&
@@ -380,7 +384,9 @@ class ViewMilestone extends Component {
 
                         <div className="form-group">
                           <span className="label">Campaign</span>
-                          <small className="form-text">The campaign this milestone belongs to.</small>
+                          <small className="form-text">
+                            The campaign this milestone belongs to.
+                          </small>
                           {campaign.title}
                         </div>
 
@@ -399,11 +405,11 @@ class ViewMilestone extends Component {
                         */}
                       </div>
                     </div>
-                  
+
                     <div className="col-md-6">
                       <h4>Status updates</h4>
 
-                      <MilestoneConversations 
+                      <MilestoneConversations
                         milestoneId={id}
                         ownerAddress={ownerAddress}
                         reviewerAddress={reviewerAddress}
@@ -412,7 +418,7 @@ class ViewMilestone extends Component {
                       />
                     </div>
                   </div>
-                </div>                    
+                </div>
               </div>
 
               <div className="row spacer-top-50 spacer-bottom-50">

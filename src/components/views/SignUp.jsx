@@ -41,7 +41,7 @@ class SignUp extends Component {
       () => {
         function createWallet() {
           let wallet;
-          GivethWallet.createWallet(this.props.provider, password)
+          GivethWallet.createWallet(password)
             .then(w => {
               wallet = w;
               return wallet;
@@ -185,11 +185,6 @@ SignUp.propTypes = {
     goBack: PropTypes.func.isRequired,
   }).isRequired,
   walletCreated: PropTypes.func.isRequired,
-  provider: PropTypes.shape({}),
-};
-
-SignUp.defaultProps = {
-  provider: {},
 };
 
 export default SignUp;
