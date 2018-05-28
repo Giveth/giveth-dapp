@@ -42,7 +42,7 @@ const configurations = {
     etherscan: 'https://rinkeby.etherscan.io/',
     foreignEtherscan: 'https://ropsten.etherscan.io/',
     feathersConnection: 'https://feathers.develop.giveth.io',
-    foreignNodeConnection: 'wss://rinkeby.giveth.io/ws',
+    foreignNodeConnection: 'https://rinkeby.giveth.io',
     foreignNetworkName: 'Rinkeby',
     homeNodeConnection: 'https://ropsten.infura.io/Id3GoVvLrsO08ZNjxiKz',
     homeNetworkName: 'Ropsten',
