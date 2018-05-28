@@ -30,7 +30,7 @@ class Donation extends Model {
     return 'cancelled';
   }
 
-  static get statuse() {
+  static get statuses() {
     return [
       Donation.PENDING,
       Donation.TO_APPROVE,
@@ -346,19 +346,7 @@ class Donation extends Model {
   }
 
   set status(value) {
-    this.checkValue(
-      value,
-      [
-        Donation.PENDING,
-        Donation.TO_APPROVE,
-        Donation.WAITING,
-        Donation.COMMITTED,
-        Donation.PAYING,
-        Donation.PAID,
-        Donation.CANCELED,
-      ],
-      'status',
-    );
+    this.checkValue(value, Donation.statuses, 'status');
     this.myStatus = value;
   }
 
