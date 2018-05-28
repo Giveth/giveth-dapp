@@ -632,7 +632,7 @@ class MyMilestones extends Component {
       React.swal({
         title: 'Withdrawal Fund to Wallet',
         text:
-          'The funds will be transferred to you wallet. Once you have the funds in your possetion, you can transfer them back across the bridge.',
+          'The funds will be transferred to you wallet. Once you have the funds in your possession, you can transfer them back across the bridge.',
         icon: 'warning',
         dangerMode: true,
         buttons: ['Cancel', 'Yes, withdrawal'],
