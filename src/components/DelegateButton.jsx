@@ -110,6 +110,7 @@ class DelegateButton extends Component {
     const { types, milestoneOnly, donation } = this.props;
     const { isSaving, objectsToDelegateTo } = this.state;
     const style = { display: 'inline-block' };
+    const pStyle = { 'white-space': 'normal' };
 
     return (
       <span style={style}>
@@ -132,7 +133,7 @@ class DelegateButton extends Component {
           {milestoneOnly && <p>Select a Milestone to delegate this donation to:</p>}
           {!milestoneOnly && <p>Select a Campaign or Milestone to delegate this donation to:</p>}
 
-          <p>
+          <p style={pStyle}>
             You are delegating donation from{' '}
             <strong>{donation.giver.name || donation.giverAddress}</strong> of a value{' '}
             <strong>{utils.fromWei(donation.amount)} ETH</strong> that has been donated to{' '}

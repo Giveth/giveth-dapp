@@ -42,26 +42,19 @@ class DonationService {
         const receiverId = delegateTo.type === 'dac' ? delegateTo.delegateId : delegateTo.projectId;
 
         const executeTransfer = () => {
+          let contract;
+
           if (donation.ownerType === 'campaign') {
-            return new LPPCampaign(web3, donation.ownerEntity.pluginAddress).transfer(
-              donation.pledgeId,
-              amount,
-              receiverId,
-              {
-                from,
-                $extraGas: 100000,
-              },
-            );
+            contract = new LPPCampaign(web3, donation.ownerEntity.pluginAddress);
           } else if (donation.ownerType === 'giver' && donation.delegate > 0) {
-            return new LPPDac(web3, donation.delegateEntity.pluginAddress).transfer(
-              donation.pledgeId,
-              amount,
-              receiverId,
-              {
-                from,
-                $extraGas: 100000,
-              },
-            );
+            contract = new LPPDac(web3, donation.delegateEntity.pluginAddress);
+          }
+
+          if (contract) {
+            return contract.transfer(donation.pledgeId, amount, receiverId, {
+              from,
+              $extraGas: 100000,
+            });
           }
 
           return network.liquidPledging.transfer(senderId, donation.pledgeId, amount, receiverId, {
@@ -78,20 +71,22 @@ class DonationService {
               status: 'pending',
             };
 
-            if (donation.ownerType.toLowerCase() === 'campaign') {
-              // campaign is the owner, so they transfer the donation, not propose
-              Object.assign(mutation, {
-                owner: delegateTo.projectId,
-                ownerId: delegateTo._id,
-                ownerType: delegateTo.type,
-              });
-            } else {
-              // dac proposes a delegation
-              Object.assign(mutation, {
-                intendedProject: delegateTo.projectId,
-                intendedProjectId: delegateTo._id,
-                intendedProjectType: delegateTo.type,
-              });
+            if (amount === donation.amount) {
+              if (donation.ownerType.toLowerCase() === 'campaign') {
+                // campaign is the owner, so they transfer the donation, not propose
+                Object.assign(mutation, {
+                  owner: delegateTo.projectId,
+                  ownerId: delegateTo._id,
+                  ownerType: delegateTo.type,
+                });
+              } else {
+                // dac proposes a delegation
+                Object.assign(mutation, {
+                  intendedProject: delegateTo.projectId,
+                  intendedProjectId: delegateTo._id,
+                  intendedProjectType: delegateTo.type,
+                });
+              }
             }
 
             feathersClient
