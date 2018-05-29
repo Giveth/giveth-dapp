@@ -718,7 +718,9 @@ class MyMilestones extends Component {
 
                 return pledges.map(
                   note =>
-                    `0x${utils.padLeft(utils.toHex(note.amount).substring(2), 48)}${utils.padLeft(
+                    // due to some issue in web3, utils.toHex(note.amount) breaks during minification.
+                    // BN.toString(16) will return a hex string as well
+                    `0x${utils.padLeft(note.amount.toString(16), 48)}${utils.padLeft(
                       utils.toHex(note.id).substring(2),
                       16,
                     )}`,
