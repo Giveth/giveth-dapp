@@ -13,6 +13,7 @@ BigNumber.config({ DECIMAL_PLACES: 18 });
 
 const fiatTypes = [
   { value: 'BRL', title: 'BRL' },
+  { value: 'CAD', title: 'CAD' },
   { value: 'CHF', title: 'CHF' },
   { value: 'CZK', title: 'CZK' },
   { value: 'ETH', title: 'ETH' },

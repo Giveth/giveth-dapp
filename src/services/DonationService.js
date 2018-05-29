@@ -98,7 +98,8 @@ class DonationService {
                 onError(err);
               });
           })
-          .on('error', err => {
+          .catch(err => {
+            if (txHash && err.message && err.message.includes('unknown transaction')) return; // bug in web3 seems to constantly fail due to this error, but the tx is correct
             ErrorPopup(
               'Thare was a problem with the delegation transaction.',
               `${etherScanUrl}tx/${txHash}`,
@@ -161,6 +162,7 @@ class DonationService {
         onSuccess(`${etherScanUrl}tx/${txHash}`);
       })
       .catch(err => {
+        if (txHash && err.message && err.message.includes('unknown transaction')) return; // bug in web3 seems to constantly fail due to this error, but the tx is correct
         ErrorPopup(
           'Something went wrong with the transaction. Is your wallet unlocked?',
           `${etherScanUrl}tx/${txHash}`,
@@ -223,6 +225,7 @@ class DonationService {
         onSuccess(`${etherScanUrl}tx/${txHash}`);
       })
       .catch(err => {
+        if (txHash && err.message && err.message.includes('unknown transaction')) return; // bug in web3 seems to constantly fail due to this error, but the tx is correct
         ErrorPopup(
           'Something went wrong with the transaction. Is your wallet unlocked?',
           `${etherScanUrl}tx/${txHash}`,
@@ -279,6 +282,7 @@ class DonationService {
       })
       .then(() => onSuccess(`${etherScanUrl}tx/${txHash}`))
       .catch(err => {
+        if (txHash && err.message && err.message.includes('unknown transaction')) return; // bug in web3 seems to constantly fail due to this error, but the tx is correct
         ErrorPopup(
           'Something went wrong with the transaction. Is your wallet unlocked?',
           `${etherScanUrl}tx/${txHash}`,

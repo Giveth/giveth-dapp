@@ -319,6 +319,7 @@ class MyMilestones extends Component {
               );
             })
             .catch(err => {
+              if (txHash && err.message && err.message.includes('unknown transaction')) return; // bug in web3 seems to constantly fail due to this error, but the tx is correct
               ErrorPopup(
                 'Something went wrong with the transaction. Is your wallet unlocked?',
                 `${etherScanUrl}tx/${txHash} => ${JSON.stringify(err, null, 2)}`,
@@ -396,7 +397,8 @@ class MyMilestones extends Component {
                 </p>,
               );
             })
-            .catch(() => {
+            .catch(err => {
+              if (txHash && err.message && err.message.includes('unknown transaction')) return; // bug in web3 seems to constantly fail due to this error, but the tx is correct
               ErrorPopup(
                 'Something went wrong with the transaction. Is your wallet unlocked?',
                 `${etherScanUrl}tx/${txHash}`,
@@ -484,6 +486,7 @@ class MyMilestones extends Component {
                 });
             })
             .catch(err => {
+              if (txHash && err.message && err.message.includes('unknown transaction')) return; // bug in web3 seems to constantly fail due to this error, but the tx is correct
               ErrorPopup(
                 'Something went wrong with the transaction. Is your wallet unlocked?',
                 `${etherScanUrl}tx/${txHash} => ${JSON.stringify(err, null, 2)}`,
@@ -560,7 +563,8 @@ class MyMilestones extends Component {
                 </p>,
               );
             })
-            .catch(() => {
+            .catch(err => {
+              if (txHash && err.message && err.message.includes('unknown transaction')) return; // bug in web3 seems to constantly fail due to this error, but the tx is correct
               ErrorPopup(
                 'Something went wrong with the transaction. Is your wallet unlocked?',
                 `${etherScanUrl}tx/${txHash}`,
@@ -629,7 +633,8 @@ class MyMilestones extends Component {
                 </p>,
               );
             })
-            .catch(() => {
+            .catch(err => {
+              if (txHash && err.message && err.message.includes('unknown transaction')) return; // bug in web3 seems to constantly fail due to this error, but the tx is correct
               ErrorPopup(
                 'Something went wrong with the transaction. Is your wallet unlocked?',
                 `${etherScanUrl}tx/${txHash}`,
@@ -726,7 +731,9 @@ class MyMilestones extends Component {
 
                 return pledges.map(
                   note =>
-                    `0x${utils.padLeft(utils.toHex(note.amount).substring(2), 48)}${utils.padLeft(
+                    // due to some issue in web3, utils.toHex(note.amount) breaks during minification.
+                    // BN.toString(16) will return a hex string as well
+                    `0x${utils.padLeft(note.amount.toString(16), 48)}${utils.padLeft(
                       utils.toHex(note.id).substring(2),
                       16,
                     )}`,
@@ -742,6 +749,7 @@ class MyMilestones extends Component {
               return new LPPCappedMilestone(web3, milestone.pluginAddress)
                 .mWithdraw(pledges, {
                   from: this.props.currentUser.address,
+                  $extraGas: 100000,
                 })
                 .once('transactionHash', hash => {
                   txHash = hash;
@@ -759,6 +767,7 @@ class MyMilestones extends Component {
               );
             })
             .catch(e => {
+              if (txHash && e.message && e.message.includes('unknown transaction')) return; // bug in web3 seems to constantly fail due to this error, but the tx is correct
               console.error(e); // eslint-disable-line no-console
 
               let msg;

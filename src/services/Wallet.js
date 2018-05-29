@@ -24,6 +24,7 @@ class WalletService {
     Promise.all([getWeb3(), getNetwork()])
       .then(([web3, network]) => {
         const dt = Object.assign({}, data, {
+          from: data.from,
           value: web3.utils.toWei(data.value),
           gas: '21000',
         });
@@ -35,6 +36,10 @@ class WalletService {
         });
       })
       .then(afterMined)
+      .catch(err => {
+        if (txHash && err.message && err.message.includes('unknown transaction')) return; // bug in web3 seems to constantly fail due to this error, but the tx is correct
+        onError(err);
+      })
       .catch(onError);
   }
 
@@ -67,7 +72,10 @@ class WalletService {
           });
       })
       .then(afterMined)
-      .catch(onError);
+      .catch(err => {
+        if (txHash && err.message && err.message.includes('unknown transaction')) return; // bug in web3 seems to constantly fail due to this error, but the tx is correct
+        onError(err);
+      });
   }
 }
 
