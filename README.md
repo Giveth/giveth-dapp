@@ -100,19 +100,7 @@ In the following sections you will learn all you need to know to run the DApp lo
 npm run build
 ```
 
-NOTE: due to a bug in Safari create-react-app's output does not work in Safari (and any iPhone browser)
-To fix this:
-
-`cd /node_modules/giveth-react-scripts/config`
-open `webpack.config.prod.js`
-go to line 300, and add:
-```
-  mangle: {
-    safari10: true,
-  },
-```
-
-now the build will work in Safari
+NOTE: due to some web3 libraries that are not transpiled from es6, we have to use our [giveth-react-scripts](https://github.com/Giveth/create-react-app/tree/master/packages/react-scripts) fork of react-scripts .
 
 ### Configuration
 The DApp has several node environment variables which can be used to alter the DApp behaviour without changing the code. You can set them through `.env` or `.env.local` files in the DApp folder.
