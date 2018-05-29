@@ -87,6 +87,7 @@ class EditMilestone extends Component {
       date: getStartOfDayUTC().subtract(1, 'd'),
       fiatTypes: [
         { value: 'BRL', title: 'BRL' },
+        { value: 'CAD', title: 'CAD' },
         { value: 'CHF', title: 'CHF' },
         { value: 'CZK', title: 'CZK' },
         { value: 'ETH', title: 'ETH' },
