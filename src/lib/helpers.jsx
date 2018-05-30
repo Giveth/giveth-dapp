@@ -108,8 +108,8 @@ export const getGasPrice = () =>
       gasPrice = Math.round(gasPrice) / 10;
 
       // sometimes the API is down, we need to return a gasprice or the dapp breaks
-      if (!gasPrice) gasPrice = process.env.REACT_APP_DEFAULT_GASPRICE;
-      
+      if (!gasPrice) gasPrice = config.defaultGasPrice;
+
       return utils.toWei(`${gasPrice}`, 'gwei');
     });
 
