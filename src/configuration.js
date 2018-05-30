@@ -10,6 +10,7 @@ const {
   REACT_APP_TOKEN_ADDRESSES,
   REACT_APP_BLOCKEXPLORER,
   REACT_APP_BUGS_EMAIL = 'bugs@giveth.io',
+  REACT_APP_DEFAULT_GASPRICE = 10
 } = process.env;
 
 const configurations = {
