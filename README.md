@@ -26,8 +26,8 @@ Welcome to the code for Giveth's DApp. This is an open source effort to realize 
 In the following sections you will learn all you need to know to run the DApp locally and to start contributing. All the steps are also described in this amazing [Video Tutorial Walkthrough](https://tinyurl.com/y9lx6jrl) by Oz.
 
 #### Prerequisities
-- You need to use Node > v6
-- You need to use npm 4.x, or npm >= 5.3, or yarn to correctly install the dependencies.
+- You need to use Node > v8, however, v10 does not work correctly yet.
+- You need to use npm > v5.4, or yarn > v1.6 to correctly install the dependencies.
 
 ### Install
 1. Click **Star** on this repo near the top-right corner of this web page (if you want to).
