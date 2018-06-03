@@ -10,6 +10,7 @@ const {
   REACT_APP_TOKEN_ADDRESSES,
   REACT_APP_BLOCKEXPLORER,
   REACT_APP_BUGS_EMAIL = 'bugs@giveth.io',
+  REACT_APP_DEFAULT_GASPRICE = 10,
 } = process.env;
 
 const configurations = {
@@ -108,6 +109,7 @@ config.feathersConnection = REACT_APP_FEATHERJS_CONNECTION_URL || config.feather
 config.foreignNodeConnection = REACT_APP_ETH_NODE_CONNECTION_URL || config.foreignNodeConnection;
 config.decimals = REACT_APP_DECIMALS;
 config.bugsEmail = REACT_APP_BUGS_EMAIL;
+config.defaultGasPrice = REACT_APP_DEFAULT_GASPRICE;
 config.sendErrors = ['develop', 'release', 'alpha', 'mainnet'].includes(REACT_APP_ENVIRONMENT);
 
 export default config;

@@ -16,6 +16,7 @@
 @import 'dashboard.scss';
 @import 'edit-view.scss';
 @import 'editMilestoneView.scss';
+@import 'myMilestones.scss';
 // components
 @import 'loader.scss';
 @import 'mainMenu.scss';
@@ -23,6 +24,7 @@
 @import 'joinGivethCommunity.scss';
 @import 'backgroundImageHeader.scss';
 @import 'dac-card.scss';
+@import 'milestoneConversations.scss';
 // misc
 @import 'quill-overrides.scss';
 @import 'react-skylight.scss';
@@ -36,7 +38,6 @@
 // overrides
 @import 'card.scss';
 @import 'formsyOverrides.scss';
-@import 'myMilestones.scss';
 
 html,
 body {
