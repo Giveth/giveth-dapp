@@ -26,8 +26,8 @@ Welcome to the code for Giveth's DApp. This is an open source effort to realize 
 In the following sections you will learn all you need to know to run the DApp locally and to start contributing. All the steps are also described in this amazing [Video Tutorial Walkthrough](https://tinyurl.com/y9lx6jrl) by Oz.
 
 #### Prerequisities
-- You need to use Node > v6
-- You need to use npm 4.x, or npm >= 5.3, or yarn to correctly install the dependencies.
+- You need to use Node > v8, however, v10 does not work correctly yet.
+- You need to use npm > v5.4, or yarn > v1.6 to correctly install the dependencies.
 
 ### Install
 1. Click **Star** on this repo near the top-right corner of this web page (if you want to).
@@ -100,19 +100,7 @@ In the following sections you will learn all you need to know to run the DApp lo
 npm run build
 ```
 
-NOTE: due to a bug in Safari create-react-app's output does not work in Safari (and any iPhone browser)
-To fix this:
-
-`cd /node_modules/giveth-react-scripts/config`
-open `webpack.config.prod.js`
-go to line 300, and add:
-```
-  mangle: {
-    safari10: true,
-  },
-```
-
-now the build will work in Safari
+NOTE: due to some web3 libraries that are not transpiled from es6, we have to use our [giveth-react-scripts](https://github.com/Giveth/create-react-app/tree/master/packages/react-scripts) fork of react-scripts .
 
 ### Configuration
 The DApp has several node environment variables which can be used to alter the DApp behaviour without changing the code. You can set them through `.env` or `.env.local` files in the DApp folder.
