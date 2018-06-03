@@ -259,14 +259,14 @@ class MyMilestones extends Component {
         icon: 'warning',
         dangerMode: true,
         content: {
-          element: "input",
+          element: 'input',
           attributes: {
             rows: 3,
-            placeholder: "Add a message for the reviewer (optional)",
-          }
+            placeholder: 'Add a message for the reviewer (optional)',
+          },
         },
         buttons: ['Cancel', 'Yes, mark complete'],
-      }).then((message, cancel) => {
+      }).then(message => {
         if (message !== null) {
           // feathers
           const _requestMarkComplete = (etherScanUrl, txHash) => {
@@ -347,12 +347,12 @@ class MyMilestones extends Component {
         buttons: ['I changed my mind', 'Yes, cancel'],
         dangerMode: true,
         content: {
-          element: "input",
+          element: 'input',
           attributes: {
             rows: 3,
-            placeholder: "Add a reason why you cancel this milestone",
-          }
-        },          
+            placeholder: 'Add a reason why you cancel this milestone',
+          },
+        },
       }).then(message => {
         if (message) {
           const _cancelMilestone = (etherScanUrl, txHash) => {
@@ -434,12 +434,12 @@ class MyMilestones extends Component {
         dangerMode: true,
         buttons: ['Cancel', 'Yes, accept'],
         content: {
-          element: "input",
+          element: 'input',
           attributes: {
             rows: 3,
-            placeholder: "Add a reason why you accept this milestone (optional)",
-          }
-        },           
+            placeholder: 'Add a reason why you accept this milestone (optional)',
+          },
+        },
       }).then(message => {
         if (message !== null) {
           // feathers
@@ -530,12 +530,12 @@ class MyMilestones extends Component {
         dangerMode: true,
         buttons: ['Cancel', 'Yes, approve'],
         content: {
-          element: "input",
+          element: 'input',
           attributes: {
             rows: 3,
-            placeholder: "Add a message why you approve completion (optional)",
-          }
-        },           
+            placeholder: 'Add a message why you approve completion (optional)',
+          },
+        },
       }).then(message => {
         if (message !== null) {
           // feathers
@@ -616,12 +616,12 @@ class MyMilestones extends Component {
         dangerMode: true,
         buttons: ['Cancel', 'Yes, reject'],
         content: {
-          element: "input",
+          element: 'input',
           attributes: {
             rows: 3,
-            placeholder: "Add a reason why you reject the completion of this milestone",
-          }
-        },            
+            placeholder: 'Add a reason why you reject the completion of this milestone',
+          },
+        },
       }).then(message => {
         if (message) {
           // reject in feathers
