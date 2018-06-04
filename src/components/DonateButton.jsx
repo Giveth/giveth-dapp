@@ -156,9 +156,10 @@ class DonateButton extends React.Component {
       // tx only requires 25400 gas, but for some reason we get an out of gas
       // error in web3 with that amount (even though the tx succeeds)
       const opts = { from: currentUser.address, value, gas: 30400 };
-      const method = currentUser.giverId
-        ? givethBridge.donate(currentUser.giverId, adminId, opts)
-        : givethBridge.donateAndCreateGiver(currentUser.address, adminId, opts);
+      const method =
+        currentUser.giverId && currentUser.giverId !== '0'
+          ? givethBridge.donate(currentUser.giverId, adminId, opts)
+          : givethBridge.donateAndCreateGiver(currentUser.address, adminId, opts);
 
       let txHash;
       method
