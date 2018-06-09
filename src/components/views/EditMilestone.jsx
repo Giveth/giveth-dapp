@@ -635,7 +635,7 @@ class EditMilestone extends Component {
 
   handleTemplateChange(option) {
     this.setState({
-      description: templates[option.value],
+      description: templates.templates[option.value],
       milestoneTemplate: option,
     });
     // this.desc.value = option.value;
