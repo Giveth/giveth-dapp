@@ -4,7 +4,10 @@ import { utils } from 'web3';
 import Toggle from 'react-toggle';
 import BigNumber from 'bignumber.js';
 import { Form, Input } from 'formsy-react-components';
+import Dropdown from 'react-dropdown';
+import 'react-dropdown/style.css';
 import { feathersClient, feathersRest } from './../../lib/feathersClient';
+import templates from './../../lib/milestoneTemplates';
 import Loader from './../Loader';
 import QuillFormsy from './../QuillFormsy';
 import SelectFormsy from './../SelectFormsy';
@@ -53,6 +56,7 @@ class EditMilestone extends Component {
       // milestone model
       title: '',
       description: '',
+      milestoneTemplate: 'none',
       image: '',
       maxAmount: new BigNumber(0),
       fiatAmount: new BigNumber(0),
@@ -98,6 +102,7 @@ class EditMilestone extends Component {
     this.setFiatAmount = this.setFiatAmount.bind(this);
     this.changeSelectedFiat = this.changeSelectedFiat.bind(this);
     this.toggleShowRecipientAddress = this.toggleShowRecipientAddress.bind(this);
+    this.handleTemplateChange = this.handleTemplateChange.bind(this);
   }
 
   componentDidMount() {
@@ -628,6 +633,14 @@ class EditMilestone extends Component {
     this.setState({ itemizeState: !this.state.itemizeState });
   }
 
+  handleTemplateChange(option) {
+    this.setState({
+      description: templates[option.value],
+      milestoneTemplate: option,
+    });
+    // this.desc.value = option.value;
+  }
+
   render() {
     const { isNew, isProposed, history } = this.props;
     const {
@@ -653,6 +666,14 @@ class EditMilestone extends Component {
       currentRate,
       reviewers,
     } = this.state;
+
+    const options = [
+      { value: 'none', label: 'None' },
+      { value: 'rewardDAO', label: 'Reward DAO' },
+      { value: 'regularReward', label: 'Regular Reward' },
+      { value: 'expenses', label: 'Expenses' },
+      { value: 'bounties', label: 'Bounties' },
+    ];
 
     return (
       <div id="edit-milestone-view">
@@ -714,7 +735,12 @@ class EditMilestone extends Component {
                       required
                       autoFocus
                     />
-
+                    <Dropdown
+                      options={options}
+                      onChange={this.handleTemplateChange}
+                      value={this.state.milestoneTemplate}
+                      placeholder="Select an option"
+                    />
                     <div className="form-group">
                       <QuillFormsy
                         name="description"
