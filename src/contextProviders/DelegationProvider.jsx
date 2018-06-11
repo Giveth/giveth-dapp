@@ -188,7 +188,7 @@ class DelegationProvider extends Component {
           { delegateId: { $in: dacsIds } },
           {
             ownerId: this.props.currentUser.address,
-            $not: { delegateId: { $gt: '0' } },
+            delegateId: { $ne: '0' },
           },
         ],
         status: {
