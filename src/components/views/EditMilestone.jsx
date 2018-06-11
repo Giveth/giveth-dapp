@@ -27,6 +27,7 @@ import AddMilestoneItem from '../../components/AddMilestoneItem';
 import ErrorPopup from '../ErrorPopup';
 import AddMilestoneItemModal from '../../components/AddMilestoneItemModal';
 import config from '../../configuration';
+import { Currency } from '../services/Currency';
 
 BigNumber.config({ DECIMAL_PLACES: 18 });
 
@@ -78,18 +79,7 @@ class EditMilestone extends Component {
       conversionRates: [],
       currentRate: undefined,
       date: getStartOfDayUTC().subtract(1, 'd'),
-      fiatTypes: [
-        { value: 'BRL', title: 'BRL' },
-        { value: 'CAD', title: 'CAD' },
-        { value: 'CHF', title: 'CHF' },
-        { value: 'CZK', title: 'CZK' },
-        { value: 'ETH', title: 'ETH' },
-        { value: 'EUR', title: 'EUR' },
-        { value: 'GBP', title: 'GBP' },
-        { value: 'MXN', title: 'MXN' },
-        { value: 'THB', title: 'THB' },
-        { value: 'USD', title: 'USD' },
-      ],
+      fiatTypes: Currency.fiatTypes,
       selectedFiatType: 'EUR',
     };
     this.submit = this.submit.bind(this);

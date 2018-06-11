@@ -1,0 +1,13 @@
+[package]
+name = "rustbn-js"
+version = "0.1.0"
+authors = ["holgerd77 <Holger.Drewes@gmail.com>",
+           "cdetrio <cdetrio@gmail.com>",]
+
+[dependencies]
+bn = { git = "https://github.com/cdetrio/bn", branch = "mont-repr-fix" }
+rand = "0.3"
+rustc-serialize = "0.3"
+num = "0.1"
+hex-slice = "0.1.0"
+

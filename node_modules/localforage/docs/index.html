@@ -1,0 +1,56 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width">
+
+  <title>localForage</title>
+
+  <!-- Flatdoc -->
+  <script src="https://cdn.jsdelivr.net/npm/jquery@1.12/dist/jquery.min.js"></script>
+  <script src="scripts/legacy.js"></script>
+  <script src="scripts/flatdoc.js"></script>
+
+  <!-- Flatdoc theme -->
+  <link href="theme/style.css" rel="stylesheet">
+  <script src="theme/script.js"></script>
+
+  <!-- localForage extras -->
+  <script src="https://cdn.jsdelivr.net/gh/localforage/localforage/dist/localforage.min.js"></script>
+  <link href="theme/localforage.css" rel="stylesheet">
+
+  <!-- Meta -->
+  <meta content="localForage" property="og:title">
+  <meta content="localForage is a JavaScript library that improves the offline experience of your web app by using an asynchronous data store with a simple, localStorage-like API." name="description">
+
+  <!-- Initializer -->
+  <script>
+    Flatdoc.run({
+      fetcher: (window.location.host === 'mozilla.github.io') ?
+        Flatdoc.github('localForage/localForage', 'docs/api.md') :
+        Flatdoc.file('api.md')
+    });
+  </script>
+</head>
+<body role="flatdoc">
+  <div class="header">
+    <div class="left">
+      <h1>localForage</h1>
+      <ul>
+        <li><a href="https://github.com/localForage/localForage">View on GitHub</a></li>
+        <li><a href="https://github.com/localForage/localForage/issues">Issues</a></li>
+      </ul>
+    </div>
+    <div class="right">
+    </div>
+  </div>
+
+  <div class="content-root">
+    <div class="menubar">
+      <div class="menu section" role="flatdoc-menu"></div>
+    </div>
+    <div role="flatdoc-content" class="content"></div>
+  </div>
+</body>
+</html>

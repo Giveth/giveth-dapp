@@ -1,0 +1,997 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ChangeListManager">
+    <list default="true" id="c571c5b8-dc36-4a24-a4b2-c7bfc95cc889" name="Default" comment="">
+      <change beforePath="$PROJECT_DIR$/dist/web3-light.js" afterPath="$PROJECT_DIR$/dist/web3-light.js" />
+      <change beforePath="$PROJECT_DIR$/dist/web3-light.min.js" afterPath="$PROJECT_DIR$/dist/web3-light.min.js" />
+      <change beforePath="$PROJECT_DIR$/dist/web3.js" afterPath="$PROJECT_DIR$/dist/web3.js" />
+      <change beforePath="$PROJECT_DIR$/dist/web3.min.js" afterPath="" />
+      <change beforePath="$PROJECT_DIR$/lib/version.json" afterPath="$PROJECT_DIR$/lib/version.json" />
+    </list>
+    <ignored path="web3.iws" />
+    <ignored path=".idea/workspace.xml" />
+    <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
+    <option name="TRACKING_ENABLED" value="true" />
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="CoverageDataManager">
+    <SUITE FILE_PATH="coverage/web3$contract_with_methods_should_change_the_address.coverage" NAME="contract.with methods.should change the address Coverage Results" MODIFIED="1505813699954" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="MochaJavaScriptTestRunnerCoverage" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" />
+  </component>
+  <component name="CreatePatchCommitExecutor">
+    <option name="PATCH_PATH" value="" />
+  </component>
+  <component name="FavoritesManager">
+    <favorites_list name="web3" />
+  </component>
+  <component name="FileColors">
+    <fileColor scope="Non-Project Files (Material Default)" color="415967" />
+    <fileColor scope="Non-Project Files (Material Darker)" color="474747" />
+    <fileColor scope="Non-Project Files (Material Lighter)" color="D2D4D5" />
+    <fileColor scope="Non-Project Files (Material Palenight)" color="4E5579" />
+    <fileColor scope="Non-Project Files (Material Default)" color="2E3C43" />
+    <fileColor scope="Non-Project Files (Material Darker)" color="323232" />
+    <fileColor scope="Non-Project Files (Material Lighter)" color="eae8e8" />
+    <fileColor scope="Non-Project Files (Material Palenight)" color="2f2e43" />
+  </component>
+  <component name="FileEditorManager">
+    <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
+      <file leaf-file-name="package.json" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/package.json">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="151">
+              <caret line="88" column="1" lean-forward="false" selection-start-line="88" selection-start-column="1" selection-end-line="88" selection-end-column="1" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="contract.js" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/test/contract.js">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="-3048">
+              <caret line="401" column="0" lean-forward="false" selection-start-line="401" selection-start-column="0" selection-end-line="401" selection-end-column="0" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="version.json" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/lib/version.json">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="15">
+              <caret line="1" column="22" lean-forward="false" selection-start-line="1" selection-start-column="22" selection-end-line="1" selection-end-column="22" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+    </leaf>
+  </component>
+  <component name="FindInProjectRecents">
+    <findStrings>
+      <find>xhr-request</find>
+      <find>data.type</find>
+      <find>hash</find>
+      <find>recover(</find>
+      <find>EthereumP</find>
+      <find>O check if that makes sens</find>
+      <find>noteCb</find>
+      <find>.reset</find>
+      <find>.on</find>
+      <find>731</find>
+      <find>address</find>
+      <find>4000</find>
+      <find>blockHeader</find>
+      <find>sub</find>
+      <find>bluebird</find>
+      <find>Promise.join</find>
+      <find>any-promis</find>
+      <find>addSubsc</find>
+      <find>if not receipt after 50 blocks</find>
+      <find>50</find>
+      <find>buildCall</find>
+      <find>defer</find>
+      <find>unsubsc</find>
+      <find>this</find>
+      <find>fail with promise when subscribing and check for receipt and c</find>
+      <find>checkConfirmation</find>
+      <find>&quot;^</find>
+      <find>_fireError</find>
+      <find>notificationCallbacks</find>
+      <find>rror when returned string is 0x</find>
+    </findStrings>
+    <replaceStrings>
+      <replace>Build running the following in the [web3.js][repo]</replace>
+      <replace>Then include `</replace>
+      <replace>core-requestmanager</replace>
+      <replace>core-promievent</replace>
+      <replace>core-method</replace>
+      <replace>web3-bzz</replace>
+      <replace>core-helpers</replace>
+      <replace>&quot;1.0.0-beta.8&quot;</replace>
+      <replace>ers, as they aren't removed automatically when</replace>
+      <replace>core</replace>
+      <replace>.accounts</replace>
+      <replace>swarmProvider1</replace>
+      <replace>provider</replace>
+      <replace>'0x9ce59a13059e417087c02d3236a0b1cc'</replace>
+      <replace>provider2</replace>
+      <replace>,</replace>
+      <replace>:</replace>
+      <replace>defaultAccount</replace>
+      <replace>c</replace>
+      <replace>16</replace>
+      <replace>padLeft</replace>
+      <replace>padRight</replace>
+      <replace>.toString(16, 64)</replace>
+      <replace>var</replace>
+      <replace>RLP</replace>
+      <replace>'1000000000000000000'</replace>
+      <replace>'1'</replace>
+      <replace>utils.hexToBytes</replace>
+      <replace>utils.to</replace>
+      <replace>message</replace>
+    </replaceStrings>
+    <dirStrings>
+      <dir>$PROJECT_DIR$/dist</dir>
+      <dir>$PROJECT_DIR$/packages/web3-core-requestmanager</dir>
+      <dir>$PROJECT_DIR$</dir>
+    </dirStrings>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+    <option name="RECENT_BRANCH_BY_REPOSITORY">
+      <map>
+        <entry key="$PROJECT_DIR$" value="1.0" />
+      </map>
+    </option>
+  </component>
+  <component name="IdeDocumentHistory">
+    <option name="CHANGED_PATHS">
+      <list>
+        <option value="$PROJECT_DIR$/package.js" />
+        <option value="$PROJECT_DIR$/docs/web3-utils.rst" />
+        <option value="$PROJECT_DIR$/test/utils.toWei.js" />
+        <option value="$PROJECT_DIR$/test/utils.fromWei.js" />
+        <option value="$PROJECT_DIR$/packages/web3-bzz/package.json" />
+        <option value="$PROJECT_DIR$/packages/web3-bzz/src/index.js" />
+        <option value="$PROJECT_DIR$/test/eth.sendTransaction.js" />
+        <option value="$PROJECT_DIR$/gulpfile.js" />
+        <option value="$PROJECT_DIR$/test/eth.abi.decodeParameters.js" />
+        <option value="$PROJECT_DIR$/test/utils.toTwosComplement.js" />
+        <option value="$PROJECT_DIR$/packages/web3-providers-http/src/index.js" />
+        <option value="$PROJECT_DIR$/test/helpers/FakeXHR2.js" />
+        <option value="$PROJECT_DIR$/test/utils.isAddress.js" />
+        <option value="$PROJECT_DIR$/docs/web3-eth-subscribe.rst" />
+        <option value="$PROJECT_DIR$/docs/web3-eth.rst" />
+        <option value="$PROJECT_DIR$/lib/web3/contract.js" />
+        <option value="$PROJECT_DIR$/packages/web3-eth-accounts/package.json" />
+        <option value="$PROJECT_DIR$/test/httpprovider.js" />
+        <option value="$PROJECT_DIR$/packages/web3-eth-abi/src/formatters.js" />
+        <option value="$PROJECT_DIR$/packages/web3-utils/src/utils.js" />
+        <option value="$PROJECT_DIR$/.jshintrc" />
+        <option value="$PROJECT_DIR$/packages/web3-core-helpers/src/formatters.js" />
+        <option value="$PROJECT_DIR$/test/eth.accounts.signTransaction.js" />
+        <option value="$PROJECT_DIR$/lib/web3/event.js" />
+        <option value="$PROJECT_DIR$/test/allevents.decode.js" />
+        <option value="$PROJECT_DIR$/lib/web3/allevents.js" />
+        <option value="$PROJECT_DIR$/test/eth.accounts.sign.js" />
+        <option value="$PROJECT_DIR$/packages/web3-eth-accounts/src/index.js" />
+        <option value="$PROJECT_DIR$/docs/web3-eth-accounts.rst" />
+        <option value="$PROJECT_DIR$/packages/web3-core-subscriptions/src/subscription.js" />
+        <option value="$PROJECT_DIR$/packages/web3-providers-ipc/src/index.js" />
+        <option value="$PROJECT_DIR$/test/helpers/FakeIpcProvider.js" />
+        <option value="$PROJECT_DIR$/packages/web3-core-requestmanager/src/index.js" />
+        <option value="$PROJECT_DIR$/packages/web3-providers-ws/src/index.js" />
+        <option value="$PROJECT_DIR$/packages/web3-eth-abi/package.json" />
+        <option value="$PROJECT_DIR$/packages/web3-eth-abi/src/index.js" />
+        <option value="$PROJECT_DIR$/test/abi.decodeParameter.js" />
+        <option value="$PROJECT_DIR$/packages/web3/README.md" />
+        <option value="$PROJECT_DIR$/README.md" />
+        <option value="$PROJECT_DIR$/test/eth.subscribe.js" />
+        <option value="$PROJECT_DIR$/test/utils.toHex.js" />
+        <option value="$PROJECT_DIR$/test/utils.fromUtf8.js" />
+        <option value="$PROJECT_DIR$/test/utils.hexToUtf8.js" />
+        <option value="$PROJECT_DIR$/packages/web3-core-promievent/package.json" />
+        <option value="$PROJECT_DIR$/package.json" />
+        <option value="$PROJECT_DIR$/test/contract.encodeABI.js" />
+        <option value="$PROJECT_DIR$/test/contract.js" />
+        <option value="$PROJECT_DIR$/test/method.buildCall.js" />
+        <option value="$PROJECT_DIR$/packages/web3-utils/src/index.js" />
+        <option value="$PROJECT_DIR$/packages/web3-core-method/src/index.js" />
+        <option value="$PROJECT_DIR$/lib/version.json" />
+      </list>
+    </option>
+  </component>
+  <component name="JsBuildToolGruntFileManager" detection-done="true" sorting="DEFINITION_ORDER" />
+  <component name="JsBuildToolPackageJson" detection-done="true" sorting="DEFINITION_ORDER" />
+  <component name="JsFlowSettings">
+    <service-enabled>true</service-enabled>
+    <exe-path />
+    <annotation-enable>false</annotation-enable>
+    <other-services-enabled>true</other-services-enabled>
+    <auto-save>true</auto-save>
+  </component>
+  <component name="JsGulpfileManager">
+    <detection-done>true</detection-done>
+    <sorting>DEFINITION_ORDER</sorting>
+  </component>
+  <component name="PackageJsonUpdateNotifier">
+    <dismissed value="$PROJECT_DIR$/package.json" />
+  </component>
+  <component name="ProjectFrameBounds">
+    <option name="width" value="1280" />
+    <option name="height" value="800" />
+  </component>
+  <component name="ProjectInspectionProfilesVisibleTreeState">
+    <entry key="Project Default">
+      <profile-state>
+        <expanded-state>
+          <State>
+            <id />
+          </State>
+          <State>
+            <id>JavaScript</id>
+          </State>
+        </expanded-state>
+        <selected-state>
+          <State>
+            <id>JavaScript</id>
+          </State>
+        </selected-state>
+      </profile-state>
+    </entry>
+  </component>
+  <component name="ProjectView">
+    <navigator currentView="ProjectPane" proportions="" version="1">
+      <flattenPackages />
+      <showMembers ProjectPane="false" />
+      <showModules />
+      <showLibraryContents />
+      <hideEmptyPackages />
+      <abbreviatePackageNames />
+      <autoscrollToSource />
+      <autoscrollFromSource />
+      <sortByType />
+      <manualOrder />
+      <foldersAlwaysOnTop value="true" />
+    </navigator>
+    <panes>
+      <pane id="ProjectPane">
+        <subPane>
+          <expand>
+            <path>
+              <item name="web3" type="b2602c69:ProjectViewProjectNode" />
+              <item name="web3" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="web3" type="b2602c69:ProjectViewProjectNode" />
+              <item name="web3" type="462c0819:PsiDirectoryNode" />
+              <item name="lib" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="web3" type="b2602c69:ProjectViewProjectNode" />
+              <item name="web3" type="462c0819:PsiDirectoryNode" />
+              <item name="test" type="462c0819:PsiDirectoryNode" />
+            </path>
+          </expand>
+          <select />
+        </subPane>
+      </pane>
+      <pane id="Scratches" />
+      <pane id="Scope" />
+    </panes>
+  </component>
+  <component name="PropertiesComponent">
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="WebServerToolWindowFactoryState" value="false" />
+    <property name="HbShouldOpenHtmlAsHb" value="" />
+    <property name="editor.config.accepted" value="true" />
+    <property name="settings.editor.selected.configurable" value="Settings.JavaScript" />
+    <property name="js-jscs-nodeInterpreter" value="/usr/local/bin/node" />
+    <property name="nodejs.mocha.mocha_node_package_dir" value="$PROJECT_DIR$/node_modules/mocha" />
+    <property name="jsx.switch.disabled" value="true" />
+    <property name="nodejs_interpreter_path" value="/usr/local/bin/node" />
+    <property name="JavaScriptWeakerCompletionTypeGuess" value="true" />
+  </component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/test" />
+      <recent name="$PROJECT_DIR$/test/helpers" />
+      <recent name="$PROJECT_DIR$/docs" />
+    </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/packages/web3-eth-abi/src/" />
+      <recent name="$PROJECT_DIR$/packages/web3-eth-abi/src" />
+      <recent name="$PROJECT_DIR$/packages/web3-providers-http/src" />
+    </key>
+  </component>
+  <component name="RunDashboard">
+    <option name="ruleStates">
+      <list>
+        <RuleState>
+          <option name="name" value="ConfigurationTypeDashboardGroupingRule" />
+        </RuleState>
+        <RuleState>
+          <option name="name" value="StatusDashboardGroupingRule" />
+        </RuleState>
+      </list>
+    </option>
+  </component>
+  <component name="RunManager" selected="Node.js.contract.js">
+    <configuration name="contract.js" type="NodeJSConfigurationType" factoryName="Node.js" temporary="true" path-to-js-file="contract.js" working-dir="$PROJECT_DIR$/test" />
+    <configuration default="true" type="DartCommandLineRunConfigurationType" factoryName="Dart Command Line Application">
+      <method />
+    </configuration>
+    <configuration default="true" type="DartTestRunConfigurationType" factoryName="Dart Test">
+      <method />
+    </configuration>
+    <configuration default="true" type="JavaScriptTestRunnerJest" factoryName="Jest">
+      <node-interpreter value="project" />
+      <working-dir value="" />
+      <envs />
+      <scope-kind value="ALL" />
+      <method />
+    </configuration>
+    <configuration default="true" type="JavaScriptTestRunnerKarma" factoryName="Karma">
+      <config-file value="" />
+      <node-interpreter value="project" />
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="true" type="JavaScriptTestRunnerProtractor" factoryName="Protractor">
+      <config-file value="" />
+      <node-interpreter value="project" />
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="true" type="JavascriptDebugType" factoryName="JavaScript Debug">
+      <method />
+    </configuration>
+    <configuration default="true" type="NodeJSConfigurationType" factoryName="Node.js" path-to-node="project" working-dir="">
+      <method />
+    </configuration>
+    <configuration default="true" type="cucumber.js" factoryName="Cucumber.js">
+      <option name="cucumberJsArguments" value="" />
+      <option name="executablePath" />
+      <option name="filePath" />
+      <method />
+    </configuration>
+    <configuration default="true" type="js.build_tools.npm" factoryName="npm">
+      <command value="run" />
+      <scripts />
+      <node-interpreter value="project" />
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="true" type="js.build_tools.gulp" factoryName="Gulp.js">
+      <node-interpreter>project</node-interpreter>
+      <node-options />
+      <gulpfile />
+      <tasks />
+      <arguments />
+      <envs />
+    </configuration>
+    <configuration default="true" type="mocha-javascript-test-runner" factoryName="Mocha">
+      <node-interpreter>/usr/local/bin/node</node-interpreter>
+      <node-options />
+      <working-directory>$PROJECT_DIR$</working-directory>
+      <pass-parent-env>true</pass-parent-env>
+      <envs />
+      <ui>bdd</ui>
+      <extra-mocha-options />
+      <test-kind>DIRECTORY</test-kind>
+      <test-directory />
+      <recursive>false</recursive>
+    </configuration>
+    <configuration name="contract.with methods" type="mocha-javascript-test-runner" factoryName="Mocha" temporary="true" nameIsGenerated="true">
+      <node-interpreter>/usr/local/bin/node</node-interpreter>
+      <node-options />
+      <working-directory>$PROJECT_DIR$</working-directory>
+      <pass-parent-env>true</pass-parent-env>
+      <envs />
+      <ui>bdd</ui>
+      <extra-mocha-options />
+      <test-kind>SUITE</test-kind>
+      <test-file>$PROJECT_DIR$/test/contract.js</test-file>
+      <test-names>
+        <name value="contract" />
+        <name value="with methods" />
+      </test-names>
+    </configuration>
+    <configuration name="contract.with methods.should change the address" type="mocha-javascript-test-runner" factoryName="Mocha" temporary="true" nameIsGenerated="true">
+      <node-interpreter>/usr/local/bin/node</node-interpreter>
+      <node-options />
+      <working-directory>$PROJECT_DIR$</working-directory>
+      <pass-parent-env>true</pass-parent-env>
+      <envs />
+      <ui>bdd</ui>
+      <extra-mocha-options />
+      <test-kind>TEST</test-kind>
+      <test-file>$PROJECT_DIR$/test/contract.js</test-file>
+      <test-names>
+        <name value="contract" />
+        <name value="with methods" />
+        <name value="should change the address" />
+      </test-names>
+    </configuration>
+    <list size="3">
+      <item index="0" class="java.lang.String" itemvalue="Mocha.contract.with methods.should change the address" />
+      <item index="1" class="java.lang.String" itemvalue="Mocha.contract.with methods" />
+      <item index="2" class="java.lang.String" itemvalue="Node.js.contract.js" />
+    </list>
+    <recent_temporary>
+      <list size="3">
+        <item index="0" class="java.lang.String" itemvalue="Node.js.contract.js" />
+        <item index="1" class="java.lang.String" itemvalue="Mocha.contract.with methods" />
+        <item index="2" class="java.lang.String" itemvalue="Mocha.contract.with methods.should change the address" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="ShelveChangesManager" show_recycled="false">
+    <option name="remove_strategy" value="false" />
+  </component>
+  <component name="SvnConfiguration">
+    <configuration />
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="c571c5b8-dc36-4a24-a4b2-c7bfc95cc889" name="Default" comment="" />
+      <created>1456145579499</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1456145579499</updated>
+      <workItem from="1467721034776" duration="1205000" />
+      <workItem from="1470132649241" duration="38228000" />
+      <workItem from="1473773595827" duration="17000" />
+      <workItem from="1473773678457" duration="32139000" />
+      <workItem from="1477397714999" duration="15000" />
+      <workItem from="1477397773365" duration="170000" />
+      <workItem from="1477490352062" duration="324000" />
+      <workItem from="1477497409745" duration="394000" />
+      <workItem from="1477499746707" duration="174000" />
+      <workItem from="1477503050256" duration="402000" />
+      <workItem from="1478005878393" duration="11530000" />
+      <workItem from="1478253232445" duration="35358000" />
+      <workItem from="1479495443436" duration="6000" />
+      <workItem from="1481122873249" duration="822000" />
+      <workItem from="1483610442047" duration="16706000" />
+      <workItem from="1484045141207" duration="17067000" />
+      <workItem from="1484231703763" duration="10213000" />
+      <workItem from="1484569622436" duration="401000" />
+      <workItem from="1484570050014" duration="14072000" />
+      <workItem from="1484648443184" duration="27335000" />
+      <workItem from="1485244321302" duration="41000000" />
+      <workItem from="1485416153421" duration="22065000" />
+      <workItem from="1486370161555" duration="30887000" />
+      <workItem from="1486973572351" duration="7000" />
+      <workItem from="1486973877717" duration="8230000" />
+      <workItem from="1486982471347" duration="17472000" />
+      <workItem from="1487093248954" duration="49000" />
+      <workItem from="1487093312445" duration="134000" />
+      <workItem from="1487093465706" duration="48506000" />
+      <workItem from="1488289544219" duration="47738000" />
+      <workItem from="1488535364615" duration="8000" />
+      <workItem from="1488535392702" duration="16028000" />
+      <workItem from="1488578979735" duration="9198000" />
+      <workItem from="1489140969609" duration="99160000" />
+      <workItem from="1490687355755" duration="40000" />
+      <workItem from="1490687425253" duration="16740000" />
+      <workItem from="1490813020014" duration="8504000" />
+      <workItem from="1493028203935" duration="1131000" />
+      <workItem from="1493087024899" duration="96000" />
+      <workItem from="1494247506671" duration="35000" />
+      <workItem from="1494247616838" duration="145000" />
+      <workItem from="1494247784478" duration="15082000" />
+      <workItem from="1494503941933" duration="5380000" />
+      <workItem from="1495591286792" duration="575000" />
+      <workItem from="1495630429343" duration="966000" />
+      <workItem from="1495677672353" duration="84000" />
+      <workItem from="1496156803243" duration="1850000" />
+      <workItem from="1497962920868" duration="78000" />
+      <workItem from="1497963119586" duration="88000" />
+      <workItem from="1497963235812" duration="10713000" />
+      <workItem from="1498570853552" duration="9642000" />
+      <workItem from="1498662920416" duration="101832000" />
+      <workItem from="1500383979590" duration="91000" />
+      <workItem from="1500384148167" duration="39000" />
+      <workItem from="1500384217121" duration="19333000" />
+      <workItem from="1500895799151" duration="8640000" />
+      <workItem from="1500911209041" duration="26966000" />
+      <workItem from="1501120877231" duration="92000" />
+      <workItem from="1501138621745" duration="22103000" />
+      <workItem from="1502181191831" duration="7453000" />
+      <workItem from="1502271622431" duration="3000" />
+      <workItem from="1502271664157" duration="15575000" />
+      <workItem from="1504882145933" duration="731000" />
+      <workItem from="1505140803074" duration="31000" />
+      <workItem from="1505140877509" duration="7198000" />
+      <workItem from="1505729282482" duration="235000" />
+      <workItem from="1505729561214" duration="2537000" />
+      <workItem from="1505808992077" duration="8819000" />
+      <workItem from="1505908063997" duration="16000" />
+      <workItem from="1505908105321" duration="5630000" />
+      <workItem from="1506088092869" duration="17711000" />
+      <workItem from="1507633262924" duration="5116000" />
+      <workItem from="1508138758364" duration="2518000" />
+      <workItem from="1508410069227" duration="11235000" />
+      <workItem from="1510567334152" duration="61000" />
+      <workItem from="1510567441227" duration="3651000" />
+      <workItem from="1510657028420" duration="2929000" />
+      <workItem from="1511976088523" duration="663000" />
+      <workItem from="1512046802309" duration="1843000" />
+      <workItem from="1513068571059" duration="640000" />
+      <workItem from="1513171959980" duration="420000" />
+      <workItem from="1513849268959" duration="6688000" />
+      <workItem from="1515091945842" duration="252000" />
+      <workItem from="1515092270321" duration="39000" />
+      <workItem from="1515678271189" duration="13301000" />
+      <workItem from="1516239730645" duration="4641000" />
+      <workItem from="1516614668815" duration="2135000" />
+      <workItem from="1516674666253" duration="126000" />
+      <workItem from="1516959308337" duration="332000" />
+      <workItem from="1517491957390" duration="1172000" />
+      <workItem from="1518441146158" duration="85000" />
+      <workItem from="1518441293154" duration="3106000" />
+      <workItem from="1518507924916" duration="16839000" />
+      <workItem from="1519333643701" duration="198000" />
+      <workItem from="1519395016259" duration="15296000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TestHistory">
+    <history-entry file="contract_with_methods - 2017.09.19 at 11h 35m 09s.xml">
+      <configuration name="contract.with methods" configurationId="mocha-javascript-test-runner" />
+    </history-entry>
+    <history-entry file="contract_with_methods_should_change_the_address - 2017.09.19 at 11h 34m 59s.xml">
+      <configuration name="contract.with methods.should change the address" configurationId="mocha-javascript-test-runner" />
+    </history-entry>
+  </component>
+  <component name="TimeTrackingManager">
+    <option name="totallyTimeSpent" value="956530000" />
+  </component>
+  <component name="TodoView">
+    <todo-panel id="selected-file">
+      <is-autoscroll-to-source value="true" />
+    </todo-panel>
+    <todo-panel id="all">
+      <are-packages-shown value="true" />
+      <is-autoscroll-to-source value="true" />
+    </todo-panel>
+  </component>
+  <component name="ToolWindowManager">
+    <frame x="0" y="0" width="1280" height="800" extended-state="6" />
+    <editor active="true" />
+    <layout>
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.25258142" sideWeight="0.49535194" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32876712" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
+      <window_info id="Docker" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="false" weight="0.33" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
+      <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32630098" sideWeight="0.50277996" order="9" side_tool="true" content_ui="tabs" />
+      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.34409687" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32630098" sideWeight="0.49722" order="11" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32911393" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.16679905" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32732734" sideWeight="0.5" order="10" side_tool="false" content_ui="tabs" />
+      <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.16640624" sideWeight="0.5046481" order="3" side_tool="true" content_ui="tabs" />
+      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.39959636" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
+      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
+      <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
+      <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
+      <window_info id="Coverage" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32960597" sideWeight="0.5" order="3" side_tool="true" content_ui="tabs" />
+      <window_info id="npm" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
+      <window_info id="Gulp" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="4" side_tool="true" content_ui="tabs" />
+      <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
+      <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
+    </layout>
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="1" />
+  </component>
+  <component name="Vcs.Log.UiProperties">
+    <option name="RECENTLY_FILTERED_USER_GROUPS">
+      <collection />
+    </option>
+    <option name="RECENTLY_FILTERED_BRANCH_GROUPS">
+      <collection />
+    </option>
+  </component>
+  <component name="VcsContentAnnotationSettings">
+    <option name="myLimit" value="2678400000" />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <option name="LOCAL_CHANGES_DETAILS_PREVIEW_SHOWN" value="true" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <option name="time" value="15" />
+    </breakpoint-manager>
+    <watches-manager />
+  </component>
+  <component name="editorHistoryManager">
+    <entry file="file://$PROJECT_DIR$/packages/web3-eth-accounts/package.json">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="165">
+          <caret line="11" column="21" lean-forward="false" selection-start-line="11" selection-start-column="21" selection-end-line="11" selection-end-column="21" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/packages/web3-core/package.json">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="225">
+          <caret line="15" column="0" lean-forward="true" selection-start-line="15" selection-start-column="0" selection-end-line="15" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/lerna.json">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="180">
+          <caret line="12" column="14" lean-forward="false" selection-start-line="12" selection-start-column="14" selection-end-line="12" selection-end-column="14" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/test/provider.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="2190">
+          <caret line="146" column="0" lean-forward="false" selection-start-line="146" selection-start-column="0" selection-end-line="146" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/test/httpprovider.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="345">
+          <caret line="23" column="0" lean-forward="false" selection-start-line="23" selection-start-column="0" selection-end-line="23" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/packages/web3-core-requestmanager/package.json">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="240">
+          <caret line="16" column="0" lean-forward="false" selection-start-line="16" selection-start-column="0" selection-end-line="16" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/.jshintrc">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="105">
+          <caret line="7" column="24" lean-forward="true" selection-start-line="7" selection-start-column="24" selection-end-line="7" selection-end-column="24" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/packages/web3-core-helpers/src/formatters.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="59">
+          <caret line="67" column="28" lean-forward="false" selection-start-line="67" selection-start-column="28" selection-end-line="67" selection-end-column="28" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/test/eth.accounts.signTransaction.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="364">
+          <caret line="237" column="30" lean-forward="false" selection-start-line="237" selection-start-column="30" selection-end-line="237" selection-end-column="30" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/packages/web3-eth-abi/src/formatters.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="75">
+          <caret line="5" column="29" lean-forward="false" selection-start-line="5" selection-start-column="29" selection-end-line="5" selection-end-column="29" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/packages/web3-eth-abi/src/type.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="199">
+          <caret line="23" column="20" lean-forward="false" selection-start-line="23" selection-start-column="20" selection-end-line="23" selection-end-column="20" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/packages/web3-eth-contract/src/index.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="152">
+          <caret line="358" column="28" lean-forward="false" selection-start-line="358" selection-start-column="23" selection-end-line="358" selection-end-column="28" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/lib/web3/contract.js" />
+    <entry file="file://$PROJECT_DIR$/lib/solidity/coder.js" />
+    <entry file="file://$PROJECT_DIR$/lib/web3/event.js" />
+    <entry file="file://$PROJECT_DIR$/test/allevents.decode.js" />
+    <entry file="file://$PROJECT_DIR$/lib/web3/allevents.js" />
+    <entry file="file://$PROJECT_DIR$/packages/web3-bzz/package-lock.json">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="240">
+          <caret line="291" column="28" lean-forward="false" selection-start-line="291" selection-start-column="28" selection-end-line="291" selection-end-column="28" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/packages/web3-eth-accounts/package-lock.json">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="349">
+          <caret line="223" column="13" lean-forward="true" selection-start-line="223" selection-start-column="13" selection-end-line="223" selection-end-column="13" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/docs/web3-eth-accounts.rst">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="114">
+          <caret line="514" column="0" lean-forward="true" selection-start-line="514" selection-start-column="0" selection-end-line="514" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/packages/web3-eth-accounts/src/index.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="312">
+          <caret line="282" column="62" lean-forward="false" selection-start-line="282" selection-start-column="62" selection-end-line="282" selection-end-column="62" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/test/eth.accounts.sign.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1065">
+          <caret line="71" column="41" lean-forward="false" selection-start-line="71" selection-start-column="41" selection-end-line="71" selection-end-column="41" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/packages/web3-core-requestmanager/src/givenProvider.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="279">
+          <caret line="57" column="47" lean-forward="false" selection-start-line="57" selection-start-column="47" selection-end-line="57" selection-end-column="47" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/test/helpers/FakeIpcProvider.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="199">
+          <caret line="96" column="35" lean-forward="false" selection-start-line="96" selection-start-column="14" selection-end-line="96" selection-end-column="35" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/test/helpers/FakeIpcProvider2.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="189">
+          <caret line="14" column="29" lean-forward="false" selection-start-line="14" selection-start-column="29" selection-end-line="14" selection-end-column="29" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/test/helpers/FakeIpcRequest.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="525">
+          <caret line="35" column="22" lean-forward="false" selection-start-line="35" selection-start-column="15" selection-end-line="35" selection-end-column="22" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/packages/web3-providers-http/src/index.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="735">
+          <caret line="64" column="14" lean-forward="false" selection-start-line="64" selection-start-column="11" selection-end-line="64" selection-end-column="14" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/packages/web3-providers-ipc/src/index.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="311">
+          <caret line="59" column="37" lean-forward="false" selection-start-line="59" selection-start-column="37" selection-end-line="59" selection-end-column="37" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/packages/web3-eth-abi/package.json">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="150">
+          <caret line="10" column="25" lean-forward="false" selection-start-line="10" selection-start-column="25" selection-end-line="10" selection-end-column="25" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/packages/web3-eth-abi/src/index.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="155">
+          <caret line="39" column="2" lean-forward="false" selection-start-line="39" selection-start-column="2" selection-end-line="39" selection-end-column="2" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/packages/web3/README.md">
+      <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
+        <state split_layout="SPLIT">
+          <first_editor relative-caret-position="195">
+            <caret line="13" column="0" lean-forward="true" selection-start-line="13" selection-start-column="0" selection-end-line="13" selection-end-column="0" />
+            <folding />
+          </first_editor>
+          <second_editor />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/test/abi.decodeParameter.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="454">
+          <caret line="33" column="128" lean-forward="false" selection-start-line="33" selection-start-column="128" selection-end-line="33" selection-end-column="128" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/README.md">
+      <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
+        <state split_layout="SPLIT">
+          <first_editor relative-caret-position="290">
+            <caret line="139" column="1" lean-forward="false" selection-start-line="139" selection-start-column="1" selection-end-line="139" selection-end-column="1" />
+            <folding>
+              <marker date="1520950349772" expanded="true" signature="1590:1647" ph="{...}" />
+            </folding>
+          </first_editor>
+          <second_editor />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/packages/web3-providers-ws/src/index.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="199">
+          <caret line="68" column="43" lean-forward="false" selection-start-line="68" selection-start-column="22" selection-end-line="68" selection-end-column="43" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/test/helpers/test.subscription.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="173">
+          <caret line="20" column="56" lean-forward="true" selection-start-line="20" selection-start-column="56" selection-end-line="20" selection-end-column="56" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/packages/web3-core/src/index.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="212">
+          <caret line="17" column="17" lean-forward="true" selection-start-line="17" selection-start-column="17" selection-end-line="17" selection-end-column="17" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/test/utils.utf8ToHex.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="180">
+          <caret line="12" column="31" lean-forward="false" selection-start-line="12" selection-start-column="31" selection-end-line="12" selection-end-column="31" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/test/utils.toHex.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="40">
+          <caret line="14" column="35" lean-forward="true" selection-start-line="14" selection-start-column="35" selection-end-line="14" selection-end-column="35" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/test/utils.toUtf8.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="255">
+          <caret line="17" column="47" lean-forward="false" selection-start-line="17" selection-start-column="41" selection-end-line="17" selection-end-column="47" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/packages/web3-core-promievent/package.json">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="135">
+          <caret line="9" column="31" lean-forward="false" selection-start-line="9" selection-start-column="8" selection-end-line="9" selection-end-column="31" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/package.json">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="151">
+          <caret line="88" column="1" lean-forward="false" selection-start-line="88" selection-start-column="1" selection-end-line="88" selection-end-column="1" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/test/contract.encodeABI.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="135">
+          <caret line="9" column="5" lean-forward="true" selection-start-line="9" selection-start-column="5" selection-end-line="9" selection-end-column="5" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/packages/web3-utils/src/utils.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="311">
+          <caret line="209" column="0" lean-forward="false" selection-start-line="209" selection-start-column="0" selection-end-line="209" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/packages/web3-core-requestmanager/src/index.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-1623">
+          <caret line="104" column="11" lean-forward="false" selection-start-line="104" selection-start-column="11" selection-end-line="104" selection-end-column="11" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/test/eth.subscribe.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="524">
+          <caret line="476" column="20" lean-forward="false" selection-start-line="476" selection-start-column="20" selection-end-line="476" selection-end-column="20" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/packages/web3-core-subscriptions/src/subscription.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="296">
+          <caret line="175" column="19" lean-forward="false" selection-start-line="175" selection-start-column="19" selection-end-line="175" selection-end-column="19" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/packages/web3-utils/src/index.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="454">
+          <caret line="84" column="2" lean-forward="false" selection-start-line="84" selection-start-column="2" selection-end-line="84" selection-end-column="2" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/test/method.buildCall.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-86">
+          <caret line="665" column="32" lean-forward="false" selection-start-line="665" selection-start-column="32" selection-end-line="665" selection-end-column="32" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/packages/web3-core-method/src/index.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="351">
+          <caret line="405" column="58" lean-forward="true" selection-start-line="405" selection-start-column="58" selection-end-line="405" selection-end-column="58" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/test/contract.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-3048">
+          <caret line="401" column="0" lean-forward="false" selection-start-line="401" selection-start-column="0" selection-end-line="401" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/lib/version.json">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="15">
+          <caret line="1" column="22" lean-forward="false" selection-start-line="1" selection-start-column="22" selection-end-line="1" selection-end-column="22" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+  </component>
+  <component name="masterDetails">
+    <states>
+      <state key="ScopeChooserConfigurable.UI">
+        <settings>
+          <last-edited>Dist</last-edited>
+          <splitter-proportions>
+            <option name="proportions">
+              <list>
+                <option value="0.2" />
+              </list>
+            </option>
+          </splitter-proportions>
+        </settings>
+      </state>
+    </states>
+  </component>
+</project>

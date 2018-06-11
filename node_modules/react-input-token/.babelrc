@@ -1,0 +1,23 @@
+{
+    "presets": [
+        "react",
+        "es2015",
+        "stage-0"
+    ],
+    "plugins": [
+        "transform-decorators-legacy",
+        "transform-function-bind"
+    ],
+    "env": {
+        "production": {
+            "presets": [
+                "react-optimize"
+            ],
+            "plugins": [
+                "transform-react-constant-elements",
+                "transform-react-inline-elements",
+                "transform-react-remove-prop-types"
+            ]
+        }
+    }
+}

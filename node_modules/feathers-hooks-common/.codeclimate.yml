@@ -1,0 +1,14 @@
+languages:
+  JavaScript: true
+engines:
+  duplication:
+    enabled: false
+    # need this: Config Error: Unable to run the duplication engine without any languages enabled.
+    config:
+      languages:
+      - javascript
+ratings:
+  paths:
+  - "**.js"
+exclude_paths:
+- "lib/"

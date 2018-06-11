@@ -1,0 +1,6 @@
+---
+extends: eslint-config-semistandard
+env:
+  es6: true
+  node: true
+  mocha: true
