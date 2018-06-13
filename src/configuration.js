@@ -38,7 +38,7 @@ const configurations = {
     lppCampaignFactoryAddress: '0x2BCaFb4772Ca5525c7b83cEBdd5C48b99183f9f6',
     lppCappedMilestoneFactoryAddress: '0xb5456EFF4aaA44C60dEb1743caD127Ce1D101466',
     givethBridgeAddress: '0x8588EE5E97e06bA863FDB2EBc5b523246D459638',
-    foreignGivethBridgeAddress: '0xE91Bf42cb524afa9f01AB56E1804eD162C643d05',
+    foreignGivethBridgeAddress: '0x8F5C03C2249Cd35742Efb6c2ed084E4e8F1773eE',
     tokenAddresses: { 'Ropsten ETH': '0x86c635C10Adf6F982222006B9cc984E1Ccd9c1fC' },
     etherscan: 'https://rinkeby.etherscan.io/',
     foreignEtherscan: 'https://ropsten.etherscan.io/',
