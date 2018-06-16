@@ -32,6 +32,7 @@ class UserWallet extends Component {
     this.state = {
       isLoadingWallet: true,
       isLoadingTokens: true,
+      insufficientBalance: false,
       tokens: [],
       hasError: false,
     };
@@ -39,7 +40,8 @@ class UserWallet extends Component {
 
   componentWillMount() {
     isLoggedIn(this.props.currentUser).then(() => {
-      this.setState({ isLoadingWallet: false });
+      const insufficientBalance = this.props.wallet.getBalance() < React.minimumWalletBalance;
+      this.setState({ isLoadingWallet: false, insufficientBalance });
 
       // load tokens
       feathersClient
@@ -102,12 +104,12 @@ class UserWallet extends Component {
       });
   }
 
-  canWithdrawToken() {
+  hasTokenBalance() {
     return Object.values(config.tokenAddresses).some(a => this.props.wallet.getTokenBalance(a) > 0);
   }
 
   render() {
-    const { isLoadingWallet, isLoadingTokens, tokens, hasError } = this.state;
+    const { isLoadingWallet, isLoadingTokens, tokens, insufficientBalance, hasError } = this.state;
     const { etherScanUrl, tokenAddresses } = config;
 
     return (
@@ -130,39 +132,72 @@ class UserWallet extends Component {
               <div>
                 <p>{this.props.currentUser.address}</p>
                 <p>
-                  {' '}
-                  <strong>Rinkeby ETH</strong> balance: {this.props.wallet.getBalance()} ETH
+                  <strong>{config.homeNetworkName} ETH</strong> balance:{' '}
+                  {this.props.wallet.getHomeBalance()} ETH
                 </p>
-                {Object.keys(tokenAddresses).map(
-                  t =>
-                    etherScanUrl ? (
-                      <p>
-                        <a
-                          href={`${etherScanUrl}token/${tokenAddresses[t]}?a=${
-                            this.props.currentUser.address
-                          }`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          <strong>{t}</strong>
-                        </a>
-                        balance: {this.props.wallet.getTokenBalance(tokenAddresses[t])}
-                      </p>
-                    ) : (
-                      <p>
-                        <strong>{t}</strong> balance:{' '}
-                        {this.props.wallet.getTokenBalance(tokenAddresses[t])}
-                      </p>
-                    ),
+
+                {insufficientBalance && (
+                  <div className="alert alert-warning">
+                    <p>
+                      We noticed that you do not have a sufficient balance in your wallet. Your
+                      wallet should be automatically topped up, however if you are a frequent user
+                      or use this wallet on the <strong>{config.foreignNetworkName}</strong>{' '}
+                      network, we may not be able to replenish it fast enough.
+                    </p>
+                    <p>
+                      <strong>{config.foreignNetworkName}</strong> balance:{' '}
+                      {this.props.wallet.getBalance()} ETH
+                    </p>
+                    <p>
+                      You can visit the <a href="https://faucet.rinkeby.io/">faucet</a> to get more
+                      ETH
+                    </p>
+                  </div>
+                )}
+
+                <p>
+                  <BackupWallet wallet={this.props.wallet} />
+                </p>
+
+                {this.hasTokenBalance() && (
+                  <div>
+                    {Object.keys(tokenAddresses)
+                      .filter(t => this.props.wallet.getTokenBalance(tokenAddresses[t]) > 0)
+                      .map(
+                        t =>
+                          etherScanUrl ? (
+                            <p>
+                              <a
+                                href={`${etherScanUrl}token/${tokenAddresses[t]}?a=${
+                                  this.props.currentUser.address
+                                }`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                              >
+                                <strong>Bridged - {t}</strong>
+                              </a>
+                              balance: {this.props.wallet.getTokenBalance(tokenAddresses[t])}
+                            </p>
+                          ) : (
+                            <p>
+                              Bridged - <strong>{t}</strong> balance:{' '}
+                              {this.props.wallet.getTokenBalance(tokenAddresses[t])}
+                            </p>
+                          ),
+                      )}
+                    <div className="alert alert-warning">
+                      We noticed you have some tokens on the{' '}
+                      <strong>{config.foreignNetworkName}</strong> network that have not been
+                      transfered across the bridge to the <strong>{config.homeNetworkName}</strong>{' '}
+                      network.
+                    </div>
+                    <BridgeWithdrawButton
+                      wallet={this.props.wallet}
+                      currentUser={this.props.currentUser}
+                    />
+                  </div>
                 )}
                 {/* <WithdrawButton wallet={this.props.wallet} currentUser={this.props.currentUser} /> */}
-                {this.canWithdrawToken() && (
-                  <BridgeWithdrawButton
-                    wallet={this.props.wallet}
-                    currentUser={this.props.currentUser}
-                  />
-                )}
-                <BackupWallet wallet={this.props.wallet} />
 
                 {isLoadingTokens && <Loader className="small" />}
 

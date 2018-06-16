@@ -15,7 +15,6 @@ import LoaderButton from '../../components/LoaderButton';
  *
  * @param handleWalletChange  Function that saves new wallet for the application
  * @param history             Browser history object
- * @param provider
  */
 class ChangeAccount extends Component {
   constructor(props) {
@@ -72,7 +71,7 @@ class ChangeAccount extends Component {
       if ('Crypto' in parsedKeystore) parsedKeystore.crypto = parsedKeystore.Crypto;
 
       // Attempt to load and decrypt the parsed wallet
-      GivethWallet.loadWallet(parsedKeystore, this.props.provider, password)
+      GivethWallet.loadWallet(parsedKeystore, password)
         .then(w => {
           wallet = w;
           return wallet;
@@ -178,12 +177,7 @@ ChangeAccount.propTypes = {
   history: PropTypes.shape({
     push: PropTypes.func.isRequired,
   }).isRequired,
-  provider: PropTypes.shape({}),
   handleWalletChange: PropTypes.func.isRequired,
-};
-
-ChangeAccount.defaultProps = {
-  provider: {},
 };
 
 export default ChangeAccount;

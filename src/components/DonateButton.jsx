@@ -7,15 +7,14 @@ import { MiniMeToken } from 'minimetoken';
 import { Form, Input } from 'formsy-react-components';
 
 import getNetwork from '../lib/blockchain/getNetwork';
-import getRopstenNetwork from '../lib/blockchain/getRopstenNetwork';
 import { feathersClient } from '../lib/feathersClient';
-import { takeActionAfterWalletUnlock, confirmBlockchainTransaction } from '../lib/middleware';
 import User from '../models/User';
 import { displayTransactionError, getGasPrice } from '../lib/helpers';
 import GivethWallet from '../lib/blockchain/GivethWallet';
 import { getWeb3, getHomeWeb3 } from '../lib/blockchain/getWeb3';
 import LoaderButton from './LoaderButton';
 import ErrorPopup from './ErrorPopup';
+import config from '../configuration';
 
 class DonateButton extends React.Component {
   constructor() {
@@ -26,8 +25,7 @@ class DonateButton extends React.Component {
       formIsValid: false,
       amount: '',
       modalVisible: false,
-      // gasPrice: utils.toWei('4', 'gwei'),
-      gasPrice: utils.toWei('10', 'gwei'),
+      gasPrice: 10,
     };
 
     this.submit = this.submit.bind(this);
@@ -35,6 +33,11 @@ class DonateButton extends React.Component {
   }
 
   componentDidMount() {
+    getGasPrice().then(gasPrice =>
+      this.setState({
+        gasPrice: utils.fromWei(gasPrice, 'gwei'),
+      }),
+    );
     // getNetwork().then(network => {
     //   const { liquidPledging } = network;
     //   const donate = liquidPledging.$contract.methods.donate(0, this.props.model.adminId);
@@ -85,10 +88,8 @@ class DonateButton extends React.Component {
 
   //     }
   //   });
-  //     // takeActionAfterWalletUnlock(this.props.wallet, () => {
   //       // this.setState({ isSaving: true });
   //       // this.donateWithGiveth(model);
-  //     // });
   //   } else {
   //     React.swal({
   //       title: "You're almost there...",
@@ -122,9 +123,7 @@ class DonateButton extends React.Component {
 
     if (this.props.currentUser) {
       this.donateWithBridge(model);
-      // takeActionAfterWalletUnlock(this.props.wallet, () => {
-      // this.setState({ isSaving: true });
-      // });
+      this.setState({ isSaving: true });
     } else {
       React.swal({
         title: "You're almost there...",
@@ -151,143 +150,66 @@ class DonateButton extends React.Component {
 
     Promise.all([getNetwork(), getHomeWeb3()]).then(([network, homeWeb3]) => {
       const { givethBridge } = network;
-      const { wallet } = this.props;
       const etherScanUrl = network.foreignEtherscan;
-      const to = givethBridge.$address;
       const value = utils.toWei(model.amount);
 
-      // 25400 gas will often be rejected by Ropsten!
-      // so increased this a lot to be more reliable for testing
-      const gas = 250000;
-      const data = currentUser.giverId
-        ? givethBridge.$contract.methods.donate(currentUser.giverId, adminId).encodeABI()
-        : givethBridge.$contract.methods
-            .donateAndCreateGiver(currentUser.address, adminId)
-            .encodeABI();
+      // tx only requires 25400 gas, but for some reason we get an out of gas
+      // error in web3 with that amount (even though the tx succeeds)
+      const opts = { from: currentUser.address, value, gas: 30400 };
+      const method =
+        currentUser.giverId && currentUser.giverId !== '0'
+          ? givethBridge.donate(currentUser.giverId, adminId, opts)
+          : givethBridge.donateAndCreateGiver(currentUser.address, adminId, opts);
 
-      Promise.all([
-        homeWeb3.eth.net.getId(),
-        homeWeb3.eth.getTransactionCount(wallet.getAddresses()[0]),
-      ])
-        .then(([id, nonce]) => {
-          // construct transaction
-          const tx = {
-            from: this.props.currentUser.address,
-            to,
-            value,
-            gas,
-            gasPrice,
-            data,
-            nonce,
-            chainId: id,
-          };
+      let txHash;
+      method
+        .on('transactionHash', transactionHash => {
+          txHash = transactionHash;
+          this.closeDialog();
 
-          // sign transaction
-          wallet
-            .signTransaction(tx)
-            .then(signedTx => {
-              console.log('signedTx', signedTx);
-
-              // send transaction
-              homeWeb3.eth
-                .sendSignedTransaction(signedTx.rawTransaction)
-                .on('transactionHash', txHash => {
-                  console.log('transactionHash', txHash);
-
-                  this.closeDialog();
-
-                  // Get the tx hash
-                  homeWeb3.eth.getTransaction(txHash).then(data => {
-                    React.toast.info(
-                      <p>
-                        Awesome! Your donation is pending...<br />
-                        <a
-                          href={`${etherScanUrl}tx/${txHash}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          View transaction
-                        </a>
-                      </p>,
-                    );
-                  });
-
-                  // As Infura doesn't provide receipt events
-                  // we poll for the receipt ourselves
-                  const _getTransactionReceiptMined = (txHash, blocks) => {
-                    let count = 0;
-                    const FIFTEEN_SECONDS = 1000 * 15; // the average blocktime
-
-                    const _getReceiptAsync = (resolve, reject) => {
-                      if (count > blocks) {
-                        return reject(`Your donation was not mined within ${blocks} blocks`);
-                      }
-
-                      homeWeb3.eth.getTransactionReceipt(txHash, (error, receipt) => {
-                        console.log('receipt', error, receipt);
-                        if (error) {
-                          return reject(error);
-                        } else if (receipt == null) {
-                          setTimeout(() => _getReceiptAsync(resolve, reject), FIFTEEN_SECONDS);
-                        } else {
-                          return resolve(receipt);
-                        }
-                      });
-
-                      count++;
-                    };
-                    return new Promise(_getReceiptAsync);
-                  };
-
-                  _getTransactionReceiptMined(txHash, 10)
-                    .then(receipt => {
-                      React.toast.success(
-                        <p>
-                          Woot! Woot! Donation received. You are awesome!<br />
-                          <a
-                            href={`${etherScanUrl}tx/${txHash}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                          >
-                            View transaction
-                          </a>
-                        </p>,
-                      );
-                    })
-                    .catch(e => {
-                      console.log('receipt error', e);
-                      React.toast.info(
-                        <p>
-                          {`${e}`} Please check the transaction on Etherscan to confirm.<br />
-                          <a
-                            href={`${etherScanUrl}tx/${txHash}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                          >
-                            View transaction
-                          </a>
-                        </p>,
-                      );
-                    });
-                });
-            })
-            .catch(e => {
-              console.log('could not send signedTx', e);
-
-              // with ropsten infura, this catch always throws, so we filter that one out
-              if (!e.message.includes('newBlockHeaders')) {
-                ErrorPopup('Something went wrong with the transaction. Please try again', e);
-              }
-            });
+          React.toast.info(
+            <p>
+              Awesome! Your donation is pending...<br />
+              <a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">
+                View transaction
+              </a>
+            </p>,
+          );
         })
-        // with ropsten infura, this catch always throws
+        .then(receipt => {
+          React.toast.success(
+            <p>
+              Woot! Woot! Donation received. You are awesome!<br />
+              Note: because we are bridging networks, there may be a delay before you donation
+              appears.<br />
+              <a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">
+                View transaction
+              </a>
+            </p>,
+          );
+        })
         .catch(e => {
-          console.error(e);
+          e = !(e instanceof Error) ? JSON.stringify(e, null, 2) : e;
+          ErrorPopup(
+            'Something went wrong with your donation.',
+            `${etherScanUrl}tx/${txHash} => ${e}`,
+          );
         });
 
       return;
 
-      const query = `?to=${to}&value=${value}&gasLimit=${gas}&data=${data}&gasPrice=${gasPrice}`;
+      // const gas = 30400;
+      // const data = currentUser.giverId
+      // ? givethBridge.$contract.methods.donate(currentUser.giverId, adminId).encodeABI()
+      // : givethBridge.$contract.methods
+      // .donateAndCreateGiver(currentUser.address, adminId)
+      // .encodeABI();
+
+      const to = givethBridge.$address;
+      const query = `?to=${to}&value=${value}&gasLimit=25400&data=${data}&gasPrice=${utils.toWei(
+        gasPrice,
+        'gwei',
+      )}`;
       this.setState({
         modalVisible: true,
       });
@@ -455,50 +377,46 @@ class DonateButton extends React.Component {
 
     let txHash;
     let etherScanUrl;
-    const doDonate = () =>
-      Promise.all([getNetwork(), getWeb3(), getHomeWeb3()])
-        .then(([network, web3, ropstenWeb3]) => {
-          const { tokenAddress, liquidPledgingAddress } = network;
-          etherScanUrl = network.etherscan;
-          const token = new MiniMeToken(web3, tokenAddress);
+    Promise.all([getNetwork(), getWeb3(), getHomeWeb3()])
+      .then(([network, web3, ropstenWeb3]) => {
+        const { tokenAddress, liquidPledgingAddress } = network;
+        etherScanUrl = network.etherscan;
+        const token = new MiniMeToken(web3, tokenAddress);
 
-          const giverId = this.props.currentUser.giverId || '0';
-          const { adminId } = this.props.model;
+        const giverId = this.props.currentUser.giverId || '0';
+        const { adminId } = this.props.model;
 
-          const data = `0x${utils.padLeft(utils.toHex(giverId).substring(2), 16)}${utils.padLeft(
-            utils.toHex(adminId).substring(2),
-            16,
-          )}`;
+        const data = `0x${utils.padLeft(utils.toHex(giverId).substring(2), 16)}${utils.padLeft(
+          utils.toHex(adminId).substring(2),
+          16,
+        )}`;
 
-          return token
-            .approveAndCall(liquidPledgingAddress, amount, data, {
-              from: this.props.currentUser.address,
-              gas: 1000000,
-            })
-            .once('transactionHash', hash => {
-              txHash = hash;
-              donate(etherScanUrl, txHash);
-            });
-        })
-        .then(() => {
-          React.toast.success(
-            <p>
-              Your donation has been confirmed!<br />
-              <a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">
-                View transaction
-              </a>
-            </p>,
-          );
-        })
-        .catch(e => {
-          console.error(e);
-          displayTransactionError(txHash, etherScanUrl);
+        return token
+          .approveAndCall(liquidPledgingAddress, amount, data, {
+            from: this.props.currentUser.address,
+            gas: 1000000,
+          })
+          .once('transactionHash', hash => {
+            txHash = hash;
+            donate(etherScanUrl, txHash);
+          });
+      })
+      .then(() => {
+        React.toast.success(
+          <p>
+            Your donation has been confirmed!<br />
+            <a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">
+              View transaction
+            </a>
+          </p>,
+        );
+      })
+      .catch(e => {
+        console.error(e);
+        displayTransactionError(txHash, etherScanUrl);
 
-          this.setState({ isSaving: false });
-        });
-
-    // Donate
-    confirmBlockchainTransaction(doDonate, () => this.setState({ isSaving: false }));
+        this.setState({ isSaving: false });
+      });
   }
 
   render() {
@@ -533,9 +451,9 @@ class DonateButton extends React.Component {
             )}
 
             <p>
-              {/* Your wallet balance: <em>&#926;{wallet.getTokenBalance()}</em> */}
-              {/* <br /> */}
-              Gas price: <em>{utils.fromWei(gasPrice, 'gwei') * 10} Gwei</em>
+              Your {config.homeNetworkName} wallet balance: <em>&#926;{wallet.getHomeBalance()}</em>
+              <br />
+              Gas price: <em>{gasPrice} Gwei</em>
             </p>
 
             <Form
@@ -588,14 +506,14 @@ class DonateButton extends React.Component {
                 Donate with Giveth
               </LoaderButton>
 
-              {/* <a
+              {/*<a
                  className={`btn btn-secondary ${isSaving ? 'disabled' : ''}`}
                  disabled={isSaving}
                  href={`${MEWurl}&value=${mewAmount}#send-transaction`}
                  target="_blank"
                  rel="noopener noreferrer"
                >
-                Donate with MyEtherWallet
+                Manually Donate (advanced)
               </a> */}
             </Form>
           </SkyLightStateless>

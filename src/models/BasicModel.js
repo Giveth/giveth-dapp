@@ -42,7 +42,7 @@ class BasicModel extends Model {
     this.image = image;
     this.newImage = false;
     this.txHash = txHash;
-    this.owner = owner;
+    this.owner = owner || { address: '0x0' }; // FIXME: Check in feathers, owner should be a model
     this.reviewer = reviewer;
     this.totalDonated = totalDonated;
     this.donationCount = donationCount;

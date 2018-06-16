@@ -3,6 +3,7 @@ import Model from './Model';
 /**
  * The DApp User model
  *
+ * @attribute id          ID of the user in feathers
  * @attribute address     Ethereum address of the user
  * @attribute avatar      URL to user avatar
  * @attribute commitTime
@@ -12,15 +13,29 @@ import Model from './Model';
  * @attribute name        Name of the user
  */
 class User extends Model {
-  constructor({ address, avatar, commitTime, email, giverId, linkedin, name }) {
-    super();
-    this.address = address;
-    this.avatar = avatar;
-    this.commitTime = commitTime;
-    this.email = email;
-    this.giverId = giverId;
-    this.linkedin = linkedin;
-    this.name = name;
+  constructor(data) {
+    super(data);
+
+    if (data) {
+      this.id = data._id || data.id; //eslint-disable-line
+      this.address = data.address;
+      this.avatar = data.avatar;
+      this.commitTime = data.commitTime;
+      this.email = data.email;
+      this.giverId = data.giverId;
+      this.linkedin = data.linkedin;
+      this.name = data.name;
+      this.updatedAt = data.updatedAt;
+    }
+  }
+
+  get id() {
+    return this.myId;
+  }
+
+  set id(value) {
+    this.checkType(value, ['undefined', 'string'], 'id');
+    this.myId = value;
   }
 
   get address() {
@@ -84,6 +99,15 @@ class User extends Model {
   set name(value) {
     this.checkType(value, ['undefined', 'string'], 'name');
     this.myName = value;
+  }
+
+  get updatedAt() {
+    return this.myUpdatedAt;
+  }
+
+  set updatedAt(value) {
+    this.checkType(value, ['undefined', 'string'], 'updatedAt');
+    this.myUpdatedAt = value;
   }
 }
 

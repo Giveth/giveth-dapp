@@ -2,12 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 
-import {
-  isLoggedIn,
-  redirectAfterWalletUnlock,
-  takeActionAfterWalletUnlock,
-  checkWalletBalance,
-} from '../../lib/middleware';
+import { isLoggedIn, redirectAfterWalletUnlock, checkWalletBalance } from '../../lib/middleware';
 import Loader from '../Loader';
 import User from '../../models/User';
 import { getTruncatedText, convertEthHelper } from '../../lib/helpers';
@@ -46,59 +41,55 @@ class MyCampaigns extends Component {
   }
 
   editCampaign(id) {
-    takeActionAfterWalletUnlock(this.props.wallet, () => {
-      checkWalletBalance(this.props.wallet).then(() => {
-        React.swal({
-          title: 'Edit Campaign?',
-          text: 'Are you sure you want to edit this Campaign?',
-          icon: 'warning',
-          dangerMode: true,
-          buttons: ['Cancel', 'Yes, edit'],
-        }).then(isConfirmed => {
-          if (isConfirmed) redirectAfterWalletUnlock(`/campaigns/${id}/edit`, this.props.wallet);
-        });
+    checkWalletBalance(this.props.wallet).then(() => {
+      React.swal({
+        title: 'Edit Campaign?',
+        text: 'Are you sure you want to edit this Campaign?',
+        icon: 'warning',
+        dangerMode: true,
+        buttons: ['Cancel', 'Yes, edit'],
+      }).then(isConfirmed => {
+        if (isConfirmed) redirectAfterWalletUnlock(`/campaigns/${id}/edit`, this.props.wallet);
       });
     });
   }
 
   cancelCampaign(campaign) {
-    takeActionAfterWalletUnlock(this.props.wallet, () => {
-      checkWalletBalance(this.props.wallet).then(() => {
-        React.swal({
-          title: 'Cancel Campaign?',
-          text: 'Are you sure you want to cancel this Campaign?',
-          icon: 'warning',
-          dangerMode: true,
-          buttons: ['Dismiss', 'Yes, cancel'],
-        }).then(isConfirmed => {
-          if (isConfirmed) {
-            const afterCreate = url => {
-              const msg = (
-                <p>
-                  Campaign cancelation pending...<br />
-                  <a href={url} target="_blank" rel="noopener noreferrer">
-                    View transaction
-                  </a>
-                </p>
-              );
-              React.toast.info(msg);
-            };
+    checkWalletBalance(this.props.wallet).then(() => {
+      React.swal({
+        title: 'Cancel Campaign?',
+        text: 'Are you sure you want to cancel this Campaign?',
+        icon: 'warning',
+        dangerMode: true,
+        buttons: ['Dismiss', 'Yes, cancel'],
+      }).then(isConfirmed => {
+        if (isConfirmed) {
+          const afterCreate = url => {
+            const msg = (
+              <p>
+                Campaign cancelation pending...<br />
+                <a href={url} target="_blank" rel="noopener noreferrer">
+                  View transaction
+                </a>
+              </p>
+            );
+            React.toast.info(msg);
+          };
 
-            const afterMined = url => {
-              const msg = (
-                <p>
-                  The campaign has been cancelled!<br />
-                  <a href={url} target="_blank" rel="noopener noreferrer">
-                    View transaction
-                  </a>
-                </p>
-              );
-              React.toast.success(msg);
-            };
+          const afterMined = url => {
+            const msg = (
+              <p>
+                The campaign has been cancelled!<br />
+                <a href={url} target="_blank" rel="noopener noreferrer">
+                  View transaction
+                </a>
+              </p>
+            );
+            React.toast.success(msg);
+          };
 
-            campaign.cancel(this.props.currentUser.address, afterCreate, afterMined);
-          }
-        });
+          campaign.cancel(this.props.currentUser.address, afterCreate, afterMined);
+        }
       });
     });
   }

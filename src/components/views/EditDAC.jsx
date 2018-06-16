@@ -7,12 +7,7 @@ import QuillFormsy from '../QuillFormsy';
 import FormsyImageUploader from './../FormsyImageUploader';
 import GoBackButton from '../GoBackButton';
 import { isOwner, getTruncatedText, history } from '../../lib/helpers';
-import {
-  isAuthenticated,
-  checkWalletBalance,
-  isInWhitelist,
-  confirmBlockchainTransaction,
-} from '../../lib/middleware';
+import { isAuthenticated, checkWalletBalance, isInWhitelist } from '../../lib/middleware';
 import LoaderButton from '../../components/LoaderButton';
 
 import DACservice from '../../services/DAC';
@@ -129,10 +124,7 @@ class EditDAC extends Component {
     };
 
     // Save the DAC
-    confirmBlockchainTransaction(
-      () => this.state.dac.save(afterCreate, afterMined),
-      () => this.setState({ isSaving: false }),
-    );
+    this.state.dac.save(afterCreate, afterMined);
   }
 
   toggleFormValid(state) {

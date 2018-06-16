@@ -15,17 +15,10 @@ import {
   isOwner,
   getRandomWhitelistAddress,
   getTruncatedText,
-  getGasPrice,
   getStartOfDayUTC,
 } from '../../lib/helpers';
-import {
-  isAuthenticated,
-  checkWalletBalance,
-  isInWhitelist,
-  confirmBlockchainTransaction,
-} from '../../lib/middleware';
+import { isAuthenticated, checkWalletBalance, isInWhitelist } from '../../lib/middleware';
 import getNetwork from '../../lib/blockchain/getNetwork';
-import { getWeb3 } from '../../lib/blockchain/getWeb3';
 import LoaderButton from '../../components/LoaderButton';
 import User from '../../models/User';
 import GivethWallet from '../../lib/blockchain/GivethWallet';
@@ -87,6 +80,7 @@ class EditMilestone extends Component {
       date: getStartOfDayUTC().subtract(1, 'd'),
       fiatTypes: [
         { value: 'BRL', title: 'BRL' },
+        { value: 'CAD', title: 'CAD' },
         { value: 'CHF', title: 'CHF' },
         { value: 'CZK', title: 'CZK' },
         { value: 'ETH', title: 'ETH' },
@@ -148,6 +142,7 @@ class EditMilestone extends Component {
                   date,
                   itemizeState: milestone.items && milestone.items.length > 0,
                   selectedFiatType: milestone.selectedFiatType || 'EUR',
+                  showRecipientAddress: !!milestone.recipientAddress,
                   campaignTitle: milestone.campaign.title,
                   campaignProjectId: milestone.campaign.projectId,
                   campaignReviewerAddress: milestone.campaign.reviewerAddress,
@@ -442,8 +437,8 @@ class EditMilestone extends Component {
           );
         } else {
           let etherScanUrl;
-          Promise.all([getNetwork(), getWeb3(), getGasPrice()])
-            .then(([network, , gasPrice]) => {
+          Promise.all([getNetwork()])
+            .then(([network]) => {
               etherScanUrl = network.etherscan;
 
               const from = this.props.currentUser.address;
@@ -472,14 +467,6 @@ class EditMilestone extends Component {
               uint _reviewTimeoutSeconds
               * */
 
-              console.log(
-                title,
-                recipientAddress,
-                reviewerAddress,
-                campaignReviewerAddress,
-                maxAmount,
-              );
-
               network.lppCappedMilestoneFactory
                 .newMilestone(
                   title,
@@ -494,7 +481,7 @@ class EditMilestone extends Component {
                   maxAmount,
                   Object.values(config.tokenAddresses)[0], // TODO make this a form param
                   5 * 24 * 60 * 60, // 5 days in seconds
-                  { from, gasPrice, $extraGas: 200000 },
+                  { from, $extraGas: 200000 },
                 )
                 .on('transactionHash', hash => {
                   txHash = hash;
@@ -535,7 +522,9 @@ class EditMilestone extends Component {
                   );
                 });
             })
-            .catch(() => {
+            .catch(err => {
+              if (txHash && err.message && err.message.includes('unknown transaction')) return; // bug in web3 seems to constantly fail due to this error, but the tx is correct
+              this.setState({ isSaving: false });
               ErrorPopup(
                 'Something went wrong with the transaction. Is your wallet unlocked?',
                 `${etherScanUrl}tx/${txHash}`,
@@ -624,9 +613,6 @@ class EditMilestone extends Component {
       }).then(isConfirmed => {
         if (isConfirmed) saveMilestone();
       });
-    } else if (this.props.isNew) {
-      // Save the Milestone
-      confirmBlockchainTransaction(() => saveMilestone(), () => this.setState({ isSaving: false }));
     } else {
       saveMilestone();
     }

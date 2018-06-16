@@ -39,8 +39,8 @@ class UnlockWallet extends Component {
                 () => {
                   this.props.onClose();
 
-                  // if requested, redirect after successfully unlocking the wallet
-                  if (this.props.redirectAfter) this.props.history.push(this.props.redirectAfter);
+                  // if requested, take action after successfully unlocking the wallet
+                  if (this.props.actionAfter) this.props.actionAfter();
                 },
               );
             })
@@ -100,14 +100,11 @@ UnlockWallet.propTypes = {
   wallet: PropTypes.instanceOf(GivethWallet).isRequired,
   onClose: PropTypes.func.isRequired,
   onCloseClicked: PropTypes.func.isRequired,
-  redirectAfter: PropTypes.string,
-  history: PropTypes.shape({
-    push: PropTypes.func.isRequired,
-  }).isRequired,
+  actionAfter: PropTypes.func,
 };
 
 UnlockWallet.defaultProps = {
-  redirectAfter: '',
+  actionAfter: undefined,
 };
 
 export default withRouter(UnlockWallet);
