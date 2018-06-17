@@ -139,7 +139,7 @@ class DACservice {
           etherScanUrl = network.etherscan;
 
           lppDacFactory
-            .newDac(dac.title, '', 0, dac.tokenName, dac.tokenSymbol, from, from, {
+            .newDac(dac.title, '', 0, dac.tokenName, dac.tokenSymbol, {
               from,
             })
             .once('transactionHash', hash => {

@@ -179,6 +179,7 @@ class EditMilestone extends Component {
                   campaignTitle: campaign.title,
                   campaignReviewerAddress: campaign.reviewerAddress,
                   campaignOwnerAddress: campaign.ownerAddress,
+                  campaignProjectId: campaign.projectId,
                 });
               }
             })
@@ -449,6 +450,7 @@ class EditMilestone extends Component {
                 campaignReviewerAddress,
                 maxAmount,
               } = constructedModel;
+              const parentProjectId = this.state.campaignProjectId;
 
               /**
               lppCappedMilestoneFactory params
@@ -457,8 +459,6 @@ class EditMilestone extends Component {
               string _url,
               uint64 _parentProject,
               address _reviewer,
-              address _escapeHatchCaller,
-              address _escapeHatchDestination,
               address _recipient,
               address _campaignReviewer,
               address _milestoneManager,
@@ -471,10 +471,8 @@ class EditMilestone extends Component {
                 .newMilestone(
                   title,
                   '',
-                  0,
+                  parentProjectId,
                   reviewerAddress,
-                  from,
-                  from,
                   recipientAddress,
                   campaignReviewerAddress,
                   from,
