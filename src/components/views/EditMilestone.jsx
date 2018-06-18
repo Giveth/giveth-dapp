@@ -861,9 +861,9 @@ class EditMilestone extends Component {
                                 label="Maximum amount in fiat"
                                 value={fiatAmount}
                                 placeholder="10"
-                                validations="greaterEqualTo:1"
+                                validations="greaterThan:0"
                                 validationErrors={{
-                                  greaterEqualTo: 'Minimum value must be at least 1',
+                                  greaterEqualTo: 'Minimum value must be greater than 0',
                                 }}
                                 disabled={projectId}
                                 onChange={this.setMaxAmount}
@@ -894,9 +894,9 @@ class EditMilestone extends Component {
                                 label="Maximum amount in ETH"
                                 value={maxAmount}
                                 placeholder="10"
-                                validations="greaterEqualTo:0.01"
+                                validations="greaterThan:0"
                                 validationErrors={{
-                                  greaterEqualTo: 'Minimum value must be at least 0.01 ETH',
+                                  greaterEqualTo: 'Minimum value must be greater than 0',
                                 }}
                                 required
                                 disabled={projectId}
