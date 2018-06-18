@@ -18,18 +18,24 @@ export const authenticate = wallet => {
     address: wallet.getAddresses()[0],
   };
 
-  return new Promise((resolve, reject) => {
-    feathersClient.authenticate(authData).catch(response => {
-      // normal flow will issue a 401 with a challenge message we need to sign and send to
-      // verify our identity
-      if (response.code === 401 && response.data.startsWith('Challenge =')) {
-        const msg = response.data.replace('Challenge =', '').trim();
+  return feathersClient.passport
+    .getJWT()
+    .then(accessToken => {
+      if (accessToken) return feathersClient.logout();
+      return undefined;
+    })
+    .then(() =>
+      feathersClient.authenticate(authData).catch(response => {
+        // normal flow will issue a 401 with a challenge message we need to sign and send to
+        // verify our identity
+        if (response.code === 401 && response.data.startsWith('Challenge =')) {
+          const msg = response.data.replace('Challenge =', '').trim();
 
-        return resolve(wallet.signMessage(msg).signature);
-      }
-      return reject(response);
-    });
-  })
+          return wallet.signMessage(msg).signature;
+        }
+        throw new Error(response);
+      }),
+    )
     .then(signature => {
       authData.signature = signature;
       return feathersClient.authenticate(authData);
@@ -37,7 +43,7 @@ export const authenticate = wallet => {
     .then(response => response.accessToken);
 };
 
-export const getTruncatedText = (text, maxLength) => {
+export const getTruncatedText = (text = '', maxLength = 45) => {
   const txt = text.replace(/<(?:.|\n)*?>/gm, '').trim();
   if (txt.length > maxLength) {
     return `${txt.substr(0, maxLength).trim()}...`;
@@ -100,6 +106,10 @@ export const getGasPrice = () =>
       // we're only interested in gwei.
       // we round to prevent errors relating to too many decimals
       gasPrice = Math.round(gasPrice) / 10;
+
+      // sometimes the API is down, we need to return a gasprice or the dapp breaks
+      if (!gasPrice) gasPrice = config.defaultGasPrice;
+
       return utils.toWei(`${gasPrice}`, 'gwei');
     });
 

@@ -10,6 +10,12 @@ addValidationRule('greaterThan', (formValues, inputValue, value) => parseFloat(i
 // Less than number
 addValidationRule('lessThan', (formValues, inputValue, value) => parseFloat(inputValue) < value);
 
+// Less or equal to number
+addValidationRule(
+  'lessOrEqualTo',
+  (formValues, inputValue, value) => parseFloat(inputValue) <= value,
+);
+
 // Greater than number
 addValidationRule(
   'greaterEqualTo',

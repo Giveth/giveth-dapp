@@ -1,34 +1,29 @@
 import React, { Component } from 'react';
 import { SkyLightStateless } from 'react-skylight';
 import { utils } from 'web3';
-import { LPPCampaign } from 'lpp-campaign';
-import { Form } from 'formsy-react-components';
+import { Form, Input } from 'formsy-react-components';
 import InputToken from 'react-input-token';
 import PropTypes from 'prop-types';
+import Slider from 'react-rangeslider';
+import 'react-rangeslider/lib/index.css';
 
-import { feathersClient } from '../lib/feathersClient';
-import {
-  takeActionAfterWalletUnlock,
-  checkWalletBalance,
-  confirmBlockchainTransaction,
-} from '../lib/middleware';
-import { getGasPrice } from '../lib/helpers';
-import getNetwork from '../lib/blockchain/getNetwork';
-import { getWeb3 } from '../lib/blockchain/getWeb3';
+import { checkWalletBalance } from '../lib/middleware';
 import GivethWallet from '../lib/blockchain/GivethWallet';
 
-import ErrorPopup from './ErrorPopup';
+import Donation from '../models/Donation';
 
-// TODO: Remove once rewritten to model
-/* eslint no-underscore-dangle: 0 */
+import DonationService from '../services/DonationService';
+
 class DelegateButton extends Component {
-  constructor() {
-    super();
+  constructor(props) {
+    super(props);
 
     this.state = {
       isSaving: false,
       objectsToDelegateTo: [],
       modalVisible: false,
+      amount: utils.fromWei(props.donation.amount),
+      maxAmount: utils.fromWei(props.donation.amount),
     };
 
     this.submit = this.submit.bind(this);
@@ -36,167 +31,72 @@ class DelegateButton extends Component {
   }
 
   openDialog() {
-    takeActionAfterWalletUnlock(this.props.wallet, () =>
-      checkWalletBalance(this.props.wallet).then(() => this.setState({ modalVisible: true })),
-    );
+    checkWalletBalance(this.props.wallet).then(() => this.setState({ modalVisible: true }));
   }
 
   selectedObject({ target }) {
     this.setState({ objectsToDelegateTo: target.value });
   }
 
-  submit() {
+  submit(model) {
     const { toBN } = utils;
-    const { model } = this.props;
+    const { donation } = this.props;
     this.setState({ isSaving: true });
 
     // find the type of where we delegate to
     const admin = this.props.types.find(t => t.id === this.state.objectsToDelegateTo[0]);
 
     // TODO: find a more friendly way to do this.
-    if (
-      admin.type === 'milestone' &&
-      toBN(admin.maxAmount).lt(toBN(admin.totalDonated || 0).add(toBN(model.amount)))
-    ) {
+    if (admin.type === 'milestone' && toBN(admin.maxAmount).lt(toBN(admin.totalDonated || 0))) {
       React.toast.error('That milestone has reached its funding goal. Please pick another.');
       return;
     }
 
-    const delegate = (etherScanUrl, txHash) => {
-      const mutation = {
-        txHash,
-        status: 'pending',
-      };
+    const onCreated = txLink => {
+      this.resetSkylight();
 
-      if (model.ownerType.toLowerCase() === 'campaign') {
-        // campaign is the owner, so they transfer the donation, not propose
-        Object.assign(mutation, {
-          owner: admin.projectId,
-          ownerId: admin._id,
-          ownerType: admin.type,
-        });
-      } else {
-        // dac proposes a delegation
-        Object.assign(mutation, {
-          intendedProject: admin.projectId,
-          intendedProjectId: admin._id,
-          intendedProjectType: admin.type,
-        });
-      }
+      const msg =
+        donation.delegate > 0 ? (
+          <p>
+            The Giver has <strong>3 days</strong> to reject your delegation before the money gets
+            locked
+          </p>
+        ) : (
+          <p>The Giver has been notified.</p>
+        );
 
-      feathersClient
-        .service('/donations')
-        .patch(model._id, mutation)
-        .then(() => {
-          this.resetSkylight();
-
-          let msg;
-          if (model.delegate > 0) {
-            msg = (
-              <p>
-                The donation has been delegated,{' '}
-                <a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">
-                  view the transaction here.
-                </a>
-                The Giver has <strong>3 days</strong> to reject your delegation before the money
-                gets locked.
-              </p>
-            );
-          } else {
-            msg = (
-              <p>
-                The donation has been delegated,{' '}
-                <a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">
-                  view the transaction here.
-                </a>{' '}
-                The Giver has been notified.
-              </p>
-            );
-          }
-
-          React.swal({
-            title: 'Delegated!',
-            content: React.swal.msg(msg),
-            icon: 'success',
-          });
-        })
-        .catch(() => {
-          ErrorPopup(
-            'Something went wrong with the transaction. Is your wallet unlocked?',
-            `${etherScanUrl}tx/${txHash}`,
-          );
-          this.setState({ isSaving: false });
-        });
+      React.swal({
+        title: 'Delegated!',
+        content: React.swal.msg(
+          <p>
+            The donation has been delegated,{' '}
+            <a href={`${txLink}`} target="_blank" rel="noopener noreferrer">
+              view the transaction here.
+            </a>
+            {msg}
+          </p>,
+        ),
+        icon: 'success',
+      });
     };
 
-    let txHash;
-    let etherScanUrl;
-
-    const doDelegate = () =>
-      Promise.all([getNetwork(), getWeb3(), getGasPrice()])
-        .then(([network, web3, gasPrice]) => {
-          const { lppDacs, liquidPledging } = network;
-          etherScanUrl = network.etherscan;
-
-          const from =
-            model.delegate > 0 ? model.delegateEntity.ownerAddress : model.ownerEntity.ownerAddress;
-          const senderId = model.delegate > 0 ? model.delegate : model.owner;
-          const receiverId = admin.type === 'dac' ? admin.delegateId : admin.projectId;
-
-          const executeTransfer = () => {
-            if (model.ownerType === 'campaign') {
-              return new LPPCampaign(web3, model.ownerEntity.pluginAddress).transfer(
-                model.pledgeId,
-                model.amount,
-                receiverId,
-                {
-                  from,
-                  $extraGas: 100000,
-                  gasPrice,
-                },
-              );
-            } else if (model.ownerType === 'giver' && model.delegate > 0) {
-              return lppDacs.transfer(model.delegate, model.pledgeId, model.amount, receiverId, {
-                from,
-                $extraGas: 100000,
-                gasPrice,
-              });
-            }
-
-            return liquidPledging.transfer(senderId, model.pledgeId, model.amount, receiverId, {
-              from,
-              $extraGas: 100000,
-              gasPrice,
-            }); // need to supply extraGas b/c https://github.com/trufflesuite/ganache-core/issues/26
-          };
-
-          return executeTransfer()
-            .once('transactionHash', hash => {
-              txHash = hash;
-              delegate(etherScanUrl, txHash);
-            })
-            .on('error', console.error); // eslint-disable-line no-console
-        })
-        .then(() => {
-          React.toast.success(
-            <p>
-              Your donation has been confirmed!<br />
-              <a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">
-                View transaction
-              </a>
-            </p>,
-          );
-        })
-        .catch(() => {
-          ErrorPopup(
-            'Something went wrong with the transaction. Is your wallet unlocked?',
-            `${etherScanUrl}tx/${txHash}`,
-          );
-          this.setState({ isSaving: false });
-        });
-
-    // Delegate
-    confirmBlockchainTransaction(doDelegate, () => this.setState({ isSaving: false }));
+    const onSuccess = txLink => {
+      React.toast.success(
+        <p>
+          Your donation has been confirmed!<br />
+          <a href={`${txLink}`} target="_blank" rel="noopener noreferrer">
+            View transaction
+          </a>
+        </p>,
+      );
+    };
+    DonationService.delegate(
+      this.props.donation,
+      utils.toWei(model.amount),
+      admin,
+      onCreated,
+      onSuccess,
+    );
   }
 
   resetSkylight() {
@@ -207,9 +107,10 @@ class DelegateButton extends Component {
   }
 
   render() {
-    const { types, milestoneOnly } = this.props;
+    const { types, milestoneOnly, donation } = this.props;
     const { isSaving, objectsToDelegateTo } = this.state;
     const style = { display: 'inline-block' };
+    const pStyle = { 'white-space': 'normal' };
 
     return (
       <span style={style}>
@@ -230,13 +131,20 @@ class DelegateButton extends Component {
           afterClose={() => this.resetSkylight()}
         >
           {milestoneOnly && <p>Select a Milestone to delegate this donation to:</p>}
-
           {!milestoneOnly && <p>Select a Campaign or Milestone to delegate this donation to:</p>}
 
+          <p style={pStyle}>
+            You are delegating donation from{' '}
+            <strong>{donation.giver.name || donation.giverAddress}</strong> of a value{' '}
+            <strong>{utils.fromWei(donation.amount)} ETH</strong> that has been donated to{' '}
+            <strong>{donation.donatedTo.name}</strong>
+          </p>
           <Form onSubmit={this.submit} layout="vertical">
             <div className="form-group">
+              <span className="label">Delegate to:</span>
               <InputToken
-                name="campaigns"
+                name="delegateTo"
+                label="Delegate to:"
                 placeholder={
                   milestoneOnly ? 'Select a Milestone' : 'Select a Campaign or Milestone'
                 }
@@ -244,6 +152,38 @@ class DelegateButton extends Component {
                 options={types}
                 onSelect={this.selectedObject}
                 maxLength={1}
+              />
+            </div>
+            <span className="label">Amount to delegate:</span>
+
+            <div className="form-group">
+              <Slider
+                type="range"
+                name="amount2"
+                min={0}
+                max={Number(this.state.maxAmount)}
+                step={this.state.maxAmount / 10}
+                value={Number(this.state.amount)}
+                labels={['0', this.state.maxAmount]}
+                format={val => `${val} ETH`}
+                onChange={amount => this.setState({ amount: Number(amount).toFixed(2) })}
+              />
+            </div>
+
+            <div className="form-group">
+              <Input
+                type="text"
+                validations={`greaterThan:0,isNumeric,lessOrEqualTo:${this.state.maxAmount}`}
+                validationErrors={{
+                  greaterThan: 'Enter value greater than 0',
+                  lessOrEqualTo: `The donation you are delegating has value of ${
+                    this.state.maxAmount
+                  }. Do not input higher amount.`,
+                  isNumeric: 'Provide correct number',
+                }}
+                name="amount"
+                value={this.state.amount}
+                onChange={(name, amount) => this.setState({ amount })}
               />
             </div>
 
@@ -266,7 +206,7 @@ DelegateButton.propTypes = {
   wallet: PropTypes.instanceOf(GivethWallet).isRequired,
   types: PropTypes.arrayOf(PropTypes.shape({})).isRequired,
   milestoneOnly: PropTypes.bool,
-  model: PropTypes.shape({}).isRequired,
+  donation: PropTypes.instanceOf(Donation).isRequired,
 };
 
 DelegateButton.defaultProps = {

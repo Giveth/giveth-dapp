@@ -67,21 +67,6 @@ export const isInWhitelist = (currentUser, whitelist) =>
   });
 
 /**
- * If the wallet is locked, asks the user to unlock his wallet before redirecting to a route
- *
- * @param wallet  {object} Wallet object
- * @param history {object} Standard history object
- * @param to      {string} Route to which the user should be redirected
- */
-export const redirectAfterWalletUnlock = (to, wallet) => {
-  if (!wallet || (wallet && !wallet.unlocked)) {
-    React.unlockWallet(to);
-  } else {
-    history.push(to);
-  }
-};
-
-/**
  * If the wallet is locked, asks the user to unlock his wallet, otherwise performs the action
  *
  * @param wallet {object}   Wallet object
@@ -90,10 +75,21 @@ export const redirectAfterWalletUnlock = (to, wallet) => {
  */
 export const takeActionAfterWalletUnlock = (wallet, action) => {
   if (!wallet || (wallet && !wallet.unlocked)) {
-    React.unlockWallet();
+    React.unlockWallet(action);
   } else {
     action();
   }
+};
+
+/**
+ * If the wallet is locked, asks the user to unlock his wallet before redirecting to a route
+ *
+ * @param wallet  {object} Wallet object
+ * @param history {object} Standard history object
+ * @param to      {string} Route to which the user should be redirected
+ */
+export const redirectAfterWalletUnlock = (to, wallet) => {
+  takeActionAfterWalletUnlock(wallet, () => history.push(to));
 };
 
 /**

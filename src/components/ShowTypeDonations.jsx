@@ -98,7 +98,6 @@ ShowTypeDonations.propTypes = {
       amount: PropTypes.string.isRequired,
       createdAt: PropTypes.string.isRequired,
       delegateType: PropTypes.string,
-      donationId: PropTypes.string.isRequired,
       currentUser: PropTypes.instanceOf(User),
       giverAddress: PropTypes.string.isRequired,
       ownerId: PropTypes.string.isRequired,

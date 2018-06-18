@@ -2,7 +2,6 @@ import { LPPCampaign } from 'lpp-campaign';
 import getNetwork from '../lib/blockchain/getNetwork';
 import { getWeb3 } from '../lib/blockchain/getWeb3';
 import { feathersClient } from '../lib/feathersClient';
-import { getGasPrice } from '../lib/helpers';
 import Campaign from '../models/Campaign';
 
 import ErrorPopup from '../components/ErrorPopup';
@@ -86,7 +85,7 @@ class CampaignService {
    */
   static subscribeDonations(id, onSuccess, onError) {
     return feathersClient
-      .service('donations/history')
+      .service('donations')
       .watch({ listStrategy: 'always' })
       .find({
         query: {
@@ -137,8 +136,8 @@ class CampaignService {
     } else {
       let txHash;
       let etherScanUrl;
-      Promise.all([getNetwork(), getWeb3(), getGasPrice()])
-        .then(([network, , gasPrice]) => {
+      getNetwork()
+        .then(network => {
           const { lppCampaignFactory } = network;
           etherScanUrl = network.etherscan;
 
@@ -151,8 +150,6 @@ class CampaignService {
           address reviewer,
           string tokenName,
           string tokenSymbol,
-          address escapeHatchCaller,
-          address escapeHatchDestination
           * */
 
           lppCampaignFactory
@@ -163,9 +160,7 @@ class CampaignService {
               campaign.reviewerAddress,
               campaign.tokenName,
               campaign.tokenSymbol,
-              from,
-              from,
-              { from, gasPrice, $extraGas: 200000 },
+              { from, $extraGas: 200000 },
             )
             .once('transactionHash', hash => {
               txHash = hash;
@@ -178,10 +173,11 @@ class CampaignService {
             .then(() => {
               afterMined(`${etherScanUrl}tx/${txHash}`);
             })
-            .catch(() => {
+            .catch(err => {
+              if (txHash && err.message && err.message.includes('unknown transaction')) return; // bug in web3 seems to constantly fail due to this error, but the tx is correct
               ErrorPopup(
                 'Something went wrong with the transaction. Is your wallet unlocked?',
-                `${etherScanUrl}tx/${txHash}`,
+                `${etherScanUrl}tx/${txHash} => ${JSON.stringify(err, null, 2)}`,
               );
             });
         })
@@ -206,13 +202,13 @@ class CampaignService {
   static cancel(campaign, from, afterCreate = () => {}, afterMined = () => {}) {
     let txHash;
     let etherScanUrl;
-    Promise.all([getNetwork(), getWeb3(), getGasPrice()])
-      .then(([network, web3, gasPrice]) => {
+    Promise.all([getNetwork(), getWeb3()])
+      .then(([network, web3]) => {
         const lppCampaign = new LPPCampaign(web3, campaign.pluginAddress);
         etherScanUrl = network.etherscan;
 
         lppCampaign
-          .cancelCampaign({ from, gasPrice, $extraGas: 100000 })
+          .cancelCampaign({ from, $extraGas: 100000 })
           .once('transactionHash', hash => {
             txHash = hash;
             feathersClient
@@ -229,6 +225,7 @@ class CampaignService {
           })
           .then(() => afterMined(`${etherScanUrl}tx/${txHash}`))
           .catch(err => {
+            if (txHash && err.message && err.message.includes('unknown transaction')) return; // bug in web3 seems to constantly fail due to this error, but the tx is correct
             ErrorPopup(
               'Something went wrong with cancelling your campaign',
               `${etherScanUrl}tx/${txHash} => ${JSON.stringify(err, null, 2)}`,
