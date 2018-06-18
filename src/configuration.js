@@ -17,9 +17,9 @@ const configurations = {
   localhost: {
     title: 'Ganache',
     liquidPledgingAddress: '0xBeFdf675cb73813952C5A9E4B84ea8B866DBA592',
-    lppDacFactoryAddress: '0x26b4afb60d6c903165150c6f0aa14f8016be4aec',
-    lppCampaignFactoryAddress: '0x0290FB167208Af455bB137780163b7B7a9a10C16',
-    lppCappedMilestoneFactoryAddress: '0x6eD79Aa1c71FD7BdBC515EfdA3Bd4e26394435cC',
+    lppDacFactoryAddress: '0x630589690929E9cdEFDeF0734717a9eF3Ec7Fcfe',
+    lppCampaignFactoryAddress: '0x9b1f7F645351AF3631a656421eD2e40f2802E6c0',
+    lppCappedMilestoneFactoryAddress: '0xb09bCc172050fBd4562da8b229Cf3E45Dc3045A6',
     givethBridgeAddress: '0x8fed3F9126e7051DeA6c530920cb0BAE5ffa17a8',
     foreignGivethBridgeAddress: '0x8fed3F9126e7051DeA6c530920cb0BAE5ffa17a8',
     tokenAddresses: { 'Home Ganache ETH': '0x5a42ca500aB159c51312B764bb25C135026e7a31' },
