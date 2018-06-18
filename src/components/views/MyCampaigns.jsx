@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
-
 import { isLoggedIn, redirectAfterWalletUnlock, checkWalletBalance } from '../../lib/middleware';
 import Loader from '../Loader';
 import User from '../../models/User';
@@ -27,13 +26,19 @@ class MyCampaigns extends Component {
   }
 
   componentDidMount() {
-    isLoggedIn(this.props.currentUser).then(() => {
-      this.campaignsObserver = CampaignService.getUserCampaigns(
-        this.props.currentUser.address,
-        campaigns => this.setState({ campaigns, isLoading: false }),
-        () => this.setState({ isLoading: false }),
-      );
-    });
+    isLoggedIn(this.props.currentUser)
+      .then(() => {
+        this.campaignsObserver = CampaignService.getUserCampaigns(
+          this.props.currentUser.address,
+          campaigns => this.setState({ campaigns, isLoading: false }),
+          () => this.setState({ isLoading: false }),
+        );
+      })
+      .catch(err => {
+        if (err === 'notLoggedIn') {
+          // history.push('/');
+        }
+      });
   }
 
   componentWillUnmount() {

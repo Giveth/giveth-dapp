@@ -14,9 +14,26 @@ import { history } from '../lib/helpers';
  *      .then(()=> ...do something when authenticated)
  */
 export const isLoggedIn = currentUser =>
-  new Promise(resolve => {
+  new Promise((resolve, reject) => {
     if (currentUser && currentUser.address) resolve();
-    else history.goBack();
+    else {
+      React.swal({
+        title: 'Oops! You need to be signed in!',
+        content: React.swal.msg(
+          <p>
+            Oops! You need to be logged in to view this page. Please sign in with a wallet to view
+            this page.
+          </p>,
+        ),
+        icon: 'warning',
+        buttons: ['Cancel', 'Sign in'],
+      }).then(isConfirmed => {
+        if (isConfirmed) history.push('/signin');
+        else history.push('/');
+        reject(new Error('notLoggedIn'));
+      });
+    }
+    // history.push('/');
   });
 
 /**

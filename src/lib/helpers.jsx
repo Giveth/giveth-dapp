@@ -178,3 +178,10 @@ export const convertEthHelper = amount => {
 
   return eth;
 };
+
+export const goBackOnePath = () => {
+  let url = history.location.pathname.split('/');
+  url.pop();
+  url = url.join('/');
+  history.push(url);
+};
