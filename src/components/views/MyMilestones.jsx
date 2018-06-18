@@ -494,8 +494,6 @@ class MyMilestones extends Component {
                   parentProjectId,
                   reviewerAddress,
                   recipientAddress,
-                  recipientAddress,
-                  recipientAddress,
                   campaignReviewerAddress,
                   from,
                   maxAmount,

@@ -150,8 +150,6 @@ class CampaignService {
           address reviewer,
           string tokenName,
           string tokenSymbol,
-          address escapeHatchCaller,
-          address escapeHatchDestination
           * */
 
           lppCampaignFactory
@@ -162,8 +160,6 @@ class CampaignService {
               campaign.reviewerAddress,
               campaign.tokenName,
               campaign.tokenSymbol,
-              from,
-              from,
               { from, $extraGas: 200000 },
             )
             .once('transactionHash', hash => {
