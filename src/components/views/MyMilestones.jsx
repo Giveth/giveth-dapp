@@ -494,8 +494,6 @@ class MyMilestones extends Component {
                   parentProjectId,
                   reviewerAddress,
                   recipientAddress,
-                  recipientAddress,
-                  recipientAddress,
                   campaignReviewerAddress,
                   from,
                   maxAmount,
@@ -688,9 +686,16 @@ class MyMilestones extends Component {
   withdrawal(milestone) {
     checkWalletBalance(this.props.wallet).then(() =>
       React.swal({
-        title: 'Withdrawal Fund to Wallet',
-        text:
-          'The funds will be transferred to you wallet. Once you have the funds in your possession, you can transfer them back across the bridge.',
+        title: 'Withdrawal Funds to Wallet',
+        content: React.swal.msg(
+          <div>
+            <p>We will initiate the transfer of the funds to your wallet.</p>
+            <div className="alert alert-warning">
+              Note: For security reasons, there is a delay of approximately 48 hrs before the funds
+              will appear in your wallet.
+            </div>
+          </div>,
+        ),
         icon: 'warning',
         dangerMode: true,
         buttons: ['Cancel', 'Yes, withdrawal'],
