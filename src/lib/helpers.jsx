@@ -181,7 +181,6 @@ export const convertEthHelper = amount => {
 
 // removes the last pathname from the url and pushes that location
 // the back button will go one lower nested route inside of the DApp
-
 export const goBackOnePath = () => {
   let url = history.location.pathname.split('/');
   url.pop();
