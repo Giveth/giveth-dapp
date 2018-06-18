@@ -20,7 +20,9 @@ class ShowTypeDonations extends Component {
     this.state = {
       etherScanUrl: '',
     };
+  }
 
+  componentDidMount() {
     getNetwork().then(network => {
       this.setState({
         etherScanUrl: network.etherscan,

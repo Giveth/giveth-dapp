@@ -52,7 +52,7 @@ export const isLoggedIn = currentUser =>
 export const isAuthenticated = (currentUser, wallet) =>
   new Promise(resolve => {
     if (currentUser && currentUser.address && wallet && wallet.unlocked) resolve();
-    else history.goBack();
+    else history.push('/');
   });
 
 /**
