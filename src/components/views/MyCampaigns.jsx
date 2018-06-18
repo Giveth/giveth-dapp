@@ -36,7 +36,8 @@ class MyCampaigns extends Component {
       })
       .catch(err => {
         if (err === 'notLoggedIn') {
-          // history.push('/');
+          // not logged in
+          // notLoggedInPopup();
         }
       });
   }

@@ -10,8 +10,8 @@ import { history } from '../lib/helpers';
  * @return new Promise
  *
  * usage:
- *    isAuthenticated(currentUser, wallet)
- *      .then(()=> ...do something when authenticated)
+ *    isLoggedIn(currentUser)
+ *      .then(()=> ...do something when logged in)
  *      .catch((err) ...do something when not logged in
  *      returns new Error 'notLoggedIn' if not logged in
  */

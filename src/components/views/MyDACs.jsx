@@ -28,13 +28,19 @@ class MyDACs extends Component {
   }
 
   componentDidMount() {
-    isLoggedIn(this.props.currentUser).then(() => {
-      this.dacsObserver = DACservice.getUserDACs(
-        this.props.currentUser.address,
-        dacs => this.setState({ dacs, isLoading: false }),
-        () => this.setState({ isLoading: false }),
-      );
-    });
+    isLoggedIn(this.props.currentUser)
+      .then(() => {
+        this.dacsObserver = DACservice.getUserDACs(
+          this.props.currentUser.address,
+          dacs => this.setState({ dacs, isLoading: false }),
+          () => this.setState({ isLoading: false }),
+        );
+      })
+      .catch(err => {
+        if (err === 'notLoggedIn') {
+          // not logged in
+        }
+      });
   }
 
   componentWillUnmount() {
