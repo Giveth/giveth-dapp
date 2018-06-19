@@ -10,13 +10,32 @@ import { history } from '../lib/helpers';
  * @return new Promise
  *
  * usage:
- *    isAuthenticated(currentUser, wallet)
- *      .then(()=> ...do something when authenticated)
+ *    isLoggedIn(currentUser)
+ *      .then(()=> ...do something when logged in)
+ *      .catch((err) ...do something when not logged in
+ *      returns new Error 'notLoggedIn' if not logged in
  */
 export const isLoggedIn = currentUser =>
-  new Promise(resolve => {
+  new Promise((resolve, reject) => {
     if (currentUser && currentUser.address) resolve();
-    else history.goBack();
+    else {
+      React.swal({
+        title: 'Oops! You need to be signed in!',
+        content: React.swal.msg(
+          <p>
+            Oops! You need to be logged in to view this page. Please sign in with a wallet to view
+            this page.
+          </p>,
+        ),
+        icon: 'warning',
+        buttons: ['Cancel', 'Sign in'],
+      }).then(isConfirmed => {
+        if (isConfirmed) history.push('/signin');
+        else history.push('/');
+        reject(new Error('notLoggedIn'));
+      });
+    }
+    // history.push('/');
   });
 
 /**
@@ -31,11 +50,27 @@ export const isLoggedIn = currentUser =>
  * usage:
  *    isAuthenticated(currentUser, wallet)
  *      .then(()=> ...do something when authenticated)
+ *      .catch((err) ...do something when not authenticated
+ *      returns new Error 'notAuthenticated' if not authenticated
  */
 export const isAuthenticated = (currentUser, wallet) =>
-  new Promise(resolve => {
+  new Promise((resolve, reject) => {
     if (currentUser && currentUser.address && wallet && wallet.unlocked) resolve();
-    else history.goBack();
+    else {
+      React.swal({
+        title: "Oops! You aren't authorized to be here!",
+        content: React.swal.msg(
+          <p>
+            Oops! You need t to view this page. Please sign in with a wallet to view this page.
+          </p>,
+        ),
+        icon: 'warning',
+        buttons: 'OK',
+      }).then(() => {
+        history.push('/');
+        reject(new Error('notAuthenticated'));
+      });
+    }
   });
 
 /**
