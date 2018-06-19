@@ -96,7 +96,8 @@ class GivethWallet {
   unlock(password) {
     return new Promise((resolve, reject) => {
       if (this.unlocked) {
-        return resolve(true);
+        resolve(true);
+        return;
       }
 
       mapSet.call(mapPassword, this, password);
@@ -106,17 +107,16 @@ class GivethWallet {
         try {
           accounts.wallet.decrypt(this.keystores, password);
         } catch (e) {
-          return reject(e);
+          reject(e);
+          return;
         }
 
         this.unlocked = true;
-        return resolve(true);
+        resolve(true);
       };
 
-      return decrypt();
-
       // web3 blocks all rendering, so we need to request an animation frame
-      // window.requestAnimationFrame(decrypt)
+      window.requestAnimationFrame(decrypt);
     });
   }
 
