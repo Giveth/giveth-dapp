@@ -30,7 +30,9 @@ class MyCampaigns extends Component {
     isLoggedIn(this.props.currentUser).then(() => {
       this.campaignsObserver = CampaignService.getUserCampaigns(
         this.props.currentUser.address,
-        campaigns => this.setState({ campaigns, isLoading: false }),
+        0,
+        100,
+        ({ data }) => this.setState({ campaigns: data, isLoading: false }),
         () => this.setState({ isLoading: false }),
       );
     });

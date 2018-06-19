@@ -101,7 +101,7 @@ class CampaignService {
    *
    * @param userAddress Address of the user whose Campaign list should be retrieved
    * @param skipPages     Amount of pages to skip
-   * @param itemsPerPage  Items to retreive   
+   * @param itemsPerPage  Items to retreive
    * @param onSuccess   Callback function once response is obtained successfully
    * @param onError     Callback function if error is encountered
    */
@@ -109,16 +109,23 @@ class CampaignService {
     return feathersClient
       .service('campaigns')
       .watch({ listStrategy: 'always' })
-      .find({ query: {
-        $or: [{ ownerAddress: userAddress }, { reviewerAddress: userAddress }],
-        $sort: {
-          createdAt: -1,
+      .find({
+        query: {
+          $or: [{ ownerAddress: userAddress }, { reviewerAddress: userAddress }],
+          $sort: {
+            createdAt: -1,
+          },
+          $limit: itemsPerPage,
+          $skip: skipPages * itemsPerPage,
         },
-        $limit: itemsPerPage,
-        $skip: skipPages * itemsPerPage,           
-      }})
-      .subscribe(resp => onSuccess(resp), onError);
-  }  
+      })
+      .subscribe(resp => {
+        const newResp = Object.assign({}, resp, {
+          data: resp.data.map(c => new Campaign(c)),
+        });
+        onSuccess(newResp);
+      }, onError);
+  }
 
   /**
    * Save new Campaign to the blockchain or update existing one in feathers

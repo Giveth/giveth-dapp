@@ -120,7 +120,12 @@ class DACservice {
           $skip: skipPages * itemsPerPage,
         },
       })
-      .subscribe(resp => onSuccess(resp), onError);
+      .subscribe(resp => {
+        const newResp = Object.assign({}, resp, {
+          data: resp.data.map(d => new DAC(d)),
+        });
+        onSuccess(newResp);
+      }, onError);
   }
 
   /**
