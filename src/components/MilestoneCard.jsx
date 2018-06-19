@@ -88,13 +88,14 @@ class MilestoneCard extends Component {
             <span className="owner-name">{getUserName(milestone.owner)}</span>
 
             {(isOwner(milestone.owner.address, currentUser) ||
-              isOwner(milestone.campaignOwnerAddress, currentUser)) && (
-              <span className="pull-right">
-                <button className="btn btn-link btn-edit" onClick={e => this.editMilestone(e)}>
-                  <i className="fa fa-edit" />
-                </button>
-              </span>
-            )}
+              isOwner(milestone.campaignOwnerAddress, currentUser)) &&
+              ['proposed', 'rejected', 'InProgress', 'NeedsReview'].includes(milestone.status) && (
+                <span className="pull-right">
+                  <button className="btn btn-link btn-edit" onClick={e => this.editMilestone(e)}>
+                    <i className="fa fa-edit" />
+                  </button>
+                </span>
+              )}
           </div>
 
           <div
