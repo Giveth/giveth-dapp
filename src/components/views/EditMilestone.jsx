@@ -27,6 +27,8 @@ import AddMilestoneItem from '../../components/AddMilestoneItem';
 import ErrorPopup from '../ErrorPopup';
 import AddMilestoneItemModal from '../../components/AddMilestoneItemModal';
 import config from '../../configuration';
+import { Prompt } from 'react-router-dom';
+
 
 BigNumber.config({ DECIMAL_PLACES: 18 });
 
@@ -91,6 +93,7 @@ class EditMilestone extends Component {
         { value: 'USD', title: 'USD' },
       ],
       selectedFiatType: 'EUR',
+      isBlocking: false
     };
     this.submit = this.submit.bind(this);
     this.setImage = this.setImage.bind(this);
@@ -363,7 +366,10 @@ class EditMilestone extends Component {
     this.setState({ isSaving: true });
 
     const afterEmit = () => {
-      this.setState({ isSaving: false });
+      this.setState({ 
+        isSaving: false,
+        isBlocking: false
+      });
       this.props.history.goBack();
     };
     let txHash;
@@ -626,6 +632,10 @@ class EditMilestone extends Component {
     this.setState({ itemizeState: !this.state.itemizeState });
   }
 
+  triggerRouteBlocking(e) {
+    this.setState({ isBlocking: true })
+  }
+
   render() {
     const { isNew, isProposed, history } = this.props;
     const {
@@ -650,6 +660,7 @@ class EditMilestone extends Component {
       fiatTypes,
       currentRate,
       reviewers,
+      isBlocking
     } = this.state;
 
     return (
@@ -692,11 +703,25 @@ class EditMilestone extends Component {
 
                   <Form
                     onSubmit={this.submit}
+                    ref="form"
                     mapping={inputs => this.mapInputs(inputs)}
                     onValid={() => this.toggleFormValid(true)}
                     onInvalid={() => this.toggleFormValid(false)}
+                    onChange={(e) => this.triggerRouteBlocking(e)}
                     layout="vertical"
                   >
+
+                    {/*
+                      // If only this would work... a bug with React Router prevents this from working
+
+                      <Prompt
+                        when={isBlocking}
+                        message={location =>
+                          `You have unsaved changes. Are you sure you want to navigate from this page?`
+                        }
+                      />
+                    */}
+
                     <Input
                       name="title"
                       label="What are you going to accomplish in this Milestone?"
