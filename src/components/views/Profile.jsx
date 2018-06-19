@@ -417,7 +417,7 @@ class Profile extends Component {
               </div>   
               
               <h4>Communities</h4>
-              <div>
+              <div className="table-container">
                 {isLoadingDacs && <Loader className="fixed" />}
 
                 {!isLoadingDacs && (
