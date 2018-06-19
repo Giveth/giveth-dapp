@@ -104,16 +104,25 @@ class DACservice {
   /**
    * Get the user's DACs
    *
-   * @param userAddress Address of the user whose DAC list should be retrieved
-   * @param onSuccess   Callback function once response is obtained successfully
-   * @param onError     Callback function if error is encountered
+   * @param userAddress   Address of the user whose DAC list should be retrieved
+   * @param skipPages     Amount of pages to skip
+   * @param itemsPerPage  Items to retreive
+   * @param onSuccess     Callback function once response is obtained successfully
+   * @param onError       Callback function if error is encountered
    */
-  static getUserDACs(userAddress, onSuccess, onError) {
+  static getUserDACs(userAddress, skipPages, itemsPerPage, onSuccess, onError) {
     return feathersClient
       .service('dacs')
       .watch({ listStrategy: 'always' })
-      .find({ query: { ownerAddress: userAddress } })
-      .subscribe(resp => onSuccess(resp.data.map(dac => new DAC(dac))), onError);
+      .find({ query: {
+        ownerAddress: userAddress,
+        $sort: {
+          createdAt: -1,
+        },
+        $limit: itemsPerPage,
+        $skip: skipPages * itemsPerPage,           
+      }})
+      .subscribe(resp => onSuccess(resp), onError);
   }
 
   /**
