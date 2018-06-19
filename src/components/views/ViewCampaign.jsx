@@ -80,17 +80,23 @@ class ViewCampaign extends Component {
   }
 
   removeMilestone(id) {
-    checkWalletBalance(this.props.wallet).then(() => {
-      React.swal({
-        title: 'Delete Milestone?',
-        text: 'You will not be able to recover this milestone!',
-        icon: 'warning',
-        dangerMode: true,
-      }).then(() => {
-        const milestones = feathersClient.service('/milestones');
-        milestones.remove(id);
+    checkWalletBalance(this.props.wallet)
+      .then(() => {
+        React.swal({
+          title: 'Delete Milestone?',
+          text: 'You will not be able to recover this milestone!',
+          icon: 'warning',
+          dangerMode: true,
+        }).then(() => {
+          const milestones = feathersClient.service('/milestones');
+          milestones.remove(id);
+        });
+      })
+      .catch(err => {
+        if (err === 'noBalance') {
+          // handle no balance error
+        }
       });
-    });
   }
 
   render() {

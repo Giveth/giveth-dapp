@@ -44,17 +44,23 @@ class MyDACs extends Component {
   }
 
   editDAC(id) {
-    checkWalletBalance(this.props.wallet).then(() =>
-      React.swal({
-        title: 'Edit Community?',
-        text: 'Are you sure you want to edit the description of this community?',
-        icon: 'warning',
-        dangerMode: true,
-        buttons: ['Cancel', 'Yes, edit'],
-      }).then(isConfirmed => {
-        if (isConfirmed) redirectAfterWalletUnlock(`/dacs/${id}/edit`, this.props.wallet);
-      }),
-    );
+    checkWalletBalance(this.props.wallet)
+      .then(() =>
+        React.swal({
+          title: 'Edit Community?',
+          text: 'Are you sure you want to edit the description of this community?',
+          icon: 'warning',
+          dangerMode: true,
+          buttons: ['Cancel', 'Yes, edit'],
+        }).then(isConfirmed => {
+          if (isConfirmed) redirectAfterWalletUnlock(`/dacs/${id}/edit`, this.props.wallet);
+        }),
+      )
+      .catch(err => {
+        if (err === 'noBalance') {
+          // handle no balance error
+        }
+      });
   }
 
   render() {

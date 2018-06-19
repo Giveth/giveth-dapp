@@ -229,59 +229,104 @@ class MyMilestones extends Component {
   }
 
   editMilestone(milestone) {
-    checkWalletBalance(this.props.wallet).then(() =>
-      React.swal({
-        title: 'Edit Milestone?',
-        text: 'Are you sure you want to edit this Milestone?',
-        icon: 'warning',
-        dangerMode: true,
-        buttons: ['Cancel', 'Yes, edit'],
-      }).then(isConfirmed => {
-        if (isConfirmed) {
-          if (['proposed', 'rejected'].includes(milestone.status)) {
-            redirectAfterWalletUnlock(
-              `/milestones/${milestone._id}/edit/proposed`,
-              this.props.wallet,
-            );
-          } else {
-            redirectAfterWalletUnlock(`/milestones/${milestone._id}/edit`, this.props.wallet);
+    checkWalletBalance(this.props.wallet)
+      .then(() =>
+        React.swal({
+          title: 'Edit Milestone?',
+          text: 'Are you sure you want to edit this Milestone?',
+          icon: 'warning',
+          dangerMode: true,
+          buttons: ['Cancel', 'Yes, edit'],
+        }).then(isConfirmed => {
+          if (isConfirmed) {
+            if (['proposed', 'rejected'].includes(milestone.status)) {
+              redirectAfterWalletUnlock(
+                `/milestones/${milestone._id}/edit/proposed`,
+                this.props.wallet,
+              );
+            } else {
+              redirectAfterWalletUnlock(`/milestones/${milestone._id}/edit`, this.props.wallet);
+            }
           }
+        }),
+      )
+      .catch(err => {
+        if (err === 'noBalance') {
+          // handle no balance error
         }
-      }),
-    );
+      });
   }
 
   requestMarkComplete(milestone) {
-    checkWalletBalance(this.props.wallet).then(() =>
-      React.swal({
-        title: 'Mark as complete?',
-        text: 'Are you sure you want to mark this Milestone as complete?',
-        icon: 'warning',
-        dangerMode: true,
-        content: {
-          element: 'input',
-          attributes: {
-            rows: 3,
-            placeholder: 'Add a message for the reviewer (optional)',
+    checkWalletBalance(this.props.wallet)
+      .then(() =>
+        React.swal({
+          title: 'Mark as complete?',
+          text: 'Are you sure you want to mark this Milestone as complete?',
+          icon: 'warning',
+          dangerMode: true,
+          content: {
+            element: 'input',
+            attributes: {
+              rows: 3,
+              placeholder: 'Add a message for the reviewer (optional)',
+            },
           },
-        },
-        buttons: ['Cancel', 'Yes, mark complete'],
-      }).then(message => {
-        if (message !== null) {
-          // feathers
-          const _requestMarkComplete = (etherScanUrl, txHash) => {
-            feathersClient
-              .service('/milestones')
-              .patch(milestone._id, {
-                status: 'NeedsReview',
-                message,
-                mined: false,
-                txHash,
+          buttons: ['Cancel', 'Yes, mark complete'],
+        }).then(message => {
+          if (message !== null) {
+            // feathers
+            const _requestMarkComplete = (etherScanUrl, txHash) => {
+              feathersClient
+                .service('/milestones')
+                .patch(milestone._id, {
+                  status: 'NeedsReview',
+                  message,
+                  mined: false,
+                  txHash,
+                })
+                .then(() => {
+                  React.toast.info(
+                    <p>
+                      Marking this milestone as complete is pending...<br />
+                      <a
+                        href={`${etherScanUrl}tx/${txHash}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        View transaction
+                      </a>
+                    </p>,
+                  );
+                })
+                .catch(e => {
+                  ErrorPopup('Something went wrong with marking your milestone as complete', e);
+                });
+            };
+
+            // on chain
+            let txHash;
+            let etherScanUrl;
+            Promise.all([getNetwork(), getWeb3()])
+              .then(([network, web3]) => {
+                etherScanUrl = network.etherscan;
+
+                const cappedMilestone = new LPPCappedMilestone(web3, milestone.pluginAddress);
+
+                return cappedMilestone
+                  .requestMarkAsComplete({
+                    from: this.props.currentUser.address,
+                    $extraGas: 4000000,
+                  })
+                  .once('transactionHash', hash => {
+                    txHash = hash;
+                    return _requestMarkComplete(etherScanUrl, txHash);
+                  });
               })
               .then(() => {
-                React.toast.info(
+                React.toast.success(
                   <p>
-                    Marking this milestone as complete is pending...<br />
+                    The milestone has been marked as complete!<br />
                     <a
                       href={`${etherScanUrl}tx/${txHash}`}
                       target="_blank"
@@ -292,83 +337,93 @@ class MyMilestones extends Component {
                   </p>,
                 );
               })
-              .catch(e => {
-                ErrorPopup('Something went wrong with marking your milestone as complete', e);
+              .catch(err => {
+                if (txHash && err.message && err.message.includes('unknown transaction')) return; // bug in web3 seems to constantly fail due to this error, but the tx is correct
+                ErrorPopup(
+                  'Something went wrong with the transaction. Is your wallet unlocked?',
+                  `${etherScanUrl}tx/${txHash} => ${JSON.stringify(err, null, 2)}`,
+                );
               });
-          };
-
-          // on chain
-          let txHash;
-          let etherScanUrl;
-          Promise.all([getNetwork(), getWeb3()])
-            .then(([network, web3]) => {
-              etherScanUrl = network.etherscan;
-
-              const cappedMilestone = new LPPCappedMilestone(web3, milestone.pluginAddress);
-
-              return cappedMilestone
-                .requestMarkAsComplete({
-                  from: this.props.currentUser.address,
-                  $extraGas: 4000000,
-                })
-                .once('transactionHash', hash => {
-                  txHash = hash;
-                  return _requestMarkComplete(etherScanUrl, txHash);
-                });
-            })
-            .then(() => {
-              React.toast.success(
-                <p>
-                  The milestone has been marked as complete!<br />
-                  <a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">
-                    View transaction
-                  </a>
-                </p>,
-              );
-            })
-            .catch(err => {
-              if (txHash && err.message && err.message.includes('unknown transaction')) return; // bug in web3 seems to constantly fail due to this error, but the tx is correct
-              ErrorPopup(
-                'Something went wrong with the transaction. Is your wallet unlocked?',
-                `${etherScanUrl}tx/${txHash} => ${JSON.stringify(err, null, 2)}`,
-              );
-            });
+          }
+        }),
+      )
+      .catch(err => {
+        if (err === 'noBalance') {
+          // handle no balance error
         }
-      }),
-    );
+      });
   }
 
   cancelMilestone(milestone) {
-    checkWalletBalance(this.props.wallet).then(() =>
-      React.swal({
-        title: 'Cancel Milestone?',
-        text: 'Are you sure you want to cancel this Milestone?',
-        icon: 'warning',
-        buttons: ['I changed my mind', 'Yes, cancel'],
-        dangerMode: true,
-        content: {
-          element: 'input',
-          attributes: {
-            rows: 3,
-            placeholder: 'Add a reason why you cancel this milestone',
+    checkWalletBalance(this.props.wallet)
+      .then(() =>
+        React.swal({
+          title: 'Cancel Milestone?',
+          text: 'Are you sure you want to cancel this Milestone?',
+          icon: 'warning',
+          buttons: ['I changed my mind', 'Yes, cancel'],
+          dangerMode: true,
+          content: {
+            element: 'input',
+            attributes: {
+              rows: 3,
+              placeholder: 'Add a reason why you cancel this milestone',
+            },
           },
-        },
-      }).then(message => {
-        if (message) {
-          const _cancelMilestone = (etherScanUrl, txHash) => {
-            // feathers
-            feathersClient
-              .service('/milestones')
-              .patch(milestone._id, {
-                status: 'Canceled',
-                message,
-                mined: false,
-                txHash,
+        }).then(message => {
+          if (message) {
+            const _cancelMilestone = (etherScanUrl, txHash) => {
+              // feathers
+              feathersClient
+                .service('/milestones')
+                .patch(milestone._id, {
+                  status: 'Canceled',
+                  message,
+                  mined: false,
+                  txHash,
+                })
+                .then(() => {
+                  React.toast.info(
+                    <p>
+                      Cancelling this milestone is pending...<br />
+                      <a
+                        href={`${etherScanUrl}tx/${txHash}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        View transaction
+                      </a>
+                    </p>,
+                  );
+                })
+                .catch(e => {
+                  ErrorPopup('Something went wrong with cancelling your milestone', e);
+                });
+            };
+
+            // on chain
+            let txHash;
+            let etherScanUrl;
+            Promise.all([getNetwork(), getWeb3()])
+              .then(([network, web3]) => {
+                etherScanUrl = network.etherscan;
+
+                const cappedMilestone = new LPPCappedMilestone(web3, milestone.pluginAddress);
+
+                return cappedMilestone
+                  .cancelMilestone({
+                    from: this.props.currentUser.address,
+                    $extraGas: 4000000,
+                  })
+                  .once('transactionHash', hash => {
+                    txHash = hash;
+                    _cancelMilestone(etherScanUrl, txHash);
+                  });
               })
               .then(() => {
-                React.toast.info(
+                React.toast.success(
                   <p>
-                    Cancelling this milestone is pending...<br />
+                    The milestone has been cancelled!<br />
                     <a
                       href={`${etherScanUrl}tx/${txHash}`}
                       target="_blank"
@@ -379,177 +434,192 @@ class MyMilestones extends Component {
                   </p>,
                 );
               })
-              .catch(e => {
-                ErrorPopup('Something went wrong with cancelling your milestone', e);
+              .catch(err => {
+                if (txHash && err.message && err.message.includes('unknown transaction')) return; // bug in web3 seems to constantly fail due to this error, but the tx is correct
+                ErrorPopup(
+                  'Something went wrong with the transaction. Is your wallet unlocked?',
+                  `${etherScanUrl}tx/${txHash}`,
+                );
               });
-          };
-
-          // on chain
-          let txHash;
-          let etherScanUrl;
-          Promise.all([getNetwork(), getWeb3()])
-            .then(([network, web3]) => {
-              etherScanUrl = network.etherscan;
-
-              const cappedMilestone = new LPPCappedMilestone(web3, milestone.pluginAddress);
-
-              return cappedMilestone
-                .cancelMilestone({
-                  from: this.props.currentUser.address,
-                  $extraGas: 4000000,
-                })
-                .once('transactionHash', hash => {
-                  txHash = hash;
-                  _cancelMilestone(etherScanUrl, txHash);
-                });
-            })
-            .then(() => {
-              React.toast.success(
-                <p>
-                  The milestone has been cancelled!<br />
-                  <a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">
-                    View transaction
-                  </a>
-                </p>,
-              );
-            })
-            .catch(err => {
-              if (txHash && err.message && err.message.includes('unknown transaction')) return; // bug in web3 seems to constantly fail due to this error, but the tx is correct
-              ErrorPopup(
-                'Something went wrong with the transaction. Is your wallet unlocked?',
-                `${etherScanUrl}tx/${txHash}`,
-              );
-            });
+          }
+        }),
+      )
+      .catch(err => {
+        if (err === 'noBalance') {
+          // handle no balance error
         }
-      }),
-    );
+      });
   }
 
   acceptProposedMilestone(milestone) {
-    checkWalletBalance(this.props.wallet).then(() =>
-      React.swal({
-        title: 'Accept Milestone?',
-        text: 'Are you sure you want to accept this Milestone?',
-        icon: 'warning',
-        dangerMode: true,
-        buttons: ['Cancel', 'Yes, accept'],
-        content: {
-          element: 'input',
-          attributes: {
-            rows: 3,
-            placeholder: 'Add a reason why you accept this milestone (optional)',
+    checkWalletBalance(this.props.wallet)
+      .then(() =>
+        React.swal({
+          title: 'Accept Milestone?',
+          text: 'Are you sure you want to accept this Milestone?',
+          icon: 'warning',
+          dangerMode: true,
+          buttons: ['Cancel', 'Yes, accept'],
+          content: {
+            element: 'input',
+            attributes: {
+              rows: 3,
+              placeholder: 'Add a reason why you accept this milestone (optional)',
+            },
           },
-        },
-      }).then(message => {
-        if (message !== null) {
-          // feathers
-          const _createMilestone = (etherScanUrl, txHash) =>
-            feathersClient
-              .service('/milestones')
-              .patch(milestone._id, {
-                status: 'pending',
-                mined: false,
-                message,
-                txHash,
-              })
-              .then(() => {
-                React.toast.info(
-                  <p>
-                    Accepting this milestone is pending...<br />
-                    <a
-                      href={`${etherScanUrl}tx/${txHash}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      View transaction
-                    </a>
-                  </p>,
-                );
-              })
-              .catch(e => {
-                ErrorPopup('Something went wrong with the transaction. Please try again.', e);
-              });
-
-          // on chain
-          let txHash;
-          let etherScanUrl;
-          getNetwork()
-            .then(network => {
-              etherScanUrl = network.etherscan;
-
-              const {
-                title,
-                maxAmount,
-                recipientAddress,
-                reviewerAddress,
-                campaignReviewerAddress,
-              } = milestone;
-              const parentProjectId = milestone.campaign.projectId;
-              const from = this.props.currentUser.address;
-
-              return network.lppCappedMilestoneFactory
-                .newMilestone(
-                  title,
-                  '',
-                  parentProjectId,
-                  reviewerAddress,
-                  recipientAddress,
-                  campaignReviewerAddress,
-                  from,
-                  maxAmount,
-                  Object.values(config.tokenAddresses)[0], // TODO make this a form param
-                  5 * 24 * 60 * 60, // 5 days in seconds
-                  { from, $extraGas: 200000 },
-                )
-                .on('transactionHash', hash => {
-                  txHash = hash;
-
-                  return _createMilestone(etherScanUrl, txHash);
+        }).then(message => {
+          if (message !== null) {
+            // feathers
+            const _createMilestone = (etherScanUrl, txHash) =>
+              feathersClient
+                .service('/milestones')
+                .patch(milestone._id, {
+                  status: 'pending',
+                  mined: false,
+                  message,
+                  txHash,
+                })
+                .then(() => {
+                  React.toast.info(
+                    <p>
+                      Accepting this milestone is pending...<br />
+                      <a
+                        href={`${etherScanUrl}tx/${txHash}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        View transaction
+                      </a>
+                    </p>,
+                  );
+                })
+                .catch(e => {
+                  ErrorPopup('Something went wrong with the transaction. Please try again.', e);
                 });
-            })
-            .catch(err => {
-              if (txHash && err.message && err.message.includes('unknown transaction')) return; // bug in web3 seems to constantly fail due to this error, but the tx is correct
-              ErrorPopup(
-                'Something went wrong with the transaction. Is your wallet unlocked?',
-                `${etherScanUrl}tx/${txHash} => ${JSON.stringify(err, null, 2)}`,
-              );
-            });
+
+            // on chain
+            let txHash;
+            let etherScanUrl;
+            getNetwork()
+              .then(network => {
+                etherScanUrl = network.etherscan;
+
+                const {
+                  title,
+                  maxAmount,
+                  recipientAddress,
+                  reviewerAddress,
+                  campaignReviewerAddress,
+                } = milestone;
+                const parentProjectId = milestone.campaign.projectId;
+                const from = this.props.currentUser.address;
+
+                return network.lppCappedMilestoneFactory
+                  .newMilestone(
+                    title,
+                    '',
+                    parentProjectId,
+                    reviewerAddress,
+                    recipientAddress,
+                    campaignReviewerAddress,
+                    from,
+                    maxAmount,
+                    Object.values(config.tokenAddresses)[0], // TODO make this a form param
+                    5 * 24 * 60 * 60, // 5 days in seconds
+                    { from, $extraGas: 200000 },
+                  )
+                  .on('transactionHash', hash => {
+                    txHash = hash;
+
+                    return _createMilestone(etherScanUrl, txHash);
+                  });
+              })
+              .catch(err => {
+                if (txHash && err.message && err.message.includes('unknown transaction')) return; // bug in web3 seems to constantly fail due to this error, but the tx is correct
+                ErrorPopup(
+                  'Something went wrong with the transaction. Is your wallet unlocked?',
+                  `${etherScanUrl}tx/${txHash} => ${JSON.stringify(err, null, 2)}`,
+                );
+              });
+          }
+        }),
+      )
+      .catch(err => {
+        if (err === 'noBalance') {
+          // handle no balance error
         }
-      }),
-    );
+      });
   }
 
   approveMilestoneCompleted(milestone) {
-    checkWalletBalance(this.props.wallet).then(() =>
-      React.swal({
-        title: 'Approve Milestone?',
-        text: 'Are you sure you want to approve this Milestone?',
-        icon: 'warning',
-        dangerMode: true,
-        buttons: ['Cancel', 'Yes, approve'],
-        content: {
-          element: 'input',
-          attributes: {
-            rows: 3,
-            placeholder: 'Add a message why you approve completion (optional)',
+    checkWalletBalance(this.props.wallet)
+      .then(() =>
+        React.swal({
+          title: 'Approve Milestone?',
+          text: 'Are you sure you want to approve this Milestone?',
+          icon: 'warning',
+          dangerMode: true,
+          buttons: ['Cancel', 'Yes, approve'],
+          content: {
+            element: 'input',
+            attributes: {
+              rows: 3,
+              placeholder: 'Add a message why you approve completion (optional)',
+            },
           },
-        },
-      }).then(message => {
-        if (message !== null) {
-          // feathers
-          const _approveMilestoneCompleted = (etherScanUrl, txHash) =>
-            feathersClient
-              .service('/milestones')
-              .patch(milestone._id, {
-                status: 'Completed',
-                mined: false,
-                message,
-                txHash,
+        }).then(message => {
+          if (message !== null) {
+            // feathers
+            const _approveMilestoneCompleted = (etherScanUrl, txHash) =>
+              feathersClient
+                .service('/milestones')
+                .patch(milestone._id, {
+                  status: 'Completed',
+                  mined: false,
+                  message,
+                  txHash,
+                })
+                .then(() => {
+                  React.toast.info(
+                    <p>
+                      Approving this milestone is pending...<br />
+                      <a
+                        href={`${etherScanUrl}tx/${txHash}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        View transaction
+                      </a>
+                    </p>,
+                  );
+                })
+                .catch(e => {
+                  ErrorPopup('Something went wrong with approving your milestone', e);
+                });
+
+            // on chain
+            let txHash;
+            let etherScanUrl;
+            Promise.all([getNetwork(), getWeb3()])
+              .then(([network, web3]) => {
+                etherScanUrl = network.etherscan;
+
+                const cappedMilestone = new LPPCappedMilestone(web3, milestone.pluginAddress);
+
+                return cappedMilestone
+                  .approveMilestoneCompleted({
+                    from: this.props.currentUser.address,
+                    $extraGas: 4000000,
+                  })
+                  .once('transactionHash', hash => {
+                    txHash = hash;
+                    return _approveMilestoneCompleted(etherScanUrl, txHash);
+                  });
               })
               .then(() => {
-                React.toast.info(
+                React.toast.success(
                   <p>
-                    Approving this milestone is pending...<br />
+                    The milestone has been approved!<br />
                     <a
                       href={`${etherScanUrl}tx/${txHash}`}
                       target="_blank"
@@ -560,159 +630,84 @@ class MyMilestones extends Component {
                   </p>,
                 );
               })
-              .catch(e => {
-                ErrorPopup('Something went wrong with approving your milestone', e);
+              .catch(err => {
+                if (txHash && err.message && err.message.includes('unknown transaction')) return; // bug in web3 seems to constantly fail due to this error, but the tx is correct
+                ErrorPopup(
+                  'Something went wrong with the transaction. Is your wallet unlocked?',
+                  `${etherScanUrl}tx/${txHash}`,
+                );
               });
-
-          // on chain
-          let txHash;
-          let etherScanUrl;
-          Promise.all([getNetwork(), getWeb3()])
-            .then(([network, web3]) => {
-              etherScanUrl = network.etherscan;
-
-              const cappedMilestone = new LPPCappedMilestone(web3, milestone.pluginAddress);
-
-              return cappedMilestone
-                .approveMilestoneCompleted({
-                  from: this.props.currentUser.address,
-                  $extraGas: 4000000,
-                })
-                .once('transactionHash', hash => {
-                  txHash = hash;
-                  return _approveMilestoneCompleted(etherScanUrl, txHash);
-                });
-            })
-            .then(() => {
-              React.toast.success(
-                <p>
-                  The milestone has been approved!<br />
-                  <a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">
-                    View transaction
-                  </a>
-                </p>,
-              );
-            })
-            .catch(err => {
-              if (txHash && err.message && err.message.includes('unknown transaction')) return; // bug in web3 seems to constantly fail due to this error, but the tx is correct
-              ErrorPopup(
-                'Something went wrong with the transaction. Is your wallet unlocked?',
-                `${etherScanUrl}tx/${txHash}`,
-              );
-            });
+          }
+        }),
+      )
+      .catch(err => {
+        if (err === 'noBalance') {
+          // handle no balance error
         }
-      }),
-    );
+      });
   }
 
   rejectMilestoneCompletion(milestone) {
-    checkWalletBalance(this.props.wallet).then(() =>
-      React.swal({
-        title: 'Reject Milestone?',
-        text: "Are you sure you want to reject this Milestone's completion?",
-        icon: 'warning',
-        dangerMode: true,
-        buttons: ['Cancel', 'Yes, reject'],
-        content: {
-          element: 'input',
-          attributes: {
-            rows: 3,
-            placeholder: 'Add a reason why you reject the completion of this milestone',
+    checkWalletBalance(this.props.wallet)
+      .then(() =>
+        React.swal({
+          title: 'Reject Milestone?',
+          text: "Are you sure you want to reject this Milestone's completion?",
+          icon: 'warning',
+          dangerMode: true,
+          buttons: ['Cancel', 'Yes, reject'],
+          content: {
+            element: 'input',
+            attributes: {
+              rows: 3,
+              placeholder: 'Add a reason why you reject the completion of this milestone',
+            },
           },
-        },
-      }).then(message => {
-        if (message) {
-          // reject in feathers
-          const _rejectMilestoneCompletion = (etherScanUrl, txHash) =>
-            feathersClient
-              .service('/milestones')
-              .patch(milestone._id, {
-                status: 'InProgress',
-                mined: false,
-                message,
-                txHash,
-              })
-              .then(() => {
-                React.toast.info(<p>You have rejected this milestone&apos;s completion...</p>);
-              })
-              .catch(e => {
-                ErrorPopup(
-                  'Something went wrong with the transaction. Is your wallet unlocked?',
-                  e,
-                );
-              });
-
-          // reject on chain
-          let txHash;
-          let etherScanUrl;
-          Promise.all([getNetwork(), getWeb3()])
-            .then(([network, web3]) => {
-              etherScanUrl = network.etherscan;
-
-              const cappedMilestone = new LPPCappedMilestone(web3, milestone.pluginAddress);
-
-              return cappedMilestone
-                .rejectCompleteRequest({
-                  from: this.props.currentUser.address,
-                  $extraGas: 4000000,
+        }).then(message => {
+          if (message) {
+            // reject in feathers
+            const _rejectMilestoneCompletion = (etherScanUrl, txHash) =>
+              feathersClient
+                .service('/milestones')
+                .patch(milestone._id, {
+                  status: 'InProgress',
+                  mined: false,
+                  message,
+                  txHash,
                 })
-                .once('transactionHash', hash => {
-                  txHash = hash;
-                  return _rejectMilestoneCompletion(etherScanUrl, txHash);
+                .then(() => {
+                  React.toast.info(<p>You have rejected this milestone&apos;s completion...</p>);
+                })
+                .catch(e => {
+                  ErrorPopup(
+                    'Something went wrong with the transaction. Is your wallet unlocked?',
+                    e,
+                  );
                 });
-            })
-            .then(() => {
-              React.toast.success(
-                <p>
-                  The milestone completion been rejected!<br />
-                  <a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">
-                    View transaction
-                  </a>
-                </p>,
-              );
-            })
-            .catch(err => {
-              if (txHash && err.message && err.message.includes('unknown transaction')) return; // bug in web3 seems to constantly fail due to this error, but the tx is correct
-              ErrorPopup(
-                'Something went wrong with the transaction. Is your wallet unlocked?',
-                `${etherScanUrl}tx/${txHash}`,
-              );
-            });
-        }
-      }),
-    );
-  }
 
-  withdrawal(milestone) {
-    checkWalletBalance(this.props.wallet).then(() =>
-      React.swal({
-        title: 'Withdrawal Funds to Wallet',
-        content: React.swal.msg(
-          <div>
-            <p>We will initiate the transfer of the funds to your wallet.</p>
-            <div className="alert alert-warning">
-              Note: For security reasons, there is a delay of approximately 48 hrs before the funds
-              will appear in your wallet.
-            </div>
-          </div>,
-        ),
-        icon: 'warning',
-        dangerMode: true,
-        buttons: ['Cancel', 'Yes, withdrawal'],
-      }).then(isConfirmed => {
-        if (isConfirmed) {
-          const withdraw = (etherScanUrl, txHash) => {
-            feathersClient
-              .service('/milestones')
-              .patch(milestone._id, {
-                status: 'Paying',
-                mined: false,
-                txHash,
+            // reject on chain
+            let txHash;
+            let etherScanUrl;
+            Promise.all([getNetwork(), getWeb3()])
+              .then(([network, web3]) => {
+                etherScanUrl = network.etherscan;
+
+                const cappedMilestone = new LPPCappedMilestone(web3, milestone.pluginAddress);
+
+                return cappedMilestone
+                  .rejectCompleteRequest({
+                    from: this.props.currentUser.address,
+                    $extraGas: 4000000,
+                  })
+                  .once('transactionHash', hash => {
+                    txHash = hash;
+                    return _rejectMilestoneCompletion(etherScanUrl, txHash);
+                  });
               })
               .then(() => {
-                React.toast.info(
+                React.toast.success(
                   <p>
-                    Withdrawal from milestone...<br />
+                    The milestone completion been rejected!<br />
                     <a
                       href={`${etherScanUrl}tx/${txHash}`}
                       target="_blank"
@@ -723,105 +718,146 @@ class MyMilestones extends Component {
                   </p>,
                 );
               })
-              .catch(e => {
-                ErrorPopup('Something went wrong doing the withdrawal', e);
+              .catch(err => {
+                if (txHash && err.message && err.message.includes('unknown transaction')) return; // bug in web3 seems to constantly fail due to this error, but the tx is correct
+                ErrorPopup(
+                  'Something went wrong with the transaction. Is your wallet unlocked?',
+                  `${etherScanUrl}tx/${txHash}`,
+                );
               });
+          }
+        }),
+      )
+      .catch(err => {
+        if (err === 'noBalance') {
+          // handle no balance error
+        }
+      });
+  }
 
-            feathersClient
-              .service('donations')
-              .patch(
-                null,
-                {
-                  status: 'pending',
-                  paymentStatus: 'Paying',
+  withdrawal(milestone) {
+    checkWalletBalance(this.props.wallet)
+      .then(() =>
+        React.swal({
+          title: 'Withdrawal Funds to Wallet',
+          content: React.swal.msg(
+            <div>
+              <p>We will initiate the transfer of the funds to your wallet.</p>
+              <div className="alert alert-warning">
+                Note: For security reasons, there is a delay of approximately 48 hrs before the
+                funds will appear in your wallet.
+              </div>
+            </div>,
+          ),
+          icon: 'warning',
+          dangerMode: true,
+          buttons: ['Cancel', 'Yes, withdrawal'],
+        }).then(isConfirmed => {
+          if (isConfirmed) {
+            const withdraw = (etherScanUrl, txHash) => {
+              feathersClient
+                .service('/milestones')
+                .patch(milestone._id, {
+                  status: 'Paying',
+                  mined: false,
                   txHash,
-                },
-                {
+                })
+                .then(() => {
+                  React.toast.info(
+                    <p>
+                      Withdrawal from milestone...<br />
+                      <a
+                        href={`${etherScanUrl}tx/${txHash}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        View transaction
+                      </a>
+                    </p>,
+                  );
+                })
+                .catch(e => {
+                  ErrorPopup('Something went wrong doing the withdrawal', e);
+                });
+
+              feathersClient
+                .service('donations')
+                .patch(
+                  null,
+                  {
+                    status: 'pending',
+                    paymentStatus: 'Paying',
+                    txHash,
+                  },
+                  {
+                    query: {
+                      ownerType: 'milestone',
+                      ownerId: milestone._id,
+                    },
+                  },
+                )
+                .catch(e => {
+                  ErrorPopup('Something went wrong doing the withdrawal', e);
+                });
+            };
+
+            const getPledges = () =>
+              feathersClient
+                .service('donations')
+                .find({
                   query: {
                     ownerType: 'milestone',
                     ownerId: milestone._id,
                   },
-                },
-              )
-              .catch(e => {
-                ErrorPopup('Something went wrong doing the withdrawal', e);
-              });
-          };
-
-          const getPledges = () =>
-            feathersClient
-              .service('donations')
-              .find({
-                query: {
-                  ownerType: 'milestone',
-                  ownerId: milestone._id,
-                },
-              })
-              .then(({ data }) => {
-                if (data.length === 0) throw new Error('No donations found to withdraw');
-
-                const pledges = [];
-                data.forEach(donation => {
-                  const pledge = pledges.find(n => n.id === donation.pledgeId);
-
-                  if (pledge) {
-                    pledge.amount = pledge.amount.add(utils.toBN(donation.amount));
-                  } else {
-                    pledges.push({
-                      id: donation.pledgeId,
-                      amount: utils.toBN(donation.amount),
-                    });
-                  }
-                });
-
-                return pledges.map(
-                  note =>
-                    // due to some issue in web3, utils.toHex(note.amount) breaks during minification.
-                    // BN.toString(16) will return a hex string as well
-                    `0x${utils.padLeft(note.amount.toString(16), 48)}${utils.padLeft(
-                      utils.toHex(note.id).substring(2),
-                      16,
-                    )}`,
-                );
-              });
-
-          let txHash;
-          let etherScanUrl;
-          Promise.all([getNetwork(), getWeb3(), getPledges()])
-            .then(([network, web3, pledges]) => {
-              etherScanUrl = network.etherscan;
-
-              return new LPPCappedMilestone(web3, milestone.pluginAddress)
-                .mWithdraw(pledges, {
-                  from: this.props.currentUser.address,
-                  $extraGas: 100000,
                 })
-                .once('transactionHash', hash => {
-                  txHash = hash;
-                  withdraw(etherScanUrl, txHash);
-                });
-            })
-            .then(() => {
-              React.toast.info(
-                <p>
-                  The milestone withdraw has been initiated...<br />
-                  <a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">
-                    View transaction
-                  </a>
-                </p>,
-              );
-            })
-            .catch(e => {
-              if (txHash && e.message && e.message.includes('unknown transaction')) return; // bug in web3 seems to constantly fail due to this error, but the tx is correct
-              console.error(e); // eslint-disable-line no-console
+                .then(({ data }) => {
+                  if (data.length === 0) throw new Error('No donations found to withdraw');
 
-              let msg;
-              if (txHash) {
-                // TODO: need to update feathers to reset the donations to previous state as this
-                // tx failed.
-                msg = (
+                  const pledges = [];
+                  data.forEach(donation => {
+                    const pledge = pledges.find(n => n.id === donation.pledgeId);
+
+                    if (pledge) {
+                      pledge.amount = pledge.amount.add(utils.toBN(donation.amount));
+                    } else {
+                      pledges.push({
+                        id: donation.pledgeId,
+                        amount: utils.toBN(donation.amount),
+                      });
+                    }
+                  });
+
+                  return pledges.map(
+                    note =>
+                      // due to some issue in web3, utils.toHex(note.amount) breaks during minification.
+                      // BN.toString(16) will return a hex string as well
+                      `0x${utils.padLeft(note.amount.toString(16), 48)}${utils.padLeft(
+                        utils.toHex(note.id).substring(2),
+                        16,
+                      )}`,
+                  );
+                });
+
+            let txHash;
+            let etherScanUrl;
+            Promise.all([getNetwork(), getWeb3(), getPledges()])
+              .then(([network, web3, pledges]) => {
+                etherScanUrl = network.etherscan;
+
+                return new LPPCappedMilestone(web3, milestone.pluginAddress)
+                  .mWithdraw(pledges, {
+                    from: this.props.currentUser.address,
+                    $extraGas: 100000,
+                  })
+                  .once('transactionHash', hash => {
+                    txHash = hash;
+                    withdraw(etherScanUrl, txHash);
+                  });
+              })
+              .then(() => {
+                React.toast.info(
                   <p>
-                    Something went wrong with the transaction.<br />
+                    The milestone withdraw has been initiated...<br />
                     <a
                       href={`${etherScanUrl}tx/${txHash}`}
                       target="_blank"
@@ -829,27 +865,54 @@ class MyMilestones extends Component {
                     >
                       View transaction
                     </a>
-                  </p>
+                  </p>,
                 );
-              } else if (e.message === 'No donations found to withdraw') {
-                msg = <p>Nothing to withdraw. There are no donations to this milestone.</p>;
-              } else {
-                msg = <p>Something went wrong with the transaction. Is your wallet unlocked?</p>;
-              }
+              })
+              .catch(e => {
+                if (txHash && e.message && e.message.includes('unknown transaction')) return; // bug in web3 seems to constantly fail due to this error, but the tx is correct
+                console.error(e); // eslint-disable-line no-console
 
-              React.swal({
-                title: 'Oh no!',
-                content: React.swal.msg(msg),
-                icon: 'error',
+                let msg;
+                if (txHash) {
+                  // TODO: need to update feathers to reset the donations to previous state as this
+                  // tx failed.
+                  msg = (
+                    <p>
+                      Something went wrong with the transaction.<br />
+                      <a
+                        href={`${etherScanUrl}tx/${txHash}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        View transaction
+                      </a>
+                    </p>
+                  );
+                } else if (e.message === 'No donations found to withdraw') {
+                  msg = <p>Nothing to withdraw. There are no donations to this milestone.</p>;
+                } else {
+                  msg = <p>Something went wrong with the transaction. Is your wallet unlocked?</p>;
+                }
+
+                React.swal({
+                  title: 'Oh no!',
+                  content: React.swal.msg(msg),
+                  icon: 'error',
+                });
               });
-            });
+          }
+        }),
+      )
+      .catch(err => {
+        if (err === 'noBalance') {
+          // handle no balance error
         }
-      }),
-    );
+      });
   }
 
   // collect(milestone) {
-  //     checkWalletBalance(this.props.wallet).then(() =>
+  //   checkWalletBalance(this.props.wallet)
+  //     .then(() =>
   //       React.swal({
   //         title: 'Collect Funds',
   //         text: 'The funds will be transferred to you wallet.',
@@ -910,7 +973,12 @@ class MyMilestones extends Component {
   //             });
   //         }
   //       }),
-  //     );
+  //     )
+  //     .catch(err => {
+  //       if (err === 'noBalance') {
+  //         // handle no balance error
+  //       }
+  //     });
   // }
 
   render() {

@@ -43,57 +43,69 @@ class MyCampaigns extends Component {
   }
 
   editCampaign(id) {
-    checkWalletBalance(this.props.wallet).then(() => {
-      React.swal({
-        title: 'Edit Campaign?',
-        text: 'Are you sure you want to edit this Campaign?',
-        icon: 'warning',
-        dangerMode: true,
-        buttons: ['Cancel', 'Yes, edit'],
-      }).then(isConfirmed => {
-        if (isConfirmed) redirectAfterWalletUnlock(`/campaigns/${id}/edit`, this.props.wallet);
+    checkWalletBalance(this.props.wallet)
+      .then(() => {
+        React.swal({
+          title: 'Edit Campaign?',
+          text: 'Are you sure you want to edit this Campaign?',
+          icon: 'warning',
+          dangerMode: true,
+          buttons: ['Cancel', 'Yes, edit'],
+        }).then(isConfirmed => {
+          if (isConfirmed) redirectAfterWalletUnlock(`/campaigns/${id}/edit`, this.props.wallet);
+        });
+      })
+      .catch(err => {
+        if (err === 'noBalance') {
+          // handle no balance error
+        }
       });
-    });
   }
 
   cancelCampaign(campaign) {
-    checkWalletBalance(this.props.wallet).then(() => {
-      React.swal({
-        title: 'Cancel Campaign?',
-        text: 'Are you sure you want to cancel this Campaign?',
-        icon: 'warning',
-        dangerMode: true,
-        buttons: ['Dismiss', 'Yes, cancel'],
-      }).then(isConfirmed => {
-        if (isConfirmed) {
-          const afterCreate = url => {
-            const msg = (
-              <p>
-                Campaign cancelation pending...<br />
-                <a href={url} target="_blank" rel="noopener noreferrer">
-                  View transaction
-                </a>
-              </p>
-            );
-            React.toast.info(msg);
-          };
+    checkWalletBalance(this.props.wallet)
+      .then(() => {
+        React.swal({
+          title: 'Cancel Campaign?',
+          text: 'Are you sure you want to cancel this Campaign?',
+          icon: 'warning',
+          dangerMode: true,
+          buttons: ['Dismiss', 'Yes, cancel'],
+        }).then(isConfirmed => {
+          if (isConfirmed) {
+            const afterCreate = url => {
+              const msg = (
+                <p>
+                  Campaign cancelation pending...<br />
+                  <a href={url} target="_blank" rel="noopener noreferrer">
+                    View transaction
+                  </a>
+                </p>
+              );
+              React.toast.info(msg);
+            };
 
-          const afterMined = url => {
-            const msg = (
-              <p>
-                The campaign has been cancelled!<br />
-                <a href={url} target="_blank" rel="noopener noreferrer">
-                  View transaction
-                </a>
-              </p>
-            );
-            React.toast.success(msg);
-          };
+            const afterMined = url => {
+              const msg = (
+                <p>
+                  The campaign has been cancelled!<br />
+                  <a href={url} target="_blank" rel="noopener noreferrer">
+                    View transaction
+                  </a>
+                </p>
+              );
+              React.toast.success(msg);
+            };
 
-          campaign.cancel(this.props.currentUser.address, afterCreate, afterMined);
+            campaign.cancel(this.props.currentUser.address, afterCreate, afterMined);
+          }
+        });
+      })
+      .catch(err => {
+        if (err === 'noBalance') {
+          // handle no balance error
         }
       });
-    });
   }
 
   render() {

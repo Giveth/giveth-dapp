@@ -31,7 +31,13 @@ class DelegateButton extends Component {
   }
 
   openDialog() {
-    checkWalletBalance(this.props.wallet).then(() => this.setState({ modalVisible: true }));
+    checkWalletBalance(this.props.wallet)
+      .then(() => this.setState({ modalVisible: true }))
+      .catch(err => {
+        if (err === 'noBalance') {
+          // handle no balance error
+        }
+      });
   }
 
   selectedObject({ target }) {

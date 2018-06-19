@@ -35,9 +35,15 @@ class JoinGivethCommunity extends Component {
     isInWhitelist(this.props.currentUser, React.whitelist.delegateWhitelist)
       .then(() => {
         if (this.props.currentUser) {
-          checkWalletBalance(this.props.wallet).then(() => {
-            this.props.history.push('/dacs/new');
-          });
+          checkWalletBalance(this.props.wallet)
+            .then(() => {
+              this.props.history.push('/dacs/new');
+            })
+            .catch(err => {
+              if (err === 'noBalance') {
+                // handle no balance error
+              }
+            });
         } else {
           React.swal({
             title: "You're almost there...",
@@ -75,9 +81,15 @@ class JoinGivethCommunity extends Component {
     isInWhitelist(this.props.currentUser, React.whitelist.projectOwnerWhitelist)
       .then(() => {
         if (this.props.currentUser) {
-          checkWalletBalance(this.props.wallet).then(() => {
-            this.props.history.push('/campaigns/new');
-          });
+          checkWalletBalance(this.props.wallet)
+            .then(() => {
+              this.props.history.push('/campaigns/new');
+            })
+            .catch(err => {
+              if (err === 'noBalance') {
+                // handle no balance error
+              }
+            });
         } else {
           React.swal({
             title: "You're almost there...",
