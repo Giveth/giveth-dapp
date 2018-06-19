@@ -93,7 +93,6 @@ class DAC extends BasicModel {
   }
 
   get status() {
-    if (this.delegateId !== '') return DAC.ACTIVE; // TODO: Remove once status is added to feathers
     return this.myStatus;
   }
 

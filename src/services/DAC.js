@@ -39,11 +39,7 @@ class DACservice {
       .watch({ listStrategy: 'always' })
       .find({
         query: {
-          delegateId: {
-            $gt: '0', // 0 is a pending dac
-          },
-          // TODO: Re-enable once communities have status staved in feathers
-          // status: DAC.ACTIVE,
+          status: DAC.ACTIVE,
           $limit: 200,
           $sort: { campaignsCount: -1 },
         },
@@ -114,14 +110,16 @@ class DACservice {
     return feathersClient
       .service('dacs')
       .watch({ listStrategy: 'always' })
-      .find({ query: {
-        ownerAddress: userAddress,
-        $sort: {
-          createdAt: -1,
+      .find({
+        query: {
+          ownerAddress: userAddress,
+          $sort: {
+            createdAt: -1,
+          },
+          $limit: itemsPerPage,
+          $skip: skipPages * itemsPerPage,
         },
-        $limit: itemsPerPage,
-        $skip: skipPages * itemsPerPage,           
-      }})
+      })
       .subscribe(resp => onSuccess(resp), onError);
   }
 

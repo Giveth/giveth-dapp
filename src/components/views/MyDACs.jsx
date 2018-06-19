@@ -31,7 +31,9 @@ class MyDACs extends Component {
     isLoggedIn(this.props.currentUser).then(() => {
       this.dacsObserver = DACservice.getUserDACs(
         this.props.currentUser.address,
-        dacs => this.setState({ dacs, isLoading: false }),
+        0,
+        100,
+        ({ data }) => this.setState({ dacs: data, isLoading: false }),
         () => this.setState({ isLoading: false }),
       );
     });
