@@ -39,30 +39,36 @@ class UserWallet extends Component {
   }
 
   componentWillMount() {
-    isLoggedIn(this.props.currentUser).then(() => {
-      const insufficientBalance = this.props.wallet.getBalance() < React.minimumWalletBalance;
-      this.setState({ isLoadingWallet: false, insufficientBalance });
+    isLoggedIn(this.props.currentUser)
+      .then(() => {
+        const insufficientBalance = this.props.wallet.getBalance() < React.minimumWalletBalance;
+        this.setState({ isLoadingWallet: false, insufficientBalance });
 
-      // load tokens
-      feathersClient
-        .service('/tokens')
-        .find({ query: { userAddress: this.props.currentUser.myAddress } })
-        .then(resp => {
-          this.setState(
-            {
-              tokens: resp.data,
-              isLoadingTokens: false,
-              hasError: false,
-              tokenSymbols: resp.data.map(t => t.tokenSymbol),
-            },
-            this.getObjectsByTokenSymbol(),
-          );
-        })
-        .catch(e => {
-          ErrorPopup('Something went wrong with loading tokens', e);
-          this.setState({ hasError: true });
-        });
-    });
+        // load tokens
+        feathersClient
+          .service('/tokens')
+          .find({ query: { userAddress: this.props.currentUser.myAddress } })
+          .then(resp => {
+            this.setState(
+              {
+                tokens: resp.data,
+                isLoadingTokens: false,
+                hasError: false,
+                tokenSymbols: resp.data.map(t => t.tokenSymbol),
+              },
+              this.getObjectsByTokenSymbol(),
+            );
+          })
+          .catch(e => {
+            ErrorPopup('Something went wrong with loading tokens', e);
+            this.setState({ hasError: true });
+          });
+      })
+      .catch(err => {
+        if (err === 'notLoggedIn') {
+          // default behavior is to go home or signin page after swal popup
+        }
+      });
   }
 
   getObjectsByTokenSymbol() {

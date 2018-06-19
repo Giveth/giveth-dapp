@@ -139,7 +139,13 @@ class MyMilestones extends Component {
   }
 
   componentDidMount() {
-    isLoggedIn(this.props.currentUser).then(() => this.loadMileStones());
+    isLoggedIn(this.props.currentUser)
+      .then(() => this.loadMileStones())
+      .catch(err => {
+        if (err === 'notLoggedIn') {
+          // default behavior is to go home or signin page after swal popup
+        }
+      });
   }
 
   componentWillUnmount() {
