@@ -207,16 +207,17 @@ class ViewMilestone extends Component {
                     <GoBackButton history={history} styleName="inline" />
 
                     {(isOwner(ownerAddress, currentUser) ||
-                      isOwner(campaignOwnerAddress, currentUser)) && (
-                      <span className="pull-right">
-                        <button
-                          className="btn btn-link btn-edit"
-                          onClick={e => this.editMilestone(e)}
-                        >
-                          <i className="fa fa-edit" />
-                        </button>
-                      </span>
-                    )}
+                      isOwner(campaignOwnerAddress, currentUser)) &&
+                      ['proposed', 'rejected', 'InProgress', 'NeedsReview'].includes(status) && (
+                        <span className="pull-right">
+                          <button
+                            className="btn btn-link btn-edit"
+                            onClick={e => this.editMilestone(e)}
+                          >
+                            <i className="fa fa-edit" />
+                          </button>
+                        </span>
+                      )}
 
                     <center>
                       <Link to={`/profile/${ownerAddress}`}>
