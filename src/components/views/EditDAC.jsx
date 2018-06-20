@@ -42,6 +42,8 @@ class EditDAC extends Component {
       isBlocking: false,
     };
 
+    this.form = React.createRef();
+
     this.submit = this.submit.bind(this);
     this.setImage = this.setImage.bind(this);
   }
@@ -140,7 +142,9 @@ class EditDAC extends Component {
   }
 
   triggerRouteBlocking() {
-    this.setState({ isBlocking: true });
+    const form = this.form.current.formsyForm;
+    // we only block routing if the form state is not submitted
+    this.setState({ isBlocking: form && (!form.state.formSubmitted || form.state.isSubmitting) });
   }
 
   render() {
@@ -173,6 +177,7 @@ class EditDAC extends Component {
 
                   <Form
                     onSubmit={this.submit}
+                    ref={this.form}
                     mapping={inputs => {
                       dac.title = inputs.title;
                       dac.description = inputs.description;
