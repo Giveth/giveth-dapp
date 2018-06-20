@@ -19,7 +19,7 @@ class DAC extends BasicModel {
     super(data);
 
     this.communityUrl = data.communityUrl || '';
-    this.delegateId = data.delegateId || '';
+    this.delegateId = data.delegateId;
     this.tokenName = data.tokenName || '';
     this.tokenSymbol = data.tokenSymbol || '';
     this.status = data.status || DAC.PENDING;
@@ -70,7 +70,7 @@ class DAC extends BasicModel {
   }
 
   set delegateId(value) {
-    this.checkType(value, ['string'], 'delegateId');
+    this.checkType(value, ['number', 'undefined'], 'delegateId');
     this.myDelegateId = value;
   }
 
