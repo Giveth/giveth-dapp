@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
-
 import { isLoggedIn, redirectAfterWalletUnlock, checkWalletBalance } from '../../lib/middleware';
 import Loader from '../Loader';
 import User from '../../models/User';
@@ -27,15 +26,22 @@ class MyCampaigns extends Component {
   }
 
   componentDidMount() {
-    isLoggedIn(this.props.currentUser).then(() => {
-      this.campaignsObserver = CampaignService.getUserCampaigns(
-        this.props.currentUser.address,
-        0,
-        100,
-        ({ data }) => this.setState({ campaigns: data, isLoading: false }),
-        () => this.setState({ isLoading: false }),
-      );
-    });
+    isLoggedIn(this.props.currentUser)
+      .then(() => {
+        this.campaignsObserver = CampaignService.getUserCampaigns(
+          this.props.currentUser.address,
+          0,
+          100,
+          campaigns => this.setState({ campaigns, isLoading: false }),
+          () => this.setState({ isLoading: false }),
+        );
+      })
+      .catch(err => {
+        if (err === 'notLoggedIn') {
+          // not logged in
+          // notLoggedInPopup();
+        }
+      });
   }
 
   componentWillUnmount() {
@@ -112,7 +118,7 @@ class MyCampaigns extends Component {
               {!isLoading && (
                 <div className="table-container">
                   {campaigns &&
-                    campaigns.length > 0 && (
+                    campaigns.data.length > 0 && (
                       <table className="table table-responsive table-striped table-hover">
                         <thead>
                           <tr>
@@ -124,7 +130,7 @@ class MyCampaigns extends Component {
                           </tr>
                         </thead>
                         <tbody>
-                          {campaigns.map(c => (
+                          {campaigns.data.map(c => (
                             <tr
                               key={c.id}
                               className={c.status === Campaign.PENDING ? 'pending' : ''}

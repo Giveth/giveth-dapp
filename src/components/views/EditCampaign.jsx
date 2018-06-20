@@ -98,6 +98,12 @@ class EditCampaign extends Component {
         } else {
           this.setState({ isLoading: false });
         }
+      })
+      .catch(err => {
+        if (err === 'notAuthenticated') {
+          // if not authenticated
+          // history.push('/');
+        }
       });
   }
 

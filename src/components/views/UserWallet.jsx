@@ -12,7 +12,6 @@ import Loader from '../Loader';
 import { feathersClient } from '../../lib/feathersClient';
 import { getTruncatedText } from '../../lib/helpers';
 import config from '../../configuration';
-
 import ErrorPopup from '../ErrorPopup';
 import BridgeWithdrawButton from '../BridgeWithdrawButton';
 // TODO: Remove the eslint exception after extracting to model
@@ -39,30 +38,36 @@ class UserWallet extends Component {
   }
 
   componentWillMount() {
-    isLoggedIn(this.props.currentUser).then(() => {
-      const insufficientBalance = this.props.wallet.getBalance() < React.minimumWalletBalance;
-      this.setState({ isLoadingWallet: false, insufficientBalance });
+    isLoggedIn(this.props.currentUser)
+      .then(() => {
+        const insufficientBalance = this.props.wallet.getBalance() < React.minimumWalletBalance;
+        this.setState({ isLoadingWallet: false, insufficientBalance });
 
-      // load tokens
-      feathersClient
-        .service('/tokens')
-        .find({ query: { userAddress: this.props.currentUser.myAddress } })
-        .then(resp => {
-          this.setState(
-            {
-              tokens: resp.data,
-              isLoadingTokens: false,
-              hasError: false,
-              tokenSymbols: resp.data.map(t => t.tokenSymbol),
-            },
-            this.getObjectsByTokenSymbol(),
-          );
-        })
-        .catch(e => {
-          ErrorPopup('Something went wrong with loading tokens', e);
-          this.setState({ hasError: true });
-        });
-    });
+        // load tokens
+        feathersClient
+          .service('/tokens')
+          .find({ query: { userAddress: this.props.currentUser.myAddress } })
+          .then(resp => {
+            this.setState(
+              {
+                tokens: resp.data,
+                isLoadingTokens: false,
+                hasError: false,
+                tokenSymbols: resp.data.map(t => t.tokenSymbol),
+              },
+              this.getObjectsByTokenSymbol(),
+            );
+          })
+          .catch(e => {
+            ErrorPopup('Something went wrong with loading tokens', e);
+            this.setState({ hasError: true });
+          });
+      })
+      .catch(err => {
+        if (err === 'notLoggedIn') {
+          // not logged in
+        }
+      });
   }
 
   getObjectsByTokenSymbol() {
