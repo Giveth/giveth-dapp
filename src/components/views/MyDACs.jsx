@@ -28,15 +28,21 @@ class MyDACs extends Component {
   }
 
   componentDidMount() {
-    isLoggedIn(this.props.currentUser).then(() => {
-      this.dacsObserver = DACservice.getUserDACs(
-        this.props.currentUser.address,
-        0,
-        100,
-        ({ data }) => this.setState({ dacs: data, isLoading: false }),
-        () => this.setState({ isLoading: false }),
-      );
-    });
+    isLoggedIn(this.props.currentUser)
+      .then(() => {
+        this.dacsObserver = DACservice.getUserDACs(
+          this.props.currentUser.address,
+          0,
+          100,
+          dacs => this.setState({ dacs, isLoading: false }),
+          () => this.setState({ isLoading: false }),
+        );
+      })
+      .catch(err => {
+        if (err === 'notLoggedIn') {
+          // not logged in
+        }
+      });
   }
 
   componentWillUnmount() {
@@ -72,7 +78,7 @@ class MyDACs extends Component {
               {!isLoading && (
                 <div>
                   {dacs &&
-                    dacs.length > 0 && (
+                    dacs.data.length > 0 && (
                       <table className="table table-responsive table-striped table-hover">
                         <thead>
                           <tr>
@@ -84,7 +90,7 @@ class MyDACs extends Component {
                           </tr>
                         </thead>
                         <tbody>
-                          {dacs.map(d => (
+                          {dacs.data.map(d => (
                             <tr key={d.id} className={d.status === DAC.PENDING ? 'pending' : ''}>
                               <td className="td-name">
                                 <Link to={`/dacs/${d.id}`}>{getTruncatedText(d.title, 45)}</Link>

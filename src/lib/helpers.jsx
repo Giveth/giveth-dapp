@@ -178,3 +178,28 @@ export const convertEthHelper = amount => {
 
   return eth;
 };
+
+// removes the last pathname from the url and pushes that location
+// the back button will go one lower nested route inside of the DApp
+export const goBackOnePath = () => {
+  let url = history.location.pathname.split('/');
+  url.pop();
+  url = url.join('/');
+  history.push(url);
+};
+
+export const notLoggedInPopup = () =>
+  React.swal({
+    title: 'Oops! You need to be signed in!',
+    content: React.swal.msg(
+      <p>
+        Oops! You need to be logged in to view this page. Please sign in with a wallet to view this
+        page.
+      </p>,
+    ),
+    icon: 'warning',
+    buttons: ['Cancel', 'Sign in'],
+  }).then(isConfirmed => {
+    if (isConfirmed) history.push('/signin');
+    else goBackOnePath();
+  });
