@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import { Prompt } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import { Form, Input } from 'formsy-react-components';
 
@@ -38,6 +39,7 @@ class EditDAC extends Component {
       dac: new DAC({
         owner: props.currentUser,
       }),
+      isBlocking: false,
     };
 
     this.submit = this.submit.bind(this);
@@ -131,9 +133,13 @@ class EditDAC extends Component {
     this.setState({ formIsValid: state });
   }
 
+  triggerRouteBlocking() {
+    this.setState({ isBlocking: true });
+  }
+
   render() {
     const { isNew } = this.props;
-    const { isLoading, isSaving, dac, formIsValid } = this.state;
+    const { isLoading, isSaving, dac, formIsValid, isBlocking } = this.state;
 
     return (
       <div id="edit-dac-view">
@@ -171,8 +177,16 @@ class EditDAC extends Component {
                     }}
                     onValid={() => this.toggleFormValid(true)}
                     onInvalid={() => this.toggleFormValid(false)}
+                    onChange={e => this.triggerRouteBlocking(e)}
                     layout="vertical"
                   >
+                    <Prompt
+                      when={isBlocking}
+                      message={() =>
+                        `You have unsaved changes. Are you sure you want to navigate from this page?`
+                      }
+                    />
+
                     <Input
                       name="title"
                       id="title-input"

@@ -1,5 +1,5 @@
 import React from 'react';
-import { history } from '../lib/helpers';
+import { history, goBackOnePath } from '../lib/helpers';
 
 /**
  * Check if there is a currentUser. If not, routes back. If yes, resolves returned promise
@@ -57,18 +57,13 @@ export const isAuthenticated = (currentUser, wallet) =>
   new Promise((resolve, reject) => {
     if (currentUser && currentUser.address && wallet && wallet.unlocked) resolve();
     else {
+      goBackOnePath();
+      reject(new Error('notAuthenticated'));
       React.swal({
-        title: "Oops! You aren't authorized to be here!",
-        content: React.swal.msg(
-          <p>
-            Oops! You need t to view this page. Please sign in with a wallet to view this page.
-          </p>,
-        ),
+        title: 'Please sign in and unlock your wallet!',
+        text: 'You need to sign in and unlock your wallet to continue.',
         icon: 'warning',
         buttons: 'OK',
-      }).then(() => {
-        history.push('/');
-        reject(new Error('notAuthenticated'));
       });
     }
   });
