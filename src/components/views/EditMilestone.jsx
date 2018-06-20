@@ -362,8 +362,6 @@ class EditMilestone extends Component {
   }
 
   submit(model) {
-    this.setState({ isSaving: true });
-
     const afterEmit = () => {
       this.setState({
         isSaving: false,
@@ -423,7 +421,7 @@ class EditMilestone extends Component {
               callback();
             })
             .catch(err => {
-              this.setState({ isSaving: false });
+              this.setState({ isSaving: false, isBlocking: true });
               ErrorPopup(
                 'There has been an issue creating the milestone. Please try again after refresh.',
                 err,
@@ -527,7 +525,7 @@ class EditMilestone extends Component {
             })
             .catch(err => {
               if (txHash && err.message && err.message.includes('unknown transaction')) return; // bug in web3 seems to constantly fail due to this error, but the tx is correct
-              this.setState({ isSaving: false });
+              this.setState({ isSaving: false, isBlocking: true });
               ErrorPopup(
                 'Something went wrong with the transaction. Is your wallet unlocked?',
                 `${etherScanUrl}tx/${txHash}`,
@@ -564,7 +562,7 @@ class EditMilestone extends Component {
                 'Something went wrong when uploading your image. Please try again after refresh.',
                 err,
               );
-              this.setState({ isSaving: false });
+              this.setState({ isSaving: false, isBlocking: true });
             });
         } else {
           updateMilestone();
@@ -594,7 +592,7 @@ class EditMilestone extends Component {
         Promise.all(uploadItemImages)
           .then(() => uploadMilestoneImage())
           .catch(err => {
-            this.setState({ isSaving: false });
+            this.setState({ isSaving: false, isBlocking: true });
             ErrorPopup(
               'There has been an issue uploading one of the proof items. Please refresh the page and try again.',
               err,
@@ -605,20 +603,28 @@ class EditMilestone extends Component {
       }
     };
 
-    if (this.props.isProposed) {
-      React.swal({
-        title: 'Propose milestone?',
-        text:
-          'The milestone will be proposed to the campaign owner and he or she might approve or reject your milestone.',
-        icon: 'warning',
-        dangerMode: true,
-        buttons: ['Cancel', 'Yes, propose'],
-      }).then(isConfirmed => {
-        if (isConfirmed) saveMilestone();
-      });
-    } else {
-      saveMilestone();
-    }
+    this.setState(
+      {
+        isSaving: true,
+        isBlocking: false,
+      },
+      () => {
+        if (this.props.isProposed) {
+          React.swal({
+            title: 'Propose milestone?',
+            text:
+              'The milestone will be proposed to the campaign owner and he or she might approve or reject your milestone.',
+            icon: 'warning',
+            dangerMode: true,
+            buttons: ['Cancel', 'Yes, propose'],
+          }).then(isConfirmed => {
+            if (isConfirmed) saveMilestone();
+          });
+        } else {
+          saveMilestone();
+        }
+      },
+    );
   }
 
   toggleAddMilestoneItemModal() {

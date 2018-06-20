@@ -145,8 +145,6 @@ class EditCampaign extends Component {
   }
 
   submit() {
-    this.setState({ isSaving: true });
-
     const afterMined = url => {
       if (url) {
         const msg = (
@@ -179,8 +177,16 @@ class EditCampaign extends Component {
       history.push('/my-campaigns');
     };
 
-    // Save the capaign
-    this.state.campaign.save(afterCreate, afterMined);
+    this.setState(
+      {
+        isSaving: true,
+        isBlocking: false,
+      },
+      () => {
+        // Save the capaign
+        this.state.campaign.save(afterCreate, afterMined);
+      },
+    );
   }
 
   toggleFormValid(state) {

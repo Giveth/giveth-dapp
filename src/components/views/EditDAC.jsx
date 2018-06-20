@@ -92,8 +92,6 @@ class EditDAC extends Component {
   }
 
   submit() {
-    this.setState({ isSaving: true });
-
     const afterMined = url => {
       if (url) {
         const msg = (
@@ -125,8 +123,16 @@ class EditDAC extends Component {
       history.push('/my-dacs');
     };
 
-    // Save the DAC
-    this.state.dac.save(afterCreate, afterMined);
+    this.setState(
+      {
+        isSaving: true,
+        isBlocking: false,
+      },
+      () => {
+        // Save the DAC
+        this.state.dac.save(afterCreate, afterMined);
+      },
+    );
   }
 
   toggleFormValid(state) {
