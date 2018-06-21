@@ -34,13 +34,17 @@ class MyDACs extends Component {
           this.props.currentUser.address,
           0,
           100,
-          dacs => this.setState({ dacs, isLoading: false }),
+
+          ({ data }) => this.setState({ dacs: data, isLoading: false }),
+
+          // dacs => this.setState({ dacs, isLoading: false }),
+
           () => this.setState({ isLoading: false }),
         );
       })
       .catch(err => {
         if (err === 'notLoggedIn') {
-          // not logged in
+          // default behavior is to go home or signin page after swal popup
         }
       });
   }
@@ -50,17 +54,23 @@ class MyDACs extends Component {
   }
 
   editDAC(id) {
-    checkWalletBalance(this.props.wallet).then(() =>
-      React.swal({
-        title: 'Edit Community?',
-        text: 'Are you sure you want to edit the description of this community?',
-        icon: 'warning',
-        dangerMode: true,
-        buttons: ['Cancel', 'Yes, edit'],
-      }).then(isConfirmed => {
-        if (isConfirmed) redirectAfterWalletUnlock(`/dacs/${id}/edit`, this.props.wallet);
-      }),
-    );
+    checkWalletBalance(this.props.wallet)
+      .then(() =>
+        React.swal({
+          title: 'Edit Community?',
+          text: 'Are you sure you want to edit the description of this community?',
+          icon: 'warning',
+          dangerMode: true,
+          buttons: ['Cancel', 'Yes, edit'],
+        }).then(isConfirmed => {
+          if (isConfirmed) redirectAfterWalletUnlock(`/dacs/${id}/edit`, this.props.wallet);
+        }),
+      )
+      .catch(err => {
+        if (err === 'noBalance') {
+          // handle no balance error
+        }
+      });
   }
 
   render() {

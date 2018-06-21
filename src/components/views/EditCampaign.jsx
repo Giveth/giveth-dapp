@@ -104,9 +104,8 @@ class EditCampaign extends Component {
         }
       })
       .catch(err => {
-        if (err === 'notAuthenticated') {
-          // if not authenticated
-          // history.push('/');
+        if (err === 'noBalance') {
+          // handle no balance error
         }
       });
   }

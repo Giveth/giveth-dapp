@@ -1,5 +1,5 @@
 import React from 'react';
-import { history, goBackOnePath } from '../lib/helpers';
+import { history } from '../lib/helpers';
 
 /**
  * Check if there is a currentUser. If not, routes back. If yes, resolves returned promise
@@ -35,7 +35,6 @@ export const isLoggedIn = currentUser =>
         reject(new Error('notLoggedIn'));
       });
     }
-    // history.push('/');
   });
 
 /**
@@ -57,14 +56,8 @@ export const isAuthenticated = (currentUser, wallet) =>
   new Promise((resolve, reject) => {
     if (currentUser && currentUser.address && wallet && wallet.unlocked) resolve();
     else {
-      goBackOnePath();
+      history.push('/');
       reject(new Error('notAuthenticated'));
-      React.swal({
-        title: 'Please sign in and unlock your wallet!',
-        text: 'You need to sign in and unlock your wallet to continue.',
-        icon: 'warning',
-        buttons: 'OK',
-      });
     }
   });
 

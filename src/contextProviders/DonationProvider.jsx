@@ -86,45 +86,56 @@ class DonationProvider extends Component {
    * @param donation Donation which delegation should be rejected
    */
   reject(donation) {
-    checkWalletBalance(this.props.wallet).then(() =>
-      React.swal({
-        title: 'Reject your donation?',
-        text:
-          'Your donation will not go to this Milestone. You will still be in control of you funds and the DAC can still delegate you donation.',
-        icon: 'warning',
-        dangerMode: true,
-        buttons: ['Cancel', 'Yes, reject'],
-      }).then(isConfirmed => {
-        if (isConfirmed) {
-          // Inform user after the transaction is created
-          const afterCreate = txLink => {
-            React.toast.success(
-              <p>
-                The refusal of the delegation is pending...<br />
-                <a href={txLink} target="_blank" rel="noopener noreferrer">
-                  View transaction
-                </a>
-              </p>,
-            );
-          };
+    checkWalletBalance(this.props.wallet)
+      .then(() =>
+        React.swal({
+          title: 'Reject your donation?',
+          text:
+            'Your donation will not go to this Milestone. You will still be in control of you funds and the DAC can still delegate you donation.',
+          icon: 'warning',
+          dangerMode: true,
+          buttons: ['Cancel', 'Yes, reject'],
+        }).then(isConfirmed => {
+          if (isConfirmed) {
+            // Inform user after the transaction is created
+            const afterCreate = txLink => {
+              React.toast.success(
+                <p>
+                  The refusal of the delegation is pending...<br />
+                  <a href={txLink} target="_blank" rel="noopener noreferrer">
+                    View transaction
+                  </a>
+                </p>,
+              );
+            };
 
-          // Inform user after the refusal transaction is mined
-          const afterMined = txLink => {
-            React.toast.success(
-              <p>
-                Your donation delegation has been rejected.<br />
-                <a href={txLink} target="_blank" rel="noopener noreferrer">
-                  View transaction
-                </a>
-              </p>,
-            );
-          };
+            // Inform user after the refusal transaction is mined
+            const afterMined = txLink => {
+              React.toast.success(
+                <p>
+                  Your donation delegation has been rejected.<br />
+                  <a href={txLink} target="_blank" rel="noopener noreferrer">
+                    View transaction
+                  </a>
+                </p>,
+              );
+            };
 
-          // Reject the delegation of the donation
-          DonationService.reject(donation, this.props.currentUser.address, afterCreate, afterMined);
+            // Reject the delegation of the donation
+            DonationService.reject(
+              donation,
+              this.props.currentUser.address,
+              afterCreate,
+              afterMined,
+            );
+          }
+        }),
+      )
+      .catch(err => {
+        if (err === 'noBalance') {
+          // handle no balance error
         }
-      }),
-    );
+      });
   }
 
   /**
@@ -133,44 +144,55 @@ class DonationProvider extends Component {
    * @param donation Donation to be committed
    */
   commit(donation) {
-    checkWalletBalance(this.props.wallet).then(() =>
-      React.swal({
-        title: 'Commit your donation?',
-        text:
-          'Your donation will go to this Milestone. After committing you can no longer take back your money.',
-        icon: 'warning',
-        buttons: ['Cancel', 'Yes, commit'],
-      }).then(isConfirmed => {
-        if (isConfirmed) {
-          // Inform user after the transaction is created
-          const afterCreate = txLink => {
-            React.toast.success(
-              <p>
-                The commitment of the donation is pending...<br />
-                <a href={txLink} target="_blank" rel="noopener noreferrer">
-                  View transaction
-                </a>
-              </p>,
-            );
-          };
+    checkWalletBalance(this.props.wallet)
+      .then(() =>
+        React.swal({
+          title: 'Commit your donation?',
+          text:
+            'Your donation will go to this Milestone. After committing you can no longer take back your money.',
+          icon: 'warning',
+          buttons: ['Cancel', 'Yes, commit'],
+        }).then(isConfirmed => {
+          if (isConfirmed) {
+            // Inform user after the transaction is created
+            const afterCreate = txLink => {
+              React.toast.success(
+                <p>
+                  The commitment of the donation is pending...<br />
+                  <a href={txLink} target="_blank" rel="noopener noreferrer">
+                    View transaction
+                  </a>
+                </p>,
+              );
+            };
 
-          // Inform user after the commit transaction is mined
-          const afterMined = txLink => {
-            React.toast.success(
-              <p>
-                Your donation has been committed!<br />
-                <a href={txLink} target="_blank" rel="noopener noreferrer">
-                  View transaction
-                </a>
-              </p>,
-            );
-          };
+            // Inform user after the commit transaction is mined
+            const afterMined = txLink => {
+              React.toast.success(
+                <p>
+                  Your donation has been committed!<br />
+                  <a href={txLink} target="_blank" rel="noopener noreferrer">
+                    View transaction
+                  </a>
+                </p>,
+              );
+            };
 
-          // Commit the donation's delegation
-          DonationService.commit(donation, this.props.currentUser.address, afterCreate, afterMined);
+            // Commit the donation's delegation
+            DonationService.commit(
+              donation,
+              this.props.currentUser.address,
+              afterCreate,
+              afterMined,
+            );
+          }
+        }),
+      )
+      .catch(err => {
+        if (err === 'noBalance') {
+          // handle no balance error
         }
-      }),
-    );
+      });
   }
 
   /**
@@ -179,45 +201,56 @@ class DonationProvider extends Component {
    * @param donation Donation to be refunded
    */
   refund(donation) {
-    checkWalletBalance(this.props.wallet).then(() =>
-      React.swal({
-        title: 'Refund your donation?',
-        text:
-          'Your donation will be cancelled and a payment will be authorized to refund your tokens. All withdrawals must be confirmed for security reasons and may take a day or two. Upon confirmation, your tokens will be transferred to your wallet.',
-        icon: 'warning',
-        dangerMode: true,
-        buttons: ['Cancel', 'Yes, refund'],
-      }).then(isConfirmed => {
-        if (isConfirmed) {
-          // Inform user after the transaction is created
-          const afterCreate = txLink => {
-            React.toast.success(
-              <p>
-                The refund is pending...<br />
-                <a href={txLink} target="_blank" rel="noopener noreferrer">
-                  View transaction
-                </a>
-              </p>,
-            );
-          };
+    checkWalletBalance(this.props.wallet)
+      .then(() =>
+        React.swal({
+          title: 'Refund your donation?',
+          text:
+            'Your donation will be cancelled and a payment will be authorized to refund your tokens. All withdrawals must be confirmed for security reasons and may take a day or two. Upon confirmation, your tokens will be transferred to your wallet.',
+          icon: 'warning',
+          dangerMode: true,
+          buttons: ['Cancel', 'Yes, refund'],
+        }).then(isConfirmed => {
+          if (isConfirmed) {
+            // Inform user after the transaction is created
+            const afterCreate = txLink => {
+              React.toast.success(
+                <p>
+                  The refund is pending...<br />
+                  <a href={txLink} target="_blank" rel="noopener noreferrer">
+                    View transaction
+                  </a>
+                </p>,
+              );
+            };
 
-          // Inform user after the refund transaction is mined
-          const afterMined = txLink => {
-            React.toast.success(
-              <p>
-                Your donation has been refunded!<br />
-                <a href={txLink} target="_blank" rel="noopener noreferrer">
-                  View transaction
-                </a>
-              </p>,
-            );
-          };
+            // Inform user after the refund transaction is mined
+            const afterMined = txLink => {
+              React.toast.success(
+                <p>
+                  Your donation has been refunded!<br />
+                  <a href={txLink} target="_blank" rel="noopener noreferrer">
+                    View transaction
+                  </a>
+                </p>,
+              );
+            };
 
-          // Refund the donation
-          DonationService.refund(donation, this.props.currentUser.address, afterCreate, afterMined);
+            // Refund the donation
+            DonationService.refund(
+              donation,
+              this.props.currentUser.address,
+              afterCreate,
+              afterMined,
+            );
+          }
+        }),
+      )
+      .catch(err => {
+        if (err === 'noBalance') {
+          // handle no balance error
         }
-      }),
-    );
+      });
   }
 
   render() {

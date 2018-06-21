@@ -37,24 +37,30 @@ class MilestoneCard extends Component {
   editMilestone(e) {
     e.stopPropagation();
 
-    checkWalletBalance(this.props.wallet).then(() => {
-      React.swal({
-        title: 'Edit Milestone?',
-        text: 'Are you sure you want to edit this milestone?',
-        icon: 'warning',
-        dangerMode: true,
-        buttons: ['Cancel', 'Yes, edit'],
-      }).then(isConfirmed => {
-        if (isConfirmed) {
-          redirectAfterWalletUnlock(
-            `/campaigns/${this.props.milestone.campaignId}/milestones/${
-              this.props.milestone._id
-            }/edit`,
-            this.props.wallet,
-          );
+    checkWalletBalance(this.props.wallet)
+      .then(() => {
+        React.swal({
+          title: 'Edit Milestone?',
+          text: 'Are you sure you want to edit this milestone?',
+          icon: 'warning',
+          dangerMode: true,
+          buttons: ['Cancel', 'Yes, edit'],
+        }).then(isConfirmed => {
+          if (isConfirmed) {
+            redirectAfterWalletUnlock(
+              `/campaigns/${this.props.milestone.campaignId}/milestones/${
+                this.props.milestone._id
+              }/edit`,
+              this.props.wallet,
+            );
+          }
+        });
+      })
+      .catch(err => {
+        if (err === 'noBalance') {
+          // handle no balance error
         }
       });
-    });
   }
 
   render() {

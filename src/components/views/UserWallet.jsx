@@ -65,7 +65,7 @@ class UserWallet extends Component {
       })
       .catch(err => {
         if (err === 'notLoggedIn') {
-          // not logged in
+          // default behavior is to go home or signin page after swal popup
         }
       });
   }
