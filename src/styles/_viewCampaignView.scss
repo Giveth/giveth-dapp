@@ -11,6 +11,22 @@
       display: inline-block;    
   }
 
+ .card-body.content{
+    @include bullet-styling(8);
+    
+    iframe.ql-video{
+      width: 100%;
+      height: 300px;
+    }
+
+    img{
+      max-width: 100%;
+      width: auto;
+      box-sizing: border-box;
+      display: block;
+    }
+  }  
+
   .milestone-card {
     margin-bottom: 10px;
 

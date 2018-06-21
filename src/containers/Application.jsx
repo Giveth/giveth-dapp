@@ -1,7 +1,8 @@
 import React, { Component } from 'react';
 import ReactDOM from 'react-dom';
 
-import { Router, Route, Switch } from 'react-router-dom';
+import { Router, Route, Redirect, Switch } from 'react-router-dom';
+
 import localforage from 'localforage';
 
 import { ToastContainer, toast } from 'react-toastify';
@@ -123,27 +124,27 @@ class Application extends Component {
 
                       <Switch>
                         {/* Routes are defined here. Persistent data is set as props on components
-                  NOTE order matters, wrong order breaks routes!
-               */}
+                          NOTE order matters, wrong order breaks routes!
+                        */}
 
                         <Route
                           exact
                           path="/dacs/new"
-                          component={props => (
+                          render={props => (
                             <EditDAC isNew currentUser={currentUser} wallet={wallet} {...props} />
                           )}
                         />
                         <Route
                           exact
                           path="/dacs/:id"
-                          component={props => (
+                          render={props => (
                             <ViewDAC currentUser={currentUser} wallet={wallet} {...props} />
                           )}
                         />
                         <Route
                           exact
                           path="/dacs/:id/edit"
-                          component={props => (
+                          render={props => (
                             <EditDAC currentUser={currentUser} wallet={wallet} {...props} />
                           )}
                         />
@@ -151,7 +152,7 @@ class Application extends Component {
                         <Route
                           exact
                           path="/campaigns/new"
-                          component={props => (
+                          render={props => (
                             <EditCampaign
                               isNew
                               currentUser={currentUser}
@@ -163,14 +164,14 @@ class Application extends Component {
                         <Route
                           exact
                           path="/campaigns/:id"
-                          component={props => (
+                          render={props => (
                             <ViewCampaign currentUser={currentUser} wallet={wallet} {...props} />
                           )}
                         />
                         <Route
                           exact
                           path="/campaigns/:id/edit"
-                          component={props => (
+                          render={props => (
                             <EditCampaign currentUser={currentUser} wallet={wallet} {...props} />
                           )}
                         />
@@ -178,7 +179,7 @@ class Application extends Component {
                         <Route
                           exact
                           path="/campaigns/:id/milestones/new"
-                          component={props => (
+                          render={props => (
                             <EditMilestone
                               isNew
                               currentUser={currentUser}
@@ -190,7 +191,7 @@ class Application extends Component {
                         <Route
                           exact
                           path="/campaigns/:id/milestones/propose"
-                          component={props => (
+                          render={props => (
                             <EditMilestone
                               isNew
                               isProposed
@@ -203,28 +204,33 @@ class Application extends Component {
                         <Route
                           exact
                           path="/campaigns/:id/milestones/:milestoneId"
-                          component={props => (
+                          render={props => (
                             <ViewMilestone currentUser={currentUser} wallet={wallet} {...props} />
                           )}
                         />
                         <Route
                           exact
                           path="/campaigns/:id/milestones/:milestoneId/edit"
-                          component={props => (
+                          render={props => (
                             <EditMilestone currentUser={currentUser} wallet={wallet} {...props} />
                           )}
                         />
                         <Route
                           exact
+                          path="/campaigns/:id/milestones"
+                          render={({ match }) => <Redirect to={`/campaigns/${match.params.id}`} />}
+                        />
+                        <Route
+                          exact
                           path="/milestones/:milestoneId/edit"
-                          component={props => (
+                          render={props => (
                             <EditMilestone currentUser={currentUser} wallet={wallet} {...props} />
                           )}
                         />
                         <Route
                           exact
                           path="/milestones/:milestoneId/edit/proposed"
-                          component={props => (
+                          render={props => (
                             <EditMilestone
                               currentUser={currentUser}
                               wallet={wallet}
@@ -236,35 +242,35 @@ class Application extends Component {
                         <Route
                           exact
                           path="/donations"
-                          component={props => (
+                          render={props => (
                             <Donations currentUser={currentUser} wallet={wallet} {...props} />
                           )}
                         />
                         <Route
                           exact
                           path="/delegations"
-                          component={props => (
+                          render={props => (
                             <Delegations currentUser={currentUser} wallet={wallet} {...props} />
                           )}
                         />
                         <Route
                           exact
                           path="/my-dacs"
-                          component={props => (
+                          render={props => (
                             <MyDACs currentUser={currentUser} wallet={wallet} {...props} />
                           )}
                         />
                         <Route
                           exact
                           path="/my-campaigns"
-                          component={props => (
+                          render={props => (
                             <MyCampaigns currentUser={currentUser} wallet={wallet} {...props} />
                           )}
                         />
                         <Route
                           exact
                           path="/my-milestones"
-                          component={props => (
+                          render={props => (
                             <MyMilestones currentUser={currentUser} wallet={wallet} {...props} />
                           )}
                         />
@@ -272,7 +278,7 @@ class Application extends Component {
                         <Route
                           exact
                           path="/signin"
-                          component={props => (
+                          render={props => (
                             <SignIn
                               wallet={wallet}
                               cachedWallet={wallet}
@@ -299,21 +305,21 @@ class Application extends Component {
                         <Route
                           exact
                           path="/wallet"
-                          component={props => (
+                          render={props => (
                             <UserWallet currentUser={currentUser} wallet={wallet} {...props} />
                           )}
                         />
                         <Route
                           exact
                           path="/profile"
-                          component={props => (
+                          render={props => (
                             <EditProfile currentUser={currentUser} wallet={wallet} {...props} />
                           )}
                         />
                         <Route
                           exact
                           path="/profile/:userAddress"
-                          component={props => <Profile {...props} />}
+                          render={props => <Profile {...props} />}
                         />
 
                         <DataRoutes />

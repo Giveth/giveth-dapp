@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import { Prompt } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import { utils } from 'web3';
 import Toggle from 'react-toggle';
@@ -27,8 +28,6 @@ import AddMilestoneItem from '../../components/AddMilestoneItem';
 import ErrorPopup from '../ErrorPopup';
 import AddMilestoneItemModal from '../../components/AddMilestoneItemModal';
 import config from '../../configuration';
-import { Prompt } from 'react-router-dom';
-
 
 BigNumber.config({ DECIMAL_PLACES: 18 });
 
@@ -93,8 +92,11 @@ class EditMilestone extends Component {
         { value: 'USD', title: 'USD' },
       ],
       selectedFiatType: 'EUR',
-      isBlocking: false
+      isBlocking: false,
     };
+
+    this.form = React.createRef();
+
     this.submit = this.submit.bind(this);
     this.setImage = this.setImage.bind(this);
     this.setMaxAmount = this.setMaxAmount.bind(this);
@@ -363,12 +365,10 @@ class EditMilestone extends Component {
   }
 
   submit(model) {
-    this.setState({ isSaving: true });
-
     const afterEmit = () => {
-      this.setState({ 
+      this.setState({
         isSaving: false,
-        isBlocking: false
+        isBlocking: false,
       });
       this.props.history.goBack();
     };
@@ -393,7 +393,6 @@ class EditMilestone extends Component {
       const constructedModel = {
         title: model.title,
         description: model.description,
-        summary: getTruncatedText(model.description, 100),
         maxAmount: utils.toWei(model.maxAmount.toFixed(18)),
         ownerAddress: this.props.currentUser.address,
         reviewerAddress: model.reviewerAddress,
@@ -424,7 +423,7 @@ class EditMilestone extends Component {
               callback();
             })
             .catch(err => {
-              this.setState({ isSaving: false });
+              this.setState({ isSaving: false, isBlocking: true });
               ErrorPopup(
                 'There has been an issue creating the milestone. Please try again after refresh.',
                 err,
@@ -528,7 +527,7 @@ class EditMilestone extends Component {
             })
             .catch(err => {
               if (txHash && err.message && err.message.includes('unknown transaction')) return; // bug in web3 seems to constantly fail due to this error, but the tx is correct
-              this.setState({ isSaving: false });
+              this.setState({ isSaving: false, isBlocking: true });
               ErrorPopup(
                 'Something went wrong with the transaction. Is your wallet unlocked?',
                 `${etherScanUrl}tx/${txHash}`,
@@ -565,7 +564,7 @@ class EditMilestone extends Component {
                 'Something went wrong when uploading your image. Please try again after refresh.',
                 err,
               );
-              this.setState({ isSaving: false });
+              this.setState({ isSaving: false, isBlocking: true });
             });
         } else {
           updateMilestone();
@@ -595,7 +594,7 @@ class EditMilestone extends Component {
         Promise.all(uploadItemImages)
           .then(() => uploadMilestoneImage())
           .catch(err => {
-            this.setState({ isSaving: false });
+            this.setState({ isSaving: false, isBlocking: true });
             ErrorPopup(
               'There has been an issue uploading one of the proof items. Please refresh the page and try again.',
               err,
@@ -606,20 +605,28 @@ class EditMilestone extends Component {
       }
     };
 
-    if (this.props.isProposed) {
-      React.swal({
-        title: 'Propose milestone?',
-        text:
-          'The milestone will be proposed to the campaign owner and he or she might approve or reject your milestone.',
-        icon: 'warning',
-        dangerMode: true,
-        buttons: ['Cancel', 'Yes, propose'],
-      }).then(isConfirmed => {
-        if (isConfirmed) saveMilestone();
-      });
-    } else {
-      saveMilestone();
-    }
+    this.setState(
+      {
+        isSaving: true,
+        isBlocking: false,
+      },
+      () => {
+        if (this.props.isProposed) {
+          React.swal({
+            title: 'Propose milestone?',
+            text:
+              'The milestone will be proposed to the campaign owner and he or she might approve or reject your milestone.',
+            icon: 'warning',
+            dangerMode: true,
+            buttons: ['Cancel', 'Yes, propose'],
+          }).then(isConfirmed => {
+            if (isConfirmed) saveMilestone();
+          });
+        } else {
+          saveMilestone();
+        }
+      },
+    );
   }
 
   toggleAddMilestoneItemModal() {
@@ -632,8 +639,10 @@ class EditMilestone extends Component {
     this.setState({ itemizeState: !this.state.itemizeState });
   }
 
-  triggerRouteBlocking(e) {
-    this.setState({ isBlocking: true })
+  triggerRouteBlocking() {
+    const form = this.form.current.formsyForm;
+    // we only block routing if the form state is not submitted
+    this.setState({ isBlocking: form && (!form.state.formSubmitted || form.state.isSubmitting) });
   }
 
   render() {
@@ -660,7 +669,7 @@ class EditMilestone extends Component {
       fiatTypes,
       currentRate,
       reviewers,
-      isBlocking
+      isBlocking,
     } = this.state;
 
     return (
@@ -703,24 +712,19 @@ class EditMilestone extends Component {
 
                   <Form
                     onSubmit={this.submit}
-                    ref="form"
+                    ref={this.form}
                     mapping={inputs => this.mapInputs(inputs)}
                     onValid={() => this.toggleFormValid(true)}
                     onInvalid={() => this.toggleFormValid(false)}
-                    onChange={(e) => this.triggerRouteBlocking(e)}
+                    onChange={e => this.triggerRouteBlocking(e)}
                     layout="vertical"
                   >
-
-                    {/*
-                      // If only this would work... a bug with React Router prevents this from working
-
-                      <Prompt
-                        when={isBlocking}
-                        message={location =>
-                          `You have unsaved changes. Are you sure you want to navigate from this page?`
-                        }
-                      />
-                    */}
+                    <Prompt
+                      when={isBlocking}
+                      message={() =>
+                        `You have unsaved changes. Are you sure you want to navigate from this page?`
+                      }
+                    />
 
                     <Input
                       name="title"

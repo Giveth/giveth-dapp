@@ -108,7 +108,7 @@ class MilestoneCard extends Component {
 
           <div className="card-content">
             <h4 className="card-title">{getTruncatedText(milestone.title, 30)}</h4>
-            <div className="card-text">{milestone.summary}</div>
+            <div className="card-text">{getTruncatedText(milestone.description, 100)}</div>
           </div>
 
           <div className="card-footer">

@@ -12,7 +12,6 @@ import Loader from '../Loader';
 import { feathersClient } from '../../lib/feathersClient';
 import { getTruncatedText } from '../../lib/helpers';
 import config from '../../configuration';
-
 import ErrorPopup from '../ErrorPopup';
 import BridgeWithdrawButton from '../BridgeWithdrawButton';
 // TODO: Remove the eslint exception after extracting to model

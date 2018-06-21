@@ -31,7 +31,6 @@ class DAC extends BasicModel {
       title: this.title,
       description: this.description,
       communityUrl: this.communityUrl,
-      summary: this.summary,
       delegateId: this.delegateId,
       image: this.image,
       txHash: this.txHash,

@@ -6,6 +6,7 @@ import GivethWallet from '../lib/blockchain/GivethWallet';
 import { getWeb3, getHomeWeb3 } from '../lib/blockchain/getWeb3';
 
 import ErrorPopup from '../components/ErrorPopup';
+import { history } from '../lib/helpers';
 
 // models
 import User from '../models/User';
@@ -68,15 +69,14 @@ class UserProvider extends Component {
         if (token) return feathersClient.passport.verifyJWT(token);
         return null;
       })
-      .then(payload => {
-        this.getUserData(payload.userId);
-        feathersClient.authenticate(); // need to authenticate the socket connection
-
+      .then(payload => this.getUserData(payload.userId))
+      .then(() => feathersClient.authenticate()) // need to authenticate the socket connection
+      .then(() =>
         this.setState({
           isLoading: false,
           hasError: false,
-        });
-      })
+        }),
+      )
       .catch(() => {
         this.setState({ isLoading: false, hasError: false });
       });
@@ -103,6 +103,7 @@ class UserProvider extends Component {
   }
 
   onSignOut() {
+    history.push('/');
     if (this.state.wallet) this.state.wallet.lock();
 
     feathersClient.logout();
@@ -111,30 +112,42 @@ class UserProvider extends Component {
 
   onSignIn() {
     const address = this.state.wallet.getAddresses()[0];
-    this.getUserData(address);
-    this.setState({ walletLocked: false });
+
+    this.setState({ isLoading: true }, () =>
+      this.getUserData(address).then(() =>
+        this.setState({
+          walletLocked: false,
+          isLoading: false,
+        }),
+      ),
+    );
   }
 
   getUserData(address) {
     if (this.userSubscriber) this.userSubscriber.unsubscribe();
-    this.userSubscriber = feathersClient
-      .service('/users')
-      .watch({ listStrategy: 'always' })
-      .find({
-        query: {
-          address,
-        },
-      })
-      .subscribe(
-        resp => {
-          if (resp.total === 1) this.setState({ currentUser: new User(resp.data[0]) });
-        },
-        error =>
-          ErrorPopup(
-            'Something went wrong with getting user profile. Please try again after refresh.',
-            error,
-          ),
-      );
+
+    return new Promise((resolve, reject) => {
+      this.userSubscriber = feathersClient
+        .service('/users')
+        .watch({ listStrategy: 'always' })
+        .find({
+          query: {
+            address,
+          },
+        })
+        .subscribe(
+          resp => {
+            if (resp.total === 1) this.setState({ currentUser: new User(resp.data[0]) }, resolve());
+          },
+          error => {
+            ErrorPopup(
+              'Something went wrong with getting user profile. Please try again after refresh.',
+              error,
+            );
+            reject();
+          },
+        );
+    });
   }
 
   handleWalletChange(wallet) {
@@ -144,8 +157,15 @@ class UserProvider extends Component {
     getWeb3().then(web3 => web3.setWallet(wallet));
     getHomeWeb3().then(homeWeb3 => homeWeb3.setWallet(wallet));
 
-    this.getUserData(address);
-    this.setState({ wallet, walletLocked: false });
+    this.setState({ isLoading: true }, () =>
+      this.getUserData(address).then(() =>
+        this.setState({
+          wallet,
+          walletLocked: false,
+          isLoading: false,
+        }),
+      ),
+    );
   }
 
   unlockWallet(actionAfter) {
