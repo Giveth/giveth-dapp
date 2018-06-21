@@ -1,5 +1,4 @@
 import { LPPCampaign } from 'lpp-campaign';
-import { LPPDac } from 'lpp-dac';
 
 import getNetwork from '../lib/blockchain/getNetwork';
 import { feathersClient } from '../lib/feathersClient';
@@ -42,15 +41,9 @@ class DonationService {
         const receiverId = delegateTo.type === 'dac' ? delegateTo.delegateId : delegateTo.projectId;
 
         const executeTransfer = () => {
-          let contract;
-
           if (donation.ownerType === 'campaign') {
-            contract = new LPPCampaign(web3, donation.ownerEntity.pluginAddress);
-          } else if (donation.ownerType === 'giver' && donation.delegate > 0) {
-            contract = new LPPDac(web3, donation.delegateEntity.pluginAddress);
-          }
+            const contract = new LPPCampaign(web3, donation.ownerEntity.pluginAddress);
 
-          if (contract) {
             return contract.transfer(donation.pledgeId, amount, receiverId, {
               from,
               $extraGas: 100000,

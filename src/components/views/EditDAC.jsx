@@ -182,8 +182,6 @@ class EditDAC extends Component {
                       dac.title = inputs.title;
                       dac.description = inputs.description;
                       dac.communityUrl = inputs.communityUrl;
-                      dac.tokenName = inputs.tokenName;
-                      dac.tokenSymbol = inputs.tokenSymbol;
                       dac.summary = getTruncatedText(inputs.description, 100);
                     }}
                     onValid={() => this.toggleFormValid(true)}
@@ -253,42 +251,6 @@ class EditDAC extends Component {
                         validationErrors={{
                           isUrl: 'Please provide a url.',
                         }}
-                      />
-                    </div>
-
-                    <div className="form-group">
-                      <Input
-                        name="tokenName"
-                        id="token-name-input"
-                        label="Token Name"
-                        type="text"
-                        value={dac.tokenName}
-                        help="The name of the token that givers will receive when they donate to
-                        this dac."
-                        validations="minLength:3"
-                        validationErrors={{
-                          minLength: 'Please provide at least 3 characters.',
-                        }}
-                        required
-                        disabled={!isNew}
-                      />
-                    </div>
-
-                    <div className="form-group">
-                      <Input
-                        name="tokenSymbol"
-                        id="token-symbol-input"
-                        label="Token Symbol"
-                        type="text"
-                        value={dac.tokenSymbol}
-                        help="The symbol of the token that givers will receive when they donate to
-                        this dac."
-                        validations="minLength:2"
-                        validationErrors={{
-                          minLength: 'Please provide at least 2 characters.',
-                        }}
-                        required
-                        disabled={!isNew}
                       />
                     </div>
 

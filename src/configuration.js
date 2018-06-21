@@ -4,7 +4,6 @@ const {
   REACT_APP_FEATHERJS_CONNECTION_URL,
   REACT_APP_ETH_NODE_CONNECTION_URL,
   REACT_APP_LIQUIDPLEDGING_ADDRESS,
-  REACT_APP_DAC_FACTORY_ADDRESS,
   REACT_APP_CAMPAIGN_FACTORY_ADDRESS,
   REACT_APP_CAPPED_MILESTONE_FACTORY_ADDRESS,
   REACT_APP_TOKEN_ADDRESSES,
@@ -17,9 +16,8 @@ const configurations = {
   localhost: {
     title: 'Ganache',
     liquidPledgingAddress: '0xBeFdf675cb73813952C5A9E4B84ea8B866DBA592',
-    lppDacFactoryAddress: '0x630589690929E9cdEFDeF0734717a9eF3Ec7Fcfe',
     lppCampaignFactoryAddress: '0x9b1f7F645351AF3631a656421eD2e40f2802E6c0',
-    lppCappedMilestoneFactoryAddress: '0xb09bCc172050fBd4562da8b229Cf3E45Dc3045A6',
+    lppCappedMilestoneFactoryAddress: '0x630589690929E9cdEFDeF0734717a9eF3Ec7Fcfe',
     givethBridgeAddress: '0x8fed3F9126e7051DeA6c530920cb0BAE5ffa17a8',
     foreignGivethBridgeAddress: '0x8fed3F9126e7051DeA6c530920cb0BAE5ffa17a8',
     tokenAddresses: { 'Home Ganache ETH': '0x5a42ca500aB159c51312B764bb25C135026e7a31' },
@@ -34,7 +32,6 @@ const configurations = {
   develop: {
     title: 'develop',
     liquidPledgingAddress: '0x800c0b18ca85c870c52ed9c5ce972830dad7f577',
-    lppDacFactoryAddress: '0x254F74D1884Cca5A4995c4f213517fF73962C163',
     lppCampaignFactoryAddress: '0x76A32025094360EE4A1706a5D0294CF792E0A77D',
     lppCappedMilestoneFactoryAddress: '0xCF58f30a1C30B003001E056ABA296D6AeeC928bD',
     givethBridgeAddress: '0x88aa025B9D55171f759A7c538E1e1eAa6d8A0169',
@@ -52,7 +49,6 @@ const configurations = {
     title: 'release',
     tokenAddresses: {},
     liquidPledgingAddress: '0x54b38a066267072734b4f30e0088722fd0811286',
-    lppDacFactoryAddress: '0xfbdabecd51eabd205c5dc7cc8c90fe153c42b94d',
     lppCampaignFactoryAddress: '0x523c1713fa80bb695ca25f85ee4a06533dceef76',
     lppCappedMilestoneFactoryAddress: '0x9d8a74f03c7765d689171ffb4004670d2bf30a62',
     etherscan: 'https://rinkeby.etherscan.io/',
@@ -71,7 +67,6 @@ const configurations = {
   alpha: {
     title: 'alpha',
     liquidPledgingAddress: '0x5625220088cA4Df67F15f96595546D10e9970B3A',
-    lppDacFactoryAddress: '0xc2Cef51f91dE37739F0a105fEDb058E235BB7354',
     lppCampaignFactoryAddress: '0x2Af51064E9042E62aB09870B4FDe67a1Ba7FEd69',
     lppCappedMilestoneFactoryAddress: '0x19Bd4E0DEdb9E5Ee9762391893d1f661404b561f',
     tokenAddresses: {},
@@ -96,7 +91,6 @@ const config = Object.assign({}, configurations[REACT_APP_ENVIRONMENT]);
 
 // Overwrite the environment values with parameters
 config.liquidPledgingAddress = REACT_APP_LIQUIDPLEDGING_ADDRESS || config.liquidPledgingAddress;
-config.dacFactoryAddress = REACT_APP_DAC_FACTORY_ADDRESS || config.lppDacFactoryAddress;
 config.campaignFactoryAddress =
   REACT_APP_CAMPAIGN_FACTORY_ADDRESS || config.lppCampaignFactoryAddress;
 config.cappedMilestoneFactoryAddress =

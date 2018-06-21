@@ -33,7 +33,7 @@ class MyCampaigns extends Component {
           0,
           100,
 
-          ({ data }) => this.setState({ campaigns: data, isLoading: false }),
+          ({ data }) => this.setState({ campaigns: data || [], isLoading: false }),
 
           // campaigns => this.setState({ campaigns, isLoading: false }),
 
@@ -133,7 +133,7 @@ class MyCampaigns extends Component {
               {!isLoading && (
                 <div className="table-container">
                   {campaigns &&
-                    campaigns.data.length > 0 && (
+                    campaigns.length > 0 && (
                       <table className="table table-responsive table-striped table-hover">
                         <thead>
                           <tr>
@@ -145,7 +145,7 @@ class MyCampaigns extends Component {
                           </tr>
                         </thead>
                         <tbody>
-                          {campaigns.data.map(c => (
+                          {campaigns.map(c => (
                             <tr
                               key={c.id}
                               className={c.status === Campaign.PENDING ? 'pending' : ''}
