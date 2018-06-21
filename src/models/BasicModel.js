@@ -1,4 +1,5 @@
 import Model from './Model';
+import { getTruncatedText } from './../lib/helpers';
 
 /**
  * The DAC, Milestone and Campaign base model containing basic common interface
@@ -24,7 +25,6 @@ class BasicModel extends Model {
     _id,
     title = '',
     description = '',
-    summary = '',
     image = '',
     txHash,
     owner,
@@ -38,7 +38,7 @@ class BasicModel extends Model {
     this.id = _id;
     this.title = title;
     this.description = description;
-    this.summary = summary;
+    this.summary = getTruncatedText(description, 100);
     this.image = image;
     this.newImage = false;
     this.txHash = txHash;

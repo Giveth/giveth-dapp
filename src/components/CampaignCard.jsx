@@ -31,19 +31,28 @@ class CampaignCard extends Component {
   editCampaign(e) {
     e.stopPropagation();
 
-    checkWalletBalance(this.props.wallet).then(() => {
-      React.swal({
-        title: 'Edit Campaign?',
-        text: 'Are you sure you want to edit this Campaign?',
-        icon: 'warning',
-        dangerMode: true,
-        buttons: ['Cancel', 'Yes, edit'],
-      }).then(isConfirmed => {
-        if (isConfirmed) {
-          redirectAfterWalletUnlock(`/campaigns/${this.props.campaign.id}/edit`, this.props.wallet);
+    checkWalletBalance(this.props.wallet)
+      .then(() => {
+        React.swal({
+          title: 'Edit Campaign?',
+          text: 'Are you sure you want to edit this Campaign?',
+          icon: 'warning',
+          dangerMode: true,
+          buttons: ['Cancel', 'Yes, edit'],
+        }).then(isConfirmed => {
+          if (isConfirmed) {
+            redirectAfterWalletUnlock(
+              `/campaigns/${this.props.campaign.id}/edit`,
+              this.props.wallet,
+            );
+          }
+        });
+      })
+      .catch(err => {
+        if (err === 'noBalance') {
+          // handle no balance error
         }
       });
-    });
   }
 
   viewProfile(e) {

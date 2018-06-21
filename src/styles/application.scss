@@ -17,6 +17,7 @@
 @import 'edit-view.scss';
 @import 'editMilestoneView.scss';
 @import 'myMilestones.scss';
+@import 'profileView.scss';
 // components
 @import 'loader.scss';
 @import 'mainMenu.scss';
@@ -227,4 +228,9 @@ span.nav-link {
 }
 span.nav-link:focus {
   outline: 0;
+}
+
+.ql-editor .ql-video {
+min-height: 400px;
+width: 100%;    
 }

@@ -31,7 +31,6 @@ class DAC extends BasicModel {
       title: this.title,
       description: this.description,
       communityUrl: this.communityUrl,
-      summary: this.summary,
       delegateId: this.delegateId,
       image: this.image,
       txHash: this.txHash,
@@ -93,7 +92,6 @@ class DAC extends BasicModel {
   }
 
   get status() {
-    if (this.delegateId !== '') return DAC.ACTIVE; // TODO: Remove once status is added to feathers
     return this.myStatus;
   }
 

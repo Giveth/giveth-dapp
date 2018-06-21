@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
-
 import { isLoggedIn, redirectAfterWalletUnlock, checkWalletBalance } from '../../lib/middleware';
 import Loader from '../Loader';
 import User from '../../models/User';
@@ -27,13 +26,25 @@ class MyCampaigns extends Component {
   }
 
   componentDidMount() {
-    isLoggedIn(this.props.currentUser).then(() => {
-      this.campaignsObserver = CampaignService.getUserCampaigns(
-        this.props.currentUser.address,
-        campaigns => this.setState({ campaigns, isLoading: false }),
-        () => this.setState({ isLoading: false }),
-      );
-    });
+    isLoggedIn(this.props.currentUser)
+      .then(() => {
+        this.campaignsObserver = CampaignService.getUserCampaigns(
+          this.props.currentUser.address,
+          0,
+          100,
+
+          ({ data }) => this.setState({ campaigns: data, isLoading: false }),
+
+          // campaigns => this.setState({ campaigns, isLoading: false }),
+
+          () => this.setState({ isLoading: false }),
+        );
+      })
+      .catch(err => {
+        if (err === 'notLoggedIn') {
+          // default behavior is to go home or signin page after swal popup
+        }
+      });
   }
 
   componentWillUnmount() {
@@ -41,57 +52,69 @@ class MyCampaigns extends Component {
   }
 
   editCampaign(id) {
-    checkWalletBalance(this.props.wallet).then(() => {
-      React.swal({
-        title: 'Edit Campaign?',
-        text: 'Are you sure you want to edit this Campaign?',
-        icon: 'warning',
-        dangerMode: true,
-        buttons: ['Cancel', 'Yes, edit'],
-      }).then(isConfirmed => {
-        if (isConfirmed) redirectAfterWalletUnlock(`/campaigns/${id}/edit`, this.props.wallet);
+    checkWalletBalance(this.props.wallet)
+      .then(() => {
+        React.swal({
+          title: 'Edit Campaign?',
+          text: 'Are you sure you want to edit this Campaign?',
+          icon: 'warning',
+          dangerMode: true,
+          buttons: ['Cancel', 'Yes, edit'],
+        }).then(isConfirmed => {
+          if (isConfirmed) redirectAfterWalletUnlock(`/campaigns/${id}/edit`, this.props.wallet);
+        });
+      })
+      .catch(err => {
+        if (err === 'noBalance') {
+          // handle no balance error
+        }
       });
-    });
   }
 
   cancelCampaign(campaign) {
-    checkWalletBalance(this.props.wallet).then(() => {
-      React.swal({
-        title: 'Cancel Campaign?',
-        text: 'Are you sure you want to cancel this Campaign?',
-        icon: 'warning',
-        dangerMode: true,
-        buttons: ['Dismiss', 'Yes, cancel'],
-      }).then(isConfirmed => {
-        if (isConfirmed) {
-          const afterCreate = url => {
-            const msg = (
-              <p>
-                Campaign cancelation pending...<br />
-                <a href={url} target="_blank" rel="noopener noreferrer">
-                  View transaction
-                </a>
-              </p>
-            );
-            React.toast.info(msg);
-          };
+    checkWalletBalance(this.props.wallet)
+      .then(() => {
+        React.swal({
+          title: 'Cancel Campaign?',
+          text: 'Are you sure you want to cancel this Campaign?',
+          icon: 'warning',
+          dangerMode: true,
+          buttons: ['Dismiss', 'Yes, cancel'],
+        }).then(isConfirmed => {
+          if (isConfirmed) {
+            const afterCreate = url => {
+              const msg = (
+                <p>
+                  Campaign cancelation pending...<br />
+                  <a href={url} target="_blank" rel="noopener noreferrer">
+                    View transaction
+                  </a>
+                </p>
+              );
+              React.toast.info(msg);
+            };
 
-          const afterMined = url => {
-            const msg = (
-              <p>
-                The campaign has been cancelled!<br />
-                <a href={url} target="_blank" rel="noopener noreferrer">
-                  View transaction
-                </a>
-              </p>
-            );
-            React.toast.success(msg);
-          };
+            const afterMined = url => {
+              const msg = (
+                <p>
+                  The campaign has been cancelled!<br />
+                  <a href={url} target="_blank" rel="noopener noreferrer">
+                    View transaction
+                  </a>
+                </p>
+              );
+              React.toast.success(msg);
+            };
 
-          campaign.cancel(this.props.currentUser.address, afterCreate, afterMined);
+            campaign.cancel(this.props.currentUser.address, afterCreate, afterMined);
+          }
+        });
+      })
+      .catch(err => {
+        if (err === 'noBalance') {
+          // handle no balance error
         }
       });
-    });
   }
 
   render() {
@@ -110,7 +133,7 @@ class MyCampaigns extends Component {
               {!isLoading && (
                 <div className="table-container">
                   {campaigns &&
-                    campaigns.length > 0 && (
+                    campaigns.data.length > 0 && (
                       <table className="table table-responsive table-striped table-hover">
                         <thead>
                           <tr>
@@ -122,7 +145,7 @@ class MyCampaigns extends Component {
                           </tr>
                         </thead>
                         <tbody>
-                          {campaigns.map(c => (
+                          {campaigns.data.map(c => (
                             <tr
                               key={c.id}
                               className={c.status === Campaign.PENDING ? 'pending' : ''}

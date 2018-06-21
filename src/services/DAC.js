@@ -39,11 +39,7 @@ class DACservice {
       .watch({ listStrategy: 'always' })
       .find({
         query: {
-          delegateId: {
-            $gt: '0', // 0 is a pending dac
-          },
-          // TODO: Re-enable once communities have status staved in feathers
-          // status: DAC.ACTIVE,
+          status: DAC.ACTIVE,
           $limit: 200,
           $sort: { campaignsCount: -1 },
         },
@@ -104,16 +100,32 @@ class DACservice {
   /**
    * Get the user's DACs
    *
-   * @param userAddress Address of the user whose DAC list should be retrieved
-   * @param onSuccess   Callback function once response is obtained successfully
-   * @param onError     Callback function if error is encountered
+   * @param userAddress   Address of the user whose DAC list should be retrieved
+   * @param skipPages     Amount of pages to skip
+   * @param itemsPerPage  Items to retreive
+   * @param onSuccess     Callback function once response is obtained successfully
+   * @param onError       Callback function if error is encountered
    */
-  static getUserDACs(userAddress, onSuccess, onError) {
+  static getUserDACs(userAddress, skipPages, itemsPerPage, onSuccess, onError) {
     return feathersClient
       .service('dacs')
       .watch({ listStrategy: 'always' })
-      .find({ query: { ownerAddress: userAddress } })
-      .subscribe(resp => onSuccess(resp.data.map(dac => new DAC(dac))), onError);
+      .find({
+        query: {
+          ownerAddress: userAddress,
+          $sort: {
+            createdAt: -1,
+          },
+          $limit: itemsPerPage,
+          $skip: skipPages * itemsPerPage,
+        },
+      })
+      .subscribe(resp => {
+        const newResp = Object.assign({}, resp, {
+          data: resp.data.map(d => new DAC(d)),
+        });
+        onSuccess(newResp);
+      }, onError);
   }
 
   /**
@@ -139,7 +151,7 @@ class DACservice {
           etherScanUrl = network.etherscan;
 
           lppDacFactory
-            .newDac(dac.title, '', 0, dac.tokenName, dac.tokenSymbol, from, from, {
+            .newDac(dac.title, '', 0, dac.tokenName, dac.tokenSymbol, {
               from,
             })
             .once('transactionHash', hash => {

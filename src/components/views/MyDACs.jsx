@@ -28,13 +28,25 @@ class MyDACs extends Component {
   }
 
   componentDidMount() {
-    isLoggedIn(this.props.currentUser).then(() => {
-      this.dacsObserver = DACservice.getUserDACs(
-        this.props.currentUser.address,
-        dacs => this.setState({ dacs, isLoading: false }),
-        () => this.setState({ isLoading: false }),
-      );
-    });
+    isLoggedIn(this.props.currentUser)
+      .then(() => {
+        this.dacsObserver = DACservice.getUserDACs(
+          this.props.currentUser.address,
+          0,
+          100,
+
+          ({ data }) => this.setState({ dacs: data, isLoading: false }),
+
+          // dacs => this.setState({ dacs, isLoading: false }),
+
+          () => this.setState({ isLoading: false }),
+        );
+      })
+      .catch(err => {
+        if (err === 'notLoggedIn') {
+          // default behavior is to go home or signin page after swal popup
+        }
+      });
   }
 
   componentWillUnmount() {
@@ -42,17 +54,23 @@ class MyDACs extends Component {
   }
 
   editDAC(id) {
-    checkWalletBalance(this.props.wallet).then(() =>
-      React.swal({
-        title: 'Edit Community?',
-        text: 'Are you sure you want to edit the description of this community?',
-        icon: 'warning',
-        dangerMode: true,
-        buttons: ['Cancel', 'Yes, edit'],
-      }).then(isConfirmed => {
-        if (isConfirmed) redirectAfterWalletUnlock(`/dacs/${id}/edit`, this.props.wallet);
-      }),
-    );
+    checkWalletBalance(this.props.wallet)
+      .then(() =>
+        React.swal({
+          title: 'Edit Community?',
+          text: 'Are you sure you want to edit the description of this community?',
+          icon: 'warning',
+          dangerMode: true,
+          buttons: ['Cancel', 'Yes, edit'],
+        }).then(isConfirmed => {
+          if (isConfirmed) redirectAfterWalletUnlock(`/dacs/${id}/edit`, this.props.wallet);
+        }),
+      )
+      .catch(err => {
+        if (err === 'noBalance') {
+          // handle no balance error
+        }
+      });
   }
 
   render() {
@@ -70,7 +88,7 @@ class MyDACs extends Component {
               {!isLoading && (
                 <div>
                   {dacs &&
-                    dacs.length > 0 && (
+                    dacs.data.length > 0 && (
                       <table className="table table-responsive table-striped table-hover">
                         <thead>
                           <tr>
@@ -82,7 +100,7 @@ class MyDACs extends Component {
                           </tr>
                         </thead>
                         <tbody>
-                          {dacs.map(d => (
+                          {dacs.data.map(d => (
                             <tr key={d.id} className={d.status === DAC.PENDING ? 'pending' : ''}>
                               <td className="td-name">
                                 <Link to={`/dacs/${d.id}`}>{getTruncatedText(d.title, 45)}</Link>

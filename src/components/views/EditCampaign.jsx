@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import { Prompt } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import InputToken from 'react-input-token';
 import 'react-input-token/lib/style.css';
@@ -46,7 +47,10 @@ class EditCampaign extends Component {
       campaign: new Campaign({
         owner: props.currentUser,
       }),
+      isBlocking: false,
     };
+
+    this.form = React.createRef();
 
     this.submit = this.submit.bind(this);
     this.setImage = this.setImage.bind(this);
@@ -98,6 +102,11 @@ class EditCampaign extends Component {
         } else {
           this.setState({ isLoading: false });
         }
+      })
+      .catch(err => {
+        if (err === 'noBalance') {
+          // handle no balance error
+        }
       });
   }
 
@@ -137,8 +146,6 @@ class EditCampaign extends Component {
   }
 
   submit() {
-    this.setState({ isSaving: true });
-
     const afterMined = url => {
       if (url) {
         const msg = (
@@ -171,8 +178,16 @@ class EditCampaign extends Component {
       history.push('/my-campaigns');
     };
 
-    // Save the capaign
-    this.state.campaign.save(afterCreate, afterMined);
+    this.setState(
+      {
+        isSaving: true,
+        isBlocking: false,
+      },
+      () => {
+        // Save the capaign
+        this.state.campaign.save(afterCreate, afterMined);
+      },
+    );
   }
 
   toggleFormValid(state) {
@@ -186,6 +201,12 @@ class EditCampaign extends Component {
     this.setState({ campaign });
   }
 
+  triggerRouteBlocking() {
+    const form = this.form.current.formsyForm;
+    // we only block routing if the form state is not submitted
+    this.setState({ isBlocking: form && (!form.state.formSubmitted || form.state.isSubmitting) });
+  }
+
   render() {
     const { isNew } = this.props;
     const {
@@ -197,6 +218,7 @@ class EditCampaign extends Component {
       hasWhitelist,
       whitelistOptions,
       reviewers,
+      isBlocking,
     } = this.state;
 
     return (
@@ -224,6 +246,7 @@ class EditCampaign extends Component {
 
                   <Form
                     onSubmit={this.submit}
+                    ref={this.form}
                     mapping={inputs => {
                       campaign.title = inputs.title;
                       campaign.description = inputs.description;
@@ -235,8 +258,16 @@ class EditCampaign extends Component {
                     }}
                     onValid={() => this.toggleFormValid(true)}
                     onInvalid={() => this.toggleFormValid(false)}
+                    onChange={e => this.triggerRouteBlocking(e)}
                     layout="vertical"
                   >
+                    <Prompt
+                      when={isBlocking}
+                      message={() =>
+                        `You have unsaved changes. Are you sure you want to navigate from this page?`
+                      }
+                    />
+
                     <Input
                       name="title"
                       id="title-input"
