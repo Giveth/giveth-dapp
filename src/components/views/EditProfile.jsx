@@ -5,11 +5,11 @@ import { Form, Input } from 'formsy-react-components';
 import { feathersClient, feathersRest } from '../../lib/feathersClient';
 import Loader from '../Loader';
 import FormsyImageUploader from './../FormsyImageUploader';
-import { isLoggedIn, checkWalletBalance, confirmBlockchainTransaction } from '../../lib/middleware';
+import { isLoggedIn, checkWalletBalance } from '../../lib/middleware';
 import LoaderButton from '../../components/LoaderButton';
 import getNetwork from '../../lib/blockchain/getNetwork';
 import User from '../../models/User';
-import { getGasPrice, history } from '../../lib/helpers';
+import { history } from '../../lib/helpers';
 import GivethWallet from '../../lib/blockchain/GivethWallet';
 import ErrorPopup from '../ErrorPopup';
 
@@ -79,15 +79,14 @@ class EditProfile extends Component {
       // TODO: if (giverId > 0), need to send tx if commitTime or name has changed
       // TODO: store user profile on ipfs and add Giver in liquidpledging contract
       if (this.state.giverId === undefined) {
-        Promise.all([getNetwork(), getGasPrice()]).then(([network, gasPrice]) => {
+        getNetwork().then(network => {
           const { liquidPledging } = network;
           const from = this.props.currentUser.address;
 
           let txHash;
           liquidPledging
-            .addGiver(model.name || '', '', 259200, '0x0', {
+            .addGiver(model.name || '', '', 259200, 0, {
               $extraGas: 50000,
-              gasPrice,
               from,
             }) // 3 days commitTime. TODO allow user to set commitTime
             .once('transactionHash', hash => {
@@ -158,27 +157,22 @@ class EditProfile extends Component {
     };
 
     // Save user profile
-    confirmBlockchainTransaction(
-      () => {
-        if (this.state.uploadNewAvatar) {
-          feathersRest
-            .service('uploads')
-            .create({ uri: this.state.avatar })
-            .then(file => {
-              updateUser(file.url);
-            })
-            .catch(err => {
-              ErrorPopup(
-                'We could not upload your new profile image. Please refresh the page and try again.',
-                err,
-              );
-            });
-        } else {
-          updateUser();
-        }
-      },
-      () => this.setState({ isSaving: false }),
-    );
+    if (this.state.uploadNewAvatar) {
+      feathersRest
+        .service('uploads')
+        .create({ uri: this.state.avatar })
+        .then(file => {
+          updateUser(file.url);
+        })
+        .catch(err => {
+          ErrorPopup(
+            'We could not upload your new profile image. Please refresh the page and try again.',
+            err,
+          );
+        });
+    } else {
+      updateUser();
+    }
   }
 
   togglePristine(currentValues, isChanged) {
@@ -218,6 +212,7 @@ class EditProfile extends Component {
                   <div className="form-group">
                     <Input
                       name="name"
+                      autoComplete="name"
                       id="name-input"
                       label="Your name"
                       type="text"
@@ -235,6 +230,7 @@ class EditProfile extends Component {
                   <div className="form-group">
                     <Input
                       name="email"
+                      autoComplete="email"
                       label="Email"
                       value={email}
                       placeholder="email@example.com"

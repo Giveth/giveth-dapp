@@ -20,8 +20,6 @@ class Campaign extends BasicModel {
 
     this.communityUrl = data.communityUrl || '';
     this.projectId = data.projectId || '0';
-    this.tokenName = data.tokenName || '';
-    this.tokenSymbol = data.tokenSymbol || '';
     this.dacs = data.dacs || [];
     this.pluginAddress = data.pluginAddress || '0x0000000000000000000000000000000000000000';
     this.status = data.status || Campaign.PENDING;
@@ -34,17 +32,15 @@ class Campaign extends BasicModel {
       title: this.title,
       description: this.description,
       communityUrl: this.communityUrl,
-      summary: this.summary,
       projectId: this.projectId,
       image: this.image,
       txHash: this.txHash,
       totalDonated: this.totalDonated,
       donationCount: this.donationCount,
       peopleCount: this.peopleCount,
-      tokenName: this.tokenName,
-      tokenSymbol: this.tokenSymbol,
       dacs: this.dacs,
       reviewerAddress: this.reviewerAddress,
+      status: this.status,
     };
   }
 
@@ -99,24 +95,6 @@ class Campaign extends BasicModel {
   set projectId(value) {
     this.checkType(value, ['string'], 'projectId');
     this.myProjectId = value;
-  }
-
-  get tokenName() {
-    return this.myTokenName;
-  }
-
-  set tokenName(value) {
-    this.checkType(value, ['string'], 'tokenName');
-    this.myTokenName = value;
-  }
-
-  get tokenSymbol() {
-    return this.myTokenSymbol;
-  }
-
-  set tokenSymbol(value) {
-    this.checkType(value, ['string'], 'tokenSymbol');
-    this.myTokenSymbol = value;
   }
 
   get status() {

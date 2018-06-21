@@ -1,25 +1,32 @@
+import { utils } from 'web3';
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { SkyLightStateless } from 'react-skylight';
 import { Form, Input } from 'formsy-react-components';
+import SelectFormsy from './SelectFormsy';
 
 import User from '../models/User';
 import GivethWallet from '../lib/blockchain/GivethWallet';
 import WalletService from '../services/Wallet';
 import { getGasPrice } from '../lib/helpers';
+import config from '../configuration';
 
 import ErrorPopup from './ErrorPopup';
 
-class WithdrawButton extends Component {
+class BridgeWithdrawButton extends Component {
   constructor() {
     super();
 
     this.state = {
       isSaving: false,
       formIsValid: false,
+      token: '',
+      tokenOptions: Object.keys(config.tokenAddresses).map(t => ({
+        value: config.tokenAddresses[t],
+        title: t,
+      })),
       amount: '',
       modalVisible: false,
-      to: '',
       gasPrice: 4,
     };
 
@@ -30,7 +37,7 @@ class WithdrawButton extends Component {
   openDialog() {
     getGasPrice().then(gasPrice =>
       this.setState({
-        gasPrice,
+        gasPrice: utils.fromWei(gasPrice, 'gwei'),
         modalVisible: true,
       }),
     );
@@ -55,7 +62,7 @@ class WithdrawButton extends Component {
     );
 
     React.swal({
-      title: 'Withdrawing money',
+      title: 'Withdrawing via bridge',
       content: React.swal.msg(msg),
       icon: 'success',
     });
@@ -68,11 +75,11 @@ class WithdrawButton extends Component {
   submit(model) {
     this.setState({ isSaving: true });
 
-    WalletService.withdraw(
+    WalletService.bridgeWithdraw(
       {
-        from: this.props.currentUser.address,
-        to: model.to,
+        addr: this.props.currentUser.address,
         value: `${model.amount}`,
+        token: `${model.token}`,
       },
       this.afterCreate,
       (etherScanUrl, txHash) => {
@@ -93,7 +100,8 @@ class WithdrawButton extends Component {
 
   render() {
     const { wallet } = this.props;
-    const { isSaving, amount, formIsValid, gasPrice, to } = this.state;
+    const { tokenAddresses } = config;
+    const { isSaving, amount, formIsValid, gasPrice, token, tokenOptions } = this.state;
     const style = {
       display: 'inline-block',
     };
@@ -114,11 +122,16 @@ class WithdrawButton extends Component {
               this.setState({ modalVisible: false });
             }}
           >
-            <strong>Withdrawing from your Giveth wallet</strong>
-
             <p>
-              Your wallet balance: <em>{wallet.getBalance()} ETH</em>
-              <br />
+              <strong>Withdrawing via bridge from your Giveth wallet</strong>
+            </p>
+
+            {Object.keys(tokenAddresses).map(t => (
+              <p>
+                <strong>{t}</strong> balance: <em>{wallet.getTokenBalance(tokenAddresses[t])}</em>
+              </p>
+            ))}
+            <p>
               Gas price: <em>{gasPrice} Gwei</em>
             </p>
 
@@ -129,34 +142,29 @@ class WithdrawButton extends Component {
               onInvalid={() => this.toggleFormValid(false)}
               layout="vertical"
             >
-              <div className="form-group">
-                <Input
-                  name="to"
-                  id="to-input"
-                  label="To which address do you want to send ether?"
-                  type="text"
-                  value={to}
-                  validations="isEtherAddress"
-                  validationErrors={{
-                    isEtherAddress: 'Please check that the address you have provided is valid.',
-                  }}
-                  autoFocus
-                  required
-                />
-              </div>
+              <SelectFormsy
+                name="token"
+                id="token-select"
+                label="Select a Token"
+                helpText="The token you would like to withdraw."
+                value={token}
+                cta="--- Select a token ---"
+                options={tokenOptions}
+                required
+              />
               <div className="form-group">
                 <Input
                   name="amount"
                   id="amount-input"
-                  label="How much ETH do you want to withdraw?"
+                  label="How much do you want to withdraw?"
                   type="number"
                   value={amount}
-                  validations={{
-                    lessThan: wallet.getBalance() - 0.1,
-                    greaterThan: 0.0099999999999,
-                  }}
+                  validations={
+                    {
+                      // lessThan: wallet.getTokenBalance(token), TODO enable this
+                    }
+                  }
                   validationErrors={{
-                    greaterThan: 'Minimum value must be at least 0.01 ETH',
                     lessThan: 'This withdrawal amount exceeds your wallet balance.',
                   }}
                   required
@@ -169,7 +177,7 @@ class WithdrawButton extends Component {
                 type="submit"
                 disabled={isSaving || !formIsValid}
               >
-                {isSaving ? 'Withdrawing...' : 'Withdraw ETH'}
+                {isSaving ? 'Withdrawing...' : 'Withdraw'}
               </button>
             </Form>
           </SkyLightStateless>
@@ -179,9 +187,9 @@ class WithdrawButton extends Component {
   }
 }
 
-WithdrawButton.propTypes = {
+BridgeWithdrawButton.propTypes = {
   currentUser: PropTypes.instanceOf(User).isRequired,
   wallet: PropTypes.instanceOf(GivethWallet).isRequired,
 };
 
-export default WithdrawButton;
+export default BridgeWithdrawButton;

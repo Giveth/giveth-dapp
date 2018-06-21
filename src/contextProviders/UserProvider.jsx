@@ -3,9 +3,10 @@ import PropTypes from 'prop-types';
 import { feathersClient } from '../lib/feathersClient';
 
 import GivethWallet from '../lib/blockchain/GivethWallet';
-import getWeb3 from '../lib/blockchain/getWeb3';
+import { getWeb3, getHomeWeb3 } from '../lib/blockchain/getWeb3';
 
 import ErrorPopup from '../components/ErrorPopup';
+import { history } from '../lib/helpers';
 
 // models
 import User from '../models/User';
@@ -16,7 +17,7 @@ export { Consumer };
 
 // TO DO: This is the minimum transaction view required to:
 // create a DAC / Campaign / Milestone / Profile
-React.minimumWalletBalance = 0.02;
+React.minimumWalletBalance = 0.01;
 
 React.whitelist = {};
 
@@ -35,18 +36,6 @@ feathersClient
  * if passed as props to children.
  */
 class UserProvider extends Component {
-  static getUserProfile(address) {
-    return feathersClient
-      .service('/users')
-      .get(address)
-      .then(user => user)
-      .catch(err => {
-        ErrorPopup(
-          'Something went wrong with getting user profile. Please try again after refresh.',
-          err,
-        );
-      });
-  }
   constructor() {
     super();
 
@@ -56,14 +45,17 @@ class UserProvider extends Component {
       isLoading: true,
       hasError: false,
       wallet: undefined,
+      walletLocked: true,
     };
 
     this.handleWalletChange = this.handleWalletChange.bind(this);
     this.onSignOut = this.onSignOut.bind(this);
     this.onSignIn = this.onSignIn.bind(this);
     this.unlockWallet = this.unlockWallet.bind(this);
+    this.lockWallet = this.lockWallet.bind(this);
     this.walletUnlocked = this.walletUnlocked.bind(this);
     this.hideUnlockWalletModal = this.hideUnlockWalletModal.bind(this);
+    this.getUserData = this.getUserData.bind(this);
 
     // Making unlock wallet global
     React.unlockWallet = this.unlockWallet;
@@ -77,29 +69,23 @@ class UserProvider extends Component {
         if (token) return feathersClient.passport.verifyJWT(token);
         return null;
       })
-      .then(payload => UserProvider.getUserProfile(payload.userId))
-      .then(user => {
-        if (!user) throw new Error('No User');
-        feathersClient.authenticate(); // need to authenticate the socket connection
-
+      .then(payload => this.getUserData(payload.userId))
+      .then(() => feathersClient.authenticate()) // need to authenticate the socket connection
+      .then(() =>
         this.setState({
           isLoading: false,
           hasError: false,
-          currentUser: new User(user),
-        });
-      })
+        }),
+      )
       .catch(() => {
         this.setState({ isLoading: false, hasError: false });
       });
 
     GivethWallet.getCachedKeystore()
-      .then(keystore => {
-        // TODO: change to getWeb3() when implemented. actually remove provider from GivethWallet
-        const provider = this.state.web3 ? this.state.web3.currentProvider : undefined;
-        return GivethWallet.loadWallet(keystore, provider);
-      })
+      .then(keystore => GivethWallet.loadWallet(keystore))
       .then(wallet => {
         getWeb3().then(web3 => web3.setWallet(wallet));
+        getHomeWeb3().then(homeWeb3 => homeWeb3.setWallet(wallet));
         this.setState({ wallet });
       })
       .catch(err => {
@@ -112,18 +98,57 @@ class UserProvider extends Component {
       });
   }
 
+  componentWillUnmount() {
+    if (this.userSubscriber) this.userSubscriber.unsubscribe();
+  }
+
   onSignOut() {
+    history.push('/');
     if (this.state.wallet) this.state.wallet.lock();
 
     feathersClient.logout();
-    this.setState({ currentUser: undefined });
+    this.setState({ currentUser: undefined, walletLocked: true });
   }
 
   onSignIn() {
     const address = this.state.wallet.getAddresses()[0];
-    return UserProvider.getUserProfile(address).then(user =>
-      this.setState({ currentUser: new User(user) }),
+
+    this.setState({ isLoading: true }, () =>
+      this.getUserData(address).then(() =>
+        this.setState({
+          walletLocked: false,
+          isLoading: false,
+        }),
+      ),
     );
+  }
+
+  getUserData(address) {
+    if (this.userSubscriber) this.userSubscriber.unsubscribe();
+
+    return new Promise((resolve, reject) => {
+      this.userSubscriber = feathersClient
+        .service('/users')
+        .watch({ listStrategy: 'always' })
+        .find({
+          query: {
+            address,
+          },
+        })
+        .subscribe(
+          resp => {
+            if (resp.total === 1) this.setState({ currentUser: new User(resp.data[0]) }, resolve());
+            else reject();
+          },
+          error => {
+            ErrorPopup(
+              'Something went wrong with getting user profile. Please try again after refresh.',
+              error,
+            );
+            reject();
+          },
+        );
+    });
   }
 
   handleWalletChange(wallet) {
@@ -131,17 +156,36 @@ class UserProvider extends Component {
     const address = wallet.getAddresses()[0];
 
     getWeb3().then(web3 => web3.setWallet(wallet));
+    getHomeWeb3().then(homeWeb3 => homeWeb3.setWallet(wallet));
 
-    UserProvider.getUserProfile(address).then(user =>
-      this.setState({
-        wallet,
-        currentUser: new User(user),
-      }),
+    this.setState({ isLoading: true }, () =>
+      this.getUserData(address).then(() =>
+        this.setState({
+          wallet,
+          walletLocked: false,
+          isLoading: false,
+        }),
+      ),
     );
   }
 
-  unlockWallet(redirectAfter) {
-    this.setState({ showUnlockWalletModal: true, redirectAfter });
+  unlockWallet(actionAfter) {
+    this.setState({ showUnlockWalletModal: true, actionAfter });
+  }
+
+  lockWallet() {
+    React.swal({
+      title: 'Lock your wallet?',
+      text: 'You will be redirected to the home page. Any changes you have made will be lost.',
+      icon: 'warning',
+      dangerMode: true,
+      buttons: ['Cancel', 'Yes, lock wallet!'],
+    }).then(isConfirmed => {
+      if (isConfirmed) {
+        this.state.wallet.lock();
+        this.setState({ walletLocked: true });
+      }
+    });
   }
 
   walletUnlocked() {
@@ -152,10 +196,11 @@ class UserProvider extends Component {
         Note that your wallet will <strong>auto-lock</strong> upon page refresh.
       </p>,
     );
+    this.setState({ walletLocked: false });
   }
 
   hideUnlockWalletModal() {
-    this.setState({ showUnlockWalletModal: false, redirectAfter: undefined });
+    this.setState({ showUnlockWalletModal: false, actionAfter: undefined });
   }
 
   render() {
@@ -166,10 +211,18 @@ class UserProvider extends Component {
       isLoading,
       hasError,
       showUnlockWalletModal,
-      redirectAfter,
+      actionAfter,
+      walletLocked,
     } = this.state;
 
-    const { onSignIn, onSignOut, walletUnlocked, hideUnlockWalletModal, handleWalletChange } = this;
+    const {
+      onSignIn,
+      onSignOut,
+      walletUnlocked,
+      hideUnlockWalletModal,
+      handleWalletChange,
+      lockWallet,
+    } = this;
 
     return (
       <Provider
@@ -177,16 +230,18 @@ class UserProvider extends Component {
           state: {
             currentUser,
             wallet,
-            web3,
+            web3, // TODO do we need this here?
             isLoading,
             hasError,
             showUnlockWalletModal,
-            redirectAfter,
+            actionAfter,
+            walletLocked,
           },
           actions: {
             onSignIn,
             onSignOut,
             walletUnlocked,
+            lockWallet,
             hideUnlockWalletModal,
             handleWalletChange,
           },

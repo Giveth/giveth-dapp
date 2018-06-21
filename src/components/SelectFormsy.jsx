@@ -39,7 +39,7 @@ class SelectFormsy extends React.Component {
 
     return (
       <div className={`form-group ${className}`}>
-        <label htmlFor>
+        <label htmlFor={this.props.name}>
           {this.props.label} {this.props.isRequired() ? '*' : null}
           <select
             className="form-control"

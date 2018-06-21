@@ -37,24 +37,30 @@ class MilestoneCard extends Component {
   editMilestone(e) {
     e.stopPropagation();
 
-    checkWalletBalance(this.props.wallet).then(() => {
-      React.swal({
-        title: 'Edit Milestone?',
-        text: 'Are you sure you want to edit this milestone?',
-        icon: 'warning',
-        dangerMode: true,
-        buttons: ['Cancel', 'Yes, edit'],
-      }).then(isConfirmed => {
-        if (isConfirmed) {
-          redirectAfterWalletUnlock(
-            `/campaigns/${this.props.milestone.campaignId}/milestones/${
-              this.props.milestone._id
-            }/edit`,
-            this.props.wallet,
-          );
+    checkWalletBalance(this.props.wallet)
+      .then(() => {
+        React.swal({
+          title: 'Edit Milestone?',
+          text: 'Are you sure you want to edit this milestone?',
+          icon: 'warning',
+          dangerMode: true,
+          buttons: ['Cancel', 'Yes, edit'],
+        }).then(isConfirmed => {
+          if (isConfirmed) {
+            redirectAfterWalletUnlock(
+              `/campaigns/${this.props.milestone.campaignId}/milestones/${
+                this.props.milestone._id
+              }/edit`,
+              this.props.wallet,
+            );
+          }
+        });
+      })
+      .catch(err => {
+        if (err === 'noBalance') {
+          // handle no balance error
         }
       });
-    });
   }
 
   render() {
@@ -82,13 +88,14 @@ class MilestoneCard extends Component {
             <span className="owner-name">{getUserName(milestone.owner)}</span>
 
             {(isOwner(milestone.owner.address, currentUser) ||
-              isOwner(milestone.campaignOwnerAddress, currentUser)) && (
-              <span className="pull-right">
-                <button className="btn btn-link btn-edit" onClick={e => this.editMilestone(e)}>
-                  <i className="fa fa-edit" />
-                </button>
-              </span>
-            )}
+              isOwner(milestone.campaignOwnerAddress, currentUser)) &&
+              ['proposed', 'rejected', 'InProgress', 'NeedsReview'].includes(milestone.status) && (
+                <span className="pull-right">
+                  <button className="btn btn-link btn-edit" onClick={e => this.editMilestone(e)}>
+                    <i className="fa fa-edit" />
+                  </button>
+                </span>
+              )}
           </div>
 
           <div
@@ -101,7 +108,7 @@ class MilestoneCard extends Component {
 
           <div className="card-content">
             <h4 className="card-title">{getTruncatedText(milestone.title, 30)}</h4>
-            <div className="card-text">{milestone.summary}</div>
+            <div className="card-text">{getTruncatedText(milestone.description, 100)}</div>
           </div>
 
           <div className="card-footer">

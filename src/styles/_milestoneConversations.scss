@@ -1,0 +1,65 @@
+#milestone-conversations {
+  $avatar-width: 30px;
+  $indent: $avatar-width + 5;
+
+  .card {
+    padding: 20px;
+  }
+
+  .sb-avatar {
+    float: left;
+  }
+
+  .content-wrapper {
+    margin-left: $indent;
+  }
+
+  .c-timestamp {
+    font-size: 0.6rem;
+    font-weight: initial;
+    color: #bbb;  
+  }
+
+  .owner-name {
+    font-weight: 700;
+    font-size: 1rem;
+
+    &.needsreview {
+      color: $dark-blue;
+    }
+
+    &.completed,
+    &.proposedaccepted, {
+      color: $green;
+    }
+
+    &.rejected,
+    &.canceled,
+    &.proposedrejected {
+      color: $red;
+    }
+
+    &.repropose {
+      // color: #aaa;
+    }
+  }
+
+  .c-message {
+    font-size: 0.8rem;
+    margin-bottom: 0;
+  }
+
+  .c-tx-hash {
+    margin-left: 8px;
+  }
+
+  .c-divider {
+    margin-bottom: 40px;
+  }
+
+  .badge {
+    font-size: 0.7rem;
+    margin-left: 8px;
+    font-weight: 300;
+  }
+}

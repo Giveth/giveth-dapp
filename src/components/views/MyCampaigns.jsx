@@ -1,13 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
-
-import {
-  isLoggedIn,
-  redirectAfterWalletUnlock,
-  takeActionAfterWalletUnlock,
-  checkWalletBalance,
-} from '../../lib/middleware';
+import { isLoggedIn, redirectAfterWalletUnlock, checkWalletBalance } from '../../lib/middleware';
 import Loader from '../Loader';
 import User from '../../models/User';
 import { getTruncatedText, convertEthHelper } from '../../lib/helpers';
@@ -32,13 +26,25 @@ class MyCampaigns extends Component {
   }
 
   componentDidMount() {
-    isLoggedIn(this.props.currentUser).then(() => {
-      this.campaignsObserver = CampaignService.getUserCampaigns(
-        this.props.currentUser.address,
-        campaigns => this.setState({ campaigns, isLoading: false }),
-        () => this.setState({ isLoading: false }),
-      );
-    });
+    isLoggedIn(this.props.currentUser)
+      .then(() => {
+        this.campaignsObserver = CampaignService.getUserCampaigns(
+          this.props.currentUser.address,
+          0,
+          100,
+
+          ({ data }) => this.setState({ campaigns: data || [], isLoading: false }),
+
+          // campaigns => this.setState({ campaigns, isLoading: false }),
+
+          () => this.setState({ isLoading: false }),
+        );
+      })
+      .catch(err => {
+        if (err === 'notLoggedIn') {
+          // default behavior is to go home or signin page after swal popup
+        }
+      });
   }
 
   componentWillUnmount() {
@@ -46,8 +52,8 @@ class MyCampaigns extends Component {
   }
 
   editCampaign(id) {
-    takeActionAfterWalletUnlock(this.props.wallet, () => {
-      checkWalletBalance(this.props.wallet).then(() => {
+    checkWalletBalance(this.props.wallet)
+      .then(() => {
         React.swal({
           title: 'Edit Campaign?',
           text: 'Are you sure you want to edit this Campaign?',
@@ -57,13 +63,17 @@ class MyCampaigns extends Component {
         }).then(isConfirmed => {
           if (isConfirmed) redirectAfterWalletUnlock(`/campaigns/${id}/edit`, this.props.wallet);
         });
+      })
+      .catch(err => {
+        if (err === 'noBalance') {
+          // handle no balance error
+        }
       });
-    });
   }
 
   cancelCampaign(campaign) {
-    takeActionAfterWalletUnlock(this.props.wallet, () => {
-      checkWalletBalance(this.props.wallet).then(() => {
+    checkWalletBalance(this.props.wallet)
+      .then(() => {
         React.swal({
           title: 'Cancel Campaign?',
           text: 'Are you sure you want to cancel this Campaign?',
@@ -99,8 +109,12 @@ class MyCampaigns extends Component {
             campaign.cancel(this.props.currentUser.address, afterCreate, afterMined);
           }
         });
+      })
+      .catch(err => {
+        if (err === 'noBalance') {
+          // handle no balance error
+        }
       });
-    });
   }
 
   render() {

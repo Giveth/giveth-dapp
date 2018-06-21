@@ -2,12 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 
-import {
-  isLoggedIn,
-  redirectAfterWalletUnlock,
-  takeActionAfterWalletUnlock,
-  checkWalletBalance,
-} from '../../lib/middleware';
+import { isLoggedIn, redirectAfterWalletUnlock, checkWalletBalance } from '../../lib/middleware';
 import { getTruncatedText, convertEthHelper } from '../../lib/helpers';
 
 import Loader from '../Loader';
@@ -33,13 +28,25 @@ class MyDACs extends Component {
   }
 
   componentDidMount() {
-    isLoggedIn(this.props.currentUser).then(() => {
-      this.dacsObserver = DACservice.getUserDACs(
-        this.props.currentUser.address,
-        dacs => this.setState({ dacs, isLoading: false }),
-        () => this.setState({ isLoading: false }),
-      );
-    });
+    isLoggedIn(this.props.currentUser)
+      .then(() => {
+        this.dacsObserver = DACservice.getUserDACs(
+          this.props.currentUser.address,
+          0,
+          100,
+
+          ({ data }) => this.setState({ dacs: data, isLoading: false }),
+
+          // dacs => this.setState({ dacs, isLoading: false }),
+
+          () => this.setState({ isLoading: false }),
+        );
+      })
+      .catch(err => {
+        if (err === 'notLoggedIn') {
+          // default behavior is to go home or signin page after swal popup
+        }
+      });
   }
 
   componentWillUnmount() {
@@ -47,8 +54,8 @@ class MyDACs extends Component {
   }
 
   editDAC(id) {
-    takeActionAfterWalletUnlock(this.props.wallet, () => {
-      checkWalletBalance(this.props.wallet).then(() =>
+    checkWalletBalance(this.props.wallet)
+      .then(() =>
         React.swal({
           title: 'Edit Community?',
           text: 'Are you sure you want to edit the description of this community?',
@@ -58,8 +65,12 @@ class MyDACs extends Component {
         }).then(isConfirmed => {
           if (isConfirmed) redirectAfterWalletUnlock(`/dacs/${id}/edit`, this.props.wallet);
         }),
-      );
-    });
+      )
+      .catch(err => {
+        if (err === 'noBalance') {
+          // handle no balance error
+        }
+      });
   }
 
   render() {
