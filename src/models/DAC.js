@@ -21,6 +21,8 @@ class DAC extends BasicModel {
     this.communityUrl = data.communityUrl || '';
     this.delegateId = data.delegateId || '';
     this.status = data.status || DAC.PENDING;
+    this.ownerAddress = data.ownerAddress;
+    this._id = data._id;
   }
 
   toFeathers() {
