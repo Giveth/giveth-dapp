@@ -32,7 +32,7 @@ const configurations = {
   develop: {
     title: 'develop',
     liquidPledgingAddress: '0x800c0b18ca85c870c52ed9c5ce972830dad7f577',
-    lppCampaignFactoryAddress: '0x76A32025094360EE4A1706a5D0294CF792E0A77D',
+    lppCampaignFactoryAddress: '0xF722Aa4d2Db0a8Fd6bDBfd19F6ee219b2202125c',
     lppCappedMilestoneFactoryAddress: '0xCF58f30a1C30B003001E056ABA296D6AeeC928bD',
     givethBridgeAddress: '0x88aa025B9D55171f759A7c538E1e1eAa6d8A0169',
     foreignGivethBridgeAddress: '0x97A7aFbEEa1ff03cc18c0d80404a17D118288054',
