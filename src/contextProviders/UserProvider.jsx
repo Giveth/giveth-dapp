@@ -138,6 +138,7 @@ class UserProvider extends Component {
         .subscribe(
           resp => {
             if (resp.total === 1) this.setState({ currentUser: new User(resp.data[0]) }, resolve());
+            else reject();
           },
           error => {
             ErrorPopup(
