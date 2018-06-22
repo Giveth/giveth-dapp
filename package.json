@@ -22,7 +22,7 @@
     "localforage": "^1.5.0",
     "lpp-campaign": "1.0.0-beta.3",
     "lpp-capped-milestone": "1.0.0-beta.4",
-	"lerna": "^2.5.1",
+    "lerna": "^2.5.1",
     "minimetoken": "^0.2.0",
     "moment": "^2.19.2",
     "node-fetch": "^2.1.1",
