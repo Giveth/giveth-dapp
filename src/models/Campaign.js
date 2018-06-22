@@ -24,6 +24,8 @@ class Campaign extends BasicModel {
     this.pluginAddress = data.pluginAddress || '0x0000000000000000000000000000000000000000';
     this.status = data.status || Campaign.PENDING;
     this.reviewerAddress = data.reviewerAddress;
+    this.ownerAddress = data.ownerAddress;
+    this._id = data._id;
   }
 
   toFeathers() {
