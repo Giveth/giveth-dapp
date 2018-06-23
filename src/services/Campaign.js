@@ -156,21 +156,14 @@ class CampaignService {
           string name,
           string url,
           uint64 parentProject,
-          address reviewer,
-          string tokenName,
-          string tokenSymbol,
+          address reviewer
           * */
 
           lppCampaignFactory
-            .newCampaign(
-              campaign.title,
-              '',
-              0,
-              campaign.reviewerAddress,
-              campaign.tokenName,
-              campaign.tokenSymbol,
-              { from, $extraGas: 200000 },
-            )
+            .newCampaign(campaign.title, '', 0, campaign.reviewerAddress, {
+              from,
+              $extraGas: 200000,
+            })
             .once('transactionHash', hash => {
               txHash = hash;
               campaign.txHash = txHash;

@@ -1230,15 +1230,17 @@ class MyMilestones extends Component {
                           </tbody>
                         </table>
 
-                        <center>
-                          <Pagination
-                            activePage={skipPages + 1}
-                            itemsCountPerPage={itemsPerPage}
-                            totalItemsCount={totalResults}
-                            pageRangeDisplayed={visiblePages}
-                            onChange={this.handlePageChanged}
-                          />
-                        </center>
+                        {totalResults > itemsPerPage && (
+                          <center>
+                            <Pagination
+                              activePage={skipPages + 1}
+                              itemsCountPerPage={itemsPerPage}
+                              totalItemsCount={totalResults}
+                              pageRangeDisplayed={visiblePages}
+                              onChange={this.handlePageChanged}
+                            />
+                          </center>
+                        )}
                       </div>
                     )}
 

@@ -147,11 +147,11 @@ class DACservice {
       let etherScanUrl;
       getNetwork()
         .then(network => {
-          const { lppDacFactory } = network;
+          const { liquidPledging } = network;
           etherScanUrl = network.etherscan;
 
-          lppDacFactory
-            .newDac(dac.title, '', 0, dac.tokenName, dac.tokenSymbol, {
+          liquidPledging
+            .addDelegate(dac.title, '', 0, 0, {
               from,
             })
             .once('transactionHash', hash => {

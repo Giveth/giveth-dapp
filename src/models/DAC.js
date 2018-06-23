@@ -20,9 +20,9 @@ class DAC extends BasicModel {
 
     this.communityUrl = data.communityUrl || '';
     this.delegateId = data.delegateId || '';
-    this.tokenName = data.tokenName || '';
-    this.tokenSymbol = data.tokenSymbol || '';
     this.status = data.status || DAC.PENDING;
+    this.ownerAddress = data.ownerAddress;
+    this._id = data._id;
   }
 
   toFeathers() {
@@ -36,8 +36,6 @@ class DAC extends BasicModel {
       txHash: this.txHash,
       totalDonated: this.totalDonated,
       donationCount: this.donationCount,
-      tokenName: this.tokenName,
-      tokenSymbol: this.tokenSymbol,
     };
   }
 
@@ -71,24 +69,6 @@ class DAC extends BasicModel {
   set delegateId(value) {
     this.checkType(value, ['string'], 'delegateId');
     this.myDelegateId = value;
-  }
-
-  get tokenName() {
-    return this.myTokenName;
-  }
-
-  set tokenName(value) {
-    this.checkType(value, ['string'], 'tokenName');
-    this.myTokenName = value;
-  }
-
-  get tokenSymbol() {
-    return this.myTokenSymbol;
-  }
-
-  set tokenSymbol(value) {
-    this.checkType(value, ['string'], 'tokenSymbol');
-    this.myTokenSymbol = value;
   }
 
   get status() {

@@ -1,21 +1,30 @@
+/* eslint-disable prefer-destructuring */
+
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import Avatar from 'react-avatar';
+import Pagination from 'react-js-pagination';
+import { Link } from 'react-router-dom';
+import moment from 'moment';
+import { paramsForServer } from 'feathers-hooks-common';
 
 import { feathersClient } from '../../lib/feathersClient';
 import getNetwork from '../../lib/blockchain/getNetwork';
 import GoBackButton from '../GoBackButton';
 import Loader from '../Loader';
-import { getUserName, getUserAvatar } from '../../lib/helpers';
+import {
+  getUserName,
+  getUserAvatar,
+  getTruncatedText,
+  getReadableStatus,
+  convertEthHelper,
+} from '../../lib/helpers';
 
 import DACservice from '../../services/DAC';
 import CampaignService from '../../services/Campaign';
 import Campaign from '../../models/Campaign';
 import DAC from '../../models/DAC';
-import Pagination from 'react-js-pagination';
-import { getTruncatedText, getReadableStatus, convertEthHelper } from '../../lib/helpers';
-import { Link } from 'react-router-dom';
-import moment from 'moment';
+import Donation from '../../models/Donation';
 
 const reviewDue = updatedAt =>
   moment()
@@ -41,14 +50,16 @@ class Profile extends Component {
       dacs: null,
       isLoadingCampaigns: true,
       campaigns: null,
-      isLoadingMilestones: true,      
+      isLoadingMilestones: true,
       milestones: null,
       visiblePages: 10,
       itemsPerPage: 25,
       skipMilestonePages: 0,
-      skipCampaignsPages: 0,
-      skipDacsPages: 0,
-      totalResults: 0,
+      skipCampaignPages: 0,
+      skipDacPages: 0,
+      skipDonationsPages: 0,
+      isLoadingDonations: true,
+      donations: null,
     };
 
     getNetwork().then(network => {
@@ -56,11 +67,18 @@ class Profile extends Component {
         etherScanUrl: network.etherscan,
       });
     });
+
+    this.loadUserMilestones = this.loadUserMilestones.bind(this);
+    this.loadUserCampaigns = this.loadUserCampaigns.bind(this);
+    this.loadUserDacs = this.loadUserDacs.bind(this);
+    this.handleMilestonePageChanged = this.handleMilestonePageChanged.bind(this);
+    this.handleCampaignsPageChanged = this.handleCampaignsPageChanged.bind(this);
+    this.handleDacPageChanged = this.handleDacPageChanged.bind(this);
+    this.handleDonationsPageChanged = this.handleDonationsPageChanged.bind(this);
   }
 
   componentDidMount() {
-    const userAddress = this.props.match.params.userAddress;
-    this.setState({ userAddress: userAddress });
+    const { userAddress } = this.props.match.params;
 
     feathersClient
       .service('users')
@@ -70,7 +88,7 @@ class Profile extends Component {
           Object.assign(
             {},
             {
-              address: userAddress,
+              userAddress,
             },
             resp.data[0],
             {
@@ -78,25 +96,31 @@ class Profile extends Component {
               hasError: false,
             },
           ),
-        )
-
-        this.loadUserCampaigns();
-        this.loadUserMilestones();
-        this.loadUserDacs();
+          () => {
+            this.loadUserCampaigns();
+            this.loadUserMilestones();
+            this.loadUserDacs();
+            this.loadUserDonations();
+          },
+        );
       })
       .catch(() =>
         this.setState({
-          address: userAddress,
+          userAddress,
           isLoading: false,
           hasError: true,
         }),
       );
   }
 
+  componentWillUnmount() {
+    if (this.dacsObserver) this.dacsObserver.unsubscribe();
+    if (this.campaignsObserver) this.campaignsObserver.unsubscribe();
+    if (this.milestonesObserver) this.milestonesObserver.unsubscribe();
+    if (this.donationsObserver) this.donationsObserver.unsubscribe();
+  }
 
   loadUserMilestones() {
-    const userAddress = this.state.userAddress;
-
     this.milestonesObserver = feathersClient
       .service('milestones')
       .watch({ listStrategy: 'always' })
@@ -105,27 +129,26 @@ class Profile extends Component {
           createdAt: -1,
         },
         $limit: this.state.itemsPerPage,
-        $skip: this.state.skipPages * this.state.itemsPerPage,
+        $skip: this.state.skipMilestonePages * this.state.itemsPerPage,
         $or: [
-          { ownerAddress: userAddress},
-          { reviewerAddress: userAddress },
-          { recipientAddress: userAddress },
+          { ownerAddress: this.state.userAddress },
+          { reviewerAddress: this.state.userAddress },
+          { recipientAddress: this.state.userAddress },
         ],
       })
       .subscribe(resp =>
         this.setState({
+          userAddress: this.state.userAddress,
           milestones: resp,
-          isLoadingMilestones: false
+          isLoadingMilestones: false,
         }),
       );
   }
 
   loadUserCampaigns() {
-    const userAddress = this.state.userAddress;
-
     this.campaignsObserver = CampaignService.getUserCampaigns(
-      userAddress,
-      this.state.skipDacPages,
+      this.state.userAddress,
+      this.state.skipCampaignPages,
       this.state.itemsPerPage,
       campaigns => this.setState({ campaigns, isLoadingCampaigns: false }),
       () => this.setState({ isLoadingCampaigns: false }),
@@ -133,10 +156,8 @@ class Profile extends Component {
   }
 
   loadUserDacs() {
-    const userAddress = this.state.userAddress;
-
     this.dacsObserver = DACservice.getUserDACs(
-      userAddress,
+      this.state.userAddress,
       this.state.skipDacPages,
       this.state.itemsPerPage,
       dacs => this.setState({ dacs, isLoadingDacs: false }),
@@ -144,23 +165,54 @@ class Profile extends Component {
     );
   }
 
-  componentWillUnmount() {
-    if (this.dacsObserver) this.dacsObserver.unsubscribe();
-    if (this.campaignsObserver) this.campaignsObserver.unsubscribe();
-    if (this.milestonesObserver) this.milestonesObserver.unsubscribe();
-  }  
+  loadUserDonations() {
+    this.donationsObserver = feathersClient
+      .service('donations')
+      .watch({ listStrategy: 'always' })
+      .find(
+        paramsForServer({
+          schema: 'includeTypeDetails',
+          query: {
+            giverAddress: this.state.userAddress,
+            $limit: this.state.itemsPerPage,
+            $skip: this.state.skipDonationsPages * this.state.itemsPerPage,
+          },
+        }),
+      )
+      .subscribe(
+        resp => {
+          this.setState({
+            donations: Object.assign({}, resp, { data: resp.data.map(d => new Donation(d)) }),
+            isLoadingDonations: false,
+          });
+        },
+        () => {
+          this.setState({ isLoadingDonations: false });
+        },
+      );
+  }
 
   handleMilestonePageChanged(newPage) {
-    this.setState({ skipMilestonePages: newPage - 1 }, () => this.loadUserMilestones());
-  }  
+    this.setState({ skipMilestonePages: newPage - 1, isLoadingMilestones: true }, () =>
+      this.loadUserMilestones(),
+    );
+  }
 
   handleCampaignsPageChanged(newPage) {
-    this.setState({ skipCampaignsPages: newPage - 1 }, () => this.loadUserCampaigns());
-  } 
+    this.setState({ skipCampaignPages: newPage - 1, isLoadingCampaigns: true }, () =>
+      this.loadUserCampaigns(),
+    );
+  }
 
   handleDacPageChanged(newPage) {
-    this.setState({ skipDacsPages: newPage - 1 }, () => this.loadUserDacs());
-  }      
+    this.setState({ skipDacPages: newPage - 1, isLoadingDacs: true }, () => this.loadUserDacs());
+  }
+
+  handleDonationsPageChanged(newPage) {
+    this.setState({ skipDonationsPages: newPage - 1, isLoadingDonations: true }, () =>
+      this.loadUserDonations(),
+    );
+  }
 
   render() {
     const { history } = this.props;
@@ -169,21 +221,19 @@ class Profile extends Component {
       hasError,
       avatar,
       name,
-      address,
       email,
       linkedIn,
       etherScanUrl,
       isLoadingDacs,
       isLoadingCampaigns,
       isLoadingMilestones,
+      isLoadingDonations,
       dacs,
       campaigns,
       milestones,
-      totalResults,
-      skipPages,
-      itemsPerPage,
-      visiblePages,  
-      userAddress    
+      donations,
+      visiblePages,
+      userAddress,
     } = this.state;
     const user = {
       name,
@@ -207,22 +257,21 @@ class Profile extends Component {
                       <h1>{getUserName(user)}</h1>
                       {etherScanUrl && (
                         <p>
-                          <a href={`${etherScanUrl}address/${address}`}>{address}</a>
+                          <a href={`${etherScanUrl}address/${userAddress}`}>{userAddress}</a>
                         </p>
                       )}
-                      {!etherScanUrl && <p>{address}</p>}
+                      {!etherScanUrl && <p>{userAddress}</p>}
                       <p>{email}</p>
                       <p>{linkedIn}</p>
                     </center>
                   </div>
-                )
-              }
+                )}
 
               <h4>Milestones</h4>
               <div>
-                {isLoadingMilestones && <Loader />}
+                {isLoadingMilestones && <Loader className="small" />}
 
-                {!isLoadingMilestones &&
+                {!isLoadingMilestones && (
                   <div className="table-container">
                     {milestones &&
                       milestones.data.length > 0 && (
@@ -261,6 +310,26 @@ class Profile extends Component {
                                     >
                                       CAMPAIGN <em>{getTruncatedText(m.campaign.title, 40)}</em>
                                     </Link>
+                                    <div>
+                                      {m.ownerAddress === userAddress && (
+                                        <span className="badge badge-success">
+                                          <i className="fa fa-flag-o" />
+                                          Owner
+                                        </span>
+                                      )}
+                                      {m.reviewerAddress === userAddress && (
+                                        <span className="badge badge-info">
+                                          <i className="fa fa-eye" />
+                                          Reviewer
+                                        </span>
+                                      )}
+                                      {m.reviewerAddress === userAddress && (
+                                        <span className="badge badge-warning">
+                                          <i className="fa fa-diamond" />
+                                          Recipient
+                                        </span>
+                                      )}
+                                    </div>
                                   </td>
                                   <td className="td-status">
                                     {(m.status === 'pending' ||
@@ -297,7 +366,7 @@ class Profile extends Component {
                             </tbody>
                           </table>
 
-                          { milestones.total > milestones.limit && 
+                          {milestones.total > milestones.limit && (
                             <center>
                               <Pagination
                                 activePage={milestones.skipPages + 1}
@@ -307,7 +376,7 @@ class Profile extends Component {
                                 onChange={this.handleMilestonePageChanged}
                               />
                             </center>
-                          }
+                          )}
                         </div>
                       )}
 
@@ -315,7 +384,7 @@ class Profile extends Component {
                       milestones.data.length === 0 && (
                         <div className="no-results">
                           <center>
-                            <h3>This user didn't create any milestones here!</h3>
+                            <h3>This user didn&apos;t create any milestones here!</h3>
                             <img
                               className="empty-state-img"
                               src={`${process.env.PUBLIC_URL}/img/delegation.svg`}
@@ -327,12 +396,12 @@ class Profile extends Component {
                         </div>
                       )}
                   </div>
-                }
+                )}
               </div>
 
               <h4>Campaigns</h4>
               <div>
-                {isLoadingCampaigns && <Loader />}
+                {isLoadingCampaigns && <Loader className="small" />}
 
                 {!isLoadingCampaigns && (
                   <div className="table-container">
@@ -358,12 +427,20 @@ class Profile extends Component {
                                     <Link to={`/campaigns/${c._id}`}>
                                       {getTruncatedText(c.title, 45)}
                                     </Link>
-                                    {c.reviewerAddress === userAddress && (
-                                      <span className="badge badge-info">
-                                        <i className="fa fa-eye" />
-                                        &nbsp;Campaign reviewer
-                                      </span>
-                                    )}
+                                    <div>
+                                      {c.ownerAddress === userAddress && (
+                                        <span className="badge badge-success">
+                                          <i className="fa fa-flag-o" />
+                                          Owner
+                                        </span>
+                                      )}
+                                      {c.reviewerAddress === userAddress && (
+                                        <span className="badge badge-info">
+                                          <i className="fa fa-eye" />
+                                          Reviewer
+                                        </span>
+                                      )}
+                                    </div>
                                   </td>
                                   <td className="td-donations-number">{c.donationCount || 0}</td>
                                   <td className="td-donations-amount">
@@ -383,7 +460,7 @@ class Profile extends Component {
                             </tbody>
                           </table>
 
-                          { campaigns.total > campaigns.limit && 
+                          {campaigns.total > campaigns.limit && (
                             <center>
                               <Pagination
                                 activePage={campaigns.skipPages + 1}
@@ -392,9 +469,9 @@ class Profile extends Component {
                                 pageRangeDisplayed={visiblePages}
                                 onChange={this.handleCampaignsPageChanged}
                               />
-                            </center> 
-                          }
-                        </div>                         
+                            </center>
+                          )}
+                        </div>
                       )}
 
                     {campaigns &&
@@ -414,11 +491,11 @@ class Profile extends Component {
                       )}
                   </div>
                 )}
-              </div>   
-              
+              </div>
+
               <h4>Communities</h4>
               <div className="table-container">
-                {isLoadingDacs && <Loader className="fixed" />}
+                {isLoadingDacs && <Loader className="small" />}
 
                 {!isLoadingDacs && (
                   <div>
@@ -432,14 +509,26 @@ class Profile extends Component {
                                 <th className="td-donations-number">Number of donations</th>
                                 <th className="td-donations-amount">Amount donated</th>
                                 <th className="td-status">Status</th>
-                                <th className="td-actions" />
                               </tr>
                             </thead>
                             <tbody>
                               {dacs.data.map(d => (
-                                <tr key={d._id} className={d.status === DAC.PENDING ? 'pending' : ''}>
+                                <tr
+                                  key={d._id}
+                                  className={d.status === DAC.PENDING ? 'pending' : ''}
+                                >
                                   <td className="td-name">
-                                    <Link to={`/dacs/${d._id}`}>{getTruncatedText(d.title, 45)}</Link>
+                                    <Link to={`/dacs/${d._id}`}>
+                                      {getTruncatedText(d.title, 45)}
+                                    </Link>
+                                    <div>
+                                      {d.ownerAddress === userAddress && (
+                                        <span className="badge badge-success">
+                                          <i className="fa fa-flag-o" />
+                                          Owner
+                                        </span>
+                                      )}
+                                    </div>
                                   </td>
                                   <td className="td-donations-number">{d.donationCount}</td>
                                   <td className="td-donations-amount">
@@ -453,17 +542,12 @@ class Profile extends Component {
                                     )}
                                     {d.status}
                                   </td>
-                                  <td className="td-actions">
-                                    <button className="btn btn-link" onClick={() => this.editDAC(d.id)}>
-                                      <i className="fa fa-edit" />
-                                    </button>
-                                  </td>
                                 </tr>
                               ))}
                             </tbody>
                           </table>
 
-                          { dacs.total > dacs.limit && 
+                          {dacs.total > dacs.limit && (
                             <center>
                               <Pagination
                                 activePage={dacs.skipPages + 1}
@@ -473,8 +557,7 @@ class Profile extends Component {
                                 onChange={this.handleDacPageChanged}
                               />
                             </center>
-                          }
-
+                          )}
                         </div>
                       )}
 
@@ -498,8 +581,99 @@ class Profile extends Component {
                       )}
                   </div>
                 )}
-              </div>                              
+              </div>
 
+              <h4>Donations</h4>
+              <div className="table-container">
+                {isLoadingDonations && <Loader className="small" />}
+
+                {!isLoadingDonations && (
+                  <div>
+                    {donations &&
+                      donations.data.length > 0 && (
+                        <div>
+                          <table className="table table-responsive table-striped table-hover">
+                            <thead>
+                              <tr>
+                                <th className="td-date">Date</th>
+                                <th className="td-donated-to">Donated to</th>
+                                <th className="td-donations-amount">Amount</th>
+                                <th className="td-transaction-status">Status</th>
+                                <th className="td-tx-address">Address</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {donations.data.map(d => (
+                                <tr
+                                  key={d.id}
+                                  className={d.status === Donation.PENDING ? 'pending' : ''}
+                                >
+                                  <td className="td-date">
+                                    {moment(d.createdAt).format('MM/DD/YYYY')}
+                                  </td>
+
+                                  <td className="td-donated-to">
+                                    {d.intendedProject > 0 && (
+                                      <span className="badge badge-info">
+                                        <i className="fa fa-random" />
+                                        &nbsp;Delegated
+                                      </span>
+                                    )}
+                                    <Link to={d.donatedTo.url}>
+                                      {d.donatedTo.type} <em>{d.donatedTo.name}</em>
+                                    </Link>
+                                  </td>
+                                  <td className="td-donations-amount">
+                                    {convertEthHelper(d.amount)} ETH
+                                  </td>
+
+                                  <td className="td-transaction-status">
+                                    {d.status === 'pending' && (
+                                      <span>
+                                        <i className="fa fa-circle-o-notch fa-spin" />&nbsp;
+                                      </span>
+                                    )}
+                                  </td>
+
+                                  {etherScanUrl && (
+                                    <td className="td-tx-address">
+                                      <a href={`${etherScanUrl}address/${d.giverAddress}`}>
+                                        {d.giverAddress}
+                                      </a>
+                                    </td>
+                                  )}
+                                  {!etherScanUrl && (
+                                    <td className="td-tx-address">{d.giverAddress}</td>
+                                  )}
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+
+                          {donations.total > donations.limit && (
+                            <center>
+                              <Pagination
+                                activePage={donations.skipPages + 1}
+                                itemsCountPerPage={donations.limit}
+                                totalItemsCount={donations.total}
+                                pageRangeDisplayed={visiblePages}
+                                onChange={this.handleDonationsPageChanged}
+                              />
+                            </center>
+                          )}
+                        </div>
+                      )}
+
+                    {donations.data.length === 0 && (
+                      <div>
+                        <center>
+                          <h3>This user didn&apos;t make any donations yet!</h3>
+                        </center>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>
