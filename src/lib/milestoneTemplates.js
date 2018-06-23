@@ -1,7 +1,7 @@
 export default {
   templates: {
-    none: ``,
-    rewardDAO: `
+    None: ``,
+    'Reward DAO': `
           <p>
               <span style="font-size: 18px;">Intro: (optional)</span>
           </p>
@@ -53,7 +53,7 @@ export default {
             </em>
           </p>
           `,
-    regularReward: `
+    'Regular Reward': `
           <p>
               <span style="font-size: 18px;">Intro: (optional)</span>
           </p>
@@ -97,7 +97,7 @@ export default {
               <br>
           </p>
       `,
-    expenses: `
+    Expenses: `
           <p>
               <span style="font-size: 18px;">Description</span>
           </p>
@@ -114,7 +114,7 @@ export default {
               <em>Please list your expenses</em>
           </p>
       `,
-    bounties: `
+    Bounties: `
           <p>
               <span style="font-size: 18px;">Intro: (optional)</span>
           </p>

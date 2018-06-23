@@ -5,8 +5,6 @@ import { utils } from 'web3';
 import Toggle from 'react-toggle';
 import BigNumber from 'bignumber.js';
 import { Form, Input } from 'formsy-react-components';
-import Dropdown from 'react-dropdown';
-import 'react-dropdown/style.css';
 import { feathersClient, feathersRest } from './../../lib/feathersClient';
 import templates from './../../lib/milestoneTemplates';
 import Loader from './../Loader';
@@ -57,7 +55,6 @@ class EditMilestone extends Component {
       // milestone model
       title: '',
       description: '',
-      milestoneTemplate: 'none',
       image: '',
       maxAmount: new BigNumber(0),
       fiatAmount: new BigNumber(0),
@@ -646,10 +643,8 @@ class EditMilestone extends Component {
 
   handleTemplateChange(option) {
     this.setState({
-      description: templates.templates[option.value],
-      milestoneTemplate: option,
+      description: templates.templates[option],
     });
-    // this.desc.value = option.value;
   }
   triggerRouteBlocking() {
     const form = this.form.current.formsyForm;
@@ -683,14 +678,6 @@ class EditMilestone extends Component {
       reviewers,
       isBlocking,
     } = this.state;
-
-    const options = [
-      { value: 'none', label: 'None' },
-      { value: 'rewardDAO', label: 'Reward DAO' },
-      { value: 'regularReward', label: 'Regular Reward' },
-      { value: 'expenses', label: 'Expenses' },
-      { value: 'bounties', label: 'Bounties' },
-    ];
 
     return (
       <div id="edit-milestone-view">
@@ -761,15 +748,10 @@ class EditMilestone extends Component {
                       required
                       autoFocus
                     />
-                    <Dropdown
-                      options={options}
-                      onChange={this.handleTemplateChange}
-                      value={this.state.milestoneTemplate}
-                      placeholder="Select an option"
-                    />
                     <div className="form-group">
                       <QuillFormsy
                         name="description"
+                        templatesDropdown
                         label="Explain how you are going to do this successfully."
                         helpText="Make it as extensive as necessary. Your goal is to build trust,
                         so that people donate Ether to your Campaign. Don't hesitate to add a detailed budget for this Milestone"
@@ -779,6 +761,7 @@ class EditMilestone extends Component {
                         onTextChanged={content => this.constructSummary(content)}
                         validations="minLength:3"
                         help="Describe your Milestone."
+                        handleTemplateChange={this.handleTemplateChange}
                         validationErrors={{
                           minLength: 'Please provide at least 3 characters.',
                         }}
