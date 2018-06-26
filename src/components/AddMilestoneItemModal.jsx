@@ -1,9 +1,11 @@
+/* eslint-disable prefer-destructuring */
+/* eslint-disable jsx-a11y/anchor-is-valid */
+
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { SkyLightStateless } from 'react-skylight';
 import { Input, Form } from 'formsy-react-components';
 import { utils } from 'web3';
-import { Portal } from 'react-portal';
 import { getStartOfDayUTC } from '../lib/helpers';
 import FormsyImageUploader from './FormsyImageUploader';
 import RateConvertor from './RateConvertor';
@@ -29,6 +31,9 @@ const initialState = {
 class AddMilestoneItemModal extends Component {
   constructor(props) {
     super(props);
+
+    this.form = React.createRef();
+
     this.state = initialState;
     this.setImage = this.setImage.bind(this);
     this.mapInputs = this.mapInputs.bind(this);
@@ -59,7 +64,12 @@ class AddMilestoneItemModal extends Component {
     this.setState(initialState);
   }
 
-  submit(model) {
+  submit() {
+    // Formsy doesn't like nesting, even when using Portals
+    // So we're manually fetching and submitting the model
+    const form = this.form;
+    const model = form.current.formsyForm.getModel();
+
     this.props.onAddItem(model);
     this.setState(initialState);
   }
@@ -68,7 +78,7 @@ class AddMilestoneItemModal extends Component {
     const { visible } = this.props;
     const { formIsValid, description, image } = this.state;
     return (
-      <Portal className="add-milestone-item-skylight">
+      <div>
         {visible && (
           <SkyLightStateless
             isVisible={visible}
@@ -77,7 +87,8 @@ class AddMilestoneItemModal extends Component {
             dialogStyles={addMilestoneModalStyle}
           >
             <Form
-              onSubmit={this.submit}
+              id="milestone-form"
+              ref={this.form}
               mapping={this.mapInputs}
               onValid={() => this.setState({ formIsValid: true })}
               onInvalid={() => this.setState({ formIsValid: false })}
@@ -110,14 +121,20 @@ class AddMilestoneItemModal extends Component {
                 resize={false}
               />
 
-              <button
+              {/*
+              NOTE: Due to a Formsy issue, we're using a 'fake' submit button here
+              */}
+
+              <a
+                role="button"
+                tabIndex="-1"
                 className="btn btn-primary"
                 disabled={!formIsValid}
-                formNoValidate
-                type="submit"
+                onClick={() => this.submit()}
+                onKeyUp={() => this.submit()}
               >
                 Add item
-              </button>
+              </a>
 
               <button className="btn btn-link" onClick={() => this.closeDialog()}>
                 Cancel
@@ -125,7 +142,7 @@ class AddMilestoneItemModal extends Component {
             </Form>
           </SkyLightStateless>
         )}
-      </Portal>
+      </div>
     );
   }
 }

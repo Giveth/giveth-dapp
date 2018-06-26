@@ -69,7 +69,7 @@ class MilestoneProof extends Component {
                           <th className="td-item-amount-fiat">Amount Fiat</th>
                           <th className="td-item-fiat-amount">Amount Ether</th>
                           <th className="td-item-file-upload">Attached proof</th>
-                          <th className="td-item-action" />
+                          {isEditMode && <th className="td-item-action" />}
                         </tr>
                       </thead>
                       <tbody>

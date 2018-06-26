@@ -402,6 +402,8 @@ class EditMilestone extends Component {
         conversionRate: this.props.currentRate.rates[this.state.selectedFiatType],
       };
 
+      console.log('constructedModel', constructedModel);
+
       if (this.props.isNew) {
         const createMilestone = (txData, callback) => {
           feathersClient
@@ -698,6 +700,7 @@ class EditMilestone extends Component {
                   </div>
 
                   <Form
+                    id="edit-milestone-form"
                     onSubmit={this.submit}
                     ref={this.form}
                     mapping={inputs => this.mapInputs(inputs)}
