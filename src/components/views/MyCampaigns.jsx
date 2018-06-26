@@ -149,6 +149,7 @@ class MyCampaigns extends Component {
                               <th className="td-donations-number">Donations</th>
                               <th className="td-donations-amount">Amount</th>
                               <th className="td-status">Status</th>
+                              <th className="td-confimrations">Confirmations</th>
                               <th className="td-actions" />
                             </tr>
                           </thead>
@@ -182,6 +183,7 @@ class MyCampaigns extends Component {
                                   )}
                                   {c.status}
                                 </td>
+                                <td className="td-confirmations">{c.id}</td>
                                 <td className="td-actions">
                                   {c.owner.address === currentUser.address &&
                                     c.isActive && (
@@ -244,9 +246,8 @@ class MyCampaigns extends Component {
                             />
                           </center>
                         )}
-
-                    </div>
-                  )}
+                      </div>
+                    )}
 
                   {campaigns &&
                     campaigns.length === 0 && (
