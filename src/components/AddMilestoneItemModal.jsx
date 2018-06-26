@@ -7,6 +7,7 @@ import { Portal } from 'react-portal';
 import { getStartOfDayUTC } from '../lib/helpers';
 import FormsyImageUploader from './FormsyImageUploader';
 import RateConvertor from './RateConvertor';
+import getEthConversionContext from './../containers/getEthConversionContext';
 
 const addMilestoneModalStyle = {
   width: '70% !important',
@@ -25,7 +26,7 @@ const initialState = {
   formIsValid: false,
 };
 
-export default class AddMilestoneItemModal extends Component {
+class AddMilestoneItemModal extends Component {
   constructor(props) {
     super(props);
     this.state = initialState;
@@ -100,7 +101,7 @@ export default class AddMilestoneItemModal extends Component {
                 </div>
               </div>
 
-              <RateConvertor getEthConversion={this.props.getEthConversion} />
+              <RateConvertor />
 
               <FormsyImageUploader
                 name="image"
@@ -132,6 +133,7 @@ export default class AddMilestoneItemModal extends Component {
 AddMilestoneItemModal.propTypes = {
   visible: PropTypes.bool.isRequired,
   onClose: PropTypes.func.isRequired,
-  getEthConversion: PropTypes.func.isRequired,
   onAddItem: PropTypes.func.isRequired,
 };
+
+export default getEthConversionContext(AddMilestoneItemModal);
