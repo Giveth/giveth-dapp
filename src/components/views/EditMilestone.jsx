@@ -79,6 +79,7 @@ class EditMilestone extends Component {
       showRecipientAddress: false,
       conversionRates: [],
       currentRate: undefined,
+      template: 'none',
       date: getStartOfDayUTC().subtract(1, 'd'),
       fiatTypes: [
         { value: 'BRL', title: 'BRL' },
@@ -105,6 +106,7 @@ class EditMilestone extends Component {
     this.changeSelectedFiat = this.changeSelectedFiat.bind(this);
     this.toggleShowRecipientAddress = this.toggleShowRecipientAddress.bind(this);
     this.handleTemplateChange = this.handleTemplateChange.bind(this);
+    this.validateMilestoneDesc = this.validateMilestoneDesc.bind(this);
   }
 
   componentDidMount() {
@@ -644,12 +646,44 @@ class EditMilestone extends Component {
   handleTemplateChange(option) {
     this.setState({
       description: templates.templates[option],
+      template: option,
     });
   }
   triggerRouteBlocking() {
     const form = this.form.current.formsyForm;
     // we only block routing if the form state is not submitted
     this.setState({ isBlocking: form && (!form.state.formSubmitted || form.state.isSubmitting) });
+  }
+
+  validateMilestoneDesc(value) {
+    console.log(value, this.state.template);
+    if (this.state.template === 'Reward DAO') {
+      return (
+        value.includes('Intro') &&
+        value.includes('Description') &&
+        value.includes('Proof') &&
+        value.includes('Video') &&
+        value.includes('Reward')
+      );
+    } else if (this.state.template === 'Regular Reward') {
+      return (
+        value.includes('Intro') &&
+        value.includes('Description') &&
+        value.includes('Video') &&
+        value.includes('Amount')
+      );
+    } else if (this.state.template === 'Expenses') {
+      return value.includes('Expenses') && value.includes('Description');
+    } else if (this.state.template === 'Bounties') {
+      return (
+        value.includes('Intro') &&
+        value.includes('What') &&
+        value.includes('Why') &&
+        value.includes('Deadline') &&
+        value.includes('Link to Bounty')
+      );
+    }
+    return value.length > 10;
   }
 
   render() {
@@ -759,11 +793,17 @@ class EditMilestone extends Component {
                         placeholder="Describe how you're going to execute your Milestone successfully
                         ..."
                         onTextChanged={content => this.constructSummary(content)}
-                        validations="minLength:3"
+                        validations={{
+                          // eslint-disable-next-line
+                          templateValidator: function(values, value) {
+                            return this.validateMilestoneDesc(value);
+                          }.bind(this),
+                        }}
                         help="Describe your Milestone."
                         handleTemplateChange={this.handleTemplateChange}
                         validationErrors={{
-                          minLength: 'Please provide at least 3 characters.',
+                          templateValidator:
+                            'Please provide at least 10 characters and do not edit the template keywords.',
                         }}
                         required
                       />
