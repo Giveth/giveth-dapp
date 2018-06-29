@@ -85,7 +85,7 @@ const configurations = {
     liquidPledgingAddress: '0x8eB047585ABeD935a73ba4b9525213F126A0c979',
     lppCampaignFactoryAddress: '0x71408CE2125b1F07f614b93C8Bd0340e8Fc31CFA',
     lppCappedMilestoneFactoryAddress: '0x19e88e279844f0201079b39c736a94b87b32b6b6',
-    givethBridgeAddress: '0xee7f3d55af5cb20c6e5f3c8196df0db6cc4fec52',
+    givethBridgeAddress: '0x30f938fED5dE6e06a9A7Cd2Ac3517131C317B1E7',
     foreignGivethBridgeAddress: '0xfF9CD5140e79377feB23f6DFaF1f8b558C0FE621',
     tokenAddresses: { GivETH: '0xe3ee055346a9EfaF4AA2900847dEb04de0195398' },
     etherscan: 'https://etherscan.io/',
