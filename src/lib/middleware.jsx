@@ -10,13 +10,31 @@ import { history } from '../lib/helpers';
  * @return new Promise
  *
  * usage:
- *    isAuthenticated(currentUser, wallet)
- *      .then(()=> ...do something when authenticated)
+ *    isLoggedIn(currentUser)
+ *      .then(()=> ...do something when logged in)
+ *      .catch((err) ...do something when not logged in
+ *      returns new Error 'notLoggedIn' if not logged in
  */
 export const isLoggedIn = currentUser =>
-  new Promise(resolve => {
+  new Promise((resolve, reject) => {
     if (currentUser && currentUser.address) resolve();
-    else history.goBack();
+    else {
+      React.swal({
+        title: 'Oops! You need to be signed in!',
+        content: React.swal.msg(
+          <p>
+            Oops! You need to be logged in to view this page. Please sign in with a wallet to view
+            this page.
+          </p>,
+        ),
+        icon: 'warning',
+        buttons: ['Cancel', 'Sign in'],
+      }).then(isConfirmed => {
+        if (isConfirmed) history.push('/signin');
+        else history.push('/');
+        reject(new Error('notLoggedIn'));
+      });
+    }
   });
 
 /**
@@ -31,11 +49,16 @@ export const isLoggedIn = currentUser =>
  * usage:
  *    isAuthenticated(currentUser, wallet)
  *      .then(()=> ...do something when authenticated)
+ *      .catch((err) ...do something when not authenticated
+ *      returns new Error 'notAuthenticated' if not authenticated
  */
 export const isAuthenticated = (currentUser, wallet) =>
-  new Promise(resolve => {
+  new Promise((resolve, reject) => {
     if (currentUser && currentUser.address && wallet && wallet.unlocked) resolve();
-    else history.goBack();
+    else {
+      history.push('/');
+      reject(new Error('notAuthenticated'));
+    }
   });
 
 /**
@@ -67,21 +90,6 @@ export const isInWhitelist = (currentUser, whitelist) =>
   });
 
 /**
- * If the wallet is locked, asks the user to unlock his wallet before redirecting to a route
- *
- * @param wallet  {object} Wallet object
- * @param history {object} Standard history object
- * @param to      {string} Route to which the user should be redirected
- */
-export const redirectAfterWalletUnlock = (to, wallet) => {
-  if (!wallet || (wallet && !wallet.unlocked)) {
-    React.unlockWallet(to);
-  } else {
-    history.push(to);
-  }
-};
-
-/**
  * If the wallet is locked, asks the user to unlock his wallet, otherwise performs the action
  *
  * @param wallet {object}   Wallet object
@@ -90,10 +98,21 @@ export const redirectAfterWalletUnlock = (to, wallet) => {
  */
 export const takeActionAfterWalletUnlock = (wallet, action) => {
   if (!wallet || (wallet && !wallet.unlocked)) {
-    React.unlockWallet();
+    React.unlockWallet(action);
   } else {
     action();
   }
+};
+
+/**
+ * If the wallet is locked, asks the user to unlock his wallet before redirecting to a route
+ *
+ * @param wallet  {object} Wallet object
+ * @param history {object} Standard history object
+ * @param to      {string} Route to which the user should be redirected
+ */
+export const redirectAfterWalletUnlock = (to, wallet) => {
+  takeActionAfterWalletUnlock(wallet, () => history.push(to));
 };
 
 /**

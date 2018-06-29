@@ -16,6 +16,8 @@
 @import 'dashboard.scss';
 @import 'edit-view.scss';
 @import 'editMilestoneView.scss';
+@import 'myMilestones.scss';
+@import 'profileView.scss';
 // components
 @import 'loader.scss';
 @import 'mainMenu.scss';
@@ -23,6 +25,7 @@
 @import 'joinGivethCommunity.scss';
 @import 'backgroundImageHeader.scss';
 @import 'dac-card.scss';
+@import 'milestoneConversations.scss';
 // misc
 @import 'quill-overrides.scss';
 @import 'react-skylight.scss';
@@ -36,7 +39,6 @@
 // overrides
 @import 'card.scss';
 @import 'formsyOverrides.scss';
-@import 'myMilestones.scss';
 
 html,
 body {
@@ -226,4 +228,9 @@ span.nav-link {
 }
 span.nav-link:focus {
   outline: 0;
+}
+
+.ql-editor .ql-video {
+min-height: 400px;
+width: 100%;    
 }

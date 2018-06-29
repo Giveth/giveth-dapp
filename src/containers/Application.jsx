@@ -1,7 +1,8 @@
 import React, { Component } from 'react';
 import ReactDOM from 'react-dom';
 
-import { Router, Route, Switch } from 'react-router-dom';
+import { Router, Route, Redirect, Switch } from 'react-router-dom';
+
 import localforage from 'localforage';
 
 import { ToastContainer, toast } from 'react-toastify';
@@ -62,10 +63,6 @@ React.swal.msg = reactNode => {
 // make toast globally available
 React.toast = toast;
 
-// TO DO: This is the minimum transaction view required to:
-// create a DAC / Campaign / Milestone / Profile
-React.minimumWalletBalance = 0.02;
-
 /**
  * This container holds the application and its routes.
  * It is also responsible for loading application persistent data.
@@ -82,7 +79,7 @@ class Application extends Component {
     });
 
     // Making unlock wallet global
-    React.unlockWallet = this.unlockWallet;
+    // React.unlockWallet = this.unlockWallet;
   }
 
   render() {
@@ -94,11 +91,10 @@ class Application extends Component {
               state: {
                 wallet,
                 currentUser,
-                web3,
                 isLoading,
                 hasError,
                 showUnlockWalletModal,
-                redirectAfter,
+                actionAfter,
               },
               actions: {
                 onSignIn,
@@ -115,7 +111,7 @@ class Application extends Component {
                   showUnlockWalletModal && (
                     <UnlockWallet
                       wallet={wallet}
-                      redirectAfter={redirectAfter}
+                      actionAfter={actionAfter}
                       onClose={walletUnlocked}
                       onCloseClicked={hideUnlockWalletModal}
                     />
@@ -124,31 +120,31 @@ class Application extends Component {
                 {!isLoading &&
                   !hasError && (
                     <div>
-                      <MainMenu onSignOut={onSignOut} wallet={wallet} currentUser={currentUser} />
+                      <MainMenu onSignOut={onSignOut} />
 
                       <Switch>
                         {/* Routes are defined here. Persistent data is set as props on components
-                  NOTE order matters, wrong order breaks routes!
-               */}
+                          NOTE order matters, wrong order breaks routes!
+                        */}
 
                         <Route
                           exact
                           path="/dacs/new"
-                          component={props => (
+                          render={props => (
                             <EditDAC isNew currentUser={currentUser} wallet={wallet} {...props} />
                           )}
                         />
                         <Route
                           exact
                           path="/dacs/:id"
-                          component={props => (
+                          render={props => (
                             <ViewDAC currentUser={currentUser} wallet={wallet} {...props} />
                           )}
                         />
                         <Route
                           exact
                           path="/dacs/:id/edit"
-                          component={props => (
+                          render={props => (
                             <EditDAC currentUser={currentUser} wallet={wallet} {...props} />
                           )}
                         />
@@ -156,7 +152,7 @@ class Application extends Component {
                         <Route
                           exact
                           path="/campaigns/new"
-                          component={props => (
+                          render={props => (
                             <EditCampaign
                               isNew
                               currentUser={currentUser}
@@ -168,14 +164,14 @@ class Application extends Component {
                         <Route
                           exact
                           path="/campaigns/:id"
-                          component={props => (
+                          render={props => (
                             <ViewCampaign currentUser={currentUser} wallet={wallet} {...props} />
                           )}
                         />
                         <Route
                           exact
                           path="/campaigns/:id/edit"
-                          component={props => (
+                          render={props => (
                             <EditCampaign currentUser={currentUser} wallet={wallet} {...props} />
                           )}
                         />
@@ -183,7 +179,7 @@ class Application extends Component {
                         <Route
                           exact
                           path="/campaigns/:id/milestones/new"
-                          component={props => (
+                          render={props => (
                             <EditMilestone
                               isNew
                               currentUser={currentUser}
@@ -195,7 +191,7 @@ class Application extends Component {
                         <Route
                           exact
                           path="/campaigns/:id/milestones/propose"
-                          component={props => (
+                          render={props => (
                             <EditMilestone
                               isNew
                               isProposed
@@ -208,28 +204,33 @@ class Application extends Component {
                         <Route
                           exact
                           path="/campaigns/:id/milestones/:milestoneId"
-                          component={props => (
+                          render={props => (
                             <ViewMilestone currentUser={currentUser} wallet={wallet} {...props} />
                           )}
                         />
                         <Route
                           exact
                           path="/campaigns/:id/milestones/:milestoneId/edit"
-                          component={props => (
+                          render={props => (
                             <EditMilestone currentUser={currentUser} wallet={wallet} {...props} />
                           )}
                         />
                         <Route
                           exact
+                          path="/campaigns/:id/milestones"
+                          render={({ match }) => <Redirect to={`/campaigns/${match.params.id}`} />}
+                        />
+                        <Route
+                          exact
                           path="/milestones/:milestoneId/edit"
-                          component={props => (
+                          render={props => (
                             <EditMilestone currentUser={currentUser} wallet={wallet} {...props} />
                           )}
                         />
                         <Route
                           exact
                           path="/milestones/:milestoneId/edit/proposed"
-                          component={props => (
+                          render={props => (
                             <EditMilestone
                               currentUser={currentUser}
                               wallet={wallet}
@@ -241,35 +242,35 @@ class Application extends Component {
                         <Route
                           exact
                           path="/donations"
-                          component={props => (
+                          render={props => (
                             <Donations currentUser={currentUser} wallet={wallet} {...props} />
                           )}
                         />
                         <Route
                           exact
                           path="/delegations"
-                          component={props => (
+                          render={props => (
                             <Delegations currentUser={currentUser} wallet={wallet} {...props} />
                           )}
                         />
                         <Route
                           exact
                           path="/my-dacs"
-                          component={props => (
+                          render={props => (
                             <MyDACs currentUser={currentUser} wallet={wallet} {...props} />
                           )}
                         />
                         <Route
                           exact
                           path="/my-campaigns"
-                          component={props => (
+                          render={props => (
                             <MyCampaigns currentUser={currentUser} wallet={wallet} {...props} />
                           )}
                         />
                         <Route
                           exact
                           path="/my-milestones"
-                          component={props => (
+                          render={props => (
                             <MyMilestones currentUser={currentUser} wallet={wallet} {...props} />
                           )}
                         />
@@ -277,7 +278,7 @@ class Application extends Component {
                         <Route
                           exact
                           path="/signin"
-                          component={props => (
+                          render={props => (
                             <SignIn
                               wallet={wallet}
                               cachedWallet={wallet}
@@ -290,48 +291,38 @@ class Application extends Component {
                         <Route
                           exact
                           path="/signup"
-                          render={props => (
-                            <Signup
-                              provider={web3 ? web3.currentProvider : undefined}
-                              walletCreated={handleWalletChange}
-                              {...props}
-                            />
-                          )}
+                          render={props => <Signup walletCreated={handleWalletChange} {...props} />}
                         />
 
                         <Route
                           exact
                           path="/change-account"
                           render={props => (
-                            <ChangeAccount
-                              provider={web3 ? web3.currentProvider : undefined}
-                              handleWalletChange={handleWalletChange}
-                              {...props}
-                            />
+                            <ChangeAccount handleWalletChange={handleWalletChange} {...props} />
                           )}
                         />
 
                         <Route
                           exact
                           path="/wallet"
-                          component={props => (
+                          render={props => (
                             <UserWallet currentUser={currentUser} wallet={wallet} {...props} />
                           )}
                         />
                         <Route
                           exact
                           path="/profile"
-                          component={props => (
+                          render={props => (
                             <EditProfile currentUser={currentUser} wallet={wallet} {...props} />
                           )}
                         />
                         <Route
                           exact
                           path="/profile/:userAddress"
-                          component={props => <Profile {...props} />}
+                          render={props => <Profile {...props} />}
                         />
 
-                        <DataRoutes currentUser={currentUser} wallet={wallet} />
+                        <DataRoutes />
 
                         <Route component={NotFound} />
                       </Switch>

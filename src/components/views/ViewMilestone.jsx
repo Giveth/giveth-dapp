@@ -1,29 +1,27 @@
-import React, { Component } from 'react';
-import PropTypes from 'prop-types';
-import { Link } from 'react-router-dom';
-import { paramsForServer } from 'feathers-hooks-common';
-import Avatar from 'react-avatar';
-import moment from 'moment';
-import { Form } from 'formsy-react-components';
 import BigNumber from 'bignumber.js';
+import { paramsForServer } from 'feathers-hooks-common';
+import { Form } from 'formsy-react-components';
+import moment from 'moment';
+import PropTypes from 'prop-types';
+import React, { Component } from 'react';
+import Avatar from 'react-avatar';
 import ReactHtmlParser, { convertNodeToElement } from 'react-html-parser';
-
-import { feathersClient } from './../../lib/feathersClient';
-import { getUserName, getUserAvatar, convertEthHelper, isOwner } from '../../lib/helpers';
-import { redirectAfterWalletUnlock, checkWalletBalance } from '../../lib/middleware';
-
-import Loader from './../Loader';
-import GoBackButton from '../GoBackButton';
+import { Link } from 'react-router-dom';
+import { utils } from 'web3';
+import GivethWallet from '../../lib/blockchain/GivethWallet';
+import { convertEthHelper, getUserAvatar, getUserName, isOwner } from '../../lib/helpers';
+import { checkWalletBalance, redirectAfterWalletUnlock } from '../../lib/middleware';
+import User from '../../models/User';
 import BackgroundImageHeader from '../BackgroundImageHeader';
 import DonateButton from '../DonateButton';
+import ErrorPopup from '../ErrorPopup';
+import GoBackButton from '../GoBackButton';
 import ShowTypeDonations from '../ShowTypeDonations';
 import getNetwork from './../../lib/blockchain/getNetwork';
+import { feathersClient } from './../../lib/feathersClient';
+import Loader from './../Loader';
 import MilestoneItem from './../MilestoneItem';
-
-import GivethWallet from '../../lib/blockchain/GivethWallet';
-import User from '../../models/User';
-
-import ErrorPopup from '../ErrorPopup';
+import MilestoneConversations from './../../components/MilestoneConversations';
 
 /**
   Loads and shows a single milestone
@@ -109,22 +107,28 @@ class ViewMilestone extends Component {
   editMilestone(e) {
     e.stopPropagation();
 
-    checkWalletBalance(this.props.wallet).then(() => {
-      React.swal({
-        title: 'Edit Milestone?',
-        text: 'Are you sure you want to edit this milestone?',
-        icon: 'warning',
-        dangerMode: true,
-        buttons: ['Cancel', 'Yes, edit'],
-      }).then(isConfirmed => {
-        if (isConfirmed) {
-          redirectAfterWalletUnlock(
-            `/campaigns/${this.state.campaign.id}/milestones/${this.state.id}/edit`,
-            this.props.wallet,
-          );
+    checkWalletBalance(this.props.wallet)
+      .then(() => {
+        React.swal({
+          title: 'Edit Milestone?',
+          text: 'Are you sure you want to edit this milestone?',
+          icon: 'warning',
+          dangerMode: true,
+          buttons: ['Cancel', 'Yes, edit'],
+        }).then(isConfirmed => {
+          if (isConfirmed) {
+            redirectAfterWalletUnlock(
+              `/campaigns/${this.state.campaign.id}/milestones/${this.state.id}/edit`,
+              this.props.wallet,
+            );
+          }
+        });
+      })
+      .catch(err => {
+        if (err === 'noBalance') {
+          // handle no balance error
         }
       });
-    });
   }
 
   renderDescription() {
@@ -169,6 +173,7 @@ class ViewMilestone extends Component {
       campaign,
       campaignOwnerAddress,
     } = this.state;
+
     return (
       <div id="view-milestone-view">
         {isLoading && <Loader className="fixed" />}
@@ -208,16 +213,17 @@ class ViewMilestone extends Component {
                     <GoBackButton history={history} styleName="inline" />
 
                     {(isOwner(ownerAddress, currentUser) ||
-                      isOwner(campaignOwnerAddress, currentUser)) && (
-                      <span className="pull-right">
-                        <button
-                          className="btn btn-link btn-edit"
-                          onClick={e => this.editMilestone(e)}
-                        >
-                          <i className="fa fa-edit" />
-                        </button>
-                      </span>
-                    )}
+                      isOwner(campaignOwnerAddress, currentUser)) &&
+                      ['proposed', 'rejected', 'InProgress', 'NeedsReview'].includes(status) && (
+                        <span className="pull-right">
+                          <button
+                            className="btn btn-link btn-edit"
+                            onClick={e => this.editMilestone(e)}
+                          >
+                            <i className="fa fa-edit" />
+                          </button>
+                        </span>
+                      )}
 
                     <center>
                       <Link to={`/profile/${ownerAddress}`}>
@@ -255,7 +261,19 @@ class ViewMilestone extends Component {
                             </thead>
                             <tbody>
                               {items.map((item, i) => (
-                                <MilestoneItem name={`milestoneItem-${i}`} item={item} />
+                                <MilestoneItem
+                                  key={item.date}
+                                  name={`milestoneItem-${i}`}
+                                  item={{
+                                    date: item.date,
+                                    description: item.description,
+                                    selectedFiatType: item.selectedFiatType,
+                                    fiatAmount: item.fiatAmount,
+                                    conversionRate: item.conversionRate,
+                                    wei: utils.toWei(item.etherAmount || '0'),
+                                    image: item.image,
+                                  }}
+                                />
                               ))}
                             </tbody>
                           </table>
@@ -267,122 +285,146 @@ class ViewMilestone extends Component {
 
               <div className="row spacer-top-50">
                 <div className="col-md-8 m-auto">
-                  <h4>Details</h4>
+                  <div className="row">
+                    <div className="col-md-6">
+                      <h4>Details</h4>
 
-                  <div className="form-group">
-                    <span className="label">Reviewer</span>
-                    <small className="form-text">
-                      This person will review the actual completion of the Milestone
-                    </small>
+                      <div className="card details-card">
+                        <div className="form-group">
+                          <span className="label">Reviewer</span>
+                          <small className="form-text">
+                            This person will review the actual completion of the Milestone
+                          </small>
 
-                    <table className="table-responsive">
-                      <tbody>
-                        <tr>
-                          <td className="td-user">
-                            <Link to={`/profile/${reviewerAddress}`}>
-                              <Avatar size={30} src={getUserAvatar(reviewer)} round />
-                              <span>{getUserName(reviewer)}</span>
-                            </Link>
-                          </td>
-                          {etherScanUrl && (
-                            <td className="td-address">
-                              {' '}
-                              -{' '}
-                              <a href={`${etherScanUrl}address/${reviewerAddress}`}>
-                                {reviewerAddress}
-                              </a>
-                            </td>
-                          )}
-                          {!etherScanUrl && <td className="td-address"> - {reviewerAddress}</td>}
-                        </tr>
-                      </tbody>
-                    </table>
-                  </div>
+                          <table className="table-responsive">
+                            <tbody>
+                              <tr>
+                                <td className="td-user">
+                                  <Link to={`/profile/${reviewerAddress}`}>
+                                    <Avatar size={30} src={getUserAvatar(reviewer)} round />
+                                    <span>{getUserName(reviewer)}</span>
+                                  </Link>
+                                </td>
+                                {etherScanUrl && (
+                                  <td className="td-address">
+                                    {' '}
+                                    -{' '}
+                                    <a href={`${etherScanUrl}address/${reviewerAddress}`}>
+                                      {reviewerAddress}
+                                    </a>
+                                  </td>
+                                )}
+                                {!etherScanUrl && (
+                                  <td className="td-address"> - {reviewerAddress}</td>
+                                )}
+                              </tr>
+                            </tbody>
+                          </table>
+                        </div>
 
-                  <div className="form-group">
-                    <span className="label">Recipient</span>
-                    <small className="form-text">
-                      Where the Ether goes after successful completion of the Milestone
-                    </small>
+                        <div className="form-group">
+                          <span className="label">Recipient</span>
+                          <small className="form-text">
+                            Where the Ether goes after successful completion of the Milestone
+                          </small>
 
-                    <table className="table-responsive">
-                      <tbody>
-                        <tr>
-                          <td className="td-user">
-                            <Link to={`/profile/${recipientAddress}`}>
-                              <Avatar size={30} src={getUserAvatar(recipient)} round />
-                              <span>{getUserName(recipient)}</span>
-                            </Link>
-                          </td>
-                          {etherScanUrl && (
-                            <td className="td-address">
-                              {' '}
-                              -{' '}
-                              <a href={`${etherScanUrl}address/${recipientAddress}`}>
-                                {recipientAddress}
-                              </a>
-                            </td>
-                          )}
-                          {!etherScanUrl && <td className="td-address"> - {recipientAddress}</td>}
-                        </tr>
-                      </tbody>
-                    </table>
-                  </div>
+                          <table className="table-responsive">
+                            <tbody>
+                              <tr>
+                                <td className="td-user">
+                                  <Link to={`/profile/${recipientAddress}`}>
+                                    <Avatar size={30} src={getUserAvatar(recipient)} round />
+                                    <span>{getUserName(recipient)}</span>
+                                  </Link>
+                                </td>
+                                {etherScanUrl && (
+                                  <td className="td-address">
+                                    {' '}
+                                    -{' '}
+                                    <a href={`${etherScanUrl}address/${recipientAddress}`}>
+                                      {recipientAddress}
+                                    </a>
+                                  </td>
+                                )}
+                                {!etherScanUrl && (
+                                  <td className="td-address"> - {recipientAddress}</td>
+                                )}
+                              </tr>
+                            </tbody>
+                          </table>
+                        </div>
 
-                  {date && (
-                    <div className="form-group">
-                      <span className="label">Date of milestone</span>
-                      <small className="form-text">
-                        This date defines the eth-fiat conversion rate
-                      </small>
-                      {moment.utc(date).format('Do MMM YYYY')}
+                        {date && (
+                          <div className="form-group">
+                            <span className="label">Date of milestone</span>
+                            <small className="form-text">
+                              This date defines the eth-fiat conversion rate
+                            </small>
+                            {moment.utc(date).format('Do MMM YYYY')}
+                          </div>
+                        )}
+
+                        <div className="form-group">
+                          <span className="label">Max amount to raise</span>
+                          <small className="form-text">
+                            The maximum amount of ETH that can be donated to this Milestone. Based
+                            on the requested amount in fiat.
+                          </small>
+                          {maxAmount} ETH
+                          {fiatAmount &&
+                            selectedFiatType &&
+                            items.length === 0 && (
+                              <span>
+                                {' '}
+                                ({fiatAmount} {selectedFiatType})
+                              </span>
+                            )}
+                        </div>
+
+                        <div className="form-group">
+                          <span className="label">Amount donated</span>
+                          <small className="form-text">
+                            The amount of ETH currently donated to this Milestone
+                          </small>
+                          {totalDonated} ETH
+                        </div>
+
+                        <div className="form-group">
+                          <span className="label">Campaign</span>
+                          <small className="form-text">
+                            The campaign this milestone belongs to.
+                          </small>
+                          {campaign.title}
+                        </div>
+
+                        <div className="form-group">
+                          <span className="label">Status</span>
+                          <br />
+                          {status}
+                        </div>
+
+                        {/*
+                          <div className="form-group">
+                            <label>Completion deadline</label>
+                            <small className="form-text">When the Milestone will be completed</small>
+                            {completionDeadline}
+                          </div>
+                        */}
+                      </div>
                     </div>
-                  )}
 
-                  <div className="form-group">
-                    <span className="label">Max amount to raise</span>
-                    <small className="form-text">
-                      The maximum amount of ETH that can be donated to this Milestone. Based on the
-                      requested amount in fiat.
-                    </small>
-                    {maxAmount} ETH
-                    {fiatAmount &&
-                      selectedFiatType &&
-                      items.length === 0 && (
-                        <span>
-                          {' '}
-                          ({fiatAmount} {selectedFiatType})
-                        </span>
-                      )}
-                  </div>
+                    <div className="col-md-6">
+                      <h4>Status updates</h4>
 
-                  <div className="form-group">
-                    <span className="label">Amount donated</span>
-                    <small className="form-text">
-                      The amount of ETH currently donated to this Milestone
-                    </small>
-                    {totalDonated} ETH
-                  </div>
-
-                  <div className="form-group">
-                    <span className="label">Campaign</span>
-                    <small className="form-text">The campaign this milestone belongs to.</small>
-                    {campaign.title}
-                  </div>
-
-                  <div className="form-group">
-                    <span className="label">Status</span>
-                    <br />
-                    {status}
-                  </div>
-
-                  {/*
-                    <div className="form-group">
-                      <label>Completion deadline</label>
-                      <small className="form-text">When the Milestone will be completed</small>
-                      {completionDeadline}
+                      <MilestoneConversations
+                        milestoneId={id}
+                        ownerAddress={ownerAddress}
+                        reviewerAddress={reviewerAddress}
+                        recipientAddress={recipientAddress}
+                        campaignOwnerAddress={campaignOwnerAddress}
+                      />
                     </div>
-                  */}
+                  </div>
                 </div>
               </div>
 

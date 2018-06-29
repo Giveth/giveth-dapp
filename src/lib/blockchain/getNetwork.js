@@ -1,6 +1,9 @@
-import { LiquidPledging } from 'giveth-liquidpledging-token';
-import { LPPDacs } from 'lpp-dacs';
-import getWeb3 from './getWeb3';
+import { LiquidPledging } from 'giveth-liquidpledging';
+import { LPPCampaignFactory } from 'lpp-campaign';
+import { LPPCappedMilestoneFactory } from 'lpp-capped-milestone';
+import { GivethBridge, ForeignGivethBridge } from 'giveth-bridge';
+
+import { getWeb3, getHomeWeb3 } from './getWeb3';
 import config from '../../configuration';
 
 let network;
@@ -8,10 +11,16 @@ let network;
 export default () => {
   if (network) return Promise.resolve(network);
 
-  return getWeb3().then(web3 => {
+  return Promise.all([getWeb3(), getHomeWeb3()]).then(([web3, homeWeb3]) => {
     network = Object.assign({}, config);
     network.liquidPledging = new LiquidPledging(web3, network.liquidPledgingAddress);
-    network.lppDacs = new LPPDacs(web3, network.dacsAddress);
+    network.lppCampaignFactory = new LPPCampaignFactory(web3, network.lppCampaignFactoryAddress);
+    network.lppCappedMilestoneFactory = new LPPCappedMilestoneFactory(
+      web3,
+      network.lppCappedMilestoneFactoryAddress,
+    );
+    network.givethBridge = new GivethBridge(homeWeb3, network.givethBridgeAddress);
+    network.foreignGivethBridge = new ForeignGivethBridge(web3, network.foreignGivethBridgeAddress);
 
     return network;
   });

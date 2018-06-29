@@ -7,7 +7,15 @@ import { convertEthHelper } from '../lib/helpers';
  *
  * TODO: Check the properties that are passed, sometimes they are number, sometimes strings...
  */
-const CardStats = ({ peopleCount, maxAmount, campaignsCount, milestonesCount, type, status }) => (
+const CardStats = ({
+  peopleCount,
+  maxAmount,
+  totalDonated,
+  campaignsCount,
+  milestonesCount,
+  type,
+  status,
+}) => (
   <div className="row card-stats">
     <div className="col-4 text-left">
       <span>
@@ -17,10 +25,10 @@ const CardStats = ({ peopleCount, maxAmount, campaignsCount, milestonesCount, ty
       <p>Giver(s)</p>
     </div>
 
-    <div className={`col-4 text-center ${maxAmount ? 'card-center' : ''}`}>
-      {maxAmount && <span>Amount requested: {convertEthHelper(maxAmount)} ETH</span>}
+    <div className="col-4 text-center card-center">
+      {maxAmount && <p>Amount requested: {convertEthHelper(maxAmount)} ETH</p>}
 
-      {!maxAmount && <p>Donated</p>}
+      {totalDonated && <p>Donated: {convertEthHelper(totalDonated)} ETH</p>}
     </div>
 
     <div className="col-4 text-right">
@@ -64,12 +72,14 @@ CardStats.propTypes = {
   milestonesCount: PropTypes.number,
   status: PropTypes.string,
   maxAmount: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  totalDonated: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
 };
 
 CardStats.defaultProps = {
   status: 'In Progress',
   milestonesCount: 0,
   maxAmount: undefined,
+  totalDonated: undefined,
   campaignsCount: 0,
 };
 

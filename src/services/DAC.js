@@ -1,6 +1,5 @@
 import getNetwork from '../lib/blockchain/getNetwork';
 import { feathersClient } from '../lib/feathersClient';
-import { getGasPrice } from '../lib/helpers';
 import DAC from '../models/DAC';
 import Campaign from '../models/Campaign';
 
@@ -31,7 +30,7 @@ class DACservice {
   /**
    * Lazy-load DACs by subscribing to DACs listener
    *
-   * @param onSuccess Callback function once response is obtained successfylly
+   * @param onSuccess Callback function once response is obtained successfully
    * @param onError   Callback function if error is encountered
    */
   static subscribe(onSuccess, onError) {
@@ -40,11 +39,7 @@ class DACservice {
       .watch({ listStrategy: 'always' })
       .find({
         query: {
-          delegateId: {
-            $gt: '0', // 0 is a pending dac
-          },
-          // TODO: Re-enable once communities have status staved in feathers
-          // status: DAC.ACTIVE,
+          status: DAC.ACTIVE,
           $limit: 200,
           $sort: { campaignsCount: -1 },
         },
@@ -66,7 +61,7 @@ class DACservice {
    */
   static subscribeDonations(id, onSuccess, onError) {
     return feathersClient
-      .service('donations/history')
+      .service('donations')
       .watch({ listStrategy: 'always' })
       .find({
         query: {
@@ -105,16 +100,32 @@ class DACservice {
   /**
    * Get the user's DACs
    *
-   * @param userAddress Address of the user whose DAC list should be retrieved
-   * @param onSuccess   Callback function once response is obtained successfully
-   * @param onError     Callback function if error is encountered
+   * @param userAddress   Address of the user whose DAC list should be retrieved
+   * @param skipPages     Amount of pages to skip
+   * @param itemsPerPage  Items to retreive
+   * @param onSuccess     Callback function once response is obtained successfully
+   * @param onError       Callback function if error is encountered
    */
-  static getUserDACs(userAddress, onSuccess, onError) {
+  static getUserDACs(userAddress, skipPages, itemsPerPage, onSuccess, onError) {
     return feathersClient
       .service('dacs')
       .watch({ listStrategy: 'always' })
-      .find({ query: { ownerAddress: userAddress } })
-      .subscribe(resp => onSuccess(resp.data.map(dac => new DAC(dac))), onError);
+      .find({
+        query: {
+          ownerAddress: userAddress,
+          $sort: {
+            createdAt: -1,
+          },
+          $limit: itemsPerPage,
+          $skip: skipPages * itemsPerPage,
+        },
+      })
+      .subscribe(resp => {
+        const newResp = Object.assign({}, resp, {
+          data: resp.data.map(d => new DAC(d)),
+        });
+        onSuccess(newResp);
+      }, onError);
   }
 
   /**
@@ -134,15 +145,14 @@ class DACservice {
     } else {
       let txHash;
       let etherScanUrl;
-      Promise.all([getNetwork(), getGasPrice()])
-        .then(([network, gasPrice]) => {
-          const { lppDacs } = network;
+      getNetwork()
+        .then(network => {
+          const { liquidPledging } = network;
           etherScanUrl = network.etherscan;
 
-          lppDacs
-            .addDac(dac.title, '', 0, dac.tokenName, dac.tokenSymbol, {
+          liquidPledging
+            .addDelegate(dac.title, '', 0, 0, {
               from,
-              gasPrice,
             })
             .once('transactionHash', hash => {
               txHash = hash;
@@ -156,10 +166,11 @@ class DACservice {
               afterMined(`${etherScanUrl}tx/${txHash}`);
             });
         })
-        .catch(() => {
+        .catch(err => {
+          if (txHash && err.message && err.message.includes('unknown transaction')) return; // bug in web3 seems to constantly fail due to this error, but the tx is correct
           ErrorPopup(
             'Something went wrong with the DAC creation. Is your wallet unlocked?',
-            `${etherScanUrl}tx/${txHash}`,
+            `${etherScanUrl}tx/${txHash} => ${JSON.stringify(err, null, 2)}`,
           );
         });
     }

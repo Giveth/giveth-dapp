@@ -1,10 +1,11 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import { goBackOnePath } from '../lib/helpers';
 
-const GoBackButton = ({ history, styleName }) => (
+const GoBackButton = ({ styleName }) => (
   <div
-    onClick={history.goBack}
-    onKeyPress={history.goBack}
+    onClick={goBackOnePath}
+    onKeyPress={goBackOnePath}
     role="button"
     tabIndex="0"
     className={`go-back-button ${styleName}`}
@@ -17,9 +18,6 @@ const GoBackButton = ({ history, styleName }) => (
 export default GoBackButton;
 
 GoBackButton.propTypes = {
-  history: PropTypes.shape({
-    goBack: PropTypes.func.isRequired,
-  }).isRequired,
   styleName: PropTypes.string,
 };
 

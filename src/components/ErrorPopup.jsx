@@ -3,6 +3,11 @@ import config from '../configuration';
 // /* global window */
 
 export default (shortDescription, error) => {
+  if (!config.sendErrors) {
+    console.error(shortDescription, error); // eslint-disable-line no-console
+    return;
+  }
+
   const errorHandler = value => {
     let body;
     if (error instanceof Error) {

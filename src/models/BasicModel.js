@@ -1,4 +1,5 @@
 import Model from './Model';
+import { getTruncatedText } from './../lib/helpers';
 
 /**
  * The DAC, Milestone and Campaign base model containing basic common interface
@@ -24,10 +25,10 @@ class BasicModel extends Model {
     _id,
     title = '',
     description = '',
-    summary = '',
     image = '',
     txHash,
     owner,
+    reviewer,
     totalDonated = '0',
     donationCount = 0,
     peopleCount = 0,
@@ -37,11 +38,12 @@ class BasicModel extends Model {
     this.id = _id;
     this.title = title;
     this.description = description;
-    this.summary = summary;
+    this.summary = getTruncatedText(description, 100);
     this.image = image;
     this.newImage = false;
     this.txHash = txHash;
-    this.owner = owner;
+    this.owner = owner || { address: '0x0' }; // FIXME: Check in feathers, owner should be a model
+    this.reviewer = reviewer;
     this.totalDonated = totalDonated;
     this.donationCount = donationCount;
     this.peopleCount = peopleCount;
@@ -110,6 +112,15 @@ class BasicModel extends Model {
   set owner(value) {
     this.checkType(value, ['undefined', 'object'], 'owner');
     this.myOwner = value;
+  }
+
+  get reviewer() {
+    return this.myReviewer;
+  }
+
+  set reviewer(value) {
+    this.checkType(value, ['undefined', 'object'], 'reviewer');
+    this.myReviewer = value;
   }
 
   get totalDonated() {

@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import { Prompt } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import InputToken from 'react-input-token';
 import 'react-input-token/lib/style.css';
@@ -11,12 +12,7 @@ import SelectFormsy from './../SelectFormsy';
 import FormsyImageUploader from './../FormsyImageUploader';
 import GoBackButton from '../GoBackButton';
 import { isOwner, getTruncatedText, history } from '../../lib/helpers';
-import {
-  isAuthenticated,
-  checkWalletBalance,
-  isInWhitelist,
-  confirmBlockchainTransaction,
-} from '../../lib/middleware';
+import { isAuthenticated, checkWalletBalance, isInWhitelist } from '../../lib/middleware';
 import LoaderButton from '../../components/LoaderButton';
 import User from '../../models/User';
 import GivethWallet from '../../lib/blockchain/GivethWallet';
@@ -42,7 +38,7 @@ class EditCampaign extends Component {
       formIsValid: false,
       dacsOptions: [],
       hasWhitelist: React.whitelist.reviewerWhitelist.length > 0,
-      whitelistOptions: React.whitelist.projectOwnerWhitelist.map(r => ({
+      whitelistOptions: React.whitelist.reviewerWhitelist.map(r => ({
         value: r.address,
         title: `${r.name ? r.name : 'Anonymous user'} - ${r.address}`,
       })),
@@ -51,7 +47,10 @@ class EditCampaign extends Component {
       campaign: new Campaign({
         owner: props.currentUser,
       }),
+      isBlocking: false,
     };
+
+    this.form = React.createRef();
 
     this.submit = this.submit.bind(this);
     this.setImage = this.setImage.bind(this);
@@ -103,6 +102,11 @@ class EditCampaign extends Component {
         } else {
           this.setState({ isLoading: false });
         }
+      })
+      .catch(err => {
+        if (err === 'noBalance') {
+          // handle no balance error
+        }
       });
   }
 
@@ -142,8 +146,6 @@ class EditCampaign extends Component {
   }
 
   submit() {
-    this.setState({ isSaving: true });
-
     const afterMined = url => {
       if (url) {
         const msg = (
@@ -176,10 +178,15 @@ class EditCampaign extends Component {
       history.push('/my-campaigns');
     };
 
-    // Save the capaign
-    confirmBlockchainTransaction(
-      () => this.state.campaign.save(afterCreate, afterMined),
-      () => this.setState({ isSaving: false }),
+    this.setState(
+      {
+        isSaving: true,
+        isBlocking: false,
+      },
+      () => {
+        // Save the capaign
+        this.state.campaign.save(afterCreate, afterMined);
+      },
     );
   }
 
@@ -194,6 +201,12 @@ class EditCampaign extends Component {
     this.setState({ campaign });
   }
 
+  triggerRouteBlocking() {
+    const form = this.form.current.formsyForm;
+    // we only block routing if the form state is not submitted
+    this.setState({ isBlocking: form && (!form.state.formSubmitted || form.state.isSubmitting) });
+  }
+
   render() {
     const { isNew } = this.props;
     const {
@@ -205,6 +218,7 @@ class EditCampaign extends Component {
       hasWhitelist,
       whitelistOptions,
       reviewers,
+      isBlocking,
     } = this.state;
 
     return (
@@ -232,19 +246,26 @@ class EditCampaign extends Component {
 
                   <Form
                     onSubmit={this.submit}
+                    ref={this.form}
                     mapping={inputs => {
                       campaign.title = inputs.title;
                       campaign.description = inputs.description;
                       campaign.communityUrl = inputs.communityUrl;
                       campaign.reviewerAddress = inputs.reviewerAddress;
-                      campaign.tokenName = inputs.tokenName;
-                      campaign.tokenSymbol = inputs.tokenSymbol;
                       campaign.summary = getTruncatedText(inputs.description, 100);
                     }}
                     onValid={() => this.toggleFormValid(true)}
                     onInvalid={() => this.toggleFormValid(false)}
+                    onChange={e => this.triggerRouteBlocking(e)}
                     layout="vertical"
                   >
+                    <Prompt
+                      when={isBlocking}
+                      message={() =>
+                        `You have unsaved changes. Are you sure you want to navigate from this page?`
+                      }
+                    />
+
                     <Input
                       name="title"
                       id="title-input"
@@ -285,7 +306,7 @@ class EditCampaign extends Component {
                     </div>
 
                     <div className="form-group">
-                      <label htmlFor>
+                      <label htmlFor="dac">
                         Relate your campaign to a community
                         <small className="form-text">
                           By linking your Campaign to a Community, Ether from that community can be
@@ -314,43 +335,6 @@ class EditCampaign extends Component {
                         help="Where can people join your Community? Giveth redirects people there."
                         validations="isUrl"
                         validationErrors={{ isUrl: 'Please provide a url.' }}
-                      />
-                    </div>
-
-                    <div className="form-group">
-                      <Input
-                        name="tokenName"
-                        id="token-name-input"
-                        label="Token Name"
-                        type="text"
-                        value={campaign.tokenName}
-                        placeholder={campaign.title}
-                        help="The name of the token that Givers will receive when they
-                        donate to this Campaign."
-                        validations="minLength:3"
-                        validationErrors={{
-                          minLength: 'Please provide at least 3 characters.',
-                        }}
-                        required
-                        disabled={!isNew}
-                      />
-                    </div>
-
-                    <div className="form-group">
-                      <Input
-                        name="tokenSymbol"
-                        id="token-symbol-input"
-                        label="Token Symbol"
-                        type="text"
-                        value={campaign.tokenSymbol}
-                        help="The symbol of the token that Givers will receive when
-                        they donate to this Campaign."
-                        validations="minLength:2"
-                        validationErrors={{
-                          minLength: 'Please provide at least 2 characters.',
-                        }}
-                        required
-                        disabled={!isNew}
                       />
                     </div>
 
