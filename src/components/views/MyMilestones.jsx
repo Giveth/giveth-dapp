@@ -16,6 +16,8 @@ import { getTruncatedText, getReadableStatus, convertEthHelper } from '../../lib
 import GivethWallet from '../../lib/blockchain/GivethWallet';
 import config from '../../configuration';
 
+import ConversationModal from 'components/ConversationModal';
+
 import ErrorPopup from '../ErrorPopup';
 
 const deleteProposedMilestone = milestone => {
@@ -125,6 +127,8 @@ class MyMilestones extends Component {
       totalResults: 0,
       loadedStatus: 'Active',
     };
+
+    this.conversationModal = React.createRef();
 
     this.milestoneTabs = ['Active', 'Paid', 'Canceled', 'Rejected'];
     this.handlePageChanged = this.handlePageChanged.bind(this);
@@ -265,93 +269,104 @@ class MyMilestones extends Component {
 
   requestMarkComplete(milestone) {
     checkWalletBalance(this.props.wallet)
-      .then(() =>
-        React.swal({
-          title: 'Mark as complete?',
-          text: 'Are you sure you want to mark this Milestone as complete?',
-          icon: 'warning',
-          dangerMode: true,
-          content: {
-            element: 'input',
-            attributes: {
-              rows: 3,
-              placeholder: 'Add a message for the reviewer (optional)',
-            },
-          },
-          buttons: ['Cancel', 'Yes, mark complete'],
-        }).then(message => {
-          if (message !== null) {
-            // feathers
-            const _requestMarkComplete = (etherScanUrl, txHash) => {
-              feathersClient
-                .service('/milestones')
-                .patch(milestone._id, {
-                  status: 'NeedsReview',
-                  message,
-                  mined: false,
-                  txHash,
-                })
-                .then(() => {
-                  React.toast.info(
-                    <p>
-                      Marking this milestone as complete is pending...<br />
-                      <a
-                        href={`${etherScanUrl}tx/${txHash}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        View transaction
-                      </a>
-                    </p>,
-                  );
-                })
-                .catch(e => {
-                  ErrorPopup('Something went wrong with marking your milestone as complete', e);
-                });
-            };
+      .then(
+        () =>
+          this.conversationModal.current
+            .show({
+              title: 'Mark as complete?',
+              description: 'Are you sure you want to mark this Milestone as complete?',
+              required: false,
+              cta: 'Mark complete',
+            })
+            .then(() => milestone)
+            .catch(() => milestone),
 
-            // on chain
-            let txHash;
-            let etherScanUrl;
-            Promise.all([getNetwork(), getWeb3()])
-              .then(([network, web3]) => {
-                etherScanUrl = network.etherscan;
+        // React.swal({
+        //   title: 'Mark as complete?',
+        //   text: 'Are you sure you want to mark this Milestone as complete?',
+        //   icon: 'warning',
+        //   dangerMode: true,
+        //   content: {
+        //     element: 'input',
+        //     attributes: {
+        //       rows: 3,
+        //       placeholder: 'Add a message for the reviewer (optional)',
+        //     },
+        //   },
+        //   buttons: ['Cancel', 'Yes, mark complete'],
+        // }).then(message => {
+        //   if (message !== null) {
+        //     // feathers
+        //     const _requestMarkComplete = (etherScanUrl, txHash) => {
+        //       feathersClient
+        //         .service('/milestones')
+        //         .patch(milestone._id, {
+        //           status: 'NeedsReview',
+        //           message,
+        //           mined: false,
+        //           txHash,
+        //         })
+        //         .then(() => {
+        //           React.toast.info(
+        //             <p>
+        //               Marking this milestone as complete is pending...<br />
+        //               <a
+        //                 href={`${etherScanUrl}tx/${txHash}`}
+        //                 target="_blank"
+        //                 rel="noopener noreferrer"
+        //               >
+        //                 View transaction
+        //               </a>
+        //             </p>,
+        //           );
+        //         })
+        //         .catch(e => {
+        //           ErrorPopup('Something went wrong with marking your milestone as complete', e);
+        //         });
+        //     };
 
-                const cappedMilestone = new LPPCappedMilestone(web3, milestone.pluginAddress);
+        //     // on chain
+        //     let txHash;
+        //     let etherScanUrl;
+        //     Promise.all([getNetwork(), getWeb3()])
+        //       .then(([network, web3]) => {
+        //         etherScanUrl = network.etherscan;
 
-                return cappedMilestone
-                  .requestMarkAsComplete({
-                    from: this.props.currentUser.address,
-                    $extraGas: 4000000,
-                  })
-                  .once('transactionHash', hash => {
-                    txHash = hash;
-                    return _requestMarkComplete(etherScanUrl, txHash);
-                  });
-              })
-              .then(() => {
-                React.toast.success(
-                  <p>
-                    The milestone has been marked as complete!<br />
-                    <a
-                      href={`${etherScanUrl}tx/${txHash}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      View transaction
-                    </a>
-                  </p>,
-                );
-              })
-              .catch(err => {
-                if (txHash && err.message && err.message.includes('unknown transaction')) return; // bug in web3 seems to constantly fail due to this error, but the tx is correct
-                ErrorPopup(
-                  'Something went wrong with the transaction. Is your wallet unlocked?',
-                  `${etherScanUrl}tx/${txHash} => ${JSON.stringify(err, null, 2)}`,
-                );
-              });
-          }
-        }),
+        //         const cappedMilestone = new LPPCappedMilestone(web3, milestone.pluginAddress);
+
+        //         return cappedMilestone
+        //           .requestMarkAsComplete({
+        //             from: this.props.currentUser.address,
+        //             $extraGas: 4000000,
+        //           })
+        //           .once('transactionHash', hash => {
+        //             txHash = hash;
+        //             return _requestMarkComplete(etherScanUrl, txHash);
+        //           });
+        //       })
+        //       .then(() => {
+        //         React.toast.success(
+        //           <p>
+        //             The milestone has been marked as complete!<br />
+        //             <a
+        //               href={`${etherScanUrl}tx/${txHash}`}
+        //               target="_blank"
+        //               rel="noopener noreferrer"
+        //             >
+        //               View transaction
+        //             </a>
+        //           </p>,
+        //         );
+        //       })
+        //       .catch(err => {
+        //         if (txHash && err.message && err.message.includes('unknown transaction')) return; // bug in web3 seems to constantly fail due to this error, but the tx is correct
+        //         ErrorPopup(
+        //           'Something went wrong with the transaction. Is your wallet unlocked?',
+        //           `${etherScanUrl}tx/${txHash} => ${JSON.stringify(err, null, 2)}`,
+        //         );
+        //       });
+        //   }
+        // }),
       )
       .catch(err => {
         if (err === 'noBalance') {
@@ -1264,6 +1279,8 @@ class MyMilestones extends Component {
             </div>
           </div>
         </div>
+
+        <ConversationModal ref={this.conversationModal} />
       </div>
     );
   }

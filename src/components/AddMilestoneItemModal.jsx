@@ -9,7 +9,7 @@ import { utils } from 'web3';
 import { getStartOfDayUTC } from '../lib/helpers';
 import FormsyImageUploader from './FormsyImageUploader';
 import RateConvertor from './RateConvertor';
-import getEthConversionContext from './../containers/getEthConversionContext';
+import getEthConversionContext from 'containers/getEthConversionContext';
 
 const addMilestoneModalStyle = {
   width: '70% !important',
