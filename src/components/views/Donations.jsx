@@ -46,10 +46,6 @@ const Donations = () => (
                                   <th className="td-transaction-status">Status</th>
                                   <th className="td-tx-address">Address</th>
                                   <th className="td-confirmations">Confirmations</th>
-                                  <th className="td-required-confirmations">
-                                    {' '}
-                                    Required Confirmations
-                                  </th>
                                   <th className="td-action" />
                                 </tr>
                               </thead>
@@ -90,11 +86,6 @@ const Donations = () => (
                                         d.statusDescription
                                       )}
                                     </td>
-                                    <td className="td-confirmations">{d.confirmations}</td>
-                                    <td className="required-confirmations">
-                                      {d.requiredConfirmations}
-                                    </td>
-
                                     {etherScanUrl && (
                                       <td className="td-tx-address">
                                         <a href={`${etherScanUrl}address/${d.giverAddress}`}>
@@ -104,6 +95,14 @@ const Donations = () => (
                                     )}
                                     {!etherScanUrl && (
                                       <td className="td-tx-address">{d.giverAddress}</td>
+                                    )}
+
+                                    {d.requiredConfirmations === d.confirmations ? (
+                                      <td className="td-confirmations"> complete</td>
+                                    ) : (
+                                      <td className="td-confirmations">
+                                        {d.confirmations}/{d.requiredConfirmations}
+                                      </td>
                                     )}
 
                                     <td className="td-actions">

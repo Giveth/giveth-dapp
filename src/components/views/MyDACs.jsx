@@ -103,6 +103,8 @@ class MyDACs extends Component {
                               <th className="td-donations-number">Number of donations</th>
                               <th className="td-donations-amount">Amount donated</th>
                               <th className="td-status">Status</th>
+                              <th className="td-confirmations">Confirmations</th>
+                              <th className="td-required-confirmations">Required Confirmations</th>
                               <th className="td-actions" />
                             </tr>
                           </thead>
@@ -124,8 +126,15 @@ class MyDACs extends Component {
                                   )}
                                   {d.status}
                                 </td>
+                                <td className="td-confirmations">{d.confirmations}</td>
+                                <td className="required-confirmations">
+                                  {d.requiredConfirmations}
+                                </td>
                                 <td className="td-actions">
-                                  <button className="btn btn-link" onClick={() => this.editDAC(d.id)}>
+                                  <button
+                                    className="btn btn-link"
+                                    onClick={() => this.editDAC(d.id)}
+                                  >
                                     <i className="fa fa-edit" />
                                   </button>
                                 </td>
@@ -146,8 +155,7 @@ class MyDACs extends Component {
                           </center>
                         )}
                       </div>
-                    )}                      
-
+                    )}
 
                   {dacs &&
                     dacs.data.length === 0 && (

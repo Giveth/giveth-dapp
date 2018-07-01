@@ -23,6 +23,8 @@ class DAC extends BasicModel {
     this.status = data.status || DAC.PENDING;
     this.ownerAddress = data.ownerAddress;
     this._id = data._id;
+    this.confirmations = data.confirmations || 0;
+    this.requiredConfirmations = data.requiredConfirmations;
   }
 
   toFeathers() {
