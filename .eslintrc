@@ -24,7 +24,8 @@
     }]
   },
   "env": {
-    "jest": true
+    "jest": true,
+    "browser": true
   },
   "globals": {
     "FileReader": true,
