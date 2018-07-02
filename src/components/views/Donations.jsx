@@ -98,7 +98,7 @@ const Donations = () => (
                                     )}
 
                                     {d.requiredConfirmations === d.confirmations ? (
-                                      <td className="td-confirmations"> complete</td>
+                                      <td className="td-confirmations">complete</td>
                                     ) : (
                                       <td className="td-confirmations">
                                         {d.confirmations}/{d.requiredConfirmations}

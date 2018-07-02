@@ -149,8 +149,7 @@ class MyCampaigns extends Component {
                               <th className="td-donations-number">Donations</th>
                               <th className="td-donations-amount">Amount</th>
                               <th className="td-status">Status</th>
-                              <th className="td-confirmations">Confirmations</th>
-                              <th className="td-required-confirmations">Required Confirmations</th>
+                              <th className="td-confirmations" />
                               <th className="td-actions" />
                             </tr>
                           </thead>
@@ -184,10 +183,15 @@ class MyCampaigns extends Component {
                                   )}
                                   {c.status}
                                 </td>
-                                <td className="td-confirmations">{c.confirmations}</td>
-                                <td className="required-confirmations">
-                                  {c.requiredConfirmations}
-                                </td>
+                                {c.requiredConfirmations === c.confirmations ? (
+                                  <td />
+                                ) : (
+                                  <td className="td-confirmations">
+                                    {' '}
+                                    Confirmations:
+                                    {c.confirmations}/{c.requiredConfirmations}
+                                  </td>
+                                )}
                                 <td className="td-actions">
                                   {c.owner.address === currentUser.address &&
                                     c.isActive && (
