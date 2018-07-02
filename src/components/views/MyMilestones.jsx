@@ -1109,7 +1109,7 @@ class MyMilestones extends Component {
                                       </button>
                                     )}
 
-                                  {m.campaignOwnerAddress === currentUser.address &&
+                                  {m.campaign.ownerAddress === currentUser.address &&
                                     m.status === 'proposed' && (
                                       <span>
                                         <button

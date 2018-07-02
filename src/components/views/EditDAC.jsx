@@ -246,7 +246,7 @@ class EditDAC extends Component {
                         type="text"
                         value={dac.communityUrl}
                         placeholder="https://slack.giveth.com"
-                        help="Where can people join your community? Giveth redirect people there."
+                        help="Where can people join your community? Paste a link here for your community's website, social or chatroom."
                         validations="isUrl"
                         validationErrors={{
                           isUrl: 'Please provide a url.',

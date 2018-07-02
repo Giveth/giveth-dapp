@@ -10,12 +10,36 @@ class QuillFormsy extends Component {
     this.reactQuillRef = null; // ReactQuill component
     this.imageUploader = null; // Hidden Input component
     this.imageHandler = this.imageHandler.bind(this);
+    this.templateHandler = this.templateHandler.bind(this);
     this.handleImageUpload = this.handleImageUpload.bind(this);
   }
 
   componentDidMount() {
     const toolbar = this.reactQuillRef.getEditor().getModule('toolbar');
     toolbar.addHandler('image', this.imageHandler);
+    if (this.props.templatesDropdown) {
+      const placeholderPickerItems = Array.prototype.slice.call(
+        document.querySelectorAll('.ql-template .ql-picker-item'),
+      );
+      placeholderPickerItems.forEach(item => {
+        item.textContent = item.dataset.value;
+      });
+      placeholderPickerItems.forEach(item =>
+        item.addEventListener('click', () => this.templateHandler(item.dataset.value)),
+      );
+      document.querySelector(
+        '.ql-template .ql-picker-label',
+      ).innerHTML = `<div class="template-picker-text" style="margin-right: 20px;">Template</div>${
+        document.querySelector('.ql-template .ql-picker-label').innerHTML
+      }`;
+    }
+  }
+
+  templateHandler(value) {
+    this.props.handleTemplateChange(value);
+    document.querySelector('.template-picker-text').innerHTML = document.querySelector(
+      '.ql-template .ql-picker-label',
+    ).dataset.value;
   }
 
   imageHandler() {
@@ -80,7 +104,7 @@ class QuillFormsy extends Component {
     // or the server has returned an error message
     const errorMessage = getErrorMessage();
 
-    const modules = {
+    let modules = {
       toolbar: [
         [{ header: [1, 2, false] }],
         ['bold', 'italic', 'underline', 'strike', 'blockquote'],
@@ -89,6 +113,21 @@ class QuillFormsy extends Component {
         ['clean'],
       ],
     };
+
+    if (this.props.templatesDropdown) {
+      modules = {
+        toolbar: {
+          container: [
+            [{ header: [1, 2, false] }],
+            ['bold', 'italic', 'underline', 'strike', 'blockquote'],
+            [{ list: 'ordered' }, { list: 'bullet' }, { indent: '-1' }, { indent: '+1' }],
+            ['link', 'image', 'video'],
+            ['clean'],
+            [{ template: ['None', 'Reward DAO', 'Regular Reward', 'Expenses', 'Bounties'] }],
+          ],
+        },
+      };
+    }
 
     const formats = [
       'header',
@@ -103,6 +142,7 @@ class QuillFormsy extends Component {
       'link',
       'image',
       'video',
+      'template',
     ];
 
     return (
@@ -146,16 +186,21 @@ QuillFormsy.propTypes = {
   isPristine: PropTypes.func.isRequired,
   isValid: PropTypes.func.isRequired,
   getErrorMessage: PropTypes.func.isRequired,
+  handleTemplateChange: PropTypes.func,
 
   helpText: PropTypes.string,
   placeholder: PropTypes.string,
   label: PropTypes.string,
+
+  templatesDropdown: PropTypes.bool,
 };
 
 QuillFormsy.defaultProps = {
   helpText: '',
   placeholder: '',
   label: '',
+  handleTemplateChange: () => {},
+  templatesDropdown: false,
 };
 
 export default withFormsy(QuillFormsy);
