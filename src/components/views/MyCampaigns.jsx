@@ -244,9 +244,8 @@ class MyCampaigns extends Component {
                             />
                           </center>
                         )}
-
-                    </div>
-                  )}
+                      </div>
+                    )}
 
                   {campaigns &&
                     campaigns.length === 0 && (
