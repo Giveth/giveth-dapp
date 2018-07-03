@@ -125,16 +125,18 @@ class Profile extends Component {
       .service('milestones')
       .watch({ listStrategy: 'always' })
       .find({
-        $sort: {
-          createdAt: -1,
+        query: {
+          $sort: {
+            createdAt: -1,
+          },
+          $limit: this.state.itemsPerPage,
+          $skip: this.state.skipMilestonePages * this.state.itemsPerPage,
+          $or: [
+            { ownerAddress: this.state.userAddress },
+            { reviewerAddress: this.state.userAddress },
+            { recipientAddress: this.state.userAddress },
+          ],
         },
-        $limit: this.state.itemsPerPage,
-        $skip: this.state.skipMilestonePages * this.state.itemsPerPage,
-        $or: [
-          { ownerAddress: this.state.userAddress },
-          { reviewerAddress: this.state.userAddress },
-          { recipientAddress: this.state.userAddress },
-        ],
       })
       .subscribe(resp =>
         this.setState({
@@ -323,7 +325,7 @@ class Profile extends Component {
                                           Reviewer
                                         </span>
                                       )}
-                                      {m.reviewerAddress === userAddress && (
+                                      {m.recipientAddress === userAddress && (
                                         <span className="badge badge-warning">
                                           <i className="fa fa-diamond" />
                                           Recipient
