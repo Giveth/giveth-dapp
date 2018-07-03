@@ -100,7 +100,9 @@ export const getGasPrice = () =>
     .service('/gasprice')
     .find()
     .then(resp => {
-      let gasPrice = resp.safeLow * 1.1;
+      // let gasPrice = resp.safeLow * 1.1;
+      // hack: temp while network gas is so erratic
+      let gasPrice = resp.average;
       gasPrice = gasPrice > resp.average ? resp.average : gasPrice;
       // div by 10 b/c https://ethgasstation.info/json/ethgasAPI.json returns price in gwei * 10
       // we're only interested in gwei.
