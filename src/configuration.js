@@ -68,18 +68,6 @@ const configurations = {
     foreignNodeConnection: 'https://rinkeby.giveth.io',
     homeNodeConnection: 'https://mew.giveth.io',
   },
-  alpha: {
-    title: 'alpha',
-    liquidPledgingAddress: '0x5625220088cA4Df67F15f96595546D10e9970B3A',
-    lppCampaignFactoryAddress: '0x2Af51064E9042E62aB09870B4FDe67a1Ba7FEd69',
-    lppCappedMilestoneFactoryAddress: '0x19Bd4E0DEdb9E5Ee9762391893d1f661404b561f',
-    tokenAddresses: {},
-    etherscan: 'https://rinkeby.etherscan.io/',
-    foreignEtherscan: 'https://ropsten.etherscan.io/',
-    feathersConnection: 'https://feathers.alpha.giveth.io',
-    foreignNodeConnection: 'https://rinkeby.giveth.io',
-    homeNodeConnection: 'https://ropsten.giveth.io',
-  },
   beta: {
     title: 'beta',
     liquidPledgingAddress: '0x8eB047585ABeD935a73ba4b9525213F126A0c979',
