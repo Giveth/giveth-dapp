@@ -88,8 +88,15 @@ class UserWallet extends Component {
                       {this.props.wallet.getBalance()} ETH
                     </p>
                     <p>
-                      You can visit the <a href="https://faucet.rinkeby.io/">faucet</a> to get more
-                      ETH
+                      You can visit the{' '}
+                      <a
+                        href="https://faucet.rinkeby.io/"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        faucet
+                      </a>{' '}
+                      to get more ETH
                     </p>
                   </div>
                 )}
