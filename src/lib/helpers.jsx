@@ -6,7 +6,7 @@ import moment from 'moment';
 import BigNumber from 'bignumber.js';
 
 import { feathersClient } from './feathersClient';
-import DefaultAvatar from './../assets/avatar-100.svg';
+import DefaultAvatar from '../assets/avatar-100.svg';
 import config from '../configuration';
 
 export const isOwner = (address, currentUser) =>

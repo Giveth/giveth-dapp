@@ -120,7 +120,8 @@ class MyDACs extends Component {
                                 <td className="td-status">
                                   {d.status === DAC.PENDING && (
                                     <span>
-                                      <i className="fa fa-circle-o-notch fa-spin" />&nbsp;
+                                      <i className="fa fa-circle-o-notch fa-spin" />
+                                      &nbsp;
                                     </span>
                                   )}
                                   {d.status}
@@ -131,11 +132,14 @@ class MyDACs extends Component {
                                   <td className="td-confirmations">
                                     {' '}
                                     Confirmations:
-                                    {d.confirmations}/{d.requiredConfirmations}
+                                    {d.confirmations}
+                                    /
+                                    {d.requiredConfirmations}
                                   </td>
                                 )}
                                 <td className="td-actions">
                                   <button
+                                    type="button"
                                     className="btn btn-link"
                                     onClick={() => this.editDAC(d.id)}
                                   >

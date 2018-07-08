@@ -120,7 +120,10 @@ class UserWallet extends Component {
                                 target="_blank"
                                 rel="noopener noreferrer"
                               >
-                                <strong>Bridged - {t}</strong>
+                                <strong>
+                                  Bridged -
+                                  {t}
+                                </strong>
                               </a>
                               balance: {this.props.wallet.getTokenBalance(tokenAddresses[t])}
                             </p>
@@ -134,8 +137,8 @@ class UserWallet extends Component {
                     <div className="alert alert-warning">
                       We noticed you have some tokens on the{' '}
                       <strong>{config.foreignNetworkName}</strong> network that have not been
-                      transfered across the bridge to the <strong>{config.homeNetworkName}</strong>{' '}
-                      network.
+                      transfered across the bridge to the
+                      <strong>{config.homeNetworkName}</strong> network.
                     </div>
                     <BridgeWithdrawButton
                       wallet={this.props.wallet}

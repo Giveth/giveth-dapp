@@ -2,12 +2,12 @@ import React, { Component } from 'react';
 import Avatar from 'react-avatar';
 import PropTypes from 'prop-types';
 
-import { isOwner, getTruncatedText, getUserName, getUserAvatar } from './../lib/helpers';
+import { isOwner, getTruncatedText, getUserName, getUserAvatar } from '../lib/helpers';
 import CardStats from './CardStats';
-import User from './../models/User';
-import { redirectAfterWalletUnlock, checkWalletBalance } from './../lib/middleware';
+import User from '../models/User';
+import { redirectAfterWalletUnlock, checkWalletBalance } from '../lib/middleware';
 import GivethWallet from '../lib/blockchain/GivethWallet';
-import Campaign from './../models/Campaign';
+import Campaign from '../models/Campaign';
 
 /**
  * Campaign Card visible in the DACs view.
@@ -24,6 +24,7 @@ class CampaignCard extends Component {
     this.viewCampaign = this.viewCampaign.bind(this);
     this.editCampaign = this.editCampaign.bind(this);
   }
+
   viewCampaign() {
     this.props.history.push(`/campaigns/${this.props.campaign.id}`);
   }
@@ -85,7 +86,7 @@ class CampaignCard extends Component {
 
             {isOwner(campaign.owner.address, currentUser) && (
               <span className="pull-right">
-                <button className="btn btn-link btn-edit" onClick={this.editCampaign}>
+                <button type="button" className="btn btn-link btn-edit" onClick={this.editCampaign}>
                   <i className="fa fa-edit" />
                 </button>
               </span>

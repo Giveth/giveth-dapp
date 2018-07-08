@@ -8,9 +8,11 @@ class Campaign extends BasicModel {
   static get CANCELED() {
     return 'Canceled';
   }
+
   static get PENDING() {
     return 'Pending';
   }
+
   static get ACTIVE() {
     return 'Active';
   }

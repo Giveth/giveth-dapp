@@ -5,13 +5,13 @@ import { utils } from 'web3';
 import Toggle from 'react-toggle';
 import BigNumber from 'bignumber.js';
 import { Form, Input } from 'formsy-react-components';
-import { feathersClient, feathersRest } from './../../lib/feathersClient';
-import templates from './../../lib/milestoneTemplates';
-import Loader from './../Loader';
-import QuillFormsy from './../QuillFormsy';
-import SelectFormsy from './../SelectFormsy';
-import DatePickerFormsy from './../DatePickerFormsy';
-import FormsyImageUploader from './../FormsyImageUploader';
+import { feathersClient, feathersRest } from '../../lib/feathersClient';
+import templates from '../../lib/milestoneTemplates';
+import Loader from '../Loader';
+import QuillFormsy from '../QuillFormsy';
+import SelectFormsy from '../SelectFormsy';
+import DatePickerFormsy from '../DatePickerFormsy';
+import FormsyImageUploader from '../FormsyImageUploader';
 import GoBackButton from '../GoBackButton';
 import {
   isOwner,
@@ -21,13 +21,13 @@ import {
 } from '../../lib/helpers';
 import { isAuthenticated, checkWalletBalance, isInWhitelist } from '../../lib/middleware';
 import getNetwork from '../../lib/blockchain/getNetwork';
-import LoaderButton from '../../components/LoaderButton';
+import LoaderButton from '../LoaderButton';
 import User from '../../models/User';
 import GivethWallet from '../../lib/blockchain/GivethWallet';
-import MilestoneItem from '../../components/MilestoneItem';
-import AddMilestoneItem from '../../components/AddMilestoneItem';
+import MilestoneItem from '../MilestoneItem';
+import AddMilestoneItem from '../AddMilestoneItem';
 import ErrorPopup from '../ErrorPopup';
-import AddMilestoneItemModal from '../../components/AddMilestoneItemModal';
+import AddMilestoneItemModal from '../AddMilestoneItemModal';
 import config from '../../configuration';
 
 BigNumber.config({ DECIMAL_PLACES: 18 });
@@ -255,10 +255,10 @@ class EditMilestone extends Component {
       // update all the input fields
       const rate = resp.rates[this.state.selectedFiatType];
 
-      this.setState({
+      this.setState(prevState => ({
         currentRate: resp,
-        maxAmount: this.state.fiatAmount.div(rate),
-      });
+        maxAmount: prevState.fiatAmount.div(rate),
+      }));
     });
   }
 
@@ -275,11 +275,11 @@ class EditMilestone extends Component {
         .service('ethconversion')
         .find({ query: { date: dtUTC } })
         .then(resp => {
-          this.setState({
+          this.setState(prevState => ({
             conversionRates: conversionRates.concat(resp),
-            maxAmount: this.state.fiatAmount.div(resp.rates[this.state.selectedFiatType]),
+            maxAmount: prevState.fiatAmount.div(resp.rates[prevState.selectedFiatType]),
             currentRate: resp,
-          });
+          }));
 
           return resp;
         })
@@ -320,7 +320,9 @@ class EditMilestone extends Component {
   }
 
   addItem(item) {
-    this.setState({ items: this.state.items.concat(item) });
+    this.setState(prevState => ({
+      items: prevState.items.concat(item),
+    }));
   }
 
   btnText() {
@@ -350,19 +352,19 @@ class EditMilestone extends Component {
 
   changeSelectedFiat(fiatType) {
     const conversionRate = this.state.currentRate.rates[fiatType];
-    this.setState({
-      maxAmount: this.state.fiatAmount.div(conversionRate),
+    this.setState(prevState => ({
+      maxAmount: prevState.fiatAmount.div(conversionRate),
       selectedFiatType: fiatType,
-    });
+    }));
   }
 
   toggleShowRecipientAddress() {
-    this.setState({ showRecipientAddress: !this.state.showRecipientAddress });
+    this.setState(prevState => ({ showRecipientAddress: !prevState.showRecipientAddress }));
   }
 
   toggleFormValid(state) {
     if (this.state.itemizeState) {
-      this.setState({ formIsValid: state && this.state.items.length > 0 });
+      this.setState(prevState => ({ formIsValid: state && prevState.items.length > 0 }));
     } else {
       this.setState({ formIsValid: state });
     }
@@ -502,7 +504,8 @@ class EditMilestone extends Component {
                     () =>
                       React.toast.info(
                         <p>
-                          Your Milestone is pending....<br />
+                          Your Milestone is pending....
+                          <br />
                           <a
                             href={`${etherScanUrl}tx/${txHash}`}
                             target="_blank"
@@ -517,7 +520,8 @@ class EditMilestone extends Component {
                 .then(() => {
                   React.toast.success(
                     <p>
-                      Your Milestone has been created!<br />
+                      Your Milestone has been created!
+                      <br />
                       <a
                         href={`${etherScanUrl}tx/${txHash}`}
                         target="_blank"
@@ -545,7 +549,8 @@ class EditMilestone extends Component {
           .then(() => {
             React.toast.success(
               <p>
-                Your Milestone has been updated!<br />
+                Your Milestone has been updated!
+                <br />
               </p>,
             );
 
@@ -634,13 +639,13 @@ class EditMilestone extends Component {
   }
 
   toggleAddMilestoneItemModal() {
-    this.setState({
-      addMilestoneItemModalVisible: !this.state.addMilestoneItemModalVisible,
-    });
+    this.setState(prevState => ({
+      addMilestoneItemModalVisible: !prevState.addMilestoneItemModalVisible,
+    }));
   }
 
   toggleItemize() {
-    this.setState({ itemizeState: !this.state.itemizeState });
+    this.setState(prevState => ({ itemizeState: !prevState.itemizeState }));
   }
 
   handleTemplateChange(option) {
@@ -649,6 +654,7 @@ class EditMilestone extends Component {
       template: option,
     });
   }
+
   triggerRouteBlocking() {
     const form = this.form.current.formsyForm;
     // we only block routing if the form state is not submitted
@@ -656,7 +662,6 @@ class EditMilestone extends Component {
   }
 
   validateMilestoneDesc(value) {
-    console.log(value, this.state.template);
     if (this.state.template === 'Reward DAO') {
       return (
         value.includes('Intro') &&
@@ -665,16 +670,19 @@ class EditMilestone extends Component {
         value.includes('Video') &&
         value.includes('Reward')
       );
-    } else if (this.state.template === 'Regular Reward') {
+    }
+    if (this.state.template === 'Regular Reward') {
       return (
         value.includes('Intro') &&
         value.includes('Description') &&
         value.includes('Video') &&
         value.includes('Amount')
       );
-    } else if (this.state.template === 'Expenses') {
+    }
+    if (this.state.template === 'Expenses') {
       return value.includes('Expenses') && value.includes('Description');
-    } else if (this.state.template === 'Bounties') {
+    }
+    if (this.state.template === 'Bounties') {
       return (
         value.includes('Intro') &&
         value.includes('What') &&
@@ -727,7 +735,7 @@ class EditMilestone extends Component {
                   <div className="form-header">
                     {isNew && !isProposed && <h3>Add a new milestone</h3>}
 
-                    {!isNew && !isProposed && <h3>Edit milestone {title}</h3>}
+                    {!isNew && !isProposed && <h3>Edit milestone{title}</h3>}
 
                     {isNew && isProposed && <h3>Propose a Milestone</h3>}
 

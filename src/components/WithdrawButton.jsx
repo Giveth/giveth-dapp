@@ -78,7 +78,8 @@ class WithdrawButton extends Component {
       (etherScanUrl, txHash) => {
         React.toast.success(
           <p>
-            Your withdrawal has been confirmed!<br />
+            Your withdrawal has been confirmed!
+            <br />
             <a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">
               View transaction
             </a>
@@ -100,7 +101,7 @@ class WithdrawButton extends Component {
 
     return (
       <span style={style}>
-        <button className="btn btn-info" onClick={() => this.openDialog()}>
+        <button type="button" className="btn btn-info" onClick={() => this.openDialog()}>
           Withdraw
         </button>
 

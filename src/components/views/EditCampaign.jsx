@@ -8,12 +8,12 @@ import { Form, Input } from 'formsy-react-components';
 import { feathersClient } from '../../lib/feathersClient';
 import Loader from '../Loader';
 import QuillFormsy from '../QuillFormsy';
-import SelectFormsy from './../SelectFormsy';
-import FormsyImageUploader from './../FormsyImageUploader';
+import SelectFormsy from '../SelectFormsy';
+import FormsyImageUploader from '../FormsyImageUploader';
 import GoBackButton from '../GoBackButton';
 import { isOwner, getTruncatedText, history } from '../../lib/helpers';
 import { isAuthenticated, checkWalletBalance, isInWhitelist } from '../../lib/middleware';
-import LoaderButton from '../../components/LoaderButton';
+import LoaderButton from '../LoaderButton';
 import User from '../../models/User';
 import GivethWallet from '../../lib/blockchain/GivethWallet';
 import Campaign from '../../models/Campaign';
@@ -150,7 +150,8 @@ class EditCampaign extends Component {
       if (url) {
         const msg = (
           <p>
-            Your Campaign has been created!<br />
+            Your Campaign has been created!
+            <br />
             <a href={url} target="_blank" rel="noopener noreferrer">
               View transaction
             </a>
@@ -168,7 +169,8 @@ class EditCampaign extends Component {
       if (this.mounted) this.setState({ isSaving: false });
       const msg = (
         <p>
-          Your Campaign is pending....<br />
+          Your Campaign is pending....
+          <br />
           <a href={url} target="_blank" rel="noopener noreferrer">
             View transaction
           </a>
@@ -235,7 +237,7 @@ class EditCampaign extends Component {
                   <div className="form-header">
                     {isNew && <h3>Start a new campaign!</h3>}
 
-                    {!isNew && <h3>Edit campaign {campaign.title}</h3>}
+                    {!isNew && <h3>Edit campaign{campaign.title}</h3>}
                     <p>
                       <i className="fa fa-question-circle" />
                       A campaign solves a specific cause by executing a project via its Milestones.

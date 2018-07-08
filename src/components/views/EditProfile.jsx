@@ -4,9 +4,9 @@ import PropTypes from 'prop-types';
 import { Form, Input } from 'formsy-react-components';
 import { feathersClient, feathersRest } from '../../lib/feathersClient';
 import Loader from '../Loader';
-import FormsyImageUploader from './../FormsyImageUploader';
+import FormsyImageUploader from '../FormsyImageUploader';
 import { isLoggedIn, checkWalletBalance } from '../../lib/middleware';
-import LoaderButton from '../../components/LoaderButton';
+import LoaderButton from '../LoaderButton';
 import getNetwork from '../../lib/blockchain/getNetwork';
 import User from '../../models/User';
 import { history } from '../../lib/helpers';
@@ -97,7 +97,8 @@ class EditProfile extends Component {
                 .then(user => {
                   React.toast.success(
                     <p>
-                      Your profile was created!<br />
+                      Your profile was created!
+                      <br />
                       <a
                         href={`${network.etherscan}tx/${txHash}`}
                         target="_blank"
@@ -119,7 +120,8 @@ class EditProfile extends Component {
             .then(() =>
               React.toast.success(
                 <p>
-                  You are now a registered user<br />
+                  You are now a registered user
+                  <br />
                   <a
                     href={`${network.etherscan}tx/${txHash}`}
                     target="_blank"

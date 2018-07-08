@@ -3,10 +3,10 @@ import PropTypes from 'prop-types';
 import Avatar from 'react-avatar';
 import moment from 'moment';
 
-import { feathersClient } from './../lib/feathersClient';
+import { feathersClient } from '../lib/feathersClient';
 import Loader from './Loader';
-import { getUserName, getUserAvatar } from './../lib/helpers';
-import getNetwork from './../lib/blockchain/getNetwork';
+import { getUserName, getUserAvatar } from '../lib/helpers';
+import getNetwork from '../lib/blockchain/getNetwork';
 
 /* eslint no-underscore-dangle: 0 */
 class MilestoneConversations extends Component {

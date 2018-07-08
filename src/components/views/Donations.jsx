@@ -77,7 +77,8 @@ const Donations = () => (
                                     <td className="td-transaction-status">
                                       {d.status === 'pending' && (
                                         <span>
-                                          <i className="fa fa-circle-o-notch fa-spin" />&nbsp;
+                                          <i className="fa fa-circle-o-notch fa-spin" />
+                                          &nbsp;
                                         </span>
                                       )}
                                       {d.canDelegate(currentUser) ? (
@@ -101,13 +102,16 @@ const Donations = () => (
                                       <td className="td-confirmations">complete</td>
                                     ) : (
                                       <td className="td-confirmations">
-                                        {d.confirmations}/{d.requiredConfirmations}
+                                        {d.confirmations}
+                                        /
+                                        {d.requiredConfirmations}
                                       </td>
                                     )}
 
                                     <td className="td-actions">
                                       {d.canRefund(currentUser) && (
                                         <button
+                                          type="button"
                                           className="btn btn-sm btn-danger"
                                           onClick={() => refund(d)}
                                         >
@@ -117,12 +121,14 @@ const Donations = () => (
                                       {d.canApproveReject(currentUser) && (
                                         <div>
                                           <button
+                                            type="button"
                                             className="btn btn-sm btn-success"
                                             onClick={() => commit(d)}
                                           >
                                             Commit
                                           </button>
                                           <button
+                                            type="button"
                                             className="btn btn-sm btn-danger"
                                             onClick={() => reject(d)}
                                           >

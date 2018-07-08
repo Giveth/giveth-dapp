@@ -5,11 +5,11 @@ import { Form, Input } from 'formsy-react-components';
 
 import Loader from '../Loader';
 import QuillFormsy from '../QuillFormsy';
-import FormsyImageUploader from './../FormsyImageUploader';
+import FormsyImageUploader from '../FormsyImageUploader';
 import GoBackButton from '../GoBackButton';
 import { isOwner, getTruncatedText, history } from '../../lib/helpers';
 import { isAuthenticated, checkWalletBalance, isInWhitelist } from '../../lib/middleware';
-import LoaderButton from '../../components/LoaderButton';
+import LoaderButton from '../LoaderButton';
 
 import DACservice from '../../services/DAC';
 import DAC from '../../models/DAC';
@@ -98,7 +98,8 @@ class EditDAC extends Component {
       if (url) {
         const msg = (
           <p>
-            Your DAC has been created!<br />
+            Your DAC has been created!
+            <br />
             <a href={url} target="_blank" rel="noopener noreferrer">
               View transaction
             </a>
@@ -115,7 +116,8 @@ class EditDAC extends Component {
       if (this.mounted) this.setState({ isSaving: false });
       const msg = (
         <p>
-          Your DAC is pending....<br />
+          Your DAC is pending....
+          <br />
           <a href={url} target="_blank" rel="noopener noreferrer">
             View transaction
           </a>
@@ -168,10 +170,10 @@ class EditDAC extends Component {
                     {!isNew && <h3>Edit DAC</h3>}
 
                     <p>
-                      <i className="fa fa-question-circle" />A DAC aims to solve a cause by building
-                      a Community, raising funds and delegating those funds to Campaigns that solve
-                      its cause. Should you create a Campaign or Community? Read more
-                      [here.](http://wiki.giveth.io)
+                      <i className="fa fa-question-circle" />
+                      A DAC aims to solve a cause by building a Community, raising funds and
+                      delegating those funds to Campaigns that solve its cause. Should you create a
+                      Campaign or Community? Read more [here.](http://wiki.giveth.io)
                     </p>
                   </div>
 

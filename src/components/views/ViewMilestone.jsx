@@ -17,11 +17,11 @@ import DonateButton from '../DonateButton';
 import ErrorPopup from '../ErrorPopup';
 import GoBackButton from '../GoBackButton';
 import ShowTypeDonations from '../ShowTypeDonations';
-import getNetwork from './../../lib/blockchain/getNetwork';
-import { feathersClient } from './../../lib/feathersClient';
-import Loader from './../Loader';
-import MilestoneItem from './../MilestoneItem';
-import MilestoneConversations from './../../components/MilestoneConversations';
+import getNetwork from '../../lib/blockchain/getNetwork';
+import { feathersClient } from '../../lib/feathersClient';
+import Loader from '../Loader';
+import MilestoneItem from '../MilestoneItem';
+import MilestoneConversations from '../MilestoneConversations';
 
 /**
   Loads and shows a single milestone
@@ -191,9 +191,12 @@ class ViewMilestone extends Component {
               )}
 
               {this.state.totalDonated < this.state.maxAmount && (
-                <p>Amount requested: {this.state.maxAmount} ETH</p>
+                <p>Amount requested:{this.state.maxAmount} ETH</p>
               )}
-              <p>Campaign: {campaign.title} </p>
+              <p>
+                Campaign:
+                {campaign.title}{' '}
+              </p>
 
               {this.isActiveMilestone() && (
                 <DonateButton
@@ -217,6 +220,7 @@ class ViewMilestone extends Component {
                       ['proposed', 'rejected', 'InProgress', 'NeedsReview'].includes(status) && (
                         <span className="pull-right">
                           <button
+                            type="button"
                             className="btn btn-link btn-edit"
                             onClick={e => this.editMilestone(e)}
                           >
@@ -313,7 +317,11 @@ class ViewMilestone extends Component {
                                   </td>
                                 )}
                                 {!etherScanUrl && (
-                                  <td className="td-address"> - {reviewerAddress}</td>
+                                  <td className="td-address">
+                                    {' '}
+                                    -
+                                    {reviewerAddress}
+                                  </td>
                                 )}
                               </tr>
                             </tbody>
@@ -343,7 +351,11 @@ class ViewMilestone extends Component {
                                   </td>
                                 )}
                                 {!etherScanUrl && (
-                                  <td className="td-address"> - {recipientAddress}</td>
+                                  <td className="td-address">
+                                    {' '}
+                                    -
+                                    {recipientAddress}
+                                  </td>
                                 )}
                               </tr>
                             </tbody>
@@ -372,7 +384,9 @@ class ViewMilestone extends Component {
                             items.length === 0 && (
                               <span>
                                 {' '}
-                                ({fiatAmount} {selectedFiatType})
+                                (
+                                {fiatAmount} {selectedFiatType}
+                                )
                               </span>
                             )}
                         </div>

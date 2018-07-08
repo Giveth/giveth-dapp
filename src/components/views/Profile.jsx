@@ -139,11 +139,11 @@ class Profile extends Component {
         },
       })
       .subscribe(resp =>
-        this.setState({
-          userAddress: this.state.userAddress,
+        this.setState(prevState => ({
+          userAddress: prevState.userAddress,
           milestones: resp,
           isLoadingMilestones: false,
-        }),
+        })),
       );
   }
 
@@ -337,13 +337,15 @@ class Profile extends Component {
                                     {(m.status === 'pending' ||
                                       (Object.keys(m).includes('mined') && !m.mined)) && (
                                       <span>
-                                        <i className="fa fa-circle-o-notch fa-spin" />&nbsp;
+                                        <i className="fa fa-circle-o-notch fa-spin" />
+                                        &nbsp;
                                       </span>
                                     )}
                                     {m.status === 'NeedsReview' &&
                                       reviewDue(m.updatedAt) && (
                                         <span>
-                                          <i className="fa fa-exclamation-triangle" />&nbsp;
+                                          <i className="fa fa-exclamation-triangle" />
+                                          &nbsp;
                                         </span>
                                       )}
                                     {getReadableStatus(m.status)}
@@ -452,7 +454,8 @@ class Profile extends Component {
                                     {(c.status === Campaign.PENDING ||
                                       (Object.keys(c).includes('mined') && !c.mined)) && (
                                       <span>
-                                        <i className="fa fa-circle-o-notch fa-spin" />&nbsp;
+                                        <i className="fa fa-circle-o-notch fa-spin" />
+                                        &nbsp;
                                       </span>
                                     )}
                                     {c.status}
@@ -539,7 +542,8 @@ class Profile extends Component {
                                   <td className="td-status">
                                     {d.status === DAC.PENDING && (
                                       <span>
-                                        <i className="fa fa-circle-o-notch fa-spin" />&nbsp;
+                                        <i className="fa fa-circle-o-notch fa-spin" />
+                                        &nbsp;
                                       </span>
                                     )}
                                     {d.status}
@@ -632,7 +636,8 @@ class Profile extends Component {
                                   <td className="td-transaction-status">
                                     {d.status === 'pending' && (
                                       <span>
-                                        <i className="fa fa-circle-o-notch fa-spin" />&nbsp;
+                                        <i className="fa fa-circle-o-notch fa-spin" />
+                                        &nbsp;
                                       </span>
                                     )}
                                   </td>

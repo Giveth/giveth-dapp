@@ -118,7 +118,7 @@ export default class AddMilestoneItemModal extends Component {
                 Add item
               </button>
 
-              <button className="btn btn-link" onClick={() => this.closeDialog()}>
+              <button type="button" className="btn btn-link" onClick={() => this.closeDialog()}>
                 Cancel
               </button>
             </Form>

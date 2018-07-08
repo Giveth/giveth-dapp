@@ -6,6 +6,8 @@ import AuthenticatedNavLink from './AuthenticatedNavLink';
 import { Consumer as UserConsumer } from '../contextProviders/UserProvider';
 import { history } from '../lib/helpers';
 
+// Broken rule that can not find the correct id tag
+/* eslint jsx-a11y/aria-proptypes: 0 */
 /**
  * The main top menu
  */
@@ -24,7 +26,7 @@ class MainMenu extends Component {
   }
 
   toggleMobileMenu() {
-    this.setState({ showMobileMenu: !this.state.showMobileMenu });
+    this.setState(prevState => ({ showMobileMenu: !prevState.showMobileMenu }));
   }
 
   render() {
@@ -210,7 +212,7 @@ class MainMenu extends Component {
                         <NavLink className="dropdown-item" to="/wallet">
                           Wallet
                         </NavLink>
-                        <button className="dropdown-item" onClick={actions.onSignOut}>
+                        <button type="button" className="dropdown-item" onClick={actions.onSignOut}>
                           Sign out
                         </button>
                       </div>

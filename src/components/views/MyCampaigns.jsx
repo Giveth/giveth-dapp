@@ -88,7 +88,8 @@ class MyCampaigns extends Component {
             const afterCreate = url => {
               const msg = (
                 <p>
-                  Campaign cancelation pending...<br />
+                  Campaign cancelation pending...
+                  <br />
                   <a href={url} target="_blank" rel="noopener noreferrer">
                     View transaction
                   </a>
@@ -100,7 +101,8 @@ class MyCampaigns extends Component {
             const afterMined = url => {
               const msg = (
                 <p>
-                  The campaign has been cancelled!<br />
+                  The campaign has been cancelled!
+                  <br />
                   <a href={url} target="_blank" rel="noopener noreferrer">
                     View transaction
                   </a>
@@ -178,7 +180,8 @@ class MyCampaigns extends Component {
                                   {(c.status === Campaign.PENDING ||
                                     (Object.keys(c).includes('mined') && !c.mined)) && (
                                     <span>
-                                      <i className="fa fa-circle-o-notch fa-spin" />&nbsp;
+                                      <i className="fa fa-circle-o-notch fa-spin" />
+                                      &nbsp;
                                     </span>
                                   )}
                                   {c.status}
@@ -189,17 +192,21 @@ class MyCampaigns extends Component {
                                   <td className="td-confirmations">
                                     {' '}
                                     Confirmations:
-                                    {c.confirmations}/{c.requiredConfirmations}
+                                    {c.confirmations}
+                                    /
+                                    {c.requiredConfirmations}
                                   </td>
                                 )}
                                 <td className="td-actions">
                                   {c.owner.address === currentUser.address &&
                                     c.isActive && (
                                       <button
+                                        type="button"
                                         className="btn btn-link"
                                         onClick={() => this.editCampaign(c.id)}
                                       >
-                                        <i className="fa fa-edit" />&nbsp;Edit
+                                        <i className="fa fa-edit" />
+                                        &nbsp;Edit
                                       </button>
                                     )}
 
@@ -207,10 +214,12 @@ class MyCampaigns extends Component {
                                     c.owner.address === currentUser.address) &&
                                     c.isActive && (
                                       <button
+                                        type="button"
                                         className="btn btn-danger btn-sm"
                                         onClick={() => this.cancelCampaign(c)}
                                       >
-                                        <i className="fa fa-ban" />&nbsp;Cancel
+                                        <i className="fa fa-ban" />
+                                        &nbsp;Cancel
                                       </button>
                                     )}
                                 </td>

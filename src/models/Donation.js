@@ -11,21 +11,27 @@ class Donation extends Model {
   static get PENDING() {
     return 'pending';
   }
+
   static get TO_APPROVE() {
     return 'to_approve';
   }
+
   static get WAITING() {
     return 'waiting';
   }
+
   static get COMMITTED() {
     return 'committed';
   }
+
   static get PAYING() {
     return 'paying';
   }
+
   static get PAID() {
     return 'paid';
   }
+
   static get CANCELED() {
     return 'cancelled';
   }

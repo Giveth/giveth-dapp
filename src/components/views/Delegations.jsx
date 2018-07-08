@@ -4,7 +4,7 @@ import Avatar from 'react-avatar';
 import moment from 'moment';
 
 import Loader from '../Loader';
-import DelegateButton from '../../components/DelegateButton';
+import DelegateButton from '../DelegateButton';
 import { getUserName, getUserAvatar, convertEthHelper } from '../../lib/helpers';
 
 import { Consumer as UserConsumer } from '../../contextProviders/UserProvider';

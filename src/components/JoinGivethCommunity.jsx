@@ -67,8 +67,10 @@ class JoinGivethCommunity extends Component {
             <p>
               It&#8217;s great to see that you want to start a Decentralized Altruistic Community,
               or DAC! However, Giveth is still in alpha and we only allow a select group of people
-              to start DACs<br />
-              Please <strong>contact us on our Slack</strong>, or keep browsing
+              to start DACs
+              <br />
+              Please <strong>contact us on our Slack</strong>
+              , or keep browsing
             </p>,
           ),
           icon: 'info',
@@ -112,8 +114,10 @@ class JoinGivethCommunity extends Component {
           content: React.swal.msg(
             <p>
               It&#8217;s great to see that you want to start a campaign, however, Giveth is still in
-              alpha and we only allow a select group of people to start campaigns<br />
-              Please <strong>contact us on our Slack</strong>, or keep browsing
+              alpha and we only allow a select group of people to start campaigns
+              <br />
+              Please <strong>contact us on our Slack</strong>
+              , or keep browsing
             </p>,
           ),
           icon: 'info',
@@ -133,12 +137,12 @@ class JoinGivethCommunity extends Component {
             </CommunityButton>
             &nbsp;
             {this.state.canCreateCampaign && (
-              <button className="btn btn-info" onClick={() => this.createDAC()}>
+              <button type="button" className="btn btn-info" onClick={() => this.createDAC()}>
                 Create a Community
               </button>
             )}
             {this.state.canCreateDAC && (
-              <button className="btn btn-info" onClick={() => this.createCampaign()}>
+              <button type="button" className="btn btn-info" onClick={() => this.createCampaign()}>
                 Start a Campaign
               </button>
             )}

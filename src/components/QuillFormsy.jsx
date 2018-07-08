@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { withFormsy } from 'formsy-react';
 import ReactQuill from 'react-quill';
-import { feathersRest } from './../lib/feathersClient';
+import { feathersRest } from '../lib/feathersClient';
 
 class QuillFormsy extends Component {
   constructor(props) {
