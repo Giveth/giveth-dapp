@@ -149,6 +149,7 @@ class MyCampaigns extends Component {
                               <th className="td-donations-number">Donations</th>
                               <th className="td-donations-amount">Amount</th>
                               <th className="td-status">Status</th>
+                              <th className="td-confirmations" />
                               <th className="td-actions" />
                             </tr>
                           </thead>
@@ -182,30 +183,15 @@ class MyCampaigns extends Component {
                                   )}
                                   {c.status}
                                 </td>
-                                <td className="td-actions">
-                                  {c.owner.address === currentUser.address &&
-                                    c.isActive && (
-                                      <button
-                                        className="btn btn-link"
-                                        onClick={() => this.editCampaign(c.id)}
-                                      >
-                                        <i className="fa fa-edit" />&nbsp;Edit
-                                      </button>
-                                    )}
-                                </td>
-                                <td className="td-donations-number">{c.donationCount || 0}</td>
-                                <td className="td-donations-amount">
-                                  {convertEthHelper(c.totalDonated)} ETH
-                                </td>
-                                <td className="td-status">
-                                  {(c.status === Campaign.PENDING ||
-                                    (Object.keys(c).includes('mined') && !c.mined)) && (
-                                    <span>
-                                      <i className="fa fa-circle-o-notch fa-spin" />&nbsp;
-                                    </span>
-                                  )}
-                                  {c.status}
-                                </td>
+                                {c.requiredConfirmations === c.confirmations ? (
+                                  <td />
+                                ) : (
+                                  <td className="td-confirmations">
+                                    {' '}
+                                    Confirmations:
+                                    {c.confirmations}/{c.requiredConfirmations}
+                                  </td>
+                                )}
                                 <td className="td-actions">
                                   {c.owner.address === currentUser.address &&
                                     c.isActive && (

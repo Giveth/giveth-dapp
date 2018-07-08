@@ -19,10 +19,12 @@ class Campaign extends BasicModel {
     super(data);
 
     this.communityUrl = data.communityUrl || '';
+    this.confirmations = data.confirmations || 0;
     this.projectId = data.projectId || '0';
     this.dacs = data.dacs || [];
     this.pluginAddress = data.pluginAddress || '0x0000000000000000000000000000000000000000';
     this.status = data.status || Campaign.PENDING;
+    this.requiredConfirmations = data.requiredConfirmations;
     this.reviewerAddress = data.reviewerAddress;
     this.ownerAddress = data.ownerAddress;
     this._id = data._id;
