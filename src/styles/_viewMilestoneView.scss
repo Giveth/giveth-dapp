@@ -14,6 +14,19 @@
     td {
       height: 40px;
       vertical-align: middle;
+
+      &.td-user {
+        min-width: 80px;
+        text-align: center;
+
+        .sb-avatar {
+          display: inline-block !important;
+        }
+
+        p {
+          margin-bottom: 0;
+        }
+      }
     }
 
     .sb-avatar {
@@ -49,5 +62,9 @@
 
   .details-card {
     padding: 20px;
+  }
+
+  .sb-avatar {
+    display: block !important;
   }
 }

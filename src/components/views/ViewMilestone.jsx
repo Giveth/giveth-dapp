@@ -302,13 +302,11 @@ class ViewMilestone extends Component {
                                 <td className="td-user">
                                   <Link to={`/profile/${reviewerAddress}`}>
                                     <Avatar size={30} src={getUserAvatar(reviewer)} round />
-                                    <span>{getUserName(reviewer)}</span>
+                                    <p>{getUserName(reviewer)}</p>
                                   </Link>
                                 </td>
                                 {etherScanUrl && (
                                   <td className="td-address">
-                                    {' '}
-                                    -{' '}
                                     <a href={`${etherScanUrl}address/${reviewerAddress}`}>
                                       {reviewerAddress}
                                     </a>
@@ -334,13 +332,11 @@ class ViewMilestone extends Component {
                                 <td className="td-user">
                                   <Link to={`/profile/${recipientAddress}`}>
                                     <Avatar size={30} src={getUserAvatar(recipient)} round />
-                                    <span>{getUserName(recipient)}</span>
+                                    <p>{getUserName(recipient)}</p>
                                   </Link>
                                 </td>
                                 {etherScanUrl && (
                                   <td className="td-address">
-                                    {' '}
-                                    -{' '}
                                     <a href={`${etherScanUrl}address/${recipientAddress}`}>
                                       {recipientAddress}
                                     </a>
