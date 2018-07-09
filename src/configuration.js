@@ -62,13 +62,6 @@ const configurations = {
     homeNodeConnection: 'https://ropsten.giveth.io',
     homeNetworkName: 'Ropsten',
   },
-  mainnet: {
-    title: 'mainnet',
-    etherscan: 'https://etherscan.io/',
-    feathersConnection: 'https://feathers.mainnet.giveth.io',
-    foreignNodeConnection: 'https://rinkeby.giveth.io',
-    homeNodeConnection: 'https://mew.giveth.io',
-  },
   beta: {
     title: 'beta',
     liquidPledgingAddress: '0x8eB047585ABeD935a73ba4b9525213F126A0c979',
@@ -113,6 +106,6 @@ config.foreignNodeConnection = REACT_APP_ETH_NODE_CONNECTION_URL || config.forei
 config.decimals = REACT_APP_DECIMALS;
 config.bugsEmail = REACT_APP_BUGS_EMAIL;
 config.defaultGasPrice = REACT_APP_DEFAULT_GASPRICE;
-config.sendErrors = ['develop', 'release', 'beta', 'mainnet'].includes(REACT_APP_ENVIRONMENT);
+config.sendErrors = ['develop', 'release', 'beta'].includes(REACT_APP_ENVIRONMENT);
 
 export default config;
