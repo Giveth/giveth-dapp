@@ -28,6 +28,7 @@ const configurations = {
     foreignNetworkName: 'Foreign Ganache',
     homeNodeConnection: 'http://localhost:8545',
     homeNetworkName: 'Home Ganache',
+    sendErrors: false,
   },
   develop: {
     title: 'develop',
@@ -112,6 +113,6 @@ config.foreignNodeConnection = REACT_APP_ETH_NODE_CONNECTION_URL || config.forei
 config.decimals = REACT_APP_DECIMALS;
 config.bugsEmail = REACT_APP_BUGS_EMAIL;
 config.defaultGasPrice = REACT_APP_DEFAULT_GASPRICE;
-config.sendErrors = ['develop', 'release', 'alpha', 'mainnet'].includes(REACT_APP_ENVIRONMENT);
+config.sendErrors = ['develop', 'release', 'beta', 'mainnet'].includes(REACT_APP_ENVIRONMENT);
 
 export default config;
