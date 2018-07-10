@@ -21,6 +21,7 @@ import EditProfile from '../components/views/EditProfile';
 import SignIn from '../components/views/SignIn';
 import Signup from '../components/views/SignUp';
 import ChangeAccount from '../components/views/ChangeAccount';
+import BackupWallet from '../components/views/BackupWallet';
 
 import ViewMilestone from '../components/views/ViewMilestone';
 import EditDAC from '../components/views/EditDAC';
@@ -298,6 +299,12 @@ class Application extends Component {
                             render={props => (
                               <Signup walletCreated={handleWalletChange} {...props} />
                             )}
+                          />
+
+                          <Route
+                            exact
+                            path="/backupwallet"
+                            render={props => <BackupWallet wallet={wallet} {...props} />}
                           />
 
                           <Route
