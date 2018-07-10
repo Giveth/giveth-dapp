@@ -1,12 +1,15 @@
 /* eslint-disable jsx-a11y/anchor-is-valid */
 
 import React, { Component } from 'react';
-import { Form, Prompt } from 'formsy-react-components';
+import { Prompt } from 'react-router-dom';
+import { Form } from 'formsy-react-components';
 import { SkyLightStateless } from 'react-skylight';
 
 import QuillFormsy from 'components/QuillFormsy';
 import LoaderButton from 'components/LoaderButton';
 import MilestoneProof from 'components/MilestoneProof';
+
+import { feathersRest } from 'lib/feathersClient';
 
 /**
   A promise modal that creates
@@ -38,7 +41,7 @@ class ConversationModal extends Component {
       show: false,
       formIsValid: false,
       isSaving: false,
-      conversation: '',
+      message: '',
       items: [],
       isBlocking: false,
     };
@@ -72,30 +75,34 @@ class ConversationModal extends Component {
         description,
         CTA: cta,
         required,
-        conversation: '',
+        message: '',
         show: true,
       });
     });
   }
 
   hide(reject) {
-    this.setState({
-      show: false,
-      items: [],
-    });
-
     if (reject) {
       this.promise.reject();
     } else {
-      this.promise.resolve();
+      this.promise.resolve({
+        message: this.state.message,
+        items: this.state.items,
+      });
     }
+
+    this.setState({
+      show: false,
+      message: '',
+      items: [],
+    });
   }
 
   /* eslint-disable class-methods-use-this */
 
   mapInputs(inputs) {
     return {
-      conversation: inputs.conversation,
+      message: inputs.message,
     };
   }
 
@@ -109,17 +116,51 @@ class ConversationModal extends Component {
     this.setState({ isBlocking: form && (!form.state.formSubmitted || form.state.isSubmitting) });
   }
 
-  submit(model) {
-    model.items = this.state.items;
+  saveProofImages() {
+    // construct image upload promises
+    const uploadItemImages = [];
 
-    this.hide();
-    this.promise.resolve();
+    this.state.items.forEach(item => {
+      if (item.image) {
+        uploadItemImages.push(
+          new Promise((resolve, reject) => {
+            feathersRest
+              .service('uploads')
+              .create({ uri: item.image })
+              .then(file => {
+                item.image = file.url;
+                resolve('done');
+              })
+              .catch(() => reject(new Error('could not upload item image')));
+          }),
+        );
+      }
+    });
+
+    // upload images
+    return Promise.all(uploadItemImages);
+  }
+
+  submit(model) {
+    this.saveProofImages()
+      .then(() => {
+        this.setState(
+          {
+            items: this.state.items,
+            message: model.message,
+          },
+          () => this.hide(),
+        );
+      })
+      .catch(() => {
+        this.setState({ isSaving: false, isBlocking: true });
+      });
   }
 
   render() {
     const {
       show,
-      conversation,
+      message,
       formIsValid,
       isSaving,
       required,
@@ -131,7 +172,7 @@ class ConversationModal extends Component {
     } = this.state;
 
     return (
-      <SkyLightStateless isVisible={show}>
+      <SkyLightStateless isVisible={show} onCloseClicked={() => this.hide(true)}>
         <h2>{title}</h2>
         <p>{description}</p>
 
@@ -156,11 +197,11 @@ class ConversationModal extends Component {
             <div className="col-6">
               <div className="form-group">
                 <QuillFormsy
-                  name="conversation"
+                  name="message"
                   label="Explain how you are going to do this successfully."
                   helpText="Make it as extensive as necessary. Your goal is to build trust,
                   so that people donate Ether to your Campaign. Don't hesitate to add a detailed budget for this Milestone"
-                  value={conversation}
+                  value={message}
                   placeholder="Describe how you're going to execute your Milestone successfully
                   ..."
                   validations="minLength:3"

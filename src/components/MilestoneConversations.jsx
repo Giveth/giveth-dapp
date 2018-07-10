@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import Avatar from 'react-avatar';
 import moment from 'moment';
+import ReactHtmlParser from 'react-html-parser';
 
 import { feathersClient } from './../lib/feathersClient';
 import Loader from './Loader';
@@ -10,6 +11,17 @@ import getNetwork from './../lib/blockchain/getNetwork';
 
 /* eslint no-underscore-dangle: 0 */
 class MilestoneConversations extends Component {
+  static getReadeableMessageContext(context) {
+    if (context === 'proposed') return 'proposed milestone';
+    if (context === 'rejected') return 'rejected completion';
+    if (context === 'NeedsReview') return 'requested review';
+    if (context === 'Completed') return 'accepted completion';
+    if (context === 'Canceled') return 'canceled milestone';
+    if (context === 'proposedRejected') return 'rejected proposed milestone';
+    if (context === 'proposedAccepted') return 'accepted proposed milestone';
+    return 'unknown';
+  }
+
   constructor() {
     super();
 
@@ -46,17 +58,6 @@ class MilestoneConversations extends Component {
     if (this.conversationObserver) this.conversationObserver.unsubscribe();
   }
 
-  static getReadeableMessageContext(context) {
-    if (context === 'proposed') return 'proposed milestone';
-    if (context === 'rejected') return 'rejected completion';
-    if (context === 'NeedsReview') return 'requested review';
-    if (context === 'Completed') return 'accepted completion';
-    if (context === 'Canceled') return 'canceled milestone';
-    if (context === 'proposedRejected') return 'rejected proposed milestone';
-    if (context === 'proposedAccepted') return 'accepted proposed milestone';
-    return 'unknown';
-  }
-
   render() {
     const { isLoading, conversations, etherScanUrl } = this.state;
 
@@ -90,7 +91,7 @@ class MilestoneConversations extends Component {
                     <span className="badge badge-secondary">{c.performedByRole}</span>
                     {/* <span className={`badge ${c.messageContext.toLowerCase()}`}>{c.messageContext}</span> */}
                   </span>
-                  <p className="c-message">{c.message}</p>
+                  <p className="c-message">{ReactHtmlParser(c.message)}</p>
 
                   <div className="c-divider" />
                 </div>
