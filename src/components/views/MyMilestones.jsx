@@ -1229,7 +1229,9 @@ class MyMilestones extends Component {
                                       </span>
                                     )}
 
-                                  {m.recipientAddress === currentUser.address &&
+                                  {[m.recipientAddress, m.ownerAddress].includes(
+                                    currentUser.address,
+                                  ) &&
                                     m.status === 'Completed' &&
                                     m.mined &&
                                     m.donationCount > 0 && (
@@ -1238,8 +1240,10 @@ class MyMilestones extends Component {
                                         className="btn btn-success btn-sm"
                                         onClick={() => this.withdrawal(m)}
                                       >
-                                        <i className="fa fa-usd" />
-                                        &nbsp;Withdrawal
+                                        <i className="fa fa-usd" />{' '}
+                                        {m.recipientAddress === currentUser.address
+                                          ? 'Collect'
+                                          : 'Disperse'}
                                       </button>
                                     )}
 
