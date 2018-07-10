@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 
-import BackupWallet from '../BackupWallet';
+import BackupWalletButton from '../BackupWalletButton';
 import { isLoggedIn } from '../../lib/middleware';
 // import WithdrawButton from '../WithdrawButton';
 import User from '../../models/User';
@@ -95,7 +95,7 @@ class UserWallet extends Component {
                 )}
 
                 <p>
-                  <BackupWallet wallet={this.props.wallet} />
+                  <BackupWalletButton wallet={this.props.wallet} />
                 </p>
 
                 {this.hasTokenBalance() && (
