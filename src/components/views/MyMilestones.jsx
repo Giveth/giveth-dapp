@@ -54,20 +54,17 @@ const rejectProposedMilestone = milestone => {
       },
     },
   }).then(message => {
-    if (message) {
-      feathersClient
-        .service('/milestones')
-        .patch(milestone._id, {
-          status: 'rejected',
-          message,
-        })
-        .then(() => {
-          React.toast.info(<p>The proposed milestone has been rejected.</p>);
-        })
-        .catch(e => {
-          ErrorPopup('Something went wrong with rejecting the proposed milestone', e);
-        });
-    }
+    const newContent = { status: 'rejected' };
+    if (message) newContent.message = message;
+    feathersClient
+      .service('/milestones')
+      .patch(milestone._id, newContent)
+      .then(() => {
+        React.toast.info(<p>The proposed milestone has been rejected.</p>);
+      })
+      .catch(e => {
+        ErrorPopup('Something went wrong with rejecting the proposed milestone', e);
+      });
   });
 };
 
@@ -85,20 +82,17 @@ const reproposeRejectedMilestone = milestone => {
       },
     },
   }).then(message => {
-    if (message) {
-      feathersClient
-        .service('/milestones')
-        .patch(milestone._id, {
-          status: 'proposed',
-          message,
-        })
-        .then(() => {
-          React.toast.info(<p>The milestone has been re-proposed.</p>);
-        })
-        .catch(e => {
-          ErrorPopup('Something went wrong with re-proposing your milestone', e);
-        });
-    }
+    const newContent = { status: 'proposed' };
+    if (message) newContent.message = message;
+    feathersClient
+      .service('/milestones')
+      .patch(milestone._id, newContent)
+      .then(() => {
+        React.toast.info(<p>The milestone has been re-proposed.</p>);
+      })
+      .catch(e => {
+        ErrorPopup('Something went wrong with re-proposing your milestone', e);
+      });
   });
 };
 
