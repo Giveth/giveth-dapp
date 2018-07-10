@@ -152,7 +152,7 @@ class MyMilestones extends Component {
     if (this.milestonesObserver) this.milestonesObserver.unsubscribe();
   }
 
-  loadMileStones() {
+  async loadMileStones() {
     const myAddress = this.props.currentUser.address;
 
     const query = {
@@ -188,13 +188,17 @@ class MyMilestones extends Component {
         { status: 'rejected' },
       ];
     } else {
+      const resp = await feathersClient
+        .service('campaigns')
+        .find({ query: { ownerAddress: myAddress } });
+      const campaignsIDs = resp.data.map(c => c._id);
       query.query.$and = [
         {
           $or: [
             { ownerAddress: myAddress },
             { reviewerAddress: myAddress },
             { recipientAddress: myAddress },
-            { $and: [{ campaignOwnerAddress: myAddress }, { status: 'proposed' }] },
+            { $and: [{ campaignId: { $in: campaignsIDs } }, { status: 'proposed' }] },
           ],
         },
         { status: { $nin: ['Paid', 'Canceled', 'rejected'] } },
