@@ -222,7 +222,7 @@ class DonateButton extends React.Component {
             Woot! Woot! Donation received. You are awesome!<br />
             Note: because we are bridging networks, there will be a delay before your donation
             appears.<br />
-            <a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">
+            <a href={`${etherscanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">
               View transaction
             </a>
           </p>,
@@ -232,7 +232,7 @@ class DonateButton extends React.Component {
         e = !(e instanceof Error) ? JSON.stringify(e, null, 2) : e;
         ErrorPopup(
           'Something went wrong with your donation.',
-          `${etherScanUrl}tx/${txHash} => ${e}`,
+          `${etherscanUrl}tx/${txHash} => ${e}`,
         );
       });
 
