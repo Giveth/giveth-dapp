@@ -140,7 +140,7 @@ class EditMilestone extends Component {
               if (
                 !(
                   isOwner(milestone.owner.address, this.props.currentUser) ||
-                  isOwner(milestone.campaignOwnerAddress, this.props.currentUser)
+                  isOwner(milestone.campaign.ownerAddress, this.props.currentUser)
                 )
               ) {
                 this.props.history.goBack();
@@ -155,7 +155,7 @@ class EditMilestone extends Component {
                   campaignTitle: milestone.campaign.title,
                   campaignProjectId: milestone.campaign.projectId,
                   campaignReviewerAddress: milestone.campaign.reviewerAddress,
-                  campaignOwnerAddress: milestone.campaign.ownerAddress,
+                  campaign: milestone.campaign,
                 }),
               );
               return date;
@@ -187,7 +187,6 @@ class EditMilestone extends Component {
                 this.setState({
                   campaignTitle: campaign.title,
                   campaignReviewerAddress: campaign.reviewerAddress,
-                  campaignOwnerAddress: campaign.ownerAddress,
                   campaignProjectId: campaign.projectId,
                 });
               }
@@ -443,7 +442,6 @@ class EditMilestone extends Component {
               pluginAddress: '0x0000000000000000000000000000000000000000',
               totalDonated: '0',
               donationCount: 0,
-              campaignOwnerAddress: this.state.campaignOwnerAddress,
             },
             () => React.toast.info(<p>Your Milestone is being proposed to the Campaign Owner.</p>),
           );

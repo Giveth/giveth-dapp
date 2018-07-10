@@ -88,7 +88,7 @@ class MilestoneCard extends Component {
             <span className="owner-name">{getUserName(milestone.owner)}</span>
 
             {(isOwner(milestone.owner.address, currentUser) ||
-              isOwner(milestone.campaignOwnerAddress, currentUser)) &&
+              isOwner(milestone.campaign.ownerAddress, currentUser)) &&
               ['proposed', 'rejected', 'InProgress', 'NeedsReview'].includes(milestone.status) && (
                 <span className="pull-right">
                   <button
