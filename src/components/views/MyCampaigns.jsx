@@ -20,7 +20,7 @@ class MyCampaigns extends Component {
 
     this.state = {
       isLoading: true,
-      campaigns: [],
+      campaigns: {},
       visiblePages: 10,
       skipPages: 0,
       itemsPerPage: 5,
@@ -129,13 +129,16 @@ class MyCampaigns extends Component {
   render() {
     const { campaigns, isLoading, visiblePages } = this.state;
     const { currentUser } = this.props;
+    const isPendingCampaign =
+      (campaigns.data && campaigns.data.some(d => d.confirmations !== d.requiredConfirmations)) ||
+      false;
 
     return (
       <div id="campaigns-view">
         <div className="container-fluid page-layout dashboard-table-view">
           <div className="row">
             <div className="col-md-10 m-auto">
-              {(isLoading || (campaigns && campaigns.length > 0)) && <h1>Your campaigns</h1>}
+              {(isLoading || (campaigns && campaigns.data.length > 0)) && <h1>Your campaigns</h1>}
 
               {isLoading && <Loader className="fixed" />}
 
@@ -151,7 +154,9 @@ class MyCampaigns extends Component {
                               <th className="td-donations-number">Donations</th>
                               <th className="td-donations-amount">Amount</th>
                               <th className="td-status">Status</th>
-                              <th className="td-confirmations" />
+                              <th className="td-confirmations">
+                                {isPendingCampaign && 'Confirmations'}
+                              </th>
                               <th className="td-actions" />
                             </tr>
                           </thead>
@@ -186,17 +191,11 @@ class MyCampaigns extends Component {
                                   )}
                                   {c.status}
                                 </td>
-                                {c.requiredConfirmations === c.confirmations ? (
-                                  <td />
-                                ) : (
-                                  <td className="td-confirmations">
-                                    {' '}
-                                    Confirmations:
-                                    {c.confirmations}
-                                    /
-                                    {c.requiredConfirmations}
-                                  </td>
-                                )}
+                                <td className="td-confirmations">
+                                  {(isPendingCampaign ||
+                                    c.requiredConfirmations !== c.confirmations) &&
+                                    `${c.confirmations}/${c.requiredConfirmations}`}
+                                </td>
                                 <td className="td-actions">
                                   {c.owner.address === currentUser.address &&
                                     c.isActive && (
@@ -243,7 +242,7 @@ class MyCampaigns extends Component {
                     )}
 
                   {campaigns &&
-                    campaigns.length === 0 && (
+                    campaigns.data.length === 0 && (
                       <div>
                         <center>
                           <h3>You didn&apos;t create any campaigns yet!</h3>

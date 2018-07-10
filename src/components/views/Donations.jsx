@@ -22,7 +22,7 @@ const Donations = () => (
       <DonationProvider currentUser={currentUser} wallet={wallet}>
         <DonationConsumer>
           {({
-            state: { isLoading, donations, etherScanUrl },
+            state: { isLoading, isPendingDonation, donations, etherScanUrl },
             actions: { refund, commit, reject },
           }) => (
             <div id="donations-view">
@@ -45,7 +45,9 @@ const Donations = () => (
                                   <th className="td-donations-amount">Amount</th>
                                   <th className="td-transaction-status">Status</th>
                                   <th className="td-tx-address">Address</th>
-                                  <th className="td-confirmations">Confirmations</th>
+                                  <th className="td-confirmations">
+                                    {isPendingDonation && 'Confirmations'}
+                                  </th>
                                   <th className="td-action" />
                                 </tr>
                               </thead>
@@ -98,15 +100,11 @@ const Donations = () => (
                                       <td className="td-tx-address">{d.giverAddress}</td>
                                     )}
 
-                                    {d.requiredConfirmations === d.confirmations ? (
-                                      <td className="td-confirmations">complete</td>
-                                    ) : (
-                                      <td className="td-confirmations">
-                                        {d.confirmations}
-                                        /
-                                        {d.requiredConfirmations}
-                                      </td>
-                                    )}
+                                    <td className="td-confirmations">
+                                      {(isPendingDonation ||
+                                        d.requiredConfirmations !== d.confirmations) &&
+                                        `${d.confirmations}/${d.requiredConfirmations}`}
+                                    </td>
 
                                     <td className="td-actions">
                                       {d.canRefund(currentUser) && (
