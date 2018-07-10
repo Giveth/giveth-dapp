@@ -515,6 +515,7 @@ class MyMilestones extends Component {
                   maxAmount,
                   recipientAddress,
                   reviewerAddress,
+                  ownerAddress, // TODO change this to managerAddress. There is no owner
                   campaignReviewerAddress,
                 } = milestone;
                 const parentProjectId = milestone.campaign.projectId;
@@ -528,7 +529,7 @@ class MyMilestones extends Component {
                     reviewerAddress,
                     recipientAddress,
                     campaignReviewerAddress,
-                    from,
+                    ownerAddress,
                     maxAmount,
                     Object.values(config.tokenAddresses)[0], // TODO make this a form param
                     5 * 24 * 60 * 60, // 5 days in seconds
