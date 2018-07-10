@@ -70,10 +70,10 @@ class UserWallet extends Component {
             !hasError && (
               <div>
                 <p>{this.props.currentUser.address}</p>
-                <p>
+                {/* <p>
                   <strong>{config.homeNetworkName} ETH</strong> balance:{' '}
                   {this.props.wallet.getHomeBalance()} ETH
-                </p>
+                </p> */}
 
                 {insufficientBalance && (
                   <div className="alert alert-warning">

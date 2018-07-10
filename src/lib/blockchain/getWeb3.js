@@ -122,9 +122,14 @@ export const getWeb3 = () =>
 
 export const getHomeWeb3 = () =>
   new Promise(resolve => {
-    if (!homeWeb3) {
-      homeWeb3 = new Web3(new ZeroClientProvider(providerOpts(config.homeNodeConnection)));
-      homeWeb3.setWallet = setWallet(config.homeNodeConnection, true);
+    if (document.readyState !== 'complete') {
+      // wait until complete
+    }
+    // only support inject web3 provider for home network
+    if (!homeWeb3 && typeof window.web3 !== 'undefined') {
+      homeWeb3 = new Web3(window.web3.currentProvider);
+      // homeWeb3.setWallet = setWallet(config.homeNodeConnection, true);
+      homeWeb3.setWallet = () => {};
     }
 
     resolve(homeWeb3);
