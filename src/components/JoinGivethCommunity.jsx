@@ -34,35 +34,33 @@ class JoinGivethCommunity extends Component {
   createDAC() {
     isInWhitelist(this.props.currentUser, React.whitelist.delegateWhitelist)
       .then(() => {
-        if (!this.props.wallet || (this.props.wallet && !this.props.wallet.unlocked)) {
-          React.unlockWallet(() => {
-            if (this.props.currentUser) {
-              checkWalletBalance(this.props.wallet)
-                .then(() => {
-                  this.props.history.push('/dacs/new');
-                })
-                .catch(err => {
-                  if (err === 'noBalance') {
-                    // handle no balance error
-                  }
-                });
-            } else {
-              React.swal({
-                title: "You're almost there...",
-                content: React.swal.msg(
-                  <p>
-                    It&#8217;s great to see that you want to start a Decentralized Altruistic
-                    Community, or DAC. To get started, please sign up (or sign in) first.
-                  </p>,
-                ),
-                icon: 'info',
-                buttons: ['Cancel', 'Sign up now!'],
-              }).then(isConfirmed => {
-                if (isConfirmed) this.props.history.push('/signup');
+        React.unlockWallet(() => {
+          if (this.props.currentUser) {
+            checkWalletBalance(this.props.wallet)
+              .then(() => {
+                this.props.history.push('/dacs/new');
+              })
+              .catch(err => {
+                if (err === 'noBalance') {
+                  // handle no balance error
+                }
               });
-            }
-          });
-        }
+          } else {
+            React.swal({
+              title: "You're almost there...",
+              content: React.swal.msg(
+                <p>
+                  It&#8217;s great to see that you want to start a Decentralized Altruistic
+                  Community, or DAC. To get started, please sign up (or sign in) first.
+                </p>,
+              ),
+              icon: 'info',
+              buttons: ['Cancel', 'Sign up now!'],
+            }).then(isConfirmed => {
+              if (isConfirmed) this.props.history.push('/signup');
+            });
+          }
+        });
       })
       .catch(() => {
         React.swal({
