@@ -15,26 +15,27 @@ import DataRoutes from './DataRoutes';
 import { history } from '../lib/helpers';
 
 // views
-import Profile from './../components/views/Profile';
-import UserWallet from './../components/views/UserWallet';
-import EditProfile from './../components/views/EditProfile';
-import SignIn from './../components/views/SignIn';
-import Signup from './../components/views/SignUp';
-import ChangeAccount from './../components/views/ChangeAccount';
+import Profile from '../components/views/Profile';
+import UserWallet from '../components/views/UserWallet';
+import EditProfile from '../components/views/EditProfile';
+import SignIn from '../components/views/SignIn';
+import Signup from '../components/views/SignUp';
+import ChangeAccount from '../components/views/ChangeAccount';
+import BackupWallet from '../components/views/BackupWallet';
 
-import ViewMilestone from './../components/views/ViewMilestone';
-import EditDAC from './../components/views/EditDAC';
-import ViewDAC from './../components/views/ViewDAC';
-import Donations from './../components/views/Donations';
-import Delegations from './../components/views/Delegations';
-import MyDACs from './../components/views/MyDACs';
-import MyCampaigns from './../components/views/MyCampaigns';
-import MyMilestones from './../components/views/MyMilestones';
-import NotFound from './../components/views/NotFound';
+import ViewMilestone from '../components/views/ViewMilestone';
+import EditDAC from '../components/views/EditDAC';
+import ViewDAC from '../components/views/ViewDAC';
+import Donations from '../components/views/Donations';
+import Delegations from '../components/views/Delegations';
+import MyDACs from '../components/views/MyDACs';
+import MyCampaigns from '../components/views/MyCampaigns';
+import MyMilestones from '../components/views/MyMilestones';
+import NotFound from '../components/views/NotFound';
 
-import EditCampaign from './../components/views/EditCampaign';
-import ViewCampaign from './../components/views/ViewCampaign';
-import EditMilestone from './../components/views/EditMilestone';
+import EditCampaign from '../components/views/EditCampaign';
+import ViewCampaign from '../components/views/ViewCampaign';
+import EditMilestone from '../components/views/EditMilestone';
 
 // components
 import MainMenu from './../components/MainMenu';
@@ -292,6 +293,12 @@ class Application extends Component {
                           exact
                           path="/signup"
                           render={props => <Signup walletCreated={handleWalletChange} {...props} />}
+                        />
+
+                        <Route
+                          exact
+                          path="/backupwallet"
+                          render={props => <BackupWallet wallet={wallet} {...props} />}
                         />
 
                         <Route
