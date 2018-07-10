@@ -148,6 +148,9 @@ class DonateButton extends React.Component {
     const { adminId } = this.props.model;
     const { gasPrice } = this.state;
 
+    // FIXME: This is super ugly, there is a short flash period when the submit button is pressed before the unlock/success appears
+    this.setState({ modalVisible: false });
+
     Promise.all([getNetwork(), getHomeWeb3()]).then(([network, homeWeb3]) => {
       const { givethBridge } = network;
       const etherScanUrl = network.foreignEtherscan;
@@ -374,6 +377,9 @@ class DonateButton extends React.Component {
         });
       });
     };
+
+    // FIXME: This is super ugly, there is a short flash period when the submit button is pressed before the unlock/success appears
+    this.setState({ modalVisible: false });
 
     let txHash;
     let etherScanUrl;
