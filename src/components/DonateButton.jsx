@@ -414,6 +414,9 @@ class DonateButton extends React.Component {
       });
     };
 
+    // FIXME: This is super ugly, there is a short flash period when the submit button is pressed before the unlock/success appears
+    this.setState({ modalVisible: false });
+
     let txHash;
     let etherScanUrl;
     Promise.all([getNetwork(), getWeb3(), getHomeWeb3()])

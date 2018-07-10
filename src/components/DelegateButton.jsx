@@ -97,6 +97,9 @@ class DelegateButton extends Component {
         </p>,
       );
     };
+    // FIXME: This is super ugly, there is a short flash period when the submit button is pressed before the unlock/success appears
+    this.setState({ modalVisible: false });
+
     DonationService.delegate(
       this.props.donation,
       utils.toWei(model.amount),
