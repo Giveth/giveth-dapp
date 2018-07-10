@@ -173,7 +173,14 @@ class EditDAC extends Component {
                       <i className="fa fa-question-circle" />
                       A DAC aims to solve a cause by building a Community, raising funds and
                       delegating those funds to Campaigns that solve its cause. Should you create a
-                      Campaign or Community? Read more [here.](http://wiki.giveth.io)
+                      Campaign or Community? Read more{' '}
+                      <a
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        href="https://wiki.giveth.io/documentation/glossary/"
+                      >
+                        here
+                      </a>.
                     </p>
                   </div>
 
