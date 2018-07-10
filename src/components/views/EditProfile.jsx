@@ -109,7 +109,9 @@ class EditProfile extends Component {
                       </a>
                     </p>,
                   );
-                  this.setState(Object.assign({}, user, { isSaving: false }));
+                  this.setState(Object.assign({}, user, { isSaving: false }), () =>
+                    history.push('/'),
+                  );
                 })
                 .catch(err => {
                   ErrorPopup(
