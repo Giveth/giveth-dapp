@@ -60,6 +60,7 @@ class DonateButton extends React.Component {
           homeWeb3.eth.net.getId().then(netId => {
             const validNetwork =
               (netId === 1 && config.homeNetworkName === 'Mainnet') ||
+              (netId > 42 && config.homeNetworkName === 'Home Ganache') ||
               (netId === 3 && config.homeNetworkName === 'Ropsten');
 
             if (validNetwork !== this.state.validNetwork) {
@@ -548,12 +549,12 @@ class DonateButton extends React.Component {
                 onChange={amount => /*TODO fixme*/ console.log(amount)}
                 placeholder="1"
                 validations={{
-                  lessThanEqual: homeWeb3 ? balance : 10000000000000000,
+                  lessOrEqualTo: homeWeb3 ? balance : 10000000000000000,
                   greaterThan: 0.009,
                 }}
                 validationErrors={{
                   greaterThan: 'Minimum value must be at least Ξ0.01',
-                  lessThanEqual: 'This donation exceeds your wallet balance.',
+                  lessOrEqualTo: 'This donation exceeds your wallet balance.',
                 }}
                 required
                 autoFocus
