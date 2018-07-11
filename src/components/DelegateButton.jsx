@@ -120,7 +120,7 @@ class DelegateButton extends Component {
     const { types, milestoneOnly, donation } = this.props;
     const { isSaving, objectsToDelegateTo } = this.state;
     const style = { display: 'inline-block' };
-    const pStyle = { 'white-space': 'normal' };
+    const pStyle = { whiteSpace: 'normal' };
 
     return (
       <span style={style}>
@@ -174,7 +174,7 @@ class DelegateButton extends Component {
                 max={Number(this.state.maxAmount)}
                 step={this.state.maxAmount / 10}
                 value={Number(this.state.amount)}
-                labels={['0', this.state.maxAmount]}
+                labels={{ 0: '0', 100: this.state.maxAmount }}
                 format={val => `${val} ETH`}
                 onChange={amount => this.setState({ amount: Number(amount).toFixed(2) })}
               />
