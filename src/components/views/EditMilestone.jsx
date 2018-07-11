@@ -181,7 +181,7 @@ class EditMilestone extends Component {
             .service('campaigns')
             .get(this.props.match.params.id)
             .then(campaign => {
-              if (!campaign.projectId) {
+              if (Number(campaign.projectId) < 0) {
                 this.props.history.goBack();
               } else {
                 this.setState({

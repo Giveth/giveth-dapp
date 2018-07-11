@@ -150,17 +150,19 @@ class ViewCampaign extends Component {
 
                   <div className="milestone-header spacer-top-50 card-view">
                     <h3>Milestones</h3>
-                    {isOwner(campaign.owner.address, currentUser) && (
-                      <AuthenticatedLink
-                        className="btn btn-primary btn-sm pull-right"
-                        to={`/campaigns/${campaign.id}/milestones/new`}
-                        wallet={wallet}
-                      >
-                        Add Milestone
-                      </AuthenticatedLink>
-                    )}
+                    {Number(campaign.projectId) > 0 &&
+                      isOwner(campaign.owner.address, currentUser) && (
+                        <AuthenticatedLink
+                          className="btn btn-primary btn-sm pull-right"
+                          to={`/campaigns/${campaign.id}/milestones/new`}
+                          wallet={wallet}
+                        >
+                          Add Milestone
+                        </AuthenticatedLink>
+                      )}
 
-                    {!isOwner(campaign.owner.address, currentUser) &&
+                    {Number(campaign.projectId) > 0 &&
+                      !isOwner(campaign.owner.address, currentUser) &&
                       currentUser && (
                         <AuthenticatedLink
                           className="btn btn-primary btn-sm pull-right"
