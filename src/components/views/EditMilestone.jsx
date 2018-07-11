@@ -618,7 +618,7 @@ class EditMilestone extends Component {
         isBlocking: false,
       },
       () => {
-        if (this.props.isProposed) {
+        if (this.props.isProposed && this.props.isNew) {
           React.swal({
             title: 'Propose milestone?',
             text:
