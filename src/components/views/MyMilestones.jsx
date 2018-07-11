@@ -1017,7 +1017,7 @@ class MyMilestones extends Component {
 
               <ul className="nav nav-tabs">
                 {this.milestoneTabs.map(st => (
-                  <li className="nav-item">
+                  <li className="nav-item" key={st}>
                     <span
                       role="button"
                       className={`nav-link ${this.state.loadedStatus === st ? 'active' : ''}`}
