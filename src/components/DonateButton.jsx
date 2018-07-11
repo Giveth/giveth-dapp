@@ -474,7 +474,7 @@ class DonateButton extends React.Component {
         >
           {!homeWeb3 && (
             <div className="alert alert-warning">
-              <i class="fa fa-exclamation-triangle" />
+              <i className="fa fa-exclamation-triangle" />
               It is recommended that you install <a href="https://metamask.io/">MetaMask</a> to
               donate
             </div>
@@ -494,7 +494,7 @@ class DonateButton extends React.Component {
           {homeWeb3 &&
             !validNetwork && (
               <div className="alert alert-warning">
-                <i class="fa fa-exclamation-triangle" />
+                <i className="fa fa-exclamation-triangle" />
                 It looks like you are connected to the wrong network. Please connect to the{' '}
                 <strong>{config.homeNetworkName}</strong> network to donate
               </div>
@@ -502,7 +502,7 @@ class DonateButton extends React.Component {
           {homeWeb3 &&
             !account && (
               <div className="alert alert-warning">
-                <i class="fa fa-exclamation-triangle" />
+                <i className="fa fa-exclamation-triangle" />
                 It looks like your account is locked.
               </div>
             )}

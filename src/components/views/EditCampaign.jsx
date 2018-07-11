@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import { Prompt } from 'react-router-dom';
 import PropTypes from 'prop-types';
-import InputToken from 'react-input-token';
 import 'react-input-token/lib/style.css';
 
 import { Form, Input } from 'formsy-react-components';
@@ -36,7 +35,6 @@ class EditCampaign extends Component {
       isLoading: true,
       isSaving: false,
       formIsValid: false,
-      dacsOptions: [],
       hasWhitelist: React.whitelist.reviewerWhitelist.length > 0,
       whitelistOptions: React.whitelist.reviewerWhitelist.map(r => ({
         value: r.address,
@@ -54,7 +52,6 @@ class EditCampaign extends Component {
 
     this.submit = this.submit.bind(this);
     this.setImage = this.setImage.bind(this);
-    this.selectDACs = this.selectDACs.bind(this);
   }
 
   componentDidMount() {
@@ -65,25 +62,6 @@ class EditCampaign extends Component {
         if (!this.state.hasWhitelist) this.getReviewers();
       })
       .then(() => {
-        this.dacsObserver = feathersClient
-          .service('dacs')
-          .watch({ listStrategy: 'always' })
-          .find({ query: { $select: ['title', '_id'] } })
-          .subscribe(
-            resp =>
-              this.setState({
-                // TODO: should we filter the available causes to those that have been mined?
-                // It is possible that a createCause tx will fail and the dac will not be
-                // available
-                dacsOptions: resp.data.map(({ _id, title }) => ({
-                  name: title,
-                  id: _id,
-                  element: <span key={_id}>{title}</span>,
-                })),
-              }),
-            () => this.setState({ isLoading: false }),
-          );
-
         // Load this Campaign
         if (!this.props.isNew) {
           CampaignService.get(this.props.match.params.id)
@@ -108,10 +86,6 @@ class EditCampaign extends Component {
           // handle no balance error
         }
       });
-  }
-
-  componentWillUnmount() {
-    if (this.dacsObserver) this.dacsObserver.unsubscribe();
   }
 
   getReviewers() {
@@ -196,13 +170,6 @@ class EditCampaign extends Component {
     this.setState({ formIsValid: state });
   }
 
-  selectDACs({ target }) {
-    const { campaign } = this.state;
-    campaign.dacs = target.value;
-
-    this.setState({ campaign });
-  }
-
   triggerRouteBlocking() {
     const form = this.form.current.formsyForm;
     // we only block routing if the form state is not submitted
@@ -216,7 +183,6 @@ class EditCampaign extends Component {
       isSaving,
       campaign,
       formIsValid,
-      dacsOptions,
       hasWhitelist,
       whitelistOptions,
       reviewers,
@@ -305,25 +271,6 @@ class EditCampaign extends Component {
                         previewImage={campaign.image}
                         isRequired={isNew}
                       />
-                    </div>
-
-                    <div className="form-group">
-                      <label htmlFor="dac">
-                        Relate your campaign to a community
-                        <small className="form-text">
-                          By linking your Campaign to a Community, Ether from that community can be
-                          delegated to your Campaign. This increases your chances of successfully
-                          funding your Campaign.
-                        </small>
-                        <InputToken
-                          name="dac"
-                          id="dac"
-                          placeholder="Select one or more Communities (DACs)"
-                          value={campaign.dacs}
-                          options={dacsOptions}
-                          onSelect={this.selectDACs}
-                        />
-                      </label>
                     </div>
 
                     <div className="form-group">
