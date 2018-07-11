@@ -95,24 +95,6 @@ class DonateButton extends React.Component {
         gasPrice: utils.fromWei(gasPrice, 'gwei'),
       }),
     );
-    // getNetwork().then(network => {
-    //   const { liquidPledging } = network;
-    //   const donate = liquidPledging.$contract.methods.donate(0, this.props.model.adminId);
-    //   const data = donate.encodeABI();
-    //   donate
-    //     .estimateGas({
-    //       from: '0x0000000000000000000000000000000000000000',
-    //       value: 1,
-    //     })
-    //     .then(gasLimit =>
-    //       this.setState({
-    //         MEWurl: `https://www.myetherwallet.com/?to=${liquidPledging.$address.toUpperCase()}&gaslimit=${gasLimit}&data=${data}`,
-    //       }),
-    //     );
-    //   this.setState({
-    //     MEWurl: `https://www.myetherwallet.com/?to=${liquidPledging.$address.toUpperCase()}&gaslimit=550000&data=${data}`,
-    //   });
-    // });
   }
 
   openDialog() {
@@ -143,7 +125,7 @@ class DonateButton extends React.Component {
   }
 
   getDonationData() {
-    const { givethBridge } = this.state;
+    const { givethBridge, account } = this.state;
     const { currentUser } = this.props;
     const { adminId } = this.props.model;
 
