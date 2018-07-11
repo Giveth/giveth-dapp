@@ -108,7 +108,7 @@ class MilestoneProof extends Component {
         </div>
 
         <AddMilestoneItemModal
-          visible={addMilestoneItemModalVisible}
+          openModal={addMilestoneItemModalVisible}
           onClose={() => this.toggleAddMilestoneItemModal()}
           onAddItem={item => this.onAddItem(item)}
         />

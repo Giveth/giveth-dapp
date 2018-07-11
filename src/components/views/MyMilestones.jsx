@@ -268,31 +268,70 @@ class MyMilestones extends Component {
   }
 
   requestMarkComplete(milestone) {
-    checkWalletBalance(this.props.wallet).then(() =>
-      this.conversationModal.current
-        .show({
-          title: 'Mark as complete?',
-          description: 'Are you sure you want to mark this Milestone as complete?',
-          required: false,
-          cta: 'Mark complete',
-        })
-        .then(proof => {
-          if (proof.message) {
-            // feathers
-            const _requestMarkComplete = (etherScanUrl, txHash) => {
-              feathersClient
-                .service('/milestones')
-                .patch(milestone._id, {
-                  status: 'NeedsReview',
-                  message: proof.message,
-                  proofItems: proof.items,
-                  mined: false,
-                  txHash,
+    checkWalletBalance(this.props.wallet)
+      .then(() => {
+        this.conversationModal.current
+          .openModal({
+            title: 'Mark as complete?',
+            description: 'Are you sure you want to mark this Milestone as complete?',
+            required: false,
+            cta: 'Mark complete',
+          })
+          .then(proof => {
+            if (proof.message) {
+              // feathers
+              const _requestMarkComplete = (etherScanUrl, txHash) => {
+                feathersClient
+                  .service('/milestones')
+                  .patch(milestone._id, {
+                    status: 'NeedsReview',
+                    message: proof.message,
+                    proofItems: proof.items,
+                    mined: false,
+                    txHash,
+                  })
+                  .then(() => {
+                    React.toast.info(
+                      <p>
+                        Marking this milestone as complete is pending...<br />
+                        <a
+                          href={`${etherScanUrl}tx/${txHash}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          View transaction
+                        </a>
+                      </p>,
+                    );
+                  })
+                  .catch(e => {
+                    ErrorPopup('Something went wrong with marking your milestone as complete', e);
+                  });
+              };
+
+              // on chain
+              let txHash;
+              let etherScanUrl;
+              Promise.all([getNetwork(), getWeb3()])
+                .then(([network, web3]) => {
+                  etherScanUrl = network.etherscan;
+
+                  const cappedMilestone = new LPPCappedMilestone(web3, milestone.pluginAddress);
+
+                  return cappedMilestone
+                    .requestMarkAsComplete({
+                      from: this.props.currentUser.address,
+                      $extraGas: 4000000,
+                    })
+                    .once('transactionHash', hash => {
+                      txHash = hash;
+                      return _requestMarkComplete(etherScanUrl, txHash);
+                    });
                 })
                 .then(() => {
-                  React.toast.info(
+                  React.toast.success(
                     <p>
-                      Marking this milestone as complete is pending...<br />
+                      The milestone has been marked as complete!<br />
                       <a
                         href={`${etherScanUrl}tx/${txHash}`}
                         target="_blank"
@@ -303,59 +342,26 @@ class MyMilestones extends Component {
                     </p>,
                   );
                 })
-                .catch(e => {
-                  ErrorPopup('Something went wrong with marking your milestone as complete', e);
+                .catch(err => {
+                  if (txHash && err.message && err.message.includes('unknown transaction')) return; // bug in web3 seems to constantly fail due to this error, but the tx is correct
+                  ErrorPopup(
+                    'Something went wrong with the transaction. Is your wallet unlocked?',
+                    `${etherScanUrl}tx/${txHash} => ${JSON.stringify(err, null, 2)}`,
+                  );
                 });
-            };
-
-            // on chain
-            let txHash;
-            let etherScanUrl;
-            Promise.all([getNetwork(), getWeb3()])
-              .then(([network, web3]) => {
-                etherScanUrl = network.etherscan;
-
-                const cappedMilestone = new LPPCappedMilestone(web3, milestone.pluginAddress);
-
-                return cappedMilestone
-                  .requestMarkAsComplete({
-                    from: this.props.currentUser.address,
-                    $extraGas: 4000000,
-                  })
-                  .once('transactionHash', hash => {
-                    txHash = hash;
-                    return _requestMarkComplete(etherScanUrl, txHash);
-                  });
-              })
-              .then(() => {
-                React.toast.success(
-                  <p>
-                    The milestone has been marked as complete!<br />
-                    <a
-                      href={`${etherScanUrl}tx/${txHash}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      View transaction
-                    </a>
-                  </p>,
-                );
-              })
-              .catch(err => {
-                if (txHash && err.message && err.message.includes('unknown transaction')) return; // bug in web3 seems to constantly fail due to this error, but the tx is correct
-                ErrorPopup(
-                  'Something went wrong with the transaction. Is your wallet unlocked?',
-                  `${etherScanUrl}tx/${txHash} => ${JSON.stringify(err, null, 2)}`,
-                );
-              });
-          }
-        })
-        .catch(err => {
-          if (err === 'noBalance') {
-            // handle no balance error
-          }
-        }),
-    );
+            }
+          })
+          .catch(err => {
+            if (err === 'noBalance') {
+              // handle no balance error
+            }
+          });
+      })
+      .catch(err => {
+        if (err === 'noBalance') {
+          // handle no balance error
+        }
+      });
   }
 
   cancelMilestone(milestone) {

@@ -109,15 +109,15 @@ class Application extends Component {
                 <div>
                   {isLoading && <Loader className="fixed" />}
 
-                  {wallet &&
-                    showUnlockWalletModal && (
-                      <UnlockWallet
-                        wallet={wallet}
-                        actionAfter={actionAfter}
-                        onClose={walletUnlocked}
-                        onCloseClicked={hideUnlockWalletModal}
-                      />
-                    )}
+                  {wallet && (
+                    <UnlockWallet
+                      isOpen={showUnlockWalletModal}
+                      wallet={wallet}
+                      actionAfter={actionAfter}
+                      onClose={walletUnlocked}
+                      onCloseClicked={hideUnlockWalletModal}
+                    />
+                  )}
 
                   {!isLoading &&
                     !hasError && (

@@ -1,7 +1,7 @@
 /* eslint-disable */
 import React from 'react';
 import PropTypes from 'prop-types';
-import { SkyLightStateless } from 'react-skylight';
+import Modal from 'react-modal';
 import { utils } from 'web3';
 import { MiniMeToken } from 'minimetoken';
 import { Form, Input } from 'formsy-react-components';
@@ -15,6 +15,21 @@ import { getWeb3, getHomeWeb3 } from '../lib/blockchain/getWeb3';
 import LoaderButton from './LoaderButton';
 import ErrorPopup from './ErrorPopup';
 import config from '../configuration';
+
+const modalStyles = {
+  content: {
+    top: '50%',
+    left: '50%',
+    right: 'auto',
+    bottom: 'auto',
+    marginRight: '-20%',
+    transform: 'translate(-50%, -50%)',
+    boxShadow: '0 0 40px #ccc',
+    overflowY: 'scroll',
+  },
+};
+
+Modal.setAppElement('#root');
 
 class DonateButton extends React.Component {
   constructor() {
@@ -59,7 +74,6 @@ class DonateButton extends React.Component {
   }
 
   openDialog() {
-    this.refs.amountInput.resetValue();
     this.setState({
       modalVisible: true,
       amount: '',
@@ -317,7 +331,8 @@ class DonateButton extends React.Component {
         });
 
         // For some reason (I suspect a rerender when donations are being fetched again)
-        // the skylight dialog is sometimes gone and this throws error
+        // the modal is sometimes gone and this throws error
+        // TO DO: Confirm now that we have new Modals
         this.setState({ modalVisible: false });
 
         let msg;
@@ -433,11 +448,11 @@ class DonateButton extends React.Component {
         </button>
 
         {wallet && (
-          <SkyLightStateless
-            isVisible={this.state.modalVisible}
-            onCloseClicked={() => this.closeDialog()}
-            onOverlayClicked={() => this.closeDialog()}
-            title={`Support this ${type}!`}
+          <Modal
+            isOpen={this.state.modalVisible}
+            onRequestClose={() => this.closeDialog()}
+            contentLabel={`Support this ${type}!`}
+            style={modalStyles}
           >
             <strong>
               Give Ether to support <em>{model.title}</em>
@@ -516,7 +531,7 @@ class DonateButton extends React.Component {
                 Manually Donate (advanced)
               </a> */}
             </Form>
-          </SkyLightStateless>
+          </Modal>
         )}
       </span>
     );

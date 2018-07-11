@@ -1,7 +1,7 @@
 import { utils } from 'web3';
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { SkyLightStateless } from 'react-skylight';
+import Modal from 'react-modal';
 import { Form, Input } from 'formsy-react-components';
 import SelectFormsy from './SelectFormsy';
 
@@ -12,6 +12,21 @@ import { getGasPrice } from '../lib/helpers';
 import config from '../configuration';
 
 import ErrorPopup from './ErrorPopup';
+
+const modalStyles = {
+  content: {
+    top: '50%',
+    left: '50%',
+    right: 'auto',
+    bottom: 'auto',
+    marginRight: '-20%',
+    transform: 'translate(-50%, -50%)',
+    boxShadow: '0 0 40px #ccc',
+    overflowY: 'scroll',
+  },
+};
+
+Modal.setAppElement('#root');
 
 class BridgeWithdrawButton extends Component {
   constructor() {
@@ -113,14 +128,12 @@ class BridgeWithdrawButton extends Component {
         </button>
 
         {wallet && (
-          <SkyLightStateless
-            isVisible={this.state.modalVisible}
-            onCloseClicked={() => {
+          <Modal
+            isOpen={this.state.modalVisible}
+            onRequestClose={() => {
               this.setState({ modalVisible: false });
             }}
-            onOverlayClicked={() => {
-              this.setState({ modalVisible: false });
-            }}
+            style={modalStyles}
           >
             <p>
               <strong>Withdrawing via bridge from your Giveth wallet</strong>
@@ -180,7 +193,7 @@ class BridgeWithdrawButton extends Component {
                 {isSaving ? 'Withdrawing...' : 'Withdraw'}
               </button>
             </Form>
-          </SkyLightStateless>
+          </Modal>
         )}
       </span>
     );

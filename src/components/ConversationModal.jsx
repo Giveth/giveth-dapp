@@ -3,7 +3,7 @@
 import React, { Component } from 'react';
 import { Prompt } from 'react-router-dom';
 import { Form } from 'formsy-react-components';
-import { SkyLightStateless } from 'react-skylight';
+import Modal from 'react-modal';
 
 import QuillFormsy from 'components/QuillFormsy';
 import LoaderButton from 'components/LoaderButton';
@@ -23,7 +23,7 @@ import { feathersRest } from 'lib/feathersClient';
   />  
 
   STEP 3 - Call it
-  this.conversationModal.current.show({
+  this.conversationModal.current.openModal({
     title: 'Do this?',
     description: 'Yes!',
     required: false,
@@ -33,25 +33,40 @@ import { feathersRest } from 'lib/feathersClient';
     .catch(() => console.log('canceled!'))
 * */
 
+const modalStyles = {
+  content: {
+    top: '50%',
+    left: '50%',
+    right: 'auto',
+    bottom: 'auto',
+    marginRight: '-40%',
+    transform: 'translate(-50%, -50%)',
+    boxShadow: '0 0 40px #ccc',
+  },
+};
+
+Modal.setAppElement('#root');
+
 class ConversationModal extends Component {
   constructor(props) {
     super(props);
 
     this.state = {
-      show: false,
+      modalIsOpen: false,
       formIsValid: false,
       isSaving: false,
       message: '',
       items: [],
       isBlocking: false,
+      required: false,
     };
 
     this.promise = {};
 
     this.form = React.createRef();
 
-    this.show = this.show.bind(this);
-    this.hide = this.hide.bind(this);
+    this.openModal = this.openModal.bind(this);
+    this.closeModal = this.closeModal.bind(this);
     this.onItemsChanged = this.onItemsChanged.bind(this);
     this.submit = this.submit.bind(this);
   }
@@ -60,28 +75,24 @@ class ConversationModal extends Component {
     this.setState({ items });
   }
 
-  show({ title, description, cta, required }) {
+  openModal({ title, description, cta, required }) {
+    this.setState({
+      title,
+      description,
+      CTA: cta,
+      modalIsOpen: true,
+      required,
+    });
+
     return new Promise((resolve, reject) => {
       this.promise = {
         resolve,
         reject,
       };
-
-      this.form.current.formsyForm.reset();
-
-      this.setState({
-        items: [],
-        title,
-        description,
-        CTA: cta,
-        required,
-        message: '',
-        show: true,
-      });
     });
   }
 
-  hide(reject) {
+  closeModal(reject) {
     if (reject) {
       this.promise.reject();
     } else {
@@ -91,11 +102,7 @@ class ConversationModal extends Component {
       });
     }
 
-    this.setState({
-      show: false,
-      message: '',
-      items: [],
-    });
+    this.setState({ modalIsOpen: false });
   }
 
   /* eslint-disable class-methods-use-this */
@@ -149,7 +156,7 @@ class ConversationModal extends Component {
             items: this.state.items,
             message: model.message,
           },
-          () => this.hide(),
+          () => this.closeModal(),
         );
       })
       .catch(() => {
@@ -159,7 +166,7 @@ class ConversationModal extends Component {
 
   render() {
     const {
-      show,
+      modalIsOpen,
       message,
       formIsValid,
       isSaving,
@@ -172,7 +179,12 @@ class ConversationModal extends Component {
     } = this.state;
 
     return (
-      <SkyLightStateless isVisible={show} onCloseClicked={() => this.hide(true)}>
+      <Modal
+        isOpen={modalIsOpen}
+        onRequestClose={() => this.closeModal(true)}
+        style={modalStyles}
+        contentLabel="Example Modal"
+      >
         <h2>{title}</h2>
         <p>{description}</p>
 
@@ -229,8 +241,8 @@ class ConversationModal extends Component {
                 tabIndex="-1"
                 className="btn btn-primary"
                 disabled={!formIsValid}
-                onClick={() => this.hide(true)}
-                onKeyUp={() => this.hide(true)}
+                onClick={() => this.closeModal(true)}
+                onKeyUp={() => this.closeModal(true)}
               >
                 Cancel
               </a>
@@ -245,7 +257,7 @@ class ConversationModal extends Component {
             </div>
           </div>
         </Form>
-      </SkyLightStateless>
+      </Modal>
     );
   }
 }

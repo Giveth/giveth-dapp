@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
-import { SkyLightStateless } from 'react-skylight';
+import Modal from 'react-modal';
+
 import { utils } from 'web3';
 import { Form, Input } from 'formsy-react-components';
 import InputToken from 'react-input-token';
@@ -13,6 +14,21 @@ import GivethWallet from '../lib/blockchain/GivethWallet';
 import Donation from '../models/Donation';
 
 import DonationService from '../services/DonationService';
+
+const modalStyles = {
+  content: {
+    top: '50%',
+    left: '50%',
+    right: 'auto',
+    bottom: 'auto',
+    marginRight: '-20%',
+    transform: 'translate(-50%, -50%)',
+    boxShadow: '0 0 40px #ccc',
+    overflowY: 'scroll',
+  },
+};
+
+Modal.setAppElement('#root');
 
 class DelegateButton extends Component {
   constructor(props) {
@@ -59,8 +75,6 @@ class DelegateButton extends Component {
     }
 
     const onCreated = txLink => {
-      this.resetSkylight();
-
       const msg =
         donation.delegate > 0 ? (
           <p>
@@ -105,13 +119,6 @@ class DelegateButton extends Component {
     );
   }
 
-  resetSkylight() {
-    this.setState({
-      isSaving: false,
-      objectsToDelegateTo: [],
-    });
-  }
-
   render() {
     const { types, milestoneOnly, donation } = this.props;
     const { isSaving, objectsToDelegateTo } = this.state;
@@ -124,17 +131,13 @@ class DelegateButton extends Component {
           Delegate
         </button>
 
-        <SkyLightStateless
-          isVisible={this.state.modalVisible}
-          onCloseClicked={() => {
+        <Modal
+          isOpen={this.state.modalVisible}
+          onRequestClose={() => {
             this.setState({ modalVisible: false });
           }}
-          onOverlayClicked={() => {
-            this.setState({ modalVisible: false });
-          }}
-          hideOnOverlayClicked
-          title="Delegate Donation"
-          afterClose={() => this.resetSkylight()}
+          contentLabel="Delegate Donation"
+          style={modalStyles}
         >
           {milestoneOnly && <p>Select a Milestone to delegate this donation to:</p>}
           {!milestoneOnly && <p>Select a Campaign or Milestone to delegate this donation to:</p>}
@@ -202,7 +205,7 @@ class DelegateButton extends Component {
               {isSaving ? 'Delegating...' : 'Delegate here'}
             </button>
           </Form>
-        </SkyLightStateless>
+        </Modal>
       </span>
     );
   }
