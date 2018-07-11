@@ -43,7 +43,6 @@ class Campaign extends BasicModel {
       totalDonated: this.totalDonated,
       donationCount: this.donationCount,
       peopleCount: this.peopleCount,
-      dacs: this.dacs,
       reviewerAddress: this.reviewerAddress,
       status: this.status,
     };
@@ -113,15 +112,6 @@ class Campaign extends BasicModel {
     else if (value === Campaign.ACTIVE) this.myOrder = 2;
     else if (value === Campaign.CANCELED) this.myOrder = 3;
     else this.myOrder = 4;
-  }
-
-  get dacs() {
-    return this.myDacs;
-  }
-
-  set dacs(value) {
-    this.checkType(value, ['object', 'array'], 'dacs');
-    this.myDacs = value;
   }
 
   get pluginAddress() {
