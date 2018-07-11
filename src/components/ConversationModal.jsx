@@ -1,4 +1,5 @@
 /* eslint-disable jsx-a11y/anchor-is-valid */
+/* eslint-disable jsx-a11y/label-has-for */
 
 import React, { Component } from 'react';
 import { Prompt } from 'react-router-dom';
@@ -12,7 +13,7 @@ import MilestoneProof from 'components/MilestoneProof';
 import { feathersRest } from 'lib/feathersClient';
 
 /**
-  A promise modal that creates
+  A promise modal to file proof when taking action on a milestone
 
   STEP 1 - Create a ref
   this.conversationModal = React.createRef();
@@ -29,8 +30,8 @@ import { feathersRest } from 'lib/feathersClient';
     required: false,
     cta: 'Save'
   })
-    .then(() => console.log('success!'))
-    .catch(() => console.log('canceled!'))
+    .then( proof => console.log("Here's your milestone proof: ", proof))
+    .catch( () => console.log("canceled!"))
 * */
 
 const modalStyles = {
@@ -59,6 +60,8 @@ class ConversationModal extends Component {
       items: [],
       isBlocking: false,
       required: false,
+      enableAttachProof: true,
+      textPlaceholder: '',
     };
 
     this.promise = {};
@@ -73,15 +76,19 @@ class ConversationModal extends Component {
 
   onItemsChanged(items) {
     this.setState({ items });
+    this.triggerRouteBlocking();
   }
 
-  openModal({ title, description, cta, required }) {
+  openModal({ title, description, cta, required, textPlaceholder, enableAttachProof }) {
     this.setState({
+      items: [],
       title,
       description,
       CTA: cta,
       modalIsOpen: true,
       required,
+      enableAttachProof,
+      textPlaceholder,
     });
 
     return new Promise((resolve, reject) => {
@@ -120,7 +127,13 @@ class ConversationModal extends Component {
   triggerRouteBlocking() {
     const form = this.form.current.formsyForm;
     // we only block routing if the form state is not submitted
-    this.setState({ isBlocking: form && (!form.state.formSubmitted || form.state.isSubmitting) });
+    this.setState({
+      isBlocking:
+        form &&
+        (!form.state.formSubmitted ||
+          form.state.isSubmitting ||
+          (this.state.enableAttachProof && this.state.items.length > 0)),
+    });
   }
 
   saveProofImages() {
@@ -176,6 +189,8 @@ class ConversationModal extends Component {
       CTA,
       items,
       isBlocking,
+      enableAttachProof,
+      textPlaceholder,
     } = this.state;
 
     return (
@@ -186,7 +201,7 @@ class ConversationModal extends Component {
         contentLabel="Example Modal"
       >
         <h2>{title}</h2>
-        <p>{description}</p>
+        <p className="mb-4">{description}</p>
 
         <Form
           id="conversation"
@@ -206,25 +221,37 @@ class ConversationModal extends Component {
           />
 
           <div className="row">
-            <div className="col-6">
-              <div className="form-group">
-                <QuillFormsy
-                  name="message"
-                  label="Explain how you are going to do this successfully."
-                  helpText="Make it as extensive as necessary. Your goal is to build trust,
-                  so that people donate Ether to your Campaign. Don't hesitate to add a detailed budget for this Milestone"
-                  value={message}
-                  placeholder="Describe how you're going to execute your Milestone successfully
-                  ..."
-                  validations="minLength:3"
-                  help="Describe your Milestone."
-                  validationErrors={{
-                    minLength: 'Please provide at least 3 characters.',
-                  }}
-                  required={required}
+            <div className={enableAttachProof ? 'col-md-6' : 'col-12'}>
+              <QuillFormsy
+                name="message"
+                label="Accompanying message"
+                // {/* helpText="Make it as extensive as necessary. Your goal is to build trust,
+                // so that people donate Ether to your Campaign. Don't hesitate to add a detailed budget for this Milestone"
+                // */}
+                value={message}
+                placeholder={textPlaceholder}
+                validations="minLength:3"
+                validationErrors={{
+                  minLength: 'It is really appreciated if you write something meaningful...',
+                }}
+                required={required}
+              />
+            </div>
+
+            {enableAttachProof && (
+              <div className="col-md-6">
+                <label>Attachments</label>
+                <MilestoneProof
+                  isEditMode
+                  items={items}
+                  onItemsChanged={returnedItems => this.onItemsChanged(returnedItems)}
                 />
               </div>
+            )}
+          </div>
 
+          <div className="row">
+            <div className="col-12">
               <LoaderButton
                 className="btn btn-success"
                 formNoValidate
@@ -239,21 +266,13 @@ class ConversationModal extends Component {
               <a
                 role="button"
                 tabIndex="-1"
-                className="btn btn-primary"
+                className="btn btn-link"
                 disabled={!formIsValid}
                 onClick={() => this.closeModal(true)}
                 onKeyUp={() => this.closeModal(true)}
               >
                 Cancel
               </a>
-            </div>
-
-            <div className="col-6">
-              <MilestoneProof
-                isEditMode
-                items={items}
-                onItemsChanged={returnedItems => this.onItemsChanged(returnedItems)}
-              />
             </div>
           </div>
         </Form>

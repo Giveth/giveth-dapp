@@ -95,10 +95,7 @@ class MilestoneProof extends Component {
                 {items.length === 0 &&
                   isEditMode && (
                     <div className="text-center">
-                      <p>
-                        Add you first item now. This can be an expense, invoice or anything else
-                        that needs to be paid.
-                      </p>
+                      <p>Attach an expense, invoice or anything else that requires payment.</p>
                       <AddMilestoneItem onClick={() => this.toggleAddMilestoneItemModal()} />
                     </div>
                   )}

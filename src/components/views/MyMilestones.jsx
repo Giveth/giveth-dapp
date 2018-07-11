@@ -74,34 +74,31 @@ const rejectProposedMilestone = milestone => {
 };
 
 const reproposeRejectedMilestone = milestone => {
-  React.swal({
-    title: 'Re-propose Milestone?',
-    text: 'Are you sure you want to re-propose this Milestone?',
-    icon: 'warning',
-    dangerMode: true,
-    buttons: ['Cancel', 'Yes, re-propose'],
-    content: {
-      element: 'input',
-      attributes: {
-        placeholder: 'Add a reason why you repropose this milestone',
-      },
-    },
-  }).then(message => {
-    if (message) {
+  this.conversationModal.current
+    .openModal({
+      title: 'Reject proposed milestone',
+      description:
+        'Optionally explain why you reject this proposed milestone. This information will be publicly visible and emailed to the milestone owner.',
+      textPlaceholder: 'Optionally explain why you reject this proposal...',
+      required: false,
+      cta: 'Reject proposal',
+      enableAttachProof: false,
+    })
+    .then(proof =>
       feathersClient
         .service('/milestones')
         .patch(milestone._id, {
           status: 'proposed',
-          message,
+          message: proof.message,
+          proofItems: proof.proofItems,
         })
         .then(() => {
           React.toast.info(<p>The milestone has been re-proposed.</p>);
         })
         .catch(e => {
           ErrorPopup('Something went wrong with re-proposing your milestone', e);
-        });
-    }
-  });
+        }),
+    );
 };
 
 const reviewDue = updatedAt =>
@@ -272,66 +269,30 @@ class MyMilestones extends Component {
       .then(() => {
         this.conversationModal.current
           .openModal({
-            title: 'Mark as complete?',
-            description: 'Are you sure you want to mark this Milestone as complete?',
+            title: 'Mark milestone complete',
+            description:
+              "Describe what you've done to finish the work of this milestone and attach proof if necessary. This information will be publicly visible and emailed to the reviewer.",
             required: false,
             cta: 'Mark complete',
+            enableAttachProof: true,
+            textPlaceholder: "Describe what you've done...",
           })
           .then(proof => {
-            if (proof.message) {
-              // feathers
-              const _requestMarkComplete = (etherScanUrl, txHash) => {
-                feathersClient
-                  .service('/milestones')
-                  .patch(milestone._id, {
-                    status: 'NeedsReview',
-                    message: proof.message,
-                    proofItems: proof.items,
-                    mined: false,
-                    txHash,
-                  })
-                  .then(() => {
-                    React.toast.info(
-                      <p>
-                        Marking this milestone as complete is pending...<br />
-                        <a
-                          href={`${etherScanUrl}tx/${txHash}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          View transaction
-                        </a>
-                      </p>,
-                    );
-                  })
-                  .catch(e => {
-                    ErrorPopup('Something went wrong with marking your milestone as complete', e);
-                  });
-              };
-
-              // on chain
-              let txHash;
-              let etherScanUrl;
-              Promise.all([getNetwork(), getWeb3()])
-                .then(([network, web3]) => {
-                  etherScanUrl = network.etherscan;
-
-                  const cappedMilestone = new LPPCappedMilestone(web3, milestone.pluginAddress);
-
-                  return cappedMilestone
-                    .requestMarkAsComplete({
-                      from: this.props.currentUser.address,
-                      $extraGas: 4000000,
-                    })
-                    .once('transactionHash', hash => {
-                      txHash = hash;
-                      return _requestMarkComplete(etherScanUrl, txHash);
-                    });
+            // feathers
+            const _requestMarkComplete = (etherScanUrl, txHash) => {
+              feathersClient
+                .service('/milestones')
+                .patch(milestone._id, {
+                  status: 'NeedsReview',
+                  message: proof.message,
+                  proofItems: proof.items,
+                  mined: false,
+                  txHash,
                 })
                 .then(() => {
-                  React.toast.success(
+                  React.toast.info(
                     <p>
-                      The milestone has been marked as complete!<br />
+                      Marking this milestone as complete is pending...<br />
                       <a
                         href={`${etherScanUrl}tx/${txHash}`}
                         target="_blank"
@@ -342,14 +303,51 @@ class MyMilestones extends Component {
                     </p>,
                   );
                 })
-                .catch(err => {
-                  if (txHash && err.message && err.message.includes('unknown transaction')) return; // bug in web3 seems to constantly fail due to this error, but the tx is correct
-                  ErrorPopup(
-                    'Something went wrong with the transaction. Is your wallet unlocked?',
-                    `${etherScanUrl}tx/${txHash} => ${JSON.stringify(err, null, 2)}`,
-                  );
+                .catch(e => {
+                  ErrorPopup('Something went wrong with marking your milestone as complete', e);
                 });
-            }
+            };
+
+            // on chain
+            let txHash;
+            let etherScanUrl;
+            Promise.all([getNetwork(), getWeb3()])
+              .then(([network, web3]) => {
+                etherScanUrl = network.etherscan;
+
+                const cappedMilestone = new LPPCappedMilestone(web3, milestone.pluginAddress);
+
+                return cappedMilestone
+                  .requestMarkAsComplete({
+                    from: this.props.currentUser.address,
+                    $extraGas: 4000000,
+                  })
+                  .once('transactionHash', hash => {
+                    txHash = hash;
+                    return _requestMarkComplete(etherScanUrl, txHash);
+                  });
+              })
+              .then(() => {
+                React.toast.success(
+                  <p>
+                    The milestone has been marked as complete!<br />
+                    <a
+                      href={`${etherScanUrl}tx/${txHash}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      View transaction
+                    </a>
+                  </p>,
+                );
+              })
+              .catch(err => {
+                if (txHash && err.message && err.message.includes('unknown transaction')) return; // bug in web3 seems to constantly fail due to this error, but the tx is correct
+                ErrorPopup(
+                  'Something went wrong with the transaction. Is your wallet unlocked?',
+                  `${etherScanUrl}tx/${txHash} => ${JSON.stringify(err, null, 2)}`,
+                );
+              });
           })
           .catch(err => {
             if (err === 'noBalance') {
@@ -367,28 +365,25 @@ class MyMilestones extends Component {
   cancelMilestone(milestone) {
     checkWalletBalance(this.props.wallet)
       .then(() =>
-        React.swal({
-          title: 'Cancel Milestone?',
-          text: 'Are you sure you want to cancel this Milestone?',
-          icon: 'warning',
-          buttons: ['I changed my mind', 'Yes, cancel'],
-          dangerMode: true,
-          content: {
-            element: 'input',
-            attributes: {
-              rows: 3,
-              placeholder: 'Add a reason why you cancel this milestone',
-            },
-          },
-        }).then(message => {
-          if (message) {
+        this.conversationModal.current
+          .openModal({
+            title: 'Cancel milestone',
+            description:
+              'Explain why you cancel this milestone. Compliments are appreciated! This information will be publicly visible and emailed to the milestone owner.',
+            textPlaceholder: 'Explain why you cancel this milestone...',
+            required: true,
+            cta: 'Cancel milestone',
+            enableAttachProof: false,
+          })
+          .then(proof => {
             const _cancelMilestone = (etherScanUrl, txHash) => {
               // feathers
               feathersClient
                 .service('/milestones')
                 .patch(milestone._id, {
                   status: 'Canceled',
-                  message,
+                  message: proof.message,
+                  proofItems: proof.items,
                   mined: false,
                   txHash,
                 })
@@ -451,8 +446,7 @@ class MyMilestones extends Component {
                   `${etherScanUrl}tx/${txHash}`,
                 );
               });
-          }
-        }),
+          }),
       )
       .catch(err => {
         if (err === 'noBalance') {
@@ -464,21 +458,17 @@ class MyMilestones extends Component {
   acceptProposedMilestone(milestone) {
     checkWalletBalance(this.props.wallet)
       .then(() =>
-        React.swal({
-          title: 'Accept Milestone?',
-          text: 'Are you sure you want to accept this Milestone?',
-          icon: 'warning',
-          dangerMode: true,
-          buttons: ['Cancel', 'Yes, accept'],
-          content: {
-            element: 'input',
-            attributes: {
-              rows: 3,
-              placeholder: 'Add a reason why you accept this milestone (optional)',
-            },
-          },
-        }).then(message => {
-          if (message !== null) {
+        this.conversationModal.current
+          .openModal({
+            title: 'Accept proposed milestone',
+            description:
+              'Optionally explain why you accept this proposed milestone. Compliments are appreciated! This information will be publicly visible and emailed to the milestone owner.',
+            textPlaceholder: 'Optionally explain why you accept this proposal...',
+            required: false,
+            cta: 'Accept proposal',
+            enableAttachProof: false,
+          })
+          .then(proof => {
             // feathers
             const _createMilestone = (etherScanUrl, txHash) =>
               feathersClient
@@ -486,7 +476,8 @@ class MyMilestones extends Component {
                 .patch(milestone._id, {
                   status: 'pending',
                   mined: false,
-                  message,
+                  message: proof.message,
+                  proofItems: proof.items,
                   txHash,
                 })
                 .then(() => {
@@ -551,8 +542,7 @@ class MyMilestones extends Component {
                   `${etherScanUrl}tx/${txHash} => ${JSON.stringify(err, null, 2)}`,
                 );
               });
-          }
-        }),
+          }),
       )
       .catch(err => {
         if (err === 'noBalance') {
@@ -564,21 +554,18 @@ class MyMilestones extends Component {
   approveMilestoneCompleted(milestone) {
     checkWalletBalance(this.props.wallet)
       .then(() =>
-        React.swal({
-          title: 'Approve Milestone?',
-          text: 'Are you sure you want to approve this Milestone?',
-          icon: 'warning',
-          dangerMode: true,
-          buttons: ['Cancel', 'Yes, approve'],
-          content: {
-            element: 'input',
-            attributes: {
-              rows: 3,
-              placeholder: 'Add a message why you approve completion (optional)',
-            },
-          },
-        }).then(message => {
-          if (message !== null) {
+        this.conversationModal.current
+          .openModal({
+            title: 'Approve milestone completion',
+            description:
+              'Optionally explain why you approve the completion of this milestone. Compliments are appreciated! This information will be publicly visible and emailed to the milestone owner.',
+            textPlaceholder:
+              'Optionally explain why you approve the completion of this milestone...',
+            required: false,
+            cta: 'Approve completion',
+            enableAttachProof: false,
+          })
+          .then(proof => {
             // feathers
             const _approveMilestoneCompleted = (etherScanUrl, txHash) =>
               feathersClient
@@ -586,7 +573,8 @@ class MyMilestones extends Component {
                 .patch(milestone._id, {
                   status: 'Completed',
                   mined: false,
-                  message,
+                  message: proof.message,
+                  proofItems: proof.items,
                   txHash,
                 })
                 .then(() => {
@@ -647,8 +635,7 @@ class MyMilestones extends Component {
                   `${etherScanUrl}tx/${txHash}`,
                 );
               });
-          }
-        }),
+          }),
       )
       .catch(err => {
         if (err === 'noBalance') {
@@ -660,21 +647,17 @@ class MyMilestones extends Component {
   rejectMilestoneCompletion(milestone) {
     checkWalletBalance(this.props.wallet)
       .then(() =>
-        React.swal({
-          title: 'Reject Milestone?',
-          text: "Are you sure you want to reject this Milestone's completion?",
-          icon: 'warning',
-          dangerMode: true,
-          buttons: ['Cancel', 'Yes, reject'],
-          content: {
-            element: 'input',
-            attributes: {
-              rows: 3,
-              placeholder: 'Add a reason why you reject the completion of this milestone',
-            },
-          },
-        }).then(message => {
-          if (message) {
+        this.conversationModal.current
+          .openModal({
+            title: 'Reject milestone completion',
+            description:
+              'Explain why you rejected the completion of this milestone. This information will be publicly visible and emailed to the milestone owner.',
+            textPlaceholder: 'Explain why you rejected the completion of this milestone...',
+            required: true,
+            cta: 'Reject completion',
+            enableAttachProof: false,
+          })
+          .then(proof => {
             // reject in feathers
             const _rejectMilestoneCompletion = (etherScanUrl, txHash) =>
               feathersClient
@@ -682,7 +665,8 @@ class MyMilestones extends Component {
                 .patch(milestone._id, {
                   status: 'InProgress',
                   mined: false,
-                  message,
+                  message: proof.message,
+                  proofItems: proof.items,
                   txHash,
                 })
                 .then(() => {
@@ -735,8 +719,7 @@ class MyMilestones extends Component {
                   `${etherScanUrl}tx/${txHash}`,
                 );
               });
-          }
-        }),
+          }),
       )
       .catch(err => {
         if (err === 'noBalance') {

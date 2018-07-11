@@ -91,20 +91,20 @@ class UnlockWallet extends Component {
             height="130px"
             alt="unlock wallet icon"
           />
+
+          <h2>Unlock your wallet to continue</h2>
+          <p className="small">
+            Note: For security reasons, your wallet auto-locks whenever the Giveth dapp reloads.
+          </p>
+
+          <UnlockWalletForm
+            submit={this.submit}
+            label="password"
+            error={error}
+            unlocking={unlocking}
+            buttonText="Unlock"
+          />
         </center>
-
-        <h2>Unlock your wallet to continue</h2>
-        <p className="small">
-          Note: For security reasons, your wallet auto-locks whenever the Giveth dapp reloads.
-        </p>
-
-        <UnlockWalletForm
-          submit={this.submit}
-          label="password"
-          error={error}
-          unlocking={unlocking}
-          buttonText="Unlock"
-        />
       </Modal>
     );
   }

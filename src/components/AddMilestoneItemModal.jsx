@@ -2,6 +2,7 @@
 /* eslint-disable jsx-a11y/anchor-is-valid */
 
 import React, { Component } from 'react';
+import { Prompt } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import Modal from 'react-modal';
 
@@ -53,6 +54,12 @@ class AddMilestoneItemModal extends Component {
     this.setState({ image });
   }
 
+  triggerRouteBlocking() {
+    const form = this.form.current.formsyForm;
+    // we only block routing if the form state is not submitted
+    this.setState({ isBlocking: form && (!form.state.formSubmitted || form.state.isSubmitting) });
+  }
+
   mapInputs(inputs) {
     return {
       date: inputs.date.format(),
@@ -84,7 +91,8 @@ class AddMilestoneItemModal extends Component {
 
   render() {
     const { openModal } = this.props;
-    const { formIsValid, description, image } = this.state;
+    const { formIsValid, description, image, isBlocking } = this.state;
+
     return (
       <Modal
         isOpen={openModal}
@@ -98,8 +106,16 @@ class AddMilestoneItemModal extends Component {
           mapping={this.mapInputs}
           onValid={() => this.setState({ formIsValid: true })}
           onInvalid={() => this.setState({ formIsValid: false })}
+          onChange={e => this.triggerRouteBlocking(e)}
           layout="vertical"
         >
+          <Prompt
+            when={isBlocking}
+            message={() =>
+              `You have unsaved changes. Are you sure you want to navigate from this page?`
+            }
+          />
+
           <div className="form-group row">
             <div className="col-12">
               <Input
@@ -139,7 +155,7 @@ class AddMilestoneItemModal extends Component {
             onClick={() => this.submit()}
             onKeyUp={() => this.submit()}
           >
-            Add item
+            Attach
           </a>
 
           <button className="btn btn-link" onClick={() => this.closeModal()}>

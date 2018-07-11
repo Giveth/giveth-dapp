@@ -454,9 +454,9 @@ class DonateButton extends React.Component {
             contentLabel={`Support this ${type}!`}
             style={modalStyles}
           >
-            <strong>
+            <h3>
               Give Ether to support <em>{model.title}</em>
-            </strong>
+            </h3>
 
             {type === 'DAC' && (
               <p>
