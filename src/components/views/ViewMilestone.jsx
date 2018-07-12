@@ -246,7 +246,8 @@ class ViewMilestone extends Component {
                 items.length > 0 && (
                   <div className="row spacer-top-50 dashboard-table-view">
                     <div className="col-md-8 m-auto">
-                      <h4>Milestone items</h4>
+                      <h4>Milestone proof</h4>
+                      <p>These receipts show how the money of this milestone was spent.</p>
 
                       {/* MilesteneItem needs to be wrapped in a form or it won't mount */}
                       <Form>
@@ -259,7 +260,6 @@ class ViewMilestone extends Component {
                                 <th className="td-item-amount-fiat">Amount Fiat</th>
                                 <th className="td-item-amount-ether">Amount Ether</th>
                                 <th className="td-item-file-upload">Attached proof</th>
-                                <th className="td-item-action" />
                               </tr>
                             </thead>
                             <tbody>

@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { withRouter } from 'react-router-dom';
 
-import { SkyLightStateless } from 'react-skylight';
+import Modal from 'react-modal';
 
 import UnlockWalletForm from './UnlockWalletForm';
 import GivethWallet from '../lib/blockchain/GivethWallet';
@@ -11,6 +11,25 @@ import GivethWallet from '../lib/blockchain/GivethWallet';
 /**
  * Modal with a form to unlock a GivethWallet
  */
+
+const modalStyles = {
+  overlay: {
+    zIndex: 100,
+  },
+  content: {
+    top: '50%',
+    left: '50%',
+    right: 'auto',
+    bottom: 'auto',
+    marginRight: '-20%',
+    transform: 'translate(-50%, -50%)',
+    boxShadow: '0 0 40px #ccc',
+    overflowY: 'scroll',
+  },
+};
+
+Modal.setAppElement('#root');
+
 class UnlockWallet extends Component {
   constructor(props) {
     super(props);
@@ -59,16 +78,11 @@ class UnlockWallet extends Component {
   }
 
   render() {
-    const { onClose, onCloseClicked } = this.props;
+    const { onCloseClicked, isOpen } = this.props;
     const { unlocking, error } = this.state;
 
     return (
-      <SkyLightStateless
-        isVisible
-        hideOnOverlayClicked
-        onCloseClicked={onCloseClicked}
-        afterClose={onClose}
-      >
+      <Modal isOpen={isOpen} onRequestClose={onCloseClicked} style={modalStyles}>
         <center>
           <img
             className="empty-state-img reduce-margin"
@@ -77,21 +91,21 @@ class UnlockWallet extends Component {
             height="130px"
             alt="unlock wallet icon"
           />
+
+          <h2>Unlock your wallet to continue</h2>
+          <p className="small">
+            Note: For security reasons, your wallet auto-locks whenever the Giveth dapp reloads.
+          </p>
+
+          <UnlockWalletForm
+            submit={this.submit}
+            label="password"
+            error={error}
+            unlocking={unlocking}
+            buttonText="Unlock"
+          />
         </center>
-
-        <h2>Unlock your wallet to continue</h2>
-        <p className="small">
-          Note: For security reasons, your wallet auto-locks whenever the Giveth dapp reloads.
-        </p>
-
-        <UnlockWalletForm
-          submit={this.submit}
-          label="password"
-          error={error}
-          unlocking={unlocking}
-          buttonText="Unlock"
-        />
-      </SkyLightStateless>
+      </Modal>
     );
   }
 }
@@ -101,6 +115,7 @@ UnlockWallet.propTypes = {
   onClose: PropTypes.func.isRequired,
   onCloseClicked: PropTypes.func.isRequired,
   actionAfter: PropTypes.func,
+  isOpen: PropTypes.bool.isRequired,
 };
 
 UnlockWallet.defaultProps = {

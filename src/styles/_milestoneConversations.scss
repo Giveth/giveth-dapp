@@ -62,4 +62,18 @@
     margin-left: 8px;
     font-weight: 300;
   }
+
+  .items-form {
+    strong {
+      font-size: 0.8rem;
+    }
+
+    .milestone-items-card {
+      padding: 10px;
+    }
+
+    .card-body {
+      padding: 0;
+    }
+  }
 }

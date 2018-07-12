@@ -16,7 +16,7 @@ try {
     })
     .then(() => localForage.getItem('x'));
 } catch (e) {
-  console.log(e);
+  // console.log(e);
 }
 
 /* global document */

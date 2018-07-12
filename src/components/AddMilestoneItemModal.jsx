@@ -1,21 +1,33 @@
+/* eslint-disable prefer-destructuring */
+/* eslint-disable jsx-a11y/anchor-is-valid */
+
 import React, { Component } from 'react';
+import { Prompt } from 'react-router-dom';
 import PropTypes from 'prop-types';
-import { SkyLightStateless } from 'react-skylight';
+import Modal from 'react-modal';
+
 import { Input, Form } from 'formsy-react-components';
 import { utils } from 'web3';
-import { Portal } from 'react-portal';
+
 import { getStartOfDayUTC } from '../lib/helpers';
 import FormsyImageUploader from './FormsyImageUploader';
 import RateConvertor from './RateConvertor';
+import getEthConversionContext from 'containers/getEthConversionContext';
 
-const addMilestoneModalStyle = {
-  width: '70% !important',
-  height: '700px !important',
-  marginTop: '-350px',
-  maxHeight: '700px',
-  overflowY: 'scroll',
-  textAlign: 'left',
+const modalStyles = {
+  content: {
+    top: '50%',
+    left: '50%',
+    right: 'auto',
+    bottom: 'auto',
+    marginRight: '-20%',
+    transform: 'translate(-50%, -50%)',
+    boxShadow: '0 0 40px #ccc',
+    overflowY: 'scroll',
+  },
 };
+
+Modal.setAppElement('#root');
 
 const initialState = {
   date: getStartOfDayUTC().subtract(1, 'd'),
@@ -25,18 +37,27 @@ const initialState = {
   formIsValid: false,
 };
 
-export default class AddMilestoneItemModal extends Component {
+class AddMilestoneItemModal extends Component {
   constructor(props) {
     super(props);
+
+    this.form = React.createRef();
+
     this.state = initialState;
     this.setImage = this.setImage.bind(this);
     this.mapInputs = this.mapInputs.bind(this);
-    this.closeDialog = this.closeDialog.bind(this);
+    this.closeModal = this.closeModal.bind(this);
     this.submit = this.submit.bind(this);
   }
 
   setImage(image) {
     this.setState({ image });
+  }
+
+  triggerRouteBlocking() {
+    const form = this.form.current.formsyForm;
+    // we only block routing if the form state is not submitted
+    this.setState({ isBlocking: form && (!form.state.formSubmitted || form.state.isSubmitting) });
   }
 
   mapInputs(inputs) {
@@ -53,85 +74,103 @@ export default class AddMilestoneItemModal extends Component {
     };
   }
 
-  closeDialog() {
+  closeModal() {
     this.props.onClose();
     this.setState(initialState);
   }
 
-  submit(model) {
+  submit() {
+    // Formsy doesn't like nesting, even when using Portals
+    // So we're manually fetching and submitting the model
+    const form = this.form;
+    const model = form.current.formsyForm.getModel();
+
     this.props.onAddItem(model);
     this.setState(initialState);
   }
 
   render() {
-    const { visible } = this.props;
-    const { formIsValid, description, image } = this.state;
+    const { openModal } = this.props;
+    const { formIsValid, description, image, isBlocking } = this.state;
+
     return (
-      <Portal className="add-milestone-item-skylight">
-        {visible && (
-          <SkyLightStateless
-            isVisible={visible}
-            onCloseClicked={this.closeDialog}
-            title="Add an item to this milestone"
-            dialogStyles={addMilestoneModalStyle}
-          >
-            <Form
-              onSubmit={this.submit}
-              mapping={this.mapInputs}
-              onValid={() => this.setState({ formIsValid: true })}
-              onInvalid={() => this.setState({ formIsValid: false })}
-              layout="vertical"
-            >
-              <div className="form-group row">
-                <div className="col-12">
-                  <Input
-                    label="Description"
-                    name="description"
-                    type="text"
-                    value={description}
-                    placeholder="E.g. my receipt"
-                    validations="minLength:3"
-                    validationErrors={{
-                      minLength: 'Provide description',
-                    }}
-                    required
-                    autoFocus
-                  />
-                </div>
-              </div>
+      <Modal
+        isOpen={openModal}
+        onRequestClose={this.closeModal}
+        contentLabel="Add an item to this milestone"
+        style={modalStyles}
+      >
+        <Form
+          id="milestone-form"
+          ref={this.form}
+          mapping={this.mapInputs}
+          onValid={() => this.setState({ formIsValid: true })}
+          onInvalid={() => this.setState({ formIsValid: false })}
+          onChange={e => this.triggerRouteBlocking(e)}
+          layout="vertical"
+        >
+          <Prompt
+            when={isBlocking}
+            message={() =>
+              `You have unsaved changes. Are you sure you want to navigate from this page?`
+            }
+          />
 
-              <RateConvertor getEthConversion={this.props.getEthConversion} />
-
-              <FormsyImageUploader
-                name="image"
-                previewImage={image}
-                setImage={this.setImage}
-                resize={false}
+          <div className="form-group row">
+            <div className="col-12">
+              <Input
+                label="Description"
+                name="description"
+                type="text"
+                value={description}
+                placeholder="E.g. my receipt"
+                validations="minLength:3"
+                validationErrors={{
+                  minLength: 'Provide description',
+                }}
+                required
+                autoFocus
               />
+            </div>
+          </div>
 
-              <button
-                className="btn btn-primary"
-                disabled={!formIsValid}
-                formNoValidate
-                type="submit"
-              >
-                Add item
-              </button>
+          <RateConvertor />
 
-              <button type="button" className="btn btn-link" onClick={() => this.closeDialog()}>
-                Cancel
-              </button>
-            </Form>
-          </SkyLightStateless>
-        )}
-      </Portal>
+          <FormsyImageUploader
+            name="image"
+            previewImage={image}
+            setImage={this.setImage}
+            resize={false}
+          />
+
+          {/*
+          NOTE: Due to a Formsy issue, we're using a 'fake' submit button here
+          */}
+
+          <a
+            role="button"
+            tabIndex="-1"
+            className="btn btn-primary"
+            disabled={!formIsValid}
+            onClick={() => this.submit()}
+            onKeyUp={() => this.submit()}
+          >
+            Attach
+          </a>
+
+          <button className="btn btn-link" onClick={() => this.closeModal()}>
+            Cancel
+          </button>
+        </Form>
+      </Modal>
     );
   }
 }
 
 AddMilestoneItemModal.propTypes = {
-  visible: PropTypes.bool.isRequired,
+  openModal: PropTypes.bool.isRequired,
   onClose: PropTypes.func.isRequired,
-  getEthConversion: PropTypes.func.isRequired,
   onAddItem: PropTypes.func.isRequired,
 };
+
+export default getEthConversionContext(AddMilestoneItemModal);

@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { SkyLightStateless } from 'react-skylight';
+import Modal from 'react-modal';
 import { Form, Input } from 'formsy-react-components';
 
 import User from '../models/User';
@@ -9,6 +9,21 @@ import WalletService from '../services/Wallet';
 import { getGasPrice } from '../lib/helpers';
 
 import ErrorPopup from './ErrorPopup';
+
+const modalStyles = {
+  content: {
+    top: '50%',
+    left: '50%',
+    right: 'auto',
+    bottom: 'auto',
+    marginRight: '-20%',
+    transform: 'translate(-50%, -50%)',
+    boxShadow: '0 0 40px #ccc',
+    overflowY: 'scroll',
+  },
+};
+
+Modal.setAppElement('#root');
 
 class WithdrawButton extends Component {
   constructor() {
@@ -106,14 +121,12 @@ class WithdrawButton extends Component {
         </button>
 
         {wallet && (
-          <SkyLightStateless
-            isVisible={this.state.modalVisible}
+          <Modal
+            isOpen={this.state.modalVisible}
             onCloseClicked={() => {
               this.setState({ modalVisible: false });
             }}
-            onOverlayClicked={() => {
-              this.setState({ modalVisible: false });
-            }}
+            style={modalStyles}
           >
             <strong>Withdrawing from your Giveth wallet</strong>
 
@@ -173,7 +186,7 @@ class WithdrawButton extends Component {
                 {isSaving ? 'Withdrawing...' : 'Withdraw ETH'}
               </button>
             </Form>
-          </SkyLightStateless>
+          </Modal>
         )}
       </span>
     );

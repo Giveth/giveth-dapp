@@ -1,6 +1,6 @@
 #view-milestone-view {
   @include content-styling;
-  
+
   padding-top: 50px;
 
   .milestone-title {
@@ -34,15 +34,15 @@
     }
   }
 
-  .card-body.content{
+  .card-body.content {
     @include bullet-styling(8);
-    
-    .video-wrapper{
+
+    .video-wrapper {
       position: relative;
       min-height: 400px;
       height: auto;
 
-      iframe.ql-video{
+      iframe.ql-video {
         position: absolute;
         top: 0;
         left: 0;
@@ -52,11 +52,16 @@
       }
     }
 
-    img{
+    img {
       max-width: 100%;
       width: auto;
       box-sizing: border-box;
       display: block;
+    }
+
+    p {
+      margin: 0;
+      padding: 0;
     }
   }
 

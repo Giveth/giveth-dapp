@@ -8,21 +8,9 @@ import SelectFormsy from './SelectFormsy';
 import DatePickerFormsy from './DatePickerFormsy';
 
 import { getStartOfDayUTC } from '../lib/helpers';
+import getEthConversionContext from '../containers/getEthConversionContext';
 
 BigNumber.config({ DECIMAL_PLACES: 18 });
-
-const fiatTypes = [
-  { value: 'BRL', title: 'BRL' },
-  { value: 'CAD', title: 'CAD' },
-  { value: 'CHF', title: 'CHF' },
-  { value: 'CZK', title: 'CZK' },
-  { value: 'ETH', title: 'ETH' },
-  { value: 'EUR', title: 'EUR' },
-  { value: 'GBP', title: 'GBP' },
-  { value: 'MXN', title: 'MXN' },
-  { value: 'THB', title: 'THB' },
-  { value: 'USD', title: 'USD' },
-];
 
 const numberRegex = RegExp('^[0-9]*[.]?[0-9]*$');
 
@@ -101,6 +89,7 @@ class RateConvertor extends Component {
   }
 
   render() {
+    const { fiatTypes } = this.props;
     const { date, selectedFiatType, fiatAmountForm, etherAmountForm, conversionRate } = this.state;
 
     return (
@@ -204,6 +193,7 @@ RateConvertor.propTypes = {
   date: PropTypes.instanceOf(moment),
   fiatAmount: PropTypes.string,
   etherAmount: PropTypes.string,
+  fiatTypes: PropTypes.arrayOf(PropTypes.object).isRequired,
 };
 
 RateConvertor.defaultProps = {
@@ -214,4 +204,4 @@ RateConvertor.defaultProps = {
   etherAmount: '',
 };
 
-export default RateConvertor;
+export default getEthConversionContext(RateConvertor);

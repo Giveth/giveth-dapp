@@ -1,3 +1,5 @@
+/* eslint-disable import/no-cycle */
+
 import BasicModel from './BasicModel';
 import CampaignService from '../services/Campaign';
 import UploadService from '../services/Uploads';

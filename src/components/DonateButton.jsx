@@ -1,7 +1,7 @@
 /* eslint-disable */
 import React from 'react';
 import PropTypes from 'prop-types';
-import { SkyLightStateless } from 'react-skylight';
+import Modal from 'react-modal';
 import { utils } from 'web3';
 import { MiniMeToken } from 'minimetoken';
 import { Form, Input } from 'formsy-react-components';
@@ -15,6 +15,21 @@ import { getWeb3, getHomeWeb3 } from '../lib/blockchain/getWeb3';
 import LoaderButton from './LoaderButton';
 import ErrorPopup from './ErrorPopup';
 import config from '../configuration';
+
+const modalStyles = {
+  content: {
+    top: '50%',
+    left: '50%',
+    right: 'auto',
+    bottom: 'auto',
+    marginRight: '-20%',
+    transform: 'translate(-50%, -50%)',
+    boxShadow: '0 0 40px #ccc',
+    overflowY: 'scroll',
+  },
+};
+
+Modal.setAppElement('#root');
 
 // tx only requires 25400 gas, but for some reason we get an out of gas
 // error in web3 with that amount (even though the tx succeeds)
@@ -98,7 +113,6 @@ class DonateButton extends React.Component {
   }
 
   openDialog() {
-    this.refs.amountInput.resetValue();
     this.setState({
       modalVisible: true,
       amount: '',
@@ -338,7 +352,8 @@ class DonateButton extends React.Component {
         });
 
         // For some reason (I suspect a rerender when donations are being fetched again)
-        // the skylight dialog is sometimes gone and this throws error
+        // the modal is sometimes gone and this throws error
+        // TO DO: Confirm now that we have new Modals
         this.setState({ modalVisible: false });
 
         let msg;
@@ -444,7 +459,7 @@ class DonateButton extends React.Component {
   }
 
   render() {
-    const { type, model } = this.props;
+    const { type, model, wallet } = this.props;
     const {
       homeWeb3,
       account,
@@ -466,117 +481,121 @@ class DonateButton extends React.Component {
           Donate
         </button>
 
-        <SkyLightStateless
-          isVisible={this.state.modalVisible}
-          onCloseClicked={() => this.closeDialog()}
-          onOverlayClicked={() => this.closeDialog()}
-          title={`Support this ${type}!`}
-        >
-          {!homeWeb3 && (
-            <div className="alert alert-warning">
-              <i className="fa fa-exclamation-triangle" />
-              It is recommended that you install <a href="https://metamask.io/">MetaMask</a> to
-              donate
-            </div>
-          )}
-          <strong>
-            Give Ether to support <em>{model.title}</em>
-          </strong>
-
-          {type === 'DAC' && (
-            <p>
-              Pledge: as long as the {type} owner does not lock your money you can take it back any
-              time.
-            </p>
-          )}
-          {/* TODO add note that we are donating as the logged in user, or that they won't be able to manage funds if no logged in user & using metamask*/}
-
-          {homeWeb3 &&
-            !validNetwork && (
+        {wallet && (
+          <Modal
+            isOpen={this.state.modalVisible}
+            onRequestClose={() => this.closeDialog()}
+            contentLabel={`Support this ${type}!`}
+            style={modalStyles}
+          >
+            {!homeWeb3 && (
               <div className="alert alert-warning">
                 <i className="fa fa-exclamation-triangle" />
-                It looks like you are connected to the wrong network. Please connect to the{' '}
-                <strong>{config.homeNetworkName}</strong> network to donate
+                It is recommended that you install <a href="https://metamask.io/">MetaMask</a> to
+                donate
               </div>
             )}
-          {homeWeb3 &&
-            !account && (
-              <div className="alert alert-warning">
-                <i className="fa fa-exclamation-triangle" />
-                It looks like your account is locked.
-              </div>
-            )}
-          {homeWeb3 &&
-            account &&
-            validNetwork && (
+
+            <h3>
+              Give Ether to support <em>{model.title}</em>
+            </h3>
+
+            {type === 'DAC' && (
               <p>
-                {config.homeNetworkName} balance: <em>&#926;{balance}</em>
-                <br />
-                Gas price: <em>{gasPrice} Gwei</em>
+                Pledge: as long as the {type} owner does not lock your money you can take it back
+                any time.
               </p>
             )}
 
-          <Form
-            onSubmit={this.submit}
-            mapping={inputs => this.mapInputs(inputs)}
-            onValid={() => this.toggleFormValid(true)}
-            onInvalid={() => this.toggleFormValid(false)}
-            layout="vertical"
-          >
-            <div className="form-group">
-              <Input
-                name="amount"
-                ref="amountInput"
-                id="amount-input"
-                label="How much Ξ do you want to donate?"
-                type="number"
-                value={amount}
-                onChange={amount => /*TODO fixme*/ console.log(amount)}
-                placeholder="1"
-                validations={{
-                  lessOrEqualTo: homeWeb3 ? balance : 10000000000000000,
-                  greaterThan: 0.009,
-                }}
-                validationErrors={{
-                  greaterThan: 'Minimum value must be at least Ξ0.01',
-                  lessOrEqualTo: 'This donation exceeds your wallet balance.',
-                }}
-                required
-                autoFocus
-              />
-            </div>
+            {/* TODO add note that we are donating as the logged in user, or that they won't be able to manage funds if no logged in user & using metamask*/}
 
-            {homeWeb3 && (
-              <LoaderButton
-                className="btn btn-success"
-                formNoValidate
-                type="submit"
-                disabled={isSaving || !formIsValid || !validNetwork || !account}
-                isLoading={isSaving}
-                loadingText="Saving..."
-              >
-                Donate
-              </LoaderButton>
-            )}
+            {homeWeb3 &&
+              !validNetwork && (
+                <div className="alert alert-warning">
+                  <i className="fa fa-exclamation-triangle" />
+                  It looks like you are connected to the wrong network. Please connect to the{' '}
+                  <strong>{config.homeNetworkName}</strong> network to donate
+                </div>
+              )}
+            {homeWeb3 &&
+              !account && (
+                <div className="alert alert-warning">
+                  <i className="fa fa-exclamation-triangle" />
+                  It looks like your account is locked.
+                </div>
+              )}
+            {homeWeb3 &&
+              account &&
+              validNetwork && (
+                <p>
+                  {config.homeNetworkName} balance: <em>&#926;{balance}</em>
+                  <br />
+                  Gas price: <em>{gasPrice} Gwei</em>
+                </p>
+              )}
 
-            {!homeWeb3 && <div>TODO: show donation data</div>}
+            <Form
+              onSubmit={this.submit}
+              mapping={inputs => this.mapInputs(inputs)}
+              onValid={() => this.toggleFormValid(true)}
+              onInvalid={() => this.toggleFormValid(false)}
+              layout="vertical"
+            >
+              <div className="form-group">
+                <Input
+                  name="amount"
+                  ref="amountInput"
+                  id="amount-input"
+                  label="How much Ξ do you want to donate?"
+                  type="number"
+                  value={amount}
+                  onChange={amount => /*TODO fixme*/ console.log(amount)}
+                  placeholder="1"
+                  validations={{
+                    lessOrEqualTo: homeWeb3 ? balance : 10000000000000000,
+                    greaterThan: 0.009,
+                  }}
+                  validationErrors={{
+                    greaterThan: 'Minimum value must be at least Ξ0.01',
+                    lessOrEqualTo: 'This donation exceeds your wallet balance.',
+                  }}
+                  required
+                  autoFocus
+                />
+              </div>
 
-            {/* TODO get amount to dynamically update */}
-            {givethBridge && (
-              <a
-                className={`btn btn-secondary ${isSaving ? 'disabled' : ''}`}
-                disabled={!givethBridge || !amount}
-                href={`https://mycrypto.com?to=${
-                  givethBridge.$address
-                }&data=${this.getDonationData()}&value=${amount}&gasLimit=${DONATION_GAS}#send-transaction`}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                Donate via MyCrypto
-              </a>
-            )}
-          </Form>
-        </SkyLightStateless>
+              {homeWeb3 && (
+                <LoaderButton
+                  className="btn btn-success"
+                  formNoValidate
+                  type="submit"
+                  disabled={isSaving || !formIsValid || !validNetwork || !account}
+                  isLoading={isSaving}
+                  loadingText="Saving..."
+                >
+                  Donate
+                </LoaderButton>
+              )}
+
+              {!homeWeb3 && <div>TODO: show donation data</div>}
+
+              {/* TODO get amount to dynamically update */}
+              {givethBridge && (
+                <a
+                  className={`btn btn-secondary ${isSaving ? 'disabled' : ''}`}
+                  disabled={!givethBridge || !amount}
+                  href={`https://mycrypto.com?to=${
+                    givethBridge.$address
+                  }&data=${this.getDonationData()}&value=${amount}&gasLimit=${DONATION_GAS}#send-transaction`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Donate via MyCrypto
+                </a>
+              )}
+            </Form>
+          </Modal>
+        )}
       </span>
     );
   }

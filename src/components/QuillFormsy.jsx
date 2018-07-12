@@ -56,9 +56,10 @@ class QuillFormsy extends Component {
         this.saveToServer(e.target.result);
       };
       reader.readAsDataURL(file);
-    } else {
-      console.warn('You could only upload images.');
     }
+    // else {
+    //   console.warn('You could only upload images.');
+    // }
   }
 
   saveToServer(image) {
