@@ -89,7 +89,7 @@ class CampaignService {
       .watch({ listStrategy: 'always' })
       .find({
         query: {
-          ownerId: id,
+          ownerTypeId: id,
           $sort: { createdAt: -1 },
         },
       })

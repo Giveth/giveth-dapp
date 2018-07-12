@@ -100,7 +100,7 @@ ShowTypeDonations.propTypes = {
       delegateType: PropTypes.string,
       currentUser: PropTypes.instanceOf(User),
       giverAddress: PropTypes.string.isRequired,
-      ownerId: PropTypes.string.isRequired,
+      ownerTypeId: PropTypes.string.isRequired,
       ownerType: PropTypes.string.isRequired,
       txHash: PropTypes.string.isRequired,
     }),

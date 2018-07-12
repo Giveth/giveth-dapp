@@ -806,7 +806,7 @@ class MyMilestones extends Component {
                   {
                     query: {
                       ownerType: 'milestone',
-                      ownerId: milestone._id,
+                      ownerTypeId: milestone._id,
                     },
                   },
                 )
@@ -821,7 +821,7 @@ class MyMilestones extends Component {
                 .find({
                   query: {
                     ownerType: 'milestone',
-                    ownerId: milestone._id,
+                    ownerTypeId: milestone._id,
                   },
                 })
                 .then(({ data }) => {

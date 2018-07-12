@@ -62,7 +62,7 @@ class DelegateButton extends Component {
       this.resetSkylight();
 
       const msg =
-        donation.delegate > 0 ? (
+        Number(donation.delegateId) > 0 ? (
           <p>
             The Giver has <strong>3 days</strong> to reject your delegation before the money gets
             locked

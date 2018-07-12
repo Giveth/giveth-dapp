@@ -65,7 +65,7 @@ class DACservice {
       .watch({ listStrategy: 'always' })
       .find({
         query: {
-          delegateId: id,
+          delegateTypeId: id,
           $sort: { createdAt: -1 },
         },
       })

@@ -34,10 +34,10 @@ class DonationService {
         etherScanUrl = network.etherscan;
 
         const from =
-          donation.delegate > 0
+          donation.delegateId > 0
             ? donation.delegateEntity.ownerAddress
             : donation.ownerEntity.ownerAddress;
-        const senderId = donation.delegate > 0 ? donation.delegate : donation.owner;
+        const senderId = donation.delegateId > 0 ? donation.delegateId : donation.ownerId;
         const receiverId = delegateTo.type === 'dac' ? delegateTo.delegateId : delegateTo.projectId;
 
         const executeTransfer = () => {
@@ -66,17 +66,17 @@ class DonationService {
 
             if (amount === donation.amount) {
               if (donation.ownerType.toLowerCase() === 'campaign') {
-                // campaign is the owner, so they transfer the donation, not propose
+                // campaign is the ownerId, so they transfer the donation, not propose
                 Object.assign(mutation, {
-                  owner: delegateTo.projectId,
-                  ownerId: delegateTo._id,
+                  ownerId: delegateTo.projectId,
+                  ownerTypeId: delegateTo._id,
                   ownerType: delegateTo.type,
                 });
               } else {
                 // dac proposes a delegation
                 Object.assign(mutation, {
-                  intendedProject: delegateTo.projectId,
-                  intendedProjectId: delegateTo._id,
+                  intendedProjectId: delegateTo.projectId,
+                  intendedProjectTypeId: delegateTo._id,
                   intendedProjectType: delegateTo.type,
                 });
               }
@@ -124,7 +124,7 @@ class DonationService {
         etherScanUrl = network.etherscan;
 
         return network.liquidPledging
-          .transfer(donation.owner, donation.pledgeId, donation.amount, donation.delegate, {
+          .transfer(donation.ownerId, donation.pledgeId, donation.amount, donation.delegateId, {
             $extraGas: 50000,
             from: address,
           })
@@ -136,9 +136,9 @@ class DonationService {
               .patch(donation.id, {
                 status: 'pending',
                 $unset: {
-                  pendingProject: true,
-                  pendingProjectId: true,
-                  pendingProjectType: true,
+                  intendedProjectId: true,
+                  intendedProjectTypeId: true,
+                  intendedProjectType: true,
                 },
                 txHash,
               })
@@ -181,10 +181,16 @@ class DonationService {
         etherScanUrl = network.etherscan;
 
         return network.liquidPledging
-          .transfer(donation.owner, donation.pledgeId, donation.amount, donation.intendedProject, {
-            $extraGas: 50000,
-            from: address,
-          })
+          .transfer(
+            donation.ownerId,
+            donation.pledgeId,
+            donation.amount,
+            donation.intendedProjectId,
+            {
+              $extraGas: 50000,
+              from: address,
+            },
+          )
           .once('transactionHash', hash => {
             txHash = hash;
 
@@ -193,17 +199,17 @@ class DonationService {
               .patch(donation.id, {
                 status: 'pending',
                 $unset: {
-                  pendingProject: true,
-                  pendingProjectId: true,
-                  pendingProjectType: true,
-                  delegate: true,
-                  delegateType: true,
+                  intendedProjectId: true,
+                  intendedProjectTypeId: true,
+                  intendedProjectType: true,
                   delegateId: true,
+                  delegateType: true,
+                  delegateTypeId: true,
                 },
                 txHash,
-                owner: donation.pendingProject,
-                ownerId: donation.pendingProjectId,
-                ownerType: donation.pendingProjectType,
+                ownerId: donation.intendedProjectId,
+                ownerTypeId: donation.intendedProjectTypeId,
+                ownerType: donation.intendedProjectType,
               })
               .then(() => {
                 onCreated(`${etherScanUrl}tx/${txHash}`);
@@ -256,12 +262,12 @@ class DonationService {
               .patch(donation.id, {
                 status: 'pending',
                 $unset: {
-                  delegate: true,
                   delegateId: true,
+                  delegateTypeId: true,
                   delegateType: true,
-                  pendingProject: true,
-                  pendingProjectId: true,
-                  pendingProjectType: true,
+                  intendedProjectId: true,
+                  intendedProjectTypeId: true,
+                  intendedProjectType: true,
                 },
                 paymentStatus: 'Paying',
                 txHash,

@@ -74,10 +74,10 @@ class ViewMilestone extends Component {
       });
 
     // lazy load donations
-    // TODO: fetch "non comitted" donations? add "intendedProjectId: milestoneId" to query to get
+    // TODO: fetch "non comitted" donations? add "intendedProjectTypeId: milestoneId" to query to get
     // all "pending aproval" donations for this milestone
     const query = paramsForServer({
-      query: { ownerId: milestoneId },
+      query: { ownerTypeId: milestoneId },
       schema: 'includeGiverDetails',
       $sort: { createdAt: -1 },
     });

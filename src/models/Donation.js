@@ -56,15 +56,15 @@ class Donation extends Model {
     this.commitTime = data.commitTime;
     this.confirmations = data.confirmations || 0;
     this.createdAt = data.createdAt;
-    this.delegate = data.delegate;
-    this.delegateEntity = data.delegateEntity;
     this.delegateId = data.delegateId;
+    this.delegateEntity = data.delegateEntity;
+    this.delegateTypeId = data.delegateTypeId;
     this.giver = data.giver;
     this.giverAddress = data.giverAddress;
-    this.intendedProject = data.intendedProject;
-    this.owner = data.owner;
-    this.ownerEntity = data.ownerEntity;
+    this.intendedProjectId = data.intendedProjectId;
     this.ownerId = data.ownerId;
+    this.ownerEntity = data.ownerEntity;
+    this.ownerTypeId = data.ownerTypeId;
     this.ownerType = data.ownerType;
     this.paymentStatus = data.paymentStatus;
     this.pledgeId = data.pledgeId;
@@ -85,17 +85,17 @@ class Donation extends Model {
       name: '',
       type: '',
     };
-    if (this.delegate > 0) {
+    if (this.delegateId > 0) {
       // DAC
       donatedTo.url = `/dacs/${this.delegateEntity._id}`; // eslint-disable-line no-underscore-dangle
       donatedTo.name = getTruncatedText(this.delegateEntity.title, 45);
       donatedTo.type = 'DAC';
-    } else if (!this.delegate && this.ownerType === 'campaign') {
+    } else if (!this.delegateId && this.ownerType === 'campaign') {
       // Campaing
       donatedTo.url = `/${this.ownerType}s/${this.ownerEntity._id}`; // eslint-disable-line no-underscore-dangle
       donatedTo.name = getTruncatedText(this.ownerEntity.title, 45);
       donatedTo.type = 'CAMPAIGN';
-    } else if (!this.delegate && this.ownerType === 'milestone') {
+    } else if (!this.delegateId && this.ownerType === 'milestone') {
       // Milestone
       donatedTo.url = `/campaigns/${this.ownerEntity.campaign._id}/milestones/${
         this.ownerEntity._id
@@ -156,7 +156,7 @@ class Donation extends Model {
    * @return {boolean} True if given user can refund the donation
    */
   canRefund(user) {
-    return this.ownerId === user.address && this.status === Donation.WAITING;
+    return this.ownerTypeId === user.address && this.status === Donation.WAITING;
   }
 
   /**
@@ -168,7 +168,7 @@ class Donation extends Model {
    */
   canApproveReject(user) {
     return (
-      this.ownerId === user.address &&
+      this.ownerTypeId === user.address &&
       this.status === Donation.TO_APPROVE &&
       new Date() < new Date(this.commitTime)
     );
@@ -230,13 +230,13 @@ class Donation extends Model {
     this.myCreatedAt = value;
   }
 
-  get delegate() {
-    return this.myDelegate;
+  get delegateId() {
+    return this.myDelegateId;
   }
 
-  set delegate(value) {
-    this.checkType(value, ['string', 'undefined'], 'delegate');
-    this.myDelegate = value;
+  set delegateId(value) {
+    this.checkType(value, ['string', 'undefined'], 'delegateId');
+    this.myDelegateId = value;
   }
 
   get delegateEntity() {
@@ -248,13 +248,13 @@ class Donation extends Model {
     this.myDelegateEntity = value;
   }
 
-  get delegateId() {
-    return this.myDelegateId;
+  get delegateTypeId() {
+    return this.myDelegateTypeId;
   }
 
-  set delegateId(value) {
-    this.checkType(value, ['string', 'undefined'], 'delegateId');
-    this.myDelegateId = value;
+  set delegateTypeId(value) {
+    this.checkType(value, ['string', 'undefined'], 'delegateTypeId');
+    this.myDelegateTypeId = value;
   }
 
   get giver() {
@@ -275,22 +275,22 @@ class Donation extends Model {
     this.myGiverAddress = value;
   }
 
-  get intendedProject() {
-    return this.myIntendedProject;
+  get intendedProjectId() {
+    return this.myIntendedProjectId;
   }
 
-  set intendedProject(value) {
-    this.checkType(value, ['string', 'undefined'], 'intendedProject');
-    this.myIntendedProject = value;
+  set intendedProjectId(value) {
+    this.checkType(value, ['string', 'undefined'], 'intendedProjectId');
+    this.myIntendedProjectId = value;
   }
 
-  get owner() {
-    return this.myOwner;
+  get ownerId() {
+    return this.myOwnerId;
   }
 
-  set owner(value) {
-    this.checkType(value, ['string'], 'owner');
-    this.myOwner = value;
+  set ownerId(value) {
+    this.checkType(value, ['string'], 'ownerId');
+    this.myOwnerId = value;
   }
 
   get ownerEntity() {
@@ -302,11 +302,11 @@ class Donation extends Model {
     this.myOwnerEntity = value;
   }
 
-  get ownerId() {
+  get ownerTypeId() {
     return this.myOwnerId;
   }
 
-  set ownerId(value) {
+  set ownerTypeId(value) {
     this.checkType(value, ['string'], 'ownerEntity');
     this.myOwnerId = value;
   }

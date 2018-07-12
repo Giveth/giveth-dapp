@@ -619,7 +619,7 @@ class Profile extends Component {
                                   </td>
 
                                   <td className="td-donated-to">
-                                    {d.intendedProject > 0 && (
+                                    {Number(d.intendedProjectId) > 0 && (
                                       <span className="badge badge-info">
                                         <i className="fa fa-random" />
                                         &nbsp;Delegated

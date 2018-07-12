@@ -184,11 +184,11 @@ class DelegationProvider extends Component {
     const query = paramsForServer({
       query: {
         $or: [
-          { ownerId: { $in: campaignIds } },
-          { delegateId: { $in: dacsIds } },
+          { ownerTypeId: { $in: campaignIds } },
+          { delegateTypeId: { $in: dacsIds } },
           {
-            ownerId: this.props.currentUser.address,
-            delegateId: { $ne: '0' },
+            ownerTypeId: this.props.currentUser.address,
+            delegateTypeId: { $ne: '0' },
           },
         ],
         status: {

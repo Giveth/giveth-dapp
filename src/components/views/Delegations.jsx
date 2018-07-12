@@ -74,7 +74,8 @@ const Delegations = () => (
                                       <td className="td-actions">
                                         {/* When donated to a dac, allow delegation
                                       to campaigns and milestones */}
-                                        {(d.delegate > 0 || d.ownerId === currentUser.address) && (
+                                        {(d.delegateId > 0 ||
+                                          d.ownerTypeId === currentUser.address) && (
                                           <DelegateButton
                                             types={campaigns.concat(milestones)}
                                             donation={d}
@@ -87,7 +88,7 @@ const Delegations = () => (
                                         {d.ownerType === 'campaign' && (
                                           <DelegateButton
                                             types={milestones.filter(
-                                              m => m.campaignId === d.ownerId,
+                                              m => m.campaignId === d.ownerTypeId,
                                             )}
                                             donation={d}
                                             milestoneOnly
