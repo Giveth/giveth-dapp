@@ -20,7 +20,7 @@ class MyCampaigns extends Component {
 
     this.state = {
       isLoading: true,
-      campaigns: [],
+      campaigns: {},
       visiblePages: 10,
       skipPages: 0,
       itemsPerPage: 5,
@@ -88,7 +88,8 @@ class MyCampaigns extends Component {
             const afterCreate = url => {
               const msg = (
                 <p>
-                  Campaign cancelation pending...<br />
+                  Campaign cancelation pending...
+                  <br />
                   <a href={url} target="_blank" rel="noopener noreferrer">
                     View transaction
                   </a>
@@ -100,7 +101,8 @@ class MyCampaigns extends Component {
             const afterMined = url => {
               const msg = (
                 <p>
-                  The campaign has been cancelled!<br />
+                  The campaign has been cancelled!
+                  <br />
                   <a href={url} target="_blank" rel="noopener noreferrer">
                     View transaction
                   </a>
@@ -127,13 +129,16 @@ class MyCampaigns extends Component {
   render() {
     const { campaigns, isLoading, visiblePages } = this.state;
     const { currentUser } = this.props;
+    const isPendingCampaign =
+      (campaigns.data && campaigns.data.some(d => d.confirmations !== d.requiredConfirmations)) ||
+      false;
 
     return (
       <div id="campaigns-view">
         <div className="container-fluid page-layout dashboard-table-view">
           <div className="row">
             <div className="col-md-10 m-auto">
-              {(isLoading || (campaigns && campaigns.length > 0)) && <h1>Your campaigns</h1>}
+              {(isLoading || (campaigns && campaigns.data.length > 0)) && <h1>Your campaigns</h1>}
 
               {isLoading && <Loader className="fixed" />}
 
@@ -149,6 +154,9 @@ class MyCampaigns extends Component {
                               <th className="td-donations-number">Donations</th>
                               <th className="td-donations-amount">Amount</th>
                               <th className="td-status">Status</th>
+                              <th className="td-confirmations">
+                                {isPendingCampaign && 'Confirmations'}
+                              </th>
                               <th className="td-actions" />
                             </tr>
                           </thead>
@@ -177,43 +185,27 @@ class MyCampaigns extends Component {
                                   {(c.status === Campaign.PENDING ||
                                     (Object.keys(c).includes('mined') && !c.mined)) && (
                                     <span>
-                                      <i className="fa fa-circle-o-notch fa-spin" />&nbsp;
+                                      <i className="fa fa-circle-o-notch fa-spin" />
+                                      &nbsp;
                                     </span>
                                   )}
                                   {c.status}
+                                </td>
+                                <td className="td-confirmations">
+                                  {(isPendingCampaign ||
+                                    c.requiredConfirmations !== c.confirmations) &&
+                                    `${c.confirmations}/${c.requiredConfirmations}`}
                                 </td>
                                 <td className="td-actions">
                                   {c.owner.address === currentUser.address &&
                                     c.isActive && (
                                       <button
+                                        type="button"
                                         className="btn btn-link"
                                         onClick={() => this.editCampaign(c.id)}
                                       >
-                                        <i className="fa fa-edit" />&nbsp;Edit
-                                      </button>
-                                    )}
-                                </td>
-                                <td className="td-donations-number">{c.donationCount || 0}</td>
-                                <td className="td-donations-amount">
-                                  {convertEthHelper(c.totalDonated)} ETH
-                                </td>
-                                <td className="td-status">
-                                  {(c.status === Campaign.PENDING ||
-                                    (Object.keys(c).includes('mined') && !c.mined)) && (
-                                    <span>
-                                      <i className="fa fa-circle-o-notch fa-spin" />&nbsp;
-                                    </span>
-                                  )}
-                                  {c.status}
-                                </td>
-                                <td className="td-actions">
-                                  {c.owner.address === currentUser.address &&
-                                    c.isActive && (
-                                      <button
-                                        className="btn btn-link"
-                                        onClick={() => this.editCampaign(c.id)}
-                                      >
-                                        <i className="fa fa-edit" />&nbsp;Edit
+                                        <i className="fa fa-edit" />
+                                        &nbsp;Edit
                                       </button>
                                     )}
 
@@ -221,10 +213,12 @@ class MyCampaigns extends Component {
                                     c.owner.address === currentUser.address) &&
                                     c.isActive && (
                                       <button
+                                        type="button"
                                         className="btn btn-danger btn-sm"
                                         onClick={() => this.cancelCampaign(c)}
                                       >
-                                        <i className="fa fa-ban" />&nbsp;Cancel
+                                        <i className="fa fa-ban" />
+                                        &nbsp;Cancel
                                       </button>
                                     )}
                                 </td>
@@ -244,12 +238,11 @@ class MyCampaigns extends Component {
                             />
                           </center>
                         )}
-
-                    </div>
-                  )}
+                      </div>
+                    )}
 
                   {campaigns &&
-                    campaigns.length === 0 && (
+                    campaigns.data.length === 0 && (
                       <div>
                         <center>
                           <h3>You didn&apos;t create any campaigns yet!</h3>

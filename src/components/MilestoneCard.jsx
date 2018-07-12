@@ -2,8 +2,8 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import Avatar from 'react-avatar';
 
-import { getTruncatedText, isOwner, getUserAvatar, getUserName } from './../lib/helpers';
-import { redirectAfterWalletUnlock, checkWalletBalance } from './../lib/middleware';
+import { getTruncatedText, isOwner, getUserAvatar, getUserName } from '../lib/helpers';
+import { redirectAfterWalletUnlock, checkWalletBalance } from '../lib/middleware';
 import User from '../models/User';
 import CardStats from './CardStats';
 import GivethWallet from '../lib/blockchain/GivethWallet';
@@ -88,10 +88,14 @@ class MilestoneCard extends Component {
             <span className="owner-name">{getUserName(milestone.owner)}</span>
 
             {(isOwner(milestone.owner.address, currentUser) ||
-              isOwner(milestone.campaignOwnerAddress, currentUser)) &&
+              isOwner(milestone.campaign.ownerAddress, currentUser)) &&
               ['proposed', 'rejected', 'InProgress', 'NeedsReview'].includes(milestone.status) && (
                 <span className="pull-right">
-                  <button className="btn btn-link btn-edit" onClick={e => this.editMilestone(e)}>
+                  <button
+                    type="button"
+                    className="btn btn-link btn-edit"
+                    onClick={e => this.editMilestone(e)}
+                  >
                     <i className="fa fa-edit" />
                   </button>
                 </span>

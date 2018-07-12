@@ -6,7 +6,7 @@ import { File, Form, Input } from 'formsy-react-components';
 import GivethWallet from '../../lib/blockchain/GivethWallet';
 import { feathersClient } from '../../lib/feathersClient';
 import { authenticate } from '../../lib/helpers';
-import LoaderButton from '../../components/LoaderButton';
+import LoaderButton from '../LoaderButton';
 
 /* global FileReader */
 /**

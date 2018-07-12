@@ -4,13 +4,12 @@ import PropTypes from 'prop-types';
 import { Form, Input } from 'formsy-react-components';
 import { feathersClient, feathersRest } from '../../lib/feathersClient';
 import Loader from '../Loader';
-import FormsyImageUploader from './../FormsyImageUploader';
-import { isLoggedIn, checkWalletBalance } from '../../lib/middleware';
-import LoaderButton from '../../components/LoaderButton';
+import FormsyImageUploader from '../FormsyImageUploader';
+import { isLoggedIn } from '../../lib/middleware';
+import LoaderButton from '../LoaderButton';
 import getNetwork from '../../lib/blockchain/getNetwork';
 import User from '../../models/User';
 import { history } from '../../lib/helpers';
-import GivethWallet from '../../lib/blockchain/GivethWallet';
 import ErrorPopup from '../ErrorPopup';
 
 /**
@@ -44,7 +43,6 @@ class EditProfile extends Component {
 
   componentDidMount() {
     isLoggedIn(this.props.currentUser)
-      .then(() => checkWalletBalance(this.props.wallet))
       .then(() => this.setState({ isLoading: false }))
       .catch(err => {
         if (err === 'noBalance') history.goBack();
@@ -56,6 +54,10 @@ class EditProfile extends Component {
           });
         }
       });
+  }
+
+  componentWillUnmount() {
+    clearInterval(this.state.balanceInterval);
   }
 
   setImage(image) {
@@ -97,7 +99,8 @@ class EditProfile extends Component {
                 .then(user => {
                   React.toast.success(
                     <p>
-                      Your profile was created!<br />
+                      Your profile was created!
+                      <br />
                       <a
                         href={`${network.etherscan}tx/${txHash}`}
                         target="_blank"
@@ -107,7 +110,9 @@ class EditProfile extends Component {
                       </a>
                     </p>,
                   );
-                  this.setState(Object.assign({}, user, { isSaving: false }));
+                  this.setState(Object.assign({}, user, { isSaving: false }), () =>
+                    history.push('/'),
+                  );
                 })
                 .catch(err => {
                   ErrorPopup(
@@ -119,7 +124,8 @@ class EditProfile extends Component {
             .then(() =>
               React.toast.success(
                 <p>
-                  You are now a registered user<br />
+                  You are now a registered user
+                  <br />
                   <a
                     href={`${network.etherscan}tx/${txHash}`}
                     target="_blank"
@@ -281,7 +287,6 @@ class EditProfile extends Component {
 }
 
 EditProfile.propTypes = {
-  wallet: PropTypes.instanceOf(GivethWallet).isRequired,
   currentUser: PropTypes.instanceOf(User),
 };
 

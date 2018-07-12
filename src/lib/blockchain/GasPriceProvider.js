@@ -1,6 +1,6 @@
 import SubProvider from 'web3-provider-engine/subproviders/subprovider';
 import { utils } from 'web3';
-import { getGasPrice } from './../helpers';
+import { getGasPrice } from '../helpers';
 
 export default class GasPriceProvider extends SubProvider {
   constructor(opts) {

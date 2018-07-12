@@ -2,10 +2,10 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import Avatar from 'react-avatar';
 
-import { getTruncatedText, getUserAvatar, isOwner, getUserName } from './../lib/helpers';
+import { getTruncatedText, getUserAvatar, isOwner, getUserName } from '../lib/helpers';
 import CardStats from './CardStats';
-import User from './../models/User';
-import { redirectAfterWalletUnlock, checkWalletBalance } from './../lib/middleware';
+import User from '../models/User';
+import { redirectAfterWalletUnlock, checkWalletBalance } from '../lib/middleware';
 import GivethWallet from '../lib/blockchain/GivethWallet';
 import DAC from '../models/DAC';
 
@@ -83,7 +83,11 @@ class DacCard extends Component {
 
             {isOwner(dac.owner.address, currentUser) && (
               <span className="pull-right">
-                <button className="btn btn-link btn-edit" onClick={e => this.editDAC(e)}>
+                <button
+                  type="button"
+                  className="btn btn-link btn-edit"
+                  onClick={e => this.editDAC(e)}
+                >
                   <i className="fa fa-edit" />
                 </button>
               </span>

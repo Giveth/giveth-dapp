@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 
-import BackupWallet from '../BackupWallet';
+import BackupWalletButton from '../BackupWalletButton';
 import { isLoggedIn } from '../../lib/middleware';
 // import WithdrawButton from '../WithdrawButton';
 import User from '../../models/User';
@@ -70,10 +70,10 @@ class UserWallet extends Component {
             !hasError && (
               <div>
                 <p>{this.props.currentUser.address}</p>
-                <p>
+                {/* <p>
                   <strong>{config.homeNetworkName} ETH</strong> balance:{' '}
                   {this.props.wallet.getHomeBalance()} ETH
-                </p>
+                </p> */}
 
                 {insufficientBalance && (
                   <div className="alert alert-warning">
@@ -88,14 +88,21 @@ class UserWallet extends Component {
                       {this.props.wallet.getBalance()} ETH
                     </p>
                     <p>
-                      You can visit the <a href="https://faucet.rinkeby.io/">faucet</a> to get more
-                      ETH
+                      You can visit the{' '}
+                      <a
+                        href="https://faucet.rinkeby.io/"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        faucet
+                      </a>{' '}
+                      to get more ETH
                     </p>
                   </div>
                 )}
 
                 <p>
-                  <BackupWallet wallet={this.props.wallet} />
+                  <BackupWalletButton wallet={this.props.wallet} />
                 </p>
 
                 {this.hasTokenBalance() && (
@@ -113,7 +120,10 @@ class UserWallet extends Component {
                                 target="_blank"
                                 rel="noopener noreferrer"
                               >
-                                <strong>Bridged - {t}</strong>
+                                <strong>
+                                  Bridged -
+                                  {t}
+                                </strong>
                               </a>
                               balance: {this.props.wallet.getTokenBalance(tokenAddresses[t])}
                             </p>
@@ -127,8 +137,8 @@ class UserWallet extends Component {
                     <div className="alert alert-warning">
                       We noticed you have some tokens on the{' '}
                       <strong>{config.foreignNetworkName}</strong> network that have not been
-                      transfered across the bridge to the <strong>{config.homeNetworkName}</strong>{' '}
-                      network.
+                      transfered across the bridge to the
+                      <strong>{config.homeNetworkName}</strong> network.
                     </div>
                     <BridgeWithdrawButton
                       wallet={this.props.wallet}

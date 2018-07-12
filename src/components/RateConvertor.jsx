@@ -8,7 +8,7 @@ import SelectFormsy from './SelectFormsy';
 import DatePickerFormsy from './DatePickerFormsy';
 
 import { getStartOfDayUTC } from '../lib/helpers';
-import getEthConversionContext from './../containers/getEthConversionContext';
+import getEthConversionContext from '../containers/getEthConversionContext';
 
 BigNumber.config({ DECIMAL_PLACES: 18 });
 
@@ -43,12 +43,10 @@ class RateConvertor extends Component {
       // update all the input fields
       const rate = resp.rates[this.state.selectedFiatType];
 
-      this.setState({
+      this.setState(prevState => ({
         conversionRate: resp,
-        etherAmountForm: this.state.fiatAmountForm
-          ? this.state.fiatAmount.div(rate).toString()
-          : '',
-      });
+        etherAmountForm: prevState.fiatAmountForm ? prevState.fiatAmount.div(rate).toString() : '',
+      }));
     });
   }
 
@@ -84,10 +82,10 @@ class RateConvertor extends Component {
 
   changeSelectedFiat(fiatType) {
     const conversionRate = this.state.conversionRate.rates[fiatType];
-    this.setState({
-      etherAmountForm: this.state.fiatAmount.div(conversionRate).toString(),
+    this.setState(prevState => ({
+      etherAmountForm: prevState.fiatAmount.div(conversionRate).toString(),
       selectedFiatType: fiatType,
-    });
+    }));
   }
 
   render() {

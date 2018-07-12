@@ -103,13 +103,17 @@ class DelegateButton extends Component {
     const onSuccess = txLink => {
       React.toast.success(
         <p>
-          Your donation has been confirmed!<br />
+          Your donation has been confirmed!
+          <br />
           <a href={`${txLink}`} target="_blank" rel="noopener noreferrer">
             View transaction
           </a>
         </p>,
       );
     };
+    // FIXME: This is super ugly, there is a short flash period when the submit button is pressed before the unlock/success appears
+    this.setState({ modalVisible: false });
+
     DonationService.delegate(
       this.props.donation,
       utils.toWei(model.amount),
@@ -123,11 +127,11 @@ class DelegateButton extends Component {
     const { types, milestoneOnly, donation } = this.props;
     const { isSaving, objectsToDelegateTo } = this.state;
     const style = { display: 'inline-block' };
-    const pStyle = { 'white-space': 'normal' };
+    const pStyle = { whiteSpace: 'normal' };
 
     return (
       <span style={style}>
-        <button className="btn btn-success btn-sm" onClick={() => this.openDialog()}>
+        <button type="button" className="btn btn-success btn-sm" onClick={() => this.openDialog()}>
           Delegate
         </button>
 
@@ -173,7 +177,7 @@ class DelegateButton extends Component {
                 max={Number(this.state.maxAmount)}
                 step={this.state.maxAmount / 10}
                 value={Number(this.state.amount)}
-                labels={['0', this.state.maxAmount]}
+                labels={{ 0: '0', 100: this.state.maxAmount }}
                 format={val => `${val} ETH`}
                 onChange={amount => this.setState({ amount: Number(amount).toFixed(2) })}
               />

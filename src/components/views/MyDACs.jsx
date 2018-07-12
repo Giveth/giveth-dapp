@@ -22,7 +22,7 @@ class MyDACs extends Component {
 
     this.state = {
       isLoading: true,
-      dacs: [],
+      dacs: {},
       visiblePages: 10,
       skipPages: 0,
       itemsPerPage: 50,
@@ -81,13 +81,15 @@ class MyDACs extends Component {
 
   render() {
     const { dacs, isLoading, visiblePages } = this.state;
+    const isPendingDac =
+      (dacs.data && dacs.data.some(d => d.confirmations !== d.requiredConfirmations)) || false;
 
     return (
       <div id="dacs-view">
         <div className="container-fluid page-layout dashboard-table-view">
           <div className="row">
             <div className="col-md-10 m-auto">
-              {(isLoading || (dacs && dacs.length > 0)) && <h1>Your Communities (DACs)</h1>}
+              {(isLoading || (dacs && dacs.data.length > 0)) && <h1>Your Communities (DACs)</h1>}
 
               {isLoading && <Loader className="fixed" />}
 
@@ -103,6 +105,9 @@ class MyDACs extends Component {
                               <th className="td-donations-number">Number of donations</th>
                               <th className="td-donations-amount">Amount donated</th>
                               <th className="td-status">Status</th>
+                              <th className="td-confirmations">
+                                {isPendingDac && 'Confirmations'}
+                              </th>
                               <th className="td-actions" />
                             </tr>
                           </thead>
@@ -119,13 +124,22 @@ class MyDACs extends Component {
                                 <td className="td-status">
                                   {d.status === DAC.PENDING && (
                                     <span>
-                                      <i className="fa fa-circle-o-notch fa-spin" />&nbsp;
+                                      <i className="fa fa-circle-o-notch fa-spin" />
+                                      &nbsp;
                                     </span>
                                   )}
                                   {d.status}
                                 </td>
+                                <td className="td-confirmations">
+                                  {(isPendingDac || d.requiredConfirmations !== d.confirmations) &&
+                                    `${d.confirmations}/${d.requiredConfirmations}`}
+                                </td>
                                 <td className="td-actions">
-                                  <button className="btn btn-link" onClick={() => this.editDAC(d.id)}>
+                                  <button
+                                    type="button"
+                                    className="btn btn-link"
+                                    onClick={() => this.editDAC(d.id)}
+                                  >
                                     <i className="fa fa-edit" />
                                   </button>
                                 </td>
@@ -146,8 +160,7 @@ class MyDACs extends Component {
                           </center>
                         )}
                       </div>
-                    )}                      
-
+                    )}
 
                   {dacs &&
                     dacs.data.length === 0 && (

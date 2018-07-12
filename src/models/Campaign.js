@@ -1,3 +1,5 @@
+/* eslint-disable import/no-cycle */
+
 import BasicModel from './BasicModel';
 import CampaignService from '../services/Campaign';
 import UploadService from '../services/Uploads';
@@ -8,9 +10,11 @@ class Campaign extends BasicModel {
   static get CANCELED() {
     return 'Canceled';
   }
+
   static get PENDING() {
     return 'Pending';
   }
+
   static get ACTIVE() {
     return 'Active';
   }
@@ -19,10 +23,11 @@ class Campaign extends BasicModel {
     super(data);
 
     this.communityUrl = data.communityUrl || '';
+    this.confirmations = data.confirmations || 0;
     this.projectId = data.projectId || '0';
-    this.dacs = data.dacs || [];
     this.pluginAddress = data.pluginAddress || '0x0000000000000000000000000000000000000000';
     this.status = data.status || Campaign.PENDING;
+    this.requiredConfirmations = data.requiredConfirmations;
     this.reviewerAddress = data.reviewerAddress;
     this.ownerAddress = data.ownerAddress;
     this._id = data._id;
@@ -40,7 +45,6 @@ class Campaign extends BasicModel {
       totalDonated: this.totalDonated,
       donationCount: this.donationCount,
       peopleCount: this.peopleCount,
-      dacs: this.dacs,
       reviewerAddress: this.reviewerAddress,
       status: this.status,
     };
@@ -110,15 +114,6 @@ class Campaign extends BasicModel {
     else if (value === Campaign.ACTIVE) this.myOrder = 2;
     else if (value === Campaign.CANCELED) this.myOrder = 3;
     else this.myOrder = 4;
-  }
-
-  get dacs() {
-    return this.myDacs;
-  }
-
-  set dacs(value) {
-    this.checkType(value, ['object', 'array'], 'dacs');
-    this.myDacs = value;
   }
 
   get pluginAddress() {

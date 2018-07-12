@@ -6,6 +6,7 @@ import { Link } from 'react-router-dom';
 import moment from 'moment';
 import Pagination from 'react-js-pagination';
 
+import ConversationModal from 'components/ConversationModal';
 import { feathersClient } from '../../lib/feathersClient';
 import { isLoggedIn, redirectAfterWalletUnlock, checkWalletBalance } from '../../lib/middleware';
 import getNetwork from '../../lib/blockchain/getNetwork';
@@ -15,8 +16,6 @@ import User from '../../models/User';
 import { getTruncatedText, getReadableStatus, convertEthHelper } from '../../lib/helpers';
 import GivethWallet from '../../lib/blockchain/GivethWallet';
 import config from '../../configuration';
-
-import ConversationModal from 'components/ConversationModal';
 
 import ErrorPopup from '../ErrorPopup';
 
@@ -56,20 +55,17 @@ const rejectProposedMilestone = milestone => {
       },
     },
   }).then(message => {
-    if (message) {
-      feathersClient
-        .service('/milestones')
-        .patch(milestone._id, {
-          status: 'rejected',
-          message,
-        })
-        .then(() => {
-          React.toast.info(<p>The proposed milestone has been rejected.</p>);
-        })
-        .catch(e => {
-          ErrorPopup('Something went wrong with rejecting the proposed milestone', e);
-        });
-    }
+    const newContent = { status: 'rejected' };
+    if (message) newContent.message = message;
+    feathersClient
+      .service('/milestones')
+      .patch(milestone._id, newContent)
+      .then(() => {
+        React.toast.info(<p>The proposed milestone has been rejected.</p>);
+      })
+      .catch(e => {
+        ErrorPopup('Something went wrong with rejecting the proposed milestone', e);
+      });
   });
 };
 
@@ -153,7 +149,7 @@ class MyMilestones extends Component {
     if (this.milestonesObserver) this.milestonesObserver.unsubscribe();
   }
 
-  loadMileStones() {
+  async loadMileStones() {
     const myAddress = this.props.currentUser.address;
 
     const query = {
@@ -189,13 +185,17 @@ class MyMilestones extends Component {
         { status: 'rejected' },
       ];
     } else {
+      const resp = await feathersClient
+        .service('campaigns')
+        .find({ query: { ownerAddress: myAddress } });
+      const campaignsIDs = resp.data.map(c => c._id);
       query.query.$and = [
         {
           $or: [
             { ownerAddress: myAddress },
             { reviewerAddress: myAddress },
             { recipientAddress: myAddress },
-            { $and: [{ campaignOwnerAddress: myAddress }, { status: 'proposed' }] },
+            { $and: [{ campaignId: { $in: campaignsIDs } }, { status: 'proposed' }] },
           ],
         },
         { status: { $nin: ['Paid', 'Canceled', 'rejected'] } },
@@ -292,7 +292,8 @@ class MyMilestones extends Component {
                 .then(() => {
                   React.toast.info(
                     <p>
-                      Marking this milestone as complete is pending...<br />
+                      Marking this milestone as complete is pending...
+                      <br />
                       <a
                         href={`${etherScanUrl}tx/${txHash}`}
                         target="_blank"
@@ -330,7 +331,8 @@ class MyMilestones extends Component {
               .then(() => {
                 React.toast.success(
                   <p>
-                    The milestone has been marked as complete!<br />
+                    The milestone has been marked as complete!
+                    <br />
                     <a
                       href={`${etherScanUrl}tx/${txHash}`}
                       target="_blank"
@@ -390,7 +392,8 @@ class MyMilestones extends Component {
                 .then(() => {
                   React.toast.info(
                     <p>
-                      Cancelling this milestone is pending...<br />
+                      Cancelling this milestone is pending...
+                      <br />
                       <a
                         href={`${etherScanUrl}tx/${txHash}`}
                         target="_blank"
@@ -428,7 +431,8 @@ class MyMilestones extends Component {
               .then(() => {
                 React.toast.success(
                   <p>
-                    The milestone has been cancelled!<br />
+                    The milestone has been cancelled!
+                    <br />
                     <a
                       href={`${etherScanUrl}tx/${txHash}`}
                       target="_blank"
@@ -483,7 +487,8 @@ class MyMilestones extends Component {
                 .then(() => {
                   React.toast.info(
                     <p>
-                      Accepting this milestone is pending...<br />
+                      Accepting this milestone is pending...
+                      <br />
                       <a
                         href={`${etherScanUrl}tx/${txHash}`}
                         target="_blank"
@@ -510,6 +515,7 @@ class MyMilestones extends Component {
                   maxAmount,
                   recipientAddress,
                   reviewerAddress,
+                  ownerAddress, // TODO change this to managerAddress. There is no owner
                   campaignReviewerAddress,
                 } = milestone;
                 const parentProjectId = milestone.campaign.projectId;
@@ -523,7 +529,7 @@ class MyMilestones extends Component {
                     reviewerAddress,
                     recipientAddress,
                     campaignReviewerAddress,
-                    from,
+                    ownerAddress,
                     maxAmount,
                     Object.values(config.tokenAddresses)[0], // TODO make this a form param
                     5 * 24 * 60 * 60, // 5 days in seconds
@@ -580,7 +586,8 @@ class MyMilestones extends Component {
                 .then(() => {
                   React.toast.info(
                     <p>
-                      Approving this milestone is pending...<br />
+                      Approving this milestone is pending...
+                      <br />
                       <a
                         href={`${etherScanUrl}tx/${txHash}`}
                         target="_blank"
@@ -617,7 +624,8 @@ class MyMilestones extends Component {
               .then(() => {
                 React.toast.success(
                   <p>
-                    The milestone has been approved!<br />
+                    The milestone has been approved!
+                    <br />
                     <a
                       href={`${etherScanUrl}tx/${txHash}`}
                       target="_blank"
@@ -701,7 +709,8 @@ class MyMilestones extends Component {
               .then(() => {
                 React.toast.success(
                   <p>
-                    The milestone completion been rejected!<br />
+                    The milestone completion been rejected!
+                    <br />
                     <a
                       href={`${etherScanUrl}tx/${txHash}`}
                       target="_blank"
@@ -758,7 +767,8 @@ class MyMilestones extends Component {
                 .then(() => {
                   React.toast.info(
                     <p>
-                      Withdrawal from milestone...<br />
+                      Withdrawal from milestone...
+                      <br />
                       <a
                         href={`${etherScanUrl}tx/${txHash}`}
                         target="_blank"
@@ -850,7 +860,8 @@ class MyMilestones extends Component {
               .then(() => {
                 React.toast.info(
                   <p>
-                    The milestone withdraw has been initiated...<br />
+                    The milestone withdraw has been initiated...
+                    <br />
                     <a
                       href={`${etherScanUrl}tx/${txHash}`}
                       target="_blank"
@@ -871,7 +882,8 @@ class MyMilestones extends Component {
                   // tx failed.
                   msg = (
                     <p>
-                      Something went wrong with the transaction.<br />
+                      Something went wrong with the transaction.
+                      <br />
                       <a
                         href={`${etherScanUrl}tx/${txHash}`}
                         target="_blank"
@@ -903,77 +915,6 @@ class MyMilestones extends Component {
       });
   }
 
-  // collect(milestone) {
-  //   checkWalletBalance(this.props.wallet)
-  //     .then(() =>
-  //       React.swal({
-  //         title: 'Collect Funds',
-  //         text: 'The funds will be transferred to you wallet.',
-  //         icon: 'warning',
-  //         dangerMode: true,
-  //         buttons: ['Cancel', 'Yes, collect'],
-  //       }).then(isConfirmed => {
-  //         if (isConfirmed) {
-  //           const collect = (etherScanUrl, txHash) => {
-  //             feathersClient
-  //               .service('/milestones')
-  //               .patch(milestone._id, {
-  //                 status: 'Paid',
-  //                 mined: false,
-  //                 txHash,
-  //               })
-  //               .then(() => {
-  //                 React.toast.info(
-  //                   <p>
-  //                     Collecting funds from milestone...<br />
-  //                     <a
-  //                       href={`${etherScanUrl}tx/${txHash}`}
-  //                       target="_blank"
-  //                       rel="noopener noreferrer"
-  //                     >
-  //                       View transaction
-  //                     </a>
-  //                   </p>,
-  //                 );
-  //               })
-  //               .catch(e => {
-  //                 ErrorPopup('Something went wrong with collecting your funds', e);
-  //               });
-  //           };
-
-  //           let txHash;
-  //           let etherScanUrl;
-  //           Promise.all([getNetwork(), getWeb3()])
-  //             .then(([network, web3]) => {
-  //               etherScanUrl = network.etherscan;
-
-  //               // TODO this should get the token from the milestone
-  //               return new LPPCappedMilestone(web3, milestone.pluginAddress)
-  //                 .collect(milestone.projectId, Object.values(config.tokenAddresses)[0], {
-  //                   from: this.props.currentUser.address,
-  //                   $extraGas: 100000,
-  //                 })
-  //                 .once('transactionHash', hash => {
-  //                   txHash = hash;
-  //                   collect(etherScanUrl, txHash);
-  //                 });
-  //             })
-  //             .catch(() => {
-  //               ErrorPopup(
-  //                 'Something went wrong with the transaction. Is your wallet unlocked?',
-  //                 `${etherScanUrl}tx/${txHash}`,
-  //               );
-  //             });
-  //         }
-  //       }),
-  //     )
-  //     .catch(err => {
-  //       if (err === 'noBalance') {
-  //         // handle no balance error
-  //       }
-  //     });
-  // }
-
   render() {
     const {
       milestones,
@@ -994,7 +935,7 @@ class MyMilestones extends Component {
 
               <ul className="nav nav-tabs">
                 {this.milestoneTabs.map(st => (
-                  <li className="nav-item">
+                  <li className="nav-item" key={st}>
                     <span
                       role="button"
                       className={`nav-link ${this.state.loadedStatus === st ? 'active' : ''}`}
@@ -1055,13 +996,15 @@ class MyMilestones extends Component {
                                   {(m.status === 'pending' ||
                                     (Object.keys(m).includes('mined') && !m.mined)) && (
                                     <span>
-                                      <i className="fa fa-circle-o-notch fa-spin" />&nbsp;
+                                      <i className="fa fa-circle-o-notch fa-spin" />
+                                      &nbsp;
                                     </span>
                                   )}
                                   {m.status === 'NeedsReview' &&
                                     reviewDue(m.updatedAt) && (
                                       <span>
-                                        <i className="fa fa-exclamation-triangle" />&nbsp;
+                                        <i className="fa fa-exclamation-triangle" />
+                                        &nbsp;
                                       </span>
                                     )}
                                   {getReadableStatus(m.status)}
@@ -1089,37 +1032,45 @@ class MyMilestones extends Component {
                                       m.status,
                                     ) && (
                                       <button
+                                        type="button"
                                         className="btn btn-link"
                                         onClick={() => this.editMilestone(m)}
                                       >
-                                        <i className="fa fa-edit" />&nbsp;Edit
+                                        <i className="fa fa-edit" />
+                                        &nbsp;Edit
                                       </button>
                                     )}
 
-                                  {m.campaignOwnerAddress === currentUser.address &&
+                                  {m.campaign.ownerAddress === currentUser.address &&
                                     m.status === 'proposed' && (
                                       <span>
                                         <button
+                                          type="button"
                                           className="btn btn-success btn-sm"
                                           onClick={() => this.acceptProposedMilestone(m)}
                                         >
-                                          <i className="fa fa-check-square-o" />&nbsp;Accept
+                                          <i className="fa fa-check-square-o" />
+                                          &nbsp;Accept
                                         </button>
                                         <button
+                                          type="button"
                                           className="btn btn-danger btn-sm"
                                           onClick={() => rejectProposedMilestone(m)}
                                         >
-                                          <i className="fa fa-times-circle-o" />&nbsp;Reject
+                                          <i className="fa fa-times-circle-o" />
+                                          &nbsp;Reject
                                         </button>
                                       </span>
                                     )}
                                   {m.ownerAddress === currentUser.address &&
                                     m.status === 'rejected' && (
                                       <button
+                                        type="button"
                                         className="btn btn-success btn-sm"
                                         onClick={() => reproposeRejectedMilestone(m)}
                                       >
-                                        <i className="fa fa-times-square-o" />&nbsp;Re-propose
+                                        <i className="fa fa-times-square-o" />
+                                        &nbsp;Re-propose
                                       </button>
                                     )}
 
@@ -1128,6 +1079,7 @@ class MyMilestones extends Component {
                                     m.status === 'InProgress' &&
                                     m.mined && (
                                       <button
+                                        type="button"
                                         className="btn btn-success btn-sm"
                                         onClick={() => this.requestMarkComplete(m)}
                                       >
@@ -1142,10 +1094,12 @@ class MyMilestones extends Component {
                                     ['InProgress', 'NeedReview'].includes(m.status) &&
                                     m.mined && (
                                       <button
+                                        type="button"
                                         className="btn btn-danger btn-sm"
                                         onClick={() => this.cancelMilestone(m)}
                                       >
-                                        <i className="fa fa-times" />&nbsp;Cancel
+                                        <i className="fa fa-times" />
+                                        &nbsp;Cancel
                                       </button>
                                     )}
 
@@ -1153,10 +1107,12 @@ class MyMilestones extends Component {
                                     ['proposed', 'rejected'].includes(m.status) && (
                                       <span>
                                         <button
+                                          type="button"
                                           className="btn btn-danger btn-sm"
                                           onClick={() => deleteProposedMilestone(m)}
                                         >
-                                          <i className="fa fa-times-circle-o" />&nbsp;Delete
+                                          <i className="fa fa-times-circle-o" />
+                                          &nbsp;Delete
                                         </button>
                                       </span>
                                     )}
@@ -1166,30 +1122,40 @@ class MyMilestones extends Component {
                                     m.mined && (
                                       <span>
                                         <button
+                                          type="button"
                                           className="btn btn-success btn-sm"
                                           onClick={() => this.approveMilestoneCompleted(m)}
                                         >
-                                          <i className="fa fa-thumbs-up" />&nbsp;Approve
+                                          <i className="fa fa-thumbs-up" />
+                                          &nbsp;Approve
                                         </button>
 
                                         <button
+                                          type="button"
                                           className="btn btn-danger btn-sm"
                                           onClick={() => this.rejectMilestoneCompletion(m)}
                                         >
-                                          <i className="fa fa-thumbs-down" />&nbsp;Reject
+                                          <i className="fa fa-thumbs-down" />
+                                          &nbsp;Reject
                                         </button>
                                       </span>
                                     )}
 
-                                  {m.recipientAddress === currentUser.address &&
+                                  {[m.recipientAddress, m.ownerAddress].includes(
+                                    currentUser.address,
+                                  ) &&
                                     m.status === 'Completed' &&
                                     m.mined &&
                                     m.donationCount > 0 && (
                                       <button
+                                        type="button"
                                         className="btn btn-success btn-sm"
                                         onClick={() => this.withdrawal(m)}
                                       >
-                                        <i className="fa fa-usd" />&nbsp;Withdrawal
+                                        <i className="fa fa-usd" />{' '}
+                                        {m.recipientAddress === currentUser.address
+                                          ? 'Collect'
+                                          : 'Disperse'}
                                       </button>
                                     )}
 

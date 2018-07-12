@@ -1,3 +1,4 @@
+/* eslint-disable import/no-cycle */
 import BasicModel from './BasicModel';
 import DACservice from '../services/DAC';
 import UploadService from '../services/Uploads';
@@ -8,9 +9,11 @@ class DAC extends BasicModel {
   static get CANCELED() {
     return 'Canceled';
   }
+
   static get PENDING() {
     return 'Pending';
   }
+
   static get ACTIVE() {
     return 'Active';
   }
@@ -23,6 +26,8 @@ class DAC extends BasicModel {
     this.status = data.status || DAC.PENDING;
     this.ownerAddress = data.ownerAddress;
     this._id = data._id;
+    this.confirmations = data.confirmations || 0;
+    this.requiredConfirmations = data.requiredConfirmations;
   }
 
   toFeathers() {

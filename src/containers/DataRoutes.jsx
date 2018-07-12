@@ -1,9 +1,9 @@
 import React, { Component } from 'react';
 import { Route } from 'react-router-dom';
 
-import DACs from './../components/views/DACs';
-import Campaigns from './../components/views/Campaigns';
-import Loader from './../components/Loader';
+import DACs from '../components/views/DACs';
+import Campaigns from '../components/views/Campaigns';
+import Loader from '../components/Loader';
 
 import DACservice from '../services/DAC';
 import CampaignService from '../services/Campaign';

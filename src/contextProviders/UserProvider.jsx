@@ -151,22 +151,26 @@ class UserProvider extends Component {
     });
   }
 
-  handleWalletChange(wallet) {
+  /**
+   * Changes the wallet that is used by the user
+   *
+   * @param {GivethWallet} wallet       New user wallet to be set
+   * @param {String}       redirectUrl  (optional) URL to which the user should be redirected
+   */
+  handleWalletChange(wallet, redirectUrl = false) {
     wallet.cacheKeystore();
     const address = wallet.getAddresses()[0];
 
     getWeb3().then(web3 => web3.setWallet(wallet));
     getHomeWeb3().then(homeWeb3 => homeWeb3.setWallet(wallet));
 
-    this.setState({ isLoading: true }, () =>
-      this.getUserData(address).then(() =>
-        this.setState({
-          wallet,
-          walletLocked: false,
-          isLoading: false,
-        }),
-      ),
-    );
+    this.setState({ isLoading: true }, async () => {
+      await this.getUserData(address);
+
+      this.setState({ wallet, walletLocked: false, isLoading: false }, () => {
+        if (redirectUrl) history.push(redirectUrl);
+      });
+    });
   }
 
   unlockWallet(actionAfter) {
@@ -192,7 +196,8 @@ class UserProvider extends Component {
     this.hideUnlockWalletModal();
     React.toast.success(
       <p>
-        Your wallet has been unlocked.<br />
+        Your wallet has been unlocked.
+        <br />
         Note that your wallet will <strong>auto-lock</strong> upon page refresh.
       </p>,
     );

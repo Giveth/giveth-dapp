@@ -5,25 +5,14 @@ import moment from 'moment';
 import ReactHtmlParser from 'react-html-parser';
 import { Form } from 'formsy-react-components';
 
-import { feathersClient } from './../lib/feathersClient';
-import Loader from './Loader';
-import { getUserName, getUserAvatar } from './../lib/helpers';
-import getNetwork from './../lib/blockchain/getNetwork';
+import { getUserName, getUserAvatar } from 'lib/helpers';
+import getNetwork from 'lib/blockchain/getNetwork';
 import MilestoneProof from 'components/MilestoneProof';
+import Loader from './Loader';
+import { feathersClient } from '../lib/feathersClient';
 
 /* eslint no-underscore-dangle: 0 */
 class MilestoneConversations extends Component {
-  static getReadeableMessageContext(context) {
-    if (context === 'proposed') return 'proposed milestone';
-    if (context === 'rejected') return 'rejected completion';
-    if (context === 'NeedsReview') return 'requested review';
-    if (context === 'Completed') return 'accepted completion';
-    if (context === 'Canceled') return 'canceled milestone';
-    if (context === 'proposedRejected') return 'rejected proposed milestone';
-    if (context === 'proposedAccepted') return 'accepted proposed milestone';
-    return 'unknown';
-  }
-
   constructor() {
     super();
 
@@ -58,6 +47,17 @@ class MilestoneConversations extends Component {
 
   componentWillUnmount() {
     if (this.conversationObserver) this.conversationObserver.unsubscribe();
+  }
+
+  static getReadeableMessageContext(context) {
+    if (context === 'proposed') return 'proposed milestone';
+    if (context === 'rejected') return 'rejected completion';
+    if (context === 'NeedsReview') return 'requested review';
+    if (context === 'Completed') return 'accepted completion';
+    if (context === 'Canceled') return 'canceled milestone';
+    if (context === 'proposedRejected') return 'rejected proposed milestone';
+    if (context === 'proposedAccepted') return 'accepted proposed milestone';
+    return 'unknown';
   }
 
   render() {

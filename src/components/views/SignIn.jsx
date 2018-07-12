@@ -84,7 +84,8 @@ class SignIn extends Component {
             .then(() => {
               React.toast.success(
                 <p>
-                  Welcome back! <br />Note that your wallet is unlocked and will
+                  Welcome back! <br />
+                  Note that your wallet is unlocked and will
                   <strong> auto-lock</strong> upon page refresh.
                 </p>,
               );
@@ -126,8 +127,12 @@ class SignIn extends Component {
 
                     {name && (
                       <h1>
-                        Welcome back<br />
-                        <strong>{name}!</strong>
+                        Welcome back
+                        <br />
+                        <strong>
+                          {name}
+                          !
+                        </strong>
                       </h1>
                     )}
 
@@ -139,7 +144,7 @@ class SignIn extends Component {
                         </div>
                       )}
 
-                    {name && <p className="small">Your address: {address}</p>}
+                    {name && <p className="small">Your address:{address}</p>}
 
                     <div className="spacer-top">
                       <UnlockWalletForm
@@ -151,7 +156,8 @@ class SignIn extends Component {
                       >
                         <div className="form-group">
                           <p className="small">
-                            <Link to="/signup">Not you</Link>, or&nbsp;
+                            <Link to="/signup">Not you</Link>
+                            , or&nbsp;
                             <Link to="/change-account">want to change wallet?</Link>
                           </p>
                         </div>
