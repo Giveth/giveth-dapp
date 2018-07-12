@@ -3,11 +3,13 @@ import PropTypes from 'prop-types';
 import Avatar from 'react-avatar';
 import moment from 'moment';
 import ReactHtmlParser from 'react-html-parser';
+import { Form } from 'formsy-react-components';
 
 import { feathersClient } from './../lib/feathersClient';
 import Loader from './Loader';
 import { getUserName, getUserAvatar } from './../lib/helpers';
 import getNetwork from './../lib/blockchain/getNetwork';
+import MilestoneProof from 'components/MilestoneProof';
 
 /* eslint no-underscore-dangle: 0 */
 class MilestoneConversations extends Component {
@@ -67,36 +69,46 @@ class MilestoneConversations extends Component {
 
         {!isLoading && (
           <div className="card">
-            {conversations.data.map(c => (
-              <div key={c._id}>
-                <Avatar size={30} src={getUserAvatar(c.owner)} round />
-                <div className="content-wrapper">
-                  <div className="c-timestamp">
-                    {moment(c.createdAt).format('Do MMM YYYY - HH:mm a')}
+            <div className="card-body content">
+              {conversations.data.map(c => (
+                <div key={c._id}>
+                  <Avatar size={30} src={getUserAvatar(c.owner)} round />
+                  <div className="content-wrapper">
+                    <div className="c-timestamp">
+                      {moment(c.createdAt).format('Do MMM YYYY - HH:mm a')}
 
-                    {c.txHash && (
-                      <a
-                        className="c-tx-hash"
-                        href={`${etherScanUrl}tx/${c.txHash}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        View transaction
-                      </a>
-                    )}
+                      {c.txHash && (
+                        <a
+                          className="c-tx-hash"
+                          href={`${etherScanUrl}tx/${c.txHash}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          View transaction
+                        </a>
+                      )}
+                    </div>
+                    <span className={`owner-name ${c.messageContext.toLowerCase()}`}>
+                      {getUserName(c.owner)}{' '}
+                      {MilestoneConversations.getReadeableMessageContext(c.messageContext)}
+                      <span className="badge badge-secondary">{c.performedByRole}</span>
+                      {/* <span className={`badge ${c.messageContext.toLowerCase()}`}>{c.messageContext}</span> */}
+                    </span>
+                    <div className="c-message">{ReactHtmlParser(c.message)}</div>
+
+                    {c.items &&
+                      c.items.length > 0 && (
+                        <Form className="items-form">
+                          <strong>Attachments</strong>
+                          <MilestoneProof items={c.items} isEditMode={false} />
+                        </Form>
+                      )}
+
+                    <div className="c-divider" />
                   </div>
-                  <span className={`owner-name ${c.messageContext.toLowerCase()}`}>
-                    {getUserName(c.owner)}{' '}
-                    {MilestoneConversations.getReadeableMessageContext(c.messageContext)}
-                    <span className="badge badge-secondary">{c.performedByRole}</span>
-                    {/* <span className={`badge ${c.messageContext.toLowerCase()}`}>{c.messageContext}</span> */}
-                  </span>
-                  <p className="c-message">{ReactHtmlParser(c.message)}</p>
-
-                  <div className="c-divider" />
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         )}
       </div>

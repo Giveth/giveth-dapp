@@ -114,9 +114,13 @@ class MilestoneProof extends Component {
   }
 }
 
+MilestoneProof.defaultProps = {
+  onItemsChanged: () => {},
+};
+
 MilestoneProof.propTypes = {
   items: PropTypes.arrayOf(PropTypes.object).isRequired,
-  onItemsChanged: PropTypes.func.isRequired,
+  onItemsChanged: PropTypes.func,
   isEditMode: PropTypes.bool.isRequired,
 };
 

@@ -43,6 +43,7 @@ const modalStyles = {
     marginRight: '-40%',
     transform: 'translate(-50%, -50%)',
     boxShadow: '0 0 40px #ccc',
+    maxHeight: '600px',
   },
 };
 
@@ -200,82 +201,84 @@ class ConversationModal extends Component {
         style={modalStyles}
         contentLabel="Example Modal"
       >
-        <h2>{title}</h2>
-        <p className="mb-4">{description}</p>
+        <div className="conversation-modal">
+          <h2>{title}</h2>
+          <p className="mb-4">{description}</p>
 
-        <Form
-          id="conversation"
-          onSubmit={this.submit}
-          ref={this.form}
-          mapping={inputs => this.mapInputs(inputs)}
-          onValid={() => this.toggleFormValid(true)}
-          onInvalid={() => this.toggleFormValid(false)}
-          onChange={e => this.triggerRouteBlocking(e)}
-          layout="vertical"
-        >
-          <Prompt
-            when={isBlocking}
-            message={() =>
-              `You have unsaved changes. Are you sure you want to navigate from this page?`
-            }
-          />
+          <Form
+            id="conversation"
+            onSubmit={this.submit}
+            ref={this.form}
+            mapping={inputs => this.mapInputs(inputs)}
+            onValid={() => this.toggleFormValid(true)}
+            onInvalid={() => this.toggleFormValid(false)}
+            onChange={e => this.triggerRouteBlocking(e)}
+            layout="vertical"
+          >
+            <Prompt
+              when={isBlocking}
+              message={() =>
+                `You have unsaved changes. Are you sure you want to navigate from this page?`
+              }
+            />
 
-          <div className="row">
-            <div className={enableAttachProof ? 'col-md-6' : 'col-12'}>
-              <QuillFormsy
-                name="message"
-                label="Accompanying message"
-                // {/* helpText="Make it as extensive as necessary. Your goal is to build trust,
-                // so that people donate Ether to your Campaign. Don't hesitate to add a detailed budget for this Milestone"
-                // */}
-                value={message}
-                placeholder={textPlaceholder}
-                validations="minLength:3"
-                validationErrors={{
-                  minLength: 'It is really appreciated if you write something meaningful...',
-                }}
-                required={required}
-              />
-            </div>
-
-            {enableAttachProof && (
-              <div className="col-md-6">
-                <label>Attachments</label>
-                <MilestoneProof
-                  isEditMode
-                  items={items}
-                  onItemsChanged={returnedItems => this.onItemsChanged(returnedItems)}
+            <div className="row">
+              <div className={enableAttachProof ? 'col-md-6' : 'col-12'}>
+                <QuillFormsy
+                  name="message"
+                  label="Accompanying message"
+                  // {/* helpText="Make it as extensive as necessary. Your goal is to build trust,
+                  // so that people donate Ether to your Campaign. Don't hesitate to add a detailed budget for this Milestone"
+                  // */}
+                  value={message}
+                  placeholder={textPlaceholder}
+                  validations="minLength:3"
+                  validationErrors={{
+                    minLength: 'It is really appreciated if you write something meaningful...',
+                  }}
+                  required={required}
                 />
               </div>
-            )}
-          </div>
 
-          <div className="row">
-            <div className="col-12">
-              <LoaderButton
-                className="btn btn-success"
-                formNoValidate
-                type="submit"
-                disabled={isSaving || !formIsValid}
-                isLoading={isSaving}
-                loadingText="Saving..."
-              >
-                <span>{CTA}</span>
-              </LoaderButton>
-
-              <a
-                role="button"
-                tabIndex="-1"
-                className="btn btn-link"
-                disabled={!formIsValid}
-                onClick={() => this.closeModal(true)}
-                onKeyUp={() => this.closeModal(true)}
-              >
-                Cancel
-              </a>
+              {enableAttachProof && (
+                <div className="col-md-6">
+                  <label>Attachments</label>
+                  <MilestoneProof
+                    isEditMode
+                    items={items}
+                    onItemsChanged={returnedItems => this.onItemsChanged(returnedItems)}
+                  />
+                </div>
+              )}
             </div>
-          </div>
-        </Form>
+
+            <div className="row">
+              <div className="col-12">
+                <LoaderButton
+                  className="btn btn-success"
+                  formNoValidate
+                  type="submit"
+                  disabled={isSaving || !formIsValid}
+                  isLoading={isSaving}
+                  loadingText="Saving..."
+                >
+                  <span>{CTA}</span>
+                </LoaderButton>
+
+                <a
+                  role="button"
+                  tabIndex="-1"
+                  className="btn btn-link"
+                  disabled={!formIsValid}
+                  onClick={() => this.closeModal(true)}
+                  onKeyUp={() => this.closeModal(true)}
+                >
+                  Cancel
+                </a>
+              </div>
+            </div>
+          </Form>
+        </div>
       </Modal>
     );
   }

@@ -17,7 +17,7 @@ import { convertEthHelper, getTruncatedText } from './../lib/helpers';
 
 class MilestoneItem extends React.Component {
   componentDidMount() {
-    this.props.setValue(true); // required for validation being true
+    if (this.props.isEditMode) this.props.setValue(true); // required for validation being true
   }
 
   render() {
