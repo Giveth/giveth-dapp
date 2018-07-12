@@ -82,7 +82,7 @@
     "doc": "jsdoc src -r -d docs"
   },
   "lint-staged": {
-    "src/**/*.{js,jsx,json,css,scss}": [
+    "src/**/*.{js,jsx,json}": [
       "prettier --single-quote --write",
       "eslint --fix",
       "git add"

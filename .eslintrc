@@ -28,14 +28,10 @@
       "singleQuote": true,
       "trailingComma": "all"
     }],
-    "import/no-extraneous-dependencies": "off",
-    "import/first": "off",
-    "import/extensions": "off",
-    "import/no-unresolved": "off",
     "react-app/jsx-a11y/href-no-hash": "off", // This rule is dropped but create-react-app uses old rules
     "jsx-a11y/label-has-for": "off", // This rule will be dropped soon anyways
     "react/destructuring-assignment": "off", // Seems to be way too restrictive
-    "import/no-cycle": 1 // Shold be addressed eventually but does not break
+    "import/no-cycle": 1 // Should be addressed eventually but does not break
   },
   "env": {
     "jest": true,
