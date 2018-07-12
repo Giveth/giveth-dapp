@@ -800,7 +800,6 @@ class MyMilestones extends Component {
                   null,
                   {
                     status: 'pending',
-                    paymentStatus: 'Paying',
                     txHash,
                   },
                   {

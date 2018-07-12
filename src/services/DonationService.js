@@ -269,7 +269,6 @@ class DonationService {
                   intendedProjectTypeId: true,
                   intendedProjectType: true,
                 },
-                paymentStatus: 'Paying',
                 txHash,
               })
               .then(() => onCreated(`${etherScanUrl}tx/${txHash}`))

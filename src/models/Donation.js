@@ -66,7 +66,6 @@ class Donation extends Model {
     this.ownerEntity = data.ownerEntity;
     this.ownerTypeId = data.ownerTypeId;
     this.ownerType = data.ownerType;
-    this.paymentStatus = data.paymentStatus;
     this.pledgeId = data.pledgeId;
     this.requiredConfirmations = data.requiredConfirmations;
     this.status = data.status;
@@ -318,15 +317,6 @@ class Donation extends Model {
   set ownerType(value) {
     this.checkType(value, ['string'], 'ownerType');
     this.myOwnerType = value;
-  }
-
-  get paymentStatus() {
-    return this.myPaymentStatus;
-  }
-
-  set paymentStatus(value) {
-    this.checkType(value, ['string'], 'paymentStatus');
-    this.myPaymentStatus = value;
   }
 
   get pledgeId() {
