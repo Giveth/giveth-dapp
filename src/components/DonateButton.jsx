@@ -95,24 +95,6 @@ class DonateButton extends React.Component {
         gasPrice: utils.fromWei(gasPrice, 'gwei'),
       }),
     );
-    // getNetwork().then(network => {
-    //   const { liquidPledging } = network;
-    //   const donate = liquidPledging.$contract.methods.donate(0, this.props.model.adminId);
-    //   const data = donate.encodeABI();
-    //   donate
-    //     .estimateGas({
-    //       from: '0x0000000000000000000000000000000000000000',
-    //       value: 1,
-    //     })
-    //     .then(gasLimit =>
-    //       this.setState({
-    //         MEWurl: `https://www.myetherwallet.com/?to=${liquidPledging.$address.toUpperCase()}&gaslimit=${gasLimit}&data=${data}`,
-    //       }),
-    //     );
-    //   this.setState({
-    //     MEWurl: `https://www.myetherwallet.com/?to=${liquidPledging.$address.toUpperCase()}&gaslimit=550000&data=${data}`,
-    //   });
-    // });
   }
 
   openDialog() {
@@ -143,7 +125,7 @@ class DonateButton extends React.Component {
   }
 
   getDonationData() {
-    const { givethBridge } = this.state;
+    const { givethBridge, account } = this.state;
     const { currentUser } = this.props;
     const { adminId } = this.props.model;
 
@@ -492,7 +474,7 @@ class DonateButton extends React.Component {
         >
           {!homeWeb3 && (
             <div className="alert alert-warning">
-              <i class="fa fa-exclamation-triangle" />
+              <i className="fa fa-exclamation-triangle" />
               It is recommended that you install <a href="https://metamask.io/">MetaMask</a> to
               donate
             </div>
@@ -512,7 +494,7 @@ class DonateButton extends React.Component {
           {homeWeb3 &&
             !validNetwork && (
               <div className="alert alert-warning">
-                <i class="fa fa-exclamation-triangle" />
+                <i className="fa fa-exclamation-triangle" />
                 It looks like you are connected to the wrong network. Please connect to the{' '}
                 <strong>{config.homeNetworkName}</strong> network to donate
               </div>
@@ -520,7 +502,7 @@ class DonateButton extends React.Component {
           {homeWeb3 &&
             !account && (
               <div className="alert alert-warning">
-                <i class="fa fa-exclamation-triangle" />
+                <i className="fa fa-exclamation-triangle" />
                 It looks like your account is locked.
               </div>
             )}

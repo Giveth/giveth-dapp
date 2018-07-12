@@ -181,7 +181,7 @@ class EditMilestone extends Component {
             .service('campaigns')
             .get(this.props.match.params.id)
             .then(campaign => {
-              if (!campaign.projectId) {
+              if (Number(campaign.projectId) < 0) {
                 this.props.history.goBack();
               } else {
                 this.setState({
@@ -618,7 +618,7 @@ class EditMilestone extends Component {
         isBlocking: false,
       },
       () => {
-        if (this.props.isProposed) {
+        if (this.props.isProposed && this.props.isNew) {
           React.swal({
             title: 'Propose milestone?',
             text:

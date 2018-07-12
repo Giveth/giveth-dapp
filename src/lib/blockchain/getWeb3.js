@@ -128,7 +128,7 @@ export const getHomeWeb3 = () =>
     // only support inject web3 provider for home network
     if (!homeWeb3) {
       if (typeof window.web3 !== 'undefined') {
-        homeWeb3.setProvider(window.web3.currentProvider);
+        homeWeb3 = new Web3(window.web3.currentProvider);
       } else {
         // we provide a fallback so we can generate/read data
         homeWeb3 = new Web3(config.homeNodeConnection);
