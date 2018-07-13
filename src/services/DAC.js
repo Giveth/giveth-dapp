@@ -86,7 +86,7 @@ class DACservice {
       .find({
         query: {
           projectId: {
-            $gt: '0', // 0 is a pending campaign
+            $gt: 0, // 0 is a pending campaign
           },
           dacs: id,
           $limit: 200,

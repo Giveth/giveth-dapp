@@ -37,7 +37,7 @@ class CampaignService {
       .find({
         query: {
           projectId: {
-            $gt: '0', // 0 is a pending campaign
+            $gt: 0, // 0 is a pending campaign
           },
           status: Campaign.ACTIVE,
           $limit: 200,
@@ -67,7 +67,7 @@ class CampaignService {
         query: {
           campaignId: id,
           projectId: {
-            $gt: '0', // 0 is a pending milestone
+            $gt: 0, // 0 is a pending milestone
           },
           status: { $nin: ['Canceled'] },
           $sort: { createdAt: -1 },

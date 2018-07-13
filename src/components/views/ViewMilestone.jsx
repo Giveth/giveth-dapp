@@ -216,7 +216,7 @@ class ViewMilestone extends Component {
 
                     {(isOwner(ownerAddress, currentUser) ||
                       isOwner(campaign.ownerAddress, currentUser)) &&
-                      ['proposed', 'rejected', 'InProgress', 'NeedsReview'].includes(status) && (
+                      ['Proposed', 'Rejected', 'InProgress', 'NeedsReview'].includes(status) && (
                         <span className="pull-right">
                           <button
                             type="button"

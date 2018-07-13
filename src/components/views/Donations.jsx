@@ -77,7 +77,7 @@ const Donations = () => (
                                     </td>
 
                                     <td className="td-transaction-status">
-                                      {d.status === 'pending' && (
+                                      {d.status === Donation.PENDING && (
                                         <span>
                                           <i className="fa fa-circle-o-notch fa-spin" />
                                           &nbsp;

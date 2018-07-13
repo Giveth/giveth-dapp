@@ -1,5 +1,6 @@
 import { LPPCampaign } from 'lpp-campaign';
 
+import Donation from '../models/Donation';
 import getNetwork from '../lib/blockchain/getNetwork';
 import { feathersClient } from '../lib/feathersClient';
 import { getWeb3 } from '../lib/blockchain/getWeb3';
@@ -61,7 +62,7 @@ class DonationService {
             txHash = hash;
             const mutation = {
               txHash,
-              status: 'pending',
+              status: Donation.PENDING,
             };
 
             if (amount === donation.amount) {
@@ -134,7 +135,7 @@ class DonationService {
             feathersClient
               .service('/donations')
               .patch(donation.id, {
-                status: 'pending',
+                status: Donation.PENDING,
                 $unset: {
                   intendedProjectId: true,
                   intendedProjectTypeId: true,
@@ -197,7 +198,7 @@ class DonationService {
             feathersClient
               .service('/donations')
               .patch(donation.id, {
-                status: 'pending',
+                status: Donation.PENDING,
                 $unset: {
                   intendedProjectId: true,
                   intendedProjectTypeId: true,
@@ -260,7 +261,7 @@ class DonationService {
             feathersClient
               .service('/donations')
               .patch(donation.id, {
-                status: 'pending',
+                status: Donation.PENDING,
                 $unset: {
                   delegateId: true,
                   delegateTypeId: true,

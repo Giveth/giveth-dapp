@@ -54,7 +54,7 @@ const rejectProposedMilestone = milestone => {
       },
     },
   }).then(message => {
-    const newContent = { status: 'rejected' };
+    const newContent = { status: 'Rejected' };
     if (message) newContent.message = message;
     feathersClient
       .service('/milestones')
@@ -82,7 +82,7 @@ const reproposeRejectedMilestone = milestone => {
       },
     },
   }).then(message => {
-    const newContent = { status: 'proposed' };
+    const newContent = { status: 'Proposed' };
     if (message) newContent.message = message;
     feathersClient
       .service('/milestones')
@@ -179,7 +179,7 @@ class MyMilestones extends Component {
             { recipientAddress: myAddress },
           ],
         },
-        { status: 'rejected' },
+        { status: 'Rejected' },
       ];
     } else {
       const resp = await feathersClient
@@ -192,10 +192,10 @@ class MyMilestones extends Component {
             { ownerAddress: myAddress },
             { reviewerAddress: myAddress },
             { recipientAddress: myAddress },
-            { $and: [{ campaignId: { $in: campaignsIDs } }, { status: 'proposed' }] },
+            { $and: [{ campaignId: { $in: campaignsIDs } }, { status: 'Proposed' }] },
           ],
         },
-        { status: { $nin: ['Paid', 'Canceled', 'rejected'] } },
+        { status: { $nin: ['Paid', 'Canceled', 'Rejected'] } },
       ];
     }
 
@@ -243,7 +243,7 @@ class MyMilestones extends Component {
           buttons: ['Cancel', 'Yes, edit'],
         }).then(isConfirmed => {
           if (isConfirmed) {
-            if (['proposed', 'rejected'].includes(milestone.status)) {
+            if (['Proposed', 'Rejected'].includes(milestone.status)) {
               redirectAfterWalletUnlock(
                 `/milestones/${milestone._id}/edit/proposed`,
                 this.props.wallet,
@@ -482,7 +482,7 @@ class MyMilestones extends Component {
               feathersClient
                 .service('/milestones')
                 .patch(milestone._id, {
-                  status: 'pending',
+                  status: 'Pending',
                   mined: false,
                   message,
                   txHash,
@@ -799,7 +799,7 @@ class MyMilestones extends Component {
                 .patch(
                   null,
                   {
-                    status: 'pending',
+                    status: 'Pending',
                     txHash,
                   },
                   {
@@ -981,7 +981,7 @@ class MyMilestones extends Component {
                           </thead>
                           <tbody>
                             {milestones.map(m => (
-                              <tr key={m._id} className={m.status === 'pending' ? 'pending' : ''}>
+                              <tr key={m._id} className={m.status === 'Pending' ? 'pending' : ''}>
                                 <td className="td-created-at">
                                   {m.createdAt && (
                                     <span>{moment.utc(m.createdAt).format('Do MMM YYYY')}</span>
@@ -1003,7 +1003,7 @@ class MyMilestones extends Component {
                                   </Link>
                                 </td>
                                 <td className="td-status">
-                                  {(m.status === 'pending' ||
+                                  {(m.status === 'Pending' ||
                                     (Object.keys(m).includes('mined') && !m.mined)) && (
                                     <span>
                                       <i className="fa fa-circle-o-notch fa-spin" />
@@ -1038,7 +1038,7 @@ class MyMilestones extends Component {
                                   {/* Campaign and Milestone managers can edit milestone */}
                                   {(m.ownerAddress === currentUser.address ||
                                     m.campaign.ownerAddress === currentUser.address) &&
-                                    ['proposed', 'rejected', 'InProgress', 'NeedsReview'].includes(
+                                    ['Proposed', 'Rejected', 'InProgress', 'NeedsReview'].includes(
                                       m.status,
                                     ) && (
                                       <button
@@ -1052,7 +1052,7 @@ class MyMilestones extends Component {
                                     )}
 
                                   {m.campaign.ownerAddress === currentUser.address &&
-                                    m.status === 'proposed' && (
+                                    m.status === 'Proposed' && (
                                       <span>
                                         <button
                                           type="button"
@@ -1073,7 +1073,7 @@ class MyMilestones extends Component {
                                       </span>
                                     )}
                                   {m.ownerAddress === currentUser.address &&
-                                    m.status === 'rejected' && (
+                                    m.status === 'Rejected' && (
                                       <button
                                         type="button"
                                         className="btn btn-success btn-sm"
@@ -1114,7 +1114,7 @@ class MyMilestones extends Component {
                                     )}
 
                                   {m.ownerAddress === currentUser.address &&
-                                    ['proposed', 'rejected'].includes(m.status) && (
+                                    ['Proposed', 'Rejected'].includes(m.status) && (
                                       <span>
                                         <button
                                           type="button"

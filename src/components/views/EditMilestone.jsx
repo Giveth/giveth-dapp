@@ -60,7 +60,7 @@ class EditMilestone extends Component {
       fiatAmount: new BigNumber(0),
       recipientAddress: '',
       // completionDeadline: '',
-      status: 'pending',
+      status: 'Pending',
       uploadNewImage: false,
       campaignTitle: '',
       projectId: undefined,
@@ -407,8 +407,8 @@ class EditMilestone extends Component {
         image: file,
         campaignId: this.state.campaignId,
         status:
-          this.props.isProposed || this.state.status === 'rejected'
-            ? 'proposed'
+          this.props.isProposed || this.state.status === 'Rejected'
+            ? 'Proposed'
             : this.state.status, // make sure not to change status!
         items: this.state.itemizeState ? this.state.items : [],
         ethConversionRateTimestamp: this.state.currentRate.timestamp,

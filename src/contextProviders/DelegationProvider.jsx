@@ -51,7 +51,7 @@ class DelegationProvider extends Component {
             .watch({ listStrategy: 'always' })
             .find({
               query: {
-                delegateId: { $gt: '0' },
+                delegateId: { $gt: 0 },
                 $select: ['ownerAddress', 'title', '_id', 'delegateId'],
               },
             })
@@ -83,7 +83,7 @@ class DelegationProvider extends Component {
             .find({
               query: {
                 projectId: {
-                  $gt: '0',
+                  $gt: 0,
                 },
                 status: 'Active',
                 $select: ['ownerAddress', 'title', '_id', 'projectId'],
@@ -116,7 +116,7 @@ class DelegationProvider extends Component {
             .watch({ listStrategy: 'always' })
             .find({
               query: {
-                projectId: { $gt: '0' },
+                projectId: { $gt: 0 },
                 status: 'InProgress',
                 $select: [
                   'title',
@@ -188,11 +188,11 @@ class DelegationProvider extends Component {
           { delegateTypeId: { $in: dacsIds } },
           {
             ownerTypeId: this.props.currentUser.address,
-            delegateTypeId: { $ne: '0' },
+            delegateTypeId: { $gt: 0 },
           },
         ],
         status: {
-          $in: ['waiting', 'committed'],
+          $in: ['Waiting', 'Committed'],
         },
         $sort: { createdAt: 1 },
       },

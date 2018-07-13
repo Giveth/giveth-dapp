@@ -9,6 +9,7 @@ import { Form, Input } from 'formsy-react-components';
 import getNetwork from '../lib/blockchain/getNetwork';
 import { feathersClient } from '../lib/feathersClient';
 import User from '../models/User';
+import Donation from '../models/Donation';
 import { displayTransactionError, getGasPrice } from '../lib/helpers';
 import GivethWallet from '../lib/blockchain/GivethWallet';
 import { getWeb3, getHomeWeb3 } from '../lib/blockchain/getWeb3';
@@ -312,7 +313,7 @@ class DonateButton extends React.Component {
       const donation = {
         amount,
         txHash,
-        status: 'pending',
+        status: Donation.PENDING,
       };
 
       if (this.props.type.toLowerCase() === 'dac') {
@@ -444,7 +445,7 @@ class DonateButton extends React.Component {
   }
 
   render() {
-    const { type, model } = this.props;
+    const { type, model, currentUser } = this.props;
     const {
       homeWeb3,
       account,
@@ -472,13 +473,14 @@ class DonateButton extends React.Component {
           onOverlayClicked={() => this.closeDialog()}
           title={`Support this ${type}!`}
         >
-          {!homeWeb3 && (
-            <div className="alert alert-warning">
-              <i className="fa fa-exclamation-triangle" />
-              It is recommended that you install <a href="https://metamask.io/">MetaMask</a> to
-              donate
-            </div>
-          )}
+          {homeWeb3 &&
+            !homeWeb3.givenProvider && (
+              <div className="alert alert-warning">
+                <i className="fa fa-exclamation-triangle" />
+                It is recommended that you install <a href="https://metamask.io/">MetaMask</a> to
+                donate
+              </div>
+            )}
           <strong>
             Give Ether to support <em>{model.title}</em>
           </strong>
@@ -492,6 +494,7 @@ class DonateButton extends React.Component {
           {/* TODO add note that we are donating as the logged in user, or that they won't be able to manage funds if no logged in user & using metamask*/}
 
           {homeWeb3 &&
+            homeWeb3.givenProvider &&
             !validNetwork && (
               <div className="alert alert-warning">
                 <i className="fa fa-exclamation-triangle" />
@@ -500,6 +503,7 @@ class DonateButton extends React.Component {
               </div>
             )}
           {homeWeb3 &&
+            homeWeb3.givenProvider &&
             !account && (
               <div className="alert alert-warning">
                 <i className="fa fa-exclamation-triangle" />
@@ -507,6 +511,7 @@ class DonateButton extends React.Component {
               </div>
             )}
           {homeWeb3 &&
+            homeWeb3.givenProvider &&
             account &&
             validNetwork && (
               <p>
@@ -546,35 +551,37 @@ class DonateButton extends React.Component {
               />
             </div>
 
-            {homeWeb3 && (
-              <LoaderButton
-                className="btn btn-success"
-                formNoValidate
-                type="submit"
-                disabled={isSaving || !formIsValid || !validNetwork || !account}
-                isLoading={isSaving}
-                loadingText="Saving..."
-              >
-                Donate
-              </LoaderButton>
-            )}
+            {homeWeb3 &&
+              homeWeb3.givenProvider && (
+                <LoaderButton
+                  className="btn btn-success"
+                  formNoValidate
+                  type="submit"
+                  disabled={isSaving || !formIsValid || !validNetwork || !account}
+                  isLoading={isSaving}
+                  loadingText="Saving..."
+                >
+                  Donate
+                </LoaderButton>
+              )}
 
-            {!homeWeb3 && <div>TODO: show donation data</div>}
+            {!homeWeb3 && currentUser && <div>TODO: show donation data</div>}
 
             {/* TODO get amount to dynamically update */}
-            {givethBridge && (
-              <a
-                className={`btn btn-secondary ${isSaving ? 'disabled' : ''}`}
-                disabled={!givethBridge || !amount}
-                href={`https://mycrypto.com?to=${
-                  givethBridge.$address
-                }&data=${this.getDonationData()}&value=${amount}&gasLimit=${DONATION_GAS}#send-transaction`}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                Donate via MyCrypto
-              </a>
-            )}
+            {givethBridge &&
+              (account || currentUser) && (
+                <a
+                  className={`btn btn-secondary ${isSaving ? 'disabled' : ''}`}
+                  disabled={!givethBridge || !amount}
+                  href={`https://mycrypto.com?to=${
+                    givethBridge.$address
+                  }&data=${this.getDonationData()}&value=${amount}&gasLimit=${DONATION_GAS}#send-transaction`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Donate via MyCrypto
+                </a>
+              )}
           </Form>
         </SkyLightStateless>
       </span>

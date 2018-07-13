@@ -9,31 +9,31 @@ import { getTruncatedText } from '../lib/helpers';
  */
 class Donation extends Model {
   static get PENDING() {
-    return 'pending';
+    return 'Pending';
   }
 
   static get TO_APPROVE() {
-    return 'to_approve';
+    return 'ToApprove';
   }
 
   static get WAITING() {
-    return 'waiting';
+    return 'Waiting';
   }
 
   static get COMMITTED() {
-    return 'committed';
+    return 'Committed';
   }
 
   static get PAYING() {
-    return 'paying';
+    return 'Paying';
   }
 
   static get PAID() {
-    return 'paid';
+    return 'Paid';
   }
 
   static get CANCELED() {
-    return 'cancelled';
+    return 'Cancelled';
   }
 
   static get statuses() {

@@ -292,7 +292,7 @@ class Profile extends Component {
                             </thead>
                             <tbody>
                               {milestones.data.map(m => (
-                                <tr key={m._id} className={m.status === 'pending' ? 'pending' : ''}>
+                                <tr key={m._id} className={m.status === 'Pending' ? 'pending' : ''}>
                                   <td className="td-created-at">
                                     {m.createdAt && (
                                       <span>{moment.utc(m.createdAt).format('Do MMM YYYY')}</span>
@@ -334,7 +334,7 @@ class Profile extends Component {
                                     </div>
                                   </td>
                                   <td className="td-status">
-                                    {(m.status === 'pending' ||
+                                    {(m.status === 'Pending' ||
                                       (Object.keys(m).includes('mined') && !m.mined)) && (
                                       <span>
                                         <i className="fa fa-circle-o-notch fa-spin" />
@@ -634,7 +634,7 @@ class Profile extends Component {
                                   </td>
 
                                   <td className="td-transaction-status">
-                                    {d.status === 'pending' && (
+                                    {d.status === Donation.PENDING && (
                                       <span>
                                         <i className="fa fa-circle-o-notch fa-spin" />
                                         &nbsp;
