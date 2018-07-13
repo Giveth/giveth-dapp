@@ -28,7 +28,7 @@ const CardStats = ({
     <div className="col-4 text-center card-center">
       {maxAmount && <p>Amount requested:{convertEthHelper(maxAmount)} ETH</p>}
 
-      {totalDonated && <p>Donated:{convertEthHelper(totalDonated)} ETH</p>}
+      {totalDonated && <p>Donated:{convertEthHelper(totalDonated, !maxAmount && 2)} ETH</p>}
     </div>
 
     <div className="col-4 text-right">

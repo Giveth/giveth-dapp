@@ -1,10 +1,8 @@
 import React, { Component } from 'react';
-import Avatar from 'react-avatar';
 import PropTypes from 'prop-types';
 
-import { isOwner, getTruncatedText, getUserName, getUserAvatar } from '../lib/helpers';
+import { getTruncatedText } from '../lib/helpers';
 import CardStats from './CardStats';
-import User from '../models/User';
 import { redirectAfterWalletUnlock, checkWalletBalance } from '../lib/middleware';
 import GivethWallet from '../lib/blockchain/GivethWallet';
 import Campaign from '../models/Campaign';
@@ -62,7 +60,7 @@ class CampaignCard extends Component {
   }
 
   render() {
-    const { campaign, currentUser } = this.props;
+    const { campaign } = this.props;
 
     return (
       <div
@@ -74,25 +72,6 @@ class CampaignCard extends Component {
         tabIndex="0"
       >
         <div className="card-body">
-          <div
-            className="card-avatar"
-            onClick={this.viewProfile}
-            onKeyPress={this.viewProfile}
-            role="button"
-            tabIndex="0"
-          >
-            <Avatar size={30} src={getUserAvatar(campaign.owner)} round />
-            <span className="owner-name">{getUserName(campaign.owner)}</span>
-
-            {isOwner(campaign.owner.address, currentUser) && (
-              <span className="pull-right">
-                <button type="button" className="btn btn-link btn-edit" onClick={this.editCampaign}>
-                  <i className="fa fa-edit" />
-                </button>
-              </span>
-            )}
-          </div>
-
           <div className="card-img" style={{ backgroundImage: `url(${campaign.image})` }} />
 
           <div className="card-content">
@@ -116,7 +95,6 @@ class CampaignCard extends Component {
 
 CampaignCard.propTypes = {
   campaign: PropTypes.instanceOf(Campaign).isRequired,
-  currentUser: PropTypes.instanceOf(User),
   wallet: PropTypes.instanceOf(GivethWallet),
   history: PropTypes.shape({
     push: PropTypes.func.isRequired,
@@ -124,7 +102,6 @@ CampaignCard.propTypes = {
 };
 
 CampaignCard.defaultProps = {
-  currentUser: undefined,
   wallet: undefined,
 };
 

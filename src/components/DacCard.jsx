@@ -1,10 +1,8 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import Avatar from 'react-avatar';
 
-import { getTruncatedText, getUserAvatar, isOwner, getUserName } from '../lib/helpers';
+import { getTruncatedText } from '../lib/helpers';
 import CardStats from './CardStats';
-import User from '../models/User';
 import { redirectAfterWalletUnlock, checkWalletBalance } from '../lib/middleware';
 import GivethWallet from '../lib/blockchain/GivethWallet';
 import DAC from '../models/DAC';
@@ -20,14 +18,8 @@ class DacCard extends Component {
   constructor(props) {
     super(props);
 
-    this.viewProfile = this.viewProfile.bind(this);
     this.viewDAC = this.viewDAC.bind(this);
     this.editDAC = this.editDAC.bind(this);
-  }
-
-  viewProfile(e) {
-    e.stopPropagation();
-    this.props.history.push(`/profile/${this.props.dac.owner.address}`);
   }
 
   viewDAC() {
@@ -59,7 +51,7 @@ class DacCard extends Component {
   }
 
   render() {
-    const { dac, currentUser } = this.props;
+    const { dac } = this.props;
 
     return (
       <div
@@ -71,29 +63,6 @@ class DacCard extends Component {
         tabIndex="0"
       >
         <div className="card-body">
-          <div
-            className="card-avatar"
-            onClick={this.viewProfile}
-            onKeyPress={this.viewProfile}
-            role="button"
-            tabIndex="0"
-          >
-            <Avatar size={30} src={getUserAvatar(dac.owner)} round />
-            <span className="owner-name">{getUserName(dac.owner)}</span>
-
-            {isOwner(dac.owner.address, currentUser) && (
-              <span className="pull-right">
-                <button
-                  type="button"
-                  className="btn btn-link btn-edit"
-                  onClick={e => this.editDAC(e)}
-                >
-                  <i className="fa fa-edit" />
-                </button>
-              </span>
-            )}
-          </div>
-
           <div className="card-img" style={{ backgroundImage: `url(${dac.image})` }} />
 
           <div className="card-content">
@@ -117,7 +86,6 @@ class DacCard extends Component {
 
 DacCard.propTypes = {
   dac: PropTypes.instanceOf(DAC).isRequired,
-  currentUser: PropTypes.instanceOf(User),
   wallet: PropTypes.instanceOf(GivethWallet),
   history: PropTypes.shape({
     push: PropTypes.func.isRequired,
@@ -125,7 +93,6 @@ DacCard.propTypes = {
 };
 
 DacCard.defaultProps = {
-  currentUser: undefined,
   wallet: undefined,
 };
 

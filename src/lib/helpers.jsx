@@ -170,15 +170,11 @@ export const history = createBrowserHistory();
 // Get start of the day in UTC for a given date or start of current day in UTC
 export const getStartOfDayUTC = date => moment.utc(date || moment()).startOf('day');
 
-export const convertEthHelper = amount => {
+export const convertEthHelper = (amount, decimals) => {
   if (!amount) return 0;
 
   const eth = utils.fromWei(amount);
-  if (eth.includes('.') && eth.split('.')[1].length > config.decimals) {
-    return new BigNumber(eth).toFixed(config.decimals);
-  }
-
-  return eth;
+  return new BigNumber(eth).toFixed(decimals || config.decimals);
 };
 
 // the back button will go one lower nested route inside of the DApp
