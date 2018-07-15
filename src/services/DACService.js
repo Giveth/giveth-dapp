@@ -5,7 +5,7 @@ import Campaign from '../models/Campaign';
 
 import ErrorPopup from '../components/ErrorPopup';
 
-class DACservice {
+class DACService {
   /**
    * Get a DAC defined by ID
    *
@@ -156,10 +156,9 @@ class DACservice {
             })
             .once('transactionHash', hash => {
               txHash = hash;
-              dac.txHash = txHash;
               feathersClient
                 .service('dacs')
-                .create(dac.toFeathers())
+                .create(dac.toFeathers(txHash))
                 .then(() => afterCreate(`${etherScanUrl}tx/${txHash}`));
             })
             .then(() => {
@@ -177,4 +176,4 @@ class DACservice {
   }
 }
 
-export default DACservice;
+export default DACService;

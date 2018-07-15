@@ -11,7 +11,7 @@ import { isOwner, getTruncatedText, history } from '../../lib/helpers';
 import { isAuthenticated, checkWalletBalance, isInWhitelist } from '../../lib/middleware';
 import LoaderButton from '../LoaderButton';
 
-import DACservice from '../../services/DAC';
+import DACservice from '../../services/DACService';
 import DAC from '../../models/DAC';
 import User from '../../models/User';
 import GivethWallet from '../../lib/blockchain/GivethWallet';

@@ -12,6 +12,7 @@ import GivethWallet from '../../lib/blockchain/GivethWallet';
 import { convertEthHelper, getUserAvatar, getUserName, isOwner } from '../../lib/helpers';
 import { checkWalletBalance, redirectAfterWalletUnlock } from '../../lib/middleware';
 import User from '../../models/User';
+import Milestone from '../../models/Milestone';
 import BackgroundImageHeader from '../BackgroundImageHeader';
 import DonateButton from '../DonateButton';
 import ErrorPopup from '../ErrorPopup';
@@ -199,8 +200,7 @@ class ViewMilestone extends Component {
 
               {this.isActiveMilestone() && (
                 <DonateButton
-                  type="milestone"
-                  model={{ title, id, adminId: projectId }}
+                  model={{ type: Milestone.type, title, id, adminId: projectId }}
                   wallet={wallet}
                   currentUser={currentUser}
                   history={history}
@@ -442,8 +442,7 @@ class ViewMilestone extends Component {
                   <ShowTypeDonations donations={donations} isLoading={isLoadingDonations} />
                   {this.isActiveMilestone() && (
                     <DonateButton
-                      type="milestone"
-                      model={{ title, id, adminId: projectId }}
+                      model={{ type: Milestone.type, title, id, adminId: projectId }}
                       wallet={wallet}
                       currentUser={currentUser}
                       history={history}

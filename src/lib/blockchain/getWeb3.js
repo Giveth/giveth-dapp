@@ -106,6 +106,7 @@ const setWallet = (rpcUrl, isHomeNetwork = false) =>
 
     getBalance();
 
+    engine.setMaxListeners(50);
     engine.on('block', getBalance);
     this.setProvider(engine);
   };

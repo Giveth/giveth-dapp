@@ -20,8 +20,8 @@ import {
   convertEthHelper,
 } from '../../lib/helpers';
 
-import DACservice from '../../services/DAC';
-import CampaignService from '../../services/Campaign';
+import DACservice from '../../services/DACService';
+import CampaignService from '../../services/CampaignService';
 import Campaign from '../../models/Campaign';
 import DAC from '../../models/DAC';
 import Donation from '../../models/Donation';
@@ -176,6 +176,7 @@ class Profile extends Component {
           schema: 'includeTypeDetails',
           query: {
             giverAddress: this.state.userAddress,
+            homeTxHash: { $exists: true },
             $limit: this.state.itemsPerPage,
             $skip: this.state.skipDonationsPages * this.state.itemsPerPage,
           },
@@ -610,16 +611,13 @@ class Profile extends Component {
                             </thead>
                             <tbody>
                               {donations.data.map(d => (
-                                <tr
-                                  key={d.id}
-                                  className={d.status === Donation.PENDING ? 'pending' : ''}
-                                >
+                                <tr key={d.id} className={d.isPending ? 'pending' : ''}>
                                   <td className="td-date">
                                     {moment(d.createdAt).format('MM/DD/YYYY')}
                                   </td>
 
                                   <td className="td-donated-to">
-                                    {Number(d.intendedProjectId) > 0 && (
+                                    {d.intendedProjectId > 0 && (
                                       <span className="badge badge-info">
                                         <i className="fa fa-random" />
                                         &nbsp;Delegated
@@ -634,12 +632,17 @@ class Profile extends Component {
                                   </td>
 
                                   <td className="td-transaction-status">
-                                    {d.status === Donation.PENDING && (
+                                    {d.isPending && (
                                       <span>
                                         <i className="fa fa-circle-o-notch fa-spin" />
                                         &nbsp;
                                       </span>
                                     )}
+                                    {!d.isPending &&
+                                      d.amountRemaining > 0 && <span>{d.status}</span>}
+                                    {!d.isPending &&
+                                      d.amountRemaining === '0' &&
+                                      (d.delegateId ? 'Delegated' : Donation.COMMITTED)}
                                   </td>
 
                                   {etherScanUrl && (

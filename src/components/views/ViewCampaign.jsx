@@ -17,8 +17,9 @@ import ShowTypeDonations from '../ShowTypeDonations';
 import AuthenticatedLink from '../AuthenticatedLink';
 
 import User from '../../models/User';
+import Campaign from '../../models/Campaign';
 import GivethWallet from '../../lib/blockchain/GivethWallet';
-import CampaignService from '../../services/Campaign';
+import CampaignService from '../../services/CampaignService';
 
 import ErrorPopup from '../ErrorPopup';
 
@@ -120,8 +121,8 @@ class ViewCampaign extends Component {
               <h1>{campaign.title}</h1>
 
               <DonateButton
-                type="campaign"
                 model={{
+                  type: Campaign.type,
                   title: campaign.title,
                   id: campaign.id,
                   adminId: campaign.projectId,
@@ -150,7 +151,7 @@ class ViewCampaign extends Component {
 
                   <div className="milestone-header spacer-top-50 card-view">
                     <h3>Milestones</h3>
-                    {Number(campaign.projectId) > 0 &&
+                    {campaign.projectId > 0 &&
                       isOwner(campaign.owner.address, currentUser) && (
                         <AuthenticatedLink
                           className="btn btn-primary btn-sm pull-right"
@@ -161,7 +162,7 @@ class ViewCampaign extends Component {
                         </AuthenticatedLink>
                       )}
 
-                    {Number(campaign.projectId) > 0 &&
+                    {campaign.projectId > 0 &&
                       !isOwner(campaign.owner.address, currentUser) &&
                       currentUser && (
                         <AuthenticatedLink
@@ -205,8 +206,8 @@ class ViewCampaign extends Component {
                   <h4>Donations</h4>
                   <ShowTypeDonations donations={donations} isLoading={isLoadingDonations} />
                   <DonateButton
-                    type="campaign"
                     model={{
+                      type: Campaign.type,
                       title: campaign.title,
                       id: campaign.id,
                       adminId: campaign.projectId,

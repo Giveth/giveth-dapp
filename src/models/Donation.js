@@ -36,15 +36,20 @@ class Donation extends Model {
     return 'Cancelled';
   }
 
+  static get REJECTED() {
+    return 'Rejected';
+  }
+
   static get statuses() {
     return [
       Donation.PENDING,
+      Donation.PAYING,
+      Donation.PAID,
       Donation.TO_APPROVE,
       Donation.WAITING,
       Donation.COMMITTED,
-      Donation.PAYING,
-      Donation.PAID,
       Donation.CANCELED,
+      Donation.REJECTED,
     ];
   }
 
@@ -53,6 +58,8 @@ class Donation extends Model {
 
     this.id = data._id;
     this.amount = data.amount;
+    this.amountRemaining = data.amountRemaining;
+    this.myPendingAmountRemaining = data.pendingAmountRemaining;
     this.commitTime = data.commitTime;
     this.confirmations = data.confirmations || 0;
     this.createdAt = data.createdAt;
@@ -67,10 +74,13 @@ class Donation extends Model {
     this.ownerTypeId = data.ownerTypeId;
     this.ownerType = data.ownerType;
     this.pledgeId = data.pledgeId;
+    this.canceledPledgeId = data.canceledPledgeId;
     this.requiredConfirmations = data.requiredConfirmations;
     this.status = data.status;
+    this.mined = data.mined;
     this.txHash = data.txHash;
     this.updatedAt = data.updatedAt;
+    this.isReturn = data.isReturn;
 
     /**
      * Get the URL, name and type of the entity to which this donation has been donated to
@@ -90,7 +100,7 @@ class Donation extends Model {
       donatedTo.name = getTruncatedText(this.delegateEntity.title, 45);
       donatedTo.type = 'DAC';
     } else if (!this.delegateId && this.ownerType === 'campaign') {
-      // Campaing
+      // Campaign
       donatedTo.url = `/${this.ownerType}s/${this.ownerEntity._id}`; // eslint-disable-line no-underscore-dangle
       donatedTo.name = getTruncatedText(this.ownerEntity.title, 45);
       donatedTo.type = 'CAMPAIGN';
@@ -126,6 +136,8 @@ class Donation extends Model {
         return 'paid';
       case Donation.CANCELED:
         return 'cancelled';
+      case Donation.REJECTED:
+        return 'rejected';
       default:
         return 'unknown';
     }
@@ -184,6 +196,12 @@ class Donation extends Model {
     return this.status === Donation.WAITING && this.ownerEntity.address === user.address;
   }
 
+  get isPending() {
+    return (
+      this.status === Donation.PENDING || this.myPendingAmountRemaining !== undefined || !this.mined
+    );
+  }
+
   get id() {
     return this.myId;
   }
@@ -200,6 +218,23 @@ class Donation extends Model {
   set amount(value) {
     this.checkType(value, ['string'], 'amount');
     this.myAmount = value;
+  }
+
+  get amountRemaining() {
+    return this.myPendingAmountRemaining || this.myAmountRemaining;
+  }
+
+  set amountRemaining(value) {
+    this.checkType(value, ['string'], 'amountRemaining');
+    this.myAmountRemaining = value;
+  }
+
+  set pendingAmountRemaining(value) {
+    this.checkType(value, ['string', 'undefined'], 'pendingAmountRemaining');
+    if (this.myPendingAmountRemaining) {
+      throw new Error('not allowed to set pendingAmountRemaining');
+    }
+    this.pendingAmountRemaining = value;
   }
 
   get commitTime() {
@@ -234,7 +269,7 @@ class Donation extends Model {
   }
 
   set delegateId(value) {
-    this.checkType(value, ['string', 'undefined'], 'delegateId');
+    this.checkType(value, ['number', 'string', 'undefined'], 'delegateId');
     this.myDelegateId = value;
   }
 
@@ -279,7 +314,7 @@ class Donation extends Model {
   }
 
   set intendedProjectId(value) {
-    this.checkType(value, ['string', 'undefined'], 'intendedProjectId');
+    this.checkType(value, ['number', 'string', 'undefined'], 'intendedProjectId');
     this.myIntendedProjectId = value;
   }
 
@@ -288,7 +323,7 @@ class Donation extends Model {
   }
 
   set ownerId(value) {
-    this.checkType(value, ['string'], 'ownerId');
+    this.checkType(value, ['number', 'string'], 'ownerId');
     this.myOwnerId = value;
   }
 
@@ -320,12 +355,23 @@ class Donation extends Model {
   }
 
   get pledgeId() {
-    return this.myPledgeId;
+    return this.myCanceledPledgeId > 0 ? this.myCanceledPledgeId : this.myPledgeId;
   }
 
   set pledgeId(value) {
     this.checkType(value, ['string'], 'pledgeId');
+    if (this.myPledgeId) {
+      throw new Error('not allowed to set pledgeId');
+    }
     this.myPledgeId = value;
+  }
+
+  set canceledPledgeId(value) {
+    this.checkType(value, ['string', 'undefined'], 'canceledPledgeId');
+    if (this.myCanceledPledgeId) {
+      throw new Error('not allowed to set canceledPledgeId');
+    }
+    this.myCanceledPledgeId = value;
   }
 
   get requiredConfirmations() {

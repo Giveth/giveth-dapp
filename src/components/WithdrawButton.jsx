@@ -5,7 +5,7 @@ import { Form, Input } from 'formsy-react-components';
 
 import User from '../models/User';
 import GivethWallet from '../lib/blockchain/GivethWallet';
-import WalletService from '../services/Wallet';
+import WalletService from '../services/WalletService';
 import { getGasPrice } from '../lib/helpers';
 
 import ErrorPopup from './ErrorPopup';

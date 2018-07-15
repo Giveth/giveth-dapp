@@ -1,11 +1,29 @@
 import { LPPCampaign } from 'lpp-campaign';
+import { utils } from 'web3';
 
 import Donation from '../models/Donation';
+import DAC from '../models/DAC';
 import getNetwork from '../lib/blockchain/getNetwork';
 import { feathersClient } from '../lib/feathersClient';
 import { getWeb3 } from '../lib/blockchain/getWeb3';
 
 import ErrorPopup from '../components/ErrorPopup';
+
+function updateExistingDonation(donation, amount) {
+  const mutation = {
+    pendingAmountRemaining: utils
+      .toBN(donation.amountRemaining)
+      .sub(utils.toBN(amount))
+      .toString(),
+  };
+
+  return feathersClient
+    .service('donations')
+    .patch(donation.id, mutation)
+    .catch(err => {
+      ErrorPopup('Unable to update the donation in feathers', err);
+    });
+}
 
 // TODO: Remove in future
 /* eslint no-underscore-dangle: 0 */
@@ -14,7 +32,7 @@ class DonationService {
    * Delegate the donation to some entity (either Campaign or Milestone)
    *
    * @param {Donation} donation    Donation to be delegated
-   * @param {string}   amount      Ammount of the donation that is to be delegated - needs to be between 0 and donation amount
+   * @param {string}   amount      Amount of the donation that is to be delegated - needs to be between 0 and donation amount
    * @param {object}   delegateTo  Entity to which the donation should be delegated
    * @param {function} onCreated   Callback function after the transaction has been broadcasted to chain and stored in feathers
    * @param {function} onSuccess   Callback function after the transaction has been mined
@@ -60,32 +78,47 @@ class DonationService {
         return executeTransfer()
           .once('transactionHash', hash => {
             txHash = hash;
-            const mutation = {
-              txHash,
-              status: Donation.PENDING,
-            };
+            updateExistingDonation(donation, amount);
 
-            if (amount === donation.amount) {
-              if (donation.ownerType.toLowerCase() === 'campaign') {
-                // campaign is the ownerId, so they transfer the donation, not propose
-                Object.assign(mutation, {
-                  ownerId: delegateTo.projectId,
-                  ownerTypeId: delegateTo._id,
-                  ownerType: delegateTo.type,
-                });
-              } else {
-                // dac proposes a delegation
-                Object.assign(mutation, {
-                  intendedProjectId: delegateTo.projectId,
-                  intendedProjectTypeId: delegateTo._id,
-                  intendedProjectType: delegateTo.type,
-                });
-              }
+            const newDonation = {
+              txHash,
+              amount,
+              amountRemaining: amount,
+              giverAddress: donation.giverAddress,
+              pledgeId: 0,
+              parentDonations: [donation.id],
+              mined: false,
+            };
+            // delegate is making the transfer
+            if (donation.delegateEntity) {
+              Object.assign(newDonation, {
+                status: Donation.TO_APPROVE,
+                ownerId: donation.ownerId,
+                ownerTypeId: donation.ownerTypeId,
+                ownerType: donation.ownerType,
+                delegateId: donation.delegateId,
+                delegateTypeId: donation.delegateTypeId,
+                delegateType: donation.delegateType,
+                intendedProjectId: delegateTo.projectId, // only support delegating to campaigns/milestones right now
+                intendedProjectType: delegateTo.type,
+                intendedProjectTypeId: delegateTo.id,
+              });
+            } else {
+              // owner of the donation is making the transfer
+              // only support delegating to campaigns/milestones right now
+              Object.assign(newDonation, {
+                status: Donation.COMMITTED,
+                ownerId: delegateTo.projectId,
+                ownerTypeId: delegateTo.type,
+                ownerType: delegateTo.id,
+              });
             }
+
+            console.log(donation, newDonation);
 
             feathersClient
               .service('/donations')
-              .patch(donation.id, mutation)
+              .create(newDonation)
               .then(() => onCreated(`${etherScanUrl}tx/${txHash}`))
               .catch(err => {
                 ErrorPopup('Unable to update the donation in feathers', err);
@@ -125,10 +158,16 @@ class DonationService {
         etherScanUrl = network.etherscan;
 
         return network.liquidPledging
-          .transfer(donation.ownerId, donation.pledgeId, donation.amount, donation.delegateId, {
-            $extraGas: 50000,
-            from: address,
-          })
+          .transfer(
+            donation.ownerId,
+            donation.pledgeId,
+            donation.amountRemaining,
+            donation.delegateId,
+            {
+              $extraGas: 50000,
+              from: address,
+            },
+          )
           .once('transactionHash', hash => {
             txHash = hash;
 
@@ -185,7 +224,7 @@ class DonationService {
           .transfer(
             donation.ownerId,
             donation.pledgeId,
-            donation.amount,
+            donation.amountRemaining,
             donation.intendedProjectId,
             {
               $extraGas: 50000,
@@ -207,7 +246,7 @@ class DonationService {
                   delegateType: true,
                   delegateTypeId: true,
                 },
-                txHash,
+                homeTxHash: txHash,
                 ownerId: donation.intendedProjectId,
                 ownerTypeId: donation.intendedProjectTypeId,
                 ownerType: donation.intendedProjectType,
@@ -216,7 +255,7 @@ class DonationService {
                 onCreated(`${etherScanUrl}tx/${txHash}`);
               })
               .catch(err => {
-                ErrorPopup('Something went wrong while comitting your donation.', err);
+                ErrorPopup('Something went wrong while committing your donation.', err);
                 onError(err);
               });
           });
@@ -252,7 +291,7 @@ class DonationService {
         etherScanUrl = network.etherscan;
 
         return network.liquidPledging
-          .withdraw(donation.pledgeId, donation.amount, {
+          .withdraw(donation.pledgeId, donation.amountRemaining, {
             $extraGas: 50000,
             from: address,
           })
@@ -287,6 +326,53 @@ class DonationService {
           `${etherScanUrl}tx/${txHash}`,
         );
         onError(err);
+      });
+  }
+
+  /**
+   * create a new donation instance in feathers
+   *
+   * @param {User} giver the giver of this donation
+   * @param {object} toAdmin entity receiving the donation
+   * @param {string} amount donation amount in wei
+   * @param {string} txHash transactionHash of the donation tx
+   */
+  static newFeathersDonation(giver, toAdmin, amount, txHash) {
+    const newDonation = {
+      giverAddress: giver.address,
+      amount,
+      amountRemaining: amount,
+      pledgeId: 0,
+      status: Donation.PENDING,
+      homeTxHash: txHash,
+      mined: false,
+    };
+
+    // donation to a delegate
+    if (toAdmin.type === DAC.type) {
+      Object.assign(newDonation, {
+        ownerType: 'giver',
+        ownerTypeId: giver.address,
+        ownerId: giver.giverId || 0,
+        delegateId: toAdmin.adminId,
+        delegateType: toAdmin.type,
+        delegateTypeId: toAdmin.id,
+      });
+    } else {
+      Object.assign(newDonation, {
+        ownerType: toAdmin.type,
+        ownerTypeId: toAdmin.id,
+        ownerId: toAdmin.adminId,
+      });
+    }
+    return feathersClient
+      .service('donations')
+      .create(newDonation)
+      .catch(err => {
+        ErrorPopup(
+          'Your donation has been initiated, however an error occurred when attempting to save. You should see your donation appear within ~30 mins.',
+          err,
+        );
       });
   }
 }

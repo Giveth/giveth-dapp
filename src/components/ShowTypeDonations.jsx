@@ -25,7 +25,7 @@ class ShowTypeDonations extends Component {
   componentDidMount() {
     getNetwork().then(network => {
       this.setState({
-        etherScanUrl: network.etherscan,
+        etherScanUrl: network.foreignEtherscan,
       });
     });
   }
@@ -57,19 +57,27 @@ class ShowTypeDonations extends Component {
                         <tr key={d._id}>
                           <td className="td-date">{moment(d.createdAt).format('MM/DD/YYYY')}</td>
 
-                          <td className="td-donations-amount">{convertEthHelper(d.amount)} ETH</td>
+                          <td className="td-donations-amount">
+                            {d.isPending && (
+                              <span>
+                                <i className="fa fa-circle-o-notch fa-spin" />
+                                &nbsp;
+                              </span>
+                            )}
+                            {convertEthHelper(d.amount)} ETH
+                          </td>
                           <td className="td-user">
                             {d.giver && <Avatar size={30} src={getUserAvatar(d.giver)} round />}
                             <span>{getUserName(d.giver)}</span>
                           </td>
-                          {etherScanUrl && d.giver ? (
+                          {etherScanUrl ? (
                             <td className="td-tx-address">
-                              <a href={`${etherScanUrl}address/${d.giver.address}`}>
-                                {d.giver.address}
+                              <a href={`${etherScanUrl}address/${d.giverAddress}`}>
+                                {d.giverAddress}
                               </a>
                             </td>
                           ) : (
-                            <td className="td-tx-address">{d.giver && d.giver.address}</td>
+                            <td className="td-tx-address">{d.giverAddress}</td>
                           )}
                         </tr>
                       ))}
@@ -102,7 +110,6 @@ ShowTypeDonations.propTypes = {
       giverAddress: PropTypes.string.isRequired,
       ownerTypeId: PropTypes.string.isRequired,
       ownerType: PropTypes.string.isRequired,
-      txHash: PropTypes.string.isRequired,
     }),
   ).isRequired,
   isLoading: PropTypes.bool.isRequired,

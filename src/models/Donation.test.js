@@ -30,7 +30,7 @@ describe('Donation Model', () => {
     commitTime: '2018-05-07T14:44:04.000Z',
     confirmations: 6,
     createdAt: '2018-05-07T14:44:04.000Z',
-    delegateId: '22',
+    delegateId: 22,
     delegateEntity: {},
     delegateTypeId: '5hkSCaKZ0vetWytd',
     giver: {},

@@ -12,9 +12,10 @@ import DonateButton from '../DonateButton';
 import ShowTypeDonations from '../ShowTypeDonations';
 import CommunityButton from '../CommunityButton';
 import User from '../../models/User';
+import DAC from '../../models/DAC';
 import { getUserName, getUserAvatar } from '../../lib/helpers';
 import GivethWallet from '../../lib/blockchain/GivethWallet';
-import DACservice from '../../services/DAC';
+import DACservice from '../../services/DACService';
 
 /**
  * The DAC detail view mapped to /dac/id
@@ -75,8 +76,8 @@ class ViewDAC extends Component {
               <h1>{dac.title}</h1>
 
               <DonateButton
-                type="DAC"
                 model={{
+                  type: DAC.type,
                   title: dac.title,
                   id: dac.id,
                   adminId: dac.delegateId,
@@ -116,8 +117,8 @@ class ViewDAC extends Component {
                   <h4>Donations</h4>
                   <ShowTypeDonations donations={donations} isLoading={isLoadingDonations} />
                   <DonateButton
-                    type="DAC"
                     model={{
+                      type: DAC.type,
                       title: dac.title,
                       id: dac.id,
                       adminId: dac.delegateId,

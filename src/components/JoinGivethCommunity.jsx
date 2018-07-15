@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 
 import CommunityButton from './CommunityButton';
 import User from '../models/User';
-import { checkWalletBalance, isInWhitelist } from '../lib/middleware';
+import { checkWalletBalance, isInWhitelist, takeActionAfterWalletUnlock } from '../lib/middleware';
 import GivethWallet from '../lib/blockchain/GivethWallet';
 
 /**
@@ -24,17 +24,17 @@ class JoinGivethCommunity extends Component {
 
   componentDidMount() {
     isInWhitelist(this.props.currentUser, React.whitelist.delegateWhitelist)
-      .then(() => this.setState({ canCreateCampaign: true }))
+      .then(() => this.setState({ canCreateDAC: true }))
       .catch(() => {}); // nothing
     isInWhitelist(this.props.currentUser, React.whitelist.projectOwnerWhitelist)
-      .then(() => this.setState({ canCreateDAC: true }))
+      .then(() => this.setState({ canCreateCampaign: true }))
       .catch(() => {}); // nothing
   }
 
   createDAC() {
     isInWhitelist(this.props.currentUser, React.whitelist.delegateWhitelist)
       .then(() => {
-        React.unlockWallet(() => {
+        takeActionAfterWalletUnlock(this.props.wallet, () => {
           if (this.props.currentUser) {
             checkWalletBalance(this.props.wallet)
               .then(() => {
@@ -84,7 +84,7 @@ class JoinGivethCommunity extends Component {
   createCampaign() {
     isInWhitelist(this.props.currentUser, React.whitelist.projectOwnerWhitelist)
       .then(() => {
-        React.unlockWallet(() => {
+        takeActionAfterWalletUnlock(this.props.wallet, () => {
           if (this.props.currentUser) {
             checkWalletBalance(this.props.wallet)
               .then(() => {
@@ -140,12 +140,12 @@ class JoinGivethCommunity extends Component {
               &nbsp;Join Giveth
             </CommunityButton>
             &nbsp;
-            {this.state.canCreateCampaign && (
+            {this.state.canCreateDAC && (
               <button type="button" className="btn btn-info" onClick={() => this.createDAC()}>
                 Create a Community
               </button>
             )}
-            {this.state.canCreateDAC && (
+            {this.state.canCreateCampaign && (
               <button type="button" className="btn btn-info" onClick={() => this.createCampaign()}>
                 Start a Campaign
               </button>

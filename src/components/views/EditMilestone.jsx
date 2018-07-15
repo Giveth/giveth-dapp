@@ -181,7 +181,7 @@ class EditMilestone extends Component {
             .service('campaigns')
             .get(this.props.match.params.id)
             .then(campaign => {
-              if (Number(campaign.projectId) < 0) {
+              if (campaign.projectId < 0) {
                 this.props.history.goBack();
               } else {
                 this.setState({
@@ -460,6 +460,14 @@ class EditMilestone extends Component {
                 maxAmount,
               } = constructedModel;
               const parentProjectId = this.state.campaignProjectId;
+              // TODO  fix this hack
+              if (!parentProjectId || parentProjectId === '0') {
+                ErrorPopup(
+                  `It looks like the campaign has not been mined yet. Please try again in a bit`,
+                  `It looks like the campaign has not been mined yet. Please try again in a bit`,
+                );
+                return;
+              }
 
               /**
               lppCappedMilestoneFactory params

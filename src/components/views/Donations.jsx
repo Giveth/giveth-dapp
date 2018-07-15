@@ -5,7 +5,6 @@ import moment from 'moment';
 
 import Loader from '../Loader';
 import { convertEthHelper } from '../../lib/helpers';
-import Donation from '../../models/Donation';
 import { Consumer as UserConsumer } from '../../contextProviders/UserProvider';
 import DonationProvider, {
   Consumer as DonationConsumer,
@@ -53,16 +52,13 @@ const Donations = () => (
                               </thead>
                               <tbody>
                                 {donations.map(d => (
-                                  <tr
-                                    key={d.id}
-                                    className={d.status === Donation.PENDING ? 'pending' : ''}
-                                  >
+                                  <tr key={d.id} className={d.isPending ? 'pending' : ''}>
                                     <td className="td-date">
                                       {moment(d.createdAt).format('MM/DD/YYYY')}
                                     </td>
 
                                     <td className="td-donated-to">
-                                      {Number(d.intendedProjectId) > 0 && (
+                                      {d.intendedProjectId > 0 && (
                                         <span className="badge badge-info">
                                           <i className="fa fa-random" />
                                           &nbsp;Delegated
@@ -73,11 +69,11 @@ const Donations = () => (
                                       </Link>
                                     </td>
                                     <td className="td-donations-amount">
-                                      {convertEthHelper(d.amount)} ETH
+                                      {convertEthHelper(d.amountRemaining)} ETH
                                     </td>
 
                                     <td className="td-transaction-status">
-                                      {d.status === Donation.PENDING && (
+                                      {d.isPending && (
                                         <span>
                                           <i className="fa fa-circle-o-notch fa-spin" />
                                           &nbsp;

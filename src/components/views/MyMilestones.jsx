@@ -524,6 +524,15 @@ class MyMilestones extends Component {
                 const parentProjectId = milestone.campaign.projectId;
                 const from = this.props.currentUser.address;
 
+                // TODO  fix this hack
+                if (!parentProjectId || parentProjectId === '0') {
+                  ErrorPopup(
+                    `It looks like the campaign has not been mined yet. Please try again in a bit`,
+                    `It looks like the campaign has not been mined yet. Please try again in a bit`,
+                  );
+                  return Promise.resolve();
+                }
+
                 return network.lppCappedMilestoneFactory
                   .newMilestone(
                     title,
@@ -821,6 +830,7 @@ class MyMilestones extends Component {
                   query: {
                     ownerType: 'milestone',
                     ownerTypeId: milestone._id,
+                    amountRemaining: { $ne: 0 },
                   },
                 })
                 .then(({ data }) => {
@@ -831,21 +841,21 @@ class MyMilestones extends Component {
                     const pledge = pledges.find(n => n.id === donation.pledgeId);
 
                     if (pledge) {
-                      pledge.amount = pledge.amount.add(utils.toBN(donation.amount));
+                      pledge.amount = pledge.amount.add(utils.toBN(donation.amountRemaining));
                     } else {
                       pledges.push({
                         id: donation.pledgeId,
-                        amount: utils.toBN(donation.amount),
+                        amount: utils.toBN(donation.amountRemaining),
                       });
                     }
                   });
 
                   return pledges.map(
-                    note =>
-                      // due to some issue in web3, utils.toHex(note.amount) breaks during minification.
+                    pledge =>
+                      // due to some issue in web3, utils.toHex(pledge.amount) breaks during minification.
                       // BN.toString(16) will return a hex string as well
-                      `0x${utils.padLeft(note.amount.toString(16), 48)}${utils.padLeft(
-                        utils.toHex(note.id).substring(2),
+                      `0x${utils.padLeft(pledge.amount.toString(16), 48)}${utils.padLeft(
+                        utils.toHex(pledge.id).substring(2),
                         16,
                       )}`,
                   );
@@ -1023,7 +1033,7 @@ class MyMilestones extends Component {
                                   {convertEthHelper(m.maxAmount)} ETH
                                 </td>
                                 <td className="td-donations-number">{m.donationCount || 0}</td>
-                                <td className="td-donations-amount">
+                                <td className="td-donations-">
                                   {convertEthHelper(m.totalDonated)} ETH
                                 </td>
                                 <td className="td-reviewer">

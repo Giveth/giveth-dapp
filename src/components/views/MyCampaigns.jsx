@@ -8,7 +8,7 @@ import Loader from '../Loader';
 import User from '../../models/User';
 import { getTruncatedText, convertEthHelper } from '../../lib/helpers';
 import GivethWallet from '../../lib/blockchain/GivethWallet';
-import CampaignService from '../../services/Campaign';
+import CampaignService from '../../services/CampaignService';
 import Campaign from '../../models/Campaign';
 
 /**

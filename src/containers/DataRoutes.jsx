@@ -5,8 +5,8 @@ import DACs from '../components/views/DACs';
 import Campaigns from '../components/views/Campaigns';
 import Loader from '../components/Loader';
 
-import DACservice from '../services/DAC';
-import CampaignService from '../services/Campaign';
+import DACservice from '../services/DACService';
+import CampaignService from '../services/CampaignService';
 
 /**
  * These routes load and keep DACs and Campaigns in state for faster switching of routes
