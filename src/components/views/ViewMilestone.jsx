@@ -12,6 +12,7 @@ import GivethWallet from '../../lib/blockchain/GivethWallet';
 import { convertEthHelper, getUserAvatar, getUserName, isOwner } from '../../lib/helpers';
 import { checkWalletBalance, redirectAfterWalletUnlock } from '../../lib/middleware';
 import User from '../../models/User';
+import Milestone from '../../models/Milestone';
 import BackgroundImageHeader from '../BackgroundImageHeader';
 import DonateButton from '../DonateButton';
 import ErrorPopup from '../ErrorPopup';
@@ -74,10 +75,10 @@ class ViewMilestone extends Component {
       });
 
     // lazy load donations
-    // TODO: fetch "non comitted" donations? add "intendedProjectId: milestoneId" to query to get
+    // TODO: fetch "non comitted" donations? add "intendedProjectTypeId: milestoneId" to query to get
     // all "pending aproval" donations for this milestone
     const query = paramsForServer({
-      query: { ownerId: milestoneId },
+      query: { ownerTypeId: milestoneId },
       schema: 'includeGiverDetails',
       $sort: { createdAt: -1 },
     });
@@ -199,8 +200,7 @@ class ViewMilestone extends Component {
 
               {this.isActiveMilestone() && (
                 <DonateButton
-                  type="milestone"
-                  model={{ title, id, adminId: projectId }}
+                  model={{ type: Milestone.type, title, id, adminId: projectId }}
                   wallet={wallet}
                   currentUser={currentUser}
                   history={history}
@@ -216,7 +216,7 @@ class ViewMilestone extends Component {
 
                     {(isOwner(ownerAddress, currentUser) ||
                       isOwner(campaign.ownerAddress, currentUser)) &&
-                      ['proposed', 'rejected', 'InProgress', 'NeedsReview'].includes(status) && (
+                      ['Proposed', 'Rejected', 'InProgress', 'NeedsReview'].includes(status) && (
                         <span className="pull-right">
                           <button
                             type="button"
@@ -442,8 +442,7 @@ class ViewMilestone extends Component {
                   <ShowTypeDonations donations={donations} isLoading={isLoadingDonations} />
                   {this.isActiveMilestone() && (
                     <DonateButton
-                      type="milestone"
-                      model={{ title, id, adminId: projectId }}
+                      model={{ type: Milestone.type, title, id, adminId: projectId }}
                       wallet={wallet}
                       currentUser={currentUser}
                       history={history}

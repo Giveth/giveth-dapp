@@ -8,6 +8,9 @@ import ErrorPopup from '../components/ErrorPopup';
 // Models
 import Donation from '../models/Donation';
 import User from '../models/User';
+import DAC from '../models/DAC';
+import Campaign from '../models/Campaign';
+import Milestone from '../models/Milestone';
 
 const Context = createContext();
 const { Provider, Consumer } = Context;
@@ -51,7 +54,7 @@ class DelegationProvider extends Component {
             .watch({ listStrategy: 'always' })
             .find({
               query: {
-                delegateId: { $gt: '0' },
+                status: DAC.ACTIVE,
                 $select: ['ownerAddress', 'title', '_id', 'delegateId'],
               },
             })
@@ -59,16 +62,16 @@ class DelegationProvider extends Component {
               resp =>
                 this.setState(
                   {
-                    dacs: resp.data.map(c => {
-                      c.type = 'dac';
-                      c.name = c.title;
-                      c.id = c._id; // eslint-disable-line no-underscore-dangle
-                      c.element = (
+                    dacs: resp.data.map(d => {
+                      d.type = DAC.type;
+                      d.name = d.title;
+                      d.id = d._id;
+                      d.element = (
                         <span>
-                          {c.title} <em>DAC</em>
+                          {d.title} <em>DAC</em>
                         </span>
                       );
-                      return c;
+                      return d;
                     }),
                   },
                   resolve(),
@@ -82,10 +85,7 @@ class DelegationProvider extends Component {
             .watch({ listStrategy: 'always' })
             .find({
               query: {
-                projectId: {
-                  $gt: '0',
-                },
-                status: 'Active',
+                status: Campaign.ACTIVE,
                 $select: ['ownerAddress', 'title', '_id', 'projectId'],
               },
             })
@@ -94,9 +94,9 @@ class DelegationProvider extends Component {
                 this.setState(
                   {
                     campaigns: resp.data.map(c => {
-                      c.type = 'campaign';
+                      c.type = Campaign.type;
                       c.name = c.title;
-                      c.id = c._id; // eslint-disable-line no-underscore-dangle
+                      c.id = c._id;
                       c.element = (
                         <span>
                           {c.title} <em>Campaign</em>
@@ -116,8 +116,7 @@ class DelegationProvider extends Component {
             .watch({ listStrategy: 'always' })
             .find({
               query: {
-                projectId: { $gt: '0' },
-                status: 'InProgress',
+                status: Milestone.IN_PROGRESS,
                 $select: [
                   'title',
                   '_id',
@@ -134,9 +133,9 @@ class DelegationProvider extends Component {
                 this.setState(
                   {
                     milestones: resp.data.map(m => {
-                      m.type = 'milestone';
+                      m.type = Milestone.type;
                       m.name = m.title;
-                      m.id = m._id; // eslint-disable-line no-underscore-dangle
+                      m.id = m._id;
                       m.element = (
                         <span>
                           {m.title} <em>Milestone</em>
@@ -175,25 +174,28 @@ class DelegationProvider extends Component {
 
     const dacsIds = this.state.dacs
       .filter(c => c.ownerAddress === this.props.currentUser.address)
-      .map(c => c._id); // eslint-disable-line no-underscore-dangle
+      .map(c => c._id);
 
     const campaignIds = this.state.campaigns
       .filter(c => c.ownerAddress === this.props.currentUser.address)
-      .map(c => c._id); // eslint-disable-line no-underscore-dangle
+      .map(c => c._id);
 
     const query = paramsForServer({
       query: {
+        amountRemaining: { $ne: 0 },
         $or: [
-          { ownerId: { $in: campaignIds } },
-          { delegateId: { $in: dacsIds } },
+          { ownerTypeId: { $in: campaignIds }, status: Donation.COMMITTED },
+          { delegateTypeId: { $in: dacsIds }, status: Donation.WAITING },
           {
-            ownerId: this.props.currentUser.address,
-            delegateId: { $ne: '0' },
+            ownerTypeId: this.props.currentUser.address,
+            delegateId: undefined,
+            status: Donation.WAITING,
           },
+          // {
+          // ownerTypeId: this.props.currentUser.address,
+          // delegateTypeId: { $gt: 0 },
+          // },
         ],
-        status: {
-          $in: ['waiting', 'committed'],
-        },
         $sort: { createdAt: 1 },
       },
       schema: 'includeTypeAndGiverDetails',

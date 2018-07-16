@@ -55,7 +55,7 @@ const rejectProposedMilestone = milestone => {
       },
     },
   }).then(message => {
-    const newContent = { status: 'rejected' };
+    const newContent = { status: 'Rejected' };
     if (message) newContent.message = message;
     feathersClient
       .service('/milestones')
@@ -182,7 +182,7 @@ class MyMilestones extends Component {
             { recipientAddress: myAddress },
           ],
         },
-        { status: 'rejected' },
+        { status: 'Rejected' },
       ];
     } else {
       const resp = await feathersClient
@@ -195,10 +195,10 @@ class MyMilestones extends Component {
             { ownerAddress: myAddress },
             { reviewerAddress: myAddress },
             { recipientAddress: myAddress },
-            { $and: [{ campaignId: { $in: campaignsIDs } }, { status: 'proposed' }] },
+            { $and: [{ campaignId: { $in: campaignsIDs } }, { status: 'Proposed' }] },
           ],
         },
-        { status: { $nin: ['Paid', 'Canceled', 'rejected'] } },
+        { status: { $nin: ['Paid', 'Canceled', 'Rejected'] } },
       ];
     }
 
@@ -246,7 +246,7 @@ class MyMilestones extends Component {
           buttons: ['Cancel', 'Yes, edit'],
         }).then(isConfirmed => {
           if (isConfirmed) {
-            if (['proposed', 'rejected'].includes(milestone.status)) {
+            if (['Proposed', 'Rejected'].includes(milestone.status)) {
               redirectAfterWalletUnlock(
                 `/milestones/${milestone._id}/edit/proposed`,
                 this.props.wallet,
@@ -321,7 +321,6 @@ class MyMilestones extends Component {
                 return cappedMilestone
                   .requestMarkAsComplete({
                     from: this.props.currentUser.address,
-                    $extraGas: 4000000,
                   })
                   .once('transactionHash', hash => {
                     txHash = hash;
@@ -421,7 +420,6 @@ class MyMilestones extends Component {
                 return cappedMilestone
                   .cancelMilestone({
                     from: this.props.currentUser.address,
-                    $extraGas: 4000000,
                   })
                   .once('transactionHash', hash => {
                     txHash = hash;
@@ -478,7 +476,7 @@ class MyMilestones extends Component {
               feathersClient
                 .service('/milestones')
                 .patch(milestone._id, {
-                  status: 'pending',
+                  status: 'Pending',
                   mined: false,
                   message: proof.message,
                   proofItems: proof.items,
@@ -521,6 +519,15 @@ class MyMilestones extends Component {
                 const parentProjectId = milestone.campaign.projectId;
                 const from = this.props.currentUser.address;
 
+                // TODO  fix this hack
+                if (!parentProjectId || parentProjectId === '0') {
+                  ErrorPopup(
+                    `It looks like the campaign has not been mined yet. Please try again in a bit`,
+                    `It looks like the campaign has not been mined yet. Please try again in a bit`,
+                  );
+                  return Promise.resolve();
+                }
+
                 return network.lppCappedMilestoneFactory
                   .newMilestone(
                     title,
@@ -533,7 +540,7 @@ class MyMilestones extends Component {
                     maxAmount,
                     Object.values(config.tokenAddresses)[0], // TODO make this a form param
                     5 * 24 * 60 * 60, // 5 days in seconds
-                    { from, $extraGas: 200000 },
+                    { from },
                   )
                   .on('transactionHash', hash => {
                     txHash = hash;
@@ -614,7 +621,6 @@ class MyMilestones extends Component {
                 return cappedMilestone
                   .approveMilestoneCompleted({
                     from: this.props.currentUser.address,
-                    $extraGas: 4000000,
                   })
                   .once('transactionHash', hash => {
                     txHash = hash;
@@ -699,7 +705,6 @@ class MyMilestones extends Component {
                 return cappedMilestone
                   .rejectCompleteRequest({
                     from: this.props.currentUser.address,
-                    $extraGas: 4000000,
                   })
                   .once('transactionHash', hash => {
                     txHash = hash;
@@ -788,14 +793,13 @@ class MyMilestones extends Component {
                 .patch(
                   null,
                   {
-                    status: 'pending',
-                    paymentStatus: 'Paying',
+                    status: 'Pending',
                     txHash,
                   },
                   {
                     query: {
                       ownerType: 'milestone',
-                      ownerId: milestone._id,
+                      ownerTypeId: milestone._id,
                     },
                   },
                 )
@@ -810,7 +814,8 @@ class MyMilestones extends Component {
                 .find({
                   query: {
                     ownerType: 'milestone',
-                    ownerId: milestone._id,
+                    ownerTypeId: milestone._id,
+                    amountRemaining: { $ne: 0 },
                   },
                 })
                 .then(({ data }) => {
@@ -821,21 +826,21 @@ class MyMilestones extends Component {
                     const pledge = pledges.find(n => n.id === donation.pledgeId);
 
                     if (pledge) {
-                      pledge.amount = pledge.amount.add(utils.toBN(donation.amount));
+                      pledge.amount = pledge.amount.add(utils.toBN(donation.amountRemaining));
                     } else {
                       pledges.push({
                         id: donation.pledgeId,
-                        amount: utils.toBN(donation.amount),
+                        amount: utils.toBN(donation.amountRemaining),
                       });
                     }
                   });
 
                   return pledges.map(
-                    note =>
-                      // due to some issue in web3, utils.toHex(note.amount) breaks during minification.
+                    pledge =>
+                      // due to some issue in web3, utils.toHex(pledge.amount) breaks during minification.
                       // BN.toString(16) will return a hex string as well
-                      `0x${utils.padLeft(note.amount.toString(16), 48)}${utils.padLeft(
-                        utils.toHex(note.id).substring(2),
+                      `0x${utils.padLeft(pledge.amount.toString(16), 48)}${utils.padLeft(
+                        utils.toHex(pledge.id).substring(2),
                         16,
                       )}`,
                   );
@@ -850,7 +855,6 @@ class MyMilestones extends Component {
                 return new LPPCappedMilestone(web3, milestone.pluginAddress)
                   .mWithdraw(pledges, {
                     from: this.props.currentUser.address,
-                    $extraGas: 100000,
                   })
                   .once('transactionHash', hash => {
                     txHash = hash;
@@ -971,7 +975,7 @@ class MyMilestones extends Component {
                           </thead>
                           <tbody>
                             {milestones.map(m => (
-                              <tr key={m._id} className={m.status === 'pending' ? 'pending' : ''}>
+                              <tr key={m._id} className={m.status === 'Pending' ? 'pending' : ''}>
                                 <td className="td-created-at">
                                   {m.createdAt && (
                                     <span>{moment.utc(m.createdAt).format('Do MMM YYYY')}</span>
@@ -993,7 +997,7 @@ class MyMilestones extends Component {
                                   </Link>
                                 </td>
                                 <td className="td-status">
-                                  {(m.status === 'pending' ||
+                                  {(m.status === 'Pending' ||
                                     (Object.keys(m).includes('mined') && !m.mined)) && (
                                     <span>
                                       <i className="fa fa-circle-o-notch fa-spin" />
@@ -1013,7 +1017,7 @@ class MyMilestones extends Component {
                                   {convertEthHelper(m.maxAmount)} ETH
                                 </td>
                                 <td className="td-donations-number">{m.donationCount || 0}</td>
-                                <td className="td-donations-amount">
+                                <td className="td-donations-">
                                   {convertEthHelper(m.totalDonated)} ETH
                                 </td>
                                 <td className="td-reviewer">
@@ -1028,7 +1032,7 @@ class MyMilestones extends Component {
                                   {/* Campaign and Milestone managers can edit milestone */}
                                   {(m.ownerAddress === currentUser.address ||
                                     m.campaign.ownerAddress === currentUser.address) &&
-                                    ['proposed', 'rejected', 'InProgress', 'NeedsReview'].includes(
+                                    ['Proposed', 'Rejected', 'InProgress', 'NeedsReview'].includes(
                                       m.status,
                                     ) && (
                                       <button
@@ -1042,7 +1046,7 @@ class MyMilestones extends Component {
                                     )}
 
                                   {m.campaign.ownerAddress === currentUser.address &&
-                                    m.status === 'proposed' && (
+                                    m.status === 'Proposed' && (
                                       <span>
                                         <button
                                           type="button"
@@ -1063,7 +1067,7 @@ class MyMilestones extends Component {
                                       </span>
                                     )}
                                   {m.ownerAddress === currentUser.address &&
-                                    m.status === 'rejected' && (
+                                    m.status === 'Rejected' && (
                                       <button
                                         type="button"
                                         className="btn btn-success btn-sm"
@@ -1104,7 +1108,7 @@ class MyMilestones extends Component {
                                     )}
 
                                   {m.ownerAddress === currentUser.address &&
-                                    ['proposed', 'rejected'].includes(m.status) && (
+                                    ['Proposed', 'Rejected'].includes(m.status) && (
                                       <span>
                                         <button
                                           type="button"

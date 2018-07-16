@@ -75,7 +75,7 @@ class EditProfile extends Component {
         avatar: file,
         // If no giverId, set to 0 so we don't add 2 givers for the same user if they update their
         // profile before the AddGiver tx has been mined. 0 is a reserved giverId
-        giverId: this.state.giverId || '0',
+        giverId: this.state.giverId || 0,
       };
 
       // TODO: if (giverId > 0), need to send tx if commitTime or name has changed
@@ -88,7 +88,6 @@ class EditProfile extends Component {
           let txHash;
           liquidPledging
             .addGiver(model.name || '', '', 259200, 0, {
-              $extraGas: 50000,
               from,
             }) // 3 days commitTime. TODO allow user to set commitTime
             .once('transactionHash', hash => {

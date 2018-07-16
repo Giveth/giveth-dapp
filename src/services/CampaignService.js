@@ -3,6 +3,7 @@ import getNetwork from '../lib/blockchain/getNetwork';
 import { getWeb3 } from '../lib/blockchain/getWeb3';
 import { feathersClient } from '../lib/feathersClient';
 import Campaign from '../models/Campaign';
+import Milestone from '../models/Milestone';
 
 import ErrorPopup from '../components/ErrorPopup';
 
@@ -37,7 +38,7 @@ class CampaignService {
       .find({
         query: {
           projectId: {
-            $gt: '0', // 0 is a pending campaign
+            $gt: 0, // 0 is a pending campaign
           },
           status: Campaign.ACTIVE,
           $limit: 200,
@@ -66,10 +67,9 @@ class CampaignService {
       .find({
         query: {
           campaignId: id,
-          projectId: {
-            $gt: '0', // 0 is a pending milestone
+          status: {
+            $nin: [Milestone.CANCELED, Milestone.PROPOSED, Milestone.REJECTED, Milestone.PENDING],
           },
-          status: { $nin: ['Canceled'] },
           $sort: { createdAt: -1 },
         },
       })
@@ -89,7 +89,8 @@ class CampaignService {
       .watch({ listStrategy: 'always' })
       .find({
         query: {
-          ownerId: id,
+          ownerTypeId: id,
+          isReturn: false,
           $sort: { createdAt: -1 },
         },
       })
@@ -162,14 +163,12 @@ class CampaignService {
           lppCampaignFactory
             .newCampaign(campaign.title, '', 0, campaign.reviewerAddress, {
               from,
-              $extraGas: 200000,
             })
             .once('transactionHash', hash => {
               txHash = hash;
-              campaign.txHash = txHash;
               feathersClient
                 .service('campaigns')
-                .create(campaign.toFeathers())
+                .create(campaign.toFeathers(txHash))
                 .then(() => afterCreate(`${etherScanUrl}tx/${txHash}`));
             })
             .then(() => {
@@ -210,7 +209,7 @@ class CampaignService {
         etherScanUrl = network.etherscan;
 
         lppCampaign
-          .cancelCampaign({ from, $extraGas: 100000 })
+          .cancelCampaign({ from })
           .once('transactionHash', hash => {
             txHash = hash;
             feathersClient
@@ -218,7 +217,7 @@ class CampaignService {
               .patch(campaign.id, {
                 status: Campaign.CANCELED,
                 mined: false,
-                txHash,
+                // txHash, // TODO create a transaction entry
               })
               .then(afterCreate(`${etherScanUrl}tx/${txHash}`))
               .catch(err => {

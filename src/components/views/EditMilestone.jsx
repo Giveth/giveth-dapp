@@ -61,7 +61,7 @@ class EditMilestone extends Component {
       fiatAmount: new BigNumber(0),
       recipientAddress: '',
       // completionDeadline: '',
-      status: 'pending',
+      status: 'Pending',
       uploadNewImage: false,
       campaignTitle: '',
       projectId: undefined,
@@ -167,7 +167,7 @@ class EditMilestone extends Component {
             .service('campaigns')
             .get(this.props.match.params.id)
             .then(campaign => {
-              if (Number(campaign.projectId) < 0) {
+              if (campaign.projectId < 0) {
                 this.props.history.goBack();
               } else {
                 this.setState({
@@ -362,8 +362,8 @@ class EditMilestone extends Component {
         image: file,
         campaignId: this.state.campaignId,
         status:
-          this.props.isProposed || this.state.status === 'rejected'
-            ? 'proposed'
+          this.props.isProposed || this.state.status === 'Rejected'
+            ? 'Proposed'
             : this.state.status, // make sure not to change status!
         items: this.state.itemizeState ? this.state.items : [],
         ethConversionRateTimestamp: this.props.currentRate.timestamp,
@@ -415,6 +415,14 @@ class EditMilestone extends Component {
                 maxAmount,
               } = constructedModel;
               const parentProjectId = this.state.campaignProjectId;
+              // TODO  fix this hack
+              if (!parentProjectId || parentProjectId === '0') {
+                ErrorPopup(
+                  `It looks like the campaign has not been mined yet. Please try again in a bit`,
+                  `It looks like the campaign has not been mined yet. Please try again in a bit`,
+                );
+                return;
+              }
 
               /**
               lppCappedMilestoneFactory params
@@ -443,7 +451,7 @@ class EditMilestone extends Component {
                   maxAmount,
                   Object.values(config.tokenAddresses)[0], // TODO make this a form param
                   5 * 24 * 60 * 60, // 5 days in seconds
-                  { from, $extraGas: 200000 },
+                  { from },
                 )
                 .on('transactionHash', hash => {
                   txHash = hash;
