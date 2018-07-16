@@ -46,6 +46,7 @@ class UserProvider extends Component {
       hasError: false,
       wallet: undefined,
       walletLocked: true,
+      showUnlockWalletModal: false,
     };
 
     this.handleWalletChange = this.handleWalletChange.bind(this);
