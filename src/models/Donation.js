@@ -1,5 +1,7 @@
 import Model from './Model';
 import { getTruncatedText } from '../lib/helpers';
+import Milestone from './Milestone';
+import Campaign from './Campaign';
 // import User from './User';
 
 /* eslint no-underscore-dangle: 0 */
@@ -69,6 +71,9 @@ class Donation extends Model {
     this.giver = data.giver;
     this.giverAddress = data.giverAddress;
     this.intendedProjectId = data.intendedProjectId;
+    this.intendedProjectTypeId = data.intendedProjectTypeId;
+    this.intendedProjectType = data.intendedProjectType;
+    this.intendedProjectEntity = data.intendedProjectEntity;
     this.ownerId = data.ownerId;
     this.ownerEntity = data.ownerEntity;
     this.ownerTypeId = data.ownerTypeId;
@@ -94,22 +99,28 @@ class Donation extends Model {
       name: '',
       type: '',
     };
-    if (this.delegateId > 0) {
+    if (this.delegateId > 0 && !this.intendedProjectId) {
       // DAC
-      donatedTo.url = `/dacs/${this.delegateEntity._id}`; // eslint-disable-line no-underscore-dangle
+      donatedTo.url = `/dacs/${this.delegateEntity._id}`;
       donatedTo.name = getTruncatedText(this.delegateEntity.title, 45);
       donatedTo.type = 'DAC';
-    } else if (!this.delegateId && this.ownerType === 'campaign') {
+    } else if (
+      (!this.delegateId && this.ownerType === Campaign.type) ||
+      (this.intendedProjectId && this.intendedProjectType === Campaign.type)
+    ) {
       // Campaign
-      donatedTo.url = `/${this.ownerType}s/${this.ownerEntity._id}`; // eslint-disable-line no-underscore-dangle
-      donatedTo.name = getTruncatedText(this.ownerEntity.title, 45);
+      const entity = this.intendedProjectId ? this.intendedProjectEntity : this.ownerEntity;
+      donatedTo.url = `/${entity}s/${entity._id}`;
+      donatedTo.name = getTruncatedText(entity.title, 45);
       donatedTo.type = 'CAMPAIGN';
-    } else if (!this.delegateId && this.ownerType === 'milestone') {
+    } else if (
+      (!this.delegateId && this.ownerType === Milestone.type) ||
+      (this.intendedProjectId && this.intendedProjectType === Milestone.type)
+    ) {
       // Milestone
-      donatedTo.url = `/campaigns/${this.ownerEntity.campaign._id}/milestones/${
-        this.ownerEntity._id
-      }`; // eslint-disable-line no-underscore-dangle
-      donatedTo.name = getTruncatedText(this.ownerEntity.title, 45);
+      const entity = this.intendedProjectId ? this.intendedProjectEntity : this.ownerEntity;
+      donatedTo.url = `/campaigns/${entity.campaign._id}/milestones/${entity._id}`;
+      donatedTo.name = getTruncatedText(entity.title, 45);
       donatedTo.type = 'MILESTONE';
     } else {
       // User
@@ -318,6 +329,33 @@ class Donation extends Model {
     this.myIntendedProjectId = value;
   }
 
+  get intendedProjectTypeId() {
+    return this.myIntendedProjectTypeId;
+  }
+
+  set intendedProjectTypeId(value) {
+    this.checkType(value, ['number', 'string', 'undefined'], 'intendedProjectTypeId');
+    this.myIntendedProjectTypeId = value;
+  }
+
+  get intendedProjectType() {
+    return this.myIntendedProjectType;
+  }
+
+  set intendedProjectType(value) {
+    this.checkType(value, ['string', 'undefined'], 'intendedProjectType');
+    this.myIntendedProjectType = value;
+  }
+
+  get intendedProjectEntity() {
+    return this.myIntendedProjectEntity;
+  }
+
+  set intendedProjectEntity(value) {
+    this.checkType(value, ['object', 'undefined'], 'intendedProjectEntity');
+    this.myIntendedProjectEntity = value;
+  }
+
   get ownerId() {
     return this.myOwnerId;
   }
@@ -337,12 +375,12 @@ class Donation extends Model {
   }
 
   get ownerTypeId() {
-    return this.myOwnerId;
+    return this.myOwnerTypeId;
   }
 
   set ownerTypeId(value) {
     this.checkType(value, ['string'], 'ownerEntity');
-    this.myOwnerId = value;
+    this.myOwnerTypeId = value;
   }
 
   get ownerType() {

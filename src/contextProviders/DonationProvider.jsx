@@ -55,10 +55,7 @@ class DonationProvider extends Component {
             schema: 'includeTypeDetails',
             query: {
               giverAddress: this.props.currentUser.address,
-              $or: [
-                { amountRemaining: { $ne: 0 } },
-                { status: { $in: [Donation.PAYING, Donation.PAID] } },
-              ],
+              amountRemaining: { $ne: 0 },
               $limit: 100,
             },
           }),

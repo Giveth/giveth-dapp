@@ -9,13 +9,16 @@ import { getWeb3 } from '../lib/blockchain/getWeb3';
 
 import ErrorPopup from '../components/ErrorPopup';
 
-function updateExistingDonation(donation, amount) {
+function updateExistingDonation(donation, amount, status) {
   const mutation = {
     pendingAmountRemaining: utils
       .toBN(donation.amountRemaining)
       .sub(utils.toBN(amount))
       .toString(),
   };
+  if (status) {
+    mutation.status = status;
+  }
 
   return feathersClient
     .service('donations')
@@ -114,8 +117,6 @@ class DonationService {
               });
             }
 
-            console.log(donation, newDonation);
-
             feathersClient
               .service('/donations')
               .create(newDonation)
@@ -170,23 +171,34 @@ class DonationService {
           )
           .once('transactionHash', hash => {
             txHash = hash;
+            updateExistingDonation(donation, donation.amountRemaining, Donation.REJECTED);
+
+            const newDonation = {
+              txHash,
+              amount: donation.amountRemaining,
+              amountRemaining: donation.amountRemaining,
+              status: Donation.TO_APPROVE,
+              ownerId: donation.ownerId,
+              ownerTypeId: donation.ownerTypeId,
+              ownerType: donation.ownerType,
+              delegateId: donation.delegateId,
+              delegateTypeId: donation.delegateTypeId,
+              delegateType: donation.delegateType,
+              giverAddress: donation.giverAddress,
+              pledgeId: 0,
+              parentDonations: [donation.id],
+              mined: false,
+              isReturn: true,
+            };
 
             feathersClient
               .service('/donations')
-              .patch(donation.id, {
-                status: Donation.PENDING,
-                $unset: {
-                  intendedProjectId: true,
-                  intendedProjectTypeId: true,
-                  intendedProjectType: true,
-                },
-                txHash,
-              })
+              .create(newDonation)
               .then(() => {
                 onCreated(`${etherScanUrl}tx/${txHash}`);
               })
               .catch(err => {
-                ErrorPopup('Something went wrong while comitting your donation.', err);
+                ErrorPopup('Something went wrong while committing your donation.', err);
                 onError(err);
               });
           });
@@ -233,24 +245,24 @@ class DonationService {
           )
           .once('transactionHash', hash => {
             txHash = hash;
+            updateExistingDonation(donation, donation.amountRemaining, Donation.COMMITTED);
 
+            const newDonation = {
+              txHash,
+              amount: donation.amountRemaining,
+              amountRemaining: donation.amountRemaining,
+              ownerId: donation.intendedProjectId,
+              ownerTypeId: donation.intendedProjectTypeId,
+              ownerType: donation.intendedProjectType,
+              giverAddress: donation.giverAddress,
+              pledgeId: 0,
+              parentDonations: [donation.id],
+              status: Donation.COMMITTED,
+              mined: false,
+            };
             feathersClient
               .service('/donations')
-              .patch(donation.id, {
-                status: Donation.PENDING,
-                $unset: {
-                  intendedProjectId: true,
-                  intendedProjectTypeId: true,
-                  intendedProjectType: true,
-                  delegateId: true,
-                  delegateType: true,
-                  delegateTypeId: true,
-                },
-                homeTxHash: txHash,
-                ownerId: donation.intendedProjectId,
-                ownerTypeId: donation.intendedProjectTypeId,
-                ownerType: donation.intendedProjectType,
-              })
+              .create(newDonation)
               .then(() => {
                 onCreated(`${etherScanUrl}tx/${txHash}`);
               })
@@ -297,20 +309,25 @@ class DonationService {
           })
           .once('transactionHash', hash => {
             txHash = hash;
+            updateExistingDonation(donation, donation.amountRemaining);
+
+            const newDonation = {
+              txHash,
+              amount: donation.amountRemaining,
+              amountRemaining: donation.amountRemaining,
+              ownerId: donation.ownerId,
+              ownerTypeId: donation.ownerTypeId,
+              ownerType: donation.ownerType,
+              giverAddress: donation.giverAddress,
+              pledgeId: 0,
+              parentDonations: [donation.id],
+              status: Donation.PAYING,
+              mined: false,
+            };
+
             feathersClient
               .service('/donations')
-              .patch(donation.id, {
-                status: Donation.PENDING,
-                $unset: {
-                  delegateId: true,
-                  delegateTypeId: true,
-                  delegateType: true,
-                  intendedProjectId: true,
-                  intendedProjectTypeId: true,
-                  intendedProjectType: true,
-                },
-                txHash,
-              })
+              .create(newDonation)
               .then(() => onCreated(`${etherScanUrl}tx/${txHash}`))
               .catch(err => {
                 ErrorPopup('Something went wrong while revoking your donation.', err);
