@@ -10,7 +10,7 @@ import Loader from '../Loader';
 
 import User from '../../models/User';
 import GivethWallet from '../../lib/blockchain/GivethWallet';
-import DACservice from '../../services/DAC';
+import DACservice from '../../services/DACService';
 import DAC from '../../models/DAC';
 
 /**

@@ -50,7 +50,7 @@ const Delegations = () => (
                                 </thead>
                                 <tbody>
                                   {delegations.map(d => (
-                                    <tr key={d.id}>
+                                    <tr key={d.adminId}>
                                       <td className="td-date">
                                         {moment(d.createdAt).format('MM/DD/YYYY')}
                                       </td>
@@ -61,7 +61,13 @@ const Delegations = () => (
                                         </Link>
                                       </td>
                                       <td className="td-donations-amount">
-                                        {convertEthHelper(d.amount)} ETH
+                                        {d.isPending && (
+                                          <span>
+                                            <i className="fa fa-circle-o-notch fa-spin" />
+                                            &nbsp;
+                                          </span>
+                                        )}
+                                        {convertEthHelper(d.amountRemaining)} ETH
                                       </td>
                                       <td className="td-user">
                                         <Link to={`profile/${d.giver.address}`}>
@@ -74,26 +80,29 @@ const Delegations = () => (
                                       <td className="td-actions">
                                         {/* When donated to a dac, allow delegation
                                       to campaigns and milestones */}
-                                        {(d.delegate > 0 || d.ownerId === currentUser.address) && (
-                                          <DelegateButton
-                                            types={campaigns.concat(milestones)}
-                                            donation={d}
-                                            wallet={wallet}
-                                          />
-                                        )}
+                                        {(d.delegateId > 0 ||
+                                          d.ownerTypeId === currentUser.address) &&
+                                          d.amountRemaining > 0 && (
+                                            <DelegateButton
+                                              types={campaigns.concat(milestones)}
+                                              donation={d}
+                                              wallet={wallet}
+                                            />
+                                          )}
 
                                         {/* When donated to a campaign, only allow delegation
                                       to milestones of that campaign */}
-                                        {d.ownerType === 'campaign' && (
-                                          <DelegateButton
-                                            types={milestones.filter(
-                                              m => m.campaignId === d.ownerId,
-                                            )}
-                                            donation={d}
-                                            milestoneOnly
-                                            wallet={wallet}
-                                          />
-                                        )}
+                                        {d.ownerType === 'campaign' &&
+                                          d.amountRemaining > 0 && (
+                                            <DelegateButton
+                                              types={milestones.filter(
+                                                m => m.campaignId === d.ownerTypeId,
+                                              )}
+                                              donation={d}
+                                              milestoneOnly
+                                              wallet={wallet}
+                                            />
+                                          )}
                                       </td>
                                     </tr>
                                   ))}

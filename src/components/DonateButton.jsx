@@ -9,12 +9,15 @@ import { Form, Input } from 'formsy-react-components';
 import getNetwork from '../lib/blockchain/getNetwork';
 import { feathersClient } from '../lib/feathersClient';
 import User from '../models/User';
+import DAC from '../models/DAC';
+import Donation from '../models/Donation';
 import { displayTransactionError, getGasPrice } from '../lib/helpers';
 import GivethWallet from '../lib/blockchain/GivethWallet';
 import { getWeb3, getHomeWeb3 } from '../lib/blockchain/getWeb3';
 import LoaderButton from './LoaderButton';
 import ErrorPopup from './ErrorPopup';
 import config from '../configuration';
+import DonationService from '../services/DonationService';
 
 const modalStyles = {
   content: {
@@ -145,7 +148,7 @@ class DonateButton extends React.Component {
 
     if (currentUser) {
       // TODO do we want to donate in the name of the rinkeby account automatically?
-      return Number(currentUser.giverId) > 0
+      return currentUser.giverId > 0
         ? givethBridge.$contract.methods.donate(currentUser.giverId, adminId).encodeABI()
         : givethBridge.$contract.methods
             .donateAndCreateGiver(currentUser.address, adminId)
@@ -155,7 +158,7 @@ class DonateButton extends React.Component {
   }
 
   submit(model) {
-    // TODO how to handle donations from non users
+    // TODO how to handle k from non users
     // if (this.props.currentUser) {
     this.donateWithBridge(model);
     this.setState({ isSaving: true });
@@ -185,12 +188,12 @@ class DonateButton extends React.Component {
 
     const value = utils.toWei(model.amount);
 
-    const opts = { value, gas: DONATION_GAS };
+    const opts = { value, gas: DONATION_GAS, from: account };
     let method;
     if (currentUser) {
       // TODO do we want to donate in the name of the rinkeby account automatically?
       method =
-        Number(currentUser.giverId) > 0
+        currentUser.giverId > 0
           ? givethBridge.donate(currentUser.giverId, adminId, opts)
           : givethBridge.donateAndCreateGiver(currentUser.address, adminId, opts);
     } else {
@@ -199,9 +202,21 @@ class DonateButton extends React.Component {
 
     let txHash;
     method
-      .on('transactionHash', transactionHash => {
+      .on('transactionHash', async transactionHash => {
         txHash = transactionHash;
         this.closeDialog();
+
+        await DonationService.newFeathersDonation(
+          currentUser || { address: account },
+          this.props.model,
+          value,
+          txHash,
+        );
+
+        this.setState({
+          modalVisible: false,
+          isSaving: false,
+        });
 
         React.toast.info(
           <p>
@@ -318,148 +333,8 @@ class DonateButton extends React.Component {
     });
   }
 
-  donateWithGiveth(model) {
-    const amount = utils.toWei(model.amount);
-    const service = feathersClient.service('donations');
-
-    const donate = (etherScanUrl, txHash) => {
-      const donation = {
-        amount,
-        txHash,
-        status: 'pending',
-      };
-
-      if (this.props.type.toLowerCase() === 'dac') {
-        Object.assign(donation, {
-          delegate: this.props.model.adminId,
-          delegateId: this.props.model.id,
-          owner: this.props.currentUser.giverId || '0',
-          ownerId: this.props.currentUser,
-          ownerType: 'giver',
-        });
-      } else {
-        Object.assign(donation, {
-          owner: this.props.model.adminId,
-          ownerId: this.props.model.id,
-          ownerType: this.props.type.toLowerCase(),
-        });
-      }
-
-      return service.create(donation).then(() => {
-        this.setState({
-          isSaving: false,
-          amount: 10,
-        });
-
-        // For some reason (I suspect a rerender when donations are being fetched again)
-        // the modal is sometimes gone and this throws error
-        // TO DO: Confirm now that we have new Modals
-        this.setState({ modalVisible: false });
-
-        let msg;
-        if (this.props.type === 'DAC') {
-          msg = (
-            <div>
-              <p>
-                Your donation is pending,
-                <a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">
-                  {' '}
-                  view the transaction here.
-                </a>
-                You have full control of this donation and
-                <strong> can take it back at any time</strong>. You will also have a
-                <strong> 3 day window</strong> to veto the use of these funds upon delegation by the
-                DAC.
-              </p>
-              <p>
-                Do make sure to
-                <a href={this.props.communityUrl} target="_blank" rel="noopener noreferrer">
-                  {' '}
-                  join the Community
-                </a>{' '}
-                to follow the progress of this DAC.
-              </p>
-            </div>
-          );
-        } else {
-          msg = (
-            <div>
-              <p>
-                Your donation is pending,
-                <a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">
-                  {' '}
-                  view the transaction here.
-                </a>
-              </p>
-              <p>
-                Do make sure to
-                <a href={this.props.communityUrl} target="_blank" rel="noopener noreferrer">
-                  {' '}
-                  join the Community
-                </a>{' '}
-                to follow the progress of this Campaign.
-              </p>
-            </div>
-          );
-        }
-
-        React.swal({
-          title: "You're awesome!",
-          content: React.swal.msg(msg),
-          icon: 'success',
-        });
-      });
-    };
-
-    // FIXME: This is super ugly, there is a short flash period when the submit button is pressed before the unlock/success appears
-    this.setState({ modalVisible: false });
-
-    let txHash;
-    let etherScanUrl;
-    Promise.all([getNetwork(), getWeb3(), getHomeWeb3()])
-      .then(([network, web3, ropstenWeb3]) => {
-        const { tokenAddress, liquidPledgingAddress } = network;
-        etherScanUrl = network.etherscan;
-        const token = new MiniMeToken(web3, tokenAddress);
-
-        const giverId = this.props.currentUser.giverId || '0';
-        const { adminId } = this.props.model;
-
-        const data = `0x${utils.padLeft(utils.toHex(giverId).substring(2), 16)}${utils.padLeft(
-          utils.toHex(adminId).substring(2),
-          16,
-        )}`;
-
-        return token
-          .approveAndCall(liquidPledgingAddress, amount, data, {
-            from: this.props.currentUser.address,
-            gas: 1000000,
-          })
-          .once('transactionHash', hash => {
-            txHash = hash;
-            donate(etherScanUrl, txHash);
-          });
-      })
-      .then(() => {
-        React.toast.success(
-          <p>
-            Your donation has been confirmed!<br />
-            <a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">
-              View transaction
-            </a>
-          </p>,
-        );
-      })
-      .catch(e => {
-        console.error(e);
-        displayTransactionError(txHash, etherScanUrl);
-
-        this.setState({ isSaving: false });
-      });
-  }
-
   render() {
-    const { type, model, wallet } = this.props;
+    const { model, currentUser } = this.props;
     const {
       homeWeb3,
       account,
@@ -488,24 +363,44 @@ class DonateButton extends React.Component {
             contentLabel={`Support this ${type}!`}
             style={modalStyles}
           >
-            {!homeWeb3 && (
-              <div className="alert alert-warning">
-                <i className="fa fa-exclamation-triangle" />
-                It is recommended that you install <a href="https://metamask.io/">MetaMask</a> to
-                donate
-              </div>
-            )}
-
+            {homeWeb3 &&
+              !homeWeb3.givenProvider && (
+                <div className="alert alert-warning">
+                  <i className="fa fa-exclamation-triangle" />
+                  It is recommended that you install <a href="https://metamask.io/">MetaMask</a> to
+                  donate
+                </div>
+              )}
             <h3>
               Give Ether to support <em>{model.title}</em>
             </h3>
 
-            {type === 'DAC' && (
+            {model.type === DAC.type && (
               <p>
-                Pledge: as long as the {type} owner does not lock your money you can take it back
-                any time.
+                Pledge: as long as the {model.type} owner does not lock your money you can take it
+                back any time.
               </p>
             )}
+            {/* TODO add note that we are donating as the logged in user, or that they won't be able to manage funds if no logged in user & using metamask*/}
+
+            {homeWeb3 &&
+              homeWeb3.givenProvider &&
+              !validNetwork && (
+                <div className="alert alert-warning">
+                  <i className="fa fa-exclamation-triangle" />
+                  It looks like you are connected to the wrong network. Please connect to the{' '}
+                  <strong>{config.homeNetworkName}</strong> network to donate
+                </div>
+              )}
+            {homeWeb3 &&
+              homeWeb3.givenProvider &&
+              account &&
+              validNetwork && (
+                <p>
+                  Pledge: as long as the {type} owner does not lock your money you can take it back
+                  any time.
+                </p>
+              )}
 
             {/* TODO add note that we are donating as the logged in user, or that they won't be able to manage funds if no logged in user & using metamask*/}
 
@@ -533,7 +428,6 @@ class DonateButton extends React.Component {
                   Gas price: <em>{gasPrice} Gwei</em>
                 </p>
               )}
-
             <Form
               onSubmit={this.submit}
               mapping={inputs => this.mapInputs(inputs)}
@@ -549,7 +443,7 @@ class DonateButton extends React.Component {
                   label="How much Ξ do you want to donate?"
                   type="number"
                   value={amount}
-                  onChange={amount => /*TODO fixme*/ console.log(amount)}
+                  onChange={amount => /*TODO fixme*/ {}}
                   placeholder="1"
                   validations={{
                     lessOrEqualTo: homeWeb3 ? balance : 10000000000000000,
@@ -564,35 +458,37 @@ class DonateButton extends React.Component {
                 />
               </div>
 
-              {homeWeb3 && (
-                <LoaderButton
-                  className="btn btn-success"
-                  formNoValidate
-                  type="submit"
-                  disabled={isSaving || !formIsValid || !validNetwork || !account}
-                  isLoading={isSaving}
-                  loadingText="Saving..."
-                >
-                  Donate
-                </LoaderButton>
-              )}
+              {homeWeb3 &&
+                homeWeb3.givenProvider && (
+                  <LoaderButton
+                    className="btn btn-success"
+                    formNoValidate
+                    type="submit"
+                    disabled={isSaving || !formIsValid || !validNetwork || !account}
+                    isLoading={isSaving}
+                    loadingText="Saving..."
+                  >
+                    Donate
+                  </LoaderButton>
+                )}
 
-              {!homeWeb3 && <div>TODO: show donation data</div>}
+              {!homeWeb3 && currentUser && <div>TODO: show donation data</div>}
 
               {/* TODO get amount to dynamically update */}
-              {givethBridge && (
-                <a
-                  className={`btn btn-secondary ${isSaving ? 'disabled' : ''}`}
-                  disabled={!givethBridge || !amount}
-                  href={`https://mycrypto.com?to=${
-                    givethBridge.$address
-                  }&data=${this.getDonationData()}&value=${amount}&gasLimit=${DONATION_GAS}#send-transaction`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  Donate via MyCrypto
-                </a>
-              )}
+              {givethBridge &&
+                (account || currentUser) && (
+                  <a
+                    className={`btn btn-secondary ${isSaving ? 'disabled' : ''}`}
+                    disabled={!givethBridge || !amount}
+                    href={`https://mycrypto.com?to=${
+                      givethBridge.$address
+                    }&data=${this.getDonationData()}&value=${amount}&gasLimit=${DONATION_GAS}#send-transaction`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    Donate via MyCrypto
+                  </a>
+                )}
             </Form>
           </Modal>
         )}
@@ -602,10 +498,10 @@ class DonateButton extends React.Component {
 }
 
 DonateButton.propTypes = {
-  type: PropTypes.string.isRequired,
   model: PropTypes.shape({
-    adminId: PropTypes.string,
-    id: PropTypes.string,
+    type: PropTypes.string.isRequired,
+    adminId: PropTypes.oneOfType([PropTypes.number, PropTypes.string]).isRequired,
+    id: PropTypes.string.isRequired,
     title: PropTypes.string.isRequired,
   }).isRequired,
   history: PropTypes.shape({

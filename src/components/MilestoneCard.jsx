@@ -89,7 +89,7 @@ class MilestoneCard extends Component {
 
             {(isOwner(milestone.owner.address, currentUser) ||
               isOwner(milestone.campaign.ownerAddress, currentUser)) &&
-              ['proposed', 'rejected', 'InProgress', 'NeedsReview'].includes(milestone.status) && (
+              ['Proposed', 'Rejected', 'InProgress', 'NeedsReview'].includes(milestone.status) && (
                 <span className="pull-right">
                   <button
                     type="button"

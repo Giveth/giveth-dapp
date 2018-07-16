@@ -16,7 +16,7 @@ import LoaderButton from '../LoaderButton';
 import User from '../../models/User';
 import GivethWallet from '../../lib/blockchain/GivethWallet';
 import Campaign from '../../models/Campaign';
-import CampaignService from '../../services/Campaign';
+import CampaignService from '../../services/CampaignService';
 import ErrorPopup from '../ErrorPopup';
 
 /**
@@ -160,7 +160,7 @@ class EditCampaign extends Component {
         isBlocking: false,
       },
       () => {
-        // Save the capaign
+        // Save the campaign
         this.state.campaign.save(afterCreate, afterMined);
       },
     );

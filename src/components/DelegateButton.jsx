@@ -12,6 +12,7 @@ import { checkWalletBalance } from '../lib/middleware';
 import GivethWallet from '../lib/blockchain/GivethWallet';
 
 import Donation from '../models/Donation';
+import Milestone from '../models/Milestone';
 
 import DonationService from '../services/DonationService';
 
@@ -38,8 +39,8 @@ class DelegateButton extends Component {
       isSaving: false,
       objectsToDelegateTo: [],
       modalVisible: false,
-      amount: utils.fromWei(props.donation.amount),
-      maxAmount: utils.fromWei(props.donation.amount),
+      amount: utils.fromWei(props.donation.amountRemaining),
+      maxAmount: utils.fromWei(props.donation.amountRemaining),
     };
 
     this.submit = this.submit.bind(this);
@@ -69,14 +70,14 @@ class DelegateButton extends Component {
     const admin = this.props.types.find(t => t.id === this.state.objectsToDelegateTo[0]);
 
     // TODO: find a more friendly way to do this.
-    if (admin.type === 'milestone' && toBN(admin.maxAmount).lt(toBN(admin.totalDonated || 0))) {
+    if (admin.type === Milestone.type && toBN(admin.maxAmount).lt(toBN(admin.totalDonated || 0))) {
       React.toast.error('That milestone has reached its funding goal. Please pick another.');
       return;
     }
 
     const onCreated = txLink => {
       const msg =
-        donation.delegate > 0 ? (
+        donation.delegateId > 0 ? (
           <p>
             The Giver has <strong>3 days</strong> to reject your delegation before the money gets
             locked
@@ -149,7 +150,7 @@ class DelegateButton extends Component {
           <p style={pStyle}>
             You are delegating donation from{' '}
             <strong>{donation.giver.name || donation.giverAddress}</strong> of a value{' '}
-            <strong>{utils.fromWei(donation.amount)} ETH</strong> that has been donated to{' '}
+            <strong>{utils.fromWei(donation.amountRemaining)} ETH</strong> that has been donated to{' '}
             <strong>{donation.donatedTo.name}</strong>
           </p>
           <Form onSubmit={this.submit} layout="vertical">

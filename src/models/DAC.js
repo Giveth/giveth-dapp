@@ -1,7 +1,7 @@
 /* eslint-disable import/no-cycle */
 import BasicModel from './BasicModel';
-import DACservice from '../services/DAC';
-import UploadService from '../services/Uploads';
+import DACService from '../services/DACService';
+import UploadService from '../services/UploadsService';
 /**
  * The DApp DAC model
  */
@@ -18,11 +18,15 @@ class DAC extends BasicModel {
     return 'Active';
   }
 
+  static get type() {
+    return 'dac';
+  }
+
   constructor(data) {
     super(data);
 
     this.communityUrl = data.communityUrl || '';
-    this.delegateId = data.delegateId || '';
+    this.delegateId = data.delegateId || 0;
     this.status = data.status || DAC.PENDING;
     this.ownerAddress = data.ownerAddress;
     this._id = data._id;
@@ -30,18 +34,18 @@ class DAC extends BasicModel {
     this.requiredConfirmations = data.requiredConfirmations;
   }
 
-  toFeathers() {
-    return {
-      id: this.id,
+  toFeathers(txHash) {
+    const dac = {
       title: this.title,
       description: this.description,
       communityUrl: this.communityUrl,
       delegateId: this.delegateId,
       image: this.image,
-      txHash: this.txHash,
       totalDonated: this.totalDonated,
       donationCount: this.donationCount,
     };
+    if (!this.id) dac.txHash = txHash;
+    return dac;
   }
 
   save(onCreated, afterEmit) {
@@ -51,10 +55,10 @@ class DAC extends BasicModel {
         this.image = file.url;
         this.newImage = false;
 
-        DACservice.save(this, this.owner.address, onCreated, afterEmit);
+        DACService.save(this, this.owner.address, onCreated, afterEmit);
       });
     } else {
-      DACservice.save(this, this.owner.address, onCreated, afterEmit);
+      DACService.save(this, this.owner.address, onCreated, afterEmit);
     }
   }
 
@@ -72,7 +76,7 @@ class DAC extends BasicModel {
   }
 
   set delegateId(value) {
-    this.checkType(value, ['string'], 'delegateId');
+    this.checkType(value, ['number', 'string'], 'delegateId');
     this.myDelegateId = value;
   }
 

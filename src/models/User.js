@@ -3,7 +3,6 @@ import Model from './Model';
 /**
  * The DApp User model
  *
- * @attribute id          ID of the user in feathers
  * @attribute address     Ethereum address of the user
  * @attribute avatar      URL to user avatar
  * @attribute commitTime
@@ -17,7 +16,6 @@ class User extends Model {
     super(data);
 
     if (data) {
-      this.id = data._id || data.id; //eslint-disable-line
       this.address = data.address;
       this.avatar = data.avatar;
       this.commitTime = data.commitTime;
@@ -29,13 +27,13 @@ class User extends Model {
     }
   }
 
-  get id() {
-    return this.myId;
+  // eslint-disable-next-line class-methods-use-this
+  get type() {
+    return 'giver';
   }
 
-  set id(value) {
-    this.checkType(value, ['undefined', 'string'], 'id');
-    this.myId = value;
+  get id() {
+    return this.myAddress;
   }
 
   get address() {
@@ -43,7 +41,7 @@ class User extends Model {
   }
 
   set address(value) {
-    this.checkType(value, ['undefined', 'string'], 'address');
+    this.checkType(value, ['string'], 'address');
     this.myAddress = value;
   }
 
@@ -61,7 +59,7 @@ class User extends Model {
   }
 
   set commitTime(value) {
-    this.checkType(value, ['undefined', 'string'], 'commitTime');
+    this.checkType(value, ['undefined', 'number'], 'commitTime');
     this.myCommitTime = value;
   }
 
@@ -79,7 +77,7 @@ class User extends Model {
   }
 
   set giverId(value) {
-    this.checkType(value, ['undefined', 'string', 'number'], 'giverId');
+    this.checkType(value, ['undefined', 'number'], 'giverId');
     this.myGiverId = value;
   }
 
