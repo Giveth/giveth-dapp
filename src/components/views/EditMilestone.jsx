@@ -496,7 +496,7 @@ class EditMilestone extends Component {
                   maxAmount,
                   Object.values(config.tokenAddresses)[0], // TODO make this a form param
                   5 * 24 * 60 * 60, // 5 days in seconds
-                  { from, $extraGas: 200000 },
+                  { from },
                 )
                 .on('transactionHash', hash => {
                   txHash = hash;

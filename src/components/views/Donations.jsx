@@ -21,7 +21,7 @@ const Donations = () => (
       <DonationProvider currentUser={currentUser} wallet={wallet}>
         <DonationConsumer>
           {({
-            state: { isLoading, isPendingDonation, donations, etherScanUrl },
+            state: { isLoading, donations, etherScanUrl },
             actions: { refund, commit, reject },
           }) => (
             <div id="donations-view">
@@ -46,7 +46,7 @@ const Donations = () => (
                                   <th className="td-transaction-status">Status</th>
                                   <th className="td-tx-address">Address</th>
                                   <th className="td-confirmations">
-                                    {isPendingDonation && 'Confirmations'}
+                                    {donations.some(d => d.isPending) && 'Confirmations'}
                                   </th>
                                 </tr>
                               </thead>
@@ -126,8 +126,7 @@ const Donations = () => (
                                     )}
 
                                     <td className="td-confirmations">
-                                      {(isPendingDonation ||
-                                        d.requiredConfirmations !== d.confirmations) &&
+                                      {donations.some(dn => dn.isPending) &&
                                         `${d.confirmations}/${d.requiredConfirmations}`}
                                     </td>
                                   </tr>

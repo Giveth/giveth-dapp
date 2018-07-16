@@ -32,6 +32,7 @@ class Campaign extends BasicModel {
     this.requiredConfirmations = data.requiredConfirmations;
     this.reviewerAddress = data.reviewerAddress;
     this.ownerAddress = data.ownerAddress;
+    this.mined = data.mined;
     this._id = data._id;
   }
 
@@ -55,6 +56,10 @@ class Campaign extends BasicModel {
 
   get isActive() {
     return this.status === Campaign.ACTIVE;
+  }
+
+  get isPending() {
+    return this.status === Campaign.PENDING || !this.mined;
   }
 
   /**

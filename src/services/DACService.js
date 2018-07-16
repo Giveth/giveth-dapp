@@ -66,6 +66,8 @@ class DACService {
       .find({
         query: {
           delegateTypeId: id,
+          isReturn: false,
+          intendedProjectId: { $exists: false },
           $sort: { createdAt: -1 },
         },
       })

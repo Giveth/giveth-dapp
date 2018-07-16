@@ -88,7 +88,6 @@ class EditProfile extends Component {
           let txHash;
           liquidPledging
             .addGiver(model.name || '', '', 259200, 0, {
-              $extraGas: 50000,
               from,
             }) // 3 days commitTime. TODO allow user to set commitTime
             .once('transactionHash', hash => {

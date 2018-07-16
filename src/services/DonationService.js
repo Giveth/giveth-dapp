@@ -68,13 +68,11 @@ class DonationService {
 
             return contract.transfer(donation.pledgeId, amount, receiverId, {
               from,
-              $extraGas: 100000,
             });
           }
 
           return network.liquidPledging.transfer(senderId, donation.pledgeId, amount, receiverId, {
             from,
-            $extraGas: 100000,
           }); // need to supply extraGas b/c https://github.com/trufflesuite/ganache-core/issues/26
         };
 
@@ -112,8 +110,8 @@ class DonationService {
               Object.assign(newDonation, {
                 status: Donation.COMMITTED,
                 ownerId: delegateTo.projectId,
-                ownerTypeId: delegateTo.type,
-                ownerType: delegateTo.id,
+                ownerTypeId: delegateTo.id,
+                ownerType: delegateTo.type,
               });
             }
 
@@ -165,7 +163,6 @@ class DonationService {
             donation.amountRemaining,
             donation.delegateId,
             {
-              $extraGas: 50000,
               from: address,
             },
           )
@@ -239,7 +236,6 @@ class DonationService {
             donation.amountRemaining,
             donation.intendedProjectId,
             {
-              $extraGas: 50000,
               from: address,
             },
           )
@@ -304,7 +300,6 @@ class DonationService {
 
         return network.liquidPledging
           .withdraw(donation.pledgeId, donation.amountRemaining, {
-            $extraGas: 50000,
             from: address,
           })
           .once('transactionHash', hash => {

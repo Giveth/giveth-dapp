@@ -33,7 +33,6 @@ class DonationProvider extends Component {
     this.state = {
       donations: [],
       isLoading: true,
-      isPendingDonation: false,
       etherScanUrl: undefined,
     };
 
@@ -64,14 +63,12 @@ class DonationProvider extends Component {
           resp => {
             this.setState({
               donations: resp.data.map(d => new Donation(d)),
-              isPendingDonation: resp.data.some(d => d.confirmations !== d.requiredConfirmations),
               isLoading: false,
             });
           },
           e => {
             this.setState({
               isLoading: false,
-              isPendingDonation: false,
             });
             ErrorPopup('Unable to retrieve donations from the server', e);
           },
@@ -222,6 +219,7 @@ class DonationProvider extends Component {
           if (isConfirmed) {
             // Inform user after the transaction is created
             const afterCreate = txLink => {
+              console.log('afterMined');
               React.toast.success(
                 <p>
                   The refund is pending...
@@ -264,7 +262,7 @@ class DonationProvider extends Component {
   }
 
   render() {
-    const { donations, isLoading, isPendingDonation, etherScanUrl } = this.state;
+    const { donations, isLoading, etherScanUrl } = this.state;
     const { refund, commit, reject } = this;
 
     return (
@@ -273,7 +271,6 @@ class DonationProvider extends Component {
           state: {
             donations,
             isLoading,
-            isPendingDonation,
             etherScanUrl,
           },
           actions: {

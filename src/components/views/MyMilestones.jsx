@@ -321,7 +321,6 @@ class MyMilestones extends Component {
                 return cappedMilestone
                   .requestMarkAsComplete({
                     from: this.props.currentUser.address,
-                    $extraGas: 4000000,
                   })
                   .once('transactionHash', hash => {
                     txHash = hash;
@@ -420,7 +419,6 @@ class MyMilestones extends Component {
                 return cappedMilestone
                   .cancelMilestone({
                     from: this.props.currentUser.address,
-                    $extraGas: 4000000,
                   })
                   .once('transactionHash', hash => {
                     txHash = hash;
@@ -545,7 +543,7 @@ class MyMilestones extends Component {
                     maxAmount,
                     Object.values(config.tokenAddresses)[0], // TODO make this a form param
                     5 * 24 * 60 * 60, // 5 days in seconds
-                    { from, $extraGas: 200000 },
+                    { from },
                   )
                   .on('transactionHash', hash => {
                     txHash = hash;
@@ -629,7 +627,6 @@ class MyMilestones extends Component {
                 return cappedMilestone
                   .approveMilestoneCompleted({
                     from: this.props.currentUser.address,
-                    $extraGas: 4000000,
                   })
                   .once('transactionHash', hash => {
                     txHash = hash;
@@ -718,7 +715,6 @@ class MyMilestones extends Component {
                 return cappedMilestone
                   .rejectCompleteRequest({
                     from: this.props.currentUser.address,
-                    $extraGas: 4000000,
                   })
                   .once('transactionHash', hash => {
                     txHash = hash;
@@ -870,7 +866,6 @@ class MyMilestones extends Component {
                 return new LPPCappedMilestone(web3, milestone.pluginAddress)
                   .mWithdraw(pledges, {
                     from: this.props.currentUser.address,
-                    $extraGas: 100000,
                   })
                   .once('transactionHash', hash => {
                     txHash = hash;

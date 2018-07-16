@@ -35,7 +35,7 @@ class Donation extends Model {
   }
 
   static get CANCELED() {
-    return 'Cancelled';
+    return 'Canceled';
   }
 
   static get REJECTED() {
@@ -146,7 +146,7 @@ class Donation extends Model {
       case Donation.PAID:
         return 'paid';
       case Donation.CANCELED:
-        return 'cancelled';
+        return 'canceled';
       case Donation.REJECTED:
         return 'rejected';
       default:
@@ -178,7 +178,11 @@ class Donation extends Model {
    * @return {boolean} True if given user can refund the donation
    */
   canRefund(user) {
-    return this.ownerTypeId === user.address && this.status === Donation.WAITING;
+    return (
+      this.ownerTypeId === user.address &&
+      this.status === Donation.WAITING &&
+      this.amountRemaining > 0
+    );
   }
 
   /**
@@ -435,7 +439,7 @@ class Donation extends Model {
   }
 
   set txHash(value) {
-    this.checkType(value, ['string'], 'txHash');
+    this.checkType(value, ['string', 'undefined'], 'txHash');
     this.myTxHash = value;
   }
 

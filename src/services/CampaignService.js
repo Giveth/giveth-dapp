@@ -90,6 +90,7 @@ class CampaignService {
       .find({
         query: {
           ownerTypeId: id,
+          isReturn: false,
           $sort: { createdAt: -1 },
         },
       })
@@ -162,7 +163,6 @@ class CampaignService {
           lppCampaignFactory
             .newCampaign(campaign.title, '', 0, campaign.reviewerAddress, {
               from,
-              $extraGas: 200000,
             })
             .once('transactionHash', hash => {
               txHash = hash;
@@ -209,7 +209,7 @@ class CampaignService {
         etherScanUrl = network.etherscan;
 
         lppCampaign
-          .cancelCampaign({ from, $extraGas: 100000 })
+          .cancelCampaign({ from })
           .once('transactionHash', hash => {
             txHash = hash;
             feathersClient
