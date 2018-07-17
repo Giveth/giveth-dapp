@@ -334,7 +334,7 @@ class DonateButton extends React.Component {
   }
 
   render() {
-    const { model, currentUser } = this.props;
+    const { model, currentUser, wallet, type } = this.props;
     const {
       homeWeb3,
       account,
