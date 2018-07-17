@@ -12,16 +12,17 @@ import GivethWallet from '../../lib/blockchain/GivethWallet';
 import { convertEthHelper, getUserAvatar, getUserName, isOwner } from '../../lib/helpers';
 import { checkWalletBalance, redirectAfterWalletUnlock } from '../../lib/middleware';
 import User from '../../models/User';
+import Milestone from '../../models/Milestone';
 import BackgroundImageHeader from '../BackgroundImageHeader';
 import DonateButton from '../DonateButton';
 import ErrorPopup from '../ErrorPopup';
 import GoBackButton from '../GoBackButton';
 import ShowTypeDonations from '../ShowTypeDonations';
-import getNetwork from './../../lib/blockchain/getNetwork';
-import { feathersClient } from './../../lib/feathersClient';
-import Loader from './../Loader';
-import MilestoneItem from './../MilestoneItem';
-import MilestoneConversations from './../../components/MilestoneConversations';
+import getNetwork from '../../lib/blockchain/getNetwork';
+import { feathersClient } from '../../lib/feathersClient';
+import Loader from '../Loader';
+import MilestoneItem from '../MilestoneItem';
+import MilestoneConversations from '../MilestoneConversations';
 
 /**
   Loads and shows a single milestone
@@ -74,10 +75,10 @@ class ViewMilestone extends Component {
       });
 
     // lazy load donations
-    // TODO: fetch "non comitted" donations? add "intendedProjectId: milestoneId" to query to get
+    // TODO: fetch "non comitted" donations? add "intendedProjectTypeId: milestoneId" to query to get
     // all "pending aproval" donations for this milestone
     const query = paramsForServer({
-      query: { ownerId: milestoneId },
+      query: { ownerTypeId: milestoneId },
       schema: 'includeGiverDetails',
       $sort: { createdAt: -1 },
     });
@@ -171,7 +172,6 @@ class ViewMilestone extends Component {
       fiatAmount,
       selectedFiatType,
       campaign,
-      campaignOwnerAddress,
     } = this.state;
 
     return (
@@ -191,14 +191,16 @@ class ViewMilestone extends Component {
               )}
 
               {this.state.totalDonated < this.state.maxAmount && (
-                <p>Amount requested: {this.state.maxAmount} ETH</p>
+                <p>Amount requested:{this.state.maxAmount} ETH</p>
               )}
-              <p>Campaign: {campaign.title} </p>
+              <p>
+                Campaign:
+                {campaign.title}{' '}
+              </p>
 
               {this.isActiveMilestone() && (
                 <DonateButton
-                  type="milestone"
-                  model={{ title, id, adminId: projectId }}
+                  model={{ type: Milestone.type, title, id, adminId: projectId }}
                   wallet={wallet}
                   currentUser={currentUser}
                   history={history}
@@ -213,10 +215,11 @@ class ViewMilestone extends Component {
                     <GoBackButton history={history} styleName="inline" />
 
                     {(isOwner(ownerAddress, currentUser) ||
-                      isOwner(campaignOwnerAddress, currentUser)) &&
-                      ['proposed', 'rejected', 'InProgress', 'NeedsReview'].includes(status) && (
+                      isOwner(campaign.ownerAddress, currentUser)) &&
+                      ['Proposed', 'Rejected', 'InProgress', 'NeedsReview'].includes(status) && (
                         <span className="pull-right">
                           <button
+                            type="button"
                             className="btn btn-link btn-edit"
                             onClick={e => this.editMilestone(e)}
                           >
@@ -243,7 +246,8 @@ class ViewMilestone extends Component {
                 items.length > 0 && (
                   <div className="row spacer-top-50 dashboard-table-view">
                     <div className="col-md-8 m-auto">
-                      <h4>Milestone items</h4>
+                      <h4>Milestone proof</h4>
+                      <p>These receipts show how the money of this milestone was spent.</p>
 
                       {/* MilesteneItem needs to be wrapped in a form or it won't mount */}
                       <Form>
@@ -256,7 +260,6 @@ class ViewMilestone extends Component {
                                 <th className="td-item-amount-fiat">Amount Fiat</th>
                                 <th className="td-item-amount-ether">Amount Ether</th>
                                 <th className="td-item-file-upload">Attached proof</th>
-                                <th className="td-item-action" />
                               </tr>
                             </thead>
                             <tbody>
@@ -302,20 +305,22 @@ class ViewMilestone extends Component {
                                 <td className="td-user">
                                   <Link to={`/profile/${reviewerAddress}`}>
                                     <Avatar size={30} src={getUserAvatar(reviewer)} round />
-                                    <span>{getUserName(reviewer)}</span>
+                                    <p>{getUserName(reviewer)}</p>
                                   </Link>
                                 </td>
                                 {etherScanUrl && (
                                   <td className="td-address">
-                                    {' '}
-                                    -{' '}
                                     <a href={`${etherScanUrl}address/${reviewerAddress}`}>
                                       {reviewerAddress}
                                     </a>
                                   </td>
                                 )}
                                 {!etherScanUrl && (
-                                  <td className="td-address"> - {reviewerAddress}</td>
+                                  <td className="td-address">
+                                    {' '}
+                                    -
+                                    {reviewerAddress}
+                                  </td>
                                 )}
                               </tr>
                             </tbody>
@@ -334,20 +339,22 @@ class ViewMilestone extends Component {
                                 <td className="td-user">
                                   <Link to={`/profile/${recipientAddress}`}>
                                     <Avatar size={30} src={getUserAvatar(recipient)} round />
-                                    <span>{getUserName(recipient)}</span>
+                                    <p>{getUserName(recipient)}</p>
                                   </Link>
                                 </td>
                                 {etherScanUrl && (
                                   <td className="td-address">
-                                    {' '}
-                                    -{' '}
                                     <a href={`${etherScanUrl}address/${recipientAddress}`}>
                                       {recipientAddress}
                                     </a>
                                   </td>
                                 )}
                                 {!etherScanUrl && (
-                                  <td className="td-address"> - {recipientAddress}</td>
+                                  <td className="td-address">
+                                    {' '}
+                                    -
+                                    {recipientAddress}
+                                  </td>
                                 )}
                               </tr>
                             </tbody>
@@ -376,7 +383,9 @@ class ViewMilestone extends Component {
                             items.length === 0 && (
                               <span>
                                 {' '}
-                                ({fiatAmount} {selectedFiatType})
+                                (
+                                {fiatAmount} {selectedFiatType}
+                                )
                               </span>
                             )}
                         </div>
@@ -421,7 +430,6 @@ class ViewMilestone extends Component {
                         ownerAddress={ownerAddress}
                         reviewerAddress={reviewerAddress}
                         recipientAddress={recipientAddress}
-                        campaignOwnerAddress={campaignOwnerAddress}
                       />
                     </div>
                   </div>
@@ -434,8 +442,7 @@ class ViewMilestone extends Component {
                   <ShowTypeDonations donations={donations} isLoading={isLoadingDonations} />
                   {this.isActiveMilestone() && (
                     <DonateButton
-                      type="milestone"
-                      model={{ title, id, adminId: projectId }}
+                      model={{ type: Milestone.type, title, id, adminId: projectId }}
                       wallet={wallet}
                       currentUser={currentUser}
                       history={history}

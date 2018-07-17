@@ -2,7 +2,7 @@ import { withFormsy } from 'formsy-react';
 import moment from 'moment';
 import PropTypes from 'prop-types';
 import React from 'react';
-import { convertEthHelper, getTruncatedText } from './../lib/helpers';
+import { convertEthHelper, getTruncatedText } from '../lib/helpers';
 
 /** *
  * NOTE: This component is created as a Formsy form component
@@ -17,7 +17,7 @@ import { convertEthHelper, getTruncatedText } from './../lib/helpers';
 
 class MilestoneItem extends React.Component {
   componentDidMount() {
-    this.props.setValue(true); // required for validation being true
+    if (this.props.isEditMode) this.props.setValue(true); // required for validation being true
   }
 
   render() {

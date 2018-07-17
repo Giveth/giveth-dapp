@@ -6,6 +6,7 @@ import { Link } from 'react-router-dom';
 import moment from 'moment';
 import Pagination from 'react-js-pagination';
 
+import ConversationModal from 'components/ConversationModal';
 import { feathersClient } from '../../lib/feathersClient';
 import { isLoggedIn, redirectAfterWalletUnlock, checkWalletBalance } from '../../lib/middleware';
 import getNetwork from '../../lib/blockchain/getNetwork';
@@ -54,52 +55,46 @@ const rejectProposedMilestone = milestone => {
       },
     },
   }).then(message => {
-    if (message) {
-      feathersClient
-        .service('/milestones')
-        .patch(milestone._id, {
-          status: 'rejected',
-          message,
-        })
-        .then(() => {
-          React.toast.info(<p>The proposed milestone has been rejected.</p>);
-        })
-        .catch(e => {
-          ErrorPopup('Something went wrong with rejecting the proposed milestone', e);
-        });
-    }
+    const newContent = { status: 'Rejected' };
+    if (message) newContent.message = message;
+    feathersClient
+      .service('/milestones')
+      .patch(milestone._id, newContent)
+      .then(() => {
+        React.toast.info(<p>The proposed milestone has been rejected.</p>);
+      })
+      .catch(e => {
+        ErrorPopup('Something went wrong with rejecting the proposed milestone', e);
+      });
   });
 };
 
 const reproposeRejectedMilestone = milestone => {
-  React.swal({
-    title: 'Re-propose Milestone?',
-    text: 'Are you sure you want to re-propose this Milestone?',
-    icon: 'warning',
-    dangerMode: true,
-    buttons: ['Cancel', 'Yes, re-propose'],
-    content: {
-      element: 'input',
-      attributes: {
-        placeholder: 'Add a reason why you repropose this milestone',
-      },
-    },
-  }).then(message => {
-    if (message) {
+  this.conversationModal.current
+    .openModal({
+      title: 'Reject proposed milestone',
+      description:
+        'Optionally explain why you reject this proposed milestone. This information will be publicly visible and emailed to the milestone owner.',
+      textPlaceholder: 'Optionally explain why you reject this proposal...',
+      required: false,
+      cta: 'Reject proposal',
+      enableAttachProof: false,
+    })
+    .then(proof =>
       feathersClient
         .service('/milestones')
         .patch(milestone._id, {
           status: 'proposed',
-          message,
+          message: proof.message,
+          proofItems: proof.proofItems,
         })
         .then(() => {
           React.toast.info(<p>The milestone has been re-proposed.</p>);
         })
         .catch(e => {
           ErrorPopup('Something went wrong with re-proposing your milestone', e);
-        });
-    }
-  });
+        }),
+    );
 };
 
 const reviewDue = updatedAt =>
@@ -125,6 +120,8 @@ class MyMilestones extends Component {
       totalResults: 0,
       loadedStatus: 'Active',
     };
+
+    this.conversationModal = React.createRef();
 
     this.milestoneTabs = ['Active', 'Paid', 'Canceled', 'Rejected'];
     this.handlePageChanged = this.handlePageChanged.bind(this);
@@ -152,7 +149,7 @@ class MyMilestones extends Component {
     if (this.milestonesObserver) this.milestonesObserver.unsubscribe();
   }
 
-  loadMileStones() {
+  async loadMileStones() {
     const myAddress = this.props.currentUser.address;
 
     const query = {
@@ -185,19 +182,23 @@ class MyMilestones extends Component {
             { recipientAddress: myAddress },
           ],
         },
-        { status: 'rejected' },
+        { status: 'Rejected' },
       ];
     } else {
+      const resp = await feathersClient
+        .service('campaigns')
+        .find({ query: { ownerAddress: myAddress } });
+      const campaignsIDs = resp.data.map(c => c._id);
       query.query.$and = [
         {
           $or: [
             { ownerAddress: myAddress },
             { reviewerAddress: myAddress },
             { recipientAddress: myAddress },
-            { $and: [{ campaignOwnerAddress: myAddress }, { status: 'proposed' }] },
+            { $and: [{ campaignId: { $in: campaignsIDs } }, { status: 'Proposed' }] },
           ],
         },
-        { status: { $nin: ['Paid', 'Canceled', 'rejected'] } },
+        { status: { $nin: ['Paid', 'Canceled', 'Rejected'] } },
       ];
     }
 
@@ -245,7 +246,7 @@ class MyMilestones extends Component {
           buttons: ['Cancel', 'Yes, edit'],
         }).then(isConfirmed => {
           if (isConfirmed) {
-            if (['proposed', 'rejected'].includes(milestone.status)) {
+            if (['Proposed', 'Rejected'].includes(milestone.status)) {
               redirectAfterWalletUnlock(
                 `/milestones/${milestone._id}/edit/proposed`,
                 this.props.wallet,
@@ -265,36 +266,34 @@ class MyMilestones extends Component {
 
   requestMarkComplete(milestone) {
     checkWalletBalance(this.props.wallet)
-      .then(() =>
-        React.swal({
-          title: 'Mark as complete?',
-          text: 'Are you sure you want to mark this Milestone as complete?',
-          icon: 'warning',
-          dangerMode: true,
-          content: {
-            element: 'input',
-            attributes: {
-              rows: 3,
-              placeholder: 'Add a message for the reviewer (optional)',
-            },
-          },
-          buttons: ['Cancel', 'Yes, mark complete'],
-        }).then(message => {
-          if (message !== null) {
+      .then(() => {
+        this.conversationModal.current
+          .openModal({
+            title: 'Mark milestone complete',
+            description:
+              "Describe what you've done to finish the work of this milestone and attach proof if necessary. This information will be publicly visible and emailed to the reviewer.",
+            required: false,
+            cta: 'Mark complete',
+            enableAttachProof: true,
+            textPlaceholder: "Describe what you've done...",
+          })
+          .then(proof => {
             // feathers
             const _requestMarkComplete = (etherScanUrl, txHash) => {
               feathersClient
                 .service('/milestones')
                 .patch(milestone._id, {
                   status: 'NeedsReview',
-                  message,
+                  message: proof.message,
+                  proofItems: proof.items,
                   mined: false,
                   txHash,
                 })
                 .then(() => {
                   React.toast.info(
                     <p>
-                      Marking this milestone as complete is pending...<br />
+                      Marking this milestone as complete is pending...
+                      <br />
                       <a
                         href={`${etherScanUrl}tx/${txHash}`}
                         target="_blank"
@@ -322,7 +321,6 @@ class MyMilestones extends Component {
                 return cappedMilestone
                   .requestMarkAsComplete({
                     from: this.props.currentUser.address,
-                    $extraGas: 4000000,
                   })
                   .once('transactionHash', hash => {
                     txHash = hash;
@@ -332,7 +330,8 @@ class MyMilestones extends Component {
               .then(() => {
                 React.toast.success(
                   <p>
-                    The milestone has been marked as complete!<br />
+                    The milestone has been marked as complete!
+                    <br />
                     <a
                       href={`${etherScanUrl}tx/${txHash}`}
                       target="_blank"
@@ -350,9 +349,13 @@ class MyMilestones extends Component {
                   `${etherScanUrl}tx/${txHash} => ${JSON.stringify(err, null, 2)}`,
                 );
               });
-          }
-        }),
-      )
+          })
+          .catch(err => {
+            if (err === 'noBalance') {
+              // handle no balance error
+            }
+          });
+      })
       .catch(err => {
         if (err === 'noBalance') {
           // handle no balance error
@@ -363,35 +366,33 @@ class MyMilestones extends Component {
   cancelMilestone(milestone) {
     checkWalletBalance(this.props.wallet)
       .then(() =>
-        React.swal({
-          title: 'Cancel Milestone?',
-          text: 'Are you sure you want to cancel this Milestone?',
-          icon: 'warning',
-          buttons: ['I changed my mind', 'Yes, cancel'],
-          dangerMode: true,
-          content: {
-            element: 'input',
-            attributes: {
-              rows: 3,
-              placeholder: 'Add a reason why you cancel this milestone',
-            },
-          },
-        }).then(message => {
-          if (message) {
+        this.conversationModal.current
+          .openModal({
+            title: 'Cancel milestone',
+            description:
+              'Explain why you cancel this milestone. Compliments are appreciated! This information will be publicly visible and emailed to the milestone owner.',
+            textPlaceholder: 'Explain why you cancel this milestone...',
+            required: true,
+            cta: 'Cancel milestone',
+            enableAttachProof: false,
+          })
+          .then(proof => {
             const _cancelMilestone = (etherScanUrl, txHash) => {
               // feathers
               feathersClient
                 .service('/milestones')
                 .patch(milestone._id, {
                   status: 'Canceled',
-                  message,
+                  message: proof.message,
+                  proofItems: proof.items,
                   mined: false,
                   txHash,
                 })
                 .then(() => {
                   React.toast.info(
                     <p>
-                      Cancelling this milestone is pending...<br />
+                      Cancelling this milestone is pending...
+                      <br />
                       <a
                         href={`${etherScanUrl}tx/${txHash}`}
                         target="_blank"
@@ -419,7 +420,6 @@ class MyMilestones extends Component {
                 return cappedMilestone
                   .cancelMilestone({
                     from: this.props.currentUser.address,
-                    $extraGas: 4000000,
                   })
                   .once('transactionHash', hash => {
                     txHash = hash;
@@ -429,7 +429,8 @@ class MyMilestones extends Component {
               .then(() => {
                 React.toast.success(
                   <p>
-                    The milestone has been cancelled!<br />
+                    The milestone has been cancelled!
+                    <br />
                     <a
                       href={`${etherScanUrl}tx/${txHash}`}
                       target="_blank"
@@ -447,8 +448,7 @@ class MyMilestones extends Component {
                   `${etherScanUrl}tx/${txHash}`,
                 );
               });
-          }
-        }),
+          }),
       )
       .catch(err => {
         if (err === 'noBalance') {
@@ -460,35 +460,33 @@ class MyMilestones extends Component {
   acceptProposedMilestone(milestone) {
     checkWalletBalance(this.props.wallet)
       .then(() =>
-        React.swal({
-          title: 'Accept Milestone?',
-          text: 'Are you sure you want to accept this Milestone?',
-          icon: 'warning',
-          dangerMode: true,
-          buttons: ['Cancel', 'Yes, accept'],
-          content: {
-            element: 'input',
-            attributes: {
-              rows: 3,
-              placeholder: 'Add a reason why you accept this milestone (optional)',
-            },
-          },
-        }).then(message => {
-          if (message !== null) {
+        this.conversationModal.current
+          .openModal({
+            title: 'Accept proposed milestone',
+            description:
+              'Optionally explain why you accept this proposed milestone. Compliments are appreciated! This information will be publicly visible and emailed to the milestone owner.',
+            textPlaceholder: 'Optionally explain why you accept this proposal...',
+            required: false,
+            cta: 'Accept proposal',
+            enableAttachProof: false,
+          })
+          .then(proof => {
             // feathers
             const _createMilestone = (etherScanUrl, txHash) =>
               feathersClient
                 .service('/milestones')
                 .patch(milestone._id, {
-                  status: 'pending',
+                  status: 'Pending',
                   mined: false,
-                  message,
+                  message: proof.message,
+                  proofItems: proof.items,
                   txHash,
                 })
                 .then(() => {
                   React.toast.info(
                     <p>
-                      Accepting this milestone is pending...<br />
+                      Accepting this milestone is pending...
+                      <br />
                       <a
                         href={`${etherScanUrl}tx/${txHash}`}
                         target="_blank"
@@ -515,10 +513,20 @@ class MyMilestones extends Component {
                   maxAmount,
                   recipientAddress,
                   reviewerAddress,
+                  ownerAddress, // TODO change this to managerAddress. There is no owner
                   campaignReviewerAddress,
                 } = milestone;
                 const parentProjectId = milestone.campaign.projectId;
                 const from = this.props.currentUser.address;
+
+                // TODO  fix this hack
+                if (!parentProjectId || parentProjectId === '0') {
+                  ErrorPopup(
+                    `It looks like the campaign has not been mined yet. Please try again in a bit`,
+                    `It looks like the campaign has not been mined yet. Please try again in a bit`,
+                  );
+                  return Promise.resolve();
+                }
 
                 return network.lppCappedMilestoneFactory
                   .newMilestone(
@@ -528,11 +536,11 @@ class MyMilestones extends Component {
                     reviewerAddress,
                     recipientAddress,
                     campaignReviewerAddress,
-                    from,
+                    ownerAddress,
                     maxAmount,
                     Object.values(config.tokenAddresses)[0], // TODO make this a form param
                     5 * 24 * 60 * 60, // 5 days in seconds
-                    { from, $extraGas: 200000 },
+                    { from },
                   )
                   .on('transactionHash', hash => {
                     txHash = hash;
@@ -547,8 +555,7 @@ class MyMilestones extends Component {
                   `${etherScanUrl}tx/${txHash} => ${JSON.stringify(err, null, 2)}`,
                 );
               });
-          }
-        }),
+          }),
       )
       .catch(err => {
         if (err === 'noBalance') {
@@ -560,21 +567,18 @@ class MyMilestones extends Component {
   approveMilestoneCompleted(milestone) {
     checkWalletBalance(this.props.wallet)
       .then(() =>
-        React.swal({
-          title: 'Approve Milestone?',
-          text: 'Are you sure you want to approve this Milestone?',
-          icon: 'warning',
-          dangerMode: true,
-          buttons: ['Cancel', 'Yes, approve'],
-          content: {
-            element: 'input',
-            attributes: {
-              rows: 3,
-              placeholder: 'Add a message why you approve completion (optional)',
-            },
-          },
-        }).then(message => {
-          if (message !== null) {
+        this.conversationModal.current
+          .openModal({
+            title: 'Approve milestone completion',
+            description:
+              'Optionally explain why you approve the completion of this milestone. Compliments are appreciated! This information will be publicly visible and emailed to the milestone owner.',
+            textPlaceholder:
+              'Optionally explain why you approve the completion of this milestone...',
+            required: false,
+            cta: 'Approve completion',
+            enableAttachProof: false,
+          })
+          .then(proof => {
             // feathers
             const _approveMilestoneCompleted = (etherScanUrl, txHash) =>
               feathersClient
@@ -582,13 +586,15 @@ class MyMilestones extends Component {
                 .patch(milestone._id, {
                   status: 'Completed',
                   mined: false,
-                  message,
+                  message: proof.message,
+                  proofItems: proof.items,
                   txHash,
                 })
                 .then(() => {
                   React.toast.info(
                     <p>
-                      Approving this milestone is pending...<br />
+                      Approving this milestone is pending...
+                      <br />
                       <a
                         href={`${etherScanUrl}tx/${txHash}`}
                         target="_blank"
@@ -615,7 +621,6 @@ class MyMilestones extends Component {
                 return cappedMilestone
                   .approveMilestoneCompleted({
                     from: this.props.currentUser.address,
-                    $extraGas: 4000000,
                   })
                   .once('transactionHash', hash => {
                     txHash = hash;
@@ -625,7 +630,8 @@ class MyMilestones extends Component {
               .then(() => {
                 React.toast.success(
                   <p>
-                    The milestone has been approved!<br />
+                    The milestone has been approved!
+                    <br />
                     <a
                       href={`${etherScanUrl}tx/${txHash}`}
                       target="_blank"
@@ -643,8 +649,7 @@ class MyMilestones extends Component {
                   `${etherScanUrl}tx/${txHash}`,
                 );
               });
-          }
-        }),
+          }),
       )
       .catch(err => {
         if (err === 'noBalance') {
@@ -656,21 +661,17 @@ class MyMilestones extends Component {
   rejectMilestoneCompletion(milestone) {
     checkWalletBalance(this.props.wallet)
       .then(() =>
-        React.swal({
-          title: 'Reject Milestone?',
-          text: "Are you sure you want to reject this Milestone's completion?",
-          icon: 'warning',
-          dangerMode: true,
-          buttons: ['Cancel', 'Yes, reject'],
-          content: {
-            element: 'input',
-            attributes: {
-              rows: 3,
-              placeholder: 'Add a reason why you reject the completion of this milestone',
-            },
-          },
-        }).then(message => {
-          if (message) {
+        this.conversationModal.current
+          .openModal({
+            title: 'Reject milestone completion',
+            description:
+              'Explain why you rejected the completion of this milestone. This information will be publicly visible and emailed to the milestone owner.',
+            textPlaceholder: 'Explain why you rejected the completion of this milestone...',
+            required: true,
+            cta: 'Reject completion',
+            enableAttachProof: false,
+          })
+          .then(proof => {
             // reject in feathers
             const _rejectMilestoneCompletion = (etherScanUrl, txHash) =>
               feathersClient
@@ -678,7 +679,8 @@ class MyMilestones extends Component {
                 .patch(milestone._id, {
                   status: 'InProgress',
                   mined: false,
-                  message,
+                  message: proof.message,
+                  proofItems: proof.items,
                   txHash,
                 })
                 .then(() => {
@@ -703,7 +705,6 @@ class MyMilestones extends Component {
                 return cappedMilestone
                   .rejectCompleteRequest({
                     from: this.props.currentUser.address,
-                    $extraGas: 4000000,
                   })
                   .once('transactionHash', hash => {
                     txHash = hash;
@@ -713,7 +714,8 @@ class MyMilestones extends Component {
               .then(() => {
                 React.toast.success(
                   <p>
-                    The milestone completion been rejected!<br />
+                    The milestone completion been rejected!
+                    <br />
                     <a
                       href={`${etherScanUrl}tx/${txHash}`}
                       target="_blank"
@@ -731,8 +733,7 @@ class MyMilestones extends Component {
                   `${etherScanUrl}tx/${txHash}`,
                 );
               });
-          }
-        }),
+          }),
       )
       .catch(err => {
         if (err === 'noBalance') {
@@ -771,7 +772,8 @@ class MyMilestones extends Component {
                 .then(() => {
                   React.toast.info(
                     <p>
-                      Withdrawal from milestone...<br />
+                      Withdrawal from milestone...
+                      <br />
                       <a
                         href={`${etherScanUrl}tx/${txHash}`}
                         target="_blank"
@@ -791,14 +793,13 @@ class MyMilestones extends Component {
                 .patch(
                   null,
                   {
-                    status: 'pending',
-                    paymentStatus: 'Paying',
+                    status: 'Pending',
                     txHash,
                   },
                   {
                     query: {
                       ownerType: 'milestone',
-                      ownerId: milestone._id,
+                      ownerTypeId: milestone._id,
                     },
                   },
                 )
@@ -813,7 +814,8 @@ class MyMilestones extends Component {
                 .find({
                   query: {
                     ownerType: 'milestone',
-                    ownerId: milestone._id,
+                    ownerTypeId: milestone._id,
+                    amountRemaining: { $ne: 0 },
                   },
                 })
                 .then(({ data }) => {
@@ -824,21 +826,21 @@ class MyMilestones extends Component {
                     const pledge = pledges.find(n => n.id === donation.pledgeId);
 
                     if (pledge) {
-                      pledge.amount = pledge.amount.add(utils.toBN(donation.amount));
+                      pledge.amount = pledge.amount.add(utils.toBN(donation.amountRemaining));
                     } else {
                       pledges.push({
                         id: donation.pledgeId,
-                        amount: utils.toBN(donation.amount),
+                        amount: utils.toBN(donation.amountRemaining),
                       });
                     }
                   });
 
                   return pledges.map(
-                    note =>
-                      // due to some issue in web3, utils.toHex(note.amount) breaks during minification.
+                    pledge =>
+                      // due to some issue in web3, utils.toHex(pledge.amount) breaks during minification.
                       // BN.toString(16) will return a hex string as well
-                      `0x${utils.padLeft(note.amount.toString(16), 48)}${utils.padLeft(
-                        utils.toHex(note.id).substring(2),
+                      `0x${utils.padLeft(pledge.amount.toString(16), 48)}${utils.padLeft(
+                        utils.toHex(pledge.id).substring(2),
                         16,
                       )}`,
                   );
@@ -853,7 +855,6 @@ class MyMilestones extends Component {
                 return new LPPCappedMilestone(web3, milestone.pluginAddress)
                   .mWithdraw(pledges, {
                     from: this.props.currentUser.address,
-                    $extraGas: 100000,
                   })
                   .once('transactionHash', hash => {
                     txHash = hash;
@@ -863,7 +864,8 @@ class MyMilestones extends Component {
               .then(() => {
                 React.toast.info(
                   <p>
-                    The milestone withdraw has been initiated...<br />
+                    The milestone withdraw has been initiated...
+                    <br />
                     <a
                       href={`${etherScanUrl}tx/${txHash}`}
                       target="_blank"
@@ -884,7 +886,8 @@ class MyMilestones extends Component {
                   // tx failed.
                   msg = (
                     <p>
-                      Something went wrong with the transaction.<br />
+                      Something went wrong with the transaction.
+                      <br />
                       <a
                         href={`${etherScanUrl}tx/${txHash}`}
                         target="_blank"
@@ -916,77 +919,6 @@ class MyMilestones extends Component {
       });
   }
 
-  // collect(milestone) {
-  //   checkWalletBalance(this.props.wallet)
-  //     .then(() =>
-  //       React.swal({
-  //         title: 'Collect Funds',
-  //         text: 'The funds will be transferred to you wallet.',
-  //         icon: 'warning',
-  //         dangerMode: true,
-  //         buttons: ['Cancel', 'Yes, collect'],
-  //       }).then(isConfirmed => {
-  //         if (isConfirmed) {
-  //           const collect = (etherScanUrl, txHash) => {
-  //             feathersClient
-  //               .service('/milestones')
-  //               .patch(milestone._id, {
-  //                 status: 'Paid',
-  //                 mined: false,
-  //                 txHash,
-  //               })
-  //               .then(() => {
-  //                 React.toast.info(
-  //                   <p>
-  //                     Collecting funds from milestone...<br />
-  //                     <a
-  //                       href={`${etherScanUrl}tx/${txHash}`}
-  //                       target="_blank"
-  //                       rel="noopener noreferrer"
-  //                     >
-  //                       View transaction
-  //                     </a>
-  //                   </p>,
-  //                 );
-  //               })
-  //               .catch(e => {
-  //                 ErrorPopup('Something went wrong with collecting your funds', e);
-  //               });
-  //           };
-
-  //           let txHash;
-  //           let etherScanUrl;
-  //           Promise.all([getNetwork(), getWeb3()])
-  //             .then(([network, web3]) => {
-  //               etherScanUrl = network.etherscan;
-
-  //               // TODO this should get the token from the milestone
-  //               return new LPPCappedMilestone(web3, milestone.pluginAddress)
-  //                 .collect(milestone.projectId, Object.values(config.tokenAddresses)[0], {
-  //                   from: this.props.currentUser.address,
-  //                   $extraGas: 100000,
-  //                 })
-  //                 .once('transactionHash', hash => {
-  //                   txHash = hash;
-  //                   collect(etherScanUrl, txHash);
-  //                 });
-  //             })
-  //             .catch(() => {
-  //               ErrorPopup(
-  //                 'Something went wrong with the transaction. Is your wallet unlocked?',
-  //                 `${etherScanUrl}tx/${txHash}`,
-  //               );
-  //             });
-  //         }
-  //       }),
-  //     )
-  //     .catch(err => {
-  //       if (err === 'noBalance') {
-  //         // handle no balance error
-  //       }
-  //     });
-  // }
-
   render() {
     const {
       milestones,
@@ -1007,7 +939,7 @@ class MyMilestones extends Component {
 
               <ul className="nav nav-tabs">
                 {this.milestoneTabs.map(st => (
-                  <li className="nav-item">
+                  <li className="nav-item" key={st}>
                     <span
                       role="button"
                       className={`nav-link ${this.state.loadedStatus === st ? 'active' : ''}`}
@@ -1043,7 +975,7 @@ class MyMilestones extends Component {
                           </thead>
                           <tbody>
                             {milestones.map(m => (
-                              <tr key={m._id} className={m.status === 'pending' ? 'pending' : ''}>
+                              <tr key={m._id} className={m.status === 'Pending' ? 'pending' : ''}>
                                 <td className="td-created-at">
                                   {m.createdAt && (
                                     <span>{moment.utc(m.createdAt).format('Do MMM YYYY')}</span>
@@ -1065,16 +997,18 @@ class MyMilestones extends Component {
                                   </Link>
                                 </td>
                                 <td className="td-status">
-                                  {(m.status === 'pending' ||
+                                  {(m.status === 'Pending' ||
                                     (Object.keys(m).includes('mined') && !m.mined)) && (
                                     <span>
-                                      <i className="fa fa-circle-o-notch fa-spin" />&nbsp;
+                                      <i className="fa fa-circle-o-notch fa-spin" />
+                                      &nbsp;
                                     </span>
                                   )}
                                   {m.status === 'NeedsReview' &&
                                     reviewDue(m.updatedAt) && (
                                       <span>
-                                        <i className="fa fa-exclamation-triangle" />&nbsp;
+                                        <i className="fa fa-exclamation-triangle" />
+                                        &nbsp;
                                       </span>
                                     )}
                                   {getReadableStatus(m.status)}
@@ -1083,7 +1017,7 @@ class MyMilestones extends Component {
                                   {convertEthHelper(m.maxAmount)} ETH
                                 </td>
                                 <td className="td-donations-number">{m.donationCount || 0}</td>
-                                <td className="td-donations-amount">
+                                <td className="td-donations-">
                                   {convertEthHelper(m.totalDonated)} ETH
                                 </td>
                                 <td className="td-reviewer">
@@ -1098,41 +1032,49 @@ class MyMilestones extends Component {
                                   {/* Campaign and Milestone managers can edit milestone */}
                                   {(m.ownerAddress === currentUser.address ||
                                     m.campaign.ownerAddress === currentUser.address) &&
-                                    ['proposed', 'rejected', 'InProgress', 'NeedsReview'].includes(
+                                    ['Proposed', 'Rejected', 'InProgress', 'NeedsReview'].includes(
                                       m.status,
                                     ) && (
                                       <button
+                                        type="button"
                                         className="btn btn-link"
                                         onClick={() => this.editMilestone(m)}
                                       >
-                                        <i className="fa fa-edit" />&nbsp;Edit
+                                        <i className="fa fa-edit" />
+                                        &nbsp;Edit
                                       </button>
                                     )}
 
                                   {m.campaign.ownerAddress === currentUser.address &&
-                                    m.status === 'proposed' && (
+                                    m.status === 'Proposed' && (
                                       <span>
                                         <button
+                                          type="button"
                                           className="btn btn-success btn-sm"
                                           onClick={() => this.acceptProposedMilestone(m)}
                                         >
-                                          <i className="fa fa-check-square-o" />&nbsp;Accept
+                                          <i className="fa fa-check-square-o" />
+                                          &nbsp;Accept
                                         </button>
                                         <button
+                                          type="button"
                                           className="btn btn-danger btn-sm"
                                           onClick={() => rejectProposedMilestone(m)}
                                         >
-                                          <i className="fa fa-times-circle-o" />&nbsp;Reject
+                                          <i className="fa fa-times-circle-o" />
+                                          &nbsp;Reject
                                         </button>
                                       </span>
                                     )}
                                   {m.ownerAddress === currentUser.address &&
-                                    m.status === 'rejected' && (
+                                    m.status === 'Rejected' && (
                                       <button
+                                        type="button"
                                         className="btn btn-success btn-sm"
                                         onClick={() => reproposeRejectedMilestone(m)}
                                       >
-                                        <i className="fa fa-times-square-o" />&nbsp;Re-propose
+                                        <i className="fa fa-times-square-o" />
+                                        &nbsp;Re-propose
                                       </button>
                                     )}
 
@@ -1141,6 +1083,7 @@ class MyMilestones extends Component {
                                     m.status === 'InProgress' &&
                                     m.mined && (
                                       <button
+                                        type="button"
                                         className="btn btn-success btn-sm"
                                         onClick={() => this.requestMarkComplete(m)}
                                       >
@@ -1155,21 +1098,25 @@ class MyMilestones extends Component {
                                     ['InProgress', 'NeedReview'].includes(m.status) &&
                                     m.mined && (
                                       <button
+                                        type="button"
                                         className="btn btn-danger btn-sm"
                                         onClick={() => this.cancelMilestone(m)}
                                       >
-                                        <i className="fa fa-times" />&nbsp;Cancel
+                                        <i className="fa fa-times" />
+                                        &nbsp;Cancel
                                       </button>
                                     )}
 
                                   {m.ownerAddress === currentUser.address &&
-                                    ['proposed', 'rejected'].includes(m.status) && (
+                                    ['Proposed', 'Rejected'].includes(m.status) && (
                                       <span>
                                         <button
+                                          type="button"
                                           className="btn btn-danger btn-sm"
                                           onClick={() => deleteProposedMilestone(m)}
                                         >
-                                          <i className="fa fa-times-circle-o" />&nbsp;Delete
+                                          <i className="fa fa-times-circle-o" />
+                                          &nbsp;Delete
                                         </button>
                                       </span>
                                     )}
@@ -1179,30 +1126,40 @@ class MyMilestones extends Component {
                                     m.mined && (
                                       <span>
                                         <button
+                                          type="button"
                                           className="btn btn-success btn-sm"
                                           onClick={() => this.approveMilestoneCompleted(m)}
                                         >
-                                          <i className="fa fa-thumbs-up" />&nbsp;Approve
+                                          <i className="fa fa-thumbs-up" />
+                                          &nbsp;Approve
                                         </button>
 
                                         <button
+                                          type="button"
                                           className="btn btn-danger btn-sm"
                                           onClick={() => this.rejectMilestoneCompletion(m)}
                                         >
-                                          <i className="fa fa-thumbs-down" />&nbsp;Reject
+                                          <i className="fa fa-thumbs-down" />
+                                          &nbsp;Reject
                                         </button>
                                       </span>
                                     )}
 
-                                  {m.recipientAddress === currentUser.address &&
+                                  {[m.recipientAddress, m.ownerAddress].includes(
+                                    currentUser.address,
+                                  ) &&
                                     m.status === 'Completed' &&
                                     m.mined &&
                                     m.donationCount > 0 && (
                                       <button
+                                        type="button"
                                         className="btn btn-success btn-sm"
                                         onClick={() => this.withdrawal(m)}
                                       >
-                                        <i className="fa fa-usd" />&nbsp;Withdrawal
+                                        <i className="fa fa-usd" />{' '}
+                                        {m.recipientAddress === currentUser.address
+                                          ? 'Collect'
+                                          : 'Disperse'}
                                       </button>
                                     )}
 
@@ -1264,6 +1221,8 @@ class MyMilestones extends Component {
             </div>
           </div>
         </div>
+
+        <ConversationModal ref={this.conversationModal} />
       </div>
     );
   }

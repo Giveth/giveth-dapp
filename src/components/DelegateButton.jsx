@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
-import { SkyLightStateless } from 'react-skylight';
+import Modal from 'react-modal';
+
 import { utils } from 'web3';
 import { Form, Input } from 'formsy-react-components';
 import InputToken from 'react-input-token';
@@ -11,8 +12,24 @@ import { checkWalletBalance } from '../lib/middleware';
 import GivethWallet from '../lib/blockchain/GivethWallet';
 
 import Donation from '../models/Donation';
+import Milestone from '../models/Milestone';
 
 import DonationService from '../services/DonationService';
+
+const modalStyles = {
+  content: {
+    top: '50%',
+    left: '50%',
+    right: 'auto',
+    bottom: 'auto',
+    marginRight: '-20%',
+    transform: 'translate(-50%, -50%)',
+    boxShadow: '0 0 40px #ccc',
+    overflowY: 'scroll',
+  },
+};
+
+Modal.setAppElement('#root');
 
 class DelegateButton extends Component {
   constructor(props) {
@@ -22,8 +39,8 @@ class DelegateButton extends Component {
       isSaving: false,
       objectsToDelegateTo: [],
       modalVisible: false,
-      amount: utils.fromWei(props.donation.amount),
-      maxAmount: utils.fromWei(props.donation.amount),
+      amount: utils.fromWei(props.donation.amountRemaining),
+      maxAmount: utils.fromWei(props.donation.amountRemaining),
     };
 
     this.submit = this.submit.bind(this);
@@ -53,16 +70,14 @@ class DelegateButton extends Component {
     const admin = this.props.types.find(t => t.id === this.state.objectsToDelegateTo[0]);
 
     // TODO: find a more friendly way to do this.
-    if (admin.type === 'milestone' && toBN(admin.maxAmount).lt(toBN(admin.totalDonated || 0))) {
+    if (admin.type === Milestone.type && toBN(admin.maxAmount).lt(toBN(admin.totalDonated || 0))) {
       React.toast.error('That milestone has reached its funding goal. Please pick another.');
       return;
     }
 
     const onCreated = txLink => {
-      this.resetSkylight();
-
       const msg =
-        donation.delegate > 0 ? (
+        donation.delegateId > 0 ? (
           <p>
             The Giver has <strong>3 days</strong> to reject your delegation before the money gets
             locked
@@ -89,13 +104,17 @@ class DelegateButton extends Component {
     const onSuccess = txLink => {
       React.toast.success(
         <p>
-          Your donation has been confirmed!<br />
+          Your donation has been confirmed!
+          <br />
           <a href={`${txLink}`} target="_blank" rel="noopener noreferrer">
             View transaction
           </a>
         </p>,
       );
     };
+    // FIXME: This is super ugly, there is a short flash period when the submit button is pressed before the unlock/success appears
+    this.setState({ modalVisible: false });
+
     DonationService.delegate(
       this.props.donation,
       utils.toWei(model.amount),
@@ -105,36 +124,25 @@ class DelegateButton extends Component {
     );
   }
 
-  resetSkylight() {
-    this.setState({
-      isSaving: false,
-      objectsToDelegateTo: [],
-    });
-  }
-
   render() {
     const { types, milestoneOnly, donation } = this.props;
     const { isSaving, objectsToDelegateTo } = this.state;
     const style = { display: 'inline-block' };
-    const pStyle = { 'white-space': 'normal' };
+    const pStyle = { whiteSpace: 'normal' };
 
     return (
       <span style={style}>
-        <button className="btn btn-success btn-sm" onClick={() => this.openDialog()}>
+        <button type="button" className="btn btn-success btn-sm" onClick={() => this.openDialog()}>
           Delegate
         </button>
 
-        <SkyLightStateless
-          isVisible={this.state.modalVisible}
-          onCloseClicked={() => {
+        <Modal
+          isOpen={this.state.modalVisible}
+          onRequestClose={() => {
             this.setState({ modalVisible: false });
           }}
-          onOverlayClicked={() => {
-            this.setState({ modalVisible: false });
-          }}
-          hideOnOverlayClicked
-          title="Delegate Donation"
-          afterClose={() => this.resetSkylight()}
+          contentLabel="Delegate Donation"
+          style={modalStyles}
         >
           {milestoneOnly && <p>Select a Milestone to delegate this donation to:</p>}
           {!milestoneOnly && <p>Select a Campaign or Milestone to delegate this donation to:</p>}
@@ -142,7 +150,7 @@ class DelegateButton extends Component {
           <p style={pStyle}>
             You are delegating donation from{' '}
             <strong>{donation.giver.name || donation.giverAddress}</strong> of a value{' '}
-            <strong>{utils.fromWei(donation.amount)} ETH</strong> that has been donated to{' '}
+            <strong>{utils.fromWei(donation.amountRemaining)} ETH</strong> that has been donated to{' '}
             <strong>{donation.donatedTo.name}</strong>
           </p>
           <Form onSubmit={this.submit} layout="vertical">
@@ -170,7 +178,7 @@ class DelegateButton extends Component {
                 max={Number(this.state.maxAmount)}
                 step={this.state.maxAmount / 10}
                 value={Number(this.state.amount)}
-                labels={['0', this.state.maxAmount]}
+                labels={{ 0: '0', 100: this.state.maxAmount }}
                 format={val => `${val} ETH`}
                 onChange={amount => this.setState({ amount: Number(amount).toFixed(2) })}
               />
@@ -202,7 +210,7 @@ class DelegateButton extends Component {
               {isSaving ? 'Delegating...' : 'Delegate here'}
             </button>
           </Form>
-        </SkyLightStateless>
+        </Modal>
       </span>
     );
   }

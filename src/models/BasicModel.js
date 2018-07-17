@@ -1,5 +1,5 @@
 import Model from './Model';
-import { getTruncatedText } from './../lib/helpers';
+import { getTruncatedText } from '../lib/helpers';
 
 /**
  * The DAC, Milestone and Campaign base model containing basic common interface

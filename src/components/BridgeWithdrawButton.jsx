@@ -1,17 +1,32 @@
 import { utils } from 'web3';
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { SkyLightStateless } from 'react-skylight';
+import Modal from 'react-modal';
 import { Form, Input } from 'formsy-react-components';
 import SelectFormsy from './SelectFormsy';
 
 import User from '../models/User';
 import GivethWallet from '../lib/blockchain/GivethWallet';
-import WalletService from '../services/Wallet';
+import WalletService from '../services/WalletService';
 import { getGasPrice } from '../lib/helpers';
 import config from '../configuration';
 
 import ErrorPopup from './ErrorPopup';
+
+const modalStyles = {
+  content: {
+    top: '50%',
+    left: '50%',
+    right: 'auto',
+    bottom: 'auto',
+    marginRight: '-20%',
+    transform: 'translate(-50%, -50%)',
+    boxShadow: '0 0 40px #ccc',
+    overflowY: 'scroll',
+  },
+};
+
+Modal.setAppElement('#root');
 
 class BridgeWithdrawButton extends Component {
   constructor() {
@@ -85,7 +100,8 @@ class BridgeWithdrawButton extends Component {
       (etherScanUrl, txHash) => {
         React.toast.success(
           <p>
-            Your withdrawal has been confirmed!<br />
+            Your withdrawal has been confirmed!
+            <br />
             <a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">
               View transaction
             </a>
@@ -108,19 +124,17 @@ class BridgeWithdrawButton extends Component {
 
     return (
       <span style={style}>
-        <button className="btn btn-info" onClick={() => this.openDialog()}>
+        <button type="button" className="btn btn-info" onClick={() => this.openDialog()}>
           Withdraw
         </button>
 
         {wallet && (
-          <SkyLightStateless
-            isVisible={this.state.modalVisible}
-            onCloseClicked={() => {
+          <Modal
+            isOpen={this.state.modalVisible}
+            onRequestClose={() => {
               this.setState({ modalVisible: false });
             }}
-            onOverlayClicked={() => {
-              this.setState({ modalVisible: false });
-            }}
+            style={modalStyles}
           >
             <p>
               <strong>Withdrawing via bridge from your Giveth wallet</strong>
@@ -180,7 +194,7 @@ class BridgeWithdrawButton extends Component {
                 {isSaving ? 'Withdrawing...' : 'Withdraw'}
               </button>
             </Form>
-          </SkyLightStateless>
+          </Modal>
         )}
       </span>
     );

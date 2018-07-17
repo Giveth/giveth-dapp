@@ -5,12 +5,13 @@ import { utils } from 'web3';
 import Toggle from 'react-toggle';
 import BigNumber from 'bignumber.js';
 import { Form, Input } from 'formsy-react-components';
-import { feathersClient, feathersRest } from './../../lib/feathersClient';
-import Loader from './../Loader';
-import QuillFormsy from './../QuillFormsy';
-import SelectFormsy from './../SelectFormsy';
-import DatePickerFormsy from './../DatePickerFormsy';
-import FormsyImageUploader from './../FormsyImageUploader';
+import { feathersClient, feathersRest } from '../../lib/feathersClient';
+import templates from '../../lib/milestoneTemplates';
+import Loader from '../Loader';
+import QuillFormsy from '../QuillFormsy';
+import SelectFormsy from '../SelectFormsy';
+import DatePickerFormsy from '../DatePickerFormsy';
+import FormsyImageUploader from '../FormsyImageUploader';
 import GoBackButton from '../GoBackButton';
 import {
   isOwner,
@@ -20,14 +21,15 @@ import {
 } from '../../lib/helpers';
 import { isAuthenticated, checkWalletBalance, isInWhitelist } from '../../lib/middleware';
 import getNetwork from '../../lib/blockchain/getNetwork';
-import LoaderButton from '../../components/LoaderButton';
+import LoaderButton from '../LoaderButton';
 import User from '../../models/User';
 import GivethWallet from '../../lib/blockchain/GivethWallet';
-import MilestoneItem from '../../components/MilestoneItem';
-import AddMilestoneItem from '../../components/AddMilestoneItem';
+
 import ErrorPopup from '../ErrorPopup';
-import AddMilestoneItemModal from '../../components/AddMilestoneItemModal';
 import config from '../../configuration';
+import MilestoneProof from '../MilestoneProof';
+
+import getEthConversionContext from '../../containers/getEthConversionContext';
 
 BigNumber.config({ DECIMAL_PLACES: 18 });
 
@@ -59,7 +61,7 @@ class EditMilestone extends Component {
       fiatAmount: new BigNumber(0),
       recipientAddress: '',
       // completionDeadline: '',
-      status: 'pending',
+      status: 'Pending',
       uploadNewImage: false,
       campaignTitle: '',
       projectId: undefined,
@@ -76,21 +78,7 @@ class EditMilestone extends Component {
       items: [],
       itemizeState: false,
       showRecipientAddress: false,
-      conversionRates: [],
-      currentRate: undefined,
       date: getStartOfDayUTC().subtract(1, 'd'),
-      fiatTypes: [
-        { value: 'BRL', title: 'BRL' },
-        { value: 'CAD', title: 'CAD' },
-        { value: 'CHF', title: 'CHF' },
-        { value: 'CZK', title: 'CZK' },
-        { value: 'ETH', title: 'ETH' },
-        { value: 'EUR', title: 'EUR' },
-        { value: 'GBP', title: 'GBP' },
-        { value: 'MXN', title: 'MXN' },
-        { value: 'THB', title: 'THB' },
-        { value: 'USD', title: 'USD' },
-      ],
       selectedFiatType: 'EUR',
       isBlocking: false,
     };
@@ -103,6 +91,9 @@ class EditMilestone extends Component {
     this.setFiatAmount = this.setFiatAmount.bind(this);
     this.changeSelectedFiat = this.changeSelectedFiat.bind(this);
     this.toggleShowRecipientAddress = this.toggleShowRecipientAddress.bind(this);
+    this.onItemsChanged = this.onItemsChanged.bind(this);
+    this.handleTemplateChange = this.handleTemplateChange.bind(this);
+    this.validateMilestoneDesc = this.validateMilestoneDesc.bind(this);
   }
 
   componentDidMount() {
@@ -136,7 +127,7 @@ class EditMilestone extends Component {
               if (
                 !(
                   isOwner(milestone.owner.address, this.props.currentUser) ||
-                  isOwner(milestone.campaignOwnerAddress, this.props.currentUser)
+                  isOwner(milestone.campaign.ownerAddress, this.props.currentUser)
                 )
               ) {
                 this.props.history.goBack();
@@ -151,13 +142,12 @@ class EditMilestone extends Component {
                   campaignTitle: milestone.campaign.title,
                   campaignProjectId: milestone.campaign.projectId,
                   campaignReviewerAddress: milestone.campaign.reviewerAddress,
-                  campaignOwnerAddress: milestone.campaign.ownerAddress,
+                  campaign: milestone.campaign,
                 }),
               );
               return date;
             })
-            .then(date => this.getEthConversion(date))
-            .then()
+            .then(date => this.props.getEthConversion(date))
             .then(() => {
               if (!this.state.hasWhitelist) this.getReviewers();
             })
@@ -177,18 +167,17 @@ class EditMilestone extends Component {
             .service('campaigns')
             .get(this.props.match.params.id)
             .then(campaign => {
-              if (!campaign.projectId) {
+              if (campaign.projectId < 0) {
                 this.props.history.goBack();
               } else {
                 this.setState({
                   campaignTitle: campaign.title,
                   campaignReviewerAddress: campaign.reviewerAddress,
-                  campaignOwnerAddress: campaign.ownerAddress,
                   campaignProjectId: campaign.projectId,
                 });
               }
             })
-            .then(() => this.getEthConversion(this.state.date))
+            .then(() => this.props.getEthConversion(this.state.date))
             .then(() => {
               if (!this.state.hasWhitelist) this.getReviewers();
             })
@@ -222,6 +211,10 @@ class EditMilestone extends Component {
     this.setState({ addMilestoneItemModalVisible: false });
   }
 
+  onItemsChanged(items) {
+    this.setState({ items });
+  }
+
   getReviewers() {
     return feathersClient
       .service('/users')
@@ -247,54 +240,19 @@ class EditMilestone extends Component {
 
   setDate(date) {
     this.setState({ date });
-    this.getEthConversion(date).then(resp => {
+    this.props.getEthConversion(date).then(resp => {
       // update all the input fields
       const rate = resp.rates[this.state.selectedFiatType];
 
-      this.setState({
-        currentRate: resp,
-        maxAmount: this.state.fiatAmount.div(rate),
-      });
-    });
-  }
-
-  getEthConversion(date) {
-    const dtUTC = getStartOfDayUTC(date); // Should not be necessary as the datepicker should provide UTC, but just to be sure
-    const timestamp = Math.round(dtUTC.toDate()) / 1000;
-
-    const { conversionRates } = this.state;
-    const cachedConversionRate = conversionRates.find(c => c.timestamp === timestamp);
-
-    if (!cachedConversionRate) {
-      // we don't have the conversion rate in cache, fetch from feathers
-      return feathersClient
-        .service('ethconversion')
-        .find({ query: { date: dtUTC } })
-        .then(resp => {
-          this.setState({
-            conversionRates: conversionRates.concat(resp),
-            maxAmount: this.state.fiatAmount.div(resp.rates[this.state.selectedFiatType]),
-            currentRate: resp,
-          });
-
-          return resp;
-        })
-        .catch(err => {
-          ErrorPopup(
-            'Sadly we were unable to get the exchange rate. Please try again after refresh.',
-            err,
-          );
-        });
-    }
-    // we have the conversion rate in cache
-    return new Promise(resolve => {
-      this.setState({ currentRate: cachedConversionRate }, () => resolve(cachedConversionRate));
+      this.setState(prevState => ({
+        maxAmount: prevState.fiatAmount.div(rate),
+      }));
     });
   }
 
   setFiatAmount(name, value) {
     const maxAmount = new BigNumber(value || '0');
-    const conversionRate = this.state.currentRate.rates[this.state.selectedFiatType];
+    const conversionRate = this.props.currentRate.rates[this.state.selectedFiatType];
 
     if (conversionRate && maxAmount.gte(0)) {
       this.setState({
@@ -306,7 +264,7 @@ class EditMilestone extends Component {
 
   setMaxAmount(name, value) {
     const fiatAmount = new BigNumber(value || '0');
-    const conversionRate = this.state.currentRate.rates[this.state.selectedFiatType];
+    const conversionRate = this.props.currentRate.rates[this.state.selectedFiatType];
     if (conversionRate && fiatAmount.gte(0)) {
       this.setState({
         maxAmount: fiatAmount.div(conversionRate),
@@ -316,7 +274,9 @@ class EditMilestone extends Component {
   }
 
   addItem(item) {
-    this.setState({ items: this.state.items.concat(item) });
+    this.setState(prevState => ({
+      items: prevState.items.concat(item),
+    }));
   }
 
   btnText() {
@@ -345,20 +305,20 @@ class EditMilestone extends Component {
   }
 
   changeSelectedFiat(fiatType) {
-    const conversionRate = this.state.currentRate.rates[fiatType];
-    this.setState({
-      maxAmount: this.state.fiatAmount.div(conversionRate),
+    const conversionRate = this.props.currentRate.rates[fiatType];
+    this.setState(prevState => ({
+      maxAmount: prevState.fiatAmount.div(conversionRate),
       selectedFiatType: fiatType,
-    });
+    }));
   }
 
   toggleShowRecipientAddress() {
-    this.setState({ showRecipientAddress: !this.state.showRecipientAddress });
+    this.setState(prevState => ({ showRecipientAddress: !prevState.showRecipientAddress }));
   }
 
   toggleFormValid(state) {
     if (this.state.itemizeState) {
-      this.setState({ formIsValid: state && this.state.items.length > 0 });
+      this.setState(prevState => ({ formIsValid: state && prevState.items.length > 0 }));
     } else {
       this.setState({ formIsValid: state });
     }
@@ -402,15 +362,15 @@ class EditMilestone extends Component {
         image: file,
         campaignId: this.state.campaignId,
         status:
-          this.props.isProposed || this.state.status === 'rejected'
-            ? 'proposed'
+          this.props.isProposed || this.state.status === 'Rejected'
+            ? 'Proposed'
             : this.state.status, // make sure not to change status!
         items: this.state.itemizeState ? this.state.items : [],
-        ethConversionRateTimestamp: this.state.currentRate.timestamp,
+        ethConversionRateTimestamp: this.props.currentRate.timestamp,
         selectedFiatType: this.state.selectedFiatType,
         date: this.state.date,
         fiatAmount: this.state.fiatAmount.toFixed(),
-        conversionRate: this.state.currentRate.rates[this.state.selectedFiatType],
+        conversionRate: this.props.currentRate.rates[this.state.selectedFiatType],
       };
 
       if (this.props.isNew) {
@@ -437,7 +397,6 @@ class EditMilestone extends Component {
               pluginAddress: '0x0000000000000000000000000000000000000000',
               totalDonated: '0',
               donationCount: 0,
-              campaignOwnerAddress: this.state.campaignOwnerAddress,
             },
             () => React.toast.info(<p>Your Milestone is being proposed to the Campaign Owner.</p>),
           );
@@ -456,6 +415,14 @@ class EditMilestone extends Component {
                 maxAmount,
               } = constructedModel;
               const parentProjectId = this.state.campaignProjectId;
+              // TODO  fix this hack
+              if (!parentProjectId || parentProjectId === '0') {
+                ErrorPopup(
+                  `It looks like the campaign has not been mined yet. Please try again in a bit`,
+                  `It looks like the campaign has not been mined yet. Please try again in a bit`,
+                );
+                return;
+              }
 
               /**
               lppCappedMilestoneFactory params
@@ -484,7 +451,7 @@ class EditMilestone extends Component {
                   maxAmount,
                   Object.values(config.tokenAddresses)[0], // TODO make this a form param
                   5 * 24 * 60 * 60, // 5 days in seconds
-                  { from, $extraGas: 200000 },
+                  { from },
                 )
                 .on('transactionHash', hash => {
                   txHash = hash;
@@ -498,7 +465,8 @@ class EditMilestone extends Component {
                     () =>
                       React.toast.info(
                         <p>
-                          Your Milestone is pending....<br />
+                          Your Milestone is pending....
+                          <br />
                           <a
                             href={`${etherScanUrl}tx/${txHash}`}
                             target="_blank"
@@ -513,7 +481,8 @@ class EditMilestone extends Component {
                 .then(() => {
                   React.toast.success(
                     <p>
-                      Your Milestone has been created!<br />
+                      Your Milestone has been created!
+                      <br />
                       <a
                         href={`${etherScanUrl}tx/${txHash}`}
                         target="_blank"
@@ -541,7 +510,8 @@ class EditMilestone extends Component {
           .then(() => {
             React.toast.success(
               <p>
-                Your Milestone has been updated!<br />
+                Your Milestone has been updated!
+                <br />
               </p>,
             );
 
@@ -611,7 +581,7 @@ class EditMilestone extends Component {
         isBlocking: false,
       },
       () => {
-        if (this.props.isProposed) {
+        if (this.props.isProposed && this.props.isNew) {
           React.swal({
             title: 'Propose milestone?',
             text:
@@ -630,13 +600,20 @@ class EditMilestone extends Component {
   }
 
   toggleAddMilestoneItemModal() {
-    this.setState({
-      addMilestoneItemModalVisible: !this.state.addMilestoneItemModalVisible,
-    });
+    this.setState(prevState => ({
+      addMilestoneItemModalVisible: !prevState.addMilestoneItemModalVisible,
+    }));
   }
 
   toggleItemize() {
-    this.setState({ itemizeState: !this.state.itemizeState });
+    this.setState(prevState => ({ itemizeState: !prevState.itemizeState }));
+  }
+
+  handleTemplateChange(option) {
+    this.setState({
+      description: templates.templates[option],
+      template: option,
+    });
   }
 
   triggerRouteBlocking() {
@@ -645,8 +622,41 @@ class EditMilestone extends Component {
     this.setState({ isBlocking: form && (!form.state.formSubmitted || form.state.isSubmitting) });
   }
 
+  validateMilestoneDesc(value) {
+    if (this.state.template === 'Reward DAO') {
+      return (
+        value.includes('Intro') &&
+        value.includes('Description') &&
+        value.includes('Proof') &&
+        value.includes('Video') &&
+        value.includes('Reward')
+      );
+    }
+    if (this.state.template === 'Regular Reward') {
+      return (
+        value.includes('Intro') &&
+        value.includes('Description') &&
+        value.includes('Video') &&
+        value.includes('Amount')
+      );
+    }
+    if (this.state.template === 'Expenses') {
+      return value.includes('Expenses') && value.includes('Description');
+    }
+    if (this.state.template === 'Bounties') {
+      return (
+        value.includes('Intro') &&
+        value.includes('What') &&
+        value.includes('Why') &&
+        value.includes('Deadline') &&
+        value.includes('Link to Bounty')
+      );
+    }
+    return value.length > 10;
+  }
+
   render() {
-    const { isNew, isProposed, history } = this.props;
+    const { isNew, isProposed, history, currentRate, fiatTypes } = this.props;
     const {
       isLoading,
       isSaving,
@@ -666,8 +676,6 @@ class EditMilestone extends Component {
       fiatAmount,
       date,
       selectedFiatType,
-      fiatTypes,
-      currentRate,
       reviewers,
       isBlocking,
     } = this.state;
@@ -686,7 +694,7 @@ class EditMilestone extends Component {
                   <div className="form-header">
                     {isNew && !isProposed && <h3>Add a new milestone</h3>}
 
-                    {!isNew && !isProposed && <h3>Edit milestone {title}</h3>}
+                    {!isNew && !isProposed && <h3>Edit milestone{title}</h3>}
 
                     {isNew && isProposed && <h3>Propose a Milestone</h3>}
 
@@ -711,6 +719,7 @@ class EditMilestone extends Component {
                   </div>
 
                   <Form
+                    id="edit-milestone-form"
                     onSubmit={this.submit}
                     ref={this.form}
                     mapping={inputs => this.mapInputs(inputs)}
@@ -741,10 +750,10 @@ class EditMilestone extends Component {
                       required
                       autoFocus
                     />
-
                     <div className="form-group">
                       <QuillFormsy
                         name="description"
+                        templatesDropdown
                         label="Explain how you are going to do this successfully."
                         helpText="Make it as extensive as necessary. Your goal is to build trust,
                         so that people donate Ether to your Campaign. Don't hesitate to add a detailed budget for this Milestone"
@@ -752,10 +761,17 @@ class EditMilestone extends Component {
                         placeholder="Describe how you're going to execute your Milestone successfully
                         ..."
                         onTextChanged={content => this.constructSummary(content)}
-                        validations="minLength:3"
+                        validations={{
+                          // eslint-disable-next-line
+                          templateValidator: function(values, value) {
+                            return this.validateMilestoneDesc(value);
+                          }.bind(this),
+                        }}
                         help="Describe your Milestone."
+                        handleTemplateChange={this.handleTemplateChange}
                         validationErrors={{
-                          minLength: 'Please provide at least 3 characters.',
+                          templateValidator:
+                            'Please provide at least 10 characters and do not edit the template keywords.',
                         }}
                         required
                       />
@@ -936,61 +952,11 @@ class EditMilestone extends Component {
                         </div>
                       </div>
                     ) : (
-                      <div className="form-group row dashboard-table-view">
-                        <div className="col-12">
-                          <div className="card milestone-items-card">
-                            <div className="card-body">
-                              {items.length > 0 && (
-                                <div className="table-container">
-                                  <table className="table table-responsive table-striped table-hover">
-                                    <thead>
-                                      <tr>
-                                        <th className="td-item-date">Date</th>
-                                        <th className="td-item-description">Description</th>
-                                        <th className="td-item-amount-fiat">Amount Fiat</th>
-                                        <th className="td-item-fiat-amount">Amount Ether</th>
-                                        <th className="td-item-file-upload">Attached proof</th>
-                                        <th className="td-item-action" />
-                                      </tr>
-                                    </thead>
-                                    <tbody>
-                                      {items.map((item, i) => (
-                                        <MilestoneItem
-                                          name={`milestoneItem-${i}`}
-                                          index={i}
-                                          item={item}
-                                          removeItem={() => this.removeItem(i)}
-                                          isEditMode={isNew || isProposed}
-                                        />
-                                      ))}
-                                    </tbody>
-                                  </table>
-                                </div>
-                              )}
-
-                              {items.length > 0 &&
-                                (isNew || isProposed) && (
-                                  <AddMilestoneItem
-                                    onClick={() => this.toggleAddMilestoneItemModal()}
-                                  />
-                                )}
-
-                              {items.length === 0 &&
-                                (isNew || isProposed) && (
-                                  <div className="text-center">
-                                    <p>
-                                      Add you first item now. This can be an expense, invoice or
-                                      anything else that needs to be paid.
-                                    </p>
-                                    <AddMilestoneItem
-                                      onClick={() => this.toggleAddMilestoneItemModal()}
-                                    />
-                                  </div>
-                                )}
-                            </div>
-                          </div>
-                        </div>
-                      </div>
+                      <MilestoneProof
+                        isEditMode
+                        items={items}
+                        onItemsChanged={returnedItems => this.onItemsChanged(returnedItems)}
+                      />
                     )}
 
                     <div className="form-group row">
@@ -1016,17 +982,12 @@ class EditMilestone extends Component {
             </div>
           </div>
         </div>
-        <AddMilestoneItemModal
-          visible={this.state.addMilestoneItemModalVisible}
-          onClose={() => this.toggleAddMilestoneItemModal()}
-          getEthConversion={d => this.getEthConversion(d)}
-          onAddItem={item => this.onAddItem(item)}
-          fiatTypes={fiatTypes}
-        />
       </div>
     );
   }
 }
+
+/* eslint react/forbid-prop-types: 0 */
 
 EditMilestone.propTypes = {
   currentUser: PropTypes.instanceOf(User).isRequired,
@@ -1043,6 +1004,9 @@ EditMilestone.propTypes = {
       milestoneId: PropTypes.string,
     }).isRequired,
   }).isRequired,
+  getEthConversion: PropTypes.func.isRequired,
+  currentRate: PropTypes.object.isRequired,
+  fiatTypes: PropTypes.arrayOf(PropTypes.object).isRequired,
 };
 
 EditMilestone.defaultProps = {
@@ -1050,4 +1014,4 @@ EditMilestone.defaultProps = {
   isProposed: false,
 };
 
-export default EditMilestone;
+export default getEthConversionContext(EditMilestone);

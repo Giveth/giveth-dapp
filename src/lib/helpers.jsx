@@ -6,7 +6,7 @@ import moment from 'moment';
 import BigNumber from 'bignumber.js';
 
 import { feathersClient } from './feathersClient';
-import DefaultAvatar from './../assets/avatar-100.svg';
+import DefaultAvatar from '../assets/avatar-100.svg';
 import config from '../configuration';
 
 export const isOwner = (address, currentUser) =>
@@ -100,7 +100,9 @@ export const getGasPrice = () =>
     .service('/gasprice')
     .find()
     .then(resp => {
-      let gasPrice = resp.safeLow * 1.1;
+      // let gasPrice = resp.safeLow * 1.1;
+      // hack: temp while network gas is so erratic
+      let gasPrice = resp.average;
       gasPrice = gasPrice > resp.average ? resp.average : gasPrice;
       // div by 10 b/c https://ethgasstation.info/json/ethgasAPI.json returns price in gwei * 10
       // we're only interested in gwei.
@@ -168,15 +170,11 @@ export const history = createBrowserHistory();
 // Get start of the day in UTC for a given date or start of current day in UTC
 export const getStartOfDayUTC = date => moment.utc(date || moment()).startOf('day');
 
-export const convertEthHelper = amount => {
+export const convertEthHelper = (amount, decimals) => {
   if (!amount) return 0;
 
   const eth = utils.fromWei(amount);
-  if (eth.includes('.') && eth.split('.')[1].length > config.decimals) {
-    return new BigNumber(eth).toFixed(config.decimals);
-  }
-
-  return eth;
+  return new BigNumber(eth).toFixed(decimals || config.decimals);
 };
 
 // the back button will go one lower nested route inside of the DApp
