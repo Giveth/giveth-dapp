@@ -787,25 +787,6 @@ class MyMilestones extends Component {
                 .catch(e => {
                   ErrorPopup('Something went wrong doing the withdrawal', e);
                 });
-
-              feathersClient
-                .service('donations')
-                .patch(
-                  null,
-                  {
-                    status: 'Pending',
-                    txHash,
-                  },
-                  {
-                    query: {
-                      ownerType: 'milestone',
-                      ownerTypeId: milestone._id,
-                    },
-                  },
-                )
-                .catch(e => {
-                  ErrorPopup('Something went wrong doing the withdrawal', e);
-                });
             };
 
             const getPledges = () =>
