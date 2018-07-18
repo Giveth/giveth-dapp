@@ -1086,6 +1086,7 @@ class MyMilestones extends Component {
                                         type="button"
                                         className="btn btn-success btn-sm"
                                         onClick={() => this.requestMarkComplete(m)}
+                                        disabled={!utils.toBN(m.totalDonated).gt('0')}
                                       >
                                         Mark complete
                                       </button>
