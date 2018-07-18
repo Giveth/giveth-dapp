@@ -78,7 +78,7 @@ class ViewMilestone extends Component {
     // TODO: fetch "non comitted" donations? add "intendedProjectTypeId: milestoneId" to query to get
     // all "pending aproval" donations for this milestone
     const query = paramsForServer({
-      query: { ownerTypeId: milestoneId },
+      query: { ownerTypeId: milestoneId, amountRemaining: { $ne: 0 } },
       schema: 'includeGiverDetails',
       $sort: { createdAt: -1 },
     });
@@ -439,7 +439,12 @@ class ViewMilestone extends Component {
               <div className="row spacer-top-50 spacer-bottom-50">
                 <div className="col-md-8 m-auto">
                   <h4>Donations</h4>
-                  <ShowTypeDonations donations={donations} isLoading={isLoadingDonations} />
+                  <ShowTypeDonations
+                    donations={donations.map(d =>
+                      Object.assign({}, d, { amount: d.amountRemaining }),
+                    )}
+                    isLoading={isLoadingDonations}
+                  />
                   {this.isActiveMilestone() && (
                     <DonateButton
                       model={{ type: Milestone.type, title, id, adminId: projectId }}
