@@ -1,6 +1,6 @@
 import SubProvider from 'web3-provider-engine/subproviders/subprovider';
 import { utils } from 'web3';
-import { getGasPrice } from './../helpers';
+import { getGasPrice } from '../helpers';
 
 export default class GasPriceProvider extends SubProvider {
   constructor(opts) {
@@ -9,9 +9,7 @@ export default class GasPriceProvider extends SubProvider {
     this.netLookups = [];
   }
 
-  /* eslint-disable class-methods-use-this */
   handleRequest(payload, next, end) {
-    // eslint-disable-line class-methods-use-this
     if (payload.method !== 'eth_gasPrice' || this.netLookups.includes(payload.id)) {
       next();
       return;
@@ -39,5 +37,4 @@ export default class GasPriceProvider extends SubProvider {
       },
     );
   }
-  /* eslint-enable class-methods-use-this */
 }

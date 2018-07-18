@@ -12,7 +12,11 @@ const AuthenticatedLink = ({ className, to, wallet, children, history }) => {
     );
   }
   return (
-    <button className={className} onClick={() => React.unlockWallet(() => history.push(to))}>
+    <button
+      type="button"
+      className={className}
+      onClick={() => React.unlockWallet(() => history.push(to))}
+    >
       {children}
     </button>
   );

@@ -1,5 +1,12 @@
 {
-  "extends": ["airbnb", "plugin:prettier/recommended"],
+  "extends": [
+    "airbnb",
+    "plugin:prettier/recommended",
+    "prettier",
+    "prettier/flowtype",
+    "prettier/react",
+    "prettier/standard"
+  ],
   "rules": {
     "jsx-a11y/anchor-is-valid": [ "error", {
         "components": [ "Link" ],
@@ -17,17 +24,28 @@
         "argsIgnorePattern": "^_"
       }
     ],
-    "linebreak-style": "off",
     "prettier/prettier": ["error", {
       "singleQuote": true,
       "trailingComma": "all"
-    }]
+    }],
+    "react-app/jsx-a11y/href-no-hash": "off", // This rule is dropped but create-react-app uses old rules
+    "jsx-a11y/label-has-for": "off", // This rule will be dropped soon anyways
+    "react/destructuring-assignment": "off", // Seems to be way too restrictive
+    "import/no-cycle": 1 // Should be addressed eventually but does not break
   },
   "env": {
-    "jest": true
+    "jest": true,
+    "browser": true
   },
   "globals": {
     "FileReader": true,
     "window": true
+  },
+  "settings": {
+    "import/resolver": {
+      "node": {
+        "moduleDirectory": ["node_modules", "src/"]
+      }
+    }
   }
 }

@@ -3,6 +3,8 @@ import PropTypes from 'prop-types';
 
 import Loader from './Loader';
 
+// Need to disable the button type because the rule does not allow prop values
+/* eslint react/button-has-type: 0 */
 /**
  * Renders a button with an optional loader
  *
@@ -51,7 +53,7 @@ LoaderButton.defaultProps = {
   isLoading: true,
   loadingText: '',
   children: null,
-  type: '',
+  type: 'button',
 };
 
 export default LoaderButton;

@@ -6,6 +6,8 @@ import AuthenticatedNavLink from './AuthenticatedNavLink';
 import { Consumer as UserConsumer } from '../contextProviders/UserProvider';
 import { history } from '../lib/helpers';
 
+// Broken rule that can not find the correct id tag
+/* eslint jsx-a11y/aria-proptypes: 0 */
 /**
  * The main top menu
  */
@@ -24,7 +26,7 @@ class MainMenu extends Component {
   }
 
   toggleMobileMenu() {
-    this.setState({ showMobileMenu: !this.state.showMobileMenu });
+    this.setState(prevState => ({ showMobileMenu: !prevState.showMobileMenu }));
   }
 
   render() {
@@ -210,7 +212,7 @@ class MainMenu extends Component {
                         <NavLink className="dropdown-item" to="/wallet">
                           Wallet
                         </NavLink>
-                        <button className="dropdown-item" onClick={actions.onSignOut}>
+                        <button type="button" className="dropdown-item" onClick={actions.onSignOut}>
                           Sign out
                         </button>
                       </div>
@@ -219,26 +221,29 @@ class MainMenu extends Component {
                 </ul>
               </div>
             </nav>
-            <div
-              className="alert alert-warning alert-dismissible fade show"
-              role="alert"
-              style={{
-                marginTop: '60px',
-                marginBottom: '0',
-                borderRadius: '0',
-              }}
-            >
-              <button type="button" className="close" data-dismiss="alert" aria-label="Close">
-                <span aria-hidden="true">&times;</span>
-              </button>
-              <center>
-                Please note that this is a very early stage of the Giveth DApp available only to a
-                curated group of testers.<br />
-                <strong>Do not send in any Ether!</strong> If you have sent Ether please contact us
-                on &nbsp;
-                <a href="http://join.giveth.io">Slack or Riot</a>.
-              </center>
-            </div>
+
+            {/* }
+              <div
+                className="alert alert-warning alert-dismissible fade show"
+                role="alert"
+                style={{
+                  marginTop: '60px',
+                  marginBottom: '0',
+                  borderRadius: '0',
+                }}
+              >
+                <button type="button" className="close" data-dismiss="alert" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+                </button>
+                <center>
+                  Please note that this is a very early stage of the Giveth DApp available only to a
+                  curated group of testers.<br />
+                  <strong>Do not send in any Ether!</strong> If you have sent Ether please contact us
+                  on &nbsp;
+                  <a href="http://join.giveth.io">Slack or Riot</a>.
+                </center>
+              </div>
+            */}
           </div>
         )}
       </UserConsumer>

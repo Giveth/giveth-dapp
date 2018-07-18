@@ -32,12 +32,12 @@ const configurations = {
   },
   develop: {
     title: 'develop',
-    liquidPledgingAddress: '0x800c0b18ca85c870c52ed9c5ce972830dad7f577',
-    lppCampaignFactoryAddress: '0xF722Aa4d2Db0a8Fd6bDBfd19F6ee219b2202125c',
-    lppCappedMilestoneFactoryAddress: '0xCF58f30a1C30B003001E056ABA296D6AeeC928bD',
-    givethBridgeAddress: '0x88aa025B9D55171f759A7c538E1e1eAa6d8A0169',
-    foreignGivethBridgeAddress: '0x97A7aFbEEa1ff03cc18c0d80404a17D118288054',
-    tokenAddresses: { 'Ropsten ETH': '0x1133c5277AD7B0e58355630a1Af24c8cE245c5f3' },
+    liquidPledgingAddress: '0xf0e0F5A752f69Ee6dCfEed138520f6821357dc32',
+    lppCampaignFactoryAddress: '0x3FE8A2f8FE8F5846A428F46B29F3Ed57D23bf2A4',
+    lppCappedMilestoneFactoryAddress: '0x3293E0B22b63550994e994E729C0A98610fD0E2f',
+    givethBridgeAddress: '0x279277482F13aeF92914317a0417DD591145aDc9',
+    foreignGivethBridgeAddress: '0x74f2b28994e9bd00A3B6CD1826Fd29AB76f840F9',
+    tokenAddresses: { 'Ropsten ETH': '0x387871cf72c8CC81E3a945402b0E3A2A6C0Ed38a' },
     etherscan: 'https://rinkeby.etherscan.io/',
     foreignEtherscan: 'https://ropsten.etherscan.io/',
     feathersConnection: 'https://feathers.develop.giveth.io',
@@ -61,25 +61,6 @@ const configurations = {
     foreignNetworkName: 'Rinkeby',
     homeNodeConnection: 'https://ropsten.giveth.io',
     homeNetworkName: 'Ropsten',
-  },
-  mainnet: {
-    title: 'mainnet',
-    etherscan: 'https://etherscan.io/',
-    feathersConnection: 'https://feathers.mainnet.giveth.io',
-    foreignNodeConnection: 'https://rinkeby.giveth.io',
-    homeNodeConnection: 'https://mew.giveth.io',
-  },
-  alpha: {
-    title: 'alpha',
-    liquidPledgingAddress: '0x5625220088cA4Df67F15f96595546D10e9970B3A',
-    lppCampaignFactoryAddress: '0x2Af51064E9042E62aB09870B4FDe67a1Ba7FEd69',
-    lppCappedMilestoneFactoryAddress: '0x19Bd4E0DEdb9E5Ee9762391893d1f661404b561f',
-    tokenAddresses: {},
-    etherscan: 'https://rinkeby.etherscan.io/',
-    foreignEtherscan: 'https://ropsten.etherscan.io/',
-    feathersConnection: 'https://feathers.alpha.giveth.io',
-    foreignNodeConnection: 'https://rinkeby.giveth.io',
-    homeNodeConnection: 'https://ropsten.giveth.io',
   },
   beta: {
     title: 'beta',
@@ -125,6 +106,6 @@ config.foreignNodeConnection = REACT_APP_ETH_NODE_CONNECTION_URL || config.forei
 config.decimals = REACT_APP_DECIMALS;
 config.bugsEmail = REACT_APP_BUGS_EMAIL;
 config.defaultGasPrice = REACT_APP_DEFAULT_GASPRICE;
-config.sendErrors = ['develop', 'release', 'beta', 'mainnet'].includes(REACT_APP_ENVIRONMENT);
+config.sendErrors = ['develop', 'release', 'beta'].includes(REACT_APP_ENVIRONMENT);
 
 export default config;

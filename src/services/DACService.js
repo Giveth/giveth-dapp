@@ -5,7 +5,7 @@ import Campaign from '../models/Campaign';
 
 import ErrorPopup from '../components/ErrorPopup';
 
-class DACservice {
+class DACService {
   /**
    * Get a DAC defined by ID
    *
@@ -65,7 +65,9 @@ class DACservice {
       .watch({ listStrategy: 'always' })
       .find({
         query: {
-          delegateId: id,
+          delegateTypeId: id,
+          isReturn: false,
+          intendedProjectId: { $exists: false },
           $sort: { createdAt: -1 },
         },
       })
@@ -86,7 +88,7 @@ class DACservice {
       .find({
         query: {
           projectId: {
-            $gt: '0', // 0 is a pending campaign
+            $gt: 0, // 0 is a pending campaign
           },
           dacs: id,
           $limit: 200,
@@ -156,10 +158,9 @@ class DACservice {
             })
             .once('transactionHash', hash => {
               txHash = hash;
-              dac.txHash = txHash;
               feathersClient
                 .service('dacs')
-                .create(dac.toFeathers())
+                .create(dac.toFeathers(txHash))
                 .then(() => afterCreate(`${etherScanUrl}tx/${txHash}`));
             })
             .then(() => {
@@ -177,4 +178,4 @@ class DACservice {
   }
 }
 
-export default DACservice;
+export default DACService;

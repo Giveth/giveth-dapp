@@ -1,13 +1,12 @@
 language: node_js
 node_js:
-  - 8.5.0
+  - 8.11.3
 env:
   - CI=true
 install:
-  - npm install yarn
-  - yarn install --pure-lockfile
+  - npm install
 
 script:
-  - yarn build
-  - yarn eslint
-  - yarn test
+  - npm run build
+  - npm run eslint
+  - npm run test

@@ -20,8 +20,8 @@ import {
   convertEthHelper,
 } from '../../lib/helpers';
 
-import DACservice from '../../services/DAC';
-import CampaignService from '../../services/Campaign';
+import DACservice from '../../services/DACService';
+import CampaignService from '../../services/CampaignService';
 import Campaign from '../../models/Campaign';
 import DAC from '../../models/DAC';
 import Donation from '../../models/Donation';
@@ -125,23 +125,25 @@ class Profile extends Component {
       .service('milestones')
       .watch({ listStrategy: 'always' })
       .find({
-        $sort: {
-          createdAt: -1,
+        query: {
+          $sort: {
+            createdAt: -1,
+          },
+          $limit: this.state.itemsPerPage,
+          $skip: this.state.skipMilestonePages * this.state.itemsPerPage,
+          $or: [
+            { ownerAddress: this.state.userAddress },
+            { reviewerAddress: this.state.userAddress },
+            { recipientAddress: this.state.userAddress },
+          ],
         },
-        $limit: this.state.itemsPerPage,
-        $skip: this.state.skipMilestonePages * this.state.itemsPerPage,
-        $or: [
-          { ownerAddress: this.state.userAddress },
-          { reviewerAddress: this.state.userAddress },
-          { recipientAddress: this.state.userAddress },
-        ],
       })
       .subscribe(resp =>
-        this.setState({
-          userAddress: this.state.userAddress,
+        this.setState(prevState => ({
+          userAddress: prevState.userAddress,
           milestones: resp,
           isLoadingMilestones: false,
-        }),
+        })),
       );
   }
 
@@ -174,6 +176,7 @@ class Profile extends Component {
           schema: 'includeTypeDetails',
           query: {
             giverAddress: this.state.userAddress,
+            homeTxHash: { $exists: true },
             $limit: this.state.itemsPerPage,
             $skip: this.state.skipDonationsPages * this.state.itemsPerPage,
           },
@@ -290,7 +293,7 @@ class Profile extends Component {
                             </thead>
                             <tbody>
                               {milestones.data.map(m => (
-                                <tr key={m._id} className={m.status === 'pending' ? 'pending' : ''}>
+                                <tr key={m._id} className={m.status === 'Pending' ? 'pending' : ''}>
                                   <td className="td-created-at">
                                     {m.createdAt && (
                                       <span>{moment.utc(m.createdAt).format('Do MMM YYYY')}</span>
@@ -323,7 +326,7 @@ class Profile extends Component {
                                           Reviewer
                                         </span>
                                       )}
-                                      {m.reviewerAddress === userAddress && (
+                                      {m.recipientAddress === userAddress && (
                                         <span className="badge badge-warning">
                                           <i className="fa fa-diamond" />
                                           Recipient
@@ -332,16 +335,18 @@ class Profile extends Component {
                                     </div>
                                   </td>
                                   <td className="td-status">
-                                    {(m.status === 'pending' ||
+                                    {(m.status === 'Pending' ||
                                       (Object.keys(m).includes('mined') && !m.mined)) && (
                                       <span>
-                                        <i className="fa fa-circle-o-notch fa-spin" />&nbsp;
+                                        <i className="fa fa-circle-o-notch fa-spin" />
+                                        &nbsp;
                                       </span>
                                     )}
                                     {m.status === 'NeedsReview' &&
                                       reviewDue(m.updatedAt) && (
                                         <span>
-                                          <i className="fa fa-exclamation-triangle" />&nbsp;
+                                          <i className="fa fa-exclamation-triangle" />
+                                          &nbsp;
                                         </span>
                                       )}
                                     {getReadableStatus(m.status)}
@@ -450,7 +455,8 @@ class Profile extends Component {
                                     {(c.status === Campaign.PENDING ||
                                       (Object.keys(c).includes('mined') && !c.mined)) && (
                                       <span>
-                                        <i className="fa fa-circle-o-notch fa-spin" />&nbsp;
+                                        <i className="fa fa-circle-o-notch fa-spin" />
+                                        &nbsp;
                                       </span>
                                     )}
                                     {c.status}
@@ -537,7 +543,8 @@ class Profile extends Component {
                                   <td className="td-status">
                                     {d.status === DAC.PENDING && (
                                       <span>
-                                        <i className="fa fa-circle-o-notch fa-spin" />&nbsp;
+                                        <i className="fa fa-circle-o-notch fa-spin" />
+                                        &nbsp;
                                       </span>
                                     )}
                                     {d.status}
@@ -604,16 +611,13 @@ class Profile extends Component {
                             </thead>
                             <tbody>
                               {donations.data.map(d => (
-                                <tr
-                                  key={d.id}
-                                  className={d.status === Donation.PENDING ? 'pending' : ''}
-                                >
+                                <tr key={d.id} className={d.isPending ? 'pending' : ''}>
                                   <td className="td-date">
                                     {moment(d.createdAt).format('MM/DD/YYYY')}
                                   </td>
 
                                   <td className="td-donated-to">
-                                    {d.intendedProject > 0 && (
+                                    {d.intendedProjectId > 0 && (
                                       <span className="badge badge-info">
                                         <i className="fa fa-random" />
                                         &nbsp;Delegated
@@ -628,11 +632,17 @@ class Profile extends Component {
                                   </td>
 
                                   <td className="td-transaction-status">
-                                    {d.status === 'pending' && (
+                                    {d.isPending && (
                                       <span>
-                                        <i className="fa fa-circle-o-notch fa-spin" />&nbsp;
+                                        <i className="fa fa-circle-o-notch fa-spin" />
+                                        &nbsp;
                                       </span>
                                     )}
+                                    {!d.isPending &&
+                                      d.amountRemaining > 0 && <span>{d.status}</span>}
+                                    {!d.isPending &&
+                                      d.amountRemaining === '0' &&
+                                      (d.delegateId ? 'Delegated' : Donation.COMMITTED)}
                                   </td>
 
                                   {etherScanUrl && (

@@ -1,5 +1,5 @@
 import React from 'react';
-import { history } from '../lib/helpers';
+import { history } from './helpers';
 
 /**
  * Check if there is a currentUser. If not, routes back. If yes, resolves returned promise

@@ -1,14 +1,29 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { SkyLightStateless } from 'react-skylight';
+import Modal from 'react-modal';
 import { Form, Input } from 'formsy-react-components';
 
 import User from '../models/User';
 import GivethWallet from '../lib/blockchain/GivethWallet';
-import WalletService from '../services/Wallet';
+import WalletService from '../services/WalletService';
 import { getGasPrice } from '../lib/helpers';
 
 import ErrorPopup from './ErrorPopup';
+
+const modalStyles = {
+  content: {
+    top: '50%',
+    left: '50%',
+    right: 'auto',
+    bottom: 'auto',
+    marginRight: '-20%',
+    transform: 'translate(-50%, -50%)',
+    boxShadow: '0 0 40px #ccc',
+    overflowY: 'scroll',
+  },
+};
+
+Modal.setAppElement('#root');
 
 class WithdrawButton extends Component {
   constructor() {
@@ -78,7 +93,8 @@ class WithdrawButton extends Component {
       (etherScanUrl, txHash) => {
         React.toast.success(
           <p>
-            Your withdrawal has been confirmed!<br />
+            Your withdrawal has been confirmed!
+            <br />
             <a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">
               View transaction
             </a>
@@ -100,19 +116,17 @@ class WithdrawButton extends Component {
 
     return (
       <span style={style}>
-        <button className="btn btn-info" onClick={() => this.openDialog()}>
+        <button type="button" className="btn btn-info" onClick={() => this.openDialog()}>
           Withdraw
         </button>
 
         {wallet && (
-          <SkyLightStateless
-            isVisible={this.state.modalVisible}
+          <Modal
+            isOpen={this.state.modalVisible}
             onCloseClicked={() => {
               this.setState({ modalVisible: false });
             }}
-            onOverlayClicked={() => {
-              this.setState({ modalVisible: false });
-            }}
+            style={modalStyles}
           >
             <strong>Withdrawing from your Giveth wallet</strong>
 
@@ -172,7 +186,7 @@ class WithdrawButton extends Component {
                 {isSaving ? 'Withdrawing...' : 'Withdraw ETH'}
               </button>
             </Form>
-          </SkyLightStateless>
+          </Modal>
         )}
       </span>
     );

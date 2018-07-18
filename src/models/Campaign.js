@@ -1,6 +1,8 @@
+/* eslint-disable import/no-cycle */
+
 import BasicModel from './BasicModel';
-import CampaignService from '../services/Campaign';
-import UploadService from '../services/Uploads';
+import CampaignService from '../services/CampaignService';
+import UploadService from '../services/UploadsService';
 /**
  * The DApp Campaign model
  */
@@ -8,46 +10,58 @@ class Campaign extends BasicModel {
   static get CANCELED() {
     return 'Canceled';
   }
+
   static get PENDING() {
     return 'Pending';
   }
+
   static get ACTIVE() {
     return 'Active';
+  }
+
+  static get type() {
+    return 'campaign';
   }
 
   constructor(data) {
     super(data);
 
     this.communityUrl = data.communityUrl || '';
-    this.projectId = data.projectId || '0';
-    this.dacs = data.dacs || [];
+    this.confirmations = data.confirmations || 0;
+    this.projectId = data.projectId || 0;
     this.pluginAddress = data.pluginAddress || '0x0000000000000000000000000000000000000000';
     this.status = data.status || Campaign.PENDING;
+    this.requiredConfirmations = data.requiredConfirmations;
     this.reviewerAddress = data.reviewerAddress;
     this.ownerAddress = data.ownerAddress;
+    this.mined = data.mined;
     this._id = data._id;
   }
 
-  toFeathers() {
-    return {
+  toFeathers(txHash) {
+    const campaign = {
       id: this.id,
       title: this.title,
       description: this.description,
       communityUrl: this.communityUrl,
       projectId: this.projectId,
       image: this.image,
-      txHash: this.txHash,
       totalDonated: this.totalDonated,
       donationCount: this.donationCount,
       peopleCount: this.peopleCount,
-      dacs: this.dacs,
       reviewerAddress: this.reviewerAddress,
       status: this.status,
     };
+    if (!this.id) campaign.txHash = txHash;
+    return campaign;
   }
 
   get isActive() {
     return this.status === Campaign.ACTIVE;
+  }
+
+  get isPending() {
+    return this.status === Campaign.PENDING || !this.mined;
   }
 
   /**
@@ -95,7 +109,7 @@ class Campaign extends BasicModel {
   }
 
   set projectId(value) {
-    this.checkType(value, ['string'], 'projectId');
+    this.checkType(value, ['number', 'string'], 'projectId');
     this.myProjectId = value;
   }
 
@@ -110,15 +124,6 @@ class Campaign extends BasicModel {
     else if (value === Campaign.ACTIVE) this.myOrder = 2;
     else if (value === Campaign.CANCELED) this.myOrder = 3;
     else this.myOrder = 4;
-  }
-
-  get dacs() {
-    return this.myDacs;
-  }
-
-  set dacs(value) {
-    this.checkType(value, ['object', 'array'], 'dacs');
-    this.myDacs = value;
   }
 
   get pluginAddress() {

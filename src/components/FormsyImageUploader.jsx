@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 
 import { File } from 'formsy-react-components';
 import Cropper from 'react-cropper';
-import ImageTools from './../lib/ImageResizer';
+import ImageTools from '../lib/ImageResizer';
 
 /* global FileReader */
 /**

@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { Form, Input } from 'formsy-react-components';
 
-import LoaderButton from '../components/LoaderButton';
+import LoaderButton from './LoaderButton';
 
 /**
  * Simple for with only a password field for unlocking a wallet.

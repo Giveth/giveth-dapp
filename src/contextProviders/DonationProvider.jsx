@@ -54,6 +54,7 @@ class DonationProvider extends Component {
             schema: 'includeTypeDetails',
             query: {
               giverAddress: this.props.currentUser.address,
+              amountRemaining: { $ne: 0 },
               $limit: 100,
             },
           }),
@@ -101,7 +102,8 @@ class DonationProvider extends Component {
             const afterCreate = txLink => {
               React.toast.success(
                 <p>
-                  The refusal of the delegation is pending...<br />
+                  The refusal of the delegation is pending...
+                  <br />
                   <a href={txLink} target="_blank" rel="noopener noreferrer">
                     View transaction
                   </a>
@@ -113,7 +115,8 @@ class DonationProvider extends Component {
             const afterMined = txLink => {
               React.toast.success(
                 <p>
-                  Your donation delegation has been rejected.<br />
+                  Your donation delegation has been rejected.
+                  <br />
                   <a href={txLink} target="_blank" rel="noopener noreferrer">
                     View transaction
                   </a>
@@ -158,7 +161,8 @@ class DonationProvider extends Component {
             const afterCreate = txLink => {
               React.toast.success(
                 <p>
-                  The commitment of the donation is pending...<br />
+                  The commitment of the donation is pending...
+                  <br />
                   <a href={txLink} target="_blank" rel="noopener noreferrer">
                     View transaction
                   </a>
@@ -170,7 +174,8 @@ class DonationProvider extends Component {
             const afterMined = txLink => {
               React.toast.success(
                 <p>
-                  Your donation has been committed!<br />
+                  Your donation has been committed!
+                  <br />
                   <a href={txLink} target="_blank" rel="noopener noreferrer">
                     View transaction
                   </a>
@@ -214,9 +219,11 @@ class DonationProvider extends Component {
           if (isConfirmed) {
             // Inform user after the transaction is created
             const afterCreate = txLink => {
+              console.log('afterMined');
               React.toast.success(
                 <p>
-                  The refund is pending...<br />
+                  The refund is pending...
+                  <br />
                   <a href={txLink} target="_blank" rel="noopener noreferrer">
                     View transaction
                   </a>
@@ -228,7 +235,8 @@ class DonationProvider extends Component {
             const afterMined = txLink => {
               React.toast.success(
                 <p>
-                  Your donation has been refunded!<br />
+                  Your donation has been refunded!
+                  <br />
                   <a href={txLink} target="_blank" rel="noopener noreferrer">
                     View transaction
                   </a>

@@ -106,6 +106,7 @@ const setWallet = (rpcUrl, isHomeNetwork = false) =>
 
     getBalance();
 
+    engine.setMaxListeners(50);
     engine.on('block', getBalance);
     this.setProvider(engine);
   };
@@ -122,9 +123,20 @@ export const getWeb3 = () =>
 
 export const getHomeWeb3 = () =>
   new Promise(resolve => {
+    if (document.readyState !== 'complete') {
+      // wait until complete
+    }
+    // only support inject web3 provider for home network
     if (!homeWeb3) {
-      homeWeb3 = new Web3(new ZeroClientProvider(providerOpts(config.homeNodeConnection)));
-      homeWeb3.setWallet = setWallet(config.homeNodeConnection, true);
+      if (typeof window.web3 !== 'undefined') {
+        homeWeb3 = new Web3(window.web3.currentProvider);
+      } else {
+        // we provide a fallback so we can generate/read data
+        homeWeb3 = new Web3(config.homeNodeConnection);
+      }
+      // homeWeb3.setWallet = setWallet(config.homeNodeConnection, true);
+      // TODO we can probably just remove this
+      homeWeb3.setWallet = () => {};
     }
 
     resolve(homeWeb3);

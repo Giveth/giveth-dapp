@@ -14,16 +14,15 @@ try {
       storeName: 'mystore',
       version: 3,
     })
-    .then(() => localForage.getItem('x'))
-    .then(x => console.log(x, localForage.driver()));
-
-  /* global document */
-  ReactDOM.render(
-    <Application />, // eslint-disable-line react/jsx-filename-extension
-    document.getElementById('root'),
-  );
-
-  registerServiceWorker();
+    .then(() => localForage.getItem('x'));
 } catch (e) {
-  console.log(e);
+  // console.log(e);
 }
+
+/* global document */
+ReactDOM.render(
+  <Application />, // eslint-disable-line react/jsx-filename-extension
+  document.getElementById('root'),
+);
+
+registerServiceWorker();
