@@ -1141,7 +1141,7 @@ class MyMilestones extends Component {
                                         <i className="fa fa-usd" />{' '}
                                         {m.recipientAddress === currentUser.address
                                           ? 'Collect'
-                                          : 'Disperse'}
+                                          : 'Disburse'}
                                       </button>
                                     )}
 
