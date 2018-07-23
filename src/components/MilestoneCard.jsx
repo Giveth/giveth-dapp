@@ -87,7 +87,7 @@ class MilestoneCard extends Component {
             <Avatar size={30} src={getUserAvatar(milestone.owner)} round />
             <span className="owner-name">{getUserName(milestone.owner)}</span>
 
-            {(isOwner(milestone.owner.address, currentUser) ||
+            {((milestone && milestone.owner && isOwner(milestone.owner.address, currentUser)) ||
               isOwner(milestone.campaign.ownerAddress, currentUser)) &&
               ['Proposed', 'Rejected', 'InProgress', 'NeedsReview'].includes(milestone.status) && (
                 <span className="pull-right">
