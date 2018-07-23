@@ -22,6 +22,7 @@ import GivethWallet from '../../lib/blockchain/GivethWallet';
 import CampaignService from '../../services/CampaignService';
 
 import ErrorPopup from '../ErrorPopup';
+import ErrorBoundary from '../ErrorBoundary';
 
 /**
  * The Campaign detail view mapped to /campaing/id
@@ -110,126 +111,135 @@ class ViewCampaign extends Component {
       isLoadingDonations,
       isLoadingMilestones,
     } = this.state;
+    if (!campaign) return <p>Unable to find a campaign</p>;
     return (
-      <div id="view-campaign-view">
-        {isLoading && <Loader className="fixed" />}
+      <ErrorBoundary>
+        <div id="view-campaign-view">
+          {isLoading && <Loader className="fixed" />}
 
-        {!isLoading && (
-          <div>
-            <BackgroundImageHeader image={campaign.image} height={300}>
-              <h6>Campaign</h6>
-              <h1>{campaign.title}</h1>
+          {!isLoading && (
+            <div>
+              <BackgroundImageHeader image={campaign.image} height={300}>
+                <h6>Campaign</h6>
+                <h1>{campaign.title}</h1>
 
-              <DonateButton
-                model={{
-                  type: Campaign.type,
-                  title: campaign.title,
-                  id: campaign.id,
-                  adminId: campaign.projectId,
-                }}
-                wallet={wallet}
-                currentUser={currentUser}
-                history={history}
-              />
-            </BackgroundImageHeader>
+                <DonateButton
+                  model={{
+                    type: Campaign.type,
+                    title: campaign.title,
+                    id: campaign.id,
+                    adminId: campaign.projectId,
+                  }}
+                  wallet={wallet}
+                  currentUser={currentUser}
+                  history={history}
+                />
+              </BackgroundImageHeader>
 
-            <div className="container-fluid">
-              <div className="row">
-                <div className="col-md-8 m-auto">
-                  <GoBackButton history={history} />
+              <div className="container-fluid">
+                <div className="row">
+                  <div className="col-md-8 m-auto">
+                    <GoBackButton history={history} />
 
-                  <center>
-                    <Link to={`/profile/${campaign.owner.address}`}>
-                      <Avatar size={50} src={getUserAvatar(campaign.owner)} round />
-                      <p className="small">{getUserName(campaign.owner)}</p>
-                    </Link>
-                  </center>
+                    <center>
+                      <Link to={`/profile/${campaign.owner.address}`}>
+                        <Avatar size={50} src={getUserAvatar(campaign.owner)} round />
+                        <p className="small">{getUserName(campaign.owner)}</p>
+                      </Link>
+                    </center>
 
-                  <div className="card content-card ">
-                    <div className="card-body content">{ReactHtmlParser(campaign.description)}</div>
-                  </div>
+                    <div className="card content-card ">
+                      <div className="card-body content">
+                        {ReactHtmlParser(campaign.description)}
+                      </div>
+                    </div>
 
-                  <div className="milestone-header spacer-top-50 card-view">
-                    <h3>Milestones</h3>
-                    {campaign.projectId > 0 &&
-                      isOwner(campaign.owner.address, currentUser) && (
-                        <AuthenticatedLink
-                          className="btn btn-primary btn-sm pull-right"
-                          to={`/campaigns/${campaign.id}/milestones/new`}
-                          wallet={wallet}
-                        >
-                          Add Milestone
-                        </AuthenticatedLink>
-                      )}
-
-                    {campaign.projectId > 0 &&
-                      !isOwner(campaign.owner.address, currentUser) &&
-                      currentUser && (
-                        <AuthenticatedLink
-                          className="btn btn-primary btn-sm pull-right"
-                          to={`/campaigns/${campaign.id}/milestones/propose`}
-                          wallet={wallet}
-                        >
-                          Propose Milestone
-                        </AuthenticatedLink>
-                      )}
-
-                    {isLoadingMilestones && <Loader className="relative" />}
-                    <ResponsiveMasonry
-                      columnsCountBreakPoints={{
-                        0: 1,
-                        470: 2,
-                        900: 3,
-                        1200: 4,
-                      }}
-                    >
-                      <Masonry gutter="10px">
-                        {milestones.map(m => (
-                          <MilestoneCard
-                            milestone={m}
-                            currentUser={currentUser}
-                            key={m._id} // eslint-disable-line no-underscore-dangle
-                            history={history}
+                    <div className="milestone-header spacer-top-50 card-view">
+                      <h3>Milestones</h3>
+                      {campaign.projectId > 0 &&
+                        isOwner(campaign.owner.address, currentUser) && (
+                          <AuthenticatedLink
+                            className="btn btn-primary btn-sm pull-right"
+                            to={`/campaigns/${campaign.id}/milestones/new`}
                             wallet={wallet}
-                            // eslint-disable-next-line no-underscore-dangle
-                            removeMilestone={() => this.removeMilestone(m._id)}
-                          />
-                        ))}
-                      </Masonry>
-                    </ResponsiveMasonry>
+                          >
+                            Add Milestone
+                          </AuthenticatedLink>
+                        )}
+
+                      {campaign.projectId > 0 &&
+                        !isOwner(campaign.owner.address, currentUser) &&
+                        currentUser && (
+                          <AuthenticatedLink
+                            className="btn btn-primary btn-sm pull-right"
+                            to={`/campaigns/${campaign.id}/milestones/propose`}
+                            wallet={wallet}
+                          >
+                            Propose Milestone
+                          </AuthenticatedLink>
+                        )}
+
+                      {isLoadingMilestones && <Loader className="relative" />}
+                      <ResponsiveMasonry
+                        columnsCountBreakPoints={{
+                          0: 1,
+                          470: 2,
+                          900: 3,
+                          1200: 4,
+                        }}
+                      >
+                        <Masonry gutter="10px">
+                          {milestones.map(m => (
+                            <MilestoneCard
+                              milestone={m}
+                              currentUser={currentUser}
+                              key={m._id} // eslint-disable-line no-underscore-dangle
+                              history={history}
+                              wallet={wallet}
+                              // eslint-disable-next-line no-underscore-dangle
+                              removeMilestone={() => this.removeMilestone(m._id)}
+                            />
+                          ))}
+                        </Masonry>
+                      </ResponsiveMasonry>
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              <div className="row spacer-top-50 spacer-bottom-50">
-                <div className="col-md-8 m-auto">
-                  <h4>Donations</h4>
-                  <ShowTypeDonations donations={donations} isLoading={isLoadingDonations} />
-                  <DonateButton
-                    model={{
-                      type: Campaign.type,
-                      title: campaign.title,
-                      id: campaign.id,
-                      adminId: campaign.projectId,
-                    }}
-                    wallet={wallet}
-                    currentUser={currentUser}
-                    history={history}
-                  />
+                <div className="row spacer-top-50 spacer-bottom-50">
+                  <div className="col-md-8 m-auto">
+                    <h4>Donations</h4>
+                    <ShowTypeDonations donations={donations} isLoading={isLoadingDonations} />
+                    <DonateButton
+                      model={{
+                        type: Campaign.type,
+                        title: campaign.title,
+                        id: campaign.id,
+                        adminId: campaign.projectId,
+                      }}
+                      wallet={wallet}
+                      currentUser={currentUser}
+                      history={history}
+                    />
+                  </div>
                 </div>
-              </div>
-              <div className="row spacer-top-50 spacer-bottom-50">
-                <div className="col-md-8 m-auto">
-                  <h4>Campaign Reviewer</h4>
-                  <Link to={`/profile/${campaign.reviewer.address}`}>
-                    {getUserName(campaign.reviewer)}
-                  </Link>
+                <div className="row spacer-top-50 spacer-bottom-50">
+                  <div className="col-md-8 m-auto">
+                    <h4>Campaign Reviewer</h4>
+                    {campaign &&
+                      campaign.reviewer && (
+                        <Link to={`/profile/${campaign.reviewer.address}`}>
+                          {getUserName(campaign.reviewer)}
+                        </Link>
+                      )}
+                    {(!campaign || !campaign.reviewer) && <span>Unknown user</span>}
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        )}
-      </div>
+          )}
+        </div>
+      </ErrorBoundary>
     );
   }
 }

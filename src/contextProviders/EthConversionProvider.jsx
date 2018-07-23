@@ -2,8 +2,8 @@ import React, { Component, createContext } from 'react';
 import PropTypes from 'prop-types';
 import BigNumber from 'bignumber.js';
 
-import { feathersClient } from './../lib/feathersClient';
-import { getStartOfDayUTC } from './../lib/helpers';
+import { feathersClient } from '../lib/feathersClient';
+import { getStartOfDayUTC } from '../lib/helpers';
 import ErrorPopup from '../components/ErrorPopup';
 
 const Context = createContext();
