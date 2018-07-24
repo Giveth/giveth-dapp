@@ -21,22 +21,54 @@ import ErrorPopup from '../ErrorPopup';
 
 const deleteProposedMilestone = milestone => {
   React.swal({
-    title: 'Delete Milestone?',
-    text: 'Are you sure you want to delete this Milestone?',
+    title: `Delete Milestone "${milestone.title}"`,
+    text: `Are you sure you want to delete this Milestone?
+          Please enter the first 5 characters of the campaign title while skipping any spaces:
+    `,
     icon: 'warning',
+    content: {
+      element: 'input',
+      attributes: {
+        placeholder: 'Milestone name (without spaces)',
+        className: 'confirmation-input',
+        style: 'width: 100%',
+      },
+    },
     dangerMode: true,
-    buttons: ['Cancel', 'Yes, delete'],
+    buttons: {
+      cancel: {
+        text: 'Dismiss',
+        value: null,
+        visible: true,
+      },
+      confirm: {
+        text: 'Yes, Cancel',
+        visible: true,
+        value: true,
+        className: 'confirm-cancel-button',
+        closeModal: true,
+      },
+    },
   }).then(isConfirmed => {
-    if (isConfirmed) {
-      feathersClient
-        .service('/milestones')
-        .remove(milestone._id)
-        .then(() => {
-          React.toast.info(<p>The milestone has been deleted.</p>);
-        })
-        .catch(e => {
-          ErrorPopup('Something went wrong with deleting your milestone', e);
-        });
+    const inputValue = document.querySelector('.confirmation-input').value;
+    const formattedTitle = milestone.title
+      .split(' ')
+      .join('')
+      .slice(0, 5);
+    if (isConfirmed !== null) {
+      if (inputValue === formattedTitle) {
+        feathersClient
+          .service('/milestones')
+          .remove(milestone._id)
+          .then(() => {
+            React.toast.info(<p>The milestone has been deleted.</p>);
+          })
+          .catch(e => {
+            ErrorPopup('Something went wrong with deleting your milestone', e);
+          });
+      } else {
+        React.swal('Incorrect milestone name!');
+      }
     }
   });
 };
