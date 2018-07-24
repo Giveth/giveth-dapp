@@ -78,40 +78,72 @@ class MyCampaigns extends Component {
     checkWalletBalance(this.props.wallet)
       .then(() => {
         React.swal({
-          title: 'Cancel Campaign?',
-          text: 'Are you sure you want to cancel this Campaign?',
+          title: `Cancel Campaign "${campaign.myTitle}"?`,
+          text: `Are you sure you want to cancel this Campaign?
+                Please enter the first 5 characters of the campaign title while skipping any spaces:
+          `,
           icon: 'warning',
+          content: {
+            element: 'input',
+            attributes: {
+              placeholder: 'Campaign name (without spaces)',
+              className: 'confirmation-input',
+              style: 'width: 100%',
+            },
+          },
           dangerMode: true,
-          buttons: ['Dismiss', 'Yes, cancel'],
+          buttons: {
+            cancel: {
+              text: 'Dismiss',
+              value: null,
+              visible: true,
+            },
+            confirm: {
+              text: 'Yes, Cancel',
+              visible: true,
+              value: true,
+              className: 'confirm-cancel-button',
+              closeModal: true,
+            },
+          },
         }).then(isConfirmed => {
-          if (isConfirmed) {
-            const afterCreate = url => {
-              const msg = (
-                <p>
-                  Campaign cancelation pending...
-                  <br />
-                  <a href={url} target="_blank" rel="noopener noreferrer">
-                    View transaction
-                  </a>
-                </p>
-              );
-              React.toast.info(msg);
-            };
+          const inputValue = document.querySelector('.confirmation-input').value;
+          const formattedTitle = campaign.myTitle
+            .split(' ')
+            .join('')
+            .slice(0, 5);
+          if (isConfirmed !== null) {
+            console.log(inputValue, formattedTitle);
+            if (inputValue === formattedTitle) {
+              const afterCreate = url => {
+                const msg = (
+                  <p>
+                    Campaign cancelation pending...
+                    <br />
+                    <a href={url} target="_blank" rel="noopener noreferrer">
+                      View transaction
+                    </a>
+                  </p>
+                );
+                React.toast.info(msg);
+              };
 
-            const afterMined = url => {
-              const msg = (
-                <p>
-                  The campaign has been cancelled!
-                  <br />
-                  <a href={url} target="_blank" rel="noopener noreferrer">
-                    View transaction
-                  </a>
-                </p>
-              );
-              React.toast.success(msg);
-            };
-
-            campaign.cancel(this.props.currentUser.address, afterCreate, afterMined);
+              const afterMined = url => {
+                const msg = (
+                  <p>
+                    The campaign has been cancelled!
+                    <br />
+                    <a href={url} target="_blank" rel="noopener noreferrer">
+                      View transaction
+                    </a>
+                  </p>
+                );
+                React.toast.success(msg);
+              };
+              campaign.cancel(this.props.currentUser.address, afterCreate, afterMined);
+            } else {
+              React.swal('Incorrect campaign name!');
+            }
           }
         });
       })
