@@ -209,48 +209,78 @@ class DonationProvider extends Component {
     checkWalletBalance(this.props.wallet)
       .then(() =>
         React.swal({
-          title: 'Refund your donation?',
+          title: `Refund your donation to "${donation.myDonatedTo.name}"?`,
           text:
-            'Your donation will be cancelled and a payment will be authorized to refund your tokens. All withdrawals must be confirmed for security reasons and may take a day or two. Upon confirmation, your tokens will be transferred to your wallet.',
+            'Your donation will be cancelled and a payment will be authorized to refund your tokens. All withdrawals must be confirmed for security reasons and may take a day or two. Upon confirmation, your tokens will be transferred to your wallet. Please enter the first 5 letters of the campaign/community',
           icon: 'warning',
+          content: {
+            element: 'input',
+            attributes: {
+              placeholder: 'Donated to (Name without spaces)',
+              className: 'confirmation-input',
+              style: 'width: 100%',
+            },
+          },
           dangerMode: true,
-          buttons: ['Cancel', 'Yes, refund'],
+          buttons: {
+            cancel: {
+              text: 'Dismiss',
+              value: null,
+              visible: true,
+            },
+            confirm: {
+              text: 'Yes, Refund',
+              visible: true,
+              value: true,
+              className: 'confirm-cancel-button',
+              closeModal: true,
+            },
+          },
         }).then(isConfirmed => {
-          if (isConfirmed) {
-            // Inform user after the transaction is created
-            const afterCreate = txLink => {
-              console.log('afterMined');
-              React.toast.success(
-                <p>
-                  The refund is pending...
-                  <br />
-                  <a href={txLink} target="_blank" rel="noopener noreferrer">
-                    View transaction
-                  </a>
-                </p>,
-              );
-            };
+          const inputValue = document.querySelector('.confirmation-input').value;
+          const formattedTitle = donation.myDonatedTo.name
+            .split(' ')
+            .join('')
+            .slice(0, 5);
+          if (isConfirmed !== null) {
+            if (inputValue === formattedTitle) {
+              // Inform user after the transaction is created
+              const afterCreate = txLink => {
+                console.log('afterMined');
+                React.toast.success(
+                  <p>
+                    The refund is pending...
+                    <br />
+                    <a href={txLink} target="_blank" rel="noopener noreferrer">
+                      View transaction
+                    </a>
+                  </p>,
+                );
+              };
 
-            // Inform user after the refund transaction is mined
-            const afterMined = txLink => {
-              React.toast.success(
-                <p>
-                  Your donation has been refunded!
-                  <br />
-                  <a href={txLink} target="_blank" rel="noopener noreferrer">
-                    View transaction
-                  </a>
-                </p>,
-              );
-            };
+              // Inform user after the refund transaction is mined
+              const afterMined = txLink => {
+                React.toast.success(
+                  <p>
+                    Your donation has been refunded!
+                    <br />
+                    <a href={txLink} target="_blank" rel="noopener noreferrer">
+                      View transaction
+                    </a>
+                  </p>,
+                );
+              };
 
-            // Refund the donation
-            DonationService.refund(
-              donation,
-              this.props.currentUser.address,
-              afterCreate,
-              afterMined,
-            );
+              // Refund the donation
+              DonationService.refund(
+                donation,
+                this.props.currentUser.address,
+                afterCreate,
+                afterMined,
+              );
+            } else {
+              React.swal('Incorrect name!');
+            }
           }
         }),
       )
