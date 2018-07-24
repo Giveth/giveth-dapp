@@ -43,7 +43,7 @@ const configurations = {
     feathersConnection: 'https://feathers.develop.giveth.io',
     foreignNodeConnection: 'https://rinkeby.giveth.io',
     foreignNetworkName: 'Rinkeby',
-    homeNodeConnection: 'https://ropsten.giveth.io',
+    homeNodeConnection: 'https://ropsten.infura.io',
     homeNetworkName: 'Ropsten',
   },
   release: {
@@ -59,7 +59,7 @@ const configurations = {
     feathersConnection: 'https://feathers.release.giveth.io',
     foreignNodeConnection: 'https://rinkeby.giveth.io',
     foreignNetworkName: 'Rinkeby',
-    homeNodeConnection: 'https://ropsten.giveth.io',
+    homeNodeConnection: 'https://ropsten.infura.io',
     homeNetworkName: 'Ropsten',
   },
   beta: {
