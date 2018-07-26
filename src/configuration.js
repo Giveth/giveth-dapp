@@ -10,6 +10,8 @@ const {
   REACT_APP_BLOCKEXPLORER,
   REACT_APP_BUGS_EMAIL = 'bugs@giveth.io',
   REACT_APP_DEFAULT_GASPRICE = 10,
+  REACT_APP_USE_GOOGLE_ANALYTICS = true,
+  REACT_APP_USE_HOTJAR = true,
 } = process.env;
 
 const configurations = {
@@ -107,5 +109,7 @@ config.decimals = REACT_APP_DECIMALS;
 config.bugsEmail = REACT_APP_BUGS_EMAIL;
 config.defaultGasPrice = REACT_APP_DEFAULT_GASPRICE;
 config.sendErrors = ['develop', 'release', 'beta'].includes(REACT_APP_ENVIRONMENT);
+config.useGoogleAnalytics = REACT_APP_USE_GOOGLE_ANALYTICS;
+config.useHotjar = REACT_APP_USE_HOTJAR;
 
 export default config;

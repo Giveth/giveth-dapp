@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import ReactDOM from 'react-dom';
+import { Helmet } from 'react-helmet';
 
 import { Router, Route, Redirect, Switch } from 'react-router-dom';
 
@@ -10,9 +11,12 @@ import 'react-toastify/dist/ReactToastify.min.css';
 
 import Sweetalert from 'sweetalert';
 
+import GA from 'lib/GoogleAnalytics';
 import DataRoutes from './DataRoutes';
 
 import { history } from '../lib/helpers';
+
+import config from '../configuration';
 
 // views
 import Profile from '../components/views/Profile';
@@ -88,6 +92,23 @@ class Application extends Component {
   render() {
     return (
       <ErrorBoundary>
+        {/* Header stuff goes here */}
+        {config.useHotjar &&
+          window.location.origin.includes('beta') && (
+            <Helmet>
+              <script>{`
+              (function(h,o,t,j,a,r){
+                h.hj=h.hj||function(){(h.hj.q=h.hj.q||[]).push(arguments)};
+                h._hjSettings={hjid:944408,hjsv:6};
+                a=o.getElementsByTagName('head')[0];
+                r=o.createElement('script');r.async=1;
+                r.src=t+h._hjSettings.hjid+j+h._hjSettings.hjsv;
+                a.appendChild(r);
+              })(window,document,'https://static.hotjar.com/c/hotjar-','.js?sv=');
+            `}</script>
+            </Helmet>
+          )}
+
         <Router history={history}>
           <EthConversionProvider>
             <UserProvider>
@@ -110,6 +131,8 @@ class Application extends Component {
                   },
                 }) => (
                   <div>
+                    {GA.init() && <GA.RouteTracker />}
+
                     {isLoading && <Loader className="fixed" />}
 
                     {wallet && (
