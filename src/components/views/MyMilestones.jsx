@@ -20,19 +20,20 @@ import config from '../../configuration';
 import ErrorPopup from '../ErrorPopup';
 
 const deleteProposedMilestone = milestone => {
+  const sweetContent = document.createElement('div');
+  sweetContent.style.display = 'flex';
+  sweetContent.style['flex-direction'] = 'column';
+  sweetContent.innerHTML = `
+        <b style="margin-bottom: 10px">${milestone.title}</b>
+        <input type="text" placeholder="Campaign name (without spaces)" class="confirmation-input" style="width: 100%" />`;
   React.swal({
-    title: `Delete Milestone "${milestone.title}"`,
+    title: 'Delete Milestone?',
     text: `Are you sure you want to delete this Milestone?
           Please enter the first 5 characters of the campaign title while skipping any spaces:
     `,
     icon: 'warning',
     content: {
-      element: 'input',
-      attributes: {
-        placeholder: 'Milestone name (without spaces)',
-        className: 'confirmation-input',
-        style: 'width: 100%',
-      },
+      element: sweetContent,
     },
     dangerMode: true,
     buttons: {
@@ -67,7 +68,7 @@ const deleteProposedMilestone = milestone => {
             ErrorPopup('Something went wrong with deleting your milestone', e);
           });
       } else {
-        React.swal('Incorrect milestone name!');
+        React.swal('Failed!', 'Incorrect milestone name.', 'warning');
       }
     }
   });
