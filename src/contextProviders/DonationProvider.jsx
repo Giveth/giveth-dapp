@@ -206,20 +206,21 @@ class DonationProvider extends Component {
    * @param donation Donation to be refunded
    */
   refund(donation) {
+    const sweetContent = document.createElement('div');
+    sweetContent.style.display = 'flex';
+    sweetContent.style['flex-direction'] = 'column';
+    sweetContent.innerHTML = `
+        <b style="margin-bottom: 10px">${donation.myDonatedTo.name}</b>
+        <input type="text" placeholder="Donated To (without spaces)" class="confirmation-input" style="width: 100%" />`;
     checkWalletBalance(this.props.wallet)
       .then(() =>
         React.swal({
-          title: `Refund your donation to "${donation.myDonatedTo.name}"?`,
+          title: 'Refund your donation?',
           text:
             'Your donation will be cancelled and a payment will be authorized to refund your tokens. All withdrawals must be confirmed for security reasons and may take a day or two. Upon confirmation, your tokens will be transferred to your wallet. Please enter the first 5 letters of the campaign/community',
           icon: 'warning',
           content: {
-            element: 'input',
-            attributes: {
-              placeholder: 'Donated to (Name without spaces)',
-              className: 'confirmation-input',
-              style: 'width: 100%',
-            },
+            element: sweetContent,
           },
           dangerMode: true,
           buttons: {
@@ -279,7 +280,7 @@ class DonationProvider extends Component {
                 afterMined,
               );
             } else {
-              React.swal('Incorrect name!');
+              React.swal('Failed!', 'Incorrect name!', 'warning');
             }
           }
         }),

@@ -401,7 +401,7 @@ class MyMilestones extends Component {
     sweetContent.style['flex-direction'] = 'column';
     sweetContent.innerHTML = `
         <b style="margin-bottom: 10px">${milestone.title}</b>
-        <input type="text" placeholder="Campaign name (without spaces)" class="confirmation-input" style="width: 100%" />`;
+        <input type="text" placeholder="Milestone name (without spaces)" class="confirmation-input" style="width: 100%" />`;
     checkWalletBalance(this.props.wallet).then(() => {
       React.swal({
         title: `Cancel Milestone?`,
