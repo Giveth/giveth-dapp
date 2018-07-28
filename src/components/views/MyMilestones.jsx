@@ -396,20 +396,21 @@ class MyMilestones extends Component {
   }
 
   cancelMilestone(milestone) {
+    const sweetContent = document.createElement('div');
+    sweetContent.style.display = 'flex';
+    sweetContent.style['flex-direction'] = 'column';
+    sweetContent.innerHTML = `
+        <b style="margin-bottom: 10px">${milestone.title}</b>
+        <input type="text" placeholder="Campaign name (without spaces)" class="confirmation-input" style="width: 100%" />`;
     checkWalletBalance(this.props.wallet).then(() => {
       React.swal({
-        title: `Cancel Milestone "${milestone.title}"?`,
+        title: `Cancel Milestone?`,
         text: `Are you sure you want to cancel this Milestone?
                 Please enter the first 5 characters of the milestone title while skipping any spaces:
           `,
         icon: 'warning',
         content: {
-          element: 'input',
-          attributes: {
-            placeholder: 'Milestone name (without spaces)',
-            className: 'confirmation-input',
-            style: 'width: 100%',
-          },
+          element: sweetContent,
         },
         dangerMode: true,
         buttons: {
@@ -522,7 +523,7 @@ class MyMilestones extends Component {
                     });
                 });
             } else {
-              React.swal('Incorrect milestone name!');
+              React.swal('Failed!', 'Incorrect milestone name.', 'warning');
             }
           }
         })

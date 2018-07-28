@@ -91,9 +91,6 @@ class MyCampaigns extends Component {
           icon: 'warning',
           content: {
             element: sweetContent,
-            attributes: {
-              marginTop: '0px',
-            },
           },
           dangerMode: true,
           buttons: {
