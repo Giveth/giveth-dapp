@@ -345,6 +345,7 @@ class DonateButton extends React.Component {
       gasPrice,
       formIsValid,
       isSaving,
+      modalVisible,
     } = this.state;
     const style = {
       display: 'inline-block',
@@ -358,11 +359,15 @@ class DonateButton extends React.Component {
 
         {wallet && (
           <Modal
-            isOpen={this.state.modalVisible}
+            isOpen={modalVisible}
             onRequestClose={() => this.closeDialog()}
             contentLabel={`Support this ${type}!`}
             style={modalStyles}
           >
+            <h3>
+              Give Ether to support <em>{model.title}</em>
+            </h3>
+
             {homeWeb3 &&
               !homeWeb3.givenProvider && (
                 <div className="alert alert-warning">
@@ -371,10 +376,6 @@ class DonateButton extends React.Component {
                   donate
                 </div>
               )}
-            <h3>
-              Give Ether to support <em>{model.title}</em>
-            </h3>
-
             {model.type === DAC.type && (
               <p>
                 Pledge: as long as the {model.type} owner does not lock your money you can take it
@@ -405,14 +406,7 @@ class DonateButton extends React.Component {
             {/* TODO add note that we are donating as the logged in user, or that they won't be able to manage funds if no logged in user & using metamask*/}
 
             {homeWeb3 &&
-              !validNetwork && (
-                <div className="alert alert-warning">
-                  <i className="fa fa-exclamation-triangle" />
-                  It looks like you are connected to the wrong network. Please connect to the{' '}
-                  <strong>{config.homeNetworkName}</strong> network to donate
-                </div>
-              )}
-            {homeWeb3 &&
+              homeWeb3.givenProvider &&
               !account && (
                 <div className="alert alert-warning">
                   <i className="fa fa-exclamation-triangle" />
