@@ -75,20 +75,24 @@ class MyCampaigns extends Component {
   }
 
   cancelCampaign(campaign) {
+    const sweetContent = document.createElement('div');
+    sweetContent.style.display = 'flex';
+    sweetContent.style['flex-direction'] = 'column';
+    sweetContent.innerHTML = `
+        <b style="margin-bottom: 10px">${campaign.myTitle}</b>
+        <input type="text" placeholder="Campaign name (without spaces)" class="confirmation-input" style="width: 100%" />`;
     checkWalletBalance(this.props.wallet)
       .then(() => {
         React.swal({
-          title: `Cancel Campaign "${campaign.myTitle}"?`,
+          title: 'Cancel Campaign?',
           text: `Are you sure you want to cancel this Campaign?
                 Please enter the first 5 characters of the campaign title while skipping any spaces:
           `,
           icon: 'warning',
           content: {
-            element: 'input',
+            element: sweetContent,
             attributes: {
-              placeholder: 'Campaign name (without spaces)',
-              className: 'confirmation-input',
-              style: 'width: 100%',
+              marginTop: '0px',
             },
           },
           dangerMode: true,
@@ -113,7 +117,6 @@ class MyCampaigns extends Component {
             .join('')
             .slice(0, 5);
           if (isConfirmed !== null) {
-            console.log(inputValue, formattedTitle);
             if (inputValue === formattedTitle) {
               const afterCreate = url => {
                 const msg = (
@@ -142,7 +145,7 @@ class MyCampaigns extends Component {
               };
               campaign.cancel(this.props.currentUser.address, afterCreate, afterMined);
             } else {
-              React.swal('Incorrect campaign name!');
+              React.swal('Failed!', 'Incorrect campaign name.', 'warning');
             }
           }
         });
