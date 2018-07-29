@@ -56,14 +56,21 @@ class DACService {
       }, onError);
   }
 
-  static subscribeTest(onSuccess, onError) {
+  /**
+   * Lazy-load DAC Campaigns by subscribing to campaigns listener
+   *
+   * @param delegateId Dekegate ID of the DAC which campaigns should be retrieved
+   * @param onSuccess  Callback function once response is obtained successfylly
+   * @param onError    Callback function if error is encountered
+   */
+  static subscribeCampaigns(delegateId, onSuccess, onError) {
     return feathersClient
       .service('donations')
       .watch({ listStrategy: 'always' })
       .find({
         query: {
           $select: ['delegateId', 'intendedProjectId', 'amount'],
-          delegateId: 5,
+          delegateId,
           $limit: 200,
         },
       })
@@ -109,31 +116,6 @@ class DACService {
         },
       })
       .subscribe(resp => onSuccess(resp.data), onError);
-  }
-
-  /**
-   * Lazy-load DAC Campaigns by subscribing to campaigns listener
-   *
-   * @param id        ID of the DAC which campaigns should be retrieved
-   * @param onSuccess Callback function once response is obtained successfylly
-   * @param onError   Callback function if error is encountered
-   */
-  static subscribeCampaigns(id, onSuccess, onError) {
-    return feathersClient
-      .service('campaigns')
-      .watch({ listStrategy: 'always' })
-      .find({
-        query: {
-          projectId: {
-            $gt: 0, // 0 is a pending campaign
-          },
-          dacs: id,
-          $limit: 200,
-        },
-      })
-      .subscribe(resp => {
-        onSuccess(resp.data.map(c => new Campaign(c)));
-      }, onError);
   }
 
   /**
