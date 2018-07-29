@@ -1,9 +1,13 @@
+import BigNumber from 'bignumber.js';
+
 import getNetwork from '../lib/blockchain/getNetwork';
 import { feathersClient } from '../lib/feathersClient';
 import DAC from '../models/DAC';
 import Campaign from '../models/Campaign';
 
 import ErrorPopup from '../components/ErrorPopup';
+
+BigNumber.config({ DECIMAL_PLACES: 18 });
 
 class DACService {
   /**
@@ -49,6 +53,39 @@ class DACService {
           data: resp.data.map(d => new DAC(d)),
         });
         onSuccess(newResp);
+      }, onError);
+  }
+
+  static subscribeTest(onSuccess, onError) {
+    return feathersClient
+      .service('donations')
+      .watch({ listStrategy: 'always' })
+      .find({
+        query: {
+          $select: ['delegateId', 'intendedProjectId', 'amount'],
+          delegateId: 5,
+          $limit: 200,
+        },
+      })
+      .subscribe(async resp => {
+        const projectIDs = {};
+        resp.data.forEach(d => {
+          if (d.intendedProjectId && d.amount) {
+            projectIDs[d.intendedProjectId] = (
+              projectIDs[d.intendedProjectId] || new BigNumber(0)
+            ).plus(new BigNumber(d.amount));
+          }
+        });
+
+        const campaignsResp = await feathersClient.service('campaigns').find({
+          query: {
+            projectId: { $in: Object.keys(projectIDs) },
+            $limit: 200,
+          },
+        });
+
+        const campaigns = campaignsResp.data.map(d => new Campaign(d));
+        onSuccess(campaigns);
       }, onError);
   }
 
