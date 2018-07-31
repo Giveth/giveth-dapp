@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import Pagination from 'react-js-pagination';
 
 import { isLoggedIn, redirectAfterWalletUnlock, checkWalletBalance } from '../../lib/middleware';
+import confirmationDialog from '../../lib/confirmationDialog';
 import Loader from '../Loader';
 import User from '../../models/User';
 import { getTruncatedText, convertEthHelper } from '../../lib/helpers';
@@ -75,83 +76,37 @@ class MyCampaigns extends Component {
   }
 
   cancelCampaign(campaign) {
-    const sweetContent = document.createElement('div');
-    sweetContent.style.display = 'flex';
-    sweetContent.style['flex-direction'] = 'column';
-    sweetContent.innerHTML = `
-        <b style="margin-bottom: 10px">${campaign.myTitle}</b>
-        <input type="text" placeholder="Campaign name (without spaces)" class="confirmation-input" style="width: 100%" />`;
-    checkWalletBalance(this.props.wallet)
-      .then(() => {
-        React.swal({
-          title: 'Cancel Campaign?',
-          text: `Are you sure you want to cancel this Campaign?
-                Please enter the first 5 characters of the campaign title while skipping any spaces:
-          `,
-          icon: 'warning',
-          content: {
-            element: sweetContent,
-          },
-          dangerMode: true,
-          buttons: {
-            cancel: {
-              text: 'Dismiss',
-              value: null,
-              visible: true,
-            },
-            confirm: {
-              text: 'Yes, Cancel',
-              visible: true,
-              value: true,
-              className: 'confirm-cancel-button',
-              closeModal: true,
-            },
-          },
-        }).then(isConfirmed => {
-          const inputValue = document.querySelector('.confirmation-input').value;
-          const formattedTitle = campaign.myTitle
-            .split(' ')
-            .join('')
-            .slice(0, 5);
-          if (isConfirmed !== null) {
-            if (inputValue === formattedTitle) {
-              const afterCreate = url => {
-                const msg = (
-                  <p>
-                    Campaign cancelation pending...
-                    <br />
-                    <a href={url} target="_blank" rel="noopener noreferrer">
-                      View transaction
-                    </a>
-                  </p>
-                );
-                React.toast.info(msg);
-              };
+    checkWalletBalance(this.props.wallet).then(() => {
+      const confirmCancelCampaign = () => {
+        const afterCreate = url => {
+          const msg = (
+            <p>
+              Campaign cancelation pending...
+              <br />
+              <a href={url} target="_blank" rel="noopener noreferrer">
+                View transaction
+              </a>
+            </p>
+          );
+          React.toast.info(msg);
+        };
 
-              const afterMined = url => {
-                const msg = (
-                  <p>
-                    The campaign has been cancelled!
-                    <br />
-                    <a href={url} target="_blank" rel="noopener noreferrer">
-                      View transaction
-                    </a>
-                  </p>
-                );
-                React.toast.success(msg);
-              };
-              campaign.cancel(this.props.currentUser.address, afterCreate, afterMined);
-            } else {
-              React.swal('Failed!', 'Incorrect campaign name.', 'warning');
-            }
-          }
-        });
-      })
-      .catch(err => {
-        if (err === 'noBalance') {
-          // handle no balance error
-        }
-      });
+        const afterMined = url => {
+          const msg = (
+            <p>
+              The campaign has been cancelled!
+              <br />
+              <a href={url} target="_blank" rel="noopener noreferrer">
+                View transaction
+              </a>
+            </p>
+          );
+          React.toast.success(msg);
+        };
+        campaign.cancel(this.props.currentUser.address, afterCreate, afterMined);
+      };
+      confirmationDialog('campaign', campaign.myTitle, confirmCancelCampaign);
+    });
   }
 
   handlePageChanged(newPage) {

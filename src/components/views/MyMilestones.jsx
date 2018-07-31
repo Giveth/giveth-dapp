@@ -9,6 +9,7 @@ import Pagination from 'react-js-pagination';
 import ConversationModal from 'components/ConversationModal';
 import { feathersClient } from '../../lib/feathersClient';
 import { isLoggedIn, redirectAfterWalletUnlock, checkWalletBalance } from '../../lib/middleware';
+import confirmationDialog from '../../lib/confirmationDialog';
 import getNetwork from '../../lib/blockchain/getNetwork';
 import { getWeb3 } from '../../lib/blockchain/getWeb3';
 import Loader from '../Loader';
@@ -20,58 +21,18 @@ import config from '../../configuration';
 import ErrorPopup from '../ErrorPopup';
 
 const deleteProposedMilestone = milestone => {
-  const sweetContent = document.createElement('div');
-  sweetContent.style.display = 'flex';
-  sweetContent.style['flex-direction'] = 'column';
-  sweetContent.innerHTML = `
-        <b style="margin-bottom: 10px">${milestone.title}</b>
-        <input type="text" placeholder="Campaign name (without spaces)" class="confirmation-input" style="width: 100%" />`;
-  React.swal({
-    title: 'Delete Milestone?',
-    text: `Are you sure you want to delete this Milestone?
-          Please enter the first 5 characters of the campaign title while skipping any spaces:
-    `,
-    icon: 'warning',
-    content: {
-      element: sweetContent,
-    },
-    dangerMode: true,
-    buttons: {
-      cancel: {
-        text: 'Dismiss',
-        value: null,
-        visible: true,
-      },
-      confirm: {
-        text: 'Yes, Cancel',
-        visible: true,
-        value: true,
-        className: 'confirm-cancel-button',
-        closeModal: true,
-      },
-    },
-  }).then(isConfirmed => {
-    const inputValue = document.querySelector('.confirmation-input').value;
-    const formattedTitle = milestone.title
-      .split(' ')
-      .join('')
-      .slice(0, 5);
-    if (isConfirmed !== null) {
-      if (inputValue === formattedTitle) {
-        feathersClient
-          .service('/milestones')
-          .remove(milestone._id)
-          .then(() => {
-            React.toast.info(<p>The milestone has been deleted.</p>);
-          })
-          .catch(e => {
-            ErrorPopup('Something went wrong with deleting your milestone', e);
-          });
-      } else {
-        React.swal('Failed!', 'Incorrect milestone name.', 'warning');
-      }
-    }
-  });
+  const confirmDeleteMilestone = () => {
+    feathersClient
+      .service('/milestones')
+      .remove(milestone._id)
+      .then(() => {
+        React.toast.info(<p>The milestone has been deleted.</p>);
+      })
+      .catch(e => {
+        ErrorPopup('Something went wrong with deleting your milestone', e);
+      });
+  };
+  confirmationDialog('milestone', milestone.title, confirmDeleteMilestone);
 };
 
 const rejectProposedMilestone = milestone => {
@@ -397,143 +358,88 @@ class MyMilestones extends Component {
   }
 
   cancelMilestone(milestone) {
-    const sweetContent = document.createElement('div');
-    sweetContent.style.display = 'flex';
-    sweetContent.style['flex-direction'] = 'column';
-    sweetContent.innerHTML = `
-        <b style="margin-bottom: 10px">${milestone.title}</b>
-        <input type="text" placeholder="Milestone name (without spaces)" class="confirmation-input" style="width: 100%" />`;
-    checkWalletBalance(this.props.wallet).then(() => {
-      React.swal({
-        title: `Cancel Milestone?`,
-        text: `Are you sure you want to cancel this Milestone?
-                Please enter the first 5 characters of the milestone title while skipping any spaces:
-          `,
-        icon: 'warning',
-        content: {
-          element: sweetContent,
-        },
-        dangerMode: true,
-        buttons: {
-          cancel: {
-            text: 'Dismiss',
-            value: null,
-            visible: true,
-          },
-          confirm: {
-            text: 'Yes, Cancel',
-            visible: true,
-            value: true,
-            className: 'confirm-cancel-button',
-            closeModal: true,
-          },
-        },
-      })
-        .then(isConfirmed => {
-          const inputValue = document.querySelector('.confirmation-input').value;
-          const formattedTitle = milestone.title
-            .split(' ')
-            .join('')
-            .slice(0, 5);
-          if (isConfirmed !== null) {
-            console.log(inputValue, formattedTitle);
-            if (inputValue === formattedTitle) {
-              // magic
-              this.conversationModal.current
-                .openModal({
-                  title: 'Cancel milestone',
-                  description:
-                    'Explain why you cancel this milestone. Compliments are appreciated! This information will be publicly visible and emailed to the milestone owner.',
-                  textPlaceholder: 'Explain why you cancel this milestone...',
-                  required: true,
-                  cta: 'Cancel milestone',
-                  enableAttachProof: false,
-                })
-                .then(proof => {
-                  const _cancelMilestone = (etherScanUrl, txHash) => {
-                    // feathers
-                    feathersClient
-                      .service('/milestones')
-                      .patch(milestone._id, {
-                        status: 'Canceled',
-                        message: proof.message,
-                        proofItems: proof.items,
-                        mined: false,
-                        txHash,
-                      })
-                      .then(() => {
-                        React.toast.info(
-                          <p>
-                            Cancelling this milestone is pending...
-                            <br />
-                            <a
-                              href={`${etherScanUrl}tx/${txHash}`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                            >
-                              View transaction
-                            </a>
-                          </p>,
-                        );
-                      })
-                      .catch(e => {
-                        ErrorPopup('Something went wrong with cancelling your milestone', e);
-                      });
-                  };
-
-                  // on chain
-                  let txHash;
-                  let etherScanUrl;
-                  Promise.all([getNetwork(), getWeb3()])
-                    .then(([network, web3]) => {
-                      etherScanUrl = network.etherscan;
-
-                      const cappedMilestone = new LPPCappedMilestone(web3, milestone.pluginAddress);
-
-                      return cappedMilestone
-                        .cancelMilestone({
-                          from: this.props.currentUser.address,
-                        })
-                        .once('transactionHash', hash => {
-                          txHash = hash;
-                          _cancelMilestone(etherScanUrl, txHash);
-                        });
-                    })
-                    .then(() => {
-                      React.toast.success(
-                        <p>
-                          The milestone has been cancelled!
-                          <br />
-                          <a
-                            href={`${etherScanUrl}tx/${txHash}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                          >
-                            View transaction
-                          </a>
-                        </p>,
-                      );
-                    })
-                    .catch(err => {
-                      if (txHash && err.message && err.message.includes('unknown transaction'))
-                        return; // bug in web3 seems to constantly fail due to this error, but the tx is correct
-                      ErrorPopup(
-                        'Something went wrong with the transaction. Is your wallet unlocked?',
-                        `${etherScanUrl}tx/${txHash}`,
-                      );
-                    });
-                });
-            } else {
-              React.swal('Failed!', 'Incorrect milestone name.', 'warning');
-            }
-          }
+    const confirmCancelMilestone = () => {
+      this.conversationModal.current
+        .openModal({
+          title: 'Cancel milestone',
+          description:
+            'Explain why you cancel this milestone. Compliments are appreciated! This information will be publicly visible and emailed to the milestone owner.',
+          textPlaceholder: 'Explain why you cancel this milestone...',
+          required: true,
+          cta: 'Cancel milestone',
+          enableAttachProof: false,
         })
-        .catch(err => {
-          if (err === 'noBalance') {
-            // handle no balance error
-          }
+        .then(proof => {
+          const _cancelMilestone = (etherScanUrl, txHash) => {
+            // feathers
+            feathersClient
+              .service('/milestones')
+              .patch(milestone._id, {
+                status: 'Canceled',
+                message: proof.message,
+                proofItems: proof.items,
+                mined: false,
+                txHash,
+              })
+              .then(() => {
+                React.toast.info(
+                  <p>
+                    Cancelling this milestone is pending...
+                    <br />
+                    <a
+                      href={`${etherScanUrl}tx/${txHash}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      View transaction
+                    </a>
+                  </p>,
+                );
+              })
+              .catch(e => {
+                ErrorPopup('Something went wrong with cancelling your milestone', e);
+              });
+          };
+
+          // on chain
+          let txHash;
+          let etherScanUrl;
+          Promise.all([getNetwork(), getWeb3()])
+            .then(([network, web3]) => {
+              etherScanUrl = network.etherscan;
+
+              const cappedMilestone = new LPPCappedMilestone(web3, milestone.pluginAddress);
+
+              return cappedMilestone
+                .cancelMilestone({
+                  from: this.props.currentUser.address,
+                })
+                .once('transactionHash', hash => {
+                  txHash = hash;
+                  _cancelMilestone(etherScanUrl, txHash);
+                });
+            })
+            .then(() => {
+              React.toast.success(
+                <p>
+                  The milestone has been cancelled!
+                  <br />
+                  <a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">
+                    View transaction
+                  </a>
+                </p>,
+              );
+            })
+            .catch(err => {
+              if (txHash && err.message && err.message.includes('unknown transaction')) return; // bug in web3 seems to constantly fail due to this error, but the tx is correct
+              ErrorPopup(
+                'Something went wrong with the transaction. Is your wallet unlocked?',
+                `${etherScanUrl}tx/${txHash}`,
+              );
+            });
         });
-    });
+    };
+    confirmationDialog('milestone', milestone.title, confirmCancelMilestone);
   }
 
   acceptProposedMilestone(milestone) {
