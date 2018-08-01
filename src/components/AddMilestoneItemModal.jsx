@@ -9,10 +9,10 @@ import Modal from 'react-modal';
 import { Input, Form } from 'formsy-react-components';
 import { utils } from 'web3';
 
+import getEthConversionContext from 'containers/getEthConversionContext';
 import { getStartOfDayUTC } from '../lib/helpers';
 import FormsyImageUploader from './FormsyImageUploader';
 import RateConvertor from './RateConvertor';
-import getEthConversionContext from 'containers/getEthConversionContext';
 
 const modalStyles = {
   content: {
@@ -67,7 +67,6 @@ class AddMilestoneItemModal extends Component {
       image: this.state.image,
       selectedFiatType: inputs.fiatType,
       fiatAmount: inputs.fiatAmount,
-      etherAmount: inputs.etherAmount,
       wei: utils.toWei(inputs.etherAmount),
       conversionRate: parseFloat(inputs.conversionRate),
       ethConversionRateTimestamp: inputs.ethConversionRateTimestamp,
@@ -158,7 +157,7 @@ class AddMilestoneItemModal extends Component {
             Attach
           </a>
 
-          <button className="btn btn-link" onClick={() => this.closeModal()}>
+          <button type="button" className="btn btn-link" onClick={() => this.closeModal()}>
             Cancel
           </button>
         </Form>

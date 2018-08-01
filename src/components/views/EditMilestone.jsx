@@ -338,12 +338,14 @@ class EditMilestone extends Component {
       // in itemized mode, we calculate the maxAmount from the items
 
       if (this.state.itemizeState) {
-        model.maxAmount = this.state.items.reduce(
-          (accumulator, item) => accumulator.plus(new BigNumber(item.etherAmount)),
-          new BigNumber(0),
-        );
+        model.maxAmount = this.state.items
+          .reduce(
+            (accumulator, item) => accumulator.plus(new BigNumber(item.wei)),
+            new BigNumber(0),
+          )
+          .toString();
       } else {
-        model.maxAmount = this.state.maxAmount;
+        model.maxAmount = utils.toWei(this.state.maxAmount);
       }
 
       if (!this.state.showRecipientAddress) {
@@ -353,7 +355,7 @@ class EditMilestone extends Component {
       const constructedModel = {
         title: model.title,
         description: model.description,
-        maxAmount: utils.toWei(model.maxAmount.toFixed(18)),
+        maxAmount: model.maxAmount,
         ownerAddress: this.props.currentUser.address,
         reviewerAddress: model.reviewerAddress,
         recipientAddress: model.recipientAddress,
