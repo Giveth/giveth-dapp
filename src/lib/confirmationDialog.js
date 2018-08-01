@@ -2,33 +2,29 @@ import React from 'react';
 
 export default (type, title, successCallback) => {
   let dialogTitle;
-  let dialogPlaceholder;
   let dialogText;
   const sweetContent = document.createElement('div');
   sweetContent.style.display = 'flex';
   sweetContent.style['flex-direction'] = 'column';
   if (type === 'milestone') {
     dialogTitle = 'Delete Milestone?';
-    dialogPlaceholder = 'Milestone name (without spaces)';
     dialogText = `Are you sure you want to delete this milestone?
           Please enter the first 5 characters of the milestone title while skipping any spaces:
     `;
   } else if (type === 'refund') {
     dialogTitle = 'Refund Donation?';
-    dialogPlaceholder = 'Donated to (without spaces)';
     dialogText = `Are you sure you want to refund your donation?
           Your donation will be cancelled and a payment will be authorized to refund your tokens. All withdrawals must be confirmed for security reasons and may take a day or two. Upon confirmation, your tokens will be transferred to your wallet. Please enter the first 5 letters of the campaign/community.
     `;
   } else if (type === 'campaign') {
     dialogTitle = 'Cancel Campaign?';
-    dialogPlaceholder = 'Campaign name (without spaces)';
     dialogText = `Are you sure you want to cancel this campaign?
           Please enter the first 5 characters of the campaign title while skipping any spaces:
     `;
   }
   sweetContent.innerHTML = `
     <b style="margin-bottom: 10px">${title}</b>
-    <input type="text" placeholder=${dialogPlaceholder} class="confirmation-input" style="width: 100%" />`;
+    <input type="text" placeholder="First five characters of the above title" class="confirmation-input" style="width: 100%" />`;
   React.swal({
     title: dialogTitle,
     text: dialogText,

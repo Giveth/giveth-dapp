@@ -207,37 +207,39 @@ class DonationProvider extends Component {
    * @param donation Donation to be refunded
    */
   refund(donation) {
-    const confirmRefund = () => {
-      const afterCreate = txLink => {
-        console.log('afterMined');
-        React.toast.success(
-          <p>
-            The refund is pending...
-            <br />
-            <a href={txLink} target="_blank" rel="noopener noreferrer">
-              View transaction
-            </a>
-          </p>,
-        );
-      };
+    checkWalletBalance(this.props.wallet).then(() => {
+      const confirmRefund = () => {
+        const afterCreate = txLink => {
+          console.log('afterMined');
+          React.toast.success(
+            <p>
+              The refund is pending...
+              <br />
+              <a href={txLink} target="_blank" rel="noopener noreferrer">
+                View transaction
+              </a>
+            </p>,
+          );
+        };
 
-      // Inform user after the refund transaction is mined
-      const afterMined = txLink => {
-        React.toast.success(
-          <p>
-            Your donation has been refunded!
-            <br />
-            <a href={txLink} target="_blank" rel="noopener noreferrer">
-              View transaction
-            </a>
-          </p>,
-        );
-      };
+        // Inform user after the refund transaction is mined
+        const afterMined = txLink => {
+          React.toast.success(
+            <p>
+              Your donation has been refunded!
+              <br />
+              <a href={txLink} target="_blank" rel="noopener noreferrer">
+                View transaction
+              </a>
+            </p>,
+          );
+        };
 
-      // Refund the donation
-      DonationService.refund(donation, this.props.currentUser.address, afterCreate, afterMined);
-    };
-    confirmationDialog('refund', donation.myDonatedTo.name, confirmRefund);
+        // Refund the donation
+        DonationService.refund(donation, this.props.currentUser.address, afterCreate, afterMined);
+      };
+      confirmationDialog('refund', donation.myDonatedTo.name, confirmRefund);
+    });
   }
 
   render() {
