@@ -110,7 +110,7 @@ class Donation extends Model {
     ) {
       // Campaign
       const entity = this.intendedProjectId ? this.intendedProjectEntity : this.ownerEntity;
-      donatedTo.url = `/${entity}s/${entity._id}`;
+      donatedTo.url = `/campaigns/${entity._id}`;
       donatedTo.name = getTruncatedText(entity.title, 45);
       donatedTo.type = 'CAMPAIGN';
     } else if (

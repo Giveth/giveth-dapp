@@ -28,8 +28,6 @@ function updateExistingDonation(donation, amount, status) {
     });
 }
 
-// TODO: Remove in future
-/* eslint no-underscore-dangle: 0 */
 class DonationService {
   /**
    * Delegate the donation to some entity (either Campaign or Milestone)
