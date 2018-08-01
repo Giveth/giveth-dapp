@@ -358,33 +358,72 @@ class MyMilestones extends Component {
   }
 
   cancelMilestone(milestone) {
-    const confirmCancelMilestone = () => {
-      this.conversationModal.current
-        .openModal({
-          title: 'Cancel milestone',
-          description:
-            'Explain why you cancel this milestone. Compliments are appreciated! This information will be publicly visible and emailed to the milestone owner.',
-          textPlaceholder: 'Explain why you cancel this milestone...',
-          required: true,
-          cta: 'Cancel milestone',
-          enableAttachProof: false,
-        })
-        .then(proof => {
-          const _cancelMilestone = (etherScanUrl, txHash) => {
-            // feathers
-            feathersClient
-              .service('/milestones')
-              .patch(milestone._id, {
-                status: 'Canceled',
-                message: proof.message,
-                proofItems: proof.items,
-                mined: false,
-                txHash,
+    checkWalletBalance(this.props.wallet)
+      .then(() =>
+        this.conversationModal.current
+          .openModal({
+            title: 'Cancel milestone',
+            description:
+              'Explain why you cancel this milestone. Compliments are appreciated! This information will be publicly visible and emailed to the milestone owner.',
+            textPlaceholder: 'Explain why you cancel this milestone...',
+            required: true,
+            cta: 'Cancel milestone',
+            enableAttachProof: false,
+          })
+          .then(proof => {
+            const _cancelMilestone = (etherScanUrl, txHash) => {
+              // feathers
+              feathersClient
+                .service('/milestones')
+                .patch(milestone._id, {
+                  status: 'Canceled',
+                  message: proof.message,
+                  proofItems: proof.items,
+                  mined: false,
+                  txHash,
+                })
+                .then(() => {
+                  React.toast.info(
+                    <p>
+                      Cancelling this milestone is pending...
+                      <br />
+                      <a
+                        href={`${etherScanUrl}tx/${txHash}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        View transaction
+                      </a>
+                    </p>,
+                  );
+                })
+                .catch(e => {
+                  ErrorPopup('Something went wrong with cancelling your milestone', e);
+                });
+            };
+
+            // on chain
+            let txHash;
+            let etherScanUrl;
+            Promise.all([getNetwork(), getWeb3()])
+              .then(([network, web3]) => {
+                etherScanUrl = network.etherscan;
+
+                const cappedMilestone = new LPPCappedMilestone(web3, milestone.pluginAddress);
+
+                return cappedMilestone
+                  .cancelMilestone({
+                    from: this.props.currentUser.address,
+                  })
+                  .once('transactionHash', hash => {
+                    txHash = hash;
+                    _cancelMilestone(etherScanUrl, txHash);
+                  });
               })
               .then(() => {
-                React.toast.info(
+                React.toast.success(
                   <p>
-                    Cancelling this milestone is pending...
+                    The milestone has been cancelled!
                     <br />
                     <a
                       href={`${etherScanUrl}tx/${txHash}`}
@@ -396,50 +435,20 @@ class MyMilestones extends Component {
                   </p>,
                 );
               })
-              .catch(e => {
-                ErrorPopup('Something went wrong with cancelling your milestone', e);
+              .catch(err => {
+                if (txHash && err.message && err.message.includes('unknown transaction')) return; // bug in web3 seems to constantly fail due to this error, but the tx is correct
+                ErrorPopup(
+                  'Something went wrong with the transaction. Is your wallet unlocked?',
+                  `${etherScanUrl}tx/${txHash}`,
+                );
               });
-          };
-
-          // on chain
-          let txHash;
-          let etherScanUrl;
-          Promise.all([getNetwork(), getWeb3()])
-            .then(([network, web3]) => {
-              etherScanUrl = network.etherscan;
-
-              const cappedMilestone = new LPPCappedMilestone(web3, milestone.pluginAddress);
-
-              return cappedMilestone
-                .cancelMilestone({
-                  from: this.props.currentUser.address,
-                })
-                .once('transactionHash', hash => {
-                  txHash = hash;
-                  _cancelMilestone(etherScanUrl, txHash);
-                });
-            })
-            .then(() => {
-              React.toast.success(
-                <p>
-                  The milestone has been cancelled!
-                  <br />
-                  <a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">
-                    View transaction
-                  </a>
-                </p>,
-              );
-            })
-            .catch(err => {
-              if (txHash && err.message && err.message.includes('unknown transaction')) return; // bug in web3 seems to constantly fail due to this error, but the tx is correct
-              ErrorPopup(
-                'Something went wrong with the transaction. Is your wallet unlocked?',
-                `${etherScanUrl}tx/${txHash}`,
-              );
-            });
-        });
-    };
-    confirmationDialog('milestone', milestone.title, confirmCancelMilestone);
+          }),
+      )
+      .catch(err => {
+        if (err === 'noBalance') {
+          // handle no balance error
+        }
+      });
   }
 
   acceptProposedMilestone(milestone) {
