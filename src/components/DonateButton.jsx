@@ -3,17 +3,14 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import Modal from 'react-modal';
 import { utils } from 'web3';
-import { MiniMeToken } from 'minimetoken';
 import { Form, Input } from 'formsy-react-components';
 
 import getNetwork from '../lib/blockchain/getNetwork';
-import { feathersClient } from '../lib/feathersClient';
 import User from '../models/User';
 import DAC from '../models/DAC';
-import Donation from '../models/Donation';
-import { displayTransactionError, getGasPrice } from '../lib/helpers';
+import { getGasPrice } from '../lib/helpers';
 import GivethWallet from '../lib/blockchain/GivethWallet';
-import { getWeb3, getHomeWeb3 } from '../lib/blockchain/getWeb3';
+import { getHomeWeb3 } from '../lib/blockchain/getWeb3';
 import LoaderButton from './LoaderButton';
 import ErrorPopup from './ErrorPopup';
 import config from '../configuration';
@@ -240,11 +237,16 @@ class DonateButton extends React.Component {
         );
       })
       .catch(e => {
-        e = !(e instanceof Error) ? JSON.stringify(e, null, 2) : e;
-        ErrorPopup(
-          'Something went wrong with your donation.',
-          `${etherscanUrl}tx/${txHash} => ${e}`,
-        );
+        if (!e.message.includes('User denied transaction signature')) {
+          e = !(e instanceof Error) ? JSON.stringify(e, null, 2) : e;
+          ErrorPopup(
+            'Something went wrong with your donation.',
+            `${etherscanUrl}tx/${txHash} => ${e}`,
+          );
+        }
+        this.setState({
+          isSaving: false,
+        });
       });
 
     return;
@@ -376,13 +378,6 @@ class DonateButton extends React.Component {
                   donate
                 </div>
               )}
-            {model.type === DAC.type && (
-              <p>
-                Pledge: as long as the {model.type} owner does not lock your money you can take it
-                back any time.
-              </p>
-            )}
-            {/* TODO add note that we are donating as the logged in user, or that they won't be able to manage funds if no logged in user & using metamask*/}
 
             {homeWeb3 &&
               homeWeb3.givenProvider &&
