@@ -4,6 +4,7 @@ import { paramsForServer } from 'feathers-hooks-common';
 
 import { checkWalletBalance } from '../lib/middleware';
 import { feathersClient } from '../lib/feathersClient';
+import confirmationDialog from '../lib/confirmationDialog';
 import ErrorPopup from '../components/ErrorPopup';
 import getNetwork from '../lib/blockchain/getNetwork';
 
@@ -206,59 +207,39 @@ class DonationProvider extends Component {
    * @param donation Donation to be refunded
    */
   refund(donation) {
-    checkWalletBalance(this.props.wallet)
-      .then(() =>
-        React.swal({
-          title: 'Refund your donation?',
-          text:
-            'Your donation will be cancelled and a payment will be authorized to refund your tokens. All withdrawals must be confirmed for security reasons and may take a day or two. Upon confirmation, your tokens will be transferred to your wallet.',
-          icon: 'warning',
-          dangerMode: true,
-          buttons: ['Cancel', 'Yes, refund'],
-        }).then(isConfirmed => {
-          if (isConfirmed) {
-            // Inform user after the transaction is created
-            const afterCreate = txLink => {
-              console.log('afterMined');
-              React.toast.success(
-                <p>
-                  The refund is pending...
-                  <br />
-                  <a href={txLink} target="_blank" rel="noopener noreferrer">
-                    View transaction
-                  </a>
-                </p>,
-              );
-            };
+    checkWalletBalance(this.props.wallet).then(() => {
+      const confirmRefund = () => {
+        const afterCreate = txLink => {
+          console.log('afterMined');
+          React.toast.success(
+            <p>
+              The refund is pending...
+              <br />
+              <a href={txLink} target="_blank" rel="noopener noreferrer">
+                View transaction
+              </a>
+            </p>,
+          );
+        };
 
-            // Inform user after the refund transaction is mined
-            const afterMined = txLink => {
-              React.toast.success(
-                <p>
-                  Your donation has been refunded!
-                  <br />
-                  <a href={txLink} target="_blank" rel="noopener noreferrer">
-                    View transaction
-                  </a>
-                </p>,
-              );
-            };
+        // Inform user after the refund transaction is mined
+        const afterMined = txLink => {
+          React.toast.success(
+            <p>
+              Your donation has been refunded!
+              <br />
+              <a href={txLink} target="_blank" rel="noopener noreferrer">
+                View transaction
+              </a>
+            </p>,
+          );
+        };
 
-            // Refund the donation
-            DonationService.refund(
-              donation,
-              this.props.currentUser.address,
-              afterCreate,
-              afterMined,
-            );
-          }
-        }),
-      )
-      .catch(err => {
-        if (err === 'noBalance') {
-          // handle no balance error
-        }
-      });
+        // Refund the donation
+        DonationService.refund(donation, this.props.currentUser.address, afterCreate, afterMined);
+      };
+      confirmationDialog('refund', donation.myDonatedTo.name, confirmRefund);
+    });
   }
 
   render() {
