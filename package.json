@@ -47,7 +47,7 @@
     "request": "^2.85.0",
     "socket.io-client": "^2.0.4",
     "sweetalert": "^2.0",
-    "web3": "git://github.com/perissology/web3.js.git#contract-provider",
+    "web3": "1.0.0-beta.35",
     "web3-eth-accounts": "1.0.0-beta.34",
     "web3-provider-engine": "^14.0.5",
     "whatwg-fetch": "^2.0.3"
