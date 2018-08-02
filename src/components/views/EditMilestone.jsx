@@ -345,7 +345,7 @@ class EditMilestone extends Component {
           )
           .toString();
       } else {
-        model.maxAmount = utils.toWei(this.state.maxAmount);
+        model.maxAmount = utils.toWei(model.maxAmount.toString());
       }
 
       if (!this.state.showRecipientAddress) {
@@ -359,7 +359,6 @@ class EditMilestone extends Component {
         ownerAddress: this.props.currentUser.address,
         reviewerAddress: model.reviewerAddress,
         recipientAddress: model.recipientAddress,
-        // completionDeadline: this.state.completionDeadline,
         campaignReviewerAddress: this.state.campaignReviewerAddress,
         image: file,
         campaignId: this.state.campaignId,
