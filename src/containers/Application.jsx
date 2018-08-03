@@ -93,7 +93,7 @@ class Application extends Component {
     return (
       <ErrorBoundary>
         {/* Header stuff goes here */}
-        {config.useHotjar &&
+        {config.analytics.useHotjar &&
           window.location.origin.includes('beta') && (
             <Helmet>
               <script>{`

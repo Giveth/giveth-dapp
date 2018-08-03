@@ -5,6 +5,7 @@ import { utils } from 'web3';
 import Toggle from 'react-toggle';
 import BigNumber from 'bignumber.js';
 import { Form, Input } from 'formsy-react-components';
+import GA from 'lib/GoogleAnalytics';
 import { feathersClient, feathersRest } from '../../lib/feathersClient';
 import templates from '../../lib/milestoneTemplates';
 import Loader from '../Loader';
@@ -378,9 +379,9 @@ class EditMilestone extends Component {
           feathersClient
             .service('milestones')
             .create(Object.assign({}, constructedModel, txData))
-            .then(() => {
+            .then(milestoneId => {
               afterEmit(true);
-              callback();
+              callback(milestoneId);
             })
             .catch(err => {
               this.setState({ isSaving: false, isBlocking: true });
@@ -398,7 +399,14 @@ class EditMilestone extends Component {
               totalDonated: '0',
               donationCount: 0,
             },
-            () => React.toast.info(<p>Your Milestone is being proposed to the Campaign Owner.</p>),
+            milestoneId => {
+              GA.trackEvent({
+                category: 'Milestone',
+                action: 'proposed',
+                label: milestoneId,
+              });
+              React.toast.info(<p>Your Milestone is being proposed to the Campaign Owner.</p>);
+            },
           );
         } else {
           let etherScanUrl;
@@ -462,7 +470,12 @@ class EditMilestone extends Component {
                       totalDonated: '0',
                       donationCount: '0',
                     },
-                    () =>
+                    milestoneId => {
+                      GA.trackEvent({
+                        category: 'Milestone',
+                        action: 'created',
+                        label: milestoneId,
+                      });
                       React.toast.info(
                         <p>
                           Your Milestone is pending....
@@ -475,7 +488,8 @@ class EditMilestone extends Component {
                             View transaction
                           </a>
                         </p>,
-                      ),
+                      );
+                    },
                   );
                 })
                 .then(() => {
@@ -514,7 +528,11 @@ class EditMilestone extends Component {
                 <br />
               </p>,
             );
-
+            GA.trackEvent({
+              category: 'Milestone',
+              action: 'updated',
+              label: this.state.id,
+            });
             afterEmit();
           });
       }

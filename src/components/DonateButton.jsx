@@ -18,6 +18,7 @@ import LoaderButton from './LoaderButton';
 import ErrorPopup from './ErrorPopup';
 import config from '../configuration';
 import DonationService from '../services/DonationService';
+import GA from 'lib/GoogleAnalytics';
 
 const modalStyles = {
   content: {
@@ -216,6 +217,12 @@ class DonateButton extends React.Component {
         this.setState({
           modalVisible: false,
           isSaving: false,
+        });
+
+        GA.trackEvent({
+          category: 'Donation',
+          action: 'donated',
+          label: `${etherscanUrl}tx/${txHash}`,
         });
 
         React.toast.info(

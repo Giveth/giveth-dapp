@@ -3,6 +3,7 @@ import { Prompt } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import { Form, Input } from 'formsy-react-components';
 
+import GA from 'lib/GoogleAnalytics';
 import Loader from '../Loader';
 import QuillFormsy from '../QuillFormsy';
 import FormsyImageUploader from '../FormsyImageUploader';
@@ -94,7 +95,7 @@ class EditDAC extends Component {
   }
 
   submit() {
-    const afterMined = url => {
+    const afterMined = (url, id) => {
       if (url) {
         const msg = (
           <p>
@@ -105,10 +106,20 @@ class EditDAC extends Component {
             </a>
           </p>
         );
+        GA.trackEvent({
+          category: 'DAC',
+          action: 'created',
+          label: id,
+        });
         React.toast.success(msg);
       } else {
         if (this.mounted) this.setState({ isSaving: false });
         React.toast.success('Your DAC has been updated!');
+        GA.trackEvent({
+          category: 'DAC',
+          action: 'updated',
+          label: id,
+        });
         history.push(`/dacs/${this.state.dac.id}`);
       }
     };

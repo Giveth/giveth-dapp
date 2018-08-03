@@ -7,6 +7,7 @@ import moment from 'moment';
 import Pagination from 'react-js-pagination';
 
 import ConversationModal from 'components/ConversationModal';
+import GA from 'lib/GoogleAnalytics';
 import { feathersClient } from '../../lib/feathersClient';
 import { isLoggedIn, redirectAfterWalletUnlock, checkWalletBalance } from '../../lib/middleware';
 import getNetwork from '../../lib/blockchain/getNetwork';
@@ -89,6 +90,11 @@ const reproposeRejectedMilestone = milestone => {
           proofItems: proof.proofItems,
         })
         .then(() => {
+          GA.trackEvent({
+            category: 'Milestone',
+            action: 'reproposed rejected milestone',
+            label: milestone._id,
+          });
           React.toast.info(<p>The milestone has been re-proposed.</p>);
         })
         .catch(e => {
@@ -290,6 +296,12 @@ class MyMilestones extends Component {
                   txHash,
                 })
                 .then(() => {
+                  GA.trackEvent({
+                    category: 'Milestone',
+                    action: 'marked complete',
+                    label: milestone._id,
+                  });
+
                   React.toast.info(
                     <p>
                       Marking this milestone as complete is pending...
@@ -389,6 +401,12 @@ class MyMilestones extends Component {
                   txHash,
                 })
                 .then(() => {
+                  GA.trackEvent({
+                    category: 'Milestone',
+                    action: 'canceled',
+                    label: milestone._id,
+                  });
+
                   React.toast.info(
                     <p>
                       Cancelling this milestone is pending...
@@ -483,6 +501,12 @@ class MyMilestones extends Component {
                   txHash,
                 })
                 .then(() => {
+                  GA.trackEvent({
+                    category: 'Milestone',
+                    action: 'accepted proposed milestone',
+                    label: milestone._id,
+                  });
+
                   React.toast.info(
                     <p>
                       Accepting this milestone is pending...
@@ -591,6 +615,12 @@ class MyMilestones extends Component {
                   txHash,
                 })
                 .then(() => {
+                  GA.trackEvent({
+                    category: 'Milestone',
+                    action: 'approved completion',
+                    label: milestone._id,
+                  });
+
                   React.toast.info(
                     <p>
                       Approving this milestone is pending...
@@ -684,6 +714,11 @@ class MyMilestones extends Component {
                   txHash,
                 })
                 .then(() => {
+                  GA.trackEvent({
+                    category: 'Milestone',
+                    action: 'rejected completion',
+                    label: milestone._id,
+                  });
                   React.toast.info(<p>You have rejected this milestone&apos;s completion...</p>);
                 })
                 .catch(e => {
@@ -770,6 +805,12 @@ class MyMilestones extends Component {
                   txHash,
                 })
                 .then(() => {
+                  GA.trackEvent({
+                    category: 'Milestone',
+                    action: 'initiated withdrawal',
+                    label: milestone._id,
+                  });
+
                   React.toast.info(
                     <p>
                       Withdrawal from milestone...
