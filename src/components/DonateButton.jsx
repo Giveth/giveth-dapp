@@ -326,7 +326,6 @@ class DonateButton extends React.Component {
               <div className="form-group">
                 <Input
                   name="amount"
-                  id="amount-input"
                   label="How much Ξ do you want to donate?"
                   type="number"
                   value={amount}

@@ -13,6 +13,7 @@ import { isOwner, getUserName, getUserAvatar } from '../../lib/helpers';
 import { checkWalletBalance } from '../../lib/middleware';
 import BackgroundImageHeader from '../BackgroundImageHeader';
 import DonateButton from '../DonateButton';
+import DelegateMultipleButton from '../DelegateMultipleButton';
 import ShowTypeDonations from '../ShowTypeDonations';
 import AuthenticatedLink from '../AuthenticatedLink';
 
@@ -133,6 +134,12 @@ class ViewCampaign extends Component {
                   wallet={wallet}
                   currentUser={currentUser}
                   history={history}
+                />
+                <DelegateMultipleButton
+                  style={{ padding: '10px 10px' }}
+                  campaign={campaign}
+                  wallet={wallet}
+                  currentUser={currentUser}
                 />
               </BackgroundImageHeader>
 

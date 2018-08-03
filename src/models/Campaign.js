@@ -36,6 +36,7 @@ class Campaign extends BasicModel {
     this.ownerAddress = data.ownerAddress;
     this.mined = data.mined;
     this._id = data._id;
+    this._type = 'campaign';
   }
 
   toFeathers(txHash) {
@@ -54,6 +55,10 @@ class Campaign extends BasicModel {
     };
     if (!this.id) campaign.txHash = txHash;
     return campaign;
+  }
+
+  get type() {
+    return this._type;
   }
 
   get isActive() {
