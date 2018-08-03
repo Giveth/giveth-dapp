@@ -122,9 +122,14 @@ class DelegateMultipleButton extends Component {
     switch (entity.type) {
       case 'dac':
         options.delegateId = entity.delegateId;
+        options.delegateTypeId = entity.id;
+        options.status = Donation.WAITING;
+
         break;
       case 'campaign':
         options.ownerId = entity.projectId;
+        options.ownerTypeId = entity.id;
+        options.status = Donation.COMMITTED;
         break;
       default:
         break;
@@ -132,10 +137,8 @@ class DelegateMultipleButton extends Component {
 
     const query = paramsForServer({
       query: {
+        amountRemaining: { $ne: 0 },
         ...options,
-        status: {
-          $in: [Donation.WAITING, Donation.COMMITTED],
-        },
         $sort: { createdAt: 1 },
       },
       schema: 'includeTypeAndGiverDetails',
@@ -149,11 +152,18 @@ class DelegateMultipleButton extends Component {
       .subscribe(
         r => {
           const delegations = r.data.map(d => new Donation(d));
-          const amount = utils.fromWei(
+          let amount = utils.fromWei(
             delegations
-              .reduce((sum, d) => sum.plus(new BigNumber(d.amount)), new BigNumber('0'))
+              .reduce((sum, d) => sum.plus(new BigNumber(d.amountRemaining)), new BigNumber('0'))
               .toString(),
           );
+
+          if (
+            this.props.milestone &&
+            new BigNumber(this.props.milestone.maxAmount).lt(new BigNumber(amount))
+          )
+            amount = this.props.milestone.maxAmount;
+
           this.setState({
             delegations,
             maxAmount: amount,
@@ -194,7 +204,8 @@ class DelegateMultipleButton extends Component {
     const onSuccess = txLink => {
       React.toast.success(
         <p>
-          Your donation has been confirmed!<br />
+          Your donation has been confirmed!
+          <br />
           <a href={`${txLink}`} target="_blank" rel="noopener noreferrer">
             View transaction
           </a>
@@ -205,7 +216,7 @@ class DelegateMultipleButton extends Component {
     DonationService.delegateMultiple(
       this.state.delegations,
       utils.toWei(model.amount),
-      this.props.campaign || Object.assign({ type: 'milestone' }, this.props.milestone),
+      this.props.campaign || this.props.milestone,
       onCreated,
       onSuccess,
     );

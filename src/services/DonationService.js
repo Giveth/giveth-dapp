@@ -14,7 +14,7 @@ import ErrorPopup from '../components/ErrorPopup';
 function updateExistingDonation(donation, amount, status) {
   const mutation = {
     pendingAmountRemaining: utils
-      .toBN(donation.amountRemaining)
+      .toBN(donation.myPendingAmountRemaining || donation.myAmountRemaining) // FIXME: Accessing private members because donation.amountRemaining was returning undefined
       .sub(utils.toBN(amount))
       .toString(),
   };
@@ -68,25 +68,27 @@ class DonationService {
       donations.every(donation => {
         const pledge = pledges.find(n => n.id === donation.pledgeId);
 
-        let donatedAmount = new BigNumber(donation.amount);
+        let delegatedAmount = new BigNumber(donation.amount);
 
         // The next donation is too big, we have to split it
-        if (currentAmount.plus(donatedAmount).isGreaterThan(maxAmount)) {
-          donatedAmount = maxAmount.minus(currentAmount);
+        if (currentAmount.plus(delegatedAmount).isGreaterThan(maxAmount)) {
+          delegatedAmount = maxAmount.minus(currentAmount);
           fullyDonated = false;
 
           // This donation would have value of 0, stop the iteration before it is added
-          if (donatedAmount.isEqualTo(new BigNumber('0'))) return fullyDonated;
+          if (delegatedAmount.isEqualTo(new BigNumber('0'))) return fullyDonated;
         }
-        pledgedDonations.push({ donation, fullyDonated });
+        pledgedDonations.push(
+          Object.assign({}, donation, { delegatedAmount: delegatedAmount.toString() }),
+        );
 
-        currentAmount = currentAmount.plus(donatedAmount);
+        currentAmount = currentAmount.plus(delegatedAmount);
         if (pledge) {
-          pledge.amount = pledge.amount.plus(donatedAmount);
+          pledge.amount = pledge.amount.plus(delegatedAmount);
         } else {
           pledges.push({
             id: donation.pledgeId,
-            amount: donatedAmount,
+            amount: delegatedAmount,
           });
         }
         return fullyDonated;
@@ -129,34 +131,50 @@ class DonationService {
         return executeTransfer()
           .once('transactionHash', hash => {
             txHash = hash;
-            const mutation = {
-              txHash,
-              status: 'pending',
-            };
 
             // Update the delegated donations in feathers
             pledgedDonations.forEach(d => {
-              if (d.fullyDonated) {
-                if (d.donation.ownerType.toLowerCase() === 'campaign') {
-                  // campaign is the owner, so they transfer the donation, not propose
-                  Object.assign(mutation, {
-                    owner: delegateTo.projectId,
-                    ownerId: delegateTo.id || delegateTo._id,
-                    ownerType: delegateTo.type,
-                  });
-                } else {
-                  // dac proposes a delegation
-                  Object.assign(mutation, {
-                    intendedProject: delegateTo.projectId,
-                    intendedProjectId: delegateTo.id || delegateTo._id,
-                    intendedProjectType: delegateTo.type,
-                  });
-                }
+              updateExistingDonation(d, d.delegatedAmount);
+
+              const newDonation = {
+                txHash,
+                amount: d.delegatedAmount,
+                amountRemaining: d.delegatedAmount,
+                giverAddress: d.myGiverAddress, // FIXME: Accessing private members because d.giverAddres was returning undefined
+                pledgeId: 0,
+                parentDonations: [d.id],
+                mined: false,
+              };
+              // delegate is making the transfer
+              if (d.delegateEntity) {
+                Object.assign(newDonation, {
+                  status: Donation.TO_APPROVE,
+                  ownerId: d.ownerId,
+                  ownerTypeId: d.ownerTypeId,
+                  ownerType: d.ownerType,
+                  delegateId: d.delegateId,
+                  delegateTypeId: d.delegateTypeId,
+                  delegateType: d.delegateType,
+                  intendedProjectId: delegateTo.projectId, // only support delegating to campaigns/milestones right now
+                  intendedProjectType: delegateTo.type,
+                  intendedProjectTypeId: delegateTo.id,
+                });
+              } else {
+                // owner of the donation is making the transfer
+                // only support delegating to campaigns/milestones right now
+                Object.assign(newDonation, {
+                  status: Donation.COMMITTED,
+                  ownerId: delegateTo.projectId,
+                  ownerTypeId: delegateTo.id,
+                  ownerType: delegateTo.type,
+                });
               }
+
+              console.log(newDonation);
 
               feathersClient
                 .service('/donations')
-                .patch(d.donation.id, mutation)
+                .create(newDonation)
                 .then(() => onCreated(`${etherScanUrl}tx/${txHash}`))
                 .catch(err => {
                   ErrorPopup('Unable to update the donation in feathers', err);
@@ -184,13 +202,8 @@ class DonationService {
    * Delegate the donation to some entity (either Campaign or Milestone)
    *
    * @param {Donation} donation    Donation to be delegated
-<<<<<<< HEAD
    * @param {string}   amount      Amount of the donation that is to be delegated - needs to be between 0 and donation amount
    * @param {object}   delegateTo  Entity to which the donation should be delegated
-=======
-   * @param {string}   amount      Ammount of the donation that is to be delegated - needs to be between 0 and donation amount
-   * @param {Object}   delegateTo  Entity to which the donation should be delegated
->>>>>>> Aggregat delegations UI done.
    * @param {function} onCreated   Callback function after the transaction has been broadcasted to chain and stored in feathers
    * @param {function} onSuccess   Callback function after the transaction has been mined
    * @param {function} onError     Callback function after error happened
