@@ -7,6 +7,8 @@ import React, { Component } from 'react';
 import Avatar from 'react-avatar';
 import ReactHtmlParser, { convertNodeToElement } from 'react-html-parser';
 import { Link } from 'react-router-dom';
+import { utils } from 'web3';
+
 import GivethWallet from '../../lib/blockchain/GivethWallet';
 import { convertEthHelper, getUserAvatar, getUserName, isOwner } from '../../lib/helpers';
 import { checkWalletBalance, redirectAfterWalletUnlock } from '../../lib/middleware';
@@ -194,6 +196,10 @@ class ViewMilestone extends Component {
                   wallet={wallet}
                   currentUser={currentUser}
                   history={history}
+                  maxAmount={utils
+                    .toBN(utils.toWei(this.state.maxAmount.toString()))
+                    .sub(utils.toBN(utils.toWei(this.state.totalDonated.toString())))
+                    .toString()}
                 />
               )}
             </BackgroundImageHeader>
