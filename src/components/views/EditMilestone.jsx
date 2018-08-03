@@ -121,7 +121,7 @@ class EditMilestone extends Component {
               const date = getStartOfDayUTC(milestone.date);
 
               // convert amounts to BigNumbers
-              milestone.maxAmount = new BigNumber(milestone.maxAmount);
+              milestone.maxAmount = new BigNumber(utils.fromWei(milestone.maxAmount).toString());
               milestone.fiatAmount = new BigNumber(milestone.fiatAmount);
 
               if (
