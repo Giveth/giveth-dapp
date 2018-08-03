@@ -56,6 +56,10 @@ class DelegationProvider extends Component {
               query: {
                 status: DAC.ACTIVE,
                 $select: ['ownerAddress', 'title', '_id', 'delegateId'],
+                $limit: 100,
+                $sort: {
+                  createdAt: -1,
+                },
               },
             })
             .subscribe(
@@ -87,6 +91,10 @@ class DelegationProvider extends Component {
               query: {
                 status: Campaign.ACTIVE,
                 $select: ['ownerAddress', 'title', '_id', 'projectId'],
+                $limit: 100,
+                $sort: {
+                  createdAt: -1,
+                },
               },
             })
             .subscribe(
@@ -117,6 +125,7 @@ class DelegationProvider extends Component {
             .find({
               query: {
                 status: Milestone.IN_PROGRESS,
+                fullyFunded: { $ne: true },
                 $select: [
                   'title',
                   '_id',
@@ -126,6 +135,10 @@ class DelegationProvider extends Component {
                   'totalDonated',
                   'status',
                 ],
+                $limit: 100,
+                $sort: {
+                  createdAt: -1,
+                },
               },
             })
             .subscribe(
