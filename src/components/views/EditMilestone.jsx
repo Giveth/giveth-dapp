@@ -77,7 +77,6 @@ class EditMilestone extends Component {
           : '',
       items: [],
       itemizeState: false,
-      showRecipientAddress: false,
       date: getStartOfDayUTC().subtract(1, 'd'),
       selectedFiatType: 'EUR',
       isBlocking: false,
@@ -90,7 +89,6 @@ class EditMilestone extends Component {
     this.setMaxAmount = this.setMaxAmount.bind(this);
     this.setFiatAmount = this.setFiatAmount.bind(this);
     this.changeSelectedFiat = this.changeSelectedFiat.bind(this);
-    this.toggleShowRecipientAddress = this.toggleShowRecipientAddress.bind(this);
     this.onItemsChanged = this.onItemsChanged.bind(this);
     this.handleTemplateChange = this.handleTemplateChange.bind(this);
     this.validateMilestoneDesc = this.validateMilestoneDesc.bind(this);
@@ -138,7 +136,6 @@ class EditMilestone extends Component {
                   date,
                   itemizeState: milestone.items && milestone.items.length > 0,
                   selectedFiatType: milestone.selectedFiatType || 'EUR',
-                  showRecipientAddress: !!milestone.recipientAddress,
                   campaignTitle: milestone.campaign.title,
                   campaignProjectId: milestone.campaign.projectId,
                   campaignReviewerAddress: milestone.campaign.reviewerAddress,
@@ -312,10 +309,6 @@ class EditMilestone extends Component {
     }));
   }
 
-  toggleShowRecipientAddress() {
-    this.setState(prevState => ({ showRecipientAddress: !prevState.showRecipientAddress }));
-  }
-
   toggleFormValid(state) {
     if (this.state.itemizeState) {
       this.setState(prevState => ({ formIsValid: state && prevState.items.length > 0 }));
@@ -346,10 +339,6 @@ class EditMilestone extends Component {
           .toString();
       } else {
         model.maxAmount = utils.toWei(model.maxAmount.toString());
-      }
-
-      if (!this.state.showRecipientAddress) {
-        model.recipientAddress = this.props.currentUser.address;
       }
 
       const constructedModel = {
@@ -695,7 +684,13 @@ class EditMilestone extends Component {
                   <div className="form-header">
                     {isNew && !isProposed && <h3>Add a new milestone</h3>}
 
-                    {!isNew && !isProposed && <h3>Edit milestone{title}</h3>}
+                    {!isNew &&
+                      !isProposed && (
+                        <h3>
+                          Edit milestone
+                          {title}
+                        </h3>
+                      )}
 
                     {isNew && isProposed && <h3>Propose a Milestone</h3>}
 
@@ -704,10 +699,9 @@ class EditMilestone extends Component {
                     </h6>
 
                     <p>
-                      <i className="fa fa-question-circle" />
-                      A Milestone is a single accomplishment within a project. In the end, all
-                      donations end up in Milestones. Once your Milestone is completed, you can
-                      request a payout.
+                      <i className="fa fa-question-circle" />A Milestone is a single accomplishment
+                      within a project. In the end, all donations end up in Milestones. Once your
+                      Milestone is completed, you can request a payout.
                     </p>
 
                     {isProposed && (
@@ -825,43 +819,23 @@ class EditMilestone extends Component {
                         />
                       )}
                     </div>
-                    <div className="label">
-                      Where will the money go after completion?{' '}
-                      {this.state.showRecipientAddress ? '*' : ''}
-                    </div>
-                    <div className="react-toggle-container">
-                      <Toggle
-                        id="show-recipient-address"
-                        defaultChecked={this.state.showRecipientAddress}
-                        onChange={() => this.toggleShowRecipientAddress()}
-                        disabled={!isNew && !isProposed}
+                    <div className="label">Where will the money go after completion? *</div>
+                    <div className="form-group recipient-address-container">
+                      <Input
+                        name="recipientAddress"
+                        id="title-input"
+                        type="text"
+                        value={recipientAddress}
+                        placeholder="0x0000000000000000000000000000000000000000"
+                        help="Enter an Ethereum address."
+                        validations="isEtherAddress"
+                        validationErrors={{
+                          isEtherAddress: 'Please insert a valid Ethereum address.',
+                        }}
+                        required
+                        disabled={projectId}
                       />
-                      <div className="label">Recipient address is different from my address</div>
                     </div>
-                    {this.state.showRecipientAddress && (
-                      <div className="form-group recipient-address-container">
-                        <Input
-                          name="recipientAddress"
-                          id="title-input"
-                          type="text"
-                          value={recipientAddress}
-                          placeholder="0x0000000000000000000000000000000000000000"
-                          help="Enter an Ethereum address."
-                          validations="isEtherAddress"
-                          validationErrors={{
-                            isEtherAddress: 'Please insert a valid Ethereum address.',
-                          }}
-                          required={this.state.showRecipientAddress}
-                          disabled={projectId}
-                        />
-                      </div>
-                    )}
-                    {!this.state.showRecipientAddress && (
-                      <div>
-                        <br />
-                        <br />
-                      </div>
-                    )}
 
                     <div className="react-toggle-container">
                       <Toggle
