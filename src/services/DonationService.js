@@ -28,8 +28,6 @@ function updateExistingDonation(donation, amount, status) {
     });
 }
 
-// TODO: Remove in future
-/* eslint no-underscore-dangle: 0 */
 class DonationService {
   /**
    * Delegate the donation to some entity (either Campaign or Milestone)
@@ -207,7 +205,7 @@ class DonationService {
         if (txHash && err.message && err.message.includes('unknown transaction')) return; // bug in web3 seems to constantly fail due to this error, but the tx is correct
         ErrorPopup(
           'Something went wrong with the transaction. Is your wallet unlocked?',
-          `${etherScanUrl}tx/${txHash}`,
+          txHash ? `${etherScanUrl}tx/${txHash}` : err,
         );
         onError(err);
       });

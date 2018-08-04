@@ -47,7 +47,9 @@ class DatePickerFormsy extends React.Component {
             id="datePicker"
             dateFormat="YYYY/MM/DD"
             name="description"
-            selected={this.props.getValue() || getStartOfDayUTC().subtract(1, 'd')}
+            selected={
+              this.props.startDate || this.props.getValue() || getStartOfDayUTC().subtract(1, 'd')
+            }
             placeholderText={this.props.placeholder}
             onChange={this.handleChange}
             onChangeRaw={this.handleRaw}
@@ -71,6 +73,7 @@ DatePickerFormsy.propTypes = {
   getErrorMessage: PropTypes.func.isRequired,
   showRequired: PropTypes.func.isRequired,
   showError: PropTypes.func.isRequired,
+  startDate: PropTypes.shape({}),
 
   changeDate: PropTypes.func.isRequired,
   label: PropTypes.string,
@@ -84,6 +87,7 @@ DatePickerFormsy.defaultProps = {
   className: undefined,
   placeholder: undefined,
   disabled: false,
+  startDate: undefined,
 };
 
 export default withFormsy(DatePickerFormsy);

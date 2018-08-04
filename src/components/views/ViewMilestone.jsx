@@ -8,6 +8,7 @@ import Avatar from 'react-avatar';
 import ReactHtmlParser, { convertNodeToElement } from 'react-html-parser';
 import { Link } from 'react-router-dom';
 import { utils } from 'web3';
+
 import GivethWallet from '../../lib/blockchain/GivethWallet';
 import { convertEthHelper, getUserAvatar, getUserName, isOwner } from '../../lib/helpers';
 import { checkWalletBalance, redirectAfterWalletUnlock } from '../../lib/middleware';
@@ -18,7 +19,6 @@ import DonateButton from '../DonateButton';
 import ErrorPopup from '../ErrorPopup';
 import GoBackButton from '../GoBackButton';
 import ShowTypeDonations from '../ShowTypeDonations';
-import getNetwork from '../../lib/blockchain/getNetwork';
 import { feathersClient } from '../../lib/feathersClient';
 import Loader from '../Loader';
 import MilestoneItem from '../MilestoneItem';
@@ -39,17 +39,10 @@ class ViewMilestone extends Component {
       isLoading: true,
       isLoadingDonations: true,
       donations: [],
-      etherScanUrl: '',
       items: [],
     };
 
     this.editMilestone = this.editMilestone.bind(this);
-
-    getNetwork().then(network => {
-      this.setState({
-        etherScanUrl: network.etherscan,
-      });
-    });
   }
 
   componentDidMount() {
@@ -165,7 +158,6 @@ class ViewMilestone extends Component {
       recipientAddress,
       reviewer,
       reviewerAddress,
-      etherScanUrl,
       items,
       date,
       status,
@@ -204,6 +196,10 @@ class ViewMilestone extends Component {
                   wallet={wallet}
                   currentUser={currentUser}
                   history={history}
+                  maxAmount={utils
+                    .toBN(utils.toWei(this.state.maxAmount.toString()))
+                    .sub(utils.toBN(utils.toWei(this.state.totalDonated.toString())))
+                    .toString()}
                 />
               )}
             </BackgroundImageHeader>
@@ -273,7 +269,7 @@ class ViewMilestone extends Component {
                                     selectedFiatType: item.selectedFiatType,
                                     fiatAmount: item.fiatAmount,
                                     conversionRate: item.conversionRate,
-                                    wei: utils.toWei(item.etherAmount || '0'),
+                                    wei: item.wei || '0',
                                     image: item.image,
                                   }}
                                 />
@@ -305,23 +301,9 @@ class ViewMilestone extends Component {
                                 <td className="td-user">
                                   <Link to={`/profile/${reviewerAddress}`}>
                                     <Avatar size={30} src={getUserAvatar(reviewer)} round />
-                                    <p>{getUserName(reviewer)}</p>
+                                    {getUserName(reviewer)}
                                   </Link>
                                 </td>
-                                {etherScanUrl && (
-                                  <td className="td-address">
-                                    <a href={`${etherScanUrl}address/${reviewerAddress}`}>
-                                      {reviewerAddress}
-                                    </a>
-                                  </td>
-                                )}
-                                {!etherScanUrl && (
-                                  <td className="td-address">
-                                    {' '}
-                                    -
-                                    {reviewerAddress}
-                                  </td>
-                                )}
                               </tr>
                             </tbody>
                           </table>
@@ -339,23 +321,9 @@ class ViewMilestone extends Component {
                                 <td className="td-user">
                                   <Link to={`/profile/${recipientAddress}`}>
                                     <Avatar size={30} src={getUserAvatar(recipient)} round />
-                                    <p>{getUserName(recipient)}</p>
+                                    {getUserName(recipient)}
                                   </Link>
                                 </td>
-                                {etherScanUrl && (
-                                  <td className="td-address">
-                                    <a href={`${etherScanUrl}address/${recipientAddress}`}>
-                                      {recipientAddress}
-                                    </a>
-                                  </td>
-                                )}
-                                {!etherScanUrl && (
-                                  <td className="td-address">
-                                    {' '}
-                                    -
-                                    {recipientAddress}
-                                  </td>
-                                )}
                               </tr>
                             </tbody>
                           </table>

@@ -9,6 +9,7 @@ import Pagination from 'react-js-pagination';
 import ConversationModal from 'components/ConversationModal';
 import { feathersClient } from '../../lib/feathersClient';
 import { isLoggedIn, redirectAfterWalletUnlock, checkWalletBalance } from '../../lib/middleware';
+import confirmationDialog from '../../lib/confirmationDialog';
 import getNetwork from '../../lib/blockchain/getNetwork';
 import { getWeb3 } from '../../lib/blockchain/getWeb3';
 import Loader from '../Loader';
@@ -20,25 +21,18 @@ import config from '../../configuration';
 import ErrorPopup from '../ErrorPopup';
 
 const deleteProposedMilestone = milestone => {
-  React.swal({
-    title: 'Delete Milestone?',
-    text: 'Are you sure you want to delete this Milestone?',
-    icon: 'warning',
-    dangerMode: true,
-    buttons: ['Cancel', 'Yes, delete'],
-  }).then(isConfirmed => {
-    if (isConfirmed) {
-      feathersClient
-        .service('/milestones')
-        .remove(milestone._id)
-        .then(() => {
-          React.toast.info(<p>The milestone has been deleted.</p>);
-        })
-        .catch(e => {
-          ErrorPopup('Something went wrong with deleting your milestone', e);
-        });
-    }
-  });
+  const confirmDeleteMilestone = () => {
+    feathersClient
+      .service('/milestones')
+      .remove(milestone._id)
+      .then(() => {
+        React.toast.info(<p>The milestone has been deleted.</p>);
+      })
+      .catch(e => {
+        ErrorPopup('Something went wrong with deleting your milestone', e);
+      });
+  };
+  confirmationDialog('milestone', milestone.title, confirmDeleteMilestone);
 };
 
 const rejectProposedMilestone = milestone => {
@@ -1141,7 +1135,7 @@ class MyMilestones extends Component {
                                         <i className="fa fa-usd" />{' '}
                                         {m.recipientAddress === currentUser.address
                                           ? 'Collect'
-                                          : 'Disperse'}
+                                          : 'Disburse'}
                                       </button>
                                     )}
 
