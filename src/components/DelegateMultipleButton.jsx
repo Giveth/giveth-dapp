@@ -183,6 +183,7 @@ class DelegateMultipleButton extends Component {
     this.setState({ isSaving: true });
 
     const onCreated = txLink => {
+      this.setState({ isSaving: false, modalVisible: false, objectToDelegateFrom: [] });
       React.swal({
         title: 'Delegated!',
         content: React.swal.msg(

@@ -14,7 +14,7 @@ import ErrorPopup from '../components/ErrorPopup';
 function updateExistingDonation(donation, amount, status) {
   const mutation = {
     pendingAmountRemaining: utils
-      .toBN(donation.myPendingAmountRemaining || donation.myAmountRemaining) // FIXME: Accessing private members because donation.amountRemaining was returning undefined
+      .toBN(donation.amountRemaining)
       .sub(utils.toBN(amount))
       .toString(),
   };
@@ -78,9 +78,7 @@ class DonationService {
           // This donation would have value of 0, stop the iteration before it is added
           if (delegatedAmount.isEqualTo(new BigNumber('0'))) return fullyDonated;
         }
-        pledgedDonations.push(
-          Object.assign({}, donation, { delegatedAmount: delegatedAmount.toString() }),
-        );
+        pledgedDonations.push({ donation, delegatedAmount: delegatedAmount.toString() });
 
         currentAmount = currentAmount.plus(delegatedAmount);
         if (pledge) {
@@ -133,28 +131,28 @@ class DonationService {
             txHash = hash;
 
             // Update the delegated donations in feathers
-            pledgedDonations.forEach(d => {
-              updateExistingDonation(d, d.delegatedAmount);
+            pledgedDonations.forEach(({ donation, delegatedAmount }) => {
+              updateExistingDonation(donation, delegatedAmount);
 
               const newDonation = {
                 txHash,
-                amount: d.delegatedAmount,
-                amountRemaining: d.delegatedAmount,
-                giverAddress: d.myGiverAddress, // FIXME: Accessing private members because d.giverAddres was returning undefined
+                amount: delegatedAmount,
+                amountRemaining: delegatedAmount,
+                giverAddress: donation.myGiverAddress, // FIXME: Accessing private members because d.giverAddres was returning undefined
                 pledgeId: 0,
-                parentDonations: [d.id],
+                parentDonations: [donation.id],
                 mined: false,
               };
               // delegate is making the transfer
-              if (d.delegateEntity) {
+              if (donation.delegateEntity) {
                 Object.assign(newDonation, {
                   status: Donation.TO_APPROVE,
-                  ownerId: d.ownerId,
-                  ownerTypeId: d.ownerTypeId,
-                  ownerType: d.ownerType,
-                  delegateId: d.delegateId,
-                  delegateTypeId: d.delegateTypeId,
-                  delegateType: d.delegateType,
+                  ownerId: donation.ownerId,
+                  ownerTypeId: donation.ownerTypeId,
+                  ownerType: donation.ownerType,
+                  delegateId: donation.delegateId,
+                  delegateTypeId: donation.delegateTypeId,
+                  delegateType: donation.delegateType,
                   intendedProjectId: delegateTo.projectId, // only support delegating to campaigns/milestones right now
                   intendedProjectType: delegateTo.type,
                   intendedProjectTypeId: delegateTo.id,
@@ -169,8 +167,6 @@ class DonationService {
                   ownerType: delegateTo.type,
                 });
               }
-
-              console.log(newDonation);
 
               feathersClient
                 .service('/donations')

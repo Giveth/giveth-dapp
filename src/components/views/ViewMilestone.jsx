@@ -184,7 +184,10 @@ class ViewMilestone extends Component {
               )}
 
               {this.state.totalDonated < this.state.maxAmount && (
-                <p>Amount requested:{this.state.maxAmount} ETH</p>
+                <p>
+                  Amount requested:
+                  {this.state.maxAmount} ETH
+                </p>
               )}
               <p>
                 Campaign:
@@ -223,6 +226,7 @@ class ViewMilestone extends Component {
                       fiatAmount,
                       selectedFiatType,
                       campaign,
+                      type: Milestone.type,
                     }}
                     wallet={wallet}
                     currentUser={currentUser}
@@ -378,9 +382,7 @@ class ViewMilestone extends Component {
                             items.length === 0 && (
                               <span>
                                 {' '}
-                                (
-                                {fiatAmount} {selectedFiatType}
-                                )
+                                ({fiatAmount} {selectedFiatType})
                               </span>
                             )}
                         </div>
