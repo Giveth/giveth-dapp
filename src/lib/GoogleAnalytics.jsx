@@ -1,6 +1,3 @@
-/* eslint-disable react/forbid-prop-types */
-/* eslint-disable react/require-default-props */
-
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import ReactGA from 'react-ga';
@@ -45,7 +42,11 @@ GoogleAnalytics.propTypes = {
     pathname: PropTypes.string,
     search: PropTypes.string,
   }).isRequired,
-  options: PropTypes.object,
+  options: PropTypes.shape({}),
+};
+
+GoogleAnalytics.defaultProps = {
+  options: {},
 };
 
 const RouteTracker = () => <Route component={GoogleAnalytics} />;
