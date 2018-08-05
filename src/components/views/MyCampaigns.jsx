@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 import Pagination from 'react-js-pagination';
 
+import GA from 'lib/GoogleAnalytics';
 import { isLoggedIn, redirectAfterWalletUnlock, checkWalletBalance } from '../../lib/middleware';
 import confirmationDialog from '../../lib/confirmationDialog';
 import Loader from '../Loader';
@@ -89,6 +90,11 @@ class MyCampaigns extends Component {
             </p>
           );
           React.toast.info(msg);
+          GA.trackEvent({
+            category: 'Campaign',
+            action: 'canceled',
+            label: campaign.id,
+          });
         };
 
         const afterMined = url => {

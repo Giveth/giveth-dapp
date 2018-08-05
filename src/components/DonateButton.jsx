@@ -4,6 +4,7 @@ import Modal from 'react-modal';
 import { utils } from 'web3';
 import { Form, Input } from 'formsy-react-components';
 
+import GA from 'lib/GoogleAnalytics';
 import getNetwork from '../lib/blockchain/getNetwork';
 import User from '../models/User';
 import { getGasPrice } from '../lib/helpers';
@@ -190,9 +191,16 @@ class DonateButton extends React.Component {
           isSaving: false,
         });
 
+        GA.trackEvent({
+          category: 'Donation',
+          action: 'donated',
+          label: `${etherscanUrl}tx/${txHash}`,
+        });
+
         React.toast.info(
           <p>
-            Awesome! Your donation is pending...<br />
+            Awesome! Your donation is pending...
+            <br />
             <a href={`${etherscanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">
               View transaction
             </a>
@@ -202,9 +210,11 @@ class DonateButton extends React.Component {
       .then(() => {
         React.toast.success(
           <p>
-            Woot! Woot! Donation received. You are awesome!<br />
+            Woot! Woot! Donation received. You are awesome!
+            <br />
             Note: because we are bridging networks, there will be a delay before your donation
-            appears.<br />
+            appears.
+            <br />
             <a href={`${etherscanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">
               View transaction
             </a>
@@ -311,7 +321,11 @@ class DonateButton extends React.Component {
               account &&
               validNetwork && (
                 <p>
-                  {config.homeNetworkName} balance: <em>&#926;{balance}</em>
+                  {config.homeNetworkName} balance:{' '}
+                  <em>
+                    &#926;
+                    {balance}
+                  </em>
                   <br />
                   Gas price: <em>{gasPrice} Gwei</em>
                 </p>
