@@ -270,7 +270,9 @@ class Profile extends Component {
                   </div>
                 )}
 
-              <h4>Milestones</h4>
+              {(isLoadingMilestones || (milestones && milestones.data.length > 0)) && (
+                <h4>Milestones</h4>
+              )}
               <div>
                 {isLoadingMilestones && <Loader className="small" />}
 
@@ -384,27 +386,13 @@ class Profile extends Component {
                           )}
                         </div>
                       )}
-
-                    {milestones &&
-                      milestones.data.length === 0 && (
-                        <div className="no-results">
-                          <center>
-                            <h3>This user didn&apos;t create any milestones here!</h3>
-                            <img
-                              className="empty-state-img"
-                              src={`${process.env.PUBLIC_URL}/img/delegation.svg`}
-                              width="200px"
-                              height="200px"
-                              alt="no-milestones-icon"
-                            />
-                          </center>
-                        </div>
-                      )}
                   </div>
                 )}
               </div>
 
-              <h4>Campaigns</h4>
+              {(isLoadingCampaigns || (campaigns && campaigns.data.length > 0)) && (
+                <h4>Campaigns</h4>
+              )}
               <div>
                 {isLoadingCampaigns && <Loader className="small" />}
 
@@ -479,27 +467,11 @@ class Profile extends Component {
                           )}
                         </div>
                       )}
-
-                    {campaigns &&
-                      campaigns.data.length === 0 && (
-                        <div>
-                          <center>
-                            <h3>This user didn&apos;t create any campaigns yet!</h3>
-                            <img
-                              className="empty-state-img"
-                              src={`${process.env.PUBLIC_URL}/img/campaign.svg`}
-                              width="200px"
-                              height="200px"
-                              alt="no-campaigns-icon"
-                            />
-                          </center>
-                        </div>
-                      )}
                   </div>
                 )}
               </div>
 
-              <h4>Communities</h4>
+              {(isLoadingDacs || (dacs && dacs.data.length > 0)) && <h4>Communities</h4>}
               <div className="table-container">
                 {isLoadingDacs && <Loader className="small" />}
 
@@ -567,30 +539,13 @@ class Profile extends Component {
                           )}
                         </div>
                       )}
-
-                    {dacs &&
-                      dacs.length === 0 && (
-                        <div>
-                          <center>
-                            <h3>
-                              You didn&apos;t create any Decentralized Altruistic Communities (DACs)
-                              yet!
-                            </h3>
-                            <img
-                              className="empty-state-img"
-                              src={`${process.env.PUBLIC_URL}/img/community.svg`}
-                              width="200px"
-                              height="200px"
-                              alt="no-dacs-icon"
-                            />
-                          </center>
-                        </div>
-                      )}
                   </div>
                 )}
               </div>
 
-              <h4>Donations</h4>
+              {(isLoadingDonations || (donations && donations.data.length > 0)) && (
+                <h4>Donations</h4>
+              )}
               <div className="table-container">
                 {isLoadingDonations && <Loader className="small" />}
 
@@ -673,14 +628,6 @@ class Profile extends Component {
                           )}
                         </div>
                       )}
-
-                    {donations.data.length === 0 && (
-                      <div>
-                        <center>
-                          <h3>This user didn&apos;t make any donations yet!</h3>
-                        </center>
-                      </div>
-                    )}
                   </div>
                 )}
               </div>

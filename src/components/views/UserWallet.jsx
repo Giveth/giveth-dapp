@@ -35,7 +35,8 @@ class UserWallet extends Component {
   componentWillMount() {
     isLoggedIn(this.props.currentUser)
       .then(() => {
-        const insufficientBalance = this.props.wallet.getBalance() < React.minimumWalletBalance;
+        const bal = this.props.wallet.getBalance();
+        const insufficientBalance = bal === undefined || bal < React.minimumWalletBalance;
         this.setState({ isLoadingWallet: false, insufficientBalance });
       })
       .catch(err => {

@@ -1,9 +1,13 @@
+import BigNumber from 'bignumber.js';
+
 import getNetwork from '../lib/blockchain/getNetwork';
 import { feathersClient } from '../lib/feathersClient';
 import DAC from '../models/DAC';
 import Campaign from '../models/Campaign';
 
 import ErrorPopup from '../components/ErrorPopup';
+
+BigNumber.config({ DECIMAL_PLACES: 18 });
 
 class DACService {
   /**
@@ -53,6 +57,46 @@ class DACService {
   }
 
   /**
+   * Lazy-load DAC Campaigns by subscribing to campaigns listener
+   *
+   * @param delegateId Dekegate ID of the DAC which campaigns should be retrieved
+   * @param onSuccess  Callback function once response is obtained successfylly
+   * @param onError    Callback function if error is encountered
+   */
+  static subscribeCampaigns(delegateId, onSuccess, onError) {
+    return feathersClient
+      .service('donations')
+      .watch({ listStrategy: 'always' })
+      .find({
+        query: {
+          $select: ['delegateId', 'intendedProjectId', 'amount'],
+          delegateId,
+          $limit: 200,
+        },
+      })
+      .subscribe(async resp => {
+        const projectIDs = {};
+        resp.data.forEach(d => {
+          if (d.intendedProjectId && d.amount) {
+            projectIDs[d.intendedProjectId] = (
+              projectIDs[d.intendedProjectId] || new BigNumber(0)
+            ).plus(new BigNumber(d.amount));
+          }
+        });
+
+        const campaignsResp = await feathersClient.service('campaigns').find({
+          query: {
+            projectId: { $in: Object.keys(projectIDs) },
+            $limit: 200,
+          },
+        });
+
+        const campaigns = campaignsResp.data.map(d => new Campaign(d));
+        onSuccess(campaigns);
+      }, onError);
+  }
+
+  /**
    * Lazy-load DAC Donations by subscribing to donations listener
    *
    * @param id        ID of the DAC which donations should be retrieved
@@ -72,31 +116,6 @@ class DACService {
         },
       })
       .subscribe(resp => onSuccess(resp.data), onError);
-  }
-
-  /**
-   * Lazy-load DAC Campaigns by subscribing to campaigns listener
-   *
-   * @param id        ID of the DAC which campaigns should be retrieved
-   * @param onSuccess Callback function once response is obtained successfylly
-   * @param onError   Callback function if error is encountered
-   */
-  static subscribeCampaigns(id, onSuccess, onError) {
-    return feathersClient
-      .service('campaigns')
-      .watch({ listStrategy: 'always' })
-      .find({
-        query: {
-          projectId: {
-            $gt: 0, // 0 is a pending campaign
-          },
-          dacs: id,
-          $limit: 200,
-        },
-      })
-      .subscribe(resp => {
-        onSuccess(resp.data.map(c => new Campaign(c)));
-      }, onError);
   }
 
   /**

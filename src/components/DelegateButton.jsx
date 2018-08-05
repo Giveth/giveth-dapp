@@ -32,6 +32,7 @@ const modalStyles = {
 
 Modal.setAppElement('#root');
 
+// FIXME: We need slider component that uses bignumbers, there are some precision issues here
 class DelegateButton extends Component {
   constructor(props) {
     super(props);
@@ -59,7 +60,17 @@ class DelegateButton extends Component {
   }
 
   selectedObject({ target }) {
-    this.setState({ objectsToDelegateTo: target.value });
+    const admin = this.props.types.find(t => t._id === target.value[0]);
+
+    let maxAmount = utils.fromWei(this.props.donation.amountRemaining);
+
+    if (admin && admin.type === Milestone.type) {
+      const diff = utils.toBN(admin.maxAmount).sub(utils.toBN(admin.totalDonated || 0));
+      if (utils.toBN(diff).lt(utils.toBN(this.props.donation.amountRemaining)))
+        maxAmount = utils.fromWei(diff);
+    }
+
+    this.setState({ maxAmount, amount: maxAmount, objectsToDelegateTo: target.value });
   }
 
   submit(model) {
@@ -68,7 +79,7 @@ class DelegateButton extends Component {
     this.setState({ isSaving: true });
 
     // find the type of where we delegate to
-    const admin = this.props.types.find(t => t.id === this.state.objectsToDelegateTo[0]);
+    const admin = this.props.types.find(t => t._id === this.state.objectsToDelegateTo[0]);
 
     // TODO: find a more friendly way to do this.
     if (admin.type === Milestone.type && toBN(admin.maxAmount).lt(toBN(admin.totalDonated || 0))) {
@@ -133,7 +144,7 @@ class DelegateButton extends Component {
 
   render() {
     const { types, milestoneOnly, donation } = this.props;
-    const { isSaving, objectsToDelegateTo } = this.state;
+    const { isSaving, objectsToDelegateTo, maxAmount } = this.state;
     const style = { display: 'inline-block' };
     const pStyle = { whiteSpace: 'normal' };
 
@@ -182,10 +193,13 @@ class DelegateButton extends Component {
                 type="range"
                 name="amount2"
                 min={0}
-                max={Number(this.state.maxAmount)}
-                step={this.state.maxAmount / 10}
+                max={maxAmount}
+                step={maxAmount / 10}
                 value={Number(this.state.amount)}
-                labels={{ 0: '0', 100: this.state.maxAmount }}
+                labels={{
+                  0: '0',
+                  [maxAmount]: maxAmount,
+                }}
                 format={val => `${val} ETH`}
                 onChange={amount => this.setState({ amount: Number(amount).toFixed(2) })}
               />
@@ -194,12 +208,10 @@ class DelegateButton extends Component {
             <div className="form-group">
               <Input
                 type="text"
-                validations={`greaterThan:0,isNumeric,lessOrEqualTo:${this.state.maxAmount}`}
+                validations={`greaterThan:0,isNumeric,lessOrEqualTo:${maxAmount}`}
                 validationErrors={{
                   greaterThan: 'Enter value greater than 0',
-                  lessOrEqualTo: `The donation you are delegating has value of ${
-                    this.state.maxAmount
-                  }. Do not input higher amount.`,
+                  lessOrEqualTo: `The donation maximum amount you can delegate is ${maxAmount}. Do not input higher amount.`,
                   isNumeric: 'Provide correct number',
                 }}
                 name="amount"
