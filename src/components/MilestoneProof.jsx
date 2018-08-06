@@ -30,8 +30,9 @@ class MilestoneProof extends Component {
   }
 
   addItem(item) {
-    this.setState({ items: this.state.items.concat(item) }, () =>
-      this.props.onItemsChanged(this.state.items),
+    this.setState(
+      prevState => ({ items: prevState.items.concat(item) }),
+      () => this.props.onItemsChanged(this.state.items),
     );
   }
 
@@ -44,9 +45,9 @@ class MilestoneProof extends Component {
   }
 
   toggleAddMilestoneItemModal() {
-    this.setState({
-      addMilestoneItemModalVisible: !this.state.addMilestoneItemModalVisible,
-    });
+    this.setState(prevState => ({
+      addMilestoneItemModalVisible: !prevState.addMilestoneItemModalVisible,
+    }));
   }
 
   render() {

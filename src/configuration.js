@@ -29,6 +29,11 @@ const configurations = {
     homeNodeConnection: 'http://localhost:8545',
     homeNetworkName: 'Home Ganache',
     sendErrors: false,
+    analytics: {
+      ga_UA: 'UA-103956937-3',
+      useGoogleAnalytics: true,
+      useHotjar: false,
+    },
   },
   develop: {
     title: 'develop',
@@ -43,8 +48,13 @@ const configurations = {
     feathersConnection: 'https://feathers.develop.giveth.io',
     foreignNodeConnection: 'https://rinkeby.giveth.io',
     foreignNetworkName: 'Rinkeby',
-    homeNodeConnection: 'https://ropsten.giveth.io',
+    homeNodeConnection: 'https://ropsten.infura.io',
     homeNetworkName: 'Ropsten',
+    analytics: {
+      ga_UA: '',
+      useGoogleAnalytics: false,
+      useHotjar: false,
+    },
   },
   release: {
     title: 'release',
@@ -59,8 +69,13 @@ const configurations = {
     feathersConnection: 'https://feathers.release.giveth.io',
     foreignNodeConnection: 'https://rinkeby.giveth.io',
     foreignNetworkName: 'Rinkeby',
-    homeNodeConnection: 'https://ropsten.giveth.io',
+    homeNodeConnection: 'https://ropsten.infura.io',
     homeNetworkName: 'Ropsten',
+    analytics: {
+      ga_UA: '',
+      useGoogleAnalytics: false,
+      useHotjar: false,
+    },
   },
   beta: {
     title: 'beta',
@@ -77,6 +92,11 @@ const configurations = {
     foreignNetworkName: 'Rinkeby',
     homeNodeConnection: 'https://mew.giveth.io',
     homeNetworkName: 'Mainnet',
+    analytics: {
+      ga_UA: 'UA-103956937-2',
+      useGoogleAnalytics: true,
+      useHotjar: true,
+    },
   },
 };
 
