@@ -2,7 +2,6 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 
 import { Form, Input } from 'formsy-react-components';
-import GA from 'lib/GoogleAnalytics';
 import { feathersClient, feathersRest } from '../../lib/feathersClient';
 import Loader from '../Loader';
 import FormsyImageUploader from '../FormsyImageUploader';
@@ -110,10 +109,6 @@ class EditProfile extends Component {
                       </a>
                     </p>,
                   );
-                  GA.trackEvent({
-                    category: 'User',
-                    action: 'saved profile',
-                  });
                   this.setState(Object.assign({}, user, { isSaving: false }), () =>
                     history.push('/'),
                   );
@@ -155,10 +150,6 @@ class EditProfile extends Component {
           .then(user => {
             React.toast.success('Your profile has been updated.');
             this.setState(Object.assign({}, user, { isSaving: false }));
-            GA.trackEvent({
-              category: 'User',
-              action: 'saved profile',
-            });
           })
           // TODO: Actually inform the user about error
           .catch(err => {

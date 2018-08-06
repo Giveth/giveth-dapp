@@ -180,7 +180,7 @@ class DACService {
               feathersClient
                 .service('dacs')
                 .create(dac.toFeathers(txHash))
-                .then(id => afterCreate(`${etherScanUrl}tx/${txHash}`, id));
+                .then(() => afterCreate(`${etherScanUrl}tx/${txHash}`));
             })
             .then(() => {
               afterMined(`${etherScanUrl}tx/${txHash}`);

@@ -169,7 +169,7 @@ class CampaignService {
               feathersClient
                 .service('campaigns')
                 .create(campaign.toFeathers(txHash))
-                .then(id => afterCreate(`${etherScanUrl}tx/${txHash}`, id));
+                .then(() => afterCreate(`${etherScanUrl}tx/${txHash}`));
             })
             .then(() => {
               afterMined(`${etherScanUrl}tx/${txHash}`);

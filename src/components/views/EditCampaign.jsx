@@ -4,7 +4,6 @@ import PropTypes from 'prop-types';
 import 'react-input-token/lib/style.css';
 
 import { Form, Input } from 'formsy-react-components';
-import GA from 'lib/GoogleAnalytics';
 import { feathersClient } from '../../lib/feathersClient';
 import Loader from '../Loader';
 import QuillFormsy from '../QuillFormsy';
@@ -140,7 +139,7 @@ class EditCampaign extends Component {
       }
     };
 
-    const afterCreate = (url, id) => {
+    const afterCreate = url => {
       if (this.mounted) this.setState({ isSaving: false });
       const msg = (
         <p>
@@ -152,11 +151,6 @@ class EditCampaign extends Component {
         </p>
       );
       React.toast.info(msg);
-      GA.trackEvent({
-        category: 'Campaign',
-        action: 'created',
-        label: id,
-      });
       history.push('/my-campaigns');
     };
 

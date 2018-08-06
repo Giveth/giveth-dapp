@@ -3,7 +3,6 @@ import PropTypes from 'prop-types';
 import Avatar from 'react-avatar';
 import { Link } from 'react-router-dom';
 
-import GA from 'lib/GoogleAnalytics';
 import { feathersClient } from '../../lib/feathersClient';
 import Loader from '../Loader';
 import UnlockWalletForm from '../UnlockWalletForm';
@@ -90,10 +89,6 @@ class SignIn extends Component {
                   <strong> auto-lock</strong> upon page refresh.
                 </p>,
               );
-              GA.trackEvent({
-                category: 'User',
-                action: 'sign in',
-              });
               this.props.history.goBack();
             })
             .catch(err => {

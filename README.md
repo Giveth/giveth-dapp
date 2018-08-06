@@ -128,27 +128,6 @@ REACT_APP_ENVIRONMENT='develop'
 REACT_APP_BLOCKEXPLORER='www.awesomeopensourceexplorer.io'
 ```
 
-The rest of the configuration can be found in `configuration.js`
-
-### Analytics
-Google analytics and Hotjar can be enabled per environment:
-```
-    analytics: {
-      ga_UA: 'UA-12345678-1',     // Your Google Analytics tracking code
-      useGoogleAnalytics: true,   // Whether to enable GA
-      useHotjar: false            // Whether to enable Hotjar
-    }
-```
-
-The following events are tracked with Google Analytics:
-- pageviews
-- signup 
-- signin
-- creation of DACs/Campaigns/Milestones
-- editing of DACs/Campaigns/Milestones
-- making donations
-- actions on milestones
-
 **DO NO USE ANY OTHER THAN DEVELOP ENVIRONMENT FOR DEVELOPING AND TESTING.**
 
 ## Contributing

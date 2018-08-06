@@ -8,7 +8,6 @@ import PropTypes from 'prop-types';
 import Slider from 'react-rangeslider';
 import 'react-rangeslider/lib/index.css';
 
-import GA from 'lib/GoogleAnalytics';
 import { checkWalletBalance } from '../lib/middleware';
 import GivethWallet from '../lib/blockchain/GivethWallet';
 
@@ -97,12 +96,6 @@ class DelegateButton extends Component {
         ) : (
           <p>The Giver has been notified.</p>
         );
-
-      GA.trackEvent({
-        category: 'Donation',
-        action: 'delegated',
-        label: donation._id,
-      });
 
       React.swal({
         title: 'Delegated!',
