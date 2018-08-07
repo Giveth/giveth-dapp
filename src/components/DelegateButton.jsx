@@ -65,7 +65,10 @@ class DelegateButton extends Component {
     let maxAmount = utils.fromWei(this.props.donation.amountRemaining);
 
     if (admin && admin.type === Milestone.type) {
-      const diff = utils.toBN(admin.maxAmount).sub(utils.toBN(admin.totalDonated || 0));
+      const diff = utils
+        .toBN(admin.maxAmount)
+        .sub(utils.toBN(admin.totalDonated || 0))
+        .toString();
       if (utils.toBN(diff).lt(utils.toBN(this.props.donation.amountRemaining)))
         maxAmount = utils.fromWei(diff);
     }
