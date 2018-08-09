@@ -59,7 +59,7 @@ class DonateButton extends React.Component {
 
   componentDidMount() {
     getNetwork().then(network => {
-      this.setState({ givethBridge: network.givethBridge, etherscanUrl: network.foreignEtherscan });
+      this.setState({ givethBridge: network.givethBridge, etherscanUrl: network.homeEtherscan });
     });
     getHomeWeb3().then(homeWeb3 => {
       this.setState({

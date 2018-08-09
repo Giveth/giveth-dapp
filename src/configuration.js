@@ -22,7 +22,7 @@ const configurations = {
     foreignGivethBridgeAddress: '0x8fed3F9126e7051DeA6c530920cb0BAE5ffa17a8',
     tokenAddresses: { 'Home Ganache ETH': '0x5a42ca500aB159c51312B764bb25C135026e7a31' },
     etherscan: 'https://etherscan.io/', // this won't work, only here so we can see links during development
-    foreignEtherscan: 'https://ropsten.etherscan.io/', // this won't work, only here so we can see links during development
+    homeEtherscan: 'https://ropsten.etherscan.io/', // this won't work, only here so we can see links during development
     feathersConnection: 'http://localhost:3030',
     foreignNodeConnection: 'http://localhost:8546',
     foreignNetworkName: 'Foreign Ganache',
@@ -44,7 +44,7 @@ const configurations = {
     foreignGivethBridgeAddress: '0x74f2b28994e9bd00A3B6CD1826Fd29AB76f840F9',
     tokenAddresses: { 'Ropsten ETH': '0x387871cf72c8CC81E3a945402b0E3A2A6C0Ed38a' },
     etherscan: 'https://rinkeby.etherscan.io/',
-    foreignEtherscan: 'https://ropsten.etherscan.io/',
+    homeEtherscan: 'https://ropsten.etherscan.io/',
     feathersConnection: 'https://feathers.develop.giveth.io',
     foreignNodeConnection: 'https://rinkeby.giveth.io',
     foreignNetworkName: 'Rinkeby',
@@ -65,7 +65,7 @@ const configurations = {
     foreignGivethBridgeAddress: '0x9423F77f919f90Ce02a063315A0F604b5D0b7aF6',
     tokenAddresses: { 'Ropsten ETH': '0x693128E9f785a380823fF00B0b21Dc80707096f5' },
     etherscan: 'https://rinkeby.etherscan.io/',
-    foreignEtherscan: 'https://ropsten.etherscan.io/',
+    homeEtherscan: 'https://ropsten.etherscan.io/',
     feathersConnection: 'https://feathers.release.giveth.io',
     foreignNodeConnection: 'https://rinkeby.giveth.io',
     foreignNetworkName: 'Rinkeby',
@@ -86,7 +86,7 @@ const configurations = {
     foreignGivethBridgeAddress: '0xfF9CD5140e79377feB23f6DFaF1f8b558C0FE621',
     tokenAddresses: { GivETH: '0xe3ee055346a9EfaF4AA2900847dEb04de0195398' },
     etherscan: 'https://rinkeby.etherscan.io/',
-    foreignEtherscan: 'https://etherscan.io/',
+    homeEtherscan: 'https://etherscan.io/',
     feathersConnection: 'https://feathers.beta.giveth.io',
     foreignNodeConnection: 'https://rinkeby.giveth.io',
     foreignNetworkName: 'Rinkeby',

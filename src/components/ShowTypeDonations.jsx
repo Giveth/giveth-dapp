@@ -52,9 +52,9 @@ const ShowTypeDonations = props => (
                           </Link>
                         )}
                       </td>
-                      {config.foreignEtherscan ? (
+                      {config.homeEtherscan ? (
                         <td className="td-tx-address">
-                          <a href={`${config.foreignEtherscan}address/${d.giverAddress}`}>
+                          <a href={`${config.homeEtherscan}address/${d.giverAddress}`}>
                             {d.giverAddress}
                           </a>
                         </td>
