@@ -206,31 +206,33 @@ class ViewMilestone extends Component {
                       .sub(utils.toBN(utils.toWei(this.state.totalDonated.toString())))
                       .toString()}
                   />
-                  <DelegateMultipleButton
-                    style={{ padding: '10px 10px' }}
-                    milestone={{
-                      id,
-                      projectId,
-                      title,
-                      ownerAddress,
-                      owner,
-                      maxAmount,
-                      totalDonated,
-                      recipient,
-                      recipientAddress,
-                      reviewer,
-                      reviewerAddress,
-                      items,
-                      date,
-                      status,
-                      fiatAmount,
-                      selectedFiatType,
-                      campaign,
-                      type: Milestone.type,
-                    }}
-                    wallet={wallet}
-                    currentUser={currentUser}
-                  />
+                  {currentUser && (
+                    <DelegateMultipleButton
+                      style={{ padding: '10px 10px' }}
+                      milestone={{
+                        id,
+                        projectId,
+                        title,
+                        ownerAddress,
+                        owner,
+                        maxAmount,
+                        totalDonated,
+                        recipient,
+                        recipientAddress,
+                        reviewer,
+                        reviewerAddress,
+                        items,
+                        date,
+                        status,
+                        fiatAmount,
+                        selectedFiatType,
+                        campaign,
+                        type: Milestone.type,
+                      }}
+                      wallet={wallet}
+                      currentUser={currentUser}
+                    />
+                  )}
                 </div>
               )}
             </BackgroundImageHeader>

@@ -135,12 +135,14 @@ class ViewCampaign extends Component {
                   currentUser={currentUser}
                   history={history}
                 />
-                <DelegateMultipleButton
-                  style={{ padding: '10px 10px' }}
-                  campaign={campaign}
-                  wallet={wallet}
-                  currentUser={currentUser}
-                />
+                {currentUser && (
+                  <DelegateMultipleButton
+                    style={{ padding: '10px 10px' }}
+                    campaign={campaign}
+                    wallet={wallet}
+                    currentUser={currentUser}
+                  />
+                )}
               </BackgroundImageHeader>
 
               <div className="container-fluid">
