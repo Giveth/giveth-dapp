@@ -99,7 +99,11 @@ class DelegateMultipleButton extends Component {
               ])
             : dacs;
 
-          this.setState({ delegationOptions });
+          this.setState({ delegationOptions }, () => {
+            if (delegationOptions.length === 1) {
+              this.selectedObject({ target: { value: [delegationOptions[0].id] } });
+            }
+          });
         },
         () => {},
       );
