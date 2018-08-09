@@ -8,6 +8,7 @@ import PropTypes from 'prop-types';
 import Slider from 'react-rangeslider';
 import 'react-rangeslider/lib/index.css';
 
+import GA from 'lib/GoogleAnalytics';
 import { checkWalletBalance } from '../lib/middleware';
 import GivethWallet from '../lib/blockchain/GivethWallet';
 
@@ -64,7 +65,10 @@ class DelegateButton extends Component {
     let maxAmount = utils.fromWei(this.props.donation.amountRemaining);
 
     if (admin && admin.type === Milestone.type) {
-      const diff = utils.toBN(admin.maxAmount).sub(utils.toBN(admin.totalDonated || 0));
+      const diff = utils
+        .toBN(admin.maxAmount)
+        .sub(utils.toBN(admin.totalDonated || 0))
+        .toString();
       if (utils.toBN(diff).lt(utils.toBN(this.props.donation.amountRemaining)))
         maxAmount = utils.fromWei(diff);
     }
@@ -96,6 +100,12 @@ class DelegateButton extends Component {
         ) : (
           <p>The Giver has been notified.</p>
         );
+
+      GA.trackEvent({
+        category: 'Donation',
+        action: 'delegated',
+        label: donation._id,
+      });
 
       React.swal({
         title: 'Delegated!',

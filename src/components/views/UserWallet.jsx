@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 
+import GA from 'lib/GoogleAnalytics';
 import BackupWalletButton from '../BackupWalletButton';
 import { isLoggedIn } from '../../lib/middleware';
 // import WithdrawButton from '../WithdrawButton';
@@ -9,6 +10,7 @@ import GivethWallet from '../../lib/blockchain/GivethWallet';
 import Loader from '../Loader';
 import config from '../../configuration';
 import BridgeWithdrawButton from '../BridgeWithdrawButton';
+
 // TODO: Remove the eslint exception after extracting to model
 /* eslint no-underscore-dangle: 0 */
 
@@ -42,6 +44,14 @@ class UserWallet extends Component {
           // default behavior is to go home or signin page after swal popup
         }
       });
+  }
+
+  /* eslint-disable class-methods-use-this */
+  onBackup() {
+    GA.trackEvent({
+      category: 'User',
+      action: 'backed up wallet',
+    });
   }
 
   hasTokenBalance() {
@@ -103,7 +113,7 @@ class UserWallet extends Component {
                 )}
 
                 <p>
-                  <BackupWalletButton wallet={this.props.wallet} />
+                  <BackupWalletButton wallet={this.props.wallet} onBackup={this.onBackup} />
                 </p>
 
                 {this.hasTokenBalance() && (

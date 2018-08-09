@@ -17,11 +17,11 @@ import { feathersRest } from 'lib/feathersClient';
 
   STEP 1 - Create a ref
   this.conversationModal = React.createRef();
-  
+
   STEP 2 - Assign ref
   <ConversationModal
     ref={this.conversationModal}
-  />  
+  />
 
   STEP 3 - Call it
   this.conversationModal.current.openModal({
@@ -128,13 +128,13 @@ class ConversationModal extends Component {
   triggerRouteBlocking() {
     const form = this.form.current.formsyForm;
     // we only block routing if the form state is not submitted
-    this.setState({
+    this.setState(prevState => ({
       isBlocking:
         form &&
         (!form.state.formSubmitted ||
           form.state.isSubmitting ||
-          (this.state.enableAttachProof && this.state.items.length > 0)),
-    });
+          (prevState.enableAttachProof && prevState.items.length > 0)),
+    }));
   }
 
   saveProofImages() {
@@ -166,10 +166,10 @@ class ConversationModal extends Component {
     this.saveProofImages()
       .then(() => {
         this.setState(
-          {
-            items: this.state.items,
+          prevState => ({
+            items: prevState.items,
             message: model.message,
-          },
+          }),
           () => this.closeModal(),
         );
       })
