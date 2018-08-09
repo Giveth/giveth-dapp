@@ -49,7 +49,7 @@ class DonationService {
     onSuccess = () => {},
     onError = () => {},
   ) {
-    const { ownerType, ownerEntity, delegateEntity, delegate } = donations[0];
+    const { ownerType, ownerEntity, delegateEntity, delegateId } = donations[0];
     let txHash;
     let etherScanUrl;
     const pledgedDonations = []; // Donations that have been pledged and should be updated in feathers
@@ -120,7 +120,7 @@ class DonationService {
               $extraGas: 100000,
             });
           }
-          return network.liquidPledging.mTransfer(delegate, pledges, receiverId, {
+          return network.liquidPledging.mTransfer(delegateId, pledges, receiverId, {
             from: delegateEntity.ownerAddress,
             $extraGas: 100000,
           });
