@@ -1,5 +1,4 @@
 import BigNumber from 'bignumber.js';
-import { paramsForServer } from 'feathers-hooks-common';
 import { Form } from 'formsy-react-components';
 import moment from 'moment';
 import PropTypes from 'prop-types';
@@ -23,6 +22,8 @@ import { feathersClient } from '../../lib/feathersClient';
 import Loader from '../Loader';
 import MilestoneItem from '../MilestoneItem';
 import MilestoneConversations from '../MilestoneConversations';
+
+import MilestoneService from '../../services/MilestoneService';
 
 /**
   Loads and shows a single milestone
@@ -67,27 +68,12 @@ class ViewMilestone extends Component {
         this.setState({ isLoading: false });
       });
 
-    // lazy load donations
-    // TODO: fetch "non comitted" donations? add "intendedProjectTypeId: milestoneId" to query to get
-    // all "pending aproval" donations for this milestone
-    const query = paramsForServer({
-      query: { ownerTypeId: milestoneId, amountRemaining: { $ne: 0 } },
-      schema: 'includeGiverDetails',
-      $sort: { createdAt: -1 },
-    });
-
-    this.donationsObserver = feathersClient
-      .service('donations')
-      .watch({ listStrategy: 'always' })
-      .find(query)
-      .subscribe(
-        resp =>
-          this.setState({
-            donations: resp.data,
-            isLoadingDonations: false,
-          }),
-        () => this.setState({ isLoadingDonations: false }),
-      );
+    this.donationsObserver = MilestoneService.subscribeDonations(milestoneId, donations =>
+      this.setState({
+        donations,
+        isLoadingDonations: false,
+      }),
+    );
   }
 
   componentWillUnmount() {
@@ -199,6 +185,7 @@ class ViewMilestone extends Component {
                   wallet={wallet}
                   currentUser={currentUser}
                   history={history}
+                  type={Milestone.type}
                   maxAmount={utils
                     .toBN(utils.toWei(this.state.maxAmount.toString()))
                     .sub(utils.toBN(utils.toWei(this.state.totalDonated.toString())))
@@ -408,18 +395,18 @@ class ViewMilestone extends Component {
               <div className="row spacer-top-50 spacer-bottom-50">
                 <div className="col-md-8 m-auto">
                   <h4>Donations</h4>
-                  <ShowTypeDonations
-                    donations={donations.map(d =>
-                      Object.assign({}, d, { amount: d.amountRemaining }),
-                    )}
-                    isLoading={isLoadingDonations}
-                  />
+                  <ShowTypeDonations donations={donations} isLoading={isLoadingDonations} />
                   {this.isActiveMilestone() && (
                     <DonateButton
                       model={{ type: Milestone.type, title, id, adminId: projectId }}
                       wallet={wallet}
                       currentUser={currentUser}
                       history={history}
+                      type={Milestone.type}
+                      maxAmount={utils
+                        .toBN(utils.toWei(this.state.maxAmount.toString()))
+                        .sub(utils.toBN(utils.toWei(this.state.totalDonated.toString())))
+                        .toString()}
                     />
                   )}
                 </div>
