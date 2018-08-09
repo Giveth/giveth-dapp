@@ -56,6 +56,7 @@ class DonationProvider extends Component {
             query: {
               giverAddress: this.props.currentUser.address,
               amountRemaining: { $ne: 0 },
+              pendingAmountRemaining: { $ne: 0 },
               $limit: 100,
             },
           }),
