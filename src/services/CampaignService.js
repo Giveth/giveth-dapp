@@ -4,6 +4,7 @@ import { getWeb3 } from '../lib/blockchain/getWeb3';
 import { feathersClient } from '../lib/feathersClient';
 import Campaign from '../models/Campaign';
 import Milestone from '../models/Milestone';
+import Donation from '../models/Donation';
 
 import ErrorPopup from '../components/ErrorPopup';
 
@@ -94,7 +95,7 @@ class CampaignService {
           $sort: { createdAt: -1 },
         },
       })
-      .subscribe(resp => onSuccess(resp.data), onError);
+      .subscribe(resp => onSuccess(resp.data.map(d => new Donation(d))), onError);
   }
 
   /**

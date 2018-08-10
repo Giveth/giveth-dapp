@@ -4,6 +4,7 @@ import getNetwork from '../lib/blockchain/getNetwork';
 import { feathersClient } from '../lib/feathersClient';
 import DAC from '../models/DAC';
 import Campaign from '../models/Campaign';
+import Donation from '../models/Donation';
 
 import ErrorPopup from '../components/ErrorPopup';
 
@@ -115,7 +116,7 @@ class DACService {
           $sort: { createdAt: -1 },
         },
       })
-      .subscribe(resp => onSuccess(resp.data), onError);
+      .subscribe(resp => onSuccess(resp.data.map(d => new Donation(d))), onError);
   }
 
   /**
