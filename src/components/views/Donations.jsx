@@ -9,12 +9,9 @@ import { Consumer as UserConsumer } from '../../contextProviders/UserProvider';
 import DonationProvider, {
   Consumer as DonationConsumer,
 } from '../../contextProviders/DonationProvider';
-// TODO: Remove once rewritten to model
-/* eslint no-underscore-dangle: 0 */
 /**
  * The my donations view
  */
-
 const Donations = () => (
   <UserConsumer>
     {({ state: { currentUser, wallet } }) => (
