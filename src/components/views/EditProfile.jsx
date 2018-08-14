@@ -212,6 +212,13 @@ class EditProfile extends Component {
                   <strong>fill out your profile </strong>
                   when you want to start Communities or Campaigns on Giveth.
                 </p>
+                <div className="alert alert-warning">
+                  <i className="fa fa-exclamation-triangle" />
+                  Please note that all the information entered will be stored on a publicly
+                  accessible permanent storage like blockchain. We are not able to erase or alter
+                  any of the information. Do not input anything that you do not have permision to
+                  share or you are not comfortable with being forever accessible.
+                </div>
 
                 <Form
                   onSubmit={this.submit}
@@ -253,7 +260,6 @@ class EditProfile extends Component {
                       validationErrors={{
                         isEmail: "Oops, that's not a valid email address.",
                       }}
-                      required
                     />
                   </div>
 

@@ -75,7 +75,7 @@ class Donation extends Model {
     this.intendedProjectType = data.intendedProjectType;
     this.intendedProjectEntity = data.intendedProjectEntity;
     this.ownerId = data.ownerId;
-    this.ownerEntity = data.ownerEntity;
+    this.ownerEntity = data.ownerEntity || { campaign: {} }; // FIXME: sometimes the ownerEntity is undefined
     this.ownerTypeId = data.ownerTypeId;
     this.ownerType = data.ownerType;
     this.pledgeId = data.pledgeId;
@@ -218,12 +218,12 @@ class Donation extends Model {
   }
 
   get id() {
-    return this.myId;
+    return this._id;
   }
 
   set id(value) {
     this.checkType(value, ['string'], 'id');
-    this.myId = value;
+    this._id = value;
   }
 
   get amount() {
@@ -374,7 +374,7 @@ class Donation extends Model {
   }
 
   set ownerEntity(value) {
-    this.checkType(value, ['object'], 'ownerEntity');
+    this.checkType(value, ['undefined', 'object'], 'ownerEntity');
     this.myOwnerEntity = value;
   }
 
