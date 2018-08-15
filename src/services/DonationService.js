@@ -53,6 +53,7 @@ class DonationService {
     let txHash;
     let etherScanUrl;
     const pledgedDonations = []; // Donations that have been pledged and should be updated in feathers
+    const pledges = [];
 
     /**
      * Decide which pledges should be used and encodes them for the contracts
@@ -64,11 +65,10 @@ class DonationService {
       let currentAmount = new BigNumber('0');
       let fullyDonated = true;
 
-      const pledges = [];
       donations.every(donation => {
         const pledge = pledges.find(n => n.id === donation.pledgeId);
 
-        let delegatedAmount = new BigNumber(donation.amount);
+        let delegatedAmount = new BigNumber(donation.amountRemaining);
 
         // The next donation is too big, we have to split it
         if (currentAmount.plus(delegatedAmount).isGreaterThan(maxAmount)) {
@@ -82,11 +82,21 @@ class DonationService {
 
         currentAmount = currentAmount.plus(delegatedAmount);
         if (pledge) {
+          pledge.parents.push(donation.id);
           pledge.amount = pledge.amount.plus(delegatedAmount);
         } else {
           pledges.push({
             id: donation.pledgeId,
+            parents: [donation.id],
             amount: delegatedAmount,
+            giverAddress: donation.giverAddress,
+            delegateEntity: donation.delegateEntity,
+            ownerId: donation.ownerId,
+            ownerTypeId: donation.ownerTypeId,
+            ownerType: donation.ownerType,
+            delegateId: donation.delegateId,
+            delegateTypeId: donation.delegateTypeId,
+            delegateType: donation.delegateType,
           });
         }
         return fullyDonated;
@@ -104,7 +114,7 @@ class DonationService {
     };
 
     Promise.all([getNetwork(), getWeb3(), getPledges()])
-      .then(([network, web3, pledges]) => {
+      .then(([network, web3, encodedPledges]) => {
         etherScanUrl = network.etherscan;
 
         const receiverId = delegateTo.projectId;
@@ -115,12 +125,12 @@ class DonationService {
           if (ownerType.toLowerCase() === 'campaign') {
             contract = new LPPCampaign(web3, ownerEntity.pluginAddress);
 
-            return contract.mTransfer(pledges, receiverId, {
+            return contract.mTransfer(encodedPledges, receiverId, {
               from: ownerEntity.ownerAddress,
               $extraGas: 100000,
             });
           }
-          return network.liquidPledging.mTransfer(delegateId, pledges, receiverId, {
+          return network.liquidPledging.mTransfer(delegateId, encodedPledges, receiverId, {
             from: delegateEntity.ownerAddress,
             $extraGas: 100000,
           });
@@ -133,14 +143,17 @@ class DonationService {
             // Update the delegated donations in feathers
             pledgedDonations.forEach(({ donation, delegatedAmount }) => {
               updateExistingDonation(donation, delegatedAmount);
+            });
 
+            // Create new donation objects for all the new pledges
+            pledges.forEach(donation => {
               const newDonation = {
                 txHash,
-                amount: delegatedAmount,
-                amountRemaining: delegatedAmount,
-                giverAddress: donation.myGiverAddress, // FIXME: Accessing private members because d.giverAddres was returning undefined
+                amount: donation.amount,
+                amountRemaining: donation.amount,
+                giverAddress: donation.giverAddress,
                 pledgeId: 0,
-                parentDonations: [donation.id],
+                parentDonations: donation.parents,
                 mined: false,
               };
               // delegate is making the transfer

@@ -75,7 +75,7 @@ class Donation extends Model {
     this.intendedProjectType = data.intendedProjectType;
     this.intendedProjectEntity = data.intendedProjectEntity;
     this.ownerId = data.ownerId;
-    this.ownerEntity = data.ownerEntity || { campaign: {} }; // FIXME: sometimes the ownerEntity is undefined
+    this.ownerEntity = data.ownerEntity;
     this.ownerTypeId = data.ownerTypeId;
     this.ownerType = data.ownerType;
     this.pledgeId = data.pledgeId;
