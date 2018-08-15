@@ -102,8 +102,6 @@ const reviewDue = updatedAt =>
     .subtract(3, 'd')
     .isAfter(moment(updatedAt));
 
-// TODO: Remove once rewritten to model
-/* eslint no-underscore-dangle: 0 */
 /**
  * The my campaings view
  */

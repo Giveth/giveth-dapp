@@ -48,7 +48,7 @@ const ShowTypeDonations = props => (
                         {d.giver && (
                           <Link to={`/profile/${d.giver.address}`}>
                             <Avatar size={30} src={getUserAvatar(d.giver)} round />
-                            <span>{getUserName(d.giver)}</span>
+                            <span> {getUserName(d.giver)}</span>
                           </Link>
                         )}
                       </td>
