@@ -157,9 +157,7 @@ class DelegateMultipleButton extends Component {
         r => {
           const delegations = r.data.map(d => new Donation(d));
           let amount = utils.fromWei(
-            delegations
-              .reduce((sum, d) => sum.plus(new BigNumber(d.amountRemaining)), new BigNumber('0'))
-              .toString(),
+            delegations.reduce((sum, d) => sum.add(utils.toBN(d.amountRemaining)), utils.toBN('0')),
           );
 
           if (

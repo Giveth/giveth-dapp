@@ -9,7 +9,6 @@ import { feathersClient } from '../lib/feathersClient';
 import { getWeb3 } from '../lib/blockchain/getWeb3';
 
 import ErrorPopup from '../components/ErrorPopup';
-// import Campaign from '../models/Campaign';
 
 function updateExistingDonation(donation, amount, status) {
   const mutation = {

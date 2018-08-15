@@ -32,7 +32,6 @@ class DAC extends BasicModel {
     this._id = data._id;
     this.confirmations = data.confirmations || 0;
     this.requiredConfirmations = data.requiredConfirmations;
-    this._type = 'dac';
   }
 
   toFeathers(txHash) {
@@ -61,10 +60,6 @@ class DAC extends BasicModel {
     } else {
       DACService.save(this, this.owner.address, onCreated, afterEmit);
     }
-  }
-
-  get type() {
-    return this._type;
   }
 
   get communityUrl() {
