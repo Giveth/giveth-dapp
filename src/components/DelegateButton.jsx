@@ -196,7 +196,7 @@ class DelegateButton extends Component {
                 type="range"
                 name="amount2"
                 min={0}
-                max={maxAmount}
+                max={Number(maxAmount)}
                 step={maxAmount / 10}
                 value={Number(this.state.amount)}
                 labels={{

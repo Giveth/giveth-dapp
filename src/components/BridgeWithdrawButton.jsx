@@ -169,7 +169,6 @@ class BridgeWithdrawButton extends Component {
               <div className="form-group">
                 <Input
                   name="amount"
-                  id="amount-input"
                   label="How much do you want to withdraw?"
                   type="number"
                   value={amount}

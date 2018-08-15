@@ -22,6 +22,7 @@ import { feathersClient } from '../../lib/feathersClient';
 import Loader from '../Loader';
 import MilestoneItem from '../MilestoneItem';
 import MilestoneConversations from '../MilestoneConversations';
+import DelegateMultipleButton from '../DelegateMultipleButton';
 
 import MilestoneService from '../../services/MilestoneService';
 
@@ -180,17 +181,45 @@ class ViewMilestone extends Component {
               </p>
 
               {this.isActiveMilestone() && (
-                <DonateButton
-                  model={{ type: Milestone.type, title, id, adminId: projectId }}
-                  wallet={wallet}
-                  currentUser={currentUser}
-                  history={history}
-                  type={Milestone.type}
-                  maxAmount={utils
-                    .toBN(utils.toWei(this.state.maxAmount.toString()))
-                    .sub(utils.toBN(utils.toWei(this.state.totalDonated.toString())))
-                    .toString()}
-                />
+                <div>
+                  <DonateButton
+                    model={{ type: Milestone.type, title, id, adminId: projectId }}
+                    wallet={wallet}
+                    currentUser={currentUser}
+                    history={history}
+                    maxAmount={utils
+                      .toBN(utils.toWei(this.state.maxAmount.toString()))
+                      .sub(utils.toBN(utils.toWei(this.state.totalDonated.toString())))
+                      .toString()}
+                  />
+                  {currentUser && (
+                    <DelegateMultipleButton
+                      style={{ padding: '10px 10px' }}
+                      milestone={{
+                        id,
+                        projectId,
+                        title,
+                        ownerAddress,
+                        owner,
+                        maxAmount,
+                        totalDonated,
+                        recipient,
+                        recipientAddress,
+                        reviewer,
+                        reviewerAddress,
+                        items,
+                        date,
+                        status,
+                        fiatAmount,
+                        selectedFiatType,
+                        campaign,
+                        type: Milestone.type,
+                      }}
+                      wallet={wallet}
+                      currentUser={currentUser}
+                    />
+                  )}
+                </div>
               )}
             </BackgroundImageHeader>
 
