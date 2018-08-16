@@ -396,14 +396,6 @@ class ViewMilestone extends Component {
                           <br />
                           {status}
                         </div>
-
-                        {/*
-                          <div className="form-group">
-                            <label>Completion deadline</label>
-                            <small className="form-text">When the Milestone will be completed</small>
-                            {completionDeadline}
-                          </div>
-                        */}
                       </div>
                     </div>
 

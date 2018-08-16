@@ -121,7 +121,6 @@ class DACService {
         }),
       )
       .subscribe(resp => {
-        console.log(resp.data);
         onSuccess(resp.data.map(d => new Donation(d)));
       }, onError);
   }
