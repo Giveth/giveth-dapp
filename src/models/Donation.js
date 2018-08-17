@@ -42,6 +42,10 @@ class Donation extends Model {
     return 'Rejected';
   }
 
+  static get FAILED() {
+    return 'Failed';
+  }
+
   static get statuses() {
     return [
       Donation.PENDING,

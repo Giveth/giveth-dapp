@@ -18,6 +18,7 @@ class MilestoneService {
     const query = paramsForServer({
       query: {
         amountRemaining: { $ne: 0 },
+        status: { $ne: Donation.FAILED },
         $or: [{ intendedProjectTypeId: id }, { ownerTypeId: id }],
       },
       schema: 'includeGiverDetails',
