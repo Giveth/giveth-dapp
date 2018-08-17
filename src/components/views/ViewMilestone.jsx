@@ -23,6 +23,7 @@ import { feathersClient } from '../../lib/feathersClient';
 import Loader from '../Loader';
 import MilestoneItem from '../MilestoneItem';
 import MilestoneConversations from '../MilestoneConversations';
+import Donation from '../../models/Donation';
 
 /**
   Loads and shows a single milestone
@@ -68,10 +69,14 @@ class ViewMilestone extends Component {
       });
 
     // lazy load donations
-    // TODO: fetch "non comitted" donations? add "intendedProjectTypeId: milestoneId" to query to get
-    // all "pending aproval" donations for this milestone
+    // TODO: fetch "non committed" donations? add "intendedProjectTypeId: milestoneId" to query to get
+    // all "pending approval" donations for this milestone
     const query = paramsForServer({
-      query: { ownerTypeId: milestoneId, amountRemaining: { $ne: 0 } },
+      query: {
+        ownerTypeId: milestoneId,
+        amountRemaining: { $ne: 0 },
+        status: { $ne: Donation.FAILED },
+      },
       schema: 'includeGiverDetails',
       $sort: { createdAt: -1 },
     });

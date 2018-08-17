@@ -19,6 +19,7 @@ import GivethWallet from '../../lib/blockchain/GivethWallet';
 import config from '../../configuration';
 
 import ErrorPopup from '../ErrorPopup';
+import Donation from '../../models/Donation';
 
 const deleteProposedMilestone = milestone => {
   const confirmDeleteMilestone = () => {
@@ -791,6 +792,7 @@ class MyMilestones extends Component {
                     ownerType: 'milestone',
                     ownerTypeId: milestone._id,
                     amountRemaining: { $ne: 0 },
+                    status: Donation.COMMITTED,
                   },
                 })
                 .then(({ data }) => {
