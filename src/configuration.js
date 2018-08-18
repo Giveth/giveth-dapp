@@ -51,8 +51,8 @@ const configurations = {
     homeNodeConnection: 'https://ropsten.infura.io',
     homeNetworkName: 'Ropsten',
     analytics: {
-      ga_UA: '',
-      useGoogleAnalytics: false,
+      ga_UA: 'UA-103956937-5',
+      useGoogleAnalytics: true,
       useHotjar: false,
     },
   },
@@ -72,8 +72,8 @@ const configurations = {
     homeNodeConnection: 'https://ropsten.infura.io',
     homeNetworkName: 'Ropsten',
     analytics: {
-      ga_UA: '',
-      useGoogleAnalytics: false,
+      ga_UA: 'UA-103956937-4',
+      useGoogleAnalytics: true,
       useHotjar: false,
     },
   },
