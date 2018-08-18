@@ -1,9 +1,11 @@
 import { LPPCampaign } from 'lpp-campaign';
+import { paramsForServer } from 'feathers-hooks-common';
 import getNetwork from '../lib/blockchain/getNetwork';
 import { getWeb3 } from '../lib/blockchain/getWeb3';
 import { feathersClient } from '../lib/feathersClient';
 import Campaign from '../models/Campaign';
 import Milestone from '../models/Milestone';
+import Donation from '../models/Donation';
 
 import ErrorPopup from '../components/ErrorPopup';
 
@@ -87,14 +89,17 @@ class CampaignService {
     return feathersClient
       .service('donations')
       .watch({ listStrategy: 'always' })
-      .find({
-        query: {
-          ownerTypeId: id,
-          isReturn: false,
-          $sort: { createdAt: -1 },
-        },
-      })
-      .subscribe(resp => onSuccess(resp.data), onError);
+      .find(
+        paramsForServer({
+          query: {
+            ownerTypeId: id,
+            isReturn: false,
+            $sort: { createdAt: -1 },
+          },
+          schema: 'includeTypeAndGiverDetails',
+        }),
+      )
+      .subscribe(resp => onSuccess(resp.data.map(d => new Donation(d))), onError);
   }
 
   /**

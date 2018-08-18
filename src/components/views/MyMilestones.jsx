@@ -20,6 +20,7 @@ import GivethWallet from '../../lib/blockchain/GivethWallet';
 import config from '../../configuration';
 
 import ErrorPopup from '../ErrorPopup';
+import Donation from '../../models/Donation';
 
 const deleteProposedMilestone = milestone => {
   const confirmDeleteMilestone = () => {
@@ -102,8 +103,6 @@ const reviewDue = updatedAt =>
     .subtract(3, 'd')
     .isAfter(moment(updatedAt));
 
-// TODO: Remove once rewritten to model
-/* eslint no-underscore-dangle: 0 */
 /**
  * The my campaings view
  */
@@ -832,6 +831,7 @@ class MyMilestones extends Component {
                     ownerType: 'milestone',
                     ownerTypeId: milestone._id,
                     amountRemaining: { $ne: 0 },
+                    status: Donation.COMMITTED,
                   },
                 })
                 .then(({ data }) => {
