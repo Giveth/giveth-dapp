@@ -42,7 +42,12 @@ class ViewCampaign extends Component {
       isLoadingDonations: true,
       donations: [],
       milestones: [],
+      milestonesLoaded: 0,
+      milestonesTotal: 0,
+      milestonesPerBatch: 50,
     };
+
+    this.loadMoreMilestones = this.loadMoreMilestones.bind(this);
   }
 
   componentDidMount() {
@@ -55,15 +60,7 @@ class ViewCampaign extends Component {
         this.setState({ isLoading: false });
       }); // TODO: inform user of error
 
-    this.milestoneObserver = CampaignService.subscribeMilestones(
-      campaignId,
-      milestones =>
-        this.setState({
-          milestones,
-          isLoadingMilestones: false,
-        }),
-      () => this.setState({ isLoadingMilestones: false }),
-    );
+    this.loadMoreMilestones(campaignId);
 
     // Lazy load donations
     this.donationsObserver = CampaignService.subscribeDonations(
@@ -78,8 +75,25 @@ class ViewCampaign extends Component {
   }
 
   componentWillUnmount() {
-    this.donationsObserver.unsubscribe();
-    this.milestoneObserver.unsubscribe();
+    if (this.donationsObserver) this.donationsObserver.unsubscribe();
+  }
+
+  loadMoreMilestones(campaignId = this.props.match.params.id) {
+    this.setState({ isLoadingMilestones: true }, () =>
+      CampaignService.getMilestones(
+        campaignId,
+        this.state.milestonesPerBatch,
+        this.state.milestonesLoaded,
+        (milestones, milestonesTotal) =>
+          this.setState(prevState => ({
+            milestones: prevState.milestones.concat(milestones),
+            isLoadingMilestones: false,
+            milestonesTotal,
+            milestonesLoaded: prevState.milestonesLoaded + milestones.length,
+          })),
+        () => this.setState({ isLoadingMilestones: false }),
+      ),
+    );
   }
 
   removeMilestone(id) {
@@ -111,6 +125,8 @@ class ViewCampaign extends Component {
       donations,
       isLoadingDonations,
       isLoadingMilestones,
+      milestonesLoaded,
+      milestonesTotal,
     } = this.state;
     if (!campaign) return <p>Unable to find a campaign</p>;
     return (
@@ -188,7 +204,8 @@ class ViewCampaign extends Component {
                           </AuthenticatedLink>
                         )}
 
-                      {isLoadingMilestones && <Loader className="relative" />}
+                      {isLoadingMilestones &&
+                        milestonesTotal === 0 && <Loader className="relative" />}
                       <ResponsiveMasonry
                         columnsCountBreakPoints={{
                           0: 1,
@@ -211,6 +228,19 @@ class ViewCampaign extends Component {
                           ))}
                         </Masonry>
                       </ResponsiveMasonry>
+
+                      {milestonesLoaded < milestonesTotal && (
+                        <center>
+                          <button
+                            type="button"
+                            className="btn btn-info"
+                            onClick={() => this.loadMoreMilestones()}
+                            disabled={isLoadingMilestones}
+                          >
+                            Load More
+                          </button>
+                        </center>
+                      )}
                     </div>
                   </div>
                 </div>
