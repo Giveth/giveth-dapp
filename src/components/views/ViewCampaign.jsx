@@ -219,10 +219,9 @@ class ViewCampaign extends Component {
                             <MilestoneCard
                               milestone={m}
                               currentUser={currentUser}
-                              key={m._id} // eslint-disable-line no-underscore-dangle
+                              key={m._id}
                               history={history}
                               wallet={wallet}
-                              // eslint-disable-next-line no-underscore-dangle
                               removeMilestone={() => this.removeMilestone(m._id)}
                             />
                           ))}
@@ -237,7 +236,12 @@ class ViewCampaign extends Component {
                             onClick={() => this.loadMoreMilestones()}
                             disabled={isLoadingMilestones}
                           >
-                            Load More
+                            {isLoadingMilestones && (
+                              <span>
+                                <i className="fa fa-circle-o-notch fa-spin" /> Loading
+                              </span>
+                            )}
+                            {!isLoadingMilestones && <span>Load More</span>}
                           </button>
                         </center>
                       )}
