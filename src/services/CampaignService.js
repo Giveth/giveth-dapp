@@ -59,13 +59,14 @@ class CampaignService {
    * Lazy-load Campaign milestones by subscribing to milestone listener
    *
    * @param id        ID of the Campaign which donations should be retrieved
+   * @param $limit    Amount of records to be loaded
+   * @param $skip     Amounds of record to be skipped
    * @param onSuccess Callback function once response is obtained successfully
    * @param onError   Callback function if error is encountered
    */
-  static subscribeMilestones(id, onSuccess, onError) {
+  static getMilestones(id, $limit, $skip, onSuccess, onError) {
     return feathersClient
       .service('milestones')
-      .watch({ listStrategy: 'always' })
       .find({
         query: {
           campaignId: id,
@@ -73,9 +74,12 @@ class CampaignService {
             $nin: [Milestone.CANCELED, Milestone.PROPOSED, Milestone.REJECTED, Milestone.PENDING],
           },
           $sort: { createdAt: -1 },
+          $limit,
+          $skip,
         },
       })
-      .subscribe(resp => onSuccess(resp.data), onError);
+      .then(resp => onSuccess(resp.data, resp.total))
+      .catch(onError);
   }
 
   /**
