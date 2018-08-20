@@ -599,6 +599,7 @@ class EditMilestone extends Component {
             buttons: ['Cancel', 'Yes, propose'],
           }).then(isConfirmed => {
             if (isConfirmed) saveMilestone();
+            else this.setState({ isSaving: false });
           });
         } else {
           saveMilestone();
