@@ -28,6 +28,7 @@ const configurations = {
     foreignNetworkName: 'Foreign Ganache',
     homeNodeConnection: 'http://localhost:8545',
     homeNetworkName: 'Home Ganache',
+    ipfsGateway: 'http://localhost:8080/ipfs/',
     sendErrors: false,
     analytics: {
       ga_UA: 'UA-103956937-3',

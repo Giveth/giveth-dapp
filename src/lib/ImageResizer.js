@@ -58,7 +58,7 @@ export default class ImageTools {
       };
     }
 
-    if (!ImageTools.isSupported() || (file.type && !file.type.match(/image.*/))) {
+    if (!ImageTools.isSupported() || !ImageTools.isImage(file)) {
       callback(file, false);
       return false;
     }
@@ -116,8 +116,8 @@ export default class ImageTools {
     return true;
   }
 
-  static toBlob(canvas, type) {
-    const dataURI = canvas.toDataURL(type);
+  static toBlob(data, type) {
+    const dataURI = data instanceof HTMLCanvasElement ? data.toDataURL(type) : data;
     const dataURIParts = dataURI.split(',');
     let byteString;
     if (dataURIParts[0].indexOf('base64') >= 0) {
@@ -166,6 +166,16 @@ export default class ImageTools {
         callback();
       }
     }
+  }
+
+  static isImage(data) {
+    if (data instanceof Blob) {
+      return data.type && data.type.match(/image.*/);
+    }
+    if (typeof data === 'string') {
+      return data.match(/data:image.*/);
+    }
+    return false;
   }
 
   static isSupported() {

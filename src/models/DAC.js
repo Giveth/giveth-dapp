@@ -2,6 +2,7 @@
 import BasicModel from './BasicModel';
 import DACService from '../services/DACService';
 import UploadService from '../services/UploadsService';
+import ErrorPopup from '../components/ErrorPopup';
 /**
  * The DApp DAC model
  */
@@ -50,13 +51,17 @@ class DAC extends BasicModel {
 
   save(onCreated, afterEmit) {
     if (this.newImage) {
-      UploadService.save(this.image).then(file => {
-        // Save the new image address and mark it as old
-        this.image = file.url;
-        this.newImage = false;
+      UploadService.save(this.image)
+        .then(file => {
+          // Save the new image address and mark it as old
+          this.image = file.url;
+          this.newImage = false;
 
-        DACService.save(this, this.owner.address, onCreated, afterEmit);
-      });
+          DACService.save(this, this.owner.address, onCreated, afterEmit);
+        })
+        .catch(err => {
+          ErrorPopup('Failed to upload avatar', err);
+        });
     } else {
       DACService.save(this, this.owner.address, onCreated, afterEmit);
     }

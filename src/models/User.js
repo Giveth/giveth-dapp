@@ -1,4 +1,7 @@
 import Model from './Model';
+import IPFSService from '../services/IPFSService';
+import UserService from '../services/UserService';
+import ErrorPopup from '../components/ErrorPopup';
 
 /**
  * The DApp User model
@@ -10,6 +13,7 @@ import Model from './Model';
  * @attribute giverId     Giver ID used for querying donations
  * @attribute linkedin    Link to the linkedin profile
  * @attribute name        Name of the user
+ * @attribute url         Url attached to LiquidPledging admin
  */
 class User extends Model {
   constructor(data) {
@@ -24,6 +28,47 @@ class User extends Model {
       this.linkedin = data.linkedin;
       this.name = data.name;
       this.updatedAt = data.updatedAt;
+      this.url = data.url;
+    }
+  }
+
+  toIpfs() {
+    return {
+      name: this.name,
+      email: this.email,
+      linkedin: this.linkedin,
+      avatar: this.avatar,
+      version: 1,
+    };
+  }
+
+  toFeathers(txHash) {
+    const user = {
+      name: this.name,
+      email: this.email,
+      linkedIn: this.linkedIn,
+      avatar: this.avatar,
+    };
+    if (this.giverId === undefined && txHash) {
+      // set to 0 so we don't attempt to create multiple givers in lp for the same user
+      user.giverId = 0;
+      user.txHash = txHash;
+    }
+    return user;
+  }
+
+  save(onSave, afterEmit) {
+    if (this.myNewAvatar) {
+      IPFSService.upload(this.myNewAvatar)
+        .then(hash => {
+          // Save the new avatar
+          this.avatar = hash;
+          delete this.myNewAvatar;
+        })
+        .catch(err => ErrorPopup('Failed to upload avatar', err))
+        .finally(() => UserService.save(this, onSave, afterEmit));
+    } else {
+      UserService.save(this, onSave, afterEmit);
     }
   }
 
@@ -52,6 +97,11 @@ class User extends Model {
   set avatar(value) {
     this.checkType(value, ['undefined', 'string'], 'avatar');
     this.myAvatar = value;
+  }
+
+  set newAvatar(value) {
+    this.checkType(value, ['string'], 'newAvatar');
+    this.myNewAvatar = value;
   }
 
   get commitTime() {
@@ -97,6 +147,15 @@ class User extends Model {
   set name(value) {
     this.checkType(value, ['undefined', 'string'], 'name');
     this.myName = value;
+  }
+
+  get url() {
+    return this.myUrl;
+  }
+
+  set url(value) {
+    this.checkType(value, ['undefined', 'string'], 'url');
+    this.myUrl = value;
   }
 
   get updatedAt() {
