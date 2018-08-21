@@ -77,7 +77,7 @@ class EditProfile extends Component {
     };
 
     const afterMined = (created, url) => {
-      const msg = created ? 'You are not a registered user' : 'Your profile has been updated';
+      const msg = created ? 'You are now a registered user' : 'Your profile has been updated';
       showToast(msg, url, true);
 
       if (created) {

@@ -29,6 +29,7 @@ class BasicModel extends Model {
     txHash,
     owner,
     reviewer,
+    url,
     totalDonated = '0',
     donationCount = 0,
     peopleCount = 0,
@@ -44,6 +45,7 @@ class BasicModel extends Model {
     this.txHash = txHash;
     this.owner = owner || { address: '0x0' }; // FIXME: Check in feathers, owner should be a model
     this.reviewer = reviewer;
+    this.url = url;
     this.totalDonated = totalDonated;
     this.donationCount = donationCount;
     this.peopleCount = peopleCount;
@@ -121,6 +123,15 @@ class BasicModel extends Model {
   set reviewer(value) {
     this.checkType(value, ['undefined', 'object'], 'reviewer');
     this.myReviewer = value;
+  }
+
+  get url() {
+    return this.myUrl;
+  }
+
+  set url(value) {
+    this.checkType(value, ['undefined', 'string'], 'url');
+    this.myUrl = value;
   }
 
   get totalDonated() {

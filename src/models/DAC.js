@@ -1,7 +1,7 @@
 /* eslint-disable import/no-cycle */
 import BasicModel from './BasicModel';
 import DACService from '../services/DACService';
-import UploadService from '../services/UploadsService';
+import IPFSService from '../services/IPFSService';
 import ErrorPopup from '../components/ErrorPopup';
 /**
  * The DApp DAC model
@@ -33,6 +33,17 @@ class DAC extends BasicModel {
     this._id = data._id;
     this.confirmations = data.confirmations || 0;
     this.requiredConfirmations = data.requiredConfirmations;
+    this.commitTime = data.commitTime || 0;
+  }
+
+  toIpfs() {
+    return {
+      title: this.title,
+      description: this.description,
+      communityUrl: this.communityUrl,
+      image: this.image,
+      version: 1,
+    };
   }
 
   toFeathers(txHash) {
@@ -49,21 +60,18 @@ class DAC extends BasicModel {
     return dac;
   }
 
-  save(onCreated, afterEmit) {
+  save(afterSave, afterMined) {
     if (this.newImage) {
-      UploadService.save(this.image)
-        .then(file => {
+      IPFSService.upload(this.image)
+        .then(hash => {
           // Save the new image address and mark it as old
-          this.image = file.url;
+          this.image = hash;
           this.newImage = false;
-
-          DACService.save(this, this.owner.address, onCreated, afterEmit);
         })
-        .catch(err => {
-          ErrorPopup('Failed to upload avatar', err);
-        });
+        .catch(err => ErrorPopup('Failed to upload image', err))
+        .finally(() => DACService.save(this, this.owner.address, afterSave, afterMined));
     } else {
-      DACService.save(this, this.owner.address, onCreated, afterEmit);
+      DACService.save(this, this.owner.address, afterSave, afterMined);
     }
   }
 
@@ -83,6 +91,15 @@ class DAC extends BasicModel {
   set delegateId(value) {
     this.checkType(value, ['number', 'string'], 'delegateId');
     this.myDelegateId = value;
+  }
+
+  get commitTime() {
+    return this.myCommitTime;
+  }
+
+  set commitTime(value) {
+    this.checkType(value, ['number'], 'commitTime');
+    this.myCommitTime = value;
   }
 
   get status() {

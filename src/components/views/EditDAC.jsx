@@ -95,47 +95,51 @@ class EditDAC extends Component {
   }
 
   submit() {
-    const afterMined = (url, id) => {
-      if (url) {
-        const msg = (
-          <p>
-            Your DAC has been created!
-            <br />
-            <a href={url} target="_blank" rel="noopener noreferrer">
-              View transaction
-            </a>
-          </p>
-        );
-        GA.trackEvent({
-          category: 'DAC',
-          action: 'created',
-          label: id,
-        });
-        React.toast.success(msg);
-      } else {
-        if (this.mounted) this.setState({ isSaving: false });
-        React.toast.success('Your DAC has been updated!');
-        GA.trackEvent({
-          category: 'DAC',
-          action: 'updated',
-          label: id,
-        });
-        history.push(`/dacs/${this.state.dac.id}`);
-      }
-    };
-    const afterCreate = url => {
-      if (this.mounted) this.setState({ isSaving: false });
-      const msg = (
+    // Save dac
+    const showToast = (msg, url, isSuccess = false) => {
+      const toast = url ? (
         <p>
-          Your DAC is pending....
+          {msg}
           <br />
           <a href={url} target="_blank" rel="noopener noreferrer">
             View transaction
           </a>
         </p>
+      ) : (
+        msg
       );
-      React.toast.info(msg);
-      history.push('/my-dacs');
+
+      if (isSuccess) React.toast.success(toast);
+      else React.toast.info(toast);
+    };
+
+    const afterMined = (created, url, id) => {
+      const msg = `Your DAC has been ${created ? 'created' : 'updated'}`;
+      showToast(msg, url, true);
+
+      if (created) {
+        GA.trackEvent({
+          category: 'DAC',
+          action: 'created',
+          label: id,
+        });
+      } else {
+        if (this.mounted) this.setState({ isSaving: false });
+        GA.trackEvent({
+          category: 'DAC',
+          action: 'updated',
+          label: id,
+        });
+        history.push(`/dacs/${id}`);
+      }
+    };
+    const afterSave = (created, url) => {
+      if (this.mounted) this.setState({ isSaving: false });
+
+      const msg = created ? 'Your DAC is pending...' : 'Your DAC is being updated...';
+      showToast(msg, url);
+
+      if (created) history.push('/my-dacs');
     };
 
     this.setState(
@@ -145,7 +149,7 @@ class EditDAC extends Component {
       },
       () => {
         // Save the DAC
-        this.state.dac.save(afterCreate, afterMined);
+        this.state.dac.save(afterSave, afterMined);
       },
     );
   }
