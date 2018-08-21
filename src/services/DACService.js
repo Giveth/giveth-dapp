@@ -167,7 +167,7 @@ class DACService {
   static async save(dac, from, afterSave = () => {}, afterMined = () => {}) {
     if (dac.id && dac.delegateId === 0) {
       throw new Error(
-        'You must wait for your DAC to be creation to finish before you can update you DAC',
+        'You must wait for your DAC to be creation to finish before you can update it',
       );
     }
 
@@ -182,12 +182,11 @@ class DACService {
       }
 
       const network = await getNetwork();
-      // eslint-disable-next-line prefer-destructuring
-      etherScanUrl = network.etherScanUrl;
+      etherScanUrl = network.etherscan;
       const { liquidPledging } = network;
 
-      // nothing to update
-      if (dac.delegateId && dac.url === profileHash) {
+      // nothing to update or failed ipfs upload
+      if (dac.delegateId && (dac.url === profileHash || !profileHash)) {
         // ipfs upload may have failed, but we still want to update feathers
         if (!profileHash) {
           await dacs.patch(dac.id, dac.toFeathers(txHash));

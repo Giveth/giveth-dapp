@@ -287,7 +287,7 @@ class EditDAC extends Component {
                           className="btn btn-success pull-right"
                           formNoValidate
                           type="submit"
-                          disabled={isSaving || !formIsValid}
+                          disabled={isSaving || !formIsValid || (dac.id && dac.delegateId === 0)}
                           isLoading={isSaving}
                           loadingText="Saving..."
                         >

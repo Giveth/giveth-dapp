@@ -2,6 +2,7 @@ import Model from './Model';
 import IPFSService from '../services/IPFSService';
 import UserService from '../services/UserService';
 import ErrorPopup from '../components/ErrorPopup';
+import { cleanIpfsPath } from '../lib/helpers';
 
 /**
  * The DApp User model
@@ -37,7 +38,7 @@ class User extends Model {
       name: this.name,
       email: this.email,
       linkedin: this.linkedin,
-      avatar: this.avatar,
+      avatar: cleanIpfsPath(this.avatar),
       version: 1,
     };
   }
@@ -47,7 +48,7 @@ class User extends Model {
       name: this.name,
       email: this.email,
       linkedIn: this.linkedIn,
-      avatar: this.avatar,
+      avatar: cleanIpfsPath(this.avatar),
     };
     if (this.giverId === undefined && txHash) {
       // set to 0 so we don't attempt to create multiple givers in lp for the same user

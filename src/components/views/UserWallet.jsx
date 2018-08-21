@@ -60,7 +60,7 @@ class UserWallet extends Component {
 
   render() {
     const { isLoadingWallet, insufficientBalance, hasError } = this.state;
-    const { etherScanUrl, tokenAddresses } = config;
+    const { etherscan, tokenAddresses } = config;
 
     return (
       <div id="profile-view" className="container-fluid page-layout dashboard-table-view">
@@ -133,10 +133,10 @@ class UserWallet extends Component {
                       .filter(t => this.props.wallet.getTokenBalance(tokenAddresses[t]) > 0)
                       .map(
                         t =>
-                          etherScanUrl ? (
+                          etherscan ? (
                             <p>
                               <a
-                                href={`${etherScanUrl}token/${tokenAddresses[t]}?a=${
+                                href={`${etherscan}token/${tokenAddresses[t]}?a=${
                                   this.props.currentUser.address
                                 }`}
                                 target="_blank"

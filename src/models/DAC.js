@@ -3,6 +3,8 @@ import BasicModel from './BasicModel';
 import DACService from '../services/DACService';
 import IPFSService from '../services/IPFSService';
 import ErrorPopup from '../components/ErrorPopup';
+import { cleanIpfsPath } from '../lib/helpers';
+
 /**
  * The DApp DAC model
  */
@@ -41,7 +43,7 @@ class DAC extends BasicModel {
       title: this.title,
       description: this.description,
       communityUrl: this.communityUrl,
-      image: this.image,
+      image: cleanIpfsPath(this.image),
       version: 1,
     };
   }
@@ -52,7 +54,7 @@ class DAC extends BasicModel {
       description: this.description,
       communityUrl: this.communityUrl,
       delegateId: this.delegateId,
-      image: this.image,
+      image: cleanIpfsPath(this.image),
       totalDonated: this.totalDonated,
       donationCount: this.donationCount,
     };

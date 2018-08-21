@@ -32,13 +32,12 @@ class UserService {
       }
 
       const network = await getNetwork();
-      // eslint-disable-next-line prefer-destructuring
-      etherScanUrl = network.etherScanUrl;
+      etherScanUrl = network.etherscan;
       const { liquidPledging } = network;
       const from = user.address;
 
-      // nothing to update
-      if (user.giverId && user.url === profileHash) {
+      // nothing to update or failed ipfs upload
+      if (user.giverId && (user.url === profileHash || !profileHash)) {
         // ipfs upload may have failed, but we still want to update feathers
         if (!profileHash) {
           await users.patch(user.address, user.toFeathers(txHash));
