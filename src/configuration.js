@@ -51,6 +51,7 @@ const configurations = {
     foreignNetworkName: 'Rinkeby',
     homeNodeConnection: 'https://ropsten.infura.io',
     homeNetworkName: 'Ropsten',
+    ipfsGateway: 'https://ipfs.giveth.io/ipfs/',
     analytics: {
       ga_UA: 'UA-103956937-5',
       useGoogleAnalytics: true,
@@ -72,6 +73,7 @@ const configurations = {
     foreignNetworkName: 'Rinkeby',
     homeNodeConnection: 'https://ropsten.infura.io',
     homeNetworkName: 'Ropsten',
+    ipfsGateway: 'https://ipfs.giveth.io/ipfs/',
     analytics: {
       ga_UA: 'UA-103956937-4',
       useGoogleAnalytics: true,
@@ -93,6 +95,7 @@ const configurations = {
     foreignNetworkName: 'Rinkeby',
     homeNodeConnection: 'https://mew.giveth.io',
     homeNetworkName: 'Mainnet',
+    ipfsGateway: 'https://ipfs.giveth.io/ipfs/',
     analytics: {
       ga_UA: 'UA-103956937-2',
       useGoogleAnalytics: true,
