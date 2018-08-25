@@ -84,6 +84,7 @@ class FormsyImageUploader extends Component {
                   highlight={false}
                   autoCropArea={1}
                   zoomOnWheel={false}
+                  viewMode={1}
                 />
               </div>
             </div>
