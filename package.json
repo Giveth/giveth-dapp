@@ -70,7 +70,7 @@
     "prettier": "^1.13.7"
   },
   "scripts": {
-    "precommit": "lint-staged",
+    "prepush": "lint-staged",
     "build-css": "node-sass-chokidar --include-path ./src --include-path ./node_modules src/ -o src/",
     "watch-css": "npm run build-css && node-sass-chokidar --include-path ./src --include-path ./node_modules src/ -o src/ --watch --recursive",
     "start-js": "react-scripts start",

@@ -8,11 +8,11 @@ import ReactHtmlParser, { convertNodeToElement } from 'react-html-parser';
 import { Link } from 'react-router-dom';
 import { utils } from 'web3';
 
+import User from 'models/User';
+import Milestone from 'models/MilestoneModel';
 import GivethWallet from '../../lib/blockchain/GivethWallet';
 import { convertEthHelper, getUserAvatar, getUserName, isOwner } from '../../lib/helpers';
 import { checkWalletBalance, redirectAfterWalletUnlock } from '../../lib/middleware';
-import User from '../../models/User';
-import Milestone from '../../models/Milestone';
 import BackgroundImageHeader from '../BackgroundImageHeader';
 import DonateButton from '../DonateButton';
 import ErrorPopup from '../ErrorPopup';

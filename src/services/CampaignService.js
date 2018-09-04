@@ -1,10 +1,10 @@
 import { LPPCampaign } from 'lpp-campaign';
 import { paramsForServer } from 'feathers-hooks-common';
+import Milestone from 'models/MilestoneModel';
 import getNetwork from '../lib/blockchain/getNetwork';
 import { getWeb3 } from '../lib/blockchain/getWeb3';
 import { feathersClient } from '../lib/feathersClient';
 import Campaign from '../models/Campaign';
-import Milestone from '../models/Milestone';
 import Donation from '../models/Donation';
 import IPFSService from './IPFSService';
 import ErrorPopup from '../components/ErrorPopup';

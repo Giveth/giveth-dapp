@@ -32,6 +32,7 @@ class Model {
    * @throws Error describing what was the passed value and which values were expected
    */
   checkValue(value, values, propName) {
+    // console.log(value, values, propName)
     if (!values.includes(value)) {
       throw new Error(
         `The value of ${propName} supplied to ${
@@ -52,8 +53,7 @@ class Model {
    */
   checkInstanceOf(value, classInstance, propName) {
     // console.log(value, classInstance)
-
-    if (!value.instanceof(classInstance)) {
+    if (!(value instanceof classInstance)) {
       throw new TypeError(
         `The type of ${propName} supplied to ${
           this.constructor.name

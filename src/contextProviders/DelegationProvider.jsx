@@ -2,6 +2,7 @@ import React, { Component, createContext } from 'react';
 import PropTypes from 'prop-types';
 import { paramsForServer } from 'feathers-hooks-common';
 
+import Milestone from 'models/MilestoneModel';
 import { feathersClient } from '../lib/feathersClient';
 import ErrorPopup from '../components/ErrorPopup';
 
@@ -10,7 +11,6 @@ import Donation from '../models/Donation';
 import User from '../models/User';
 import DAC from '../models/DAC';
 import Campaign from '../models/Campaign';
-import Milestone from '../models/Milestone';
 
 const Context = createContext();
 const { Provider, Consumer } = Context;

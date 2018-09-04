@@ -1,85 +1,86 @@
 import React from 'react';
 import BigNumber from 'bignumber.js';
 import { getStartOfDayUTC, getRandomWhitelistAddress } from 'lib/helpers';
-import Model from './Model';
+import BasicModel from './BasicModel';
 
-import MilestoneItemModel from './MilestoneItemModel';
+import MilestoneModelItemModel from './MilestoneItemModel';
 /**
- * The DApp donation model
+ * The DApp MilestoneModel model
  */
-class Milestone extends Model {
+export default class MilestoneModel extends BasicModel {
   constructor(data) {
     super(data);
 
-    this.title = data.title || '';
-    this.description = data.description || '';
-    this.image = data.image || '';
-    this.maxAmount = data.maxAmount || new BigNumber(0);
-    this.fiatAmount = data.fiatAmount || new BigNumber(0);
-    this.recipientAddress = data.recipientAddress || '';
-    this.status = data.status || Milestone.PENDING;
-    this.campaignTitle = data.campaignTitle || '';
-    this.projectId = data.projectId || '';
-    this.reviewAddress =
+    this._maxAmount = data.maxAmount || new BigNumber(0);
+    this._fiatAmount = data.fiatAmount || new BigNumber(0);
+    this._recipientAddress = data.recipientAddress || '';
+    this._status = data.status || MilestoneModel.PENDING;
+    this._campaignTitle = data.campaignTitle || '';
+    this._projectId = data.projectId || '';
+    this._reviewAddress =
       React.whitelist.reviewerWhitelist.length > 0
         ? getRandomWhitelistAddress(React.whitelist.reviewerWhitelist).address
         : '';
-    this.items = data.items || [];
-    this.itemizeState = data.itemizeState || false;
-    this.date = getStartOfDayUTC().subtract(1, 'd');
+    this._items = data.items || [];
+    this._itemizeState = data.itemizeState || false;
+    this._date = getStartOfDayUTC().subtract(1, 'd');
 
     this._id = data._id;
-    this.confirmations = data.confirmations || 0;
-    this.requiredConfirmations = data.requiredConfirmations;
-    this.commitTime = data.commitTime || 0;
+    this._confirmations = data.confirmations || 0;
+    this._requiredConfirmations = data.requiredConfirmations;
+    this._commitTime = data.commitTime || 0;
   }
 
   /**
     methods
   * */
 
+  save() {
+    // console.log('milestone model', this)
+  }
+
   /**
     get & setters
   * */
 
   static get PROPOSED() {
-    return Milestone.statuses.PROPOSED;
+    return MilestoneModel.statuses.PROPOSED;
   }
 
   static get REJECTED() {
-    return Milestone.statuses.REJECTED;
+    return MilestoneModel.statuses.REJECTED;
   }
 
   static get PENDING() {
-    return Milestone.statuses.PENDING;
+    return MilestoneModel.statuses.PENDING;
   }
 
   static get IN_PROGRESS() {
-    return Milestone.statuses.IN_PROGRESS;
+    return MilestoneModel.statuses.IN_PROGRESS;
   }
 
   static get NEEDS_REVIEW() {
-    return Milestone.statuses.NEEDS_REVIEW;
+    return MilestoneModel.statuses.NEEDS_REVIEW;
   }
 
   static get COMPLETED() {
-    return Milestone.statuses.COMPLETED;
+    return MilestoneModel.statuses.COMPLETED;
   }
 
   static get CANCELED() {
-    return Milestone.statuses.CANCELED;
+    return MilestoneModel.statuses.CANCELED;
   }
 
   static get PAYING() {
-    return Milestone.statuses.PAYING;
+    return MilestoneModel.statuses.PAYING;
   }
 
   static get PAID() {
-    return Milestone.statuses.PAID;
+    return MilestoneModel.statuses.PAID;
   }
 
   static get FAILED() {
-    return Milestone.statuses.FAILED;
+    return MilestoneModel.statuses.FAILED;
   }
 
   static get statuses() {
@@ -98,165 +99,164 @@ class Milestone extends Model {
   }
 
   static get type() {
-    return 'milestone';
+    return 'MilestoneModel';
   }
 
   get title() {
-    return this.title;
+    return this._title;
   }
 
   set title(value) {
     this.checkType(value, ['string'], 'title');
-    this.title = value;
+    this._title = value;
   }
 
   get description() {
-    return this.description;
+    return this._description;
   }
 
   set description(value) {
     this.checkType(value, ['string'], 'description');
-    this.description = value;
+    this._description = value;
   }
 
   get image() {
-    return this.image;
+    return this._image;
   }
 
   set image(value) {
     this.checkType(value, ['string'], 'image');
-    this.image = value;
+    this._image = value;
   }
 
   get maxAmount() {
-    return this.maxAmount;
+    return this._maxAmount;
   }
 
   set maxAmount(value) {
     this.checkInstanceOf(value, BigNumber, 'maxAmount');
-    this.maxAmount = value;
+    this._maxAmount = value;
   }
 
   get fiatAmount() {
-    return this.fiatAmount;
+    return this._fiatAmount;
   }
 
   set fiatAmount(value) {
     this.checkInstanceOf(value, BigNumber, 'fiatAmount');
-    this.fiatAmount = value;
+    this._fiatAmount = value;
   }
 
   get recipientAddress() {
-    return this.recipientAddress;
+    return this._recipientAddress;
   }
 
   set recipientAddress(value) {
     this.checkType(value, ['string'], 'recipientAddress');
-    this.recipientAddress = value;
+    this._recipientAddress = value;
   }
 
   get status() {
-    return this.status;
+    return this._status;
   }
 
   set status(value) {
-    this.checkType(value, Object.keys(Milestone.values), 'status');
-    this.status = value;
+    this.checkValue(value, Object.values(MilestoneModel.statuses), 'status');
+    this._status = value;
   }
 
   get campaignTitle() {
-    return this.campaignTitle;
+    return this._campaignTitle;
   }
 
   set campaignTitle(value) {
     this.checkType(value, ['string'], 'campaignTitle');
-    this.campaignTitle = value;
+    this._campaignTitle = value;
   }
 
   get projectId() {
-    return this.projectId;
+    return this._projectId;
   }
 
   set projectId(value) {
     this.checkType(value, ['string'], 'projectId');
-    this.projectId = value;
+    this._projectId = value;
   }
 
   get reviewAddress() {
-    return this.reviewAddress;
+    return this._reviewAddress;
   }
 
   set reviewAddress(value) {
     this.checkType(value, ['string'], 'reviewAddress');
-    this.reviewAddress = value;
+    this._reviewAddress = value;
   }
 
   get items() {
-    return this.items;
+    return this._items;
   }
 
   set items(value) {
     value.forEach(item => {
-      this.checkInstanceOf(item, MilestoneItemModel, 'items');
+      this.checkInstanceOf(item, MilestoneModelItemModel, 'items');
     });
 
-    this.items = value;
+    this._items = value;
   }
 
   get itemizeState() {
-    return this.itemizeState;
+    return this._itemizeState;
   }
 
-  // TO DO >>> ITEM MODEL!
   set itemizeState(value) {
     this.checkType(value, ['boolean'], 'itemizeState');
-    this.itemizeState = value;
+    this._itemizeState = value;
   }
 
   get date() {
-    return this.date;
+    return this._date;
   }
 
   set date(value) {
     this.checkType(value, ['date'], 'date');
-    this.date = value;
+    this._date = value;
   }
 
-  get _id() {
+  get id() {
     return this._id;
   }
 
-  set _id(value) {
-    this.checkType(value, ['string'], '_id');
-    this._id = value;
+  set id(value) {
+    if (value) {
+      this.checkType(value, ['string'], '_id');
+      this._id = value;
+    }
   }
 
   get confirmations() {
-    return this.confirmations;
+    return this._confirmations;
   }
 
   set confirmations(value) {
     this.checkType(value, ['number'], 'confirmations');
-    this.confirmations = value;
+    this._confirmations = value;
   }
 
   get requiredConfirmations() {
-    return this.requiredConfirmations;
+    return this._requiredConfirmations;
   }
 
   set requiredConfirmations(value) {
     this.checkType(value, ['number'], 'requiredConfirmations');
-    this.requiredConfirmations = value;
+    this._requiredConfirmations = value;
   }
 
   get commitTime() {
-    return this.myCommitTime;
+    return this._commitTime;
   }
 
   set commitTime(value) {
     this.checkType(value, ['number'], 'commitTime');
-    this.myCommitTime = value;
+    this._commitTime = value;
   }
 }
-
-export default Milestone;

@@ -9,11 +9,10 @@ import Slider from 'react-rangeslider';
 import 'react-rangeslider/lib/index.css';
 
 import GA from 'lib/GoogleAnalytics';
+import Donation from 'models/Donation';
+import Milestone from 'models/MilestoneModel';
 import { checkWalletBalance } from '../lib/middleware';
 import GivethWallet from '../lib/blockchain/GivethWallet';
-
-import Donation from '../models/Donation';
-import Milestone from '../models/Milestone';
 
 import DonationService from '../services/DonationService';
 

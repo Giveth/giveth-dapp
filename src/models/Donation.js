@@ -1,6 +1,6 @@
 import Model from './Model';
 import { getTruncatedText } from '../lib/helpers';
-import Milestone from './Milestone';
+import Milestone from './MilestoneModel';
 import Campaign from './Campaign';
 // import User from './User';
 
