@@ -170,8 +170,8 @@ class RateConvertor extends Component {
             type="hidden"
             name="conversionRate"
             value={
-              this.state.conversionRate && this.state.conversionRate.rates
-                ? this.state.conversionRate.rates[this.state.selectedFiatType].toString()
+              conversionRate && conversionRate.rates
+                ? conversionRate.rates[selectedFiatType].toString()
                 : '0'
             }
           />

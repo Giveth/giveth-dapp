@@ -12,6 +12,7 @@ class Model {
    * @throws TypeError describing what was the passed type and which types were expected
    */
   checkType(value, types, propName) {
+    // console.log(value, types, propName, typeof value)
     if (!types.includes(typeof value)) {
       throw new TypeError(
         `The type of ${propName} supplied to ${
@@ -36,6 +37,27 @@ class Model {
         `The value of ${propName} supplied to ${
           this.constructor.name
         } is: ${value}. Expected one of: ${values.join(', ')}.`,
+      );
+    }
+  }
+
+  /**
+   * Checks that type of passed value is of a specific class instance
+   *
+   * @param value            Value which is to be tested
+   * @param classInstance    Class to be tested
+   * @param propName         Name of the property that is being inspected
+   *
+   * @throws TypeError describing what was the passed type and which types were expected
+   */
+  checkInstanceOf(value, classInstance, propName) {
+    // console.log(value, classInstance)
+
+    if (!value.instanceof(classInstance)) {
+      throw new TypeError(
+        `The type of ${propName} supplied to ${
+          this.constructor.name
+        } is: ${typeof value}. Expected ${classInstance.constructor.name}`,
       );
     }
   }

@@ -2,7 +2,8 @@ import { withFormsy } from 'formsy-react';
 import moment from 'moment';
 import PropTypes from 'prop-types';
 import React from 'react';
-import { convertEthHelper, getTruncatedText } from '../lib/helpers';
+import { convertEthHelper, getTruncatedText } from 'lib/helpers';
+import MilestoneItemModel from 'models/MilestoneItemModel';
 
 /** *
  * NOTE: This component is created as a Formsy form component
@@ -72,15 +73,7 @@ MilestoneItem.propTypes = {
   setValue: PropTypes.func.isRequired,
 
   removeItem: PropTypes.func,
-  item: PropTypes.shape({
-    date: PropTypes.string.isRequired,
-    description: PropTypes.string.isRequired,
-    selectedFiatType: PropTypes.string.isRequired,
-    fiatAmount: PropTypes.string.isRequired,
-    conversionRate: PropTypes.number.isRequired,
-    wei: PropTypes.string.isRequired,
-    image: PropTypes.string,
-  }).isRequired,
+  item: PropTypes.instanceOf(MilestoneItemModel).isRequired,
   isEditMode: PropTypes.bool,
 };
 

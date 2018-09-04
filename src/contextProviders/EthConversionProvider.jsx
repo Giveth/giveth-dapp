@@ -12,7 +12,7 @@ export { Consumer };
 
 BigNumber.config({ DECIMAL_PLACES: 18 });
 
-const fiatTypes = [
+export const fiatTypes = [
   { value: 'BRL', title: 'BRL' },
   { value: 'CAD', title: 'CAD' },
   { value: 'CHF', title: 'CHF' },
