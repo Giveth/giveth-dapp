@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { Form, Input } from 'formsy-react-components';
 
+import GA from 'lib/GoogleAnalytics';
 import GivethWallet from '../../lib/blockchain/GivethWallet';
 import { authenticate } from '../../lib/helpers';
 import LoaderButton from '../LoaderButton';
@@ -40,6 +41,11 @@ class SignUp extends Component {
             await authenticate(wallet);
 
             this.props.walletCreated(wallet, 'backupwallet');
+
+            GA.trackEvent({
+              category: 'User',
+              action: 'sign up',
+            });
           } catch (err) {
             let error;
             if (typeof err === 'object') {

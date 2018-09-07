@@ -1,5 +1,6 @@
 import { LPPCampaign } from 'lpp-campaign';
 import { utils } from 'web3';
+import BigNumber from 'bignumber.js';
 
 import Donation from '../models/Donation';
 import DAC from '../models/DAC';
@@ -29,6 +30,182 @@ function updateExistingDonation(donation, amount, status) {
 }
 
 class DonationService {
+  /**
+   * Delegate multiple donations to some entity (either Campaign or Milestone)
+   *
+   * @param {Array}    donations   Array of donations that can be delegated
+   * @param {string}   amount      Total ammount in wei to be delegated - needs to be between 0 and total donation amount
+   * @param {Object}   delegateTo  Entity to which the donation should be delegated
+   * @param {function} onCreated   Callback function after the transaction has been broadcasted to chain and stored in feathers
+   * @param {function} onSuccess   Callback function after the transaction has been mined
+   * @param {function} onError     Callback function after error happened
+   */
+  static delegateMultiple(
+    donations,
+    amount,
+    delegateTo,
+    onCreated = () => {},
+    onSuccess = () => {},
+    onError = () => {},
+  ) {
+    const { ownerType, ownerEntity, delegateEntity, delegateId } = donations[0];
+    let txHash;
+    let etherScanUrl;
+    const pledgedDonations = []; // Donations that have been pledged and should be updated in feathers
+    const pledges = [];
+
+    /**
+     * Decide which pledges should be used and encodes them for the contracts
+     *
+     * @return {Array} Array of strings with encoded pledges to delegate
+     */
+    const getPledges = () => {
+      const maxAmount = new BigNumber(amount);
+      let currentAmount = new BigNumber('0');
+      let fullyDonated = true;
+
+      donations.every(donation => {
+        const pledge = pledges.find(n => n.id === donation.pledgeId);
+
+        let delegatedAmount = new BigNumber(donation.amountRemaining);
+
+        // The next donation is too big, we have to split it
+        if (currentAmount.plus(delegatedAmount).isGreaterThan(maxAmount)) {
+          delegatedAmount = maxAmount.minus(currentAmount);
+          fullyDonated = false;
+
+          // This donation would have value of 0, stop the iteration before it is added
+          if (delegatedAmount.isEqualTo(new BigNumber('0'))) return fullyDonated;
+        }
+        pledgedDonations.push({ donation, delegatedAmount: delegatedAmount.toString() });
+
+        currentAmount = currentAmount.plus(delegatedAmount);
+        if (pledge) {
+          pledge.parents.push(donation.id);
+          pledge.amount = pledge.amount.plus(delegatedAmount);
+        } else {
+          pledges.push({
+            id: donation.pledgeId,
+            parents: [donation.id],
+            amount: delegatedAmount,
+            giverAddress: donation.giverAddress,
+            delegateEntity: donation.delegateEntity,
+            ownerId: donation.ownerId,
+            ownerTypeId: donation.ownerTypeId,
+            ownerType: donation.ownerType,
+            delegateId: donation.delegateId,
+            delegateTypeId: donation.delegateTypeId,
+            delegateType: donation.delegateType,
+          });
+        }
+        return fullyDonated;
+      });
+
+      return pledges.map(
+        note =>
+          // due to some issue in web3, utils.toHex(note.amount) breaks during minification.
+          // BN.toString(16) will return a hex string as well
+          `0x${utils.padLeft(note.amount.toString(16), 48)}${utils.padLeft(
+            utils.toHex(note.id).substring(2),
+            16,
+          )}`,
+      );
+    };
+
+    Promise.all([getNetwork(), getWeb3(), getPledges()])
+      .then(([network, web3, encodedPledges]) => {
+        etherScanUrl = network.etherscan;
+
+        const receiverId = delegateTo.projectId;
+
+        const executeTransfer = () => {
+          let contract;
+
+          if (ownerType.toLowerCase() === 'campaign') {
+            contract = new LPPCampaign(web3, ownerEntity.pluginAddress);
+
+            return contract.mTransfer(encodedPledges, receiverId, {
+              from: ownerEntity.ownerAddress,
+              $extraGas: 100000,
+            });
+          }
+          return network.liquidPledging.mTransfer(delegateId, encodedPledges, receiverId, {
+            from: delegateEntity.ownerAddress,
+            $extraGas: 100000,
+          });
+        };
+
+        return executeTransfer()
+          .once('transactionHash', hash => {
+            txHash = hash;
+
+            // Update the delegated donations in feathers
+            pledgedDonations.forEach(({ donation, delegatedAmount }) => {
+              updateExistingDonation(donation, delegatedAmount);
+            });
+
+            // Create new donation objects for all the new pledges
+            pledges.forEach(donation => {
+              const newDonation = {
+                txHash,
+                amount: donation.amount,
+                amountRemaining: donation.amount,
+                giverAddress: donation.giverAddress,
+                pledgeId: 0,
+                parentDonations: donation.parents,
+                mined: false,
+              };
+              // delegate is making the transfer
+              if (donation.delegateEntity) {
+                Object.assign(newDonation, {
+                  status: Donation.TO_APPROVE,
+                  ownerId: donation.ownerId,
+                  ownerTypeId: donation.ownerTypeId,
+                  ownerType: donation.ownerType,
+                  delegateId: donation.delegateId,
+                  delegateTypeId: donation.delegateTypeId,
+                  delegateType: donation.delegateType,
+                  intendedProjectId: delegateTo.projectId, // only support delegating to campaigns/milestones right now
+                  intendedProjectType: delegateTo.type,
+                  intendedProjectTypeId: delegateTo.id,
+                });
+              } else {
+                // owner of the donation is making the transfer
+                // only support delegating to campaigns/milestones right now
+                Object.assign(newDonation, {
+                  status: Donation.COMMITTED,
+                  ownerId: delegateTo.projectId,
+                  ownerTypeId: delegateTo.id,
+                  ownerType: delegateTo.type,
+                });
+              }
+
+              feathersClient
+                .service('/donations')
+                .create(newDonation)
+                .then(() => onCreated(`${etherScanUrl}tx/${txHash}`))
+                .catch(err => {
+                  ErrorPopup('Unable to update the donation in feathers', err);
+                  onError(err);
+                });
+            });
+          })
+          .catch(err => {
+            if (txHash && err.message && err.message.includes('unknown transaction')) return; // bug in web3 seems to constantly fail due to this error, but the tx is correct
+            ErrorPopup(
+              'Thare was a problem with the delegation transaction.',
+              `${etherScanUrl}tx/${txHash}`,
+            );
+            onError(err);
+          });
+      })
+      .then(() => onSuccess(`${etherScanUrl}tx/${txHash}`))
+      .catch(err => {
+        ErrorPopup('Unable to initiate the delegation transaction.', err);
+        onError(err);
+      });
+  }
+
   /**
    * Delegate the donation to some entity (either Campaign or Milestone)
    *

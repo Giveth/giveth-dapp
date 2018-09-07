@@ -4,16 +4,18 @@ import Modal from 'react-modal';
 import { utils } from 'web3';
 import { Form, Input } from 'formsy-react-components';
 import { Link } from 'react-router-dom';
+import Toggle from 'react-toggle';
 
+import GA from 'lib/GoogleAnalytics';
 import getNetwork from '../lib/blockchain/getNetwork';
 import User from '../models/User';
 import { getGasPrice } from '../lib/helpers';
-import GivethWallet from '../lib/blockchain/GivethWallet';
 import { getHomeWeb3 } from '../lib/blockchain/getWeb3';
 import LoaderButton from './LoaderButton';
 import ErrorPopup from './ErrorPopup';
 import config from '../configuration';
 import DonationService from '../services/DonationService';
+import { feathersClient } from '../lib/feathersClient';
 
 const modalStyles = {
   content: {
@@ -35,8 +37,8 @@ Modal.setAppElement('#root');
 const DONATION_GAS = 30400;
 
 class DonateButton extends React.Component {
-  constructor() {
-    super();
+  constructor(props) {
+    super(props);
 
     this.state = {
       isSaving: false,
@@ -50,6 +52,9 @@ class DonateButton extends React.Component {
       etherscanUrl: '',
       modalVisible: false,
       gasPrice: 10,
+      showCustomAddress: false,
+      customAddress:
+        props.currentUser && props.currentUser.address ? props.currentUser.address : undefined,
     };
 
     this.submit = this.submit.bind(this);
@@ -58,7 +63,7 @@ class DonateButton extends React.Component {
 
   componentDidMount() {
     getNetwork().then(network => {
-      this.setState({ givethBridge: network.givethBridge, etherscanUrl: network.foreignEtherscan });
+      this.setState({ givethBridge: network.givethBridge, etherscanUrl: network.homeEtherscan });
     });
     getHomeWeb3().then(homeWeb3 => {
       this.setState({
@@ -148,29 +153,47 @@ class DonateButton extends React.Component {
   }
 
   submit(model) {
-    // TODO how to handle k from non users
-    // if (this.props.currentUser) {
     this.donateWithBridge(model);
     this.setState({ isSaving: true });
   }
 
-  donateWithBridge(model) {
+  async donateWithBridge(model) {
     const { currentUser } = this.props;
     const { adminId } = this.props.model;
-    const { account, givethBridge, etherscanUrl } = this.state;
+    const { account, givethBridge, etherscanUrl, showCustomAddress } = this.state;
 
     const value = utils.toWei(model.amount);
 
     const opts = { value, gas: DONATION_GAS, from: account };
     let method;
-    if (currentUser) {
-      // TODO do we want to donate in the name of the rinkeby account automatically?
+    let donationUser;
+
+    if (showCustomAddress) {
+      // Donating on behalf of another user or address
+      try {
+        const user = await feathersClient.service('users').get(model.customAddress);
+        if (user && user.giverId > 0) {
+          method = givethBridge.donate(user.giverId, adminId, opts);
+          donationUser = user;
+        } else {
+          givethBridge.donateAndCreateGiver(model.customAddress, adminId, opts);
+          donationUser = { address: model.customAddress };
+        }
+      } catch (e) {
+        givethBridge.donateAndCreateGiver(model.customAddress, adminId, opts);
+        donationUser = { address: model.customAddress };
+      }
+    } else if (currentUser) {
+      // Donating on behalf of logged in DApp user
       method =
         currentUser.giverId > 0
           ? givethBridge.donate(currentUser.giverId, adminId, opts)
           : givethBridge.donateAndCreateGiver(currentUser.address, adminId, opts);
+      donationUser = currentUser;
     } else {
+      // Donating without any user
       method = givethBridge.donateAndCreateGiver(account, adminId, opts);
+      donationUser = { address: account };
     }
 
     let txHash;
@@ -178,22 +201,23 @@ class DonateButton extends React.Component {
       .on('transactionHash', async transactionHash => {
         txHash = transactionHash;
         this.closeDialog();
-
-        await DonationService.newFeathersDonation(
-          currentUser || { address: account },
-          this.props.model,
-          value,
-          txHash,
-        );
+        await DonationService.newFeathersDonation(donationUser, this.props.model, value, txHash);
 
         this.setState({
           modalVisible: false,
           isSaving: false,
         });
 
+        GA.trackEvent({
+          category: 'Donation',
+          action: 'donated',
+          label: `${etherscanUrl}tx/${txHash}`,
+        });
+
         React.toast.info(
           <p>
-            Awesome! Your donation is pending...<br />
+            Awesome! Your donation is pending...
+            <br />
             <a href={`${etherscanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">
               View transaction
             </a>
@@ -203,9 +227,11 @@ class DonateButton extends React.Component {
       .then(() => {
         React.toast.success(
           <p>
-            Woot! Woot! Donation received. You are awesome!<br />
+            Woot! Woot! Donation received. You are awesome!
+            <br />
             Note: because we are bridging networks, there will be a delay before your donation
-            appears.<br />
+            appears.
+            <br />
             <a href={`${etherscanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">
               View transaction
             </a>
@@ -227,7 +253,7 @@ class DonateButton extends React.Component {
   }
 
   render() {
-    const { model, currentUser, wallet, type } = this.props;
+    const { model, currentUser, type } = this.props;
     const {
       homeWeb3,
       account,
@@ -239,6 +265,8 @@ class DonateButton extends React.Component {
       formIsValid,
       isSaving,
       modalVisible,
+      customAddress,
+      showCustomAddress,
     } = this.state;
     const style = {
       display: 'inline-block',
@@ -277,21 +305,13 @@ class DonateButton extends React.Component {
               </div>
             )}
 
-          {!wallet && (
-            <div className="alert alert-warning">
-              <i className="fa fa-exclamation-triangle" />
-              We could not find your DApp wallet. If you want to maintain control over your donation
-              please <Link to="/signin">sign in</Link> or <Link to="/signup">register</Link>.
-            </div>
-          )}
-
           {homeWeb3 &&
             homeWeb3.givenProvider &&
             !validNetwork && (
               <div className="alert alert-warning">
                 <i className="fa fa-exclamation-triangle" />
-                It looks like you are connected to the wrong network. Please connect to the{' '}
-                <strong>{config.homeNetworkName}</strong> network to donate
+                It looks like you are connected to the wrong network on your MetaMask. Please
+                connect to the <strong>{config.homeNetworkName}</strong> network to donate
               </div>
             )}
           {homeWeb3 &&
@@ -304,16 +324,15 @@ class DonateButton extends React.Component {
               </p>
             )}
 
-          {/* TODO add note that we are donating as the logged in user, or that they won't be able to manage funds if no logged in user & using metamask */}
-
           {homeWeb3 &&
             homeWeb3.givenProvider &&
             !account && (
               <div className="alert alert-warning">
                 <i className="fa fa-exclamation-triangle" />
-                It looks like your account is locked.
+                It looks like your MetaMask account is locked.
               </div>
             )}
+
           {homeWeb3 &&
             account &&
             validNetwork && (
@@ -329,7 +348,7 @@ class DonateButton extends React.Component {
             )}
           <Form
             onSubmit={this.submit}
-            mapping={inputs => ({ amount: inputs.amount })}
+            mapping={inputs => ({ amount: inputs.amount, customAddress: inputs.customAddress })}
             onValid={() => this.toggleFormValid(true)}
             onInvalid={() => this.toggleFormValid(false)}
             layout="vertical"
@@ -354,6 +373,71 @@ class DonateButton extends React.Component {
                 autoFocus
               />
             </div>
+
+            {!(currentUser && currentUser.address) &&
+              !showCustomAddress && (
+                <div className="alert alert-warning">
+                  <i className="fa fa-exclamation-triangle" />
+                  We could not find your DApp wallet. If you want to maintain control over your
+                  donation please <Link to="/signin">sign in</Link> or{' '}
+                  <Link to="/signup">register</Link>.
+                </div>
+              )}
+
+            {currentUser &&
+              currentUser.address &&
+              !showCustomAddress && (
+                <div className="alert alert-success">
+                  <i className="fa fa-exclamation-triangle" />
+                  We detected that you have a DApp wallet. The donation will be donated on behalf of
+                  your DApp account:{' '}
+                  <Link to={`/profile/${currentUser.address}`}>
+                    {currentUser.name ? currentUser.name : currentUser.address}
+                  </Link>{' '}
+                  so that you can see your donation in My Donations page.
+                </div>
+              )}
+            {showCustomAddress && (
+              <div className="alert alert-success">
+                <i className="fa fa-exclamation-triangle" />
+                The donation will be donated on behalf of address:
+              </div>
+            )}
+
+            <div className="react-toggle-container">
+              <Toggle
+                id="show-recipient-address"
+                defaultChecked={showCustomAddress}
+                onChange={() =>
+                  this.setState(prevState => ({
+                    showCustomAddress: !prevState.showCustomAddress,
+                  }))
+                }
+              />
+              <div className="label">I want to donate on behalf of another address</div>
+            </div>
+            {showCustomAddress && (
+              <div className="form-group recipient-address-container">
+                <Input
+                  name="customAddress"
+                  id="title-input"
+                  type="text"
+                  value={customAddress}
+                  placeholder="0x0000000000000000000000000000000000000000"
+                  validations="isEtherAddress"
+                  validationErrors={{
+                    isEtherAddress: 'Please insert a valid Ethereum address.',
+                  }}
+                  required={this.state.showRecipientAddress}
+                />
+              </div>
+            )}
+            {!showCustomAddress && (
+              <div>
+                <br />
+                <br />
+              </div>
+            )}
 
             {homeWeb3 &&
               homeWeb3.givenProvider && (
@@ -401,7 +485,6 @@ DonateButton.propTypes = {
     title: PropTypes.string.isRequired,
   }).isRequired,
   currentUser: PropTypes.instanceOf(User),
-  wallet: PropTypes.instanceOf(GivethWallet),
   maxAmount: PropTypes.string,
   type: PropTypes.string.isRequired,
 };
@@ -409,7 +492,6 @@ DonateButton.propTypes = {
 DonateButton.defaultProps = {
   maxAmount: undefined,
   currentUser: undefined,
-  wallet: undefined,
 };
 
 export default DonateButton;

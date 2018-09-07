@@ -1,9 +1,11 @@
 import BigNumber from 'bignumber.js';
 
+import { paramsForServer } from 'feathers-hooks-common';
 import getNetwork from '../lib/blockchain/getNetwork';
 import { feathersClient } from '../lib/feathersClient';
 import DAC from '../models/DAC';
 import Campaign from '../models/Campaign';
+import Donation from '../models/Donation';
 
 import ErrorPopup from '../components/ErrorPopup';
 
@@ -107,15 +109,20 @@ class DACService {
     return feathersClient
       .service('donations')
       .watch({ listStrategy: 'always' })
-      .find({
-        query: {
-          delegateTypeId: id,
-          isReturn: false,
-          intendedProjectId: { $exists: false },
-          $sort: { createdAt: -1 },
-        },
-      })
-      .subscribe(resp => onSuccess(resp.data), onError);
+      .find(
+        paramsForServer({
+          query: {
+            delegateTypeId: id,
+            isReturn: false,
+            intendedProjectId: { $exists: false },
+            $sort: { createdAt: -1 },
+          },
+          schema: 'includeTypeAndGiverDetails',
+        }),
+      )
+      .subscribe(resp => {
+        onSuccess(resp.data.map(d => new Donation(d)));
+      }, onError);
   }
 
   /**
@@ -180,7 +187,7 @@ class DACService {
               feathersClient
                 .service('dacs')
                 .create(dac.toFeathers(txHash))
-                .then(() => afterCreate(`${etherScanUrl}tx/${txHash}`));
+                .then(id => afterCreate(`${etherScanUrl}tx/${txHash}`, id));
             })
             .then(() => {
               afterMined(`${etherScanUrl}tx/${txHash}`);

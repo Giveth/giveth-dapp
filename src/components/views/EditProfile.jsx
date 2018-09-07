@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 
 import { Form, Input } from 'formsy-react-components';
+import GA from 'lib/GoogleAnalytics';
 import { feathersClient, feathersRest } from '../../lib/feathersClient';
 import Loader from '../Loader';
 import FormsyImageUploader from '../FormsyImageUploader';
@@ -109,6 +110,10 @@ class EditProfile extends Component {
                       </a>
                     </p>,
                   );
+                  GA.trackEvent({
+                    category: 'User',
+                    action: 'saved profile',
+                  });
                   this.setState(Object.assign({}, user, { isSaving: false }), () =>
                     history.push('/'),
                   );
@@ -150,6 +155,10 @@ class EditProfile extends Component {
           .then(user => {
             React.toast.success('Your profile has been updated.');
             this.setState(Object.assign({}, user, { isSaving: false }));
+            GA.trackEvent({
+              category: 'User',
+              action: 'saved profile',
+            });
           })
           // TODO: Actually inform the user about error
           .catch(err => {
@@ -203,6 +212,13 @@ class EditProfile extends Component {
                   <strong>fill out your profile </strong>
                   when you want to start Communities or Campaigns on Giveth.
                 </p>
+                <div className="alert alert-warning">
+                  <i className="fa fa-exclamation-triangle" />
+                  Please note that all the information entered will be stored on a publicly
+                  accessible permanent storage like blockchain. We are not able to erase or alter
+                  any of the information. Do not input anything that you do not have permision to
+                  share or you are not comfortable with being forever accessible.
+                </div>
 
                 <Form
                   onSubmit={this.submit}
@@ -244,7 +260,6 @@ class EditProfile extends Component {
                       validationErrors={{
                         isEmail: "Oops, that's not a valid email address.",
                       }}
-                      required
                     />
                   </div>
 

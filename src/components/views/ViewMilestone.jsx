@@ -1,5 +1,4 @@
 import BigNumber from 'bignumber.js';
-import { paramsForServer } from 'feathers-hooks-common';
 import { Form } from 'formsy-react-components';
 import moment from 'moment';
 import PropTypes from 'prop-types';
@@ -23,7 +22,9 @@ import { feathersClient } from '../../lib/feathersClient';
 import Loader from '../Loader';
 import MilestoneItem from '../MilestoneItem';
 import MilestoneConversations from '../MilestoneConversations';
-import Donation from '../../models/Donation';
+import DelegateMultipleButton from '../DelegateMultipleButton';
+
+import MilestoneService from '../../services/MilestoneService';
 
 /**
   Loads and shows a single milestone
@@ -68,31 +69,12 @@ class ViewMilestone extends Component {
         this.setState({ isLoading: false });
       });
 
-    // lazy load donations
-    // TODO: fetch "non committed" donations? add "intendedProjectTypeId: milestoneId" to query to get
-    // all "pending approval" donations for this milestone
-    const query = paramsForServer({
-      query: {
-        ownerTypeId: milestoneId,
-        amountRemaining: { $ne: 0 },
-        status: { $ne: Donation.FAILED },
-      },
-      schema: 'includeGiverDetails',
-      $sort: { createdAt: -1 },
-    });
-
-    this.donationsObserver = feathersClient
-      .service('donations')
-      .watch({ listStrategy: 'always' })
-      .find(query)
-      .subscribe(
-        resp =>
-          this.setState({
-            donations: resp.data,
-            isLoadingDonations: false,
-          }),
-        () => this.setState({ isLoadingDonations: false }),
-      );
+    this.donationsObserver = MilestoneService.subscribeDonations(milestoneId, donations =>
+      this.setState({
+        donations,
+        isLoadingDonations: false,
+      }),
+    );
   }
 
   componentWillUnmount() {
@@ -188,7 +170,10 @@ class ViewMilestone extends Component {
               )}
 
               {this.state.totalDonated < this.state.maxAmount && (
-                <p>Amount requested:{this.state.maxAmount} ETH</p>
+                <p>
+                  Amount requested:
+                  {this.state.maxAmount} ETH
+                </p>
               )}
               <p>
                 Campaign:
@@ -196,16 +181,45 @@ class ViewMilestone extends Component {
               </p>
 
               {this.isActiveMilestone() && (
-                <DonateButton
-                  model={{ type: Milestone.type, title, id, adminId: projectId }}
-                  wallet={wallet}
-                  currentUser={currentUser}
-                  history={history}
-                  maxAmount={utils
-                    .toBN(utils.toWei(this.state.maxAmount.toString()))
-                    .sub(utils.toBN(utils.toWei(this.state.totalDonated.toString())))
-                    .toString()}
-                />
+                <div>
+                  <DonateButton
+                    model={{ type: Milestone.type, title, id, adminId: projectId }}
+                    wallet={wallet}
+                    currentUser={currentUser}
+                    history={history}
+                    maxAmount={utils
+                      .toBN(utils.toWei(this.state.maxAmount.toString()))
+                      .sub(utils.toBN(utils.toWei(this.state.totalDonated.toString())))
+                      .toString()}
+                  />
+                  {currentUser && (
+                    <DelegateMultipleButton
+                      style={{ padding: '10px 10px' }}
+                      milestone={{
+                        id,
+                        projectId,
+                        title,
+                        ownerAddress,
+                        owner,
+                        maxAmount,
+                        totalDonated,
+                        recipient,
+                        recipientAddress,
+                        reviewer,
+                        reviewerAddress,
+                        items,
+                        date,
+                        status,
+                        fiatAmount,
+                        selectedFiatType,
+                        campaign,
+                        type: Milestone.type,
+                      }}
+                      wallet={wallet}
+                      currentUser={currentUser}
+                    />
+                  )}
+                </div>
               )}
             </BackgroundImageHeader>
 
@@ -356,9 +370,7 @@ class ViewMilestone extends Component {
                             items.length === 0 && (
                               <span>
                                 {' '}
-                                (
-                                {fiatAmount} {selectedFiatType}
-                                )
+                                ({fiatAmount} {selectedFiatType})
                               </span>
                             )}
                         </div>
@@ -384,14 +396,6 @@ class ViewMilestone extends Component {
                           <br />
                           {status}
                         </div>
-
-                        {/*
-                          <div className="form-group">
-                            <label>Completion deadline</label>
-                            <small className="form-text">When the Milestone will be completed</small>
-                            {completionDeadline}
-                          </div>
-                        */}
                       </div>
                     </div>
 
@@ -412,18 +416,18 @@ class ViewMilestone extends Component {
               <div className="row spacer-top-50 spacer-bottom-50">
                 <div className="col-md-8 m-auto">
                   <h4>Donations</h4>
-                  <ShowTypeDonations
-                    donations={donations.map(d =>
-                      Object.assign({}, d, { amount: d.amountRemaining }),
-                    )}
-                    isLoading={isLoadingDonations}
-                  />
+                  <ShowTypeDonations donations={donations} isLoading={isLoadingDonations} />
                   {this.isActiveMilestone() && (
                     <DonateButton
                       model={{ type: Milestone.type, title, id, adminId: projectId }}
                       wallet={wallet}
                       currentUser={currentUser}
                       history={history}
+                      type={Milestone.type}
+                      maxAmount={utils
+                        .toBN(utils.toWei(this.state.maxAmount.toString()))
+                        .sub(utils.toBN(utils.toWei(this.state.totalDonated.toString())))
+                        .toString()}
                     />
                   )}
                 </div>

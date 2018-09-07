@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 
+import GA from 'lib/GoogleAnalytics';
 import BackupWalletButton from '../BackupWalletButton';
 import { isLoggedIn } from '../../lib/middleware';
 // import WithdrawButton from '../WithdrawButton';
@@ -9,6 +10,7 @@ import GivethWallet from '../../lib/blockchain/GivethWallet';
 import Loader from '../Loader';
 import config from '../../configuration';
 import BridgeWithdrawButton from '../BridgeWithdrawButton';
+
 // TODO: Remove the eslint exception after extracting to model
 /* eslint no-underscore-dangle: 0 */
 
@@ -44,6 +46,14 @@ class UserWallet extends Component {
       });
   }
 
+  /* eslint-disable class-methods-use-this */
+  onBackup() {
+    GA.trackEvent({
+      category: 'User',
+      action: 'backed up wallet',
+    });
+  }
+
   hasTokenBalance() {
     return Object.values(config.tokenAddresses).some(a => this.props.wallet.getTokenBalance(a) > 0);
   }
@@ -70,11 +80,22 @@ class UserWallet extends Component {
           {!isLoadingWallet &&
             !hasError && (
               <div>
-                <p>{this.props.currentUser.address}</p>
-                {/* <p>
-                  <strong>{config.homeNetworkName} ETH</strong> balance:{' '}
-                  {this.props.wallet.getHomeBalance()} ETH
-                </p> */}
+                <div className="alert alert-warning">
+                  <i className="fa fa-exclamation-triangle" />
+                  Please <strong>do not send any main network ether</strong> to this address. All
+                  the transactions in the DApp are made on{' '}
+                  <strong>{config.foreignNetworkName}</strong> network. To interact with the DApp
+                  you do not need any main network ether.
+                </div>
+                <p>
+                  <a
+                    href={`${config.etherscan}/address/${this.props.currentUser.address}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    {this.props.currentUser.address}
+                  </a>
+                </p>
 
                 {insufficientBalance && (
                   <div className="alert alert-warning">
@@ -103,7 +124,7 @@ class UserWallet extends Component {
                 )}
 
                 <p>
-                  <BackupWalletButton wallet={this.props.wallet} />
+                  <BackupWalletButton wallet={this.props.wallet} onBackup={this.onBackup} />
                 </p>
 
                 {this.hasTokenBalance() && (

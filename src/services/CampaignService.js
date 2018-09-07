@@ -1,9 +1,11 @@
 import { LPPCampaign } from 'lpp-campaign';
+import { paramsForServer } from 'feathers-hooks-common';
 import getNetwork from '../lib/blockchain/getNetwork';
 import { getWeb3 } from '../lib/blockchain/getWeb3';
 import { feathersClient } from '../lib/feathersClient';
 import Campaign from '../models/Campaign';
 import Milestone from '../models/Milestone';
+import Donation from '../models/Donation';
 
 import ErrorPopup from '../components/ErrorPopup';
 
@@ -57,13 +59,14 @@ class CampaignService {
    * Lazy-load Campaign milestones by subscribing to milestone listener
    *
    * @param id        ID of the Campaign which donations should be retrieved
+   * @param $limit    Amount of records to be loaded
+   * @param $skip     Amounds of record to be skipped
    * @param onSuccess Callback function once response is obtained successfully
    * @param onError   Callback function if error is encountered
    */
-  static subscribeMilestones(id, onSuccess, onError) {
+  static getMilestones(id, $limit, $skip, onSuccess, onError) {
     return feathersClient
       .service('milestones')
-      .watch({ listStrategy: 'always' })
       .find({
         query: {
           campaignId: id,
@@ -71,9 +74,12 @@ class CampaignService {
             $nin: [Milestone.CANCELED, Milestone.PROPOSED, Milestone.REJECTED, Milestone.PENDING],
           },
           $sort: { createdAt: -1 },
+          $limit,
+          $skip,
         },
       })
-      .subscribe(resp => onSuccess(resp.data), onError);
+      .then(resp => onSuccess(resp.data, resp.total))
+      .catch(onError);
   }
 
   /**
@@ -87,14 +93,17 @@ class CampaignService {
     return feathersClient
       .service('donations')
       .watch({ listStrategy: 'always' })
-      .find({
-        query: {
-          ownerTypeId: id,
-          isReturn: false,
-          $sort: { createdAt: -1 },
-        },
-      })
-      .subscribe(resp => onSuccess(resp.data), onError);
+      .find(
+        paramsForServer({
+          query: {
+            ownerTypeId: id,
+            isReturn: false,
+            $sort: { createdAt: -1 },
+          },
+          schema: 'includeTypeAndGiverDetails',
+        }),
+      )
+      .subscribe(resp => onSuccess(resp.data.map(d => new Donation(d))), onError);
   }
 
   /**
@@ -169,7 +178,7 @@ class CampaignService {
               feathersClient
                 .service('campaigns')
                 .create(campaign.toFeathers(txHash))
-                .then(() => afterCreate(`${etherScanUrl}tx/${txHash}`));
+                .then(id => afterCreate(`${etherScanUrl}tx/${txHash}`, id));
             })
             .then(() => {
               afterMined(`${etherScanUrl}tx/${txHash}`);

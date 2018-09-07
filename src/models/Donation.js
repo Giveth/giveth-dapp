@@ -222,12 +222,12 @@ class Donation extends Model {
   }
 
   get id() {
-    return this.myId;
+    return this._id;
   }
 
   set id(value) {
     this.checkType(value, ['string'], 'id');
-    this.myId = value;
+    this._id = value;
   }
 
   get amount() {
@@ -378,7 +378,7 @@ class Donation extends Model {
   }
 
   set ownerEntity(value) {
-    this.checkType(value, ['object'], 'ownerEntity');
+    this.checkType(value, ['undefined', 'object'], 'ownerEntity');
     this.myOwnerEntity = value;
   }
 

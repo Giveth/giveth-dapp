@@ -33,6 +33,8 @@
     "react-cropper": "^1.0.1",
     "react-datepicker": "1.4.1",
     "react-dom": "16.4.1",
+    "react-ga": "^2.5.3",
+    "react-helmet": "^5.2.0",
     "react-html-parser": "^2.0.2",
     "react-input-token": "^1.1.2",
     "react-js-pagination": "^3.0.1",
