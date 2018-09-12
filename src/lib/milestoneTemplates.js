@@ -91,7 +91,7 @@ export default {
               <span style="font-size: 18px;">Amount:</span>
           </p>
           <p>
-              <em>Amount in fiat</em>
+              <em>Amount in selected currency</em>
           </p>
           <p>
               <br>
