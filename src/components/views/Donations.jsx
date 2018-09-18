@@ -37,6 +37,7 @@ const Donations = () => (
                               <thead>
                                 <tr>
                                   <th className="td-action" />
+                                  <th>Status</th>
                                   <th className="td-date">Date</th>
                                   <th className="td-donated-to">Donated to</th>
                                   <th className="td-donations-amount">Amount</th>
@@ -78,6 +79,9 @@ const Donations = () => (
                                           </button>
                                         </div>
                                       )}
+                                    </td>
+                                    <td>
+                                      <span>{d.status}</span>
                                     </td>
                                     <td className="td-date">
                                       {moment(d.createdAt).format('MM/DD/YYYY')}
