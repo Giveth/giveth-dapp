@@ -25,6 +25,7 @@ const ShowTypeDonations = props => (
                 <thead>
                   <tr>
                     <th className="td-date">Date</th>
+                    <th>Status</th>
                     <th className="td-donations-amount">Amount</th>
                     <th className="td-user">Name</th>
                     <th className="td-tx-address">Address</th>
@@ -34,6 +35,7 @@ const ShowTypeDonations = props => (
                   {props.donations.map(d => (
                     <tr key={d._id}>
                       <td className="td-date">{moment(d.createdAt).format('MM/DD/YYYY')}</td>
+                      <td>{d.status}</td>
 
                       <td className="td-donations-amount">
                         {d.isPending && (
