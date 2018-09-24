@@ -369,9 +369,9 @@ class EditMilestone extends Component {
           feathersClient
             .service('milestones')
             .create(Object.assign({}, constructedModel, txData))
-            .then(milestoneId => {
+            .then(milestone => {
               afterEmit(true);
-              callback(milestoneId);
+              callback(milestone);
             })
             .catch(err => {
               this.setState({ isSaving: false, isBlocking: true });
@@ -389,11 +389,11 @@ class EditMilestone extends Component {
               totalDonated: '0',
               donationCount: 0,
             },
-            milestoneId => {
+            milestone => {
               GA.trackEvent({
                 category: 'Milestone',
                 action: 'proposed',
-                label: milestoneId,
+                label: milestone._id,
               });
               React.toast.info(<p>Your Milestone is being proposed to the Campaign Owner.</p>);
             },
@@ -460,11 +460,11 @@ class EditMilestone extends Component {
                       totalDonated: '0',
                       donationCount: '0',
                     },
-                    milestoneId => {
+                    milestone => {
                       GA.trackEvent({
                         category: 'Milestone',
                         action: 'created',
-                        label: milestoneId,
+                        label: milestone._id,
                       });
                       React.toast.info(
                         <p>
