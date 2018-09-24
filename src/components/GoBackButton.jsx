@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { goBackOnePath } from '../lib/helpers';
 
-const GoBackButton = ({ styleName }) => (
+const GoBackButton = ({ styleName, title }) => (
   <div
     onClick={goBackOnePath}
     onKeyPress={goBackOnePath}
@@ -11,7 +11,7 @@ const GoBackButton = ({ styleName }) => (
     className={`go-back-button ${styleName}`}
   >
     <i className="fa fa-long-arrow-left" />
-    back
+    {title}
   </div>
 );
 
@@ -19,8 +19,10 @@ export default GoBackButton;
 
 GoBackButton.propTypes = {
   styleName: PropTypes.string,
+  title: PropTypes.string,
 };
 
 GoBackButton.defaultProps = {
   styleName: '',
+  title: 'back',
 };
