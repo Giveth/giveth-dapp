@@ -227,7 +227,11 @@ class ViewMilestone extends Component {
               <div className="row">
                 <div className="col-md-8 m-auto">
                   <div>
-                    <GoBackButton history={history} styleName="inline" />
+                    <GoBackButton
+                      history={history}
+                      styleName="inline"
+                      title={`Campaign: ${campaign.title}`}
+                    />
 
                     {(isOwner(ownerAddress, currentUser) ||
                       isOwner(campaign.ownerAddress, currentUser)) &&

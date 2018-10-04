@@ -56,6 +56,7 @@ class Donation extends Model {
       Donation.COMMITTED,
       Donation.CANCELED,
       Donation.REJECTED,
+      Donation.FAILED,
     ];
   }
 

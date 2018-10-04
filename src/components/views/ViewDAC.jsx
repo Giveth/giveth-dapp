@@ -115,7 +115,7 @@ class ViewDAC extends Component {
             <div className="container-fluid">
               <div className="row">
                 <div className="col-md-8 m-auto">
-                  <GoBackButton history={history} />
+                  <GoBackButton history={history} title="Communities" />
 
                   <center>
                     <Link to={`/profile/${dac.owner.address}`}>

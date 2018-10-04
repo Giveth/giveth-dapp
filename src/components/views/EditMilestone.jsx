@@ -393,9 +393,9 @@ class EditMilestone extends Component {
           feathersClient
             .service('milestones')
             .create(Object.assign({}, constructedModel, txData))
-            .then(milestoneId => {
+            .then(milestone => {
               afterEmit(true);
-              callback(milestoneId);
+              callback(milestone);
             })
             .catch(err => {
               this.setState({ isSaving: false, isBlocking: true });
@@ -413,11 +413,11 @@ class EditMilestone extends Component {
               totalDonated: '0',
               donationCount: 0,
             },
-            milestoneId => {
+            milestone => {
               GA.trackEvent({
                 category: 'Milestone',
                 action: 'proposed',
-                label: milestoneId,
+                label: milestone._id,
               });
               React.toast.info(<p>Your Milestone is being proposed to the Campaign Owner.</p>);
             },
@@ -484,11 +484,11 @@ class EditMilestone extends Component {
                       totalDonated: '0',
                       donationCount: '0',
                     },
-                    milestoneId => {
+                    milestone => {
                       GA.trackEvent({
                         category: 'Milestone',
                         action: 'created',
-                        label: milestoneId,
+                        label: milestone._id,
                       });
                       React.toast.info(
                         <p>
@@ -717,7 +717,7 @@ class EditMilestone extends Component {
 
               {!isLoading && (
                 <div>
-                  <GoBackButton history={history} />
+                  <GoBackButton history={history} title={`Campaign: ${campaignTitle}`} />
 
                   <div className="form-header">
                     {isNew && !isProposed && <h3>Add a new milestone</h3>}
@@ -974,7 +974,7 @@ class EditMilestone extends Component {
 
                     <div className="form-group row">
                       <div className="col-6">
-                        <GoBackButton history={history} />
+                        <GoBackButton history={history} title={`Campaign: ${campaignTitle}`} />
                       </div>
                       <div className="col-6">
                         <LoaderButton
