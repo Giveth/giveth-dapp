@@ -30,6 +30,7 @@ class BasicModel extends Model {
     owner,
     reviewer,
     totalDonated = '0',
+    currentBalance = '0',
     donationCount = 0,
     peopleCount = 0,
   }) {
@@ -45,6 +46,7 @@ class BasicModel extends Model {
     this.owner = owner || { address: '0x0' }; // FIXME: Check in feathers, owner should be a model
     this.reviewer = reviewer;
     this.totalDonated = totalDonated;
+    this.currentBalance = currentBalance;
     this.donationCount = donationCount;
     this.peopleCount = peopleCount;
     this.myOrder = -1;
@@ -130,6 +132,15 @@ class BasicModel extends Model {
   set totalDonated(value) {
     this.checkType(value, ['string'], 'totalDonated');
     this.myTotalDonated = value;
+  }
+
+  set currentBalance(value) {
+    this.checkType(value, ['string'], 'currentBalance');
+    this.myCurrentBalance = value;
+  }
+
+  get currentBalance() {
+    return this.myCurrentBalance;
   }
 
   get donationCount() {
