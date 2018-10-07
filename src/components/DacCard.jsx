@@ -75,7 +75,7 @@ class DacCard extends Component {
               type="dac"
               peopleCount={dac.peopleCount}
               totalDonated={dac.totalDonated}
-              campaignsCount={dac.campaignsCount}
+              currentBalance={dac.currentBalance}
             />
           </div>
         </div>

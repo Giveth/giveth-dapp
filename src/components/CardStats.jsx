@@ -7,15 +7,7 @@ import { convertEthHelper } from '../lib/helpers';
  *
  * TODO: Check the properties that are passed, sometimes they are number, sometimes strings...
  */
-const CardStats = ({
-  peopleCount,
-  maxAmount,
-  totalDonated,
-  campaignsCount,
-  milestonesCount,
-  type,
-  status,
-}) => (
+const CardStats = ({ peopleCount, maxAmount, totalDonated, currentBalance, type, status }) => (
   <div className="row card-stats">
     <div className="col-4 text-left">
       <span>
@@ -28,27 +20,13 @@ const CardStats = ({
     <div className="col-4 text-center card-center">
       {maxAmount && <p>Amount requested:{convertEthHelper(maxAmount)} ETH</p>}
 
-      {totalDonated && <p>Donated:{convertEthHelper(totalDonated, !maxAmount && 2)} ETH</p>}
+      {totalDonated && <p>Donated: {convertEthHelper(totalDonated, !maxAmount && 2)} ETH</p>}
     </div>
 
     <div className="col-4 text-right">
-      {type === 'dac' && (
+      {(type === 'dac' || type === 'campaign') && (
         <div>
-          <span>
-            <i className="fa fa-flag" />
-            {campaignsCount}
-          </span>
-          <p>campaign(s)</p>
-        </div>
-      )}
-
-      {type === 'campaign' && (
-        <div>
-          <span>
-            <i className="fa fa-check-circle" />
-            {milestonesCount}
-          </span>
-          <p>Milestone(s)</p>
+          <p>Balance: {convertEthHelper(currentBalance, 2)} ETH</p>
         </div>
       )}
 
@@ -68,19 +46,17 @@ const CardStats = ({
 CardStats.propTypes = {
   type: PropTypes.string.isRequired,
   peopleCount: PropTypes.number.isRequired,
-  campaignsCount: PropTypes.number,
-  milestonesCount: PropTypes.number,
   status: PropTypes.string,
-  maxAmount: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-  totalDonated: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  maxAmount: PropTypes.string,
+  totalDonated: PropTypes.string,
+  currentBalance: PropTypes.string,
 };
 
 CardStats.defaultProps = {
   status: 'In Progress',
-  milestonesCount: 0,
   maxAmount: undefined,
   totalDonated: undefined,
-  campaignsCount: 0,
+  currentBalance: undefined,
 };
 
 export default CardStats;
