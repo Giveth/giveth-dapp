@@ -54,7 +54,7 @@ In the following sections you will learn all you need to know to run the DApp lo
     ```
     npm install
     ```
-5. That is it, you are now ready to run the giveth-dapp! Head to the [Run DApp](#run-dapp) section for further instructions.
+5. That is it, you are now ready to run the giveth-dapp! Head to the [Run DApp](#run) section for further instructions.
 
 #### Windows
 1. Make sure you have the LTS version of [64-bit NodeJS](https://nodejs.org/en/download/current) (v8.9.1)
