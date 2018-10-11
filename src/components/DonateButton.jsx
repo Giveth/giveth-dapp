@@ -359,6 +359,7 @@ class DonateButton extends React.Component {
                 id="amount-input"
                 label="How much Ξ do you want to donate?"
                 type="number"
+                step="any"
                 value={amount}
                 placeholder="1"
                 validations={{
