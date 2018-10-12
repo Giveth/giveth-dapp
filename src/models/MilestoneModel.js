@@ -29,6 +29,7 @@ export default class MilestoneModel extends BasicModel {
     this._confirmations = data.confirmations || 0;
     this._requiredConfirmations = data.requiredConfirmations;
     this._commitTime = data.commitTime || 0;
+    this._token = data.token || React.whitelist.tokenWhitelist.find(t => t.symbol === 'ETH').address
   }
 
   /**
@@ -258,5 +259,13 @@ export default class MilestoneModel extends BasicModel {
   set commitTime(value) {
     this.checkType(value, ['number'], 'commitTime');
     this._commitTime = value;
+  }
+
+  get token() {
+    return this._token;
+  }
+
+  set token(value) {
+    this._token = value
   }
 }

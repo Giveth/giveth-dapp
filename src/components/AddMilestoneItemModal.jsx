@@ -98,7 +98,7 @@ class AddMilestoneItemModal extends Component {
   }
 
   render() {
-    const { openModal } = this.props;
+    const { openModal, token } = this.props;
     const { formIsValid, item, isBlocking } = this.state;
 
     return (
@@ -142,7 +142,7 @@ class AddMilestoneItemModal extends Component {
             </div>
           </div>
 
-          <RateConvertor />
+          <RateConvertor token={token}/>
 
           <FormsyImageUploader
             name="image"

@@ -22,7 +22,7 @@ class MilestoneItem extends React.Component {
   }
 
   render() {
-    const { removeItem, item, isEditMode } = this.props;
+    const { removeItem, item, isEditMode, token } = this.props;
     return (
       <tr>
         <td className="td-item-date">{moment.utc(item.date).format('Do MMM YYYY')}</td>
@@ -33,7 +33,7 @@ class MilestoneItem extends React.Component {
           {item.selectedFiatType} {item.fiatAmount}
           <br />
           <span className="help-block">
-            {`1 ETH = ${item.conversionRate} ${item.selectedFiatType}`}
+            {`1 ${token.name} = ${item.conversionRate} ${item.selectedFiatType}`}
           </span>
         </td>
 

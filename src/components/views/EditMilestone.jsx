@@ -35,6 +35,8 @@ import getEthConversionContext from '../../containers/getEthConversionContext';
 
 BigNumber.config({ DECIMAL_PLACES: 18 });
 
+
+console.log('React.whitelist.tokenWhitelist', React.whitelist.tokenWhitelist)
 /**
  * Create or edit a Milestone
  *
@@ -74,6 +76,11 @@ class EditMilestone extends Component {
         value: r.address,
         title: `${r.name ? r.name : 'Anonymous user'} - ${r.address}`,
       })),
+      tokenWhitelist: React.whitelist.tokenWhitelist.map(t => ({
+        value: t.address,
+        title: t.name
+      })),
+      currency: React.whitelist.tokenWhitelist.find(t => t.symbol === 'ETH'),
       reviewers: [],
       // reviewerAddress:
       //   React.whitelist.reviewerWhitelist.length > 0
@@ -642,6 +649,10 @@ class EditMilestone extends Component {
     this.setState(prevState => ({ itemizeState: !prevState.itemizeState }));
   }
 
+  setCurrency(address) {
+    this.setState(prevState => ({ currency: React.whitelist.tokenWhitelist.find(t => t.address === address) }));    
+  }
+
   handleTemplateChange(option) {
     this.setState({
       description: templates.templates[option],
@@ -699,13 +710,14 @@ class EditMilestone extends Component {
       campaignTitle,
       hasWhitelist,
       whitelistReviewerOptions,
-
+      tokenWhitelist,
       itemizeState,
 
       selectedFiatType,
       reviewers,
       isBlocking,
       milestone,
+      currency
     } = this.state;
 
     return (
@@ -875,6 +887,19 @@ class EditMilestone extends Component {
                       />
                     </div>
 
+                      <SelectFormsy
+                        name="token"
+                        id="token-select"
+                        label="Raising funds in"
+                        helpText="Select the currency you're raising funds in"
+                        value={milestone.token}
+                        cta="--- Select a token ---"
+                        options={tokenWhitelist}
+                        onChange={(val) => this.setCurrency(val)}
+                        required
+                        disabled={!isNew && !isProposed}
+                      />                    
+
                     <div className="react-toggle-container">
                       <Toggle
                         id="itemize-state"
@@ -949,7 +974,7 @@ class EditMilestone extends Component {
                                 min="0"
                                 id="maxamount-input"
                                 type="number"
-                                label="Maximum amount in ETH"
+                                label={`Maximum amount in ${currency.name}`}
                                 value={milestone.maxAmount}
                                 placeholder="10"
                                 validations="greaterThan:0"
@@ -969,6 +994,8 @@ class EditMilestone extends Component {
                         isEditMode
                         items={milestone.items}
                         onItemsChanged={returnedItems => this.onItemsChanged(returnedItems)}
+                        token={currency}
+
                       />
                     )}
 

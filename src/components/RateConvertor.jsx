@@ -89,7 +89,7 @@ class RateConvertor extends Component {
   }
 
   render() {
-    const { fiatTypes } = this.props;
+    const { fiatTypes, token } = this.props;
     const { date, selectedFiatType, fiatAmountForm, etherAmountForm, conversionRate } = this.state;
 
     return (
@@ -153,7 +153,7 @@ class RateConvertor extends Component {
           <div className="col-4">
             <Input
               type="text"
-              label="Amount in ether"
+              label={`Amount in ${token.name}`}
               name="etherAmount"
               value={etherAmountForm}
               validations="greaterThan:0,isNumeric"
