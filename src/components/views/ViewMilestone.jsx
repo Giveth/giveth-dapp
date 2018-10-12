@@ -82,7 +82,7 @@ class ViewMilestone extends Component {
   }
 
   isActiveMilestone() {
-    return this.state.status === 'InProgress' && !this.state.fullyFunded;
+    return ['InProgress', 'Completed'].includes(this.state.status) && !this.state.fullyFunded;
   }
 
   editMilestone(e) {
