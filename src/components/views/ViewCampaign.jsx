@@ -159,8 +159,8 @@ class ViewCampaign extends Component {
                     currentUser={currentUser}
                   />
                 )}
-                {campaign.myCommunityUrl && (
-                  <CommunityButton className="btn btn-secondary" url={campaign.myCommunityUrl}>
+                {campaign.communityUrl && (
+                  <CommunityButton className="btn btn-secondary" url={campaign.communityUrl}>
                     Join our community
                   </CommunityButton>
                 )}

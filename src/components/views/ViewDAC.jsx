@@ -100,11 +100,11 @@ class ViewDAC extends Component {
                 }}
                 wallet={wallet}
                 currentUser={currentUser}
-                commmunityUrl={dac.myCommunityUrl}
+                commmunityUrl={dac.communityUrl}
                 history={history}
               />
-              {dac.myCommunityUrl && (
-                <CommunityButton className="btn btn-secondary" url={dac.myCommunityUrl}>
+              {dac.communityUrl && (
+                <CommunityButton className="btn btn-secondary" url={dac.communityUrl}>
                   Join our community
                 </CommunityButton>
               )}
