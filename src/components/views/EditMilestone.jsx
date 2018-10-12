@@ -897,6 +897,7 @@ class EditMilestone extends Component {
                                 min="0"
                                 id="fiatamount-input"
                                 type="number"
+                                step="any"
                                 label="Maximum amount in fiat"
                                 value={fiatAmount}
                                 placeholder="10"
@@ -930,6 +931,7 @@ class EditMilestone extends Component {
                                 min="0"
                                 id="maxamount-input"
                                 type="number"
+                                step="any"
                                 label="Maximum amount in ETH"
                                 value={maxAmount}
                                 placeholder="10"

@@ -54,7 +54,7 @@ In the following sections you will learn all you need to know to run the DApp lo
     ```
     npm install
     ```
-5. That is it, you are now ready to run the giveth-dapp! Head to the [Run DApp](#run-dapp) section for further instructions.
+5. That is it, you are now ready to run the giveth-dapp! Head to the [Run DApp](#run) section for further instructions.
 
 #### Windows
 1. Make sure you have the LTS version of [64-bit NodeJS](https://nodejs.org/en/download/current) (v8.9.1)
@@ -182,7 +182,8 @@ Name | Blockchain | Branch Deployed | Auto Deploy | Use |
 You can change the environment to which the DApp connects through the node environment variables. See the [Configuration](#Configuration) section for more details.
 
 ### Release Process
-The development uses the Gitflow process with 2 weeks long sprints. This means there is new release to be tested every fortnight. We invite contributors to help us test the DApp in the release environment before we merge it to the master branch and deploy to production environments. If you are intereste, write to the DApp Development channel on [Riot](https://join.giveth.io). You can read more about the release planning on [our wiki](https://wiki.giveth.io/documentation/DApp/product-development-testing/).
+The development uses the Gitflow process with 2 weeks long sprints. This means there is new release to be tested every fortnight. We invite contributors to help us test the DApp in the release 
+environment before we merge it to the master branch and deploy to production environments. If you are interested, write to the DApp Development channel on [Riot](https://join.giveth.io). You can read more about the release planning on [our wiki](https://wiki.giveth.io/documentation/DApp/product-development-testing/).
 
 ## Help
 Reach out to us on [Riot](https://join.giveth.io) for any help or to share ideas.

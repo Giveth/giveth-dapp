@@ -171,6 +171,7 @@ class BridgeWithdrawButton extends Component {
                   name="amount"
                   label="How much do you want to withdraw?"
                   type="number"
+                  step="any"
                   value={amount}
                   validations={
                     {
