@@ -78,7 +78,6 @@ class ViewDAC extends Component {
       donations,
       dac,
       isLoadingDonations,
-      communityUrl,
       campaigns,
       isLoadingCampaigns,
     } = this.state;
@@ -102,12 +101,12 @@ class ViewDAC extends Component {
                 }}
                 wallet={wallet}
                 currentUser={currentUser}
-                commmunityUrl={communityUrl}
+                commmunityUrl={dac.communityUrl}
                 history={history}
               />
-              {communityUrl && (
-                <CommunityButton className="btn btn-secondary" url={communityUrl}>
-                  &nbsp;Join our community
+              {dac.communityUrl && (
+                <CommunityButton className="btn btn-secondary" url={dac.communityUrl}>
+                  Join our community
                 </CommunityButton>
               )}
             </BackgroundImageHeader>

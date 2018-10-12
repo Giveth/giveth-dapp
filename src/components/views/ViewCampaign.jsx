@@ -16,6 +16,7 @@ import DonateButton from '../DonateButton';
 import DelegateMultipleButton from '../DelegateMultipleButton';
 import ShowTypeDonations from '../ShowTypeDonations';
 import AuthenticatedLink from '../AuthenticatedLink';
+import CommunityButton from '../CommunityButton';
 
 import User from '../../models/User';
 import Campaign from '../../models/Campaign';
@@ -158,6 +159,11 @@ class ViewCampaign extends Component {
                     wallet={wallet}
                     currentUser={currentUser}
                   />
+                )}
+                {campaign.communityUrl && (
+                  <CommunityButton className="btn btn-secondary" url={campaign.communityUrl}>
+                    Join our community
+                  </CommunityButton>
                 )}
               </BackgroundImageHeader>
 
