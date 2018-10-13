@@ -69,11 +69,15 @@ class ViewMilestone extends Component {
         this.setState({ isLoading: false });
       });
 
-    this.donationsObserver = MilestoneService.subscribeDonations(milestoneId, donations =>
-      this.setState({
-        donations,
-        isLoadingDonations: false,
-      }),
+    if (this.donationsObserver) this.donationsObserver.unsubscribe();
+    this.donationsObserver = MilestoneService.subscribeDonations(
+      milestoneId,
+      donations =>
+        this.setState({
+          donations,
+          isLoadingDonations: false,
+        }),
+      () => this.setState({ isLoadingDonations: false }),
     );
   }
 
