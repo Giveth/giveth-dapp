@@ -21,7 +21,7 @@ class MilestoneService {
         status: { $ne: Donation.FAILED },
         $or: [{ intendedProjectTypeId: id }, { ownerTypeId: id }],
       },
-      schema: 'includeGiverDetails',
+      schema: 'includeTypeAndGiverDetails',
       $sort: { createdAt: -1 },
     });
 
@@ -29,9 +29,7 @@ class MilestoneService {
       .service('donations')
       .watch({ listStrategy: 'always' })
       .find(query)
-      .subscribe(resp => {
-        onSuccess(resp.data.map(d => new Donation(d)));
-      }, onError);
+      .subscribe(resp => onSuccess(resp.data.map(d => new Donation(d))), onError);
   }
 }
 

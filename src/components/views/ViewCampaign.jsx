@@ -62,10 +62,19 @@ class ViewCampaign extends Component {
       }); // TODO: inform user of error
 
     this.loadMoreMilestones(campaignId);
+  }
 
+  componentWillUnmount() {
+    if (this.donationsObserver) this.donationsObserver.unsubscribe();
+  }
+
+  loadDonations() {
     // Lazy load donations
+    const milestoneIds = this.state.milestones.map(m => m._id);
+
+    if (this.donationsObserver) this.donationsObserver.unsubscribe();
     this.donationsObserver = CampaignService.subscribeDonations(
-      campaignId,
+      [this.state.campaign.id, ...milestoneIds],
       donations =>
         this.setState({
           donations,
@@ -75,23 +84,21 @@ class ViewCampaign extends Component {
     );
   }
 
-  componentWillUnmount() {
-    if (this.donationsObserver) this.donationsObserver.unsubscribe();
-  }
-
   loadMoreMilestones(campaignId = this.props.match.params.id) {
     this.setState({ isLoadingMilestones: true }, () =>
       CampaignService.getMilestones(
         campaignId,
         this.state.milestonesPerBatch,
         this.state.milestonesLoaded,
-        (milestones, milestonesTotal) =>
+        (milestones, milestonesTotal) => {
           this.setState(prevState => ({
             milestones: prevState.milestones.concat(milestones),
             isLoadingMilestones: false,
             milestonesTotal,
             milestonesLoaded: prevState.milestonesLoaded + milestones.length,
-          })),
+          }));
+          this.loadDonations();
+        },
         () => this.setState({ isLoadingMilestones: false }),
       ),
     );

@@ -85,18 +85,20 @@ class CampaignService {
   /**
    * Lazy-load Campaign donations by subscribing to donations listener
    *
-   * @param id        ID of the Campaign which donations should be retrieved
+   * @param ids       ID of the Campaign and its milestones which donations should be retrieved
    * @param onSuccess Callback function once response is obtained successfully
    * @param onError   Callback function if error is encountered
    */
-  static subscribeDonations(id, onSuccess, onError) {
+  static subscribeDonations(ids, onSuccess, onError) {
     return feathersClient
       .service('donations')
       .watch({ listStrategy: 'always' })
       .find(
         paramsForServer({
           query: {
-            ownerTypeId: id,
+            ownerTypeId: {
+              $in: ids,
+            },
             isReturn: false,
             $sort: { createdAt: -1 },
           },
