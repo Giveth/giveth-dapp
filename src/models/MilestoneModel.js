@@ -1,12 +1,13 @@
+import React from 'react'
 import BigNumber from 'bignumber.js';
-import { getStartOfDayUTC } from 'lib/helpers';
+import { getStartOfDayUTC, getRandomWhitelistAddress } from 'lib/helpers';
 import BasicModel from './BasicModel';
 
 import MilestoneItemModel from './MilestoneItemModel';
 /**
  * The DApp Milestone model
  */
-export default class Milestone extends BasicModel {
+export default class MilestoneModel extends BasicModel {
   constructor(data) {
     super(data);
 
@@ -15,7 +16,7 @@ export default class Milestone extends BasicModel {
       maxAmount = new BigNumber('0'),
       fiatAmount = new BigNumber('0'),
       recipientAddress = '',
-      status = Milestone.PENDING,
+      status = MilestoneModel.PENDING,
       projectId = '',
       reviewerAddress = React.whitelist.reviewerWhitelist.length > 0
         ? getRandomWhitelistAddress(React.whitelist.reviewerWhitelist).address
@@ -36,6 +37,7 @@ export default class Milestone extends BasicModel {
     this._projectId = projectId;
     this._reviewAddress = reviewerAddress;
     this._items = items;
+    this._itemizeState = itemizeState;
     this._date = date;
     this._id = id;
     this._confirmations = confirmations;
@@ -49,43 +51,43 @@ export default class Milestone extends BasicModel {
   * */
 
   static get PROPOSED() {
-    return Milestone.statuses.PROPOSED;
+    return MilestoneModel.statuses.PROPOSED;
   }
 
   static get REJECTED() {
-    return Milestone.statuses.REJECTED;
+    return MilestoneModel.statuses.REJECTED;
   }
 
   static get PENDING() {
-    return Milestone.statuses.PENDING;
+    return MilestoneModel.statuses.PENDING;
   }
 
   static get IN_PROGRESS() {
-    return Milestone.statuses.IN_PROGRESS;
+    return MilestoneModel.statuses.IN_PROGRESS;
   }
 
   static get NEEDS_REVIEW() {
-    return Milestone.statuses.NEEDS_REVIEW;
+    return MilestoneModel.statuses.NEEDS_REVIEW;
   }
 
   static get COMPLETED() {
-    return Milestone.statuses.COMPLETED;
+    return MilestoneModel.statuses.COMPLETED;
   }
 
   static get CANCELED() {
-    return Milestone.statuses.CANCELED;
+    return MilestoneModel.statuses.CANCELED;
   }
 
   static get PAYING() {
-    return Milestone.statuses.PAYING;
+    return MilestoneModel.statuses.PAYING;
   }
 
   static get PAID() {
-    return Milestone.statuses.PAID;
+    return MilestoneModel.statuses.PAID;
   }
 
   static get FAILED() {
-    return Milestone.statuses.FAILED;
+    return MilestoneModel.statuses.FAILED;
   }
 
   static get statuses() {

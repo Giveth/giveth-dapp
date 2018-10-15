@@ -37,7 +37,6 @@ class BasicModel extends Model {
   }) {
     super();
 
-<<<<<<< HEAD
     this._id = _id;
     this._title = title;
     this._description = description;
