@@ -17,7 +17,6 @@ import FormsyImageUploader from '../FormsyImageUploader';
 import GoBackButton from '../GoBackButton';
 import {
   isOwner,
-  getRandomWhitelistAddress,
   getTruncatedText,
   getStartOfDayUTC,
 } from '../../lib/helpers';
@@ -56,21 +55,7 @@ class EditMilestone extends Component {
       isLoading: true,
       isSaving: false,
       formIsValid: false,
-
       milestone: new MilestoneModel({}),
-
-      // milestone model
-      // title: '',
-      // description: '',
-      // image: '',
-      // maxAmount: new BigNumber(0),
-      // fiatAmount: new BigNumber(0),
-      // recipientAddress: '',
-      // // completionDeadline: '',
-      // status: 'Pending',
-      // uploadNewImage: false,
-      // campaignTitle: '',
-      // projectId: undefined,
       hasWhitelist: React.whitelist.reviewerWhitelist.length > 0,
       whitelistReviewerOptions: React.whitelist.reviewerWhitelist.map(r => ({
         value: r.address,
@@ -82,14 +67,8 @@ class EditMilestone extends Component {
       })),
       currency: React.whitelist.tokenWhitelist.find(t => t.symbol === 'ETH'),
       reviewers: [],
-      // reviewerAddress:
-      //   React.whitelist.reviewerWhitelist.length > 0
-      //     ? getRandomWhitelistAddress(React.whitelist.reviewerWhitelist).address
-      //     : '',
       items: [],
       itemizeState: false,
-      // date: getStartOfDayUTC().subtract(1, 'd'),
-      selectedFiatType: 'EUR',
       isBlocking: false,
     };
 
@@ -255,10 +234,10 @@ class EditMilestone extends Component {
 
     this.props.getEthConversion(date).then(resp => {
       // update all the input fields
-      const rate = resp.rates[this.state.selectedFiatType];
+      const rate = resp.rates[milestone.selectedFiatType];
 
       this.setState(prevState => {
-        milestone.fiatAmount = prevState.fiatAmount.div(rate);
+        milestone.fiatAmount = prevState.milestone.fiatAmount.div(rate);
         return {
           maxAmount: milestone.fiatAmount,
         };
@@ -267,33 +246,27 @@ class EditMilestone extends Component {
   }
 
   setFiatAmount(name, value) {
+    const { milestone } = this.state;    
     const maxAmount = new BigNumber(value || '0');
-    const conversionRate = this.props.currentRate.rates[this.state.selectedFiatType];
-    const { milestone } = this.state;
+    const conversionRate = this.props.currentRate.rates[milestone.selectedFiatType];
 
     if (conversionRate && maxAmount.gte(0)) {
       milestone.maxAmount = maxAmount;
       milestone.fiatAmount = maxAmount.times(conversionRate);
 
-      this.setState({
-        fiatAmount: maxAmount.times(conversionRate),
-        maxAmount,
-      });
+      this.setState({ milestone: milestone });
     }
   }
 
   setMaxAmount(name, value) {
+    const { milestone } = this.state;    
     const fiatAmount = new BigNumber(value || '0');
-    const conversionRate = this.props.currentRate.rates[this.state.selectedFiatType];
-    const { milestone } = this.state;
+    const conversionRate = this.props.currentRate.rates[milestone.selectedFiatType];
     if (conversionRate && fiatAmount.gte(0)) {
       milestone.maxAmount = fiatAmount.div(conversionRate);
       milestone.fiatAmount = fiatAmount;
 
-      this.setState({
-        maxAmount: fiatAmount.div(conversionRate),
-        fiatAmount,
-      });
+      this.setState({ milestone: milestone });
     }
   }
 
@@ -331,11 +304,15 @@ class EditMilestone extends Component {
   }
 
   changeSelectedFiat(fiatType) {
+    const { milestone } = this.state;    
     const conversionRate = this.props.currentRate.rates[fiatType];
-    this.setState(prevState => ({
-      maxAmount: prevState.fiatAmount.div(conversionRate),
-      selectedFiatType: fiatType,
-    }));
+    const maxAmount = milestone.fiatAmount.div(conversionRate)
+    
+    milestone.maxAmount = maxAmount;
+    milestone.fiatAmount = maxAmount.times(conversionRate)
+    milestone.selectedFiatType = fiatType
+
+    this.setState({ milestone: milestone })
   }
 
   toggleFormValid(state) {
@@ -387,10 +364,10 @@ class EditMilestone extends Component {
         status: this.props.isProposed || model.status === 'Rejected' ? 'Proposed' : model.status, // make sure not to change status!
         items: this.state.itemizeState ? model.items : [],
         ethConversionRateTimestamp: this.props.currentRate.timestamp,
-        selectedFiatType: this.state.selectedFiatType,
+        selectedFiatType: model.selectedFiatType,
         date: model.date,
         fiatAmount: model.fiatAmount.toFixed(),
-        conversionRate: this.props.currentRate.rates[this.state.selectedFiatType],
+        conversionRate: this.props.currentRate.rates[model.selectedFiatType],
       };
 
       console.log('constructedModel', constructedModel);
@@ -712,8 +689,6 @@ class EditMilestone extends Component {
       whitelistReviewerOptions,
       tokenWhitelist,
       itemizeState,
-
-      selectedFiatType,
       reviewers,
       isBlocking,
       milestone,
@@ -942,7 +917,7 @@ class EditMilestone extends Component {
                                 id="fiatamount-input"
                                 type="number"
                                 label="Maximum amount in fiat"
-                                value={milestone.fiatAmount}
+                                value={milestone.fiatAmount.toNumber()}
                                 placeholder="10"
                                 validations="greaterThan:0"
                                 validationErrors={{
@@ -961,8 +936,8 @@ class EditMilestone extends Component {
                                 options={fiatTypes}
                                 onChange={this.changeSelectedFiat}
                                 helpText={`1 Eth = ${
-                                  currentRate.rates[selectedFiatType]
-                                } ${selectedFiatType}`}
+                                  currentRate.rates[milestone.selectedFiatType]
+                                } ${milestone.selectedFiatType}`}
                                 disabled={milestone.projectId}
                                 required
                               />

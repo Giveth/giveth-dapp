@@ -1,4 +1,4 @@
-import React from 'react'
+import React from 'react';
 import BigNumber from 'bignumber.js';
 import { getStartOfDayUTC, getRandomWhitelistAddress } from 'lib/helpers';
 import BasicModel from './BasicModel';
@@ -14,6 +14,7 @@ export default class MilestoneModel extends BasicModel {
     const {
       id = data._id || undefined,
       maxAmount = new BigNumber('0'),
+      selectedFiatType = "EUR",
       fiatAmount = new BigNumber('0'),
       recipientAddress = '',
       status = MilestoneModel.PENDING,
@@ -31,6 +32,7 @@ export default class MilestoneModel extends BasicModel {
     } = data;
 
     this._maxAmount = maxAmount;
+    this._selectedFiatType = selectedFiatType;
     this._fiatAmount = fiatAmount;
     this._recipientAddress = recipientAddress;
     this._status = status;
@@ -145,6 +147,15 @@ export default class MilestoneModel extends BasicModel {
     this._maxAmount = value;
   }
 
+  get selectedFiatType() {
+    return this._selectedFiatType;
+  }
+
+  set selectedFiatType(value) {
+    this.checkType(value, ['string'], 'selectedFiatType');
+    this._selectedFiatType = value;
+  }  
+
   get fiatAmount() {
     return this._fiatAmount;
   }
@@ -225,7 +236,7 @@ export default class MilestoneModel extends BasicModel {
   }
 
   set date(value) {
-    this.checkType(value, ['date'], 'date');
+    this.checkIsMoment(value, 'date');
     this._date = value;
   }
 

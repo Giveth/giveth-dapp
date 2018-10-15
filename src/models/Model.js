@@ -1,3 +1,5 @@
+import moment from 'moment'
+
 /**
  * The Basic model containing helper functions
  */
@@ -61,6 +63,24 @@ class Model {
       );
     }
   }
+
+  /**
+   * Checks that type of passed value is as moment
+   *
+   * @param value            Value which is to be tested
+   *
+   * @throws TypeError describing what was the passed type and which types were expected
+   */
+  checkIsMoment(value, propName) {
+    if (!moment.isMoment(value)) {
+      throw new TypeError(
+        `The type of ${propName} supplied to ${
+          this.constructor.name
+        } is: ${typeof value}. Expected a moment`,
+      );
+    }
+  }
+
 }
 
 export default Model;
