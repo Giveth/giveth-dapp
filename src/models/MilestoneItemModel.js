@@ -1,3 +1,4 @@
+import React from 'react';
 import { getStartOfDayUTC } from 'lib/helpers';
 import { fiatTypes } from 'contextProviders/EthConversionProvider';
 import moment from 'moment';
@@ -7,14 +8,27 @@ export default class MilestoneItemModel extends Model {
   constructor(data) {
     super(data);
 
-    this._date = getStartOfDayUTC().subtract(1, 'd');
-    this._description = data.description || '';
-    this._image = data.image || '';
-    this._selectedFiatType = data.fiatType || 'EUR';
-    this._fiatAmount = data.fiatAmount || 0;
-    this._wei = data.wei || '';
-    this._conversionRate = data.conversionRate || parseFloat(0);
-    this._ethConversionRateTimestamp = data.ethConversionRateTimestamp || new Date().toISOString();
+    const {
+      date = getStartOfDayUTC().subtract(1, 'd'),
+      description = "",
+      image = "",
+      selectedFiatType = "EUR",
+      token = React.whitelist.tokenWhitelist.find(t => t.symbol === 'ETH').address,
+      fiatAmount = 0,
+      wei = "",
+      conversionRate = parseFloat(0),
+      ethConversionRateTimestamp = new Date().toISOString(),
+    } = data;
+
+    this._date = date;
+    this._description = description;
+    this._image = image;
+    this._selectedFiatType = selectedFiatType;
+    this._fiatAmount = fiatAmount;
+    this._wei = wei;
+    this._conversionRate = conversionRate;
+    this._ethConversionRateTimestamp = ethConversionRateTimestamp;
+    this._token = token;
   }
 
   get date() {
@@ -103,4 +117,12 @@ export default class MilestoneItemModel extends Model {
       ethConversionRateTimestamp: this._ethConversionRateTimestamp,
     };
   }
+
+  get token() {
+    return this._token;
+  }
+
+  set token(value) {
+    this._token = value
+  }  
 }

@@ -33,13 +33,13 @@ class RateConvertor extends Component {
 
   componentWillMount() {
     this.props
-      .getEthConversion(this.state.date)
+      .getEthConversion(this.state.date, this.props.token.symbol)
       .then(resp => this.setState({ conversionRate: resp }));
   }
 
   setDate(date) {
     this.setState({ date });
-    this.props.getEthConversion(date).then(resp => {
+    this.props.getEthConversion(date, this.props.token.symbol).then(resp => {
       // update all the input fields
       const rate = resp.rates[this.state.selectedFiatType];
 
@@ -143,7 +143,7 @@ class RateConvertor extends Component {
               helpText={
                 conversionRate &&
                 conversionRate.rates &&
-                `1 Eth = ${conversionRate.rates[selectedFiatType]} ${selectedFiatType}`
+                `1 ${token.symbol} = ${conversionRate.rates[selectedFiatType]} ${selectedFiatType}`
               }
               required
               disabled={this.props.disabled}

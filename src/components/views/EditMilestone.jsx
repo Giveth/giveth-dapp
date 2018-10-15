@@ -164,7 +164,7 @@ class EditMilestone extends Component {
                 });
               }
             })
-            .then(() => this.props.getEthConversion(this.state.date))
+            .then(() => this.props.getEthConversion(this.state.date, this.state.currency.symbol))
             .then(() => {
               if (!this.state.hasWhitelist) this.getReviewers();
             })
@@ -228,11 +228,12 @@ class EditMilestone extends Component {
   }
 
   setDate(date) {
+    console.log('fetching rates for date', date)
     this.setState({ date });
-    const { milestone } = this.state;
+    const { milestone, currency } = this.state;
     milestone.date = date;
 
-    this.props.getEthConversion(date).then(resp => {
+    this.props.getEthConversion(date, currency.symbol).then(resp => {
       // update all the input fields
       const rate = resp.rates[milestone.selectedFiatType];
 
@@ -627,7 +628,8 @@ class EditMilestone extends Component {
   }
 
   setCurrency(address) {
-    this.setState(prevState => ({ currency: React.whitelist.tokenWhitelist.find(t => t.address === address) }));    
+    this.setState(prevState => ({ currency: React.whitelist.tokenWhitelist.find(t => t.address === address) }), 
+      () => this.setDate(this.state.milestone.data || getStartOfDayUTC()));     
   }
 
   handleTemplateChange(option) {
@@ -935,7 +937,7 @@ class EditMilestone extends Component {
                                 value={milestone.selectedFiatType}
                                 options={fiatTypes}
                                 onChange={this.changeSelectedFiat}
-                                helpText={`1 Eth = ${
+                                helpText={`1 ${currency.symbol} = ${
                                   currentRate.rates[milestone.selectedFiatType]
                                 } ${milestone.selectedFiatType}`}
                                 disabled={milestone.projectId}
