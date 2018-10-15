@@ -58,6 +58,7 @@ class UserProvider extends Component {
     this.lockWallet = this.lockWallet.bind(this);
     this.walletUnlocked = this.walletUnlocked.bind(this);
     this.hideUnlockWalletModal = this.hideUnlockWalletModal.bind(this);
+    this.hideChangeReviewer = this.hideChangeReviewer.bind(this);
     this.getUserData = this.getUserData.bind(this);
 
     // Making unlock wallet global
@@ -222,9 +223,7 @@ class UserProvider extends Component {
   }
 
   hideChangeReviewer() {
-    console.log('Closing modal');
     this.setState({ showReviewerModal: false, actionAfter: undefined });
-    // this.setState({ showReviewerModal: false, actionAfter: undefined });
   }
 
   render() {
