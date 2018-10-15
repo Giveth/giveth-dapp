@@ -49,6 +49,7 @@ class ViewCampaign extends Component {
     };
 
     this.loadMoreMilestones = this.loadMoreMilestones.bind(this);
+    // this.changeReviewer = this.changeReviewer.bind(this);
   }
 
   componentDidMount() {
@@ -97,6 +98,10 @@ class ViewCampaign extends Component {
     );
   }
 
+  // changeReviewer(campaign, reviewer) {
+  // React.changeReviewer
+  // }
+
   removeMilestone(id) {
     checkWalletBalance(this.props.wallet)
       .then(() => {
@@ -118,7 +123,7 @@ class ViewCampaign extends Component {
   }
 
   render() {
-    const { history, currentUser, wallet } = this.props;
+    const { history, currentUser, wallet, to } = this.props;
     const {
       isLoading,
       campaign,
@@ -280,6 +285,15 @@ class ViewCampaign extends Component {
                           {getUserName(campaign.reviewer)}
                         </Link>
                       )}
+                    {campaign.reviewer && (
+                      <a
+                        className="btn btn-sm"
+                        href={to}
+                        onClick={() => React.changeReviewer(() => history.push(to))}
+                      >
+                        Change Reviewer
+                      </a>
+                    )}
                     {(!campaign || !campaign.reviewer) && <span>Unknown user</span>}
                   </div>
                 </div>
@@ -297,6 +311,7 @@ ViewCampaign.propTypes = {
     goBack: PropTypes.func.isRequired,
     push: PropTypes.func.isRequired,
   }).isRequired,
+  to: PropTypes.string.isRequired,
   currentUser: PropTypes.instanceOf(User),
   match: PropTypes.shape({
     params: PropTypes.shape({

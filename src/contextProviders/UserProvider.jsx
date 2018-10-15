@@ -47,12 +47,14 @@ class UserProvider extends Component {
       wallet: undefined,
       walletLocked: true,
       showUnlockWalletModal: false,
+      showReviewerModal: false,
     };
 
     this.handleWalletChange = this.handleWalletChange.bind(this);
     this.onSignOut = this.onSignOut.bind(this);
     this.onSignIn = this.onSignIn.bind(this);
     this.unlockWallet = this.unlockWallet.bind(this);
+    this.changeReviewer = this.changeReviewer.bind(this);
     this.lockWallet = this.lockWallet.bind(this);
     this.walletUnlocked = this.walletUnlocked.bind(this);
     this.hideUnlockWalletModal = this.hideUnlockWalletModal.bind(this);
@@ -60,6 +62,7 @@ class UserProvider extends Component {
 
     // Making unlock wallet global
     React.unlockWallet = this.unlockWallet;
+    React.changeReviewer = this.changeReviewer;
   }
 
   componentWillMount() {
@@ -178,6 +181,10 @@ class UserProvider extends Component {
     this.setState({ showUnlockWalletModal: true, actionAfter });
   }
 
+  changeReviewer(actionAfter) {
+    this.setState({ showReviewerModal: true, actionAfter });
+  }
+
   lockWallet() {
     React.swal({
       title: 'Lock your wallet?',
@@ -205,8 +212,19 @@ class UserProvider extends Component {
     this.setState({ walletLocked: false });
   }
 
+  reviewFinished() {
+    this.hideChangeReviewer();
+    React.toast.success(<p>New Reviewer has been notified.</p>);
+  }
+
   hideUnlockWalletModal() {
     this.setState({ showUnlockWalletModal: false, actionAfter: undefined });
+  }
+
+  hideChangeReviewer() {
+    console.log('Closing modal');
+    this.setState({ showReviewerModal: false, actionAfter: undefined });
+    // this.setState({ showReviewerModal: false, actionAfter: undefined });
   }
 
   render() {
@@ -217,6 +235,7 @@ class UserProvider extends Component {
       isLoading,
       hasError,
       showUnlockWalletModal,
+      showReviewerModal,
       actionAfter,
       walletLocked,
     } = this.state;
@@ -226,6 +245,7 @@ class UserProvider extends Component {
       onSignOut,
       walletUnlocked,
       hideUnlockWalletModal,
+      hideChangeReviewer,
       handleWalletChange,
       lockWallet,
     } = this;
@@ -240,6 +260,7 @@ class UserProvider extends Component {
             isLoading,
             hasError,
             showUnlockWalletModal,
+            showReviewerModal,
             actionAfter,
             walletLocked,
           },
@@ -249,6 +270,7 @@ class UserProvider extends Component {
             walletUnlocked,
             lockWallet,
             hideUnlockWalletModal,
+            hideChangeReviewer,
             handleWalletChange,
           },
         }}

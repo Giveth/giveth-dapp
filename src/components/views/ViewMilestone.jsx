@@ -128,7 +128,7 @@ class ViewMilestone extends Component {
   }
 
   render() {
-    const { history, wallet, currentUser } = this.props;
+    const { history, wallet, currentUser, to } = this.props;
     const {
       isLoading,
       id,
@@ -326,6 +326,15 @@ class ViewMilestone extends Component {
                                     <Avatar size={30} src={getUserAvatar(reviewer)} round />
                                     {getUserName(reviewer)}
                                   </Link>
+                                  {reviewer && (
+                                    <a
+                                      className="btn btn-sm"
+                                      href={to}
+                                      onClick={() => React.changeReviewer(() => history.push(to))}
+                                    >
+                                      Change Reviewer
+                                    </a>
+                                  )}
                                 </td>
                               </tr>
                             </tbody>
@@ -449,6 +458,7 @@ ViewMilestone.propTypes = {
     goBack: PropTypes.func.isRequired,
     push: PropTypes.func.isRequired,
   }).isRequired,
+  to: PropTypes.string.isRequired,
   currentUser: PropTypes.instanceOf(User),
   wallet: PropTypes.instanceOf(GivethWallet),
   match: PropTypes.shape({

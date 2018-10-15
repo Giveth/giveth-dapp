@@ -45,6 +45,7 @@ import EditMilestone from '../components/views/EditMilestone';
 import MainMenu from '../components/MainMenu';
 import Loader from '../components/Loader';
 import UnlockWallet from '../components/UnlockWallet';
+import ChangeReviewer from '../components/ChangeReviewer';
 import ErrorBoundary from '../components/ErrorBoundary';
 
 // context providers
@@ -120,14 +121,17 @@ class Application extends Component {
                     isLoading,
                     hasError,
                     showUnlockWalletModal,
+                    showReviewerModal,
                     actionAfter,
                   },
                   actions: {
                     onSignIn,
                     onSignOut,
                     walletUnlocked,
+                    reviewFinished,
                     hideUnlockWalletModal,
                     handleWalletChange,
+                    hideChangeReviewer,
                   },
                 }) => (
                   <div>
@@ -144,6 +148,13 @@ class Application extends Component {
                         onCloseClicked={hideUnlockWalletModal}
                       />
                     )}
+
+                    <ChangeReviewer
+                      isOpen={showReviewerModal}
+                      actionAfter={actionAfter}
+                      onClose={reviewFinished}
+                      onCloseClicked={hideChangeReviewer}
+                    />
 
                     {!isLoading &&
                       !hasError && (
