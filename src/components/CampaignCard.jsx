@@ -84,7 +84,7 @@ class CampaignCard extends Component {
               type="campaign"
               peopleCount={campaign.peopleCount}
               totalDonated={campaign.totalDonated}
-              milestonesCount={campaign.milestonesCount}
+              currentBalance={campaign.currentBalance}
             />
           </div>
         </div>

@@ -1,43 +1,47 @@
-import React from 'react';
 import BigNumber from 'bignumber.js';
-import { getStartOfDayUTC, getRandomWhitelistAddress } from 'lib/helpers';
+import { getStartOfDayUTC } from 'lib/helpers';
 import BasicModel from './BasicModel';
 
-import MilestoneModelItemModel from './MilestoneItemModel';
+import MilestoneItemModel from './MilestoneItemModel';
 /**
- * The DApp MilestoneModel model
+ * The DApp Milestone model
  */
-export default class MilestoneModel extends BasicModel {
+export default class Milestone extends BasicModel {
   constructor(data) {
     super(data);
 
-    this._maxAmount = data.maxAmount || new BigNumber(0);
-    this._fiatAmount = data.fiatAmount || new BigNumber(0);
-    this._recipientAddress = data.recipientAddress || '';
-    this._status = data.status || MilestoneModel.PENDING;
-    this._campaignTitle = data.campaignTitle || '';
-    this._projectId = data.projectId || '';
-    this._reviewAddress =
-      React.whitelist.reviewerWhitelist.length > 0
+    const {
+      id = data._id || undefined,
+      maxAmount = new BigNumber('0'),
+      fiatAmount = new BigNumber('0'),
+      recipientAddress = '',
+      status = Milestone.PENDING,
+      projectId = '',
+      reviewerAddress = React.whitelist.reviewerWhitelist.length > 0
         ? getRandomWhitelistAddress(React.whitelist.reviewerWhitelist).address
-        : '';
-    this._items = data.items || [];
-    this._itemizeState = data.itemizeState || false;
-    this._date = getStartOfDayUTC().subtract(1, 'd');
+        : '',
+      items = [],
+      itemizeState = false,
+      date = getStartOfDayUTC().subtract(1, 'd'),
+      confirmations = 0,
+      requiredConfirmations = 6,
+      commitTime,
+      token = React.whitelist.tokenWhitelist.find(t => t.symbol === 'ETH').address,
+    } = data;
 
-    this._id = data._id;
-    this._confirmations = data.confirmations || 0;
-    this._requiredConfirmations = data.requiredConfirmations;
-    this._commitTime = data.commitTime || 0;
-    this._token = data.token || React.whitelist.tokenWhitelist.find(t => t.symbol === 'ETH').address
-  }
-
-  /**
-    methods
-  * */
-
-  save() {
-    // console.log('milestone model', this)
+    this._maxAmount = maxAmount;
+    this._fiatAmount = fiatAmount;
+    this._recipientAddress = recipientAddress;
+    this._status = status;
+    this._projectId = projectId;
+    this._reviewAddress = reviewerAddress;
+    this._items = items;
+    this._date = date;
+    this._id = id;
+    this._confirmations = confirmations;
+    this._requiredConfirmations = requiredConfirmations;
+    this._commitTime = commitTime;
+    this._token = token;
   }
 
   /**
@@ -45,43 +49,43 @@ export default class MilestoneModel extends BasicModel {
   * */
 
   static get PROPOSED() {
-    return MilestoneModel.statuses.PROPOSED;
+    return Milestone.statuses.PROPOSED;
   }
 
   static get REJECTED() {
-    return MilestoneModel.statuses.REJECTED;
+    return Milestone.statuses.REJECTED;
   }
 
   static get PENDING() {
-    return MilestoneModel.statuses.PENDING;
+    return Milestone.statuses.PENDING;
   }
 
   static get IN_PROGRESS() {
-    return MilestoneModel.statuses.IN_PROGRESS;
+    return Milestone.statuses.IN_PROGRESS;
   }
 
   static get NEEDS_REVIEW() {
-    return MilestoneModel.statuses.NEEDS_REVIEW;
+    return Milestone.statuses.NEEDS_REVIEW;
   }
 
   static get COMPLETED() {
-    return MilestoneModel.statuses.COMPLETED;
+    return Milestone.statuses.COMPLETED;
   }
 
   static get CANCELED() {
-    return MilestoneModel.statuses.CANCELED;
+    return Milestone.statuses.CANCELED;
   }
 
   static get PAYING() {
-    return MilestoneModel.statuses.PAYING;
+    return Milestone.statuses.PAYING;
   }
 
   static get PAID() {
-    return MilestoneModel.statuses.PAID;
+    return Milestone.statuses.PAID;
   }
 
   static get FAILED() {
-    return MilestoneModel.statuses.FAILED;
+    return Milestone.statuses.FAILED;
   }
 
   static get statuses() {
@@ -199,7 +203,7 @@ export default class MilestoneModel extends BasicModel {
 
   set items(value) {
     value.forEach(item => {
-      this.checkInstanceOf(item, MilestoneModelItemModel, 'items');
+      this.checkInstanceOf(item, MilestoneItemModel, 'items');
     });
 
     this._items = value;
@@ -261,11 +265,12 @@ export default class MilestoneModel extends BasicModel {
     this._commitTime = value;
   }
 
+
   get token() {
     return this._token;
   }
 
   set token(value) {
     this._token = value
-  }
+  }  
 }

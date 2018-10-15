@@ -31,11 +31,13 @@ class BasicModel extends Model {
     reviewer,
     url,
     totalDonated = '0',
+    currentBalance = '0',
     donationCount = 0,
     peopleCount = 0,
   }) {
     super();
 
+<<<<<<< HEAD
     this._id = _id;
     this._title = title;
     this._description = description;
@@ -47,6 +49,7 @@ class BasicModel extends Model {
     this._reviewer = reviewer;
     this._url = url;
     this._totalDonated = totalDonated;
+    this._currentBalance = currentBalance;
     this._donationCount = donationCount;
     this._peopleCount = peopleCount;
     this._Order = -1;
@@ -141,6 +144,15 @@ class BasicModel extends Model {
   set totalDonated(value) {
     this.checkType(value, ['string'], 'totalDonated');
     this._totalDonated = value;
+  }
+
+  set currentBalance(value) {
+    this.checkType(value, ['string'], 'currentBalance');
+    this._currentBalance = value;
+  }
+
+  get currentBalance() {
+    return this._currentBalance;
   }
 
   get donationCount() {
