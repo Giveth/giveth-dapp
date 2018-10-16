@@ -151,6 +151,7 @@ class ViewMilestone extends Component {
       fiatAmount,
       selectedFiatType,
       campaign,
+      token,
     } = this.state;
 
     return (
@@ -172,7 +173,7 @@ class ViewMilestone extends Component {
               {this.state.totalDonated < this.state.maxAmount && (
                 <p>
                   Amount requested:
-                  {this.state.maxAmount} ETH
+                  {this.state.maxAmount} {token.symbol}
                 </p>
               )}
               <p>
@@ -277,7 +278,7 @@ class ViewMilestone extends Component {
                                 <th className="td-item-date">Date</th>
                                 <th className="td-item-description">Description</th>
                                 <th className="td-item-amount-fiat">Amount Fiat</th>
-                                <th className="td-item-amount-ether">Amount Ether</th>
+                                <th className="td-item-amount-ether">Amount {token.symbol}</th>
                                 <th className="td-item-file-upload">Attached proof</th>
                               </tr>
                             </thead>
@@ -295,6 +296,7 @@ class ViewMilestone extends Component {
                                     wei: item.wei || '0',
                                     image: item.image,
                                   }}
+                                  token={token}
                                 />
                               ))}
                             </tbody>
@@ -335,7 +337,7 @@ class ViewMilestone extends Component {
                         <div className="form-group">
                           <span className="label">Recipient</span>
                           <small className="form-text">
-                            Where the Ether goes after successful completion of the Milestone
+                            Where the {token.symbol} goes after successful completion of the Milestone
                           </small>
 
                           <table className="table-responsive">
@@ -356,7 +358,7 @@ class ViewMilestone extends Component {
                           <div className="form-group">
                             <span className="label">Date of milestone</span>
                             <small className="form-text">
-                              This date defines the eth-fiat conversion rate
+                              This date defines the {token.symbol}-fiat conversion rate
                             </small>
                             {moment.utc(date).format('Do MMM YYYY')}
                           </div>
@@ -365,10 +367,10 @@ class ViewMilestone extends Component {
                         <div className="form-group">
                           <span className="label">Max amount to raise</span>
                           <small className="form-text">
-                            The maximum amount of ETH that can be donated to this Milestone. Based
+                            The maximum amount of {token.symbol} that can be donated to this Milestone. Based
                             on the requested amount in fiat.
                           </small>
-                          {maxAmount} ETH
+                          {maxAmount} {token.symbol}
                           {fiatAmount &&
                             selectedFiatType &&
                             items.length === 0 && (
@@ -382,9 +384,9 @@ class ViewMilestone extends Component {
                         <div className="form-group">
                           <span className="label">Amount donated</span>
                           <small className="form-text">
-                            The amount of ETH currently donated to this Milestone
+                            The amount of {token.symbol} currently donated to this Milestone
                           </small>
-                          {totalDonated} ETH
+                          {totalDonated} {token.symbol}
                         </div>
 
                         <div className="form-group">
