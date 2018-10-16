@@ -7,7 +7,7 @@ import { convertEthHelper } from '../lib/helpers';
  *
  * TODO: Check the properties that are passed, sometimes they are number, sometimes strings...
  */
-const CardStats = ({ peopleCount, maxAmount, totalDonated, currentBalance, type, status }) => (
+const CardStats = ({ peopleCount, maxAmount, totalDonated, currentBalance, type, status, token }) => (
   <div className="row card-stats">
     <div className="col-4 text-left">
       <span>
@@ -18,15 +18,15 @@ const CardStats = ({ peopleCount, maxAmount, totalDonated, currentBalance, type,
     </div>
 
     <div className="col-4 text-center card-center">
-      {maxAmount && <p>Amount requested:{convertEthHelper(maxAmount)} ETH</p>}
+      {maxAmount && <p>Amount requested:{convertEthHelper(maxAmount )} {token.symbol}</p>}
 
-      {totalDonated && <p>Donated: {convertEthHelper(totalDonated, !maxAmount && 2)} ETH</p>}
+      {totalDonated && <p>Donated: {convertEthHelper(totalDonated, !maxAmount && 2)} {token.symbol}</p>}
     </div>
 
     <div className="col-4 text-right">
       {(type === 'dac' || type === 'campaign') && (
         <div>
-          <p>Balance: {convertEthHelper(currentBalance, 2)} ETH</p>
+          <p>Balance: {convertEthHelper(currentBalance, 2)} {token.symbol}</p>
         </div>
       )}
 
@@ -50,6 +50,7 @@ CardStats.propTypes = {
   maxAmount: PropTypes.string,
   totalDonated: PropTypes.string,
   currentBalance: PropTypes.string,
+  token: PropTypes.object
 };
 
 CardStats.defaultProps = {
