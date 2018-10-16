@@ -7,7 +7,9 @@ import { Link } from 'react-router-dom';
 import Toggle from 'react-toggle';
 
 import GA from 'lib/GoogleAnalytics';
+import Slider from 'react-rangeslider';
 import getNetwork from '../lib/blockchain/getNetwork';
+import 'react-rangeslider/lib/index.css';
 import User from '../models/User';
 import { getGasPrice } from '../lib/helpers';
 import { getHomeWeb3 } from '../lib/blockchain/getWeb3';
@@ -353,11 +355,28 @@ class DonateButton extends React.Component {
             onInvalid={() => this.toggleFormValid(false)}
             layout="vertical"
           >
+            <span className="label">How much Ξ do you want to donate?</span>
+            <div className="form-group">
+              <Slider
+                type="range"
+                name="amount2"
+                min={0}
+                max={parseInt(maxAmount * 100, 10) / 100}
+                step={0.01}
+                value={Number(this.state.amount).toFixed(2)}
+                labels={{
+                  0: '0',
+                  [maxAmount]: parseInt(maxAmount * 100, 10) / 100,
+                }}
+                format={val => `${val} ETH`}
+                onChange={newAmount => this.setState({ amount: Number(newAmount).toFixed(2) })}
+              />
+            </div>
+
             <div className="form-group">
               <Input
                 name="amount"
                 id="amount-input"
-                label="How much Ξ do you want to donate?"
                 type="number"
                 step="any"
                 value={amount}
@@ -370,7 +389,6 @@ class DonateButton extends React.Component {
                   greaterThan: 'Minimum value must be at least Ξ0.01',
                   lessOrEqualTo: `This donation exceeds your wallet balance or the milestone max amount: ${maxAmount} ETH.`,
                 }}
-                required
                 autoFocus
               />
             </div>
