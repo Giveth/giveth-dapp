@@ -145,6 +145,7 @@ class ViewCampaign extends Component {
                     type: Campaign.type,
                     title: campaign.title,
                     id: campaign.id,
+                    token: { symbol: 'ETH' },
                     adminId: campaign.projectId,
                   }}
                   wallet={wallet}
@@ -259,6 +260,7 @@ class ViewCampaign extends Component {
                         title: campaign.title,
                         id: campaign.id,
                         adminId: campaign.projectId,
+                        token: { symbol: 'ETH' }
                       }}
                       wallet={wallet}
                       currentUser={currentUser}

@@ -1030,11 +1030,11 @@ class MyMilestones extends Component {
                                   {getReadableStatus(m.status)}
                                 </td>
                                 <td className="td-donations-number">
-                                  {convertEthHelper(m.maxAmount)} ETH
+                                  {convertEthHelper(m.maxAmount)} {m.token.symbol}
                                 </td>
                                 <td className="td-donations-number">{m.donationCount || 0}</td>
                                 <td className="td-donations-">
-                                  {convertEthHelper(m.totalDonated)} ETH
+                                  {convertEthHelper(m.totalDonated)} {m.token.symbol}
                                 </td>
                                 <td className="td-reviewer">
                                   {m.reviewer &&

@@ -293,7 +293,7 @@ class DonateButton extends React.Component {
           style={modalStyles}
         >
           <h3>
-            Give Ether to support <em>{model.title}</em>
+            Give {model.token.symbol} to support <em>{model.title}</em>
           </h3>
 
           {homeWeb3 &&
@@ -357,7 +357,7 @@ class DonateButton extends React.Component {
               <Input
                 name="amount"
                 id="amount-input"
-                label="How much Ξ do you want to donate?"
+                label={`How much ${model.token.symbol} do you want to donate?`}
                 type="number"
                 value={amount}
                 placeholder="1"
@@ -366,8 +366,8 @@ class DonateButton extends React.Component {
                   greaterThan: 0.009,
                 }}
                 validationErrors={{
-                  greaterThan: 'Minimum value must be at least Ξ0.01',
-                  lessOrEqualTo: `This donation exceeds your wallet balance or the milestone max amount: ${maxAmount} ETH.`,
+                  greaterThan: `Minimum value must be at least ${model.token.symbol}0.01`,
+                  lessOrEqualTo: `This donation exceeds your wallet balance or the milestone max amount: ${maxAmount} ${model.token.symbol}.`,
                 }}
                 required
                 autoFocus
