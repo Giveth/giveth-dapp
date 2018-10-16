@@ -52,7 +52,9 @@ class MilestoneProof extends Component {
 
   render() {
     const { items, addMilestoneItemModalVisible } = this.state;
-    const { isEditMode, token } = this.props;
+    const { isEditMode, token, milestoneStatus } = this.props;
+
+    const canEdit = isEditMode && ['Proposed', 'Pending'].includes(milestoneStatus)
 
     return (
       <div>
@@ -70,7 +72,7 @@ class MilestoneProof extends Component {
                           <th className="td-item-amount-fiat">Amount Fiat</th>
                           <th className="td-item-fiat-amount">Amount {token.name}</th>
                           <th className="td-item-file-upload">Attached proof</th>
-                          {isEditMode && <th className="td-item-action" />}
+                          {canEdit && <th className="td-item-action" />}
                         </tr>
                       </thead>
                       <tbody>
@@ -80,7 +82,7 @@ class MilestoneProof extends Component {
                             index={i}
                             item={item}
                             removeItem={() => this.removeItem(i)}
-                            isEditMode={isEditMode}
+                            isEditMode={canEdit}
                             token={token}
                           />
                         ))}
@@ -90,12 +92,12 @@ class MilestoneProof extends Component {
                 )}
 
                 {items.length > 0 &&
-                  isEditMode && (
+                  canEdit && (
                     <AddMilestoneItem onClick={() => this.toggleAddMilestoneItemModal()} />
                   )}
 
                 {items.length === 0 &&
-                  isEditMode && (
+                  canEdit && (
                     <div className="text-center">
                       <p>Attach an expense, invoice or anything else that requires payment.</p>
                       <AddMilestoneItem onClick={() => this.toggleAddMilestoneItemModal()} />
@@ -125,6 +127,7 @@ MilestoneProof.propTypes = {
   items: PropTypes.arrayOf(PropTypes.object).isRequired,
   onItemsChanged: PropTypes.func,
   isEditMode: PropTypes.bool.isRequired,
+  milestoneStatus: PropTypes.string.isRequired
 };
 
 export default MilestoneProof;

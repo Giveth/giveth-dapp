@@ -7,6 +7,7 @@ import BigNumber from 'bignumber.js';
 import { Form, Input } from 'formsy-react-components';
 import GA from 'lib/GoogleAnalytics';
 import MilestoneModel from 'models/MilestoneModel';
+import MilestoneItemModel from 'models/MilestoneItemModel';
 import { feathersClient, feathersRest } from '../../lib/feathersClient';
 import templates from '../../lib/milestoneTemplates';
 import Loader from '../Loader';
@@ -34,8 +35,6 @@ import getEthConversionContext from '../../containers/getEthConversionContext';
 
 BigNumber.config({ DECIMAL_PLACES: 18 });
 
-
-console.log('React.whitelist.tokenWhitelist', React.whitelist.tokenWhitelist)
 /**
  * Create or edit a Milestone
  *
@@ -61,14 +60,11 @@ class EditMilestone extends Component {
         value: r.address,
         title: `${r.name ? r.name : 'Anonymous user'} - ${r.address}`,
       })),
-      tokenWhitelist: React.whitelist.tokenWhitelist.map(t => ({
+      tokenWhitelistOptions: React.whitelist.tokenWhitelist.map(t => ({
         value: t.address,
         title: t.name
       })),
-      currency: React.whitelist.tokenWhitelist.find(t => t.symbol === 'ETH'),
       reviewers: [],
-      items: [],
-      itemizeState: false,
       isBlocking: false,
     };
 
@@ -107,7 +103,6 @@ class EditMilestone extends Component {
             .then(resp => {
               const milestone = resp.data[0];
               const date = getStartOfDayUTC(milestone.date);
-
               // convert amounts to BigNumbers
               milestone.maxAmount = new BigNumber(utils.fromWei(milestone.maxAmount).toString());
               milestone.fiatAmount = new BigNumber(milestone.fiatAmount);
@@ -120,18 +115,31 @@ class EditMilestone extends Component {
               ) {
                 this.props.history.goBack();
               }
-              this.setState(
-                Object.assign({}, milestone, {
-                  id: this.props.match.params.milestoneId,
-                  date,
-                  itemizeState: milestone.items && milestone.items.length > 0,
-                  selectedFiatType: milestone.selectedFiatType || 'EUR',
-                  campaignTitle: milestone.campaign.title,
-                  campaignProjectId: milestone.campaign.projectId,
-                  campaignReviewerAddress: milestone.campaign.reviewerAddress,
-                  campaign: milestone.campaign,
-                }),
-              );
+              this.setState({
+                milestone: new MilestoneModel({
+                            title: milestone.title,
+                            description: milestone.description,
+                            image: milestone.image,
+                            id: this.props.match.params.milestoneId,
+                            maxAmount: milestone.maxAmount,
+                            selectedFiatType: milestone.selectedFiatType,                                              
+                            fiatAmount: milestone.fiatAmount,
+                            recipientAddress: milestone.recipientAddress,
+                            status: milestone.status,
+                            projectId: milestone.campaignId,
+                            reviewerAddress: milestone.reviewerAddress,
+                            items: milestone.items.map(i => new MilestoneItemModel(i)),
+                            itemizeState: milestone.items && milestone.items.length > 0,
+                            date: date,
+                            token: milestone.token
+                          }),
+                campaignTitle: milestone.campaign.title,
+                campaignProjectId: milestone.campaign.projectId,
+                campaignReviewerAddress: milestone.campaign.reviewerAddress,
+                campaign: milestone.campaign,                    
+              });
+
+              console.log('milestone', this.state.milestone)
               return date;
             })
             .then(date => this.props.getEthConversion(date))
@@ -164,7 +172,7 @@ class EditMilestone extends Component {
                 });
               }
             })
-            .then(() => this.props.getEthConversion(this.state.date, this.state.currency.symbol))
+            .then(() => this.props.getEthConversion(this.state.date, this.state.milestone.symbol))
             .then(() => {
               if (!this.state.hasWhitelist) this.getReviewers();
             })
@@ -199,7 +207,9 @@ class EditMilestone extends Component {
   }
 
   onItemsChanged(items) {
-    this.setState({ items });
+    const { milestone } = this.state;
+    milestone.items = items;
+    this.setState({ milestone: milestone });
   }
 
   getReviewers() {
@@ -230,10 +240,10 @@ class EditMilestone extends Component {
   setDate(date) {
     console.log('fetching rates for date', date)
     this.setState({ date });
-    const { milestone, currency } = this.state;
+    const { milestone } = this.state;
     milestone.date = date;
 
-    this.props.getEthConversion(date, currency.symbol).then(resp => {
+    this.props.getEthConversion(date, milestone.token.symbol).then(resp => {
       // update all the input fields
       const rate = resp.rates[milestone.selectedFiatType];
 
@@ -272,9 +282,9 @@ class EditMilestone extends Component {
   }
 
   addItem(item) {
-    this.setState(prevState => ({
-      items: prevState.items.concat(item),
-    }));
+    const { milestone } = this.state;
+    milestone.items = milestone.items.concat(item);
+    this.setState({ milestone: milestone });
   }
 
   btnText() {
@@ -286,9 +296,10 @@ class EditMilestone extends Component {
   }
 
   removeItem(index) {
-    const { items } = this.state;
-    delete items[index];
-    this.setState({ items: items.filter(() => true) });
+    const { milestone } = this.state
+    delete milestone.items[index];
+    milestone.items = milestone.items.filter(() => true)
+    this.setState({ milestone: milestone });
   }
 
   mapInputs(inputs) {
@@ -298,8 +309,8 @@ class EditMilestone extends Component {
     milestone.description = inputs.description;
     milestone.reviewerAddress = inputs.reviewerAddress;
     milestone.recipientAddress = inputs.recipientAddress;
-    milestone.items = this.state.items;
-    milestone.maxAmount = inputs.maxAmount;
+
+    if(!milestone.itemizeState) milestone.maxAmount = inputs.maxAmount;
 
     this.setState({ milestone });
   }
@@ -316,18 +327,18 @@ class EditMilestone extends Component {
     this.setState({ milestone: milestone })
   }
 
-  toggleFormValid(state) {
-    if (this.state.itemizeState) {
-      this.setState(prevState => ({ formIsValid: state && prevState.items.length > 0 }));
+  toggleFormValid(formState) {
+    if (this.state.milestone.itemizeState) {
+      this.setState(prevState => ({ formIsValid: formState && prevState.milestone.items.length > 0 }));
     } else {
-      this.setState({ formIsValid: state });
+      this.setState({ formIsValid: formState });
     }
   }
 
   submit(model) {
-    model = this.state.milestone;
+    const { milestone } = this.state;
 
-    console.log('model', model);
+    console.log('milestone', milestone);
 
     const afterEmit = () => {
       this.setState({
@@ -339,37 +350,38 @@ class EditMilestone extends Component {
     let txHash;
 
     const updateMilestone = file => {
-      // in itemized mode, we calculate the maxAmount from the items
+      const constructedModel = {
+        title: milestone.title,
+        description: milestone.description,
+        maxAmount: milestone.maxAmount,
+        ownerAddress: this.props.currentUser.address,
+        reviewerAddress: milestone.reviewerAddress,
+        recipientAddress: milestone.recipientAddress,
+        campaignReviewerAddress: this.state.campaignReviewerAddress,
+        image: file,
+        campaignId: this.state.campaignId,
+        status: this.props.isProposed || milestone.status === 'Rejected' ? 'Proposed' : milestone.status, // make sure not to change status!
+        items: milestone.items.map(i => i.getItem()),
+        ethConversionRateTimestamp: this.props.currentRate.timestamp,
+        selectedFiatType: milestone.selectedFiatType,
+        date: milestone.date,
+        fiatAmount: milestone.fiatAmount.toFixed(),
+        conversionRate: this.props.currentRate.rates[milestone.selectedFiatType],
+        token: milestone.token
+      };
 
-      if (this.state.itemizeState) {
-        model.maxAmount = this.state.items
+      // in itemized mode, we calculate the maxAmount from the items
+      // convert to string here, the milestone only works with BigNumber
+      if (milestone.itemizeState) {
+        constructedModel.maxAmount = constructedModel.items
           .reduce(
             (accumulator, item) => accumulator.plus(new BigNumber(item.wei)),
             new BigNumber(0),
           )
           .toString();
       } else {
-        model.maxAmount = utils.toWei(model.maxAmount.toString());
+        constructedModel.maxAmount = utils.toWei(milestone.maxAmount.toString());
       }
-
-      const constructedModel = {
-        title: model.title,
-        description: model.description,
-        maxAmount: model.maxAmount,
-        ownerAddress: this.props.currentUser.address,
-        reviewerAddress: model.reviewerAddress,
-        recipientAddress: model.recipientAddress,
-        campaignReviewerAddress: this.state.campaignReviewerAddress,
-        image: file,
-        campaignId: this.state.campaignId,
-        status: this.props.isProposed || model.status === 'Rejected' ? 'Proposed' : model.status, // make sure not to change status!
-        items: this.state.itemizeState ? model.items : [],
-        ethConversionRateTimestamp: this.props.currentRate.timestamp,
-        selectedFiatType: model.selectedFiatType,
-        date: model.date,
-        fiatAmount: model.fiatAmount.toFixed(),
-        conversionRate: this.props.currentRate.rates[model.selectedFiatType],
-      };
 
       console.log('constructedModel', constructedModel);
 
@@ -420,6 +432,7 @@ class EditMilestone extends Component {
                 reviewerAddress,
                 campaignReviewerAddress,
                 maxAmount,
+                token,
               } = constructedModel;
               const parentProjectId = this.state.campaignProjectId;
               // TODO  fix this hack
@@ -456,7 +469,7 @@ class EditMilestone extends Component {
                   campaignReviewerAddress,
                   from,
                   maxAmount,
-                  Object.values(config.tokenAddresses)[0], // TODO make this a form param
+                  token.address,
                   5 * 24 * 60 * 60, // 5 days in seconds
                   { from },
                 )
@@ -508,6 +521,7 @@ class EditMilestone extends Component {
                 });
             })
             .catch(err => {
+              console.log('err creating milestone > ', err)
               if (txHash && err.message && err.message.includes('unknown transaction')) return; // bug in web3 seems to constantly fail due to this error, but the tx is correct
               this.setState({ isSaving: false, isBlocking: true });
               ErrorPopup(
@@ -519,7 +533,7 @@ class EditMilestone extends Component {
       } else {
         feathersClient
           .service('milestones')
-          .patch(this.state.id, constructedModel)
+          .patch(milestone.id, constructedModel)
           .then(() => {
             React.toast.success(
               <p>
@@ -558,10 +572,10 @@ class EditMilestone extends Component {
         }
       };
 
-      if (this.state.itemizeState && this.props.isNew) {
+      if (this.state.milestone.itemizeState && this.props.isNew) {
         // upload all the item images
         const uploadItemImages = [];
-        this.state.items.forEach(item => {
+        this.state.milestone.items.forEach(item => {
           if (item.image) {
             uploadItemImages.push(
               new Promise((resolve, reject) => {
@@ -624,11 +638,15 @@ class EditMilestone extends Component {
   }
 
   toggleItemize() {
-    this.setState(prevState => ({ itemizeState: !prevState.itemizeState }));
+    const { milestone } = this.state;
+    milestone.itemizeState = !milestone.itemizeState;
+    this.setState({ milestone: milestone });
   }
 
-  setCurrency(address) {
-    this.setState(prevState => ({ currency: React.whitelist.tokenWhitelist.find(t => t.address === address) }), 
+  setToken(address) {
+    const { milestone } = this.state;
+    milestone.token = React.whitelist.tokenWhitelist.find(t => t.address === address)
+    this.setState({ milestone: milestone }, 
       () => this.setDate(this.state.milestone.data || getStartOfDayUTC()));     
   }
 
@@ -689,12 +707,10 @@ class EditMilestone extends Component {
       campaignTitle,
       hasWhitelist,
       whitelistReviewerOptions,
-      tokenWhitelist,
-      itemizeState,
+      tokenWhitelistOptions,
       reviewers,
       isBlocking,
       milestone,
-      currency
     } = this.state;
 
     return (
@@ -868,11 +884,11 @@ class EditMilestone extends Component {
                         name="token"
                         id="token-select"
                         label="Raising funds in"
-                        helpText="Select the currency you're raising funds in"
-                        value={milestone.token}
+                        helpText="Select the token you're raising funds in"
+                        value={milestone.token.address}
                         cta="--- Select a token ---"
-                        options={tokenWhitelist}
-                        onChange={(val) => this.setCurrency(val)}
+                        options={tokenWhitelistOptions}
+                        onChange={(address) => this.setToken(address)}
                         required
                         disabled={!isNew && !isProposed}
                       />                    
@@ -880,14 +896,14 @@ class EditMilestone extends Component {
                     <div className="react-toggle-container">
                       <Toggle
                         id="itemize-state"
-                        defaultChecked={this.state.itemizeState}
+                        defaultChecked={milestone.itemizeState}
                         onChange={() => this.toggleItemize()}
                         disabled={!isNew && !isProposed}
                       />
                       <span className="label">Add multiple expenses, invoices or items</span>
                     </div>
 
-                    {!itemizeState ? (
+                    {!milestone.itemizeState ? (
                       <div className="card milestone-items-card">
                         <div className="card-body">
                           <div className="form-group row">
@@ -905,7 +921,7 @@ class EditMilestone extends Component {
                                 validationErrors={{
                                   isMoment: 'Please provide a date.',
                                 }}
-                                required={!itemizeState}
+                                required={!milestone.itemizeState}
                                 disabled={milestone.projectId}
                               />
                             </div>
@@ -937,7 +953,7 @@ class EditMilestone extends Component {
                                 value={milestone.selectedFiatType}
                                 options={fiatTypes}
                                 onChange={this.changeSelectedFiat}
-                                helpText={`1 ${currency.symbol} = ${
+                                helpText={`1 ${milestone.token.symbol} = ${
                                   currentRate.rates[milestone.selectedFiatType]
                                 } ${milestone.selectedFiatType}`}
                                 disabled={milestone.projectId}
@@ -951,7 +967,7 @@ class EditMilestone extends Component {
                                 min="0"
                                 id="maxamount-input"
                                 type="number"
-                                label={`Maximum amount in ${currency.name}`}
+                                label={`Maximum amount in ${milestone.token.name}`}
                                 value={milestone.maxAmount}
                                 placeholder="10"
                                 validations="greaterThan:0"
@@ -971,7 +987,8 @@ class EditMilestone extends Component {
                         isEditMode
                         items={milestone.items}
                         onItemsChanged={returnedItems => this.onItemsChanged(returnedItems)}
-                        token={currency}
+                        token={milestone.token}
+                        milestoneStatus={milestone.status}
 
                       />
                     )}

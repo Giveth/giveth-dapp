@@ -93,7 +93,7 @@ class AddMilestoneItemModal extends Component {
     this.form.current.formsyForm.getModel();
 
     // Get MilestoneItemModel
-    this.props.onAddItem(this.state.item.getItem());
+    this.props.onAddItem(this.state.item);
     this.reset();
   }
 

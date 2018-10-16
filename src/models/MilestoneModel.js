@@ -28,7 +28,7 @@ export default class MilestoneModel extends BasicModel {
       confirmations = 0,
       requiredConfirmations = 6,
       commitTime,
-      token = React.whitelist.tokenWhitelist.find(t => t.symbol === 'ETH').address,
+      token = React.whitelist.tokenWhitelist.find(t => t.symbol === 'ETH'),
     } = data;
 
     this._maxAmount = maxAmount;
@@ -37,7 +37,7 @@ export default class MilestoneModel extends BasicModel {
     this._recipientAddress = recipientAddress;
     this._status = status;
     this._projectId = projectId;
-    this._reviewAddress = reviewerAddress;
+    this._reviewerAddress = reviewerAddress;
     this._items = items;
     this._itemizeState = itemizeState;
     this._date = date;
@@ -201,13 +201,13 @@ export default class MilestoneModel extends BasicModel {
     this._projectId = value;
   }
 
-  get reviewAddress() {
-    return this._reviewAddress;
+  get reviewerAddress() {
+    return this._reviewerAddress;
   }
 
-  set reviewAddress(value) {
-    this.checkType(value, ['string'], 'reviewAddress');
-    this._reviewAddress = value;
+  set reviewerAddress(value) {
+    this.checkType(value, ['string'], 'reviewerAddress');
+    this._reviewerAddress = value;
   }
 
   get items() {

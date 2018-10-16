@@ -28,7 +28,6 @@ export default class MilestoneItemModel extends Model {
     this._wei = wei;
     this._conversionRate = conversionRate;
     this._ethConversionRateTimestamp = ethConversionRateTimestamp;
-    this._token = token;
   }
 
   get date() {
@@ -117,12 +116,4 @@ export default class MilestoneItemModel extends Model {
       ethConversionRateTimestamp: this._ethConversionRateTimestamp,
     };
   }
-
-  get token() {
-    return this._token;
-  }
-
-  set token(value) {
-    this._token = value
-  }  
 }
