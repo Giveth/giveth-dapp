@@ -4,6 +4,8 @@ import BigNumber from 'bignumber.js';
 
 import Donation from '../models/Donation';
 import DAC from '../models/DAC';
+import Milestone from '../models/Milestone';
+import Campaign from '../models/Campaign';
 import getNetwork from '../lib/blockchain/getNetwork';
 import { feathersClient } from '../lib/feathersClient';
 import { getWeb3 } from '../lib/blockchain/getWeb3';
@@ -545,13 +547,26 @@ class DonationService {
         delegateType: toAdmin.type,
         delegateTypeId: toAdmin.id,
       });
-    } else {
+    } else if (toAdmin.type === Campaign.type) {
+      Object.assign(newDonation, {
+        ownerType: toAdmin.type,
+        ownerTypeId: toAdmin.id,
+        ownerId: toAdmin.adminId,
+        campaignId: toAdmin.id,
+      });
+    } else if (toAdmin.type === Milestone.type) {
+      Object.assign(newDonation, {
+        ownerType: toAdmin.type,
+        ownerTypeId: toAdmin.id,
+        ownerId: toAdmin.adminId,
+        campaignId: toAdmin.campaignId,
+      });
+    } else
       Object.assign(newDonation, {
         ownerType: toAdmin.type,
         ownerTypeId: toAdmin.id,
         ownerId: toAdmin.adminId,
       });
-    }
     return feathersClient
       .service('donations')
       .create(newDonation)

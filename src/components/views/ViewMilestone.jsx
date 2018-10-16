@@ -183,7 +183,13 @@ class ViewMilestone extends Component {
               {this.isActiveMilestone() && (
                 <div>
                   <DonateButton
-                    model={{ type: Milestone.type, title, id, adminId: projectId }}
+                    model={{
+                      type: Milestone.type,
+                      title,
+                      id,
+                      adminId: projectId,
+                      campaignId: this.state.campaign._id,
+                    }}
                     wallet={wallet}
                     currentUser={currentUser}
                     history={history}
@@ -423,7 +429,13 @@ class ViewMilestone extends Component {
                   <ShowTypeDonations donations={donations} isLoading={isLoadingDonations} />
                   {this.isActiveMilestone() && (
                     <DonateButton
-                      model={{ type: Milestone.type, title, id, adminId: projectId }}
+                      model={{
+                        type: Milestone.type,
+                        title,
+                        id,
+                        adminId: projectId,
+                        campaignId: this.state.campaign._id,
+                      }}
                       wallet={wallet}
                       currentUser={currentUser}
                       history={history}

@@ -502,6 +502,7 @@ DonateButton.propTypes = {
     adminId: PropTypes.oneOfType([PropTypes.number, PropTypes.string]).isRequired,
     id: PropTypes.string.isRequired,
     title: PropTypes.string.isRequired,
+    campaignId: PropTypes.string,
   }).isRequired,
   currentUser: PropTypes.instanceOf(User),
   maxAmount: PropTypes.string,
