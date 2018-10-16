@@ -387,7 +387,9 @@ class DonateButton extends React.Component {
                 }}
                 validationErrors={{
                   greaterThan: 'Minimum value must be at least Ξ0.01',
-                  lessOrEqualTo: `This donation exceeds your wallet balance or the milestone max amount: ${maxAmount} ETH.`,
+                  lessOrEqualTo: `This donation exceeds your wallet balance or the milestone max amount: ${Number(
+                    maxAmount,
+                  ).toFixed(2)} ETH.`,
                 }}
                 autoFocus
               />
