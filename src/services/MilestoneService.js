@@ -21,7 +21,7 @@ class MilestoneService {
         status: { $ne: Donation.FAILED },
         $or: [{ intendedProjectTypeId: id }, { ownerTypeId: id }],
       },
-      schema: 'includeGiverDetails',
+      schema: 'includeTypeAndGiverDetails',
       $sort: { createdAt: -1 },
     });
 
