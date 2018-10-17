@@ -49,7 +49,6 @@ class ViewCampaign extends Component {
     };
 
     this.loadMoreMilestones = this.loadMoreMilestones.bind(this);
-    // this.changeReviewer = this.changeReviewer.bind(this);
   }
 
   componentDidMount() {
@@ -97,10 +96,6 @@ class ViewCampaign extends Component {
       ),
     );
   }
-
-  // changeReviewer(campaign, reviewer) {
-  // React.changeReviewer
-  // }
 
   removeMilestone(id) {
     checkWalletBalance(this.props.wallet)
@@ -285,7 +280,7 @@ class ViewCampaign extends Component {
                           {getUserName(campaign.reviewer)}
                         </Link>
                       )}
-                    {campaign.reviewer && (
+                    {campaign.myReviewerAddress === currentUser.address && (
                       <a
                         className="btn btn-sm"
                         href={to}

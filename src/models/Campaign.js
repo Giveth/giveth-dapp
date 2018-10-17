@@ -110,6 +110,10 @@ class Campaign extends BasicModel {
     CampaignService.cancel(this, from, afterCreate, afterMined);
   }
 
+  changeReviewer(newAddress, afterCreate, afterMined) {
+    CampaignService.changeReviewer(this, newAddress, afterCreate, afterMined);
+  }
+
   get communityUrl() {
     return this.myCommunityUrl;
   }

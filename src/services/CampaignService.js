@@ -268,6 +268,46 @@ class CampaignService {
         );
       });
   }
+
+  static changeReviewer(campaign, newAddress, afterCreate = () => {}, afterMined = () => {}) {
+    let txHash;
+    let etherScanUrl;
+    Promise.all([getNetwork(), getWeb3()])
+      .then(([network, web3]) => {
+        const lppCampaign = new LPPCampaign(web3, campaign.pluginAddress);
+        etherScanUrl = network.etherscan;
+        lppCampaign
+          .changeReviewer(newAddress.reviewerAddress)
+          .once('transactionHash', hash => {
+            txHash = hash;
+            campaigns
+              .patch(campaign.id, {
+                myReviewerAddress: newAddress.reviewerAddress,
+                // txHash, // TODO create a transaction entry
+              })
+              .then(afterCreate(`${etherScanUrl}tx/${txHash}`))
+              .catch(err => {
+                ErrorPopup('Something went wrong with updating reviewer', err);
+              });
+          })
+          .then(() => afterMined(`${etherScanUrl}tx/${txHash}`))
+          .catch(err => {
+            console.log('First Error ', err);
+            if (txHash && err.message && err.message.includes('unknown transaction')) return; // bug in web3 seems to constantly fail due to this error, but the tx is correct
+            ErrorPopup(
+              'Something went wrong with changing reviewer',
+              `${etherScanUrl}tx/${txHash} => ${JSON.stringify(err, null, 2)}`,
+            );
+          });
+      })
+      .catch(err => {
+        console.log('Second Error ', err);
+        ErrorPopup(
+          'Something went wrong with changing reviewer',
+          `${etherScanUrl}tx/${txHash} => ${JSON.stringify(err, null, 2)}`,
+        );
+      });
+  }
 }
 
 export default CampaignService;

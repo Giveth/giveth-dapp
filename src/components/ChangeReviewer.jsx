@@ -4,6 +4,8 @@ import { withRouter } from 'react-router-dom';
 
 import Modal from 'react-modal';
 
+import CampaignService from '../services/CampaignService';
+
 import ChangeReviewerForm from './ChangeReviewerForm';
 import { feathersClient } from '../lib/feathersClient';
 import ErrorPopup from './ErrorPopup';
@@ -32,13 +34,22 @@ class ChangeReviewer extends Component {
     this.state = {
       error: '',
       loading: false,
+      campaign: {},
       reviewers: [],
     };
     this.submit = this.submit.bind(this);
   }
 
   componentDidMount() {
-    this.getReviewers();
+    const id = this.props.location.pathname.split('/')[2];
+    CampaignService.get(id)
+      .then(campaign => {
+        this.setState({ campaign });
+        this.getReviewers();
+      })
+      .catch(err =>
+        ErrorPopup('Something went wrong loading campaign. Please try refresh the page.', err),
+      );
   }
 
   getReviewers() {
@@ -66,8 +77,49 @@ class ChangeReviewer extends Component {
       );
   }
 
-  submit() {
+  submit(newReviewerAddress) {
     this.setState({ loading: true });
+    const afterMined = url => {
+      if (url) {
+        const msg = (
+          <p>
+            Your Request has been submitted!
+            <br />
+            <a href={url} target="_blank" rel="noopener noreferrer">
+              View transaction
+            </a>
+          </p>
+        );
+        React.toast.success(msg);
+      } else {
+        if (this.mounted) this.setState({ loading: false });
+        React.toast.success('Your Request has been submitted!');
+      }
+    };
+
+    const afterCreate = (url /** id */) => {
+      if (this.mounted) this.setState({ loading: false });
+      const msg = (
+        <p>
+          Your Request is pending....
+          <br />
+          <a href={url} target="_blank" rel="noopener noreferrer">
+            View transaction
+          </a>
+        </p>
+      );
+      React.toast.info(msg);
+    };
+
+    this.setState(
+      {
+        loading: true,
+      },
+      () => {
+        // Change the reviewer
+        this.state.campaign.changeReviewer(newReviewerAddress, afterCreate, afterMined);
+      },
+    );
   }
 
   render() {
@@ -93,6 +145,7 @@ class ChangeReviewer extends Component {
 ChangeReviewer.propTypes = {
   onCloseClicked: PropTypes.func.isRequired,
   isOpen: PropTypes.bool.isRequired,
+  location: PropTypes.objectOf.isRequired,
 };
 
 export default withRouter(ChangeReviewer);

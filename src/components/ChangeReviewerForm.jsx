@@ -12,6 +12,7 @@ class ChangeReviewerForm extends Component {
       isValid: false,
     };
     this.toggleFormValid = this.toggleFormValid.bind(this);
+    this.submit = this.submit.bind(this);
   }
 
   toggleFormValid(state) {
