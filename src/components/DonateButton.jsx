@@ -61,6 +61,7 @@ class DonateButton extends React.Component {
 
     this.submit = this.submit.bind(this);
     this.openDialog = this.openDialog.bind(this);
+    this.setMaxAmount = this.setMaxAmount.bind(this);
   }
 
   componentDidMount() {
@@ -132,6 +133,10 @@ class DonateButton extends React.Component {
             .encodeABI();
     }
     return givethBridge.$contract.methods.donateAndCreateGiver(account, adminId).encodeABI();
+  }
+
+  setMaxAmount(maxAmount) {
+    this.setState({ amount: maxAmount });
   }
 
   toggleFormValid(state) {
@@ -282,7 +287,6 @@ class DonateButton extends React.Component {
       utils.toBN(this.props.maxAmount).lt(utils.toBN(utils.toWei(balance.toString())))
     )
       maxAmount = utils.fromWei(this.props.maxAmount);
-
     return (
       <span style={style}>
         <button type="button" className="btn btn-success" onClick={this.openDialog}>
@@ -348,150 +352,180 @@ class DonateButton extends React.Component {
                 Gas price: <em>{gasPrice} Gwei</em>
               </p>
             )}
-          <Form
-            onSubmit={this.submit}
-            mapping={inputs => ({ amount: inputs.amount, customAddress: inputs.customAddress })}
-            onValid={() => this.toggleFormValid(true)}
-            onInvalid={() => this.toggleFormValid(false)}
-            layout="vertical"
-          >
-            <span className="label">How much Ξ do you want to donate?</span>
-            <div className="form-group">
-              <Slider
-                type="range"
-                name="amount2"
-                min={0}
-                max={parseInt(maxAmount * 100, 10) / 100}
-                step={0.01}
-                value={Number(this.state.amount).toFixed(2)}
-                labels={{
-                  0: '0',
-                  [maxAmount]: parseInt(maxAmount * 100, 10) / 100,
-                }}
-                format={val => `${val} ETH`}
-                onChange={newAmount => this.setState({ amount: Number(newAmount).toFixed(2) })}
-              />
-            </div>
 
-            <div className="form-group">
-              <Input
-                name="amount"
-                id="amount-input"
-                type="number"
-                step="any"
-                value={amount}
-                placeholder="1"
-                validations={{
-                  lessOrEqualTo: maxAmount,
-                  greaterThan: 0.009,
-                }}
-                validationErrors={{
-                  greaterThan: 'Minimum value must be at least Ξ0.01',
-                  lessOrEqualTo: `This donation exceeds your wallet balance or the milestone max amount: ${Number(
-                    maxAmount,
-                  ).toFixed(2)} ETH.`,
-                }}
-                autoFocus
-              />
-            </div>
-
-            {!(currentUser && currentUser.address) &&
-              !showCustomAddress && (
-                <div className="alert alert-warning">
-                  <i className="fa fa-exclamation-triangle" />
-                  We could not find your DApp wallet. If you want to maintain control over your
-                  donation please <Link to="/signin">sign in</Link> or{' '}
-                  <Link to="/signup">register</Link>.
-                </div>
-              )}
-
-            {currentUser &&
-              currentUser.address &&
-              !showCustomAddress && (
-                <div className="alert alert-success">
-                  <i className="fa fa-exclamation-triangle" />
-                  We detected that you have a DApp wallet. The donation will be donated on behalf of
-                  your DApp account:{' '}
-                  <Link to={`/profile/${currentUser.address}`}>
-                    {currentUser.name ? currentUser.name : currentUser.address}
-                  </Link>{' '}
-                  so that you can see your donation in My Donations page.
-                </div>
-              )}
-            {showCustomAddress && (
-              <div className="alert alert-success">
+          {homeWeb3 &&
+            account &&
+            validNetwork &&
+            balance === 0 && (
+              <div className="alert alert-warning">
                 <i className="fa fa-exclamation-triangle" />
-                The donation will be donated on behalf of address:
+                You do not have adequate balance in your account to donate.
               </div>
             )}
 
-            <div className="react-toggle-container">
-              <Toggle
-                id="show-recipient-address"
-                defaultChecked={showCustomAddress}
-                onChange={() =>
-                  this.setState(prevState => ({
-                    showCustomAddress: !prevState.showCustomAddress,
-                  }))
-                }
-              />
-              <div className="label">I want to donate on behalf of another address</div>
-            </div>
-            {showCustomAddress && (
-              <div className="form-group recipient-address-container">
-                <Input
-                  name="customAddress"
-                  id="title-input"
-                  type="text"
-                  value={customAddress}
-                  placeholder="0x0000000000000000000000000000000000000000"
-                  validations="isEtherAddress"
-                  validationErrors={{
-                    isEtherAddress: 'Please insert a valid Ethereum address.',
-                  }}
-                  required={this.state.showRecipientAddress}
-                />
-              </div>
+          {homeWeb3 &&
+            homeWeb3.givenProvider &&
+            account &&
+            maxAmount !== 0 && (
+              <Form
+                onSubmit={this.submit}
+                mapping={inputs => ({ amount: inputs.amount, customAddress: inputs.customAddress })}
+                onValid={() => this.toggleFormValid(true)}
+                onInvalid={() => this.toggleFormValid(false)}
+                layout="vertical"
+              >
+                <span className="label">How much Ξ do you want to donate?</span>
+
+                <div className="form-group">
+                  <Slider
+                    type="range"
+                    name="amount2"
+                    min={0}
+                    max={Number(maxAmount)}
+                    step={0.01}
+                    value={Number(this.state.amount).toFixed(4)}
+                    labels={{
+                      0: '0',
+                      [maxAmount]: Number(maxAmount).toFixed(4),
+                    }}
+                    format={val => `${val} ETH`}
+                    onChange={newAmount => this.setState({ amount: newAmount.toString() })}
+                  />
+                </div>
+
+                <div className="form-group">
+                  <Input
+                    name="amount"
+                    id="amount-input"
+                    type="text"
+                    value={amount}
+                    placeholder={maxAmount}
+                    validations={{
+                      lessOrEqualTo: maxAmount,
+                      greaterThan: 0.009,
+                      isNumeric: true,
+                    }}
+                    validationErrors={{
+                      greaterThan: 'Minimum value must be at least Ξ0.01',
+                      lessOrEqualTo: `This donation exceeds your wallet balance or the milestone max amount: ${Number(
+                        maxAmount,
+                      ).toFixed(4)} ETH.`,
+                      isNumeric: 'Provide correct number',
+                    }}
+                    required
+                    autoFocus
+                    onChange={(name, newAmount) => this.setState({ amount: newAmount })}
+                    buttonAfter={
+                      <button
+                        style={{ marginLeft: '2px' }}
+                        className="btn btn-default"
+                        type="button"
+                        onClick={() => this.setMaxAmount(maxAmount)}
+                      >
+                        Donate Max
+                      </button>
+                    }
+                  />
+                </div>
+
+                {!(currentUser && currentUser.address) &&
+                  !showCustomAddress && (
+                    <div className="alert alert-warning">
+                      <i className="fa fa-exclamation-triangle" />
+                      We could not find your DApp wallet. If you want to maintain control over your
+                      donation please <Link to="/signin">sign in</Link> or{' '}
+                      <Link to="/signup">register</Link>.
+                    </div>
+                  )}
+
+                {currentUser &&
+                  currentUser.address &&
+                  !showCustomAddress && (
+                    <div className="alert alert-success">
+                      <i className="fa fa-exclamation-triangle" />
+                      We detected that you have a DApp wallet. The donation will be donated on
+                      behalf of your DApp account:{' '}
+                      <Link to={`/profile/${currentUser.address}`}>
+                        {currentUser.name ? currentUser.name : currentUser.address}
+                      </Link>{' '}
+                      so that you can see your donation in My Donations page.
+                    </div>
+                  )}
+                {showCustomAddress && (
+                  <div className="alert alert-success">
+                    <i className="fa fa-exclamation-triangle" />
+                    The donation will be donated on behalf of address:
+                  </div>
+                )}
+
+                <div className="react-toggle-container">
+                  <Toggle
+                    id="show-recipient-address"
+                    defaultChecked={showCustomAddress}
+                    onChange={() =>
+                      this.setState(prevState => ({
+                        showCustomAddress: !prevState.showCustomAddress,
+                      }))
+                    }
+                  />
+                  <div className="label">I want to donate on behalf of another address</div>
+                </div>
+                {showCustomAddress && (
+                  <div className="form-group recipient-address-container">
+                    <Input
+                      name="customAddress"
+                      id="title-input"
+                      type="text"
+                      value={customAddress}
+                      placeholder="0x0000000000000000000000000000000000000000"
+                      validations="isEtherAddress"
+                      validationErrors={{
+                        isEtherAddress: 'Please insert a valid Ethereum address.',
+                      }}
+                      required={this.state.showRecipientAddress}
+                    />
+                  </div>
+                )}
+                {!showCustomAddress && (
+                  <div>
+                    <br />
+                    <br />
+                  </div>
+                )}
+
+                {homeWeb3 &&
+                  homeWeb3.givenProvider && (
+                    <LoaderButton
+                      className="btn btn-success"
+                      formNoValidate
+                      type="submit"
+                      disabled={isSaving || !formIsValid || !validNetwork || !account}
+                      isLoading={isSaving}
+                      loadingText="Saving..."
+                    >
+                      Donate
+                    </LoaderButton>
+                  )}
+
+                {!homeWeb3 && currentUser && <div>TODO: show donation data</div>}
+
+                {/* TODO get amount to dynamically update */}
+                {givethBridge &&
+                  (account || currentUser) && (
+                    <a
+                      className={`btn btn-secondary ${isSaving ? 'disabled' : ''}`}
+                      disabled={!givethBridge || !amount}
+                      href={`https://mycrypto.com?to=${
+                        givethBridge.$address
+                      }&data=${this.getDonationData()}&value=${amount}&gasLimit=${DONATION_GAS}#send-transaction`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      Donate via MyCrypto
+                    </a>
+                  )}
+              </Form>
             )}
-            {!showCustomAddress && (
-              <div>
-                <br />
-                <br />
-              </div>
-            )}
-
-            {homeWeb3 &&
-              homeWeb3.givenProvider && (
-                <LoaderButton
-                  className="btn btn-success"
-                  formNoValidate
-                  type="submit"
-                  disabled={isSaving || !formIsValid || !validNetwork || !account}
-                  isLoading={isSaving}
-                  loadingText="Saving..."
-                >
-                  Donate
-                </LoaderButton>
-              )}
-
-            {!homeWeb3 && currentUser && <div>TODO: show donation data</div>}
-
-            {/* TODO get amount to dynamically update */}
-            {givethBridge &&
-              (account || currentUser) && (
-                <a
-                  className={`btn btn-secondary ${isSaving ? 'disabled' : ''}`}
-                  disabled={!givethBridge || !amount}
-                  href={`https://mycrypto.com?to=${
-                    givethBridge.$address
-                  }&data=${this.getDonationData()}&value=${amount}&gasLimit=${DONATION_GAS}#send-transaction`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  Donate via MyCrypto
-                </a>
-              )}
-          </Form>
         </Modal>
       </span>
     );
