@@ -356,7 +356,7 @@ class DonateButton extends React.Component {
           {homeWeb3 &&
             account &&
             validNetwork &&
-            balance === 0 && (
+            balance === '0' && (
               <div className="alert alert-warning">
                 <i className="fa fa-exclamation-triangle" />
                 You do not have adequate balance in your account to donate.
@@ -366,7 +366,8 @@ class DonateButton extends React.Component {
           {homeWeb3 &&
             homeWeb3.givenProvider &&
             account &&
-            maxAmount !== 0 && (
+            maxAmount !== 0 &&
+            balance !== '0' && (
               <Form
                 onSubmit={this.submit}
                 mapping={inputs => ({ amount: inputs.amount, customAddress: inputs.customAddress })}
@@ -374,8 +375,6 @@ class DonateButton extends React.Component {
                 onInvalid={() => this.toggleFormValid(false)}
                 layout="vertical"
               >
-                <span className="label">How much Ξ do you want to donate?</span>
-
                 <div className="form-group">
                   <Slider
                     type="range"
@@ -393,11 +392,12 @@ class DonateButton extends React.Component {
                   />
                 </div>
 
-                <div className="form-group">
+                <div className="form-group" style={{ marginTop: '2rem' }}>
                   <Input
                     name="amount"
                     id="amount-input"
                     type="text"
+                    label="How much Ξ do you want to donate?"
                     value={amount}
                     placeholder={maxAmount}
                     validations={{
@@ -418,7 +418,7 @@ class DonateButton extends React.Component {
                     buttonAfter={
                       <button
                         style={{ marginLeft: '2px' }}
-                        className="btn btn-default"
+                        className="btn btn-success"
                         type="button"
                         onClick={() => this.setMaxAmount(maxAmount)}
                       >
