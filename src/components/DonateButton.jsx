@@ -10,12 +10,13 @@ import GA from 'lib/GoogleAnalytics';
 import getNetwork from '../lib/blockchain/getNetwork';
 import User from '../models/User';
 import { getGasPrice } from '../lib/helpers';
-import { getHomeWeb3 } from '../lib/blockchain/getWeb3';
+import { getHomeWeb3, getERC20TokenBalance } from '../lib/blockchain/getWeb3';
 import LoaderButton from './LoaderButton';
 import ErrorPopup from './ErrorPopup';
 import config from '../configuration';
 import DonationService from '../services/DonationService';
 import { feathersClient } from '../lib/feathersClient';
+import SelectFormsy from './SelectFormsy';
 
 const modalStyles = {
   content: {
@@ -30,6 +31,18 @@ const modalStyles = {
   },
 };
 
+const _getTokenWhitelist = () => {
+  const r = React.whitelist.tokenWhitelist;
+  return r.map(t => {
+    if(t.symbol === 'ETH') {
+      t.name = `${config.homeNetworkName} ETH`
+      t.address = "0x0"
+    }  
+    t.balance = "0"
+    return t;
+  })
+}
+
 Modal.setAppElement('#root');
 
 // tx only requires 25400 gas, but for some reason we get an out of gas
@@ -40,11 +53,14 @@ class DonateButton extends React.Component {
   constructor(props) {
     super(props);
 
+    // set initial balance
+    const modelToken = props.model.token
+    modelToken.balance = "0"
+
     this.state = {
       isSaving: false,
       formIsValid: false,
       amount: '',
-      balance: 0,
       homeWeb3: undefined,
       validNetwork: false,
       account: undefined,
@@ -55,6 +71,11 @@ class DonateButton extends React.Component {
       showCustomAddress: false,
       customAddress:
         props.currentUser && props.currentUser.address ? props.currentUser.address : undefined,
+      tokenWhitelistOptions: _getTokenWhitelist().map(t => ({
+        value: t.address,
+        title: t.name
+      })),  
+      selectedToken: props.model.type === "MilestoneModel" ? modelToken : _getTokenWhitelist().find(t => t.symbol === "ETH")           
     };
 
     this.submit = this.submit.bind(this);
@@ -65,6 +86,19 @@ class DonateButton extends React.Component {
     getNetwork().then(network => {
       this.setState({ givethBridge: network.givethBridge, etherscanUrl: network.homeEtherscan });
     });
+  }
+
+  componentWillMount() {
+    if(this._interval) clearInterval(this._interval);
+  }
+
+
+  pollWallet() {
+    const { selectedToken } = this.state;
+    let _init = true;
+    console.log('_init', _init)
+    if(this._interval) clearInterval(this._interval);
+
     getHomeWeb3().then(homeWeb3 => {
       this.setState({
         homeWeb3,
@@ -87,24 +121,59 @@ class DonateButton extends React.Component {
             }
           });
 
-          homeWeb3.eth.getAccounts().then(accounts => {
-            if (this.state.account !== accounts[0]) {
-              [account] = accounts;
+          if(selectedToken.symbol === "ETH") {
+            console.log('poll for eth...')
+            homeWeb3.eth.getAccounts().then(accounts => {
+              if (this.state.account !== accounts[0] || _init) {
+                [account] = accounts;
 
-              if (account) {
-                homeWeb3.eth.getBalance(account).then(bal => {
-                  this.setState({
-                    balance: homeWeb3.utils.fromWei(bal),
-                    account,
+                if (account) {
+                  homeWeb3.eth.getBalance(account).then(bal => {
+                    console.log('ETH balance', bal)
+                    selectedToken.balance = homeWeb3.utils.fromWei(bal)
+                    
+                    this.setState({
+                      selectedToken: selectedToken,
+                      account,
+                    });
                   });
-                });
-              } else {
-                this.setState({ account });
+                } else {
+                  this.setState({ account });
+                }
               }
-            }
-          });
+              _init = false;
+            });
+          } else {
+            console.log('poll for token...')
+            homeWeb3.eth.getAccounts().then(accounts => {
+              if (this.state.account !== accounts[0] || _init) {
+                [account] = accounts;
+
+                if (account) {
+                  getERC20TokenBalance(this.state.account, selectedToken.address)
+                  .then(bal => {
+                    selectedToken.balance = bal
+                    this.setState({
+                      selectedToken: selectedToken,
+                      account
+                    })   
+                    console.log('token balance', bal)
+                  })
+                  .catch(err => {
+                    selectedToken.balance = "0"
+                    this.setState({
+                      selectedToken: selectedToken,
+                      account
+                    })               
+                    console.log('error getting token balance', err)
+                  })
+                }
+              }
+              _init = false;
+            })
+          }
         };
-        setInterval(poll, 1000);
+        this._interval = setInterval(poll, 1000);
         poll();
       }
     });
@@ -115,6 +184,12 @@ class DonateButton extends React.Component {
       }),
     );
   }
+
+  setToken(address) {
+    this.setState({ selectedToken: _getTokenWhitelist().find(t => t.address === address) }, () => 
+      this.pollWallet()
+    );
+  }  
 
   getDonationData() {
     const { givethBridge, account } = this.state;
@@ -137,6 +212,7 @@ class DonateButton extends React.Component {
   }
 
   closeDialog() {
+    clearInterval(this._interval)
     this.setState({
       modalVisible: false,
       amount: '',
@@ -149,7 +225,9 @@ class DonateButton extends React.Component {
       modalVisible: true,
       amount: '',
       formIsValid: false,
-    });
+    }, () =>
+      this.pollWallet()
+    );
   }
 
   submit(model) {
@@ -165,6 +243,8 @@ class DonateButton extends React.Component {
     const value = utils.toWei(model.amount);
 
     const opts = { value, gas: DONATION_GAS, from: account };
+    console.log('value', value)
+    return
     let method;
     let donationUser;
 
@@ -258,7 +338,6 @@ class DonateButton extends React.Component {
       homeWeb3,
       account,
       validNetwork,
-      balance,
       givethBridge,
       amount,
       gasPrice,
@@ -267,6 +346,8 @@ class DonateButton extends React.Component {
       modalVisible,
       customAddress,
       showCustomAddress,
+      tokenWhitelistOptions,
+      selectedToken,      
     } = this.state;
     const style = {
       display: 'inline-block',
@@ -274,10 +355,10 @@ class DonateButton extends React.Component {
 
     // Determine max amount
     let maxAmount = 10000000000000000;
-    if (homeWeb3) maxAmount = balance;
+    if (homeWeb3) maxAmount = selectedToken.balance;
     if (
       this.props.maxAmount &&
-      utils.toBN(this.props.maxAmount).lt(utils.toBN(utils.toWei(balance.toString())))
+      utils.toBN(this.props.maxAmount).lt(utils.toBN(utils.toWei(selectedToken.balance.toString())))
     )
       maxAmount = utils.fromWei(this.props.maxAmount);
 
@@ -292,60 +373,7 @@ class DonateButton extends React.Component {
           contentLabel={`Support this ${type}!`}
           style={modalStyles}
         >
-          <h3>
-            Give {model.token.symbol} to support <em>{model.title}</em>
-          </h3>
 
-          {homeWeb3 &&
-            !homeWeb3.givenProvider && (
-              <div className="alert alert-warning">
-                <i className="fa fa-exclamation-triangle" />
-                It is recommended that you install <a href="https://metamask.io/">MetaMask</a> to
-                donate
-              </div>
-            )}
-
-          {homeWeb3 &&
-            homeWeb3.givenProvider &&
-            !validNetwork && (
-              <div className="alert alert-warning">
-                <i className="fa fa-exclamation-triangle" />
-                It looks like you are connected to the wrong network on your MetaMask. Please
-                connect to the <strong>{config.homeNetworkName}</strong> network to donate
-              </div>
-            )}
-          {homeWeb3 &&
-            homeWeb3.givenProvider &&
-            account &&
-            validNetwork && (
-              <p>
-                Pledge: as long as the {type} owner does not lock your money you can take it back
-                any time.
-              </p>
-            )}
-
-          {homeWeb3 &&
-            homeWeb3.givenProvider &&
-            !account && (
-              <div className="alert alert-warning">
-                <i className="fa fa-exclamation-triangle" />
-                It looks like your MetaMask account is locked.
-              </div>
-            )}
-
-          {homeWeb3 &&
-            account &&
-            validNetwork && (
-              <p>
-                {config.homeNetworkName} balance:{' '}
-                <em>
-                  &#926;
-                  {balance}
-                </em>
-                <br />
-                Gas price: <em>{gasPrice} Gwei</em>
-              </p>
-            )}
           <Form
             onSubmit={this.submit}
             mapping={inputs => ({ amount: inputs.amount, customAddress: inputs.customAddress })}
@@ -353,11 +381,81 @@ class DonateButton extends React.Component {
             onInvalid={() => this.toggleFormValid(false)}
             layout="vertical"
           >
+
+
+            <h3>
+              Donate to support <em>{model.title}</em>
+            </h3>
+
+            {homeWeb3 &&
+              !homeWeb3.givenProvider && (
+                <div className="alert alert-warning">
+                  <i className="fa fa-exclamation-triangle" />
+                  It is recommended that you install <a href="https://metamask.io/">MetaMask</a> to
+                  donate
+                </div>
+              )}
+
+            {homeWeb3 &&
+              homeWeb3.givenProvider &&
+              !validNetwork && (
+                <div className="alert alert-warning">
+                  <i className="fa fa-exclamation-triangle" />
+                  It looks like you are connected to the wrong network on your MetaMask. Please
+                  connect to the <strong>{config.homeNetworkName}</strong> network to donate
+                </div>
+              )}
+            {homeWeb3 &&
+              homeWeb3.givenProvider &&
+              account &&
+              validNetwork && (
+                <p>
+                  You're pledging: as long as the {type} owner does not lock your money you can take it back
+                  any time.
+                </p>
+              )}
+
+            {homeWeb3 &&
+              homeWeb3.givenProvider &&
+              !account && (
+                <div className="alert alert-warning">
+                  <i className="fa fa-exclamation-triangle" />
+                  It looks like your MetaMask account is locked.
+                </div>
+              )}
+
+            {homeWeb3 &&
+              account &&
+              validNetwork && (
+                <p>
+                  { model.type !== "MilestoneModel" && 
+                    <SelectFormsy
+                      name="token"
+                      id="token-select"
+                      label="Make your donation in"
+                      helpText="Select ETH or the token you want to donate"
+                      value={selectedToken.address}
+                      cta="--- Select ---"
+                      options={tokenWhitelistOptions}
+                      onChange={(address) => this.setToken(address)}
+                      disabled={model.type === "MilestoneModel"}
+                    /> 
+                  }   
+
+                  {config.homeNetworkName} {selectedToken.symbol} balance:&nbsp;
+                  <em>
+                    {selectedToken.balance}
+                  </em>
+                  <br />
+                  Gas price: <em>{gasPrice} Gwei</em>
+                </p>
+              )}
+
             <div className="form-group">
               <Input
                 name="amount"
                 id="amount-input"
-                label={`How much ${model.token.symbol} do you want to donate?`}
+                label={`How much ${selectedToken.symbol} do you want to donate?`}
                 type="number"
                 value={amount}
                 placeholder="1"
@@ -366,8 +464,8 @@ class DonateButton extends React.Component {
                   greaterThan: 0.009,
                 }}
                 validationErrors={{
-                  greaterThan: `Minimum value must be at least ${model.token.symbol}0.01`,
-                  lessOrEqualTo: `This donation exceeds your wallet balance or the milestone max amount: ${maxAmount} ${model.token.symbol}.`,
+                  greaterThan: `Minimum value must be at least ${selectedToken.symbol}0.01`,
+                  lessOrEqualTo: `This donation exceeds your wallet balance or the milestone max amount: ${maxAmount} ${selectedToken.symbol}.`,
                 }}
                 required
                 autoFocus

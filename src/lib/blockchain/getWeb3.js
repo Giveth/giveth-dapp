@@ -166,19 +166,19 @@ let miniABI = [
 export const getERC20TokenBalance = (walletAddress, tokenAddress) =>
   new Promise((resolve, reject) =>
     getWeb3().then(web3 => {
-      const contract = web3.eth.contract(miniABI).at(tokenAddress);
+      const contract = new web3.eth.Contract(miniABI, tokenAddress);
     
-      contract.balanceOf(walletAddress, (error, balance) => {
+      contract.methods.balanceOf(walletAddress).call((error, balance) => {
         if(balance) {
           contract.decimals((error, decimals) => {
             // calculate a balance
             balance = balance.div(10**decimals);
 
             if(decimals) resolve(balance.toString())
-            reject();
+            reject(error);
           });
         } else {
-          reject()
+          reject(error)
         }
       })
     })
