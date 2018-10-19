@@ -141,3 +141,45 @@ export const getHomeWeb3 = () =>
 
     resolve(homeWeb3);
   });
+
+
+// The minimum ABI to get ERC20 Token balance and decimals
+let miniABI = [
+  // balanceOf
+  {
+    "constant":true,
+    "inputs":[{"name":"_owner","type":"address"}],
+    "name":"balanceOf",
+    "outputs":[{"name":"balance","type":"uint256"}],
+    "type":"function"
+  },
+  // decimals
+  {
+    "constant":true,
+    "inputs":[],
+    "name":"decimals",
+    "outputs":[{"name":"","type":"uint8"}],
+    "type":"function"
+  }
+];
+
+export const getERC20TokenBalance = (walletAddress, tokenAddress) =>
+  new Promise((resolve, reject) =>
+    getWeb3().then(web3 => {
+      const contract = web3.eth.contract(miniABI).at(tokenAddress);
+    
+      contract.balanceOf(walletAddress, (error, balance) => {
+        if(balance) {
+          contract.decimals((error, decimals) => {
+            // calculate a balance
+            balance = balance.div(10**decimals);
+
+            if(decimals) resolve(balance.toString())
+            reject();
+          });
+        } else {
+          reject()
+        }
+      })
+    })
+  )
