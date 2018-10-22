@@ -190,6 +190,7 @@ class ViewMilestone extends Component {
                       id,
                       adminId: projectId,
                       campaignId: this.state.campaign._id,
+                      token: token
                     }}
                     wallet={wallet}
                     currentUser={currentUser}
@@ -437,6 +438,7 @@ class ViewMilestone extends Component {
                         id,
                         adminId: projectId,
                         campaignId: this.state.campaign._id,
+                        token: token
                       }}
                       wallet={wallet}
                       currentUser={currentUser}

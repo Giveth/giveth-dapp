@@ -459,6 +459,11 @@ class EditMilestone extends Component {
               uint _reviewTimeoutSeconds
               * */
 
+              // if this is Eth, get the ETH from config
+              if(token.address === '0x0') {
+                token.address = Object.values(config.tokenAddresses)[0]
+              }
+
               network.lppCappedMilestoneFactory
                 .newMilestone(
                   title,
@@ -518,7 +523,12 @@ class EditMilestone extends Component {
                       </a>
                     </p>,
                   );
-                });
+                })
+                .catch((e) => {
+                  ErrorPopup(
+                    'Something went wrong with the transaction. Is your wallet unlocked?', e
+                  );                  
+                })
             })
             .catch(err => {
               console.log('err creating milestone > ', err)

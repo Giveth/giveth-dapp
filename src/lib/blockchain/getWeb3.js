@@ -3,7 +3,6 @@ import Web3 from 'web3';
 import ZeroClientProvider from './ZeroClientProvider';
 import config from '../../configuration';
 import { takeActionAfterWalletUnlock, confirmBlockchainTransaction } from '../middleware';
-
 import ErrorPopup from '../../components/ErrorPopup';
 
 let givethWeb3;
@@ -163,17 +162,14 @@ let miniABI = [
   }
 ];
 
-export const getERC20TokenBalance = (walletAddress, tokenAddress) =>
+export const getERC20TokenBalance = (accountAddress, contractAddress) =>
   new Promise((resolve, reject) =>
-    getWeb3().then(web3 => {
-      const contract = new web3.eth.Contract(miniABI, tokenAddress);
+    getHomeWeb3().then(web3 => {
+      const ERC20 = new web3.eth.Contract(miniABI, contractAddress);
     
-      contract.methods.balanceOf(walletAddress).call((error, balance) => {
+      ERC20.methods.balanceOf(accountAddress).call((error, balance) => {
         if(balance) {
-          contract.decimals((error, decimals) => {
-            // calculate a balance
-            balance = balance.div(10**decimals);
-
+          ERC20.methods.decimals().call((error, decimals) => {
             if(decimals) resolve(balance.toString())
             reject(error);
           });

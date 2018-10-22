@@ -162,6 +162,10 @@ If you want to better understand how does the development process works, please 
 At first you would like to run the DApp locally. When running `testrpc` locally in `deterministic` mode, you can use any of the keystores in the `giveth-dapp/keystores` as your wallet.
 This will provide you access to the testrpc accounts for local development. Each keystore uses the same password: `password`. **DO NOT USE THESE ON MAINNET ETHEREUM**
 
+The keystores are seeded with 10.000 ANT tokens for testing donations. To get started with testing donations,
+make sure to add your account's keystore to MetaMask and swith MetaMask to Ganache. The donation modal should
+then show the appropriate balance when donating in ANT tokens.
+
 ### Development and PR Testing
 1. The Giveth Dapp is auto deployed from the develop branch and is live on Rinkeby [develop.giveth.io](https://develop.giveth.io). All pull requests are autodeployed and the PR preview will be generated upon submission. To learn how to access PR previews see [Development Process & Quality Assurance](https://wiki.giveth.io/documentation/DApp/product-development-testing/) on our wiki.
 2. In order to use the dapp you will need to create account. If this is your first time, click "sign up" to create an account. If you already have a valid keychain file, use it to sign in.

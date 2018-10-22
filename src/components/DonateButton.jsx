@@ -96,7 +96,6 @@ class DonateButton extends React.Component {
   pollWallet() {
     const { selectedToken } = this.state;
     let _init = true;
-    console.log('_init', _init)
     if(this._interval) clearInterval(this._interval);
 
     getHomeWeb3().then(homeWeb3 => {
@@ -122,14 +121,12 @@ class DonateButton extends React.Component {
           });
 
           if(selectedToken.symbol === "ETH") {
-            console.log('poll for eth...')
             homeWeb3.eth.getAccounts().then(accounts => {
               if (this.state.account !== accounts[0] || _init) {
                 [account] = accounts;
 
                 if (account) {
                   homeWeb3.eth.getBalance(account).then(bal => {
-                    console.log('ETH balance', bal)
                     selectedToken.balance = homeWeb3.utils.fromWei(bal)
                     
                     this.setState({
@@ -144,13 +141,12 @@ class DonateButton extends React.Component {
               _init = false;
             });
           } else {
-            console.log('poll for token...')
             homeWeb3.eth.getAccounts().then(accounts => {
               if (this.state.account !== accounts[0] || _init) {
                 [account] = accounts;
 
                 if (account) {
-                  getERC20TokenBalance(this.state.account, selectedToken.address)
+                  getERC20TokenBalance(account, selectedToken.address)
                   .then(bal => {
                     selectedToken.balance = bal
                     this.setState({
@@ -238,13 +234,14 @@ class DonateButton extends React.Component {
   async donateWithBridge(model) {
     const { currentUser } = this.props;
     const { adminId } = this.props.model;
-    const { account, givethBridge, etherscanUrl, showCustomAddress } = this.state;
+    const { account, givethBridge, etherscanUrl, showCustomAddress, selectedToken } = this.state;
 
     const value = utils.toWei(model.amount);
+    const tokenAddress = selectedToken.symbol === 'ETH' ? "0x0" : selectedToken.address;
+    const opts = { gas: DONATION_GAS, from: account };
 
-    const opts = { value, gas: DONATION_GAS, from: account };
-    console.log('value', value)
-    return
+    console.log('selectedToken', selectedToken)
+
     let method;
     let donationUser;
 
@@ -253,26 +250,26 @@ class DonateButton extends React.Component {
       try {
         const user = await feathersClient.service('users').get(model.customAddress);
         if (user && user.giverId > 0) {
-          method = givethBridge.donate(user.giverId, adminId, opts);
+          method = givethBridge.donate(user.giverId, adminId, tokenAddress, value, opts);
           donationUser = user;
         } else {
-          givethBridge.donateAndCreateGiver(model.customAddress, adminId, opts);
+          givethBridge.donateAndCreateGiver(model.customAddress, adminId, tokenAddress, value, opts);
           donationUser = { address: model.customAddress };
         }
       } catch (e) {
-        givethBridge.donateAndCreateGiver(model.customAddress, adminId, opts);
+        givethBridge.donateAndCreateGiver(model.customAddress, adminId, tokenAddress, value, opts);
         donationUser = { address: model.customAddress };
       }
     } else if (currentUser) {
       // Donating on behalf of logged in DApp user
       method =
         currentUser.giverId > 0
-          ? givethBridge.donate(currentUser.giverId, adminId, opts)
-          : givethBridge.donateAndCreateGiver(currentUser.address, adminId, opts);
+          ? givethBridge.donate(currentUser.giverId, adminId, tokenAddress, value, opts)
+          : givethBridge.donateAndCreateGiver(currentUser.address, adminId, tokenAddress, value, opts);
       donationUser = currentUser;
     } else {
       // Donating without any user
-      method = givethBridge.donateAndCreateGiver(account, adminId, opts);
+      method = givethBridge.donateAndCreateGiver(account, adminId, tokenAddress, value, opts);
       donationUser = { address: account };
     }
 
@@ -281,7 +278,7 @@ class DonateButton extends React.Component {
       .on('transactionHash', async transactionHash => {
         txHash = transactionHash;
         this.closeDialog();
-        await DonationService.newFeathersDonation(donationUser, this.props.model, value, txHash);
+        await DonationService.newFeathersDonation(donationUser, this.props.model, value, selectedToken, txHash);
 
         this.setState({
           modalVisible: false,

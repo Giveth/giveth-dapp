@@ -526,7 +526,7 @@ class DonationService {
    * @param {string} amount donation amount in wei
    * @param {string} txHash transactionHash of the donation tx
    */
-  static newFeathersDonation(giver, toAdmin, amount, txHash) {
+  static newFeathersDonation(giver, toAdmin, amount, token, txHash) {
     const newDonation = {
       giverAddress: giver.address,
       amount,
@@ -535,6 +535,7 @@ class DonationService {
       status: Donation.PENDING,
       homeTxHash: txHash,
       mined: false,
+      token: token
     };
 
     // donation to a delegate
