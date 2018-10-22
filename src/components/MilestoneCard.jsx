@@ -119,7 +119,7 @@ class MilestoneCard extends Component {
             <CardStats
               type="milestone"
               peopleCount={milestone.peopleCount}
-              totalDonated={milestone.totalDonated}
+              totalDonated={milestone.currentBalance}
               maxAmount={milestone.maxAmount}
               milestonesCount={milestone.milestonesCount}
               status={milestone.status}

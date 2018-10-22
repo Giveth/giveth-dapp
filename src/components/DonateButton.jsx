@@ -457,6 +457,7 @@ class DonateButton extends React.Component {
                 id="amount-input"
                 label={`How much ${selectedToken.symbol} do you want to donate?`}
                 type="number"
+                step="any"
                 value={amount}
                 placeholder="1"
                 validations={{
@@ -581,6 +582,7 @@ DonateButton.propTypes = {
     adminId: PropTypes.oneOfType([PropTypes.number, PropTypes.string]).isRequired,
     id: PropTypes.string.isRequired,
     title: PropTypes.string.isRequired,
+    campaignId: PropTypes.string,
   }).isRequired,
   currentUser: PropTypes.instanceOf(User),
   maxAmount: PropTypes.string,

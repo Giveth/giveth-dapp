@@ -1034,7 +1034,7 @@ class MyMilestones extends Component {
                                 </td>
                                 <td className="td-donations-number">{m.donationCount || 0}</td>
                                 <td className="td-donations-">
-                                  {convertEthHelper(m.totalDonated)} {m.token.symbol}
+                                  {convertEthHelper(m.currentBalance || '0')} {m.token.symbol}
                                 </td>
                                 <td className="td-reviewer">
                                   {m.reviewer &&
@@ -1102,7 +1102,7 @@ class MyMilestones extends Component {
                                         type="button"
                                         className="btn btn-success btn-sm"
                                         onClick={() => this.requestMarkComplete(m)}
-                                        disabled={!utils.toBN(m.totalDonated).gt('0')}
+                                        disabled={!utils.toBN(m.currentBalance || '0').gt('0')}
                                       >
                                         Mark complete
                                       </button>

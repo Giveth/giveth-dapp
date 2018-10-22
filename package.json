@@ -4,6 +4,7 @@
   "private": true,
   "dependencies": {
     "bignumber.js": "^7.2.1",
+    "ethereumjs-abi": "^0.6.5",
     "feathers": "^2.2.3",
     "feathers-authentication-client": "^0.3.3",
     "feathers-client": "^2.3.0",

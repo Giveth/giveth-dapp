@@ -59,7 +59,7 @@ class ViewMilestone extends Component {
             isLoading: false,
             id: milestoneId,
             fiatAmount: new BigNumber(resp.data[0].fiatAmount || '0').toFixed(2),
-            totalDonated: convertEthHelper(resp.data[0].totalDonated),
+            currentBalance: convertEthHelper(resp.data[0].currentBalance),
             maxAmount: convertEthHelper(resp.data[0].maxAmount),
           }),
         ),
@@ -82,7 +82,7 @@ class ViewMilestone extends Component {
   }
 
   isActiveMilestone() {
-    return this.state.status === 'InProgress' && this.state.totalDonated < this.state.maxAmount;
+    return this.state.status === 'InProgress' && !this.state.fullyFunded;
   }
 
   editMilestone(e) {
@@ -140,7 +140,7 @@ class ViewMilestone extends Component {
       ownerAddress,
       owner,
       maxAmount,
-      totalDonated,
+      currentBalance,
       recipient,
       recipientAddress,
       reviewer,
@@ -166,11 +166,11 @@ class ViewMilestone extends Component {
 
               {!this.state.status === 'InProgress' && <p>This milestone is not active anymore</p>}
 
-              {this.state.totalDonated >= this.state.maxAmount && (
+              {this.state.currentBalance >= this.state.maxAmount && (
                 <p>This milestone has reached its funding goal.</p>
               )}
 
-              {this.state.totalDonated < this.state.maxAmount && (
+              {this.state.currentBalance < this.state.maxAmount && (
                 <p>
                   Amount requested:
                   {this.state.maxAmount} {token.symbol}
@@ -184,13 +184,19 @@ class ViewMilestone extends Component {
               {this.isActiveMilestone() && (
                 <div>
                   <DonateButton
-                    model={{ type: Milestone.type, title, id, token, adminId: projectId }}
+                    model={{
+                      type: Milestone.type,
+                      title,
+                      id,
+                      adminId: projectId,
+                      campaignId: this.state.campaign._id,
+                    }}
                     wallet={wallet}
                     currentUser={currentUser}
                     history={history}
                     maxAmount={utils
                       .toBN(utils.toWei(this.state.maxAmount.toString()))
-                      .sub(utils.toBN(utils.toWei(this.state.totalDonated.toString())))
+                      .sub(utils.toBN(utils.toWei(this.state.currentBalance.toString())))
                       .toString()}
                   />
                   {currentUser && (
@@ -203,7 +209,7 @@ class ViewMilestone extends Component {
                         ownerAddress,
                         owner,
                         maxAmount,
-                        totalDonated,
+                        currentBalance,
                         recipient,
                         recipientAddress,
                         reviewer,
@@ -386,7 +392,11 @@ class ViewMilestone extends Component {
                           <small className="form-text">
                             The amount of {token.symbol} currently donated to this Milestone
                           </small>
+<<<<<<< HEAD
                           {totalDonated} {token.symbol}
+=======
+                          {currentBalance} ETH
+>>>>>>> origin/develop
                         </div>
 
                         <div className="form-group">
@@ -425,14 +435,24 @@ class ViewMilestone extends Component {
                   <ShowTypeDonations donations={donations} isLoading={isLoadingDonations} />
                   {this.isActiveMilestone() && (
                     <DonateButton
+<<<<<<< HEAD
                       model={{ type: Milestone.type, title, id, token, adminId: projectId }}
+=======
+                      model={{
+                        type: Milestone.type,
+                        title,
+                        id,
+                        adminId: projectId,
+                        campaignId: this.state.campaign._id,
+                      }}
+>>>>>>> origin/develop
                       wallet={wallet}
                       currentUser={currentUser}
                       history={history}
                       type={Milestone.type}
                       maxAmount={utils
                         .toBN(utils.toWei(this.state.maxAmount.toString()))
-                        .sub(utils.toBN(utils.toWei(this.state.totalDonated.toString())))
+                        .sub(utils.toBN(utils.toWei(this.state.currentBalance.toString())))
                         .toString()}
                     />
                   )}

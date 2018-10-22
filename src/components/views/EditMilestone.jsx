@@ -934,6 +934,7 @@ class EditMilestone extends Component {
                                 min="0"
                                 id="fiatamount-input"
                                 type="number"
+                                step="any"
                                 label="Maximum amount in fiat"
                                 value={milestone.fiatAmount.toNumber()}
                                 placeholder="10"
@@ -967,6 +968,7 @@ class EditMilestone extends Component {
                                 min="0"
                                 id="maxamount-input"
                                 type="number"
+                                step="any"
                                 label={`Maximum amount in ${milestone.token.name}`}
                                 value={milestone.maxAmount}
                                 placeholder="10"
