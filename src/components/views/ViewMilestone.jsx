@@ -392,11 +392,7 @@ class ViewMilestone extends Component {
                           <small className="form-text">
                             The amount of {token.symbol} currently donated to this Milestone
                           </small>
-<<<<<<< HEAD
-                          {totalDonated} {token.symbol}
-=======
-                          {currentBalance} ETH
->>>>>>> origin/develop
+                          {currentBalance} {token.symbol}
                         </div>
 
                         <div className="form-group">
@@ -435,9 +431,6 @@ class ViewMilestone extends Component {
                   <ShowTypeDonations donations={donations} isLoading={isLoadingDonations} />
                   {this.isActiveMilestone() && (
                     <DonateButton
-<<<<<<< HEAD
-                      model={{ type: Milestone.type, title, id, token, adminId: projectId }}
-=======
                       model={{
                         type: Milestone.type,
                         title,
@@ -445,7 +438,6 @@ class ViewMilestone extends Component {
                         adminId: projectId,
                         campaignId: this.state.campaign._id,
                       }}
->>>>>>> origin/develop
                       wallet={wallet}
                       currentUser={currentUser}
                       history={history}

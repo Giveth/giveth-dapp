@@ -4,7 +4,7 @@ import BigNumber from 'bignumber.js';
 
 import Donation from '../models/Donation';
 import DAC from '../models/DAC';
-import Milestone from '../models/Milestone';
+import Milestone from '../models/MilestoneModel';
 import Campaign from '../models/Campaign';
 import getNetwork from '../lib/blockchain/getNetwork';
 import { feathersClient } from '../lib/feathersClient';
