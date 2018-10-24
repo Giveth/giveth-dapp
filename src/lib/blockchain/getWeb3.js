@@ -1,5 +1,5 @@
 import { MiniMeToken } from 'minimetoken';
-import Web3 from 'web3';
+import Web3, { utils } from 'web3';
 import ZeroClientProvider from './ZeroClientProvider';
 import config from '../../configuration';
 import { takeActionAfterWalletUnlock, confirmBlockchainTransaction } from '../middleware';
@@ -159,7 +159,17 @@ let miniABI = [
     "name":"decimals",
     "outputs":[{"name":"","type":"uint8"}],
     "type":"function"
-  }
+  },
+  // approve
+  {
+    "constant":false,
+    "inputs":[
+      {"name":"_spender","type":"address"}, 
+      {"name":"_amount","type":"uint256"}
+    ],
+    "name":"approve",
+    "outputs":[{"name":"success","type":"bool"}],
+    "type":"function"}
 ];
 
 export const getERC20TokenBalance = (accountAddress, contractAddress) =>
@@ -170,7 +180,7 @@ export const getERC20TokenBalance = (accountAddress, contractAddress) =>
       ERC20.methods.balanceOf(accountAddress).call((error, balance) => {
         if(balance) {
           ERC20.methods.decimals().call((error, decimals) => {
-            if(decimals) resolve(balance.toString())
+            if(decimals) resolve(utils.fromWei(balance))
             reject(error);
           });
         } else {
@@ -179,3 +189,14 @@ export const getERC20TokenBalance = (accountAddress, contractAddress) =>
       })
     })
   )
+
+export const approveERC20tokenTransfer = (contractAddress, amount) =>
+  new Promise((resolve, reject) =>
+    getHomeWeb3().then(web3 => {
+      const ERC20 = new web3.eth.Contract(miniABI, contractAddress);
+    
+      ERC20.methods.approve(config.givethBridgeAddress, amount).call((err, res) =>
+        res ? resolve(res) : reject(err)
+      )
+    })
+  )  

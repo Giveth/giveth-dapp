@@ -10,7 +10,7 @@ import GA from 'lib/GoogleAnalytics';
 import getNetwork from '../lib/blockchain/getNetwork';
 import User from '../models/User';
 import { getGasPrice } from '../lib/helpers';
-import { getHomeWeb3, getERC20TokenBalance } from '../lib/blockchain/getWeb3';
+import { getHomeWeb3, getERC20TokenBalance, approveERC20tokenTransfer } from '../lib/blockchain/getWeb3';
 import LoaderButton from './LoaderButton';
 import ErrorPopup from './ErrorPopup';
 import config from '../configuration';
@@ -52,6 +52,7 @@ const DONATION_GAS = 30400;
 class DonateButton extends React.Component {
   constructor(props) {
     super(props);
+    console.log('props', props)
 
     // set initial balance
     const modelToken = props.model.token
@@ -231,102 +232,130 @@ class DonateButton extends React.Component {
     this.setState({ isSaving: true });
   }
 
-  async donateWithBridge(model) {
+  donateWithBridge(model) {
     const { currentUser } = this.props;
     const { adminId } = this.props.model;
     const { account, givethBridge, etherscanUrl, showCustomAddress, selectedToken } = this.state;
 
     const value = utils.toWei(model.amount);
-    const tokenAddress = selectedToken.symbol === 'ETH' ? "0x0" : selectedToken.address;
-    const opts = { gas: DONATION_GAS, from: account };
+    const isDonationInToken = selectedToken.symbol !== 'ETH'
+    const tokenAddress = isDonationInToken ? selectedToken.address : 0;
 
-    console.log('selectedToken', selectedToken)
+    const _makeDonationTx = async () => {
+      let method;
+      let donationUser;
+      let opts;
 
-    let method;
-    let donationUser;
+      if(isDonationInToken)
+        opts = { gas: DONATION_GAS, from: account, $extraGas: 1000000 };
+      else
+        opts = { value, gas: DONATION_GAS, from: account };
 
-    if (showCustomAddress) {
-      // Donating on behalf of another user or address
-      try {
-        const user = await feathersClient.service('users').get(model.customAddress);
-        if (user && user.giverId > 0) {
-          method = givethBridge.donate(user.giverId, adminId, tokenAddress, value, opts);
-          donationUser = user;
-        } else {
+      console.log('donation amount', value)
+      console.log('tokenAddress', tokenAddress)
+      console.log('opts', opts)
+
+      if (showCustomAddress) {
+        // Donating on behalf of another user or address
+        try {
+          const user = await feathersClient.service('users').get(model.customAddress);
+          if (user && user.giverId > 0) {
+            method = givethBridge.donate(user.giverId, adminId, tokenAddress, value, opts);
+            donationUser = user;
+          } else {
+            givethBridge.donateAndCreateGiver(model.customAddress, adminId, tokenAddress, value, opts);
+            donationUser = { address: model.customAddress };
+          }
+        } catch (e) {
           givethBridge.donateAndCreateGiver(model.customAddress, adminId, tokenAddress, value, opts);
           donationUser = { address: model.customAddress };
         }
-      } catch (e) {
-        givethBridge.donateAndCreateGiver(model.customAddress, adminId, tokenAddress, value, opts);
-        donationUser = { address: model.customAddress };
+      } else if (currentUser) {
+        // Donating on behalf of logged in DApp user
+        method =
+          currentUser.giverId > 0
+            ? givethBridge.donate(currentUser.giverId, adminId, tokenAddress, value, opts)
+            : givethBridge.donateAndCreateGiver(currentUser.address, adminId, tokenAddress, value, opts);
+        donationUser = currentUser;
+      } else {
+        // Donating without any user
+        method = givethBridge.donateAndCreateGiver(account, adminId, tokenAddress, value, opts);
+        donationUser = { address: account };
       }
-    } else if (currentUser) {
-      // Donating on behalf of logged in DApp user
-      method =
-        currentUser.giverId > 0
-          ? givethBridge.donate(currentUser.giverId, adminId, tokenAddress, value, opts)
-          : givethBridge.donateAndCreateGiver(currentUser.address, adminId, tokenAddress, value, opts);
-      donationUser = currentUser;
-    } else {
-      // Donating without any user
-      method = givethBridge.donateAndCreateGiver(account, adminId, tokenAddress, value, opts);
-      donationUser = { address: account };
+
+      let txHash;
+      method
+        .on('transactionHash', async transactionHash => {
+          txHash = transactionHash;
+          this.closeDialog();
+          await DonationService.newFeathersDonation(donationUser, this.props.model, value, selectedToken, txHash);
+
+          this.setState({
+            modalVisible: false,
+            isSaving: false,
+          });
+
+          GA.trackEvent({
+            category: 'Donation',
+            action: 'donated',
+            label: `${etherscanUrl}tx/${txHash}`,
+          });
+
+          React.toast.info(
+            <p>
+              Awesome! Your donation is pending...
+              <br />
+              <a href={`${etherscanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">
+                View transaction
+              </a>
+            </p>,
+          );
+        })
+        .then(() => {
+          React.toast.success(
+            <p>
+              Woot! Woot! Donation received. You are awesome!
+              <br />
+              Note: because we are bridging networks, there will be a delay before your donation
+              appears.
+              <br />
+              <a href={`${etherscanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">
+                View transaction
+              </a>
+            </p>,
+          );
+        })
+        .catch(e => {
+          if (!e.message.includes('User denied transaction signature')) {
+            const err = !(e instanceof Error) ? JSON.stringify(e, null, 2) : e;
+            ErrorPopup(
+              'Something went wrong with your donation.',
+              `${etherscanUrl}tx/${txHash} => ${err}`,
+            );
+          }
+          this.setState({
+            isSaving: false,
+          });
+        });
+
     }
 
-    let txHash;
-    method
-      .on('transactionHash', async transactionHash => {
-        txHash = transactionHash;
-        this.closeDialog();
-        await DonationService.newFeathersDonation(donationUser, this.props.model, value, selectedToken, txHash);
 
-        this.setState({
-          modalVisible: false,
-          isSaving: false,
-        });
-
-        GA.trackEvent({
-          category: 'Donation',
-          action: 'donated',
-          label: `${etherscanUrl}tx/${txHash}`,
-        });
-
-        React.toast.info(
-          <p>
-            Awesome! Your donation is pending...
-            <br />
-            <a href={`${etherscanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">
-              View transaction
-            </a>
-          </p>,
-        );
-      })
-      .then(() => {
-        React.toast.success(
-          <p>
-            Woot! Woot! Donation received. You are awesome!
-            <br />
-            Note: because we are bridging networks, there will be a delay before your donation
-            appears.
-            <br />
-            <a href={`${etherscanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">
-              View transaction
-            </a>
-          </p>,
-        );
-      })
-      .catch(e => {
-        if (!e.message.includes('User denied transaction signature')) {
-          const err = !(e instanceof Error) ? JSON.stringify(e, null, 2) : e;
+    // if donating in token, first approve transfer of token by bridge
+    if(isDonationInToken) {
+      console.log('creating ERC20 allowance')
+      approveERC20tokenTransfer(tokenAddress, value)
+        .then( res => _makeDonationTx())
+        .catch( err => {
+          console.log('err approving ERC20', err)
           ErrorPopup(
-            'Something went wrong with your donation.',
-            `${etherscanUrl}tx/${txHash} => ${err}`,
-          );
-        }
-        this.setState({
-          isSaving: false,
-        });
-      });
+            'Something went wrong with your donation. Could not approve token allowance.'
+          );          
+        })
+    } else {
+      console.log('making donation in eth')
+      _makeDonationTx()
+    }
   }
 
   render() {
