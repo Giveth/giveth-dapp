@@ -583,7 +583,7 @@ class Profile extends Component {
                                     </Link>
                                   </td>
                                   <td className="td-donations-amount">
-                                    {convertEthHelper(d.amount)} ETH
+                                    {convertEthHelper(d.amount)} {d.token.symbol}
                                   </td>
 
                                   <td className="td-transaction-status">

@@ -91,6 +91,7 @@ class Donation extends Model {
     this.txHash = data.txHash;
     this.updatedAt = data.updatedAt;
     this.isReturn = data.isReturn;
+    this.token = data.token;
 
     /**
      * Get the URL, name and type of the entity to which this donation has been donated to
@@ -456,6 +457,15 @@ class Donation extends Model {
     this.checkType(value, ['string', 'undefined'], 'updatedAt');
     this.myUpdatedAt = value;
   }
+
+  get token() {
+    return this._token;
+  }
+
+  set token(value) {
+    this._token = value
+  }  
+
 }
 
 export default Donation;
