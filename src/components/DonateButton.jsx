@@ -52,7 +52,6 @@ const DONATION_GAS = 30400;
 class DonateButton extends React.Component {
   constructor(props) {
     super(props);
-    console.log('props', props)
 
     // set initial balance
     const modelToken = props.model.token
@@ -147,22 +146,24 @@ class DonateButton extends React.Component {
                 [account] = accounts;
 
                 if (account) {
-                  getERC20TokenBalance(account, selectedToken.address)
+                  getERC20TokenBalance(selectedToken.address, account)
                   .then(bal => {
                     selectedToken.balance = bal
                     this.setState({
                       selectedToken: selectedToken,
                       account
                     })   
-                    console.log('token balance', bal)
                   })
                   .catch(err => {
                     selectedToken.balance = "0"
                     this.setState({
                       selectedToken: selectedToken,
                       account
-                    })               
-                    console.log('error getting token balance', err)
+                    }) 
+
+                    ErrorPopup(
+                      'Error getting your token balance', err
+                    );                                  
                   })
                 }
               }
@@ -247,13 +248,9 @@ class DonateButton extends React.Component {
       let opts;
 
       if(isDonationInToken)
-        opts = { gas: DONATION_GAS, from: account, $extraGas: 1000000 };
+        opts = { from: account, gas: 1000000 };
       else
         opts = { value, gas: DONATION_GAS, from: account };
-
-      console.log('donation amount', value)
-      console.log('tokenAddress', tokenAddress)
-      console.log('opts', opts)
 
       if (showCustomAddress) {
         // Donating on behalf of another user or address
@@ -332,6 +329,8 @@ class DonateButton extends React.Component {
               'Something went wrong with your donation.',
               `${etherscanUrl}tx/${txHash} => ${err}`,
             );
+          } else {
+            React.toast.info("The transaction was cancelled. No donation has been made :-(")
           }
           this.setState({
             isSaving: false,
@@ -343,17 +342,30 @@ class DonateButton extends React.Component {
 
     // if donating in token, first approve transfer of token by bridge
     if(isDonationInToken) {
-      console.log('creating ERC20 allowance')
-      approveERC20tokenTransfer(tokenAddress, value)
-        .then( res => _makeDonationTx())
+      approveERC20tokenTransfer(etherscanUrl, tokenAddress, account, value)
+        .then( res => {
+          if(res === 'approved') {
+            _makeDonationTx()
+          } else {
+            this.setState({
+              isSaving: false,
+            });   
+            React.toast.error('Something went wrong with your donation. Could not approve token allowance.')
+          }
+        })
         .catch( err => {
-          console.log('err approving ERC20', err)
-          ErrorPopup(
-            'Something went wrong with your donation. Could not approve token allowance.'
-          );          
+          this.setState({
+            isSaving: false,
+          });   
+
+          if(err.message !== 'cancelled') {
+            ErrorPopup(
+              'Something went wrong with your donation. Could not approve token allowance.',
+              err
+            );          
+          }
         })
     } else {
-      console.log('making donation in eth')
       _makeDonationTx()
     }
   }
@@ -572,7 +584,7 @@ class DonateButton extends React.Component {
                   type="submit"
                   disabled={isSaving || !formIsValid || !validNetwork || !account}
                   isLoading={isSaving}
-                  loadingText="Saving..."
+                  loadingText="Donating..."
                 >
                   Donate
                 </LoaderButton>
@@ -591,6 +603,7 @@ class DonateButton extends React.Component {
                   }&data=${this.getDonationData()}&value=${amount}&gasLimit=${DONATION_GAS}#send-transaction`}
                   target="_blank"
                   rel="noopener noreferrer"
+                  style={{marginLeft: "8px"}}
                 >
                   Donate via MyCrypto
                 </a>

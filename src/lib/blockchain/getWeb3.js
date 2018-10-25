@@ -1,3 +1,4 @@
+import React from 'react';
 import { MiniMeToken } from 'minimetoken';
 import Web3, { utils } from 'web3';
 import ZeroClientProvider from './ZeroClientProvider';
@@ -110,11 +111,45 @@ const setWallet = (rpcUrl, isHomeNetwork = false) =>
     this.setProvider(engine);
   };
 
+/**
+  Method to extend web3 to poll tx receipt mined. Usage:
+  web3.eth.getTransactionReceiptMined = _getTransactionReceiptMined;
+  Gist: https://gist.github.com/xavierlepretre/88682e871f4ad07be4534ae560692ee6
+**/
+const _getTransactionReceiptMined = function(txHash, interval){
+  const self = this;
+  
+  const transactionReceiptAsync = function(resolve, reject) {
+    self.getTransactionReceipt(txHash, (error, receipt) => {
+      if (error) {
+        reject(error);
+      } else if (receipt == null) {
+        setTimeout(
+          () => transactionReceiptAsync(resolve, reject),
+          interval ? interval : 500);
+      } else {
+        resolve(receipt);
+      }
+    });
+  };
+
+  if (Array.isArray(txHash)) {
+    return Promise.all(txHash.map(
+      oneTxHash => self.getTransactionReceiptMined(oneTxHash, interval)));
+  } else if (typeof txHash === "string") {
+    return new Promise(transactionReceiptAsync);
+  } else {
+    throw new Error("Invalid Type: " + txHash);
+  }
+};
+
+
 export const getWeb3 = () =>
   new Promise(resolve => {
     if (!givethWeb3) {
       givethWeb3 = new Web3(new ZeroClientProvider(providerOpts(config.foreignNodeConnection)));
       givethWeb3.setWallet = setWallet(config.foreignNodeConnection);
+      givethWeb3.eth.getTransactionReceiptMined = _getTransactionReceiptMined;
     }
 
     resolve(givethWeb3);
@@ -136,15 +171,16 @@ export const getHomeWeb3 = () =>
       // homeWeb3.setWallet = setWallet(config.homeNodeConnection, true);
       // TODO we can probably just remove this
       homeWeb3.setWallet = () => {};
+      homeWeb3.eth.getTransactionReceiptMined = _getTransactionReceiptMined;      
     }
 
     resolve(homeWeb3);
   });
 
 
-// The minimum ABI to get ERC20 Token balance and decimals
+// The minimum ABI to handle any ERC20 Token balance, decimals and allowance approval
 let miniABI = [
-  // balanceOf
+  // read balanceOf
   {
     "constant":true,
     "inputs":[{"name":"_owner","type":"address"}],
@@ -152,7 +188,7 @@ let miniABI = [
     "outputs":[{"name":"balance","type":"uint256"}],
     "type":"function"
   },
-  // decimals
+  // read decimals
   {
     "constant":true,
     "inputs":[],
@@ -160,7 +196,7 @@ let miniABI = [
     "outputs":[{"name":"","type":"uint8"}],
     "type":"function"
   },
-  // approve
+  // set allowance approval
   {
     "constant":false,
     "inputs":[
@@ -169,15 +205,35 @@ let miniABI = [
     ],
     "name":"approve",
     "outputs":[{"name":"success","type":"bool"}],
-    "type":"function"}
+    "type":"function"
+  },
+  // read allowance of a specific address
+  {
+    "constant":true,
+    "inputs":[
+      {"name":"_owner","type":"address"},
+      {"name":"_spender","type":"address"}
+    ],
+    "name":"allowance",
+    "outputs":[{"name":"remaining","type":"uint256"}],
+    "type":"function"
+  }  
 ];
 
-export const getERC20TokenBalance = (accountAddress, contractAddress) =>
+
+/**
+  Fetches the balance of a specific address for any ERC20 token
+
+  @param tokenContractAddress Address of the ERC20 token
+  @param accountAddress  Address of the token holder, by default the current logged in user    
+**/
+export const getERC20TokenBalance = (tokenContractAddress, accountAddress) =>
   new Promise((resolve, reject) =>
     getHomeWeb3().then(web3 => {
-      const ERC20 = new web3.eth.Contract(miniABI, contractAddress);
-    
+      const ERC20 = new web3.eth.Contract(miniABI, tokenContractAddress);
+
       ERC20.methods.balanceOf(accountAddress).call((error, balance) => {
+        console.log(error, balance)
         if(balance) {
           ERC20.methods.decimals().call((error, decimals) => {
             if(decimals) resolve(utils.fromWei(balance))
@@ -190,13 +246,116 @@ export const getERC20TokenBalance = (accountAddress, contractAddress) =>
     })
   )
 
-export const approveERC20tokenTransfer = (contractAddress, amount) =>
+
+/**
+  Functions to creates an allowance approval for an ERC20 token
+
+  @param tokenContractAddress Address of the ERC20 token
+  @param tokenHolderAddress  Address of the token holder, by default the current logged in user
+  @param amount Amount in wei for the allowance. If none given defaults to unlimited (-1)
+**/
+
+const _createAllowance = (web3, etherScanUrl, ERC20, tokenHolderAddress, amount) => 
+  new Promise((resolve, reject) =>
+    ERC20.methods.approve(config.givethBridgeAddress, amount).send({ from: tokenHolderAddress }, (err, txHash) => {
+      
+      if(amount === 0) {
+        React.toast.info(
+          <p>
+            Please wait until your transaction is mined...<br/>
+            <strong>You will be asked to make another transaction to set the correct allowance!</strong>
+            <br />
+            <a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">
+              View transaction
+            </a>
+          </p>
+        )
+      } else {
+        React.toast.info(
+          <p>
+            Please wait until your transaction is mined...<br/>
+            <strong>You will be asked to make another transaction for your donation!</strong>
+            <br />
+            <a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">
+              View transaction
+            </a>
+          </p>
+        )        
+      }
+
+      if(txHash) {
+        web3.eth.getTransactionReceiptMined(txHash)
+          .then((res) => resolve())
+          .catch((err) => reject(err))
+      } else {
+        reject()
+      }
+
+    })
+  )
+
+
+export const approveERC20tokenTransfer = (etherScanUrl, tokenContractAddress, tokenHolderAddress, amount = -1) =>
   new Promise((resolve, reject) =>
     getHomeWeb3().then(web3 => {
-      const ERC20 = new web3.eth.Contract(miniABI, contractAddress);
-    
-      ERC20.methods.approve(config.givethBridgeAddress, amount).call((err, res) =>
-        res ? resolve(res) : reject(err)
-      )
+      const ERC20 = new web3.eth.Contract(miniABI, tokenContractAddress);
+
+      // read existing allowance for the givethBridge
+      ERC20.methods.allowance(tokenHolderAddress, config.givethBridgeAddress).call((error, allowance) => {
+        // if no allowance, we set the allowance
+        // if there's an existing allowance, but it's lower than the amount, we reset it and create a new allowance
+        // in any other case, just continue
+        if (allowance == 0){   
+          React.swal({
+            title: 'Here we go...',
+            content: React.swal.msg(
+              <div>
+                <p>For your donation you need to make 2 transactions:</p>
+                <ol style={{textAlign: "left"}}>
+                  <li>A transaction to allow our contracts to transfer {utils.fromWei(amount)} tokens.</li>
+                  <li>A transaction of 0 ETH to transfer the tokens.</li>
+                </ol>                    
+              </div>
+            ),
+            icon: 'info',
+            buttons: ['Cancel', 'Lets do it!'],
+          })
+            .then(isConfirmed => {
+              if(isConfirmed) {
+                return _createAllowance(web3, etherScanUrl, ERC20, tokenHolderAddress, amount)
+              } else {
+                throw new Error("cancelled");
+              }})
+            .then(() => resolve('approved'))
+            .catch(err => reject(err))  
+        } else if (amount > allowance) {
+          React.swal({
+            title: 'Here we go...',
+            content: React.swal.msg(
+              <div>
+                <p>For your donation you need to make 3 transactions:</p>
+                <ol style={{textAlign: "left"}}>
+                  <li>A transaction to reset your token allowance</li>
+                  <li>A transaction to allow our contracts to transfer {utils.fromWei(amount)} tokens</li>
+                  <li>A transaction of 0 ETH to transfer the tokens</li>
+                </ol>
+              </div>
+            ),
+            icon: 'info',
+            buttons: ['Cancel', 'Lets do it!'],
+          })
+            .then(isConfirmed => {
+              if(isConfirmed) {
+                return _createAllowance(web3, etherScanUrl, ERC20, tokenHolderAddress, 0)
+              } else {
+                throw new Error("cancelled");
+              }})
+            .then(() => _createAllowance(web3, etherScanUrl, ERC20, tokenHolderAddress, amount))
+            .then(() => resolve('approved'))
+            .catch(err => reject(err))
+        } else {
+          resolve('approved')
+        }
+      })
     })
   )  
