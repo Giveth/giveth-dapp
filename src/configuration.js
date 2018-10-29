@@ -28,6 +28,7 @@ const configurations = {
     foreignNetworkName: 'Foreign Ganache',
     homeNodeConnection: 'http://localhost:8545',
     homeNetworkName: 'Home Ganache',
+    homeNetworkType: 'private',
     ipfsGateway: 'http://localhost:8080/ipfs/',
     sendErrors: false,
     analytics: {

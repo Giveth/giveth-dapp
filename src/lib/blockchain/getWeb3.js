@@ -7,7 +7,7 @@ import { takeActionAfterWalletUnlock, confirmBlockchainTransaction } from '../mi
 import ErrorPopup from '../../components/ErrorPopup';
 
 let givethWeb3;
-let homeWeb3;
+let newWeb3;
 /* ///////////// custom Web3 Functions ///////////// */
 
 const providerOpts = rpcUrl => {
@@ -121,23 +121,21 @@ export const getWeb3 = () =>
     resolve(givethWeb3);
   });
 
-export const getHomeWeb3 = () =>
+export const getNewWeb3 = () =>
   new Promise(resolve => {
     if (document.readyState !== 'complete') {
       // wait until complete
     }
     // only support inject web3 provider for home network
-    if (!homeWeb3) {
-      if (typeof window.web3 !== 'undefined') {
-        homeWeb3 = new Web3(window.web3.currentProvider);
+    if (!newWeb3) {
+      if (typeof window.ethereum !== 'undefined') {
+        newWeb3 = new Web3(window.ethereum);
       } else {
         // we provide a fallback so we can generate/read data
-        homeWeb3 = new Web3(config.homeNodeConnection);
+        newWeb3 = new Web3(config.foreignNodeConnection);
+        newWeb3.defaultNode = true;
       }
-      // homeWeb3.setWallet = setWallet(config.homeNodeConnection, true);
-      // TODO we can probably just remove this
-      homeWeb3.setWallet = () => {};
     }
 
-    resolve(homeWeb3);
+    resolve(newWeb3);
   });

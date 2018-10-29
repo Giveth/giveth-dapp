@@ -12,7 +12,7 @@ import getNetwork from '../lib/blockchain/getNetwork';
 import 'react-rangeslider/lib/index.css';
 import User from '../models/User';
 import { getGasPrice } from '../lib/helpers';
-import { getHomeWeb3 } from '../lib/blockchain/getWeb3';
+import { getNewWeb3 } from '../lib/blockchain/getWeb3';
 import LoaderButton from './LoaderButton';
 import ErrorPopup from './ErrorPopup';
 import config from '../configuration';
@@ -47,8 +47,9 @@ class DonateButton extends React.Component {
       formIsValid: false,
       amount: '',
       balance: 0,
-      homeWeb3: undefined,
+      web3: undefined,
       validNetwork: false,
+      validProvider: true,
       account: undefined,
       givethBridge: undefined,
       etherscanUrl: '',
@@ -68,36 +69,29 @@ class DonateButton extends React.Component {
     getNetwork().then(network => {
       this.setState({ givethBridge: network.givethBridge, etherscanUrl: network.homeEtherscan });
     });
-    getHomeWeb3().then(homeWeb3 => {
+    getNewWeb3().then(web3 => {
       this.setState({
-        homeWeb3,
+        web3,
       });
 
-      if (!homeWeb3) {
-        this.setState({ validNetwork: false });
+      if (!web3 || web3.isDefault) {
+        this.setState({ validProvider: false });
       } else {
         let account;
         // poll for account & network changes
         const poll = () => {
-          homeWeb3.eth.net.getId().then(netId => {
-            const validNetwork =
-              (netId === 1 && config.homeNetworkName === 'Mainnet') ||
-              (netId > 42 && config.homeNetworkName === 'Home Ganache') ||
-              (netId === 3 && config.homeNetworkName === 'Ropsten');
-
-            if (validNetwork !== this.state.validNetwork) {
-              this.setState({ validNetwork });
-            }
+          web3.eth.net.getNetworkType().then(type => {
+            this.setState({ validNetwork: type === config.homeNetworkType });
           });
 
-          homeWeb3.eth.getAccounts().then(accounts => {
+          web3.eth.getAccounts().then(accounts => {
             if (this.state.account !== accounts[0]) {
               [account] = accounts;
 
               if (account) {
-                homeWeb3.eth.getBalance(account).then(bal => {
+                web3.eth.getBalance(account).then(bal => {
                   this.setState({
-                    balance: homeWeb3.utils.fromWei(bal),
+                    balance: web3.utils.fromWei(bal),
                     account,
                   });
                 });
@@ -262,9 +256,10 @@ class DonateButton extends React.Component {
   render() {
     const { model, currentUser, type } = this.props;
     const {
-      homeWeb3,
+      web3,
       account,
       validNetwork,
+      validProvider,
       balance,
       givethBridge,
       amount,
@@ -281,7 +276,7 @@ class DonateButton extends React.Component {
 
     // Determine max amount
     let maxAmount = 10000000000000000;
-    if (homeWeb3) maxAmount = balance;
+    if (web3) maxAmount = balance;
     if (
       this.props.maxAmount &&
       utils.toBN(this.props.maxAmount).lt(utils.toBN(utils.toWei(balance.toString())))
@@ -302,44 +297,39 @@ class DonateButton extends React.Component {
             Give Ether to support <em>{model.title}</em>
           </h3>
 
-          {homeWeb3 &&
-            !homeWeb3.givenProvider && (
-              <div className="alert alert-warning">
-                <i className="fa fa-exclamation-triangle" />
-                It is recommended that you install <a href="https://metamask.io/">MetaMask</a> to
-                donate
-              </div>
-            )}
+          {!validProvider && (
+            <div className="alert alert-warning">
+              <i className="fa fa-exclamation-triangle" />
+              It is recommended that you install <a href="https://metamask.io/">MetaMask</a> to
+              donate
+            </div>
+          )}
 
-          {homeWeb3 &&
-            homeWeb3.givenProvider &&
+          {validProvider &&
             !validNetwork && (
               <div className="alert alert-warning">
                 <i className="fa fa-exclamation-triangle" />
-                It looks like you are connected to the wrong network on your MetaMask. Please
-                connect to the <strong>{config.homeNetworkName}</strong> network to donate
+                It looks like you are connected to the wrong network on your Ethereum Provider.
+                Please connect to the <strong>{config.homeNetworkType}</strong> network to donate
               </div>
             )}
-          {homeWeb3 &&
-            homeWeb3.givenProvider &&
-            account &&
-            validNetwork && (
+          {validNetwork &&
+            account && (
               <p>
                 Pledge: as long as the {type} owner does not lock your money you can take it back
                 any time.
               </p>
             )}
 
-          {homeWeb3 &&
-            homeWeb3.givenProvider &&
+          {validProvider &&
             !account && (
               <div className="alert alert-warning">
                 <i className="fa fa-exclamation-triangle" />
-                It looks like your MetaMask account is locked.
+                It looks like your Ethereum Provider is locked.
               </div>
             )}
 
-          {homeWeb3 &&
+          {validProvider &&
             account &&
             validNetwork && (
               <p>
@@ -353,17 +343,17 @@ class DonateButton extends React.Component {
               </p>
             )}
 
-          {homeWeb3 &&
+          {validProvider &&
             account &&
             validNetwork &&
             balance === '0' && (
               <div className="alert alert-warning">
                 <i className="fa fa-exclamation-triangle" />
-                You do not have adequate balance in your account to donate.
+                You do not have an adequate balance in your account to donate.
               </div>
             )}
 
-          {homeWeb3 && (
+          {web3 && (
             <Form
               onSubmit={this.submit}
               mapping={inputs => ({ amount: inputs.amount, customAddress: inputs.customAddress })}
@@ -371,7 +361,7 @@ class DonateButton extends React.Component {
               onInvalid={() => this.toggleFormValid(false)}
               layout="vertical"
             >
-              {homeWeb3.givenProvider &&
+              {validProvider &&
                 account &&
                 maxAmount !== 0 &&
                 balance !== '0' && (
@@ -505,7 +495,7 @@ class DonateButton extends React.Component {
                 </div>
               )}
 
-              {homeWeb3.givenProvider &&
+              {validProvider &&
                 account &&
                 maxAmount !== 0 &&
                 balance !== '0' && (
@@ -521,7 +511,7 @@ class DonateButton extends React.Component {
                   </LoaderButton>
                 )}
 
-              {!homeWeb3 && currentUser && <div>TODO: show donation data</div>}
+              {!web3 && currentUser && <div>TODO: show donation data</div>}
 
               {/* TODO get amount to dynamically update */}
               {givethBridge &&

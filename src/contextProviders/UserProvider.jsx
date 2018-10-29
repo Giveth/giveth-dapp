@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { feathersClient } from '../lib/feathersClient';
 
 import GivethWallet from '../lib/blockchain/GivethWallet';
-import { getWeb3, getHomeWeb3 } from '../lib/blockchain/getWeb3';
+import { getWeb3 } from '../lib/blockchain/getWeb3';
 
 import ErrorPopup from '../components/ErrorPopup';
 import { history } from '../lib/helpers';
@@ -86,7 +86,6 @@ class UserProvider extends Component {
       .then(keystore => GivethWallet.loadWallet(keystore))
       .then(wallet => {
         getWeb3().then(web3 => web3.setWallet(wallet));
-        getHomeWeb3().then(homeWeb3 => homeWeb3.setWallet(wallet));
         this.setState({ wallet });
       })
       .catch(err => {
@@ -163,7 +162,6 @@ class UserProvider extends Component {
     const address = wallet.getAddresses()[0];
 
     getWeb3().then(web3 => web3.setWallet(wallet));
-    getHomeWeb3().then(homeWeb3 => homeWeb3.setWallet(wallet));
 
     this.setState({ isLoading: true }, async () => {
       await this.getUserData(address);
