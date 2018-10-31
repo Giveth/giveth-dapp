@@ -89,13 +89,8 @@ class MainMenu extends Component {
               >
                 <ul className="navbar-nav mr-auto">
                   <li className="nav-item">
-                    <NavLink className="nav-link" to="/dacs" activeClassName="active">
-                      Communities
-                    </NavLink>
-                  </li>
-                  <li className="nav-item">
-                    <NavLink className="nav-link" to="/campaigns" activeClassName="active">
-                      Campaigns
+                    <NavLink className="nav-link" to="/" activeClassName="active">
+                      Explore
                     </NavLink>
                   </li>
 

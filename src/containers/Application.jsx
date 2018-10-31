@@ -12,7 +12,6 @@ import 'react-toastify/dist/ReactToastify.min.css';
 import Sweetalert from 'sweetalert';
 
 import GA from 'lib/GoogleAnalytics';
-import DataRoutes from './DataRoutes';
 
 import { history } from '../lib/helpers';
 
@@ -36,6 +35,9 @@ import MyDACs from '../components/views/MyDACs';
 import MyCampaigns from '../components/views/MyCampaigns';
 import MyMilestones from '../components/views/MyMilestones';
 import NotFound from '../components/views/NotFound';
+import Explore from '../components/views/Explore';
+import Campaigns from '../components/views/Campaigns';
+import DACs from '../components/views/DACs';
 
 import EditCampaign from '../components/views/EditCampaign';
 import ViewCampaign from '../components/views/ViewCampaign';
@@ -154,7 +156,6 @@ class Application extends Component {
                             {/* Routes are defined here. Persistent data is set as props on components
                                 NOTE order matters, wrong order breaks routes!
                             */}
-
                             <Route
                               exact
                               path="/dacs/new"
@@ -181,7 +182,6 @@ class Application extends Component {
                                 <EditDAC currentUser={currentUser} wallet={wallet} {...props} />
                               )}
                             />
-
                             <Route
                               exact
                               path="/campaigns/new"
@@ -216,7 +216,6 @@ class Application extends Component {
                                 />
                               )}
                             />
-
                             <Route
                               exact
                               path="/campaigns/:id/milestones/new"
@@ -333,7 +332,6 @@ class Application extends Component {
                                 />
                               )}
                             />
-
                             <Route
                               exact
                               path="/signin"
@@ -346,7 +344,6 @@ class Application extends Component {
                                 />
                               )}
                             />
-
                             <Route
                               exact
                               path="/signup"
@@ -354,13 +351,11 @@ class Application extends Component {
                                 <Signup walletCreated={handleWalletChange} {...props} />
                               )}
                             />
-
                             <Route
                               exact
                               path="/backupwallet"
                               render={props => <BackupWallet wallet={wallet} {...props} />}
                             />
-
                             <Route
                               exact
                               path="/change-account"
@@ -368,7 +363,6 @@ class Application extends Component {
                                 <ChangeAccount handleWalletChange={handleWalletChange} {...props} />
                               )}
                             />
-
                             <Route
                               exact
                               path="/wallet"
@@ -388,8 +382,13 @@ class Application extends Component {
                               path="/profile/:userAddress"
                               render={props => <Profile {...props} />}
                             />
-
-                            <DataRoutes />
+                            <Route exact path="/" render={props => <Explore {...props} />} />
+                            <Route
+                              exact
+                              path="/campaigns"
+                              render={props => <Campaigns {...props} />}
+                            />
+                            <Route exact path="/dacs" render={props => <DACs {...props} />} />
 
                             <Route component={NotFound} />
                           </Switch>
