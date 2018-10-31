@@ -28,35 +28,33 @@ class CampaignService {
   }
 
   /**
-   * Lazy-load Campaigns by subscribing to Campaigns listener
+   * Get Campaigns
    *
+   * @param $limit    Amount of records to be loaded
+   * @param $skip     Amounds of record to be skipped
    * @param onSuccess Callback function once response is obtained successfylly
    * @param onError   Callback function if error is encountered
    */
-  static subscribe(onSuccess, onError) {
+  static getCampaigns($limit = 100, $skip = 0, onSuccess = () => {}, onError = () => {}) {
     return feathersClient
       .service('campaigns')
-      .watch({ listStrategy: 'always' })
       .find({
         query: {
-          projectId: {
-            $gt: 0, // 0 is a pending campaign
-          },
+          projectId: { $gt: 0 }, // 0 is a pending campaign
           status: Campaign.ACTIVE,
-          $limit: 200,
+          $limit,
+          $skip,
           $sort: { milestonesCount: -1 },
         },
       })
-      .subscribe(resp => {
-        const newResp = Object.assign({}, resp, {
-          data: resp.data.map(c => new Campaign(c)),
-        });
-        onSuccess(newResp);
-      }, onError);
+      .then(resp => {
+        onSuccess(resp.data.map(c => new Campaign(c)), resp.total);
+      })
+      .catch(onError);
   }
 
   /**
-   * Lazy-load Campaign milestones by subscribing to milestone listener
+   * Get Campaign milestones listener
    *
    * @param id        ID of the Campaign which donations should be retrieved
    * @param $limit    Amount of records to be loaded
@@ -64,7 +62,7 @@ class CampaignService {
    * @param onSuccess Callback function once response is obtained successfully
    * @param onError   Callback function if error is encountered
    */
-  static getMilestones(id, $limit, $skip, onSuccess, onError) {
+  static getMilestones(id, $limit = 100, $skip = 0, onSuccess = () => {}, onError = () => {}) {
     return feathersClient
       .service('milestones')
       .find({
@@ -96,7 +94,7 @@ class CampaignService {
       .find(
         paramsForServer({
           query: {
-            ownerTypeId: id,
+            campaignId: id,
             isReturn: false,
             $sort: { createdAt: -1 },
           },
