@@ -11,7 +11,7 @@ import 'react-toastify/dist/ReactToastify.min.css';
 
 import Sweetalert from 'sweetalert';
 
-import GA from 'lib/GoogleAnalytics';
+// import GA from 'lib/GoogleAnalytics';
 import DataRoutes from './DataRoutes';
 
 import { history } from '../lib/helpers';
@@ -81,11 +81,25 @@ class Application extends Component {
       name: 'giveth',
     });
 
-    // Making unlock wallet global
-    // React.unlockWallet = this.unlockWallet;
+    this.state = {
+      web3Loading: true,
+      userLoading: true,
+    };
+
+    this.web3Loaded = this.web3Loaded.bind(this);
+    this.userLoaded = this.userLoaded.bind(this);
+  }
+
+  web3Loaded() {
+    this.setState({ web3Loading: false });
+  }
+
+  userLoaded() {
+    this.setState({ userLoading: false });
   }
 
   render() {
+    const { web3Loading, userLoading } = this.state;
     return (
       <ErrorBoundary>
         {/* Header stuff goes here */}
@@ -106,291 +120,296 @@ class Application extends Component {
           )}
 
         <Router history={history}>
-          <Web3Provider>
+          <Web3Provider onLoaded={this.web3Loaded}>
             <Web3Consumer>
               {({ state: { account } }) => (
-                <EthConversionProvider>
-                  <UserProvider account={account}>
-                    <UserConsumer>
-                      {({ state: { wallet, currentUser, isLoading, hasError } }) => (
-                        <div>
-                          {/* {GA.init() && <GA.RouteTracker />} */}
+                <div>
+                  {web3Loading && <Loader className="fixed" />}
+                  {!web3Loading && (
+                    <EthConversionProvider>
+                      <UserProvider account={account} onLoaded={this.userLoaded}>
+                        <UserConsumer>
+                          {({ state: { wallet, currentUser, hasError } }) => (
+                            <div>
+                              {/* {GA.init() && <GA.RouteTracker />} */}
 
-                          {isLoading && <Loader className="fixed" />}
+                              {userLoading && <Loader className="fixed" />}
 
-                          {!isLoading &&
-                            !hasError && (
-                              <div>
-                                <MainMenu />
+                              {!userLoading &&
+                                !hasError && (
+                                  <div>
+                                    <MainMenu />
 
-                                <Switch>
-                                  {/* Routes are defined here. Persistent data is set as props on components
+                                    <Switch>
+                                      {/* Routes are defined here. Persistent data is set as props on components
                                 NOTE order matters, wrong order breaks routes!
                             */}
 
-                                  <Route
-                                    exact
-                                    path="/dacs/new"
-                                    render={props => (
-                                      <EditDAC
-                                        isNew
-                                        currentUser={currentUser}
-                                        wallet={wallet}
-                                        {...props}
+                                      <Route
+                                        exact
+                                        path="/dacs/new"
+                                        render={props => (
+                                          <EditDAC
+                                            isNew
+                                            currentUser={currentUser}
+                                            wallet={wallet}
+                                            {...props}
+                                          />
+                                        )}
                                       />
-                                    )}
-                                  />
-                                  <Route
-                                    exact
-                                    path="/dacs/:id"
-                                    render={props => (
-                                      <ViewDAC
-                                        currentUser={currentUser}
-                                        wallet={wallet}
-                                        {...props}
+                                      <Route
+                                        exact
+                                        path="/dacs/:id"
+                                        render={props => (
+                                          <ViewDAC
+                                            currentUser={currentUser}
+                                            wallet={wallet}
+                                            {...props}
+                                          />
+                                        )}
                                       />
-                                    )}
-                                  />
-                                  <Route
-                                    exact
-                                    path="/dacs/:id/edit"
-                                    render={props => (
-                                      <EditDAC
-                                        currentUser={currentUser}
-                                        wallet={wallet}
-                                        {...props}
+                                      <Route
+                                        exact
+                                        path="/dacs/:id/edit"
+                                        render={props => (
+                                          <EditDAC
+                                            currentUser={currentUser}
+                                            wallet={wallet}
+                                            {...props}
+                                          />
+                                        )}
                                       />
-                                    )}
-                                  />
 
-                                  <Route
-                                    exact
-                                    path="/campaigns/new"
-                                    render={props => (
-                                      <EditCampaign
-                                        isNew
-                                        currentUser={currentUser}
-                                        wallet={wallet}
-                                        {...props}
+                                      <Route
+                                        exact
+                                        path="/campaigns/new"
+                                        render={props => (
+                                          <EditCampaign
+                                            isNew
+                                            currentUser={currentUser}
+                                            wallet={wallet}
+                                            {...props}
+                                          />
+                                        )}
                                       />
-                                    )}
-                                  />
-                                  <Route
-                                    exact
-                                    path="/campaigns/:id"
-                                    render={props => (
-                                      <ViewCampaign
-                                        currentUser={currentUser}
-                                        wallet={wallet}
-                                        {...props}
+                                      <Route
+                                        exact
+                                        path="/campaigns/:id"
+                                        render={props => (
+                                          <ViewCampaign
+                                            currentUser={currentUser}
+                                            wallet={wallet}
+                                            {...props}
+                                          />
+                                        )}
                                       />
-                                    )}
-                                  />
-                                  <Route
-                                    exact
-                                    path="/campaigns/:id/edit"
-                                    render={props => (
-                                      <EditCampaign
-                                        currentUser={currentUser}
-                                        wallet={wallet}
-                                        {...props}
+                                      <Route
+                                        exact
+                                        path="/campaigns/:id/edit"
+                                        render={props => (
+                                          <EditCampaign
+                                            currentUser={currentUser}
+                                            wallet={wallet}
+                                            {...props}
+                                          />
+                                        )}
                                       />
-                                    )}
-                                  />
 
-                                  <Route
-                                    exact
-                                    path="/campaigns/:id/milestones/new"
-                                    render={props => (
-                                      <EditMilestone
-                                        isNew
-                                        currentUser={currentUser}
-                                        wallet={wallet}
-                                        {...props}
+                                      <Route
+                                        exact
+                                        path="/campaigns/:id/milestones/new"
+                                        render={props => (
+                                          <EditMilestone
+                                            isNew
+                                            currentUser={currentUser}
+                                            wallet={wallet}
+                                            {...props}
+                                          />
+                                        )}
                                       />
-                                    )}
-                                  />
-                                  <Route
-                                    exact
-                                    path="/campaigns/:id/milestones/propose"
-                                    render={props => (
-                                      <EditMilestone
-                                        isNew
-                                        isProposed
-                                        currentUser={currentUser}
-                                        wallet={wallet}
-                                        {...props}
+                                      <Route
+                                        exact
+                                        path="/campaigns/:id/milestones/propose"
+                                        render={props => (
+                                          <EditMilestone
+                                            isNew
+                                            isProposed
+                                            currentUser={currentUser}
+                                            wallet={wallet}
+                                            {...props}
+                                          />
+                                        )}
                                       />
-                                    )}
-                                  />
-                                  <Route
-                                    exact
-                                    path="/campaigns/:id/milestones/:milestoneId"
-                                    render={props => (
-                                      <ViewMilestone
-                                        currentUser={currentUser}
-                                        wallet={wallet}
-                                        {...props}
+                                      <Route
+                                        exact
+                                        path="/campaigns/:id/milestones/:milestoneId"
+                                        render={props => (
+                                          <ViewMilestone
+                                            currentUser={currentUser}
+                                            wallet={wallet}
+                                            {...props}
+                                          />
+                                        )}
                                       />
-                                    )}
-                                  />
-                                  <Route
-                                    exact
-                                    path="/campaigns/:id/milestones/:milestoneId/edit"
-                                    render={props => (
-                                      <EditMilestone
-                                        currentUser={currentUser}
-                                        wallet={wallet}
-                                        {...props}
+                                      <Route
+                                        exact
+                                        path="/campaigns/:id/milestones/:milestoneId/edit"
+                                        render={props => (
+                                          <EditMilestone
+                                            currentUser={currentUser}
+                                            wallet={wallet}
+                                            {...props}
+                                          />
+                                        )}
                                       />
-                                    )}
-                                  />
-                                  <Route
-                                    exact
-                                    path="/campaigns/:id/milestones"
-                                    render={({ match }) => (
-                                      <Redirect to={`/campaigns/${match.params.id}`} />
-                                    )}
-                                  />
-                                  <Route
-                                    exact
-                                    path="/milestones/:milestoneId/edit"
-                                    render={props => (
-                                      <EditMilestone
-                                        currentUser={currentUser}
-                                        wallet={wallet}
-                                        {...props}
+                                      <Route
+                                        exact
+                                        path="/campaigns/:id/milestones"
+                                        render={({ match }) => (
+                                          <Redirect to={`/campaigns/${match.params.id}`} />
+                                        )}
                                       />
-                                    )}
-                                  />
-                                  <Route
-                                    exact
-                                    path="/milestones/:milestoneId/edit/proposed"
-                                    render={props => (
-                                      <EditMilestone
-                                        currentUser={currentUser}
-                                        wallet={wallet}
-                                        isProposed
-                                        {...props}
+                                      <Route
+                                        exact
+                                        path="/milestones/:milestoneId/edit"
+                                        render={props => (
+                                          <EditMilestone
+                                            currentUser={currentUser}
+                                            wallet={wallet}
+                                            {...props}
+                                          />
+                                        )}
                                       />
-                                    )}
-                                  />
-                                  <Route
-                                    exact
-                                    path="/donations"
-                                    render={props => (
-                                      <Donations
-                                        currentUser={currentUser}
-                                        wallet={wallet}
-                                        {...props}
+                                      <Route
+                                        exact
+                                        path="/milestones/:milestoneId/edit/proposed"
+                                        render={props => (
+                                          <EditMilestone
+                                            currentUser={currentUser}
+                                            wallet={wallet}
+                                            isProposed
+                                            {...props}
+                                          />
+                                        )}
                                       />
-                                    )}
-                                  />
-                                  <Route
-                                    exact
-                                    path="/delegations"
-                                    render={props => (
-                                      <Delegations
-                                        currentUser={currentUser}
-                                        wallet={wallet}
-                                        {...props}
+                                      <Route
+                                        exact
+                                        path="/donations"
+                                        render={props => (
+                                          <Donations
+                                            currentUser={currentUser}
+                                            wallet={wallet}
+                                            {...props}
+                                          />
+                                        )}
                                       />
-                                    )}
-                                  />
-                                  <Route
-                                    exact
-                                    path="/my-dacs"
-                                    render={props => (
-                                      <MyDACs
-                                        currentUser={currentUser}
-                                        wallet={wallet}
-                                        {...props}
+                                      <Route
+                                        exact
+                                        path="/delegations"
+                                        render={props => (
+                                          <Delegations
+                                            currentUser={currentUser}
+                                            wallet={wallet}
+                                            {...props}
+                                          />
+                                        )}
                                       />
-                                    )}
-                                  />
-                                  <Route
-                                    exact
-                                    path="/my-campaigns"
-                                    render={props => (
-                                      <MyCampaigns
-                                        currentUser={currentUser}
-                                        wallet={wallet}
-                                        {...props}
+                                      <Route
+                                        exact
+                                        path="/my-dacs"
+                                        render={props => (
+                                          <MyDACs
+                                            currentUser={currentUser}
+                                            wallet={wallet}
+                                            {...props}
+                                          />
+                                        )}
                                       />
-                                    )}
-                                  />
-                                  <Route
-                                    exact
-                                    path="/my-milestones"
-                                    render={props => (
-                                      <MyMilestones
-                                        currentUser={currentUser}
-                                        wallet={wallet}
-                                        {...props}
+                                      <Route
+                                        exact
+                                        path="/my-campaigns"
+                                        render={props => (
+                                          <MyCampaigns
+                                            currentUser={currentUser}
+                                            wallet={wallet}
+                                            {...props}
+                                          />
+                                        )}
                                       />
-                                    )}
-                                  />
+                                      <Route
+                                        exact
+                                        path="/my-milestones"
+                                        render={props => (
+                                          <MyMilestones
+                                            currentUser={currentUser}
+                                            wallet={wallet}
+                                            {...props}
+                                          />
+                                        )}
+                                      />
 
-                                  <Route
-                                    exact
-                                    path="/wallet"
-                                    render={props => (
-                                      <UserWallet
-                                        currentUser={currentUser}
-                                        wallet={wallet}
-                                        {...props}
+                                      <Route
+                                        exact
+                                        path="/wallet"
+                                        render={props => (
+                                          <UserWallet
+                                            currentUser={currentUser}
+                                            wallet={wallet}
+                                            {...props}
+                                          />
+                                        )}
                                       />
-                                    )}
-                                  />
-                                  <Route
-                                    exact
-                                    path="/profile"
-                                    render={props => (
-                                      <EditProfile
-                                        currentUser={currentUser}
-                                        wallet={wallet}
-                                        {...props}
+                                      <Route
+                                        exact
+                                        path="/profile"
+                                        render={props => (
+                                          <EditProfile
+                                            currentUser={currentUser}
+                                            wallet={wallet}
+                                            {...props}
+                                          />
+                                        )}
                                       />
-                                    )}
-                                  />
-                                  <Route
-                                    exact
-                                    path="/profile/:userAddress"
-                                    render={props => <Profile {...props} />}
-                                  />
+                                      <Route
+                                        exact
+                                        path="/profile/:userAddress"
+                                        render={props => <Profile {...props} />}
+                                      />
 
-                                  <DataRoutes />
+                                      <DataRoutes />
 
-                                  <Route component={NotFound} />
-                                </Switch>
-                              </div>
-                            )}
+                                      <Route component={NotFound} />
+                                    </Switch>
+                                  </div>
+                                )}
 
-                          {!isLoading &&
-                            hasError && (
-                              <center>
-                                <h2>Oops, something went wrong...</h2>
-                                <p>
-                                  The Giveth dapp could not load for some reason. Please try
-                                  again...
-                                </p>
-                              </center>
-                            )}
+                              {!userLoading &&
+                                hasError && (
+                                  <center>
+                                    <h2>Oops, something went wrong...</h2>
+                                    <p>
+                                      The Giveth dapp could not load for some reason. Please try
+                                      again...
+                                    </p>
+                                  </center>
+                                )}
 
-                          <ToastContainer
-                            position="top-right"
-                            type="default"
-                            autoClose={5000}
-                            hideProgressBar
-                            newestOnTop={false}
-                            closeOnClick
-                            pauseOnHover
-                          />
-                        </div>
-                      )}
-                    </UserConsumer>
-                  </UserProvider>
-                </EthConversionProvider>
+                              <ToastContainer
+                                position="top-right"
+                                type="default"
+                                autoClose={5000}
+                                hideProgressBar
+                                newestOnTop={false}
+                                closeOnClick
+                                pauseOnHover
+                              />
+                            </div>
+                          )}
+                        </UserConsumer>
+                      </UserProvider>
+                    </EthConversionProvider>
+                  )}
+                </div>
               )}
             </Web3Consumer>
           </Web3Provider>

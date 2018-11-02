@@ -43,7 +43,7 @@ const getAccount = async web3 => {
 };
 
 const pollAccount = pollEvery((web3, { onAccount = () => {}, onBalance = () => {} } = {}) => {
-  let lastAccount;
+  let lastAccount = -1;
   let lastBalance = toBN(-1);
   return {
     request: async () => {
@@ -106,6 +106,8 @@ class Web3Provider extends Component {
       isEnabled: false,
     };
 
+    this.isLoaded = false;
+
     this.enableProvider = this.enableProvider.bind(this);
   }
 
@@ -127,12 +129,12 @@ class Web3Provider extends Component {
 
       if (!web3.defaultNode) {
         pollAccount(web3, {
-          onAccount: account => {
-            console.log('account', account);
+          onAccount: async account => {
+            if (!this.isLoaded) this.loaded();
             this.setState({
               account,
-              // TODO: find a way to determine if the provider is locked or not enabled
-              isEnabled: !!account,
+              // TODO: find a way for non metamask providers
+              isEnabled: await web3.currentProvider._metamask.isEnabled(),
             });
           },
           onBalance: balance => {
@@ -147,8 +149,15 @@ class Web3Provider extends Component {
     this.enableProvider();
   }
 
+  loaded() {
+    this.isLoaded = true;
+    this.props.onLoaded();
+  }
+
   async enableProvider() {
     const web3 = await getWeb3();
+
+    if (!web3.isEnabled) this.loaded();
 
     let isEnabled = false;
 
@@ -157,13 +166,7 @@ class Web3Provider extends Component {
     }, 5000);
 
     try {
-      // TODO: there is very inconsistant behavior here
-      // on first load, if metamask is locked, this will never resolve
-      // however if you unlock metamask or metamask is unlocked upon first
-      // load, then you lock metamask, this will resolve to []
-      // also, calling web3.enable() does not reflect any account changes
-      console.log('enabling', await web3.currentProvider.enable());
-      // console.log('enabling', await web3.enable());
+      await web3.enable();
       clearTimeout(timeoutId);
       isEnabled = true;
     } catch (e) {}
@@ -206,6 +209,11 @@ class Web3Provider extends Component {
 
 Web3Provider.propTypes = {
   children: PropTypes.oneOfType([PropTypes.arrayOf(PropTypes.node), PropTypes.node]).isRequired,
+  onLoaded: PropTypes.func,
+};
+
+Web3Provider.defaultProps = {
+  onLoaded: () => {},
 };
 
 export { Consumer };

@@ -40,8 +40,6 @@ class UserProvider extends Component {
 
     this.state = {
       currentUser: undefined,
-      // isLoading: true,
-      isLoading: false,
       hasError: false,
       wallet: undefined,
     };
@@ -55,19 +53,17 @@ class UserProvider extends Component {
     });
   }
 
-  componentWillReceiveProps(nextProps) {
-    const { currentUser } = this.state;
-    if (
-      (nextProps.account && !currentUser) ||
-      (currentUser && nextProps.account !== currentUser.address)
-    ) {
-      this.getUserData(nextProps.account);
-    }
+  componentDidMount() {
+    this.getUserData(this.props.account);
   }
 
-  // getDerivedStateFromProps(a, b) {
-  // console.log('getDerivedState', a, b);
-  // }
+  componentDidUpdate(prevProps) {
+    const { currentUser } = this.state;
+    const { account } = this.props;
+    if ((account && !currentUser) || (currentUser && account !== prevProps.account)) {
+      this.getUserData(account);
+    }
+  }
 
   componentWillUnmount() {
     if (this.userSubscriber) this.userSubscriber.unsubscribe();
@@ -79,6 +75,7 @@ class UserProvider extends Component {
     return new Promise((resolve, reject) => {
       if (!address) {
         this.setState({ currentUser: undefined }, resolve());
+        this.props.onLoaded();
       } else {
         this.userSubscriber = feathersClient
           .service('/users')
@@ -113,28 +110,26 @@ class UserProvider extends Component {
 
   async authenticateIfPossible() {
     const { currentUser } = this.state;
-    if (!currentUser) return;
 
-    try {
-      const token = await feathersClient.passport.getJWT();
+    if (currentUser) {
+      try {
+        const token = await feathersClient.passport.getJWT();
 
-      if (!token) return;
-      const payload = await feathersClient.passport.verifyJWT(token);
+        if (token) {
+          const payload = await feathersClient.passport.verifyJWT(token);
 
-      if (currentUser.address === payload.userId) {
-        feathersClient.authenticate(); // authenticate the socket connection
-      }
-      // this.setState({
-      // isLoading: false,
-      // hasError: false,
-      // }),
-    } catch (e) {
-      // this.setState({ isLoading: false, hasError: false });
+          if (currentUser.address === payload.userId) {
+            await feathersClient.authenticate(); // authenticate the socket connection
+          }
+        }
+      } catch (e) {}
     }
+
+    this.props.onLoaded();
   }
 
   render() {
-    const { currentUser, wallet, isLoading, hasError } = this.state;
+    const { currentUser, wallet, hasError } = this.state;
 
     return (
       <Provider
@@ -142,7 +137,6 @@ class UserProvider extends Component {
           state: {
             currentUser,
             wallet,
-            isLoading,
             hasError,
           },
         }}
@@ -155,7 +149,13 @@ class UserProvider extends Component {
 
 UserProvider.propTypes = {
   children: PropTypes.oneOfType([PropTypes.arrayOf(PropTypes.node), PropTypes.node]).isRequired,
-  account: PropTypes.string.isRequired,
+  account: PropTypes.string,
+  onLoaded: PropTypes.func,
+};
+
+UserProvider.defaultProps = {
+  onLoaded: () => {},
+  account: undefined,
 };
 
 export default UserProvider;
