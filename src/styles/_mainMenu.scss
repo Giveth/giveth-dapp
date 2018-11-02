@@ -1,10 +1,6 @@
 #main-menu {
   background-color: $header-background;
 
-  .mobile-wallet-lock {
-    display: none;
-  }
-
   .navbar-brand {
     padding-bottom: .5225rem;    
     padding-top: 0;
@@ -139,14 +135,6 @@
         height: 50px !important;
         max-width: none !important;
       }
-    }
-  }
-
-  .mobile-wallet-lock {
-    display: flex !important;
-
-    a {
-      font-size: 1.2rem !important;
     }
   }
 }

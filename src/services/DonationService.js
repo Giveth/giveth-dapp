@@ -8,7 +8,7 @@ import Milestone from '../models/Milestone';
 import Campaign from '../models/Campaign';
 import getNetwork from '../lib/blockchain/getNetwork';
 import { feathersClient } from '../lib/feathersClient';
-import { getWeb3 } from '../lib/blockchain/getWeb3';
+import getWeb3 from '../lib/blockchain/getWeb3';
 
 import ErrorPopup from '../components/ErrorPopup';
 

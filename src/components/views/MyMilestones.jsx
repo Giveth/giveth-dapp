@@ -12,7 +12,7 @@ import { feathersClient } from '../../lib/feathersClient';
 import { isLoggedIn, redirectAfterWalletUnlock, checkWalletBalance } from '../../lib/middleware';
 import confirmationDialog from '../../lib/confirmationDialog';
 import getNetwork from '../../lib/blockchain/getNetwork';
-import { getWeb3 } from '../../lib/blockchain/getWeb3';
+import getWeb3 from '../../lib/blockchain/getWeb3';
 import Loader from '../Loader';
 import User from '../../models/User';
 import { getTruncatedText, getReadableStatus, convertEthHelper } from '../../lib/helpers';

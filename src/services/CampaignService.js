@@ -1,7 +1,7 @@
 import { LPPCampaign } from 'lpp-campaign';
 import { paramsForServer } from 'feathers-hooks-common';
 import getNetwork from '../lib/blockchain/getNetwork';
-import { getWeb3 } from '../lib/blockchain/getWeb3';
+import getWeb3 from '../lib/blockchain/getWeb3';
 import { feathersClient } from '../lib/feathersClient';
 import Campaign from '../models/Campaign';
 import Milestone from '../models/Milestone';

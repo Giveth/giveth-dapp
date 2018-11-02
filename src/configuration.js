@@ -26,9 +26,10 @@ const configurations = {
     feathersConnection: 'http://localhost:3030',
     foreignNodeConnection: 'http://localhost:8546',
     foreignNetworkName: 'Foreign Ganache',
+    foreignNetworkId: 67,
     homeNodeConnection: 'http://localhost:8545',
     homeNetworkName: 'Home Ganache',
-    homeNetworkType: 'private',
+    homeNetworkId: 66,
     ipfsGateway: 'http://localhost:8080/ipfs/',
     sendErrors: false,
     analytics: {

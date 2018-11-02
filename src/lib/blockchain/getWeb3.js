@@ -111,25 +111,52 @@ const setWallet = (rpcUrl, isHomeNetwork = false) =>
     this.setProvider(engine);
   };
 
-export const getWeb3 = () =>
-  new Promise(resolve => {
-    if (!givethWeb3) {
-      givethWeb3 = new Web3(new ZeroClientProvider(providerOpts(config.foreignNodeConnection)));
-      givethWeb3.setWallet = setWallet(config.foreignNodeConnection);
-    }
+// export const getWeb3 = () =>
+//   new Promise(resolve => {
+//     if (!givethWeb3) {
+//       givethWeb3 = new Web3(new ZeroClientProvider(providerOpts(config.foreignNodeConnection)));
+//       givethWeb3.setWallet = setWallet(config.foreignNodeConnection);
+//     }
 
-    resolve(givethWeb3);
-  });
+//     resolve(givethWeb3);
+//   });
 
-export const getNewWeb3 = () =>
+let enablePromise;
+function enable() {
+  if (enablePromise) return enablePromise;
+
+  enablePromise = new Promise((resolve, reject) =>
+    this.currentProvider
+      .enable()
+      .then(addrs => {
+        this.isEnabled = true;
+        resolve(addrs);
+      })
+      .catch(e => {
+        enablePromise = false;
+        this.isEnabled = false;
+        reject(e);
+      }),
+  );
+
+  return enablePromise;
+}
+
+export default () =>
   new Promise(resolve => {
     if (document.readyState !== 'complete') {
       // wait until complete
     }
     // only support inject web3 provider for home network
     if (!newWeb3) {
-      if (typeof window.ethereum !== 'undefined') {
+      if (window.ethereum) {
         newWeb3 = new Web3(window.ethereum);
+        newWeb3.enable = enable.bind(newWeb3);
+        // newWeb3.accountsEnabled = false;
+      } else if (window.web3) {
+        newWeb3 = new Web3(window.web3.currentProvider);
+        newWeb3.enable = newWeb3.eth.getAccounts;
+        newWeb3.accountsEnabled = true;
       } else {
         // we provide a fallback so we can generate/read data
         newWeb3 = new Web3(config.foreignNodeConnection);
