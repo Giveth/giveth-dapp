@@ -6,6 +6,20 @@ import { Consumer as UserConsumer } from '../contextProviders/UserProvider';
 import { Consumer as Web3Consumer } from '../contextProviders/Web3Provider';
 import { history } from '../lib/helpers';
 
+const signUpSwal = () => {
+  React.swal({
+    title: 'Sign Up!',
+    content: React.swal.msg(
+      <p>
+        In order to use the Dapp, you need to use a Web3 wallet.
+        <br />
+        It is recommended that you install <a href="https://metamask.io/">MetaMask</a>.
+      </p>,
+    ),
+    icon: 'info',
+    buttons: ['Ok'],
+  });
+};
 // Broken rule that can not find the correct id tag
 /* eslint jsx-a11y/aria-proptypes: 0 */
 /**
@@ -136,6 +150,15 @@ class MainMenu extends Component {
                         !state.currentUser && (
                           <small className="text-muted">Please unlock MetaMask</small>
                         )}
+                      {!validProvider && (
+                        <button
+                          type="button"
+                          className="btn btn-outline-info btn-sm"
+                          onClick={signUpSwal}
+                        >
+                          Sign Up!
+                        </button>
+                      )}
 
                       {state.currentUser && (
                         <li className="nav-item dropdown">
