@@ -39,6 +39,7 @@ class Content extends Component {
   }
 
   handleCamera() {
+    this.setState({ type: 'camera' });
     const params = { audio: true, video: true };
     navigator.getUserMedia(
       params,
