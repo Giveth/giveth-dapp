@@ -35,8 +35,7 @@ const pollEvery = (fn, delay) => {
 
 const getAccount = async web3 => {
   try {
-    // bug doesn't update accounts when changed w/ enable
-    const addrs = web3.isEnabled ? await web3.eth.getAccounts() : await web3.enable();
+    const addrs = await web3.eth.getAccounts();
     if (addrs.length > 0) return addrs[0];
   } catch (e) {}
   return undefined;
@@ -107,6 +106,7 @@ class Web3Provider extends Component {
     };
 
     this.isLoaded = false;
+    this.enableTimedout = false;
 
     this.enableProvider = this.enableProvider.bind(this);
   }
@@ -130,12 +130,14 @@ class Web3Provider extends Component {
       if (!web3.defaultNode) {
         pollAccount(web3, {
           onAccount: async account => {
-            if (!this.isLoaded) this.loaded();
-            this.setState({
-              account,
-              // TODO: find a way for non metamask providers
-              isEnabled: await web3.currentProvider._metamask.isEnabled(),
-            });
+            this.setState(
+              {
+                account,
+                // TODO: find a way for non metamask providers
+                isEnabled: await web3.currentProvider._metamask.isEnabled(),
+              },
+              () => !this.isLoaded && this.loaded(),
+            );
           },
           onBalance: balance => {
             this.setState({
@@ -157,20 +159,38 @@ class Web3Provider extends Component {
   async enableProvider() {
     const web3 = await getWeb3();
 
-    if (!web3.isEnabled) this.loaded();
+    if (web3.isEnabled) {
+      this.setState(
+        {
+          isEnabled: true,
+          account: await getAccount(web3),
+        },
+        () => this.loaded(),
+      );
+      return;
+    }
 
     let isEnabled = false;
+    let account;
+    let balance;
 
     const timeoutId = setTimeout(() => {
-      this.setState({ isEnabled });
+      this.setState({ isEnabled }, () => this.loaded());
+      this.enableTimedout = true;
     }, 5000);
 
     try {
-      await web3.enable();
+      const accounts = await web3.enable(this.enableTimedout);
       clearTimeout(timeoutId);
       isEnabled = true;
-    } catch (e) {}
-    this.setState({ isEnabled });
+      account = accounts.length ? accounts[0] : undefined;
+      if (account) {
+        balance = utils.toBN(await web3.eth.getBalance(account));
+      }
+    } catch (e) {
+      // ignore
+    }
+    this.setState({ isEnabled, account, balance }, () => this.loaded());
   }
 
   render() {

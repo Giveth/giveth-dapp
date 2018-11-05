@@ -1,9 +1,7 @@
 import React, { Component, createContext } from 'react';
 import PropTypes from 'prop-types';
+import { utils } from 'web3';
 import { feathersClient } from '../lib/feathersClient';
-
-import Web3Wallet from '../lib/blockchain/Web3Wallet';
-import getWeb3 from '../lib/blockchain/getWeb3';
 
 import ErrorPopup from '../components/ErrorPopup';
 
@@ -17,6 +15,7 @@ export { Consumer };
 // TO DO: This is the minimum transaction view required to:
 // create a DAC / Campaign / Milestone / Profile
 React.minimumWalletBalance = 0.01;
+React.minimumWalletBalanceInWei = utils.toBN(utils.toWei('0.01'));
 
 React.whitelist = {};
 
@@ -41,16 +40,9 @@ class UserProvider extends Component {
     this.state = {
       currentUser: undefined,
       hasError: false,
-      wallet: undefined,
     };
 
     this.getUserData = this.getUserData.bind(this);
-  }
-
-  componentWillMount() {
-    getWeb3().then(web3 => {
-      this.setState({ wallet: web3.defaultNode ? undefined : new Web3Wallet(web3) });
-    });
   }
 
   componentDidMount() {
@@ -74,8 +66,10 @@ class UserProvider extends Component {
 
     return new Promise((resolve, reject) => {
       if (!address) {
-        this.setState({ currentUser: undefined }, resolve());
-        this.props.onLoaded();
+        this.setState({ currentUser: undefined }, () => {
+          resolve();
+          this.props.onLoaded();
+        });
       } else {
         this.userSubscriber = feathersClient
           .service('/users')
@@ -122,21 +116,22 @@ class UserProvider extends Component {
             await feathersClient.authenticate(); // authenticate the socket connection
           }
         }
-      } catch (e) {}
+      } catch (e) {
+        // ignore
+      }
     }
 
     this.props.onLoaded();
   }
 
   render() {
-    const { currentUser, wallet, hasError } = this.state;
+    const { currentUser, hasError } = this.state;
 
     return (
       <Provider
         value={{
           state: {
             currentUser,
-            wallet,
             hasError,
           },
         }}
