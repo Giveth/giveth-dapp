@@ -67,7 +67,7 @@ const Delegations = () => (
                                             &nbsp;
                                           </span>
                                         )}
-                                        {convertEthHelper(d.amountRemaining)} ETH
+                                        {convertEthHelper(d.amountRemaining)} {(d.token && d.token.symbol) || "ETH"}
                                       </td>
                                       <td className="td-user">
                                         <Link to={`profile/${d.giver.address}`}>
@@ -87,6 +87,7 @@ const Delegations = () => (
                                               types={campaigns.concat(milestones)}
                                               donation={d}
                                               wallet={wallet}
+                                              symbol={d.token.symbol}
                                             />
                                           )}
 

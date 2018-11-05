@@ -41,7 +41,7 @@ class DelegateButton extends Component {
       objectsToDelegateTo: [],
       modalVisible: false,
       amount: utils.fromWei(props.donation.amountRemaining),
-      maxAmount: utils.fromWei(props.donation.amountRemaining),
+      maxAmount: utils.fromWei(props.donation.amountRemaining),      
     };
 
     this.submit = this.submit.bind(this);
@@ -145,7 +145,7 @@ class DelegateButton extends Component {
   }
 
   render() {
-    const { types, milestoneOnly, donation } = this.props;
+    const { types, milestoneOnly, donation, symbol } = this.props;
     const { isSaving, objectsToDelegateTo, maxAmount } = this.state;
     const style = { display: 'inline-block' };
     const pStyle = { whiteSpace: 'normal' };
@@ -170,7 +170,7 @@ class DelegateButton extends Component {
           <p style={pStyle}>
             You are delegating donation from{' '}
             <strong>{donation.giver.name || donation.giverAddress}</strong> of a value{' '}
-            <strong>{utils.fromWei(donation.amountRemaining)} ETH</strong> that has been donated to{' '}
+            <strong>{utils.fromWei(donation.amountRemaining)} {symbol}</strong> that has been donated to{' '}
             <strong>{donation.donatedTo.name}</strong>
           </p>
           <Form onSubmit={this.submit} layout="vertical">
@@ -188,6 +188,7 @@ class DelegateButton extends Component {
                 maxLength={1}
               />
             </div>
+
             <span className="label">Amount to delegate:</span>
 
             <div className="form-group">
@@ -202,7 +203,7 @@ class DelegateButton extends Component {
                   0: '0',
                   [maxAmount]: maxAmount,
                 }}
-                format={val => `${val} ETH`}
+                format={val => `${val} ${symbol}`}
                 onChange={amount => this.setState({ amount: Number(amount).toFixed(2) })}
               />
             </div>
@@ -242,10 +243,12 @@ DelegateButton.propTypes = {
   types: PropTypes.arrayOf(PropTypes.shape({})).isRequired,
   milestoneOnly: PropTypes.bool,
   donation: PropTypes.instanceOf(Donation).isRequired,
+  symbol: PropTypes.string
 };
 
 DelegateButton.defaultProps = {
   milestoneOnly: false,
+  symbol: "ETH"
 };
 
 export default DelegateButton;

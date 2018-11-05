@@ -20,13 +20,13 @@ const CardStats = ({ peopleCount, maxAmount, totalDonated, currentBalance, type,
     <div className="col-4 text-center card-center">
       {maxAmount && <p>Amount requested:{convertEthHelper(maxAmount )} {token.symbol}</p>}
 
-      {totalDonated && <p>Donated: {convertEthHelper(totalDonated, !maxAmount && 2)} {token.symbol}</p>}
+      {totalDonated && <p>Donated: {convertEthHelper(totalDonated, !maxAmount && 2)}</p>}
     </div>
 
     <div className="col-4 text-right">
       {(type === 'dac' || type === 'campaign') && (
         <div>
-          <p>Balance: {convertEthHelper(currentBalance, 2)} {token.symbol}</p>
+          <p>Balance: {convertEthHelper(currentBalance, 2)}</p>
         </div>
       )}
 

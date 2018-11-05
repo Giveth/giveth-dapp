@@ -96,6 +96,7 @@ class ViewDAC extends Component {
                   type: DAC.type,
                   title: dac.title,
                   id: dac.id,
+                  token: { symbol: 'ETH' },
                   adminId: dac.delegateId,
                 }}
                 wallet={wallet}
@@ -164,6 +165,7 @@ class ViewDAC extends Component {
                       type: DAC.type,
                       title: dac.title,
                       id: dac.id,
+                      token: { symbol: 'ETH' },
                       adminId: dac.delegateId,
                     }}
                     wallet={wallet}
