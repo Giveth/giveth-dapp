@@ -426,7 +426,7 @@ class EditMilestone extends Component {
                 action: 'proposed',
                 label: milestone._id,
               });
-              React.toast.info(<p>Your Milestone is being proposed to the Campaign Owner.</p>);
+              React.toast.info(<p>Your Milestone has been proposed to the Campaign Owner.</p>);
             },
           );
         } else {

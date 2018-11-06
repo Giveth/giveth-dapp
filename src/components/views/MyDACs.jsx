@@ -41,6 +41,14 @@ class MyDACs extends Component {
       });
   }
 
+  componentDidUpdate(prevProps) {
+    if (prevProps.currentUser !== this.props.currentUser) {
+      this.setState({ isLoading: true });
+      if (this.dacsObserver) this.dacsObserver.unsubscribe();
+      this.loadDACs();
+    }
+  }
+
   componentWillUnmount() {
     if (this.dacsObserver) this.dacsObserver.unsubscribe();
   }

@@ -227,6 +227,7 @@ class Application extends Component {
                                             isNew
                                             currentUser={currentUser}
                                             balance={balance}
+                                            isForeignNetwork={isForeignNetwork}
                                             {...props}
                                           />
                                         )}

@@ -148,30 +148,6 @@ export const checkForeignNetwork = async isForeignNetwork => {
 };
 
 /**
- * Check if currentUser is authenticated. If not, routes back. If yes, resolves returned promise
- *
- * @param currentUser {object} Current User object
- * @param history     {object} Standard browser history object
- * @param wallet      {object} Wallet object
- *
- * @return new Promise
- *
- * usage:
- *    isAuthenticated(currentUser, wallet)
- *      .then(()=> ...do something when authenticated)
- *      .catch((err) ...do something when not authenticated
- *      returns new Error 'notAuthenticated' if not authenticated
- */
-export const isAuthenticated = (currentUser, wallet) =>
-  new Promise((resolve, reject) => {
-    if (currentUser && currentUser.address && wallet && wallet.unlocked) resolve();
-    else {
-      history.push('/');
-      reject(new Error('notAuthenticated'));
-    }
-  });
-
-/**
  * check if the currentUser is in a particular whitelist.
  *
  * @param currentUser {object} Current User object
@@ -190,32 +166,6 @@ export const isInWhitelist = (currentUser, whitelist) => {
     return true;
   }
   return false;
-};
-
-/**
- * If the wallet is locked, asks the user to unlock his wallet, otherwise performs the action
- *
- * @param wallet {object}   Wallet object
- * @param action {function} Function to call when the wallet is unlocked
- *
- */
-export const takeActionAfterWalletUnlock = (wallet, action) => {
-  if (!wallet || (wallet && !wallet.unlocked)) {
-    React.unlockWallet(action);
-  } else {
-    action();
-  }
-};
-
-/**
- * If the wallet is locked, asks the user to unlock his wallet before redirecting to a route
- *
- * @param wallet  {object} Wallet object
- * @param history {object} Standard history object
- * @param to      {string} Route to which the user should be redirected
- */
-export const redirectAfterWalletUnlock = (to, wallet) => {
-  takeActionAfterWalletUnlock(wallet, () => history.push(to));
 };
 
 /**
@@ -241,24 +191,4 @@ export const checkBalance = balance =>
         icon: 'warning',
       });
     }
-  });
-
-/**
- * Confirms blockchain tx with user before making the tx
- *
- * @param wallet  {object} Wallet object
- * @param history {object} Standard history object
- *
- */
-export const confirmBlockchainTransaction = (onConfirm, onCancel) =>
-  React.swal({
-    title: 'Send transaction?',
-    text:
-      'The action you are trying to perform will create a blockchain transaction. Please confirm to make the transaction.',
-    icon: 'warning',
-    dangerMode: true,
-    buttons: ['Cancel', 'Yes, execute transaction'],
-  }).then(isConfirmed => {
-    if (isConfirmed) onConfirm();
-    else onCancel();
   });

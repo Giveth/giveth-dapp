@@ -2,6 +2,8 @@ import React, { Component, createContext } from 'react';
 import PropTypes from 'prop-types';
 import { paramsForServer } from 'feathers-hooks-common';
 
+import { authenticateIfPossible } from 'lib/middleware';
+
 import { feathersClient } from '../lib/feathersClient';
 import ErrorPopup from '../components/ErrorPopup';
 
@@ -38,146 +40,153 @@ class DelegationProvider extends Component {
   }
 
   componentWillMount() {
-    if (this.props.currentUser) {
-      /**
+    if (this.props.currentUser) this.load();
+  }
+
+  componentDidUpdate(prevProps) {
+    if (prevProps.currentUser !== this.props.currentUser) {
+      this.setState({ isLoading: true });
+      authenticateIfPossible(this.props.currentUser);
+      this.cleanUp();
+      if (this.props.currentUser) this.load();
+    }
+  }
+
+  componentWillUnmount() {
+    this.cleanUp();
+  }
+
+  load() {
+    /**
         Load all DACs/campaigns/milestones
         TO DO: We should really move this to a single service
 
         For each type we transform the data so that the InputToken component can handle it
         * */
 
-      // FIXME: Move all of this to single service in feathers
-      Promise.all([
-        new Promise((resolve, reject) => {
-          this.dacsObserver = feathersClient
-            .service('dacs')
-            .watch({ listStrategy: 'always' })
-            .find({
-              query: {
-                status: DAC.ACTIVE,
-                $select: ['ownerAddress', 'title', '_id', 'delegateId'],
-                $limit: 100,
-                $sort: {
-                  createdAt: -1,
+    // FIXME: Move all of this to single service in feathers
+    Promise.all([
+      new Promise((resolve, reject) => {
+        this.dacsObserver = feathersClient
+          .service('dacs')
+          .watch({ listStrategy: 'always' })
+          .find({
+            query: {
+              status: DAC.ACTIVE,
+              $select: ['ownerAddress', 'title', '_id', 'delegateId'],
+              $limit: 100,
+              $sort: {
+                createdAt: -1,
+              },
+            },
+          })
+          .subscribe(
+            resp =>
+              this.setState(
+                {
+                  dacs: resp.data.map(d => {
+                    d.type = DAC.type;
+                    d.name = d.title;
+                    d.id = d._id;
+                    d.element = (
+                      <span>
+                        {d.title} <em>DAC</em>
+                      </span>
+                    );
+                    return d;
+                  }),
                 },
+                resolve(),
+              ),
+            () => reject(),
+          );
+      }),
+      new Promise((resolve, reject) => {
+        this.campaignsObserver = feathersClient
+          .service('campaigns')
+          .watch({ listStrategy: 'always' })
+          .find({
+            query: {
+              status: Campaign.ACTIVE,
+              $select: ['ownerAddress', 'title', '_id', 'projectId'],
+              $limit: 100,
+              $sort: {
+                createdAt: -1,
               },
-            })
-            .subscribe(
-              resp =>
-                this.setState(
-                  {
-                    dacs: resp.data.map(d => {
-                      d.type = DAC.type;
-                      d.name = d.title;
-                      d.id = d._id;
-                      d.element = (
-                        <span>
-                          {d.title} <em>DAC</em>
-                        </span>
-                      );
-                      return d;
-                    }),
-                  },
-                  resolve(),
-                ),
-              () => reject(),
-            );
-        }),
-        new Promise((resolve, reject) => {
-          this.campaignsObserver = feathersClient
-            .service('campaigns')
-            .watch({ listStrategy: 'always' })
-            .find({
-              query: {
-                status: Campaign.ACTIVE,
-                $select: ['ownerAddress', 'title', '_id', 'projectId'],
-                $limit: 100,
-                $sort: {
-                  createdAt: -1,
+            },
+          })
+          .subscribe(
+            resp =>
+              this.setState(
+                {
+                  campaigns: resp.data.map(c => {
+                    c.type = Campaign.type;
+                    c.name = c.title;
+                    c.id = c._id;
+                    c.element = (
+                      <span>
+                        {c.title} <em>Campaign</em>
+                      </span>
+                    );
+                    return c;
+                  }),
                 },
+                resolve(),
+              ),
+            () => reject(),
+          );
+      }),
+      new Promise((resolve, reject) => {
+        this.milestoneObserver = feathersClient
+          .service('milestones')
+          .watch({ listStrategy: 'always' })
+          .find({
+            query: {
+              status: Milestone.IN_PROGRESS,
+              fullyFunded: { $ne: true },
+              $select: [
+                'title',
+                '_id',
+                'projectId',
+                'campaignId',
+                'maxAmount',
+                'totalDonated',
+                'status',
+              ],
+              $limit: 100,
+              $sort: {
+                createdAt: -1,
               },
-            })
-            .subscribe(
-              resp =>
-                this.setState(
-                  {
-                    campaigns: resp.data.map(c => {
-                      c.type = Campaign.type;
-                      c.name = c.title;
-                      c.id = c._id;
-                      c.element = (
-                        <span>
-                          {c.title} <em>Campaign</em>
-                        </span>
-                      );
-                      return c;
-                    }),
-                  },
-                  resolve(),
-                ),
-              () => reject(),
-            );
-        }),
-        new Promise((resolve, reject) => {
-          this.milestoneObserver = feathersClient
-            .service('milestones')
-            .watch({ listStrategy: 'always' })
-            .find({
-              query: {
-                status: Milestone.IN_PROGRESS,
-                fullyFunded: { $ne: true },
-                $select: [
-                  'title',
-                  '_id',
-                  'projectId',
-                  'campaignId',
-                  'maxAmount',
-                  'totalDonated',
-                  'status',
-                ],
-                $limit: 100,
-                $sort: {
-                  createdAt: -1,
+            },
+          })
+          .subscribe(
+            resp => {
+              this.setState(
+                {
+                  milestones: resp.data.map(m => {
+                    m.type = Milestone.type;
+                    m.name = m.title;
+                    m.id = m._id;
+                    m.element = (
+                      <span>
+                        {m.title} <em>Milestone</em>
+                      </span>
+                    );
+                    return m;
+                  }), // .filter((m) => m.totalDonated < m.maxAmount)
                 },
-              },
-            })
-            .subscribe(
-              resp => {
-                this.setState(
-                  {
-                    milestones: resp.data.map(m => {
-                      m.type = Milestone.type;
-                      m.name = m.title;
-                      m.id = m._id;
-                      m.element = (
-                        <span>
-                          {m.title} <em>Milestone</em>
-                        </span>
-                      );
-                      return m;
-                    }), // .filter((m) => m.totalDonated < m.maxAmount)
-                  },
-                  resolve(),
-                );
-              },
-              () => reject(),
-            );
-        }),
-      ])
-        .then(() => this.getAndWatchDonations())
-        .catch(err => {
-          ErrorPopup('Unable to load dacs, campaigns or milestones.', err);
-          this.setState({ isLoading: false });
-        });
-    }
-  }
-
-  componentWillUnmount() {
-    // Clean up the observers
-    if (this.donationsObserver) this.donationsObserver.unsubscribe();
-    if (this.dacsObserver) this.dacsObserver.unsubscribe();
-    if (this.campaignsObserver) this.campaignsObserver.unsubscribe();
-    if (this.milestoneObserver) this.milestoneObserver.unsubscribe();
+                resolve(),
+              );
+            },
+            () => reject(),
+          );
+      }),
+    ])
+      .then(() => this.getAndWatchDonations())
+      .catch(err => {
+        ErrorPopup('Unable to load dacs, campaigns or milestones.', err);
+        this.setState({ isLoading: false });
+      });
   }
 
   getAndWatchDonations() {
@@ -228,6 +237,14 @@ class DelegationProvider extends Component {
         },
         () => this.setState({ isLoading: false }),
       );
+  }
+
+  cleanUp() {
+    // Clean up the observers
+    if (this.donationsObserver) this.donationsObserver.unsubscribe();
+    if (this.dacsObserver) this.dacsObserver.unsubscribe();
+    if (this.campaignsObserver) this.campaignsObserver.unsubscribe();
+    if (this.milestoneObserver) this.milestoneObserver.unsubscribe();
   }
 
   render() {

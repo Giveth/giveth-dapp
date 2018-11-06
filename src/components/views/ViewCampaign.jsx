@@ -17,7 +17,6 @@ import DonateButton from '../DonateButton';
 import CommunityButton from '../CommunityButton';
 import DelegateMultipleButton from '../DelegateMultipleButton';
 import ShowTypeDonations from '../ShowTypeDonations';
-import AuthenticatedLink from '../AuthenticatedLink';
 
 import User from '../../models/User';
 import Campaign from '../../models/Campaign';
@@ -187,25 +186,23 @@ class ViewCampaign extends Component {
                       <h3>Milestones</h3>
                       {campaign.projectId > 0 &&
                         isOwner(campaign.owner.address, currentUser) && (
-                          <AuthenticatedLink
+                          <Link
                             className="btn btn-primary btn-sm pull-right"
                             to={`/campaigns/${campaign.id}/milestones/new`}
-                            // wallet={wallet}
                           >
                             Add Milestone
-                          </AuthenticatedLink>
+                          </Link>
                         )}
 
                       {campaign.projectId > 0 &&
                         !isOwner(campaign.owner.address, currentUser) &&
                         currentUser && (
-                          <AuthenticatedLink
+                          <Link
                             className="btn btn-primary btn-sm pull-right"
                             to={`/campaigns/${campaign.id}/milestones/propose`}
-                            // wallet={wallet}
                           >
                             Propose Milestone
-                          </AuthenticatedLink>
+                          </Link>
                         )}
 
                       {isLoadingMilestones &&

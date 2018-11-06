@@ -114,6 +114,8 @@ class UserProvider extends Component {
 
           if (currentUser.address === payload.userId) {
             await feathersClient.authenticate(); // authenticate the socket connection
+          } else {
+            await feathersClient.logout();
           }
         }
       } catch (e) {

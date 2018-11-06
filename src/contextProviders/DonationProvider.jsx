@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { paramsForServer } from 'feathers-hooks-common';
 import { utils } from 'web3';
 
-import { checkBalance } from '../lib/middleware';
+import { authenticateIfPossible, checkBalance } from '../lib/middleware';
 import { feathersClient } from '../lib/feathersClient';
 import confirmationDialog from '../lib/confirmationDialog';
 import ErrorPopup from '../components/ErrorPopup';
@@ -46,40 +46,51 @@ class DonationProvider extends Component {
     getNetwork().then(network => this.setState({ etherScanUrl: network.etherscan }));
 
     // Get the donations for current user
-    if (this.props.currentUser) {
-      this.donationsObserver = feathersClient
-        .service('donations')
-        .watch({ listStrategy: 'always' })
-        .find(
-          paramsForServer({
-            schema: 'includeTypeDetails',
-            query: {
-              giverAddress: this.props.currentUser.address,
-              amountRemaining: { $ne: 0 },
-              $limit: 100,
-            },
-          }),
-        )
-        .subscribe(
-          resp => {
-            this.setState({
-              donations: resp.data.map(d => new Donation(d)),
-              isLoading: false,
-            });
-          },
-          e => {
-            this.setState({
-              isLoading: false,
-            });
-            ErrorPopup('Unable to retrieve donations from the server', e);
-          },
-        );
+    if (this.props.currentUser) this.loadDonations();
+  }
+
+  componentDidUpdate(prevProps) {
+    if (prevProps.currentUser !== this.props.currentUser) {
+      this.setState({ isLoading: true });
+      authenticateIfPossible(this.props.currentUser);
+      if (this.donationsObserver) this.donationsObserver.unsubscribe();
+      if (this.props.currentUser) this.loadDonations();
     }
   }
 
   componentWillUnmount() {
     // Clean up the observers
     if (this.donationsObserver) this.donationsObserver.unsubscribe();
+  }
+
+  loadDonations() {
+    this.donationsObserver = feathersClient
+      .service('donations')
+      .watch({ listStrategy: 'always' })
+      .find(
+        paramsForServer({
+          schema: 'includeTypeDetails',
+          query: {
+            giverAddress: this.props.currentUser.address,
+            amountRemaining: { $ne: 0 },
+            $limit: 100,
+          },
+        }),
+      )
+      .subscribe(
+        resp => {
+          this.setState({
+            donations: resp.data.map(d => new Donation(d)),
+            isLoading: false,
+          });
+        },
+        e => {
+          this.setState({
+            isLoading: false,
+          });
+          ErrorPopup('Unable to retrieve donations from the server', e);
+        },
+      );
   }
 
   /**

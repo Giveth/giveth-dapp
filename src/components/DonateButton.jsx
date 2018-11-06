@@ -17,6 +17,7 @@ import config from '../configuration';
 import DonationService from '../services/DonationService';
 import { feathersClient } from '../lib/feathersClient';
 import { Consumer as Web3Consumer } from '../contextProviders/Web3Provider';
+import NetworkWarning from './NetworkWarning';
 
 const modalStyles = {
   content: {
@@ -257,15 +258,12 @@ class DonateButton extends React.Component {
                   </div>
                 )}
 
-                {validProvider &&
-                  !isHomeNetwork && (
-                    <div className="alert alert-warning">
-                      <i className="fa fa-exclamation-triangle" />
-                      It looks like you are connected to the wrong network on your Ethereum
-                      Provider. Please connect to the <strong>{config.homeNetworkName}</strong>{' '}
-                      network to donate
-                    </div>
-                  )}
+                {validProvider && (
+                  <NetworkWarning
+                    incorrectNetwork={!isHomeNetwork}
+                    networkName={config.homeNetworkName}
+                  />
+                )}
                 {isHomeNetwork &&
                   currentUser && (
                     <p>
