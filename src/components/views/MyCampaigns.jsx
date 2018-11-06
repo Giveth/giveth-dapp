@@ -49,6 +49,7 @@ class MyCampaigns extends Component {
 
   componentDidUpdate(prevProps) {
     if (prevProps.currentUser !== this.props.currentUser) {
+      // eslint-disable-next-line react/no-did-update-set-state
       this.setState({ isLoading: true });
       authenticateIfPossible(this.props.currentUser);
       if (this.campaignsObserver) this.campaignsObserver.unsubscribe();

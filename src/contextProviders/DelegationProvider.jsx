@@ -45,6 +45,7 @@ class DelegationProvider extends Component {
 
   componentDidUpdate(prevProps) {
     if (prevProps.currentUser !== this.props.currentUser) {
+      // eslint-disable-next-line react/no-did-update-set-state
       this.setState({ isLoading: true });
       authenticateIfPossible(this.props.currentUser);
       this.cleanUp();
@@ -54,6 +55,56 @@ class DelegationProvider extends Component {
 
   componentWillUnmount() {
     this.cleanUp();
+  }
+
+  getAndWatchDonations() {
+    // here we get all the ids.
+    // TO DO: less overhead here if we move it all to a single service.
+    // NOTE: This will not rerun, meaning after any dac/campaign/milestone is added
+
+    const dacsIds = this.state.dacs
+      .filter(c => c.ownerAddress === this.props.currentUser.address)
+      .map(c => c._id);
+
+    const campaignIds = this.state.campaigns
+      .filter(c => c.ownerAddress === this.props.currentUser.address)
+      .map(c => c._id);
+
+    const query = paramsForServer({
+      query: {
+        amountRemaining: { $ne: 0 },
+        $or: [
+          { ownerTypeId: { $in: campaignIds }, status: Donation.COMMITTED },
+          { delegateTypeId: { $in: dacsIds }, status: Donation.WAITING },
+          {
+            ownerTypeId: this.props.currentUser.address,
+            delegateId: undefined,
+            status: Donation.WAITING,
+          },
+          // {
+          // ownerTypeId: this.props.currentUser.address,
+          // delegateTypeId: { $gt: 0 },
+          // },
+        ],
+        $sort: { createdAt: 1 },
+      },
+      schema: 'includeTypeAndGiverDetails',
+    });
+
+    // start watching donations, this will re-run when donations change or are added
+    this.donationsObserver = feathersClient
+      .service('donations')
+      .watch({ listStrategy: 'always' })
+      .find(query)
+      .subscribe(
+        resp => {
+          this.setState({
+            delegations: resp.data.map(d => new Donation(d)),
+            isLoading: false,
+          });
+        },
+        () => this.setState({ isLoading: false }),
+      );
   }
 
   load() {
@@ -187,56 +238,6 @@ class DelegationProvider extends Component {
         ErrorPopup('Unable to load dacs, campaigns or milestones.', err);
         this.setState({ isLoading: false });
       });
-  }
-
-  getAndWatchDonations() {
-    // here we get all the ids.
-    // TO DO: less overhead here if we move it all to a single service.
-    // NOTE: This will not rerun, meaning after any dac/campaign/milestone is added
-
-    const dacsIds = this.state.dacs
-      .filter(c => c.ownerAddress === this.props.currentUser.address)
-      .map(c => c._id);
-
-    const campaignIds = this.state.campaigns
-      .filter(c => c.ownerAddress === this.props.currentUser.address)
-      .map(c => c._id);
-
-    const query = paramsForServer({
-      query: {
-        amountRemaining: { $ne: 0 },
-        $or: [
-          { ownerTypeId: { $in: campaignIds }, status: Donation.COMMITTED },
-          { delegateTypeId: { $in: dacsIds }, status: Donation.WAITING },
-          {
-            ownerTypeId: this.props.currentUser.address,
-            delegateId: undefined,
-            status: Donation.WAITING,
-          },
-          // {
-          // ownerTypeId: this.props.currentUser.address,
-          // delegateTypeId: { $gt: 0 },
-          // },
-        ],
-        $sort: { createdAt: 1 },
-      },
-      schema: 'includeTypeAndGiverDetails',
-    });
-
-    // start watching donations, this will re-run when donations change or are added
-    this.donationsObserver = feathersClient
-      .service('donations')
-      .watch({ listStrategy: 'always' })
-      .find(query)
-      .subscribe(
-        resp => {
-          this.setState({
-            delegations: resp.data.map(d => new Donation(d)),
-            isLoading: false,
-          });
-        },
-        () => this.setState({ isLoading: false }),
-      );
   }
 
   cleanUp() {

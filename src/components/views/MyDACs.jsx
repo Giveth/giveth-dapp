@@ -43,6 +43,7 @@ class MyDACs extends Component {
 
   componentDidUpdate(prevProps) {
     if (prevProps.currentUser !== this.props.currentUser) {
+      // eslint-disable-next-line react/no-did-update-set-state
       this.setState({ isLoading: true });
       if (this.dacsObserver) this.dacsObserver.unsubscribe();
       this.loadDACs();

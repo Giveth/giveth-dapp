@@ -37,7 +37,9 @@ const getAccount = async web3 => {
   try {
     const addrs = await web3.eth.getAccounts();
     if (addrs.length > 0) return addrs[0];
-  } catch (e) {}
+  } catch (e) {
+    // ignore
+  }
   return undefined;
 };
 
