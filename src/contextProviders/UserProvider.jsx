@@ -2,6 +2,7 @@ import React, { Component, createContext } from 'react';
 import PropTypes from 'prop-types';
 import { utils } from 'web3';
 import { feathersClient } from '../lib/feathersClient';
+import GivethWallet from '../lib/blockchain/GivethWallet';
 
 import ErrorPopup from '../components/ErrorPopup';
 
@@ -55,6 +56,7 @@ class UserProvider extends Component {
     if ((account && !currentUser) || (currentUser && account !== prevProps.account)) {
       this.getUserData(account);
     }
+    this.checkGivethWallet();
   }
 
   componentWillUnmount() {
@@ -100,6 +102,36 @@ class UserProvider extends Component {
           );
       }
     });
+  }
+
+  // TODO: this can be removed after a sufficient time has passed w/ new Web3 support
+  // eslint-disable-next-line class-methods-use-this
+  checkGivethWallet() {
+    GivethWallet.getCachedKeystore()
+      .then(keystore => {
+        React.swal({
+          title: 'Giveth Wallet Deprecation Notice',
+          text:
+            'We noticed you have a Giveth wallet. We have replaced the Giveth wallet with support for MetaMask. You can import you keystore file directly into MetaMask.',
+          icon: 'warning',
+          buttons: ['Ok', 'Download Keystore'],
+        }).then(download => {
+          if (download) {
+            // GivethWallet.loadWallet(keystore);
+            const downloadLink = document.createElement('a');
+            downloadLink.href = URL.createObjectURL(
+              new Blob([JSON.stringify(keystore[0])], {
+                type: 'application/json',
+              }),
+            );
+            downloadLink.download = `UTC--${new Date().toISOString()}-${keystore[0].address}.json`;
+
+            downloadLink.click();
+            GivethWallet.removeCachedKeystore();
+          }
+        });
+      })
+      .catch(() => {});
   }
 
   async authenticateIfPossible() {

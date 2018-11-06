@@ -192,9 +192,9 @@ class MainMenu extends Component {
                             <NavLink className="dropdown-item" to="/profile">
                               Profile
                             </NavLink>
-                            <NavLink className="dropdown-item" to="/wallet">
+                            {/* <NavLink className="dropdown-item" to="/wallet">
                               Wallet
-                            </NavLink>
+                            </NavLink> */}
                           </div>
                         </li>
                       )}

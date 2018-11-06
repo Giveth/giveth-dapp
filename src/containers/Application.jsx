@@ -20,7 +20,7 @@ import config from '../configuration';
 
 // views
 import Profile from '../components/views/Profile';
-import UserWallet from '../components/views/UserWallet';
+// import UserWallet from '../components/views/UserWallet';
 import EditProfile from '../components/views/EditProfile';
 
 import ViewMilestone from '../components/views/ViewMilestone';
@@ -357,7 +357,7 @@ class Application extends Component {
                                         )}
                                       />
 
-                                      <Route
+                                      {/* <Route
                                         exact
                                         path="/wallet"
                                         render={props => (
@@ -367,7 +367,7 @@ class Application extends Component {
                                             {...props}
                                           />
                                         )}
-                                      />
+                                      /> */}
                                       <Route
                                         exact
                                         path="/profile"
