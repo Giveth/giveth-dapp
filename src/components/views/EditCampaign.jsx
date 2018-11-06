@@ -102,7 +102,7 @@ class EditCampaign extends Component {
         )
           history.goBack();
       });
-    } else if (!prevProps.balance.eq(this.props.balance)) {
+    } else if (this.props.currentUser && !prevProps.balance.eq(this.props.balance)) {
       checkBalance(this.props.balance);
     }
   }

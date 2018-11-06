@@ -20,7 +20,13 @@ import {
   getTruncatedText,
   getStartOfDayUTC,
 } from '../../lib/helpers';
-import { isAuthenticated, checkBalance, isInWhitelist } from '../../lib/middleware';
+import {
+  checkForeignNetwork,
+  checkBalance,
+  isInWhitelist,
+  authenticateIfPossible,
+  checkProfile,
+} from '../../lib/middleware';
 import getNetwork from '../../lib/blockchain/getNetwork';
 import LoaderButton from '../LoaderButton';
 import User from '../../models/User';
@@ -95,18 +101,8 @@ class EditMilestone extends Component {
   }
 
   componentDidMount() {
-    isAuthenticated(this.props.currentUser, this.props.wallet)
-      .then(() => {
-        if (!this.props.isProposed) checkBalance(this.props.balance);
-      })
-      .then(() => {
-        if (
-          !this.props.isProposed &&
-          !isInWhitelist(this.props.currentUser, React.whitelist.projectOwnerWhitelist)
-        ) {
-          throw new Error('not whitelisted');
-        }
-      })
+    checkForeignNetwork(this.props.isForeignNetwork)
+      .then(() => this.checkUser())
       .then(() => {
         this.setState({
           campaignId: this.props.match.params.id,
@@ -206,6 +202,20 @@ class EditMilestone extends Component {
       });
   }
 
+  componentDidUpdate(prevProps) {
+    if (prevProps.currentUser !== this.props.currentUser) {
+      this.checkUser().then(() => {
+        if (
+          !isOwner(this.state.milestone.owner.address, this.props.currentUser) ||
+          !isOwner(this.state.milestone.campaign.ownerAddress, this.props.currentUser)
+        )
+          this.props.history.goBack();
+      });
+    } else if (this.props.currentUser && !prevProps.balance.eq(this.props.balance)) {
+      checkBalance(this.props.balance);
+    }
+  }
+
   onAddItem(item) {
     this.addItem(item);
     this.setState({ addMilestoneItemModalVisible: false });
@@ -271,6 +281,25 @@ class EditMilestone extends Component {
         fiatAmount,
       });
     }
+  }
+
+  checkUser() {
+    if (!this.props.currentUser) {
+      this.props.history.push('/');
+      return Promise.reject();
+    }
+
+    return authenticateIfPossible(this.props.currentUser)
+      .then(() => {
+        if (
+          !this.props.isProposed &&
+          !isInWhitelist(this.props.currentUser, React.whitelist.projectOwnerWhitelist)
+        ) {
+          throw new Error('not whitelisted');
+        }
+      })
+      .then(() => checkProfile(this.props.currentUser))
+      .then(() => !this.props.isProposed && checkBalance(this.props.balance));
   }
 
   addItem(item) {
@@ -968,6 +997,7 @@ class EditMilestone extends Component {
                           type="submit"
                           disabled={isSaving || !formIsValid}
                           isLoading={isSaving}
+                          network="Foreign"
                           loadingText="Saving..."
                         >
                           <span>{this.btnText()}</span>
@@ -988,7 +1018,7 @@ class EditMilestone extends Component {
 /* eslint react/forbid-prop-types: 0 */
 
 EditMilestone.propTypes = {
-  currentUser: PropTypes.instanceOf(User).isRequired,
+  currentUser: PropTypes.instanceOf(User),
   history: PropTypes.shape({
     goBack: PropTypes.func.isRequired,
     push: PropTypes.func.isRequired,
@@ -996,6 +1026,7 @@ EditMilestone.propTypes = {
   isProposed: PropTypes.bool,
   isNew: PropTypes.bool,
   balance: PropTypes.objectOf(utils.BN).isRequired,
+  isForeignNetwork: PropTypes.bool.isRequired,
   match: PropTypes.shape({
     params: PropTypes.shape({
       id: PropTypes.string,
@@ -1008,6 +1039,7 @@ EditMilestone.propTypes = {
 };
 
 EditMilestone.defaultProps = {
+  currentUser: undefined,
   isNew: false,
   isProposed: false,
 };

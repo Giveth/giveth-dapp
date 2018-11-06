@@ -91,10 +91,7 @@ class EditDAC extends Component {
   componentDidUpdate(prevProps) {
     if (prevProps.currentUser !== this.props.currentUser) {
       this.checkUser().then(() => {
-        if (
-          !this.props.isNew &&
-          !isOwner(this.state.campaign.owner.address, this.props.currentUser)
-        )
+        if (!this.props.isNew && !isOwner(this.state.dac.owner.address, this.props.currentUser))
           history.goBack();
       });
     } else if (this.props.currentUser && !prevProps.balance.eq(this.props.balance)) {
@@ -120,7 +117,7 @@ class EditDAC extends Component {
 
     return authenticateIfPossible(this.props.currentUser)
       .then(() => {
-        if (!isInWhitelist(this.props.currentUser, React.whitelist.projectOwnerWhitelist)) {
+        if (!isInWhitelist(this.props.currentUser, React.whitelist.delegateWhitelist)) {
           throw new Error('not whitelisted');
         }
       })
