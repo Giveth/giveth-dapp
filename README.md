@@ -95,6 +95,16 @@ In the following sections you will learn all you need to know to run the DApp lo
 3. Once the dapp is up in your browser, click "Sign In" from the main menu.
 4. For testing locally, choose any of the wallet files found in the `giveth-dapp/keystores/` folder using the wallet password: `password`. **DO NOT USE THESE ON MAINNET ETHEREUM.**
 
+5. Using the test token
+  To use the test token you need to import the keystore.json you use for your account to MetaMask.
+  After importing, click on 'Add token' > 'Custom token' and enter the MiniMe Token address that can be found when deploying the contracts
+  (should be `0xe78A0F7E598Cc8b0Bb87894B0F60dD2a88d6a8Ab` by default but make sure to check)
+  The token balance should show up automatically and the token symbol is MMT.
+  However, in the dApp the token symbol is referred to as ANT, b/c the dapp needs to be able to fetch a conversion rate.
+
+  NOTE: 
+  When resetting feathers or redeploying the contracts, you need to remove the keystore from metamask and follow this procedure again.
+
 ### Build
 ```
 npm run build

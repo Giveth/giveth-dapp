@@ -87,7 +87,7 @@ const Delegations = () => (
                                               types={campaigns.concat(milestones)}
                                               donation={d}
                                               wallet={wallet}
-                                              symbol={d.token.symbol}
+                                              symbol={(d.token && d.token.symbol) || "ETH"}
                                             />
                                           )}
 

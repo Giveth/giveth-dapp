@@ -310,7 +310,7 @@ class EditMilestone extends Component {
     milestone.reviewerAddress = inputs.reviewerAddress;
     milestone.recipientAddress = inputs.recipientAddress;
 
-    if(!milestone.itemizeState) milestone.maxAmount = inputs.maxAmount;
+    // if(!milestone.itemizeState) milestone.maxAmount = inputs.maxAmount;
 
     this.setState({ milestone });
   }

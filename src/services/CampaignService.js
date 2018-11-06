@@ -96,7 +96,7 @@ class CampaignService {
       .find(
         paramsForServer({
           query: {
-            campaignId: id,
+            ownerTypeId: id,
             isReturn: false,
             $sort: { createdAt: -1 },
           },

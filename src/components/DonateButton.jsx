@@ -75,7 +75,7 @@ class DonateButton extends React.Component {
         value: t.address,
         title: t.name
       })),  
-      selectedToken: props.model.type === "MilestoneModel" ? modelToken : _getTokenWhitelist().find(t => t.symbol === "ETH")           
+      selectedToken: props.model.type === "milestone" ? modelToken : _getTokenWhitelist().find(t => t.symbol === "ETH")           
     };
 
     this.submit = this.submit.bind(this);
@@ -466,7 +466,7 @@ class DonateButton extends React.Component {
               account &&
               validNetwork && (
                 <p>
-                  { model.type !== "MilestoneModel" && 
+                  { model.type !== "milestone" && 
                     <SelectFormsy
                       name="token"
                       id="token-select"
@@ -476,7 +476,7 @@ class DonateButton extends React.Component {
                       cta="--- Select ---"
                       options={tokenWhitelistOptions}
                       onChange={(address) => this.setToken(address)}
-                      disabled={model.type === "MilestoneModel"}
+                      disabled={model.type === "milestone"}
                     /> 
                   }   
 

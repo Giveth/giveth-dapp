@@ -108,7 +108,7 @@ export default class MilestoneModel extends BasicModel {
   }
 
   static get type() {
-    return 'MilestoneModel';
+    return 'milestone';
   }
 
   get title() {
