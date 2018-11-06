@@ -75,14 +75,21 @@ const pollAccount = pollEvery((web3, { onAccount = () => {}, onBalance = () => {
   };
 }, POLL_DELAY_ACCOUNT);
 
+const fetchNetwork = async web3 => ({
+  networkId: await web3.eth.net.getId(),
+  networkType: await web3.eth.net.getNetworkType(),
+});
+
+const getNetworkState = (networkId, networkType) => ({
+  isHomeNetwork: networkId === config.homeNetworkId,
+  isForeignNetwork: networkId === config.foreignNetworkId,
+  currentNetwork: networkType,
+});
+
 const pollNetwork = pollEvery((web3, { onNetwork = () => {} } = {}) => {
   let lastNetworkId;
   return {
-    request: async () => {
-      const networkId = await web3.eth.net.getId();
-      const networkType = await web3.eth.net.getNetworkType();
-      return { networkId, networkType };
-    },
+    request: () => fetchNetwork(web3),
     onResult: ({ networkId, networkType }) => {
       if (networkId !== lastNetworkId) {
         onNetwork(networkId, networkType);
@@ -105,7 +112,6 @@ class Web3Provider extends Component {
       isEnabled: false,
     };
 
-    this.isLoaded = false;
     this.enableTimedout = false;
 
     this.enableProvider = this.enableProvider.bind(this);
@@ -119,25 +125,18 @@ class Web3Provider extends Component {
 
       pollNetwork(web3, {
         onNetwork: (networkId, networkType) => {
-          this.setState({
-            currentNetwork: networkType,
-            isHomeNetwork: networkId === config.homeNetworkId,
-            isForeignNetwork: networkId === config.foreignNetworkId,
-          });
+          this.setState(getNetworkState(networkId, networkType));
         },
       });
 
       if (!web3.defaultNode) {
         pollAccount(web3, {
           onAccount: async account => {
-            this.setState(
-              {
-                account,
-                // TODO: find a way for non metamask providers
-                isEnabled: await web3.currentProvider._metamask.isEnabled(),
-              },
-              () => !this.isLoaded && this.loaded(),
-            );
+            this.setState({
+              account,
+              // TODO: find a way for non metamask providers
+              isEnabled: await web3.currentProvider._metamask.isApproved(),
+            });
           },
           onBalance: balance => {
             this.setState({
@@ -151,13 +150,11 @@ class Web3Provider extends Component {
     this.enableProvider();
   }
 
-  loaded() {
-    this.isLoaded = true;
-    this.props.onLoaded();
-  }
-
   async enableProvider() {
     const web3 = await getWeb3();
+
+    const { networkId, networkType } = await fetchNetwork(web3);
+    this.setState(getNetworkState(networkId, networkType));
 
     if (web3.isEnabled) {
       this.setState(
@@ -165,7 +162,7 @@ class Web3Provider extends Component {
           isEnabled: true,
           account: await getAccount(web3),
         },
-        () => this.loaded(),
+        () => this.props.onLoaded(),
       );
       return;
     }
@@ -174,8 +171,10 @@ class Web3Provider extends Component {
     let account;
     let balance;
 
-    const timeoutId = setTimeout(() => {
-      this.setState({ isEnabled }, () => this.loaded());
+    const timeoutId = setTimeout(async () => {
+      this.setState({ isEnabled: await web3.currentProvider._metamask.isApproved() }, () =>
+        this.props.onLoaded(),
+      );
       this.enableTimedout = true;
     }, 5000);
 
@@ -190,7 +189,7 @@ class Web3Provider extends Component {
     } catch (e) {
       // ignore
     }
-    this.setState({ isEnabled, account, balance }, () => this.loaded());
+    this.setState({ isEnabled, account, balance }, () => this.props.onLoaded());
   }
 
   render() {
