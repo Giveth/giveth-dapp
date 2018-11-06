@@ -112,7 +112,7 @@ class UserProvider extends Component {
         React.swal({
           title: 'Giveth Wallet Deprecation Notice',
           text:
-            'We noticed you have a Giveth wallet. We have replaced the Giveth wallet with support for MetaMask. You can import you keystore file directly into MetaMask.',
+            'We noticed you have a Giveth wallet. We have replaced the Giveth wallet with support for MetaMask. You can import your keystore file directly into MetaMask to continue to using your Giveth wallet.',
           icon: 'warning',
           buttons: ['Ok', 'Download Keystore'],
         }).then(download => {
