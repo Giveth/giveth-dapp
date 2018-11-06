@@ -51,8 +51,10 @@ const configurations = {
     feathersConnection: 'https://feathers.develop.giveth.io',
     foreignNodeConnection: 'https://rinkeby.giveth.io',
     foreignNetworkName: 'Rinkeby',
+    foreignNetworkId: 4,
     homeNodeConnection: 'https://ropsten.infura.io',
     homeNetworkName: 'Ropsten',
+    homeNetworkId: 3,
     ipfsGateway: 'https://ipfs.giveth.io/ipfs/',
     analytics: {
       ga_UA: 'UA-103956937-5',
@@ -73,8 +75,10 @@ const configurations = {
     feathersConnection: 'https://feathers.release.giveth.io',
     foreignNodeConnection: 'https://rinkeby.giveth.io',
     foreignNetworkName: 'Rinkeby',
+    foreignNetworkId: 4,
     homeNodeConnection: 'https://ropsten.infura.io',
     homeNetworkName: 'Ropsten',
+    homeNetworkId: 3,
     ipfsGateway: 'https://ipfs.giveth.io/ipfs/',
     analytics: {
       ga_UA: 'UA-103956937-4',
@@ -95,8 +99,10 @@ const configurations = {
     feathersConnection: 'https://feathers.beta.giveth.io',
     foreignNodeConnection: 'https://rinkeby.giveth.io',
     foreignNetworkName: 'Rinkeby',
+    foreignNetworkId: 4,
     homeNodeConnection: 'https://mew.giveth.io',
     homeNetworkName: 'Mainnet',
+    homeNetworkId: 1,
     ipfsGateway: 'https://ipfs.giveth.io/ipfs/',
     analytics: {
       ga_UA: 'UA-103956937-2',
