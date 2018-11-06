@@ -2,6 +2,7 @@ import React from 'react';
 import { history } from './helpers';
 import { feathersClient } from './feathersClient';
 import getWeb3 from './blockchain/getWeb3';
+import config from '../configuration';
 
 /**
  * Check if there is a currentUser. If not, routes back. If yes, resolves returned promise
@@ -130,6 +131,23 @@ export const checkProfile = async currentUser => {
 };
 
 /**
+ * Check if the user is connected to the foreign network
+ */
+export const checkForeignNetwork = async isForeignNetwork => {
+  // already on correct network
+  if (isForeignNetwork) return;
+
+  // we block the user b/c MetaMask will reload the page on a network change
+  await React.swal({
+    title: 'Network Change Required!',
+    text: `Please connect to the ${
+      config.foreignNetworkName
+    } network before proceeding. Depending on your provider, the page will be reloaded upon changing the network which may result in loosing data`,
+    icon: 'warning',
+  });
+};
+
+/**
  * Check if currentUser is authenticated. If not, routes back. If yes, resolves returned promise
  *
  * @param currentUser {object} Current User object
@@ -221,10 +239,6 @@ export const checkBalance = balance =>
           </p>,
         ),
         icon: 'warning',
-        // buttons: ['OK', 'View wallet info'],
-        // }).then(isConfirmed => {
-        // if (isConfirmed) history.push('/wallet');
-        // reject(new Error('noBalance'));
       });
     }
   });
