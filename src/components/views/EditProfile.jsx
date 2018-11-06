@@ -1,11 +1,12 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
+import { utils } from 'web3';
 
 import { Form, Input } from 'formsy-react-components';
 import GA from 'lib/GoogleAnalytics';
 import Loader from '../Loader';
 import FormsyImageUploader from '../FormsyImageUploader';
-import { isLoggedIn } from '../../lib/middleware';
+import { authenticateIfPossible, checkBalance, checkForeignNetwork } from '../../lib/middleware';
 import LoaderButton from '../LoaderButton';
 import User from '../../models/User';
 import { history } from '../../lib/helpers';
@@ -13,7 +14,6 @@ import { history } from '../../lib/helpers';
 /**
  * The edit user profile view mapped to /profile/
  *
- * @param wallet       Wallet object with the balance and all keystores
  * @param currentUser  The current user's address
  */
 class EditProfile extends Component {
@@ -35,7 +35,9 @@ class EditProfile extends Component {
   }
 
   componentDidMount() {
-    isLoggedIn(this.props.currentUser)
+    checkForeignNetwork(this.props.isForeignNetwork)
+      .then(() => authenticateIfPossible(this.props.currentUser))
+      .then(() => checkBalance(this.props.balance))
       .then(() => this.setState({ isLoading: false }))
       .catch(err => {
         if (err === 'noBalance') history.goBack();
@@ -45,10 +47,6 @@ class EditProfile extends Component {
           });
         }
       });
-  }
-
-  componentWillUnmount() {
-    clearInterval(this.state.balanceInterval);
   }
 
   setImage(image) {
@@ -215,6 +213,7 @@ class EditProfile extends Component {
                     className="btn btn-success"
                     formNoValidate
                     type="submit"
+                    network="Foreign"
                     disabled={isSaving || isPristine || (currentUser && currentUser.giverId === 0)}
                     isLoading={isSaving}
                     loadingText="Saving..."
@@ -233,6 +232,8 @@ class EditProfile extends Component {
 
 EditProfile.propTypes = {
   currentUser: PropTypes.instanceOf(User),
+  balance: PropTypes.objectOf(utils.BN).isRequired,
+  isForeignNetwork: PropTypes.bool.isRequired,
 };
 
 EditProfile.defaultProps = {

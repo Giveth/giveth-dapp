@@ -1,12 +1,12 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import Avatar from 'react-avatar';
+import { utils } from 'web3';
 
 import { getTruncatedText, isOwner, getUserAvatar, getUserName } from '../lib/helpers';
-import { redirectAfterWalletUnlock, checkWalletBalance } from '../lib/middleware';
+import { checkBalance } from '../lib/middleware';
 import User from '../models/User';
 import CardStats from './CardStats';
-import GivethWallet from '../lib/blockchain/GivethWallet';
 import GivethLogo from '../assets/logo.svg';
 
 // TODO: Remove once rewritten to model
@@ -37,7 +37,7 @@ class MilestoneCard extends Component {
   editMilestone(e) {
     e.stopPropagation();
 
-    checkWalletBalance(this.props.wallet)
+    checkBalance(this.props.balance)
       .then(() => {
         React.swal({
           title: 'Edit Milestone?',
@@ -47,11 +47,10 @@ class MilestoneCard extends Component {
           buttons: ['Cancel', 'Yes, edit'],
         }).then(isConfirmed => {
           if (isConfirmed) {
-            redirectAfterWalletUnlock(
+            this.props.history.push(
               `/campaigns/${this.props.milestone.campaignId}/milestones/${
                 this.props.milestone._id
               }/edit`,
-              this.props.wallet,
             );
           }
         });
@@ -140,7 +139,7 @@ MilestoneCard.propTypes = {
     }).isRequired,
   }).isRequired,
   currentUser: PropTypes.instanceOf(User),
-  wallet: PropTypes.instanceOf(GivethWallet),
+  balance: PropTypes.objectOf(utils.BN).isRequired,
   history: PropTypes.shape({
     push: PropTypes.func.isRequired,
   }).isRequired,
@@ -148,7 +147,6 @@ MilestoneCard.propTypes = {
 
 MilestoneCard.defaultProps = {
   currentUser: undefined,
-  wallet: undefined,
 };
 
 export default MilestoneCard;

@@ -2,6 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 
 import { Consumer as UserConsumer } from '../../contextProviders/UserProvider';
+import { Consumer as Web3Consumer } from '../../contextProviders/Web3Provider';
 
 import JoinGivethCommunity from '../JoinGivethCommunity';
 import CampaignCard from '../CampaignCard';
@@ -11,61 +12,62 @@ import Campaign from '../../models/Campaign';
  * The Campaigns view mapped to /campaigns
  *
  * @param campaigns    List of all campaigns with navigation information
- * @param currentUser  Currently logged in user information
  * @param history      Browser history object
- * @param wallet       Wallet object with the balance and all keystores
  */
 const Campaigns = ({ campaigns, history }) => (
-  <UserConsumer>
-    {({ state: { wallet, currentUser } }) => (
-      <div id="campaigns-view" className="card-view">
-        <JoinGivethCommunity currentUser={currentUser} wallet={wallet} history={history} />
+  <Web3Consumer>
+    {({ state: { balance } }) => (
+      <UserConsumer>
+        {({ state: { currentUser } }) => (
+          <div id="campaigns-view" className="card-view">
+            <JoinGivethCommunity currentUser={currentUser} balance={balance} history={history} />
 
-        <div className="container-fluid page-layout reduced-padding">
-          {// There are some Campaigns in the system, show them
-          campaigns.data &&
-            campaigns.data.length > 0 && (
-              <div>
-                <center>
-                  <p>
-                    These Campaigns work hard to solve causes. Help them realise their goals by
-                    giving Ether!
-                  </p>
-                </center>
-                <div className="cards-grid-container">
-                  {campaigns.data.map(campaign => (
-                    <CampaignCard
-                      key={campaign.id}
-                      campaign={campaign}
-                      currentUser={currentUser}
-                      wallet={wallet}
-                      history={history}
-                    />
-                  ))}
-                </div>
-              </div>
-            )}
+            <div className="container-fluid page-layout reduced-padding">
+              {// There are some Campaigns in the system, show them
+              campaigns.data &&
+                campaigns.data.length > 0 && (
+                  <div>
+                    <center>
+                      <p>
+                        These Campaigns work hard to solve causes. Help them realise their goals by
+                        giving Ether!
+                      </p>
+                    </center>
+                    <div className="cards-grid-container">
+                      {campaigns.data.map(campaign => (
+                        <CampaignCard
+                          key={campaign.id}
+                          campaign={campaign}
+                          history={history}
+                          balance={balance}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                )}
 
-          {// There are no Campaigns, show empty state
-          campaigns.data &&
-            campaigns.data.length === 0 && (
-              <div>
-                <center>
-                  <p>There are no campaigns yet!</p>
-                  <img
-                    className="empty-state-img"
-                    src={`${process.env.PUBLIC_URL}/img/campaign.svg`}
-                    width="200px"
-                    height="200px"
-                    alt="no-campaigns-icon"
-                  />
-                </center>
-              </div>
-            )}
-        </div>
-      </div>
+              {// There are no Campaigns, show empty state
+              campaigns.data &&
+                campaigns.data.length === 0 && (
+                  <div>
+                    <center>
+                      <p>There are no campaigns yet!</p>
+                      <img
+                        className="empty-state-img"
+                        src={`${process.env.PUBLIC_URL}/img/campaign.svg`}
+                        width="200px"
+                        height="200px"
+                        alt="no-campaigns-icon"
+                      />
+                    </center>
+                  </div>
+                )}
+            </div>
+          </div>
+        )}
+      </UserConsumer>
     )}
-  </UserConsumer>
+  </Web3Consumer>
 );
 
 Campaigns.propTypes = {

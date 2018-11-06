@@ -20,11 +20,10 @@ import {
   getTruncatedText,
   getStartOfDayUTC,
 } from '../../lib/helpers';
-import { isAuthenticated, checkWalletBalance, isInWhitelist } from '../../lib/middleware';
+import { isAuthenticated, checkBalance, isInWhitelist } from '../../lib/middleware';
 import getNetwork from '../../lib/blockchain/getNetwork';
 import LoaderButton from '../LoaderButton';
 import User from '../../models/User';
-import GivethWallet from '../../lib/blockchain/GivethWallet';
 
 import ErrorPopup from '../ErrorPopup';
 import config from '../../configuration';
@@ -98,11 +97,14 @@ class EditMilestone extends Component {
   componentDidMount() {
     isAuthenticated(this.props.currentUser, this.props.wallet)
       .then(() => {
-        if (!this.props.isProposed) checkWalletBalance(this.props.wallet);
+        if (!this.props.isProposed) checkBalance(this.props.balance);
       })
       .then(() => {
-        if (!this.props.isProposed) {
-          isInWhitelist(this.props.currentUser, React.whitelist.projectOwnerWhitelist);
+        if (
+          !this.props.isProposed &&
+          !isInWhitelist(this.props.currentUser, React.whitelist.projectOwnerWhitelist)
+        ) {
+          throw new Error('not whitelisted');
         }
       })
       .then(() => {
@@ -502,7 +504,7 @@ class EditMilestone extends Component {
               if (txHash && err.message && err.message.includes('unknown transaction')) return; // bug in web3 seems to constantly fail due to this error, but the tx is correct
               this.setState({ isSaving: false, isBlocking: true });
               ErrorPopup(
-                'Something went wrong with the transaction. Is your wallet unlocked?',
+                'Something went wrong with the transaction.',
                 `${etherScanUrl}tx/${txHash}`,
               );
             });
@@ -993,7 +995,7 @@ EditMilestone.propTypes = {
   }).isRequired,
   isProposed: PropTypes.bool,
   isNew: PropTypes.bool,
-  wallet: PropTypes.instanceOf(GivethWallet).isRequired,
+  balance: PropTypes.objectOf(utils.BN).isRequired,
   match: PropTypes.shape({
     params: PropTypes.shape({
       id: PropTypes.string,

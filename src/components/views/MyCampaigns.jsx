@@ -2,14 +2,14 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 import Pagination from 'react-js-pagination';
+import { utils } from 'web3';
 
 import GA from 'lib/GoogleAnalytics';
-import { isLoggedIn, redirectAfterWalletUnlock, checkWalletBalance } from '../../lib/middleware';
+import { isLoggedIn, checkBalance } from '../../lib/middleware';
 import confirmationDialog from '../../lib/confirmationDialog';
 import Loader from '../Loader';
 import User from '../../models/User';
-import { getTruncatedText, convertEthHelper } from '../../lib/helpers';
-import GivethWallet from '../../lib/blockchain/GivethWallet';
+import { getTruncatedText, convertEthHelper, history } from '../../lib/helpers';
 import CampaignService from '../../services/CampaignService';
 import Campaign from '../../models/Campaign';
 
@@ -57,7 +57,7 @@ class MyCampaigns extends Component {
   }
 
   editCampaign(id) {
-    checkWalletBalance(this.props.wallet)
+    checkBalance(this.props.balance)
       .then(() => {
         React.swal({
           title: 'Edit Campaign?',
@@ -66,7 +66,7 @@ class MyCampaigns extends Component {
           dangerMode: true,
           buttons: ['Cancel', 'Yes, edit'],
         }).then(isConfirmed => {
-          if (isConfirmed) redirectAfterWalletUnlock(`/campaigns/${id}/edit`, this.props.wallet);
+          if (isConfirmed) history.push(`/campaigns/${id}/edit`);
         });
       })
       .catch(err => {
@@ -77,7 +77,7 @@ class MyCampaigns extends Component {
   }
 
   cancelCampaign(campaign) {
-    checkWalletBalance(this.props.wallet).then(() => {
+    checkBalance(this.props.balance).then(() => {
       const confirmCancelCampaign = () => {
         const afterCreate = url => {
           const msg = (
@@ -261,7 +261,7 @@ class MyCampaigns extends Component {
 
 MyCampaigns.propTypes = {
   currentUser: PropTypes.instanceOf(User).isRequired,
-  wallet: PropTypes.instanceOf(GivethWallet).isRequired,
+  balance: PropTypes.objectOf(utils.BN).isRequired,
 };
 
 export default MyCampaigns;

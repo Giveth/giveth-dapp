@@ -1,10 +1,10 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
+import { utils } from 'web3';
 
 import { getTruncatedText } from '../lib/helpers';
 import CardStats from './CardStats';
-import { redirectAfterWalletUnlock, checkWalletBalance } from '../lib/middleware';
-import GivethWallet from '../lib/blockchain/GivethWallet';
+import { checkBalance } from '../lib/middleware';
 import DAC from '../models/DAC';
 
 /**
@@ -12,7 +12,7 @@ import DAC from '../models/DAC';
  *
  * @param currentUser  Currently logged in user information
  * @param history      Browser history object
- * @param wallet       Wallet object with the balance and all keystores
+ * @param balance      User's current balance
  */
 class DacCard extends Component {
   constructor(props) {
@@ -29,7 +29,7 @@ class DacCard extends Component {
   editDAC(e) {
     e.stopPropagation();
 
-    checkWalletBalance(this.props.wallet)
+    checkBalance(this.props.balance)
       .then(() => {
         React.swal({
           title: 'Edit Community?',
@@ -39,7 +39,7 @@ class DacCard extends Component {
           dangerMode: true,
         }).then(isConfirmed => {
           if (isConfirmed) {
-            redirectAfterWalletUnlock(`/dacs/${this.props.dac.id}/edit`, this.props.wallet);
+            this.props.history.push(`/dacs/${this.props.dac.id}/edit`);
           }
         });
       })
@@ -86,14 +86,12 @@ class DacCard extends Component {
 
 DacCard.propTypes = {
   dac: PropTypes.instanceOf(DAC).isRequired,
-  wallet: PropTypes.instanceOf(GivethWallet),
+  balance: PropTypes.objectOf(utils.BN).isRequired,
   history: PropTypes.shape({
     push: PropTypes.func.isRequired,
   }).isRequired,
 };
 
-DacCard.defaultProps = {
-  wallet: undefined,
-};
+DacCard.defaultProps = {};
 
 export default DacCard;

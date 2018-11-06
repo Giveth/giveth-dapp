@@ -122,14 +122,14 @@ class Application extends Component {
         <Router history={history}>
           <Web3Provider onLoaded={this.web3Loaded}>
             <Web3Consumer>
-              {({ state: { account } }) => (
+              {({ state: { account, balance, isForeignNetwork } }) => (
                 <div>
                   {web3Loading && <Loader className="fixed" />}
                   {!web3Loading && (
                     <EthConversionProvider>
                       <UserProvider account={account} onLoaded={this.userLoaded}>
                         <UserConsumer>
-                          {({ state: { wallet, currentUser, hasError } }) => (
+                          {({ state: { currentUser, hasError } }) => (
                             <div>
                               {/* {GA.init() && <GA.RouteTracker />} */}
 
@@ -152,7 +152,8 @@ class Application extends Component {
                                           <EditDAC
                                             isNew
                                             currentUser={currentUser}
-                                            wallet={wallet}
+                                            balance={balance}
+                                            isForeignNetwork={isForeignNetwork}
                                             {...props}
                                           />
                                         )}
@@ -163,7 +164,7 @@ class Application extends Component {
                                         render={props => (
                                           <ViewDAC
                                             currentUser={currentUser}
-                                            wallet={wallet}
+                                            balance={balance}
                                             {...props}
                                           />
                                         )}
@@ -174,7 +175,8 @@ class Application extends Component {
                                         render={props => (
                                           <EditDAC
                                             currentUser={currentUser}
-                                            wallet={wallet}
+                                            balance={balance}
+                                            isForeignNetwork={isForeignNetwork}
                                             {...props}
                                           />
                                         )}
@@ -187,7 +189,8 @@ class Application extends Component {
                                           <EditCampaign
                                             isNew
                                             currentUser={currentUser}
-                                            wallet={wallet}
+                                            balance={balance}
+                                            isForeignNetwork={isForeignNetwork}
                                             {...props}
                                           />
                                         )}
@@ -198,7 +201,7 @@ class Application extends Component {
                                         render={props => (
                                           <ViewCampaign
                                             currentUser={currentUser}
-                                            wallet={wallet}
+                                            balance={balance}
                                             {...props}
                                           />
                                         )}
@@ -209,7 +212,8 @@ class Application extends Component {
                                         render={props => (
                                           <EditCampaign
                                             currentUser={currentUser}
-                                            wallet={wallet}
+                                            balance={balance}
+                                            isForeignNetwork={isForeignNetwork}
                                             {...props}
                                           />
                                         )}
@@ -222,7 +226,7 @@ class Application extends Component {
                                           <EditMilestone
                                             isNew
                                             currentUser={currentUser}
-                                            wallet={wallet}
+                                            balance={balance}
                                             {...props}
                                           />
                                         )}
@@ -235,7 +239,8 @@ class Application extends Component {
                                             isNew
                                             isProposed
                                             currentUser={currentUser}
-                                            wallet={wallet}
+                                            isForeignNetwork={isForeignNetwork}
+                                            balance={balance}
                                             {...props}
                                           />
                                         )}
@@ -246,7 +251,7 @@ class Application extends Component {
                                         render={props => (
                                           <ViewMilestone
                                             currentUser={currentUser}
-                                            wallet={wallet}
+                                            balance={balance}
                                             {...props}
                                           />
                                         )}
@@ -257,7 +262,8 @@ class Application extends Component {
                                         render={props => (
                                           <EditMilestone
                                             currentUser={currentUser}
-                                            wallet={wallet}
+                                            balance={balance}
+                                            isForeignNetwork={isForeignNetwork}
                                             {...props}
                                           />
                                         )}
@@ -275,7 +281,8 @@ class Application extends Component {
                                         render={props => (
                                           <EditMilestone
                                             currentUser={currentUser}
-                                            wallet={wallet}
+                                            balance={balance}
+                                            isForeignNetwork={isForeignNetwork}
                                             {...props}
                                           />
                                         )}
@@ -286,7 +293,8 @@ class Application extends Component {
                                         render={props => (
                                           <EditMilestone
                                             currentUser={currentUser}
-                                            wallet={wallet}
+                                            balance={balance}
+                                            isForeignNetwork={isForeignNetwork}
                                             isProposed
                                             {...props}
                                           />
@@ -298,7 +306,7 @@ class Application extends Component {
                                         render={props => (
                                           <Donations
                                             currentUser={currentUser}
-                                            wallet={wallet}
+                                            balance={balance}
                                             {...props}
                                           />
                                         )}
@@ -309,7 +317,7 @@ class Application extends Component {
                                         render={props => (
                                           <Delegations
                                             currentUser={currentUser}
-                                            wallet={wallet}
+                                            balance={balance}
                                             {...props}
                                           />
                                         )}
@@ -320,7 +328,7 @@ class Application extends Component {
                                         render={props => (
                                           <MyDACs
                                             currentUser={currentUser}
-                                            wallet={wallet}
+                                            balance={balance}
                                             {...props}
                                           />
                                         )}
@@ -331,7 +339,7 @@ class Application extends Component {
                                         render={props => (
                                           <MyCampaigns
                                             currentUser={currentUser}
-                                            wallet={wallet}
+                                            balance={balance}
                                             {...props}
                                           />
                                         )}
@@ -342,7 +350,7 @@ class Application extends Component {
                                         render={props => (
                                           <MyMilestones
                                             currentUser={currentUser}
-                                            wallet={wallet}
+                                            balance={balance}
                                             {...props}
                                           />
                                         )}
@@ -354,7 +362,7 @@ class Application extends Component {
                                         render={props => (
                                           <UserWallet
                                             currentUser={currentUser}
-                                            wallet={wallet}
+                                            // wallet={wallet}
                                             {...props}
                                           />
                                         )}
@@ -365,7 +373,8 @@ class Application extends Component {
                                         render={props => (
                                           <EditProfile
                                             currentUser={currentUser}
-                                            wallet={wallet}
+                                            balance={balance}
+                                            isForeignNetwork={isForeignNetwork}
                                             {...props}
                                           />
                                         )}

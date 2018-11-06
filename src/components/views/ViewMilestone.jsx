@@ -8,9 +8,8 @@ import ReactHtmlParser, { convertNodeToElement } from 'react-html-parser';
 import { Link } from 'react-router-dom';
 import { utils } from 'web3';
 
-import GivethWallet from '../../lib/blockchain/GivethWallet';
 import { convertEthHelper, getUserAvatar, getUserName, isOwner } from '../../lib/helpers';
-import { checkWalletBalance, redirectAfterWalletUnlock } from '../../lib/middleware';
+import { checkBalance } from '../../lib/middleware';
 import User from '../../models/User';
 import Milestone from '../../models/Milestone';
 import BackgroundImageHeader from '../BackgroundImageHeader';
@@ -88,7 +87,7 @@ class ViewMilestone extends Component {
   editMilestone(e) {
     e.stopPropagation();
 
-    checkWalletBalance(this.props.wallet)
+    checkBalance(this.props.balance)
       .then(() => {
         React.swal({
           title: 'Edit Milestone?',
@@ -98,9 +97,8 @@ class ViewMilestone extends Component {
           buttons: ['Cancel', 'Yes, edit'],
         }).then(isConfirmed => {
           if (isConfirmed) {
-            redirectAfterWalletUnlock(
+            this.props.history.push(
               `/campaigns/${this.state.campaign.id}/milestones/${this.state.id}/edit`,
-              this.props.wallet,
             );
           }
         });
@@ -128,7 +126,7 @@ class ViewMilestone extends Component {
   }
 
   render() {
-    const { history, wallet, currentUser } = this.props;
+    const { history, currentUser } = this.props;
     const {
       isLoading,
       id,
@@ -190,7 +188,6 @@ class ViewMilestone extends Component {
                       adminId: projectId,
                       campaignId: this.state.campaign._id,
                     }}
-                    wallet={wallet}
                     currentUser={currentUser}
                     history={history}
                     maxAmount={utils
@@ -221,7 +218,6 @@ class ViewMilestone extends Component {
                         campaign,
                         type: Milestone.type,
                       }}
-                      wallet={wallet}
                       currentUser={currentUser}
                     />
                   )}
@@ -436,7 +432,6 @@ class ViewMilestone extends Component {
                         adminId: projectId,
                         campaignId: this.state.campaign._id,
                       }}
-                      wallet={wallet}
                       currentUser={currentUser}
                       history={history}
                       type={Milestone.type}
@@ -462,7 +457,7 @@ ViewMilestone.propTypes = {
     push: PropTypes.func.isRequired,
   }).isRequired,
   currentUser: PropTypes.instanceOf(User),
-  wallet: PropTypes.instanceOf(GivethWallet),
+  balance: PropTypes.objectOf(utils.BN).isRequired,
   match: PropTypes.shape({
     params: PropTypes.shape({
       milestoneId: PropTypes.string.isRequired,
@@ -472,7 +467,6 @@ ViewMilestone.propTypes = {
 
 ViewMilestone.defaultProps = {
   currentUser: undefined,
-  wallet: undefined,
 };
 
 export default ViewMilestone;

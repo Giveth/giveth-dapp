@@ -211,7 +211,8 @@ class DonateButton extends React.Component {
     return (
       <Web3Consumer>
         {({ state: { isHomeNetwork, validProvider, balance } }) => {
-          const { model, currentUser, type } = this.props;
+          const { model, currentUser } = this.props;
+          const { type } = model;
           const {
             web3,
             givethBridge,
@@ -314,7 +315,6 @@ class DonateButton extends React.Component {
                   layout="vertical"
                 >
                   {validProvider &&
-                    // currentUser &&
                     maxAmount !== 0 &&
                     balance.gtn(0) && (
                       <div className="form-group">
@@ -324,10 +324,10 @@ class DonateButton extends React.Component {
                           min={0}
                           max={Number(maxAmount)}
                           step={0.01}
-                          value={Number(this.state.amount).toFixed(4)}
+                          value={Number(Number(this.state.amount).toFixed(4))}
                           labels={{
                             0: '0',
-                            [maxAmount]: Number(maxAmount).toFixed(4),
+                            [maxAmount]: Number(Number(maxAmount).toFixed(4)),
                           }}
                           format={val => `${val} ETH`}
                           onChange={newAmount => this.setState({ amount: newAmount.toString() })}
@@ -476,7 +476,6 @@ DonateButton.propTypes = {
   }).isRequired,
   currentUser: PropTypes.instanceOf(User),
   maxAmount: PropTypes.string,
-  type: PropTypes.string.isRequired,
 };
 
 DonateButton.defaultProps = {

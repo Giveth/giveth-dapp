@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { Prompt } from 'react-router-dom';
 import PropTypes from 'prop-types';
+import { utils } from 'web3';
 import 'react-input-token/lib/style.css';
 
 import { Form, Input } from 'formsy-react-components';
@@ -12,10 +13,15 @@ import SelectFormsy from '../SelectFormsy';
 import FormsyImageUploader from '../FormsyImageUploader';
 import GoBackButton from '../GoBackButton';
 import { isOwner, getTruncatedText, history } from '../../lib/helpers';
-import { isAuthenticated, checkWalletBalance, isInWhitelist } from '../../lib/middleware';
+import {
+  checkForeignNetwork,
+  checkBalance,
+  isInWhitelist,
+  authenticateIfPossible,
+  checkProfile,
+} from '../../lib/middleware';
 import LoaderButton from '../LoaderButton';
 import User from '../../models/User';
-import GivethWallet from '../../lib/blockchain/GivethWallet';
 import Campaign from '../../models/Campaign';
 import CampaignService from '../../services/CampaignService';
 import ErrorPopup from '../ErrorPopup';
@@ -26,7 +32,6 @@ import ErrorPopup from '../ErrorPopup';
  * @param isNew    If set, component will load an empty model.
  *                 Otherwise component expects an id param and will load a campaign object
  * @param id       URL parameter which is an id of a campaign object
- * @param wallet   Wallet object with the balance and all keystores
  */
 class EditCampaign extends Component {
   constructor(props) {
@@ -56,9 +61,8 @@ class EditCampaign extends Component {
   }
 
   componentDidMount() {
-    isAuthenticated(this.props.currentUser, this.props.wallet)
-      .then(() => isInWhitelist(this.props.currentUser, React.whitelist.projectOwnerWhitelist))
-      .then(() => checkWalletBalance(this.props.wallet))
+    checkForeignNetwork(this.props.isForeignNetwork)
+      .then(() => this.checkUser())
       .then(() => {
         if (!this.state.hasWhitelist) this.getReviewers();
       })
@@ -87,6 +91,20 @@ class EditCampaign extends Component {
           // handle no balance error
         }
       });
+  }
+
+  componentDidUpdate(prevProps) {
+    if (prevProps.currentUser !== this.props.currentUser) {
+      this.checkUser().then(() => {
+        if (
+          !this.props.isNew &&
+          !isOwner(this.state.campaign.owner.address, this.props.currentUser)
+        )
+          history.goBack();
+      });
+    } else if (!prevProps.balance.eq(this.props.balance)) {
+      checkBalance(this.props.balance);
+    }
   }
 
   getReviewers() {
@@ -118,6 +136,22 @@ class EditCampaign extends Component {
     const { campaign } = this.state;
     campaign.image = image;
     this.setState({ campaign });
+  }
+
+  checkUser() {
+    if (!this.props.currentUser) {
+      history.push('/');
+      return Promise.reject();
+    }
+
+    return authenticateIfPossible(this.props.currentUser)
+      .then(() => {
+        if (!isInWhitelist(this.props.currentUser, React.whitelist.projectOwnerWhitelist)) {
+          throw new Error('not whitelisted');
+        }
+      })
+      .then(() => checkProfile(this.props.currentUser))
+      .then(() => checkBalance(this.props.balance));
   }
 
   submit() {
@@ -342,6 +376,7 @@ class EditCampaign extends Component {
                           type="submit"
                           disabled={isSaving || !formIsValid}
                           isLoading={isSaving}
+                          network="Foreign"
                           loadingText="Saving..."
                         >
                           {isNew ? 'Create' : 'Update'} Campaign
@@ -360,9 +395,10 @@ class EditCampaign extends Component {
 }
 
 EditCampaign.propTypes = {
-  currentUser: PropTypes.instanceOf(User).isRequired,
+  currentUser: PropTypes.instanceOf(User),
   isNew: PropTypes.bool,
-  wallet: PropTypes.instanceOf(GivethWallet).isRequired,
+  balance: PropTypes.objectOf(utils.BN).isRequired,
+  isForeignNetwork: PropTypes.bool.isRequired,
   match: PropTypes.shape({
     params: PropTypes.shape({
       id: PropTypes.string,
@@ -371,6 +407,7 @@ EditCampaign.propTypes = {
 };
 
 EditCampaign.defaultProps = {
+  currentUser: undefined,
   isNew: false,
 };
 

@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import { Prompt } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import { Form, Input } from 'formsy-react-components';
+import {utils} from 'web3';
 
 import GA from 'lib/GoogleAnalytics';
 import Loader from '../Loader';
@@ -9,13 +10,12 @@ import QuillFormsy from '../QuillFormsy';
 import FormsyImageUploader from '../FormsyImageUploader';
 import GoBackButton from '../GoBackButton';
 import { isOwner, getTruncatedText, history } from '../../lib/helpers';
-import { isAuthenticated, checkWalletBalance, isInWhitelist } from '../../lib/middleware';
+import { isAuthenticated, checkBalance, isInWhitelist } from '../../lib/middleware';
 import LoaderButton from '../LoaderButton';
 
 import DACservice from '../../services/DACService';
 import DAC from '../../models/DAC';
 import User from '../../models/User';
-import GivethWallet from '../../lib/blockchain/GivethWallet';
 import ErrorPopup from '../ErrorPopup';
 
 /**
@@ -25,7 +25,6 @@ import ErrorPopup from '../ErrorPopup';
  *                 Otherwise component expects an id param and will load a DAC object
  * @param id       URL parameter which is an id of a campaign object
  * @param history  Browser history object
- * @param wallet   Wallet object with the balance and all keystores
  */
 class EditDAC extends Component {
   constructor(props) {
@@ -51,8 +50,12 @@ class EditDAC extends Component {
 
   componentDidMount() {
     isAuthenticated(this.props.currentUser, this.props.wallet)
-      .then(() => isInWhitelist(this.props.currentUser, React.whitelist.delegateWhitelist))
-      .then(() => checkWalletBalance(this.props.wallet))
+      .then(() => {
+        if (!isInWhitelist(this.props.currentUser, React.whitelist.delegateWhitelist)) {
+          throw new Error('not whitelisted');
+        }
+      })
+      .then(() => checkBalance(this.props.balance))
       .then(() => {
         if (!this.props.isNew) {
           DACservice.get(this.props.match.params.id)
@@ -309,7 +312,7 @@ class EditDAC extends Component {
 EditDAC.propTypes = {
   currentUser: PropTypes.instanceOf(User).isRequired,
   isNew: PropTypes.bool,
-  wallet: PropTypes.instanceOf(GivethWallet).isRequired,
+  balance: PropTypes.objectOf(utils.BN).isRequired,
   match: PropTypes.shape({
     params: PropTypes.shape({
       id: PropTypes.string,

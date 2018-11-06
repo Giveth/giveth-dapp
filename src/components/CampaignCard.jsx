@@ -1,10 +1,10 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
+import { utils } from 'web3';
 
 import { getTruncatedText } from '../lib/helpers';
 import CardStats from './CardStats';
-import { redirectAfterWalletUnlock, checkWalletBalance } from '../lib/middleware';
-import GivethWallet from '../lib/blockchain/GivethWallet';
+import { checkBalance } from '../lib/middleware';
 import Campaign from '../models/Campaign';
 
 /**
@@ -12,7 +12,6 @@ import Campaign from '../models/Campaign';
  *
  * @param currentUser  Currently logged in user information
  * @param history      Browser history object
- * @param wallet       Wallet object with the balance and all keystores
  */
 class CampaignCard extends Component {
   constructor(props) {
@@ -30,7 +29,7 @@ class CampaignCard extends Component {
   editCampaign(e) {
     e.stopPropagation();
 
-    checkWalletBalance(this.props.wallet)
+    checkBalance(this.props.balance)
       .then(() => {
         React.swal({
           title: 'Edit Campaign?',
@@ -40,10 +39,7 @@ class CampaignCard extends Component {
           buttons: ['Cancel', 'Yes, edit'],
         }).then(isConfirmed => {
           if (isConfirmed) {
-            redirectAfterWalletUnlock(
-              `/campaigns/${this.props.campaign.id}/edit`,
-              this.props.wallet,
-            );
+            this.props.history.push(`/campaigns/${this.props.campaign.id}/edit`);
           }
         });
       })
@@ -95,14 +91,10 @@ class CampaignCard extends Component {
 
 CampaignCard.propTypes = {
   campaign: PropTypes.instanceOf(Campaign).isRequired,
-  wallet: PropTypes.instanceOf(GivethWallet),
+  balance: PropTypes.objectOf(utils.BN).isRequired,
   history: PropTypes.shape({
     push: PropTypes.func.isRequired,
   }).isRequired,
-};
-
-CampaignCard.defaultProps = {
-  wallet: undefined,
 };
 
 export default CampaignCard;

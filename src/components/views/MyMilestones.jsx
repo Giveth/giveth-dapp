@@ -9,14 +9,13 @@ import Pagination from 'react-js-pagination';
 import ConversationModal from 'components/ConversationModal';
 import GA from 'lib/GoogleAnalytics';
 import { feathersClient } from '../../lib/feathersClient';
-import { isLoggedIn, redirectAfterWalletUnlock, checkWalletBalance } from '../../lib/middleware';
+import { isLoggedIn, checkBalance } from '../../lib/middleware';
 import confirmationDialog from '../../lib/confirmationDialog';
 import getNetwork from '../../lib/blockchain/getNetwork';
 import getWeb3 from '../../lib/blockchain/getWeb3';
 import Loader from '../Loader';
 import User from '../../models/User';
-import { getTruncatedText, getReadableStatus, convertEthHelper } from '../../lib/helpers';
-import GivethWallet from '../../lib/blockchain/GivethWallet';
+import { getTruncatedText, getReadableStatus, convertEthHelper, history } from '../../lib/helpers';
 import config from '../../configuration';
 
 import ErrorPopup from '../ErrorPopup';
@@ -235,7 +234,7 @@ class MyMilestones extends Component {
   }
 
   editMilestone(milestone) {
-    checkWalletBalance(this.props.wallet)
+    checkBalance(this.props.balance)
       .then(() =>
         React.swal({
           title: 'Edit Milestone?',
@@ -246,12 +245,9 @@ class MyMilestones extends Component {
         }).then(isConfirmed => {
           if (isConfirmed) {
             if (['Proposed', 'Rejected'].includes(milestone.status)) {
-              redirectAfterWalletUnlock(
-                `/milestones/${milestone._id}/edit/proposed`,
-                this.props.wallet,
-              );
+              history.push(`/milestones/${milestone._id}/edit/proposed`);
             } else {
-              redirectAfterWalletUnlock(`/milestones/${milestone._id}/edit`, this.props.wallet);
+              history.push(`/milestones/${milestone._id}/edit`);
             }
           }
         }),
@@ -264,7 +260,7 @@ class MyMilestones extends Component {
   }
 
   requestMarkComplete(milestone) {
-    checkWalletBalance(this.props.wallet)
+    checkBalance(this.props.balance)
       .then(() => {
         this.conversationModal.current
           .openModal({
@@ -350,7 +346,7 @@ class MyMilestones extends Component {
               .catch(err => {
                 if (txHash && err.message && err.message.includes('unknown transaction')) return; // bug in web3 seems to constantly fail due to this error, but the tx is correct
                 ErrorPopup(
-                  'Something went wrong with the transaction. Is your wallet unlocked?',
+                  'Something went wrong with the transaction.',
                   `${etherScanUrl}tx/${txHash} => ${JSON.stringify(err, null, 2)}`,
                 );
               });
@@ -369,7 +365,7 @@ class MyMilestones extends Component {
   }
 
   cancelMilestone(milestone) {
-    checkWalletBalance(this.props.wallet)
+    checkBalance(this.props.balance)
       .then(() =>
         this.conversationModal.current
           .openModal({
@@ -455,7 +451,7 @@ class MyMilestones extends Component {
               .catch(err => {
                 if (txHash && err.message && err.message.includes('unknown transaction')) return; // bug in web3 seems to constantly fail due to this error, but the tx is correct
                 ErrorPopup(
-                  'Something went wrong with the transaction. Is your wallet unlocked?',
+                  'Something went wrong with the transaction.',
                   `${etherScanUrl}tx/${txHash}`,
                 );
               });
@@ -469,7 +465,7 @@ class MyMilestones extends Component {
   }
 
   acceptProposedMilestone(milestone) {
-    checkWalletBalance(this.props.wallet)
+    checkBalance(this.props.balance)
       .then(() =>
         this.conversationModal.current
           .openModal({
@@ -568,7 +564,7 @@ class MyMilestones extends Component {
               .catch(err => {
                 if (txHash && err.message && err.message.includes('unknown transaction')) return; // bug in web3 seems to constantly fail due to this error, but the tx is correct
                 ErrorPopup(
-                  'Something went wrong with the transaction. Is your wallet unlocked?',
+                  'Something went wrong with the transaction.',
                   `${etherScanUrl}tx/${txHash} => ${JSON.stringify(err, null, 2)}`,
                 );
               });
@@ -582,7 +578,7 @@ class MyMilestones extends Component {
   }
 
   approveMilestoneCompleted(milestone) {
-    checkWalletBalance(this.props.wallet)
+    checkBalance(this.props.balance)
       .then(() =>
         this.conversationModal.current
           .openModal({
@@ -668,7 +664,7 @@ class MyMilestones extends Component {
               .catch(err => {
                 if (txHash && err.message && err.message.includes('unknown transaction')) return; // bug in web3 seems to constantly fail due to this error, but the tx is correct
                 ErrorPopup(
-                  'Something went wrong with the transaction. Is your wallet unlocked?',
+                  'Something went wrong with the transaction.',
                   `${etherScanUrl}tx/${txHash}`,
                 );
               });
@@ -682,7 +678,7 @@ class MyMilestones extends Component {
   }
 
   rejectMilestoneCompletion(milestone) {
-    checkWalletBalance(this.props.wallet)
+    checkBalance(this.props.balance)
       .then(() =>
         this.conversationModal.current
           .openModal({
@@ -716,7 +712,7 @@ class MyMilestones extends Component {
                 })
                 .catch(e => {
                   ErrorPopup(
-                    'Something went wrong with the transaction. Is your wallet unlocked?',
+                    'Something went wrong with the transaction.',
                     e,
                   );
                 });
@@ -757,7 +753,7 @@ class MyMilestones extends Component {
               .catch(err => {
                 if (txHash && err.message && err.message.includes('unknown transaction')) return; // bug in web3 seems to constantly fail due to this error, but the tx is correct
                 ErrorPopup(
-                  'Something went wrong with the transaction. Is your wallet unlocked?',
+                  'Something went wrong with the transaction.',
                   `${etherScanUrl}tx/${txHash}`,
                 );
               });
@@ -771,7 +767,7 @@ class MyMilestones extends Component {
   }
 
   withdrawal(milestone) {
-    checkWalletBalance(this.props.wallet)
+    checkBalance(this.props.balance)
       .then(() =>
         React.swal({
           title: 'Withdrawal Funds to Wallet',
@@ -916,7 +912,7 @@ class MyMilestones extends Component {
                 } else if (e.message === 'No donations found to withdraw') {
                   msg = <p>Nothing to withdraw. There are no donations to this milestone.</p>;
                 } else {
-                  msg = <p>Something went wrong with the transaction. Is your wallet unlocked?</p>;
+                  msg = <p>Something went wrong with the transaction.</p>;
                 }
 
                 React.swal({
@@ -1247,7 +1243,7 @@ class MyMilestones extends Component {
 
 MyMilestones.propTypes = {
   currentUser: PropTypes.instanceOf(User).isRequired,
-  wallet: PropTypes.instanceOf(GivethWallet).isRequired,
+  balance: PropTypes.objectOf(utils.BN).isRequired,
 };
 
 export default MyMilestones;
