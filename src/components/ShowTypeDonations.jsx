@@ -35,7 +35,7 @@ const ShowTypeDonations = props => (
                   {props.donations.map(d => (
                     <tr key={d._id}>
                       <td className="td-date">{moment(d.createdAt).format('MM/DD/YYYY')}</td>
-                      <td>{d.status}</td>
+                      <td>{d.statusDescription}</td>
 
                       <td className="td-donations-amount">
                         {d.isPending && (

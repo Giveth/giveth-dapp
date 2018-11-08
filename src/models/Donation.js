@@ -142,9 +142,9 @@ class Donation extends Model {
       case Donation.PENDING:
         return 'pending successful transaction';
       case Donation.TO_APPROVE:
-        return 'pending for your approval to be committed.';
+        return 'proposed delegation';
       case Donation.WAITING:
-        return 'waiting for further delegation';
+        return 'ready for delegation';
       case Donation.COMMITTED:
         return 'committed';
       case Donation.PAYING:

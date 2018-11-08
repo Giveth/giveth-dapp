@@ -302,6 +302,7 @@ export const approveERC20tokenTransfer = (etherScanUrl, tokenContractAddress, to
 
       // read existing allowance for the givethBridge
       ERC20.methods.allowance(tokenHolderAddress, config.givethBridgeAddress).call((error, allowance) => {
+        console.log(`Existing ERC20 allowance for address ${tokenHolderAddress}: `, allowance)
         // if no allowance, we set the allowance
         // if there's an existing allowance, but it's lower than the amount, we reset it and create a new allowance
         // in any other case, just continue
@@ -313,7 +314,7 @@ export const approveERC20tokenTransfer = (etherScanUrl, tokenContractAddress, to
                 <p>For your donation you need to make 2 transactions:</p>
                 <ol style={{textAlign: "left"}}>
                   <li>A transaction to allow our contracts to transfer {utils.fromWei(amount)} tokens.</li>
-                  <li>A transaction of 0 ETH to transfer the tokens.</li>
+                  <li>A transaction of 0 ETH to donate the tokens.</li>
                 </ol>                    
               </div>
             ),
@@ -337,7 +338,7 @@ export const approveERC20tokenTransfer = (etherScanUrl, tokenContractAddress, to
                 <ol style={{textAlign: "left"}}>
                   <li>A transaction to reset your token allowance</li>
                   <li>A transaction to allow our contracts to transfer {utils.fromWei(amount)} tokens</li>
-                  <li>A transaction of 0 ETH to transfer the tokens</li>
+                  <li>A transaction of 0 ETH to donate the tokens</li>
                 </ol>
               </div>
             ),

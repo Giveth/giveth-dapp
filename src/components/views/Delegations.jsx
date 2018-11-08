@@ -76,7 +76,7 @@ const Delegations = () => (
                                         </Link>
                                       </td>
                                       <td className="td-tx-address">{d.giverAddress}</td>
-                                      <td className="td-status">{d.status}</td>
+                                      <td className="td-status">{d.statusDescription}</td>
                                       <td className="td-actions">
                                         {/* When donated to a dac, allow delegation
                                       to campaigns and milestones */}
