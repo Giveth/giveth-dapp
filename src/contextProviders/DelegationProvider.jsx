@@ -1,6 +1,7 @@
 import React, { Component, createContext } from 'react';
 import PropTypes from 'prop-types';
 import { paramsForServer } from 'feathers-hooks-common';
+import { utils } from 'web3';
 
 import Milestone from 'models/MilestoneModel';
 import { feathersClient } from '../lib/feathersClient';
@@ -132,7 +133,7 @@ class DelegationProvider extends Component {
                   'projectId',
                   'campaignId',
                   'maxAmount',
-                  'totalDonated',
+                  'donationCounters',
                   'status',
                   'token'
                 ],
@@ -147,26 +148,41 @@ class DelegationProvider extends Component {
                 this.setState(
                   {
                     milestones: resp.data.map(m => {
-                      m.type = Milestone.type;
-                      m.name = m.title;
                       m.id = m._id;
+                      m.type = Milestone.type;
+                      m.symbol = m.token.symbol;
+                      m.name = m.title;
+
+                      if(m.donationCounters && m.donationCounters.length > 0) {
+                        const currentBalance = m.donationCounters[0].currentBalance;
+                        m.maxDelegationAmount = utils
+                          .toBN(m.maxAmount)
+                          .sub(utils.toBN(currentBalance))
+                          .toString()
+                      } else {
+                        m.maxDelegationAmount = m.maxAmount;
+                      }
+
                       m.element = (
                         <span>
                           {m.title} <em>Milestone</em>
                         </span>
                       );
                       return m;
-                    }), // .filter((m) => m.totalDonated < m.maxAmount)
-                  },
-                  resolve(),
+                    })
+                  }, resolve()
                 );
               },
               () => reject(),
             );
         }),
       ])
-        .then(() => this.getAndWatchDonations())
+        .then((res) => {
+          this.getAndWatchDonations()
+        })
+
         .catch(err => {
+          console.log('err', err)
           ErrorPopup('Unable to load dacs, campaigns or milestones.', err);
           this.setState({ isLoading: false });
         });

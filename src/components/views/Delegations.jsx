@@ -84,7 +84,7 @@ const Delegations = () => (
                                           d.ownerTypeId === currentUser.address) &&
                                           d.amountRemaining > 0 && (
                                             <DelegateButton
-                                              types={campaigns.concat(milestones)}
+                                              types={campaigns.concat(milestones.filter(m => m.symbol === d.token.symbol ))}
                                               donation={d}
                                               wallet={wallet}
                                               symbol={(d.token && d.token.symbol) || "ETH"}

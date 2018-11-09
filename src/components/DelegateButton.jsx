@@ -41,7 +41,7 @@ class DelegateButton extends Component {
       objectsToDelegateTo: [],
       modalVisible: false,
       amount: utils.fromWei(props.donation.amountRemaining),
-      maxAmount: utils.fromWei(props.donation.amountRemaining),      
+      maxAmount: utils.fromWei(props.donation.amountRemaining),    
     };
 
     this.submit = this.submit.bind(this);
@@ -62,17 +62,17 @@ class DelegateButton extends Component {
     const admin = this.props.types.find(t => t._id === target.value[0]);
 
     let maxAmount = utils.fromWei(this.props.donation.amountRemaining);
-
+    
     if (admin && admin.type === Milestone.type) {
-      const diff = utils
-        .toBN(admin.maxAmount)
-        .sub(utils.toBN(admin.totalDonated || 0))
-        .toString();
-      if (utils.toBN(diff).lt(utils.toBN(this.props.donation.amountRemaining)))
-        maxAmount = utils.fromWei(diff);
+      if (utils.toBN(admin.maxDelegationAmount).lt(utils.toBN(this.props.donation.amountRemaining)))
+        maxAmount = utils.fromWei(admin.maxDelegationAmount);
     }
 
-    this.setState({ maxAmount, amount: maxAmount, objectsToDelegateTo: target.value });
+    this.setState({ 
+      maxAmount, 
+      amount: maxAmount, 
+      objectsToDelegateTo: target.value,
+    });
   }
 
   submit(model) {
