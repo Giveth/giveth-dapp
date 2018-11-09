@@ -28,7 +28,6 @@ export default class MilestoneModel extends BasicModel {
       confirmations = 0,
       requiredConfirmations = 6,
       commitTime,
-      token = React.whitelist.tokenWhitelist.find(t => t.symbol === 'ETH'),
     } = data;
 
     this._maxAmount = maxAmount;
@@ -45,7 +44,6 @@ export default class MilestoneModel extends BasicModel {
     this._confirmations = confirmations;
     this._requiredConfirmations = requiredConfirmations;
     this._commitTime = commitTime;
-    this._token = token;
   }
 
   /**
@@ -278,12 +276,12 @@ export default class MilestoneModel extends BasicModel {
     this._commitTime = value;
   }
 
-
-  get token() {
-    return this._token;
+  get currentBalance() {
+    console.log(this._donationCounters)
+    if(this._donationCounters.length > 0) {
+      return this._donationCounters[0].currentBalance
+    } else {
+      return "0"
+    }
   }
-
-  set token(value) {
-    this._token = value
-  }  
 }

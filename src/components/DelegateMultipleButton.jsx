@@ -43,7 +43,6 @@ const _getTokenWhitelist = () => {
   return r.map(t => {
     if(t.symbol === 'ETH') {
       t.name = `${config.homeNetworkName} ETH`
-      t.address = "0x0"
     }  
     t.balance = "0"
     return t;
@@ -109,9 +108,9 @@ class DelegateMultipleButton extends Component {
           const delegationOptions = this.props.milestone
             ? dacs.concat([
                 {
-                  id: this.props.milestone.campaign._id,
-                  name: this.props.milestone.campaign.title,
-                  projectId: this.props.milestone.campaign.projectId,
+                  id: this.props.campaign._id,
+                  name: this.props.campaign.title,
+                  projectId: this.props.campaign.projectId,
                   ownerEntity: this.props.milestone.ownerEntity,
                   type: 'campaign',
                 },
@@ -256,7 +255,7 @@ class DelegateMultipleButton extends Component {
     return (
       <span style={style}>
         <button type="button" className="btn btn-info" onClick={() => this.openDialog()}>
-          Delegate
+          Delegate funds here
         </button>
 
         <Modal
@@ -268,8 +267,8 @@ class DelegateMultipleButton extends Component {
         >
           <p>
             You are delegating donations to
-            {campaign && <strong> {campaign.title}</strong>}
-            {milestone && <strong> {milestone.campaign.title}</strong>}
+            {!milestone && <strong> {campaign.title}</strong>}
+            {milestone && <strong> {milestone.title}</strong>}
           </p>
           {isLoading && <Loader className="small btn-loader" />}
           {!isLoading && (

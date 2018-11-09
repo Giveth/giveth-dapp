@@ -134,6 +134,7 @@ class DelegationProvider extends Component {
                   'maxAmount',
                   'totalDonated',
                   'status',
+                  'token'
                 ],
                 $limit: 100,
                 $sort: {

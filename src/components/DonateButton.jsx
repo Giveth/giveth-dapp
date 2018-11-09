@@ -36,7 +36,6 @@ const _getTokenWhitelist = () => {
   return r.map(t => {
     if(t.symbol === 'ETH') {
       t.name = `${config.homeNetworkName} ETH`
-      t.address = "0x0"
     }  
     t.balance = "0"
     return t;
@@ -408,7 +407,7 @@ class DonateButton extends React.Component {
         <Modal
           isOpen={modalVisible}
           onRequestClose={() => this.closeDialog()}
-          contentLabel={`Support this ${type}!`}
+          contentLabel={`Support this ${model.type}!`}
           style={modalStyles}
         >
 
@@ -446,9 +445,11 @@ class DonateButton extends React.Component {
             {homeWeb3 &&
               homeWeb3.givenProvider &&
               account &&
-              validNetwork && (
+              validNetwork && 
+              model.type !== 'milestone' &&
+              (
                 <p>
-                  You're pledging: as long as the {type} owner does not lock your money you can take it back
+                  You're pledging: as long as the {model.type} owner does not lock your money you can take it back
                   any time.
                 </p>
               )}
@@ -625,7 +626,6 @@ DonateButton.propTypes = {
   }).isRequired,
   currentUser: PropTypes.instanceOf(User),
   maxAmount: PropTypes.string,
-  type: PropTypes.string.isRequired,
 };
 
 DonateButton.defaultProps = {

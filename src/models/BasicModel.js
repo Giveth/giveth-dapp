@@ -1,3 +1,4 @@
+import React from 'react';
 import Model from './Model';
 import { getTruncatedText } from '../lib/helpers';
 
@@ -30,10 +31,11 @@ class BasicModel extends Model {
     owner,
     reviewer,
     url,
-    totalDonated = '0',
-    currentBalance = '0',
     donationCount = 0,
     peopleCount = 0,
+    fullyFunded = false,
+    donationCounters = [],
+    token = React.whitelist.tokenWhitelist.find(t => t.symbol === 'ETH'),
   }) {
     super();
 
@@ -47,11 +49,12 @@ class BasicModel extends Model {
     this._owner = owner || { address: '0x0' }; // FIXME: Check in feathers, owner should be a model
     this._reviewer = reviewer;
     this._url = url;
-    this._totalDonated = totalDonated;
-    this._currentBalance = currentBalance;
     this._donationCount = donationCount;
     this._peopleCount = peopleCount;
+    this._fullyFunded = fullyFunded;
+    this._donationCounters = donationCounters;
     this._Order = -1;
+    this._token = token;
   }
 
   get id() {
@@ -136,31 +139,8 @@ class BasicModel extends Model {
     this._url = value;
   }
 
-  get totalDonated() {
-    return this._totalDonated;
-  }
-
-  set totalDonated(value) {
-    this.checkType(value, ['string'], 'totalDonated');
-    this._totalDonated = value;
-  }
-
-  set currentBalance(value) {
-    this.checkType(value, ['string'], 'currentBalance');
-    this._currentBalance = value;
-  }
-
-  get currentBalance() {
-    return this._currentBalance;
-  }
-
   get donationCount() {
-    return this._donationCount;
-  }
-
-  set donationCount(value) {
-    this.checkType(value, ['number'], 'donationCount');
-    this._donationCount = value;
+    return this._donationCounters.reduce((token) => token.length, 0)
   }
 
   get peopleCount() {
@@ -171,6 +151,32 @@ class BasicModel extends Model {
     this.checkType(value, ['number'], 'peopleCount');
     this._peopleCount = value;
   }
+
+  get fullyFunded() {
+    return this._fullyFunded;
+  }
+
+  set fullyFunded(value) {
+    this.checkType(value, ['boolean'], 'fullyFunded');    
+    this._fullyFunded = value
+  }
+
+  get donationCounters() {
+    return this._donationCounters;
+  }
+
+  set donationCounters(value) {
+    this._donationCounters = value;
+  }
+
+  get token() {
+    return this._token;
+  }
+
+  set token(value) {
+    this._token = value
+  }  
+
 }
 
 export default BasicModel;

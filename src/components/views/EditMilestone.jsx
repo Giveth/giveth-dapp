@@ -28,7 +28,6 @@ import User from '../../models/User';
 import GivethWallet from '../../lib/blockchain/GivethWallet';
 
 import ErrorPopup from '../ErrorPopup';
-import config from '../../configuration';
 import MilestoneProof from '../MilestoneProof';
 
 import getEthConversionContext from '../../containers/getEthConversionContext';
@@ -459,11 +458,6 @@ class EditMilestone extends Component {
               uint _reviewTimeoutSeconds
               * */
 
-              // if this is Eth, get the ETH from config
-              if(token.address === '0x0') {
-                token.address = Object.values(config.tokenAddresses)[0]
-              }
-
               network.lppCappedMilestoneFactory
                 .newMilestone(
                   title,
@@ -474,7 +468,7 @@ class EditMilestone extends Component {
                   campaignReviewerAddress,
                   from,
                   maxAmount,
-                  token.address,
+                  token.foreignAddress,
                   5 * 24 * 60 * 60, // 5 days in seconds
                   { from },
                 )
