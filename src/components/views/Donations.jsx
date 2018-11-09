@@ -100,7 +100,7 @@ const Donations = () => (
                                       {d.intendedProjectId > 0 && (
                                         <span className="badge badge-info">
                                           <i className="fa fa-random" />
-                                          &nbsp;Proposed delegation
+                                          Proposed delegation&nbsp;
                                         </span>
                                       )}
                                       <Link to={d.donatedTo.url}>
@@ -108,7 +108,7 @@ const Donations = () => (
                                       </Link>
                                     </td>
                                     <td className="td-donations-amount">
-                                      {convertEthHelper(d.amountRemaining)} ETH
+                                      {convertEthHelper(d.amountRemaining)} {d.token.symbol}
                                     </td>
 
                                     {etherScanUrl && (
