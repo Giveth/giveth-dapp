@@ -17,6 +17,15 @@ const CardStats = ({ peopleCount, maxAmount, totalDonated, type, status, token }
       </span>      
     </div>
 
+    {['dac', 'campaign'].includes(type) &&
+      <div className="col-5 text-center card-center">
+        <span>
+          <p>Donations</p>                  
+          <p>{totalDonated}</p>
+        </span>
+      </div>
+    }
+
     {type === 'milestone' &&
       <div className="col-5 text-center card-center">
         {maxAmount &&

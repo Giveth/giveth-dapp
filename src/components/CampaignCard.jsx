@@ -83,7 +83,7 @@ class CampaignCard extends Component {
             <CardStats
               type="campaign"
               peopleCount={campaign.peopleCount}
-              totalDonated={campaign.totalDonated}
+              totalDonated={campaign.totalDonationCount}
               currentBalance={campaign.currentBalance}
               token={{symbol: 'ETH', decimals: 18}}
             />

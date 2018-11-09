@@ -139,8 +139,10 @@ class BasicModel extends Model {
     this._url = value;
   }
 
-  get donationCount() {
-    return this._donationCounters.reduce((token) => token.length, 0)
+  get totalDonationCount() {
+    return this._donationCounters.reduce((count, token) =>
+      count + token.donationCount
+    , 0)
   }
 
   get peopleCount() {

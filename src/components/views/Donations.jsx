@@ -108,7 +108,7 @@ const Donations = () => (
                                       </Link>
                                     </td>
                                     <td className="td-donations-amount">
-                                      {convertEthHelper(d.amountRemaining)} {d.token.symbol}
+                                      {convertEthHelper(d.amountRemaining)} {d.token && d.token.symbol}
                                     </td>
 
                                     {etherScanUrl && (
