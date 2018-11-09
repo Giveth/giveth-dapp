@@ -199,7 +199,6 @@ class Donation extends Model {
    * @return {boolean} True if given user can approve or reject the delegation of the donation
    */
   canApproveReject(user) {
-    console.log(this._ownerTypeId === user.address, this._status === Donation.TO_APPROVE, new Date() < new Date(this._commitTime) )
     return (
       this._ownerTypeId === user.address &&
       this._status === Donation.TO_APPROVE &&

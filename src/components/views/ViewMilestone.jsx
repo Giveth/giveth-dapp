@@ -1,4 +1,3 @@
-import BigNumber from 'bignumber.js';
 import { Form } from 'formsy-react-components';
 import moment from 'moment';
 import PropTypes from 'prop-types';
@@ -9,9 +8,8 @@ import { Link } from 'react-router-dom';
 import { utils } from 'web3';
 
 import User from 'models/User';
-import Milestone from 'models/MilestoneModel';
 import GivethWallet from '../../lib/blockchain/GivethWallet';
-import { convertEthHelper, getUserAvatar, getUserName, isOwner } from '../../lib/helpers';
+import { getUserAvatar, getUserName, isOwner } from '../../lib/helpers';
 import { checkWalletBalance, redirectAfterWalletUnlock } from '../../lib/middleware';
 import BackgroundImageHeader from '../BackgroundImageHeader';
 import DonateButton from '../DonateButton';

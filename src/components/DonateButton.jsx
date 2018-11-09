@@ -370,7 +370,7 @@ class DonateButton extends React.Component {
   }
 
   render() {
-    const { model, currentUser, type } = this.props;
+    const { model, currentUser } = this.props;
     const {
       homeWeb3,
       account,

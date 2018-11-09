@@ -306,7 +306,9 @@ export const approveERC20tokenTransfer = (etherScanUrl, tokenContractAddress, to
         // if no allowance, we set the allowance
         // if there's an existing allowance, but it's lower than the amount, we reset it and create a new allowance
         // in any other case, just continue
-        if (allowance == 0){   
+
+        /* eslint-disable eqeqeq */
+        if (allowance == 0){ 
           React.swal({
             title: 'Here we go...',
             content: React.swal.msg(

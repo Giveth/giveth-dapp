@@ -1,4 +1,3 @@
-import React from 'react';
 import { getStartOfDayUTC } from 'lib/helpers';
 import { fiatTypes } from 'contextProviders/EthConversionProvider';
 import moment from 'moment';
@@ -13,7 +12,6 @@ export default class MilestoneItemModel extends Model {
       description = "",
       image = "",
       selectedFiatType = "EUR",
-      token = React.whitelist.tokenWhitelist.find(t => t.symbol === 'ETH').address,
       fiatAmount = 0,
       wei = "",
       conversionRate = parseFloat(0),
