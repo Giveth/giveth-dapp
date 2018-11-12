@@ -39,34 +39,50 @@ class Content extends Component {
   }
 
   handleCamera() {
-    this.setState({ type: 'camera' });
-    const params = { audio: true, video: true };
-    navigator.getUserMedia(
-      params,
-      cameraStream => {
-        this.setState(
-          {
-            stream: new window.MultiStreamsMixer([cameraStream]),
-            cameraStream,
-          },
-          () => {
-            this.state.stream.frameInterval = 1; // eslint-disable-line react/no-direct-mutation-state
-            this.state.stream.startDrawingFrames();
-            window.setSrcObject(
-              this.state.stream.getMixedStream(),
-              document.getElementById('video'),
-            );
-          },
-        );
-      },
-      () => {
-        alert('No camera devices found');
-      },
-    );
+    this.setState({ type: 'camera' }, () => {
+      navigator.getUserMedia(
+        { audio: true, video: true },
+        cameraStream => {
+          this.setState(
+            {
+              stream: new window.MultiStreamsMixer([cameraStream]),
+              cameraStream,
+            },
+            () => {
+              this.state.stream.frameInterval = 1; // eslint-disable-line react/no-direct-mutation-state
+              this.state.stream.startDrawingFrames();
+              window.setSrcObject(
+                this.state.stream.getMixedStream(),
+                document.getElementById('video'),
+              );
+            },
+          );
+        },
+        () => {
+          alert('No camera devices found');
+        },
+      );
+    });
+  }
+
+  handleExit() {
+    const { cameraStream, audioStream, screenStream } = this.state;
+    if (cameraStream) {
+      cameraStream.stop();
+      cameraStream.getTracks()[0].stop();
+      cameraStream.getTracks()[1].stop();
+    }
+    if (audioStream) {
+      audioStream.stop();
+      audioStream.getTracks()[0].stop();
+    }
+    if (screenStream) {
+      screenStream.stop();
+      screenStream.getTracks()[0].stop();
+    }
   }
 
   handleUpload() {
-    const { cameraStream, audioStream, screenStream } = this.state;
     this.setState(
       {
         currentState: 'uploading',
@@ -74,19 +90,7 @@ class Content extends Component {
       () => {
         IPFSService.upload(this.state.blob)
           .then(hash => {
-            if (cameraStream) {
-              cameraStream.stop();
-              cameraStream.getTracks()[0].stop();
-              cameraStream.getTracks()[1].stop();
-            }
-            if (audioStream) {
-              audioStream.stop();
-              audioStream.getTracks()[0].stop();
-            }
-            if (screenStream) {
-              screenStream.stop();
-              screenStream.getTracks()[0].stop();
-            }
+            this.handleExit();
 
             this.props.handleQuillInsert(config.ipfsGateway + hash.slice(6));
           })
@@ -222,7 +226,7 @@ class Content extends Component {
               style={{ marginTop: '1rem', width: '100%' }}
               controls
               autoPlay
-              muted={currentState === 'recording'}
+              muted
               src={file}
               id="video"
             />
@@ -244,6 +248,17 @@ class Content extends Component {
             </button>
           </div>
         )}
+        <button
+          type="button"
+          style={{ marginTop: '1rem' }}
+          className="btn btn-danger"
+          onClick={() => {
+            this.handleExit();
+            React.swal.close();
+          }}
+        >
+          Close
+        </button>
       </div>
     );
   }
@@ -260,5 +275,6 @@ export default handleQuillInsert => {
     button: {
       visible: false,
     },
+    closeOnClickOutside: false,
   });
 };
