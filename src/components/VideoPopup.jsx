@@ -43,22 +43,21 @@ class Content extends Component {
     const params = { audio: true, video: true };
     navigator.getUserMedia(
       params,
-      () => {
-        navigator.mediaDevices.getUserMedia({ video: true, audio: true }).then(cameraStream => {
-          this.setState(
-            {
-              stream: new window.MultiStreamsMixer([cameraStream]),
-            },
-            () => {
-              this.state.stream.frameInterval = 1; // eslint-disable-line react/no-direct-mutation-state
-              this.state.stream.startDrawingFrames();
-              window.setSrcObject(
-                this.state.stream.getMixedStream(),
-                document.getElementById('video'),
-              );
-            },
-          );
-        });
+      cameraStream => {
+        this.setState(
+          {
+            stream: new window.MultiStreamsMixer([cameraStream]),
+            cameraStream,
+          },
+          () => {
+            this.state.stream.frameInterval = 1; // eslint-disable-line react/no-direct-mutation-state
+            this.state.stream.startDrawingFrames();
+            window.setSrcObject(
+              this.state.stream.getMixedStream(),
+              document.getElementById('video'),
+            );
+          },
+        );
       },
       () => {
         alert('No camera devices found');
@@ -67,13 +66,30 @@ class Content extends Component {
   }
 
   handleUpload() {
+    const { cameraStream, audioStream, screenStream } = this.state;
     this.setState(
       {
         currentState: 'uploading',
       },
       () => {
         IPFSService.upload(this.state.blob)
-          .then(hash => this.props.handleQuillInsert(config.ipfsGateway + hash.slice(6)))
+          .then(hash => {
+            if (cameraStream) {
+              cameraStream.stop();
+              cameraStream.getTracks()[0].stop();
+              cameraStream.getTracks()[1].stop();
+            }
+            if (audioStream) {
+              audioStream.stop();
+              audioStream.getTracks()[0].stop();
+            }
+            if (screenStream) {
+              screenStream.stop();
+              screenStream.getTracks()[0].stop();
+            }
+
+            this.props.handleQuillInsert(config.ipfsGateway + hash.slice(6));
+          })
           .catch(err => console.log(err));
       },
     );
@@ -101,7 +117,6 @@ class Content extends Component {
         blob: recordVideo.getBlob(),
         currentState: '',
       });
-      window.RecordRTC.writeToDisk();
     });
   }
 
@@ -133,6 +148,8 @@ class Content extends Component {
           this.setState(
             {
               stream: new window.MultiStreamsMixer([screenStream, audioStream]),
+              audioStream,
+              screenStream,
             },
             () => {
               this.state.stream.frameInterval = 1; // eslint-disable-line react/no-direct-mutation-state
@@ -151,7 +168,6 @@ class Content extends Component {
   render() {
     const { handleQuillInsert } = this.props;
     const { type, url, file, currentState } = this.state;
-
     return (
       <div>
         <label style={{ display: 'block', marginBottom: '1rem' }}>Choose type of video</label>
