@@ -58,8 +58,7 @@ class ViewMilestone extends Component {
       .find({ query: { _id: milestoneId } })
       .subscribe(resp => {
         const milestone = new MilestoneModel(resp.data[0])
-        console.log('resp', resp.data[0])
-        console.log(milestone)
+        
         this.setState({
           milestone: milestone,
           isLoading: false,

@@ -50,7 +50,7 @@ const _getTokenWhitelist = () => {
 }
 
 /**
- * Retrieves the oldest 100 donations that can the user delegate
+ * Retrieves the oldest 100 donations that the user can delegate
  *
  * @prop {GivethWallet} wallet      Wallet object
  * @prop {User}         currentUser Current user of the Dapp
@@ -74,7 +74,7 @@ class DelegateMultipleButton extends Component {
         value: t.address,
         title: t.name
       })),  
-      selectedToken: _getTokenWhitelist().find(t => t.symbol === "ETH"),      
+      selectedToken: this.props.milestone ? this.props.milestone.token : _getTokenWhitelist().find(t => t.symbol === "ETH"),      
     };
 
     this.loadDonations = this.loadDonations.bind(this);
@@ -128,11 +128,14 @@ class DelegateMultipleButton extends Component {
   }
 
   setToken(address) {
-    this.setState({ selectedToken: _getTokenWhitelist().find(t => t.address === address) });
+    this.setState({ selectedToken: _getTokenWhitelist().find(t => t.address === address) }, () =>
+      this.loadDonations(this.state.objectToDelegateFrom)
+    );
   }      
 
   selectedObject({ target }) {
     this.setState({ objectToDelegateFrom: target.value, isLoadingDonations: true });
+
     this.loadDonations(target.value);
   }
 
@@ -166,6 +169,7 @@ class DelegateMultipleButton extends Component {
         amountRemaining: { $ne: 0 },
         ...options,
         $sort: { createdAt: 1 },
+        'token.symbol': this.state.selectedToken.symbol,
       },
       schema: 'includeTypeAndGiverDetails',
     });
@@ -176,8 +180,8 @@ class DelegateMultipleButton extends Component {
       .watch({ listStrategy: 'always' })
       .find(query)
       .subscribe(
-        r => {
-          const delegations = r.data.map(d => new Donation(d));
+        donations => {
+          const delegations = donations.data.map(d => new Donation(d));
           let amount = utils.fromWei(
             delegations.reduce((sum, d) => sum.add(utils.toBN(d.amountRemaining)), utils.toBN('0')),
           );
@@ -241,7 +245,7 @@ class DelegateMultipleButton extends Component {
     DonationService.delegateMultiple(
       this.state.delegations,
       utils.toWei(model.amount),
-      this.props.campaign || this.props.milestone,
+      this.props.milestone || this.props.campaign,
       onCreated,
       onSuccess,
     );
@@ -306,20 +310,22 @@ class DelegateMultipleButton extends Component {
                 !isLoadingDonations &&
                 delegations.length > 0 && (
                   <div>
-                  
-                    <SelectFormsy
-                      name="token"
-                      id="token-select"
-                      label="Select token or ETH to delegate"
-                      helpText=""
-                      value={selectedToken.address}
-                      cta="--- Select ---"
-                      options={tokenWhitelistOptions}
-                      onChange={(address) => this.setToken(address)}
-                    /> 
+
+                    { !this.props.milestone &&             
+                      <SelectFormsy
+                        name="token"
+                        id="token-select"
+                        label="Select token or ETH to delegate"
+                        helpText=""
+                        value={selectedToken && selectedToken.address}
+                        cta="--- Select ---"
+                        options={tokenWhitelistOptions}
+                        onChange={(address) => this.setToken(address)}
+                      /> 
+                    }
 
 
-                    <span className="label">Amount to delegate:</span>
+                    <span className="label">Amount {selectedToken.symbol} to delegate:</span>
 
                     <div className="form-group">
                       <Slider
@@ -330,7 +336,7 @@ class DelegateMultipleButton extends Component {
                         step={this.state.maxAmount / 10}
                         value={Number(this.state.amount)}
                         labels={{ 0: '0', [this.state.maxAmount]: this.state.maxAmount }}
-                        format={val => `${val} ETH`}
+                        format={val => `${val} ${selectedToken.symbol}`}
                         onChange={amount =>
                           this.setState(prevState => ({
                             amount:

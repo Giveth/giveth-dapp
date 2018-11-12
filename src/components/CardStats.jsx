@@ -9,13 +9,26 @@ import { convertEthHelper } from '../lib/helpers';
  */
 const CardStats = ({ peopleCount, maxAmount, totalDonated, type, status, token }) => (
   <div className="row card-stats">
-    <div className="col-3 text-left">
-      <p>Giver(s)</p>
-      <span>
-        <i className="fa fa-male" />
-        {peopleCount}
-      </span>      
-    </div>
+
+    {['dac', 'campaign'].includes(type) &&  
+      <div className="col-6 text-left">
+        <p>Giver(s)</p>
+        <span>
+          <i className="fa fa-male" />
+          {peopleCount}
+        </span>      
+      </div>
+    }
+
+    {type === 'milestone' &&  
+      <div className="col-3 text-left">
+        <p>Giver(s)</p>
+        <span>
+          <i className="fa fa-male" />
+          {peopleCount}
+        </span>      
+      </div>
+    }
 
     {['dac', 'campaign'].includes(type) &&
       <div className="col-5 text-center card-center">

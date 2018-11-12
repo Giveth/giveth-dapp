@@ -206,8 +206,6 @@ class MyMilestones extends Component {
       .watch({ listStrategy: 'always' })
       .find(query)
       .subscribe(resp => {
-        console.log(resp.data)
-
         this.setState({
           milestones: resp.data,
           itemsPerPage: resp.limit,

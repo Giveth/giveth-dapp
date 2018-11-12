@@ -98,7 +98,7 @@ const Donations = () => (
 
                                     <td className="td-donated-to">
                                       {d.intendedProjectId > 0 && (
-                                        <span className="badge badge-info">
+                                        <span className="badge badge-info" style={{ "marginRight": "5px" }}>
                                           <i className="fa fa-random" />
                                           Proposed delegation&nbsp;
                                         </span>

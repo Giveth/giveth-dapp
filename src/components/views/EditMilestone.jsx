@@ -138,7 +138,6 @@ class EditMilestone extends Component {
                 campaign: milestone.campaign,                    
               });
 
-              console.log('milestone', this.state.milestone)
               return date;
             })
             .then(date => this.props.getEthConversion(date))
@@ -237,7 +236,6 @@ class EditMilestone extends Component {
   }
 
   setDate(date) {
-    console.log('fetching rates for date', date)
     this.setState({ date });
     const { milestone } = this.state;
     milestone.date = date;
@@ -337,8 +335,6 @@ class EditMilestone extends Component {
   submit(model) {
     const { milestone } = this.state;
 
-    console.log('milestone', milestone);
-
     const afterEmit = () => {
       this.setState({
         isSaving: false,
@@ -381,8 +377,6 @@ class EditMilestone extends Component {
       } else {
         constructedModel.maxAmount = utils.toWei(milestone.maxAmount.toString());
       }
-
-      console.log('constructedModel', constructedModel);
 
       if (this.props.isNew) {
         const createMilestone = (txData, callback) => {
@@ -889,7 +883,7 @@ class EditMilestone extends Component {
                         id="token-select"
                         label="Raising funds in"
                         helpText="Select the token you're raising funds in"
-                        value={milestone.token.address}
+                        value={milestone.token && milestone.token.address}
                         cta="--- Select a token ---"
                         options={tokenWhitelistOptions}
                         onChange={(address) => this.setToken(address)}
