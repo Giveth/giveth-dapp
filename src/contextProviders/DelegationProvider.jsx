@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { paramsForServer } from 'feathers-hooks-common';
 import { utils } from 'web3';
 
-import Milestone from 'models/MilestoneModel';
+import Milestone from 'models/Milestone';
 import { feathersClient } from '../lib/feathersClient';
 import ErrorPopup from '../components/ErrorPopup';
 

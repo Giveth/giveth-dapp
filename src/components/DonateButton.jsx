@@ -247,7 +247,7 @@ class DonateButton extends React.Component {
       let opts;
 
       if(isDonationInToken)
-        opts = { from: account, gas: 1000000 };
+        opts = { from: account, gas: 100000 }; // actually uses 84766, but runs out of gas if exact
       else
         opts = { value, gas: DONATION_GAS, from: account };
 

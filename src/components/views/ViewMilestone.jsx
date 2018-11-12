@@ -18,7 +18,7 @@ import GoBackButton from '../GoBackButton';
 import ShowTypeDonations from '../ShowTypeDonations';
 import { feathersClient } from '../../lib/feathersClient';
 import Loader from '../Loader';
-import MilestoneModel from 'models/MilestoneModel';
+import Milestone from 'models/Milestone';
 import MilestoneItem from '../MilestoneItem';
 import MilestoneConversations from '../MilestoneConversations';
 import DelegateMultipleButton from '../DelegateMultipleButton';
@@ -57,7 +57,7 @@ class ViewMilestone extends Component {
       .watch({ listStrategy: 'always' })
       .find({ query: { _id: milestoneId } })
       .subscribe(resp => {
-        const milestone = new MilestoneModel(resp.data[0])
+        const milestone = new Milestone(resp.data[0])
         
         this.setState({
           milestone: milestone,

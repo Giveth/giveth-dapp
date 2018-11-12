@@ -3,7 +3,7 @@ import BigNumber from 'bignumber.js';
 import { getStartOfDayUTC, getRandomWhitelistAddress } from 'lib/helpers';
 import BasicModel from './BasicModel';
 
-import MilestoneItemModel from './MilestoneItemModel';
+import MilestoneItemModel from './MilestoneItem';
 /**
  * The DApp Milestone model
  */

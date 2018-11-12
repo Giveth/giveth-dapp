@@ -3,7 +3,7 @@ import moment from 'moment';
 import PropTypes from 'prop-types';
 import React from 'react';
 import { convertEthHelper, getTruncatedText } from 'lib/helpers';
-import MilestoneItemModel from 'models/MilestoneItemModel';
+import Item from 'models/MilestoneItem';
 
 /** *
  * NOTE: This component is created as a Formsy form component
@@ -73,7 +73,7 @@ MilestoneItem.propTypes = {
   setValue: PropTypes.func.isRequired,
 
   removeItem: PropTypes.func,
-  item: PropTypes.instanceOf(MilestoneItemModel).isRequired,
+  item: PropTypes.instanceOf(Item).isRequired,
   isEditMode: PropTypes.bool,
 };
 

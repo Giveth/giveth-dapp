@@ -111,45 +111,11 @@ const setWallet = (rpcUrl, isHomeNetwork = false) =>
     this.setProvider(engine);
   };
 
-/**
-  Method to extend web3 to poll tx receipt mined. Usage:
-  web3.eth.getTransactionReceiptMined = _getTransactionReceiptMined;
-  Gist: https://gist.github.com/xavierlepretre/88682e871f4ad07be4534ae560692ee6
-**/
-const _getTransactionReceiptMined = function(txHash, interval){
-  const self = this;
-  
-  const transactionReceiptAsync = function(resolve, reject) {
-    self.getTransactionReceipt(txHash, (error, receipt) => {
-      if (error) {
-        reject(error);
-      } else if (receipt == null) {
-        setTimeout(
-          () => transactionReceiptAsync(resolve, reject),
-          interval ? interval : 500);
-      } else {
-        resolve(receipt);
-      }
-    });
-  };
-
-  if (Array.isArray(txHash)) {
-    return Promise.all(txHash.map(
-      oneTxHash => self.getTransactionReceiptMined(oneTxHash, interval)));
-  } else if (typeof txHash === "string") {
-    return new Promise(transactionReceiptAsync);
-  } else {
-    throw new Error("Invalid Type: " + txHash);
-  }
-};
-
-
 export const getWeb3 = () =>
   new Promise(resolve => {
     if (!givethWeb3) {
       givethWeb3 = new Web3(new ZeroClientProvider(providerOpts(config.foreignNodeConnection)));
       givethWeb3.setWallet = setWallet(config.foreignNodeConnection);
-      givethWeb3.eth.getTransactionReceiptMined = _getTransactionReceiptMined;
     }
 
     resolve(givethWeb3);
@@ -171,7 +137,6 @@ export const getHomeWeb3 = () =>
       // homeWeb3.setWallet = setWallet(config.homeNodeConnection, true);
       // TODO we can probably just remove this
       homeWeb3.setWallet = () => {};
-      homeWeb3.eth.getTransactionReceiptMined = _getTransactionReceiptMined;      
     }
 
     resolve(homeWeb3);
@@ -284,7 +249,7 @@ const _createAllowance = (web3, etherScanUrl, ERC20, tokenHolderAddress, amount)
       }
 
       if(txHash) {
-        web3.eth.getTransactionReceiptMined(txHash)
+        web3.eth.getTransactionReceipt(txHash)
           .then((res) => resolve())
           .catch((err) => reject(err))
       } else {

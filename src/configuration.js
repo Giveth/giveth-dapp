@@ -46,7 +46,7 @@ const configurations = {
     tokenAddresses: { 'Ropsten ETH': '0x387871cf72c8CC81E3a945402b0E3A2A6C0Ed38a' },
     etherscan: 'https://rinkeby.etherscan.io/',
     homeEtherscan: 'https://ropsten.etherscan.io/',
-    feathersConnection: 'http://localhost:3030',
+    feathersConnection: 'https://feathers.develop.giveth.io',
     foreignNodeConnection: 'https://rinkeby.giveth.io',
     foreignNetworkName: 'Rinkeby',
     homeNodeConnection: 'https://ropsten.infura.io',

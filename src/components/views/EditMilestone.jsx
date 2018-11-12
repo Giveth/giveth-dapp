@@ -6,8 +6,8 @@ import Toggle from 'react-toggle';
 import BigNumber from 'bignumber.js';
 import { Form, Input } from 'formsy-react-components';
 import GA from 'lib/GoogleAnalytics';
-import MilestoneModel from 'models/MilestoneModel';
-import MilestoneItemModel from 'models/MilestoneItemModel';
+import Milestone from 'models/Milestone';
+import MilestoneItem from 'models/MilestoneItem';
 import { feathersClient, feathersRest } from '../../lib/feathersClient';
 import templates from '../../lib/milestoneTemplates';
 import Loader from '../Loader';
@@ -53,7 +53,7 @@ class EditMilestone extends Component {
       isLoading: true,
       isSaving: false,
       formIsValid: false,
-      milestone: new MilestoneModel({}),
+      milestone: new Milestone({}),
       hasWhitelist: React.whitelist.reviewerWhitelist.length > 0,
       whitelistReviewerOptions: React.whitelist.reviewerWhitelist.map(r => ({
         value: r.address,
@@ -115,7 +115,7 @@ class EditMilestone extends Component {
                 this.props.history.goBack();
               }
               this.setState({
-                milestone: new MilestoneModel({
+                milestone: new Milestone({
                             title: milestone.title,
                             description: milestone.description,
                             image: milestone.image,
@@ -127,7 +127,7 @@ class EditMilestone extends Component {
                             status: milestone.status,
                             projectId: milestone.campaignId,
                             reviewerAddress: milestone.reviewerAddress,
-                            items: milestone.items.map(i => new MilestoneItemModel(i)),
+                            items: milestone.items.map(i => new MilestoneItem(i)),
                             itemizeState: milestone.items && milestone.items.length > 0,
                             date: date,
                             token: milestone.token
