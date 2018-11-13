@@ -163,7 +163,9 @@ class DelegateMultipleButton extends Component {
 
           if (
             this.props.milestone &&
-            new BigNumber(this.props.milestone.maxAmount).lt(new BigNumber(utils.fromWei(amount)))
+            new BigNumber(this.props.milestone.maxAmount).lt(
+              new BigNumber(utils.fromWei(amount.toString())),
+            )
           )
             amount = this.props.milestone.maxAmount;
           else {
