@@ -156,22 +156,26 @@ class DelegateMultipleButton extends Component {
       .subscribe(
         r => {
           const delegations = r.data.map(d => new Donation(d));
-          const amount = delegations.reduce(
+          let amount = delegations.reduce(
             (sum, d) => sum.add(utils.toBN(d.amountRemaining)),
             utils.toBN('0'),
           );
+
           if (
             this.props.milestone &&
-            new BigNumber(this.props.milestone.maxAmount).lt(
-              new BigNumber(utils.fromWei(amount.toString())),
-            )
+            new BigNumber(this.props.milestone.maxAmount).lt(new BigNumber(utils.fromWei(amount)))
           )
-            this.setState({
-              delegations,
-              maxAmount: utils.fromWei(amount.toString()),
-              amount: utils.fromWei(amount.toString()),
-              isLoadingDonations: false,
-            });
+            amount = this.props.milestone.maxAmount;
+          else {
+            amount = utils.fromWei(amount.toString());
+          }
+
+          this.setState({
+            delegations,
+            maxAmount: amount,
+            amount,
+            isLoadingDonations: false,
+          });
         },
         () => this.setState({ isLoadingDonations: false }),
       );
