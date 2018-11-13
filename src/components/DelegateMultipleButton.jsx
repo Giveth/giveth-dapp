@@ -103,7 +103,6 @@ class DelegateMultipleButton extends Component {
               this.selectedObject({ target: { value: [delegationOptions[0].id] } });
             }
           });
-          this.setState({ delegationOptions });
         },
         () => {},
       );
