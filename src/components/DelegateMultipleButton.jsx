@@ -98,6 +98,11 @@ class DelegateMultipleButton extends Component {
                 },
               ])
             : dacs;
+          this.setState({ delegationOptions }, () => {
+            if (delegationOptions.length === 1) {
+              this.selectedObject({ target: { value: [delegationOptions[0].id] } });
+            }
+          });
           this.setState({ delegationOptions });
         },
         () => {},
@@ -151,7 +156,6 @@ class DelegateMultipleButton extends Component {
       .subscribe(
         r => {
           const delegations = r.data.map(d => new Donation(d));
-          this.setState({ delegations });
           const amount = delegations.reduce(
             (sum, d) => sum.add(utils.toBN(d.amountRemaining)),
             utils.toBN('0'),
