@@ -6,7 +6,7 @@ import PropTypes from 'prop-types';
 import { paramsForServer } from 'feathers-hooks-common';
 import Slider from 'react-rangeslider';
 import 'react-rangeslider/lib/index.css';
-import BigNumber from 'bignumber.js';
+import { BigNumber } from 'bignumber.js';
 import InputToken from 'react-input-token';
 
 import { checkWalletBalance } from '../lib/middleware';
@@ -98,7 +98,6 @@ class DelegateMultipleButton extends Component {
                 },
               ])
             : dacs;
-
           this.setState({ delegationOptions }, () => {
             if (delegationOptions.length === 1) {
               this.selectedObject({ target: { value: [delegationOptions[0].id] } });
@@ -156,15 +155,21 @@ class DelegateMultipleButton extends Component {
       .subscribe(
         r => {
           const delegations = r.data.map(d => new Donation(d));
-          let amount = utils.fromWei(
-            delegations.reduce((sum, d) => sum.add(utils.toBN(d.amountRemaining)), utils.toBN('0')),
+          let amount = delegations.reduce(
+            (sum, d) => sum.add(utils.toBN(d.amountRemaining)),
+            utils.toBN('0'),
           );
 
           if (
             this.props.milestone &&
-            new BigNumber(this.props.milestone.maxAmount).lt(new BigNumber(amount))
+            new BigNumber(this.props.milestone.maxAmount).lt(
+              new BigNumber(utils.fromWei(amount.toString())),
+            )
           )
             amount = this.props.milestone.maxAmount;
+          else {
+            amount = utils.fromWei(amount.toString());
+          }
 
           this.setState({
             delegations,
