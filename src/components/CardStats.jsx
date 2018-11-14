@@ -70,13 +70,16 @@ CardStats.propTypes = {
   status: PropTypes.string,
   maxAmount: PropTypes.instanceOf(BigNumber),
   totalDonated: PropTypes.instanceOf(BigNumber),
-  token: PropTypes.shape().isRequired,
+  token: PropTypes.shape(),
 };
 
 CardStats.defaultProps = {
   status: 'In Progress',
   maxAmount: new BigNumber('0'),
   totalDonated: new BigNumber('0'),
+  token: {
+    symbol: 'ETH',
+  },
 };
 
 export default CardStats;

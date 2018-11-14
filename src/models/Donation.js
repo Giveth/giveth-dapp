@@ -1,3 +1,6 @@
+import BigNumber from 'bignumber.js';
+import { utils } from 'web3';
+
 import Model from './Model';
 import { getTruncatedText } from '../lib/helpers';
 import Milestone from './Milestone';
@@ -64,7 +67,7 @@ class Donation extends Model {
     super(data);
 
     this._id = data._id;
-    this._amount = data.amount;
+    this._amount = new BigNumber(utils.fromWei(data.amount));
     this._amountRemaining = data.amountRemaining;
     this._pendingAmountRemaining = data.pendingAmountRemaining;
     this._commitTime = data.commitTime;
@@ -219,7 +222,9 @@ class Donation extends Model {
 
   get isPending() {
     return (
-      this._status === Donation.PENDING || this._pendingAmountRemaining !== undefined || !this._mined
+      this._status === Donation.PENDING ||
+      this._pendingAmountRemaining !== undefined ||
+      !this._mined
     );
   }
 
@@ -463,9 +468,8 @@ class Donation extends Model {
   }
 
   set token(value) {
-    this._token = value
-  }  
-
+    this._token = value;
+  }
 }
 
 export default Donation;

@@ -171,14 +171,20 @@ class MyCampaigns extends Component {
                                   )}
                                 </td>
                                 <td className="td-donations-number">
-                                  {c.donationCounters && c.donationCounters.map(counter => (
-                                    <p>{counter.donationCount} donation(s) in {counter.symbol}</p>
-                                  ))}
+                                  {c.donationCounters &&
+                                    c.donationCounters.map(counter => (
+                                      <p key={counter._id}>
+                                        {counter.donationCount} donation(s) in {counter.symbol}
+                                      </p>
+                                    ))}
                                 </td>
                                 <td className="td-donations-amount">
-                                  {c.donationCounters && c.donationCounters.map(counter => (
-                                    <p>{convertEthHelper(counter.totalDonated)} {counter.symbol}</p>
-                                  ))}
+                                  {c.donationCounters &&
+                                    c.donationCounters.map(counter => (
+                                      <p key={counter._id}>
+                                        {convertEthHelper(counter.totalDonated)} {counter.symbol}
+                                      </p>
+                                    ))}
                                 </td>
                                 <td className="td-status">
                                   {(c.status === Campaign.PENDING ||
