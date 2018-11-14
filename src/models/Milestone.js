@@ -14,7 +14,7 @@ export default class MilestoneModel extends BasicModel {
     const {
       id = data._id || undefined,
       maxAmount = new BigNumber('0'),
-      selectedFiatType = "EUR",
+      selectedFiatType = 'EUR',
       fiatAmount = new BigNumber('0'),
       recipientAddress = '',
       status = MilestoneModel.PENDING,
@@ -28,6 +28,13 @@ export default class MilestoneModel extends BasicModel {
       confirmations = 0,
       requiredConfirmations = 6,
       commitTime,
+
+      // transient
+      campaign,
+      owner,
+      campaignReviewer,
+      recipient,
+      reviewer,
     } = data;
 
     this._maxAmount = maxAmount;
@@ -44,6 +51,13 @@ export default class MilestoneModel extends BasicModel {
     this._confirmations = confirmations;
     this._requiredConfirmations = requiredConfirmations;
     this._commitTime = commitTime;
+
+    // transient
+    this._campaign = campaign;
+    this._owner = owner;
+    this._campaignReviewer = campaignReviewer;
+    this._recipient = recipient;
+    this._reviewer = reviewer;
   }
 
   /**
@@ -109,15 +123,6 @@ export default class MilestoneModel extends BasicModel {
     return 'milestone';
   }
 
-  get title() {
-    return this._title;
-  }
-
-  set title(value) {
-    this.checkType(value, ['string'], 'title');
-    this._title = value;
-  }
-
   get description() {
     return this._description;
   }
@@ -152,7 +157,7 @@ export default class MilestoneModel extends BasicModel {
   set selectedFiatType(value) {
     this.checkType(value, ['string'], 'selectedFiatType');
     this._selectedFiatType = value;
-  }  
+  }
 
   get fiatAmount() {
     return this._fiatAmount;
@@ -277,11 +282,30 @@ export default class MilestoneModel extends BasicModel {
   }
 
   get currentBalance() {
-    console.log(this._donationCounters)
-    if(this._donationCounters.length > 0) {
-      return this._donationCounters[0].currentBalance
-    } else {
-      return "0"
+    if (this._donationCounters.length > 0) {
+      return this._donationCounters[0].currentBalance;
     }
+    return '0';
+  }
+
+  // transient
+  get campaign() {
+    return this._campaign;
+  }
+
+  get owner() {
+    return this._owner;
+  }
+
+  get reviewer() {
+    return this._reviewer;
+  }
+
+  get campaignReviewer() {
+    return this._campaignReviewer;
+  }
+
+  get recipient() {
+    return this._recipient;
   }
 }

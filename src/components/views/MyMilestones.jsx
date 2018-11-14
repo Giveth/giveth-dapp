@@ -19,6 +19,8 @@ import { getTruncatedText, getReadableStatus, convertEthHelper } from '../../lib
 import GivethWallet from '../../lib/blockchain/GivethWallet';
 import config from '../../configuration';
 
+import MilestoneService from '../../services/MilestoneService';
+
 import ErrorPopup from '../ErrorPopup';
 import Donation from '../../models/Donation';
 
@@ -117,7 +119,7 @@ class MyMilestones extends Component {
       itemsPerPage: 50,
       skipPages: 0,
       totalResults: 0,
-      loadedStatus: 'Active',
+      milestoneStatus: 'Active',
     };
 
     this.conversationModal = React.createRef();
@@ -145,75 +147,33 @@ class MyMilestones extends Component {
   }
 
   componentWillUnmount() {
-    if (this.milestonesObserver) this.milestonesObserver.unsubscribe();
+    MilestoneService.unsubscribe();
   }
 
   async loadMileStones() {
     const myAddress = this.props.currentUser.address;
+    const { milestoneStatus, skipPages, itemsPerPage } = this.state;
 
-    const query = {
-      query: {
-        $sort: {
-          createdAt: -1,
-        },
-        $limit: this.state.itemsPerPage,
-        $skip: this.state.skipPages * this.state.itemsPerPage,
-      },
-    };
-
-    if (['Paid', 'Canceled'].includes(this.state.loadedStatus)) {
-      query.query.$and = [
-        {
-          $or: [
-            { ownerAddress: myAddress },
-            // { reviewerAddress: myAddress }, // Not really "My Milestones"
-            { recipientAddress: myAddress },
-          ],
-        },
-        { status: this.state.loadedStatus },
-      ];
-    } else if (this.state.loadedStatus === 'Rejected') {
-      query.query.$and = [
-        {
-          $or: [
-            { ownerAddress: myAddress },
-            // { reviewerAddress: myAddress }, // Not really "My Milestones"
-            { recipientAddress: myAddress },
-          ],
-        },
-        { status: 'Rejected' },
-      ];
-    } else {
-      const resp = await feathersClient
-        .service('campaigns')
-        .find({ query: { ownerAddress: myAddress } });
-      const campaignsIDs = resp.data.map(c => c._id);
-      query.query.$and = [
-        {
-          $or: [
-            { ownerAddress: myAddress },
-            { reviewerAddress: myAddress },
-            { recipientAddress: myAddress },
-            { $and: [{ campaignId: { $in: campaignsIDs } }, { status: 'Proposed' }] },
-          ],
-        },
-        { status: { $nin: ['Paid', 'Canceled', 'Rejected'] } },
-      ];
-    }
-
-    this.milestonesObserver = feathersClient
-      .service('milestones')
-      .watch({ listStrategy: 'always' })
-      .find(query)
-      .subscribe(resp => {
+    MilestoneService.subscribe({
+      milestoneStatus,
+      ownerAddress: myAddress,
+      recipientAddress: myAddress,
+      skipPages,
+      itemsPerPage,
+    })
+      .then(resp =>
         this.setState({
           milestones: resp.data,
           itemsPerPage: resp.limit,
           skipPages: resp.skip,
           totalResults: resp.total,
           isLoading: false,
-        })
-      });
+        }),
+      )
+      .catch(() =>
+        // TO DO: handle error here in view
+        this.setState({ isLoading: false }),
+      );
   }
 
   handlePageChanged(newPage) {
@@ -224,11 +184,11 @@ class MyMilestones extends Component {
     this.setState(
       {
         isLoading: true,
-        loadedStatus: newStatus,
+        milestoneStatus: newStatus,
         skipPages: 0,
       },
       () => {
-        if (this.milestonesObserver) this.milestonesObserver.unsubscribe();
+        MilestoneService.unsubscribe();
         this.loadMileStones();
       },
     );
@@ -958,7 +918,7 @@ class MyMilestones extends Component {
                   <li className="nav-item" key={st}>
                     <span
                       role="button"
-                      className={`nav-link ${this.state.loadedStatus === st ? 'active' : ''}`}
+                      className={`nav-link ${this.state.milestoneStatus === st ? 'active' : ''}`}
                       onKeyPress={() => this.changeTab(st)}
                       tabIndex={0}
                       onClick={() => this.changeTab(st)}
@@ -1032,9 +992,20 @@ class MyMilestones extends Component {
                                 <td className="td-donations-number">
                                   {convertEthHelper(m.maxAmount)} {m.token.symbol}
                                 </td>
-                                <td className="td-donations-number">{(m.donationCounters && m.donationCounters.length && m.donationCounters[0].donationCount) || 0}</td>
+                                <td className="td-donations-number">
+                                  {(m.donationCounters &&
+                                    m.donationCounters.length &&
+                                    m.donationCounters[0].donationCount) ||
+                                    0}
+                                </td>
                                 <td className="td-donations-">
-                                  {convertEthHelper((m.donationCounters && m.donationCounters.length && m.donationCounters[0].currentBalance) || '0')} {m.token.symbol}
+                                  {convertEthHelper(
+                                    (m.donationCounters &&
+                                      m.donationCounters.length &&
+                                      m.donationCounters[0].currentBalance) ||
+                                      '0',
+                                  )}{' '}
+                                  {m.token.symbol}
                                 </td>
                                 <td className="td-reviewer">
                                   {m.reviewer &&
@@ -1167,7 +1138,9 @@ class MyMilestones extends Component {
                                   ) &&
                                     m.status === 'Completed' &&
                                     m.mined &&
-                                    (m.donationCounters && m.donationCounters.length > 0 && m.donationCounters[0].totalDonated > 0) && (
+                                    (m.donationCounters &&
+                                      m.donationCounters.length > 0 &&
+                                      m.donationCounters[0].totalDonated > 0) && (
                                       <button
                                         type="button"
                                         className="btn btn-success btn-sm"

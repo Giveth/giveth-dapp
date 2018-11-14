@@ -36,6 +36,7 @@ class BasicModel extends Model {
     fullyFunded = false,
     donationCounters = [],
     token = React.whitelist.tokenWhitelist.find(t => t.symbol === 'ETH'),
+    createdAt,
   }) {
     super();
 
@@ -55,6 +56,7 @@ class BasicModel extends Model {
     this._donationCounters = donationCounters;
     this._Order = -1;
     this._token = token;
+    this._createdAt = createdAt;
   }
 
   get id() {
@@ -140,9 +142,7 @@ class BasicModel extends Model {
   }
 
   get totalDonationCount() {
-    return this._donationCounters.reduce((count, token) =>
-      count + token.donationCount
-    , 0)
+    return this._donationCounters.reduce((count, token) => count + token.donationCount, 0);
   }
 
   get peopleCount() {
@@ -159,8 +159,8 @@ class BasicModel extends Model {
   }
 
   set fullyFunded(value) {
-    this.checkType(value, ['boolean'], 'fullyFunded');    
-    this._fullyFunded = value
+    this.checkType(value, ['boolean'], 'fullyFunded');
+    this._fullyFunded = value;
   }
 
   get donationCounters() {
@@ -176,9 +176,12 @@ class BasicModel extends Model {
   }
 
   set token(value) {
-    this._token = value
-  }  
+    this._token = value;
+  }
 
+  get createdAt() {
+    return this._createdAt;
+  }
 }
 
 export default BasicModel;
