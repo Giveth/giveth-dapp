@@ -16,7 +16,8 @@ BigNumber.config({ DECIMAL_PLACES: 18 });
 
 class MilestoneService {
   constructor() {
-    this.milestoneListener = null;
+    this.milestoneSubscription = null;
+    this.donationSubscription = null;
   }
 
   /**
@@ -32,6 +33,23 @@ class MilestoneService {
           resolve(new Milestone(resp.data[0]));
         })
         .catch(reject);
+    });
+  }
+
+  /**
+   * Subscribe to a Milestone defined by ID
+   *
+   * @param id   ID of the Milestone to be retrieved
+   */
+  static subscribeOne(id) {
+    return new Promise((resolve, reject) => {
+      this.milestoneSubscription = milestones
+        .watch({ listStrategy: 'always' })
+        .find({ query: { _id: id } })
+        .subscribe(resp => {
+          resolve(new Milestone(resp.data[0]));
+        }, reject);
+      return this.milestoneSubscription;
     });
   }
 
@@ -119,7 +137,7 @@ class MilestoneService {
     }
 
     return new Promise((resolve, reject) => {
-      this.milestoneListener = milestones
+      this.milestoneSubscription = milestones
         .watch({ listStrategy: 'always' })
         .find({ query })
         .subscribe(resp => {
@@ -128,7 +146,7 @@ class MilestoneService {
           });
           resolve(newResp);
         }, reject);
-      return this.milestoneListener;
+      return this.milestoneSubscription;
     });
   }
 
@@ -137,7 +155,8 @@ class MilestoneService {
    */
 
   static unsubscribe() {
-    if (this.milestoneListener) this.milestoneListener.unsubscribe();
+    if (this.milestoneSubscription) this.milestoneSubscription.unsubscribe();
+    if (this.donationSubscription) this.donationSubscription.unsubscribe();
   }
 
   /**

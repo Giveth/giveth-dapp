@@ -1,4 +1,7 @@
 import { getStartOfDayUTC } from 'lib/helpers';
+import BigNumber from 'bignumber.js';
+import { utils } from 'web3';
+
 import { fiatTypes } from 'contextProviders/EthConversionProvider';
 import moment from 'moment';
 import Model from './Model';
@@ -9,11 +12,11 @@ export default class MilestoneItemModel extends Model {
 
     const {
       date = getStartOfDayUTC().subtract(1, 'd'),
-      description = "",
-      image = "",
-      selectedFiatType = "EUR",
-      fiatAmount = 0,
-      wei = "",
+      description = '',
+      image = '',
+      selectedFiatType = 'EUR',
+      fiatAmount = new BigNumber('0'),
+      wei = '',
       conversionRate = parseFloat(0),
       ethConversionRateTimestamp = new Date().toISOString(),
     } = data;
@@ -22,8 +25,8 @@ export default class MilestoneItemModel extends Model {
     this._description = description;
     this._image = image;
     this._selectedFiatType = selectedFiatType;
-    this._fiatAmount = fiatAmount;
-    this._wei = wei;
+    this._fiatAmount = new BigNumber(fiatAmount);
+    this._wei = new BigNumber(utils.fromWei(wei).toString());
     this._conversionRate = conversionRate;
     this._ethConversionRateTimestamp = ethConversionRateTimestamp;
   }

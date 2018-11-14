@@ -25,7 +25,7 @@ class MilestoneCard extends Component {
 
   viewMilestone() {
     this.props.history.push(
-      `/campaigns/${this.props.milestone.campaignId}/milestones/${this.props.milestone._id}`,
+      `/campaigns/${this.props.milestone.campaign._id}/milestones/${this.props.milestone._id}`,
     );
   }
 
@@ -48,7 +48,7 @@ class MilestoneCard extends Component {
         }).then(isConfirmed => {
           if (isConfirmed) {
             redirectAfterWalletUnlock(
-              `/campaigns/${this.props.milestone.campaignId}/milestones/${
+              `/campaigns/${this.props.milestone.campaign._id}/milestones/${
                 this.props.milestone._id
               }/edit`,
               this.props.wallet,
@@ -135,7 +135,7 @@ class MilestoneCard extends Component {
 MilestoneCard.propTypes = {
   milestone: PropTypes.shape({
     _id: PropTypes.string.isRequired,
-    campaignId: PropTypes.string.isRequired,
+    campaign: PropTypes.shape().isRequired,
     owner: PropTypes.shape({
       address: PropTypes.string.isRequired,
     }).isRequired,

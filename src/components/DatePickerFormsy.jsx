@@ -41,7 +41,7 @@ class DatePickerFormsy extends React.Component {
 
     return (
       <div className={`form-group ${className}`}>
-        <label htmlFor>
+        <label>
           {this.props.label}
           <DatePicker
             id="datePicker"
@@ -57,7 +57,7 @@ class DatePickerFormsy extends React.Component {
             disabled={this.props.disabled}
             minDate={getStartOfDayUTC(moment('2017-01-01', 'YYYY-MM-DD'))}
             maxDate={getStartOfDayUTC().subtract(1, 'd')}
-            shouldCloseOnSelect={true}            
+            shouldCloseOnSelect
             readOnly
           />
         </label>

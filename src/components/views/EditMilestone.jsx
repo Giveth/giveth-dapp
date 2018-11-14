@@ -1,3 +1,4 @@
+/* eslint-disable react/sort-comp */
 import React, { Component } from 'react';
 import { Prompt } from 'react-router-dom';
 import PropTypes from 'prop-types';
@@ -7,20 +8,14 @@ import BigNumber from 'bignumber.js';
 import { Form, Input } from 'formsy-react-components';
 import GA from 'lib/GoogleAnalytics';
 import Milestone from 'models/Milestone';
-import MilestoneItem from 'models/MilestoneItem';
 import { feathersClient, feathersRest } from '../../lib/feathersClient';
-import templates from '../../lib/milestoneTemplates';
 import Loader from '../Loader';
 import QuillFormsy from '../QuillFormsy';
 import SelectFormsy from '../SelectFormsy';
 import DatePickerFormsy from '../DatePickerFormsy';
 import FormsyImageUploader from '../FormsyImageUploader';
 import GoBackButton from '../GoBackButton';
-import {
-  isOwner,
-  getTruncatedText,
-  getStartOfDayUTC,
-} from '../../lib/helpers';
+import { isOwner, getTruncatedText, getStartOfDayUTC } from '../../lib/helpers';
 import { isAuthenticated, checkWalletBalance, isInWhitelist } from '../../lib/middleware';
 import getNetwork from '../../lib/blockchain/getNetwork';
 import LoaderButton from '../LoaderButton';
@@ -31,6 +26,7 @@ import ErrorPopup from '../ErrorPopup';
 import MilestoneProof from '../MilestoneProof';
 
 import getEthConversionContext from '../../containers/getEthConversionContext';
+import MilestoneService from '../../services/MilestoneService';
 
 BigNumber.config({ DECIMAL_PLACES: 18 });
 
@@ -61,7 +57,7 @@ class EditMilestone extends Component {
       })),
       tokenWhitelistOptions: React.whitelist.tokenWhitelist.map(t => ({
         value: t.address,
-        title: t.name
+        title: t.name,
       })),
       reviewers: [],
       isBlocking: false,
@@ -96,16 +92,8 @@ class EditMilestone extends Component {
 
         // load a single milestones (when editing)
         if (!this.props.isNew) {
-          feathersClient
-            .service('milestones')
-            .find({ query: { _id: this.props.match.params.milestoneId } })
-            .then(resp => {
-              const milestone = resp.data[0];
-              const date = getStartOfDayUTC(milestone.date);
-              // convert amounts to BigNumbers
-              milestone.maxAmount = new BigNumber(utils.fromWei(milestone.maxAmount).toString());
-              milestone.fiatAmount = new BigNumber(milestone.fiatAmount);
-
+          MilestoneService.get(this.props.match.params.milestoneId)
+            .then(milestone => {
               if (
                 !(
                   isOwner(milestone.owner.address, this.props.currentUser) ||
@@ -115,30 +103,13 @@ class EditMilestone extends Component {
                 this.props.history.goBack();
               }
               this.setState({
-                milestone: new Milestone({
-                            title: milestone.title,
-                            description: milestone.description,
-                            image: milestone.image,
-                            id: this.props.match.params.milestoneId,
-                            maxAmount: milestone.maxAmount,
-                            selectedFiatType: milestone.selectedFiatType,                                              
-                            fiatAmount: milestone.fiatAmount,
-                            recipientAddress: milestone.recipientAddress,
-                            status: milestone.status,
-                            projectId: milestone.campaignId,
-                            reviewerAddress: milestone.reviewerAddress,
-                            items: milestone.items.map(i => new MilestoneItem(i)),
-                            itemizeState: milestone.items && milestone.items.length > 0,
-                            date: date,
-                            token: milestone.token
-                          }),
+                milestone,
                 campaignTitle: milestone.campaign.title,
                 campaignProjectId: milestone.campaign.projectId,
                 campaignReviewerAddress: milestone.campaign.reviewerAddress,
-                campaign: milestone.campaign,                    
               });
 
-              return date;
+              return milestone.date;
             })
             .then(date => this.props.getEthConversion(date))
             .then(() => {
@@ -207,7 +178,7 @@ class EditMilestone extends Component {
   onItemsChanged(items) {
     const { milestone } = this.state;
     milestone.items = items;
-    this.setState({ milestone: milestone });
+    this.setState({ milestone });
   }
 
   getReviewers() {
@@ -254,7 +225,7 @@ class EditMilestone extends Component {
   }
 
   setFiatAmount(name, value) {
-    const { milestone } = this.state;    
+    const { milestone } = this.state;
     const maxAmount = new BigNumber(value || '0');
     const conversionRate = this.props.currentRate.rates[milestone.selectedFiatType];
 
@@ -262,77 +233,45 @@ class EditMilestone extends Component {
       milestone.maxAmount = maxAmount;
       milestone.fiatAmount = maxAmount.times(conversionRate);
 
-      this.setState({ milestone: milestone });
+      this.setState({ milestone });
     }
   }
 
   setMaxAmount(name, value) {
-    const { milestone } = this.state;    
+    const { milestone } = this.state;
     const fiatAmount = new BigNumber(value || '0');
     const conversionRate = this.props.currentRate.rates[milestone.selectedFiatType];
     if (conversionRate && fiatAmount.gte(0)) {
       milestone.maxAmount = fiatAmount.div(conversionRate);
       milestone.fiatAmount = fiatAmount;
 
-      this.setState({ milestone: milestone });
+      this.setState({ milestone });
     }
   }
 
-  addItem(item) {
+  changeSelectedFiat(fiatType) {
     const { milestone } = this.state;
-    milestone.items = milestone.items.concat(item);
-    this.setState({ milestone: milestone });
-  }
+    const conversionRate = this.props.currentRate.rates[fiatType];
+    const maxAmount = milestone.fiatAmount.div(conversionRate);
 
-  btnText() {
-    if (this.props.isNew) {
-      return this.props.isProposed ? 'Propose Milestone' : 'Create Milestone';
-    }
-
-    return 'Update Milestone';
-  }
-
-  removeItem(index) {
-    const { milestone } = this.state
-    delete milestone.items[index];
-    milestone.items = milestone.items.filter(() => true)
-    this.setState({ milestone: milestone });
-  }
-
-  mapInputs(inputs) {
-    const { milestone } = this.state;
-
-    milestone.title = inputs.title;
-    milestone.description = inputs.description;
-    milestone.reviewerAddress = inputs.reviewerAddress;
-    milestone.recipientAddress = inputs.recipientAddress;
-
-    // if(!milestone.itemizeState) milestone.maxAmount = inputs.maxAmount;
+    milestone.maxAmount = maxAmount;
+    milestone.fiatAmount = maxAmount.times(conversionRate);
+    milestone.selectedFiatType = fiatType;
 
     this.setState({ milestone });
   }
 
-  changeSelectedFiat(fiatType) {
-    const { milestone } = this.state;    
-    const conversionRate = this.props.currentRate.rates[fiatType];
-    const maxAmount = milestone.fiatAmount.div(conversionRate)
-    
-    milestone.maxAmount = maxAmount;
-    milestone.fiatAmount = maxAmount.times(conversionRate)
-    milestone.selectedFiatType = fiatType
-
-    this.setState({ milestone: milestone })
-  }
-
   toggleFormValid(formState) {
     if (this.state.milestone.itemizeState) {
-      this.setState(prevState => ({ formIsValid: formState && prevState.milestone.items.length > 0 }));
+      this.setState(prevState => ({
+        formIsValid: formState && prevState.milestone.items.length > 0,
+      }));
     } else {
       this.setState({ formIsValid: formState });
     }
   }
 
-  submit(model) {
+  submit() {
     const { milestone } = this.state;
 
     const afterEmit = () => {
@@ -355,14 +294,15 @@ class EditMilestone extends Component {
         campaignReviewerAddress: this.state.campaignReviewerAddress,
         image: file,
         campaignId: this.state.campaignId,
-        status: this.props.isProposed || milestone.status === 'Rejected' ? 'Proposed' : milestone.status, // make sure not to change status!
+        status:
+          this.props.isProposed || milestone.status === 'Rejected' ? 'Proposed' : milestone.status, // make sure not to change status!
         items: milestone.items.map(i => i.getItem()),
         ethConversionRateTimestamp: this.props.currentRate.timestamp,
         selectedFiatType: milestone.selectedFiatType,
         date: milestone.date,
         fiatAmount: milestone.fiatAmount.toFixed(),
         conversionRate: this.props.currentRate.rates[milestone.selectedFiatType],
-        token: milestone.token
+        token: milestone.token,
       };
 
       // in itemized mode, we calculate the maxAmount from the items
@@ -383,9 +323,9 @@ class EditMilestone extends Component {
           feathersClient
             .service('milestones')
             .create(Object.assign({}, constructedModel, txData))
-            .then(milestone => {
+            .then(res => {
               afterEmit(true);
-              callback(milestone);
+              callback(res);
             })
             .catch(err => {
               this.setState({ isSaving: false, isBlocking: true });
@@ -403,11 +343,11 @@ class EditMilestone extends Component {
               totalDonated: '0',
               donationCount: 0,
             },
-            milestone => {
+            res => {
               GA.trackEvent({
                 category: 'Milestone',
                 action: 'proposed',
-                label: milestone._id,
+                label: res._id,
               });
               React.toast.info(<p>Your Milestone is being proposed to the Campaign Owner.</p>);
             },
@@ -475,11 +415,11 @@ class EditMilestone extends Component {
                       totalDonated: '0',
                       donationCount: '0',
                     },
-                    milestone => {
+                    resp => {
                       GA.trackEvent({
                         category: 'Milestone',
                         action: 'created',
-                        label: milestone._id,
+                        label: resp._id,
                       });
                       React.toast.info(
                         <p>
@@ -512,14 +452,15 @@ class EditMilestone extends Component {
                     </p>,
                   );
                 })
-                .catch((e) => {
+                .catch(e => {
                   ErrorPopup(
-                    'Something went wrong with the transaction. Is your wallet unlocked?', e
-                  );                  
-                })
+                    'Something went wrong with the transaction. Is your wallet unlocked?',
+                    e,
+                  );
+                });
             })
             .catch(err => {
-              console.log('err creating milestone > ', err)
+              console.log('err creating milestone > ', err);
               if (txHash && err.message && err.message.includes('unknown transaction')) return; // bug in web3 seems to constantly fail due to this error, but the tx is correct
               this.setState({ isSaving: false, isBlocking: true });
               ErrorPopup(
@@ -638,19 +579,52 @@ class EditMilestone extends Component {
   toggleItemize() {
     const { milestone } = this.state;
     milestone.itemizeState = !milestone.itemizeState;
-    this.setState({ milestone: milestone });
+    this.setState({ milestone });
   }
 
   setToken(address) {
     const { milestone } = this.state;
-    milestone.token = React.whitelist.tokenWhitelist.find(t => t.address === address)
-    this.setState({ milestone: milestone }, 
-      () => this.setDate(this.state.milestone.data || getStartOfDayUTC()));     
+    milestone.token = React.whitelist.tokenWhitelist.find(t => t.address === address);
+    this.setState({ milestone }, () =>
+      this.setDate(this.state.milestone.data || getStartOfDayUTC()),
+    );
+  }
+
+  mapInputs(inputs) {
+    const { milestone } = this.state;
+
+    milestone.title = inputs.title;
+    milestone.description = inputs.description;
+    milestone.reviewerAddress = inputs.reviewerAddress;
+    milestone.recipientAddress = inputs.recipientAddress;
+
+    // if(!milestone.itemizeState) milestone.maxAmount = inputs.maxAmount;
+
+    this.setState({ milestone });
+  }
+
+  removeItem(index) {
+    const { milestone } = this.state;
+    delete milestone.items[index];
+    milestone.items = milestone.items.filter(() => true);
+    this.setState({ milestone });
+  }
+
+  btnText() {
+    if (this.props.isNew) {
+      return this.props.isProposed ? 'Propose Milestone' : 'Create Milestone';
+    }
+    return 'Update Milestone';
+  }
+
+  addItem(item) {
+    const { milestone } = this.state;
+    milestone.items = milestone.items.concat(item);
+    this.setState({ milestone });
   }
 
   handleTemplateChange(option) {
     this.setState({
-      description: templates.templates[option],
       template: option,
     });
   }
@@ -874,22 +848,22 @@ class EditMilestone extends Component {
                           isEtherAddress: 'Please insert a valid Ethereum address.',
                         }}
                         required
-                        disabled={milestone.projectId}
+                        disabled={milestone.projectId !== undefined}
                       />
                     </div>
 
-                      <SelectFormsy
-                        name="token"
-                        id="token-select"
-                        label="Raising funds in"
-                        helpText="Select the token you're raising funds in"
-                        value={milestone.token && milestone.token.address}
-                        cta="--- Select a token ---"
-                        options={tokenWhitelistOptions}
-                        onChange={(address) => this.setToken(address)}
-                        required
-                        disabled={!isNew && !isProposed}
-                      />                    
+                    <SelectFormsy
+                      name="token"
+                      id="token-select"
+                      label="Raising funds in"
+                      helpText="Select the token you're raising funds in"
+                      value={milestone.token && milestone.token.address}
+                      cta="--- Select a token ---"
+                      options={tokenWhitelistOptions}
+                      onChange={address => this.setToken(address)}
+                      required
+                      disabled={!isNew && !isProposed}
+                    />
 
                     <div className="react-toggle-container">
                       <Toggle
@@ -920,7 +894,7 @@ class EditMilestone extends Component {
                                   isMoment: 'Please provide a date.',
                                 }}
                                 required={!milestone.itemizeState}
-                                disabled={milestone.projectId}
+                                disabled={milestone.projectId !== undefined}
                               />
                             </div>
                           </div>
@@ -934,13 +908,13 @@ class EditMilestone extends Component {
                                 type="number"
                                 step="any"
                                 label="Maximum amount in fiat"
-                                value={milestone.fiatAmount.toNumber()}
+                                value={milestone.fiatAmount.toString()}
                                 placeholder="10"
                                 validations="greaterThan:0"
                                 validationErrors={{
                                   greaterEqualTo: 'Minimum value must be greater than 0',
                                 }}
-                                disabled={milestone.projectId}
+                                disabled={milestone.projectId !== undefined}
                                 onChange={this.setMaxAmount}
                               />
                             </div>
@@ -955,7 +929,7 @@ class EditMilestone extends Component {
                                 helpText={`1 ${milestone.token.symbol} = ${
                                   currentRate.rates[milestone.selectedFiatType]
                                 } ${milestone.selectedFiatType}`}
-                                disabled={milestone.projectId}
+                                disabled={milestone.projectId !== undefined}
                                 required
                               />
                             </div>
@@ -968,14 +942,14 @@ class EditMilestone extends Component {
                                 type="number"
                                 step="any"
                                 label={`Maximum amount in ${milestone.token.name}`}
-                                value={milestone.maxAmount}
+                                value={milestone.maxAmount.toString()}
                                 placeholder="10"
                                 validations="greaterThan:0"
                                 validationErrors={{
                                   greaterEqualTo: 'Minimum value must be greater than 0',
                                 }}
                                 required
-                                disabled={milestone.projectId}
+                                disabled={milestone.projectId !== undefined}
                                 onChange={this.setFiatAmount}
                               />
                             </div>
@@ -989,7 +963,6 @@ class EditMilestone extends Component {
                         onItemsChanged={returnedItems => this.onItemsChanged(returnedItems)}
                         token={milestone.token}
                         milestoneStatus={milestone.status}
-
                       />
                     )}
 

@@ -1,8 +1,9 @@
 import React from 'react';
 import BigNumber from 'bignumber.js';
+import { utils } from 'web3';
+
 import { getStartOfDayUTC, getRandomWhitelistAddress } from 'lib/helpers';
 import BasicModel from './BasicModel';
-
 import MilestoneItemModel from './MilestoneItem';
 /**
  * The DApp Milestone model
@@ -13,17 +14,16 @@ export default class MilestoneModel extends BasicModel {
 
     const {
       id = data._id || undefined,
-      maxAmount = new BigNumber('0'),
+      maxAmount = '',
       selectedFiatType = 'EUR',
       fiatAmount = new BigNumber('0'),
       recipientAddress = '',
       status = MilestoneModel.PENDING,
-      projectId = '',
+      projectId = undefined,
       reviewerAddress = React.whitelist.reviewerWhitelist.length > 0
         ? getRandomWhitelistAddress(React.whitelist.reviewerWhitelist).address
         : '',
       items = [],
-      itemizeState = false,
       date = getStartOfDayUTC().subtract(1, 'd'),
       confirmations = 0,
       requiredConfirmations = 6,
@@ -37,16 +37,16 @@ export default class MilestoneModel extends BasicModel {
       reviewer,
     } = data;
 
-    this._maxAmount = maxAmount;
     this._selectedFiatType = selectedFiatType;
-    this._fiatAmount = fiatAmount;
+    this._maxAmount = new BigNumber(utils.fromWei(maxAmount));
+    this._fiatAmount = new BigNumber(fiatAmount);
     this._recipientAddress = recipientAddress;
     this._status = status;
     this._projectId = projectId;
     this._reviewerAddress = reviewerAddress;
-    this._items = items;
-    this._itemizeState = itemizeState;
-    this._date = date;
+    this._items = items.map(i => new MilestoneItemModel(i));
+    this._itemizeState = items && items.length > 0;
+    this._date = getStartOfDayUTC(date);
     this._id = id;
     this._confirmations = confirmations;
     this._requiredConfirmations = requiredConfirmations;
@@ -282,10 +282,10 @@ export default class MilestoneModel extends BasicModel {
   }
 
   get currentBalance() {
-    if (this._donationCounters.length > 0) {
+    if (this._donationCounters && this._donationCounters.length > 0) {
       return this._donationCounters[0].currentBalance;
     }
-    return '0';
+    return new BigNumber('0');
   }
 
   // transient

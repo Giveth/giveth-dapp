@@ -1,4 +1,7 @@
 import React from 'react';
+import BigNumber from 'bignumber.js';
+import { utils } from 'web3';
+
 import Model from './Model';
 import { getTruncatedText } from '../lib/helpers';
 
@@ -53,7 +56,11 @@ class BasicModel extends Model {
     this._donationCount = donationCount;
     this._peopleCount = peopleCount;
     this._fullyFunded = fullyFunded;
-    this._donationCounters = donationCounters;
+    this._donationCounters = donationCounters.map(c => {
+      c.totalDonated = new BigNumber(utils.fromWei(c.totalDonated));
+      c.currentBalance = new BigNumber(utils.fromWei(c.currentBalance));
+      return c;
+    });
     this._Order = -1;
     this._token = token;
     this._createdAt = createdAt;
@@ -142,7 +149,10 @@ class BasicModel extends Model {
   }
 
   get totalDonationCount() {
-    return this._donationCounters.reduce((count, token) => count + token.donationCount, 0);
+    return this._donationCounters.reduce(
+      (count, token) => count.plus(token.donationCount),
+      new BigNumber('0'),
+    );
   }
 
   get peopleCount() {

@@ -1,5 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import BigNumber from 'bignumber.js';
 import { convertEthHelper } from '../lib/helpers';
 
 /**
@@ -9,46 +10,47 @@ import { convertEthHelper } from '../lib/helpers';
  */
 const CardStats = ({ peopleCount, maxAmount, totalDonated, type, status, token }) => (
   <div className="row card-stats">
-
-    {['dac', 'campaign'].includes(type) &&  
+    {['dac', 'campaign'].includes(type) && (
       <div className="col-6 text-left">
         <p>Giver(s)</p>
         <span>
           <i className="fa fa-male" />
           {peopleCount}
-        </span>      
+        </span>
       </div>
-    }
+    )}
 
-    {type === 'milestone' &&  
+    {type === 'milestone' && (
       <div className="col-3 text-left">
         <p>Giver(s)</p>
         <span>
           <i className="fa fa-male" />
           {peopleCount}
-        </span>      
-      </div>
-    }
-
-    {['dac', 'campaign'].includes(type) &&
-      <div className="col-5 text-center card-center">
-        <span>
-          <p>Donations</p>                  
-          <p>{totalDonated}</p>
         </span>
       </div>
-    }
+    )}
 
-    {type === 'milestone' &&
+    {['dac', 'campaign'].includes(type) && (
       <div className="col-5 text-center card-center">
-        {maxAmount &&
-          <span>
-            <p>Requested</p>                  
-            <p>{convertEthHelper(maxAmount )} {token.symbol}</p>
-          </span>
-        }
+        <span>
+          <p>Donations</p>
+          <p>{totalDonated.toString()}</p>
+        </span>
       </div>
-    }
+    )}
+
+    {type === 'milestone' && (
+      <div className="col-5 text-center card-center">
+        {maxAmount && (
+          <span>
+            <p>Requested</p>
+            <p>
+              {convertEthHelper(maxAmount)} {token.symbol}
+            </p>
+          </span>
+        )}
+      </div>
+    )}
 
     {type === 'milestone' && (
       <div className="col-4 text-right">
@@ -56,10 +58,9 @@ const CardStats = ({ peopleCount, maxAmount, totalDonated, type, status, token }
         <span>
           <i className="fa fa-check-circle" />
           {status}
-        </span>          
+        </span>
       </div>
     )}
-
   </div>
 );
 
@@ -67,17 +68,15 @@ CardStats.propTypes = {
   type: PropTypes.string.isRequired,
   peopleCount: PropTypes.number.isRequired,
   status: PropTypes.string,
-  maxAmount: PropTypes.string,
-  totalDonated: PropTypes.string,
-  currentBalance: PropTypes.string,
-  token: PropTypes.object
+  maxAmount: PropTypes.instanceOf(BigNumber),
+  totalDonated: PropTypes.instanceOf(BigNumber),
+  token: PropTypes.shape().isRequired,
 };
 
 CardStats.defaultProps = {
   status: 'In Progress',
-  maxAmount: undefined,
-  totalDonated: undefined,
-  currentBalance: undefined,
+  maxAmount: new BigNumber('0'),
+  totalDonated: new BigNumber('0'),
 };
 
 export default CardStats;

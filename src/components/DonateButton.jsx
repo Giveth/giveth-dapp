@@ -5,12 +5,17 @@ import { utils } from 'web3';
 import { Form, Input } from 'formsy-react-components';
 import { Link } from 'react-router-dom';
 import Toggle from 'react-toggle';
+import BigNumber from 'bignumber.js';
 
 import GA from 'lib/GoogleAnalytics';
 import getNetwork from '../lib/blockchain/getNetwork';
 import User from '../models/User';
 import { getGasPrice } from '../lib/helpers';
-import { getHomeWeb3, getERC20TokenBalance, approveERC20tokenTransfer } from '../lib/blockchain/getWeb3';
+import {
+  getHomeWeb3,
+  getERC20TokenBalance,
+  approveERC20tokenTransfer,
+} from '../lib/blockchain/getWeb3';
 import LoaderButton from './LoaderButton';
 import ErrorPopup from './ErrorPopup';
 import config from '../configuration';
@@ -34,13 +39,13 @@ const modalStyles = {
 const _getTokenWhitelist = () => {
   const r = React.whitelist.tokenWhitelist;
   return r.map(t => {
-    if(t.symbol === 'ETH') {
-      t.name = `${config.homeNetworkName} ETH`
-    }  
-    t.balance = "0"
+    if (t.symbol === 'ETH') {
+      t.name = `${config.homeNetworkName} ETH`;
+    }
+    t.balance = '0';
     return t;
-  })
-}
+  });
+};
 
 Modal.setAppElement('#root');
 
@@ -53,8 +58,8 @@ class DonateButton extends React.Component {
     super(props);
 
     // set initial balance
-    const modelToken = props.model.token
-    modelToken.balance = "0"
+    const modelToken = props.model.token;
+    modelToken.balance = '0';
 
     this.state = {
       isSaving: false,
@@ -72,13 +77,20 @@ class DonateButton extends React.Component {
         props.currentUser && props.currentUser.address ? props.currentUser.address : undefined,
       tokenWhitelistOptions: _getTokenWhitelist().map(t => ({
         value: t.address,
-        title: t.name
-      })),  
-      selectedToken: props.model.type === "milestone" ? modelToken : _getTokenWhitelist().find(t => t.symbol === "ETH")           
+        title: t.name,
+      })),
+      selectedToken:
+        props.model.type === 'milestone'
+          ? modelToken
+          : _getTokenWhitelist().find(t => t.symbol === 'ETH'),
     };
 
     this.submit = this.submit.bind(this);
     this.openDialog = this.openDialog.bind(this);
+  }
+
+  componentWillMount() {
+    if (this._interval) clearInterval(this._interval);
   }
 
   componentDidMount() {
@@ -87,15 +99,32 @@ class DonateButton extends React.Component {
     });
   }
 
-  componentWillMount() {
-    if(this._interval) clearInterval(this._interval);
+  setToken(address) {
+    this.setState({ selectedToken: _getTokenWhitelist().find(t => t.address === address) }, () =>
+      this.pollWallet(),
+    );
   }
 
+  getDonationData() {
+    const { givethBridge, account } = this.state;
+    const { currentUser } = this.props;
+    const { adminId } = this.props.model;
+
+    if (currentUser) {
+      // TODO do we want to donate in the name of the rinkeby account automatically?
+      return currentUser.giverId > 0
+        ? givethBridge.$contract.methods.donate(currentUser.giverId, adminId).encodeABI()
+        : givethBridge.$contract.methods
+            .donateAndCreateGiver(currentUser.address, adminId)
+            .encodeABI();
+    }
+    return givethBridge.$contract.methods.donateAndCreateGiver(account, adminId).encodeABI();
+  }
 
   pollWallet() {
     const { selectedToken } = this.state;
     let _init = true;
-    if(this._interval) clearInterval(this._interval);
+    if (this._interval) clearInterval(this._interval);
 
     getHomeWeb3().then(homeWeb3 => {
       this.setState({
@@ -119,17 +148,17 @@ class DonateButton extends React.Component {
             }
           });
 
-          if(selectedToken.symbol === "ETH") {
+          if (selectedToken.symbol === 'ETH') {
             homeWeb3.eth.getAccounts().then(accounts => {
               if (this.state.account !== accounts[0] || _init) {
                 [account] = accounts;
 
                 if (account) {
                   homeWeb3.eth.getBalance(account).then(bal => {
-                    selectedToken.balance = homeWeb3.utils.fromWei(bal)
-                    
+                    selectedToken.balance = homeWeb3.utils.fromWei(bal);
+
                     this.setState({
-                      selectedToken: selectedToken,
+                      selectedToken,
                       account,
                     });
                   });
@@ -146,28 +175,26 @@ class DonateButton extends React.Component {
 
                 if (account) {
                   getERC20TokenBalance(selectedToken.address, account)
-                  .then(bal => {
-                    selectedToken.balance = bal
-                    this.setState({
-                      selectedToken: selectedToken,
-                      account
-                    })   
-                  })
-                  .catch(err => {
-                    selectedToken.balance = "0"
-                    this.setState({
-                      selectedToken: selectedToken,
-                      account
-                    }) 
+                    .then(bal => {
+                      selectedToken.balance = bal;
+                      this.setState({
+                        selectedToken,
+                        account,
+                      });
+                    })
+                    .catch(err => {
+                      selectedToken.balance = '0';
+                      this.setState({
+                        selectedToken,
+                        account,
+                      });
 
-                    ErrorPopup(
-                      'Error getting your token balance', err
-                    );                                  
-                  })
+                      ErrorPopup('Error getting your token balance', err);
+                    });
                 }
               }
               _init = false;
-            })
+            });
           }
         };
         this._interval = setInterval(poll, 1000);
@@ -182,34 +209,12 @@ class DonateButton extends React.Component {
     );
   }
 
-  setToken(address) {
-    this.setState({ selectedToken: _getTokenWhitelist().find(t => t.address === address) }, () => 
-      this.pollWallet()
-    );
-  }  
-
-  getDonationData() {
-    const { givethBridge, account } = this.state;
-    const { currentUser } = this.props;
-    const { adminId } = this.props.model;
-
-    if (currentUser) {
-      // TODO do we want to donate in the name of the rinkeby account automatically?
-      return currentUser.giverId > 0
-        ? givethBridge.$contract.methods.donate(currentUser.giverId, adminId).encodeABI()
-        : givethBridge.$contract.methods
-            .donateAndCreateGiver(currentUser.address, adminId)
-            .encodeABI();
-    }
-    return givethBridge.$contract.methods.donateAndCreateGiver(account, adminId).encodeABI();
-  }
-
   toggleFormValid(state) {
     this.setState({ formIsValid: state });
   }
 
   closeDialog() {
-    clearInterval(this._interval)
+    clearInterval(this._interval);
     this.setState({
       modalVisible: false,
       amount: '',
@@ -218,12 +223,13 @@ class DonateButton extends React.Component {
   }
 
   openDialog() {
-    this.setState({
-      modalVisible: true,
-      amount: '',
-      formIsValid: false,
-    }, () =>
-      this.pollWallet()
+    this.setState(
+      {
+        modalVisible: true,
+        amount: '',
+        formIsValid: false,
+      },
+      () => this.pollWallet(),
     );
   }
 
@@ -238,7 +244,7 @@ class DonateButton extends React.Component {
     const { account, givethBridge, etherscanUrl, showCustomAddress, selectedToken } = this.state;
 
     const value = utils.toWei(model.amount);
-    const isDonationInToken = selectedToken.symbol !== 'ETH'
+    const isDonationInToken = selectedToken.symbol !== 'ETH';
     const tokenAddress = isDonationInToken ? selectedToken.address : 0;
 
     const _makeDonationTx = async () => {
@@ -246,10 +252,9 @@ class DonateButton extends React.Component {
       let donationUser;
       let opts;
 
-      if(isDonationInToken)
-        opts = { from: account, gas: 100000 }; // actually uses 84766, but runs out of gas if exact
-      else
-        opts = { value, gas: DONATION_GAS, from: account };
+      if (isDonationInToken) opts = { from: account, gas: 100000 };
+      // actually uses 84766, but runs out of gas if exact
+      else opts = { value, gas: DONATION_GAS, from: account };
 
       if (showCustomAddress) {
         // Donating on behalf of another user or address
@@ -259,11 +264,23 @@ class DonateButton extends React.Component {
             method = givethBridge.donate(user.giverId, adminId, tokenAddress, value, opts);
             donationUser = user;
           } else {
-            givethBridge.donateAndCreateGiver(model.customAddress, adminId, tokenAddress, value, opts);
+            givethBridge.donateAndCreateGiver(
+              model.customAddress,
+              adminId,
+              tokenAddress,
+              value,
+              opts,
+            );
             donationUser = { address: model.customAddress };
           }
         } catch (e) {
-          givethBridge.donateAndCreateGiver(model.customAddress, adminId, tokenAddress, value, opts);
+          givethBridge.donateAndCreateGiver(
+            model.customAddress,
+            adminId,
+            tokenAddress,
+            value,
+            opts,
+          );
           donationUser = { address: model.customAddress };
         }
       } else if (currentUser) {
@@ -271,7 +288,13 @@ class DonateButton extends React.Component {
         method =
           currentUser.giverId > 0
             ? givethBridge.donate(currentUser.giverId, adminId, tokenAddress, value, opts)
-            : givethBridge.donateAndCreateGiver(currentUser.address, adminId, tokenAddress, value, opts);
+            : givethBridge.donateAndCreateGiver(
+                currentUser.address,
+                adminId,
+                tokenAddress,
+                value,
+                opts,
+              );
         donationUser = currentUser;
       } else {
         // Donating without any user
@@ -284,7 +307,13 @@ class DonateButton extends React.Component {
         .on('transactionHash', async transactionHash => {
           txHash = transactionHash;
           this.closeDialog();
-          await DonationService.newFeathersDonation(donationUser, this.props.model, value, selectedToken, txHash);
+          await DonationService.newFeathersDonation(
+            donationUser,
+            this.props.model,
+            value,
+            selectedToken,
+            txHash,
+          );
 
           this.setState({
             modalVisible: false,
@@ -329,43 +358,43 @@ class DonateButton extends React.Component {
               `${etherscanUrl}tx/${txHash} => ${err}`,
             );
           } else {
-            React.toast.info("The transaction was cancelled. No donation has been made :-(")
+            React.toast.info('The transaction was cancelled. No donation has been made :-(');
           }
           this.setState({
             isSaving: false,
           });
         });
-
-    }
-
+    };
 
     // if donating in token, first approve transfer of token by bridge
-    if(isDonationInToken) {
+    if (isDonationInToken) {
       approveERC20tokenTransfer(etherscanUrl, tokenAddress, account, value)
-        .then( res => {
-          if(res === 'approved') {
-            _makeDonationTx()
+        .then(res => {
+          if (res === 'approved') {
+            _makeDonationTx();
           } else {
             this.setState({
               isSaving: false,
-            });   
-            React.toast.error('Something went wrong with your donation. Could not approve token allowance.')
+            });
+            React.toast.error(
+              'Something went wrong with your donation. Could not approve token allowance.',
+            );
           }
         })
-        .catch( err => {
+        .catch(err => {
           this.setState({
             isSaving: false,
-          });   
+          });
 
-          if(err.message !== 'cancelled') {
+          if (err.message !== 'cancelled') {
             ErrorPopup(
               'Something went wrong with your donation. Could not approve token allowance.',
-              err
-            );          
+              err,
+            );
           }
-        })
+        });
     } else {
-      _makeDonationTx()
+      _makeDonationTx();
     }
   }
 
@@ -384,20 +413,21 @@ class DonateButton extends React.Component {
       customAddress,
       showCustomAddress,
       tokenWhitelistOptions,
-      selectedToken,      
+      selectedToken,
     } = this.state;
     const style = {
       display: 'inline-block',
     };
 
     // Determine max amount
-    let maxAmount = 10000000000000000;
-    if (homeWeb3) maxAmount = selectedToken.balance;
+    let maxAmount = new BigNumber(10000000000000000);
+    if (homeWeb3) maxAmount = new BigNumber(utils.fromWei(selectedToken.balance));
+
     if (
       this.props.maxAmount &&
-      utils.toBN(this.props.maxAmount).lt(utils.toBN(utils.toWei(selectedToken.balance.toString())))
+      maxAmount.lt(utils.toBN(utils.toWei(selectedToken.balance.toString())))
     )
-      maxAmount = utils.fromWei(this.props.maxAmount);
+      maxAmount = this.props.maxAmount.toString();
 
     return (
       <span style={style}>
@@ -410,7 +440,6 @@ class DonateButton extends React.Component {
           contentLabel={`Support this ${model.type}!`}
           style={modalStyles}
         >
-
           <Form
             onSubmit={this.submit}
             mapping={inputs => ({ amount: inputs.amount, customAddress: inputs.customAddress })}
@@ -418,8 +447,6 @@ class DonateButton extends React.Component {
             onInvalid={() => this.toggleFormValid(false)}
             layout="vertical"
           >
-
-
             <h3>
               Donate to support <em>{model.title}</em>
             </h3>
@@ -445,14 +472,14 @@ class DonateButton extends React.Component {
             {homeWeb3 &&
               homeWeb3.givenProvider &&
               account &&
-              validNetwork && 
+              validNetwork &&
               model.type !== 'milestone' &&
-              (
+              `
                 <p>
-                  You're pledging: as long as the {model.type} owner does not lock your money you can take it back
-                  any time.
+                  You're pledging: as long as the ${model.type} owner does not lock your money you
+                  can take it back any time.
                 </p>
-              )}
+              `}
 
             {homeWeb3 &&
               homeWeb3.givenProvider &&
@@ -467,7 +494,7 @@ class DonateButton extends React.Component {
               account &&
               validNetwork && (
                 <p>
-                  { model.type !== "milestone" && 
+                  {model.type !== 'milestone' && (
                     <SelectFormsy
                       name="token"
                       id="token-select"
@@ -476,15 +503,12 @@ class DonateButton extends React.Component {
                       value={selectedToken.address}
                       cta="--- Select ---"
                       options={tokenWhitelistOptions}
-                      onChange={(address) => this.setToken(address)}
-                      disabled={model.type === "milestone"}
-                    /> 
-                  }   
-
+                      onChange={address => this.setToken(address)}
+                      disabled={model.type === 'milestone'}
+                    />
+                  )}
                   {config.homeNetworkName} {selectedToken.symbol} balance:&nbsp;
-                  <em>
-                    {selectedToken.balance}
-                  </em>
+                  <em>{selectedToken.balance}</em>
                   <br />
                   Gas price: <em>{gasPrice} Gwei</em>
                 </p>
@@ -505,7 +529,9 @@ class DonateButton extends React.Component {
                 }}
                 validationErrors={{
                   greaterThan: `Minimum value must be at least ${selectedToken.symbol}0.01`,
-                  lessOrEqualTo: `This donation exceeds your wallet balance or the milestone max amount: ${maxAmount} ${selectedToken.symbol}.`,
+                  lessOrEqualTo: `This donation exceeds your wallet balance or the milestone max amount: ${maxAmount} ${
+                    selectedToken.symbol
+                  }.`,
                 }}
                 required
                 autoFocus
@@ -604,7 +630,7 @@ class DonateButton extends React.Component {
                   }&data=${this.getDonationData()}&value=${amount}&gasLimit=${DONATION_GAS}#send-transaction`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  style={{marginLeft: "8px"}}
+                  style={{ marginLeft: '8px' }}
                 >
                   Donate via MyCrypto
                 </a>
@@ -623,13 +649,14 @@ DonateButton.propTypes = {
     id: PropTypes.string.isRequired,
     title: PropTypes.string.isRequired,
     campaignId: PropTypes.string,
+    token: PropTypes.shape().isRequired,
   }).isRequired,
   currentUser: PropTypes.instanceOf(User),
-  maxAmount: PropTypes.string,
+  maxAmount: PropTypes.instanceOf(BigNumber),
 };
 
 DonateButton.defaultProps = {
-  maxAmount: undefined,
+  maxAmount: new BigNumber('0'),
   currentUser: undefined,
 };
 

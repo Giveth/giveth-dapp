@@ -999,12 +999,10 @@ class MyMilestones extends Component {
                                     0}
                                 </td>
                                 <td className="td-donations-">
-                                  {convertEthHelper(
-                                    (m.donationCounters &&
-                                      m.donationCounters.length &&
-                                      m.donationCounters[0].currentBalance) ||
-                                      '0',
-                                  )}{' '}
+                                  {(m.donationCounters &&
+                                    m.donationCounters.length &&
+                                    convertEthHelper(m.donationCounters[0].currentBalance)) ||
+                                    0}{' '}
                                   {m.token.symbol}
                                 </td>
                                 <td className="td-reviewer">

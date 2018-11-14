@@ -30,7 +30,7 @@ class MilestoneItem extends React.Component {
         <td className="td-item-description">{getTruncatedText(item.description)}</td>
 
         <td className="td-item-amount-fiat">
-          {item.selectedFiatType} {item.fiatAmount}
+          {item.selectedFiatType} {item.fiatAmount.toString()}
           <br />
           <span className="help-block">
             {`1 ${token.name} = ${item.conversionRate} ${item.selectedFiatType}`}
@@ -75,6 +75,7 @@ MilestoneItem.propTypes = {
   removeItem: PropTypes.func,
   item: PropTypes.instanceOf(Item).isRequired,
   isEditMode: PropTypes.bool,
+  token: PropTypes.shape().isRequired,
 };
 
 MilestoneItem.defaultProps = {
