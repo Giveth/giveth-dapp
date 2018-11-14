@@ -25,7 +25,7 @@ class MyDACs extends Component {
       dacs: {},
       visiblePages: 10,
       skipPages: 0,
-      itemsPerPage: 1,
+      itemsPerPage: 50,
     };
 
     this.editDAC = this.editDAC.bind(this);

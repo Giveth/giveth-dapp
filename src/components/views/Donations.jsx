@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 // import _ from 'underscore';
 import moment from 'moment';
+import Pagination from 'react-js-pagination';
 
 import Loader from '../Loader';
 import { convertEthHelper } from '../../lib/helpers';
@@ -9,6 +10,7 @@ import { Consumer as UserConsumer } from '../../contextProviders/UserProvider';
 import DonationProvider, {
   Consumer as DonationConsumer,
 } from '../../contextProviders/DonationProvider';
+
 /**
  * The my donations view
  */
@@ -18,8 +20,16 @@ const Donations = () => (
       <DonationProvider currentUser={currentUser} wallet={wallet}>
         <DonationConsumer>
           {({
-            state: { isLoading, donations, etherScanUrl },
-            actions: { refund, commit, reject },
+            state: {
+              isLoading,
+              donations,
+              etherScanUrl,
+              totalResults,
+              visiblePages,
+              skipPages,
+              itemsPerPage,
+            },
+            actions: { refund, commit, reject, handlePageChanged },
           }) => (
             <div id="donations-view">
               <div className="container-fluid page-layout dashboard-table-view">
@@ -135,7 +145,18 @@ const Donations = () => (
                               </tbody>
                             </table>
                           )}
-
+                        {donations &&
+                          donations.length >= itemsPerPage && (
+                            <center>
+                              <Pagination
+                                activePage={skipPages + 1}
+                                itemsCountPerPage={itemsPerPage}
+                                totalItemsCount={totalResults}
+                                pageRangeDisplayed={visiblePages}
+                                onChange={handlePageChanged}
+                              />
+                            </center>
+                          )}
                         {donations.length === 0 && (
                           <div>
                             <center>

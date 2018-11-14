@@ -35,11 +35,17 @@ class DonationProvider extends Component {
       donations: [],
       isLoading: true,
       etherScanUrl: undefined,
+      visiblePages: 10,
+      itemsPerPage: 50,
+      skipPages: 0,
+      totalResults: 0,
     };
 
     this.refund = this.refund.bind(this);
     this.commit = this.commit.bind(this);
     this.reject = this.reject.bind(this);
+    this.handlePageChanged = this.handlePageChanged.bind(this);
+    this.loadDonations = this.loadDonations.bind(this);
   }
 
   componentWillMount() {
@@ -47,39 +53,48 @@ class DonationProvider extends Component {
 
     // Get the donations for current user
     if (this.props.currentUser) {
-      this.donationsObserver = feathersClient
-        .service('donations')
-        .watch({ listStrategy: 'always' })
-        .find(
-          paramsForServer({
-            schema: 'includeTypeDetails',
-            query: {
-              giverAddress: this.props.currentUser.address,
-              amountRemaining: { $ne: 0 },
-              $limit: 100,
-            },
-          }),
-        )
-        .subscribe(
-          resp => {
-            this.setState({
-              donations: resp.data.map(d => new Donation(d)),
-              isLoading: false,
-            });
-          },
-          e => {
-            this.setState({
-              isLoading: false,
-            });
-            ErrorPopup('Unable to retrieve donations from the server', e);
-          },
-        );
+      this.loadDonations();
     }
   }
 
   componentWillUnmount() {
     // Clean up the observers
     if (this.donationsObserver) this.donationsObserver.unsubscribe();
+  }
+
+  // Function to fetch donations of the current user.
+  loadDonations() {
+    this.donationsObserver = feathersClient
+      .service('donations')
+      .watch({ listStrategy: 'always' })
+      .find(
+        paramsForServer({
+          schema: 'includeTypeDetails',
+          query: {
+            giverAddress: this.props.currentUser.address,
+            amountRemaining: { $ne: 0 },
+            $limit: this.state.itemsPerPage,
+            $skip: this.state.skipPages * this.state.itemsPerPage,
+          },
+        }),
+      )
+      .subscribe(
+        resp => {
+          this.setState({
+            donations: resp.data.map(d => new Donation(d)),
+            itemsPerPage: resp.limit,
+            skipPages: resp.skip,
+            totalResults: resp.total,
+            isLoading: false,
+          });
+        },
+        e => {
+          this.setState({
+            isLoading: false,
+          });
+          ErrorPopup('Unable to retrieve donations from the server', e);
+        },
+      );
   }
 
   /**
@@ -242,9 +257,21 @@ class DonationProvider extends Component {
     });
   }
 
+  handlePageChanged(newPage) {
+    this.setState({ skipPages: newPage - 1 }, () => this.loadDonations());
+  }
+
   render() {
-    const { donations, isLoading, etherScanUrl } = this.state;
-    const { refund, commit, reject } = this;
+    const {
+      donations,
+      isLoading,
+      etherScanUrl,
+      itemsPerPage,
+      visiblePages,
+      totalResults,
+      skipPages,
+    } = this.state;
+    const { refund, commit, reject, handlePageChanged } = this;
 
     return (
       <Provider
@@ -253,11 +280,16 @@ class DonationProvider extends Component {
             donations,
             isLoading,
             etherScanUrl,
+            itemsPerPage,
+            visiblePages,
+            totalResults,
+            skipPages,
           },
           actions: {
             refund,
             commit,
             reject,
+            handlePageChanged,
           },
         }}
       >
