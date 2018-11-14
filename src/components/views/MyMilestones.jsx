@@ -104,7 +104,7 @@ const reviewDue = updatedAt =>
     .isAfter(moment(updatedAt));
 
 /**
- * The my campaings view
+ * The my milestones view
  */
 class MyMilestones extends Component {
   constructor(props) {
