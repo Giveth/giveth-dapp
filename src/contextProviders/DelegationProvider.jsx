@@ -32,9 +32,14 @@ class DelegationProvider extends Component {
       campaigns: [],
       milestones: [],
       isLoading: true,
+      visiblePages: 10,
+      itemsPerPage: 50,
+      skipPages: 0,
+      totalResults: 0,
     };
 
     this.getAndWatchDonations = this.getAndWatchDonations.bind(this);
+    this.handlePageChanged = this.handlePageChanged.bind(this);
   }
 
   componentWillMount() {
@@ -210,6 +215,8 @@ class DelegationProvider extends Component {
           // },
         ],
         $sort: { createdAt: 1 },
+        $limit: this.state.itemsPerPage,
+        $skip: this.state.skipPages * this.state.itemsPerPage,
       },
       schema: 'includeTypeAndGiverDetails',
     });
@@ -223,6 +230,9 @@ class DelegationProvider extends Component {
         resp => {
           this.setState({
             delegations: resp.data.map(d => new Donation(d)),
+            itemsPerPage: resp.limit,
+            skipPages: resp.skip,
+            totalResults: resp.total,
             isLoading: false,
           });
         },
@@ -230,9 +240,23 @@ class DelegationProvider extends Component {
       );
   }
 
+  handlePageChanged(newPage) {
+    this.setState({ skipPages: newPage - 1 }, () => this.getAndWatchDonations());
+  }
+
   render() {
-    const { delegations, milestones, campaigns, isLoading, etherScanUrl } = this.state;
-    const { refund, commit, reject } = this;
+    const {
+      delegations,
+      milestones,
+      campaigns,
+      isLoading,
+      etherScanUrl,
+      itemsPerPage,
+      visiblePages,
+      totalResults,
+      skipPages,
+    } = this.state;
+    const { refund, commit, reject, handlePageChanged } = this;
 
     return (
       <Provider
@@ -243,11 +267,16 @@ class DelegationProvider extends Component {
             campaigns,
             isLoading,
             etherScanUrl,
+            itemsPerPage,
+            visiblePages,
+            totalResults,
+            skipPages,
           },
           actions: {
             refund,
             commit,
             reject,
+            handlePageChanged,
           },
         }}
       >

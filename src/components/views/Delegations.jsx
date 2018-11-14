@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import Avatar from 'react-avatar';
 import moment from 'moment';
+import Pagination from 'react-js-pagination';
 
 import Loader from '../Loader';
 import DelegateButton from '../DelegateButton';
@@ -20,7 +21,19 @@ const Delegations = () => (
     {({ state: { currentUser, wallet } }) => (
       <DelegationProvider currentUser={currentUser} wallet={wallet}>
         <DelegationConsumer>
-          {({ state: { isLoading, delegations, campaigns, milestones } }) => (
+          {({
+            state: {
+              isLoading,
+              delegations,
+              campaigns,
+              milestones,
+              totalResults,
+              visiblePages,
+              skipPages,
+              itemsPerPage,
+            },
+            actions: { handlePageChanged },
+          }) => (
             <div id="delegations-view">
               <div className="container-fluid page-layout dashboard-table-view">
                 <div className="row">
@@ -110,7 +123,18 @@ const Delegations = () => (
                               </table>
                             </div>
                           )}
-
+                        {delegations &&
+                          delegations.length >= itemsPerPage && (
+                            <center>
+                              <Pagination
+                                activePage={skipPages + 1}
+                                itemsCountPerPage={itemsPerPage}
+                                totalItemsCount={totalResults}
+                                pageRangeDisplayed={visiblePages}
+                                onChange={handlePageChanged}
+                              />
+                            </center>
+                          )}
                         {delegations &&
                           delegations.length === 0 && (
                             <div>
