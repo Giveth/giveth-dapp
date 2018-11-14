@@ -25,10 +25,11 @@ class MyDACs extends Component {
       dacs: {},
       visiblePages: 10,
       skipPages: 0,
-      itemsPerPage: 50,
+      itemsPerPage: 1,
     };
 
     this.editDAC = this.editDAC.bind(this);
+    this.handlePageChanged = this.handlePageChanged.bind(this);
   }
 
   componentDidMount() {
@@ -148,12 +149,12 @@ class MyDACs extends Component {
                           </tbody>
                         </table>
 
-                        {dacs.data.length > dacs.itemsPerPage && (
+                        {dacs.data.length >= dacs.limit && (
                           <center>
                             <Pagination
-                              activePage={dacs.skipPages + 1}
-                              itemsCountPerPage={dacs.itemsPerPage}
-                              totalItemsCount={dacs.totalResults}
+                              activePage={dacs.skip + 1}
+                              itemsCountPerPage={dacs.limit}
+                              totalItemsCount={dacs.total}
                               pageRangeDisplayed={visiblePages}
                               onChange={this.handlePageChanged}
                             />
