@@ -1,3 +1,4 @@
+/* eslint-disable react/no-unescaped-entities */
 import React from 'react';
 import PropTypes from 'prop-types';
 import Modal from 'react-modal';
@@ -155,7 +156,7 @@ class DonateButton extends React.Component {
 
                 if (account) {
                   homeWeb3.eth.getBalance(account).then(bal => {
-                    selectedToken.balance = homeWeb3.utils.fromWei(bal);
+                    selectedToken.balance = utils.fromWei(bal);
 
                     this.setState({
                       selectedToken,
@@ -399,7 +400,7 @@ class DonateButton extends React.Component {
   }
 
   render() {
-    const { model, currentUser } = this.props;
+    const { model, currentUser, maxAmount } = this.props;
     const {
       homeWeb3,
       account,
@@ -415,19 +416,19 @@ class DonateButton extends React.Component {
       tokenWhitelistOptions,
       selectedToken,
     } = this.state;
+
     const style = {
       display: 'inline-block',
     };
 
-    // Determine max amount
-    let maxAmount = new BigNumber(10000000000000000);
-    if (homeWeb3) maxAmount = new BigNumber(utils.fromWei(selectedToken.balance));
+    // Determines max amount based on wallet balance or milestone maxAmount
+    const _getMaxAmount = () => {
+      let _maxAmount = maxAmount;
+      if (homeWeb3) _maxAmount = new BigNumber(selectedToken.balance);
+      if (maxAmount.lt(new BigNumber(selectedToken.balance))) _maxAmount = this.props.maxAmount;
 
-    if (
-      this.props.maxAmount &&
-      maxAmount.lt(utils.toBN(utils.toWei(selectedToken.balance.toString())))
-    )
-      maxAmount = this.props.maxAmount.toString();
+      return _maxAmount.toNumber();
+    };
 
     return (
       <span style={style}>
@@ -473,13 +474,12 @@ class DonateButton extends React.Component {
               homeWeb3.givenProvider &&
               account &&
               validNetwork &&
-              model.type !== 'milestone' &&
-              `
+              model.type !== 'milestone' && (
                 <p>
-                  You're pledging: as long as the ${model.type} owner does not lock your money you
+                  You're pledging: as long as the {model.type} owner does not lock your money you
                   can take it back any time.
                 </p>
-              `}
+              )}
 
             {homeWeb3 &&
               homeWeb3.givenProvider &&
@@ -524,12 +524,12 @@ class DonateButton extends React.Component {
                 value={amount}
                 placeholder="1"
                 validations={{
-                  lessOrEqualTo: maxAmount,
+                  lessOrEqualTo: _getMaxAmount(),
                   greaterThan: 0.009,
                 }}
                 validationErrors={{
                   greaterThan: `Minimum value must be at least ${selectedToken.symbol}0.01`,
-                  lessOrEqualTo: `This donation exceeds your wallet balance or the milestone max amount: ${maxAmount} ${
+                  lessOrEqualTo: `This donation exceeds your wallet balance or the milestone max amount: ${_getMaxAmount()} ${
                     selectedToken.symbol
                   }.`,
                 }}
@@ -656,8 +656,8 @@ DonateButton.propTypes = {
 };
 
 DonateButton.defaultProps = {
-  maxAmount: new BigNumber('0'),
   currentUser: undefined,
+  maxAmount: new BigNumber(10000000000000000),
 };
 
 export default DonateButton;
