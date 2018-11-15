@@ -10,7 +10,7 @@ import { Input, Form } from 'formsy-react-components';
 import { utils } from 'web3';
 
 import getEthConversionContext from 'containers/getEthConversionContext';
-import MilestoneItemModel from 'models/MilestoneItemModel';
+import MilestoneItem from 'models/MilestoneItem';
 import FormsyImageUploader from './FormsyImageUploader';
 import RateConvertor from './RateConvertor';
 
@@ -36,7 +36,7 @@ class AddMilestoneItemModal extends Component {
     this.form = React.createRef();
 
     this.state = {
-      item: new MilestoneItemModel({}),
+      item: new MilestoneItem({}),
       formIsValid: false,
     };
     this.setImage = this.setImage.bind(this);
@@ -60,7 +60,7 @@ class AddMilestoneItemModal extends Component {
   mapInputs(inputs) {
     const { item } = this.state;
 
-    // set values on MilestoneItemModel
+    // set values on MilestoneItem
     item.date = inputs.date.format();
     item.description = inputs.description;
     item.image = item.image;
@@ -80,7 +80,7 @@ class AddMilestoneItemModal extends Component {
 
   reset() {
     this.setState({
-      item: new MilestoneItemModel({}),
+      item: new MilestoneItem({}),
       formIsValid: false,
     });
   }
@@ -89,16 +89,16 @@ class AddMilestoneItemModal extends Component {
     // Formsy doesn't like nesting, even when using Portals
     // So we're manually fetching and submitting the model
 
-    // We need to call getModel here to set values on the MilestoneItemModel
+    // We need to call getModel here to set values on the MilestoneItem
     this.form.current.formsyForm.getModel();
 
-    // Get MilestoneItemModel
-    this.props.onAddItem(this.state.item.getItem());
+    // Get MilestoneItem
+    this.props.onAddItem(this.state.item);
     this.reset();
   }
 
   render() {
-    const { openModal } = this.props;
+    const { openModal, token } = this.props;
     const { formIsValid, item, isBlocking } = this.state;
 
     return (
@@ -142,7 +142,7 @@ class AddMilestoneItemModal extends Component {
             </div>
           </div>
 
-          <RateConvertor />
+          <RateConvertor token={token}/>
 
           <FormsyImageUploader
             name="image"

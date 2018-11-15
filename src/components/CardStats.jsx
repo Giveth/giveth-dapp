@@ -7,39 +7,59 @@ import { convertEthHelper } from '../lib/helpers';
  *
  * TODO: Check the properties that are passed, sometimes they are number, sometimes strings...
  */
-const CardStats = ({ peopleCount, maxAmount, totalDonated, currentBalance, type, status }) => (
+const CardStats = ({ peopleCount, maxAmount, totalDonated, type, status, token }) => (
   <div className="row card-stats">
-    <div className="col-4 text-left">
-      <span>
-        <i className="fa fa-male" />
-        {peopleCount}
-      </span>
-      <p>Giver(s)</p>
-    </div>
 
-    <div className="col-4 text-center card-center">
-      {maxAmount && <p>Amount requested:{convertEthHelper(maxAmount)} ETH</p>}
+    {['dac', 'campaign'].includes(type) &&  
+      <div className="col-6 text-left">
+        <p>Giver(s)</p>
+        <span>
+          <i className="fa fa-male" />
+          {peopleCount}
+        </span>      
+      </div>
+    }
 
-      {totalDonated && <p>Donated: {convertEthHelper(totalDonated, !maxAmount && 2)} ETH</p>}
-    </div>
+    {type === 'milestone' &&  
+      <div className="col-3 text-left">
+        <p>Giver(s)</p>
+        <span>
+          <i className="fa fa-male" />
+          {peopleCount}
+        </span>      
+      </div>
+    }
 
-    <div className="col-4 text-right">
-      {(type === 'dac' || type === 'campaign') && (
-        <div>
-          <p>Balance: {convertEthHelper(currentBalance, 2)} ETH</p>
-        </div>
-      )}
+    {['dac', 'campaign'].includes(type) &&
+      <div className="col-5 text-center card-center">
+        <span>
+          <p>Donations</p>                  
+          <p>{totalDonated}</p>
+        </span>
+      </div>
+    }
 
-      {type === 'milestone' && (
-        <div>
+    {type === 'milestone' &&
+      <div className="col-5 text-center card-center">
+        {maxAmount &&
           <span>
-            <i className="fa fa-check-circle" />
-            {status}
+            <p>Requested</p>                  
+            <p>{convertEthHelper(maxAmount )} {token.symbol}</p>
           </span>
-          <p>status</p>
-        </div>
-      )}
-    </div>
+        }
+      </div>
+    }
+
+    {type === 'milestone' && (
+      <div className="col-4 text-right">
+        <p>status</p>
+        <span>
+          <i className="fa fa-check-circle" />
+          {status}
+        </span>          
+      </div>
+    )}
+
   </div>
 );
 
@@ -50,6 +70,7 @@ CardStats.propTypes = {
   maxAmount: PropTypes.string,
   totalDonated: PropTypes.string,
   currentBalance: PropTypes.string,
+  token: PropTypes.object
 };
 
 CardStats.defaultProps = {

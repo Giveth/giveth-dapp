@@ -78,11 +78,9 @@ class ViewDAC extends Component {
       donations,
       dac,
       isLoadingDonations,
-      communityUrl,
       campaigns,
       isLoadingCampaigns,
     } = this.state;
-
     return (
       <div id="view-cause-view">
         {isLoading && <Loader className="fixed" />}
@@ -98,16 +96,17 @@ class ViewDAC extends Component {
                   type: DAC.type,
                   title: dac.title,
                   id: dac.id,
+                  token: { symbol: 'ETH' },
                   adminId: dac.delegateId,
                 }}
                 wallet={wallet}
                 currentUser={currentUser}
-                commmunityUrl={communityUrl}
+                commmunityUrl={dac.communityUrl}
                 history={history}
               />
-              {communityUrl && (
-                <CommunityButton className="btn btn-secondary" url={communityUrl}>
-                  &nbsp;Join our community
+              {dac.communityUrl && (
+                <CommunityButton className="btn btn-secondary" url={dac.communityUrl}>
+                  Join our community
                 </CommunityButton>
               )}
             </BackgroundImageHeader>
@@ -166,6 +165,7 @@ class ViewDAC extends Component {
                       type: DAC.type,
                       title: dac.title,
                       id: dac.id,
+                      token: { symbol: 'ETH' },
                       adminId: dac.delegateId,
                     }}
                     wallet={wallet}

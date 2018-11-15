@@ -163,6 +163,7 @@ class WithdrawButton extends Component {
                   name="amount"
                   label="How much ETH do you want to withdraw?"
                   type="number"
+                  step="any"
                   value={amount}
                   validations={{
                     lessThan: wallet.getBalance() - 0.1,

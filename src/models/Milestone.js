@@ -1,24 +1,29 @@
+import React from 'react';
 import BigNumber from 'bignumber.js';
-import { getStartOfDayUTC } from 'lib/helpers';
+import { getStartOfDayUTC, getRandomWhitelistAddress } from 'lib/helpers';
 import BasicModel from './BasicModel';
 
-import MilestoneItemModel from './MilestoneItemModel';
+import MilestoneItemModel from './MilestoneItem';
 /**
  * The DApp Milestone model
  */
-export default class Milestone extends BasicModel {
+export default class MilestoneModel extends BasicModel {
   constructor(data) {
     super(data);
 
     const {
       id = data._id || undefined,
       maxAmount = new BigNumber('0'),
+      selectedFiatType = "EUR",
       fiatAmount = new BigNumber('0'),
       recipientAddress = '',
-      status = Milestone.PENDING,
+      status = MilestoneModel.PENDING,
       projectId = '',
-      reviewerAddress = '',
+      reviewerAddress = React.whitelist.reviewerWhitelist.length > 0
+        ? getRandomWhitelistAddress(React.whitelist.reviewerWhitelist).address
+        : '',
       items = [],
+      itemizeState = false,
       date = getStartOfDayUTC().subtract(1, 'd'),
       confirmations = 0,
       requiredConfirmations = 6,
@@ -26,12 +31,14 @@ export default class Milestone extends BasicModel {
     } = data;
 
     this._maxAmount = maxAmount;
+    this._selectedFiatType = selectedFiatType;
     this._fiatAmount = fiatAmount;
     this._recipientAddress = recipientAddress;
     this._status = status;
     this._projectId = projectId;
-    this._reviewAddress = reviewerAddress;
+    this._reviewerAddress = reviewerAddress;
     this._items = items;
+    this._itemizeState = itemizeState;
     this._date = date;
     this._id = id;
     this._confirmations = confirmations;
@@ -44,43 +51,43 @@ export default class Milestone extends BasicModel {
   * */
 
   static get PROPOSED() {
-    return Milestone.statuses.PROPOSED;
+    return MilestoneModel.statuses.PROPOSED;
   }
 
   static get REJECTED() {
-    return Milestone.statuses.REJECTED;
+    return MilestoneModel.statuses.REJECTED;
   }
 
   static get PENDING() {
-    return Milestone.statuses.PENDING;
+    return MilestoneModel.statuses.PENDING;
   }
 
   static get IN_PROGRESS() {
-    return Milestone.statuses.IN_PROGRESS;
+    return MilestoneModel.statuses.IN_PROGRESS;
   }
 
   static get NEEDS_REVIEW() {
-    return Milestone.statuses.NEEDS_REVIEW;
+    return MilestoneModel.statuses.NEEDS_REVIEW;
   }
 
   static get COMPLETED() {
-    return Milestone.statuses.COMPLETED;
+    return MilestoneModel.statuses.COMPLETED;
   }
 
   static get CANCELED() {
-    return Milestone.statuses.CANCELED;
+    return MilestoneModel.statuses.CANCELED;
   }
 
   static get PAYING() {
-    return Milestone.statuses.PAYING;
+    return MilestoneModel.statuses.PAYING;
   }
 
   static get PAID() {
-    return Milestone.statuses.PAID;
+    return MilestoneModel.statuses.PAID;
   }
 
   static get FAILED() {
-    return Milestone.statuses.FAILED;
+    return MilestoneModel.statuses.FAILED;
   }
 
   static get statuses() {
@@ -99,7 +106,7 @@ export default class Milestone extends BasicModel {
   }
 
   static get type() {
-    return 'Milestone';
+    return 'milestone';
   }
 
   get title() {
@@ -138,6 +145,15 @@ export default class Milestone extends BasicModel {
     this._maxAmount = value;
   }
 
+  get selectedFiatType() {
+    return this._selectedFiatType;
+  }
+
+  set selectedFiatType(value) {
+    this.checkType(value, ['string'], 'selectedFiatType');
+    this._selectedFiatType = value;
+  }  
+
   get fiatAmount() {
     return this._fiatAmount;
   }
@@ -161,7 +177,7 @@ export default class Milestone extends BasicModel {
   }
 
   set status(value) {
-    this.checkValue(value, Object.values(Milestone.statuses), 'status');
+    this.checkValue(value, Object.values(MilestoneModel.statuses), 'status');
     this._status = value;
   }
 
@@ -183,13 +199,13 @@ export default class Milestone extends BasicModel {
     this._projectId = value;
   }
 
-  get reviewAddress() {
-    return this._reviewAddress;
+  get reviewerAddress() {
+    return this._reviewerAddress;
   }
 
-  set reviewAddress(value) {
-    this.checkType(value, ['string'], 'reviewAddress');
-    this._reviewAddress = value;
+  set reviewerAddress(value) {
+    this.checkType(value, ['string'], 'reviewerAddress');
+    this._reviewerAddress = value;
   }
 
   get items() {
@@ -218,7 +234,7 @@ export default class Milestone extends BasicModel {
   }
 
   set date(value) {
-    this.checkType(value, ['date'], 'date');
+    this.checkIsMoment(value, 'date');
     this._date = value;
   }
 
@@ -258,5 +274,14 @@ export default class Milestone extends BasicModel {
   set commitTime(value) {
     this.checkType(value, ['number'], 'commitTime');
     this._commitTime = value;
+  }
+
+  get currentBalance() {
+    console.log(this._donationCounters)
+    if(this._donationCounters.length > 0) {
+      return this._donationCounters[0].currentBalance
+    } else {
+      return "0"
+    }
   }
 }

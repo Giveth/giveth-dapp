@@ -13,6 +13,7 @@ import { isOwner, getUserName, getUserAvatar } from '../../lib/helpers';
 import { checkWalletBalance } from '../../lib/middleware';
 import BackgroundImageHeader from '../BackgroundImageHeader';
 import DonateButton from '../DonateButton';
+import CommunityButton from '../CommunityButton';
 import DelegateMultipleButton from '../DelegateMultipleButton';
 import ShowTypeDonations from '../ShowTypeDonations';
 import AuthenticatedLink from '../AuthenticatedLink';
@@ -139,12 +140,12 @@ class ViewCampaign extends Component {
               <BackgroundImageHeader image={campaign.image} height={300}>
                 <h6>Campaign</h6>
                 <h1>{campaign.title}</h1>
-
                 <DonateButton
                   model={{
                     type: Campaign.type,
                     title: campaign.title,
                     id: campaign.id,
+                    token: { symbol: 'ETH' },
                     adminId: campaign.projectId,
                   }}
                   wallet={wallet}
@@ -158,6 +159,11 @@ class ViewCampaign extends Component {
                     wallet={wallet}
                     currentUser={currentUser}
                   />
+                )}
+                {campaign.communityUrl && (
+                  <CommunityButton className="btn btn-secondary" url={campaign.communityUrl}>
+                    Join our community
+                  </CommunityButton>
                 )}
               </BackgroundImageHeader>
 
@@ -259,6 +265,7 @@ class ViewCampaign extends Component {
                         title: campaign.title,
                         id: campaign.id,
                         adminId: campaign.projectId,
+                        token: { symbol: 'ETH' }
                       }}
                       wallet={wallet}
                       currentUser={currentUser}

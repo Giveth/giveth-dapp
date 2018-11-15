@@ -3,7 +3,7 @@ import moment from 'moment';
 import PropTypes from 'prop-types';
 import React from 'react';
 import { convertEthHelper, getTruncatedText } from 'lib/helpers';
-import MilestoneItemModel from 'models/MilestoneItemModel';
+import Item from 'models/MilestoneItem';
 
 /** *
  * NOTE: This component is created as a Formsy form component
@@ -22,7 +22,7 @@ class MilestoneItem extends React.Component {
   }
 
   render() {
-    const { removeItem, item, isEditMode } = this.props;
+    const { removeItem, item, isEditMode, token } = this.props;
     return (
       <tr>
         <td className="td-item-date">{moment.utc(item.date).format('Do MMM YYYY')}</td>
@@ -33,7 +33,7 @@ class MilestoneItem extends React.Component {
           {item.selectedFiatType} {item.fiatAmount}
           <br />
           <span className="help-block">
-            {`1 ETH = ${item.conversionRate} ${item.selectedFiatType}`}
+            {`1 ${token.name} = ${item.conversionRate} ${item.selectedFiatType}`}
           </span>
         </td>
 
@@ -73,7 +73,7 @@ MilestoneItem.propTypes = {
   setValue: PropTypes.func.isRequired,
 
   removeItem: PropTypes.func,
-  item: PropTypes.instanceOf(MilestoneItemModel).isRequired,
+  item: PropTypes.instanceOf(Item).isRequired,
   isEditMode: PropTypes.bool,
 };
 

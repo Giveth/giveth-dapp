@@ -4,6 +4,7 @@
   "private": true,
   "dependencies": {
     "bignumber.js": "^7.2.1",
+    "ethereumjs-abi": "^0.6.5",
     "feathers": "^2.2.3",
     "feathers-authentication-client": "^0.3.3",
     "feathers-client": "^2.3.0",
@@ -70,7 +71,7 @@
     "prettier": "^1.13.7"
   },
   "scripts": {
-    "prepush": "lint-staged",
+    "precommit": "lint-staged",
     "build-css": "node-sass-chokidar --include-path ./src --include-path ./node_modules src/ -o src/",
     "watch-css": "npm run build-css && node-sass-chokidar --include-path ./src --include-path ./node_modules src/ -o src/ --watch --recursive",
     "start-js": "react-scripts start",

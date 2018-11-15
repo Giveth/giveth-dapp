@@ -136,7 +136,7 @@ class JoinGivethCommunity extends Component {
         <div className="vertical-align">
           <center>
             <h3>Building the Future of Giving, with You.</h3>
-            <CommunityButton className="btn btn-success" url="https://join.giveth.io">
+            <CommunityButton className="btn btn-success" url="https://giveth.io/join">
               &nbsp;Join Giveth
             </CommunityButton>
             &nbsp;

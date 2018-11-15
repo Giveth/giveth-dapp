@@ -54,7 +54,7 @@ In the following sections you will learn all you need to know to run the DApp lo
     ```
     npm install
     ```
-5. That is it, you are now ready to run the giveth-dapp! Head to the [Run DApp](#run-dapp) section for further instructions.
+5. That is it, you are now ready to run the giveth-dapp! Head to the [Run DApp](#run) section for further instructions.
 
 #### Windows
 1. Make sure you have the LTS version of [64-bit NodeJS](https://nodejs.org/en/download/current) (v8.9.1)
@@ -94,6 +94,16 @@ In the following sections you will learn all you need to know to run the DApp lo
     ```
 3. Once the dapp is up in your browser, click "Sign In" from the main menu.
 4. For testing locally, choose any of the wallet files found in the `giveth-dapp/keystores/` folder using the wallet password: `password`. **DO NOT USE THESE ON MAINNET ETHEREUM.**
+
+5. Using the test token
+  To use the test token you need to import the keystore.json you use for your account to MetaMask.
+  After importing, click on 'Add token' > 'Custom token' and enter the MiniMe Token address that can be found when deploying the contracts
+  (should be `0xe78A0F7E598Cc8b0Bb87894B0F60dD2a88d6a8Ab` by default but make sure to check)
+  The token balance should show up automatically and the token symbol is MMT.
+  However, in the dApp the token symbol is referred to as ANT, b/c the dapp needs to be able to fetch a conversion rate.
+
+  NOTE: 
+  When resetting feathers or redeploying the contracts, you need to remove the keystore from metamask and follow this procedure again.
 
 ### Build
 ```
@@ -162,6 +172,10 @@ If you want to better understand how does the development process works, please 
 At first you would like to run the DApp locally. When running `testrpc` locally in `deterministic` mode, you can use any of the keystores in the `giveth-dapp/keystores` as your wallet.
 This will provide you access to the testrpc accounts for local development. Each keystore uses the same password: `password`. **DO NOT USE THESE ON MAINNET ETHEREUM**
 
+The keystores are seeded with 10.000 ANT tokens for testing donations. To get started with testing donations,
+make sure to add your account's keystore to MetaMask and swith MetaMask to Ganache. The donation modal should
+then show the appropriate balance when donating in ANT tokens.
+
 ### Development and PR Testing
 1. The Giveth Dapp is auto deployed from the develop branch and is live on Rinkeby [develop.giveth.io](https://develop.giveth.io). All pull requests are autodeployed and the PR preview will be generated upon submission. To learn how to access PR previews see [Development Process & Quality Assurance](https://wiki.giveth.io/documentation/DApp/product-development-testing/) on our wiki.
 2. In order to use the dapp you will need to create account. If this is your first time, click "sign up" to create an account. If you already have a valid keychain file, use it to sign in.
@@ -182,7 +196,8 @@ Name | Blockchain | Branch Deployed | Auto Deploy | Use |
 You can change the environment to which the DApp connects through the node environment variables. See the [Configuration](#Configuration) section for more details.
 
 ### Release Process
-The development uses the Gitflow process with 2 weeks long sprints. This means there is new release to be tested every fortnight. We invite contributors to help us test the DApp in the release environment before we merge it to the master branch and deploy to production environments. If you are intereste, write to the DApp Development channel on [Riot](https://join.giveth.io). You can read more about the release planning on [our wiki](https://wiki.giveth.io/documentation/DApp/product-development-testing/).
+The development uses the Gitflow process with 2 weeks long sprints. This means there is new release to be tested every fortnight. We invite contributors to help us test the DApp in the release 
+environment before we merge it to the master branch and deploy to production environments. If you are interested, write to the DApp Development channel on [Riot](https://join.giveth.io). You can read more about the release planning on [our wiki](https://wiki.giveth.io/documentation/DApp/product-development-testing/).
 
 ## Help
 Reach out to us on [Riot](https://join.giveth.io) for any help or to share ideas.

@@ -205,15 +205,15 @@ class MyMilestones extends Component {
       .service('milestones')
       .watch({ listStrategy: 'always' })
       .find(query)
-      .subscribe(resp =>
+      .subscribe(resp => {
         this.setState({
           milestones: resp.data,
           itemsPerPage: resp.limit,
           skipPages: resp.skip,
           totalResults: resp.total,
           isLoading: false,
-        }),
-      );
+        })
+      });
   }
 
   handlePageChanged(newPage) {
@@ -1030,11 +1030,11 @@ class MyMilestones extends Component {
                                   {getReadableStatus(m.status)}
                                 </td>
                                 <td className="td-donations-number">
-                                  {convertEthHelper(m.maxAmount)} ETH
+                                  {convertEthHelper(m.maxAmount)} {m.token.symbol}
                                 </td>
-                                <td className="td-donations-number">{m.donationCount || 0}</td>
+                                <td className="td-donations-number">{(m.donationCounters && m.donationCounters.length && m.donationCounters[0].donationCount) || 0}</td>
                                 <td className="td-donations-">
-                                  {convertEthHelper(m.totalDonated)} ETH
+                                  {convertEthHelper((m.donationCounters && m.donationCounters.length && m.donationCounters[0].currentBalance) || '0')} {m.token.symbol}
                                 </td>
                                 <td className="td-reviewer">
                                   {m.reviewer &&
@@ -1102,7 +1102,7 @@ class MyMilestones extends Component {
                                         type="button"
                                         className="btn btn-success btn-sm"
                                         onClick={() => this.requestMarkComplete(m)}
-                                        disabled={!utils.toBN(m.totalDonated).gt('0')}
+                                        disabled={!utils.toBN(m.currentBalance || '0').gt('0')}
                                       >
                                         Mark complete
                                       </button>
@@ -1167,7 +1167,7 @@ class MyMilestones extends Component {
                                   ) &&
                                     m.status === 'Completed' &&
                                     m.mined &&
-                                    m.donationCount > 0 && (
+                                    (m.donationCounters && m.donationCounters.length > 0 && m.donationCounters[0].totalDonated > 0) && (
                                       <button
                                         type="button"
                                         className="btn btn-success btn-sm"
