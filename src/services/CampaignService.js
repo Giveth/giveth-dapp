@@ -2,6 +2,7 @@ import { LPPCampaign } from 'lpp-campaign';
 import { paramsForServer } from 'feathers-hooks-common';
 import getNetwork from '../lib/blockchain/getNetwork';
 import getWeb3 from '../lib/blockchain/getWeb3';
+import extraGas from '../lib/blockchain/extraGas';
 import { feathersClient } from '../lib/feathersClient';
 import Campaign from '../models/Campaign';
 import Milestone from '../models/Milestone';
@@ -171,7 +172,7 @@ class CampaignService {
         if (!profileHash) {
           await campaigns.patch(campaign.id, campaign.toFeathers(txHash));
         }
-        afterSave(false);
+        afterSave(null, false);
         afterMined(false, undefined, campaign.id);
         return;
       }
@@ -185,6 +186,7 @@ class CampaignService {
           0,
           {
             from,
+            $extraGas: extraGas(),
           },
         );
       } else {
@@ -197,6 +199,7 @@ class CampaignService {
           campaign.reviewerAddress,
           {
             from,
+            $extraGas: extraGas(),
           },
         );
       }
@@ -206,7 +209,7 @@ class CampaignService {
         txHash = hash;
         if (campaign.id) await campaigns.patch(campaign.id, campaign.toFeathers(txHash));
         else id = (await campaigns.create(campaign.toFeathers(txHash)))._id;
-        afterSave(!campaign.projectId, `${etherScanUrl}tx/${txHash}`);
+        afterSave(null, !campaign.projectId, `${etherScanUrl}tx/${txHash}`);
       });
 
       afterMined(!campaign.projectId, `${etherScanUrl}tx/${txHash}`, id);
@@ -217,6 +220,7 @@ class CampaignService {
         }. Is your wallet unlocked?`,
         `${etherScanUrl}tx/${txHash} => ${JSON.stringify(err, null, 2)}`,
       );
+      afterSave(err);
     }
   }
 
@@ -238,7 +242,7 @@ class CampaignService {
         etherScanUrl = network.etherscan;
 
         lppCampaign
-          .cancelCampaign({ from })
+          .cancelCampaign({ from, $extraGas: extraGas() })
           .once('transactionHash', hash => {
             txHash = hash;
             campaigns

@@ -7,6 +7,7 @@ import DAC from '../models/DAC';
 import Milestone from '../models/Milestone';
 import Campaign from '../models/Campaign';
 import getNetwork from '../lib/blockchain/getNetwork';
+import extraGas from '../lib/blockchain/extraGas';
 import { feathersClient } from '../lib/feathersClient';
 import getWeb3 from '../lib/blockchain/getWeb3';
 
@@ -128,12 +129,12 @@ class DonationService {
 
             return contract.mTransfer(encodedPledges, receiverId, {
               from: ownerEntity.ownerAddress,
-              $extraGas: 100000,
+              $extraGas: extraGas(),
             });
           }
           return network.liquidPledging.mTransfer(delegateId, encodedPledges, receiverId, {
             from: delegateEntity.ownerAddress,
-            $extraGas: 100000,
+            $extraGas: extraGas(),
           });
         };
 
@@ -245,12 +246,14 @@ class DonationService {
 
             return contract.transfer(donation.pledgeId, amount, receiverId, {
               from,
+              $extraGas: extraGas(),
             });
           }
 
           return network.liquidPledging.transfer(senderId, donation.pledgeId, amount, receiverId, {
             from,
-          }); // need to supply extraGas b/c https://github.com/trufflesuite/ganache-core/issues/26
+            $extraGas: extraGas(),
+          });
         };
 
         return executeTransfer()
@@ -341,6 +344,7 @@ class DonationService {
             donation.delegateId,
             {
               from: address,
+              $extraGas: extraGas(),
             },
           )
           .once('transactionHash', hash => {
@@ -414,6 +418,7 @@ class DonationService {
             donation.intendedProjectId,
             {
               from: address,
+              $extraGas: extraGas(),
             },
           )
           .once('transactionHash', hash => {
@@ -478,6 +483,7 @@ class DonationService {
         return network.liquidPledging
           .withdraw(donation.pledgeId, donation.amountRemaining, {
             from: address,
+            $extraGas: extraGas(),
           })
           .once('transactionHash', hash => {
             txHash = hash;

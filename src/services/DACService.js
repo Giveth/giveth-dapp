@@ -2,6 +2,7 @@ import BigNumber from 'bignumber.js';
 
 import { paramsForServer } from 'feathers-hooks-common';
 import getNetwork from '../lib/blockchain/getNetwork';
+import extraGas from '../lib/blockchain/extraGas';
 import { feathersClient } from '../lib/feathersClient';
 import DAC from '../models/DAC';
 import Campaign from '../models/Campaign';
@@ -191,7 +192,7 @@ class DACService {
         if (!profileHash) {
           await dacs.patch(dac.id, dac.toFeathers(txHash));
         }
-        afterSave(false);
+        afterSave(null, false);
         afterMined(false, undefined, dac.id);
         return;
       }
@@ -205,16 +206,16 @@ class DACService {
             dac.title,
             profileHash,
             dac.commitTime,
-            { from },
+            { from, $extraGas: extraGas() },
           )
-        : liquidPledging.addDelegate(dac.title, profileHash, 0, 0, { from });
+        : liquidPledging.addDelegate(dac.title, profileHash, 0, 0, { from, $extraGas: extraGas() });
 
       let { id } = dac;
       await promise.once('transactionHash', async hash => {
         txHash = hash;
         if (dac.id) await dacs.patch(dac.id, dac.toFeathers(txHash));
         else id = (await dacs.create(dac.toFeathers(txHash)))._id;
-        afterSave(!dac.delegateId, `${etherScanUrl}tx/${txHash}`);
+        afterSave(null, !dac.delegateId, `${etherScanUrl}tx/${txHash}`);
       });
 
       afterMined(!dac.delegateId, `${etherScanUrl}tx/${txHash}`, id);
@@ -225,6 +226,7 @@ class DACService {
         }. Is your wallet unlocked?`,
         `${etherScanUrl}tx/${txHash} => ${JSON.stringify(err, null, 2)}`,
       );
+      afterSave(err);
     }
   }
 }

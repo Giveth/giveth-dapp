@@ -28,6 +28,7 @@ import {
   checkProfile,
 } from '../../lib/middleware';
 import getNetwork from '../../lib/blockchain/getNetwork';
+import extraGas from '../../lib/blockchain/extraGas';
 import LoaderButton from '../LoaderButton';
 import User from '../../models/User';
 
@@ -450,7 +451,7 @@ class EditMilestone extends Component {
                   `It looks like the campaign has not been mined yet. Please try again in a bit`,
                   `It looks like the campaign has not been mined yet. Please try again in a bit`,
                 );
-                return;
+                return null;
               }
 
               /**
@@ -468,7 +469,7 @@ class EditMilestone extends Component {
               uint _reviewTimeoutSeconds
               * */
 
-              network.lppCappedMilestoneFactory
+              return network.lppCappedMilestoneFactory
                 .newMilestone(
                   title,
                   '',
@@ -480,7 +481,7 @@ class EditMilestone extends Component {
                   maxAmount,
                   Object.values(config.tokenAddresses)[0], // TODO make this a form param
                   5 * 24 * 60 * 60, // 5 days in seconds
-                  { from },
+                  { from, $extraGas: extraGas() },
                 )
                 .on('transactionHash', hash => {
                   txHash = hash;

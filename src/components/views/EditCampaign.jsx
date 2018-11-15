@@ -61,6 +61,7 @@ class EditCampaign extends Component {
   }
 
   componentDidMount() {
+    this.mounted = true;
     checkForeignNetwork(this.props.isForeignNetwork)
       .then(() => this.checkUser())
       .then(() => {
@@ -105,6 +106,10 @@ class EditCampaign extends Component {
     } else if (this.props.currentUser && !prevProps.balance.eq(this.props.balance)) {
       checkBalance(this.props.balance);
     }
+  }
+
+  componentWillUnmount() {
+    this.mounted = false;
   }
 
   getReviewers() {
@@ -174,24 +179,26 @@ class EditCampaign extends Component {
       }
     };
 
-    const afterCreate = (url, id) => {
+    const afterCreate = (err, url, id) => {
       if (this.mounted) this.setState({ isSaving: false });
-      const msg = (
-        <p>
-          Your Campaign is pending....
-          <br />
-          <a href={url} target="_blank" rel="noopener noreferrer">
-            View transaction
-          </a>
-        </p>
-      );
-      React.toast.info(msg);
-      GA.trackEvent({
-        category: 'Campaign',
-        action: 'created',
-        label: id,
-      });
-      history.push('/my-campaigns');
+      if (!err) {
+        const msg = (
+          <p>
+            Your Campaign is pending....
+            <br />
+            <a href={url} target="_blank" rel="noopener noreferrer">
+              View transaction
+            </a>
+          </p>
+        );
+        React.toast.info(msg);
+        GA.trackEvent({
+          category: 'Campaign',
+          action: 'created',
+          label: id,
+        });
+        history.push('/my-campaigns');
+      }
     };
 
     this.setState(

@@ -16,6 +16,7 @@ import { isLoggedIn, checkBalance, authenticateIfPossible } from '../../lib/midd
 import confirmationDialog from '../../lib/confirmationDialog';
 import getNetwork from '../../lib/blockchain/getNetwork';
 import getWeb3 from '../../lib/blockchain/getWeb3';
+import extraGas from '../../lib/blockchain/extraGas';
 import Loader from '../Loader';
 import User from '../../models/User';
 import { getTruncatedText, getReadableStatus, convertEthHelper, history } from '../../lib/helpers';
@@ -336,6 +337,7 @@ class MyMilestones extends Component {
                 return cappedMilestone
                   .requestMarkAsComplete({
                     from: this.props.currentUser.address,
+                    $extraGas: extraGas(),
                   })
                   .once('transactionHash', hash => {
                     txHash = hash;
@@ -441,6 +443,7 @@ class MyMilestones extends Component {
                 return cappedMilestone
                   .cancelMilestone({
                     from: this.props.currentUser.address,
+                    $extraGas: extraGas(),
                   })
                   .once('transactionHash', hash => {
                     txHash = hash;
@@ -567,7 +570,7 @@ class MyMilestones extends Component {
                     maxAmount,
                     Object.values(config.tokenAddresses)[0], // TODO make this a form param
                     5 * 24 * 60 * 60, // 5 days in seconds
-                    { from },
+                    { from, $extraGas: extraGas() },
                   )
                   .on('transactionHash', hash => {
                     txHash = hash;
@@ -654,6 +657,7 @@ class MyMilestones extends Component {
                 return cappedMilestone
                   .approveMilestoneCompleted({
                     from: this.props.currentUser.address,
+                    $extraGas: extraGas(),
                   })
                   .once('transactionHash', hash => {
                     txHash = hash;
@@ -740,6 +744,7 @@ class MyMilestones extends Component {
                 return cappedMilestone
                   .rejectCompleteRequest({
                     from: this.props.currentUser.address,
+                    $extraGas: extraGas(),
                   })
                   .once('transactionHash', hash => {
                     txHash = hash;
@@ -878,6 +883,7 @@ class MyMilestones extends Component {
                 return new LPPCappedMilestone(web3, milestone.pluginAddress)
                   .mWithdraw(pledges, {
                     from: this.props.currentUser.address,
+                    $extraGas: extraGas(),
                   })
                   .once('transactionHash', hash => {
                     txHash = hash;

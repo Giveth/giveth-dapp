@@ -164,9 +164,9 @@ class EditDAC extends Component {
         history.push(`/dacs/${id}`);
       }
     };
-    const afterSave = (created, url) => {
+    const afterSave = (err, created, url) => {
       if (this.mounted) this.setState({ isSaving: false });
-
+      if (err) return;
       const msg = created ? 'Your DAC is pending...' : 'Your DAC is being updated...';
       showToast(msg, url);
 
