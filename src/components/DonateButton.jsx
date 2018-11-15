@@ -356,7 +356,7 @@ class DonateButton extends React.Component {
           {homeWeb3 &&
             account &&
             validNetwork &&
-            balance === '0' && (
+            balance === 0 && (
               <div className="alert alert-warning">
                 <i className="fa fa-exclamation-triangle" />
                 You do not have adequate balance in your account to donate.
@@ -429,7 +429,7 @@ class DonateButton extends React.Component {
                     balance !== '0' && (
                       <button
                         style={{ marginLeft: '2px' }}
-                        className="btn btn-success"
+                        className="btn btn-default"
                         type="button"
                         onClick={() => this.setMaxAmount(maxAmount)}
                       >
