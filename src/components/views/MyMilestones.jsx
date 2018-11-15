@@ -154,7 +154,7 @@ class MyMilestones extends Component {
     const myAddress = this.props.currentUser.address;
     const { milestoneStatus, skipPages, itemsPerPage } = this.state;
 
-    MilestoneService.subscribe({
+    MilestoneService.subscribeMyMilestones({
       milestoneStatus,
       ownerAddress: myAddress,
       recipientAddress: myAddress,

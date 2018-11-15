@@ -27,6 +27,7 @@ import MilestoneProof from '../MilestoneProof';
 
 import getEthConversionContext from '../../containers/getEthConversionContext';
 import MilestoneService from '../../services/MilestoneService';
+import CampaignService from '../../services/CampaignService';
 
 BigNumber.config({ DECIMAL_PLACES: 18 });
 
@@ -127,9 +128,7 @@ class EditMilestone extends Component {
               );
             });
         } else {
-          feathersClient
-            .service('campaigns')
-            .get(this.props.match.params.id)
+          CampaignService.get(this.props.match.params.id)
             .then(campaign => {
               if (campaign.projectId < 0) {
                 this.props.history.goBack();

@@ -493,7 +493,7 @@ class DonateButton extends React.Component {
             {homeWeb3 &&
               account &&
               validNetwork && (
-                <p>
+                <div>
                   {model.type !== 'milestone' && (
                     <SelectFormsy
                       name="token"
@@ -511,7 +511,7 @@ class DonateButton extends React.Component {
                   <em>{selectedToken.balance}</em>
                   <br />
                   Gas price: <em>{gasPrice} Gwei</em>
-                </p>
+                </div>
               )}
 
             <div className="form-group">

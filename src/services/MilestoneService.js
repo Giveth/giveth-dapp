@@ -73,7 +73,7 @@ class MilestoneService {
    *  reject:
    *    error message
    */
-  static async subscribe({
+  static async subscribeMyMilestones({
     milestoneStatus,
     ownerAddress,
     recipientAddress,
@@ -136,6 +136,27 @@ class MilestoneService {
       ];
     }
 
+    return this.subscribe(query);
+  }
+
+  /**
+   * Lazy-load Milestones by subscribing to Milestone listener
+   *
+   * @param query     A feathers query
+   *
+   * returns a Promise
+   *  resolve:
+   *    Object
+   *      data                (Array) Milestone models
+   *      limit               (Number) items per page
+   *      skipped             (Number) pages skipped
+   *      totalResults        (Number) total results
+   *
+   *  reject:
+   *    error message
+   */
+
+  static subscribe(query) {
     return new Promise((resolve, reject) => {
       this.milestoneSubscription = milestones
         .watch({ listStrategy: 'always' })
