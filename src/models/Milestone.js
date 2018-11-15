@@ -14,7 +14,7 @@ export default class MilestoneModel extends BasicModel {
     const {
       id = data._id || undefined,
       maxAmount = new BigNumber('0'),
-      selectedFiatType = "EUR",
+      selectedFiatType = 'EUR',
       fiatAmount = new BigNumber('0'),
       recipientAddress = '',
       status = MilestoneModel.PENDING,
@@ -152,7 +152,7 @@ export default class MilestoneModel extends BasicModel {
   set selectedFiatType(value) {
     this.checkType(value, ['string'], 'selectedFiatType');
     this._selectedFiatType = value;
-  }  
+  }
 
   get fiatAmount() {
     return this._fiatAmount;
@@ -277,11 +277,10 @@ export default class MilestoneModel extends BasicModel {
   }
 
   get currentBalance() {
-    console.log(this._donationCounters)
-    if(this._donationCounters.length > 0) {
-      return this._donationCounters[0].currentBalance
-    } else {
-      return "0"
+    console.log(this._donationCounters);
+    if (this._donationCounters.length > 0) {
+      return this._donationCounters[0].currentBalance;
     }
+    return '0';
   }
 }

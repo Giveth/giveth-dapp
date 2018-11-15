@@ -140,9 +140,7 @@ class BasicModel extends Model {
   }
 
   get totalDonationCount() {
-    return this._donationCounters.reduce((count, token) =>
-      count + token.donationCount
-    , 0)
+    return this._donationCounters.reduce((count, token) => count + token.donationCount, 0);
   }
 
   get peopleCount() {
@@ -159,8 +157,8 @@ class BasicModel extends Model {
   }
 
   set fullyFunded(value) {
-    this.checkType(value, ['boolean'], 'fullyFunded');    
-    this._fullyFunded = value
+    this.checkType(value, ['boolean'], 'fullyFunded');
+    this._fullyFunded = value;
   }
 
   get donationCounters() {
@@ -176,9 +174,8 @@ class BasicModel extends Model {
   }
 
   set token(value) {
-    this._token = value
-  }  
-
+    this._token = value;
+  }
 }
 
 export default BasicModel;

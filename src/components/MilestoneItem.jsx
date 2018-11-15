@@ -75,11 +75,13 @@ MilestoneItem.propTypes = {
   removeItem: PropTypes.func,
   item: PropTypes.instanceOf(Item).isRequired,
   isEditMode: PropTypes.bool,
+  token: PropTypes.shape({}),
 };
 
 MilestoneItem.defaultProps = {
   isEditMode: false,
   removeItem: () => {},
+  token: undefined,
 };
 
 export default withFormsy(MilestoneItem);

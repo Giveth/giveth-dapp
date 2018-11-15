@@ -9,11 +9,11 @@ export default class MilestoneItemModel extends Model {
 
     const {
       date = getStartOfDayUTC().subtract(1, 'd'),
-      description = "",
-      image = "",
-      selectedFiatType = "EUR",
+      description = '',
+      image = '',
+      selectedFiatType = 'EUR',
       fiatAmount = 0,
-      wei = "",
+      wei = '',
       conversionRate = parseFloat(0),
       ethConversionRateTimestamp = new Date().toISOString(),
     } = data;

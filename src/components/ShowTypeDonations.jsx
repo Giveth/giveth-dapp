@@ -44,7 +44,7 @@ const ShowTypeDonations = props => (
                             &nbsp;
                           </span>
                         )}
-                        {convertEthHelper(d.amount)} {(d.token && d.token.symbol) || "ETH"}
+                        {convertEthHelper(d.amount)} {(d.token && d.token.symbol) || 'ETH'}
                       </td>
                       <td className="td-user">
                         {d.giver && (

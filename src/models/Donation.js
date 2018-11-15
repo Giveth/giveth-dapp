@@ -219,7 +219,9 @@ class Donation extends Model {
 
   get isPending() {
     return (
-      this._status === Donation.PENDING || this._pendingAmountRemaining !== undefined || !this._mined
+      this._status === Donation.PENDING ||
+      this._pendingAmountRemaining !== undefined ||
+      !this._mined
     );
   }
 
@@ -463,9 +465,8 @@ class Donation extends Model {
   }
 
   set token(value) {
-    this._token = value
-  }  
-
+    this._token = value;
+  }
 }
 
 export default Donation;

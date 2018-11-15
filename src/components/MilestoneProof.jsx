@@ -54,7 +54,7 @@ class MilestoneProof extends Component {
     const { items, addMilestoneItemModalVisible } = this.state;
     const { isEditMode, token, milestoneStatus } = this.props;
 
-    const canEdit = isEditMode && ['Proposed', 'Pending'].includes(milestoneStatus)
+    const canEdit = isEditMode && ['Proposed', 'Pending'].includes(milestoneStatus);
 
     return (
       <div>
@@ -119,15 +119,17 @@ class MilestoneProof extends Component {
   }
 }
 
-MilestoneProof.defaultProps = {
-  onItemsChanged: () => {},
-};
-
 MilestoneProof.propTypes = {
   items: PropTypes.arrayOf(PropTypes.object).isRequired,
   onItemsChanged: PropTypes.func,
   isEditMode: PropTypes.bool.isRequired,
-  milestoneStatus: PropTypes.string.isRequired
+  milestoneStatus: PropTypes.string.isRequired,
+  token: PropTypes.shape({}),
+};
+
+MilestoneProof.defaultProps = {
+  onItemsChanged: () => {},
+  token: undefined,
 };
 
 export default MilestoneProof;

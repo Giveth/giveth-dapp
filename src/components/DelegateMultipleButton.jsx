@@ -41,13 +41,13 @@ const modalStyles = {
 const _getTokenWhitelist = () => {
   const r = React.whitelist.tokenWhitelist;
   return r.map(t => {
-    if(t.symbol === 'ETH') {
-      t.name = `${config.homeNetworkName} ETH`
-    }  
-    t.balance = "0"
+    if (t.symbol === 'ETH') {
+      t.name = `${config.homeNetworkName} ETH`;
+    }
+    t.balance = '0';
     return t;
-  })
-}
+  });
+};
 
 /**
  * Retrieves the oldest 100 donations that the user can delegate
@@ -72,9 +72,11 @@ class DelegateMultipleButton extends Component {
       objectToDelegateFrom: [],
       tokenWhitelistOptions: _getTokenWhitelist().map(t => ({
         value: t.address,
-        title: t.name
-      })),  
-      selectedToken: this.props.milestone ? this.props.milestone.token : _getTokenWhitelist().find(t => t.symbol === "ETH"),      
+        title: t.name,
+      })),
+      selectedToken: this.props.milestone
+        ? this.props.milestone.token
+        : _getTokenWhitelist().find(t => t.symbol === 'ETH'),
     };
 
     this.loadDonations = this.loadDonations.bind(this);
@@ -129,9 +131,9 @@ class DelegateMultipleButton extends Component {
 
   setToken(address) {
     this.setState({ selectedToken: _getTokenWhitelist().find(t => t.address === address) }, () =>
-      this.loadDonations(this.state.objectToDelegateFrom)
+      this.loadDonations(this.state.objectToDelegateFrom),
     );
-  }      
+  }
 
   selectedObject({ target }) {
     this.setState({ objectToDelegateFrom: target.value, isLoadingDonations: true });
@@ -253,7 +255,15 @@ class DelegateMultipleButton extends Component {
 
   render() {
     const style = { display: 'inline-block', ...this.props.style };
-    const { isSaving, isLoading, delegationOptions, delegations, isLoadingDonations, tokenWhitelistOptions, selectedToken } = this.state;
+    const {
+      isSaving,
+      isLoading,
+      delegationOptions,
+      delegations,
+      isLoadingDonations,
+      tokenWhitelistOptions,
+      selectedToken,
+    } = this.state;
     const { campaign, milestone } = this.props;
 
     return (
@@ -310,8 +320,7 @@ class DelegateMultipleButton extends Component {
                 !isLoadingDonations &&
                 delegations.length > 0 && (
                   <div>
-
-                    { !this.props.milestone &&             
+                    {!this.props.milestone && (
                       <SelectFormsy
                         name="token"
                         id="token-select"
@@ -320,10 +329,9 @@ class DelegateMultipleButton extends Component {
                         value={selectedToken && selectedToken.address}
                         cta="--- Select ---"
                         options={tokenWhitelistOptions}
-                        onChange={(address) => this.setToken(address)}
-                      /> 
-                    }
-
+                        onChange={address => this.setToken(address)}
+                      />
+                    )}
 
                     <span className="label">Amount {selectedToken.symbol} to delegate:</span>
 

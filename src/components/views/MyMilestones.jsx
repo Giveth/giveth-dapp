@@ -212,7 +212,7 @@ class MyMilestones extends Component {
           skipPages: resp.skip,
           totalResults: resp.total,
           isLoading: false,
-        })
+        });
       });
   }
 
@@ -1032,9 +1032,20 @@ class MyMilestones extends Component {
                                 <td className="td-donations-number">
                                   {convertEthHelper(m.maxAmount)} {m.token.symbol}
                                 </td>
-                                <td className="td-donations-number">{(m.donationCounters && m.donationCounters.length && m.donationCounters[0].donationCount) || 0}</td>
+                                <td className="td-donations-number">
+                                  {(m.donationCounters &&
+                                    m.donationCounters.length &&
+                                    m.donationCounters[0].donationCount) ||
+                                    0}
+                                </td>
                                 <td className="td-donations-">
-                                  {convertEthHelper((m.donationCounters && m.donationCounters.length && m.donationCounters[0].currentBalance) || '0')} {m.token.symbol}
+                                  {convertEthHelper(
+                                    (m.donationCounters &&
+                                      m.donationCounters.length &&
+                                      m.donationCounters[0].currentBalance) ||
+                                      '0',
+                                  )}{' '}
+                                  {m.token.symbol}
                                 </td>
                                 <td className="td-reviewer">
                                   {m.reviewer &&
@@ -1167,7 +1178,9 @@ class MyMilestones extends Component {
                                   ) &&
                                     m.status === 'Completed' &&
                                     m.mined &&
-                                    (m.donationCounters && m.donationCounters.length > 0 && m.donationCounters[0].totalDonated > 0) && (
+                                    (m.donationCounters &&
+                                      m.donationCounters.length > 0 &&
+                                      m.donationCounters[0].totalDonated > 0) && (
                                       <button
                                         type="button"
                                         className="btn btn-success btn-sm"

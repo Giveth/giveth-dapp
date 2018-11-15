@@ -98,7 +98,10 @@ const Donations = () => (
 
                                     <td className="td-donated-to">
                                       {d.intendedProjectId > 0 && (
-                                        <span className="badge badge-info" style={{ "marginRight": "5px" }}>
+                                        <span
+                                          className="badge badge-info"
+                                          style={{ marginRight: '5px' }}
+                                        >
                                           <i className="fa fa-random" />
                                           Proposed delegation&nbsp;
                                         </span>
@@ -108,7 +111,8 @@ const Donations = () => (
                                       </Link>
                                     </td>
                                     <td className="td-donations-amount">
-                                      {convertEthHelper(d.amountRemaining)} {d.token && d.token.symbol}
+                                      {convertEthHelper(d.amountRemaining)}{' '}
+                                      {d.token && d.token.symbol}
                                     </td>
 
                                     {etherScanUrl && (

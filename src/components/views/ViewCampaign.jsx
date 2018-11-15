@@ -265,7 +265,7 @@ class ViewCampaign extends Component {
                         title: campaign.title,
                         id: campaign.id,
                         adminId: campaign.projectId,
-                        token: { symbol: 'ETH' }
+                        token: { symbol: 'ETH' },
                       }}
                       wallet={wallet}
                       currentUser={currentUser}

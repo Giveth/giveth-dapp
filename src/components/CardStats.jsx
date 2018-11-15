@@ -9,46 +9,47 @@ import { convertEthHelper } from '../lib/helpers';
  */
 const CardStats = ({ peopleCount, maxAmount, totalDonated, type, status, token }) => (
   <div className="row card-stats">
-
-    {['dac', 'campaign'].includes(type) &&  
+    {['dac', 'campaign'].includes(type) && (
       <div className="col-6 text-left">
         <p>Giver(s)</p>
         <span>
           <i className="fa fa-male" />
           {peopleCount}
-        </span>      
+        </span>
       </div>
-    }
+    )}
 
-    {type === 'milestone' &&  
+    {type === 'milestone' && (
       <div className="col-3 text-left">
         <p>Giver(s)</p>
         <span>
           <i className="fa fa-male" />
           {peopleCount}
-        </span>      
+        </span>
       </div>
-    }
+    )}
 
-    {['dac', 'campaign'].includes(type) &&
+    {['dac', 'campaign'].includes(type) && (
       <div className="col-5 text-center card-center">
         <span>
-          <p>Donations</p>                  
+          <p>Donations</p>
           <p>{totalDonated}</p>
         </span>
       </div>
-    }
+    )}
 
-    {type === 'milestone' &&
+    {type === 'milestone' && (
       <div className="col-5 text-center card-center">
-        {maxAmount &&
+        {maxAmount && (
           <span>
-            <p>Requested</p>                  
-            <p>{convertEthHelper(maxAmount )} {token.symbol}</p>
+            <p>Requested</p>
+            <p>
+              {convertEthHelper(maxAmount)} {token.symbol}
+            </p>
           </span>
-        }
+        )}
       </div>
-    }
+    )}
 
     {type === 'milestone' && (
       <div className="col-4 text-right">
@@ -56,10 +57,9 @@ const CardStats = ({ peopleCount, maxAmount, totalDonated, type, status, token }
         <span>
           <i className="fa fa-check-circle" />
           {status}
-        </span>          
+        </span>
       </div>
     )}
-
   </div>
 );
 
@@ -69,15 +69,14 @@ CardStats.propTypes = {
   status: PropTypes.string,
   maxAmount: PropTypes.string,
   totalDonated: PropTypes.string,
-  currentBalance: PropTypes.string,
-  token: PropTypes.object
+  token: PropTypes.shape({}),
 };
 
 CardStats.defaultProps = {
   status: 'In Progress',
   maxAmount: undefined,
   totalDonated: undefined,
-  currentBalance: undefined,
+  token: undefined,
 };
 
 export default CardStats;

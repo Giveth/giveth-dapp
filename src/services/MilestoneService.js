@@ -22,12 +22,12 @@ class MilestoneService {
         paramsForServer({
           query: {
             amountRemaining: { $ne: 0 },
-            status: { $nin: [ Donation.FAILED, Donation.TO_APPROVE ] },
+            status: { $nin: [Donation.FAILED, Donation.TO_APPROVE] },
             $or: [{ intendedProjectTypeId: id }, { ownerTypeId: id }],
-            $sort: { createdAt: -1 },        
+            $sort: { createdAt: -1 },
           },
           schema: 'includeTypeAndGiverDetails',
-        })
+        }),
       )
       .subscribe(resp => {
         onSuccess(resp.data.map(d => new Donation(d)));

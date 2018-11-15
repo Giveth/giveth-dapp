@@ -194,6 +194,7 @@ RateConvertor.propTypes = {
   fiatAmount: PropTypes.string,
   etherAmount: PropTypes.string,
   fiatTypes: PropTypes.arrayOf(PropTypes.object).isRequired,
+  token: PropTypes.shape({ symbol: PropTypes.string }),
 };
 
 RateConvertor.defaultProps = {
@@ -202,6 +203,7 @@ RateConvertor.defaultProps = {
   date: getStartOfDayUTC().subtract(1, 'd'),
   fiatAmount: '',
   etherAmount: '',
+  token: undefined,
 };
 
 export default getEthConversionContext(RateConvertor);
