@@ -12,7 +12,7 @@ export { Consumer };
 
 BigNumber.config({ DECIMAL_PLACES: 18 });
 
-const fiatTypes = [
+export const fiatTypes = [
   { value: 'BRL', title: 'BRL' },
   { value: 'CAD', title: 'CAD' },
   { value: 'CHF', title: 'CHF' },
@@ -37,7 +37,9 @@ class EthConversionProvider extends Component {
     this.getEthConversion = this.getEthConversion.bind(this);
   }
 
-  getEthConversion(date) {
+  getEthConversion(date, symbol) {
+    console.log(`requesting conversion rates for date ${date} and symbol ${symbol}`);
+
     const dtUTC = getStartOfDayUTC(date); // Should not be necessary as the datepicker should provide UTC, but just to be sure
     const timestamp = Math.round(dtUTC.toDate()) / 1000;
 
@@ -48,7 +50,7 @@ class EthConversionProvider extends Component {
       // we don't have the conversion rate in cache, fetch from feathers
       return feathersClient
         .service('ethconversion')
-        .find({ query: { date: dtUTC } })
+        .find({ query: { date: dtUTC, symbol } })
         .then(resp => {
           this.setState({
             conversionRates: conversionRates.concat(resp),

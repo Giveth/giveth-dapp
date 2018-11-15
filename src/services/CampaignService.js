@@ -1,11 +1,11 @@
 import { LPPCampaign } from 'lpp-campaign';
 import { paramsForServer } from 'feathers-hooks-common';
+import Milestone from 'models/Milestone';
 import getNetwork from '../lib/blockchain/getNetwork';
 import getWeb3 from '../lib/blockchain/getWeb3';
 import extraGas from '../lib/blockchain/extraGas';
 import { feathersClient } from '../lib/feathersClient';
 import Campaign from '../models/Campaign';
-import Milestone from '../models/Milestone';
 import Donation from '../models/Donation';
 import IPFSService from './IPFSService';
 import ErrorPopup from '../components/ErrorPopup';
@@ -30,34 +30,33 @@ class CampaignService {
   }
 
   /**
-   * Lazy-load Campaigns by subscribing to Campaigns listener
+   * Get Campaigns
    *
+   * @param $limit    Amount of records to be loaded
+   * @param $skip     Amounds of record to be skipped
    * @param onSuccess Callback function once response is obtained successfylly
    * @param onError   Callback function if error is encountered
    */
-  static subscribe(onSuccess, onError) {
-    return campaigns
-      .watch({ listStrategy: 'always' })
+  static getCampaigns($limit = 100, $skip = 0, onSuccess = () => {}, onError = () => {}) {
+    return feathersClient
+      .service('campaigns')
       .find({
         query: {
-          projectId: {
-            $gt: 0, // 0 is a pending campaign
-          },
+          projectId: { $gt: 0 }, // 0 is a pending campaign
           status: Campaign.ACTIVE,
-          $limit: 200,
+          $limit,
+          $skip,
           $sort: { milestonesCount: -1 },
         },
       })
-      .subscribe(resp => {
-        const newResp = Object.assign({}, resp, {
-          data: resp.data.map(c => new Campaign(c)),
-        });
-        onSuccess(newResp);
-      }, onError);
+      .then(resp => {
+        onSuccess(resp.data.map(c => new Campaign(c)), resp.total);
+      })
+      .catch(onError);
   }
 
   /**
-   * Lazy-load Campaign milestones by subscribing to milestone listener
+   * Get Campaign milestones listener
    *
    * @param id        ID of the Campaign which donations should be retrieved
    * @param $limit    Amount of records to be loaded
@@ -65,7 +64,7 @@ class CampaignService {
    * @param onSuccess Callback function once response is obtained successfully
    * @param onError   Callback function if error is encountered
    */
-  static getMilestones(id, $limit, $skip, onSuccess, onError) {
+  static getMilestones(id, $limit = 100, $skip = 0, onSuccess = () => {}, onError = () => {}) {
     return feathersClient
       .service('milestones')
       .find({
@@ -97,7 +96,7 @@ class CampaignService {
       .find(
         paramsForServer({
           query: {
-            campaignId: id,
+            ownerTypeId: id,
             isReturn: false,
             $sort: { createdAt: -1 },
           },

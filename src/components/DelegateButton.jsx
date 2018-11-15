@@ -9,10 +9,9 @@ import Slider from 'react-rangeslider';
 import 'react-rangeslider/lib/index.css';
 
 import GA from 'lib/GoogleAnalytics';
+import Donation from 'models/Donation';
+import Milestone from 'models/Milestone';
 import { checkBalance } from '../lib/middleware';
-
-import Donation from '../models/Donation';
-import Milestone from '../models/Milestone';
 
 import DonationService from '../services/DonationService';
 
@@ -64,15 +63,15 @@ class DelegateButton extends Component {
     let maxAmount = utils.fromWei(this.props.donation.amountRemaining);
 
     if (admin && admin.type === Milestone.type) {
-      const diff = utils
-        .toBN(admin.maxAmount)
-        .sub(utils.toBN(admin.totalDonated || 0))
-        .toString();
-      if (utils.toBN(diff).lt(utils.toBN(this.props.donation.amountRemaining)))
-        maxAmount = utils.fromWei(diff);
+      if (utils.toBN(admin.maxDelegationAmount).lt(utils.toBN(this.props.donation.amountRemaining)))
+        maxAmount = utils.fromWei(admin.maxDelegationAmount);
     }
 
-    this.setState({ maxAmount, amount: maxAmount, objectsToDelegateTo: target.value });
+    this.setState({
+      maxAmount,
+      amount: maxAmount,
+      objectsToDelegateTo: target.value,
+    });
   }
 
   submit(model) {
@@ -145,7 +144,7 @@ class DelegateButton extends Component {
   }
 
   render() {
-    const { types, milestoneOnly, donation } = this.props;
+    const { types, milestoneOnly, donation, symbol } = this.props;
     const { isSaving, objectsToDelegateTo, maxAmount } = this.state;
     const style = { display: 'inline-block' };
     const pStyle = { whiteSpace: 'normal' };
@@ -170,8 +169,10 @@ class DelegateButton extends Component {
           <p style={pStyle}>
             You are delegating donation from{' '}
             <strong>{donation.giver.name || donation.giverAddress}</strong> of a value{' '}
-            <strong>{utils.fromWei(donation.amountRemaining)} ETH</strong> that has been donated to{' '}
-            <strong>{donation.donatedTo.name}</strong>
+            <strong>
+              {utils.fromWei(donation.amountRemaining)} {symbol}
+            </strong>{' '}
+            that has been donated to <strong>{donation.donatedTo.name}</strong>
           </p>
           <Form onSubmit={this.submit} layout="vertical">
             <div className="form-group">
@@ -188,6 +189,7 @@ class DelegateButton extends Component {
                 maxLength={1}
               />
             </div>
+
             <span className="label">Amount to delegate:</span>
 
             <div className="form-group">
@@ -202,7 +204,7 @@ class DelegateButton extends Component {
                   0: '0',
                   [maxAmount]: maxAmount,
                 }}
-                format={val => `${val} ETH`}
+                format={val => `${val} ${symbol}`}
                 onChange={amount => this.setState({ amount: Number(amount).toFixed(2) })}
               />
             </div>
@@ -242,10 +244,12 @@ DelegateButton.propTypes = {
   types: PropTypes.arrayOf(PropTypes.shape({})).isRequired,
   milestoneOnly: PropTypes.bool,
   donation: PropTypes.instanceOf(Donation).isRequired,
+  symbol: PropTypes.string,
 };
 
 DelegateButton.defaultProps = {
   milestoneOnly: false,
+  symbol: 'ETH',
 };
 
 export default DelegateButton;

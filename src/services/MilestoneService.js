@@ -15,20 +15,20 @@ class MilestoneService {
    * @param onError   Callback function if error is encountered
    */
   static subscribeDonations(id, onSuccess = () => {}, onError = () => {}) {
-    const query = paramsForServer({
-      query: {
-        amountRemaining: { $ne: 0 },
-        status: { $ne: Donation.FAILED },
-        $or: [{ intendedProjectTypeId: id }, { ownerTypeId: id }],
-      },
-      schema: 'includeTypeAndGiverDetails',
-      $sort: { createdAt: -1 },
-    });
-
     return feathersClient
       .service('donations')
       .watch({ listStrategy: 'always' })
-      .find(query)
+      .find(
+        paramsForServer({
+          query: {
+            amountRemaining: { $ne: 0 },
+            status: { $nin: [Donation.FAILED, Donation.TO_APPROVE] },
+            $or: [{ intendedProjectTypeId: id }, { ownerTypeId: id }],
+            $sort: { createdAt: -1 },
+          },
+          schema: 'includeTypeAndGiverDetails',
+        }),
+      )
       .subscribe(resp => {
         onSuccess(resp.data.map(d => new Donation(d)));
       }, onError);

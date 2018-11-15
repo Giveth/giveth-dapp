@@ -35,7 +35,7 @@ const ShowTypeDonations = props => (
                   {props.donations.map(d => (
                     <tr key={d._id}>
                       <td className="td-date">{moment(d.createdAt).format('MM/DD/YYYY')}</td>
-                      <td>{d.status}</td>
+                      <td>{d.statusDescription}</td>
 
                       <td className="td-donations-amount">
                         {d.isPending && (
@@ -44,7 +44,7 @@ const ShowTypeDonations = props => (
                             &nbsp;
                           </span>
                         )}
-                        {convertEthHelper(d.amount)} ETH
+                        {convertEthHelper(d.amount)} {(d.token && d.token.symbol) || 'ETH'}
                       </td>
                       <td className="td-user">
                         {d.giver && (

@@ -219,15 +219,15 @@ class MyMilestones extends Component {
       .service('milestones')
       .watch({ listStrategy: 'always' })
       .find(query)
-      .subscribe(resp =>
+      .subscribe(resp => {
         this.setState({
           milestones: resp.data,
           itemsPerPage: resp.limit,
           skipPages: resp.skip,
           totalResults: resp.total,
           isLoading: false,
-        }),
-      );
+        });
+      });
   }
 
   handlePageChanged(newPage) {
@@ -1055,11 +1055,22 @@ class MyMilestones extends Component {
                                       {getReadableStatus(m.status)}
                                     </td>
                                     <td className="td-donations-number">
-                                      {convertEthHelper(m.maxAmount)} ETH
+                                      {convertEthHelper(m.maxAmount)} {m.token.symbol}
                                     </td>
-                                    <td className="td-donations-number">{m.donationCount || 0}</td>
+                                    <td className="td-donations-number">
+                                      {(m.donationCounters &&
+                                        m.donationCounters.length &&
+                                        m.donationCounters[0].donationCount) ||
+                                        0}
+                                    </td>
                                     <td className="td-donations-">
-                                      {convertEthHelper(m.currentBalance || '0')} ETH
+                                      {convertEthHelper(
+                                        (m.donationCounters &&
+                                          m.donationCounters.length &&
+                                          m.donationCounters[0].currentBalance) ||
+                                          '0',
+                                      )}{' '}
+                                      {m.token.symbol}
                                     </td>
                                     <td className="td-reviewer">
                                       {m.reviewer &&

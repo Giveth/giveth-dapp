@@ -1,6 +1,5 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-// import _ from 'underscore';
 import moment from 'moment';
 
 import NetworkWarning from 'components/NetworkWarning';
@@ -50,11 +49,10 @@ const Donations = () => (
                                   <thead>
                                     <tr>
                                       <th className="td-action" />
-                                      <th>Status</th>
+                                      <th className="td-transaction-status">Status</th>
                                       <th className="td-date">Date</th>
                                       <th className="td-donated-to">Donated to</th>
                                       <th className="td-donations-amount">Amount</th>
-                                      <th className="td-transaction-status">Status</th>
                                       <th className="td-tx-address">Address</th>
                                       <th className="td-confirmations">
                                         {donations.some(d => d.isPending) && 'Confirmations'}
@@ -93,9 +91,21 @@ const Donations = () => (
                                             </div>
                                           )}
                                         </td>
-                                        <td>
-                                          <span>{d.status}</span>
+
+                                        <td className="td-transaction-status">
+                                          {d.isPending && (
+                                            <span>
+                                              <i className="fa fa-circle-o-notch fa-spin" />
+                                              &nbsp;
+                                            </span>
+                                          )}
+                                          {d.canDelegate(currentUser) ? (
+                                            <Link to="/delegations">{d.statusDescription}</Link>
+                                          ) : (
+                                            d.statusDescription
+                                          )}
                                         </td>
+
                                         <td className="td-date">
                                           {moment(d.createdAt).format('MM/DD/YYYY')}
                                         </td>
@@ -112,22 +122,10 @@ const Donations = () => (
                                           </Link>
                                         </td>
                                         <td className="td-donations-amount">
-                                          {convertEthHelper(d.amountRemaining)} ETH
+                                          {convertEthHelper(d.amountRemaining)}{' '}
+                                          {d.token && d.token.symbol}
                                         </td>
 
-                                        <td className="td-transaction-status">
-                                          {d.isPending && (
-                                            <span>
-                                              <i className="fa fa-circle-o-notch fa-spin" />
-                                              &nbsp;
-                                            </span>
-                                          )}
-                                          {d.canDelegate(currentUser) ? (
-                                            <Link to="/delegations">{d.statusDescription}</Link>
-                                          ) : (
-                                            d.statusDescription
-                                          )}
-                                        </td>
                                         {etherScanUrl && (
                                           <td className="td-tx-address">
                                             <a href={`${etherScanUrl}address/${d.giverAddress}`}>

@@ -95,6 +95,7 @@ class ViewDAC extends Component {
                   type: DAC.type,
                   title: dac.title,
                   id: dac.id,
+                  token: { symbol: 'ETH' },
                   adminId: dac.delegateId,
                 }}
                 currentUser={currentUser}
@@ -161,6 +162,7 @@ class ViewDAC extends Component {
                       type: DAC.type,
                       title: dac.title,
                       id: dac.id,
+                      token: { symbol: 'ETH' },
                       adminId: dac.delegateId,
                     }}
                     currentUser={currentUser}

@@ -3,12 +3,15 @@ import PropTypes from 'prop-types';
 import { utils } from 'web3';
 
 import getWeb3 from '../lib/blockchain/getWeb3';
+import getNetwork from '../lib/blockchain/getNetwork';
 import config from '../configuration';
 
 const { toBN } = utils;
+const { tokenAddresses } = config;
 
 const POLL_DELAY_ACCOUNT = 1000;
 const POLL_DELAY_NETWORK = 2000;
+const POLL_DELAY_TOKENS = 2000;
 
 const Context = createContext();
 const { Provider, Consumer } = Context;
@@ -43,6 +46,75 @@ const getAccount = async web3 => {
   return undefined;
 };
 
+const defaultTokenBalances = () =>
+  Object.keys(tokenAddresses).reduce((accumulator, addr) => {
+    accumulator[addr] = toBN(0);
+    return accumulator;
+  }, {});
+
+const getTokenBalance = async (contract, account) => {
+  let balance = toBN(0);
+  try {
+    balance = await contract.balanceOf(account);
+  } catch (e) {
+    // ignore
+  }
+
+  return {
+    address: contract._address,
+    balance,
+  };
+};
+
+const pollTokens = pollEvery(async (web3, { onBalance = () => {} } = {}) => {
+  const { tokens } = await getNetwork();
+  const tokenBalances = Object.values(tokenAddresses).reduce((accumulator, addr) => {
+    accumulator[addr] = {
+      contract: tokens[addr],
+      balance: toBN(-1),
+    };
+    return accumulator;
+  }, {});
+
+  return {
+    request: async () => {
+      try {
+        const [accounts, netId] = await Promise.all([web3.eth.getAccounts(), web3.eth.net.getId()]);
+
+        // we are only interested in homeNetwork token balances
+        if (accounts.length === 0 || netId !== config.homeNetworkId) {
+          return defaultTokenBalances();
+        }
+
+        const balances = {};
+
+        const setBalance = contract =>
+          getTokenBalance(contract, accounts[0]).then(({ address, balance }) => {
+            balances[address] = balance;
+          });
+
+        await Promise.all(Object.values(tokenBalances).map(({ contract }) => setBalance(contract)));
+
+        return balances;
+      } catch (e) {
+        return defaultTokenBalances();
+      }
+    },
+    onResult: balances => {
+      const hasChanged = Object.keys(balances).some(
+        addr => !balances[addr].eq(tokenBalances[addr].balance),
+      );
+
+      if (hasChanged) {
+        Object.keys(tokenBalances).forEach(addr => {
+          tokenBalances[addr].balance = balances[addr];
+        });
+        onBalance(balances);
+      }
+    },
+  };
+}, POLL_DELAY_TOKENS);
+
 const pollAccount = pollEvery((web3, { onAccount = () => {}, onBalance = () => {} } = {}) => {
   let lastAccount = -1;
   let lastBalance = toBN(-1);
@@ -60,7 +132,7 @@ const pollAccount = pollEvery((web3, { onAccount = () => {}, onBalance = () => {
         };
       } catch (e) {
         return {
-          balance: toBN(-1),
+          balance: toBN(0),
         };
       }
     },
@@ -108,6 +180,7 @@ class Web3Provider extends Component {
     this.state = {
       account: undefined,
       balance: toBN(-1),
+      tokenBalances: defaultTokenBalances(),
       currentNetwork: undefined,
       validProvider: false,
       isHomeNetwork: false,
@@ -144,6 +217,14 @@ class Web3Provider extends Component {
           onBalance: balance => {
             this.setState({
               balance,
+            });
+          },
+        });
+
+        pollTokens(web3, {
+          onBalance: tokenBalances => {
+            this.setState({
+              tokenBalances,
             });
           },
         });
@@ -199,6 +280,7 @@ class Web3Provider extends Component {
     const {
       account,
       balance,
+      tokenBalances,
       currentNetwork,
       validProvider,
       isHomeNetwork,
@@ -212,6 +294,7 @@ class Web3Provider extends Component {
           state: {
             account,
             balance,
+            tokenBalances,
             currentNetwork,
             validProvider,
             isHomeNetwork,

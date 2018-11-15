@@ -77,17 +77,6 @@ class MainMenu extends Component {
                     id="navbarSupportedContent"
                   >
                     <ul className="navbar-nav mr-auto">
-                      <li className="nav-item">
-                        <NavLink className="nav-link" to="/dacs" activeClassName="active">
-                          Communities
-                        </NavLink>
-                      </li>
-                      <li className="nav-item">
-                        <NavLink className="nav-link" to="/campaigns" activeClassName="active">
-                          Campaigns
-                        </NavLink>
-                      </li>
-
                       {validProvider &&
                         state.currentUser && (
                           <li className="nav-item dropdown">

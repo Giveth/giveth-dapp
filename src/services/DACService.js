@@ -37,27 +37,26 @@ class DACService {
   }
 
   /**
-   * Lazy-load DACs by subscribing to DACs listener
+   * Get DACs
    *
-   * @param onSuccess Callback function once response is obtained successfully
+   * @param $limit    Amount of records to be loaded
+   * @param $skip     Amounds of record to be skipped
+   * @param onSuccess Callback function once response is obtained successfylly
    * @param onError   Callback function if error is encountered
    */
-  static subscribe(onSuccess, onError) {
-    return dacs
-      .watch({ listStrategy: 'always' })
+  static getDACs($limit = 100, $skip = 0, onSuccess = () => {}, onError = () => {}) {
+    return feathersClient
+      .service('dacs')
       .find({
         query: {
           status: DAC.ACTIVE,
-          $limit: 200,
+          $limit,
+          $skip,
           $sort: { campaignsCount: -1 },
         },
       })
-      .subscribe(resp => {
-        const newResp = Object.assign({}, resp, {
-          data: resp.data.map(d => new DAC(d)),
-        });
-        onSuccess(newResp);
-      }, onError);
+      .then(resp => onSuccess(resp.data.map(d => new DAC(d)), resp.total))
+      .catch(onError);
   }
 
   /**

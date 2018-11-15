@@ -80,7 +80,8 @@ const Delegations = ({ balance }) => (
                                                 &nbsp;
                                               </span>
                                             )}
-                                            {convertEthHelper(d.amountRemaining)} ETH
+                                            {convertEthHelper(d.amountRemaining)}{' '}
+                                            {(d.token && d.token.symbol) || 'ETH'}
                                           </td>
                                           <td className="td-user">
                                             <Link to={`profile/${d.giver.address}`}>
@@ -93,7 +94,7 @@ const Delegations = ({ balance }) => (
                                             </Link>
                                           </td>
                                           <td className="td-tx-address">{d.giverAddress}</td>
-                                          <td className="td-status">{d.status}</td>
+                                          <td className="td-status">{d.statusDescription}</td>
                                           <td className="td-actions">
                                             {/* When donated to a dac, allow delegation
                                       to campaigns and milestones */}
@@ -102,9 +103,14 @@ const Delegations = ({ balance }) => (
                                               isForeignNetwork &&
                                               d.amountRemaining > 0 && (
                                                 <DelegateButton
-                                                  types={campaigns.concat(milestones)}
+                                                  types={campaigns.concat(
+                                                    milestones.filter(
+                                                      m => m.symbol === d.token.symbol,
+                                                    ),
+                                                  )}
                                                   donation={d}
                                                   balance={balance}
+                                                  symbol={(d.token && d.token.symbol) || 'ETH'}
                                                 />
                                               )}
 

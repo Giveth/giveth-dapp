@@ -11,8 +11,7 @@ import 'react-toastify/dist/ReactToastify.min.css';
 
 import Sweetalert from 'sweetalert';
 
-// import GA from 'lib/GoogleAnalytics';
-import DataRoutes from './DataRoutes';
+import GA from 'lib/GoogleAnalytics';
 
 import { history } from '../lib/helpers';
 
@@ -32,6 +31,9 @@ import MyDACs from '../components/views/MyDACs';
 import MyCampaigns from '../components/views/MyCampaigns';
 import MyMilestones from '../components/views/MyMilestones';
 import NotFound from '../components/views/NotFound';
+import Explore from '../components/views/Explore';
+import Campaigns from '../components/views/Campaigns';
+import DACs from '../components/views/DACs';
 
 import EditCampaign from '../components/views/EditCampaign';
 import ViewCampaign from '../components/views/ViewCampaign';
@@ -131,7 +133,7 @@ class Application extends Component {
                         <UserConsumer>
                           {({ state: { currentUser, hasError } }) => (
                             <div>
-                              {/* {GA.init() && <GA.RouteTracker />} */}
+                              {GA.init() && <GA.RouteTracker />}
 
                               {userLoading && <Loader className="fixed" />}
 
@@ -386,7 +388,21 @@ class Application extends Component {
                                         render={props => <Profile {...props} />}
                                       />
 
-                                      <DataRoutes />
+                                      <Route
+                                        exact
+                                        path="/"
+                                        render={props => <Explore {...props} />}
+                                      />
+                                      <Route
+                                        exact
+                                        path="/campaigns"
+                                        render={props => <Campaigns {...props} />}
+                                      />
+                                      <Route
+                                        exact
+                                        path="/dacs"
+                                        render={props => <DACs {...props} />}
+                                      />
 
                                       <Route component={NotFound} />
                                     </Switch>

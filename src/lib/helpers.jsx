@@ -95,45 +95,6 @@ export const getReadableStatus = status => {
   }
 };
 
-// returns a risk indicator
-export const calculateRiskFactor = (owner, dependencies) => {
-  const reasons = {
-    risk: 0,
-    hasName: true,
-    hasAvatar: true,
-    hasEmail: true,
-    hasLinkedIn: true,
-    hasDependencies: true,
-  };
-
-  if (!owner.name) {
-    reasons.risk += 3;
-    reasons.hasName = false;
-  }
-
-  if (!owner.avatar) {
-    reasons.risk += 2;
-    reasons.hasAvatar = false;
-  }
-
-  if (!owner.email) {
-    reasons.risk += 15;
-    reasons.hasEmail = false;
-  }
-
-  if (!owner.linkedIn) {
-    reasons.risk += 35;
-    reasons.hasLinkedIn = false;
-  }
-
-  if (dependencies === 0) {
-    reasons.risk += 40;
-    reasons.hasDependencies = false;
-  }
-
-  return reasons;
-};
-
 export const history = createBrowserHistory();
 
 // Get start of the day in UTC for a given date or start of current day in UTC
