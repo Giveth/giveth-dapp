@@ -94,6 +94,7 @@ const pollNetwork = pollEvery((web3, { onNetwork = () => {} } = {}) => {
     request: () => fetchNetwork(web3),
     onResult: ({ networkId, networkType }) => {
       if (networkId !== lastNetworkId) {
+        lastNetworkId = networkId;
         onNetwork(networkId, networkType);
       }
     },
