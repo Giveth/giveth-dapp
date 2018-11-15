@@ -68,7 +68,7 @@ CardStats.propTypes = {
   peopleCount: PropTypes.number.isRequired,
   status: PropTypes.string,
   maxAmount: PropTypes.string,
-  totalDonated: PropTypes.string,
+  totalDonated: PropTypes.number,
   token: PropTypes.shape({}),
 };
 
