@@ -37,11 +37,10 @@ const Donations = () => (
                               <thead>
                                 <tr>
                                   <th className="td-action" />
-                                  <th>Status</th>
+                                  <th className="td-transaction-status">Status</th>
                                   <th className="td-date">Date</th>
                                   <th className="td-donated-to">Donated to</th>
                                   <th className="td-donations-amount">Amount</th>
-                                  <th className="td-transaction-status">Status</th>
                                   <th className="td-tx-address">Address</th>
                                   <th className="td-confirmations">
                                     {donations.some(d => d.isPending) && 'Confirmations'}
@@ -80,28 +79,6 @@ const Donations = () => (
                                         </div>
                                       )}
                                     </td>
-                                    <td>
-                                      <span>{d.status}</span>
-                                    </td>
-                                    <td className="td-date">
-                                      {moment(d.createdAt).format('MM/DD/YYYY')}
-                                    </td>
-
-                                    <td className="td-donated-to">
-                                      {d.intendedProjectId > 0 && (
-                                        <span className="badge badge-info">
-                                          <i className="fa fa-random" />
-                                          &nbsp;Delegated
-                                        </span>
-                                      )}
-                                      <Link to={d.donatedTo.url}>
-                                        {d.donatedTo.type} <em>{d.donatedTo.name}</em>
-                                      </Link>
-                                    </td>
-                                    <td className="td-donations-amount">
-                                      {convertEthHelper(d.amountRemaining)} ETH
-                                    </td>
-
                                     <td className="td-transaction-status">
                                       {d.isPending && (
                                         <span>
@@ -115,6 +92,29 @@ const Donations = () => (
                                         d.statusDescription
                                       )}
                                     </td>
+                                    <td className="td-date">
+                                      {moment(d.createdAt).format('MM/DD/YYYY')}
+                                    </td>
+
+                                    <td className="td-donated-to">
+                                      {d.intendedProjectId > 0 && (
+                                        <span
+                                          className="badge badge-info"
+                                          style={{ marginRight: '5px' }}
+                                        >
+                                          <i className="fa fa-random" />
+                                          Proposed delegation&nbsp;
+                                        </span>
+                                      )}
+                                      <Link to={d.donatedTo.url}>
+                                        {d.donatedTo.type} <em>{d.donatedTo.name}</em>
+                                      </Link>
+                                    </td>
+                                    <td className="td-donations-amount">
+                                      {convertEthHelper(d.amountRemaining)}{' '}
+                                      {d.token && d.token.symbol}
+                                    </td>
+
                                     {etherScanUrl && (
                                       <td className="td-tx-address">
                                         <a href={`${etherScanUrl}address/${d.giverAddress}`}>

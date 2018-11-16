@@ -1,7 +1,9 @@
 import React, { Component, createContext } from 'react';
 import PropTypes from 'prop-types';
 import { paramsForServer } from 'feathers-hooks-common';
+import { utils } from 'web3';
 
+import Milestone from 'models/Milestone';
 import { feathersClient } from '../lib/feathersClient';
 import ErrorPopup from '../components/ErrorPopup';
 
@@ -10,7 +12,6 @@ import Donation from '../models/Donation';
 import User from '../models/User';
 import DAC from '../models/DAC';
 import Campaign from '../models/Campaign';
-import Milestone from '../models/Milestone';
 
 const Context = createContext();
 const { Provider, Consumer } = Context;
@@ -132,8 +133,9 @@ class DelegationProvider extends Component {
                   'projectId',
                   'campaignId',
                   'maxAmount',
-                  'totalDonated',
+                  'donationCounters',
                   'status',
+                  'token',
                 ],
                 $limit: 100,
                 $sort: {
@@ -146,16 +148,28 @@ class DelegationProvider extends Component {
                 this.setState(
                   {
                     milestones: resp.data.map(m => {
-                      m.type = Milestone.type;
-                      m.name = m.title;
                       m.id = m._id;
+                      m.type = Milestone.type;
+                      m.symbol = m.token.symbol;
+                      m.name = m.title;
+
+                      if (m.donationCounters && m.donationCounters.length > 0) {
+                        const { currentBalance } = m.donationCounters[0];
+                        m.maxDelegationAmount = utils
+                          .toBN(m.maxAmount)
+                          .sub(utils.toBN(currentBalance))
+                          .toString();
+                      } else {
+                        m.maxDelegationAmount = m.maxAmount;
+                      }
+
                       m.element = (
                         <span>
                           {m.title} <em>Milestone</em>
                         </span>
                       );
                       return m;
-                    }), // .filter((m) => m.totalDonated < m.maxAmount)
+                    }),
                   },
                   resolve(),
                 );
@@ -164,8 +178,12 @@ class DelegationProvider extends Component {
             );
         }),
       ])
-        .then(() => this.getAndWatchDonations())
+        .then(() => {
+          this.getAndWatchDonations();
+        })
+
         .catch(err => {
+          console.log('err', err);
           ErrorPopup('Unable to load dacs, campaigns or milestones.', err);
           this.setState({ isLoading: false });
         });
