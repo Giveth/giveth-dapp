@@ -11,8 +11,7 @@ import 'react-rangeslider/lib/index.css';
 import GA from 'lib/GoogleAnalytics';
 import Donation from 'models/Donation';
 import Milestone from 'models/Milestone';
-import { checkWalletBalance } from '../lib/middleware';
-import GivethWallet from '../lib/blockchain/GivethWallet';
+import { checkBalance } from '../lib/middleware';
 
 import DonationService from '../services/DonationService';
 
@@ -49,7 +48,7 @@ class DelegateButton extends Component {
   }
 
   openDialog() {
-    checkWalletBalance(this.props.wallet)
+    checkBalance(this.props.balance)
       .then(() => this.setState({ modalVisible: true }))
       .catch(err => {
         if (err === 'noBalance') {
@@ -241,7 +240,7 @@ class DelegateButton extends Component {
 }
 
 DelegateButton.propTypes = {
-  wallet: PropTypes.instanceOf(GivethWallet).isRequired,
+  balance: PropTypes.objectOf(utils.BN).isRequired,
   types: PropTypes.arrayOf(PropTypes.shape({})).isRequired,
   milestoneOnly: PropTypes.bool,
   donation: PropTypes.instanceOf(Donation).isRequired,

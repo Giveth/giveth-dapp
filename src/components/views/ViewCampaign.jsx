@@ -4,23 +4,22 @@ import { Link } from 'react-router-dom';
 import Avatar from 'react-avatar';
 import Masonry, { ResponsiveMasonry } from 'react-responsive-masonry';
 import ReactHtmlParser from 'react-html-parser';
+import { utils } from 'web3';
 
 import { feathersClient } from '../../lib/feathersClient';
 import Loader from '../Loader';
 import MilestoneCard from '../MilestoneCard';
 import GoBackButton from '../GoBackButton';
 import { isOwner, getUserName, getUserAvatar } from '../../lib/helpers';
-import { checkWalletBalance } from '../../lib/middleware';
+import { checkBalance } from '../../lib/middleware';
 import BackgroundImageHeader from '../BackgroundImageHeader';
 import DonateButton from '../DonateButton';
 import CommunityButton from '../CommunityButton';
 import DelegateMultipleButton from '../DelegateMultipleButton';
 import ShowTypeDonations from '../ShowTypeDonations';
-import AuthenticatedLink from '../AuthenticatedLink';
 
 import User from '../../models/User';
 import Campaign from '../../models/Campaign';
-import GivethWallet from '../../lib/blockchain/GivethWallet';
 import CampaignService from '../../services/CampaignService';
 
 import ErrorPopup from '../ErrorPopup';
@@ -31,7 +30,7 @@ import ErrorBoundary from '../ErrorBoundary';
  *
  * @param currentUser  Currently logged in user information
  * @param history      Browser history object
- * @param wallet       Wallet object with the balance and all keystores
+ * @param balance      User's current balance
  */
 class ViewCampaign extends Component {
   constructor(props) {
@@ -98,7 +97,7 @@ class ViewCampaign extends Component {
   }
 
   removeMilestone(id) {
-    checkWalletBalance(this.props.wallet)
+    checkBalance(this.props.balance)
       .then(() => {
         React.swal({
           title: 'Delete Milestone?',
@@ -118,7 +117,7 @@ class ViewCampaign extends Component {
   }
 
   render() {
-    const { history, currentUser, wallet } = this.props;
+    const { history, currentUser, balance } = this.props;
     const {
       isLoading,
       campaign,
@@ -148,7 +147,6 @@ class ViewCampaign extends Component {
                     token: { symbol: 'ETH' },
                     adminId: campaign.projectId,
                   }}
-                  wallet={wallet}
                   currentUser={currentUser}
                   history={history}
                 />
@@ -156,7 +154,7 @@ class ViewCampaign extends Component {
                   <DelegateMultipleButton
                     style={{ padding: '10px 10px' }}
                     campaign={campaign}
-                    wallet={wallet}
+                    balance={balance}
                     currentUser={currentUser}
                   />
                 )}
@@ -189,25 +187,23 @@ class ViewCampaign extends Component {
                       <h3>Milestones</h3>
                       {campaign.projectId > 0 &&
                         isOwner(campaign.owner.address, currentUser) && (
-                          <AuthenticatedLink
+                          <Link
                             className="btn btn-primary btn-sm pull-right"
                             to={`/campaigns/${campaign.id}/milestones/new`}
-                            wallet={wallet}
                           >
                             Add Milestone
-                          </AuthenticatedLink>
+                          </Link>
                         )}
 
                       {campaign.projectId > 0 &&
                         !isOwner(campaign.owner.address, currentUser) &&
                         currentUser && (
-                          <AuthenticatedLink
+                          <Link
                             className="btn btn-primary btn-sm pull-right"
                             to={`/campaigns/${campaign.id}/milestones/propose`}
-                            wallet={wallet}
                           >
                             Propose Milestone
-                          </AuthenticatedLink>
+                          </Link>
                         )}
 
                       {isLoadingMilestones &&
@@ -227,7 +223,7 @@ class ViewCampaign extends Component {
                               currentUser={currentUser}
                               key={m._id}
                               history={history}
-                              wallet={wallet}
+                              balance={balance}
                               removeMilestone={() => this.removeMilestone(m._id)}
                             />
                           ))}
@@ -267,7 +263,6 @@ class ViewCampaign extends Component {
                         adminId: campaign.projectId,
                         token: { symbol: 'ETH' },
                       }}
-                      wallet={wallet}
                       currentUser={currentUser}
                       history={history}
                     />
@@ -305,12 +300,11 @@ ViewCampaign.propTypes = {
       id: PropTypes.string,
     }).isRequired,
   }).isRequired,
-  wallet: PropTypes.instanceOf(GivethWallet),
+  balance: PropTypes.objectOf(utils.BN).isRequired,
 };
 
 ViewCampaign.defaultProps = {
   currentUser: undefined,
-  wallet: undefined,
 };
 
 export default ViewCampaign;

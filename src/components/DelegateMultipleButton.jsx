@@ -9,9 +9,8 @@ import 'react-rangeslider/lib/index.css';
 import BigNumber from 'bignumber.js';
 import InputToken from 'react-input-token';
 
-import { checkWalletBalance } from '../lib/middleware';
+import { checkBalance } from '../lib/middleware';
 import { feathersClient } from '../lib/feathersClient';
-import GivethWallet from '../lib/blockchain/GivethWallet';
 import Loader from './Loader';
 import config from '../configuration';
 import SelectFormsy from './SelectFormsy';
@@ -52,7 +51,7 @@ const _getTokenWhitelist = () => {
 /**
  * Retrieves the oldest 100 donations that the user can delegate
  *
- * @prop {GivethWallet} wallet      Wallet object
+ * @prop {BN}           balance     Current user's balance
  * @prop {User}         currentUser Current user of the Dapp
  * @prop {Campaign}     campaign    If the delegation is towards campaign, this contains the campaign
  * @prop {Object}       milestone   It the delegation is towards campaign, this contains the milestone
@@ -203,7 +202,7 @@ class DelegateMultipleButton extends Component {
   }
 
   openDialog() {
-    checkWalletBalance(this.props.wallet).then(() => this.setState({ modalVisible: true }));
+    checkBalance(this.props.balance).then(() => this.setState({ modalVisible: true }));
   }
 
   submit(model) {
@@ -391,7 +390,7 @@ class DelegateMultipleButton extends Component {
 }
 
 DelegateMultipleButton.propTypes = {
-  wallet: PropTypes.instanceOf(GivethWallet).isRequired,
+  balance: PropTypes.objectOf(utils.BN).isRequired,
   currentUser: PropTypes.instanceOf(User).isRequired,
   campaign: PropTypes.instanceOf(Campaign),
   milestone: PropTypes.shape(),

@@ -2,14 +2,14 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 import Pagination from 'react-js-pagination';
+import { utils } from 'web3';
 
-import { isLoggedIn, redirectAfterWalletUnlock, checkWalletBalance } from '../../lib/middleware';
-import { getTruncatedText, convertEthHelper } from '../../lib/helpers';
+import { isLoggedIn, checkBalance } from '../../lib/middleware';
+import { getTruncatedText, convertEthHelper, history } from '../../lib/helpers';
 
 import Loader from '../Loader';
 
 import User from '../../models/User';
-import GivethWallet from '../../lib/blockchain/GivethWallet';
 import DACservice from '../../services/DACService';
 import DAC from '../../models/DAC';
 
@@ -41,6 +41,15 @@ class MyDACs extends Component {
       });
   }
 
+  componentDidUpdate(prevProps) {
+    if (prevProps.currentUser !== this.props.currentUser) {
+      // eslint-disable-next-line react/no-did-update-set-state
+      this.setState({ isLoading: true });
+      if (this.dacsObserver) this.dacsObserver.unsubscribe();
+      this.loadDACs();
+    }
+  }
+
   componentWillUnmount() {
     if (this.dacsObserver) this.dacsObserver.unsubscribe();
   }
@@ -56,7 +65,7 @@ class MyDACs extends Component {
   }
 
   editDAC(id) {
-    checkWalletBalance(this.props.wallet)
+    checkBalance(this.props.balance)
       .then(() =>
         React.swal({
           title: 'Edit Community?',
@@ -65,7 +74,7 @@ class MyDACs extends Component {
           dangerMode: true,
           buttons: ['Cancel', 'Yes, edit'],
         }).then(isConfirmed => {
-          if (isConfirmed) redirectAfterWalletUnlock(`/dacs/${id}/edit`, this.props.wallet);
+          if (isConfirmed) history.push(`/dacs/${id}/edit`);
         }),
       )
       .catch(err => {
@@ -204,7 +213,7 @@ class MyDACs extends Component {
 
 MyDACs.propTypes = {
   currentUser: PropTypes.instanceOf(User).isRequired,
-  wallet: PropTypes.instanceOf(GivethWallet).isRequired,
+  balance: PropTypes.objectOf(utils.BN).isRequired,
 };
 
 export default MyDACs;

@@ -183,11 +183,13 @@ class Donation extends Model {
    * Check if a user can refund this donation
    *
    * @param {User} user User for whom the action should be checked
+   * @param {boolean} isForeignNetwork Are we connected to the foreign network
    *
    * @return {boolean} True if given user can refund the donation
    */
-  canRefund(user) {
+  canRefund(user, isForeignNetwork) {
     return (
+      isForeignNetwork &&
       this._ownerTypeId === user.address &&
       this._status === Donation.WAITING &&
       this._amountRemaining > 0
@@ -198,11 +200,13 @@ class Donation extends Model {
    * Check if a user can approve or reject delegation of this donation
    *
    * @param {User} user User for whom the action should be checked
+   * @param {boolean} isForeignNetwork Are we connected to the foreign network
    *
    * @return {boolean} True if given user can approve or reject the delegation of the donation
    */
-  canApproveReject(user) {
+  canApproveReject(user, isForeignNetwork) {
     return (
+      isForeignNetwork &&
       this._ownerTypeId === user.address &&
       this._status === Donation.TO_APPROVE &&
       (new Date() < new Date(this._commitTime) || !this._commitTime)
@@ -212,12 +216,17 @@ class Donation extends Model {
   /**
    * Check if a user can delegate this donation
    *
-   * @param {User} user User for whom the action should be checked
+   * @param {User}    user User for whom the action should be checked
+   * @param {boolean} isForeignNetwork Are we connected to the foreign network
    *
    * @return {boolean} True if given user can delegate the donation
    */
-  canDelegate(user) {
-    return this._status === Donation.WAITING && this._ownerEntity.address === user.address;
+  canDelegate(user, isForeignNetwork) {
+    return (
+      isForeignNetwork &&
+      this._status === Donation.WAITING &&
+      this._ownerEntity.address === user.address
+    );
   }
 
   get isPending() {

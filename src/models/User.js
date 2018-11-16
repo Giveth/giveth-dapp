@@ -7,18 +7,21 @@ import { cleanIpfsPath } from '../lib/helpers';
 /**
  * The DApp User model
  *
- * @attribute address     Ethereum address of the user
- * @attribute avatar      URL to user avatar
+ * @attribute address       Ethereum address of the user
+ * @attribute avatar        URL to user avatar
  * @attribute commitTime
- * @attribute email       Email address of the user
- * @attribute giverId     Giver ID used for querying donations
- * @attribute linkedin    Link to the linkedin profile
- * @attribute name        Name of the user
- * @attribute url         Url attached to LiquidPledging admin
+ * @attribute email         Email address of the user
+ * @attribute giverId       Giver ID used for querying donations
+ * @attribute linkedin      Link to the linkedin profile
+ * @attribute name          Name of the user
+ * @attribute url           Url attached to LiquidPledging admin
+ * @attribute authenticated If the user is authenticated w/ feathers
  */
 class User extends Model {
   constructor(data) {
     super(data);
+
+    this.authenticated = false;
 
     if (data) {
       this.address = data.address;
@@ -30,6 +33,7 @@ class User extends Model {
       this.name = data.name;
       this.updatedAt = data.updatedAt;
       this.url = data.url;
+      this.authenticated = data.authenticated || false;
     }
   }
 
@@ -87,7 +91,7 @@ class User extends Model {
   }
 
   set address(value) {
-    this.checkType(value, ['string'], 'address');
+    this.checkType(value, ['undefined', 'string'], 'address');
     this.myAddress = value;
   }
 
@@ -166,6 +170,15 @@ class User extends Model {
   set updatedAt(value) {
     this.checkType(value, ['undefined', 'string'], 'updatedAt');
     this.myUpdatedAt = value;
+  }
+
+  get authenticated() {
+    return this.myIsAuthenticated;
+  }
+
+  set authenticated(value) {
+    this.checkType(value, ['boolean'], 'authenticated');
+    this.myIsAuthenticated = value;
   }
 }
 
