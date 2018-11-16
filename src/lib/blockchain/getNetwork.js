@@ -5,6 +5,7 @@ import { GivethBridge, ForeignGivethBridge } from 'giveth-bridge';
 
 import getWeb3 from './getWeb3';
 import config from '../../configuration';
+import { feathersClient } from '../feathersClient';
 
 // The minimum ABI to handle any ERC20 Token balance, decimals and allowance approval
 const ERC20ABI = [
@@ -61,9 +62,12 @@ export default async () => {
   network.foreignGivethBridge = new ForeignGivethBridge(web3, network.foreignGivethBridgeAddress);
 
   network.tokens = {};
-  Object.values(config.tokenAddresses).forEach(addr => {
-    network.tokens[addr] = new web3.eth.Contract(ERC20ABI, addr);
-  });
+  const { tokenWhitelist } = await feathersClient.service('/whitelist').find();
+  if (tokenWhitelist) {
+    tokenWhitelist.filter(token => web3.utils.isAddress(token.address)).forEach(token => {
+      network.tokens[token.address] = new web3.eth.Contract(ERC20ABI, token.address);
+    });
+  }
 
   return network;
 };
