@@ -605,15 +605,16 @@ class DonationService {
       const isConfirmed = await React.swal({
         title: 'Here we go...',
         content: React.swal.msg(
-          `<div>
+          <div>
             <p>For your donation you need to make 2 transactions:</p>
             <ol style={{ textAlign: 'left' }}>
               <li>
-                A transaction to allow our contracts to transfer {utils.fromWei(amount)} tokens.
+                A transaction to approve our contracts to transfer {utils.fromWei(amount)} tokens on
+                your behalf.
               </li>
               <li>A transaction of 0 ETH to donate the tokens.</li>
             </ol>
-          </div>`,
+          </div>,
         ),
         icon: 'info',
         buttons: ['Cancel', 'Lets do it!'],
@@ -634,7 +635,8 @@ class DonationService {
             <ol style={{ textAlign: 'left' }}>
               <li>A transaction to reset your token allowance</li>
               <li>
-                A transaction to allow our contracts to transfer {utils.fromWei(amount)} tokens
+                A transaction to approve our contracts to transfer {utils.fromWei(amount)} tokens on
+                your behalf.
               </li>
               <li>A transaction of 0 ETH to donate the tokens</li>
             </ol>

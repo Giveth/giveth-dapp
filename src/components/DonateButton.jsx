@@ -63,7 +63,6 @@ class BaseDonateButton extends React.Component {
       isSaving: false,
       formIsValid: false,
       amount: '',
-      account: undefined,
       givethBridge: undefined,
       etherscanUrl: '',
       modalVisible: false,
@@ -102,7 +101,7 @@ class BaseDonateButton extends React.Component {
   }
 
   getDonationData() {
-    const { givethBridge, account } = this.state;
+    const { givethBridge } = this.state;
     const { currentUser } = this.props;
     const { adminId } = this.props.model;
 
@@ -113,7 +112,9 @@ class BaseDonateButton extends React.Component {
             .donateAndCreateGiver(currentUser.address, adminId)
             .encodeABI();
     }
-    return givethBridge.$contract.methods.donateAndCreateGiver(account, adminId).encodeABI();
+    return givethBridge.$contract.methods
+      .donateAndCreateGiver(currentUser.address, adminId)
+      .encodeABI();
   }
 
   pollToken() {
@@ -188,7 +189,7 @@ class BaseDonateButton extends React.Component {
   donateWithBridge(model) {
     const { currentUser } = this.props;
     const { adminId } = this.props.model;
-    const { account, givethBridge, etherscanUrl, showCustomAddress, selectedToken } = this.state;
+    const { givethBridge, etherscanUrl, showCustomAddress, selectedToken } = this.state;
 
     const value = utils.toWei(model.amount);
     const isDonationInToken = selectedToken.symbol !== 'ETH';
@@ -197,7 +198,7 @@ class BaseDonateButton extends React.Component {
     const _makeDonationTx = async () => {
       let method;
       let donationUser;
-      const opts = { from: account, $extraGas: extraGas() };
+      const opts = { from: currentUser.address, $extraGas: extraGas() };
 
       // actually uses 84766, but runs out of gas if exact
       if (!isDonationInToken) Object.assign(opts, { value, gas: DONATION_GAS });
@@ -229,7 +230,7 @@ class BaseDonateButton extends React.Component {
           );
           donationUser = { address: model.customAddress };
         }
-      } else if (currentUser) {
+      } else {
         // Donating on behalf of logged in DApp user
         method =
           currentUser.giverId > 0
@@ -242,10 +243,6 @@ class BaseDonateButton extends React.Component {
                 opts,
               );
         donationUser = currentUser;
-      } else {
-        // Donating without any user
-        method = givethBridge.donateAndCreateGiver(account, adminId, tokenAddress, value, opts);
-        donationUser = { address: account };
       }
 
       let txHash;
@@ -314,7 +311,7 @@ class BaseDonateButton extends React.Component {
 
     // if donating in token, first approve transfer of token by bridge
     if (isDonationInToken) {
-      DonationService.approveERC20tokenTransfer(tokenAddress, account, value)
+      DonationService.approveERC20tokenTransfer(tokenAddress, currentUser.address, value)
         .then(() => _makeDonationTx())
         .catch(err => {
           this.setState({
