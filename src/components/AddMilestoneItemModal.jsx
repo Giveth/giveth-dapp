@@ -1,4 +1,3 @@
-/* eslint-disable prefer-destructuring */
 /* eslint-disable jsx-a11y/anchor-is-valid */
 
 import React, { Component } from 'react';
@@ -142,7 +141,7 @@ class AddMilestoneItemModal extends Component {
             </div>
           </div>
 
-          <RateConvertor token={token}/>
+          <RateConvertor token={token} />
 
           <FormsyImageUploader
             name="image"
@@ -179,6 +178,11 @@ AddMilestoneItemModal.propTypes = {
   openModal: PropTypes.bool.isRequired,
   onClose: PropTypes.func.isRequired,
   onAddItem: PropTypes.func.isRequired,
+  token: PropTypes.shape({}),
+};
+
+AddMilestoneItemModal.defaultProps = {
+  token: undefined,
 };
 
 export default getEthConversionContext(AddMilestoneItemModal);

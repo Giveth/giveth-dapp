@@ -1,10 +1,8 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 
-import { getTruncatedText } from '../lib/helpers';
+import { getTruncatedText, history } from '../lib/helpers';
 import CardStats from './CardStats';
-import { redirectAfterWalletUnlock, checkWalletBalance } from '../lib/middleware';
-import GivethWallet from '../lib/blockchain/GivethWallet';
 import Campaign from '../models/Campaign';
 
 /**
@@ -18,45 +16,11 @@ class CampaignCard extends Component {
   constructor(props) {
     super(props);
 
-    this.viewProfile = this.viewProfile.bind(this);
     this.viewCampaign = this.viewCampaign.bind(this);
-    this.editCampaign = this.editCampaign.bind(this);
   }
 
   viewCampaign() {
-    this.props.history.push(`/campaigns/${this.props.campaign.id}`);
-  }
-
-  editCampaign(e) {
-    e.stopPropagation();
-
-    checkWalletBalance(this.props.wallet)
-      .then(() => {
-        React.swal({
-          title: 'Edit Campaign?',
-          text: 'Are you sure you want to edit this Campaign?',
-          icon: 'warning',
-          dangerMode: true,
-          buttons: ['Cancel', 'Yes, edit'],
-        }).then(isConfirmed => {
-          if (isConfirmed) {
-            redirectAfterWalletUnlock(
-              `/campaigns/${this.props.campaign.id}/edit`,
-              this.props.wallet,
-            );
-          }
-        });
-      })
-      .catch(err => {
-        if (err === 'noBalance') {
-          // handle no balance error
-        }
-      });
-  }
-
-  viewProfile(e) {
-    e.stopPropagation();
-    this.props.history.push(`/profile/${this.props.campaign.owner.address}`);
+    history.push(`/campaigns/${this.props.campaign.id}`);
   }
 
   render() {
@@ -85,7 +49,7 @@ class CampaignCard extends Component {
               peopleCount={campaign.peopleCount}
               totalDonated={campaign.totalDonationCount}
               currentBalance={campaign.currentBalance}
-              token={{symbol: 'ETH', decimals: 18}}
+              token={{ symbol: 'ETH', decimals: 18 }}
             />
           </div>
         </div>
@@ -96,14 +60,8 @@ class CampaignCard extends Component {
 
 CampaignCard.propTypes = {
   campaign: PropTypes.instanceOf(Campaign).isRequired,
-  wallet: PropTypes.instanceOf(GivethWallet),
-  history: PropTypes.shape({
-    push: PropTypes.func.isRequired,
-  }).isRequired,
 };
 
-CampaignCard.defaultProps = {
-  wallet: undefined,
-};
+CampaignCard.defaultProps = {};
 
 export default CampaignCard;

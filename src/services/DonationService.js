@@ -433,7 +433,7 @@ class DonationService {
               parentDonations: [donation.id],
               status: Donation.COMMITTED,
               mined: false,
-              token: donation.token
+              token: donation.token,
             };
             feathersClient
               .service('/donations')
@@ -451,7 +451,7 @@ class DonationService {
         onSuccess(`${etherScanUrl}tx/${txHash}`);
       })
       .catch(err => {
-        console.log('err', err)
+        console.log('err', err);
         if (txHash && err.message && err.message.includes('unknown transaction')) return; // bug in web3 seems to constantly fail due to this error, but the tx is correct
         ErrorPopup(
           'Something went wrong with the transaction. Is your wallet unlocked?',
@@ -538,7 +538,7 @@ class DonationService {
       status: Donation.PENDING,
       homeTxHash: txHash,
       mined: false,
-      token: token
+      token,
     };
 
     // donation to a delegate

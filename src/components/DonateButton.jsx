@@ -156,7 +156,7 @@ class DonateButton extends React.Component {
 
                 if (account) {
                   homeWeb3.eth.getBalance(account).then(bal => {
-                    selectedToken.balance = utils.fromWei(bal);
+                    selectedToken.balance = homeWeb3.utils.fromWei(bal);
 
                     this.setState({
                       selectedToken,
@@ -253,7 +253,7 @@ class DonateButton extends React.Component {
       let donationUser;
       let opts;
 
-      if (isDonationInToken) opts = { from: account, gas: 100000 };
+      if (isDonationInToken) opts = { from: account, gas: 200000 };
       // actually uses 84766, but runs out of gas if exact
       else opts = { value, gas: DONATION_GAS, from: account };
 
@@ -476,8 +476,8 @@ class DonateButton extends React.Component {
               validNetwork &&
               model.type !== 'milestone' && (
                 <p>
-                  You're pledging: as long as the {model.type} owner does not lock your money you
-                  can take it back any time.
+                  You&apos;re pledging: as long as the {model.type} owner does not lock your money
+                  you can take it back any time.
                 </p>
               )}
 

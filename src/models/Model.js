@@ -1,4 +1,4 @@
-import moment from 'moment'
+import moment from 'moment';
 
 /**
  * The Basic model containing helper functions
@@ -80,7 +80,6 @@ class Model {
       );
     }
   }
-
 }
 
 export default Model;

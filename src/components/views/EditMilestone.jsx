@@ -21,6 +21,7 @@ import getNetwork from '../../lib/blockchain/getNetwork';
 import LoaderButton from '../LoaderButton';
 import User from '../../models/User';
 import GivethWallet from '../../lib/blockchain/GivethWallet';
+import templates from '../../lib/milestoneTemplates';
 
 import ErrorPopup from '../ErrorPopup';
 import MilestoneProof from '../MilestoneProof';
@@ -270,7 +271,27 @@ class EditMilestone extends Component {
     }
   }
 
-  submit() {
+  setToken(address) {
+    const { milestone } = this.state;
+    milestone.token = React.whitelist.tokenWhitelist.find(t => t.address === address);
+    this.setState({ milestone }, () =>
+      this.setDate(this.state.milestone.data || getStartOfDayUTC()),
+    );
+  }
+
+  toggleItemize() {
+    const { milestone } = this.state;
+    milestone.itemizeState = !milestone.itemizeState;
+    this.setState({ milestone });
+  }
+
+  toggleAddMilestoneItemModal() {
+    this.setState(prevState => ({
+      addMilestoneItemModalVisible: !prevState.addMilestoneItemModalVisible,
+    }));
+  }
+
+  submit(/* model */) {
     const { milestone } = this.state;
 
     const afterEmit = () => {
@@ -322,9 +343,9 @@ class EditMilestone extends Component {
           feathersClient
             .service('milestones')
             .create(Object.assign({}, constructedModel, txData))
-            .then(res => {
+            .then(m => {
               afterEmit(true);
-              callback(res);
+              callback(m);
             })
             .catch(err => {
               this.setState({ isSaving: false, isBlocking: true });
@@ -342,11 +363,11 @@ class EditMilestone extends Component {
               totalDonated: '0',
               donationCount: 0,
             },
-            res => {
+            m => {
               GA.trackEvent({
                 category: 'Milestone',
                 action: 'proposed',
-                label: res._id,
+                label: m._id,
               });
               React.toast.info(<p>Your Milestone is being proposed to the Campaign Owner.</p>);
             },
@@ -414,11 +435,11 @@ class EditMilestone extends Component {
                       totalDonated: '0',
                       donationCount: '0',
                     },
-                    resp => {
+                    m => {
                       GA.trackEvent({
                         category: 'Milestone',
                         action: 'created',
-                        label: resp._id,
+                        label: m._id,
                       });
                       React.toast.info(
                         <p>
@@ -569,26 +590,6 @@ class EditMilestone extends Component {
     );
   }
 
-  toggleAddMilestoneItemModal() {
-    this.setState(prevState => ({
-      addMilestoneItemModalVisible: !prevState.addMilestoneItemModalVisible,
-    }));
-  }
-
-  toggleItemize() {
-    const { milestone } = this.state;
-    milestone.itemizeState = !milestone.itemizeState;
-    this.setState({ milestone });
-  }
-
-  setToken(address) {
-    const { milestone } = this.state;
-    milestone.token = React.whitelist.tokenWhitelist.find(t => t.address === address);
-    this.setState({ milestone }, () =>
-      this.setDate(this.state.milestone.data || getStartOfDayUTC()),
-    );
-  }
-
   mapInputs(inputs) {
     const { milestone } = this.state;
 
@@ -623,7 +624,10 @@ class EditMilestone extends Component {
   }
 
   handleTemplateChange(option) {
+    const { milestone } = this.state;
+    milestone.description = templates.templates[option];
     this.setState({
+      milestone,
       template: option,
     });
   }

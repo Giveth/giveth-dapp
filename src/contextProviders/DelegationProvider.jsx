@@ -135,7 +135,7 @@ class DelegationProvider extends Component {
                   'maxAmount',
                   'donationCounters',
                   'status',
-                  'token'
+                  'token',
                 ],
                 $limit: 100,
                 $sort: {
@@ -153,12 +153,12 @@ class DelegationProvider extends Component {
                       m.symbol = m.token.symbol;
                       m.name = m.title;
 
-                      if(m.donationCounters && m.donationCounters.length > 0) {
-                        const currentBalance = m.donationCounters[0].currentBalance;
+                      if (m.donationCounters && m.donationCounters.length > 0) {
+                        const { currentBalance } = m.donationCounters[0];
                         m.maxDelegationAmount = utils
                           .toBN(m.maxAmount)
                           .sub(utils.toBN(currentBalance))
-                          .toString()
+                          .toString();
                       } else {
                         m.maxDelegationAmount = m.maxAmount;
                       }
@@ -169,20 +169,21 @@ class DelegationProvider extends Component {
                         </span>
                       );
                       return m;
-                    })
-                  }, resolve()
+                    }),
+                  },
+                  resolve(),
                 );
               },
               () => reject(),
             );
         }),
       ])
-        .then((res) => {
-          this.getAndWatchDonations()
+        .then(() => {
+          this.getAndWatchDonations();
         })
 
         .catch(err => {
-          console.log('err', err)
+          console.log('err', err);
           ErrorPopup('Unable to load dacs, campaigns or milestones.', err);
           this.setState({ isLoading: false });
         });

@@ -41,7 +41,7 @@ class DelegateButton extends Component {
       objectsToDelegateTo: [],
       modalVisible: false,
       amount: utils.fromWei(props.donation.amountRemaining),
-      maxAmount: utils.fromWei(props.donation.amountRemaining),    
+      maxAmount: utils.fromWei(props.donation.amountRemaining),
     };
 
     this.submit = this.submit.bind(this);
@@ -62,15 +62,15 @@ class DelegateButton extends Component {
     const admin = this.props.types.find(t => t._id === target.value[0]);
 
     let maxAmount = utils.fromWei(this.props.donation.amountRemaining);
-    
+
     if (admin && admin.type === Milestone.type) {
       if (utils.toBN(admin.maxDelegationAmount).lt(utils.toBN(this.props.donation.amountRemaining)))
         maxAmount = utils.fromWei(admin.maxDelegationAmount);
     }
 
-    this.setState({ 
-      maxAmount, 
-      amount: maxAmount, 
+    this.setState({
+      maxAmount,
+      amount: maxAmount,
       objectsToDelegateTo: target.value,
     });
   }
@@ -170,8 +170,10 @@ class DelegateButton extends Component {
           <p style={pStyle}>
             You are delegating donation from{' '}
             <strong>{donation.giver.name || donation.giverAddress}</strong> of a value{' '}
-            <strong>{utils.fromWei(donation.amountRemaining)} {symbol}</strong> that has been donated to{' '}
-            <strong>{donation.donatedTo.name}</strong>
+            <strong>
+              {utils.fromWei(donation.amountRemaining)} {symbol}
+            </strong>{' '}
+            that has been donated to <strong>{donation.donatedTo.name}</strong>
           </p>
           <Form onSubmit={this.submit} layout="vertical">
             <div className="form-group">
@@ -243,12 +245,12 @@ DelegateButton.propTypes = {
   types: PropTypes.arrayOf(PropTypes.shape({})).isRequired,
   milestoneOnly: PropTypes.bool,
   donation: PropTypes.instanceOf(Donation).isRequired,
-  symbol: PropTypes.string
+  symbol: PropTypes.string,
 };
 
 DelegateButton.defaultProps = {
   milestoneOnly: false,
-  symbol: "ETH"
+  symbol: 'ETH',
 };
 
 export default DelegateButton;

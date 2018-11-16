@@ -27,7 +27,7 @@ feathersClient
   .find()
   .then(whitelist => {
     React.whitelist = whitelist;
-    console.log('React.whitelist', whitelist)
+    console.log('React.whitelist', whitelist);
   });
 
 /**

@@ -142,75 +142,66 @@ export const getHomeWeb3 = () =>
     resolve(homeWeb3);
   });
 
-
 // The minimum ABI to handle any ERC20 Token balance, decimals and allowance approval
-let miniABI = [
+const miniABI = [
   // read balanceOf
   {
-    "constant":true,
-    "inputs":[{"name":"_owner","type":"address"}],
-    "name":"balanceOf",
-    "outputs":[{"name":"balance","type":"uint256"}],
-    "type":"function"
+    constant: true,
+    inputs: [{ name: '_owner', type: 'address' }],
+    name: 'balanceOf',
+    outputs: [{ name: 'balance', type: 'uint256' }],
+    type: 'function',
   },
   // read decimals
   {
-    "constant":true,
-    "inputs":[],
-    "name":"decimals",
-    "outputs":[{"name":"","type":"uint8"}],
-    "type":"function"
+    constant: true,
+    inputs: [],
+    name: 'decimals',
+    outputs: [{ name: '', type: 'uint8' }],
+    type: 'function',
   },
   // set allowance approval
   {
-    "constant":false,
-    "inputs":[
-      {"name":"_spender","type":"address"}, 
-      {"name":"_amount","type":"uint256"}
-    ],
-    "name":"approve",
-    "outputs":[{"name":"success","type":"bool"}],
-    "type":"function"
+    constant: false,
+    inputs: [{ name: '_spender', type: 'address' }, { name: '_amount', type: 'uint256' }],
+    name: 'approve',
+    outputs: [{ name: 'success', type: 'bool' }],
+    type: 'function',
   },
   // read allowance of a specific address
   {
-    "constant":true,
-    "inputs":[
-      {"name":"_owner","type":"address"},
-      {"name":"_spender","type":"address"}
-    ],
-    "name":"allowance",
-    "outputs":[{"name":"remaining","type":"uint256"}],
-    "type":"function"
-  }  
+    constant: true,
+    inputs: [{ name: '_owner', type: 'address' }, { name: '_spender', type: 'address' }],
+    name: 'allowance',
+    outputs: [{ name: 'remaining', type: 'uint256' }],
+    type: 'function',
+  },
 ];
-
 
 /**
   Fetches the balance of a specific address for any ERC20 token
 
   @param tokenContractAddress Address of the ERC20 token
-  @param accountAddress  Address of the token holder, by default the current logged in user    
-**/
+  @param accountAddress  Address of the token holder, by default the current logged in user
+* */
 export const getERC20TokenBalance = (tokenContractAddress, accountAddress) =>
   new Promise((resolve, reject) =>
     getHomeWeb3().then(web3 => {
       const ERC20 = new web3.eth.Contract(miniABI, tokenContractAddress);
 
       ERC20.methods.balanceOf(accountAddress).call((error, balance) => {
-        console.log(error, balance)
-        if(balance) {
-          ERC20.methods.decimals().call((error, decimals) => {
-            if(decimals) resolve(utils.fromWei(balance))
-            reject(error);
+        console.log(error, balance);
+        if (balance) {
+          ERC20.methods.decimals().call((e, decimals) => {
+            if (decimals) resolve(utils.fromWei(balance));
+            reject(e);
           });
         } else {
-          reject(error)
+          reject(error);
         }
-      })
-    })
-  )
-
+      });
+    }),
+  );
 
 /**
   Functions to creates an allowance approval for an ERC20 token
@@ -218,112 +209,127 @@ export const getERC20TokenBalance = (tokenContractAddress, accountAddress) =>
   @param tokenContractAddress Address of the ERC20 token
   @param tokenHolderAddress  Address of the token holder, by default the current logged in user
   @param amount Amount in wei for the allowance. If none given defaults to unlimited (-1)
-**/
+* */
 
-const _createAllowance = (web3, etherScanUrl, ERC20, tokenHolderAddress, amount) => 
+const _createAllowance = (web3, etherScanUrl, ERC20, tokenHolderAddress, amount) =>
   new Promise((resolve, reject) =>
-    ERC20.methods.approve(config.givethBridgeAddress, amount).send({ from: tokenHolderAddress }, (err, txHash) => {
-      
-      if(amount === 0) {
-        React.toast.info(
-          <p>
-            Please wait until your transaction is mined...<br/>
-            <strong>You will be asked to make another transaction to set the correct allowance!</strong>
-            <br />
-            <a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">
-              View transaction
-            </a>
-          </p>
-        )
-      } else {
-        React.toast.info(
-          <p>
-            Please wait until your transaction is mined...<br/>
-            <strong>You will be asked to make another transaction for your donation!</strong>
-            <br />
-            <a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">
-              View transaction
-            </a>
-          </p>
-        )        
-      }
+    ERC20.methods
+      .approve(config.givethBridgeAddress, amount)
+      .send({ from: tokenHolderAddress }, (err, txHash) => {
+        if (amount === 0) {
+          React.toast.info(
+            <p>
+              Please wait until your transaction is mined...<br />
+              <strong>
+                You will be asked to make another transaction to set the correct allowance!
+              </strong>
+              <br />
+              <a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">
+                View transaction
+              </a>
+            </p>,
+          );
+        } else {
+          React.toast.info(
+            <p>
+              Please wait until your transaction is mined...<br />
+              <strong>You will be asked to make another transaction for your donation!</strong>
+              <br />
+              <a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">
+                View transaction
+              </a>
+            </p>,
+          );
+        }
 
-      if(txHash) {
-        web3.eth.getTransactionReceipt(txHash)
-          .then((res) => resolve())
-          .catch((err) => reject(err))
-      } else {
-        reject()
-      }
+        if (txHash) {
+          web3.eth
+            .getTransactionReceipt(txHash)
+            .then(res => resolve(res))
+            .catch(e => reject(e));
+        } else {
+          reject();
+        }
+      }),
+  );
 
-    })
-  )
-
-
-export const approveERC20tokenTransfer = (etherScanUrl, tokenContractAddress, tokenHolderAddress, amount = -1) =>
+export const approveERC20tokenTransfer = (
+  etherScanUrl,
+  tokenContractAddress,
+  tokenHolderAddress,
+  amount = -1,
+) =>
   new Promise((resolve, reject) =>
     getHomeWeb3().then(web3 => {
       const ERC20 = new web3.eth.Contract(miniABI, tokenContractAddress);
 
       // read existing allowance for the givethBridge
-      ERC20.methods.allowance(tokenHolderAddress, config.givethBridgeAddress).call((error, allowance) => {
-        console.log(`Existing ERC20 allowance for address ${tokenHolderAddress}: `, allowance)
-        // if no allowance, we set the allowance
-        // if there's an existing allowance, but it's lower than the amount, we reset it and create a new allowance
-        // in any other case, just continue
+      ERC20.methods
+        .allowance(tokenHolderAddress, config.givethBridgeAddress)
+        .call((error, allowance) => {
+          console.log(`Existing ERC20 allowance for address ${tokenHolderAddress}: `, allowance);
+          // if no allowance, we set the allowance
+          // if there's an existing allowance, but it's lower than the amount, we reset it and create a new allowance
+          // in any other case, just continue
 
-        /* eslint-disable eqeqeq */
-        if (allowance == 0){ 
-          React.swal({
-            title: 'Here we go...',
-            content: React.swal.msg(
-              <div>
-                <p>For your donation you need to make 2 transactions:</p>
-                <ol style={{textAlign: "left"}}>
-                  <li>A transaction to allow our contracts to transfer {utils.fromWei(amount)} tokens.</li>
-                  <li>A transaction of 0 ETH to donate the tokens.</li>
-                </ol>                    
-              </div>
-            ),
-            icon: 'info',
-            buttons: ['Cancel', 'Lets do it!'],
-          })
-            .then(isConfirmed => {
-              if(isConfirmed) {
-                return _createAllowance(web3, etherScanUrl, ERC20, tokenHolderAddress, amount)
-              } else {
-                throw new Error("cancelled");
-              }})
-            .then(() => resolve('approved'))
-            .catch(err => reject(err))  
-        } else if (amount > allowance) {
-          React.swal({
-            title: 'Here we go...',
-            content: React.swal.msg(
-              <div>
-                <p>For your donation you need to make 3 transactions:</p>
-                <ol style={{textAlign: "left"}}>
-                  <li>A transaction to reset your token allowance</li>
-                  <li>A transaction to allow our contracts to transfer {utils.fromWei(amount)} tokens</li>
-                  <li>A transaction of 0 ETH to donate the tokens</li>
-                </ol>
-              </div>
-            ),
-            icon: 'info',
-            buttons: ['Cancel', 'Lets do it!'],
-          })
-            .then(isConfirmed => {
-              if(isConfirmed) {
-                return _createAllowance(web3, etherScanUrl, ERC20, tokenHolderAddress, 0)
-              } else {
-                throw new Error("cancelled");
-              }})
-            .then(() => _createAllowance(web3, etherScanUrl, ERC20, tokenHolderAddress, amount))
-            .then(() => resolve('approved'))
-            .catch(err => reject(err))
-        } else {
-          resolve('approved')
-        }
-      })
-    })
-  )  
+          /* eslint-disable eqeqeq */
+          if (allowance == 0) {
+            React.swal({
+              title: 'Here we go...',
+              content: React.swal.msg(
+                <div>
+                  <p>For your donation you need to make 2 transactions:</p>
+                  <ol style={{ textAlign: 'left' }}>
+                    <li>
+                      A transaction to allow our contracts to transfer {utils.fromWei(amount)}{' '}
+                      tokens.
+                    </li>
+                    <li>A transaction of 0 ETH to donate the tokens.</li>
+                  </ol>
+                </div>,
+              ),
+              icon: 'info',
+              buttons: ['Cancel', 'Lets do it!'],
+            })
+              .then(isConfirmed => {
+                if (isConfirmed) {
+                  return _createAllowance(web3, etherScanUrl, ERC20, tokenHolderAddress, amount);
+                }
+                throw new Error('cancelled');
+              })
+              .then(() => resolve('approved'))
+              .catch(err => reject(err));
+          } else if (amount > allowance) {
+            React.swal({
+              title: 'Here we go...',
+              content: React.swal.msg(
+                <div>
+                  <p>For your donation you need to make 3 transactions:</p>
+                  <ol style={{ textAlign: 'left' }}>
+                    <li>A transaction to reset your token allowance</li>
+                    <li>
+                      A transaction to allow our contracts to transfer {utils.fromWei(amount)}{' '}
+                      tokens
+                    </li>
+                    <li>A transaction of 0 ETH to donate the tokens</li>
+                  </ol>
+                </div>,
+              ),
+              icon: 'info',
+              buttons: ['Cancel', 'Lets do it!'],
+            })
+              .then(isConfirmed => {
+                if (isConfirmed) {
+                  return _createAllowance(web3, etherScanUrl, ERC20, tokenHolderAddress, 0);
+                }
+                throw new Error('cancelled');
+              })
+              .then(() => _createAllowance(web3, etherScanUrl, ERC20, tokenHolderAddress, amount))
+              .then(() => resolve('approved'))
+              .catch(err => reject(err));
+          } else {
+            resolve('approved');
+          }
+        });
+    }),
+  );
