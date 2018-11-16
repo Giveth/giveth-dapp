@@ -122,7 +122,7 @@ class ViewMilestone extends Component {
   }
 
   render() {
-    const { history, currentUser } = this.props;
+    const { history, currentUser, balance } = this.props;
     const { isLoading, donations, isLoadingDonations, campaign, milestone, recipient } = this.state;
 
     return (
@@ -169,6 +169,7 @@ class ViewMilestone extends Component {
                       style={{ padding: '10px 10px' }}
                       milestone={milestone}
                       campaign={campaign}
+                      balance={balance}
                       currentUser={currentUser}
                     />
                   )}

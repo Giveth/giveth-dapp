@@ -351,11 +351,9 @@ class BaseDonateButton extends React.Component {
     const balance = selectedToken.symbol === 'ETH' ? ETHBalance : selectedToken.balance;
 
     // Determine max amount
-    // let maxAmount = 10000000000000000;
     let maxAmount = utils.fromWei(balance);
-    if (this.props.maxAmount && balance.gtn(this.props.maxAmount))
+    if (this.props.maxAmount && balance.gt(utils.toBN(this.props.maxAmount)))
       maxAmount = utils.fromWei(this.props.maxAmount);
-    // else maxAmount = utils.fromWei(balance);
     return (
       <span style={style}>
         <button type="button" className="btn btn-success" onClick={this.openDialog}>
