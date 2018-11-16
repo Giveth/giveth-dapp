@@ -74,15 +74,7 @@ class MyCampaigns extends Component {
   editCampaign(id) {
     checkBalance(this.props.balance)
       .then(() => {
-        React.swal({
-          title: 'Edit Campaign?',
-          text: 'Are you sure you want to edit this Campaign?',
-          icon: 'warning',
-          dangerMode: true,
-          buttons: ['Cancel', 'Yes, edit'],
-        }).then(isConfirmed => {
-          if (isConfirmed) history.push(`/campaigns/${id}/edit`);
-        });
+        history.push(`/campaigns/${id}/edit`);
       })
       .catch(err => {
         if (err === 'noBalance') {

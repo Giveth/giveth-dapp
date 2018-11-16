@@ -39,21 +39,11 @@ class MilestoneCard extends Component {
 
     checkBalance(this.props.balance)
       .then(() => {
-        React.swal({
-          title: 'Edit Milestone?',
-          text: 'Are you sure you want to edit this milestone?',
-          icon: 'warning',
-          dangerMode: true,
-          buttons: ['Cancel', 'Yes, edit'],
-        }).then(isConfirmed => {
-          if (isConfirmed) {
-            this.props.history.push(
-              `/campaigns/${this.props.milestone.campaignId}/milestones/${
-                this.props.milestone._id
-              }/edit`,
-            );
-          }
-        });
+        this.props.history.push(
+          `/campaigns/${this.props.milestone.campaignId}/milestones/${
+            this.props.milestone._id
+          }/edit`,
+        );
       })
       .catch(err => {
         if (err === 'noBalance') {
