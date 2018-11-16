@@ -93,9 +93,7 @@ class DonateButton extends React.Component {
   }
 
   setToken(address) {
-    this.setState({ selectedToken: _getTokenWhitelist().find(t => t.address === address) }, () =>
-      this.pollWallet(),
-    );
+    this.setState({ selectedToken: _getTokenWhitelist().find(t => t.address === address) });
   }
 
   getDonationData() {
@@ -395,7 +393,7 @@ class DonateButton extends React.Component {
                         )}
                         {/* TODO: remove this b/c the wallet provider will contain this info */}
                         {config.homeNetworkName} {selectedToken.symbol} balance:&nbsp;
-                        <em>{selectedToken.balance}</em>
+                        <em>{utils.fromWei(balance)}</em>
                       </p>
                     )}
 

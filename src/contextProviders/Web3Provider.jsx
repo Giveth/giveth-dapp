@@ -47,7 +47,7 @@ const getAccount = async web3 => {
 };
 
 const defaultTokenBalances = () =>
-  Object.keys(tokenAddresses).reduce((accumulator, addr) => {
+  Object.values(tokenAddresses).reduce((accumulator, addr) => {
     accumulator[addr] = toBN(0);
     return accumulator;
   }, {});
@@ -55,7 +55,7 @@ const defaultTokenBalances = () =>
 const getTokenBalance = async (contract, account) => {
   let balance = toBN(0);
   try {
-    balance = await contract.balanceOf(account);
+    balance = toBN(await contract.methods.balanceOf(account).call());
   } catch (e) {
     // ignore
   }
@@ -66,15 +66,9 @@ const getTokenBalance = async (contract, account) => {
   };
 };
 
-const pollTokens = pollEvery(async (web3, { onBalance = () => {} } = {}) => {
-  const { tokens } = await getNetwork();
-  const tokenBalances = Object.values(tokenAddresses).reduce((accumulator, addr) => {
-    accumulator[addr] = {
-      contract: tokens[addr],
-      balance: toBN(-1),
-    };
-    return accumulator;
-  }, {});
+const pollTokens = pollEvery((web3, { onBalance = () => {} } = {}) => {
+  let initTokenBalances = false;
+  const tokenBalances = {};
 
   return {
     request: async () => {
@@ -100,7 +94,18 @@ const pollTokens = pollEvery(async (web3, { onBalance = () => {} } = {}) => {
         return defaultTokenBalances();
       }
     },
-    onResult: balances => {
+    onResult: async balances => {
+      if (!initTokenBalances) {
+        const { tokens } = await getNetwork();
+        Object.values(tokenAddresses).forEach(addr => {
+          tokenBalances[addr] = {
+            contract: tokens[addr],
+            balance: toBN(-1),
+          };
+        });
+        initTokenBalances = true;
+      }
+
       const hasChanged = Object.keys(balances).some(
         addr => !balances[addr].eq(tokenBalances[addr].balance),
       );
@@ -314,12 +319,10 @@ class Web3Provider extends Component {
 
 Web3Provider.propTypes = {
   children: PropTypes.oneOfType([PropTypes.arrayOf(PropTypes.node), PropTypes.node]).isRequired,
-  onLoaded: PropTypes.func,
+  onLoaded: PropTypes.func.isRequired,
 };
 
-Web3Provider.defaultProps = {
-  onLoaded: () => {},
-};
+Web3Provider.defaultProps = {};
 
 export { Consumer };
 export default Web3Provider;

@@ -20,7 +20,10 @@ const configurations = {
     lppCappedMilestoneFactoryAddress: '0x630589690929E9cdEFDeF0734717a9eF3Ec7Fcfe',
     givethBridgeAddress: '0x8fed3F9126e7051DeA6c530920cb0BAE5ffa17a8',
     foreignGivethBridgeAddress: '0x8fed3F9126e7051DeA6c530920cb0BAE5ffa17a8',
-    tokenAddresses: { 'Home Ganache ETH': '0x5a42ca500aB159c51312B764bb25C135026e7a31' },
+    tokenAddresses: {
+      'Home Ganache ETH': '0x5a42ca500aB159c51312B764bb25C135026e7a31',
+      'MiniMe Test Token': '0xe78A0F7E598Cc8b0Bb87894B0F60dD2a88d6a8Ab',
+    },
     etherscan: 'https://etherscan.io/', // this won't work, only here so we can see links during development
     homeEtherscan: 'https://ropsten.etherscan.io/', // this won't work, only here so we can see links during development
     feathersConnection: 'http://localhost:3030',
