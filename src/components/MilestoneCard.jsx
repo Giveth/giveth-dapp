@@ -123,6 +123,7 @@ class MilestoneCard extends Component {
               maxAmount={milestone.maxAmount}
               milestonesCount={milestone.milestonesCount}
               status={milestone.status}
+              token={milestone.token}
             />
           </div>
         </div>

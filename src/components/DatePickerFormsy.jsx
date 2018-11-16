@@ -57,6 +57,7 @@ class DatePickerFormsy extends React.Component {
             disabled={this.props.disabled}
             minDate={getStartOfDayUTC(moment('2017-01-01', 'YYYY-MM-DD'))}
             maxDate={getStartOfDayUTC().subtract(1, 'd')}
+            shouldCloseOnSelect
             readOnly
           />
         </label>
