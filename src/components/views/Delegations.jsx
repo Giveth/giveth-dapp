@@ -124,7 +124,7 @@ const Delegations = () => (
                             </div>
                           )}
                         {delegations &&
-                          delegations.length >= itemsPerPage && (
+                          totalResults > itemsPerPage && (
                             <center>
                               <Pagination
                                 activePage={skipPages + 1}

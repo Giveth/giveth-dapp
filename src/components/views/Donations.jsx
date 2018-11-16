@@ -146,7 +146,7 @@ const Donations = () => (
                             </table>
                           )}
                         {donations &&
-                          donations.length >= itemsPerPage && (
+                          totalResults > itemsPerPage && (
                             <center>
                               <Pagination
                                 activePage={skipPages + 1}

@@ -149,7 +149,7 @@ class MyDACs extends Component {
                           </tbody>
                         </table>
 
-                        {dacs.data.length >= dacs.limit && (
+                        {dacs.total > dacs.limit && (
                           <center>
                             <Pagination
                               activePage={dacs.skip + 1}

@@ -221,7 +221,7 @@ class MyCampaigns extends Component {
                           </tbody>
                         </table>
 
-                        {campaigns.data.length >= campaigns.limit && (
+                        {campaigns.total > campaigns.limit && (
                           <center>
                             <Pagination
                               activePage={campaigns.skip + 1}
