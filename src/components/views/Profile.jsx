@@ -354,11 +354,11 @@ class Profile extends Component {
                                     {getReadableStatus(m.status)}
                                   </td>
                                   <td className="td-donations-number">
-                                    {convertEthHelper(m.maxAmount)} ETH
+                                    {convertEthHelper(m.maxAmount)} {m.token.symbol}
                                   </td>
                                   <td className="td-donations-number">{m.donationCount || 0}</td>
                                   <td className="td-donations-amount">
-                                    {convertEthHelper(m.totalDonated)} ETH
+                                    {convertEthHelper(m.totalDonated)} {m.token.symbol}
                                   </td>
                                   <td className="td-reviewer">
                                     {m.reviewer &&
@@ -583,7 +583,7 @@ class Profile extends Component {
                                     </Link>
                                   </td>
                                   <td className="td-donations-amount">
-                                    {convertEthHelper(d.amount)} ETH
+                                    {convertEthHelper(d.amount)} {d.token.symbol}
                                   </td>
 
                                   <td className="td-transaction-status">

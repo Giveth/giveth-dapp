@@ -54,7 +54,7 @@ const RouteTracker = () => <Route component={GoogleAnalytics} />;
 const init = (options = {}) => {
   if (config.analytics.useGoogleAnalytics) {
     ReactGA.initialize(config.analytics.ga_UA, {
-      debug: true,
+      debug: false,
       ...options,
     });
   }
