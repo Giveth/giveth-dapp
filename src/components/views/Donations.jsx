@@ -17,10 +17,10 @@ import DonationProvider, {
  */
 const Donations = () => (
   <Web3Consumer>
-    {({ state: { isForeignNetwork } }) => (
+    {({ state: { isForeignNetwork, balance } }) => (
       <UserConsumer>
         {({ state: { currentUser } }) => (
-          <DonationProvider currentUser={currentUser}>
+          <DonationProvider currentUser={currentUser} balance={balance}>
             <DonationConsumer>
               {({
                 state: { isLoading, donations, etherScanUrl },

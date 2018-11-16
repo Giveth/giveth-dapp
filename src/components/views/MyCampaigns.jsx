@@ -126,7 +126,7 @@ class MyCampaigns extends Component {
         };
         campaign.cancel(this.props.currentUser.address, afterCreate, afterMined);
       };
-      confirmationDialog('campaign', campaign.myTitle, confirmCancelCampaign);
+      confirmationDialog('campaign', campaign.title, confirmCancelCampaign);
     });
   }
 
