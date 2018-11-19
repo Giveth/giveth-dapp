@@ -250,7 +250,7 @@ class DonationProvider extends Component {
         // Refund the donation
         DonationService.refund(donation, this.props.currentUser.address, afterCreate, afterMined);
       };
-      confirmationDialog('refund', donation.myDonatedTo.name, confirmRefund);
+      confirmationDialog('refund', donation.donatedTo.name, confirmRefund);
     });
   }
 

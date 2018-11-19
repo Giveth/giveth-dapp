@@ -66,17 +66,9 @@ class MyDACs extends Component {
 
   editDAC(id) {
     checkBalance(this.props.balance)
-      .then(() =>
-        React.swal({
-          title: 'Edit Community?',
-          text: 'Are you sure you want to edit the description of this community?',
-          icon: 'warning',
-          dangerMode: true,
-          buttons: ['Cancel', 'Yes, edit'],
-        }).then(isConfirmed => {
-          if (isConfirmed) history.push(`/dacs/${id}/edit`);
-        }),
-      )
+      .then(() => {
+        history.push(`/dacs/${id}/edit`);
+      })
       .catch(err => {
         if (err === 'noBalance') {
           // handle no balance error

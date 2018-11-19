@@ -1,5 +1,6 @@
 import React from 'react';
 
+import { Consumer as Web3Consumer } from '../../contextProviders/Web3Provider';
 import { Consumer as UserConsumer } from '../../contextProviders/UserProvider';
 import { history } from '../../lib/helpers';
 import DACs from './DACs';
@@ -9,11 +10,15 @@ import JoinGivethCommunity from '../JoinGivethCommunity';
 
 const Explore = () => (
   <div>
-    <UserConsumer>
-      {({ state: { wallet, currentUser } }) => (
-        <JoinGivethCommunity currentUser={currentUser} wallet={wallet} history={history} />
+    <Web3Consumer>
+      {({ state: { balance } }) => (
+        <UserConsumer>
+          {({ state: { currentUser } }) => (
+            <JoinGivethCommunity currentUser={currentUser} balance={balance} history={history} />
+          )}
+        </UserConsumer>
       )}
-    </UserConsumer>
+    </Web3Consumer>
 
     <Campaigns />
     <DACs />

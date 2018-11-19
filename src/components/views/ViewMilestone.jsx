@@ -86,19 +86,9 @@ class ViewMilestone extends Component {
 
     checkBalance(this.props.balance)
       .then(() => {
-        React.swal({
-          title: 'Edit Milestone?',
-          text: 'Are you sure you want to edit this milestone?',
-          icon: 'warning',
-          dangerMode: true,
-          buttons: ['Cancel', 'Yes, edit'],
-        }).then(isConfirmed => {
-          if (isConfirmed) {
-            this.props.history.push(
-              `/campaigns/${this.state.campaign.id}/milestones/${this.state.id}/edit`,
-            );
-          }
-        });
+        this.props.history.push(
+          `/campaigns/${this.state.campaign.id}/milestones/${this.state.id}/edit`,
+        );
       })
       .catch(err => {
         if (err === 'noBalance') {
@@ -123,7 +113,7 @@ class ViewMilestone extends Component {
   }
 
   render() {
-    const { history, currentUser } = this.props;
+    const { history, currentUser, balance } = this.props;
     const { isLoading, donations, isLoadingDonations, campaign, milestone, recipient } = this.state;
 
     return (
@@ -167,6 +157,7 @@ class ViewMilestone extends Component {
                       style={{ padding: '10px 10px' }}
                       milestone={milestone}
                       campaign={campaign}
+                      balance={balance}
                       currentUser={currentUser}
                     />
                   )}

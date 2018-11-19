@@ -210,23 +210,13 @@ class MyMilestones extends Component {
 
   editMilestone(milestone) {
     checkBalance(this.props.balance)
-      .then(() =>
-        React.swal({
-          title: 'Edit Milestone?',
-          text: 'Are you sure you want to edit this Milestone?',
-          icon: 'warning',
-          dangerMode: true,
-          buttons: ['Cancel', 'Yes, edit'],
-        }).then(isConfirmed => {
-          if (isConfirmed) {
-            if (['Proposed', 'Rejected'].includes(milestone.status)) {
-              history.push(`/milestones/${milestone._id}/edit/proposed`);
-            } else {
-              history.push(`/milestones/${milestone._id}/edit`);
-            }
-          }
-        }),
-      )
+      .then(() => {
+        if (['Proposed', 'Rejected'].includes(milestone.status)) {
+          history.push(`/milestones/${milestone._id}/edit/proposed`);
+        } else {
+          history.push(`/milestones/${milestone._id}/edit`);
+        }
+      })
       .catch(err => {
         if (err === 'noBalance') {
           // handle no balance error

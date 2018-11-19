@@ -118,7 +118,6 @@ class UserProvider extends Component {
           buttons: ['Ok', 'Download Keystore'],
         }).then(download => {
           if (download) {
-            // GivethWallet.loadWallet(keystore);
             const downloadLink = document.createElement('a');
             downloadLink.href = URL.createObjectURL(
               new Blob([JSON.stringify(keystore[0])], {

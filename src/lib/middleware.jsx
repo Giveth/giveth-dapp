@@ -177,7 +177,7 @@ export const isInWhitelist = (currentUser, whitelist) => {
  */
 export const checkBalance = balance =>
   new Promise(resolve => {
-    if (balance.gte(React.minimumWalletBalanceInWei)) {
+    if (balance && balance.gte(React.minimumWalletBalanceInWei)) {
       resolve();
     } else {
       React.swal({

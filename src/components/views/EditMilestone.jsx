@@ -133,10 +133,13 @@ class EditMilestone extends Component {
               if (campaign.projectId < 0) {
                 this.props.history.goBack();
               } else {
+                const { milestone } = this.state;
+                milestone.recipientAddress = this.props.currentUser.address;
                 this.setState({
                   campaignTitle: campaign.title,
                   campaignReviewerAddress: campaign.reviewerAddress,
                   campaignProjectId: campaign.projectId,
+                  milestone,
                 });
               }
             })
