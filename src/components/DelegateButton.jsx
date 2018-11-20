@@ -144,7 +144,7 @@ class DelegateButton extends Component {
   }
 
   render() {
-    const { types, milestoneOnly, donation, symbol } = this.props;
+    const { types, milestoneOnly, donation } = this.props;
     const { isSaving, objectsToDelegateTo, maxAmount } = this.state;
     const style = { display: 'inline-block' };
     const pStyle = { whiteSpace: 'normal' };
@@ -170,7 +170,7 @@ class DelegateButton extends Component {
             You are delegating donation from{' '}
             <strong>{donation.giver.name || donation.giverAddress}</strong> of a value{' '}
             <strong>
-              {utils.fromWei(donation.amountRemaining)} {symbol}
+              {utils.fromWei(donation.amountRemaining)} {donation.token.symbol}
             </strong>{' '}
             that has been donated to <strong>{donation.donatedTo.name}</strong>
           </p>
@@ -204,7 +204,7 @@ class DelegateButton extends Component {
                   0: '0',
                   [maxAmount]: maxAmount,
                 }}
-                format={val => `${val} ${symbol}`}
+                format={val => `${val} ${donation.token.symbol}`}
                 onChange={amount => this.setState({ amount: Number(amount).toFixed(2) })}
               />
             </div>
@@ -244,12 +244,10 @@ DelegateButton.propTypes = {
   types: PropTypes.arrayOf(PropTypes.shape({})).isRequired,
   milestoneOnly: PropTypes.bool,
   donation: PropTypes.instanceOf(Donation).isRequired,
-  symbol: PropTypes.string,
 };
 
 DelegateButton.defaultProps = {
   milestoneOnly: false,
-  symbol: 'ETH',
 };
 
 export default DelegateButton;
