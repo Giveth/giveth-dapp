@@ -29,11 +29,12 @@ class MyCampaigns extends Component {
       campaigns: {},
       visiblePages: 10,
       skipPages: 0,
-      itemsPerPage: 5,
+      itemsPerPage: 50,
     };
 
     this.editCampaign = this.editCampaign.bind(this);
     this.cancelCampaign = this.cancelCampaign.bind(this);
+    this.handlePageChanged = this.handlePageChanged.bind(this);
   }
 
   componentDidMount() {
@@ -252,12 +253,12 @@ class MyCampaigns extends Component {
                               </tbody>
                             </table>
 
-                            {campaigns.data.length > campaigns.itemsPerPage && (
+                            {campaigns.total > this.state.itemsPerPage && (
                               <center>
                                 <Pagination
-                                  activePage={campaigns.skipPages + 1}
-                                  itemsCountPerPage={campaigns.itemsPerPage}
-                                  totalItemsCount={campaigns.totalResults}
+                                  activePage={campaigns.skip / campaigns.limit + 1}
+                                  itemsCountPerPage={campaigns.limit}
+                                  totalItemsCount={campaigns.total}
                                   pageRangeDisplayed={visiblePages}
                                   onChange={this.handlePageChanged}
                                 />

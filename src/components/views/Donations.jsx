@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import moment from 'moment';
+import Pagination from 'react-js-pagination';
 
 import NetworkWarning from 'components/NetworkWarning';
 import { Consumer as Web3Consumer } from 'contextProviders/Web3Provider';
@@ -12,6 +13,7 @@ import { Consumer as UserConsumer } from '../../contextProviders/UserProvider';
 import DonationProvider, {
   Consumer as DonationConsumer,
 } from '../../contextProviders/DonationProvider';
+
 /**
  * The my donations view
  */
@@ -23,8 +25,16 @@ const Donations = () => (
           <DonationProvider currentUser={currentUser} balance={balance}>
             <DonationConsumer>
               {({
-                state: { isLoading, donations, etherScanUrl },
-                actions: { refund, commit, reject },
+                state: {
+                  isLoading,
+                  donations,
+                  etherScanUrl,
+                  totalResults,
+                  visiblePages,
+                  skipPages,
+                  itemsPerPage,
+                },
+                actions: { refund, commit, reject, handlePageChanged },
               }) => (
                 <div id="donations-view">
                   <div className="container-fluid page-layout dashboard-table-view">
@@ -145,6 +155,18 @@ const Donations = () => (
                                     ))}
                                   </tbody>
                                 </table>
+                              )}
+                            {donations &&
+                              totalResults > itemsPerPage && (
+                                <center>
+                                  <Pagination
+                                    activePage={skipPages + 1}
+                                    itemsCountPerPage={itemsPerPage}
+                                    totalItemsCount={totalResults}
+                                    pageRangeDisplayed={visiblePages}
+                                    onChange={handlePageChanged}
+                                  />
+                                </center>
                               )}
 
                             {donations.length === 0 && (

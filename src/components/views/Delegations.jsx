@@ -4,6 +4,7 @@ import Avatar from 'react-avatar';
 import PropTypes from 'prop-types';
 import { utils } from 'web3';
 import moment from 'moment';
+import Pagination from 'react-js-pagination';
 
 import NetworkWarning from 'components/NetworkWarning';
 import { Consumer as Web3Consumer } from 'contextProviders/Web3Provider';
@@ -28,7 +29,19 @@ const Delegations = ({ balance }) => (
         {({ state: { currentUser } }) => (
           <DelegationProvider currentUser={currentUser}>
             <DelegationConsumer>
-              {({ state: { isLoading, delegations, campaigns, milestones } }) => (
+              {({
+                state: {
+                  isLoading,
+                  delegations,
+                  campaigns,
+                  milestones,
+                  totalResults,
+                  visiblePages,
+                  skipPages,
+                  itemsPerPage,
+                },
+                actions: { handlePageChanged },
+              }) => (
                 <div id="delegations-view">
                   <div className="container-fluid page-layout dashboard-table-view">
                     <div className="row">
@@ -136,6 +149,18 @@ const Delegations = ({ balance }) => (
                                 </div>
                               )}
 
+                            {delegations &&
+                              totalResults > itemsPerPage && (
+                                <center>
+                                  <Pagination
+                                    activePage={skipPages + 1}
+                                    itemsCountPerPage={itemsPerPage}
+                                    totalItemsCount={totalResults}
+                                    pageRangeDisplayed={visiblePages}
+                                    onChange={handlePageChanged}
+                                  />
+                                </center>
+                              )}
                             {delegations &&
                               delegations.length === 0 && (
                                 <div>
