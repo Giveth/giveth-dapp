@@ -118,20 +118,23 @@ class MyDACs extends Component {
                                   <Link to={`/dacs/${d.id}`}>{getTruncatedText(d.title, 45)}</Link>
                                 </td>
                                 <td className="td-donations-number">
-                                  {d.donationCounters &&
+                                  {d.donationCounters.length > 0 &&
                                     d.donationCounters.map(counter => (
                                       <p>
                                         {counter.donationCount} donation(s) in {counter.symbol}
                                       </p>
                                     ))}
+                                  {d.donationCounters.length === 0 && <span>-</span>}
                                 </td>
                                 <td className="td-donations-amount">
-                                  {d.donationCounters &&
+                                  {d.donationCounters.length > 0 &&
                                     d.donationCounters.map(counter => (
                                       <p>
                                         {convertEthHelper(counter.totalDonated)} {counter.symbol}
                                       </p>
                                     ))}
+
+                                  {d.donationCounters.length === 0 && <span>-</span>}
                                 </td>
                                 <td className="td-status">
                                   {d.status === DAC.PENDING && (
