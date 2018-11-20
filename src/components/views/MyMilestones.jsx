@@ -5,18 +5,21 @@ import { LPPCappedMilestone } from 'lpp-capped-milestone';
 import { Link } from 'react-router-dom';
 import moment from 'moment';
 import Pagination from 'react-js-pagination';
+import GA from 'lib/GoogleAnalytics';
 
 import ConversationModal from 'components/ConversationModal';
-import GA from 'lib/GoogleAnalytics';
+import NetworkWarning from 'components/NetworkWarning';
+import { Consumer as Web3Consumer } from 'contextProviders/Web3Provider';
+
 import { feathersClient } from '../../lib/feathersClient';
-import { isLoggedIn, redirectAfterWalletUnlock, checkWalletBalance } from '../../lib/middleware';
+import { isLoggedIn, checkBalance, authenticateIfPossible } from '../../lib/middleware';
 import confirmationDialog from '../../lib/confirmationDialog';
 import getNetwork from '../../lib/blockchain/getNetwork';
-import { getWeb3 } from '../../lib/blockchain/getWeb3';
+import getWeb3 from '../../lib/blockchain/getWeb3';
+import extraGas from '../../lib/blockchain/extraGas';
 import Loader from '../Loader';
 import User from '../../models/User';
-import { getTruncatedText, getReadableStatus, convertEthHelper } from '../../lib/helpers';
-import GivethWallet from '../../lib/blockchain/GivethWallet';
+import { getTruncatedText, getReadableStatus, convertEthHelper, history } from '../../lib/helpers';
 import config from '../../configuration';
 
 import ErrorPopup from '../ErrorPopup';
@@ -135,13 +138,24 @@ class MyMilestones extends Component {
   }
 
   componentDidMount() {
-    isLoggedIn(this.props.currentUser)
+    authenticateIfPossible(this.props.currentUser)
+      .then(() => isLoggedIn(this.props.currentUser))
       .then(() => this.loadMileStones())
       .catch(err => {
         if (err === 'notLoggedIn') {
           // default behavior is to go home or signin page after swal popup
         }
       });
+  }
+
+  componentDidUpdate(prevProps) {
+    if (prevProps.currentUser !== this.props.currentUser) {
+      // eslint-disable-next-line react/no-did-update-set-state
+      this.setState({ isLoading: true });
+      authenticateIfPossible(this.props.currentUser);
+      if (this.milestonesObserver) this.milestonesObserver.unsubscribe();
+      this.loadMileStones();
+    }
   }
 
   componentWillUnmount() {
@@ -235,27 +249,14 @@ class MyMilestones extends Component {
   }
 
   editMilestone(milestone) {
-    checkWalletBalance(this.props.wallet)
-      .then(() =>
-        React.swal({
-          title: 'Edit Milestone?',
-          text: 'Are you sure you want to edit this Milestone?',
-          icon: 'warning',
-          dangerMode: true,
-          buttons: ['Cancel', 'Yes, edit'],
-        }).then(isConfirmed => {
-          if (isConfirmed) {
-            if (['Proposed', 'Rejected'].includes(milestone.status)) {
-              redirectAfterWalletUnlock(
-                `/milestones/${milestone._id}/edit/proposed`,
-                this.props.wallet,
-              );
-            } else {
-              redirectAfterWalletUnlock(`/milestones/${milestone._id}/edit`, this.props.wallet);
-            }
-          }
-        }),
-      )
+    checkBalance(this.props.balance)
+      .then(() => {
+        if (['Proposed', 'Rejected'].includes(milestone.status)) {
+          history.push(`/milestones/${milestone._id}/edit/proposed`);
+        } else {
+          history.push(`/milestones/${milestone._id}/edit`);
+        }
+      })
       .catch(err => {
         if (err === 'noBalance') {
           // handle no balance error
@@ -264,7 +265,7 @@ class MyMilestones extends Component {
   }
 
   requestMarkComplete(milestone) {
-    checkWalletBalance(this.props.wallet)
+    checkBalance(this.props.balance)
       .then(() => {
         this.conversationModal.current
           .openModal({
@@ -326,6 +327,7 @@ class MyMilestones extends Component {
                 return cappedMilestone
                   .requestMarkAsComplete({
                     from: this.props.currentUser.address,
+                    $extraGas: extraGas(),
                   })
                   .once('transactionHash', hash => {
                     txHash = hash;
@@ -350,7 +352,7 @@ class MyMilestones extends Component {
               .catch(err => {
                 if (txHash && err.message && err.message.includes('unknown transaction')) return; // bug in web3 seems to constantly fail due to this error, but the tx is correct
                 ErrorPopup(
-                  'Something went wrong with the transaction. Is your wallet unlocked?',
+                  'Something went wrong with the transaction.',
                   `${etherScanUrl}tx/${txHash} => ${JSON.stringify(err, null, 2)}`,
                 );
               });
@@ -369,7 +371,7 @@ class MyMilestones extends Component {
   }
 
   cancelMilestone(milestone) {
-    checkWalletBalance(this.props.wallet)
+    checkBalance(this.props.balance)
       .then(() =>
         this.conversationModal.current
           .openModal({
@@ -431,6 +433,7 @@ class MyMilestones extends Component {
                 return cappedMilestone
                   .cancelMilestone({
                     from: this.props.currentUser.address,
+                    $extraGas: extraGas(),
                   })
                   .once('transactionHash', hash => {
                     txHash = hash;
@@ -455,7 +458,7 @@ class MyMilestones extends Component {
               .catch(err => {
                 if (txHash && err.message && err.message.includes('unknown transaction')) return; // bug in web3 seems to constantly fail due to this error, but the tx is correct
                 ErrorPopup(
-                  'Something went wrong with the transaction. Is your wallet unlocked?',
+                  'Something went wrong with the transaction.',
                   `${etherScanUrl}tx/${txHash}`,
                 );
               });
@@ -469,7 +472,7 @@ class MyMilestones extends Component {
   }
 
   acceptProposedMilestone(milestone) {
-    checkWalletBalance(this.props.wallet)
+    checkBalance(this.props.balance)
       .then(() =>
         this.conversationModal.current
           .openModal({
@@ -557,7 +560,7 @@ class MyMilestones extends Component {
                     maxAmount,
                     Object.values(config.tokenAddresses)[0], // TODO make this a form param
                     5 * 24 * 60 * 60, // 5 days in seconds
-                    { from },
+                    { from, $extraGas: extraGas() },
                   )
                   .on('transactionHash', hash => {
                     txHash = hash;
@@ -568,7 +571,7 @@ class MyMilestones extends Component {
               .catch(err => {
                 if (txHash && err.message && err.message.includes('unknown transaction')) return; // bug in web3 seems to constantly fail due to this error, but the tx is correct
                 ErrorPopup(
-                  'Something went wrong with the transaction. Is your wallet unlocked?',
+                  'Something went wrong with the transaction.',
                   `${etherScanUrl}tx/${txHash} => ${JSON.stringify(err, null, 2)}`,
                 );
               });
@@ -582,7 +585,7 @@ class MyMilestones extends Component {
   }
 
   approveMilestoneCompleted(milestone) {
-    checkWalletBalance(this.props.wallet)
+    checkBalance(this.props.balance)
       .then(() =>
         this.conversationModal.current
           .openModal({
@@ -644,6 +647,7 @@ class MyMilestones extends Component {
                 return cappedMilestone
                   .approveMilestoneCompleted({
                     from: this.props.currentUser.address,
+                    $extraGas: extraGas(),
                   })
                   .once('transactionHash', hash => {
                     txHash = hash;
@@ -668,7 +672,7 @@ class MyMilestones extends Component {
               .catch(err => {
                 if (txHash && err.message && err.message.includes('unknown transaction')) return; // bug in web3 seems to constantly fail due to this error, but the tx is correct
                 ErrorPopup(
-                  'Something went wrong with the transaction. Is your wallet unlocked?',
+                  'Something went wrong with the transaction.',
                   `${etherScanUrl}tx/${txHash}`,
                 );
               });
@@ -682,7 +686,7 @@ class MyMilestones extends Component {
   }
 
   rejectMilestoneCompletion(milestone) {
-    checkWalletBalance(this.props.wallet)
+    checkBalance(this.props.balance)
       .then(() =>
         this.conversationModal.current
           .openModal({
@@ -715,10 +719,7 @@ class MyMilestones extends Component {
                   React.toast.info(<p>You have rejected this milestone&apos;s completion...</p>);
                 })
                 .catch(e => {
-                  ErrorPopup(
-                    'Something went wrong with the transaction. Is your wallet unlocked?',
-                    e,
-                  );
+                  ErrorPopup('Something went wrong with the transaction.', e);
                 });
 
             // reject on chain
@@ -733,6 +734,7 @@ class MyMilestones extends Component {
                 return cappedMilestone
                   .rejectCompleteRequest({
                     from: this.props.currentUser.address,
+                    $extraGas: extraGas(),
                   })
                   .once('transactionHash', hash => {
                     txHash = hash;
@@ -757,7 +759,7 @@ class MyMilestones extends Component {
               .catch(err => {
                 if (txHash && err.message && err.message.includes('unknown transaction')) return; // bug in web3 seems to constantly fail due to this error, but the tx is correct
                 ErrorPopup(
-                  'Something went wrong with the transaction. Is your wallet unlocked?',
+                  'Something went wrong with the transaction.',
                   `${etherScanUrl}tx/${txHash}`,
                 );
               });
@@ -771,7 +773,7 @@ class MyMilestones extends Component {
   }
 
   withdrawal(milestone) {
-    checkWalletBalance(this.props.wallet)
+    checkBalance(this.props.balance)
       .then(() =>
         React.swal({
           title: 'Withdrawal Funds to Wallet',
@@ -871,6 +873,7 @@ class MyMilestones extends Component {
                 return new LPPCappedMilestone(web3, milestone.pluginAddress)
                   .mWithdraw(pledges, {
                     from: this.props.currentUser.address,
+                    $extraGas: extraGas(),
                   })
                   .once('transactionHash', hash => {
                     txHash = hash;
@@ -916,7 +919,7 @@ class MyMilestones extends Component {
                 } else if (e.message === 'No donations found to withdraw') {
                   msg = <p>Nothing to withdraw. There are no donations to this milestone.</p>;
                 } else {
-                  msg = <p>Something went wrong with the transaction. Is your wallet unlocked?</p>;
+                  msg = <p>Something went wrong with the transaction.</p>;
                 }
 
                 React.swal({
@@ -947,253 +950,274 @@ class MyMilestones extends Component {
     const { currentUser } = this.props;
 
     return (
-      <div id="milestones-view">
-        <div className="container-fluid page-layout dashboard-table-view">
-          <div className="row">
-            <div className="col-md-10 m-auto">
-              <h1>Your milestones</h1>
+      <Web3Consumer>
+        {({ state: { isForeignNetwork } }) => (
+          <div id="milestones-view">
+            <div className="container-fluid page-layout dashboard-table-view">
+              <div className="row">
+                <div className="col-md-10 m-auto">
+                  <h1>Your milestones</h1>
 
-              <ul className="nav nav-tabs">
-                {this.milestoneTabs.map(st => (
-                  <li className="nav-item" key={st}>
-                    <span
-                      role="button"
-                      className={`nav-link ${this.state.loadedStatus === st ? 'active' : ''}`}
-                      onKeyPress={() => this.changeTab(st)}
-                      tabIndex={0}
-                      onClick={() => this.changeTab(st)}
-                    >
-                      {st}
-                    </span>
-                  </li>
-                ))}
-              </ul>
+                  <NetworkWarning
+                    incorrectNetwork={!isForeignNetwork}
+                    networkName={config.foreignNetworkName}
+                  />
 
-              {isLoading && <Loader className="fixed" />}
+                  <ul className="nav nav-tabs">
+                    {this.milestoneTabs.map(st => (
+                      <li className="nav-item" key={st}>
+                        <span
+                          role="button"
+                          className={`nav-link ${this.state.loadedStatus === st ? 'active' : ''}`}
+                          onKeyPress={() => this.changeTab(st)}
+                          tabIndex={0}
+                          onClick={() => this.changeTab(st)}
+                        >
+                          {st}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
 
-              {!isLoading && (
-                <div className="table-container">
-                  {milestones &&
-                    milestones.length > 0 && (
-                      <div>
-                        <table className="table table-responsive table-striped table-hover">
-                          <thead>
-                            <tr>
-                              <th className="td-created-at">Created</th>
-                              <th className="td-name">Name</th>
-                              <th className="td-status">Status</th>
-                              <th className="td-donations-number">Requested</th>
-                              <th className="td-donations-number">Donations</th>
-                              <th className="td-donations-amount">Donated</th>
-                              <th className="td-reviewer">Reviewer</th>
-                              <th className="td-actions" />
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {milestones.map(m => (
-                              <tr key={m._id} className={m.status === 'Pending' ? 'pending' : ''}>
-                                <td className="td-created-at">
-                                  {m.createdAt && (
-                                    <span>{moment.utc(m.createdAt).format('Do MMM YYYY')}</span>
-                                  )}
-                                </td>
-                                <td className="td-name">
-                                  <strong>
-                                    <Link to={`/campaigns/${m.campaign._id}/milestones/${m._id}`}>
-                                      MILESTONE <em>{getTruncatedText(m.title, 35)}</em>
-                                    </Link>
-                                  </strong>
-                                  <br />
-                                  <i className="fa fa-arrow-right" />
-                                  <Link
-                                    className="secondary-link"
-                                    to={`/campaigns/${m.campaign._id}`}
+                  {isLoading && <Loader className="fixed" />}
+
+                  {!isLoading && (
+                    <div className="table-container">
+                      {milestones &&
+                        milestones.length > 0 && (
+                          <div>
+                            <table className="table table-responsive table-striped table-hover">
+                              <thead>
+                                <tr>
+                                  <th className="td-created-at">Created</th>
+                                  <th className="td-name">Name</th>
+                                  <th className="td-status">Status</th>
+                                  <th className="td-donations-number">Requested</th>
+                                  <th className="td-donations-number">Donations</th>
+                                  <th className="td-donations-amount">Donated</th>
+                                  <th className="td-reviewer">Reviewer</th>
+                                  <th className="td-actions" />
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {milestones.map(m => (
+                                  <tr
+                                    key={m._id}
+                                    className={m.status === 'Pending' ? 'pending' : ''}
                                   >
-                                    CAMPAIGN <em>{getTruncatedText(m.campaign.title, 40)}</em>
-                                  </Link>
-                                </td>
-                                <td className="td-status">
-                                  {(m.status === 'Pending' ||
-                                    (Object.keys(m).includes('mined') && !m.mined)) && (
-                                    <span>
-                                      <i className="fa fa-circle-o-notch fa-spin" />
-                                      &nbsp;
-                                    </span>
-                                  )}
-                                  {m.status === 'NeedsReview' &&
-                                    reviewDue(m.updatedAt) && (
-                                      <span>
-                                        <i className="fa fa-exclamation-triangle" />
-                                        &nbsp;
-                                      </span>
-                                    )}
-                                  {getReadableStatus(m.status)}
-                                </td>
-                                <td className="td-donations-number">
-                                  {convertEthHelper(m.maxAmount)} {m.token.symbol}
-                                </td>
-                                <td className="td-donations-number">
-                                  {(m.donationCounters &&
-                                    m.donationCounters.length &&
-                                    m.donationCounters[0].donationCount) ||
-                                    0}
-                                </td>
-                                <td className="td-donations-">
-                                  {convertEthHelper(
-                                    (m.donationCounters &&
-                                      m.donationCounters.length &&
-                                      m.donationCounters[0].currentBalance) ||
-                                      '0',
-                                  )}{' '}
-                                  {m.token.symbol}
-                                </td>
-                                <td className="td-reviewer">
-                                  {m.reviewer &&
-                                    m.reviewer.address && (
-                                      <Link to={`/profile/${m.reviewer.address}`}>
-                                        {m.reviewer.name || 'Anomynous user'}
+                                    <td className="td-created-at">
+                                      {m.createdAt && (
+                                        <span>{moment.utc(m.createdAt).format('Do MMM YYYY')}</span>
+                                      )}
+                                    </td>
+                                    <td className="td-name">
+                                      <strong>
+                                        <Link
+                                          to={`/campaigns/${m.campaign._id}/milestones/${m._id}`}
+                                        >
+                                          MILESTONE <em>{getTruncatedText(m.title, 35)}</em>
+                                        </Link>
+                                      </strong>
+                                      <br />
+                                      <i className="fa fa-arrow-right" />
+                                      <Link
+                                        className="secondary-link"
+                                        to={`/campaigns/${m.campaign._id}`}
+                                      >
+                                        CAMPAIGN <em>{getTruncatedText(m.campaign.title, 40)}</em>
                                       </Link>
-                                    )}
-                                </td>
-                                <td className="td-actions">
-                                  {/* Campaign and Milestone managers can edit milestone */}
-                                  {(m.ownerAddress === currentUser.address ||
-                                    m.campaign.ownerAddress === currentUser.address) &&
-                                    ['Proposed', 'Rejected', 'InProgress', 'NeedsReview'].includes(
-                                      m.status,
-                                    ) && (
-                                      <button
-                                        type="button"
-                                        className="btn btn-link"
-                                        onClick={() => this.editMilestone(m)}
-                                      >
-                                        <i className="fa fa-edit" />
-                                        &nbsp;Edit
-                                      </button>
-                                    )}
+                                    </td>
+                                    <td className="td-status">
+                                      {(m.status === 'Pending' ||
+                                        (Object.keys(m).includes('mined') && !m.mined)) && (
+                                        <span>
+                                          <i className="fa fa-circle-o-notch fa-spin" />
+                                          &nbsp;
+                                        </span>
+                                      )}
+                                      {m.status === 'NeedsReview' &&
+                                        reviewDue(m.updatedAt) && (
+                                          <span>
+                                            <i className="fa fa-exclamation-triangle" />
+                                            &nbsp;
+                                          </span>
+                                        )}
+                                      {getReadableStatus(m.status)}
+                                    </td>
+                                    <td className="td-donations-number">
+                                      {convertEthHelper(m.maxAmount)} {m.token.symbol}
+                                    </td>
+                                    <td className="td-donations-number">
+                                      {(m.donationCounters &&
+                                        m.donationCounters.length &&
+                                        m.donationCounters[0].donationCount) ||
+                                        0}
+                                    </td>
+                                    <td className="td-donations-">
+                                      {convertEthHelper(
+                                        (m.donationCounters &&
+                                          m.donationCounters.length &&
+                                          m.donationCounters[0].currentBalance) ||
+                                          '0',
+                                      )}{' '}
+                                      {m.token.symbol}
+                                    </td>
+                                    <td className="td-reviewer">
+                                      {m.reviewer &&
+                                        m.reviewer.address && (
+                                          <Link to={`/profile/${m.reviewer.address}`}>
+                                            {m.reviewer.name || 'Anomynous user'}
+                                          </Link>
+                                        )}
+                                    </td>
+                                    <td className="td-actions">
+                                      {/* Campaign and Milestone managers can edit milestone */}
+                                      {(m.ownerAddress === currentUser.address ||
+                                        m.campaign.ownerAddress === currentUser.address) &&
+                                        isForeignNetwork &&
+                                        [
+                                          'Proposed',
+                                          'Rejected',
+                                          'InProgress',
+                                          'NeedsReview',
+                                        ].includes(m.status) && (
+                                          <button
+                                            type="button"
+                                            className="btn btn-link"
+                                            onClick={() => this.editMilestone(m)}
+                                          >
+                                            <i className="fa fa-edit" />
+                                            &nbsp;Edit
+                                          </button>
+                                        )}
 
-                                  {m.campaign.ownerAddress === currentUser.address &&
-                                    m.status === 'Proposed' && (
-                                      <span>
-                                        <button
-                                          type="button"
-                                          className="btn btn-success btn-sm"
-                                          onClick={() => this.acceptProposedMilestone(m)}
-                                        >
-                                          <i className="fa fa-check-square-o" />
-                                          &nbsp;Accept
-                                        </button>
-                                        <button
-                                          type="button"
-                                          className="btn btn-danger btn-sm"
-                                          onClick={() => rejectProposedMilestone(m)}
-                                        >
-                                          <i className="fa fa-times-circle-o" />
-                                          &nbsp;Reject
-                                        </button>
-                                      </span>
-                                    )}
-                                  {m.ownerAddress === currentUser.address &&
-                                    m.status === 'Rejected' && (
-                                      <button
-                                        type="button"
-                                        className="btn btn-success btn-sm"
-                                        onClick={() => reproposeRejectedMilestone(m)}
-                                      >
-                                        <i className="fa fa-times-square-o" />
-                                        &nbsp;Re-propose
-                                      </button>
-                                    )}
+                                      {m.campaign.ownerAddress === currentUser.address &&
+                                        isForeignNetwork &&
+                                        m.status === 'Proposed' && (
+                                          <span>
+                                            <button
+                                              type="button"
+                                              className="btn btn-success btn-sm"
+                                              onClick={() => this.acceptProposedMilestone(m)}
+                                            >
+                                              <i className="fa fa-check-square-o" />
+                                              &nbsp;Accept
+                                            </button>
+                                            <button
+                                              type="button"
+                                              className="btn btn-danger btn-sm"
+                                              onClick={() => rejectProposedMilestone(m)}
+                                            >
+                                              <i className="fa fa-times-circle-o" />
+                                              &nbsp;Reject
+                                            </button>
+                                          </span>
+                                        )}
+                                      {m.ownerAddress === currentUser.address &&
+                                        isForeignNetwork &&
+                                        m.status === 'Rejected' && (
+                                          <button
+                                            type="button"
+                                            className="btn btn-success btn-sm"
+                                            onClick={() => reproposeRejectedMilestone(m)}
+                                          >
+                                            <i className="fa fa-times-square-o" />
+                                            &nbsp;Re-propose
+                                          </button>
+                                        )}
 
-                                  {(m.recipientAddress === currentUser.address ||
-                                    m.ownerAddress === currentUser.address) &&
-                                    m.status === 'InProgress' &&
-                                    m.mined && (
-                                      <button
-                                        type="button"
-                                        className="btn btn-success btn-sm"
-                                        onClick={() => this.requestMarkComplete(m)}
-                                        disabled={!utils.toBN(m.currentBalance || '0').gt('0')}
-                                      >
-                                        Mark complete
-                                      </button>
-                                    )}
-                                  {[
-                                    m.reviewerAddress,
-                                    m.campaignReviewerAddress,
-                                    m.recipientAddress,
-                                  ].includes(currentUser.address) &&
-                                    ['InProgress', 'NeedReview'].includes(m.status) &&
-                                    m.mined && (
-                                      <button
-                                        type="button"
-                                        className="btn btn-danger btn-sm"
-                                        onClick={() => this.cancelMilestone(m)}
-                                      >
-                                        <i className="fa fa-times" />
-                                        &nbsp;Cancel
-                                      </button>
-                                    )}
+                                      {(m.recipientAddress === currentUser.address ||
+                                        m.ownerAddress === currentUser.address) &&
+                                        isForeignNetwork &&
+                                        m.status === 'InProgress' &&
+                                        m.mined && (
+                                          <button
+                                            type="button"
+                                            className="btn btn-success btn-sm"
+                                            onClick={() => this.requestMarkComplete(m)}
+                                            disabled={!utils.toBN(m.currentBalance || '0').gt('0')}
+                                          >
+                                            Mark complete
+                                          </button>
+                                        )}
+                                      {[
+                                        m.reviewerAddress,
+                                        m.campaignReviewerAddress,
+                                        m.recipientAddress,
+                                      ].includes(currentUser.address) &&
+                                        isForeignNetwork &&
+                                        ['InProgress', 'NeedReview'].includes(m.status) &&
+                                        m.mined && (
+                                          <button
+                                            type="button"
+                                            className="btn btn-danger btn-sm"
+                                            onClick={() => this.cancelMilestone(m)}
+                                          >
+                                            <i className="fa fa-times" />
+                                            &nbsp;Cancel
+                                          </button>
+                                        )}
 
-                                  {m.ownerAddress === currentUser.address &&
-                                    ['Proposed', 'Rejected'].includes(m.status) && (
-                                      <span>
-                                        <button
-                                          type="button"
-                                          className="btn btn-danger btn-sm"
-                                          onClick={() => deleteProposedMilestone(m)}
-                                        >
-                                          <i className="fa fa-times-circle-o" />
-                                          &nbsp;Delete
-                                        </button>
-                                      </span>
-                                    )}
+                                      {m.ownerAddress === currentUser.address &&
+                                        isForeignNetwork &&
+                                        ['Proposed', 'Rejected'].includes(m.status) && (
+                                          <span>
+                                            <button
+                                              type="button"
+                                              className="btn btn-danger btn-sm"
+                                              onClick={() => deleteProposedMilestone(m)}
+                                            >
+                                              <i className="fa fa-times-circle-o" />
+                                              &nbsp;Delete
+                                            </button>
+                                          </span>
+                                        )}
 
-                                  {m.reviewerAddress === currentUser.address &&
-                                    m.status === 'NeedsReview' &&
-                                    m.mined && (
-                                      <span>
-                                        <button
-                                          type="button"
-                                          className="btn btn-success btn-sm"
-                                          onClick={() => this.approveMilestoneCompleted(m)}
-                                        >
-                                          <i className="fa fa-thumbs-up" />
-                                          &nbsp;Approve
-                                        </button>
+                                      {m.reviewerAddress === currentUser.address &&
+                                        isForeignNetwork &&
+                                        m.status === 'NeedsReview' &&
+                                        m.mined && (
+                                          <span>
+                                            <button
+                                              type="button"
+                                              className="btn btn-success btn-sm"
+                                              onClick={() => this.approveMilestoneCompleted(m)}
+                                            >
+                                              <i className="fa fa-thumbs-up" />
+                                              &nbsp;Approve
+                                            </button>
 
-                                        <button
-                                          type="button"
-                                          className="btn btn-danger btn-sm"
-                                          onClick={() => this.rejectMilestoneCompletion(m)}
-                                        >
-                                          <i className="fa fa-thumbs-down" />
-                                          &nbsp;Reject
-                                        </button>
-                                      </span>
-                                    )}
+                                            <button
+                                              type="button"
+                                              className="btn btn-danger btn-sm"
+                                              onClick={() => this.rejectMilestoneCompletion(m)}
+                                            >
+                                              <i className="fa fa-thumbs-down" />
+                                              &nbsp;Reject
+                                            </button>
+                                          </span>
+                                        )}
 
-                                  {[m.recipientAddress, m.ownerAddress].includes(
-                                    currentUser.address,
-                                  ) &&
-                                    m.status === 'Completed' &&
-                                    m.mined &&
-                                    (m.donationCounters &&
-                                      m.donationCounters.length > 0 &&
-                                      m.donationCounters[0].totalDonated > 0) && (
-                                      <button
-                                        type="button"
-                                        className="btn btn-success btn-sm"
-                                        onClick={() => this.withdrawal(m)}
-                                      >
-                                        <i className="fa fa-usd" />{' '}
-                                        {m.recipientAddress === currentUser.address
-                                          ? 'Collect'
-                                          : 'Disburse'}
-                                      </button>
-                                    )}
+                                      {[m.recipientAddress, m.ownerAddress].includes(
+                                        currentUser.address,
+                                      ) &&
+                                        m.status === 'Completed' &&
+                                        isForeignNetwork &&
+                                        m.mined &&
+                                        m.donationCount > 0 && (
+                                          <button
+                                            type="button"
+                                            className="btn btn-success btn-sm"
+                                            onClick={() => this.withdrawal(m)}
+                                          >
+                                            <i className="fa fa-usd" />{' '}
+                                            {m.recipientAddress === currentUser.address
+                                              ? 'Collect'
+                                              : 'Disburse'}
+                                          </button>
+                                        )}
 
-                                  {/* {m.recipientAddress === currentUser.address &&
+                                      {/* {m.recipientAddress === currentUser.address &&
                                     m.status === 'Paying' && (
                                       <p>
                                         Withdraw authorization pending. You will be able to collect
@@ -1211,56 +1235,58 @@ class MyMilestones extends Component {
                                         <i className="fa fa-usd" />&nbsp;Collect
                                       </button>
                                     )} */}
-                                </td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
+                                    </td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
 
-                        {totalResults > itemsPerPage && (
-                          <center>
-                            <Pagination
-                              activePage={skipPages + 1}
-                              itemsCountPerPage={itemsPerPage}
-                              totalItemsCount={totalResults}
-                              pageRangeDisplayed={visiblePages}
-                              onChange={this.handlePageChanged}
-                            />
-                          </center>
+                            {totalResults > itemsPerPage && (
+                              <center>
+                                <Pagination
+                                  activePage={skipPages + 1}
+                                  itemsCountPerPage={itemsPerPage}
+                                  totalItemsCount={totalResults}
+                                  pageRangeDisplayed={visiblePages}
+                                  onChange={this.handlePageChanged}
+                                />
+                              </center>
+                            )}
+                          </div>
                         )}
-                      </div>
-                    )}
 
-                  {milestones &&
-                    milestones.length === 0 && (
-                      <div className="no-results">
-                        <center>
-                          <h3>No milestones here!</h3>
-                          <img
-                            className="empty-state-img"
-                            src={`${process.env.PUBLIC_URL}/img/delegation.svg`}
-                            width="200px"
-                            height="200px"
-                            alt="no-milestones-icon"
-                          />
-                        </center>
-                      </div>
-                    )}
+                      {milestones &&
+                        milestones.length === 0 && (
+                          <div className="no-results">
+                            <center>
+                              <h3>No milestones here!</h3>
+                              <img
+                                className="empty-state-img"
+                                src={`${process.env.PUBLIC_URL}/img/delegation.svg`}
+                                width="200px"
+                                height="200px"
+                                alt="no-milestones-icon"
+                              />
+                            </center>
+                          </div>
+                        )}
+                    </div>
+                  )}
                 </div>
-              )}
+              </div>
             </div>
-          </div>
-        </div>
 
-        <ConversationModal ref={this.conversationModal} />
-      </div>
+            <ConversationModal ref={this.conversationModal} />
+          </div>
+        )}
+      </Web3Consumer>
     );
   }
 }
 
 MyMilestones.propTypes = {
   currentUser: PropTypes.instanceOf(User).isRequired,
-  wallet: PropTypes.instanceOf(GivethWallet).isRequired,
+  balance: PropTypes.objectOf(utils.BN).isRequired,
 };
 
 export default MyMilestones;

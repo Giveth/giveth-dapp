@@ -12,37 +12,6 @@ import config from '../configuration';
 export const isOwner = (address, currentUser) =>
   address !== undefined && currentUser !== undefined && currentUser.address === address;
 
-export const authenticate = wallet => {
-  const authData = {
-    strategy: 'web3',
-    address: wallet.getAddresses()[0],
-  };
-
-  return feathersClient.passport
-    .getJWT()
-    .then(accessToken => {
-      if (accessToken) return feathersClient.logout();
-      return undefined;
-    })
-    .then(() =>
-      feathersClient.authenticate(authData).catch(response => {
-        // normal flow will issue a 401 with a challenge message we need to sign and send to
-        // verify our identity
-        if (response.code === 401 && response.data.startsWith('Challenge =')) {
-          const msg = response.data.replace('Challenge =', '').trim();
-
-          return wallet.signMessage(msg).signature;
-        }
-        throw new Error(response);
-      }),
-    )
-    .then(signature => {
-      authData.signature = signature;
-      return feathersClient.authenticate(authData);
-    })
-    .then(response => response.accessToken);
-};
-
 export const getTruncatedText = (text = '', maxLength = 45) => {
   const txt = text.replace(/<(?:.|\n)*?>/gm, '').trim();
   if (txt.length > maxLength) {
