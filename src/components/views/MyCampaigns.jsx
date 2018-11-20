@@ -15,6 +15,7 @@ import User from '../../models/User';
 import { getTruncatedText, convertEthHelper, history } from '../../lib/helpers';
 import CampaignService from '../../services/CampaignService';
 import Campaign from '../../models/Campaign';
+import Loader from '../Loader';
 
 /**
  * The my campaings view
@@ -147,6 +148,8 @@ class MyCampaigns extends Component {
                     incorrectNetwork={!isForeignNetwork}
                     networkName={config.foreignNetworkName}
                   />
+
+                  {isLoading && <Loader className="fixed" />}
 
                   {!isLoading && (
                     <div className="table-container">
