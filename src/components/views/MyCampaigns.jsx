@@ -183,9 +183,24 @@ class MyCampaigns extends Component {
                                         </span>
                                       )}
                                     </td>
-                                    <td className="td-donations-number">{c.donationCount || 0}</td>
+                                    <td className="td-donations-number">
+                                      {c.donationCounters.length > 0 &&
+                                        c.donationCounters.map(counter => (
+                                          <p>
+                                            {counter.donationCount} donation(s) in {counter.symbol}
+                                          </p>
+                                        ))}
+                                      {c.donationCounters.length === 0 && <span>-</span>}
+                                    </td>
                                     <td className="td-donations-amount">
-                                      {convertEthHelper(c.totalDonated)} ETH
+                                      {c.donationCounters.length > 0 &&
+                                        c.donationCounters.map(counter => (
+                                          <p>
+                                            {convertEthHelper(counter.totalDonated)}{' '}
+                                            {counter.symbol}
+                                          </p>
+                                        ))}
+                                      {c.donationCounters.length === 0 && <span>-</span>}
                                     </td>
                                     <td className="td-status">
                                       {(c.status === Campaign.PENDING ||
