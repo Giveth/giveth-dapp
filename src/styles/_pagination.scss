@@ -11,14 +11,14 @@
       line-height: 1.25;
       color: #007bff;
       background-color: #fff;
-      border: 1px solid #daecff;
+      border: 1px solid #dee2e6;
     }
     &.disabled > a {
       cursor: not-allowed;
     }
     &.active > a {
       text-decoration: none;
-      background-color: ;
+      background-color: #daecff;
     }
     &:first-child a {
       margin-left: 0;

@@ -8,30 +8,42 @@
     "prettier/standard"
   ],
   "rules": {
-    "jsx-a11y/anchor-is-valid": [ "error", {
-        "components": [ "Link" ],
-        "specialLink": [ "to", "hrefLeft", "hrefRight" ],
-        "aspects": [ "noHref", "invalidHref", "preferButton" ]
-      }],
-    "no-param-reassign": [2, {
-      "props": false
-    }],
+    "jsx-a11y/anchor-is-valid": [
+      "error",
+      {
+        "components": ["Link"],
+        "specialLink": ["to", "hrefLeft", "hrefRight"],
+        "aspects": ["noHref", "invalidHref", "preferButton"]
+      }
+    ],
+    "no-param-reassign": [
+      2,
+      {
+        "props": false
+      }
+    ],
     "no-underscore-dangle": 0,
-    "no-unused-vars": ["error", {
+    "no-unused-vars": [
+      "error",
+      {
         "vars": "all",
         "args": "after-used",
         "ignoreRestSiblings": true,
         "argsIgnorePattern": "^_"
       }
     ],
-    "prettier/prettier": ["error", {
-      "singleQuote": true,
-      "trailingComma": "all"
-    }],
+    "prettier/prettier": [
+      "error",
+      {
+        "singleQuote": true,
+        "trailingComma": "all"
+      }
+    ],
     "react-app/jsx-a11y/href-no-hash": "off", // This rule is dropped but create-react-app uses old rules
     "jsx-a11y/label-has-for": "off", // This rule will be dropped soon anyways
     "react/destructuring-assignment": "off", // Seems to be way too restrictive
-    "import/no-cycle": 1 // Should be addressed eventually but does not break
+    "import/no-cycle": 1, // Should be addressed eventually but does not break
+    "jsx-a11y/media-has-caption": "off" // Pretty hard to do for every video..
   },
   "env": {
     "jest": true,
