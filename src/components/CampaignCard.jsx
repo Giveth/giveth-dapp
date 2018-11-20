@@ -10,7 +10,6 @@ import Campaign from '../models/Campaign';
  *
  * @param currentUser  Currently logged in user information
  * @param history      Browser history object
- * @param wallet       Wallet object with the balance and all keystores
  */
 class CampaignCard extends Component {
   constructor(props) {

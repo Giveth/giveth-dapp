@@ -8,18 +8,21 @@ Welcome to the code for Giveth's DApp. This is an open source effort to realize 
 
 ## Table of content
 
+- [Table of content](#table-of-content)
 - [Getting Started](#getting-started)
+        - [Prerequisities](#prerequisities)
     - [Install](#install)
-      - [OSX and Linux](#osx-and-linux)
-      - [Windows](#windows)
+        - [OSX and Linux](#osx-and-linux)
+        - [Windows](#windows)
     - [Run](#run)
     - [Build](#build)
     - [Configuration](#configuration)
+    - [Analytics](#analytics)
 - [Contributing](#contributing)
-  - [Local Development](#local-development)
-  - [Development and PR Testing](#development-and-pr-testing)
-  - [Deployment Environments](#deploy-environments)
-  - [Release Process](#release-process)
+    - [Local Development](#local-development)
+    - [Development and PR Testing](#development-and-pr-testing)
+    - [Deployment Environments](#deployment-environments)
+    - [Release Process](#release-process)
 - [Help](#help)
 
 ## Getting Started
@@ -175,6 +178,8 @@ This will provide you access to the testrpc accounts for local development. Each
 The keystores are seeded with 10.000 ANT tokens for testing donations. To get started with testing donations,
 make sure to add your account's keystore to MetaMask and swith MetaMask to Ganache. The donation modal should
 then show the appropriate balance when donating in ANT tokens.
+
+**NOTE**: If you get a nonce error in MetaMask or if the dapp fails to load with your metamask unlocked, it could be b/c metamask is confused. You should go to "settings" -> "Reset Account" in MetaMask in order to reset the nonce & cached account data.
 
 ### Development and PR Testing
 1. The Giveth Dapp is auto deployed from the develop branch and is live on Rinkeby [develop.giveth.io](https://develop.giveth.io). All pull requests are autodeployed and the PR preview will be generated upon submission. To learn how to access PR previews see [Development Process & Quality Assurance](https://wiki.giveth.io/documentation/DApp/product-development-testing/) on our wiki.

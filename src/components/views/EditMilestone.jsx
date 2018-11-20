@@ -17,11 +17,17 @@ import DatePickerFormsy from '../DatePickerFormsy';
 import FormsyImageUploader from '../FormsyImageUploader';
 import GoBackButton from '../GoBackButton';
 import { isOwner, getTruncatedText, getStartOfDayUTC } from '../../lib/helpers';
-import { isAuthenticated, checkWalletBalance, isInWhitelist } from '../../lib/middleware';
+import {
+  checkForeignNetwork,
+  checkBalance,
+  isInWhitelist,
+  authenticateIfPossible,
+  checkProfile,
+} from '../../lib/middleware';
 import getNetwork from '../../lib/blockchain/getNetwork';
+import extraGas from '../../lib/blockchain/extraGas';
 import LoaderButton from '../LoaderButton';
 import User from '../../models/User';
-import GivethWallet from '../../lib/blockchain/GivethWallet';
 
 import ErrorPopup from '../ErrorPopup';
 import MilestoneProof from '../MilestoneProof';
@@ -76,15 +82,8 @@ class EditMilestone extends Component {
   }
 
   componentDidMount() {
-    isAuthenticated(this.props.currentUser, this.props.wallet)
-      .then(() => {
-        if (!this.props.isProposed) checkWalletBalance(this.props.wallet);
-      })
-      .then(() => {
-        if (!this.props.isProposed) {
-          isInWhitelist(this.props.currentUser, React.whitelist.projectOwnerWhitelist);
-        }
-      })
+    checkForeignNetwork(this.props.isForeignNetwork)
+      .then(() => this.checkUser())
       .then(() => {
         this.setState({
           campaignId: this.props.match.params.id,
@@ -158,10 +157,13 @@ class EditMilestone extends Component {
               if (campaign.projectId < 0) {
                 this.props.history.goBack();
               } else {
+                const { milestone } = this.state;
+                milestone.recipientAddress = this.props.currentUser.address;
                 this.setState({
                   campaignTitle: campaign.title,
                   campaignReviewerAddress: campaign.reviewerAddress,
                   campaignProjectId: campaign.projectId,
+                  milestone,
                 });
               }
             })
@@ -192,6 +194,20 @@ class EditMilestone extends Component {
           );
         }
       });
+  }
+
+  componentDidUpdate(prevProps) {
+    if (prevProps.currentUser !== this.props.currentUser) {
+      this.checkUser().then(() => {
+        if (
+          !isOwner(this.state.milestone.owner.address, this.props.currentUser) ||
+          !isOwner(this.state.milestone.campaign.ownerAddress, this.props.currentUser)
+        )
+          this.props.history.goBack();
+      });
+    } else if (this.props.currentUser && !prevProps.balance.eq(this.props.balance)) {
+      checkBalance(this.props.balance);
+    }
   }
 
   onAddItem(item) {
@@ -279,6 +295,25 @@ class EditMilestone extends Component {
     this.setState({ milestone }, () =>
       this.setDate(this.state.milestone.data || getStartOfDayUTC()),
     );
+  }
+
+  checkUser() {
+    if (!this.props.currentUser) {
+      this.props.history.push('/');
+      return Promise.reject();
+    }
+
+    return authenticateIfPossible(this.props.currentUser)
+      .then(() => {
+        if (
+          !this.props.isProposed &&
+          !isInWhitelist(this.props.currentUser, React.whitelist.projectOwnerWhitelist)
+        ) {
+          throw new Error('not whitelisted');
+        }
+      })
+      .then(() => checkProfile(this.props.currentUser))
+      .then(() => !this.props.isProposed && checkBalance(this.props.balance));
   }
 
   toggleItemize() {
@@ -371,7 +406,7 @@ class EditMilestone extends Component {
                 action: 'proposed',
                 label: m._id,
               });
-              React.toast.info(<p>Your Milestone is being proposed to the Campaign Owner.</p>);
+              React.toast.info(<p>Your Milestone has been proposed to the Campaign Owner.</p>);
             },
           );
         } else {
@@ -396,7 +431,7 @@ class EditMilestone extends Component {
                   `It looks like the campaign has not been mined yet. Please try again in a bit`,
                   `It looks like the campaign has not been mined yet. Please try again in a bit`,
                 );
-                return;
+                return null;
               }
 
               /**
@@ -414,7 +449,7 @@ class EditMilestone extends Component {
               uint _reviewTimeoutSeconds
               * */
 
-              network.lppCappedMilestoneFactory
+              return network.lppCappedMilestoneFactory
                 .newMilestone(
                   title,
                   '',
@@ -426,7 +461,7 @@ class EditMilestone extends Component {
                   maxAmount,
                   token.foreignAddress,
                   5 * 24 * 60 * 60, // 5 days in seconds
-                  { from },
+                  { from, $extraGas: extraGas() },
                 )
                 .on('transactionHash', hash => {
                   txHash = hash;
@@ -485,7 +520,7 @@ class EditMilestone extends Component {
               if (txHash && err.message && err.message.includes('unknown transaction')) return; // bug in web3 seems to constantly fail due to this error, but the tx is correct
               this.setState({ isSaving: false, isBlocking: true });
               ErrorPopup(
-                'Something went wrong with the transaction. Is your wallet unlocked?',
+                'Something went wrong with the transaction.',
                 `${etherScanUrl}tx/${txHash}`,
               );
             });
@@ -1004,6 +1039,7 @@ class EditMilestone extends Component {
                           type="submit"
                           disabled={isSaving || !formIsValid}
                           isLoading={isSaving}
+                          network="Foreign"
                           loadingText="Saving..."
                         >
                           <span>{this.btnText()}</span>
@@ -1024,14 +1060,15 @@ class EditMilestone extends Component {
 /* eslint react/forbid-prop-types: 0 */
 
 EditMilestone.propTypes = {
-  currentUser: PropTypes.instanceOf(User).isRequired,
+  currentUser: PropTypes.instanceOf(User),
   history: PropTypes.shape({
     goBack: PropTypes.func.isRequired,
     push: PropTypes.func.isRequired,
   }).isRequired,
   isProposed: PropTypes.bool,
   isNew: PropTypes.bool,
-  wallet: PropTypes.instanceOf(GivethWallet).isRequired,
+  balance: PropTypes.objectOf(utils.BN).isRequired,
+  isForeignNetwork: PropTypes.bool.isRequired,
   match: PropTypes.shape({
     params: PropTypes.shape({
       id: PropTypes.string,
@@ -1044,6 +1081,7 @@ EditMilestone.propTypes = {
 };
 
 EditMilestone.defaultProps = {
+  currentUser: undefined,
   isNew: false,
   isProposed: false,
 };

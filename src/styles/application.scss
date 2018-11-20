@@ -22,6 +22,7 @@
 @import 'loader.scss';
 @import 'mainMenu.scss';
 @import 'goBackButton.scss';
+@import 'loaderButton.scss';
 @import 'joinGivethCommunity.scss';
 @import 'backgroundImageHeader.scss';
 @import 'dac-card.scss';
@@ -42,185 +43,183 @@
 
 html,
 body {
-    font-family: 'Quicksand', sans-serif;
+  font-family: 'Quicksand', sans-serif;
 }
 
 body {
-    margin: 0;
-    padding: 0;
-    background-color: $page-background;
+  margin: 0;
+  padding: 0;
+  background-color: $page-background;
 }
 
 .page-layout {
+  padding: 130px 20px 50px 20px;
+  &.reduced-padding {
+    padding-top: 50px;
+  }
+  &.extended-padding {
+    padding-top: 80px + 50px;
+  }
+  @media (max-width: 768px) {
     padding: 130px 20px 50px 20px;
-    &.reduced-padding {
-        padding-top: 50px;
-    }
-    &.extended-padding {
-        padding-top: 80px + 50px;
-    }
-    @media (max-width: 768px) {
-        padding: 130px 20px 50px 20px;
-    }
+  }
 }
 
 a,
 button {
-    cursor: pointer;
-    &.secondary-link {
-        color: $secondary-link;
-    }
+  cursor: pointer;
+  &.secondary-link {
+    color: $secondary-link;
+  }
 }
 
 label,
 .label {
-    font-weight: 600;
-    margin-bottom: 2px;
-    font-size: 0.9rem;
+  font-weight: 600;
+  margin-bottom: 2px;
+  font-size: 0.9rem;
 }
 
-
 table {
-    overflow-x: scroll;
-    /* has to be scroll, not auto */
-    -webkit-overflow-scrolling: touch;
+  overflow-x: scroll;
+  /* has to be scroll, not auto */
+  -webkit-overflow-scrolling: touch;
 }
 
 .help-block {
-    color: lighten(black, 30%);
-    font-size: 0.75rem;
-    font-weight: 300;
+  color: lighten(black, 30%);
+  font-size: 0.75rem;
+  font-weight: 300;
 }
 
 .form-text {
-    margin-top: -3px;
-    margin-bottom: 10px;
-    color: lighten(black, 30%);
-    font-size: 0.75rem;
-    font-weight: 300;
+  margin-top: -3px;
+  margin-bottom: 10px;
+  color: lighten(black, 30%);
+  font-size: 0.75rem;
+  font-weight: 300;
 }
 
-input[type="file"] {
-    display: block;
+input[type='file'] {
+  display: block;
 }
 
 i {
-    margin-right: 5px;
-    &.fa-question-circle-o,
-    &.fa-question-circle {
-        color: $green;
-    }
+  margin-right: 5px;
+  &.fa-question-circle-o,
+  &.fa-question-circle {
+    color: $green;
+  }
 }
 
 .empty-state-img {
-    margin: 40px 0;
-    &.reduce-margin {
-        margin: 20px 0;
-    }
+  margin: 40px 0;
+  &.reduce-margin {
+    margin: 20px 0;
+  }
 }
 
 .spacer-top {
-    margin-top: 50px;
+  margin-top: 50px;
 }
 
 //
 .form-group {
-    // $valid-green: darken($green, 2%);
+  // $valid-green: darken($green, 2%);
+  label {
+    // color: $valid-green;
+  }
+  input {
+    // border-color: $valid-green;
+    &[type='file'] {
+      margin-top: 2px;
+    }
+  }
+  // &.is-valid {
+  //   .ql-toolbar {
+  //     border-top-color: $valid-green;
+  //     border-right-color: $valid-green;
+  //     border-left-color: $valid-green;
+  //   }
+  //   .ql-container {
+  //     border-bottom-color: $valid-green;
+  //     border-right-color: $valid-green;
+  //     border-left-color: $valid-green;
+  //   }
+  // }
+  &.has-error {
     label {
-        // color: $valid-green;
+      color: $error-red;
     }
     input {
-        // border-color: $valid-green;
-        &[type="file"] {
-            margin-top: 2px;
-        }
+      border-color: $error-red !important;
     }
-    // &.is-valid {
-    //   .ql-toolbar {
-    //     border-top-color: $valid-green;
-    //     border-right-color: $valid-green;
-    //     border-left-color: $valid-green;
-    //   }
-    //   .ql-container {
-    //     border-bottom-color: $valid-green;
-    //     border-right-color: $valid-green;
-    //     border-left-color: $valid-green;
-    //   }
-    // }
-    &.has-error {
-        $error-red: darken($red, 20%);
-        label {
-            color: $error-red;
-        }
-        input {
-            border-color: $error-red !important;
-        }
-        .ql-toolbar {
-            border-top-color: $error-red !important;
-            border-right-color: $error-red !important;
-            border-left-color: $error-red !important;
-        }
-        .ql-container {
-            border-bottom-color: $error-red !important;
-            border-right-color: $error-red !important;
-            border-left-color: $error-red !important;
-        }
-        .help-block {
-            color: $error-red;
-            margin-left: 0;
-            font-weight: 500;
-            &:not(.validation-message) {
-                display: none;
-            }
-        }
+    .ql-toolbar {
+      border-top-color: $error-red !important;
+      border-right-color: $error-red !important;
+      border-left-color: $error-red !important;
     }
-    // &.has-feedback > input {
-    //   border-color: $valid-green;
-    // }
-    .validation-message {
-        margin-left: 3px;
+    .ql-container {
+      border-bottom-color: $error-red !important;
+      border-right-color: $error-red !important;
+      border-left-color: $error-red !important;
     }
+    .help-block {
+      color: $error-red;
+      margin-left: 0;
+      font-weight: 500;
+      &:not(.validation-message) {
+        display: none;
+      }
+    }
+  }
+  // &.has-feedback > input {
+  //   border-color: $valid-green;
+  // }
+  .validation-message {
+    margin-left: 3px;
+  }
 }
 
 .nav-tabs {
-    margin-top: 50px;
+  margin-top: 50px;
 
-    .nav-link {
-        font-size: 0.8rem;
+  .nav-link {
+    font-size: 0.8rem;
 
-        &.active {
-            background-color: #f9f9f9;
-            border-bottom-color: #f9f9f9;
-        }
+    &.active {
+      background-color: #f9f9f9;
+      border-bottom-color: #f9f9f9;
     }
+  }
 }
 
 .image-preview {
-    background-color: #f9f9f9;
-    padding: 5px;
-    text-align: center;
-    border: 1px solid #e2e2e2;
-    border-radius: 3px;
-    margin-bottom: 10px;
-    max-width: 150px;
-    img{
-        width: 100%;
-    }
+  background-color: #f9f9f9;
+  padding: 5px;
+  text-align: center;
+  border: 1px solid #e2e2e2;
+  border-radius: 3px;
+  margin-bottom: 10px;
+  max-width: 150px;
+  img {
+    width: 100%;
+  }
 }
 
-.image-preview.small{
-    max-width: 100px;
+.image-preview.small {
+  max-width: 100px;
 }
 
-.react-toggle-container{
-    display: flex;
+.react-toggle-container {
+  display: flex;
 
-    .label{
-        margin-left: 10px;
-    }
+  .label {
+    margin-left: 10px;
+  }
 }
-.inline{
-    display: inline;
+.inline {
+  display: inline;
 }
 
 span.nav-link {
@@ -231,6 +230,6 @@ span.nav-link:focus {
 }
 
 .ql-editor .ql-video {
-min-height: 400px;
-width: 100%;    
+  min-height: 400px;
+  width: 100%;
 }
