@@ -2,14 +2,14 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 import Pagination from 'react-js-pagination';
+import { utils } from 'web3';
 
-import { isLoggedIn, redirectAfterWalletUnlock, checkWalletBalance } from '../../lib/middleware';
-import { getTruncatedText, convertEthHelper } from '../../lib/helpers';
+import { isLoggedIn, checkBalance } from '../../lib/middleware';
+import { getTruncatedText, convertEthHelper, history } from '../../lib/helpers';
 
 import Loader from '../Loader';
 
 import User from '../../models/User';
-import GivethWallet from '../../lib/blockchain/GivethWallet';
 import DACservice from '../../services/DACService';
 import DAC from '../../models/DAC';
 
@@ -42,6 +42,15 @@ class MyDACs extends Component {
       });
   }
 
+  componentDidUpdate(prevProps) {
+    if (prevProps.currentUser !== this.props.currentUser) {
+      // eslint-disable-next-line react/no-did-update-set-state
+      this.setState({ isLoading: true });
+      if (this.dacsObserver) this.dacsObserver.unsubscribe();
+      this.loadDACs();
+    }
+  }
+
   componentWillUnmount() {
     if (this.dacsObserver) this.dacsObserver.unsubscribe();
   }
@@ -57,18 +66,10 @@ class MyDACs extends Component {
   }
 
   editDAC(id) {
-    checkWalletBalance(this.props.wallet)
-      .then(() =>
-        React.swal({
-          title: 'Edit Community?',
-          text: 'Are you sure you want to edit the description of this community?',
-          icon: 'warning',
-          dangerMode: true,
-          buttons: ['Cancel', 'Yes, edit'],
-        }).then(isConfirmed => {
-          if (isConfirmed) redirectAfterWalletUnlock(`/dacs/${id}/edit`, this.props.wallet);
-        }),
-      )
+    checkBalance(this.props.balance)
+      .then(() => {
+        history.push(`/dacs/${id}/edit`);
+      })
       .catch(err => {
         if (err === 'noBalance') {
           // handle no balance error
@@ -119,20 +120,23 @@ class MyDACs extends Component {
                                   <Link to={`/dacs/${d.id}`}>{getTruncatedText(d.title, 45)}</Link>
                                 </td>
                                 <td className="td-donations-number">
-                                  {d.donationCounters &&
+                                  {d.donationCounters.length > 0 &&
                                     d.donationCounters.map(counter => (
                                       <p>
                                         {counter.donationCount} donation(s) in {counter.symbol}
                                       </p>
                                     ))}
+                                  {d.donationCounters.length === 0 && <span>-</span>}
                                 </td>
                                 <td className="td-donations-amount">
-                                  {d.donationCounters &&
+                                  {d.donationCounters.length > 0 &&
                                     d.donationCounters.map(counter => (
                                       <p>
                                         {convertEthHelper(counter.totalDonated)} {counter.symbol}
                                       </p>
                                     ))}
+
+                                  {d.donationCounters.length === 0 && <span>-</span>}
                                 </td>
                                 <td className="td-status">
                                   {d.status === DAC.PENDING && (
@@ -205,7 +209,7 @@ class MyDACs extends Component {
 
 MyDACs.propTypes = {
   currentUser: PropTypes.instanceOf(User).isRequired,
-  wallet: PropTypes.instanceOf(GivethWallet).isRequired,
+  balance: PropTypes.objectOf(utils.BN).isRequired,
 };
 
 export default MyDACs;

@@ -1,8 +1,9 @@
 import React, { Component, createContext } from 'react';
 import PropTypes from 'prop-types';
 import { paramsForServer } from 'feathers-hooks-common';
+import { utils } from 'web3';
 
-import { checkWalletBalance } from '../lib/middleware';
+import { authenticateIfPossible, checkBalance } from '../lib/middleware';
 import { feathersClient } from '../lib/feathersClient';
 import confirmationDialog from '../lib/confirmationDialog';
 import ErrorPopup from '../components/ErrorPopup';
@@ -11,7 +12,6 @@ import getNetwork from '../lib/blockchain/getNetwork';
 // Models
 import Donation from '../models/Donation';
 import User from '../models/User';
-import GivethWallet from '../lib/blockchain/GivethWallet';
 
 // Services
 import DonationService from '../services/DonationService';
@@ -24,7 +24,7 @@ export { Consumer };
  * Donation provider listing given user's donation and actions on top of them
  *
  * @prop currentUser User for whom the list of donations should be retrieved
- * @prop wallet      Wallet object
+ * @prop balance     User's balance
  * @prop children    Child REACT components
  */
 class DonationProvider extends Component {
@@ -52,8 +52,16 @@ class DonationProvider extends Component {
     getNetwork().then(network => this.setState({ etherScanUrl: network.etherscan }));
 
     // Get the donations for current user
-    if (this.props.currentUser) {
-      this.loadDonations();
+    if (this.props.currentUser) this.loadDonations();
+  }
+
+  componentDidUpdate(prevProps) {
+    if (prevProps.currentUser !== this.props.currentUser) {
+      // eslint-disable-next-line react/no-did-update-set-state
+      this.setState({ isLoading: true });
+      authenticateIfPossible(this.props.currentUser);
+      if (this.donationsObserver) this.donationsObserver.unsubscribe();
+      if (this.props.currentUser) this.loadDonations();
     }
   }
 
@@ -103,7 +111,7 @@ class DonationProvider extends Component {
    * @param donation Donation which delegation should be rejected
    */
   reject(donation) {
-    checkWalletBalance(this.props.wallet)
+    checkBalance(this.props.balance)
       .then(() =>
         React.swal({
           title: 'Reject your donation?',
@@ -163,7 +171,7 @@ class DonationProvider extends Component {
    * @param donation Donation to be committed
    */
   commit(donation) {
-    checkWalletBalance(this.props.wallet)
+    checkBalance(this.props.balance)
       .then(() =>
         React.swal({
           title: 'Commit your donation?',
@@ -222,10 +230,9 @@ class DonationProvider extends Component {
    * @param donation Donation to be refunded
    */
   refund(donation) {
-    checkWalletBalance(this.props.wallet).then(() => {
+    checkBalance(this.props.balance).then(() => {
       const confirmRefund = () => {
         const afterCreate = txLink => {
-          console.log('afterMined');
           React.toast.success(
             <p>
               The refund is pending...
@@ -253,7 +260,7 @@ class DonationProvider extends Component {
         // Refund the donation
         DonationService.refund(donation, this.props.currentUser.address, afterCreate, afterMined);
       };
-      confirmationDialog('refund', donation.myDonatedTo.name, confirmRefund);
+      confirmationDialog('refund', donation.donatedTo.name, confirmRefund);
     });
   }
 
@@ -302,12 +309,11 @@ class DonationProvider extends Component {
 DonationProvider.propTypes = {
   children: PropTypes.oneOfType([PropTypes.arrayOf(PropTypes.node), PropTypes.node]).isRequired,
   currentUser: PropTypes.instanceOf(User),
-  wallet: PropTypes.instanceOf(GivethWallet),
+  balance: PropTypes.objectOf(utils.BN).isRequired,
 };
 
 DonationProvider.defaultProps = {
   currentUser: undefined,
-  wallet: undefined,
 };
 
 export default DonationProvider;

@@ -5,10 +5,12 @@ $menu-item-color: #3a6467; //white;
 
 $link-color: black;
 
-$green: #5FB15F;
+$green: #5fb15f;
 $dark-blue: #234052;
 $green: #00b491;
 $red: #ff4b54;
 
 $success-green: #28a745;
 $secondary-link: #6189b5;
+
+$error-red: darken($red, 20%);

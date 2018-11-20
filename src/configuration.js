@@ -20,14 +20,19 @@ const configurations = {
     lppCappedMilestoneFactoryAddress: '0x630589690929E9cdEFDeF0734717a9eF3Ec7Fcfe',
     givethBridgeAddress: '0x8fed3F9126e7051DeA6c530920cb0BAE5ffa17a8',
     foreignGivethBridgeAddress: '0x8fed3F9126e7051DeA6c530920cb0BAE5ffa17a8',
-    tokenAddresses: { 'Home Ganache ETH': '0x5a42ca500aB159c51312B764bb25C135026e7a31' },
+    tokenAddresses: {
+      'Home Ganache ETH': '0x5a42ca500aB159c51312B764bb25C135026e7a31',
+      'MiniMe Test Token': '0xe78A0F7E598Cc8b0Bb87894B0F60dD2a88d6a8Ab',
+    },
     etherscan: 'https://etherscan.io/', // this won't work, only here so we can see links during development
     homeEtherscan: 'https://ropsten.etherscan.io/', // this won't work, only here so we can see links during development
     feathersConnection: 'http://localhost:3030',
     foreignNodeConnection: 'http://localhost:8546',
     foreignNetworkName: 'Foreign Ganache',
+    foreignNetworkId: 67,
     homeNodeConnection: 'http://localhost:8545',
     homeNetworkName: 'Home Ganache',
+    homeNetworkId: 66,
     ipfsGateway: 'http://localhost:8080/ipfs/',
     sendErrors: false,
     analytics: {
@@ -49,8 +54,10 @@ const configurations = {
     feathersConnection: 'https://feathers.develop.giveth.io',
     foreignNodeConnection: 'https://rinkeby.giveth.io',
     foreignNetworkName: 'Rinkeby',
+    foreignNetworkId: 4,
     homeNodeConnection: 'https://ropsten.infura.io',
     homeNetworkName: 'Ropsten',
+    homeNetworkId: 3,
     ipfsGateway: 'https://ipfs.giveth.io/ipfs/',
     analytics: {
       ga_UA: 'UA-103956937-5',
@@ -71,8 +78,10 @@ const configurations = {
     feathersConnection: 'https://feathers.release.giveth.io',
     foreignNodeConnection: 'https://rinkeby.giveth.io',
     foreignNetworkName: 'Rinkeby',
+    foreignNetworkId: 4,
     homeNodeConnection: 'https://ropsten.infura.io',
     homeNetworkName: 'Ropsten',
+    homeNetworkId: 3,
     ipfsGateway: 'https://ipfs.giveth.io/ipfs/',
     analytics: {
       ga_UA: 'UA-103956937-4',
@@ -93,8 +102,10 @@ const configurations = {
     feathersConnection: 'https://feathers.beta.giveth.io',
     foreignNodeConnection: 'https://rinkeby.giveth.io',
     foreignNetworkName: 'Rinkeby',
+    foreignNetworkId: 4,
     homeNodeConnection: 'https://mew.giveth.io',
     homeNetworkName: 'Mainnet',
+    homeNetworkId: 1,
     ipfsGateway: 'https://ipfs.giveth.io/ipfs/',
     analytics: {
       ga_UA: 'UA-103956937-2',
