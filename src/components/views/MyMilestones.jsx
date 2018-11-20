@@ -29,15 +29,11 @@ import Donation from '../../models/Donation';
 
 const deleteProposedMilestone = milestone => {
   const confirmDeleteMilestone = () => {
-    feathersClient
-      .service('/milestones')
-      .remove(milestone._id)
-      .then(() => {
-        React.toast.info(<p>The milestone has been deleted.</p>);
-      })
-      .catch(e => {
-        ErrorPopup('Something went wrong with deleting your milestone', e);
-      });
+    MilestoneService.deleteProposedMilestone({
+      milestone,
+      onSuccess: () => React.toast.info(<p>The milestone has been deleted.</p>),
+      onError: e => ErrorPopup('Something went wrong with deleting your milestone', e),
+    });
   };
   confirmationDialog('milestone', milestone.title, confirmDeleteMilestone);
 };
@@ -55,18 +51,13 @@ const rejectProposedMilestone = milestone => {
         placeholder: 'Add a reason why you reject this proposed milestone...',
       },
     },
-  }).then(message => {
-    const newContent = { status: 'Rejected' };
-    if (message) newContent.message = message;
-    feathersClient
-      .service('/milestones')
-      .patch(milestone._id, newContent)
-      .then(() => {
-        React.toast.info(<p>The proposed milestone has been rejected.</p>);
-      })
-      .catch(e => {
-        ErrorPopup('Something went wrong with rejecting the proposed milestone', e);
-      });
+  }).then(rejectReason => {
+    MilestoneService.rejectProposedMilestone({
+      milestone,
+      rejectReason,
+      onSuccess: () => React.toast.info(<p>The proposed milestone has been rejected.</p>),
+      onError: e => ErrorPopup('Something went wrong with rejecting the proposed milestone', e),
+    });
   });
 };
 
@@ -82,24 +73,19 @@ const reproposeRejectedMilestone = milestone => {
       enableAttachProof: false,
     })
     .then(proof =>
-      feathersClient
-        .service('/milestones')
-        .patch(milestone._id, {
-          status: 'proposed',
-          message: proof.message,
-          proofItems: proof.proofItems,
-        })
-        .then(() => {
+      MilestoneService.reproposeRejectedMilestone({
+        milestone,
+        proof,
+        onSuccess: () => {
           GA.trackEvent({
             category: 'Milestone',
             action: 'reproposed rejected milestone',
             label: milestone._id,
           });
           React.toast.info(<p>The milestone has been re-proposed.</p>);
-        })
-        .catch(e => {
-          ErrorPopup('Something went wrong with re-proposing your milestone', e);
-        }),
+        },
+        onError: e => ErrorPopup('Something went wrong with re-proposing your milestone', e),
+      }),
     );
 };
 
@@ -238,84 +224,135 @@ class MyMilestones extends Component {
             textPlaceholder: "Describe what you've done...",
           })
           .then(proof => {
-            // feathers
-            const _requestMarkComplete = (etherScanUrl, txHash) => {
-              feathersClient
-                .service('/milestones')
-                .patch(milestone._id, {
-                  status: 'NeedsReview',
-                  message: proof.message,
-                  proofItems: proof.items,
-                  mined: false,
-                  txHash,
-                })
-                .then(() => {
-                  GA.trackEvent({
-                    category: 'Milestone',
-                    action: 'marked complete',
-                    label: milestone._id,
-                  });
-
-                  React.toast.info(
-                    <p>
-                      Marking this milestone as complete is pending...
-                      <br />
-                      <a
-                        href={`${etherScanUrl}tx/${txHash}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        View transaction
-                      </a>
-                    </p>,
-                  );
-                })
-                .catch(e => {
-                  ErrorPopup('Something went wrong with marking your milestone as complete', e);
+            MilestoneService.requestMarkComplete({
+              milestone,
+              from: this.props.currentUser.address,
+              proof,
+              onTxHash: txUrl => {
+                GA.trackEvent({
+                  category: 'Milestone',
+                  action: 'marked complete',
+                  label: milestone._id,
                 });
-            };
 
-            // on chain
-            let txHash;
-            let etherScanUrl;
-            Promise.all([getNetwork(), getWeb3()])
-              .then(([network, web3]) => {
-                etherScanUrl = network.etherscan;
-
-                const cappedMilestone = new LPPCappedMilestone(web3, milestone.pluginAddress);
-
-                return cappedMilestone
-                  .requestMarkAsComplete({
-                    from: this.props.currentUser.address,
-                    $extraGas: extraGas(),
-                  })
-                  .once('transactionHash', hash => {
-                    txHash = hash;
-                    return _requestMarkComplete(etherScanUrl, txHash);
-                  });
-              })
-              .then(() => {
-                React.toast.success(
+                React.toast.info(
                   <p>
-                    The milestone has been marked as complete!
+                    Marking this milestone as complete is pending...
                     <br />
-                    <a
-                      href={`${etherScanUrl}tx/${txHash}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
+                    <a href={txUrl} target="_blank" rel="noopener noreferrer">
                       View transaction
                     </a>
                   </p>,
                 );
-              })
-              .catch(err => {
-                if (txHash && err.message && err.message.includes('unknown transaction')) return; // bug in web3 seems to constantly fail due to this error, but the tx is correct
-                ErrorPopup(
-                  'Something went wrong with the transaction.',
-                  `${etherScanUrl}tx/${txHash} => ${JSON.stringify(err, null, 2)}`,
+              },
+              onConfirmation: txUrl => {
+                React.toast.success(
+                  <p>
+                    The milestone has been marked as complete!
+                    <br />
+                    <a href={txUrl} target="_blank" rel="noopener noreferrer">
+                      View transaction
+                    </a>
+                  </p>,
                 );
-              });
+              },
+              onError: (code, err, txUrl) => {
+                if (code === 'patch-error') {
+                  ErrorPopup('Something went wrong with marking your milestone as complete', err);
+                } else {
+                  ErrorPopup(
+                    'Something went wrong with the transaction.',
+                    `${txUrl} => ${JSON.stringify(err, null, 2)}`,
+                  );
+                }
+              },
+            });
+
+            // // feathers
+            // const _requestMarkComplete = (etherScanUrl, txHash) => {
+            //   feathersClient
+            //     .service('/milestones')
+            //     .patch(milestone._id, {
+            //       status: 'NeedsReview',
+            //       message: proof.message,
+            //       proofItems: proof.items,
+            //       mined: false,
+            //       txHash,
+            //     })
+            //     .then(() => {
+            //       GA.trackEvent({
+            //         category: 'Milestone',
+            //         action: 'marked complete',
+            //         label: milestone._id,
+            //       });
+
+            //       React.toast.info(
+            //         <p>
+            //           Marking this milestone as complete is pending...
+            //           <br />
+            //           <a
+            //             href={`${etherScanUrl}tx/${txHash}`}
+            //             target="_blank"
+            //             rel="noopener noreferrer"
+            //           >
+            //             View transaction
+            //           </a>
+            //         </p>,
+            //       );
+            //     })
+            //     .onError((code, err) => {
+            //       if(code === 'error-patch') {
+            //         ErrorPopup('Something went wrong with marking your milestone as complete', e);
+            //       } else {
+            //         ErrorPopup(
+            //           'Something went wrong with the transaction.',
+            //           `${etherScanUrl}tx/${txHash} => ${JSON.stringify(err, null, 2)}`,
+            //         );
+            //       }
+            //     });
+            // };
+
+            // // on chain
+            // let txHash;
+            // let etherScanUrl;
+            // Promise.all([getNetwork(), getWeb3()])
+            //   .then(([network, web3]) => {
+            //     etherScanUrl = network.etherscan;
+
+            //     const cappedMilestone = new LPPCappedMilestone(web3, milestone.pluginAddress);
+
+            //     return cappedMilestone
+            //       .requestMarkAsComplete({
+            //         from: this.props.currentUser.address,
+            //         $extraGas: extraGas(),
+            //       })
+            //       .once('transactionHash', hash => {
+            //         txHash = hash;
+            //         return _requestMarkComplete(etherScanUrl, txHash);
+            //       });
+            //   })
+            //   .then(() => {
+            //     React.toast.success(
+            //       <p>
+            //         The milestone has been marked as complete!
+            //         <br />
+            //         <a
+            //           href={`${etherScanUrl}tx/${txHash}`}
+            //           target="_blank"
+            //           rel="noopener noreferrer"
+            //         >
+            //           View transaction
+            //         </a>
+            //       </p>,
+            //     );
+            //   })
+            //   .catch(err => {
+            //     if (txHash && err.message && err.message.includes('unknown transaction')) return; // bug in web3 seems to constantly fail due to this error, but the tx is correct
+            //     ErrorPopup(
+            //       'Something went wrong with the transaction.',
+            //       `${etherScanUrl}tx/${txHash} => ${JSON.stringify(err, null, 2)}`,
+            //     );
+            //   });
           })
           .catch(err => {
             if (err === 'noBalance') {

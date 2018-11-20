@@ -189,7 +189,7 @@ class MyCampaigns extends Component {
                                     <td className="td-donations-number">
                                       {c.donationCounters.length > 0 &&
                                         c.donationCounters.map(counter => (
-                                          <p>
+                                          <p key={counter._id}>
                                             {counter.donationCount} donation(s) in {counter.symbol}
                                           </p>
                                         ))}
@@ -198,7 +198,7 @@ class MyCampaigns extends Component {
                                     <td className="td-donations-amount">
                                       {c.donationCounters.length > 0 &&
                                         c.donationCounters.map(counter => (
-                                          <p>
+                                          <p key={counter._id}>
                                             {convertEthHelper(counter.totalDonated)}{' '}
                                             {counter.symbol}
                                           </p>

@@ -1,10 +1,11 @@
 import BigNumber from 'bignumber.js';
 import { paramsForServer } from 'feathers-hooks-common';
-// import { LPPCappedMilestone } from 'lpp-capped-milestone';
+import { LPPCappedMilestone } from 'lpp-capped-milestone';
 import Milestone from 'models/Milestone';
-import { feathersClient } from '../lib/feathersClient';
-// import getNetwork from '../lib/blockchain/getNetwork';
-// import { getWeb3 } from '../lib/blockchain/getWeb3';
+import { feathersClient } from 'lib/feathersClient';
+import getNetwork from 'lib/blockchain/getNetwork';
+import getWeb3 from 'lib/blockchain/getWeb3';
+import extraGas from 'lib/blockchain/extraGas';
 
 import Donation from '../models/Donation';
 // import IPFSService from './IPFSService';
@@ -205,6 +206,70 @@ class MilestoneService {
       .subscribe(resp => {
         onSuccess(resp.data.map(d => new Donation(d)));
       }, onError);
+  }
+
+  static deleteProposedMilestone({ milestone, onSuccess, onError }) {
+    milestones
+      .remove(milestone._id)
+      .then(() => onSuccess())
+      .catch(e => onError(e));
+  }
+
+  static rejectProposedMilestone({ milestone, rejectReason, onSuccess, onError }) {
+    const reject = { status: 'Rejected' };
+    if (rejectReason) reject.message = rejectReason;
+    milestones
+      .patch(milestone._id, reject)
+      .then(() => onSuccess())
+      .catch(e => onError(e));
+  }
+
+  static reproposeRejectedMilestone(milestone, proof, onSuccess, onError) {
+    milestones
+      .patch(milestone._id, {
+        status: 'proposed',
+        message: proof.message,
+        proofItems: proof.proofItems,
+      })
+      .then(() => onSuccess())
+      .catch(e => onError(e));
+  }
+
+  static requestMarkComplete({ milestone, from, proof, onTxHash, onConfirmation, onError }) {
+    let txHash;
+    let etherScanUrl;
+
+    Promise.all([getNetwork(), getWeb3()])
+      .then(([network, web3]) => {
+        etherScanUrl = network.etherscan;
+
+        const cappedMilestone = new LPPCappedMilestone(web3, milestone.pluginAddress);
+
+        return cappedMilestone
+          .requestMarkAsComplete({
+            from,
+            $extraGas: extraGas(),
+          })
+          .once('transactionHash', hash => {
+            txHash = hash;
+
+            return milestones
+              .patch(milestone._id, {
+                status: 'NeedsReview',
+                message: proof.message,
+                proofItems: proof.items,
+                mined: false,
+                txHash,
+              })
+              .then(() => onTxHash(`${etherScanUrl}tx/${txHash}`))
+              .catch(e => onError('patch-error', e));
+          });
+      })
+      .then(() => onConfirmation(`${etherScanUrl}tx/${txHash}`))
+      .catch(err => {
+        if (txHash && err.message && err.message.includes('unknown transaction')) onError(); // bug in web3 seems to constantly fail due to this error, but the tx is correct
+        onError(err, `${etherScanUrl}tx/${txHash}`);
+      });
   }
 }
 

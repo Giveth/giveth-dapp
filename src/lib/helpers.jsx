@@ -107,13 +107,8 @@ export const getStartOfDayUTC = date => moment.utc(date || moment()).startOf('da
 export const convertEthHelper = (amount, decimals) => {
   if (!amount) return 0;
   if (!(amount instanceof BigNumber)) {
-    console.trace(amount);
     return 0;
   }
-
-  // console.log(amount, decimals);
-
-  // const eth = utils.fromWei(amount.toString());
   return amount.toFixed(decimals || config.decimals);
 };
 

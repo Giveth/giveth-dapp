@@ -333,7 +333,7 @@ class BaseDonateButton extends React.Component {
   }
 
   render() {
-    const { model, currentUser, isHomeNetwork, ETHBalance, validProvider } = this.props;
+    const { model, currentUser, isHomeNetwork, ETHBalance, validProvider, maxAmount } = this.props;
     const {
       givethBridge,
       amount,
@@ -352,10 +352,14 @@ class BaseDonateButton extends React.Component {
 
     const balance = selectedToken.symbol === 'ETH' ? ETHBalance : selectedToken.balance;
 
-    // Determine max amount
-    let maxAmount = utils.fromWei(balance);
-    if (this.props.maxAmount && balance.gt(utils.toBN(this.props.maxAmount)))
-      maxAmount = utils.fromWei(this.props.maxAmount);
+    // Determines max amount based on wallet balance or milestone maxAmount
+    const _getMaxAmount = () => {
+      let _maxAmount = maxAmount;
+      _maxAmount = new BigNumber(selectedToken.balance);
+      if (maxAmount.lt(new BigNumber(selectedToken.balance))) _maxAmount = this.props.maxAmount;
+      return _maxAmount.toNumber();
+    };
+
     return (
       <span style={style}>
         <button type="button" className="btn btn-success" onClick={this.openDialog}>
@@ -474,12 +478,12 @@ class BaseDonateButton extends React.Component {
                 value={amount}
                 placeholder="1"
                 validations={{
-                  lessOrEqualTo: maxAmount,
+                  lessOrEqualTo: _getMaxAmount(),
                   greaterThan: 0.009,
                 }}
                 validationErrors={{
                   greaterThan: `Minimum value must be at least ${selectedToken.symbol}0.01`,
-                  lessOrEqualTo: `This donation exceeds your wallet balance or the milestone max amount: ${maxAmount} ${
+                  lessOrEqualTo: `This donation exceeds your wallet balance or the milestone max amount: ${_getMaxAmount()} ${
                     selectedToken.symbol
                   }.`,
                 }}
@@ -532,7 +536,7 @@ class BaseDonateButton extends React.Component {
 
             {validProvider &&
               currentUser &&
-              maxAmount !== 0 &&
+              _getMaxAmount() !== 0 &&
               balance !== '0' && (
                 <LoaderButton
                   className="btn btn-success"
@@ -609,7 +613,7 @@ BaseDonateButton.propTypes = {
     token: PropTypes.shape({}),
   }).isRequired,
   currentUser: PropTypes.instanceOf(User),
-  maxAmount: PropTypes.string,
+  maxAmount: PropTypes.instanceOf(BigNumber),
   ETHBalance: PropTypes.objectOf(utils.BN).isRequired,
   validProvider: PropTypes.bool.isRequired,
   isHomeNetwork: PropTypes.bool.isRequired,

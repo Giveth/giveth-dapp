@@ -68,8 +68,8 @@ class Donation extends Model {
 
     this._id = data._id;
     this._amount = new BigNumber(utils.fromWei(data.amount));
-    this._amountRemaining = data.amountRemaining;
-    this._pendingAmountRemaining = data.pendingAmountRemaining;
+    this._amountRemaining = new BigNumber(utils.fromWei(data.amountRemaining || ''));
+    this._pendingAmountRemaining = new BigNumber(utils.fromWei(data.pendingAmountRemaining || ''));
     this._commitTime = data.commitTime;
     this._confirmations = data.confirmations || 0;
     this._createdAt = data.createdAt;
@@ -192,7 +192,7 @@ class Donation extends Model {
       isForeignNetwork &&
       this._ownerTypeId === user.address &&
       this._status === Donation.WAITING &&
-      this._amountRemaining > 0
+      this._amountRemaining.toNumber() > 0
     );
   }
 
@@ -232,7 +232,7 @@ class Donation extends Model {
   get isPending() {
     return (
       this._status === Donation.PENDING ||
-      this._pendingAmountRemaining !== undefined ||
+      (this._pendingAmountRemaining && this._pendingAmountRemaining.toFixed() !== '0') ||
       !this._mined
     );
   }
@@ -256,16 +256,20 @@ class Donation extends Model {
   }
 
   get amountRemaining() {
-    return this._pendingAmountRemaining || this._amountRemaining;
+    if (this._pendingAmountRemaining.toFixed !== '0') {
+      return this._amountRemaining;
+    }
+    return this._pendingAmountRemaining;
   }
 
   set amountRemaining(value) {
-    this.checkType(value, ['string'], 'amountRemaining');
+    console.log('value', value.toFixed());
+    this.checkInstanceOf(value, BigNumber, 'amountRemaining');
     this._amountRemaining = value;
   }
 
   set pendingAmountRemaining(value) {
-    this.checkType(value, ['string', 'undefined'], 'pendingAmountRemaining');
+    this.checkInstanceOf(value, BigNumber, 'pendingAmountRemaining');
     if (this._pendingAmountRemaining) {
       throw new Error('not allowed to set pendingAmountRemaining');
     }
