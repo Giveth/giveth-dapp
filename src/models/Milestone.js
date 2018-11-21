@@ -35,6 +35,7 @@ export default class MilestoneModel extends BasicModel {
       campaignReviewer,
       recipient,
       reviewer,
+      mined = false,
     } = data;
 
     this._selectedFiatType = selectedFiatType;
@@ -58,6 +59,7 @@ export default class MilestoneModel extends BasicModel {
     this._campaignReviewer = campaignReviewer;
     this._recipient = recipient;
     this._reviewer = reviewer;
+    this._mined = mined;
   }
 
   /**
@@ -283,9 +285,18 @@ export default class MilestoneModel extends BasicModel {
 
   get currentBalance() {
     if (this._donationCounters && this._donationCounters.length > 0) {
-      return this._donationCounters[0].currentBalance;
+      return new BigNumber(this._donationCounters[0].currentBalance);
     }
     return new BigNumber('0');
+  }
+
+  get mined() {
+    return this._mined;
+  }
+
+  set mined(value) {
+    this.checkType(value, ['boolean'], 'mined');
+    this._mined = value;
   }
 
   // transient

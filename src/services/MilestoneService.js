@@ -6,6 +6,7 @@ import { feathersClient } from 'lib/feathersClient';
 import getNetwork from 'lib/blockchain/getNetwork';
 import getWeb3 from 'lib/blockchain/getWeb3';
 import extraGas from 'lib/blockchain/extraGas';
+import DonationService from 'services/DonationService';
 
 import Donation from '../models/Donation';
 // import IPFSService from './IPFSService';
@@ -224,6 +225,66 @@ class MilestoneService {
       .catch(e => onError(e));
   }
 
+  static acceptProposedMilestone({ milestone, from, proof, onTxHash, onConfirmation, onError }) {
+    let txHash;
+    let etherScanUrl;
+
+    getNetwork()
+      .then(network => {
+        etherScanUrl = network.etherscan;
+
+        const {
+          title,
+          maxAmount,
+          recipientAddress,
+          reviewerAddress,
+          ownerAddress, // TODO change this to managerAddress. There is no owner
+          campaignReviewerAddress,
+          token,
+        } = milestone;
+        const parentProjectId = milestone.campaign.projectId;
+
+        // TODO fix this hack
+        if (!parentProjectId || parentProjectId === '0') {
+          throw new Error('campaign-not-mined');
+        }
+
+        network.lppCappedMilestoneFactory
+          .newMilestone(
+            title,
+            '',
+            parentProjectId,
+            reviewerAddress,
+            recipientAddress,
+            campaignReviewerAddress,
+            ownerAddress,
+            maxAmount,
+            token.address,
+            5 * 24 * 60 * 60, // 5 days in seconds
+            { from, $extraGas: extraGas() },
+          )
+          .on('transactionHash', hash => {
+            txHash = hash;
+
+            return milestones
+              .patch(milestone._id, {
+                status: 'Pending',
+                mined: false,
+                message: proof.message,
+                proofItems: proof.items,
+                txHash,
+              })
+              .then(() => onTxHash(`${etherScanUrl}tx/${txHash}`))
+              .catch(e => onError('patch-error', e));
+          });
+      })
+      .then(() => onConfirmation(`${etherScanUrl}tx/${txHash}`))
+      .catch(err => {
+        if (txHash && err.message && err.message.includes('unknown transaction')) onError(); // bug in web3 seems to constantly fail due to this error, but the tx is correct
+        onError(err, `${etherScanUrl}tx/${txHash}`);
+      });
+  }
+
   static reproposeRejectedMilestone(milestone, proof, onSuccess, onError) {
     milestones
       .patch(milestone._id, {
@@ -255,9 +316,155 @@ class MilestoneService {
 
             return milestones
               .patch(milestone._id, {
-                status: 'NeedsReview',
+                status: 'Pending',
                 message: proof.message,
                 proofItems: proof.items,
+                mined: false,
+                txHash,
+              })
+              .then(() => onTxHash(`${etherScanUrl}tx/${txHash}`))
+              .catch(e => onError('patch-error', e));
+          });
+      })
+      .then(() => onConfirmation(`${etherScanUrl}tx/${txHash}`))
+      .catch(err => {
+        if (txHash && err.message && err.message.includes('unknown transaction')) onError(); // bug in web3 seems to constantly fail due to this error, but the tx is correct
+        onError(err, `${etherScanUrl}tx/${txHash}`);
+      });
+  }
+
+  static cancelMilestone({ milestone, from, proof, onTxHash, onConfirmation, onError }) {
+    let txHash;
+    let etherScanUrl;
+
+    Promise.all([getNetwork(), getWeb3()])
+      .then(([network, web3]) => {
+        etherScanUrl = network.etherscan;
+
+        const cappedMilestone = new LPPCappedMilestone(web3, milestone.pluginAddress);
+
+        return cappedMilestone
+          .cancelMilestone({
+            from,
+            $extraGas: extraGas(),
+          })
+          .once('transactionHash', hash => {
+            txHash = hash;
+
+            return milestones
+              .patch(milestone._id, {
+                status: 'Canceled',
+                message: proof.message,
+                proofItems: proof.items,
+                mined: false,
+                txHash,
+              })
+              .then(() => onTxHash(`${etherScanUrl}tx/${txHash}`))
+              .catch(e => onError('patch-error', e));
+          });
+      })
+      .then(() => onConfirmation(`${etherScanUrl}tx/${txHash}`))
+      .catch(err => {
+        if (txHash && err.message && err.message.includes('unknown transaction')) onError(); // bug in web3 seems to constantly fail due to this error, but the tx is correct
+        onError(err, `${etherScanUrl}tx/${txHash}`);
+      });
+  }
+
+  static approveMilestoneCompletion({ milestone, from, proof, onTxHash, onConfirmation, onError }) {
+    let txHash;
+    let etherScanUrl;
+
+    Promise.all([getNetwork(), getWeb3()])
+      .then(([network, web3]) => {
+        etherScanUrl = network.etherscan;
+
+        const cappedMilestone = new LPPCappedMilestone(web3, milestone.pluginAddress);
+
+        return cappedMilestone
+          .approveMilestoneCompleted({
+            from,
+            $extraGas: extraGas(),
+          })
+          .once('transactionHash', hash => {
+            txHash = hash;
+
+            return milestones
+              .patch(milestone._id, {
+                status: 'Completed',
+                mined: false,
+                message: proof.message,
+                proofItems: proof.items,
+                txHash,
+              })
+              .then(() => onTxHash(`${etherScanUrl}tx/${txHash}`))
+              .catch(e => onError('patch-error', e));
+          });
+      })
+      .then(() => onConfirmation(`${etherScanUrl}tx/${txHash}`))
+      .catch(err => {
+        if (txHash && err.message && err.message.includes('unknown transaction')) onError(); // bug in web3 seems to constantly fail due to this error, but the tx is correct
+        onError(err, `${etherScanUrl}tx/${txHash}`);
+      });
+  }
+
+  static rejectMilestoneCompletion({ milestone, from, proof, onTxHash, onConfirmation, onError }) {
+    let txHash;
+    let etherScanUrl;
+
+    Promise.all([getNetwork(), getWeb3()])
+      .then(([network, web3]) => {
+        etherScanUrl = network.etherscan;
+
+        const cappedMilestone = new LPPCappedMilestone(web3, milestone.pluginAddress);
+
+        return cappedMilestone
+          .rejectMilestoneCompleted({
+            from,
+            $extraGas: extraGas(),
+          })
+          .once('transactionHash', hash => {
+            txHash = hash;
+
+            return milestones
+              .patch(milestone._id, {
+                status: 'InProgress',
+                mined: false,
+                message: proof.message,
+                proofItems: proof.items,
+                txHash,
+              })
+              .then(() => onTxHash(`${etherScanUrl}tx/${txHash}`))
+              .catch(e => onError('patch-error', e));
+          });
+      })
+      .then(() => onConfirmation(`${etherScanUrl}tx/${txHash}`))
+      .catch(err => {
+        if (txHash && err.message && err.message.includes('unknown transaction')) onError(); // bug in web3 seems to constantly fail due to this error, but the tx is correct
+        onError(err, `${etherScanUrl}tx/${txHash}`);
+      });
+  }
+
+  static withdraw({ milestone, from, onTxHash, onConfirmation, onError }) {
+    let txHash;
+    let etherScanUrl;
+
+    Promise.all([getNetwork(), getWeb3(), DonationService.getPledges(milestone._id)])
+      .then(([network, web3]) => {
+        etherScanUrl = network.etherscan;
+
+        const cappedMilestone = new LPPCappedMilestone(web3, milestone.pluginAddress);
+
+        return cappedMilestone
+          .mWithdraw({
+            from,
+            $extraGas: extraGas(),
+          })
+          .once('transactionHash', hash => {
+            txHash = hash;
+
+            return milestones
+              .patch(milestone._id, {
+                status: 'Paying',
                 mined: false,
                 txHash,
               })

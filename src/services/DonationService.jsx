@@ -508,7 +508,6 @@ class DonationService {
         onSuccess(`${etherScanUrl}tx/${txHash}`);
       })
       .catch(err => {
-        console.log('err', err);
         if (txHash && err.message && err.message.includes('unknown transaction')) return; // bug in web3 seems to constantly fail due to this error, but the tx is correct
         ErrorPopup(
           'Something went wrong with the transaction. Is your wallet unlocked?',
@@ -712,6 +711,46 @@ class DonationService {
         ErrorPopup(
           'Your donation has been initiated, however an error occurred when attempting to save. You should see your donation appear within ~30 mins.',
           err,
+        );
+      });
+  }
+
+  static getMilestonePledges(milestoneId) {
+    return feathersClient
+      .service('/donations')
+      .find({
+        query: {
+          ownerType: 'milestone',
+          ownerTypeId: milestoneId,
+          amountRemaining: { $ne: 0 },
+          status: Donation.COMMITTED,
+        },
+      })
+      .then(({ data }) => {
+        if (data.length === 0) throw new Error('No donations found to withdraw');
+
+        const pledges = [];
+        data.forEach(donation => {
+          const pledge = pledges.find(n => n.id === donation.pledgeId);
+
+          if (pledge) {
+            pledge.amount = pledge.amount.add(utils.toBN(donation.amountRemaining));
+          } else {
+            pledges.push({
+              id: donation.pledgeId,
+              amount: utils.toBN(donation.amountRemaining),
+            });
+          }
+        });
+
+        return pledges.map(
+          pledge =>
+            // due to some issue in web3, utils.toHex(pledge.amount) breaks during minification.
+            // BN.toString(16) will return a hex string as well
+            `0x${utils.padLeft(pledge.amount.toString(16), 48)}${utils.padLeft(
+              utils.toHex(pledge.id).substring(2),
+              16,
+            )}`,
         );
       });
   }
