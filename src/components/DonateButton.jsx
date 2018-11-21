@@ -4,6 +4,7 @@ import Modal from 'react-modal';
 import { utils } from 'web3';
 import { Form, Input } from 'formsy-react-components';
 import Toggle from 'react-toggle';
+import Slider from 'react-rangeslider';
 
 import GA from 'lib/GoogleAnalytics';
 import getNetwork from '../lib/blockchain/getNetwork';
@@ -174,11 +175,14 @@ class BaseDonateButton extends React.Component {
   }
 
   openDialog() {
-    this.setState({
+    this.setState(prevState => ({
       modalVisible: true,
-      amount: '',
+      amount:
+        prevState.selectedToken.symbol === 'ETH'
+          ? utils.fromWei(this.props.ETHBalance)
+          : utils.fromWei(prevState.selectedToken.balance), // FIXME: Is this correct, shouldn't it consider precision of the token?
       formIsValid: false,
-    });
+    }));
   }
 
   submit(model) {
@@ -351,7 +355,7 @@ class BaseDonateButton extends React.Component {
     const balance = selectedToken.symbol === 'ETH' ? ETHBalance : selectedToken.balance;
 
     // Determine max amount
-    let maxAmount = utils.fromWei(balance);
+    let maxAmount = utils.fromWei(balance); // FIXME: Is this correct, shouldn't it consider precision of the token?
     if (this.props.maxAmount && balance.gt(utils.toBN(this.props.maxAmount)))
       maxAmount = utils.fromWei(this.props.maxAmount);
     return (
@@ -362,6 +366,7 @@ class BaseDonateButton extends React.Component {
         <Modal
           isOpen={modalVisible}
           onRequestClose={() => this.closeDialog()}
+          shouldCloseOnOverlayClick={false}
           contentLabel={`Support this ${model.type}!`}
           style={modalStyles}
         >
@@ -412,7 +417,7 @@ class BaseDonateButton extends React.Component {
             {validProvider &&
               isHomeNetwork &&
               currentUser && (
-                <p>
+                <div>
                   {model.type !== 'milestone' && (
                     <SelectFormsy
                       name="token"
@@ -420,7 +425,6 @@ class BaseDonateButton extends React.Component {
                       label="Make your donation in"
                       helpText="Select ETH or the token you want to donate"
                       value={selectedToken.address}
-                      cta="--- Select ---"
                       options={tokenWhitelistOptions}
                       onChange={address => this.setToken(address)}
                       disabled={model.type === 'milestone'}
@@ -429,48 +433,40 @@ class BaseDonateButton extends React.Component {
                   {/* TODO: remove this b/c the wallet provider will contain this info */}
                   {config.homeNetworkName} {selectedToken.symbol} balance:&nbsp;
                   <em>{utils.fromWei(balance)}</em>
-                </p>
+                </div>
               )}
 
-            {/* {validProvider &&
-                  isHomeNetwork &&
-                  currentUser &&
-                  balance.eqn(0) && (
-                    <div className="alert alert-warning">
-                      <i className="fa fa-exclamation-triangle" />
-                      You do not have an adequate balance in your account to donate.
-                    </div>
-                  )} */}
+            <span className="label">How much ${selectedToken.symbol} do you want to donate?</span>
 
-            {/* {validProvider &&
-                    maxAmount !== 0 &&
-                    balance.gtn(0) && (
-                      <div className="form-group">
-                        <Slider
-                          type="range"
-                          name="amount2"
-                          min={0}
-                          max={Number(maxAmount)}
-                          step={0.01}
-                          value={Number(Number(this.state.amount).toFixed(4))}
-                          labels={{
-                            0: '0',
-                            [maxAmount]: Number(Number(maxAmount).toFixed(4)),
-                          }}
-                          format={val => `${val} ETH`}
-                          onChange={newAmount => this.setState({ amount: newAmount.toString() })}
-                        />
-                      </div>
-                    )} */}
+            {validProvider &&
+              maxAmount !== 0 &&
+              balance.gtn(0) && (
+                <div className="form-group">
+                  <Slider
+                    type="range"
+                    name="amount2"
+                    min={0}
+                    max={Number(maxAmount)}
+                    step={0.01}
+                    value={Number(Number(amount).toFixed(4))}
+                    labels={{
+                      0: '0',
+                      [maxAmount]: Number(Number(maxAmount).toFixed(4)),
+                    }}
+                    format={val => `${val} ETH`}
+                    onChange={newAmount => this.setState({ amount: newAmount.toString() })}
+                  />
+                </div>
+              )}
 
             <div className="form-group">
               <Input
                 name="amount"
                 id="amount-input"
-                label={`How much ${selectedToken.symbol} do you want to donate?`}
                 type="number"
                 step="any"
                 value={amount}
+                onChange={(name, newAmount) => this.setState({ amount: newAmount })}
                 placeholder="1"
                 validations={{
                   lessOrEqualTo: maxAmount,
@@ -482,7 +478,6 @@ class BaseDonateButton extends React.Component {
                     selectedToken.symbol
                   }.`,
                 }}
-                required
                 autoFocus
               />
             </div>
@@ -547,7 +542,6 @@ class BaseDonateButton extends React.Component {
 
             {/* {!validProvider && <div>TODO: show donation data</div>} */}
 
-            {/* TODO get amount to dynamically update */}
             {givethBridge && (
               <a
                 className={`btn btn-primary ${isSaving ? 'disabled' : ''}`}
@@ -583,15 +577,17 @@ const DonateButton = ({ model, currentUser, maxAmount }) => (
   </Web3Consumer>
 );
 
+const modelTypes = PropTypes.shape({
+  type: PropTypes.string.isRequired,
+  adminId: PropTypes.oneOfType([PropTypes.number, PropTypes.string]).isRequired,
+  id: PropTypes.string.isRequired,
+  title: PropTypes.string.isRequired,
+  campaignId: PropTypes.string,
+  token: PropTypes.shape({}),
+});
+
 DonateButton.propTypes = {
-  model: PropTypes.shape({
-    type: PropTypes.string.isRequired,
-    adminId: PropTypes.oneOfType([PropTypes.number, PropTypes.string]).isRequired,
-    id: PropTypes.string.isRequired,
-    title: PropTypes.string.isRequired,
-    campaignId: PropTypes.string,
-    token: PropTypes.shape({}),
-  }).isRequired,
+  model: modelTypes.isRequired,
   currentUser: PropTypes.instanceOf(User),
   maxAmount: PropTypes.string,
 };
@@ -599,14 +595,7 @@ DonateButton.propTypes = {
 // eslint isn't smart enough to be able to use Object.assign({}, DonateButton.propTypes, {...})
 // so we have to duplicate them
 BaseDonateButton.propTypes = {
-  model: PropTypes.shape({
-    type: PropTypes.string.isRequired,
-    adminId: PropTypes.oneOfType([PropTypes.number, PropTypes.string]).isRequired,
-    id: PropTypes.string.isRequired,
-    title: PropTypes.string.isRequired,
-    campaignId: PropTypes.string,
-    token: PropTypes.shape({}),
-  }).isRequired,
+  model: modelTypes.isRequired,
   currentUser: PropTypes.instanceOf(User),
   maxAmount: PropTypes.string,
   ETHBalance: PropTypes.objectOf(utils.BN).isRequired,
