@@ -45,7 +45,7 @@ class CancelMilestoneButton extends Component {
 
                 React.toast.info(
                   <p>
-                    Cancelling this milestone is pending...
+                    Canceling this milestone is pending...
                     <br />
                     <a href={txUrl} target="_blank" rel="noopener noreferrer">
                       View transaction
@@ -64,8 +64,8 @@ class CancelMilestoneButton extends Component {
                   </p>,
                 );
               },
-              onError: (code, err, txUrl) => {
-                if (code === 'patch-error') {
+              onError: (err, txUrl) => {
+                if (err === 'patch-error') {
                   ErrorPopup('Something went wrong with canceling your milestone', err);
                 } else {
                   ErrorPopup(

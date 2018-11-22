@@ -49,7 +49,7 @@ class ReproposeRejectedMilestoneButton extends Component {
 
     return (
       <Fragment>
-        {milestone.ownerAddress === currentUser.address &&
+        {milestone.owner.address === currentUser.address &&
           isForeignNetwork &&
           milestone.status === 'Rejected' && (
             <button

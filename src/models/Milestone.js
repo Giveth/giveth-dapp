@@ -36,6 +36,7 @@ export default class MilestoneModel extends BasicModel {
       recipient,
       reviewer,
       mined = false,
+      pluginAddress = '0x0000000000000000000000000000000000000000',
     } = data;
 
     this._selectedFiatType = selectedFiatType;
@@ -52,6 +53,7 @@ export default class MilestoneModel extends BasicModel {
     this._confirmations = confirmations;
     this._requiredConfirmations = requiredConfirmations;
     this._commitTime = commitTime;
+    this._pluginAddress = pluginAddress;
 
     // transient
     this._campaign = campaign;
@@ -245,17 +247,6 @@ export default class MilestoneModel extends BasicModel {
     this._date = value;
   }
 
-  get id() {
-    return this._id;
-  }
-
-  set id(value) {
-    if (value) {
-      this.checkType(value, ['string'], '_id');
-      this._id = value;
-    }
-  }
-
   get confirmations() {
     return this._confirmations;
   }
@@ -297,6 +288,15 @@ export default class MilestoneModel extends BasicModel {
   set mined(value) {
     this.checkType(value, ['boolean'], 'mined');
     this._mined = value;
+  }
+
+  get pluginAddress() {
+    return this._pluginAddress;
+  }
+
+  set pluginAddress(value) {
+    this.checkType(value, ['string'], 'pluginAddress');
+    this._pluginAddress = value;
   }
 
   // transient

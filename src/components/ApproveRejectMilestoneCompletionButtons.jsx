@@ -66,8 +66,8 @@ class ApproveRejectMilestoneCompletionButtons extends Component {
                   </p>,
                 );
               },
-              onError: (code, err, txUrl) => {
-                if (code === 'patch-error') {
+              onError: (err, txUrl) => {
+                if (err === 'patch-error') {
                   ErrorPopup(
                     "Something went wrong with approving this milestone's completion",
                     err,
@@ -129,7 +129,7 @@ class ApproveRejectMilestoneCompletionButtons extends Component {
               onConfirmation: txUrl => {
                 React.toast.success(
                   <p>
-                    The milestone completion been rejected!
+                    The milestone's completion has been rejected.
                     <br />
                     <a href={txUrl} target="_blank" rel="noopener noreferrer">
                       View transaction
@@ -137,8 +137,9 @@ class ApproveRejectMilestoneCompletionButtons extends Component {
                   </p>,
                 );
               },
-              onError: (code, err, txUrl) => {
-                if (code === 'patch-error') {
+              onError: (err, txUrl) => {
+                console.log(err, txUrl);
+                if (err === 'patch-error') {
                   ErrorPopup(
                     "Something went wrong with rejecting this milestone's completion",
                     err,
@@ -182,7 +183,7 @@ class ApproveRejectMilestoneCompletionButtons extends Component {
               <button
                 type="button"
                 className="btn btn-danger btn-sm"
-                onClick={() => this.rejectMilestoneCompletion()}
+                onClick={() => this.rejectMilestoneCompleted()}
               >
                 <i className="fa fa-thumbs-down" />
                 &nbsp;Reject

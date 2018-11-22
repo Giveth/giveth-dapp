@@ -1,4 +1,5 @@
 import BigNumber from 'bignumber.js';
+import { utils } from 'web3';
 import { paramsForServer } from 'feathers-hooks-common';
 import { LPPCappedMilestone } from 'lpp-capped-milestone';
 import Milestone from 'models/Milestone';
@@ -81,6 +82,8 @@ class MilestoneService {
     recipientAddress,
     skipPages,
     itemsPerPage,
+    onResult,
+    onError,
   }) {
     const query = {
       $sort: {
@@ -138,7 +141,7 @@ class MilestoneService {
       ];
     }
 
-    return this.subscribe(query);
+    this.subscribe(query, onResult, onError);
   }
 
   /**
@@ -158,19 +161,19 @@ class MilestoneService {
    *    error message
    */
 
-  static subscribe(query) {
-    return new Promise((resolve, reject) => {
-      this.milestoneSubscription = milestones
-        .watch({ listStrategy: 'always' })
-        .find({ query })
-        .subscribe(resp => {
-          const newResp = Object.assign({}, resp, {
-            data: resp.data.map(m => new Milestone(m)),
-          });
-          resolve(newResp);
-        }, reject);
-      return this.milestoneSubscription;
-    });
+  static subscribe(query, onResult, onError) {
+    this.milestoneSubscription = milestones
+      .watch({ listStrategy: 'always' })
+      .find({ query })
+      .subscribe(
+        resp =>
+          onResult(
+            Object.assign({}, resp, {
+              data: resp.data.map(m => new Milestone(m)),
+            }),
+          ),
+        onError,
+      );
   }
 
   /**
@@ -238,8 +241,8 @@ class MilestoneService {
           maxAmount,
           recipientAddress,
           reviewerAddress,
-          ownerAddress, // TODO change this to managerAddress. There is no owner
-          campaignReviewerAddress,
+          owner, // TODO change this to managerAddress. There is no owner
+          campaignReviewer,
           token,
         } = milestone;
         const parentProjectId = milestone.campaign.projectId;
@@ -256,19 +259,19 @@ class MilestoneService {
             parentProjectId,
             reviewerAddress,
             recipientAddress,
-            campaignReviewerAddress,
-            ownerAddress,
-            maxAmount,
-            token.address,
+            campaignReviewer.address,
+            owner.address,
+            utils.toWei(maxAmount.toString()),
+            token.foreignAddress,
             5 * 24 * 60 * 60, // 5 days in seconds
             { from, $extraGas: extraGas() },
           )
-          .on('transactionHash', hash => {
+          .once('transactionHash', hash => {
             txHash = hash;
 
             return milestones
               .patch(milestone._id, {
-                status: 'Pending',
+                status: Milestone.PROPOSED,
                 mined: false,
                 message: proof.message,
                 proofItems: proof.items,
@@ -276,19 +279,19 @@ class MilestoneService {
               })
               .then(() => onTxHash(`${etherScanUrl}tx/${txHash}`))
               .catch(e => onError('patch-error', e));
-          });
+          })
+          .on('receipt', () => onConfirmation(`${etherScanUrl}tx/${txHash}`));
       })
-      .then(() => onConfirmation(`${etherScanUrl}tx/${txHash}`))
       .catch(err => {
         if (txHash && err.message && err.message.includes('unknown transaction')) onError(); // bug in web3 seems to constantly fail due to this error, but the tx is correct
         onError(err, `${etherScanUrl}tx/${txHash}`);
       });
   }
 
-  static reproposeRejectedMilestone(milestone, proof, onSuccess, onError) {
+  static reproposeRejectedMilestone({ milestone, proof, onSuccess, onError }) {
     milestones
       .patch(milestone._id, {
-        status: 'proposed',
+        status: Milestone.PROPOSED,
         message: proof.message,
         proofItems: proof.proofItems,
       })
@@ -316,7 +319,7 @@ class MilestoneService {
 
             return milestones
               .patch(milestone._id, {
-                status: 'Pending',
+                status: Milestone.NEEDS_REVIEW,
                 message: proof.message,
                 proofItems: proof.items,
                 mined: false,
@@ -324,9 +327,9 @@ class MilestoneService {
               })
               .then(() => onTxHash(`${etherScanUrl}tx/${txHash}`))
               .catch(e => onError('patch-error', e));
-          });
+          })
+          .on('receipt', () => onConfirmation(`${etherScanUrl}tx/${txHash}`));
       })
-      .then(() => onConfirmation(`${etherScanUrl}tx/${txHash}`))
       .catch(err => {
         if (txHash && err.message && err.message.includes('unknown transaction')) onError(); // bug in web3 seems to constantly fail due to this error, but the tx is correct
         onError(err, `${etherScanUrl}tx/${txHash}`);
@@ -353,7 +356,7 @@ class MilestoneService {
 
             return milestones
               .patch(milestone._id, {
-                status: 'Canceled',
+                status: Milestone.CANCELED,
                 message: proof.message,
                 proofItems: proof.items,
                 mined: false,
@@ -361,9 +364,9 @@ class MilestoneService {
               })
               .then(() => onTxHash(`${etherScanUrl}tx/${txHash}`))
               .catch(e => onError('patch-error', e));
-          });
+          })
+          .on('receipt', () => onConfirmation(`${etherScanUrl}tx/${txHash}`));
       })
-      .then(() => onConfirmation(`${etherScanUrl}tx/${txHash}`))
       .catch(err => {
         if (txHash && err.message && err.message.includes('unknown transaction')) onError(); // bug in web3 seems to constantly fail due to this error, but the tx is correct
         onError(err, `${etherScanUrl}tx/${txHash}`);
@@ -390,7 +393,7 @@ class MilestoneService {
 
             return milestones
               .patch(milestone._id, {
-                status: 'Completed',
+                status: Milestone.COMPLETED,
                 mined: false,
                 message: proof.message,
                 proofItems: proof.items,
@@ -398,9 +401,9 @@ class MilestoneService {
               })
               .then(() => onTxHash(`${etherScanUrl}tx/${txHash}`))
               .catch(e => onError('patch-error', e));
-          });
+          })
+          .on('receipt', () => onConfirmation(`${etherScanUrl}tx/${txHash}`));
       })
-      .then(() => onConfirmation(`${etherScanUrl}tx/${txHash}`))
       .catch(err => {
         if (txHash && err.message && err.message.includes('unknown transaction')) onError(); // bug in web3 seems to constantly fail due to this error, but the tx is correct
         onError(err, `${etherScanUrl}tx/${txHash}`);
@@ -418,7 +421,7 @@ class MilestoneService {
         const cappedMilestone = new LPPCappedMilestone(web3, milestone.pluginAddress);
 
         return cappedMilestone
-          .rejectMilestoneCompleted({
+          .rejectCompleteRequest({
             from,
             $extraGas: extraGas(),
           })
@@ -427,7 +430,7 @@ class MilestoneService {
 
             return milestones
               .patch(milestone._id, {
-                status: 'InProgress',
+                status: Milestone.IN_PROGRESS,
                 mined: false,
                 message: proof.message,
                 proofItems: proof.items,
@@ -435,9 +438,9 @@ class MilestoneService {
               })
               .then(() => onTxHash(`${etherScanUrl}tx/${txHash}`))
               .catch(e => onError('patch-error', e));
-          });
+          })
+          .on('receipt', () => onConfirmation(`${etherScanUrl}tx/${txHash}`));
       })
-      .then(() => onConfirmation(`${etherScanUrl}tx/${txHash}`))
       .catch(err => {
         if (txHash && err.message && err.message.includes('unknown transaction')) onError(); // bug in web3 seems to constantly fail due to this error, but the tx is correct
         onError(err, `${etherScanUrl}tx/${txHash}`);
@@ -448,14 +451,14 @@ class MilestoneService {
     let txHash;
     let etherScanUrl;
 
-    Promise.all([getNetwork(), getWeb3(), DonationService.getPledges(milestone._id)])
-      .then(([network, web3]) => {
+    Promise.all([getNetwork(), getWeb3(), DonationService.getMilestoneDonations(milestone._id)])
+      .then(([network, web3, donations]) => {
         etherScanUrl = network.etherscan;
 
         const cappedMilestone = new LPPCappedMilestone(web3, milestone.pluginAddress);
 
         return cappedMilestone
-          .mWithdraw({
+          .mWithdraw(donations, {
             from,
             $extraGas: extraGas(),
           })
@@ -464,15 +467,15 @@ class MilestoneService {
 
             return milestones
               .patch(milestone._id, {
-                status: 'Paying',
+                status: Milestone.PAYING,
                 mined: false,
                 txHash,
               })
               .then(() => onTxHash(`${etherScanUrl}tx/${txHash}`))
               .catch(e => onError('patch-error', e));
-          });
+          })
+          .on('receipt', () => onConfirmation(`${etherScanUrl}tx/${txHash}`));
       })
-      .then(() => onConfirmation(`${etherScanUrl}tx/${txHash}`))
       .catch(err => {
         if (txHash && err.message && err.message.includes('unknown transaction')) onError(); // bug in web3 seems to constantly fail due to this error, but the tx is correct
         onError(err, `${etherScanUrl}tx/${txHash}`);

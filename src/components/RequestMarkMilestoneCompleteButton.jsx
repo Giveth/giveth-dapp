@@ -64,8 +64,8 @@ class RequestMarkMilestoneCompleteButton extends Component {
                   </p>,
                 );
               },
-              onError: (code, err, txUrl) => {
-                if (code === 'patch-error') {
+              onError: (err, txUrl) => {
+                if (err === 'patch-error') {
                   ErrorPopup('Something went wrong with marking your milestone as complete', err);
                 } else {
                   ErrorPopup(

@@ -62,11 +62,13 @@ class WithdrawMilestoneFundsButton extends Component {
                   </p>,
                 );
               },
-              onError: (code, err, txUrl) => {
+              onError: (err, txUrl) => {
                 let msg;
 
-                if (code === 'patch-error') {
-                  ErrorPopup('Something went wrong with canceling your milestone', err);
+                if (err === 'patch-error') {
+                  ErrorPopup('Something went wrong with witdrawing your funds', err);
+                } else if (err.message === 'no-donations') {
+                  msg = <p>Nothing to withdraw. There are no donations to this milestone.</p>;
                 } else if (txUrl) {
                   // TODO: need to update feathers to reset the donations to previous state as this
                   // tx failed.
@@ -79,8 +81,6 @@ class WithdrawMilestoneFundsButton extends Component {
                       </a>
                     </p>
                   );
-                } else if (err.message === 'No donations found to withdraw') {
-                  msg = <p>Nothing to withdraw. There are no donations to this milestone.</p>;
                 } else {
                   msg = <p>Something went wrong with the transaction.</p>;
                 }
@@ -107,11 +107,11 @@ class WithdrawMilestoneFundsButton extends Component {
 
     return (
       <Fragment>
-        {[milestone.recipientAddress, milestone.ownerAddress].includes(currentUser.address) &&
-          milestone.status === 'Completed' &&
+        {[milestone.recipientAddress, milestone.owner.address].includes(currentUser.address) &&
+          milestone.status === Milestone.COMPLETED &&
           isForeignNetwork &&
           milestone.mined &&
-          milestone.donationCount > 0 && (
+          milestone.currentBalance.gt('0') > 0 && (
             <button
               type="button"
               className="btn btn-success btn-sm"

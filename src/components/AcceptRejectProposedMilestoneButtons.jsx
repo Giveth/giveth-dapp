@@ -57,7 +57,7 @@ class AcceptRejectProposedMilestoneButtons extends Component {
           .then(proof => {
             MilestoneService.acceptProposedMilestone({
               milestone,
-              from: currentUser,
+              from: currentUser.address,
               proof,
               onTxHash: txUrl => {
                 GA.trackEvent({
@@ -87,8 +87,8 @@ class AcceptRejectProposedMilestoneButtons extends Component {
                   </p>,
                 );
               },
-              onError: (code, err, txUrl) => {
-                if (code === 'patch-error') {
+              onError: (err, txUrl) => {
+                if (err === 'patch-error') {
                   ErrorPopup('Something went wrong with accepting this proposed milestone', err);
                 } else {
                   ErrorPopup(

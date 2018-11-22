@@ -67,7 +67,7 @@ class MyMilestones extends Component {
       // eslint-disable-next-line react/no-did-update-set-state
       this.setState({ isLoading: true });
       authenticateIfPossible(this.props.currentUser);
-      if (this.milestonesObserver) this.milestonesObserver.unsubscribe();
+      if (this.milestonesObserver) MilestoneService.unsubscribe();
       this.loadMileStones();
     }
   }
@@ -76,7 +76,7 @@ class MyMilestones extends Component {
     MilestoneService.unsubscribe();
   }
 
-  async loadMileStones() {
+  loadMileStones() {
     const myAddress = this.props.currentUser.address;
     const { milestoneStatus, skipPages, itemsPerPage } = this.state;
 
@@ -86,8 +86,7 @@ class MyMilestones extends Component {
       recipientAddress: myAddress,
       skipPages,
       itemsPerPage,
-    })
-      .then(resp =>
+      onResult: resp =>
         this.setState({
           milestones: resp.data,
           itemsPerPage: resp.limit,
@@ -95,11 +94,10 @@ class MyMilestones extends Component {
           totalResults: resp.total,
           isLoading: false,
         }),
-      )
-      .catch(() =>
+      onError: () =>
         // TO DO: handle error here in view
         this.setState({ isLoading: false }),
-      );
+    });
   }
 
   handlePageChanged(newPage) {
@@ -226,8 +224,7 @@ class MyMilestones extends Component {
                                       </Link>
                                     </td>
                                     <td className="td-status">
-                                      {(m.status === 'Pending' ||
-                                        (Object.keys(m).includes('mined') && !m.mined)) && (
+                                      {!m.mined && (
                                         <span>
                                           <i className="fa fa-circle-o-notch fa-spin" />
                                           &nbsp;
@@ -336,25 +333,6 @@ class MyMilestones extends Component {
                                         currentUser={currentUser}
                                         isForeignNetwork={isForeignNetwork}
                                       />
-
-                                      {/* {m.recipientAddress === currentUser.address &&
-                                    m.status === 'Paying' && (
-                                      <p>
-                                        Withdraw authorization pending. You will be able to collect
-                                        the funds when confirmed.
-                                      </p>
-                                    )}
-
-                                  {m.recipientAddress === currentUser.address &&
-                                    m.status === 'CanWithdraw' &&
-                                    m.mined && (
-                                      <button
-                                        className="btn btn-success btn-sm"
-                                        onClick={() => this.collect(m)}
-                                      >
-                                        <i className="fa fa-usd" />&nbsp;Collect
-                                      </button>
-                                    )} */}
                                     </td>
                                   </tr>
                                 ))}

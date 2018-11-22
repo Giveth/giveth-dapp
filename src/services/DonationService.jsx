@@ -715,8 +715,8 @@ class DonationService {
       });
   }
 
-  static getMilestonePledges(milestoneId) {
-    return feathersClient
+  static getMilestoneDonations(milestoneId) {
+    feathersClient
       .service('/donations')
       .find({
         query: {
@@ -727,7 +727,7 @@ class DonationService {
         },
       })
       .then(({ data }) => {
-        if (data.length === 0) throw new Error('No donations found to withdraw');
+        if (data.length === 0) throw new Error('no-donations');
 
         const pledges = [];
         data.forEach(donation => {
@@ -752,7 +752,8 @@ class DonationService {
               16,
             )}`,
         );
-      });
+      })
+      .catch(err => err);
   }
 }
 
