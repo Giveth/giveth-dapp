@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import { Prompt } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import { Form, Input } from 'formsy-react-components';
+import { utils } from 'web3';
 
 import GA from 'lib/GoogleAnalytics';
 import Loader from '../Loader';
@@ -9,13 +10,18 @@ import QuillFormsy from '../QuillFormsy';
 import FormsyImageUploader from '../FormsyImageUploader';
 import GoBackButton from '../GoBackButton';
 import { isOwner, getTruncatedText, history } from '../../lib/helpers';
-import { isAuthenticated, checkWalletBalance, isInWhitelist } from '../../lib/middleware';
+import {
+  checkForeignNetwork,
+  checkProfile,
+  authenticateIfPossible,
+  checkBalance,
+  isInWhitelist,
+} from '../../lib/middleware';
 import LoaderButton from '../LoaderButton';
 
 import DACservice from '../../services/DACService';
 import DAC from '../../models/DAC';
 import User from '../../models/User';
-import GivethWallet from '../../lib/blockchain/GivethWallet';
 import ErrorPopup from '../ErrorPopup';
 
 /**
@@ -25,7 +31,6 @@ import ErrorPopup from '../ErrorPopup';
  *                 Otherwise component expects an id param and will load a DAC object
  * @param id       URL parameter which is an id of a campaign object
  * @param history  Browser history object
- * @param wallet   Wallet object with the balance and all keystores
  */
 class EditDAC extends Component {
   constructor(props) {
@@ -50,9 +55,8 @@ class EditDAC extends Component {
   }
 
   componentDidMount() {
-    isAuthenticated(this.props.currentUser, this.props.wallet)
-      .then(() => isInWhitelist(this.props.currentUser, React.whitelist.delegateWhitelist))
-      .then(() => checkWalletBalance(this.props.wallet))
+    checkForeignNetwork(this.props.isForeignNetwork)
+      .then(() => this.checkUser())
       .then(() => {
         if (!this.props.isNew) {
           DACservice.get(this.props.match.params.id)
@@ -84,6 +88,17 @@ class EditDAC extends Component {
     this.mounted = true;
   }
 
+  componentDidUpdate(prevProps) {
+    if (prevProps.currentUser !== this.props.currentUser) {
+      this.checkUser().then(() => {
+        if (!this.props.isNew && !isOwner(this.state.dac.owner.address, this.props.currentUser))
+          history.goBack();
+      });
+    } else if (this.props.currentUser && !prevProps.balance.eq(this.props.balance)) {
+      checkBalance(this.props.balance);
+    }
+  }
+
   componentWillUnmount() {
     this.mounted = false;
   }
@@ -94,48 +109,68 @@ class EditDAC extends Component {
     this.setState({ dac });
   }
 
+  checkUser() {
+    if (!this.props.currentUser) {
+      history.push('/');
+      return Promise.reject();
+    }
+
+    return authenticateIfPossible(this.props.currentUser)
+      .then(() => {
+        if (!isInWhitelist(this.props.currentUser, React.whitelist.delegateWhitelist)) {
+          throw new Error('not whitelisted');
+        }
+      })
+      .then(() => checkProfile(this.props.currentUser))
+      .then(() => checkBalance(this.props.balance));
+  }
+
   submit() {
-    const afterMined = (url, id) => {
-      if (url) {
-        const msg = (
-          <p>
-            Your DAC has been created!
-            <br />
-            <a href={url} target="_blank" rel="noopener noreferrer">
-              View transaction
-            </a>
-          </p>
-        );
-        GA.trackEvent({
-          category: 'DAC',
-          action: 'created',
-          label: id,
-        });
-        React.toast.success(msg);
-      } else {
-        if (this.mounted) this.setState({ isSaving: false });
-        React.toast.success('Your DAC has been updated!');
-        GA.trackEvent({
-          category: 'DAC',
-          action: 'updated',
-          label: id,
-        });
-        history.push(`/dacs/${this.state.dac.id}`);
-      }
-    };
-    const afterCreate = url => {
-      if (this.mounted) this.setState({ isSaving: false });
-      const msg = (
+    // Save dac
+    const showToast = (msg, url, isSuccess = false) => {
+      const toast = url ? (
         <p>
-          Your DAC is pending....
+          {msg}
           <br />
           <a href={url} target="_blank" rel="noopener noreferrer">
             View transaction
           </a>
         </p>
+      ) : (
+        msg
       );
-      React.toast.info(msg);
-      history.push('/my-dacs');
+
+      if (isSuccess) React.toast.success(toast);
+      else React.toast.info(toast);
+    };
+
+    const afterMined = (created, url, id) => {
+      const msg = `Your DAC has been ${created ? 'created' : 'updated'}`;
+      showToast(msg, url, true);
+
+      if (created) {
+        GA.trackEvent({
+          category: 'DAC',
+          action: 'created',
+          label: id,
+        });
+      } else {
+        if (this.mounted) this.setState({ isSaving: false });
+        GA.trackEvent({
+          category: 'DAC',
+          action: 'updated',
+          label: id,
+        });
+        history.push(`/dacs/${id}`);
+      }
+    };
+    const afterSave = (err, created, url) => {
+      if (this.mounted) this.setState({ isSaving: false });
+      if (err) return;
+      const msg = created ? 'Your DAC is pending...' : 'Your DAC is being updated...';
+      showToast(msg, url);
+
+      if (created) history.push('/my-dacs');
     };
 
     this.setState(
@@ -145,7 +180,7 @@ class EditDAC extends Component {
       },
       () => {
         // Save the DAC
-        this.state.dac.save(afterCreate, afterMined);
+        this.state.dac.save(afterSave, afterMined);
       },
     );
   }
@@ -283,8 +318,9 @@ class EditDAC extends Component {
                           className="btn btn-success pull-right"
                           formNoValidate
                           type="submit"
-                          disabled={isSaving || !formIsValid}
+                          disabled={isSaving || !formIsValid || (dac.id && dac.delegateId === 0)}
                           isLoading={isSaving}
+                          network="Foreign"
                           loadingText="Saving..."
                         >
                           {isNew ? 'Create DAC' : 'Update DAC'}
@@ -303,9 +339,10 @@ class EditDAC extends Component {
 }
 
 EditDAC.propTypes = {
-  currentUser: PropTypes.instanceOf(User).isRequired,
+  currentUser: PropTypes.instanceOf(User),
   isNew: PropTypes.bool,
-  wallet: PropTypes.instanceOf(GivethWallet).isRequired,
+  balance: PropTypes.objectOf(utils.BN).isRequired,
+  isForeignNetwork: PropTypes.bool.isRequired,
   match: PropTypes.shape({
     params: PropTypes.shape({
       id: PropTypes.string,
@@ -314,6 +351,7 @@ EditDAC.propTypes = {
 };
 
 EditDAC.defaultProps = {
+  currentUser: undefined,
   isNew: false,
 };
 

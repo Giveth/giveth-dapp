@@ -2,6 +2,9 @@ import React, { Component, createContext } from 'react';
 import PropTypes from 'prop-types';
 import { paramsForServer } from 'feathers-hooks-common';
 
+import { authenticateIfPossible } from 'lib/middleware';
+
+import Milestone from 'models/Milestone';
 import { feathersClient } from '../lib/feathersClient';
 import ErrorPopup from '../components/ErrorPopup';
 
@@ -10,7 +13,6 @@ import Donation from '../models/Donation';
 import User from '../models/User';
 import DAC from '../models/DAC';
 import Campaign from '../models/Campaign';
-import Milestone from '../models/Milestone';
 
 const Context = createContext();
 const { Provider, Consumer } = Context;
@@ -32,157 +34,39 @@ class DelegationProvider extends Component {
       campaigns: [],
       milestones: [],
       isLoading: true,
+      visiblePages: 10,
+      itemsPerPage: 50,
+      skipPages: 0,
+      totalResults: 0,
     };
 
     this.getAndWatchDonations = this.getAndWatchDonations.bind(this);
+    this.handlePageChanged = this.handlePageChanged.bind(this);
+    this.load = this.load.bind(this);
+    this.cleanUp = this.cleanUp.bind(this);
   }
 
   componentWillMount() {
-    if (this.props.currentUser) {
-      /**
-        Load all DACs/campaigns/milestones
-        TO DO: We should really move this to a single service
+    if (this.props.currentUser) this.load();
+  }
 
-        For each type we transform the data so that the InputToken component can handle it
-        * */
-
-      // FIXME: Move all of this to single service in feathers
-      Promise.all([
-        new Promise((resolve, reject) => {
-          this.dacsObserver = feathersClient
-            .service('dacs')
-            .watch({ listStrategy: 'always' })
-            .find({
-              query: {
-                status: DAC.ACTIVE,
-                $select: ['ownerAddress', 'title', '_id', 'delegateId'],
-                $limit: 100,
-                $sort: {
-                  createdAt: -1,
-                },
-              },
-            })
-            .subscribe(
-              resp =>
-                this.setState(
-                  {
-                    dacs: resp.data.map(d => {
-                      d.type = DAC.type;
-                      d.name = d.title;
-                      d.id = d._id;
-                      d.element = (
-                        <span>
-                          {d.title} <em>DAC</em>
-                        </span>
-                      );
-                      return d;
-                    }),
-                  },
-                  resolve(),
-                ),
-              () => reject(),
-            );
-        }),
-        new Promise((resolve, reject) => {
-          this.campaignsObserver = feathersClient
-            .service('campaigns')
-            .watch({ listStrategy: 'always' })
-            .find({
-              query: {
-                status: Campaign.ACTIVE,
-                $select: ['ownerAddress', 'title', '_id', 'projectId'],
-                $limit: 100,
-                $sort: {
-                  createdAt: -1,
-                },
-              },
-            })
-            .subscribe(
-              resp =>
-                this.setState(
-                  {
-                    campaigns: resp.data.map(c => {
-                      c.type = Campaign.type;
-                      c.name = c.title;
-                      c.id = c._id;
-                      c.element = (
-                        <span>
-                          {c.title} <em>Campaign</em>
-                        </span>
-                      );
-                      return c;
-                    }),
-                  },
-                  resolve(),
-                ),
-              () => reject(),
-            );
-        }),
-        new Promise((resolve, reject) => {
-          this.milestoneObserver = feathersClient
-            .service('milestones')
-            .watch({ listStrategy: 'always' })
-            .find({
-              query: {
-                status: Milestone.IN_PROGRESS,
-                fullyFunded: { $ne: true },
-                $select: [
-                  'title',
-                  '_id',
-                  'projectId',
-                  'campaignId',
-                  'maxAmount',
-                  'totalDonated',
-                  'status',
-                ],
-                $limit: 100,
-                $sort: {
-                  createdAt: -1,
-                },
-              },
-            })
-            .subscribe(
-              resp => {
-                this.setState(
-                  {
-                    milestones: resp.data.map(m => {
-                      m.type = Milestone.type;
-                      m.name = m.title;
-                      m.id = m._id;
-                      m.element = (
-                        <span>
-                          {m.title} <em>Milestone</em>
-                        </span>
-                      );
-                      return m;
-                    }), // .filter((m) => m.totalDonated < m.maxAmount)
-                  },
-                  resolve(),
-                );
-              },
-              () => reject(),
-            );
-        }),
-      ])
-        .then(() => this.getAndWatchDonations())
-        .catch(err => {
-          ErrorPopup('Unable to load dacs, campaigns or milestones.', err);
-          this.setState({ isLoading: false });
-        });
+  componentDidUpdate(prevProps) {
+    if (prevProps.currentUser !== this.props.currentUser) {
+      // eslint-disable-next-line react/no-did-update-set-state
+      this.setState({ isLoading: true });
+      authenticateIfPossible(this.props.currentUser);
+      this.cleanUp();
+      if (this.props.currentUser) this.load();
     }
   }
 
   componentWillUnmount() {
-    // Clean up the observers
-    if (this.donationsObserver) this.donationsObserver.unsubscribe();
-    if (this.dacsObserver) this.dacsObserver.unsubscribe();
-    if (this.campaignsObserver) this.campaignsObserver.unsubscribe();
-    if (this.milestoneObserver) this.milestoneObserver.unsubscribe();
+    this.cleanUp();
   }
 
   getAndWatchDonations() {
     // here we get all the ids.
-    // TO DO: less overhead here if we move it all to a single service.
+    // TODO: less overhead here if we move it all to a single service.
     // NOTE: This will not rerun, meaning after any dac/campaign/milestone is added
 
     const dacsIds = this.state.dacs
@@ -210,29 +94,191 @@ class DelegationProvider extends Component {
           // },
         ],
         $sort: { createdAt: 1 },
+        $limit: this.state.itemsPerPage,
+        $skip: this.state.skipPages * this.state.itemsPerPage,
       },
       schema: 'includeTypeAndGiverDetails',
     });
 
     // start watching donations, this will re-run when donations change or are added
+    if (this.donationsObserver) this.donationsObserver.unsubscribe();
     this.donationsObserver = feathersClient
       .service('donations')
       .watch({ listStrategy: 'always' })
       .find(query)
       .subscribe(
         resp => {
-          this.setState({
+          this.setState(prevState => ({
             delegations: resp.data.map(d => new Donation(d)),
+            skipPages: resp.skip / prevState.itemsPerPage,
+            totalResults: resp.total,
             isLoading: false,
-          });
+          }));
         },
         () => this.setState({ isLoading: false }),
       );
   }
 
+  handlePageChanged(newPage) {
+    this.setState({ skipPages: newPage - 1 }, () => {
+      this.getAndWatchDonations();
+    });
+  }
+
+  load() {
+    /**
+        Load all DACs/campaigns/milestones
+        TO DO: We should really move this to a single service
+
+        For each type we transform the data so that the InputToken component can handle it
+        * */
+
+    // FIXME: Move all of this to single service in feathers
+    Promise.all([
+      new Promise((resolve, reject) => {
+        this.dacsObserver = feathersClient
+          .service('dacs')
+          .watch({ listStrategy: 'always' })
+          .find({
+            query: {
+              status: DAC.ACTIVE,
+              $select: ['ownerAddress', 'title', '_id', 'delegateId'],
+              $limit: 100,
+              $sort: {
+                createdAt: -1,
+              },
+            },
+          })
+          .subscribe(
+            resp =>
+              this.setState(
+                {
+                  dacs: resp.data.map(d => {
+                    d.type = DAC.type;
+                    d.name = d.title;
+                    d.id = d._id;
+                    d.element = (
+                      <span>
+                        {d.title} <em>DAC</em>
+                      </span>
+                    );
+                    return d;
+                  }),
+                },
+                resolve(),
+              ),
+            () => reject(),
+          );
+      }),
+      new Promise((resolve, reject) => {
+        this.campaignsObserver = feathersClient
+          .service('campaigns')
+          .watch({ listStrategy: 'always' })
+          .find({
+            query: {
+              status: Campaign.ACTIVE,
+              $select: ['ownerAddress', 'title', '_id', 'projectId'],
+              $limit: 100,
+              $sort: {
+                createdAt: -1,
+              },
+            },
+          })
+          .subscribe(
+            resp =>
+              this.setState(
+                {
+                  campaigns: resp.data.map(c => {
+                    c.type = Campaign.type;
+                    c.name = c.title;
+                    c.id = c._id;
+                    c.element = (
+                      <span>
+                        {c.title} <em>Campaign</em>
+                      </span>
+                    );
+                    return c;
+                  }),
+                },
+                resolve(),
+              ),
+            () => reject(),
+          );
+      }),
+      new Promise((resolve, reject) => {
+        this.milestoneObserver = feathersClient
+          .service('milestones')
+          .watch({ listStrategy: 'always' })
+          .find({
+            query: {
+              status: Milestone.IN_PROGRESS,
+              fullyFunded: { $ne: true },
+              $select: [
+                'title',
+                '_id',
+                'projectId',
+                'campaignId',
+                'maxAmount',
+                'totalDonated',
+                'status',
+              ],
+              $limit: 100,
+              $sort: {
+                createdAt: -1,
+              },
+            },
+          })
+          .subscribe(
+            resp => {
+              this.setState(
+                {
+                  milestones: resp.data.map(m => {
+                    m.type = Milestone.type;
+                    m.name = m.title;
+                    m.id = m._id;
+                    m.element = (
+                      <span>
+                        {m.title} <em>Milestone</em>
+                      </span>
+                    );
+                    return m;
+                  }), // .filter((m) => m.totalDonated < m.maxAmount)
+                },
+                resolve(),
+              );
+            },
+            () => reject(),
+          );
+      }),
+    ])
+      .then(() => this.getAndWatchDonations())
+      .catch(err => {
+        ErrorPopup('Unable to load dacs, campaigns or milestones.', err);
+        this.setState({ isLoading: false });
+      });
+  }
+
+  cleanUp() {
+    // Clean up the observers
+    if (this.donationsObserver) this.donationsObserver.unsubscribe();
+    if (this.dacsObserver) this.dacsObserver.unsubscribe();
+    if (this.campaignsObserver) this.campaignsObserver.unsubscribe();
+    if (this.milestoneObserver) this.milestoneObserver.unsubscribe();
+  }
+
   render() {
-    const { delegations, milestones, campaigns, isLoading, etherScanUrl } = this.state;
-    const { refund, commit, reject } = this;
+    const {
+      delegations,
+      milestones,
+      campaigns,
+      isLoading,
+      etherScanUrl,
+      itemsPerPage,
+      visiblePages,
+      totalResults,
+      skipPages,
+    } = this.state;
+    const { refund, commit, reject, handlePageChanged } = this;
 
     return (
       <Provider
@@ -243,11 +289,16 @@ class DelegationProvider extends Component {
             campaigns,
             isLoading,
             etherScanUrl,
+            itemsPerPage,
+            visiblePages,
+            totalResults,
+            skipPages,
           },
           actions: {
             refund,
             commit,
             reject,
+            handlePageChanged,
           },
         }}
       >

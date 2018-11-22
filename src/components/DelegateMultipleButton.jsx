@@ -6,13 +6,14 @@ import PropTypes from 'prop-types';
 import { paramsForServer } from 'feathers-hooks-common';
 import Slider from 'react-rangeslider';
 import 'react-rangeslider/lib/index.css';
-import { BigNumber } from 'bignumber.js';
+import BigNumber from 'bignumber.js';
 import InputToken from 'react-input-token';
 
-import { checkWalletBalance } from '../lib/middleware';
+import { checkBalance } from '../lib/middleware';
 import { feathersClient } from '../lib/feathersClient';
-import GivethWallet from '../lib/blockchain/GivethWallet';
 import Loader from './Loader';
+import config from '../configuration';
+import SelectFormsy from './SelectFormsy';
 
 import Donation from '../models/Donation';
 import Campaign from '../models/Campaign';
@@ -36,10 +37,21 @@ const modalStyles = {
   },
 };
 
+const _getTokenWhitelist = () => {
+  const r = React.whitelist.tokenWhitelist;
+  return r.map(t => {
+    if (t.symbol === 'ETH') {
+      t.name = `${config.homeNetworkName} ETH`;
+    }
+    t.balance = '0';
+    return t;
+  });
+};
+
 /**
- * Retrieves the oldest 100 donations that can the user delegate
+ * Retrieves the oldest 100 donations that the user can delegate
  *
- * @prop {GivethWallet} wallet      Wallet object
+ * @prop {BN}           balance     Current user's balance
  * @prop {User}         currentUser Current user of the Dapp
  * @prop {Campaign}     campaign    If the delegation is towards campaign, this contains the campaign
  * @prop {Object}       milestone   It the delegation is towards campaign, this contains the milestone
@@ -57,6 +69,13 @@ class DelegateMultipleButton extends Component {
       maxAmount: 0,
       delegationOptions: [],
       objectToDelegateFrom: [],
+      tokenWhitelistOptions: _getTokenWhitelist().map(t => ({
+        value: t.address,
+        title: t.name,
+      })),
+      selectedToken: this.props.milestone
+        ? this.props.milestone.token
+        : _getTokenWhitelist().find(t => t.symbol === 'ETH'),
     };
 
     this.loadDonations = this.loadDonations.bind(this);
@@ -90,14 +109,15 @@ class DelegateMultipleButton extends Component {
           const delegationOptions = this.props.milestone
             ? dacs.concat([
                 {
-                  id: this.props.milestone.campaign._id,
-                  name: this.props.milestone.campaign.title,
-                  projectId: this.props.milestone.campaign.projectId,
+                  id: this.props.campaign._id,
+                  name: this.props.campaign.title,
+                  projectId: this.props.campaign.projectId,
                   ownerEntity: this.props.milestone.ownerEntity,
                   type: 'campaign',
                 },
               ])
             : dacs;
+
           this.setState({ delegationOptions }, () => {
             if (delegationOptions.length === 1) {
               this.selectedObject({ target: { value: [delegationOptions[0].id] } });
@@ -108,8 +128,15 @@ class DelegateMultipleButton extends Component {
       );
   }
 
+  setToken(address) {
+    this.setState({ selectedToken: _getTokenWhitelist().find(t => t.address === address) }, () =>
+      this.loadDonations(this.state.objectToDelegateFrom),
+    );
+  }
+
   selectedObject({ target }) {
     this.setState({ objectToDelegateFrom: target.value, isLoadingDonations: true });
+
     this.loadDonations(target.value);
   }
 
@@ -143,6 +170,7 @@ class DelegateMultipleButton extends Component {
         amountRemaining: { $ne: 0 },
         ...options,
         $sort: { createdAt: 1 },
+        'token.symbol': this.state.selectedToken.symbol,
       },
       schema: 'includeTypeAndGiverDetails',
     });
@@ -153,23 +181,17 @@ class DelegateMultipleButton extends Component {
       .watch({ listStrategy: 'always' })
       .find(query)
       .subscribe(
-        r => {
-          const delegations = r.data.map(d => new Donation(d));
-          let amount = delegations.reduce(
-            (sum, d) => sum.add(utils.toBN(d.amountRemaining)),
-            utils.toBN('0'),
+        donations => {
+          const delegations = donations.data.map(d => new Donation(d));
+          let amount = utils.fromWei(
+            delegations.reduce((sum, d) => sum.add(utils.toBN(d.amountRemaining)), utils.toBN('0')),
           );
 
           if (
             this.props.milestone &&
-            new BigNumber(this.props.milestone.maxAmount).lt(
-              new BigNumber(utils.fromWei(amount.toString())),
-            )
+            new BigNumber(this.props.milestone.maxAmount).lt(new BigNumber(amount))
           )
             amount = this.props.milestone.maxAmount;
-          else {
-            amount = utils.fromWei(amount.toString());
-          }
 
           this.setState({
             delegations,
@@ -183,7 +205,7 @@ class DelegateMultipleButton extends Component {
   }
 
   openDialog() {
-    checkWalletBalance(this.props.wallet).then(() => this.setState({ modalVisible: true }));
+    checkBalance(this.props.balance).then(() => this.setState({ modalVisible: true }));
   }
 
   submit(model) {
@@ -224,7 +246,7 @@ class DelegateMultipleButton extends Component {
     DonationService.delegateMultiple(
       this.state.delegations,
       utils.toWei(model.amount),
-      this.props.campaign || this.props.milestone,
+      this.props.milestone || this.props.campaign,
       onCreated,
       onSuccess,
     );
@@ -232,13 +254,21 @@ class DelegateMultipleButton extends Component {
 
   render() {
     const style = { display: 'inline-block', ...this.props.style };
-    const { isSaving, isLoading, delegationOptions, delegations, isLoadingDonations } = this.state;
+    const {
+      isSaving,
+      isLoading,
+      delegationOptions,
+      delegations,
+      isLoadingDonations,
+      tokenWhitelistOptions,
+      selectedToken,
+    } = this.state;
     const { campaign, milestone } = this.props;
 
     return (
       <span style={style}>
         <button type="button" className="btn btn-info" onClick={() => this.openDialog()}>
-          Delegate
+          Delegate funds here
         </button>
 
         <Modal
@@ -250,8 +280,8 @@ class DelegateMultipleButton extends Component {
         >
           <p>
             You are delegating donations to
-            {campaign && <strong> {campaign.title}</strong>}
-            {milestone && <strong> {milestone.campaign.title}</strong>}
+            {!milestone && <strong> {campaign.title}</strong>}
+            {milestone && <strong> {milestone.title}</strong>}
           </p>
           {isLoading && <Loader className="small btn-loader" />}
           {!isLoading && (
@@ -289,7 +319,20 @@ class DelegateMultipleButton extends Component {
                 !isLoadingDonations &&
                 delegations.length > 0 && (
                   <div>
-                    <span className="label">Amount to delegate:</span>
+                    {!this.props.milestone && (
+                      <SelectFormsy
+                        name="token"
+                        id="token-select"
+                        label="Select token or ETH to delegate"
+                        helpText=""
+                        value={selectedToken && selectedToken.address}
+                        cta="--- Select ---"
+                        options={tokenWhitelistOptions}
+                        onChange={address => this.setToken(address)}
+                      />
+                    )}
+
+                    <span className="label">Amount {selectedToken.symbol} to delegate:</span>
 
                     <div className="form-group">
                       <Slider
@@ -300,7 +343,7 @@ class DelegateMultipleButton extends Component {
                         step={this.state.maxAmount / 10}
                         value={Number(this.state.amount)}
                         labels={{ 0: '0', [this.state.maxAmount]: this.state.maxAmount }}
-                        format={val => `${val} ETH`}
+                        format={val => `${val} ${selectedToken.symbol}`}
                         onChange={amount =>
                           this.setState(prevState => ({
                             amount:
@@ -350,7 +393,7 @@ class DelegateMultipleButton extends Component {
 }
 
 DelegateMultipleButton.propTypes = {
-  wallet: PropTypes.instanceOf(GivethWallet).isRequired,
+  balance: PropTypes.objectOf(utils.BN).isRequired,
   currentUser: PropTypes.instanceOf(User).isRequired,
   campaign: PropTypes.instanceOf(Campaign),
   milestone: PropTypes.shape(),

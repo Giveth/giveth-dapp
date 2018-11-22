@@ -46,7 +46,6 @@ class SelectFormsy extends React.Component {
             name={this.props.name}
             onChange={this.changeValue}
             value={this.props.getValue()}
-            defaultValue={this.props.getValue()}
             disabled={this.props.disabled}
           >
             {options}

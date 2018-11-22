@@ -1,4 +1,3 @@
-/* eslint-disable prefer-destructuring */
 /* eslint-disable jsx-a11y/anchor-is-valid */
 
 import React, { Component } from 'react';
@@ -10,7 +9,7 @@ import { Input, Form } from 'formsy-react-components';
 import { utils } from 'web3';
 
 import getEthConversionContext from 'containers/getEthConversionContext';
-import { getStartOfDayUTC } from '../lib/helpers';
+import MilestoneItem from 'models/MilestoneItem';
 import FormsyImageUploader from './FormsyImageUploader';
 import RateConvertor from './RateConvertor';
 
@@ -29,21 +28,16 @@ const modalStyles = {
 
 Modal.setAppElement('#root');
 
-const initialState = {
-  date: getStartOfDayUTC().subtract(1, 'd'),
-  description: '',
-  image: '',
-  uploadNewImage: false,
-  formIsValid: false,
-};
-
 class AddMilestoneItemModal extends Component {
   constructor(props) {
     super(props);
 
     this.form = React.createRef();
 
-    this.state = initialState;
+    this.state = {
+      item: new MilestoneItem({}),
+      formIsValid: false,
+    };
     this.setImage = this.setImage.bind(this);
     this.mapInputs = this.mapInputs.bind(this);
     this.closeModal = this.closeModal.bind(this);
@@ -51,7 +45,9 @@ class AddMilestoneItemModal extends Component {
   }
 
   setImage(image) {
-    this.setState({ image });
+    const { item } = this.state;
+    item.image = image;
+    this.setState({ item });
   }
 
   triggerRouteBlocking() {
@@ -61,36 +57,48 @@ class AddMilestoneItemModal extends Component {
   }
 
   mapInputs(inputs) {
-    return {
-      date: inputs.date.format(),
-      description: inputs.description,
-      image: this.state.image,
-      selectedFiatType: inputs.fiatType,
-      fiatAmount: inputs.fiatAmount,
-      wei: utils.toWei(inputs.etherAmount),
-      conversionRate: parseFloat(inputs.conversionRate),
-      ethConversionRateTimestamp: inputs.ethConversionRateTimestamp,
-    };
+    const { item } = this.state;
+
+    // set values on MilestoneItem
+    item.date = inputs.date.format();
+    item.description = inputs.description;
+    item.image = item.image;
+    item.selectedFiatType = inputs.fiatType;
+    item.fiatAmount = inputs.fiatAmount;
+    item.wei = utils.toWei(inputs.etherAmount);
+    item.conversionRate = parseFloat(inputs.conversionRate);
+    item.ethConversionRateTimestamp = inputs.ethConversionRateTimestamp;
+
+    this.setState({ item });
   }
 
   closeModal() {
     this.props.onClose();
-    this.setState(initialState);
+    this.reset();
+  }
+
+  reset() {
+    this.setState({
+      item: new MilestoneItem({}),
+      formIsValid: false,
+    });
   }
 
   submit() {
     // Formsy doesn't like nesting, even when using Portals
     // So we're manually fetching and submitting the model
-    const form = this.form;
-    const model = form.current.formsyForm.getModel();
 
-    this.props.onAddItem(model);
-    this.setState(initialState);
+    // We need to call getModel here to set values on the MilestoneItem
+    this.form.current.formsyForm.getModel();
+
+    // Get MilestoneItem
+    this.props.onAddItem(this.state.item);
+    this.reset();
   }
 
   render() {
-    const { openModal } = this.props;
-    const { formIsValid, description, image, isBlocking } = this.state;
+    const { openModal, token } = this.props;
+    const { formIsValid, item, isBlocking } = this.state;
 
     return (
       <Modal
@@ -121,7 +129,7 @@ class AddMilestoneItemModal extends Component {
                 label="Description"
                 name="description"
                 type="text"
-                value={description}
+                value={item.description}
                 placeholder="E.g. my receipt"
                 validations="minLength:3"
                 validationErrors={{
@@ -133,11 +141,11 @@ class AddMilestoneItemModal extends Component {
             </div>
           </div>
 
-          <RateConvertor />
+          <RateConvertor token={token} />
 
           <FormsyImageUploader
             name="image"
-            previewImage={image}
+            previewImage={item.image}
             setImage={this.setImage}
             resize={false}
           />
@@ -170,6 +178,11 @@ AddMilestoneItemModal.propTypes = {
   openModal: PropTypes.bool.isRequired,
   onClose: PropTypes.func.isRequired,
   onAddItem: PropTypes.func.isRequired,
+  token: PropTypes.shape({}),
+};
+
+AddMilestoneItemModal.defaultProps = {
+  token: undefined,
 };
 
 export default getEthConversionContext(AddMilestoneItemModal);

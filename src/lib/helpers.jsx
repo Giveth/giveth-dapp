@@ -12,37 +12,6 @@ import config from '../configuration';
 export const isOwner = (address, currentUser) =>
   address !== undefined && currentUser !== undefined && currentUser.address === address;
 
-export const authenticate = wallet => {
-  const authData = {
-    strategy: 'web3',
-    address: wallet.getAddresses()[0],
-  };
-
-  return feathersClient.passport
-    .getJWT()
-    .then(accessToken => {
-      if (accessToken) return feathersClient.logout();
-      return undefined;
-    })
-    .then(() =>
-      feathersClient.authenticate(authData).catch(response => {
-        // normal flow will issue a 401 with a challenge message we need to sign and send to
-        // verify our identity
-        if (response.code === 401 && response.data.startsWith('Challenge =')) {
-          const msg = response.data.replace('Challenge =', '').trim();
-
-          return wallet.signMessage(msg).signature;
-        }
-        throw new Error(response);
-      }),
-    )
-    .then(signature => {
-      authData.signature = signature;
-      return feathersClient.authenticate(authData);
-    })
-    .then(response => response.accessToken);
-};
-
 export const getTruncatedText = (text = '', maxLength = 45) => {
   const txt = text.replace(/<(?:.|\n)*?>/gm, '').trim();
   if (txt.length > maxLength) {
@@ -126,45 +95,6 @@ export const getReadableStatus = status => {
   }
 };
 
-// returns a risk indicator
-export const calculateRiskFactor = (owner, dependencies) => {
-  const reasons = {
-    risk: 0,
-    hasName: true,
-    hasAvatar: true,
-    hasEmail: true,
-    hasLinkedIn: true,
-    hasDependencies: true,
-  };
-
-  if (!owner.name) {
-    reasons.risk += 3;
-    reasons.hasName = false;
-  }
-
-  if (!owner.avatar) {
-    reasons.risk += 2;
-    reasons.hasAvatar = false;
-  }
-
-  if (!owner.email) {
-    reasons.risk += 15;
-    reasons.hasEmail = false;
-  }
-
-  if (!owner.linkedIn) {
-    reasons.risk += 35;
-    reasons.hasLinkedIn = false;
-  }
-
-  if (dependencies === 0) {
-    reasons.risk += 40;
-    reasons.hasDependencies = false;
-  }
-
-  return reasons;
-};
-
 export const history = createBrowserHistory();
 
 // Get start of the day in UTC for a given date or start of current day in UTC
@@ -185,4 +115,19 @@ export const goBackOnePath = () => {
   url.pop();
   url = url.join('/');
   history.push(url);
+};
+
+/**
+ * If path is an ipfsUrl, return just the ipfs path, otherwise returns the path param
+ *
+ * @param {string} path the path to clean
+ */
+export const cleanIpfsPath = path => {
+  const re = new RegExp(/\/ipfs\/\w+$/);
+
+  const match = re.exec(path);
+  if (match) {
+    return match[0];
+  }
+  return path;
 };

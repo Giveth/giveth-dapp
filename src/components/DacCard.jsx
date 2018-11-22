@@ -45,7 +45,7 @@ class DacCard extends Component {
             <CardStats
               type="dac"
               peopleCount={dac.peopleCount}
-              totalDonated={dac.totalDonated}
+              totalDonated={dac.totalDonationCount}
               currentBalance={dac.currentBalance}
             />
           </div>

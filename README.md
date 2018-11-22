@@ -8,18 +8,21 @@ Welcome to the code for Giveth's DApp. This is an open source effort to realize 
 
 ## Table of content
 
+- [Table of content](#table-of-content)
 - [Getting Started](#getting-started)
+        - [Prerequisities](#prerequisities)
     - [Install](#install)
-      - [OSX and Linux](#osx-and-linux)
-      - [Windows](#windows)
+        - [OSX and Linux](#osx-and-linux)
+        - [Windows](#windows)
     - [Run](#run)
     - [Build](#build)
     - [Configuration](#configuration)
+    - [Analytics](#analytics)
 - [Contributing](#contributing)
-  - [Local Development](#local-development)
-  - [Development and PR Testing](#development-and-pr-testing)
-  - [Deployment Environments](#deploy-environments)
-  - [Release Process](#release-process)
+    - [Local Development](#local-development)
+    - [Development and PR Testing](#development-and-pr-testing)
+    - [Deployment Environments](#deployment-environments)
+    - [Release Process](#release-process)
 - [Help](#help)
 
 ## Getting Started
@@ -95,6 +98,16 @@ In the following sections you will learn all you need to know to run the DApp lo
 3. Once the dapp is up in your browser, click "Sign In" from the main menu.
 4. For testing locally, choose any of the wallet files found in the `giveth-dapp/keystores/` folder using the wallet password: `password`. **DO NOT USE THESE ON MAINNET ETHEREUM.**
 
+5. Using the test token
+  To use the test token you need to import the keystore.json you use for your account to MetaMask.
+  After importing, click on 'Add token' > 'Custom token' and enter the MiniMe Token address that can be found when deploying the contracts
+  (should be `0xe78A0F7E598Cc8b0Bb87894B0F60dD2a88d6a8Ab` by default but make sure to check)
+  The token balance should show up automatically and the token symbol is MMT.
+  However, in the dApp the token symbol is referred to as ANT, b/c the dapp needs to be able to fetch a conversion rate.
+
+  NOTE: 
+  When resetting feathers or redeploying the contracts, you need to remove the keystore from metamask and follow this procedure again.
+
 ### Build
 ```
 npm run build
@@ -161,6 +174,12 @@ If you want to better understand how does the development process works, please 
 ### Local Development
 At first you would like to run the DApp locally. When running `testrpc` locally in `deterministic` mode, you can use any of the keystores in the `giveth-dapp/keystores` as your wallet.
 This will provide you access to the testrpc accounts for local development. Each keystore uses the same password: `password`. **DO NOT USE THESE ON MAINNET ETHEREUM**
+
+The keystores are seeded with 10.000 ANT tokens for testing donations. To get started with testing donations,
+make sure to add your account's keystore to MetaMask and swith MetaMask to Ganache. The donation modal should
+then show the appropriate balance when donating in ANT tokens.
+
+**NOTE**: If you get a nonce error in MetaMask or if the dapp fails to load with your metamask unlocked, it could be b/c metamask is confused. You should go to "settings" -> "Reset Account" in MetaMask in order to reset the nonce & cached account data.
 
 ### Development and PR Testing
 1. The Giveth Dapp is auto deployed from the develop branch and is live on Rinkeby [develop.giveth.io](https://develop.giveth.io). All pull requests are autodeployed and the PR preview will be generated upon submission. To learn how to access PR previews see [Development Process & Quality Assurance](https://wiki.giveth.io/documentation/DApp/product-development-testing/) on our wiki.

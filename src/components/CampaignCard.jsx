@@ -10,7 +10,6 @@ import Campaign from '../models/Campaign';
  *
  * @param currentUser  Currently logged in user information
  * @param history      Browser history object
- * @param wallet       Wallet object with the balance and all keystores
  */
 class CampaignCard extends Component {
   constructor(props) {
@@ -47,8 +46,9 @@ class CampaignCard extends Component {
             <CardStats
               type="campaign"
               peopleCount={campaign.peopleCount}
-              totalDonated={campaign.totalDonated}
+              totalDonated={campaign.totalDonationCount}
               currentBalance={campaign.currentBalance}
+              token={{ symbol: 'ETH', decimals: 18 }}
             />
           </div>
         </div>

@@ -1,3 +1,4 @@
+import React from 'react';
 import { LPPCampaign } from 'lpp-campaign';
 import { utils } from 'web3';
 import BigNumber from 'bignumber.js';
@@ -7,8 +8,10 @@ import DAC from '../models/DAC';
 import Milestone from '../models/Milestone';
 import Campaign from '../models/Campaign';
 import getNetwork from '../lib/blockchain/getNetwork';
+import extraGas from '../lib/blockchain/extraGas';
 import { feathersClient } from '../lib/feathersClient';
-import { getWeb3 } from '../lib/blockchain/getWeb3';
+import getWeb3 from '../lib/blockchain/getWeb3';
+import config from '../configuration';
 
 import ErrorPopup from '../components/ErrorPopup';
 
@@ -30,6 +33,56 @@ function updateExistingDonation(donation, amount, status) {
       ErrorPopup('Unable to update the donation in feathers', err);
     });
 }
+
+/**
+ * Create an allowance for the givethBridge contract to transfer the provided token address
+ * on behalf of the provided user
+ *
+ * @param {string} tokenContractAddress Address of the token to create an allowance on
+ * @param {string} tokenHolderAddress  Address of the holder to create allowance for
+ * @param {string|number} amount Amount to create an allowance for
+ */
+const createAllowance = async (tokenContractAddress, tokenHolderAddress, amount) => {
+  const network = await getNetwork();
+  const ERC20 = network.tokens[tokenContractAddress];
+
+  let txHash;
+  try {
+    return ERC20.methods
+      .approve(config.givethBridgeAddress, amount)
+      .send({ from: tokenHolderAddress })
+      .on('transactionHash', transactionHash => {
+        txHash = transactionHash;
+      });
+  } catch (e) {
+    if (amount === 0) {
+      React.toast.info(
+        <p>
+          Please wait until your transaction is mined...<br />
+          <strong>
+            You will be asked to make another transaction to set the correct allowance!
+          </strong>
+          <br />
+          <a href={`${config.homeEtherscan}tx/${txHash}`} target="_blank" rel="noopener noreferrer">
+            View transaction
+          </a>
+        </p>,
+      );
+    } else {
+      React.toast.info(
+        <p>
+          Please wait until your transaction is mined...<br />
+          <strong>You will be asked to make another transaction for your donation!</strong>
+          <br />
+          <a href={`${config.homeEtherscan}tx/${txHash}`} target="_blank" rel="noopener noreferrer">
+            View transaction
+          </a>
+        </p>,
+      );
+    }
+    throw e;
+  }
+};
 
 class DonationService {
   /**
@@ -128,12 +181,12 @@ class DonationService {
 
             return contract.mTransfer(encodedPledges, receiverId, {
               from: ownerEntity.ownerAddress,
-              $extraGas: 100000,
+              $extraGas: extraGas(),
             });
           }
           return network.liquidPledging.mTransfer(delegateId, encodedPledges, receiverId, {
             from: delegateEntity.ownerAddress,
-            $extraGas: 100000,
+            $extraGas: extraGas(),
           });
         };
 
@@ -245,12 +298,14 @@ class DonationService {
 
             return contract.transfer(donation.pledgeId, amount, receiverId, {
               from,
+              $extraGas: extraGas(),
             });
           }
 
           return network.liquidPledging.transfer(senderId, donation.pledgeId, amount, receiverId, {
             from,
-          }); // need to supply extraGas b/c https://github.com/trufflesuite/ganache-core/issues/26
+            $extraGas: extraGas(),
+          });
         };
 
         return executeTransfer()
@@ -266,6 +321,7 @@ class DonationService {
               pledgeId: 0,
               parentDonations: [donation.id],
               mined: false,
+              token: donation.token,
             };
             // delegate is making the transfer
             if (donation.delegateEntity) {
@@ -341,6 +397,7 @@ class DonationService {
             donation.delegateId,
             {
               from: address,
+              $extraGas: extraGas(),
             },
           )
           .once('transactionHash', hash => {
@@ -414,6 +471,7 @@ class DonationService {
             donation.intendedProjectId,
             {
               from: address,
+              $extraGas: extraGas(),
             },
           )
           .once('transactionHash', hash => {
@@ -432,6 +490,7 @@ class DonationService {
               parentDonations: [donation.id],
               status: Donation.COMMITTED,
               mined: false,
+              token: donation.token,
             };
             feathersClient
               .service('/donations')
@@ -449,6 +508,7 @@ class DonationService {
         onSuccess(`${etherScanUrl}tx/${txHash}`);
       })
       .catch(err => {
+        console.log('err', err);
         if (txHash && err.message && err.message.includes('unknown transaction')) return; // bug in web3 seems to constantly fail due to this error, but the tx is correct
         ErrorPopup(
           'Something went wrong with the transaction. Is your wallet unlocked?',
@@ -478,6 +538,7 @@ class DonationService {
         return network.liquidPledging
           .withdraw(donation.pledgeId, donation.amountRemaining, {
             from: address,
+            $extraGas: extraGas(),
           })
           .once('transactionHash', hash => {
             txHash = hash;
@@ -519,6 +580,82 @@ class DonationService {
   }
 
   /**
+   * Creates an allowance approval for an ERC20 token
+   *
+   * @param {string} tokenContractAddress Address of the ERC20 token
+   * @param {string} tokenHolderAddress Address of the token holder, by default the current logged in user
+   * @param {string|number} amount Amount in wei for the allowance. If none given defaults to unlimited (-1)
+   */
+  static async approveERC20tokenTransfer(tokenContractAddress, tokenHolderAddress, amount = -1) {
+    const network = await getNetwork();
+    const ERC20 = network.tokens[tokenContractAddress];
+
+    // read existing allowance for the givethBridge
+    const allowance = await ERC20.methods
+      .allowance(tokenHolderAddress, config.givethBridgeAddress)
+      .call();
+
+    // console.log(`Existing ERC20 allowance for address ${tokenHolderAddress}: `, allowance);
+    // if no allowance, we set the allowance
+    // if there's an existing allowance, but it's lower than the amount, we reset it and create a new allowance
+    // in any other case, just continue
+
+    /* eslint-disable eqeqeq */
+    if (allowance == 0) {
+      const isConfirmed = await React.swal({
+        title: 'Here we go...',
+        content: React.swal.msg(
+          <div>
+            <p>For your donation you need to make 2 transactions:</p>
+            <ol style={{ textAlign: 'left' }}>
+              <li>
+                A transaction to approve our contracts to transfer {utils.fromWei(amount)} tokens on
+                your behalf.
+              </li>
+              <li>A transaction of 0 ETH to donate the tokens.</li>
+            </ol>
+          </div>,
+        ),
+        icon: 'info',
+        buttons: ['Cancel', 'Lets do it!'],
+      });
+
+      if (isConfirmed) {
+        // return _createAllowance(web3, etherScanUrl, ERC20, tokenHolderAddress, amount);
+        await createAllowance(tokenContractAddress, tokenHolderAddress, amount);
+        return;
+      }
+      throw new Error('cancelled');
+    } else if (amount > allowance) {
+      const isConfirmed = await React.swal({
+        title: 'Here we go...',
+        content: React.swal.msg(
+          <div>
+            <p>For your donation you need to make 3 transactions:</p>
+            <ol style={{ textAlign: 'left' }}>
+              <li>A transaction to reset your token allowance</li>
+              <li>
+                A transaction to approve our contracts to transfer {utils.fromWei(amount)} tokens on
+                your behalf.
+              </li>
+              <li>A transaction of 0 ETH to donate the tokens</li>
+            </ol>
+          </div>,
+        ),
+        icon: 'info',
+        buttons: ['Cancel', 'Lets do it!'],
+      });
+      if (isConfirmed) {
+        // return _createAllowance(web3, etherScanUrl, ERC20, tokenHolderAddress, 0);
+        await createAllowance(tokenContractAddress, tokenHolderAddress, 0);
+        await createAllowance(tokenContractAddress, tokenHolderAddress, amount);
+        return;
+      }
+      throw new Error('cancelled');
+    }
+  }
+
+  /**
    * create a new donation instance in feathers
    *
    * @param {User} giver the giver of this donation
@@ -526,7 +663,7 @@ class DonationService {
    * @param {string} amount donation amount in wei
    * @param {string} txHash transactionHash of the donation tx
    */
-  static newFeathersDonation(giver, toAdmin, amount, txHash) {
+  static newFeathersDonation(giver, toAdmin, amount, token, txHash) {
     const newDonation = {
       giverAddress: giver.address,
       amount,
@@ -535,6 +672,7 @@ class DonationService {
       status: Donation.PENDING,
       homeTxHash: txHash,
       mined: false,
+      token,
     };
 
     // donation to a delegate

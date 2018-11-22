@@ -2,7 +2,10 @@
 
 import BasicModel from './BasicModel';
 import CampaignService from '../services/CampaignService';
-import UploadService from '../services/UploadsService';
+import IPFSService from '../services/IPFSService';
+import ErrorPopup from '../components/ErrorPopup';
+import { cleanIpfsPath } from '../lib/helpers';
+
 /**
  * The DApp Campaign model
  */
@@ -36,6 +39,17 @@ class Campaign extends BasicModel {
     this.ownerAddress = data.ownerAddress;
     this.mined = data.mined;
     this._id = data._id;
+    this.commitTime = data.commitTime || 0;
+  }
+
+  toIpfs() {
+    return {
+      title: this.title,
+      description: this.description,
+      communityUrl: this.communityUrl,
+      image: cleanIpfsPath(this.image),
+      version: 1,
+    };
   }
 
   toFeathers(txHash) {
@@ -45,7 +59,7 @@ class Campaign extends BasicModel {
       description: this.description,
       communityUrl: this.communityUrl,
       projectId: this.projectId,
-      image: this.image,
+      image: cleanIpfsPath(this.image),
       totalDonated: this.totalDonated,
       donationCount: this.donationCount,
       peopleCount: this.peopleCount,
@@ -67,20 +81,21 @@ class Campaign extends BasicModel {
   /**
    * Save the campaign to feathers and blockchain if necessary
    *
-   * @param afterCreate Callback function once a transaction is created
-   * @param afterMined  Callback function once the transaction is mined and feathers updated
+   * @param afterSve Callback function once the campaign has been saved to feathers
+   * @param afterMined  Callback function once the transaction is mined
    */
-  save(afterCreate, afterMined) {
+  save(afterSave, afterMined) {
     if (this.newImage) {
-      UploadService.save(this.image).then(file => {
-        // Save the new image address and mark it as old
-        this.image = file.url;
-        this.newImage = false;
-
-        CampaignService.save(this, this.owner.address, afterCreate, afterMined);
-      });
+      IPFSService.upload(this.image)
+        .then(hash => {
+          // Save the new image address and mark it as old
+          this.image = hash;
+          this.newImage = false;
+        })
+        .catch(err => ErrorPopup('Failed to upload image', err))
+        .finally(() => CampaignService.save(this, this.owner.address, afterSave, afterMined));
     } else {
-      CampaignService.save(this, this.owner.address, afterCreate, afterMined);
+      CampaignService.save(this, this.owner.address, afterSave, afterMined);
     }
   }
 
@@ -142,6 +157,15 @@ class Campaign extends BasicModel {
   set reviewerAddress(value) {
     this.checkType(value, ['string', 'undefined'], 'reviewerAddress');
     this.myReviewerAddress = value;
+  }
+
+  get commitTime() {
+    return this.myCommitTime;
+  }
+
+  set commitTime(value) {
+    this.checkType(value, ['number'], 'commitTime');
+    this.myCommitTime = value;
   }
 }
 
