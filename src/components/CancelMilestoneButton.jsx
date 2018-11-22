@@ -9,6 +9,7 @@ import ErrorPopup from 'components/ErrorPopup';
 import ConversationModal from 'components/ConversationModal';
 import GA from 'lib/GoogleAnalytics';
 import { checkBalance } from 'lib/middleware';
+import { Consumer as Web3Consumer } from '../contextProviders/Web3Provider';
 
 class CancelMilestoneButton extends Component {
   constructor() {
@@ -85,30 +86,34 @@ class CancelMilestoneButton extends Component {
   }
 
   render() {
-    const { milestone, currentUser, isForeignNetwork } = this.props;
+    const { milestone, currentUser } = this.props;
 
     return (
-      <Fragment>
-        {[
-          milestone.reviewerAddress,
-          milestone.campaignReviewer.address,
-          milestone.recipientAddress,
-        ].includes(currentUser.address) &&
-          isForeignNetwork &&
-          ['InProgress', 'NeedReview'].includes(milestone.status) &&
-          milestone.mined && (
-            <button
-              type="button"
-              className="btn btn-danger btn-sm"
-              onClick={() => this.cancelMilestone()}
-            >
-              <i className="fa fa-times" />
-              &nbsp;Cancel
-            </button>
-          )}
+      <Web3Consumer>
+        {({ state: { isForeignNetwork } }) => (
+          <Fragment>
+            {[
+              milestone.reviewerAddress,
+              milestone.campaignReviewer.address,
+              milestone.recipientAddress,
+            ].includes(currentUser.address) &&
+              ['InProgress', 'NeedReview'].includes(milestone.status) &&
+              milestone.mined && (
+                <button
+                  type="button"
+                  className="btn btn-danger btn-sm"
+                  onClick={() => this.cancelMilestone()}
+                  disabled={!isForeignNetwork}
+                >
+                  <i className="fa fa-times" />
+                  &nbsp;Cancel
+                </button>
+              )}
 
-        <ConversationModal ref={this.conversationModal} />
-      </Fragment>
+            <ConversationModal ref={this.conversationModal} />
+          </Fragment>
+        )}
+      </Web3Consumer>
     );
   }
 }
@@ -117,7 +122,6 @@ CancelMilestoneButton.propTypes = {
   currentUser: PropTypes.instanceOf(User).isRequired,
   balance: PropTypes.objectOf(BigNumber).isRequired,
   milestone: PropTypes.objectOf(Milestone).isRequired,
-  isForeignNetwork: PropTypes.bool.isRequired,
 };
 
 export default CancelMilestoneButton;

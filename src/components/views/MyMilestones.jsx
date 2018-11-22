@@ -290,48 +290,41 @@ class MyMilestones extends Component {
                                         milestone={m}
                                         balance={balance}
                                         currentUser={currentUser}
-                                        isForeignNetwork={isForeignNetwork}
                                       />
 
                                       <ReproposeRejectedMilestoneButton
                                         milestone={m}
                                         currentUser={currentUser}
-                                        isForeignNetwork={isForeignNetwork}
                                       />
 
                                       <RequestMarkMilestoneCompleteButton
                                         milestone={m}
                                         balance={balance}
                                         currentUser={currentUser}
-                                        isForeignNetwork={isForeignNetwork}
                                       />
 
                                       <CancelMilestoneButton
                                         milestone={m}
                                         balance={balance}
                                         currentUser={currentUser}
-                                        isForeignNetwork={isForeignNetwork}
                                       />
 
                                       <DeleteProposedMilestoneButton
                                         milestone={m}
                                         balance={balance}
                                         currentUser={currentUser}
-                                        isForeignNetwork={isForeignNetwork}
                                       />
 
                                       <ApproveRejectMilestoneCompletionButtons
                                         milestone={m}
                                         balance={balance}
                                         currentUser={currentUser}
-                                        isForeignNetwork={isForeignNetwork}
                                       />
 
                                       <WithdrawMilestoneFundsButton
                                         milestone={m}
                                         balance={balance}
                                         currentUser={currentUser}
-                                        isForeignNetwork={isForeignNetwork}
                                       />
                                     </td>
                                   </tr>

@@ -7,6 +7,7 @@ import User from 'models/User';
 import ErrorPopup from 'components/ErrorPopup';
 import ConversationModal from 'components/ConversationModal';
 import GA from 'lib/GoogleAnalytics';
+import { Consumer as Web3Consumer } from '../contextProviders/Web3Provider';
 
 class ReproposeRejectedMilestoneButton extends Component {
   constructor() {
@@ -45,25 +46,29 @@ class ReproposeRejectedMilestoneButton extends Component {
   }
 
   render() {
-    const { milestone, currentUser, isForeignNetwork } = this.props;
+    const { milestone, currentUser } = this.props;
 
     return (
-      <Fragment>
-        {milestone.owner.address === currentUser.address &&
-          isForeignNetwork &&
-          milestone.status === 'Rejected' && (
-            <button
-              type="button"
-              className="btn btn-success btn-sm"
-              onClick={() => this.repropose()}
-            >
-              <i className="fa fa-times-square-o" />
-              &nbsp;Re-propose
-            </button>
-          )}
+      <Web3Consumer>
+        {({ state: { isForeignNetwork } }) => (
+          <Fragment>
+            {milestone.owner.address === currentUser.address &&
+              milestone.status === 'Rejected' && (
+                <button
+                  type="button"
+                  className="btn btn-success btn-sm"
+                  onClick={() => this.repropose()}
+                  disabled={!isForeignNetwork}
+                >
+                  <i className="fa fa-times-square-o" />
+                  &nbsp;Re-propose
+                </button>
+              )}
 
-        <ConversationModal ref={this.conversationModal} />
-      </Fragment>
+            <ConversationModal ref={this.conversationModal} />
+          </Fragment>
+        )}
+      </Web3Consumer>
     );
   }
 }
@@ -71,7 +76,6 @@ class ReproposeRejectedMilestoneButton extends Component {
 ReproposeRejectedMilestoneButton.propTypes = {
   currentUser: PropTypes.instanceOf(User).isRequired,
   milestone: PropTypes.objectOf(Milestone).isRequired,
-  isForeignNetwork: PropTypes.bool.isRequired,
 };
 
 export default ReproposeRejectedMilestoneButton;

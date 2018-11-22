@@ -6,8 +6,9 @@ import Milestone from 'models/Milestone';
 import User from 'models/User';
 import ErrorPopup from 'components/ErrorPopup';
 import confirmationDialog from 'lib/confirmationDialog';
+import { Consumer as Web3Consumer } from '../contextProviders/Web3Provider';
 
-const DeleteProposedMilestoneButton = ({ milestone, currentUser, isForeignNetwork }) => {
+const DeleteProposedMilestoneButton = ({ milestone, currentUser }) => {
   const _confirmDeleteMilestone = () => {
     MilestoneService.deleteProposedMilestone({
       milestone,
@@ -20,29 +21,32 @@ const DeleteProposedMilestoneButton = ({ milestone, currentUser, isForeignNetwor
     confirmationDialog('milestone', milestone.title, _confirmDeleteMilestone);
 
   return (
-    <Fragment>
-      {milestone.ownerAddress === currentUser.address &&
-        isForeignNetwork &&
-        ['Proposed', 'Rejected'].includes(milestone.status) && (
-          <span>
-            <button
-              type="button"
-              className="btn btn-danger btn-sm"
-              onClick={_deleteProposedMilestone()}
-            >
-              <i className="fa fa-times-circle-o" />
-              &nbsp;Delete
-            </button>
-          </span>
-        )}
-    </Fragment>
+    <Web3Consumer>
+      {({ state: { isForeignNetwork } }) => (
+        <Fragment>
+          {milestone.ownerAddress === currentUser.address &&
+            ['Proposed', 'Rejected'].includes(milestone.status) && (
+              <span>
+                <button
+                  type="button"
+                  className="btn btn-danger btn-sm"
+                  onClick={_deleteProposedMilestone()}
+                  disable={!isForeignNetwork}
+                >
+                  <i className="fa fa-times-circle-o" />
+                  &nbsp;Delete
+                </button>
+              </span>
+            )}
+        </Fragment>
+      )}
+    </Web3Consumer>
   );
 };
 
 DeleteProposedMilestoneButton.propTypes = {
   currentUser: PropTypes.instanceOf(User).isRequired,
   milestone: PropTypes.objectOf(Milestone).isRequired,
-  isForeignNetwork: PropTypes.bool.isRequired,
 };
 
 export default DeleteProposedMilestoneButton;

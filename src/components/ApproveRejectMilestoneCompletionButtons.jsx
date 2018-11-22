@@ -10,6 +10,7 @@ import ErrorPopup from 'components/ErrorPopup';
 import ConversationModal from 'components/ConversationModal';
 import GA from 'lib/GoogleAnalytics';
 import { checkBalance } from 'lib/middleware';
+import { Consumer as Web3Consumer } from '../contextProviders/Web3Provider';
 
 class ApproveRejectMilestoneCompletionButtons extends Component {
   constructor() {
@@ -138,7 +139,6 @@ class ApproveRejectMilestoneCompletionButtons extends Component {
                 );
               },
               onError: (err, txUrl) => {
-                console.log(err, txUrl);
                 if (err === 'patch-error') {
                   ErrorPopup(
                     "Something went wrong with rejecting this milestone's completion",
@@ -162,37 +162,42 @@ class ApproveRejectMilestoneCompletionButtons extends Component {
   }
 
   render() {
-    const { milestone, currentUser, isForeignNetwork } = this.props;
+    const { milestone, currentUser } = this.props;
 
     return (
-      <Fragment>
-        {milestone.reviewerAddress === currentUser.address &&
-          isForeignNetwork &&
-          milestone.status === 'NeedsReview' &&
-          milestone.mined && (
-            <span>
-              <button
-                type="button"
-                className="btn btn-success btn-sm"
-                onClick={() => this.approveMilestoneCompleted()}
-              >
-                <i className="fa fa-thumbs-up" />
-                &nbsp;Approve
-              </button>
+      <Web3Consumer>
+        {({ state: { isForeignNetwork } }) => (
+          <Fragment>
+            {milestone.reviewerAddress === currentUser.address &&
+              milestone.status === 'NeedsReview' &&
+              milestone.mined && (
+                <span>
+                  <button
+                    type="button"
+                    className="btn btn-success btn-sm"
+                    onClick={() => this.approveMilestoneCompleted()}
+                    disabled={!isForeignNetwork}
+                  >
+                    <i className="fa fa-thumbs-up" />
+                    &nbsp;Approve
+                  </button>
 
-              <button
-                type="button"
-                className="btn btn-danger btn-sm"
-                onClick={() => this.rejectMilestoneCompleted()}
-              >
-                <i className="fa fa-thumbs-down" />
-                &nbsp;Reject
-              </button>
-            </span>
-          )}
+                  <button
+                    type="button"
+                    className="btn btn-danger btn-sm"
+                    onClick={() => this.rejectMilestoneCompleted()}
+                    disabled={!isForeignNetwork}
+                  >
+                    <i className="fa fa-thumbs-down" />
+                    &nbsp;Reject
+                  </button>
+                </span>
+              )}
 
-        <ConversationModal ref={this.conversationModal} />
-      </Fragment>
+            <ConversationModal ref={this.conversationModal} />
+          </Fragment>
+        )}
+      </Web3Consumer>
     );
   }
 }
@@ -201,7 +206,6 @@ ApproveRejectMilestoneCompletionButtons.propTypes = {
   currentUser: PropTypes.instanceOf(User).isRequired,
   balance: PropTypes.objectOf(BigNumber).isRequired,
   milestone: PropTypes.objectOf(Milestone).isRequired,
-  isForeignNetwork: PropTypes.bool.isRequired,
 };
 
 export default ApproveRejectMilestoneCompletionButtons;

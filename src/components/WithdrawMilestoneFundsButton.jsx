@@ -8,6 +8,7 @@ import User from 'models/User';
 import ErrorPopup from 'components/ErrorPopup';
 import GA from 'lib/GoogleAnalytics';
 import { checkBalance } from 'lib/middleware';
+import { Consumer as Web3Consumer } from '../contextProviders/Web3Provider';
 
 class WithdrawMilestoneFundsButton extends Component {
   withdraw() {
@@ -103,25 +104,29 @@ class WithdrawMilestoneFundsButton extends Component {
   }
 
   render() {
-    const { milestone, currentUser, isForeignNetwork } = this.props;
+    const { milestone, currentUser } = this.props;
 
     return (
-      <Fragment>
-        {[milestone.recipientAddress, milestone.owner.address].includes(currentUser.address) &&
-          milestone.status === Milestone.COMPLETED &&
-          isForeignNetwork &&
-          milestone.mined &&
-          milestone.currentBalance.gt('0') > 0 && (
-            <button
-              type="button"
-              className="btn btn-success btn-sm"
-              onClick={() => this.withdraw()}
-            >
-              <i className="fa fa-usd" />{' '}
-              {milestone.recipientAddress === currentUser.address ? 'Collect' : 'Disburse'}
-            </button>
-          )}
-      </Fragment>
+      <Web3Consumer>
+        {({ state: { isForeignNetwork } }) => (
+          <Fragment>
+            {[milestone.recipientAddress, milestone.owner.address].includes(currentUser.address) &&
+              milestone.status === Milestone.COMPLETED &&
+              milestone.mined &&
+              milestone.currentBalance.gt('0') > 0 && (
+                <button
+                  type="button"
+                  className="btn btn-success btn-sm"
+                  onClick={() => this.withdraw()}
+                  disabled={!isForeignNetwork}
+                >
+                  <i className="fa fa-usd" />{' '}
+                  {milestone.recipientAddress === currentUser.address ? 'Collect' : 'Disburse'}
+                </button>
+              )}
+          </Fragment>
+        )}
+      </Web3Consumer>
     );
   }
 }
@@ -130,7 +135,6 @@ WithdrawMilestoneFundsButton.propTypes = {
   currentUser: PropTypes.instanceOf(User).isRequired,
   balance: PropTypes.objectOf(BigNumber).isRequired,
   milestone: PropTypes.objectOf(Milestone).isRequired,
-  isForeignNetwork: PropTypes.bool.isRequired,
 };
 
 export default WithdrawMilestoneFundsButton;

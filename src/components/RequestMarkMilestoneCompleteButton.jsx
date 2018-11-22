@@ -9,6 +9,7 @@ import ErrorPopup from 'components/ErrorPopup';
 import ConversationModal from 'components/ConversationModal';
 import GA from 'lib/GoogleAnalytics';
 import { checkBalance } from 'lib/middleware';
+import { Consumer as Web3Consumer } from '../contextProviders/Web3Provider';
 
 class RequestMarkMilestoneCompleteButton extends Component {
   constructor() {
@@ -85,27 +86,30 @@ class RequestMarkMilestoneCompleteButton extends Component {
   }
 
   render() {
-    const { milestone, currentUser, isForeignNetwork } = this.props;
+    const { milestone, currentUser } = this.props;
 
     return (
-      <Fragment>
-        {(milestone.recipientAddress === currentUser.address ||
-          milestone.ownerAddress === currentUser.address) &&
-          isForeignNetwork &&
-          milestone.status === 'InProgress' &&
-          milestone.mined && (
-            <button
-              type="button"
-              className="btn btn-success btn-sm"
-              onClick={() => this.requestMarkComplete()}
-              disabled={!(milestone.currentBalance || '0').gt('0')}
-            >
-              Mark complete
-            </button>
-          )}
+      <Web3Consumer>
+        {({ state: { isForeignNetwork } }) => (
+          <Fragment>
+            {(milestone.recipientAddress === currentUser.address ||
+              milestone.ownerAddress === currentUser.address) &&
+              milestone.status === 'InProgress' &&
+              milestone.mined && (
+                <button
+                  type="button"
+                  className="btn btn-success btn-sm"
+                  onClick={() => this.requestMarkComplete()}
+                  disabled={!(milestone.currentBalance || '0').gt('0') || !isForeignNetwork}
+                >
+                  Mark complete
+                </button>
+              )}
 
-        <ConversationModal ref={this.conversationModal} />
-      </Fragment>
+            <ConversationModal ref={this.conversationModal} />
+          </Fragment>
+        )}
+      </Web3Consumer>
     );
   }
 }
@@ -114,7 +118,6 @@ RequestMarkMilestoneCompleteButton.propTypes = {
   currentUser: PropTypes.instanceOf(User).isRequired,
   balance: PropTypes.objectOf(BigNumber).isRequired,
   milestone: PropTypes.objectOf(Milestone).isRequired,
-  isForeignNetwork: PropTypes.bool.isRequired,
 };
 
 export default RequestMarkMilestoneCompleteButton;

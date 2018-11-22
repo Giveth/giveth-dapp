@@ -9,6 +9,7 @@ import ErrorPopup from 'components/ErrorPopup';
 import { checkBalance } from 'lib/middleware';
 import ConversationModal from 'components/ConversationModal';
 import GA from 'lib/GoogleAnalytics';
+import { Consumer as Web3Consumer } from '../contextProviders/Web3Provider';
 
 class AcceptRejectProposedMilestoneButtons extends Component {
   constructor() {
@@ -108,35 +109,40 @@ class AcceptRejectProposedMilestoneButtons extends Component {
   }
 
   render() {
-    const { milestone, currentUser, isForeignNetwork } = this.props;
+    const { milestone, currentUser } = this.props;
 
     return (
-      <Fragment>
-        {milestone.campaign.ownerAddress === currentUser.address &&
-          isForeignNetwork &&
-          milestone.status === 'Proposed' && (
-            <span>
-              <button
-                type="button"
-                className="btn btn-success btn-sm"
-                onClick={() => this.acceptProposedMilestone()}
-              >
-                <i className="fa fa-check-square-o" />
-                &nbsp;Accept
-              </button>
-              <button
-                type="button"
-                className="btn btn-danger btn-sm"
-                onClick={() => this.rejectProposedMilestone()}
-              >
-                <i className="fa fa-times-circle-o" />
-                &nbsp;Reject
-              </button>
-            </span>
-          )}
+      <Web3Consumer>
+        {({ state: { isForeignNetwork } }) => (
+          <Fragment>
+            {milestone.campaign.ownerAddress === currentUser.address &&
+              milestone.status === 'Proposed' && (
+                <span>
+                  <button
+                    type="button"
+                    className="btn btn-success btn-sm"
+                    onClick={() => this.acceptProposedMilestone()}
+                    disabled={!isForeignNetwork}
+                  >
+                    <i className="fa fa-check-square-o" />
+                    &nbsp;Accept
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn-danger btn-sm"
+                    onClick={() => this.rejectProposedMilestone()}
+                    disabled={!isForeignNetwork}
+                  >
+                    <i className="fa fa-times-circle-o" />
+                    &nbsp;Reject
+                  </button>
+                </span>
+              )}
 
-        <ConversationModal ref={this.conversationModal} />
-      </Fragment>
+            <ConversationModal ref={this.conversationModal} />
+          </Fragment>
+        )}
+      </Web3Consumer>
     );
   }
 }
@@ -145,7 +151,6 @@ AcceptRejectProposedMilestoneButtons.propTypes = {
   currentUser: PropTypes.instanceOf(User).isRequired,
   balance: PropTypes.objectOf(BigNumber).isRequired,
   milestone: PropTypes.objectOf(Milestone).isRequired,
-  isForeignNetwork: PropTypes.bool.isRequired,
 };
 
 export default AcceptRejectProposedMilestoneButtons;
