@@ -14,12 +14,14 @@ import { feathersClient } from '../lib/feathersClient';
 import Loader from './Loader';
 import config from '../configuration';
 import SelectFormsy from './SelectFormsy';
+import NetworkWarning from './NetworkWarning';
 
 import Donation from '../models/Donation';
 import Campaign from '../models/Campaign';
 import User from '../models/User';
 
 import DonationService from '../services/DonationService';
+import { Consumer as Web3Consumer } from '../contextProviders/Web3Provider';
 
 BigNumber.config({ DECIMAL_PLACES: 18 });
 Modal.setAppElement('#root');
@@ -57,7 +59,7 @@ const _getTokenWhitelist = () => {
  * @prop {Object}       milestone   It the delegation is towards campaign, this contains the milestone
  * @prop {Object}       style       Styles added to the button
  */
-class DelegateMultipleButton extends Component {
+class BaseDelegateMultipleButton extends Component {
   constructor(props) {
     super(props);
 
@@ -269,7 +271,7 @@ class DelegateMultipleButton extends Component {
       tokenWhitelistOptions,
       selectedToken,
     } = this.state;
-    const { campaign, milestone } = this.props;
+    const { campaign, milestone, validProvider, isForeignNetwork } = this.props;
 
     return (
       <span style={style}>
@@ -284,6 +286,19 @@ class DelegateMultipleButton extends Component {
             this.setState({ modalVisible: false });
           }}
         >
+          {!validProvider && (
+            <div className="alert alert-warning">
+              <i className="fa fa-exclamation-triangle" />
+              It is recommended that you install <a href="https://metamask.io/">MetaMask</a> to
+              donate
+            </div>
+          )}
+          {validProvider && (
+            <NetworkWarning
+              incorrectNetwork={!isForeignNetwork}
+              networkName={config.foreignNetworkName}
+            />
+          )}
           <p>
             You are delegating donations to
             {!milestone && <strong> {campaign.title}</strong>}
@@ -384,7 +399,7 @@ class DelegateMultipleButton extends Component {
                         className="btn btn-success"
                         formNoValidate
                         type="submit"
-                        disabled={isSaving}
+                        disabled={isSaving || !isForeignNetwork}
                       >
                         {isSaving ? 'Delegating...' : 'Delegate here'}
                       </button>
@@ -400,15 +415,30 @@ class DelegateMultipleButton extends Component {
   }
 }
 
-DelegateMultipleButton.propTypes = {
+const DelegateMultipleButton = props => (
+  <Web3Consumer>
+    {({ state: { isForeignNetwork, validProvider, balance } }) => (
+      <BaseDelegateMultipleButton
+        ETHBalance={balance}
+        validProvider={validProvider}
+        isForeignNetwork={isForeignNetwork}
+        {...props}
+      />
+    )}
+  </Web3Consumer>
+);
+
+BaseDelegateMultipleButton.propTypes = {
   balance: PropTypes.objectOf(utils.BN).isRequired,
   currentUser: PropTypes.instanceOf(User).isRequired,
   campaign: PropTypes.instanceOf(Campaign),
   milestone: PropTypes.shape(),
   style: PropTypes.shape(),
+  validProvider: PropTypes.bool.isRequired,
+  isForeignNetwork: PropTypes.bool.isRequired,
 };
 
-DelegateMultipleButton.defaultProps = {
+BaseDelegateMultipleButton.defaultProps = {
   campaign: undefined,
   milestone: undefined,
   style: {},
