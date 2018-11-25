@@ -12,7 +12,7 @@ import NetworkWarning from 'components/NetworkWarning';
 import { Consumer as Web3Consumer } from 'contextProviders/Web3Provider';
 
 import { feathersClient } from '../../lib/feathersClient';
-import { isLoggedIn, checkBalance, authenticateIfPossible } from '../../lib/middleware';
+import { checkBalance } from '../../lib/middleware';
 import confirmationDialog from '../../lib/confirmationDialog';
 import getNetwork from '../../lib/blockchain/getNetwork';
 import getWeb3 from '../../lib/blockchain/getWeb3';
@@ -21,6 +21,7 @@ import Loader from '../Loader';
 import User from '../../models/User';
 import { getTruncatedText, getReadableStatus, convertEthHelper, history } from '../../lib/helpers';
 import config from '../../configuration';
+import AuthenticationWarning from '../AuthenticationWarning';
 
 import ErrorPopup from '../ErrorPopup';
 import Donation from '../../models/Donation';
@@ -133,26 +134,19 @@ class MyMilestones extends Component {
     this.cancelMilestone = this.cancelMilestone.bind(this);
     this.approveMilestoneCompleted = this.approveMilestoneCompleted.bind(this);
     this.rejectMilestoneCompletion = this.rejectMilestoneCompletion.bind(this);
+    this.loadMileStones = this.loadMileStones.bind(this);
     this.requestWithdrawal = this.withdrawal.bind(this);
     // this.collect = this.collect.bind(this);
   }
 
   componentDidMount() {
-    authenticateIfPossible(this.props.currentUser)
-      .then(() => isLoggedIn(this.props.currentUser))
-      .then(() => this.loadMileStones())
-      .catch(err => {
-        if (err === 'notLoggedIn') {
-          // default behavior is to go home or signin page after swal popup
-        }
-      });
+    this.loadMileStones();
   }
 
   componentDidUpdate(prevProps) {
     if (prevProps.currentUser !== this.props.currentUser) {
       // eslint-disable-next-line react/no-did-update-set-state
       this.setState({ isLoading: true });
-      authenticateIfPossible(this.props.currentUser);
       if (this.milestonesObserver) this.milestonesObserver.unsubscribe();
       this.loadMileStones();
     }
@@ -164,6 +158,7 @@ class MyMilestones extends Component {
 
   async loadMileStones() {
     const myAddress = this.props.currentUser.address;
+    console.log(myAddress);
 
     const query = {
       query: {
@@ -958,6 +953,7 @@ class MyMilestones extends Component {
                 <div className="col-md-10 m-auto">
                   <h1>Your milestones</h1>
 
+                  <AuthenticationWarning currentUser={currentUser} />
                   <NetworkWarning
                     incorrectNetwork={!isForeignNetwork}
                     networkName={config.foreignNetworkName}
@@ -983,93 +979,27 @@ class MyMilestones extends Component {
 
                   {!isLoading && (
                     <div className="table-container">
-                      {milestones &&
-                        milestones.length > 0 && (
-                          <div>
-                            <table className="table table-responsive table-striped table-hover">
-                              <thead>
-                                <tr>
-                                  <th className="td-created-at">Created</th>
-                                  <th className="td-name">Name</th>
-                                  <th className="td-status">Status</th>
-                                  <th className="td-donations-number">Requested</th>
-                                  <th className="td-donations-number">Donations</th>
-                                  <th className="td-donations-amount">Donated</th>
-                                  <th className="td-reviewer">Reviewer</th>
-                                  <th className="td-actions" />
-                                </tr>
-                              </thead>
-                              <tbody>
-                                {milestones.map(m => (
-                                  <tr
-                                    key={m._id}
-                                    className={m.status === 'Pending' ? 'pending' : ''}
-                                  >
-                                    <td className="td-created-at">
-                                      {m.createdAt && (
-                                        <span>{moment.utc(m.createdAt).format('Do MMM YYYY')}</span>
-                                      )}
-                                    </td>
-                                    <td className="td-name">
-                                      <strong>
-                                        <Link
-                                          to={`/campaigns/${m.campaign._id}/milestones/${m._id}`}
-                                        >
-                                          MILESTONE <em>{getTruncatedText(m.title, 35)}</em>
-                                        </Link>
-                                      </strong>
-                                      <br />
-                                      <i className="fa fa-arrow-right" />
-                                      <Link
-                                        className="secondary-link"
-                                        to={`/campaigns/${m.campaign._id}`}
-                                      >
-                                        CAMPAIGN <em>{getTruncatedText(m.campaign.title, 40)}</em>
-                                      </Link>
-                                    </td>
-                                    <td className="td-status">
-                                      {(m.status === 'Pending' ||
-                                        (Object.keys(m).includes('mined') && !m.mined)) && (
-                                        <span>
-                                          <i className="fa fa-circle-o-notch fa-spin" />
-                                          &nbsp;
-                                        </span>
-                                      )}
-                                      {m.status === 'NeedsReview' &&
-                                        reviewDue(m.updatedAt) && (
-                                          <span>
-                                            <i className="fa fa-exclamation-triangle" />
-                                            &nbsp;
-                                          </span>
-                                        )}
-                                      {getReadableStatus(m.status)}
-                                    </td>
-                                    <td className="td-donations-number">
-                                      {convertEthHelper(m.maxAmount)} {m.token.symbol}
-                                    </td>
-                                    <td className="td-donations-number">
-                                      {(m.donationCounters &&
-                                        m.donationCounters.length &&
-                                        m.donationCounters[0].donationCount) ||
-                                        0}
-                                    </td>
-                                    <td className="td-donations-">
-                                      {convertEthHelper(
-                                        (m.donationCounters &&
-                                          m.donationCounters.length &&
-                                          m.donationCounters[0].currentBalance) ||
-                                          '0',
-                                      )}{' '}
-                                      {m.token.symbol}
-                                    </td>
-                                    <td className="td-reviewer">
-                                      {m.reviewer &&
-                                        m.reviewer.address && (
-                                          <Link to={`/profile/${m.reviewer.address}`}>
-                                            {m.reviewer.name || 'Anomynous user'}
-                                          </Link>
-                                        )}
-                                    </td>
+                      {milestones && milestones.length > 0 && (
+                        <div>
+                          <table className="table table-responsive table-striped table-hover">
+                            <thead>
+                              <tr>
+                                {currentUser.authenticated && (
+                                  <th className="td-actions">Actions</th>
+                                )}
+                                <th className="td-created-at">Created</th>
+                                <th className="td-name">Name</th>
+                                <th className="td-status">Status</th>
+                                <th className="td-donations-number">Requested</th>
+                                <th className="td-donations-number">Donations</th>
+                                <th className="td-donations-amount">Donated</th>
+                                <th className="td-reviewer">Reviewer</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {milestones.map(m => (
+                                <tr key={m._id} className={m.status === 'Pending' ? 'pending' : ''}>
+                                  {currentUser.authenticated && (
                                     <td className="td-actions">
                                       {/* Campaign and Milestone managers can edit milestone */}
                                       {(m.ownerAddress === currentUser.address ||
@@ -1236,40 +1166,101 @@ class MyMilestones extends Component {
                                       </button>
                                     )} */}
                                     </td>
-                                  </tr>
-                                ))}
-                              </tbody>
-                            </table>
+                                  )}
+                                  <td className="td-created-at">
+                                    {m.createdAt && (
+                                      <span>{moment.utc(m.createdAt).format('Do MMM YYYY')}</span>
+                                    )}
+                                  </td>
+                                  <td className="td-name">
+                                    <strong>
+                                      <Link to={`/campaigns/${m.campaign._id}/milestones/${m._id}`}>
+                                        MILESTONE <em>{getTruncatedText(m.title, 35)}</em>
+                                      </Link>
+                                    </strong>
+                                    <br />
+                                    <i className="fa fa-arrow-right" />
+                                    <Link
+                                      className="secondary-link"
+                                      to={`/campaigns/${m.campaign._id}`}
+                                    >
+                                      CAMPAIGN <em>{getTruncatedText(m.campaign.title, 40)}</em>
+                                    </Link>
+                                  </td>
+                                  <td className="td-status">
+                                    {(m.status === 'Pending' ||
+                                      (Object.keys(m).includes('mined') && !m.mined)) && (
+                                      <span>
+                                        <i className="fa fa-circle-o-notch fa-spin" />
+                                        &nbsp;
+                                      </span>
+                                    )}
+                                    {m.status === 'NeedsReview' && reviewDue(m.updatedAt) && (
+                                      <span>
+                                        <i className="fa fa-exclamation-triangle" />
+                                        &nbsp;
+                                      </span>
+                                    )}
+                                    {getReadableStatus(m.status)}
+                                  </td>
+                                  <td className="td-donations-number">
+                                    {convertEthHelper(m.maxAmount)} {m.token.symbol}
+                                  </td>
+                                  <td className="td-donations-number">
+                                    {(m.donationCounters &&
+                                      m.donationCounters.length &&
+                                      m.donationCounters[0].donationCount) ||
+                                      0}
+                                  </td>
+                                  <td className="td-donations-">
+                                    {convertEthHelper(
+                                      (m.donationCounters &&
+                                        m.donationCounters.length &&
+                                        m.donationCounters[0].currentBalance) ||
+                                        '0',
+                                    )}{' '}
+                                    {m.token.symbol}
+                                  </td>
+                                  <td className="td-reviewer">
+                                    {m.reviewer && m.reviewer.address && (
+                                      <Link to={`/profile/${m.reviewer.address}`}>
+                                        {m.reviewer.name || 'Anomynous user'}
+                                      </Link>
+                                    )}
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
 
-                            {totalResults > itemsPerPage && (
-                              <center>
-                                <Pagination
-                                  activePage={skipPages + 1}
-                                  itemsCountPerPage={itemsPerPage}
-                                  totalItemsCount={totalResults}
-                                  pageRangeDisplayed={visiblePages}
-                                  onChange={this.handlePageChanged}
-                                />
-                              </center>
-                            )}
-                          </div>
-                        )}
-
-                      {milestones &&
-                        milestones.length === 0 && (
-                          <div className="no-results">
+                          {totalResults > itemsPerPage && (
                             <center>
-                              <h3>No milestones here!</h3>
-                              <img
-                                className="empty-state-img"
-                                src={`${process.env.PUBLIC_URL}/img/delegation.svg`}
-                                width="200px"
-                                height="200px"
-                                alt="no-milestones-icon"
+                              <Pagination
+                                activePage={skipPages + 1}
+                                itemsCountPerPage={itemsPerPage}
+                                totalItemsCount={totalResults}
+                                pageRangeDisplayed={visiblePages}
+                                onChange={this.handlePageChanged}
                               />
                             </center>
-                          </div>
-                        )}
+                          )}
+                        </div>
+                      )}
+
+                      {milestones && milestones.length === 0 && (
+                        <div className="no-results">
+                          <center>
+                            <h3>No milestones here!</h3>
+                            <img
+                              className="empty-state-img"
+                              src={`${process.env.PUBLIC_URL}/img/delegation.svg`}
+                              width="200px"
+                              height="200px"
+                              alt="no-milestones-icon"
+                            />
+                          </center>
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>

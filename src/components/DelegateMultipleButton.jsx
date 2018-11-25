@@ -9,7 +9,7 @@ import 'react-rangeslider/lib/index.css';
 import BigNumber from 'bignumber.js';
 import InputToken from 'react-input-token';
 
-import { checkBalance } from '../lib/middleware';
+import { checkBalance, isLoggedIn, authenticateIfPossible } from '../lib/middleware';
 import { feathersClient } from '../lib/feathersClient';
 import Loader from './Loader';
 import config from '../configuration';
@@ -213,7 +213,11 @@ class BaseDelegateMultipleButton extends Component {
   }
 
   openDialog() {
-    checkBalance(this.props.balance).then(() => this.setState({ modalVisible: true }));
+    authenticateIfPossible(this.props.currentUser)
+      .then(() => isLoggedIn(this.props.currentUser))
+      .then(() =>
+        checkBalance(this.props.balance).then(() => this.setState({ modalVisible: true })),
+      );
   }
 
   submit(model) {

@@ -20,7 +20,7 @@ import config from '../configuration';
  */
 export const isLoggedIn = currentUser =>
   new Promise((resolve, reject) => {
-    if (currentUser && currentUser.address) resolve();
+    if (currentUser && currentUser.address && currentUser.authenticated) resolve();
     else {
       React.swal({
         title: 'Oops! You need to unlock you wallet!',
