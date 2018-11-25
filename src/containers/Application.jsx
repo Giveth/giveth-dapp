@@ -123,10 +123,17 @@ class Application extends Component {
         <Router history={history}>
           <Web3Provider onLoaded={this.web3Loaded}>
             <Web3Consumer>
-              {({ state: { account, balance, isForeignNetwork } }) => (
+              {({ state: { account, balance, isForeignNetwork, failedToLoad } }) => (
                 <div>
-                  {web3Loading && <Loader className="fixed" />}
-                  {!web3Loading && (
+                  {web3Loading && !failedToLoad && <Loader className="fixed" />}
+                  {failedToLoad && (
+                    <p>
+                      Unable to connect to the web3 provider. Please check if your MataMask or other
+                      wallet is connected to a valid network. If so try and restart your browser or
+                      open the DApp in private window.
+                    </p>
+                  )}
+                  {!web3Loading && !failedToLoad && (
                     <EthConversionProvider>
                       <UserProvider account={account} onLoaded={this.userLoaded}>
                         <UserConsumer>

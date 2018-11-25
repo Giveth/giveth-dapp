@@ -94,6 +94,7 @@ class Web3Provider extends Component {
       isHomeNetwork: false,
       isForeignNetwork: false,
       isEnabled: false,
+      setupTimeout: false,
     };
 
     this.enableTimedout = false;
@@ -102,6 +103,10 @@ class Web3Provider extends Component {
   }
 
   componentWillMount() {
+    const timeout = setTimeout(async () => {
+      this.setState({ setupTimeout: true });
+    }, 10000);
+
     getWeb3().then(web3 => {
       this.setState({
         validProvider: !web3.defaultNode,
@@ -132,6 +137,8 @@ class Web3Provider extends Component {
     });
 
     this.enableProvider();
+
+    clearTimeout(timeout);
   }
 
   async enableProvider() {
@@ -156,8 +163,17 @@ class Web3Provider extends Component {
     let balance;
 
     const timeoutId = setTimeout(async () => {
-      this.setState({ isEnabled: await web3.currentProvider._metamask.isApproved() }, () =>
-        this.props.onLoaded(),
+      this.setState(
+        {
+          isEnabled:
+            web3 &&
+            web3.currentProvider &&
+            web3.currentProvider._metamaks &&
+            web3.currentProvider._metamaks
+              ? await web3.currentProvider._metamask.isApproved()
+              : false,
+        },
+        () => this.props.onLoaded(),
       );
       this.enableTimedout = true;
     }, 5000);
@@ -185,12 +201,14 @@ class Web3Provider extends Component {
       isHomeNetwork,
       isForeignNetwork,
       isEnabled,
+      setupTimeout,
     } = this.state;
 
     return (
       <Provider
         value={{
           state: {
+            failedToLoad: setupTimeout,
             account,
             balance,
             currentNetwork,
