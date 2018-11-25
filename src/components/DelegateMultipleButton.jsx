@@ -242,7 +242,7 @@ class BaseDelegateMultipleButton extends Component {
     const onSuccess = txLink => {
       React.toast.success(
         <p>
-          Your donation has been confirmed!
+          The delegation has been confirmed!
           <br />
           <a href={`${txLink}`} target="_blank" rel="noopener noreferrer">
             View transaction
@@ -251,12 +251,24 @@ class BaseDelegateMultipleButton extends Component {
       );
     };
 
+    const onError = () => {
+      this.setState({ isSaving: false });
+      React.toast.error(<p>There has been an error with the delegation</p>);
+    };
+
+    const onCancel = () => {
+      this.setState({ isSaving: false });
+      React.toast.error(<p>The delegation transaction has been cancelled</p>);
+    };
+
     DonationService.delegateMultiple(
       this.state.delegations,
       utils.toWei(model.amount),
       this.props.milestone || this.props.campaign,
       onCreated,
       onSuccess,
+      onError,
+      onCancel,
     );
   }
 
