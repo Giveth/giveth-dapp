@@ -48,7 +48,7 @@ class MainMenu extends Component {
 
     return (
       <Web3Consumer>
-        {({ state: { validProvider, isEnabled }, actions: { enableProvider } }) => (
+        {({ state: { validProvider, isEnabled, failedToLoad }, actions: { enableProvider } }) => (
           <UserConsumer>
             {({ state }) => (
               <div>
@@ -125,6 +125,7 @@ class MainMenu extends Component {
 
                     <ul className="navbar-nav">
                       {validProvider &&
+                        !failedToLoad &&
                         !isEnabled && (
                           <button
                             type="button"
@@ -135,6 +136,7 @@ class MainMenu extends Component {
                           </button>
                         )}
                       {validProvider &&
+                        !failedToLoad &&
                         isEnabled &&
                         !state.currentUser && (
                           <small className="text-muted">Please unlock MetaMask</small>
