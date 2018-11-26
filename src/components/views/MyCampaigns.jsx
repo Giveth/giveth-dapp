@@ -9,13 +9,14 @@ import { Consumer as Web3Consumer } from 'contextProviders/Web3Provider';
 import config from 'configuration';
 
 import GA from 'lib/GoogleAnalytics';
-import { isLoggedIn, checkBalance, authenticateIfPossible } from '../../lib/middleware';
+import { checkBalance } from '../../lib/middleware';
 import confirmationDialog from '../../lib/confirmationDialog';
 import User from '../../models/User';
 import { getTruncatedText, convertEthHelper, history } from '../../lib/helpers';
 import CampaignService from '../../services/CampaignService';
 import Campaign from '../../models/Campaign';
 import Loader from '../Loader';
+import AuthenticationWarning from '../AuthenticationWarning';
 
 /**
  * The my campaings view
@@ -29,29 +30,22 @@ class MyCampaigns extends Component {
       campaigns: {},
       visiblePages: 10,
       skipPages: 0,
-      itemsPerPage: 5,
+      itemsPerPage: 50,
     };
 
     this.editCampaign = this.editCampaign.bind(this);
     this.cancelCampaign = this.cancelCampaign.bind(this);
+    this.handlePageChanged = this.handlePageChanged.bind(this);
   }
 
   componentDidMount() {
-    authenticateIfPossible(this.props.currentUser)
-      .then(() => isLoggedIn(this.props.currentUser))
-      .then(() => this.loadCampaigns())
-      .catch(err => {
-        if (err === 'notLoggedIn') {
-          // default behavior is to go home or signin page after swal popup
-        }
-      });
+    this.loadCampaigns();
   }
 
   componentDidUpdate(prevProps) {
     if (prevProps.currentUser !== this.props.currentUser) {
       // eslint-disable-next-line react/no-did-update-set-state
       this.setState({ isLoading: true });
-      authenticateIfPossible(this.props.currentUser);
       if (this.campaignsObserver) this.campaignsObserver.unsubscribe();
       this.loadCampaigns();
     }
@@ -144,6 +138,8 @@ class MyCampaigns extends Component {
                     <h1>Your campaigns</h1>
                   )}
 
+                  <AuthenticationWarning currentUser={currentUser} />
+
                   <NetworkWarning
                     incorrectNetwork={!isForeignNetwork}
                     networkName={config.foreignNetworkName}
@@ -159,6 +155,7 @@ class MyCampaigns extends Component {
                             <table className="table table-responsive table-striped table-hover">
                               <thead>
                                 <tr>
+                                  {currentUser.authenticated && <th className="td-actions" />}
                                   <th className="td-name">Name</th>
                                   <th className="td-donations-number">Donations</th>
                                   <th className="td-donations-amount">Amount</th>
@@ -166,7 +163,6 @@ class MyCampaigns extends Component {
                                   <th className="td-confirmations">
                                     {isPendingCampaign && 'Confirmations'}
                                   </th>
-                                  <th className="td-actions" />
                                 </tr>
                               </thead>
                               <tbody>
@@ -189,7 +185,7 @@ class MyCampaigns extends Component {
                                     <td className="td-donations-number">
                                       {c.donationCounters.length > 0 &&
                                         c.donationCounters.map(counter => (
-                                          <p key={counter._id}>
+                                          <p>
                                             {counter.donationCount} donation(s) in {counter.symbol}
                                           </p>
                                         ))}
@@ -198,7 +194,7 @@ class MyCampaigns extends Component {
                                     <td className="td-donations-amount">
                                       {c.donationCounters.length > 0 &&
                                         c.donationCounters.map(counter => (
-                                          <p key={counter._id}>
+                                          <p>
                                             {convertEthHelper(counter.totalDonated)}{' '}
                                             {counter.symbol}
                                           </p>
@@ -220,44 +216,46 @@ class MyCampaigns extends Component {
                                         c.requiredConfirmations !== c.confirmations) &&
                                         `${c.confirmations}/${c.requiredConfirmations}`}
                                     </td>
-                                    <td className="td-actions">
-                                      {c.owner.address === currentUser.address &&
-                                        c.isActive && (
-                                          <button
-                                            type="button"
-                                            className="btn btn-link"
-                                            onClick={() => this.editCampaign(c.id)}
-                                          >
-                                            <i className="fa fa-edit" />
-                                            &nbsp;Edit
-                                          </button>
-                                        )}
+                                    {currentUser.authenticated && (
+                                      <td className="td-actions">
+                                        {c.owner.address === currentUser.address &&
+                                          c.isActive && (
+                                            <button
+                                              type="button"
+                                              className="btn btn-link"
+                                              onClick={() => this.editCampaign(c.id)}
+                                            >
+                                              <i className="fa fa-edit" />
+                                              &nbsp;Edit
+                                            </button>
+                                          )}
 
-                                      {(c.reviewerAddress === currentUser.address ||
-                                        c.owner.address === currentUser.address) &&
-                                        isForeignNetwork &&
-                                        c.isActive && (
-                                          <button
-                                            type="button"
-                                            className="btn btn-danger btn-sm"
-                                            onClick={() => this.cancelCampaign(c)}
-                                          >
-                                            <i className="fa fa-ban" />
-                                            &nbsp;Cancel
-                                          </button>
-                                        )}
-                                    </td>
+                                        {(c.reviewerAddress === currentUser.address ||
+                                          c.owner.address === currentUser.address) &&
+                                          isForeignNetwork &&
+                                          c.isActive && (
+                                            <button
+                                              type="button"
+                                              className="btn btn-danger btn-sm"
+                                              onClick={() => this.cancelCampaign(c)}
+                                            >
+                                              <i className="fa fa-ban" />
+                                              &nbsp;Cancel
+                                            </button>
+                                          )}
+                                      </td>
+                                    )}
                                   </tr>
                                 ))}
                               </tbody>
                             </table>
 
-                            {campaigns.data.length > campaigns.itemsPerPage && (
+                            {campaigns.total > this.state.itemsPerPage && (
                               <center>
                                 <Pagination
-                                  activePage={campaigns.skipPages + 1}
-                                  itemsCountPerPage={campaigns.itemsPerPage}
-                                  totalItemsCount={campaigns.totalResults}
+                                  activePage={campaigns.skip / campaigns.limit + 1}
+                                  itemsCountPerPage={campaigns.limit}
+                                  totalItemsCount={campaigns.total}
                                   pageRangeDisplayed={visiblePages}
                                   onChange={this.handlePageChanged}
                                 />

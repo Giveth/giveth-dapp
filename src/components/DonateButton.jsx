@@ -1,4 +1,5 @@
 /* eslint-disable react/no-unescaped-entities */
+/* eslint-disable no-restricted-globals */
 import React from 'react';
 import PropTypes from 'prop-types';
 import Modal from 'react-modal';
@@ -6,6 +7,7 @@ import BigNumber from 'bignumber.js';
 import { utils } from 'web3';
 import { Form, Input } from 'formsy-react-components';
 import Toggle from 'react-toggle';
+import Slider from 'react-rangeslider';
 
 import GA from 'lib/GoogleAnalytics';
 import getNetwork from '../lib/blockchain/getNetwork';
@@ -64,7 +66,7 @@ class BaseDonateButton extends React.Component {
     this.state = {
       isSaving: false,
       formIsValid: false,
-      amount: '',
+      amount: new BigNumber('0'),
       givethBridge: undefined,
       etherscanUrl: '',
       modalVisible: false,
@@ -114,9 +116,14 @@ class BaseDonateButton extends React.Component {
             .donateAndCreateGiver(currentUser.address, adminId)
             .encodeABI();
     }
-    return givethBridge.$contract.methods
-      .donateAndCreateGiver(currentUser.address, adminId)
-      .encodeABI();
+    return givethBridge.$contract.methods.donateAndCreateGiver('0x0', adminId).encodeABI();
+  }
+
+  setAmount(amount) {
+    if (!isNaN(parseFloat(amount))) {
+      // protecting against overflow occuring when BigNumber receives something that results in NaN
+      this.setState({ amount: new BigNumber(amount) });
+    }
   }
 
   pollToken() {
@@ -159,10 +166,6 @@ class BaseDonateButton extends React.Component {
     )();
   }
 
-  // setMaxAmount(maxAmount) {
-  // this.setState({ amount: maxAmount });
-  // }
-
   toggleFormValid(state) {
     this.setState({ formIsValid: state });
   }
@@ -170,17 +173,20 @@ class BaseDonateButton extends React.Component {
   closeDialog() {
     this.setState({
       modalVisible: false,
-      amount: '',
+      amount: new BigNumber('0'),
       formIsValid: false,
     });
   }
 
   openDialog() {
-    this.setState({
+    this.setState(prevState => ({
       modalVisible: true,
-      amount: '',
+      amount:
+        prevState.selectedToken.symbol === 'ETH'
+          ? utils.fromWei(this.props.ETHBalance ? this.props.ETHBalance : '')
+          : utils.fromWei(prevState.selectedToken.balance ? prevState.selectedToken.balance : ''), // FIXME: Is it correct to use from wei? Shouldn't it consider precision of the token?
       formIsValid: false,
-    });
+    }));
   }
 
   submit(model) {
@@ -354,9 +360,13 @@ class BaseDonateButton extends React.Component {
 
     // Determines max amount based on wallet balance or milestone maxAmount
     const _getMaxAmount = () => {
-      let _maxAmount = selectedToken.balance;
-      if (maxAmount.lt(selectedToken.balance)) _maxAmount = maxAmount;
-      return _maxAmount.toNumber();
+      // set max donation amount user wallet's balance
+      const _balance = new BigNumber(utils.fromWei(balance.toString()));
+      let _maxAmount = _balance;
+      // if milestone max amount < balance, set it to maxAmount
+      if (selectedToken.balance.lt(_balance)) _maxAmount = maxAmount;
+
+      return _maxAmount;
     };
 
     return (
@@ -367,6 +377,7 @@ class BaseDonateButton extends React.Component {
         <Modal
           isOpen={modalVisible}
           onRequestClose={() => this.closeDialog()}
+          shouldCloseOnOverlayClick={false}
           contentLabel={`Support this ${model.type}!`}
           style={modalStyles}
         >
@@ -398,6 +409,7 @@ class BaseDonateButton extends React.Component {
                 networkName={config.homeNetworkName}
               />
             )}
+
             {isHomeNetwork &&
               currentUser && (
                 <p>
@@ -417,7 +429,7 @@ class BaseDonateButton extends React.Component {
             {validProvider &&
               isHomeNetwork &&
               currentUser && (
-                <p>
+                <div>
                   {model.type !== 'milestone' && (
                     <SelectFormsy
                       name="token"
@@ -425,7 +437,6 @@ class BaseDonateButton extends React.Component {
                       label="Make your donation in"
                       helpText="Select ETH or the token you want to donate"
                       value={selectedToken.address}
-                      cta="--- Select ---"
                       options={tokenWhitelistOptions}
                       onChange={address => this.setToken(address)}
                       disabled={model.type === 'milestone'}
@@ -433,60 +444,50 @@ class BaseDonateButton extends React.Component {
                   )}
                   {/* TODO: remove this b/c the wallet provider will contain this info */}
                   {config.homeNetworkName} {selectedToken.symbol} balance:&nbsp;
-                  <em>{utils.fromWei(balance.toString())}</em>
-                </p>
+                  <em>{utils.fromWei(balance ? balance.toString() : '')}</em>
+                </div>
               )}
 
-            {/* {validProvider &&
-                  isHomeNetwork &&
-                  currentUser &&
-                  balance.eqn(0) && (
-                    <div className="alert alert-warning">
-                      <i className="fa fa-exclamation-triangle" />
-                      You do not have an adequate balance in your account to donate.
-                    </div>
-                  )} */}
+            <span className="label">How much {selectedToken.symbol} do you want to donate?</span>
 
-            {/* {validProvider &&
-                    maxAmount !== 0 &&
-                    balance.gtn(0) && (
-                      <div className="form-group">
-                        <Slider
-                          type="range"
-                          name="amount2"
-                          min={0}
-                          max={Number(maxAmount)}
-                          step={0.01}
-                          value={Number(Number(this.state.amount).toFixed(4))}
-                          labels={{
-                            0: '0',
-                            [maxAmount]: Number(Number(maxAmount).toFixed(4)),
-                          }}
-                          format={val => `${val} ETH`}
-                          onChange={newAmount => this.setState({ amount: newAmount.toString() })}
-                        />
-                      </div>
-                    )} */}
+            {validProvider &&
+              _getMaxAmount().toNumber() !== 0 &&
+              balance.gte(0) && (
+                <div className="form-group">
+                  <Slider
+                    type="range"
+                    name="amount2"
+                    min={0}
+                    max={_getMaxAmount().toNumber()}
+                    step={_getMaxAmount().toNumber() / 10}
+                    value={amount.toNumber()}
+                    labels={{
+                      0: '0',
+                      [_getMaxAmount().toFixed()]: _getMaxAmount().toFixed(),
+                    }}
+                    format={val => `${val} ETH`}
+                    onChange={newAmount => this.setAmount(newAmount)}
+                  />
+                </div>
+              )}
+
             <div className="form-group">
               <Input
                 name="amount"
                 id="amount-input"
-                label={`How much ${selectedToken.symbol} do you want to donate?`}
                 type="number"
-                step="any"
-                value={amount}
-                placeholder="1"
+                value={amount.toNumber()}
+                onChange={(name, newAmount) => this.setAmount(newAmount)}
                 validations={{
-                  lessOrEqualTo: _getMaxAmount(),
+                  lessOrEqualTo: _getMaxAmount().toNumber(),
                   greaterThan: 0.009,
                 }}
                 validationErrors={{
                   greaterThan: `Minimum value must be at least ${selectedToken.symbol}0.01`,
-                  lessOrEqualTo: `This donation exceeds your wallet balance or the milestone max amount: ${_getMaxAmount()} ${
+                  lessOrEqualTo: `This donation exceeds your wallet balance or the milestone max amount: ${_getMaxAmount().toString()} ${
                     selectedToken.symbol
                   }.`,
                 }}
-                required
                 autoFocus
               />
             </div>
@@ -535,7 +536,7 @@ class BaseDonateButton extends React.Component {
 
             {validProvider &&
               currentUser &&
-              _getMaxAmount() !== 0 &&
+              _getMaxAmount().toNumber() !== 0 &&
               balance !== '0' && (
                 <LoaderButton
                   className="btn btn-success"
@@ -551,7 +552,6 @@ class BaseDonateButton extends React.Component {
 
             {/* {!validProvider && <div>TODO: show donation data</div>} */}
 
-            {/* TODO get amount to dynamically update */}
             {givethBridge && (
               <a
                 className={`btn btn-primary ${isSaving ? 'disabled' : ''}`}
@@ -587,15 +587,17 @@ const DonateButton = ({ model, currentUser, maxAmount }) => (
   </Web3Consumer>
 );
 
+const modelTypes = PropTypes.shape({
+  type: PropTypes.string.isRequired,
+  adminId: PropTypes.oneOfType([PropTypes.number, PropTypes.string]).isRequired,
+  id: PropTypes.string.isRequired,
+  title: PropTypes.string.isRequired,
+  campaignId: PropTypes.string,
+  token: PropTypes.shape({}),
+});
+
 DonateButton.propTypes = {
-  model: PropTypes.shape({
-    type: PropTypes.string.isRequired,
-    adminId: PropTypes.oneOfType([PropTypes.number, PropTypes.string]).isRequired,
-    id: PropTypes.string.isRequired,
-    title: PropTypes.string.isRequired,
-    campaignId: PropTypes.string,
-    token: PropTypes.shape().isRequired,
-  }).isRequired,
+  model: modelTypes.isRequired,
   currentUser: PropTypes.instanceOf(User),
   maxAmount: PropTypes.instanceOf(BigNumber),
 };
@@ -603,14 +605,7 @@ DonateButton.propTypes = {
 // eslint isn't smart enough to be able to use Object.assign({}, DonateButton.propTypes, {...})
 // so we have to duplicate them
 BaseDonateButton.propTypes = {
-  model: PropTypes.shape({
-    type: PropTypes.string.isRequired,
-    adminId: PropTypes.oneOfType([PropTypes.number, PropTypes.string]).isRequired,
-    id: PropTypes.string.isRequired,
-    title: PropTypes.string.isRequired,
-    campaignId: PropTypes.string,
-    token: PropTypes.shape({}),
-  }).isRequired,
+  model: modelTypes.isRequired,
   currentUser: PropTypes.instanceOf(User),
   maxAmount: PropTypes.instanceOf(BigNumber),
   ETHBalance: PropTypes.instanceOf(BigNumber).isRequired,

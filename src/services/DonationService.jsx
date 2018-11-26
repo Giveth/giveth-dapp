@@ -58,7 +58,8 @@ const createAllowance = async (tokenContractAddress, tokenHolderAddress, amount)
     if (amount === 0) {
       React.toast.info(
         <p>
-          Please wait until your transaction is mined...<br />
+          Please wait until your transaction is mined...
+          <br />
           <strong>
             You will be asked to make another transaction to set the correct allowance!
           </strong>
@@ -71,7 +72,8 @@ const createAllowance = async (tokenContractAddress, tokenHolderAddress, amount)
     } else {
       React.toast.info(
         <p>
-          Please wait until your transaction is mined...<br />
+          Please wait until your transaction is mined...
+          <br />
           <strong>You will be asked to make another transaction for your donation!</strong>
           <br />
           <a href={`${config.homeEtherscan}tx/${txHash}`} target="_blank" rel="noopener noreferrer">
@@ -94,6 +96,7 @@ class DonationService {
    * @param {function} onCreated   Callback function after the transaction has been broadcasted to chain and stored in feathers
    * @param {function} onSuccess   Callback function after the transaction has been mined
    * @param {function} onError     Callback function after error happened
+   * @param {function} onCancel    Callback function after user cancelled the TX
    */
   static delegateMultiple(
     donations,
@@ -102,6 +105,7 @@ class DonationService {
     onCreated = () => {},
     onSuccess = () => {},
     onError = () => {},
+    onCancel = () => {},
   ) {
     const { ownerType, ownerEntity, delegateEntity, delegateId } = donations[0];
     let txHash;
@@ -245,16 +249,22 @@ class DonationService {
                 });
             });
           })
+          .then(() => onSuccess(`${etherScanUrl}tx/${txHash}`))
           .catch(err => {
-            if (txHash && err.message && err.message.includes('unknown transaction')) return; // bug in web3 seems to constantly fail due to this error, but the tx is correct
-            ErrorPopup(
-              'Thare was a problem with the delegation transaction.',
-              `${etherScanUrl}tx/${txHash}`,
-            );
-            onError(err);
+            // bug in web3 seems to constantly fail due to this error, but the tx is correct
+            if (txHash && err.message && err.message.includes('unknown transaction')) return;
+
+            if (err.message.includes('User denied transaction signature')) {
+              onCancel(err);
+            } else {
+              ErrorPopup(
+                'Thare was a problem with the delegation transaction.',
+                `${etherScanUrl}tx/${txHash}`,
+              );
+              onError(err);
+            }
           });
       })
-      .then(() => onSuccess(`${etherScanUrl}tx/${txHash}`))
       .catch(err => {
         ErrorPopup('Unable to initiate the delegation transaction.', err);
         onError(err);
@@ -270,6 +280,7 @@ class DonationService {
    * @param {function} onCreated   Callback function after the transaction has been broadcasted to chain and stored in feathers
    * @param {function} onSuccess   Callback function after the transaction has been mined
    * @param {function} onError     Callback function after error happened
+   * @param {function} onCancel    Callback function after user cancelled the TX
    */
   static delegate(
     donation,
@@ -278,6 +289,7 @@ class DonationService {
     onCreated = () => {},
     onSuccess = () => {},
     onError = () => {},
+    onCancel = () => {},
   ) {
     let txHash;
     let etherScanUrl;
@@ -357,16 +369,21 @@ class DonationService {
                 onError(err);
               });
           })
+          .then(() => onSuccess(`${etherScanUrl}tx/${txHash}`))
           .catch(err => {
             if (txHash && err.message && err.message.includes('unknown transaction')) return; // bug in web3 seems to constantly fail due to this error, but the tx is correct
-            ErrorPopup(
-              'Thare was a problem with the delegation transaction.',
-              `${etherScanUrl}tx/${txHash}`,
-            );
-            onError(err);
+
+            if (err.message.includes('User denied transaction signature')) {
+              onCancel(err);
+            } else {
+              ErrorPopup(
+                'Thare was a problem with the delegation transaction.',
+                `${etherScanUrl}tx/${txHash}`,
+              );
+              onError(err);
+            }
           });
       })
-      .then(() => onSuccess(`${etherScanUrl}tx/${txHash}`))
       .catch(err => {
         ErrorPopup('Unable to initiate the delegation transaction.', err);
         onError(err);

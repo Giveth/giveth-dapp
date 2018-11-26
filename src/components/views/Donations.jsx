@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import moment from 'moment';
+import Pagination from 'react-js-pagination';
 
 import NetworkWarning from 'components/NetworkWarning';
 import { Consumer as Web3Consumer } from 'contextProviders/Web3Provider';
@@ -12,6 +13,8 @@ import { Consumer as UserConsumer } from '../../contextProviders/UserProvider';
 import DonationProvider, {
   Consumer as DonationConsumer,
 } from '../../contextProviders/DonationProvider';
+import AuthenticationWarning from '../AuthenticationWarning';
+
 /**
  * The my donations view
  */
@@ -23,8 +26,16 @@ const Donations = () => (
           <DonationProvider currentUser={currentUser} balance={balance}>
             <DonationConsumer>
               {({
-                state: { isLoading, donations, etherScanUrl },
-                actions: { refund, commit, reject },
+                state: {
+                  isLoading,
+                  donations,
+                  etherScanUrl,
+                  totalResults,
+                  visiblePages,
+                  skipPages,
+                  itemsPerPage,
+                },
+                actions: { refund, commit, reject, handlePageChanged },
               }) => (
                 <div id="donations-view">
                   <div className="container-fluid page-layout dashboard-table-view">
@@ -33,6 +44,8 @@ const Donations = () => (
                         {(isLoading || (donations && donations.length > 0)) && (
                           <h1>Your donations</h1>
                         )}
+
+                        <AuthenticationWarning currentUser={currentUser} />
 
                         <NetworkWarning
                           incorrectNetwork={!isForeignNetwork}
@@ -48,7 +61,7 @@ const Donations = () => (
                                 <table className="table table-responsive table-striped table-hover">
                                   <thead>
                                     <tr>
-                                      <th className="td-action" />
+                                      {currentUser.authenticated && <th className="td-action" />}
                                       <th className="td-transaction-status">Status</th>
                                       <th className="td-date">Date</th>
                                       <th className="td-donated-to">Donated to</th>
@@ -62,35 +75,37 @@ const Donations = () => (
                                   <tbody>
                                     {donations.map(d => (
                                       <tr key={d.id} className={d.isPending ? 'pending' : ''}>
-                                        <td className="td-actions">
-                                          {d.canRefund(currentUser, isForeignNetwork) && (
-                                            <button
-                                              type="button"
-                                              className="btn btn-sm btn-danger"
-                                              onClick={() => refund(d)}
-                                            >
-                                              Refund
-                                            </button>
-                                          )}
-                                          {d.canApproveReject(currentUser, isForeignNetwork) && (
-                                            <div>
-                                              <button
-                                                type="button"
-                                                className="btn btn-sm btn-success"
-                                                onClick={() => commit(d)}
-                                              >
-                                                Commit
-                                              </button>
+                                        {currentUser.authenticated && (
+                                          <td className="td-actions">
+                                            {d.canRefund(currentUser, isForeignNetwork) && (
                                               <button
                                                 type="button"
                                                 className="btn btn-sm btn-danger"
-                                                onClick={() => reject(d)}
+                                                onClick={() => refund(d)}
                                               >
-                                                Reject
+                                                Refund
                                               </button>
-                                            </div>
-                                          )}
-                                        </td>
+                                            )}
+                                            {d.canApproveReject(currentUser, isForeignNetwork) && (
+                                              <div>
+                                                <button
+                                                  type="button"
+                                                  className="btn btn-sm btn-success"
+                                                  onClick={() => commit(d)}
+                                                >
+                                                  Commit
+                                                </button>
+                                                <button
+                                                  type="button"
+                                                  className="btn btn-sm btn-danger"
+                                                  onClick={() => reject(d)}
+                                                >
+                                                  Reject
+                                                </button>
+                                              </div>
+                                            )}
+                                          </td>
+                                        )}
 
                                         <td className="td-transaction-status">
                                           {d.isPending && (
@@ -145,6 +160,18 @@ const Donations = () => (
                                     ))}
                                   </tbody>
                                 </table>
+                              )}
+                            {donations &&
+                              totalResults > itemsPerPage && (
+                                <center>
+                                  <Pagination
+                                    activePage={skipPages + 1}
+                                    itemsCountPerPage={itemsPerPage}
+                                    totalItemsCount={totalResults}
+                                    pageRangeDisplayed={visiblePages}
+                                    onChange={handlePageChanged}
+                                  />
+                                </center>
                               )}
 
                             {donations.length === 0 && (

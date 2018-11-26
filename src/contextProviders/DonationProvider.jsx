@@ -35,11 +35,17 @@ class DonationProvider extends Component {
       donations: [],
       isLoading: true,
       etherScanUrl: undefined,
+      visiblePages: 10,
+      itemsPerPage: 50,
+      skipPages: 0,
+      totalResults: 0,
     };
 
     this.refund = this.refund.bind(this);
     this.commit = this.commit.bind(this);
     this.reject = this.reject.bind(this);
+    this.handlePageChanged = this.handlePageChanged.bind(this);
+    this.loadDonations = this.loadDonations.bind(this);
   }
 
   componentWillMount() {
@@ -64,6 +70,7 @@ class DonationProvider extends Component {
     if (this.donationsObserver) this.donationsObserver.unsubscribe();
   }
 
+  // Function to fetch donations of the current user.
   loadDonations() {
     this.donationsObserver = feathersClient
       .service('donations')
@@ -74,16 +81,19 @@ class DonationProvider extends Component {
           query: {
             giverAddress: this.props.currentUser.address,
             amountRemaining: { $ne: 0 },
-            $limit: 100,
+            $limit: this.state.itemsPerPage,
+            $skip: this.state.skipPages * this.state.itemsPerPage,
           },
         }),
       )
       .subscribe(
         resp => {
-          this.setState({
+          this.setState(prevState => ({
             donations: resp.data.map(d => new Donation(d)),
+            skipPages: resp.skip / prevState.itemsPerPage,
+            totalResults: resp.total,
             isLoading: false,
-          });
+          }));
         },
         e => {
           this.setState({
@@ -253,9 +263,21 @@ class DonationProvider extends Component {
     });
   }
 
+  handlePageChanged(newPage) {
+    this.setState({ skipPages: newPage - 1 }, () => this.loadDonations());
+  }
+
   render() {
-    const { donations, isLoading, etherScanUrl } = this.state;
-    const { refund, commit, reject } = this;
+    const {
+      donations,
+      isLoading,
+      etherScanUrl,
+      itemsPerPage,
+      visiblePages,
+      totalResults,
+      skipPages,
+    } = this.state;
+    const { refund, commit, reject, handlePageChanged } = this;
 
     return (
       <Provider
@@ -264,11 +286,16 @@ class DonationProvider extends Component {
             donations,
             isLoading,
             etherScanUrl,
+            itemsPerPage,
+            visiblePages,
+            totalResults,
+            skipPages,
           },
           actions: {
             refund,
             commit,
             reject,
+            handlePageChanged,
           },
         }}
       >

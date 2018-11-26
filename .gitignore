@@ -32,3 +32,6 @@ src/**/*.css
 *.iml
 
 .vscode
+
+# NCI does not work with lerna, no need to polute repo with lock file
+package-lock.json

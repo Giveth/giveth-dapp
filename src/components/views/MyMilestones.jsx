@@ -10,11 +10,12 @@ import { Consumer as Web3Consumer } from 'contextProviders/Web3Provider';
 
 import MilestoneActions from 'components/MilestoneActions';
 
-import { isLoggedIn, authenticateIfPossible } from '../../lib/middleware';
+import { authenticateIfPossible } from '../../lib/middleware';
 import Loader from '../Loader';
 import User from '../../models/User';
 import { getTruncatedText, getReadableStatus, convertEthHelper } from '../../lib/helpers';
 import config from '../../configuration';
+import AuthenticationWarning from '../AuthenticationWarning';
 
 import MilestoneService from '../../services/MilestoneService';
 
@@ -24,7 +25,7 @@ const reviewDue = updatedAt =>
     .isAfter(moment(updatedAt));
 
 /**
- * The my campaings view
+ * The my milestones view
  */
 class MyMilestones extends Component {
   constructor(props) {
@@ -45,14 +46,7 @@ class MyMilestones extends Component {
   }
 
   componentDidMount() {
-    authenticateIfPossible(this.props.currentUser)
-      .then(() => isLoggedIn(this.props.currentUser))
-      .then(() => this.loadMileStones())
-      .catch(err => {
-        if (err === 'notLoggedIn') {
-          // default behavior is to go home or signin page after swal popup
-        }
-      });
+    this.loadMileStones();
   }
 
   componentDidUpdate(prevProps) {
@@ -61,6 +55,7 @@ class MyMilestones extends Component {
       this.setState({ isLoading: true });
       authenticateIfPossible(this.props.currentUser);
       if (this.milestonesObserver) MilestoneService.unsubscribe();
+
       this.loadMileStones();
     }
   }
@@ -131,6 +126,7 @@ class MyMilestones extends Component {
                 <div className="col-md-10 m-auto">
                   <h1>Your milestones</h1>
 
+                  <AuthenticationWarning currentUser={currentUser} />
                   <NetworkWarning
                     incorrectNetwork={!isForeignNetwork}
                     networkName={config.foreignNetworkName}
@@ -162,6 +158,9 @@ class MyMilestones extends Component {
                             <table className="table table-responsive table-striped table-hover">
                               <thead>
                                 <tr>
+                                  {currentUser.authenticated && (
+                                    <th className="td-actions">Actions</th>
+                                  )}
                                   <th className="td-created-at">Created</th>
                                   <th className="td-name">Name</th>
                                   <th className="td-status">Status</th>
@@ -169,7 +168,6 @@ class MyMilestones extends Component {
                                   <th className="td-donations-number">Donations</th>
                                   <th className="td-donations-amount">Donated</th>
                                   <th className="td-reviewer">Reviewer</th>
-                                  <th className="td-actions" />
                                 </tr>
                               </thead>
                               <tbody>
@@ -178,6 +176,15 @@ class MyMilestones extends Component {
                                     key={m._id}
                                     className={m.status === 'Pending' ? 'pending' : ''}
                                   >
+                                    {currentUser.authenticated && (
+                                      <td className="td-actions">
+                                        <MilestoneActions
+                                          milestone={m}
+                                          balance={balance}
+                                          currentUser={currentUser}
+                                        />
+                                      </td>
+                                    )}
                                     <td className="td-created-at">
                                       {m.createdAt && (
                                         <span>{moment.utc(m.createdAt).format('Do MMM YYYY')}</span>
@@ -201,7 +208,8 @@ class MyMilestones extends Component {
                                       </Link>
                                     </td>
                                     <td className="td-status">
-                                      {!m.mined && (
+                                      {(m.status === 'Pending' ||
+                                        (Object.keys(m).includes('mined') && !m.mined)) && (
                                         <span>
                                           <i className="fa fa-circle-o-notch fa-spin" />
                                           &nbsp;
@@ -241,13 +249,6 @@ class MyMilestones extends Component {
                                             {m.reviewer.name || 'Anomynous user'}
                                           </Link>
                                         )}
-                                    </td>
-                                    <td className="td-actions">
-                                      <MilestoneActions
-                                        milestone={m}
-                                        balance={balance}
-                                        currentUser={currentUser}
-                                      />
                                     </td>
                                   </tr>
                                 ))}

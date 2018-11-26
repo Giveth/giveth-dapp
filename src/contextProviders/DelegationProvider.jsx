@@ -34,9 +34,16 @@ class DelegationProvider extends Component {
       campaigns: [],
       milestones: [],
       isLoading: true,
+      visiblePages: 10,
+      itemsPerPage: 50,
+      skipPages: 0,
+      totalResults: 0,
     };
 
     this.getAndWatchDonations = this.getAndWatchDonations.bind(this);
+    this.handlePageChanged = this.handlePageChanged.bind(this);
+    this.load = this.load.bind(this);
+    this.cleanUp = this.cleanUp.bind(this);
   }
 
   componentWillMount() {
@@ -59,7 +66,7 @@ class DelegationProvider extends Component {
 
   getAndWatchDonations() {
     // here we get all the ids.
-    // TO DO: less overhead here if we move it all to a single service.
+    // TODO: less overhead here if we move it all to a single service.
     // NOTE: This will not rerun, meaning after any dac/campaign/milestone is added
 
     const dacsIds = this.state.dacs
@@ -87,24 +94,35 @@ class DelegationProvider extends Component {
           // },
         ],
         $sort: { createdAt: 1 },
+        $limit: this.state.itemsPerPage,
+        $skip: this.state.skipPages * this.state.itemsPerPage,
       },
       schema: 'includeTypeAndGiverDetails',
     });
 
     // start watching donations, this will re-run when donations change or are added
+    if (this.donationsObserver) this.donationsObserver.unsubscribe();
     this.donationsObserver = feathersClient
       .service('donations')
       .watch({ listStrategy: 'always' })
       .find(query)
       .subscribe(
         resp => {
-          this.setState({
+          this.setState(prevState => ({
             delegations: resp.data.map(d => new Donation(d)),
+            skipPages: resp.skip / prevState.itemsPerPage,
+            totalResults: resp.total,
             isLoading: false,
-          });
+          }));
         },
         () => this.setState({ isLoading: false }),
       );
+  }
+
+  handlePageChanged(newPage) {
+    this.setState({ skipPages: newPage - 1 }, () => {
+      this.getAndWatchDonations();
+    });
   }
 
   load() {
@@ -249,8 +267,18 @@ class DelegationProvider extends Component {
   }
 
   render() {
-    const { delegations, milestones, campaigns, isLoading, etherScanUrl } = this.state;
-    const { refund, commit, reject } = this;
+    const {
+      delegations,
+      milestones,
+      campaigns,
+      isLoading,
+      etherScanUrl,
+      itemsPerPage,
+      visiblePages,
+      totalResults,
+      skipPages,
+    } = this.state;
+    const { refund, commit, reject, handlePageChanged } = this;
 
     return (
       <Provider
@@ -261,11 +289,16 @@ class DelegationProvider extends Component {
             campaigns,
             isLoading,
             etherScanUrl,
+            itemsPerPage,
+            visiblePages,
+            totalResults,
+            skipPages,
           },
           actions: {
             refund,
             commit,
             reject,
+            handlePageChanged,
           },
         }}
       >
