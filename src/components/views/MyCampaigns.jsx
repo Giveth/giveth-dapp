@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 import Pagination from 'react-js-pagination';
-import { utils } from 'web3';
+import BigNumber from 'bignumber.js';
 
 import NetworkWarning from 'components/NetworkWarning';
 import { Consumer as Web3Consumer } from 'contextProviders/Web3Provider';
@@ -295,7 +295,7 @@ class MyCampaigns extends Component {
 
 MyCampaigns.propTypes = {
   currentUser: PropTypes.instanceOf(User).isRequired,
-  balance: PropTypes.objectOf(utils.BN).isRequired,
+  balance: PropTypes.instanceOf(BigNumber).isRequired,
 };
 
 export default MyCampaigns;

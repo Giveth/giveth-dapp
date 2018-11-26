@@ -139,7 +139,7 @@ class AcceptRejectProposedMilestoneButtons extends Component {
                 </span>
               )}
 
-            <ConversationModal ref={this.conversationModal} />
+            <ConversationModal ref={this.conversationModal} milestone={milestone} />
           </Fragment>
         )}
       </Web3Consumer>
@@ -149,8 +149,8 @@ class AcceptRejectProposedMilestoneButtons extends Component {
 
 AcceptRejectProposedMilestoneButtons.propTypes = {
   currentUser: PropTypes.instanceOf(User).isRequired,
-  balance: PropTypes.objectOf(BigNumber).isRequired,
-  milestone: PropTypes.objectOf(Milestone).isRequired,
+  balance: PropTypes.instanceOf(BigNumber).isRequired,
+  milestone: PropTypes.instanceOf(Milestone).isRequired,
 };
 
 export default AcceptRejectProposedMilestoneButtons;

@@ -515,7 +515,6 @@ class EditMilestone extends Component {
                 });
             })
             .catch(err => {
-              console.log('err creating milestone > ', err);
               if (txHash && err.message && err.message.includes('unknown transaction')) return; // bug in web3 seems to constantly fail due to this error, but the tx is correct
               this.setState({ isSaving: false, isBlocking: true });
               ErrorPopup(
@@ -1043,7 +1042,7 @@ EditMilestone.propTypes = {
   }).isRequired,
   isProposed: PropTypes.bool,
   isNew: PropTypes.bool,
-  balance: PropTypes.objectOf(utils.BN).isRequired,
+  balance: PropTypes.instanceOf(BigNumber).isRequired,
   isForeignNetwork: PropTypes.bool.isRequired,
   match: PropTypes.shape({
     params: PropTypes.shape({

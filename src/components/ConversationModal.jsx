@@ -2,10 +2,13 @@
 /* eslint-disable jsx-a11y/label-has-for */
 
 import React, { Component } from 'react';
+import PropTypes from 'prop-types';
+
 import { Prompt } from 'react-router-dom';
 import { Form } from 'formsy-react-components';
 import Modal from 'react-modal';
 
+import Milestone from 'models/Milestone';
 import QuillFormsy from 'components/QuillFormsy';
 import LoaderButton from 'components/LoaderButton';
 import MilestoneProof from 'components/MilestoneProof';
@@ -194,6 +197,8 @@ class ConversationModal extends Component {
       textPlaceholder,
     } = this.state;
 
+    const { milestone } = this.props;
+
     return (
       <Modal
         isOpen={modalIsOpen}
@@ -247,6 +252,7 @@ class ConversationModal extends Component {
                     isEditMode
                     items={items}
                     onItemsChanged={returnedItems => this.onItemsChanged(returnedItems)}
+                    token={milestone.token}
                   />
                 </div>
               )}
@@ -255,7 +261,7 @@ class ConversationModal extends Component {
             <div className="row">
               <div className="col-12">
                 <LoaderButton
-                  className="btn btn-success"
+                  className="btn btn-success btn-inline"
                   formNoValidate
                   type="submit"
                   disabled={isSaving || !formIsValid}
@@ -283,5 +289,9 @@ class ConversationModal extends Component {
     );
   }
 }
+
+ConversationModal.propTypes = {
+  milestone: PropTypes.instanceOf(Milestone).isRequired,
+};
 
 export default ConversationModal;

@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { utils } from 'web3';
+import BigNumber from 'bignumber.js';
 
 import { Form, Input } from 'formsy-react-components';
 import GA from 'lib/GoogleAnalytics';
@@ -232,7 +232,7 @@ class EditProfile extends Component {
 
 EditProfile.propTypes = {
   currentUser: PropTypes.instanceOf(User),
-  balance: PropTypes.objectOf(utils.BN).isRequired,
+  balance: PropTypes.instanceOf(BigNumber).isRequired,
   isForeignNetwork: PropTypes.bool.isRequired,
 };
 

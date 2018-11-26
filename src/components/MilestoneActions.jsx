@@ -1,4 +1,5 @@
 /* eslint-disable react/prefer-stateless-function */
+// @dev: not prefering stateless here because functionality will be extended
 import React, { Component, Fragment } from 'react';
 import PropTypes from 'prop-types';
 
@@ -62,9 +63,9 @@ class MilestoneActions extends Component {
 }
 
 MilestoneActions.propTypes = {
-  milestone: PropTypes.objectOf(Milestone).isRequired,
+  milestone: PropTypes.instanceOf(Milestone).isRequired,
   currentUser: PropTypes.instanceOf(User).isRequired,
-  balance: PropTypes.objectOf(BigNumber).isRequired,
+  balance: PropTypes.instanceOf(BigNumber).isRequired,
 };
 
 export default MilestoneActions;

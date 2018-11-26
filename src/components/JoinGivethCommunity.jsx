@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { utils } from 'web3';
+import BigNumber from 'bignumber.js';
 
 import CommunityButton from './CommunityButton';
 import User from '../models/User';
@@ -146,7 +146,7 @@ JoinGivethCommunity.propTypes = {
     goBack: PropTypes.func.isRequired,
     push: PropTypes.func.isRequired,
   }).isRequired,
-  balance: PropTypes.objectOf(utils.BN).isRequired,
+  balance: PropTypes.instanceOf(BigNumber).isRequired,
   currentUser: PropTypes.instanceOf(User),
 };
 

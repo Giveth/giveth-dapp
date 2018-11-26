@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import Avatar from 'react-avatar';
-import { utils } from 'web3';
+import BigNumber from 'bignumber.js';
 
 import { getTruncatedText, isOwner, getUserAvatar, getUserName } from '../lib/helpers';
 import { checkBalance } from '../lib/middleware';
@@ -130,7 +130,7 @@ MilestoneCard.propTypes = {
     }).isRequired,
   }).isRequired,
   currentUser: PropTypes.instanceOf(User),
-  balance: PropTypes.objectOf(utils.BN).isRequired,
+  balance: PropTypes.instanceOf(BigNumber).isRequired,
   history: PropTypes.shape({
     push: PropTypes.func.isRequired,
   }).isRequired,

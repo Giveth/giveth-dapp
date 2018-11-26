@@ -2,7 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import Avatar from 'react-avatar';
 import PropTypes from 'prop-types';
-import { utils } from 'web3';
+import BigNumber from 'bignumber.js';
 import moment from 'moment';
 
 import NetworkWarning from 'components/NetworkWarning';
@@ -167,7 +167,7 @@ const Delegations = ({ balance }) => (
 );
 
 Delegations.propTypes = {
-  balance: PropTypes.objectOf(utils.BN).isRequired,
+  balance: PropTypes.instanceOf(BigNumber).isRequired,
 };
 
 export default Delegations;

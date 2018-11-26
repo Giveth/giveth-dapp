@@ -2,10 +2,10 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import Modal from 'react-modal';
+import BigNumber from 'bignumber.js';
 import { utils } from 'web3';
 import { Form, Input } from 'formsy-react-components';
 import Toggle from 'react-toggle';
-import BigNumber from 'bignumber.js';
 
 import GA from 'lib/GoogleAnalytics';
 import getNetwork from '../lib/blockchain/getNetwork';
@@ -354,9 +354,8 @@ class BaseDonateButton extends React.Component {
 
     // Determines max amount based on wallet balance or milestone maxAmount
     const _getMaxAmount = () => {
-      let _maxAmount = maxAmount;
-      _maxAmount = new BigNumber(selectedToken.balance);
-      if (maxAmount.lt(new BigNumber(selectedToken.balance))) _maxAmount = this.props.maxAmount;
+      let _maxAmount = selectedToken.balance;
+      if (maxAmount.lt(selectedToken.balance)) _maxAmount = maxAmount;
       return _maxAmount.toNumber();
     };
 
@@ -434,7 +433,7 @@ class BaseDonateButton extends React.Component {
                   )}
                   {/* TODO: remove this b/c the wallet provider will contain this info */}
                   {config.homeNetworkName} {selectedToken.symbol} balance:&nbsp;
-                  <em>{utils.fromWei(balance)}</em>
+                  <em>{utils.fromWei(balance.toString())}</em>
                 </p>
               )}
 
@@ -614,7 +613,7 @@ BaseDonateButton.propTypes = {
   }).isRequired,
   currentUser: PropTypes.instanceOf(User),
   maxAmount: PropTypes.instanceOf(BigNumber),
-  ETHBalance: PropTypes.objectOf(utils.BN).isRequired,
+  ETHBalance: PropTypes.instanceOf(BigNumber).isRequired,
   validProvider: PropTypes.bool.isRequired,
   isHomeNetwork: PropTypes.bool.isRequired,
 };
@@ -625,8 +624,8 @@ DonateButton.defaultProps = {
 };
 
 BaseDonateButton.defaultProps = {
-  maxAmount: undefined,
   currentUser: undefined,
+  maxAmount: new BigNumber(10000000000000000),
 };
 
 export default DonateButton;

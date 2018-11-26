@@ -36,7 +36,7 @@ const LoaderButton = ({
         network &&
         ((network === 'Home' && isForeignNetwork) || (network === 'Foreign' && isHomeNetwork));
       return (
-        <div>
+        <div className="loader-button">
           <button
             className={className}
             formNoValidate={formNoValidate}

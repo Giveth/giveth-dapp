@@ -65,7 +65,7 @@ class ReproposeRejectedMilestoneButton extends Component {
                 </button>
               )}
 
-            <ConversationModal ref={this.conversationModal} />
+            <ConversationModal ref={this.conversationModal} milestone={milestone} />
           </Fragment>
         )}
       </Web3Consumer>
@@ -75,7 +75,7 @@ class ReproposeRejectedMilestoneButton extends Component {
 
 ReproposeRejectedMilestoneButton.propTypes = {
   currentUser: PropTypes.instanceOf(User).isRequired,
-  milestone: PropTypes.objectOf(Milestone).isRequired,
+  milestone: PropTypes.instanceOf(Milestone).isRequired,
 };
 
 export default ReproposeRejectedMilestoneButton;

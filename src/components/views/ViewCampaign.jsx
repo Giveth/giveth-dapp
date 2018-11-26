@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import Avatar from 'react-avatar';
 import Masonry, { ResponsiveMasonry } from 'react-responsive-masonry';
 import ReactHtmlParser from 'react-html-parser';
-import { utils } from 'web3';
+import BigNumber from 'bignumber.js';
 
 import { feathersClient } from '../../lib/feathersClient';
 import Loader from '../Loader';
@@ -300,7 +300,7 @@ ViewCampaign.propTypes = {
       id: PropTypes.string,
     }).isRequired,
   }).isRequired,
-  balance: PropTypes.objectOf(utils.BN).isRequired,
+  balance: PropTypes.instanceOf(BigNumber).isRequired,
 };
 
 ViewCampaign.defaultProps = {

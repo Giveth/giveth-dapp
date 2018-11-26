@@ -19,6 +19,7 @@ export default class MilestoneItemModel extends Model {
       wei = '',
       conversionRate = parseFloat(0),
       ethConversionRateTimestamp = new Date().toISOString(),
+      _id,
     } = data;
 
     this._date = date;
@@ -29,6 +30,7 @@ export default class MilestoneItemModel extends Model {
     this._wei = new BigNumber(utils.fromWei(wei).toString());
     this._conversionRate = conversionRate;
     this._ethConversionRateTimestamp = ethConversionRateTimestamp;
+    this._id = _id;
   }
 
   get date() {

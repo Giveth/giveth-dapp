@@ -10,17 +10,17 @@ import BigNumber from 'bignumber.js';
 
 import User from 'models/User';
 import MilestoneActions from 'components/MilestoneActions';
-import { getUserAvatar, getUserName } from '../../lib/helpers';
 
-import BackgroundImageHeader from '../BackgroundImageHeader';
-import DonateButton from '../DonateButton';
-import ErrorPopup from '../ErrorPopup';
-import GoBackButton from '../GoBackButton';
-import ShowTypeDonations from '../ShowTypeDonations';
-import Loader from '../Loader';
-import MilestoneItem from '../MilestoneItem';
-import MilestoneConversations from '../MilestoneConversations';
-import DelegateMultipleButton from '../DelegateMultipleButton';
+import BackgroundImageHeader from 'components/BackgroundImageHeader';
+import DonateButton from 'components/DonateButton';
+import ErrorPopup from 'components/ErrorPopup';
+import GoBackButton from 'components/GoBackButton';
+import ShowTypeDonations from 'components/ShowTypeDonations';
+import Loader from 'components/Loader';
+import MilestoneItem from 'components/MilestoneItem';
+import MilestoneConversations from 'components/MilestoneConversations';
+import DelegateMultipleButton from 'components/DelegateMultipleButton';
+import { getUserAvatar, getUserName } from '../../lib/helpers';
 
 import MilestoneService from '../../services/MilestoneService';
 
@@ -48,19 +48,20 @@ class ViewMilestone extends Component {
   componentDidMount() {
     const { milestoneId } = this.props.match.params;
 
-    MilestoneService.subscribeOne(milestoneId)
-      .then(milestone => {
+    MilestoneService.subscribeOne(
+      milestoneId,
+      milestone =>
         this.setState({
           milestone,
           isLoading: false,
           campaign: milestone.campaign,
           recipient: milestone.recipient,
-        });
-      })
-      .catch(err => {
+        }),
+      err => {
         ErrorPopup('Something went wrong with viewing the milestone. Please try a refresh.', err);
         this.setState({ isLoading: false });
-      });
+      },
+    );
 
     MilestoneService.subscribeDonations(milestoneId, donations =>
       this.setState({
@@ -204,17 +205,9 @@ class ViewMilestone extends Component {
                             <tbody>
                               {milestone.items.map((item, i) => (
                                 <MilestoneItem
-                                  key={item.date}
+                                  key={item._id}
                                   name={`milestoneItem-${i}`}
-                                  item={{
-                                    date: item.date,
-                                    description: item.description,
-                                    selectedFiatType: item.selectedFiatType,
-                                    fiatAmount: item.fiatAmount,
-                                    conversionRate: item.conversionRate,
-                                    wei: item.wei,
-                                    image: item.image,
-                                  }}
+                                  item={item}
                                   token={milestone.token}
                                 />
                               ))}

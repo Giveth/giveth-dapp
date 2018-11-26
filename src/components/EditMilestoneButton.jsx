@@ -52,8 +52,8 @@ class EditMilestoneButton extends Component {
 
 EditMilestoneButton.propTypes = {
   currentUser: PropTypes.instanceOf(User).isRequired,
-  balance: PropTypes.objectOf(BigNumber).isRequired,
-  milestone: PropTypes.objectOf(Milestone).isRequired,
+  balance: PropTypes.instanceOf(BigNumber).isRequired,
+  milestone: PropTypes.instanceOf(Milestone).isRequired,
 };
 
 export default EditMilestoneButton;

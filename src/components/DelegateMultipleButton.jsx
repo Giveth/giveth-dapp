@@ -1,12 +1,12 @@
 import React, { Component } from 'react';
 import Modal from 'react-modal';
+import BigNumber from 'bignumber.js';
 import { utils } from 'web3';
 import { Form, Input } from 'formsy-react-components';
 import PropTypes from 'prop-types';
 import { paramsForServer } from 'feathers-hooks-common';
 import Slider from 'react-rangeslider';
 import 'react-rangeslider/lib/index.css';
-import BigNumber from 'bignumber.js';
 import InputToken from 'react-input-token';
 
 import { checkBalance } from '../lib/middleware';
@@ -390,7 +390,7 @@ class DelegateMultipleButton extends Component {
 }
 
 DelegateMultipleButton.propTypes = {
-  balance: PropTypes.objectOf(utils.BN).isRequired,
+  balance: PropTypes.instanceOf(BigNumber).isRequired,
   currentUser: PropTypes.instanceOf(User).isRequired,
   campaign: PropTypes.instanceOf(Campaign),
   milestone: PropTypes.shape(),

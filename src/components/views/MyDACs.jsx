@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 import Pagination from 'react-js-pagination';
-import { utils } from 'web3';
+import BigNumber from 'bignumber.js';
 
 import { isLoggedIn, checkBalance } from '../../lib/middleware';
 import { getTruncatedText, convertEthHelper, history } from '../../lib/helpers';
@@ -208,7 +208,7 @@ class MyDACs extends Component {
 
 MyDACs.propTypes = {
   currentUser: PropTypes.instanceOf(User).isRequired,
-  balance: PropTypes.objectOf(utils.BN).isRequired,
+  balance: PropTypes.instanceOf(BigNumber).isRequired,
 };
 
 export default MyDACs;

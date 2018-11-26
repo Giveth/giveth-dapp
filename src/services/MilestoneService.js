@@ -44,16 +44,14 @@ class MilestoneService {
    *
    * @param id   ID of the Milestone to be retrieved
    */
-  static subscribeOne(id) {
-    return new Promise((resolve, reject) => {
-      this.milestoneSubscription = milestones
-        .watch({ listStrategy: 'always' })
-        .find({ query: { _id: id } })
-        .subscribe(resp => {
-          resolve(new Milestone(resp.data[0]));
-        }, reject);
-      return this.milestoneSubscription;
-    });
+  static subscribeOne(id, onResult, onError) {
+    this.milestoneSubscription = milestones
+      .watch({ listStrategy: 'always' })
+      .find({ query: { _id: id } })
+      .subscribe(resp => {
+        onResult(new Milestone(resp.data[0]));
+      }, onError);
+    return this.milestoneSubscription;
   }
 
   /**
@@ -212,6 +210,13 @@ class MilestoneService {
       }, onError);
   }
 
+  /**
+   * Delete a proposed milestone
+   *
+   * @param milestone   a Milestone model
+   * @param onSuccess   Callback function once response is obtained successfully
+   * @param onError     Callback function if error is encountered
+   */
   static deleteProposedMilestone({ milestone, onSuccess, onError }) {
     milestones
       .remove(milestone._id)
@@ -219,6 +224,14 @@ class MilestoneService {
       .catch(e => onError(e));
   }
 
+  /**
+   * Reject a proposed milestone
+   *
+   * @param milestone       a Milestone model
+   * @param rejectReason    (string, optional) message why the milestone is rejected
+   * @param onSuccess       Callback function once response is obtained successfully
+   * @param onError         Callback function if error is encountered
+   */
   static rejectProposedMilestone({ milestone, rejectReason, onSuccess, onError }) {
     const reject = { status: 'Rejected' };
     if (rejectReason) reject.message = rejectReason;
@@ -228,6 +241,18 @@ class MilestoneService {
       .catch(e => onError(e));
   }
 
+  /**
+   * Accept a proposed milestone
+   *
+   * @param milestone       a Milestone model
+   * @param from            (string) Ethereum address
+   * @param proof           A proof object:
+        message               Reason why the milestone was accepted
+        items                 Attached proof
+   * @param onTxHash        Callback function once the transaction was created
+   * @param onConfirmation  Callback function once the transaction was mined
+   * @param onError         Callback function if error is encountered
+   */
   static acceptProposedMilestone({ milestone, from, proof, onTxHash, onConfirmation, onError }) {
     let txHash;
     let etherScanUrl;
@@ -288,6 +313,16 @@ class MilestoneService {
       });
   }
 
+  /**
+   * Repropose a proposed milestone that has been rejected
+   *
+   * @param milestone       a Milestone model
+   * @param proof           A proof object:
+        message               Reason why the milestone was reproposed
+        items                 Attached proof
+   * @param onSuccess       Callback function once response is obtained successfully
+   * @param onError         Callback function if error is encountered
+   */
   static reproposeRejectedMilestone({ milestone, proof, onSuccess, onError }) {
     milestones
       .patch(milestone._id, {
@@ -299,6 +334,18 @@ class MilestoneService {
       .catch(e => onError(e));
   }
 
+  /**
+   * Request a milestone to be marked as complete
+   *
+   * @param milestone       a Milestone model
+   * @param from            (string) Ethereum address
+   * @param proof           A proof object:
+        message               Reason why the milestone is marked as complete
+        items                 Attached proof
+   * @param onTxHash        Callback function once the transaction was created
+   * @param onConfirmation  Callback function once the transaction was mined
+   * @param onError         Callback function if error is encountered
+   */
   static requestMarkComplete({ milestone, from, proof, onTxHash, onConfirmation, onError }) {
     let txHash;
     let etherScanUrl;
@@ -335,6 +382,19 @@ class MilestoneService {
         onError(err, `${etherScanUrl}tx/${txHash}`);
       });
   }
+
+  /**
+   * Cancel a milestone
+   *
+   * @param milestone       a Milestone model
+   * @param from            (string) Ethereum address
+   * @param proof           A proof object:
+        message               Reason why the milestone is canceled
+        items                 Attached proof
+   * @param onTxHash        Callback function once the transaction was created
+   * @param onConfirmation  Callback function once the transaction was mined
+   * @param onError         Callback function if error is encountered
+   */
 
   static cancelMilestone({ milestone, from, proof, onTxHash, onConfirmation, onError }) {
     let txHash;
@@ -373,6 +433,19 @@ class MilestoneService {
       });
   }
 
+  /**
+   * Approve the completion of a milestone (after the milestone has been requested as complete)
+   *
+   * @param milestone       a Milestone model
+   * @param from            (string) Ethereum address
+   * @param proof           A proof object:
+        message               Reason why the milestone is approved for completion
+        items                 Attached proof
+   * @param onTxHash        Callback function once the transaction was created
+   * @param onConfirmation  Callback function once the transaction was mined
+   * @param onError         Callback function if error is encountered
+   */
+
   static approveMilestoneCompletion({ milestone, from, proof, onTxHash, onConfirmation, onError }) {
     let txHash;
     let etherScanUrl;
@@ -410,6 +483,19 @@ class MilestoneService {
       });
   }
 
+  /**
+   * Reject the completion of a milestone (after the milestone has been requested as complete)
+   *
+   * @param milestone       a Milestone model
+   * @param from            (string) Ethereum address
+   * @param proof           A proof object:
+        message               Reason why the milestone is rejected for completion
+        items                 Attached proof
+   * @param onTxHash        Callback function once the transaction was created
+   * @param onConfirmation  Callback function once the transaction was mined
+   * @param onError         Callback function if error is encountered
+   */
+
   static rejectMilestoneCompletion({ milestone, from, proof, onTxHash, onConfirmation, onError }) {
     let txHash;
     let etherScanUrl;
@@ -446,6 +532,17 @@ class MilestoneService {
         onError(err, `${etherScanUrl}tx/${txHash}`);
       });
   }
+
+  /**
+   * Withdraw the donations (pledges) from a milestone
+   * Only possible when the milestones was approved for completion
+   *
+   * @param milestone       a Milestone model
+   * @param from            (string) Ethereum address
+   * @param onTxHash        Callback function once the transaction was created
+   * @param onConfirmation  Callback function once the transaction was mined
+   * @param onError         Callback function if error is encountered
+   */
 
   static withdraw({ milestone, from, onTxHash, onConfirmation, onError }) {
     let txHash;

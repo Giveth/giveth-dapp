@@ -1,9 +1,9 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { utils } from 'web3';
 import { Link } from 'react-router-dom';
 import moment from 'moment';
 import Pagination from 'react-js-pagination';
+import BigNumber from 'bignumber.js';
 
 import NetworkWarning from 'components/NetworkWarning';
 import { Consumer as Web3Consumer } from 'contextProviders/Web3Provider';
@@ -297,7 +297,7 @@ class MyMilestones extends Component {
 
 MyMilestones.propTypes = {
   currentUser: PropTypes.instanceOf(User).isRequired,
-  balance: PropTypes.objectOf(utils.BN).isRequired,
+  balance: PropTypes.instanceOf(BigNumber).isRequired,
 };
 
 export default MyMilestones;
