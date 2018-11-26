@@ -112,7 +112,7 @@ class ViewDAC extends Component {
             <div className="container-fluid">
               <div className="row">
                 <div className="col-md-8 m-auto">
-                  <GoBackButton history={history} title="Communities" />
+                  <GoBackButton to="/" title="Communities" />
 
                   <center>
                     <Link to={`/profile/${dac.owner.address}`}>
@@ -136,19 +136,18 @@ class ViewDAC extends Component {
                     </p>
                     {isLoadingCampaigns && <Loader className="small" />}
 
-                    {campaigns.length > 0 &&
-                      !isLoadingCampaigns && (
-                        <div className="cards-grid-container">
-                          {campaigns.map(c => (
-                            <CampaignCard
-                              key={c.id}
-                              campaign={c}
-                              history={history}
-                              balance={balance}
-                            />
-                          ))}
-                        </div>
-                      )}
+                    {campaigns.length > 0 && !isLoadingCampaigns && (
+                      <div className="cards-grid-container">
+                        {campaigns.map(c => (
+                          <CampaignCard
+                            key={c.id}
+                            campaign={c}
+                            history={history}
+                            balance={balance}
+                          />
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </div>
               )}
