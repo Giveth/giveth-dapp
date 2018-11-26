@@ -168,7 +168,7 @@ class ApproveRejectMilestoneCompletionButtons extends Component {
       <Web3Consumer>
         {({ state: { isForeignNetwork } }) => (
           <Fragment>
-            {milestone.reviewerAddress === currentUser.address &&
+            {milestone.reviewer.address === currentUser.address &&
               milestone.status === 'NeedsReview' &&
               milestone.mined && (
                 <span>

@@ -1,15 +1,16 @@
+import React, { Component, Fragment } from 'react';
+import PropTypes from 'prop-types';
+
 import { Form } from 'formsy-react-components';
 import moment from 'moment';
-import PropTypes from 'prop-types';
-import React, { Component } from 'react';
 import Avatar from 'react-avatar';
 import ReactHtmlParser, { convertNodeToElement } from 'react-html-parser';
 import { Link } from 'react-router-dom';
 import BigNumber from 'bignumber.js';
 
 import User from 'models/User';
-import { getUserAvatar, getUserName, isOwner } from '../../lib/helpers';
-import { checkBalance } from '../../lib/middleware';
+import MilestoneActions from 'components/MilestoneActions';
+import { getUserAvatar, getUserName } from '../../lib/helpers';
 
 import BackgroundImageHeader from '../BackgroundImageHeader';
 import DonateButton from '../DonateButton';
@@ -42,8 +43,6 @@ class ViewMilestone extends Component {
       campaign: {},
       milestone: {},
     };
-
-    this.editMilestone = this.editMilestone.bind(this);
   }
 
   componentDidMount() {
@@ -51,7 +50,6 @@ class ViewMilestone extends Component {
 
     MilestoneService.subscribeOne(milestoneId)
       .then(milestone => {
-        console.log('milestone', milestone);
         this.setState({
           milestone,
           isLoading: false,
@@ -60,7 +58,6 @@ class ViewMilestone extends Component {
         });
       })
       .catch(err => {
-        console.log('err', err);
         ErrorPopup('Something went wrong with viewing the milestone. Please try a refresh.', err);
         this.setState({ isLoading: false });
       });
@@ -79,22 +76,6 @@ class ViewMilestone extends Component {
 
   isActiveMilestone() {
     return this.state.milestone.status === 'InProgress' && !this.state.milestone.fullyFunded;
-  }
-
-  editMilestone(e) {
-    e.stopPropagation();
-
-    checkBalance(this.props.balance)
-      .then(() => {
-        this.props.history.push(
-          `/campaigns/${this.state.campaign.id}/milestones/${this.state.id}/edit`,
-        );
-      })
-      .catch(err => {
-        if (err === 'noBalance') {
-          // handle no balance error
-        }
-      });
   }
 
   renderDescription() {
@@ -137,32 +118,41 @@ class ViewMilestone extends Component {
               )}
               <p>Campaign: {campaign.title} </p>
 
-              {this.isActiveMilestone() && (
-                <div>
-                  <DonateButton
-                    model={{
-                      type: 'milestone',
-                      title: milestone.title,
-                      id: milestone.id,
-                      adminId: milestone.projectId,
-                      campaignId: campaign._id,
-                      token: milestone.token,
-                    }}
-                    currentUser={currentUser}
-                    history={history}
-                    maxAmount={milestone.maxAmount}
-                  />
-                  {currentUser && (
-                    <DelegateMultipleButton
-                      style={{ padding: '10px 10px' }}
-                      milestone={milestone}
-                      campaign={campaign}
-                      balance={balance}
+              <div className="milestone-actions">
+                {this.isActiveMilestone() && (
+                  <Fragment>
+                    <DonateButton
+                      model={{
+                        type: 'milestone',
+                        title: milestone.title,
+                        id: milestone.id,
+                        adminId: milestone.projectId,
+                        campaignId: campaign._id,
+                        token: milestone.token,
+                      }}
                       currentUser={currentUser}
+                      history={history}
+                      maxAmount={milestone.maxAmount}
                     />
-                  )}
-                </div>
-              )}
+                    {currentUser && (
+                      <DelegateMultipleButton
+                        milestone={milestone}
+                        campaign={campaign}
+                        balance={balance}
+                        currentUser={currentUser}
+                      />
+                    )}
+                  </Fragment>
+                )}
+
+                {/* Milestone actions */}
+
+                <MilestoneActions
+                  milestone={milestone}
+                  balance={balance}
+                  currentUser={currentUser}
+                />
+              </div>
             </BackgroundImageHeader>
 
             <div className="container-fluid">
@@ -174,22 +164,6 @@ class ViewMilestone extends Component {
                       styleName="inline"
                       title={`Campaign: ${campaign.title}`}
                     />
-
-                    {(isOwner(milestone.owner.address, currentUser) ||
-                      isOwner(campaign.ownerAddress, currentUser)) &&
-                      ['Proposed', 'Rejected', 'InProgress', 'NeedsReview'].includes(
-                        milestone.status,
-                      ) && (
-                        <span className="pull-right">
-                          <button
-                            type="button"
-                            className="btn btn-link btn-edit"
-                            onClick={e => this.editMilestone(e)}
-                          >
-                            <i className="fa fa-edit" />
-                          </button>
-                        </span>
-                      )}
 
                     <center>
                       <Link to={`/profile/${milestone.owner.address}`}>
@@ -215,7 +189,7 @@ class ViewMilestone extends Component {
                       {/* MilesteneItem needs to be wrapped in a form or it won't mount */}
                       <Form>
                         <div className="table-container">
-                          <table className="table table-responsive table-striped table-hover">
+                          <table className="table table-striped table-hover">
                             <thead>
                               <tr>
                                 <th className="td-item-date">Date</th>
@@ -360,10 +334,9 @@ class ViewMilestone extends Component {
                       <h4>Status updates</h4>
 
                       <MilestoneConversations
-                        milestoneId={milestone.id}
-                        ownerAddress={milestone.ownerAddress}
-                        reviewerAddress={milestone.reviewerAddress}
-                        recipientAddress={milestone.recipientAddress}
+                        milestone={milestone}
+                        currentUser={currentUser}
+                        balance={balance}
                       />
                     </div>
                   </div>

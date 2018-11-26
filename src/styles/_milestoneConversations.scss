@@ -23,6 +23,9 @@
   .owner-name {
     font-weight: 700;
     font-size: 1rem;
+    line-height: 1.2rem;
+    padding-bottom: 0.3rem !important;    
+    margin-top: 0.3rem !important;    
 
     &.needsreview {
       color: $dark-blue;
@@ -49,6 +52,17 @@
     margin-bottom: 0;
   }
 
+  .c-action-footer:not(:empty) {
+    border-top: 1px solid #efefef;
+    padding: 3px 0;
+    margin-top: 8px;  
+  }
+
+  .c-action-footer .btn {
+    font-size: 0.7rem;
+    padding: .15rem .55rem;     
+  }
+
   .c-tx-hash {
     margin-left: 8px;
   }
@@ -58,9 +72,11 @@
   }
 
   .badge {
-    font-size: 0.7rem;
-    margin-left: 8px;
+    font-size: 0.65rem;
+    padding: 5px !important;
     font-weight: 300;
+    background-color: #e4e4e4;
+    color: #383838;
   }
 
   .items-form {

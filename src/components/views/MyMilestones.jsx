@@ -8,18 +8,12 @@ import Pagination from 'react-js-pagination';
 import NetworkWarning from 'components/NetworkWarning';
 import { Consumer as Web3Consumer } from 'contextProviders/Web3Provider';
 
-import DeleteProposedMilestoneButton from 'components/DeleteProposedMilestoneButton';
-import AcceptRejectProposedMilestoneButtons from 'components/AcceptRejectProposedMilestoneButtons';
-import ReproposeRejectedMilestoneButton from 'components/ReproposeRejectedMilestoneButton';
-import RequestMarkMilestoneCompleteButton from 'components/RequestMarkMilestoneCompleteButton';
-import CancelMilestoneButton from 'components/CancelMilestoneButton';
-import ApproveRejectMilestoneCompletionButtons from 'components/ApproveRejectMilestoneCompletionButtons';
-import WithdrawMilestoneFundsButton from 'components/WithdrawMilestoneFundsButton';
+import MilestoneActions from 'components/MilestoneActions';
 
-import { isLoggedIn, checkBalance, authenticateIfPossible } from '../../lib/middleware';
+import { isLoggedIn, authenticateIfPossible } from '../../lib/middleware';
 import Loader from '../Loader';
 import User from '../../models/User';
-import { getTruncatedText, getReadableStatus, convertEthHelper, history } from '../../lib/helpers';
+import { getTruncatedText, getReadableStatus, convertEthHelper } from '../../lib/helpers';
 import config from '../../configuration';
 
 import MilestoneService from '../../services/MilestoneService';
@@ -48,7 +42,6 @@ class MyMilestones extends Component {
 
     this.milestoneTabs = ['Active', 'Paid', 'Canceled', 'Rejected'];
     this.handlePageChanged = this.handlePageChanged.bind(this);
-    this.editMilestone = this.editMilestone.bind(this);
   }
 
   componentDidMount() {
@@ -116,22 +109,6 @@ class MyMilestones extends Component {
         this.loadMileStones();
       },
     );
-  }
-
-  editMilestone(milestone) {
-    checkBalance(this.props.balance)
-      .then(() => {
-        if (['Proposed', 'Rejected'].includes(milestone.status)) {
-          history.push(`/milestones/${milestone._id}/edit/proposed`);
-        } else {
-          history.push(`/milestones/${milestone._id}/edit`);
-        }
-      })
-      .catch(err => {
-        if (err === 'noBalance') {
-          // handle no balance error
-        }
-      });
   }
 
   render() {
@@ -266,62 +243,7 @@ class MyMilestones extends Component {
                                         )}
                                     </td>
                                     <td className="td-actions">
-                                      {/* Campaign and Milestone managers can edit milestone */}
-                                      {(m.ownerAddress === currentUser.address ||
-                                        m.campaign.ownerAddress === currentUser.address) &&
-                                        isForeignNetwork &&
-                                        [
-                                          'Proposed',
-                                          'Rejected',
-                                          'InProgress',
-                                          'NeedsReview',
-                                        ].includes(m.status) && (
-                                          <button
-                                            type="button"
-                                            className="btn btn-link"
-                                            onClick={() => this.editMilestone(m)}
-                                          >
-                                            <i className="fa fa-edit" />
-                                            &nbsp;Edit
-                                          </button>
-                                        )}
-
-                                      <AcceptRejectProposedMilestoneButtons
-                                        milestone={m}
-                                        balance={balance}
-                                        currentUser={currentUser}
-                                      />
-
-                                      <ReproposeRejectedMilestoneButton
-                                        milestone={m}
-                                        currentUser={currentUser}
-                                      />
-
-                                      <RequestMarkMilestoneCompleteButton
-                                        milestone={m}
-                                        balance={balance}
-                                        currentUser={currentUser}
-                                      />
-
-                                      <CancelMilestoneButton
-                                        milestone={m}
-                                        balance={balance}
-                                        currentUser={currentUser}
-                                      />
-
-                                      <DeleteProposedMilestoneButton
-                                        milestone={m}
-                                        balance={balance}
-                                        currentUser={currentUser}
-                                      />
-
-                                      <ApproveRejectMilestoneCompletionButtons
-                                        milestone={m}
-                                        balance={balance}
-                                        currentUser={currentUser}
-                                      />
-
-                                      <WithdrawMilestoneFundsButton
+                                      <MilestoneActions
                                         milestone={m}
                                         balance={balance}
                                         currentUser={currentUser}
