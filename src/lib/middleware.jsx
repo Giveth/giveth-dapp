@@ -158,8 +158,9 @@ export const checkForeignNetwork = async isForeignNetwork => {
  */
 export const isInWhitelist = (currentUser, whitelist) => {
   if (
-    (whitelist && whitelist.length === 0) ||
-    (currentUser &&
+    (Array.isArray(whitelist) && whitelist.length === 0) ||
+    (Array.isArray(whitelist) &&
+      currentUser &&
       currentUser.address &&
       whitelist.find(u => u.address.toLowerCase() === currentUser.address.toLowerCase()))
   ) {
