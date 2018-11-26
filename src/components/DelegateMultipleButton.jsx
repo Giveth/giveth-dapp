@@ -419,6 +419,15 @@ class BaseDelegateMultipleButton extends Component {
                       >
                         {isSaving ? 'Delegating...' : 'Delegate here'}
                       </button>
+                      <button
+                        className="btn btn-light float-right"
+                        type="button"
+                        onClick={() => {
+                          this.setState({ modalVisible: false });
+                        }}
+                      >
+                        Close
+                      </button>
                     </div>
                   )}
                 </div>
