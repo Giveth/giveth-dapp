@@ -9,16 +9,16 @@ import Slider from 'react-rangeslider';
 import 'react-rangeslider/lib/index.css';
 import InputToken from 'react-input-token';
 
+import Donation from 'models/Donation';
+import Campaign from 'models/Campaign';
+import Milestone from 'models/Milestone';
+import User from 'models/User';
 import { checkBalance, isLoggedIn, authenticateIfPossible } from '../lib/middleware';
 import { feathersClient } from '../lib/feathersClient';
 import Loader from './Loader';
 import config from '../configuration';
 import SelectFormsy from './SelectFormsy';
 import NetworkWarning from './NetworkWarning';
-
-import Donation from '../models/Donation';
-import Campaign from '../models/Campaign';
-import User from '../models/User';
 
 import DonationService from '../services/DonationService';
 import { Consumer as Web3Consumer } from '../contextProviders/Web3Provider';
@@ -189,13 +189,12 @@ class BaseDelegateMultipleButton extends Component {
       .subscribe(
         donations => {
           const delegations = donations.data.map(d => new Donation(d));
-          let amount = utils.fromWei(
-            delegations
-              .reduce((sum, d) => sum.add(utils.toBN(d.amountRemaining)), utils.toBN('0'))
-              .toString(),
+          let amount = delegations.reduce(
+            (sum, d) => sum.add(utils.toBN(d.amountRemaining)),
+            utils.toBN('0'),
           );
 
-          if (this.props.milestone && this.props.milestone.maxAmount.lt(new BigNumber(amount)))
+          if (this.props.milestone && this.props.milestone.maxAmount.lt(amount))
             amount = this.props.milestone.maxAmount;
 
           this.setState({
@@ -445,7 +444,7 @@ BaseDelegateMultipleButton.propTypes = {
   balance: PropTypes.instanceOf(BigNumber).isRequired,
   currentUser: PropTypes.instanceOf(User).isRequired,
   campaign: PropTypes.instanceOf(Campaign),
-  milestone: PropTypes.shape(),
+  milestone: PropTypes.instanceOf(Milestone),
   style: PropTypes.shape(),
   validProvider: PropTypes.bool.isRequired,
   isForeignNetwork: PropTypes.bool.isRequired,

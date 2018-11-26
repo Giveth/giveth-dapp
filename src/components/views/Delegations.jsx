@@ -81,7 +81,7 @@ const Delegations = ({ balance }) => (
                                     </thead>
                                     <tbody>
                                       {delegations.map(d => (
-                                        <tr key={d.adminId}>
+                                        <tr key={d._id}>
                                           {currentUser.authenticated && (
                                             <td className="td-actions">
                                               {/* When donated to a dac, allow delegation

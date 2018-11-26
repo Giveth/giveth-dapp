@@ -179,14 +179,14 @@ class BaseDonateButton extends React.Component {
   }
 
   openDialog() {
-    this.setState(prevState => ({
+    this.setState({
       modalVisible: true,
-      amount:
-        prevState.selectedToken.symbol === 'ETH'
-          ? utils.fromWei(this.props.ETHBalance ? this.props.ETHBalance : '')
-          : utils.fromWei(prevState.selectedToken.balance ? prevState.selectedToken.balance : ''), // FIXME: Is it correct to use from wei? Shouldn't it consider precision of the token?
+      amount: new BigNumber('0'),
+      // prevState.selectedToken.symbol === 'ETH'
+      //   ? utils.fromWei(this.props.ETHBalance ? this.props.ETHBalance : '')
+      //   : utils.fromWei(prevState.selectedToken.balance ? prevState.selectedToken.balance : ''), // FIXME: Is it correct to use from wei? Shouldn't it consider precision of the token?
       formIsValid: false,
-    }));
+    });
   }
 
   submit(model) {
