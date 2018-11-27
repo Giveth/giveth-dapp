@@ -225,7 +225,7 @@ class Profile extends Component {
       avatar,
       name,
       email,
-      linkedIn,
+      linkedin,
       etherScanUrl,
       isLoadingDacs,
       isLoadingCampaigns,
@@ -265,7 +265,7 @@ class Profile extends Component {
                       )}
                       {!etherScanUrl && <p>{userAddress}</p>}
                       <p>{email}</p>
-                      <p>{linkedIn}</p>
+                      <p>{linkedin}</p>
                     </center>
                   </div>
                 )}

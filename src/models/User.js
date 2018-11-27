@@ -51,7 +51,7 @@ class User extends Model {
     const user = {
       name: this._name,
       email: this._email,
-      linkedIn: this._linkedIn,
+      linkedIn: this._linkedin,
       avatar: cleanIpfsPath(this._avatar),
     };
     if (this._giverId === undefined && txHash) {
@@ -137,12 +137,12 @@ class User extends Model {
   }
 
   get linkedin() {
-    return this._linkedIn;
+    return this._linkedin;
   }
 
   set linkedin(value) {
     this.checkType(value, ['undefined', 'string'], 'linkedin');
-    this._linkedIn = value;
+    this._linkedin = value;
   }
 
   get name() {

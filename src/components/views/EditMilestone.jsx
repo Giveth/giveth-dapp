@@ -110,9 +110,9 @@ class EditMilestone extends Component {
                 campaignReviewerAddress: milestone.campaign.reviewerAddress,
               });
 
-              return milestone.date;
+              return milestone;
             })
-            .then(date => this.props.getEthConversion(date))
+            .then(milestone => this.props.getEthConversion(milestone.date, milestone.token.symbol))
             .then(() => {
               if (!this.state.hasWhitelist) this.getReviewers();
             })
@@ -143,7 +143,9 @@ class EditMilestone extends Component {
                 });
               }
             })
-            .then(() => this.props.getEthConversion(this.state.date, this.state.milestone.symbol))
+            .then(() =>
+              this.props.getEthConversion(this.state.date, this.state.milestone.token.symbol),
+            )
             .then(() => {
               if (!this.state.hasWhitelist) this.getReviewers();
             })
@@ -426,7 +428,6 @@ class EditMilestone extends Component {
               // TODO  fix this hack
               if (!parentProjectId || parentProjectId === '0') {
                 ErrorPopup(
-                  `It looks like the campaign has not been mined yet. Please try again in a bit`,
                   `It looks like the campaign has not been mined yet. Please try again in a bit`,
                 );
                 return null;
