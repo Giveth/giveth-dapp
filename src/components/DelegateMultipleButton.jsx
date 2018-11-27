@@ -108,17 +108,20 @@ class BaseDelegateMultipleButton extends Component {
             type: 'dac',
           }));
 
-          const delegationOptions = this.props.milestone
-            ? dacs.concat([
-                {
-                  id: this.props.campaign._id,
-                  name: this.props.campaign.title,
-                  projectId: this.props.campaign.projectId,
-                  ownerEntity: this.props.milestone.ownerEntity,
-                  type: 'campaign',
-                },
-              ])
-            : dacs;
+          const delegationOptions =
+            this.props.milestone &&
+            this.props.campaign.ownerAddress.toLowerCase() ===
+              this.props.currentUser.address.toLowerCase()
+              ? dacs.concat([
+                  {
+                    id: this.props.campaign._id,
+                    name: this.props.campaign.title,
+                    projectId: this.props.campaign.projectId,
+                    ownerEntity: this.props.milestone.ownerEntity,
+                    type: 'campaign',
+                  },
+                ])
+              : dacs;
 
           this.setState({ delegationOptions }, () => {
             if (delegationOptions.length === 1) {
