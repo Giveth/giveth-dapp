@@ -554,6 +554,7 @@ class BaseDonateButton extends React.Component {
 
             {givethBridge && (
               <a
+                style={{ marginLeft: '10px' }}
                 className={`btn btn-primary ${isSaving ? 'disabled' : ''}`}
                 disabled={!givethBridge || !amount}
                 href={`https://mycrypto.com?to=${
@@ -565,6 +566,15 @@ class BaseDonateButton extends React.Component {
                 Donate via MyCrypto
               </a>
             )}
+            <button
+              className="btn btn-light float-right"
+              type="button"
+              onClick={() => {
+                this.setState({ modalVisible: false });
+              }}
+            >
+              Close
+            </button>
           </Form>
         </Modal>
       </span>

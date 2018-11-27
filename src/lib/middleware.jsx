@@ -1,3 +1,4 @@
+// TO DO: move all this to UserProvider
 import React from 'react';
 import { history } from './helpers';
 import { feathersClient } from './feathersClient';
@@ -22,15 +23,9 @@ export const isLoggedIn = currentUser =>
   new Promise((resolve, reject) => {
     if (currentUser && currentUser.address && currentUser.authenticated) resolve();
     else {
-      React.swal({
-        title: 'Oops! You need to unlock you wallet!',
-        content: React.swal.msg(<p>Oops! You need to unlock your wallet to view this page.</p>),
-        icon: 'warning',
-        buttons: ['Ok'],
-      }).then(() => {
-        history.push('/');
-        reject(new Error('notLoggedIn'));
-      });
+      // this refers to UserProvider
+      React.signIn();
+      reject();
     }
   });
 
@@ -61,25 +56,47 @@ const authenticate = async address => {
     if (response.code === 401 && response.data.startsWith('Challenge =')) {
       const msg = response.data.replace('Challenge =', '').trim();
 
-      await React.swal({
-        title: 'Sign In!',
+      const res = await React.swal({
+        title: 'You need to sign in!',
         text:
           // 'By signing in we are able to provide instant updates to the app after you take an action. The signin process simply requires you to verify that you own this address by signing a randomly generated message. If you choose to skip this step, the app will not reflect any actions you make until the transactions have been mined.',
           'In order to provide the best experience possible, we are going to ask you to sign a randomly generated message proving that you own the current account. This will enable us to provide instant updates to the app after any action.',
         icon: 'info',
+        buttons: [false, 'OK'],
+      });
+
+      if (!res) {
+        history.goBack();
+        return false;
+      }
+
+      React.swal({
+        title: 'Please sign the MetaMask transaction...',
+        text:
+          "A MetaMask transaction should have popped-up. If you don't see it check the pending transaction in the MetaMask browser extension. Alternatively make sure to check that your popup blocker is disabled.",
+        icon: 'success',
+        button: false,
       });
 
       // we have to wrap in a timeout b/c if you close the chrome window MetaMask opens, the promise never resolves
       const signOrTimeout = () =>
         new Promise(async resolve => {
-          setTimeout(() => resolve(false), 7000);
+          const timeOut = setTimeout(() => {
+            resolve(false);
+            history.goBack();
+            React.swal.close();
+          }, 10000);
 
           try {
             const signature = await web3.eth.personal.sign(msg, address);
             authData.signature = signature;
             await feathersClient.authenticate(authData);
+            React.swal.close();
+            clearTimeout(timeOut);
             resolve(true);
           } catch (e) {
+            clearTimeout(timeOut);
+            history.goBack();
             resolve(false);
           }
         });
@@ -110,7 +127,7 @@ export const authenticateIfPossible = async currentUser => {
   currentUser.authenticated = await authPromise;
   authPromise = undefined;
 
-  return false;
+  return currentUser.authenticated;
 };
 
 /**
@@ -158,8 +175,9 @@ export const checkForeignNetwork = async isForeignNetwork => {
  */
 export const isInWhitelist = (currentUser, whitelist) => {
   if (
-    (whitelist && whitelist.length === 0) ||
-    (currentUser &&
+    (Array.isArray(whitelist) && whitelist.length === 0) ||
+    (Array.isArray(whitelist) &&
+      currentUser &&
       currentUser.address &&
       whitelist.find(u => u.address.toLowerCase() === currentUser.address.toLowerCase()))
   ) {

@@ -168,7 +168,7 @@ class ViewCampaign extends Component {
               <div className="container-fluid">
                 <div className="row">
                   <div className="col-md-8 m-auto">
-                    <GoBackButton history={history} title="Campaigns" />
+                    <GoBackButton to="/" title="Campaigns" />
 
                     <center>
                       <Link to={`/profile/${campaign.owner.address}`}>

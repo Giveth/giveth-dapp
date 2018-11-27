@@ -1,6 +1,7 @@
 import React, { Component, createContext } from 'react';
 import PropTypes from 'prop-types';
 import { utils } from 'web3';
+import { authenticateIfPossible } from 'lib/middleware';
 import { feathersClient } from '../lib/feathersClient';
 import GivethWallet from '../lib/blockchain/GivethWallet';
 
@@ -45,6 +46,11 @@ class UserProvider extends Component {
     };
 
     this.getUserData = this.getUserData.bind(this);
+    this.authenticateFeathers = this.authenticateFeathers.bind(this);
+    this.signIn = this.signIn.bind(this);
+
+    // hack to make signIn globally available
+    React.signIn = this.signIn;
   }
 
   componentDidMount() {
@@ -53,6 +59,7 @@ class UserProvider extends Component {
 
   componentDidUpdate(prevProps) {
     const { currentUser } = this.state;
+
     const { account } = this.props;
     if ((account && !currentUser) || (currentUser && account !== prevProps.account)) {
       this.getUserData(account);
@@ -86,7 +93,7 @@ class UserProvider extends Component {
             resp => {
               const currentUser = resp.total === 1 ? new User(resp.data[0]) : new User({ address });
               this.setState({ currentUser }, () => {
-                this.authenticateIfPossible();
+                this.authenticateFeathers();
                 resolve();
               });
             },
@@ -96,7 +103,7 @@ class UserProvider extends Component {
                 error,
               );
               this.setState({ currentUser: new User({ address }) }, () => {
-                this.authenticateIfPossible();
+                this.authenticateFeathers();
                 reject();
               });
             },
@@ -134,7 +141,21 @@ class UserProvider extends Component {
       .catch(() => {});
   }
 
-  async authenticateIfPossible() {
+  signIn() {
+    const { currentUser } = this.state;
+
+    if (currentUser) {
+      authenticateIfPossible(currentUser).then(isAuthenticated => {
+        if (isAuthenticated) {
+          currentUser.authenticated = true;
+          this.setState({ currentUser: new User(currentUser) });
+          this.props.onLoaded();
+        }
+      });
+    }
+  }
+
+  async authenticateFeathers() {
     const { currentUser } = this.state;
 
     if (currentUser) {
@@ -146,9 +167,14 @@ class UserProvider extends Component {
 
           if (currentUser.address === payload.userId) {
             await feathersClient.authenticate(); // authenticate the socket connection
+            currentUser.authenticated = true;
+            this.setState({ currentUser });
           } else {
             await feathersClient.logout();
           }
+        } else {
+          currentUser.authenticated = false;
+          this.setState({ currentUser });
         }
       } catch (e) {
         // ignore
@@ -167,6 +193,7 @@ class UserProvider extends Component {
           state: {
             currentUser,
             hasError,
+            signIn: this.signIn,
           },
         }}
       >

@@ -36,7 +36,7 @@ const LoaderButton = ({
         network &&
         ((network === 'Home' && isForeignNetwork) || (network === 'Foreign' && isHomeNetwork));
       return (
-        <div className="loader-button">
+        <span>
           <button
             className={className}
             formNoValidate={formNoValidate}
@@ -61,7 +61,7 @@ const LoaderButton = ({
               network with your Web3 Provider.
             </small>
           )}
-        </div>
+        </span>
       );
     }}
   </Web3Consumer>

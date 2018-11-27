@@ -2,20 +2,20 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 import Pagination from 'react-js-pagination';
-import BigNumber from 'bignumber.js';
+import { utils } from 'web3';
 
 import NetworkWarning from 'components/NetworkWarning';
 import { Consumer as Web3Consumer } from 'contextProviders/Web3Provider';
 import config from 'configuration';
 
 import GA from 'lib/GoogleAnalytics';
-import { checkBalance } from '../../lib/middleware';
+import { isLoggedIn, checkBalance } from '../../lib/middleware';
 import confirmationDialog from '../../lib/confirmationDialog';
+import Loader from '../Loader';
 import User from '../../models/User';
 import { getTruncatedText, convertEthHelper, history } from '../../lib/helpers';
 import CampaignService from '../../services/CampaignService';
 import Campaign from '../../models/Campaign';
-import Loader from '../Loader';
 import AuthenticationWarning from '../AuthenticationWarning';
 
 /**
@@ -39,7 +39,13 @@ class MyCampaigns extends Component {
   }
 
   componentDidMount() {
-    this.loadCampaigns();
+    isLoggedIn(this.props.currentUser)
+      .then(() => this.loadCampaigns())
+      .catch(err => {
+        if (err === 'notLoggedIn') {
+          // default behavior is to go home or signin page after swal popup
+        }
+      });
   }
 
   componentDidUpdate(prevProps) {
@@ -171,6 +177,35 @@ class MyCampaigns extends Component {
                                     key={c.id}
                                     className={c.status === Campaign.PENDING ? 'pending' : ''}
                                   >
+                                    {currentUser.authenticated && (
+                                      <td className="td-actions">
+                                        {c.owner.address === currentUser.address &&
+                                          c.isActive && (
+                                            <button
+                                              type="button"
+                                              className="btn btn-link"
+                                              onClick={() => this.editCampaign(c.id)}
+                                            >
+                                              <i className="fa fa-edit" />
+                                              &nbsp;Edit
+                                            </button>
+                                          )}
+
+                                        {(c.reviewerAddress === currentUser.address ||
+                                          c.owner.address === currentUser.address) &&
+                                          isForeignNetwork &&
+                                          c.isActive && (
+                                            <button
+                                              type="button"
+                                              className="btn btn-danger btn-sm"
+                                              onClick={() => this.cancelCampaign(c)}
+                                            >
+                                              <i className="fa fa-ban" />
+                                              &nbsp;Cancel
+                                            </button>
+                                          )}
+                                      </td>
+                                    )}
                                     <td className="td-name">
                                       <Link to={`/campaigns/${c.id}`}>
                                         {getTruncatedText(c.title, 45)}
@@ -216,35 +251,6 @@ class MyCampaigns extends Component {
                                         c.requiredConfirmations !== c.confirmations) &&
                                         `${c.confirmations}/${c.requiredConfirmations}`}
                                     </td>
-                                    {currentUser.authenticated && (
-                                      <td className="td-actions">
-                                        {c.owner.address === currentUser.address &&
-                                          c.isActive && (
-                                            <button
-                                              type="button"
-                                              className="btn btn-link"
-                                              onClick={() => this.editCampaign(c.id)}
-                                            >
-                                              <i className="fa fa-edit" />
-                                              &nbsp;Edit
-                                            </button>
-                                          )}
-
-                                        {(c.reviewerAddress === currentUser.address ||
-                                          c.owner.address === currentUser.address) &&
-                                          isForeignNetwork &&
-                                          c.isActive && (
-                                            <button
-                                              type="button"
-                                              className="btn btn-danger btn-sm"
-                                              onClick={() => this.cancelCampaign(c)}
-                                            >
-                                              <i className="fa fa-ban" />
-                                              &nbsp;Cancel
-                                            </button>
-                                          )}
-                                      </td>
-                                    )}
                                   </tr>
                                 ))}
                               </tbody>
@@ -293,7 +299,7 @@ class MyCampaigns extends Component {
 
 MyCampaigns.propTypes = {
   currentUser: PropTypes.instanceOf(User).isRequired,
-  balance: PropTypes.instanceOf(BigNumber).isRequired,
+  balance: PropTypes.objectOf(utils.BN).isRequired,
 };
 
 export default MyCampaigns;

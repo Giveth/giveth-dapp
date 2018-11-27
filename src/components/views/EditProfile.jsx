@@ -6,7 +6,7 @@ import { Form, Input } from 'formsy-react-components';
 import GA from 'lib/GoogleAnalytics';
 import Loader from '../Loader';
 import FormsyImageUploader from '../FormsyImageUploader';
-import { authenticateIfPossible, checkBalance, checkForeignNetwork } from '../../lib/middleware';
+import { checkBalance, checkForeignNetwork } from '../../lib/middleware';
 import LoaderButton from '../LoaderButton';
 import User from '../../models/User';
 import { history } from '../../lib/helpers';
@@ -36,7 +36,6 @@ class EditProfile extends Component {
 
   componentDidMount() {
     checkForeignNetwork(this.props.isForeignNetwork)
-      .then(() => authenticateIfPossible(this.props.currentUser))
       .then(() => checkBalance(this.props.balance))
       .then(() => this.setState({ isLoading: false }))
       .catch(err => {

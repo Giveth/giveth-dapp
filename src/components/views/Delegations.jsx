@@ -2,7 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import Avatar from 'react-avatar';
 import PropTypes from 'prop-types';
-import BigNumber from 'bignumber.js';
+import { utils } from 'web3';
 import moment from 'moment';
 import Pagination from 'react-js-pagination';
 
@@ -18,7 +18,6 @@ import { Consumer as UserConsumer } from '../../contextProviders/UserProvider';
 import DelegationProvider, {
   Consumer as DelegationConsumer,
 } from '../../contextProviders/DelegationProvider';
-import AuthenticationWarning from '../AuthenticationWarning';
 
 /**
  * The my delegations view
@@ -51,8 +50,6 @@ const Delegations = ({ balance }) => (
                           <h1>Your delegations</h1>
                         )}
 
-                        <AuthenticationWarning currentUser={currentUser} />
-
                         <NetworkWarning
                           incorrectNetwork={!isForeignNetwork}
                           networkName={config.foreignNetworkName}
@@ -68,9 +65,7 @@ const Delegations = ({ balance }) => (
                                   <table className="table table-responsive table-striped table-hover">
                                     <thead>
                                       <tr>
-                                        {currentUser.authenticated && (
-                                          <th className="td-actions">Action</th>
-                                        )}
+                                        {currentUser.authenticated && <th className="td-actions" />}
                                         <th className="td-date">Date</th>
                                         <th className="td-donated-to">Donated to</th>
                                         <th className="td-donations-amount">Amount</th>
@@ -81,11 +76,11 @@ const Delegations = ({ balance }) => (
                                     </thead>
                                     <tbody>
                                       {delegations.map(d => (
-                                        <tr key={d._id}>
+                                        <tr key={d.adminId}>
                                           {currentUser.authenticated && (
                                             <td className="td-actions">
                                               {/* When donated to a dac, allow delegation
-                                    to campaigns and milestones */}
+                                        to campaigns and milestones */}
                                               {(d.delegateId > 0 ||
                                                 d.ownerTypeId === currentUser.address) &&
                                                 isForeignNetwork &&
@@ -103,7 +98,7 @@ const Delegations = ({ balance }) => (
                                                 )}
 
                                               {/* When donated to a campaign, only allow delegation
-                                    to milestones of that campaign */}
+                                        to milestones of that campaign */}
                                               {d.ownerType === 'campaign' &&
                                                 isForeignNetwork &&
                                                 d.amountRemaining > 0 && (
@@ -118,6 +113,7 @@ const Delegations = ({ balance }) => (
                                                 )}
                                             </td>
                                           )}
+
                                           <td className="td-date">
                                             {moment(d.createdAt).format('MM/DD/YYYY')}
                                           </td>
@@ -199,7 +195,7 @@ const Delegations = ({ balance }) => (
 );
 
 Delegations.propTypes = {
-  balance: PropTypes.instanceOf(BigNumber).isRequired,
+  balance: PropTypes.objectOf(utils.BN).isRequired,
 };
 
 export default Delegations;

@@ -13,7 +13,6 @@ import { Consumer as UserConsumer } from '../../contextProviders/UserProvider';
 import DonationProvider, {
   Consumer as DonationConsumer,
 } from '../../contextProviders/DonationProvider';
-import AuthenticationWarning from '../AuthenticationWarning';
 
 /**
  * The my donations view
@@ -44,8 +43,6 @@ const Donations = () => (
                         {(isLoading || (donations && donations.length > 0)) && (
                           <h1>Your donations</h1>
                         )}
-
-                        <AuthenticationWarning currentUser={currentUser} />
 
                         <NetworkWarning
                           incorrectNetwork={!isForeignNetwork}
@@ -106,7 +103,6 @@ const Donations = () => (
                                             )}
                                           </td>
                                         )}
-
                                         <td className="td-transaction-status">
                                           {d.isPending && (
                                             <span>

@@ -9,13 +9,11 @@ import NetworkWarning from 'components/NetworkWarning';
 import { Consumer as Web3Consumer } from 'contextProviders/Web3Provider';
 
 import MilestoneActions from 'components/MilestoneActions';
-
-import { authenticateIfPossible } from '../../lib/middleware';
+import { isLoggedIn } from 'lib/middleware';
 import Loader from '../Loader';
 import User from '../../models/User';
 import { getTruncatedText, getReadableStatus, convertEthHelper } from '../../lib/helpers';
 import config from '../../configuration';
-import AuthenticationWarning from '../AuthenticationWarning';
 
 import MilestoneService from '../../services/MilestoneService';
 
@@ -46,14 +44,19 @@ class MyMilestones extends Component {
   }
 
   componentDidMount() {
-    this.loadMileStones();
+    isLoggedIn(this.props.currentUser)
+      .then(() => this.loadMileStones())
+      .catch(err => {
+        if (err === 'notLoggedIn') {
+          // default behavior is to go home or signin page after swal popup
+        }
+      });
   }
 
   componentDidUpdate(prevProps) {
     if (prevProps.currentUser !== this.props.currentUser) {
       // eslint-disable-next-line react/no-did-update-set-state
       this.setState({ isLoading: true });
-      authenticateIfPossible(this.props.currentUser);
       if (this.milestonesObserver) MilestoneService.unsubscribe();
 
       this.loadMileStones();
@@ -126,7 +129,6 @@ class MyMilestones extends Component {
                 <div className="col-md-10 m-auto">
                   <h1>Your milestones</h1>
 
-                  <AuthenticationWarning currentUser={currentUser} />
                   <NetworkWarning
                     incorrectNetwork={!isForeignNetwork}
                     networkName={config.foreignNetworkName}

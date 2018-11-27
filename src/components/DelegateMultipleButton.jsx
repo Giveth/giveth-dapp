@@ -13,7 +13,7 @@ import Donation from 'models/Donation';
 import Campaign from 'models/Campaign';
 import Milestone from 'models/Milestone';
 import User from 'models/User';
-import { checkBalance, isLoggedIn, authenticateIfPossible } from '../lib/middleware';
+import { checkBalance } from '../lib/middleware';
 import { feathersClient } from '../lib/feathersClient';
 import Loader from './Loader';
 import config from '../configuration';
@@ -108,17 +108,20 @@ class BaseDelegateMultipleButton extends Component {
             type: 'dac',
           }));
 
-          const delegationOptions = this.props.milestone
-            ? dacs.concat([
-                {
-                  id: this.props.campaign._id,
-                  name: this.props.campaign.title,
-                  projectId: this.props.campaign.projectId,
-                  ownerEntity: this.props.milestone.ownerEntity,
-                  type: 'campaign',
-                },
-              ])
-            : dacs;
+          const delegationOptions =
+            this.props.milestone &&
+            this.props.campaign.ownerAddress.toLowerCase() ===
+              this.props.currentUser.address.toLowerCase()
+              ? dacs.concat([
+                  {
+                    id: this.props.campaign._id,
+                    name: this.props.campaign.title,
+                    projectId: this.props.campaign.projectId,
+                    ownerEntity: this.props.milestone.ownerEntity,
+                    type: 'campaign',
+                  },
+                ])
+              : dacs;
 
           this.setState({ delegationOptions }, () => {
             if (delegationOptions.length === 1) {
@@ -209,11 +212,7 @@ class BaseDelegateMultipleButton extends Component {
   }
 
   openDialog() {
-    authenticateIfPossible(this.props.currentUser)
-      .then(() => isLoggedIn(this.props.currentUser))
-      .then(() =>
-        checkBalance(this.props.balance).then(() => this.setState({ modalVisible: true })),
-      );
+    checkBalance(this.props.balance).then(() => this.setState({ modalVisible: true }));
   }
 
   submit(model) {
@@ -414,6 +413,15 @@ class BaseDelegateMultipleButton extends Component {
                           disabled={isSaving || !isForeignNetwork}
                         >
                           {isSaving ? 'Delegating...' : 'Delegate here'}
+                        </button>
+                        <button
+                          className="btn btn-light float-right"
+                          type="button"
+                          onClick={() => {
+                            this.setState({ modalVisible: false });
+                          }}
+                        >
+                          Close
                         </button>
                       </div>
                     )}
