@@ -1,4 +1,4 @@
-import { getWeb3 } from '../lib/blockchain/getWeb3';
+import getWeb3 from '../lib/blockchain/getWeb3';
 import getNetwork from '../lib/blockchain/getNetwork';
 
 /**

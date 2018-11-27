@@ -63,34 +63,35 @@ class Donation extends Model {
   constructor(data) {
     super(data);
 
-    this.id = data._id;
-    this.amount = data.amount;
-    this.amountRemaining = data.amountRemaining;
-    this.myPendingAmountRemaining = data.pendingAmountRemaining;
-    this.commitTime = data.commitTime;
-    this.confirmations = data.confirmations || 0;
-    this.createdAt = data.createdAt;
-    this.delegateId = data.delegateId;
-    this.delegateEntity = data.delegateEntity;
-    this.delegateTypeId = data.delegateTypeId;
-    this.giver = data.giver;
-    this.giverAddress = data.giverAddress;
-    this.intendedProjectId = data.intendedProjectId;
-    this.intendedProjectTypeId = data.intendedProjectTypeId;
-    this.intendedProjectType = data.intendedProjectType;
-    this.intendedProjectEntity = data.intendedProjectEntity;
-    this.ownerId = data.ownerId;
-    this.ownerEntity = data.ownerEntity;
-    this.ownerTypeId = data.ownerTypeId;
-    this.ownerType = data.ownerType;
-    this.pledgeId = data.pledgeId;
-    this.canceledPledgeId = data.canceledPledgeId;
-    this.requiredConfirmations = data.requiredConfirmations;
-    this.status = data.status;
-    this.mined = data.mined;
-    this.txHash = data.txHash;
-    this.updatedAt = data.updatedAt;
-    this.isReturn = data.isReturn;
+    this._id = data._id;
+    this._amount = data.amount;
+    this._amountRemaining = data.amountRemaining;
+    this._pendingAmountRemaining = data.pendingAmountRemaining;
+    this._commitTime = data.commitTime;
+    this._confirmations = data.confirmations || 0;
+    this._createdAt = data.createdAt;
+    this._delegateId = data.delegateId;
+    this._delegateEntity = data.delegateEntity;
+    this._delegateTypeId = data.delegateTypeId;
+    this._giver = data.giver;
+    this._giverAddress = data.giverAddress;
+    this._intendedProjectId = data.intendedProjectId;
+    this._intendedProjectTypeId = data.intendedProjectTypeId;
+    this._intendedProjectType = data.intendedProjectType;
+    this._intendedProjectEntity = data.intendedProjectEntity;
+    this._ownerId = data.ownerId;
+    this._ownerEntity = data.ownerEntity;
+    this._ownerTypeId = data.ownerTypeId;
+    this._ownerType = data.ownerType;
+    this._pledgeId = data.pledgeId;
+    this._canceledPledgeId = data.canceledPledgeId;
+    this._requiredConfirmations = data.requiredConfirmations;
+    this._status = data.status;
+    this._mined = data.mined;
+    this._txHash = data.txHash;
+    this._updatedAt = data.updatedAt;
+    this._isReturn = data.isReturn;
+    this._token = data.token;
 
     /**
      * Get the URL, name and type of the entity to which this donation has been donated to
@@ -104,46 +105,46 @@ class Donation extends Model {
       name: '',
       type: '',
     };
-    if (this.delegateId > 0 && !this.intendedProjectId) {
+    if (this._delegateId > 0 && !this._intendedProjectId) {
       // DAC
-      donatedTo.url = `/dacs/${this.delegateEntity._id}`;
-      donatedTo.name = getTruncatedText(this.delegateEntity.title, 45);
+      donatedTo.url = `/dacs/${this._delegateEntity._id}`;
+      donatedTo.name = getTruncatedText(this._delegateEntity.title, 45);
       donatedTo.type = 'DAC';
     } else if (
-      (!this.delegateId && this.ownerType === Campaign.type) ||
-      (this.intendedProjectId && this.intendedProjectType === Campaign.type)
+      (!this._delegateId && this._ownerType === Campaign.type) ||
+      (this._intendedProjectId && this._intendedProjectType === Campaign.type)
     ) {
       // Campaign
-      const entity = this.intendedProjectId ? this.intendedProjectEntity : this.ownerEntity;
+      const entity = this._intendedProjectId ? this._intendedProjectEntity : this._ownerEntity;
       donatedTo.url = `/campaigns/${entity._id}`;
       donatedTo.name = getTruncatedText(entity.title, 45);
       donatedTo.type = 'CAMPAIGN';
     } else if (
-      (!this.delegateId && this.ownerType === Milestone.type) ||
-      (this.intendedProjectId && this.intendedProjectType === Milestone.type)
+      (!this._delegateId && this._ownerType === Milestone.type) ||
+      (this._intendedProjectId && this._intendedProjectType === Milestone.type)
     ) {
       // Milestone
-      const entity = this.intendedProjectId ? this.intendedProjectEntity : this.ownerEntity;
+      const entity = this._intendedProjectId ? this._intendedProjectEntity : this._ownerEntity;
       donatedTo.url = `/campaigns/${entity.campaign._id}/milestones/${entity._id}`;
       donatedTo.name = getTruncatedText(entity.title, 45);
       donatedTo.type = 'MILESTONE';
     } else {
       // User
-      donatedTo.url = `/profile/${this.ownerEntity.address}`;
-      donatedTo.name = this.ownerEntity.name || this.ownerEntity.address;
+      donatedTo.url = `/profile/${this._ownerEntity.address}`;
+      donatedTo.name = this._ownerEntity.name || this._ownerEntity.address;
       donatedTo.type = 'GIVER';
     }
-    this.myDonatedTo = donatedTo;
+    this._donatedTo = donatedTo;
   }
 
   get statusDescription() {
-    switch (this.status) {
+    switch (this._status) {
       case Donation.PENDING:
         return 'pending successful transaction';
       case Donation.TO_APPROVE:
-        return 'pending for your approval to be committed.';
+        return 'proposed delegation';
       case Donation.WAITING:
-        return 'waiting for further delegation';
+        return 'ready for delegation';
       case Donation.COMMITTED:
         return 'committed';
       case Donation.PAYING:
@@ -172,21 +173,23 @@ class Donation extends Model {
    *                     type {string} Type of the entity - one of DAC, CAMPAIGN, MILESTONE or GIVER
    */
   get donatedTo() {
-    return this.myDonatedTo;
+    return this._donatedTo;
   }
 
   /**
    * Check if a user can refund this donation
    *
    * @param {User} user User for whom the action should be checked
+   * @param {boolean} isForeignNetwork Are we connected to the foreign network
    *
    * @return {boolean} True if given user can refund the donation
    */
-  canRefund(user) {
+  canRefund(user, isForeignNetwork) {
     return (
-      this.ownerTypeId === user.address &&
-      this.status === Donation.WAITING &&
-      this.amountRemaining > 0
+      isForeignNetwork &&
+      this._ownerTypeId === user.address &&
+      this._status === Donation.WAITING &&
+      this._amountRemaining > 0
     );
   }
 
@@ -194,31 +197,40 @@ class Donation extends Model {
    * Check if a user can approve or reject delegation of this donation
    *
    * @param {User} user User for whom the action should be checked
+   * @param {boolean} isForeignNetwork Are we connected to the foreign network
    *
    * @return {boolean} True if given user can approve or reject the delegation of the donation
    */
-  canApproveReject(user) {
+  canApproveReject(user, isForeignNetwork) {
     return (
-      this.ownerTypeId === user.address &&
-      this.status === Donation.TO_APPROVE &&
-      new Date() < new Date(this.commitTime)
+      isForeignNetwork &&
+      this._ownerTypeId === user.address &&
+      this._status === Donation.TO_APPROVE &&
+      (new Date() < new Date(this._commitTime) || !this._commitTime)
     );
   }
 
   /**
    * Check if a user can delegate this donation
    *
-   * @param {User} user User for whom the action should be checked
+   * @param {User}    user User for whom the action should be checked
+   * @param {boolean} isForeignNetwork Are we connected to the foreign network
    *
    * @return {boolean} True if given user can delegate the donation
    */
-  canDelegate(user) {
-    return this.status === Donation.WAITING && this.ownerEntity.address === user.address;
+  canDelegate(user, isForeignNetwork) {
+    return (
+      isForeignNetwork &&
+      this._status === Donation.WAITING &&
+      this._ownerEntity.address === user.address
+    );
   }
 
   get isPending() {
     return (
-      this.status === Donation.PENDING || this.myPendingAmountRemaining !== undefined || !this.mined
+      this._status === Donation.PENDING ||
+      this._pendingAmountRemaining !== undefined ||
+      !this._mined
     );
   }
 
@@ -232,229 +244,237 @@ class Donation extends Model {
   }
 
   get amount() {
-    return this.myAmount;
+    return this._amount;
   }
 
   set amount(value) {
     this.checkType(value, ['string'], 'amount');
-    this.myAmount = value;
+    this._amount = value;
   }
 
   get amountRemaining() {
-    return this.myPendingAmountRemaining || this.myAmountRemaining;
+    return this._pendingAmountRemaining || this._amountRemaining;
   }
 
   set amountRemaining(value) {
     this.checkType(value, ['string'], 'amountRemaining');
-    this.myAmountRemaining = value;
+    this._amountRemaining = value;
   }
 
   set pendingAmountRemaining(value) {
     this.checkType(value, ['string', 'undefined'], 'pendingAmountRemaining');
-    if (this.myPendingAmountRemaining) {
+    if (this._pendingAmountRemaining) {
       throw new Error('not allowed to set pendingAmountRemaining');
     }
-    this.pendingAmountRemaining = value;
+    this._pendingAmountRemaining = value;
   }
 
   get commitTime() {
-    return this.myCommitTime;
+    return this._commitTime;
   }
 
   set commitTime(value) {
     this.checkType(value, ['string', 'undefined'], 'commitTime');
-    this.myCommitTime = value;
+    this._commitTime = value;
   }
 
   get confirmations() {
-    return this.myConfirmations;
+    return this._confirmations;
   }
 
   set confirmations(value) {
     this.checkType(value, ['number'], 'confirmations');
-    this.myConfirmations = value;
+    this._confirmations = value;
   }
 
   get createdAt() {
-    return this.myCreatedAt;
+    return this._createdAt;
   }
 
   set createdAt(value) {
     this.checkType(value, ['string'], 'createdAt');
-    this.myCreatedAt = value;
+    this._createdAt = value;
   }
 
   get delegateId() {
-    return this.myDelegateId;
+    return this._delegateId;
   }
 
   set delegateId(value) {
     this.checkType(value, ['number', 'string', 'undefined'], 'delegateId');
-    this.myDelegateId = value;
+    this._delegateId = value;
   }
 
   get delegateEntity() {
-    return this.myDelegateEntity;
+    return this._delegateEntity;
   }
 
   set delegateEntity(value) {
     this.checkType(value, ['object', 'undefined'], 'delegateEntity');
-    this.myDelegateEntity = value;
+    this._delegateEntity = value;
   }
 
   get delegateTypeId() {
-    return this.myDelegateTypeId;
+    return this._delegateTypeId;
   }
 
   set delegateTypeId(value) {
     this.checkType(value, ['string', 'undefined'], 'delegateTypeId');
-    this.myDelegateTypeId = value;
+    this._delegateTypeId = value;
   }
 
   get giver() {
-    return this.myGiver;
+    return this._giver;
   }
 
   set giver(value) {
     this.checkType(value, ['object', 'undefined'], 'giver');
-    this.myGiver = value;
+    this._giver = value;
   }
 
   get giverAddress() {
-    return this.myGiverAddress;
+    return this._giverAddress;
   }
 
   set giverAddress(value) {
     this.checkType(value, ['string'], 'giverAddress');
-    this.myGiverAddress = value;
+    this._giverAddress = value;
   }
 
   get intendedProjectId() {
-    return this.myIntendedProjectId;
+    return this._intendedProjectId;
   }
 
   set intendedProjectId(value) {
     this.checkType(value, ['number', 'string', 'undefined'], 'intendedProjectId');
-    this.myIntendedProjectId = value;
+    this._intendedProjectId = value;
   }
 
   get intendedProjectTypeId() {
-    return this.myIntendedProjectTypeId;
+    return this._intendedProjectTypeId;
   }
 
   set intendedProjectTypeId(value) {
     this.checkType(value, ['number', 'string', 'undefined'], 'intendedProjectTypeId');
-    this.myIntendedProjectTypeId = value;
+    this._intendedProjectTypeId = value;
   }
 
   get intendedProjectType() {
-    return this.myIntendedProjectType;
+    return this._intendedProjectType;
   }
 
   set intendedProjectType(value) {
     this.checkType(value, ['string', 'undefined'], 'intendedProjectType');
-    this.myIntendedProjectType = value;
+    this._intendedProjectType = value;
   }
 
   get intendedProjectEntity() {
-    return this.myIntendedProjectEntity;
+    return this._intendedProjectEntity;
   }
 
   set intendedProjectEntity(value) {
     this.checkType(value, ['object', 'undefined'], 'intendedProjectEntity');
-    this.myIntendedProjectEntity = value;
+    this._intendedProjectEntity = value;
   }
 
   get ownerId() {
-    return this.myOwnerId;
+    return this._ownerId;
   }
 
   set ownerId(value) {
     this.checkType(value, ['number', 'string'], 'ownerId');
-    this.myOwnerId = value;
+    this._ownerId = value;
   }
 
   get ownerEntity() {
-    return this.myOwnerEntity;
+    return this._ownerEntity;
   }
 
   set ownerEntity(value) {
     this.checkType(value, ['undefined', 'object'], 'ownerEntity');
-    this.myOwnerEntity = value;
+    this._ownerEntity = value;
   }
 
   get ownerTypeId() {
-    return this.myOwnerTypeId;
+    return this._ownerTypeId;
   }
 
   set ownerTypeId(value) {
     this.checkType(value, ['string'], 'ownerEntity');
-    this.myOwnerTypeId = value;
+    this._ownerTypeId = value;
   }
 
   get ownerType() {
-    return this.myOwnerType;
+    return this._ownerType;
   }
 
   set ownerType(value) {
     this.checkType(value, ['string'], 'ownerType');
-    this.myOwnerType = value;
+    this._ownerType = value;
   }
 
   get pledgeId() {
-    return this.myCanceledPledgeId > 0 ? this.myCanceledPledgeId : this.myPledgeId;
+    return this._canceledPledgeId > 0 ? this._canceledPledgeId : this._pledgeId;
   }
 
   set pledgeId(value) {
     this.checkType(value, ['string'], 'pledgeId');
-    if (this.myPledgeId) {
+    if (this._pledgeId) {
       throw new Error('not allowed to set pledgeId');
     }
-    this.myPledgeId = value;
+    this._pledgeId = value;
   }
 
   set canceledPledgeId(value) {
     this.checkType(value, ['string', 'undefined'], 'canceledPledgeId');
-    if (this.myCanceledPledgeId) {
+    if (this._canceledPledgeId) {
       throw new Error('not allowed to set canceledPledgeId');
     }
-    this.myCanceledPledgeId = value;
+    this._canceledPledgeId = value;
   }
 
   get requiredConfirmations() {
-    return this.myRequiredConfirmations;
+    return this._requiredConfirmations;
   }
 
   set requiredConfirmations(value) {
     this.checkType(value, ['number'], 'requiredConfirmations');
-    this.myRequiredConfirmations = value;
+    this._requiredConfirmations = value;
   }
 
   get status() {
-    return this.myStatus;
+    return this._status;
   }
 
   set status(value) {
     this.checkValue(value, Donation.statuses, 'status');
-    this.myStatus = value;
+    this._status = value;
   }
 
   get txHash() {
-    return this.myTxHash;
+    return this._txHash;
   }
 
   set txHash(value) {
     this.checkType(value, ['string', 'undefined'], 'txHash');
-    this.myTxHash = value;
+    this._txHash = value;
   }
 
   get updatedAt() {
-    return this.myUpdatedAt;
+    return this._updatedAt;
   }
 
   set updatedAt(value) {
     this.checkType(value, ['string', 'undefined'], 'updatedAt');
-    this.myUpdatedAt = value;
+    this._updatedAt = value;
+  }
+
+  get token() {
+    return this._token;
+  }
+
+  set token(value) {
+    this._token = value;
   }
 }
 

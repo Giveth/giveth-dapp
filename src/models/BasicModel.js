@@ -1,3 +1,4 @@
+import React from 'react';
 import Model from './Model';
 import { getTruncatedText } from '../lib/helpers';
 
@@ -16,8 +17,8 @@ class BasicModel extends Model {
    *         0  if a = b
    */
   static compare(a, b) {
-    if (a.myOrder > b.myOrder) return 1;
-    if (a.myOrder < b.myOrder) return -1;
+    if (a._Order > b._Order) return 1;
+    if (a._Order < b._Order) return -1;
     return 0;
   }
 
@@ -29,136 +30,151 @@ class BasicModel extends Model {
     txHash,
     owner,
     reviewer,
-    totalDonated = '0',
-    currentBalance = '0',
+    url,
     donationCount = 0,
     peopleCount = 0,
+    fullyFunded = false,
+    donationCounters = [],
+    token = React.whitelist.tokenWhitelist.find(t => t.symbol === 'ETH'),
   }) {
     super();
 
-    this.id = _id;
-    this.title = title;
-    this.description = description;
-    this.summary = getTruncatedText(description, 100);
-    this.image = image;
-    this.newImage = false;
-    this.txHash = txHash;
-    this.owner = owner || { address: '0x0' }; // FIXME: Check in feathers, owner should be a model
-    this.reviewer = reviewer;
-    this.totalDonated = totalDonated;
-    this.currentBalance = currentBalance;
-    this.donationCount = donationCount;
-    this.peopleCount = peopleCount;
-    this.myOrder = -1;
+    this._id = _id;
+    this._title = title;
+    this._description = description;
+    this._summary = getTruncatedText(description, 100);
+    this._image = image;
+    this._newImage = false;
+    this._txHash = txHash;
+    this._owner = owner || { address: '0x0' }; // FIXME: Check in feathers, owner should be a model
+    this._reviewer = reviewer;
+    this._url = url;
+    this._donationCount = donationCount;
+    this._peopleCount = peopleCount;
+    this._fullyFunded = fullyFunded;
+    this._donationCounters = donationCounters;
+    this._Order = -1;
+    this._token = token;
   }
 
   get id() {
-    return this.myId;
+    return this._id;
   }
 
   set id(value) {
     this.checkType(value, ['undefined', 'string'], 'id');
-    this.myId = value;
+    this._id = value;
   }
 
   get title() {
-    return this.myTitle;
+    return this._title;
   }
 
   set title(value) {
     this.checkType(value, ['string'], 'title');
-    this.myTitle = value;
+    this._title = value;
   }
 
   get description() {
-    return this.myDescription;
+    return this._description;
   }
 
   set description(value) {
     this.checkType(value, ['string'], 'description');
-    this.myDescription = value;
+    this._description = value;
   }
 
   get summary() {
-    return this.mySummary;
+    return this._summary;
   }
 
   set summary(value) {
     this.checkType(value, ['string'], 'summary');
-    this.mySummary = value;
+    this._summary = value;
   }
 
   get image() {
-    return this.myImage;
+    return this._image;
   }
 
   set image(value) {
     this.checkType(value, ['string'], 'image');
     this.newImage = true;
-    this.myImage = value;
+    this._image = value;
   }
 
   get txHash() {
-    return this.myTxHash;
+    return this._txHash;
   }
 
   set txHash(value) {
     this.checkType(value, ['undefined', 'string'], 'txHash');
-    this.myTxHash = value;
+    this._txHash = value;
   }
 
   get owner() {
-    return this.myOwner;
+    return this._owner;
   }
 
   set owner(value) {
     this.checkType(value, ['undefined', 'object'], 'owner');
-    this.myOwner = value;
+    this._owner = value;
   }
 
   get reviewer() {
-    return this.myReviewer;
+    return this._reviewer;
   }
 
   set reviewer(value) {
     this.checkType(value, ['undefined', 'object'], 'reviewer');
-    this.myReviewer = value;
+    this._reviewer = value;
   }
 
-  get totalDonated() {
-    return this.myTotalDonated;
+  get url() {
+    return this._url;
   }
 
-  set totalDonated(value) {
-    this.checkType(value, ['string'], 'totalDonated');
-    this.myTotalDonated = value;
+  set url(value) {
+    this.checkType(value, ['undefined', 'string'], 'url');
+    this._url = value;
   }
 
-  set currentBalance(value) {
-    this.checkType(value, ['string'], 'currentBalance');
-    this.myCurrentBalance = value;
-  }
-
-  get currentBalance() {
-    return this.myCurrentBalance;
-  }
-
-  get donationCount() {
-    return this.myDonationCount;
-  }
-
-  set donationCount(value) {
-    this.checkType(value, ['number'], 'donationCount');
-    this.myDonationCount = value;
+  get totalDonationCount() {
+    return this._donationCounters.reduce((count, token) => count + token.donationCount, 0);
   }
 
   get peopleCount() {
-    return this.myPeopleCount;
+    return this._peopleCount;
   }
 
   set peopleCount(value) {
     this.checkType(value, ['number'], 'peopleCount');
-    this.myPeopleCount = value;
+    this._peopleCount = value;
+  }
+
+  get fullyFunded() {
+    return this._fullyFunded;
+  }
+
+  set fullyFunded(value) {
+    this.checkType(value, ['boolean'], 'fullyFunded');
+    this._fullyFunded = value;
+  }
+
+  get donationCounters() {
+    return this._donationCounters;
+  }
+
+  set donationCounters(value) {
+    this._donationCounters = value;
+  }
+
+  get token() {
+    return this._token;
+  }
+
+  set token(value) {
+    this._token = value;
   }
 }
 

@@ -1,13 +1,16 @@
 import { LPPCampaign } from 'lpp-campaign';
 import { paramsForServer } from 'feathers-hooks-common';
+import Milestone from 'models/Milestone';
 import getNetwork from '../lib/blockchain/getNetwork';
-import { getWeb3 } from '../lib/blockchain/getWeb3';
+import getWeb3 from '../lib/blockchain/getWeb3';
+import extraGas from '../lib/blockchain/extraGas';
 import { feathersClient } from '../lib/feathersClient';
 import Campaign from '../models/Campaign';
-import Milestone from '../models/Milestone';
 import Donation from '../models/Donation';
-
+import IPFSService from './IPFSService';
 import ErrorPopup from '../components/ErrorPopup';
+
+const campaigns = feathersClient.service('campaigns');
 
 class CampaignService {
   /**
@@ -17,8 +20,7 @@ class CampaignService {
    */
   static get(id) {
     return new Promise((resolve, reject) => {
-      feathersClient
-        .service('campaigns')
+      campaigns
         .find({ query: { _id: id } })
         .then(resp => {
           resolve(new Campaign(resp.data[0]));
@@ -94,7 +96,7 @@ class CampaignService {
       .find(
         paramsForServer({
           query: {
-            campaignId: id,
+            ownerTypeId: id,
             isReturn: false,
             $sort: { createdAt: -1 },
           },
@@ -114,8 +116,7 @@ class CampaignService {
    * @param onError     Callback function if error is encountered
    */
   static getUserCampaigns(userAddress, skipPages, itemsPerPage, onSuccess, onError) {
-    return feathersClient
-      .service('campaigns')
+    return campaigns
       .watch({ listStrategy: 'always' })
       .find({
         query: {
@@ -140,61 +141,85 @@ class CampaignService {
    * TODO: Handle error states properly
    *
    * @param campaign    Campaign object to be saved
-   * @param from        Address of the user creating the Campaign
-   * @param afterCreate Callback to be triggered after the Campaign is created in feathers
+   * @param from        address of the user saving the Campaign
+   * @param afterSave   Callback to be triggered after the Campaign is saved in feathers
    * @param afterMined  Callback to be triggered after the transaction is mined
    */
-  static save(campaign, from, afterCreate = () => {}, afterMined = () => {}) {
-    if (campaign.id) {
-      feathersClient
-        .service('campaigns')
-        .patch(campaign.id, campaign.toFeathers())
-        .then(() => afterMined());
-    } else {
-      let txHash;
-      let etherScanUrl;
-      getNetwork()
-        .then(network => {
-          const { lppCampaignFactory } = network;
-          etherScanUrl = network.etherscan;
+  static async save(campaign, from, afterSave = () => {}, afterMined = () => {}) {
+    if (campaign.id && campaign.projectId === 0) {
+      throw new Error(
+        'You must wait for your Campaign to be creation to finish before you can update it',
+      );
+    }
 
-          /**
-          LPPCampaignFactory params:
+    let txHash;
+    let etherScanUrl;
+    try {
+      let profileHash = '';
+      try {
+        profileHash = await IPFSService.upload(campaign.toIpfs());
+      } catch (err) {
+        ErrorPopup('Failed to upload campaign to ipfs');
+      }
 
-          string name,
-          string url,
-          uint64 parentProject,
-          address reviewer
-          * */
+      const network = await getNetwork();
+      etherScanUrl = network.etherscan;
 
-          lppCampaignFactory
-            .newCampaign(campaign.title, '', 0, campaign.reviewerAddress, {
-              from,
-            })
-            .once('transactionHash', hash => {
-              txHash = hash;
-              feathersClient
-                .service('campaigns')
-                .create(campaign.toFeathers(txHash))
-                .then(id => afterCreate(`${etherScanUrl}tx/${txHash}`, id));
-            })
-            .then(() => {
-              afterMined(`${etherScanUrl}tx/${txHash}`);
-            })
-            .catch(err => {
-              if (txHash && err.message && err.message.includes('unknown transaction')) return; // bug in web3 seems to constantly fail due to this error, but the tx is correct
-              ErrorPopup(
-                'Something went wrong with the transaction. Is your wallet unlocked?',
-                `${etherScanUrl}tx/${txHash} => ${JSON.stringify(err, null, 2)}`,
-              );
-            });
-        })
-        .catch(err => {
-          ErrorPopup(
-            'Something went wrong with the transaction. Is your wallet unlocked?',
-            `${etherScanUrl}tx/${txHash} => ${JSON.stringify(err, null, 2)}`,
-          );
-        });
+      // nothing to update or failed ipfs upload
+      if (campaign.projectId && (campaign.url === profileHash || !profileHash)) {
+        // ipfs upload may have failed, but we still want to update feathers
+        if (!profileHash) {
+          await campaigns.patch(campaign.id, campaign.toFeathers(txHash));
+        }
+        afterSave(null, false);
+        afterMined(false, undefined, campaign.id);
+        return;
+      }
+
+      let promise;
+      if (campaign.projectId) {
+        // LPPCampaign function update(string newName, string newUrl, uint64 newCommitTime)
+        promise = new LPPCampaign(await getWeb3(), campaign.pluginAddress).update(
+          campaign.title,
+          profileHash,
+          0,
+          {
+            from,
+            $extraGas: extraGas(),
+          },
+        );
+      } else {
+        // LPPCampaignFactory function newCampaign(string name, string url, uint64 parentProject, address reviewer)
+        const { lppCampaignFactory } = network;
+        promise = lppCampaignFactory.newCampaign(
+          campaign.title,
+          profileHash,
+          0,
+          campaign.reviewerAddress,
+          {
+            from,
+            $extraGas: extraGas(),
+          },
+        );
+      }
+
+      let { id } = campaign;
+      await promise.once('transactionHash', async hash => {
+        txHash = hash;
+        if (campaign.id) await campaigns.patch(campaign.id, campaign.toFeathers(txHash));
+        else id = (await campaigns.create(campaign.toFeathers(txHash)))._id;
+        afterSave(null, !campaign.projectId, `${etherScanUrl}tx/${txHash}`);
+      });
+
+      afterMined(!campaign.projectId, `${etherScanUrl}tx/${txHash}`, id);
+    } catch (err) {
+      ErrorPopup(
+        `Something went wrong with the Campaign ${
+          campaign.projectId > 0 ? 'update' : 'creation'
+        }. Is your wallet unlocked?`,
+        `${etherScanUrl}tx/${txHash} => ${JSON.stringify(err, null, 2)}`,
+      );
+      afterSave(err);
     }
   }
 
@@ -216,11 +241,10 @@ class CampaignService {
         etherScanUrl = network.etherscan;
 
         lppCampaign
-          .cancelCampaign({ from })
+          .cancelCampaign({ from, $extraGas: extraGas() })
           .once('transactionHash', hash => {
             txHash = hash;
-            feathersClient
-              .service('/campaigns')
+            campaigns
               .patch(campaign.id, {
                 status: Campaign.CANCELED,
                 mined: false,

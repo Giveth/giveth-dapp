@@ -6,6 +6,8 @@ import Toggle from 'react-toggle';
 import BigNumber from 'bignumber.js';
 import { Form, Input } from 'formsy-react-components';
 import GA from 'lib/GoogleAnalytics';
+import Milestone from 'models/Milestone';
+import MilestoneItem from 'models/MilestoneItem';
 import { feathersClient, feathersRest } from '../../lib/feathersClient';
 import templates from '../../lib/milestoneTemplates';
 import Loader from '../Loader';
@@ -14,20 +16,20 @@ import SelectFormsy from '../SelectFormsy';
 import DatePickerFormsy from '../DatePickerFormsy';
 import FormsyImageUploader from '../FormsyImageUploader';
 import GoBackButton from '../GoBackButton';
+import { isOwner, getTruncatedText, getStartOfDayUTC } from '../../lib/helpers';
 import {
-  isOwner,
-  getRandomWhitelistAddress,
-  getTruncatedText,
-  getStartOfDayUTC,
-} from '../../lib/helpers';
-import { isAuthenticated, checkWalletBalance, isInWhitelist } from '../../lib/middleware';
+  checkForeignNetwork,
+  checkBalance,
+  isInWhitelist,
+  authenticateIfPossible,
+  checkProfile,
+} from '../../lib/middleware';
 import getNetwork from '../../lib/blockchain/getNetwork';
+import extraGas from '../../lib/blockchain/extraGas';
 import LoaderButton from '../LoaderButton';
 import User from '../../models/User';
-import GivethWallet from '../../lib/blockchain/GivethWallet';
 
 import ErrorPopup from '../ErrorPopup';
-import config from '../../configuration';
 import MilestoneProof from '../MilestoneProof';
 
 import getEthConversionContext from '../../containers/getEthConversionContext';
@@ -53,33 +55,17 @@ class EditMilestone extends Component {
       isLoading: true,
       isSaving: false,
       formIsValid: false,
-
-      // milestone model
-      title: '',
-      description: '',
-      image: '',
-      maxAmount: new BigNumber(0),
-      fiatAmount: new BigNumber(0),
-      recipientAddress: '',
-      // completionDeadline: '',
-      status: 'Pending',
-      uploadNewImage: false,
-      campaignTitle: '',
-      projectId: undefined,
+      milestone: new Milestone({}),
       hasWhitelist: React.whitelist.reviewerWhitelist.length > 0,
       whitelistReviewerOptions: React.whitelist.reviewerWhitelist.map(r => ({
         value: r.address,
         title: `${r.name ? r.name : 'Anonymous user'} - ${r.address}`,
       })),
+      tokenWhitelistOptions: React.whitelist.tokenWhitelist.map(t => ({
+        value: t.address,
+        title: t.name,
+      })),
       reviewers: [],
-      reviewerAddress:
-        React.whitelist.reviewerWhitelist.length > 0
-          ? getRandomWhitelistAddress(React.whitelist.reviewerWhitelist).address
-          : '',
-      items: [],
-      itemizeState: false,
-      date: getStartOfDayUTC().subtract(1, 'd'),
-      selectedFiatType: 'EUR',
       isBlocking: false,
     };
 
@@ -96,15 +82,8 @@ class EditMilestone extends Component {
   }
 
   componentDidMount() {
-    isAuthenticated(this.props.currentUser, this.props.wallet)
-      .then(() => {
-        if (!this.props.isProposed) checkWalletBalance(this.props.wallet);
-      })
-      .then(() => {
-        if (!this.props.isProposed) {
-          isInWhitelist(this.props.currentUser, React.whitelist.projectOwnerWhitelist);
-        }
-      })
+    checkForeignNetwork(this.props.isForeignNetwork)
+      .then(() => this.checkUser())
       .then(() => {
         this.setState({
           campaignId: this.props.match.params.id,
@@ -118,7 +97,6 @@ class EditMilestone extends Component {
             .then(resp => {
               const milestone = resp.data[0];
               const date = getStartOfDayUTC(milestone.date);
-
               // convert amounts to BigNumbers
               milestone.maxAmount = new BigNumber(utils.fromWei(milestone.maxAmount).toString());
               milestone.fiatAmount = new BigNumber(milestone.fiatAmount);
@@ -131,21 +109,35 @@ class EditMilestone extends Component {
               ) {
                 this.props.history.goBack();
               }
-              this.setState(
-                Object.assign({}, milestone, {
+              this.setState({
+                milestone: new Milestone({
+                  title: milestone.title,
+                  description: milestone.description,
+                  image: milestone.image,
                   id: this.props.match.params.milestoneId,
-                  date,
+                  maxAmount: milestone.maxAmount,
+                  selectedFiatType: milestone.selectedFiatType,
+                  fiatAmount: milestone.fiatAmount,
+                  recipientAddress: milestone.recipientAddress,
+                  status: milestone.status,
+                  projectId: milestone.campaignId,
+                  reviewerAddress: milestone.reviewerAddress,
+                  items: milestone.items.map(i => new MilestoneItem(i)),
                   itemizeState: milestone.items && milestone.items.length > 0,
-                  selectedFiatType: milestone.selectedFiatType || 'EUR',
-                  campaignTitle: milestone.campaign.title,
-                  campaignProjectId: milestone.campaign.projectId,
-                  campaignReviewerAddress: milestone.campaign.reviewerAddress,
-                  campaign: milestone.campaign,
+                  date,
+                  token: milestone.token,
                 }),
-              );
-              return date;
+                campaignId: milestone.campaign._id,
+                campaignTitle: milestone.campaign.title,
+                campaignProjectId: milestone.campaign.projectId,
+                campaignReviewerAddress: milestone.campaign.reviewerAddress,
+              });
+
+              return { date, milestone };
             })
-            .then(date => this.props.getEthConversion(date))
+            .then(({ date, milestone }) =>
+              this.props.getEthConversion(date, milestone.token.symbol),
+            )
             .then(() => {
               if (!this.state.hasWhitelist) this.getReviewers();
             })
@@ -168,14 +160,19 @@ class EditMilestone extends Component {
               if (campaign.projectId < 0) {
                 this.props.history.goBack();
               } else {
+                const { milestone } = this.state;
+                milestone.recipientAddress = this.props.currentUser.address;
                 this.setState({
                   campaignTitle: campaign.title,
                   campaignReviewerAddress: campaign.reviewerAddress,
                   campaignProjectId: campaign.projectId,
+                  milestone,
                 });
               }
             })
-            .then(() => this.props.getEthConversion(this.state.date))
+            .then(() =>
+              this.props.getEthConversion(this.state.date, this.state.milestone.token.symbol),
+            )
             .then(() => {
               if (!this.state.hasWhitelist) this.getReviewers();
             })
@@ -204,13 +201,29 @@ class EditMilestone extends Component {
       });
   }
 
+  componentDidUpdate(prevProps) {
+    if (prevProps.currentUser !== this.props.currentUser) {
+      this.checkUser().then(() => {
+        if (
+          !isOwner(this.state.milestone.owner.address, this.props.currentUser) ||
+          !isOwner(this.state.milestone.campaign.ownerAddress, this.props.currentUser)
+        )
+          this.props.history.goBack();
+      });
+    } else if (this.props.currentUser && !prevProps.balance.eq(this.props.balance)) {
+      checkBalance(this.props.balance);
+    }
+  }
+
   onAddItem(item) {
     this.addItem(item);
     this.setState({ addMilestoneItemModalVisible: false });
   }
 
   onItemsChanged(items) {
-    this.setState({ items });
+    const { milestone } = this.state;
+    milestone.items = items;
+    this.setState({ milestone });
   }
 
   getReviewers() {
@@ -233,92 +246,96 @@ class EditMilestone extends Component {
   }
 
   setImage(image) {
+    const { milestone } = this.state;
+    milestone.image = image;
     this.setState({ image, uploadNewImage: true });
   }
 
   setDate(date) {
     this.setState({ date });
-    this.props.getEthConversion(date).then(resp => {
-      // update all the input fields
-      const rate = resp.rates[this.state.selectedFiatType];
+    const { milestone } = this.state;
+    milestone.date = date;
 
-      this.setState(prevState => ({
-        maxAmount: prevState.fiatAmount.div(rate),
-      }));
+    this.props.getEthConversion(date, milestone.token.symbol).then(resp => {
+      // update all the input fields
+      const rate = resp.rates[milestone.selectedFiatType];
+
+      this.setState(prevState => {
+        milestone.fiatAmount = prevState.milestone.fiatAmount.div(rate);
+        return {
+          maxAmount: milestone.fiatAmount,
+        };
+      });
     });
   }
 
   setFiatAmount(name, value) {
+    const { milestone } = this.state;
     const maxAmount = new BigNumber(value || '0');
-    const conversionRate = this.props.currentRate.rates[this.state.selectedFiatType];
+    const conversionRate = this.props.currentRate.rates[milestone.selectedFiatType];
 
     if (conversionRate && maxAmount.gte(0)) {
-      this.setState({
-        fiatAmount: maxAmount.times(conversionRate),
-        maxAmount,
-      });
+      milestone.maxAmount = maxAmount;
+      milestone.fiatAmount = maxAmount.times(conversionRate);
+
+      this.setState({ milestone });
     }
   }
 
   setMaxAmount(name, value) {
+    const { milestone } = this.state;
     const fiatAmount = new BigNumber(value || '0');
-    const conversionRate = this.props.currentRate.rates[this.state.selectedFiatType];
+    const conversionRate = this.props.currentRate.rates[milestone.selectedFiatType];
     if (conversionRate && fiatAmount.gte(0)) {
-      this.setState({
-        maxAmount: fiatAmount.div(conversionRate),
-        fiatAmount,
-      });
+      milestone.maxAmount = fiatAmount.div(conversionRate);
+      milestone.fiatAmount = fiatAmount;
+
+      this.setState({ milestone });
     }
   }
 
-  addItem(item) {
+  setToken(address) {
+    const { milestone } = this.state;
+    milestone.token = React.whitelist.tokenWhitelist.find(t => t.address === address);
+    this.setState({ milestone }, () =>
+      this.setDate(this.state.milestone.data || getStartOfDayUTC()),
+    );
+  }
+
+  checkUser() {
+    if (!this.props.currentUser) {
+      this.props.history.push('/');
+      return Promise.reject();
+    }
+
+    return authenticateIfPossible(this.props.currentUser)
+      .then(() => {
+        if (
+          !this.props.isProposed &&
+          !isInWhitelist(this.props.currentUser, React.whitelist.projectOwnerWhitelist)
+        ) {
+          throw new Error('not whitelisted');
+        }
+      })
+      .then(() => checkProfile(this.props.currentUser))
+      .then(() => !this.props.isProposed && checkBalance(this.props.balance));
+  }
+
+  toggleItemize() {
+    const { milestone } = this.state;
+    milestone.itemizeState = !milestone.itemizeState;
+    this.setState({ milestone });
+  }
+
+  toggleAddMilestoneItemModal() {
     this.setState(prevState => ({
-      items: prevState.items.concat(item),
+      addMilestoneItemModalVisible: !prevState.addMilestoneItemModalVisible,
     }));
   }
 
-  btnText() {
-    if (this.props.isNew) {
-      return this.props.isProposed ? 'Propose Milestone' : 'Create Milestone';
-    }
+  submit(/* model */) {
+    const { milestone } = this.state;
 
-    return 'Update Milestone';
-  }
-
-  removeItem(index) {
-    const { items } = this.state;
-    delete items[index];
-    this.setState({ items: items.filter(() => true) });
-  }
-
-  mapInputs(inputs) {
-    return {
-      title: inputs.title,
-      description: inputs.description,
-      reviewerAddress: inputs.reviewerAddress,
-      recipientAddress: inputs.recipientAddress,
-      items: this.state.items,
-      maxAmount: inputs.maxAmount,
-    };
-  }
-
-  changeSelectedFiat(fiatType) {
-    const conversionRate = this.props.currentRate.rates[fiatType];
-    this.setState(prevState => ({
-      maxAmount: prevState.fiatAmount.div(conversionRate),
-      selectedFiatType: fiatType,
-    }));
-  }
-
-  toggleFormValid(state) {
-    if (this.state.itemizeState) {
-      this.setState(prevState => ({ formIsValid: state && prevState.items.length > 0 }));
-    } else {
-      this.setState({ formIsValid: state });
-    }
-  }
-
-  submit(model) {
     const afterEmit = () => {
       this.setState({
         isSaving: false,
@@ -329,49 +346,48 @@ class EditMilestone extends Component {
     let txHash;
 
     const updateMilestone = file => {
-      // in itemized mode, we calculate the maxAmount from the items
+      const constructedModel = {
+        title: milestone.title,
+        description: milestone.description,
+        maxAmount: milestone.maxAmount,
+        ownerAddress: this.props.currentUser.address,
+        reviewerAddress: milestone.reviewerAddress,
+        recipientAddress: milestone.recipientAddress,
+        campaignReviewerAddress: this.state.campaignReviewerAddress,
+        image: file,
+        campaignId: this.state.campaignId,
+        status:
+          this.props.isProposed || milestone.status === 'Rejected' ? 'Proposed' : milestone.status, // make sure not to change status!
+        items: milestone.items.map(i => i.getItem()),
+        ethConversionRateTimestamp: this.props.currentRate.timestamp,
+        selectedFiatType: milestone.selectedFiatType,
+        date: milestone.date,
+        fiatAmount: milestone.fiatAmount.toFixed(),
+        conversionRate: this.props.currentRate.rates[milestone.selectedFiatType],
+        token: milestone.token,
+      };
 
-      if (this.state.itemizeState) {
-        model.maxAmount = this.state.items
+      // in itemized mode, we calculate the maxAmount from the items
+      // convert to string here, the milestone only works with BigNumber
+      if (milestone.itemizeState) {
+        constructedModel.maxAmount = constructedModel.items
           .reduce(
             (accumulator, item) => accumulator.plus(new BigNumber(item.wei)),
             new BigNumber(0),
           )
           .toString();
       } else {
-        model.maxAmount = utils.toWei(model.maxAmount.toString());
+        constructedModel.maxAmount = utils.toWei(milestone.maxAmount.toString());
       }
-
-      const constructedModel = {
-        title: model.title,
-        description: model.description,
-        maxAmount: model.maxAmount,
-        ownerAddress: this.props.currentUser.address,
-        reviewerAddress: model.reviewerAddress,
-        recipientAddress: model.recipientAddress,
-        campaignReviewerAddress: this.state.campaignReviewerAddress,
-        image: file,
-        campaignId: this.state.campaignId,
-        status:
-          this.props.isProposed || this.state.status === 'Rejected'
-            ? 'Proposed'
-            : this.state.status, // make sure not to change status!
-        items: this.state.itemizeState ? this.state.items : [],
-        ethConversionRateTimestamp: this.props.currentRate.timestamp,
-        selectedFiatType: this.state.selectedFiatType,
-        date: this.state.date,
-        fiatAmount: this.state.fiatAmount.toFixed(),
-        conversionRate: this.props.currentRate.rates[this.state.selectedFiatType],
-      };
 
       if (this.props.isNew) {
         const createMilestone = (txData, callback) => {
           feathersClient
             .service('milestones')
             .create(Object.assign({}, constructedModel, txData))
-            .then(milestone => {
+            .then(m => {
               afterEmit(true);
-              callback(milestone);
+              callback(m);
             })
             .catch(err => {
               this.setState({ isSaving: false, isBlocking: true });
@@ -389,13 +405,13 @@ class EditMilestone extends Component {
               totalDonated: '0',
               donationCount: 0,
             },
-            milestone => {
+            m => {
               GA.trackEvent({
                 category: 'Milestone',
                 action: 'proposed',
-                label: milestone._id,
+                label: m._id,
               });
-              React.toast.info(<p>Your Milestone is being proposed to the Campaign Owner.</p>);
+              React.toast.info(<p>Your Milestone has been proposed to the Campaign Owner.</p>);
             },
           );
         } else {
@@ -411,15 +427,15 @@ class EditMilestone extends Component {
                 reviewerAddress,
                 campaignReviewerAddress,
                 maxAmount,
+                token,
               } = constructedModel;
               const parentProjectId = this.state.campaignProjectId;
               // TODO  fix this hack
               if (!parentProjectId || parentProjectId === '0') {
                 ErrorPopup(
                   `It looks like the campaign has not been mined yet. Please try again in a bit`,
-                  `It looks like the campaign has not been mined yet. Please try again in a bit`,
                 );
-                return;
+                return null;
               }
 
               /**
@@ -437,7 +453,7 @@ class EditMilestone extends Component {
               uint _reviewTimeoutSeconds
               * */
 
-              network.lppCappedMilestoneFactory
+              return network.lppCappedMilestoneFactory
                 .newMilestone(
                   title,
                   '',
@@ -447,9 +463,9 @@ class EditMilestone extends Component {
                   campaignReviewerAddress,
                   from,
                   maxAmount,
-                  Object.values(config.tokenAddresses)[0], // TODO make this a form param
+                  token.foreignAddress,
                   5 * 24 * 60 * 60, // 5 days in seconds
-                  { from },
+                  { from, $extraGas: extraGas() },
                 )
                 .on('transactionHash', hash => {
                   txHash = hash;
@@ -460,11 +476,11 @@ class EditMilestone extends Component {
                       totalDonated: '0',
                       donationCount: '0',
                     },
-                    milestone => {
+                    m => {
                       GA.trackEvent({
                         category: 'Milestone',
                         action: 'created',
-                        label: milestone._id,
+                        label: m._id,
                       });
                       React.toast.info(
                         <p>
@@ -496,13 +512,19 @@ class EditMilestone extends Component {
                       </a>
                     </p>,
                   );
+                })
+                .catch(e => {
+                  ErrorPopup(
+                    'Something went wrong with the transaction. Is your wallet unlocked?',
+                    e,
+                  );
                 });
             })
             .catch(err => {
               if (txHash && err.message && err.message.includes('unknown transaction')) return; // bug in web3 seems to constantly fail due to this error, but the tx is correct
               this.setState({ isSaving: false, isBlocking: true });
               ErrorPopup(
-                'Something went wrong with the transaction. Is your wallet unlocked?',
+                'Something went wrong with the transaction.',
                 `${etherScanUrl}tx/${txHash}`,
               );
             });
@@ -510,7 +532,7 @@ class EditMilestone extends Component {
       } else {
         feathersClient
           .service('milestones')
-          .patch(this.state.id, constructedModel)
+          .patch(milestone.id, constructedModel)
           .then(() => {
             React.toast.success(
               <p>
@@ -549,10 +571,10 @@ class EditMilestone extends Component {
         }
       };
 
-      if (this.state.itemizeState && this.props.isNew) {
+      if (this.state.milestone.itemizeState && this.props.isNew) {
         // upload all the item images
         const uploadItemImages = [];
-        this.state.items.forEach(item => {
+        this.state.milestone.items.forEach(item => {
           if (item.image) {
             uploadItemImages.push(
               new Promise((resolve, reject) => {
@@ -608,19 +630,67 @@ class EditMilestone extends Component {
     );
   }
 
-  toggleAddMilestoneItemModal() {
-    this.setState(prevState => ({
-      addMilestoneItemModalVisible: !prevState.addMilestoneItemModalVisible,
-    }));
+  toggleFormValid(formState) {
+    if (this.state.milestone.itemizeState) {
+      this.setState(prevState => ({
+        formIsValid: formState && prevState.milestone.items.length > 0,
+      }));
+    } else {
+      this.setState({ formIsValid: formState });
+    }
   }
 
-  toggleItemize() {
-    this.setState(prevState => ({ itemizeState: !prevState.itemizeState }));
+  changeSelectedFiat(fiatType) {
+    const { milestone } = this.state;
+    const conversionRate = this.props.currentRate.rates[fiatType];
+    const maxAmount = milestone.fiatAmount.div(conversionRate);
+
+    milestone.maxAmount = maxAmount;
+    milestone.fiatAmount = maxAmount.times(conversionRate);
+    milestone.selectedFiatType = fiatType;
+
+    this.setState({ milestone });
+  }
+
+  mapInputs(inputs) {
+    const { milestone } = this.state;
+
+    milestone.title = inputs.title;
+    milestone.description = inputs.description;
+    milestone.reviewerAddress = inputs.reviewerAddress;
+    milestone.recipientAddress = inputs.recipientAddress;
+
+    // if(!milestone.itemizeState) milestone.maxAmount = inputs.maxAmount;
+
+    this.setState({ milestone });
+  }
+
+  removeItem(index) {
+    const { milestone } = this.state;
+    delete milestone.items[index];
+    milestone.items = milestone.items.filter(() => true);
+    this.setState({ milestone });
+  }
+
+  btnText() {
+    if (this.props.isNew) {
+      return this.props.isProposed ? 'Propose Milestone' : 'Create Milestone';
+    }
+
+    return 'Update Milestone';
+  }
+
+  addItem(item) {
+    const { milestone } = this.state;
+    milestone.items = milestone.items.concat(item);
+    this.setState({ milestone });
   }
 
   handleTemplateChange(option) {
+    const { milestone } = this.state;
+    milestone.description = templates.templates[option];
     this.setState({
-      description: templates.templates[option],
+      milestone,
       template: option,
     });
   }
@@ -669,24 +739,16 @@ class EditMilestone extends Component {
     const {
       isLoading,
       isSaving,
-      title,
-      description,
-      image,
-      recipientAddress,
-      reviewerAddress,
+
       formIsValid,
-      maxAmount,
+
       campaignTitle,
       hasWhitelist,
       whitelistReviewerOptions,
-      projectId,
-      items,
-      itemizeState,
-      fiatAmount,
-      date,
-      selectedFiatType,
+      tokenWhitelistOptions,
       reviewers,
       isBlocking,
+      milestone,
     } = this.state;
 
     return (
@@ -703,13 +765,12 @@ class EditMilestone extends Component {
                   <div className="form-header">
                     {isNew && !isProposed && <h3>Add a new milestone</h3>}
 
-                    {!isNew &&
-                      !isProposed && (
-                        <h3>
-                          Edit milestone
-                          {title}
-                        </h3>
-                      )}
+                    {!isNew && !isProposed && (
+                      <h3>
+                        Edit milestone
+                        {milestone.title}
+                      </h3>
+                    )}
 
                     {isNew && isProposed && <h3>Propose a Milestone</h3>}
 
@@ -754,7 +815,7 @@ class EditMilestone extends Component {
                       label="What are you going to accomplish in this Milestone?"
                       id="title-input"
                       type="text"
-                      value={title}
+                      value={milestone.title}
                       placeholder="E.g. buying goods"
                       help="Describe your Milestone in 1 sentence."
                       validations="minLength:3"
@@ -771,7 +832,7 @@ class EditMilestone extends Component {
                         label="Explain how you are going to do this successfully."
                         helpText="Make it as extensive as necessary. Your goal is to build trust,
                         so that people donate Ether to your Campaign. Don't hesitate to add a detailed budget for this Milestone"
-                        value={description}
+                        value={milestone.description}
                         placeholder="Describe how you're going to execute your Milestone successfully
                         ..."
                         onTextChanged={content => this.constructSummary(content)}
@@ -794,7 +855,7 @@ class EditMilestone extends Component {
                     <div className="form-group">
                       <FormsyImageUploader
                         setImage={this.setImage}
-                        previewImage={image}
+                        previewImage={milestone.image}
                         required={isNew}
                       />
                     </div>
@@ -807,7 +868,7 @@ class EditMilestone extends Component {
                           label="Select a reviewer"
                           helpText="Each milestone needs a reviewer who verifies that the milestone is
                           completed successfully"
-                          value={reviewerAddress}
+                          value={milestone.reviewerAddress}
                           cta="--- Select a reviewer ---"
                           options={whitelistReviewerOptions}
                           validations="isEtherAddress"
@@ -826,7 +887,7 @@ class EditMilestone extends Component {
                           label="Select a reviewer"
                           helpText="Each milestone needs a reviewer who verifies that the milestone is
                           completed successfully"
-                          value={reviewerAddress}
+                          value={milestone.reviewerAddress}
                           cta="--- Select a reviewer ---"
                           options={reviewers}
                           validations="isEtherAddress"
@@ -844,7 +905,7 @@ class EditMilestone extends Component {
                         name="recipientAddress"
                         id="title-input"
                         type="text"
-                        value={recipientAddress}
+                        value={milestone.recipientAddress}
                         placeholder="0x0000000000000000000000000000000000000000"
                         help="Enter an Ethereum address."
                         validations="isEtherAddress"
@@ -852,21 +913,34 @@ class EditMilestone extends Component {
                           isEtherAddress: 'Please insert a valid Ethereum address.',
                         }}
                         required
-                        disabled={projectId}
+                        disabled={milestone.projectId}
                       />
                     </div>
+
+                    <SelectFormsy
+                      name="token"
+                      id="token-select"
+                      label="Raising funds in"
+                      helpText="Select the token you're raising funds in"
+                      value={milestone.token && milestone.token.address}
+                      cta="--- Select a token ---"
+                      options={tokenWhitelistOptions}
+                      onChange={address => this.setToken(address)}
+                      required
+                      disabled={!isNew && !isProposed}
+                    />
 
                     <div className="react-toggle-container">
                       <Toggle
                         id="itemize-state"
-                        defaultChecked={this.state.itemizeState}
+                        defaultChecked={milestone.itemizeState}
                         onChange={() => this.toggleItemize()}
                         disabled={!isNew && !isProposed}
                       />
                       <span className="label">Add multiple expenses, invoices or items</span>
                     </div>
 
-                    {!itemizeState ? (
+                    {!milestone.itemizeState ? (
                       <div className="card milestone-items-card">
                         <div className="card-body">
                           <div className="form-group row">
@@ -874,8 +948,8 @@ class EditMilestone extends Component {
                               <DatePickerFormsy
                                 name="date"
                                 type="text"
-                                value={date}
-                                startDate={date}
+                                value={milestone.date}
+                                startDate={milestone.date}
                                 label="Milestone date"
                                 changeDate={dt => this.setDate(dt)}
                                 placeholder="Select a date"
@@ -884,8 +958,8 @@ class EditMilestone extends Component {
                                 validationErrors={{
                                   isMoment: 'Please provide a date.',
                                 }}
-                                required={!itemizeState}
-                                disabled={projectId}
+                                required={!milestone.itemizeState}
+                                disabled={milestone.projectId}
                               />
                             </div>
                           </div>
@@ -899,13 +973,13 @@ class EditMilestone extends Component {
                                 type="number"
                                 step="any"
                                 label="Maximum amount in fiat"
-                                value={fiatAmount}
+                                value={milestone.fiatAmount.toNumber()}
                                 placeholder="10"
                                 validations="greaterThan:0"
                                 validationErrors={{
                                   greaterEqualTo: 'Minimum value must be greater than 0',
                                 }}
-                                disabled={projectId}
+                                disabled={milestone.projectId}
                                 onChange={this.setMaxAmount}
                               />
                             </div>
@@ -914,13 +988,13 @@ class EditMilestone extends Component {
                               <SelectFormsy
                                 name="fiatType"
                                 label="Currency"
-                                value={selectedFiatType}
+                                value={milestone.selectedFiatType}
                                 options={fiatTypes}
                                 onChange={this.changeSelectedFiat}
-                                helpText={`1 Eth = ${
-                                  currentRate.rates[selectedFiatType]
-                                } ${selectedFiatType}`}
-                                disabled={projectId}
+                                helpText={`1 ${milestone.token.symbol} = ${
+                                  currentRate.rates[milestone.selectedFiatType]
+                                } ${milestone.selectedFiatType}`}
+                                disabled={milestone.projectId}
                                 required
                               />
                             </div>
@@ -932,15 +1006,15 @@ class EditMilestone extends Component {
                                 id="maxamount-input"
                                 type="number"
                                 step="any"
-                                label="Maximum amount in ETH"
-                                value={maxAmount}
+                                label={`Maximum amount in ${milestone.token.name}`}
+                                value={milestone.maxAmount}
                                 placeholder="10"
                                 validations="greaterThan:0"
                                 validationErrors={{
                                   greaterEqualTo: 'Minimum value must be greater than 0',
                                 }}
                                 required
-                                disabled={projectId}
+                                disabled={milestone.projectId}
                                 onChange={this.setFiatAmount}
                               />
                             </div>
@@ -950,8 +1024,10 @@ class EditMilestone extends Component {
                     ) : (
                       <MilestoneProof
                         isEditMode
-                        items={items}
+                        items={milestone.items}
                         onItemsChanged={returnedItems => this.onItemsChanged(returnedItems)}
+                        token={milestone.token}
+                        milestoneStatus={milestone.status}
                       />
                     )}
 
@@ -966,6 +1042,7 @@ class EditMilestone extends Component {
                           type="submit"
                           disabled={isSaving || !formIsValid}
                           isLoading={isSaving}
+                          network="Foreign"
                           loadingText="Saving..."
                         >
                           <span>{this.btnText()}</span>
@@ -986,14 +1063,15 @@ class EditMilestone extends Component {
 /* eslint react/forbid-prop-types: 0 */
 
 EditMilestone.propTypes = {
-  currentUser: PropTypes.instanceOf(User).isRequired,
+  currentUser: PropTypes.instanceOf(User),
   history: PropTypes.shape({
     goBack: PropTypes.func.isRequired,
     push: PropTypes.func.isRequired,
   }).isRequired,
   isProposed: PropTypes.bool,
   isNew: PropTypes.bool,
-  wallet: PropTypes.instanceOf(GivethWallet).isRequired,
+  balance: PropTypes.objectOf(utils.BN).isRequired,
+  isForeignNetwork: PropTypes.bool.isRequired,
   match: PropTypes.shape({
     params: PropTypes.shape({
       id: PropTypes.string,
@@ -1006,6 +1084,7 @@ EditMilestone.propTypes = {
 };
 
 EditMilestone.defaultProps = {
+  currentUser: undefined,
   isNew: false,
   isProposed: false,
 };

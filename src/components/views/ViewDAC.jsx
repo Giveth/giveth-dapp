@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
+import { utils } from 'web3';
 
 import { Link } from 'react-router-dom';
 import Avatar from 'react-avatar';
@@ -14,7 +15,6 @@ import CommunityButton from '../CommunityButton';
 import User from '../../models/User';
 import DAC from '../../models/DAC';
 import { getUserName, getUserAvatar } from '../../lib/helpers';
-import GivethWallet from '../../lib/blockchain/GivethWallet';
 import DACservice from '../../services/DACService';
 import CampaignCard from '../CampaignCard';
 
@@ -23,7 +23,6 @@ import CampaignCard from '../CampaignCard';
  *
  * @param currentUser  Currently logged in user information
  * @param history      Browser history object
- * @param wallet       Wallet object with the balance and all keystores
  */
 class ViewDAC extends Component {
   constructor() {
@@ -72,7 +71,7 @@ class ViewDAC extends Component {
   }
 
   render() {
-    const { wallet, history, currentUser } = this.props;
+    const { balance, history, currentUser } = this.props;
     const {
       isLoading,
       donations,
@@ -81,7 +80,6 @@ class ViewDAC extends Component {
       campaigns,
       isLoadingCampaigns,
     } = this.state;
-
     return (
       <div id="view-cause-view">
         {isLoading && <Loader className="fixed" />}
@@ -97,9 +95,9 @@ class ViewDAC extends Component {
                   type: DAC.type,
                   title: dac.title,
                   id: dac.id,
+                  token: { symbol: 'ETH' },
                   adminId: dac.delegateId,
                 }}
-                wallet={wallet}
                 currentUser={currentUser}
                 commmunityUrl={dac.communityUrl}
                 history={history}
@@ -114,7 +112,7 @@ class ViewDAC extends Component {
             <div className="container-fluid">
               <div className="row">
                 <div className="col-md-8 m-auto">
-                  <GoBackButton history={history} title="Communities" />
+                  <GoBackButton to="/" title="Communities" />
 
                   <center>
                     <Link to={`/profile/${dac.owner.address}`}>
@@ -138,20 +136,18 @@ class ViewDAC extends Component {
                     </p>
                     {isLoadingCampaigns && <Loader className="small" />}
 
-                    {campaigns.length > 0 &&
-                      !isLoadingCampaigns && (
-                        <div className="cards-grid-container">
-                          {campaigns.map(c => (
-                            <CampaignCard
-                              key={c.id}
-                              campaign={c}
-                              currentUser={currentUser}
-                              wallet={wallet}
-                              history={history}
-                            />
-                          ))}
-                        </div>
-                      )}
+                    {campaigns.length > 0 && !isLoadingCampaigns && (
+                      <div className="cards-grid-container">
+                        {campaigns.map(c => (
+                          <CampaignCard
+                            key={c.id}
+                            campaign={c}
+                            history={history}
+                            balance={balance}
+                          />
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </div>
               )}
@@ -165,9 +161,9 @@ class ViewDAC extends Component {
                       type: DAC.type,
                       title: dac.title,
                       id: dac.id,
+                      token: { symbol: 'ETH' },
                       adminId: dac.delegateId,
                     }}
-                    wallet={wallet}
                     currentUser={currentUser}
                     history={history}
                   />
@@ -192,12 +188,11 @@ ViewDAC.propTypes = {
       id: PropTypes.string,
     }).isRequired,
   }).isRequired,
-  wallet: PropTypes.instanceOf(GivethWallet),
+  balance: PropTypes.objectOf(utils.BN).isRequired,
 };
 
 ViewDAC.defaultProps = {
   currentUser: undefined,
-  wallet: undefined,
 };
 
 export default ViewDAC;

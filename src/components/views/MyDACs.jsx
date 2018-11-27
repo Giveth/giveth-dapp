@@ -2,14 +2,14 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 import Pagination from 'react-js-pagination';
+import { utils } from 'web3';
 
-import { isLoggedIn, redirectAfterWalletUnlock, checkWalletBalance } from '../../lib/middleware';
-import { getTruncatedText, convertEthHelper } from '../../lib/helpers';
+import { isLoggedIn, checkBalance } from '../../lib/middleware';
+import { getTruncatedText, convertEthHelper, history } from '../../lib/helpers';
 
 import Loader from '../Loader';
 
 import User from '../../models/User';
-import GivethWallet from '../../lib/blockchain/GivethWallet';
 import DACservice from '../../services/DACService';
 import DAC from '../../models/DAC';
 
@@ -29,6 +29,7 @@ class MyDACs extends Component {
     };
 
     this.editDAC = this.editDAC.bind(this);
+    this.handlePageChanged = this.handlePageChanged.bind(this);
   }
 
   componentDidMount() {
@@ -39,6 +40,15 @@ class MyDACs extends Component {
           // default behavior is to go home or signin page after swal popup
         }
       });
+  }
+
+  componentDidUpdate(prevProps) {
+    if (prevProps.currentUser !== this.props.currentUser) {
+      // eslint-disable-next-line react/no-did-update-set-state
+      this.setState({ isLoading: true });
+      if (this.dacsObserver) this.dacsObserver.unsubscribe();
+      this.loadDACs();
+    }
   }
 
   componentWillUnmount() {
@@ -56,18 +66,10 @@ class MyDACs extends Component {
   }
 
   editDAC(id) {
-    checkWalletBalance(this.props.wallet)
-      .then(() =>
-        React.swal({
-          title: 'Edit Community?',
-          text: 'Are you sure you want to edit the description of this community?',
-          icon: 'warning',
-          dangerMode: true,
-          buttons: ['Cancel', 'Yes, edit'],
-        }).then(isConfirmed => {
-          if (isConfirmed) redirectAfterWalletUnlock(`/dacs/${id}/edit`, this.props.wallet);
-        }),
-      )
+    checkBalance(this.props.balance)
+      .then(() => {
+        history.push(`/dacs/${id}/edit`);
+      })
       .catch(err => {
         if (err === 'noBalance') {
           // handle no balance error
@@ -81,6 +83,7 @@ class MyDACs extends Component {
 
   render() {
     const { dacs, isLoading, visiblePages } = this.state;
+    const { currentUser } = this.props;
     const isPendingDac =
       (dacs.data && dacs.data.some(d => d.confirmations !== d.requiredConfirmations)) || false;
 
@@ -101,6 +104,7 @@ class MyDACs extends Component {
                         <table className="table table-responsive table-striped table-hover">
                           <thead>
                             <tr>
+                              {currentUser.authenticated && <th className="td-actions" />}
                               <th className="td-name">Name</th>
                               <th className="td-donations-number">Number of donations</th>
                               <th className="td-donations-amount">Amount donated</th>
@@ -108,18 +112,43 @@ class MyDACs extends Component {
                               <th className="td-confirmations">
                                 {isPendingDac && 'Confirmations'}
                               </th>
-                              <th className="td-actions" />
                             </tr>
                           </thead>
                           <tbody>
                             {dacs.data.map(d => (
                               <tr key={d.id} className={d.status === DAC.PENDING ? 'pending' : ''}>
+                                {currentUser.authenticated && (
+                                  <td className="td-actions">
+                                    <button
+                                      type="button"
+                                      className="btn btn-link"
+                                      onClick={() => this.editDAC(d.id)}
+                                    >
+                                      <i className="fa fa-edit" />
+                                    </button>
+                                  </td>
+                                )}
                                 <td className="td-name">
                                   <Link to={`/dacs/${d.id}`}>{getTruncatedText(d.title, 45)}</Link>
                                 </td>
-                                <td className="td-donations-number">{d.donationCount}</td>
+                                <td className="td-donations-number">
+                                  {d.donationCounters.length > 0 &&
+                                    d.donationCounters.map(counter => (
+                                      <p>
+                                        {counter.donationCount} donation(s) in {counter.symbol}
+                                      </p>
+                                    ))}
+                                  {d.donationCounters.length === 0 && <span>-</span>}
+                                </td>
                                 <td className="td-donations-amount">
-                                  {convertEthHelper(d.totalDonated)} ETH
+                                  {d.donationCounters.length > 0 &&
+                                    d.donationCounters.map(counter => (
+                                      <p>
+                                        {convertEthHelper(counter.totalDonated)} {counter.symbol}
+                                      </p>
+                                    ))}
+
+                                  {d.donationCounters.length === 0 && <span>-</span>}
                                 </td>
                                 <td className="td-status">
                                   {d.status === DAC.PENDING && (
@@ -134,26 +163,17 @@ class MyDACs extends Component {
                                   {(isPendingDac || d.requiredConfirmations !== d.confirmations) &&
                                     `${d.confirmations}/${d.requiredConfirmations}`}
                                 </td>
-                                <td className="td-actions">
-                                  <button
-                                    type="button"
-                                    className="btn btn-link"
-                                    onClick={() => this.editDAC(d.id)}
-                                  >
-                                    <i className="fa fa-edit" />
-                                  </button>
-                                </td>
                               </tr>
                             ))}
                           </tbody>
                         </table>
 
-                        {dacs.data.length > dacs.itemsPerPage && (
+                        {dacs.total > dacs.limit && (
                           <center>
                             <Pagination
-                              activePage={dacs.skipPages + 1}
-                              itemsCountPerPage={dacs.itemsPerPage}
-                              totalItemsCount={dacs.totalResults}
+                              activePage={dacs.skip + 1}
+                              itemsCountPerPage={dacs.limit}
+                              totalItemsCount={dacs.total}
                               pageRangeDisplayed={visiblePages}
                               onChange={this.handlePageChanged}
                             />
@@ -192,7 +212,7 @@ class MyDACs extends Component {
 
 MyDACs.propTypes = {
   currentUser: PropTypes.instanceOf(User).isRequired,
-  wallet: PropTypes.instanceOf(GivethWallet).isRequired,
+  balance: PropTypes.objectOf(utils.BN).isRequired,
 };
 
 export default MyDACs;

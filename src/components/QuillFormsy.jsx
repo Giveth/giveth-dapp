@@ -4,6 +4,8 @@ import { withFormsy } from 'formsy-react';
 import ReactQuill from 'react-quill';
 import { feathersRest } from '../lib/feathersClient';
 
+import VideoPopup from './VideoPopup';
+
 class QuillFormsy extends Component {
   constructor(props) {
     super(props);
@@ -17,6 +19,14 @@ class QuillFormsy extends Component {
   componentDidMount() {
     const toolbar = this.reactQuillRef.getEditor().getModule('toolbar');
     toolbar.addHandler('image', this.imageHandler);
+    toolbar.addHandler('video', () => {
+      const quill = this.reactQuillRef.getEditor();
+      const index = quill.getLength() - 1;
+      VideoPopup(url => {
+        quill.insertEmbed(index, 'video', url);
+        React.swal.close();
+      });
+    });
     if (this.props.templatesDropdown) {
       const placeholderPickerItems = Array.prototype.slice.call(
         document.querySelectorAll('.ql-template .ql-picker-item'),

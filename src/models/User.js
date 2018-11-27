@@ -1,19 +1,27 @@
 import Model from './Model';
+import IPFSService from '../services/IPFSService';
+import UserService from '../services/UserService';
+import ErrorPopup from '../components/ErrorPopup';
+import { cleanIpfsPath } from '../lib/helpers';
 
 /**
  * The DApp User model
  *
- * @attribute address     Ethereum address of the user
- * @attribute avatar      URL to user avatar
+ * @attribute address       Ethereum address of the user
+ * @attribute avatar        URL to user avatar
  * @attribute commitTime
- * @attribute email       Email address of the user
- * @attribute giverId     Giver ID used for querying donations
- * @attribute linkedin    Link to the linkedin profile
- * @attribute name        Name of the user
+ * @attribute email         Email address of the user
+ * @attribute giverId       Giver ID used for querying donations
+ * @attribute linkedin      Link to the linkedin profile
+ * @attribute name          Name of the user
+ * @attribute url           Url attached to LiquidPledging admin
+ * @attribute authenticated If the user is authenticated w/ feathers
  */
 class User extends Model {
   constructor(data) {
     super(data);
+
+    this.authenticated = false;
 
     if (data) {
       this.address = data.address;
@@ -24,6 +32,48 @@ class User extends Model {
       this.linkedin = data.linkedin;
       this.name = data.name;
       this.updatedAt = data.updatedAt;
+      this.url = data.url;
+      this.authenticated = data.authenticated || false;
+    }
+  }
+
+  toIpfs() {
+    return {
+      name: this.name,
+      email: this.email,
+      linkedin: this.linkedin,
+      avatar: cleanIpfsPath(this.avatar),
+      version: 1,
+    };
+  }
+
+  toFeathers(txHash) {
+    const user = {
+      name: this.name,
+      email: this.email,
+      linkedin: this.linkedin,
+      avatar: cleanIpfsPath(this.avatar),
+    };
+    if (this.giverId === undefined && txHash) {
+      // set to 0 so we don't attempt to create multiple givers in lp for the same user
+      user.giverId = 0;
+      user.txHash = txHash;
+    }
+    return user;
+  }
+
+  save(onSave, afterEmit) {
+    if (this.myNewAvatar) {
+      IPFSService.upload(this.myNewAvatar)
+        .then(hash => {
+          // Save the new avatar
+          this.avatar = hash;
+          delete this.myNewAvatar;
+        })
+        .catch(err => ErrorPopup('Failed to upload avatar', err))
+        .finally(() => UserService.save(this, onSave, afterEmit));
+    } else {
+      UserService.save(this, onSave, afterEmit);
     }
   }
 
@@ -41,7 +91,7 @@ class User extends Model {
   }
 
   set address(value) {
-    this.checkType(value, ['string'], 'address');
+    this.checkType(value, ['undefined', 'string'], 'address');
     this.myAddress = value;
   }
 
@@ -52,6 +102,11 @@ class User extends Model {
   set avatar(value) {
     this.checkType(value, ['undefined', 'string'], 'avatar');
     this.myAvatar = value;
+  }
+
+  set newAvatar(value) {
+    this.checkType(value, ['string'], 'newAvatar');
+    this.myNewAvatar = value;
   }
 
   get commitTime() {
@@ -82,12 +137,12 @@ class User extends Model {
   }
 
   get linkedin() {
-    return this.myLinkedIn;
+    return this.mylinkedin;
   }
 
   set linkedin(value) {
     this.checkType(value, ['undefined', 'string'], 'linkedin');
-    this.myLinkedIn = value;
+    this.mylinkedin = value;
   }
 
   get name() {
@@ -99,6 +154,15 @@ class User extends Model {
     this.myName = value;
   }
 
+  get url() {
+    return this.myUrl;
+  }
+
+  set url(value) {
+    this.checkType(value, ['undefined', 'string'], 'url');
+    this.myUrl = value;
+  }
+
   get updatedAt() {
     return this.myUpdatedAt;
   }
@@ -106,6 +170,15 @@ class User extends Model {
   set updatedAt(value) {
     this.checkType(value, ['undefined', 'string'], 'updatedAt');
     this.myUpdatedAt = value;
+  }
+
+  get authenticated() {
+    return this.myIsAuthenticated;
+  }
+
+  set authenticated(value) {
+    this.checkType(value, ['boolean'], 'authenticated');
+    this.myIsAuthenticated = value;
   }
 }
 

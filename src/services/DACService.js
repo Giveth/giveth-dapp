@@ -2,14 +2,18 @@ import BigNumber from 'bignumber.js';
 
 import { paramsForServer } from 'feathers-hooks-common';
 import getNetwork from '../lib/blockchain/getNetwork';
+import extraGas from '../lib/blockchain/extraGas';
 import { feathersClient } from '../lib/feathersClient';
 import DAC from '../models/DAC';
 import Campaign from '../models/Campaign';
 import Donation from '../models/Donation';
+import IPFSService from './IPFSService';
 
 import ErrorPopup from '../components/ErrorPopup';
 
 BigNumber.config({ DECIMAL_PLACES: 18 });
+
+const dacs = feathersClient.service('dacs');
 
 class DACService {
   /**
@@ -19,8 +23,7 @@ class DACService {
    */
   static get(id) {
     return new Promise((resolve, reject) => {
-      feathersClient
-        .service('dacs')
+      dacs
         .find({
           query: {
             _id: id,
@@ -133,8 +136,7 @@ class DACService {
    * @param onError       Callback function if error is encountered
    */
   static getUserDACs(userAddress, skipPages, itemsPerPage, onSuccess, onError) {
-    return feathersClient
-      .service('dacs')
+    return dacs
       .watch({ listStrategy: 'always' })
       .find({
         query: {
@@ -159,45 +161,71 @@ class DACService {
    *
    * @param dac         DAC object to be saved
    * @param from        address of the user creating the DAC
-   * @param afterCreate Callback to be triggered after the DAC is created in feathers
+   * @param afterSave   Callback to be triggered after the DAC is saved in feathers
    * @param afterMined  Callback to be triggered after the transaction is mined
    */
-  static save(dac, from, afterCreate = () => {}, afterMined = () => {}) {
-    if (dac.id) {
-      feathersClient
-        .service('dacs')
-        .patch(dac.id, dac.toFeathers())
-        .then(() => afterMined());
-    } else {
-      let txHash;
-      let etherScanUrl;
-      getNetwork()
-        .then(network => {
-          const { liquidPledging } = network;
-          etherScanUrl = network.etherscan;
+  static async save(dac, from, afterSave = () => {}, afterMined = () => {}) {
+    if (dac.id && dac.delegateId === 0) {
+      throw new Error(
+        'You must wait for your DAC to be creation to finish before you can update it',
+      );
+    }
 
-          liquidPledging
-            .addDelegate(dac.title, '', 0, 0, {
-              from,
-            })
-            .once('transactionHash', hash => {
-              txHash = hash;
-              feathersClient
-                .service('dacs')
-                .create(dac.toFeathers(txHash))
-                .then(id => afterCreate(`${etherScanUrl}tx/${txHash}`, id));
-            })
-            .then(() => {
-              afterMined(`${etherScanUrl}tx/${txHash}`);
-            });
-        })
-        .catch(err => {
-          if (txHash && err.message && err.message.includes('unknown transaction')) return; // bug in web3 seems to constantly fail due to this error, but the tx is correct
-          ErrorPopup(
-            'Something went wrong with the DAC creation. Is your wallet unlocked?',
-            `${etherScanUrl}tx/${txHash} => ${JSON.stringify(err, null, 2)}`,
-          );
-        });
+    let txHash;
+    let etherScanUrl;
+    try {
+      let profileHash = '';
+      try {
+        profileHash = await IPFSService.upload(dac.toIpfs());
+      } catch (err) {
+        ErrorPopup('Failed to upload dac to ipfs');
+      }
+
+      const network = await getNetwork();
+      etherScanUrl = network.etherscan;
+      const { liquidPledging } = network;
+
+      // nothing to update or failed ipfs upload
+      if (dac.delegateId && (dac.url === profileHash || !profileHash)) {
+        // ipfs upload may have failed, but we still want to update feathers
+        if (!profileHash) {
+          await dacs.patch(dac.id, dac.toFeathers(txHash));
+        }
+        afterSave(null, false);
+        afterMined(false, undefined, dac.id);
+        return;
+      }
+
+      // lp function updateDelegate(uint64 idDelegate,address newAddr,string newName,string newUrl,uint64 newCommitTime)
+      // lp function addDelegate(string name,string url,uint64 commitTime,address plugin)
+      const promise = dac.delegateId
+        ? liquidPledging.updateDelegate(
+            dac.delegateId,
+            dac.ownerAddress,
+            dac.title,
+            profileHash,
+            dac.commitTime,
+            { from, $extraGas: extraGas() },
+          )
+        : liquidPledging.addDelegate(dac.title, profileHash, 0, 0, { from, $extraGas: extraGas() });
+
+      let { id } = dac;
+      await promise.once('transactionHash', async hash => {
+        txHash = hash;
+        if (dac.id) await dacs.patch(dac.id, dac.toFeathers(txHash));
+        else id = (await dacs.create(dac.toFeathers(txHash)))._id;
+        afterSave(null, !dac.delegateId, `${etherScanUrl}tx/${txHash}`);
+      });
+
+      afterMined(!dac.delegateId, `${etherScanUrl}tx/${txHash}`, id);
+    } catch (err) {
+      ErrorPopup(
+        `Something went wrong with the DAC ${
+          dac.delegateId > 0 ? 'update' : 'creation'
+        }. Is your wallet unlocked?`,
+        `${etherScanUrl}tx/${txHash} => ${JSON.stringify(err, null, 2)}`,
+      );
+      afterSave(err);
     }
   }
 }
