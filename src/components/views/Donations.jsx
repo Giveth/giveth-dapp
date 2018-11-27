@@ -58,7 +58,7 @@ const Donations = () => (
                                 <table className="table table-responsive table-striped table-hover">
                                   <thead>
                                     <tr>
-                                      <th className="td-action" />
+                                      {currentUser.authenticated && <th className="td-action" />}
                                       <th className="td-transaction-status">Status</th>
                                       <th className="td-date">Date</th>
                                       <th className="td-donated-to">Donated to</th>
@@ -72,36 +72,37 @@ const Donations = () => (
                                   <tbody>
                                     {donations.map(d => (
                                       <tr key={d.id} className={d.isPending ? 'pending' : ''}>
-                                        <td className="td-actions">
-                                          {d.canRefund(currentUser, isForeignNetwork) && (
-                                            <button
-                                              type="button"
-                                              className="btn btn-sm btn-danger"
-                                              onClick={() => refund(d)}
-                                            >
-                                              Refund
-                                            </button>
-                                          )}
-                                          {d.canApproveReject(currentUser, isForeignNetwork) && (
-                                            <div>
-                                              <button
-                                                type="button"
-                                                className="btn btn-sm btn-success"
-                                                onClick={() => commit(d)}
-                                              >
-                                                Commit
-                                              </button>
+                                        {currentUser.authenticated && (
+                                          <td className="td-actions">
+                                            {d.canRefund(currentUser, isForeignNetwork) && (
                                               <button
                                                 type="button"
                                                 className="btn btn-sm btn-danger"
-                                                onClick={() => reject(d)}
+                                                onClick={() => refund(d)}
                                               >
-                                                Reject
+                                                Refund
                                               </button>
-                                            </div>
-                                          )}
-                                        </td>
-
+                                            )}
+                                            {d.canApproveReject(currentUser, isForeignNetwork) && (
+                                              <div>
+                                                <button
+                                                  type="button"
+                                                  className="btn btn-sm btn-success"
+                                                  onClick={() => commit(d)}
+                                                >
+                                                  Commit
+                                                </button>
+                                                <button
+                                                  type="button"
+                                                  className="btn btn-sm btn-danger"
+                                                  onClick={() => reject(d)}
+                                                >
+                                                  Reject
+                                                </button>
+                                              </div>
+                                            )}
+                                          </td>
+                                        )}
                                         <td className="td-transaction-status">
                                           {d.isPending && (
                                             <span>

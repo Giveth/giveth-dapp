@@ -12,7 +12,7 @@ import NetworkWarning from 'components/NetworkWarning';
 import { Consumer as Web3Consumer } from 'contextProviders/Web3Provider';
 
 import { feathersClient } from '../../lib/feathersClient';
-import { isLoggedIn, checkBalance, authenticateIfPossible } from '../../lib/middleware';
+import { isLoggedIn, checkBalance } from '../../lib/middleware';
 import confirmationDialog from '../../lib/confirmationDialog';
 import getNetwork from '../../lib/blockchain/getNetwork';
 import getWeb3 from '../../lib/blockchain/getWeb3';
@@ -138,8 +138,7 @@ class MyMilestones extends Component {
   }
 
   componentDidMount() {
-    authenticateIfPossible(this.props.currentUser)
-      .then(() => isLoggedIn(this.props.currentUser))
+    isLoggedIn(this.props.currentUser)
       .then(() => this.loadMileStones())
       .catch(err => {
         if (err === 'notLoggedIn') {
@@ -152,7 +151,6 @@ class MyMilestones extends Component {
     if (prevProps.currentUser !== this.props.currentUser) {
       // eslint-disable-next-line react/no-did-update-set-state
       this.setState({ isLoading: true });
-      authenticateIfPossible(this.props.currentUser);
       if (this.milestonesObserver) this.milestonesObserver.unsubscribe();
       this.loadMileStones();
     }
@@ -989,6 +987,7 @@ class MyMilestones extends Component {
                             <table className="table table-responsive table-striped table-hover">
                               <thead>
                                 <tr>
+                                  {currentUser.authenticated && <th className="td-actions" />}
                                   <th className="td-created-at">Created</th>
                                   <th className="td-name">Name</th>
                                   <th className="td-status">Status</th>
@@ -996,7 +995,6 @@ class MyMilestones extends Component {
                                   <th className="td-donations-number">Donations</th>
                                   <th className="td-donations-amount">Donated</th>
                                   <th className="td-reviewer">Reviewer</th>
-                                  <th className="td-actions" />
                                 </tr>
                               </thead>
                               <tbody>
@@ -1005,6 +1003,177 @@ class MyMilestones extends Component {
                                     key={m._id}
                                     className={m.status === 'Pending' ? 'pending' : ''}
                                   >
+                                    {currentUser.authenticated && (
+                                      <td className="td-actions">
+                                        {/* Campaign and Milestone managers can edit milestone */}
+                                        {(m.ownerAddress === currentUser.address ||
+                                          m.campaign.ownerAddress === currentUser.address) &&
+                                          isForeignNetwork &&
+                                          [
+                                            'Proposed',
+                                            'Rejected',
+                                            'InProgress',
+                                            'NeedsReview',
+                                          ].includes(m.status) && (
+                                            <button
+                                              type="button"
+                                              className="btn btn-link"
+                                              onClick={() => this.editMilestone(m)}
+                                            >
+                                              <i className="fa fa-edit" />
+                                              &nbsp;Edit
+                                            </button>
+                                          )}
+
+                                        {m.campaign.ownerAddress === currentUser.address &&
+                                          isForeignNetwork &&
+                                          m.status === 'Proposed' && (
+                                            <span>
+                                              <button
+                                                type="button"
+                                                className="btn btn-success btn-sm"
+                                                onClick={() => this.acceptProposedMilestone(m)}
+                                              >
+                                                <i className="fa fa-check-square-o" />
+                                                &nbsp;Accept
+                                              </button>
+                                              <button
+                                                type="button"
+                                                className="btn btn-danger btn-sm"
+                                                onClick={() => rejectProposedMilestone(m)}
+                                              >
+                                                <i className="fa fa-times-circle-o" />
+                                                &nbsp;Reject
+                                              </button>
+                                            </span>
+                                          )}
+                                        {m.ownerAddress === currentUser.address &&
+                                          isForeignNetwork &&
+                                          m.status === 'Rejected' && (
+                                            <button
+                                              type="button"
+                                              className="btn btn-success btn-sm"
+                                              onClick={() => reproposeRejectedMilestone(m)}
+                                            >
+                                              <i className="fa fa-times-square-o" />
+                                              &nbsp;Re-propose
+                                            </button>
+                                          )}
+
+                                        {(m.recipientAddress === currentUser.address ||
+                                          m.ownerAddress === currentUser.address) &&
+                                          isForeignNetwork &&
+                                          m.status === 'InProgress' &&
+                                          m.mined && (
+                                            <button
+                                              type="button"
+                                              className="btn btn-success btn-sm"
+                                              onClick={() => this.requestMarkComplete(m)}
+                                              disabled={
+                                                !utils.toBN(m.currentBalance || '0').gt('0')
+                                              }
+                                            >
+                                              Mark complete
+                                            </button>
+                                          )}
+                                        {[
+                                          m.reviewerAddress,
+                                          m.campaignReviewerAddress,
+                                          m.recipientAddress,
+                                        ].includes(currentUser.address) &&
+                                          isForeignNetwork &&
+                                          ['InProgress', 'NeedReview'].includes(m.status) &&
+                                          m.mined && (
+                                            <button
+                                              type="button"
+                                              className="btn btn-danger btn-sm"
+                                              onClick={() => this.cancelMilestone(m)}
+                                            >
+                                              <i className="fa fa-times" />
+                                              &nbsp;Cancel
+                                            </button>
+                                          )}
+
+                                        {m.ownerAddress === currentUser.address &&
+                                          isForeignNetwork &&
+                                          ['Proposed', 'Rejected'].includes(m.status) && (
+                                            <span>
+                                              <button
+                                                type="button"
+                                                className="btn btn-danger btn-sm"
+                                                onClick={() => deleteProposedMilestone(m)}
+                                              >
+                                                <i className="fa fa-times-circle-o" />
+                                                &nbsp;Delete
+                                              </button>
+                                            </span>
+                                          )}
+
+                                        {m.reviewerAddress === currentUser.address &&
+                                          isForeignNetwork &&
+                                          m.status === 'NeedsReview' &&
+                                          m.mined && (
+                                            <span>
+                                              <button
+                                                type="button"
+                                                className="btn btn-success btn-sm"
+                                                onClick={() => this.approveMilestoneCompleted(m)}
+                                              >
+                                                <i className="fa fa-thumbs-up" />
+                                                &nbsp;Approve
+                                              </button>
+
+                                              <button
+                                                type="button"
+                                                className="btn btn-danger btn-sm"
+                                                onClick={() => this.rejectMilestoneCompletion(m)}
+                                              >
+                                                <i className="fa fa-thumbs-down" />
+                                                &nbsp;Reject
+                                              </button>
+                                            </span>
+                                          )}
+
+                                        {[m.recipientAddress, m.ownerAddress].includes(
+                                          currentUser.address,
+                                        ) &&
+                                          m.status === 'Completed' &&
+                                          isForeignNetwork &&
+                                          m.mined &&
+                                          m.donationCount > 0 && (
+                                            <button
+                                              type="button"
+                                              className="btn btn-success btn-sm"
+                                              onClick={() => this.withdrawal(m)}
+                                            >
+                                              <i className="fa fa-usd" />{' '}
+                                              {m.recipientAddress === currentUser.address
+                                                ? 'Collect'
+                                                : 'Disburse'}
+                                            </button>
+                                          )}
+
+                                        {/* {m.recipientAddress === currentUser.address &&
+                                      m.status === 'Paying' && (
+                                        <p>
+                                          Withdraw authorization pending. You will be able to collect
+                                          the funds when confirmed.
+                                        </p>
+                                      )}
+
+                                    {m.recipientAddress === currentUser.address &&
+                                      m.status === 'CanWithdraw' &&
+                                      m.mined && (
+                                        <button
+                                          className="btn btn-success btn-sm"
+                                          onClick={() => this.collect(m)}
+                                        >
+                                          <i className="fa fa-usd" />&nbsp;Collect
+                                        </button>
+                                      )} */}
+                                      </td>
+                                    )}
+
                                     <td className="td-created-at">
                                       {m.createdAt && (
                                         <span>{moment.utc(m.createdAt).format('Do MMM YYYY')}</span>
@@ -1069,172 +1238,6 @@ class MyMilestones extends Component {
                                             {m.reviewer.name || 'Anomynous user'}
                                           </Link>
                                         )}
-                                    </td>
-                                    <td className="td-actions">
-                                      {/* Campaign and Milestone managers can edit milestone */}
-                                      {(m.ownerAddress === currentUser.address ||
-                                        m.campaign.ownerAddress === currentUser.address) &&
-                                        isForeignNetwork &&
-                                        [
-                                          'Proposed',
-                                          'Rejected',
-                                          'InProgress',
-                                          'NeedsReview',
-                                        ].includes(m.status) && (
-                                          <button
-                                            type="button"
-                                            className="btn btn-link"
-                                            onClick={() => this.editMilestone(m)}
-                                          >
-                                            <i className="fa fa-edit" />
-                                            &nbsp;Edit
-                                          </button>
-                                        )}
-
-                                      {m.campaign.ownerAddress === currentUser.address &&
-                                        isForeignNetwork &&
-                                        m.status === 'Proposed' && (
-                                          <span>
-                                            <button
-                                              type="button"
-                                              className="btn btn-success btn-sm"
-                                              onClick={() => this.acceptProposedMilestone(m)}
-                                            >
-                                              <i className="fa fa-check-square-o" />
-                                              &nbsp;Accept
-                                            </button>
-                                            <button
-                                              type="button"
-                                              className="btn btn-danger btn-sm"
-                                              onClick={() => rejectProposedMilestone(m)}
-                                            >
-                                              <i className="fa fa-times-circle-o" />
-                                              &nbsp;Reject
-                                            </button>
-                                          </span>
-                                        )}
-                                      {m.ownerAddress === currentUser.address &&
-                                        isForeignNetwork &&
-                                        m.status === 'Rejected' && (
-                                          <button
-                                            type="button"
-                                            className="btn btn-success btn-sm"
-                                            onClick={() => reproposeRejectedMilestone(m)}
-                                          >
-                                            <i className="fa fa-times-square-o" />
-                                            &nbsp;Re-propose
-                                          </button>
-                                        )}
-
-                                      {(m.recipientAddress === currentUser.address ||
-                                        m.ownerAddress === currentUser.address) &&
-                                        isForeignNetwork &&
-                                        m.status === 'InProgress' &&
-                                        m.mined && (
-                                          <button
-                                            type="button"
-                                            className="btn btn-success btn-sm"
-                                            onClick={() => this.requestMarkComplete(m)}
-                                            disabled={!utils.toBN(m.currentBalance || '0').gt('0')}
-                                          >
-                                            Mark complete
-                                          </button>
-                                        )}
-                                      {[
-                                        m.reviewerAddress,
-                                        m.campaignReviewerAddress,
-                                        m.recipientAddress,
-                                      ].includes(currentUser.address) &&
-                                        isForeignNetwork &&
-                                        ['InProgress', 'NeedReview'].includes(m.status) &&
-                                        m.mined && (
-                                          <button
-                                            type="button"
-                                            className="btn btn-danger btn-sm"
-                                            onClick={() => this.cancelMilestone(m)}
-                                          >
-                                            <i className="fa fa-times" />
-                                            &nbsp;Cancel
-                                          </button>
-                                        )}
-
-                                      {m.ownerAddress === currentUser.address &&
-                                        isForeignNetwork &&
-                                        ['Proposed', 'Rejected'].includes(m.status) && (
-                                          <span>
-                                            <button
-                                              type="button"
-                                              className="btn btn-danger btn-sm"
-                                              onClick={() => deleteProposedMilestone(m)}
-                                            >
-                                              <i className="fa fa-times-circle-o" />
-                                              &nbsp;Delete
-                                            </button>
-                                          </span>
-                                        )}
-
-                                      {m.reviewerAddress === currentUser.address &&
-                                        isForeignNetwork &&
-                                        m.status === 'NeedsReview' &&
-                                        m.mined && (
-                                          <span>
-                                            <button
-                                              type="button"
-                                              className="btn btn-success btn-sm"
-                                              onClick={() => this.approveMilestoneCompleted(m)}
-                                            >
-                                              <i className="fa fa-thumbs-up" />
-                                              &nbsp;Approve
-                                            </button>
-
-                                            <button
-                                              type="button"
-                                              className="btn btn-danger btn-sm"
-                                              onClick={() => this.rejectMilestoneCompletion(m)}
-                                            >
-                                              <i className="fa fa-thumbs-down" />
-                                              &nbsp;Reject
-                                            </button>
-                                          </span>
-                                        )}
-
-                                      {[m.recipientAddress, m.ownerAddress].includes(
-                                        currentUser.address,
-                                      ) &&
-                                        m.status === 'Completed' &&
-                                        isForeignNetwork &&
-                                        m.mined &&
-                                        m.donationCount > 0 && (
-                                          <button
-                                            type="button"
-                                            className="btn btn-success btn-sm"
-                                            onClick={() => this.withdrawal(m)}
-                                          >
-                                            <i className="fa fa-usd" />{' '}
-                                            {m.recipientAddress === currentUser.address
-                                              ? 'Collect'
-                                              : 'Disburse'}
-                                          </button>
-                                        )}
-
-                                      {/* {m.recipientAddress === currentUser.address &&
-                                    m.status === 'Paying' && (
-                                      <p>
-                                        Withdraw authorization pending. You will be able to collect
-                                        the funds when confirmed.
-                                      </p>
-                                    )}
-
-                                  {m.recipientAddress === currentUser.address &&
-                                    m.status === 'CanWithdraw' &&
-                                    m.mined && (
-                                      <button
-                                        className="btn btn-success btn-sm"
-                                        onClick={() => this.collect(m)}
-                                      >
-                                        <i className="fa fa-usd" />&nbsp;Collect
-                                      </button>
-                                    )} */}
                                     </td>
                                   </tr>
                                 ))}

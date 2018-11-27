@@ -65,18 +65,55 @@ const Delegations = ({ balance }) => (
                                   <table className="table table-responsive table-striped table-hover">
                                     <thead>
                                       <tr>
+                                        {currentUser.authenticated && <th className="td-actions" />}
                                         <th className="td-date">Date</th>
                                         <th className="td-donated-to">Donated to</th>
                                         <th className="td-donations-amount">Amount</th>
                                         <th className="td-user">Received from</th>
                                         <th className="td-tx-address">Address</th>
                                         <th className="td-status">Status</th>
-                                        <th className="td-actions" />
                                       </tr>
                                     </thead>
                                     <tbody>
                                       {delegations.map(d => (
                                         <tr key={d.adminId}>
+                                          {currentUser.authenticated && (
+                                            <td className="td-actions">
+                                              {/* When donated to a dac, allow delegation
+                                        to campaigns and milestones */}
+                                              {(d.delegateId > 0 ||
+                                                d.ownerTypeId === currentUser.address) &&
+                                                isForeignNetwork &&
+                                                d.amountRemaining > 0 && (
+                                                  <DelegateButton
+                                                    types={campaigns.concat(
+                                                      milestones.filter(
+                                                        m => m.symbol === d.token.symbol,
+                                                      ),
+                                                    )}
+                                                    donation={d}
+                                                    balance={balance}
+                                                    symbol={(d.token && d.token.symbol) || 'ETH'}
+                                                  />
+                                                )}
+
+                                              {/* When donated to a campaign, only allow delegation
+                                        to milestones of that campaign */}
+                                              {d.ownerType === 'campaign' &&
+                                                isForeignNetwork &&
+                                                d.amountRemaining > 0 && (
+                                                  <DelegateButton
+                                                    types={milestones.filter(
+                                                      m => m.campaignId === d.ownerTypeId,
+                                                    )}
+                                                    donation={d}
+                                                    balance={balance}
+                                                    milestoneOnly
+                                                  />
+                                                )}
+                                            </td>
+                                          )}
+
                                           <td className="td-date">
                                             {moment(d.createdAt).format('MM/DD/YYYY')}
                                           </td>
@@ -108,40 +145,6 @@ const Delegations = ({ balance }) => (
                                           </td>
                                           <td className="td-tx-address">{d.giverAddress}</td>
                                           <td className="td-status">{d.statusDescription}</td>
-                                          <td className="td-actions">
-                                            {/* When donated to a dac, allow delegation
-                                      to campaigns and milestones */}
-                                            {(d.delegateId > 0 ||
-                                              d.ownerTypeId === currentUser.address) &&
-                                              isForeignNetwork &&
-                                              d.amountRemaining > 0 && (
-                                                <DelegateButton
-                                                  types={campaigns.concat(
-                                                    milestones.filter(
-                                                      m => m.symbol === d.token.symbol,
-                                                    ),
-                                                  )}
-                                                  donation={d}
-                                                  balance={balance}
-                                                  symbol={(d.token && d.token.symbol) || 'ETH'}
-                                                />
-                                              )}
-
-                                            {/* When donated to a campaign, only allow delegation
-                                      to milestones of that campaign */}
-                                            {d.ownerType === 'campaign' &&
-                                              isForeignNetwork &&
-                                              d.amountRemaining > 0 && (
-                                                <DelegateButton
-                                                  types={milestones.filter(
-                                                    m => m.campaignId === d.ownerTypeId,
-                                                  )}
-                                                  donation={d}
-                                                  balance={balance}
-                                                  milestoneOnly
-                                                />
-                                              )}
-                                          </td>
                                         </tr>
                                       ))}
                                     </tbody>

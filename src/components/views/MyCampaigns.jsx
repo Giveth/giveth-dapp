@@ -9,13 +9,14 @@ import { Consumer as Web3Consumer } from 'contextProviders/Web3Provider';
 import config from 'configuration';
 
 import GA from 'lib/GoogleAnalytics';
-import { isLoggedIn, checkBalance, authenticateIfPossible } from '../../lib/middleware';
+import { isLoggedIn, checkBalance } from '../../lib/middleware';
 import confirmationDialog from '../../lib/confirmationDialog';
 import Loader from '../Loader';
 import User from '../../models/User';
 import { getTruncatedText, convertEthHelper, history } from '../../lib/helpers';
 import CampaignService from '../../services/CampaignService';
 import Campaign from '../../models/Campaign';
+import AuthenticationWarning from '../AuthenticationWarning';
 
 /**
  * The my campaings view
@@ -38,8 +39,7 @@ class MyCampaigns extends Component {
   }
 
   componentDidMount() {
-    authenticateIfPossible(this.props.currentUser)
-      .then(() => isLoggedIn(this.props.currentUser))
+    isLoggedIn(this.props.currentUser)
       .then(() => this.loadCampaigns())
       .catch(err => {
         if (err === 'notLoggedIn') {
@@ -52,7 +52,6 @@ class MyCampaigns extends Component {
     if (prevProps.currentUser !== this.props.currentUser) {
       // eslint-disable-next-line react/no-did-update-set-state
       this.setState({ isLoading: true });
-      authenticateIfPossible(this.props.currentUser);
       if (this.campaignsObserver) this.campaignsObserver.unsubscribe();
       this.loadCampaigns();
     }
@@ -145,6 +144,8 @@ class MyCampaigns extends Component {
                     <h1>Your campaigns</h1>
                   )}
 
+                  <AuthenticationWarning currentUser={currentUser} />
+
                   <NetworkWarning
                     incorrectNetwork={!isForeignNetwork}
                     networkName={config.foreignNetworkName}
@@ -160,6 +161,7 @@ class MyCampaigns extends Component {
                             <table className="table table-responsive table-striped table-hover">
                               <thead>
                                 <tr>
+                                  {currentUser.authenticated && <th className="td-actions" />}
                                   <th className="td-name">Name</th>
                                   <th className="td-donations-number">Donations</th>
                                   <th className="td-donations-amount">Amount</th>
@@ -167,7 +169,6 @@ class MyCampaigns extends Component {
                                   <th className="td-confirmations">
                                     {isPendingCampaign && 'Confirmations'}
                                   </th>
-                                  <th className="td-actions" />
                                 </tr>
                               </thead>
                               <tbody>
@@ -176,6 +177,35 @@ class MyCampaigns extends Component {
                                     key={c.id}
                                     className={c.status === Campaign.PENDING ? 'pending' : ''}
                                   >
+                                    {currentUser.authenticated && (
+                                      <td className="td-actions">
+                                        {c.owner.address === currentUser.address &&
+                                          c.isActive && (
+                                            <button
+                                              type="button"
+                                              className="btn btn-link"
+                                              onClick={() => this.editCampaign(c.id)}
+                                            >
+                                              <i className="fa fa-edit" />
+                                              &nbsp;Edit
+                                            </button>
+                                          )}
+
+                                        {(c.reviewerAddress === currentUser.address ||
+                                          c.owner.address === currentUser.address) &&
+                                          isForeignNetwork &&
+                                          c.isActive && (
+                                            <button
+                                              type="button"
+                                              className="btn btn-danger btn-sm"
+                                              onClick={() => this.cancelCampaign(c)}
+                                            >
+                                              <i className="fa fa-ban" />
+                                              &nbsp;Cancel
+                                            </button>
+                                          )}
+                                      </td>
+                                    )}
                                     <td className="td-name">
                                       <Link to={`/campaigns/${c.id}`}>
                                         {getTruncatedText(c.title, 45)}
@@ -220,33 +250,6 @@ class MyCampaigns extends Component {
                                       {(isPendingCampaign ||
                                         c.requiredConfirmations !== c.confirmations) &&
                                         `${c.confirmations}/${c.requiredConfirmations}`}
-                                    </td>
-                                    <td className="td-actions">
-                                      {c.owner.address === currentUser.address &&
-                                        c.isActive && (
-                                          <button
-                                            type="button"
-                                            className="btn btn-link"
-                                            onClick={() => this.editCampaign(c.id)}
-                                          >
-                                            <i className="fa fa-edit" />
-                                            &nbsp;Edit
-                                          </button>
-                                        )}
-
-                                      {(c.reviewerAddress === currentUser.address ||
-                                        c.owner.address === currentUser.address) &&
-                                        isForeignNetwork &&
-                                        c.isActive && (
-                                          <button
-                                            type="button"
-                                            className="btn btn-danger btn-sm"
-                                            onClick={() => this.cancelCampaign(c)}
-                                          >
-                                            <i className="fa fa-ban" />
-                                            &nbsp;Cancel
-                                          </button>
-                                        )}
                                     </td>
                                   </tr>
                                 ))}

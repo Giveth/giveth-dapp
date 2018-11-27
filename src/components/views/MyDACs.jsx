@@ -83,6 +83,7 @@ class MyDACs extends Component {
 
   render() {
     const { dacs, isLoading, visiblePages } = this.state;
+    const { currentUser } = this.props;
     const isPendingDac =
       (dacs.data && dacs.data.some(d => d.confirmations !== d.requiredConfirmations)) || false;
 
@@ -103,6 +104,7 @@ class MyDACs extends Component {
                         <table className="table table-responsive table-striped table-hover">
                           <thead>
                             <tr>
+                              {currentUser.authenticated && <th className="td-actions" />}
                               <th className="td-name">Name</th>
                               <th className="td-donations-number">Number of donations</th>
                               <th className="td-donations-amount">Amount donated</th>
@@ -110,12 +112,22 @@ class MyDACs extends Component {
                               <th className="td-confirmations">
                                 {isPendingDac && 'Confirmations'}
                               </th>
-                              <th className="td-actions" />
                             </tr>
                           </thead>
                           <tbody>
                             {dacs.data.map(d => (
                               <tr key={d.id} className={d.status === DAC.PENDING ? 'pending' : ''}>
+                                {currentUser.authenticated && (
+                                  <td className="td-actions">
+                                    <button
+                                      type="button"
+                                      className="btn btn-link"
+                                      onClick={() => this.editDAC(d.id)}
+                                    >
+                                      <i className="fa fa-edit" />
+                                    </button>
+                                  </td>
+                                )}
                                 <td className="td-name">
                                   <Link to={`/dacs/${d.id}`}>{getTruncatedText(d.title, 45)}</Link>
                                 </td>
@@ -150,15 +162,6 @@ class MyDACs extends Component {
                                 <td className="td-confirmations">
                                   {(isPendingDac || d.requiredConfirmations !== d.confirmations) &&
                                     `${d.confirmations}/${d.requiredConfirmations}`}
-                                </td>
-                                <td className="td-actions">
-                                  <button
-                                    type="button"
-                                    className="btn btn-link"
-                                    onClick={() => this.editDAC(d.id)}
-                                  >
-                                    <i className="fa fa-edit" />
-                                  </button>
                                 </td>
                               </tr>
                             ))}
