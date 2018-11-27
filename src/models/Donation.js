@@ -256,10 +256,10 @@ class Donation extends Model {
   }
 
   get amountRemaining() {
-    if (this._pendingAmountRemaining.toFixed !== '0') {
-      return this._amountRemaining;
+    if (this._pendingAmountRemaining && this._pendingAmountRemaining.toFixed() !== '0') {
+      return this._pendingAmountRemaining;
     }
-    return this._pendingAmountRemaining;
+    return this._amountRemaining;
   }
 
   set amountRemaining(value) {

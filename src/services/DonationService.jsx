@@ -127,7 +127,7 @@ class DonationService {
       donations.every(donation => {
         const pledge = pledges.find(n => n.id === donation.pledgeId);
 
-        let delegatedAmount = new BigNumber(donation.amountRemaining);
+        let delegatedAmount = donation.amountRemaining; // 0.1
 
         // The next donation is too big, we have to split it
         if (currentAmount.plus(delegatedAmount).isGreaterThan(maxAmount)) {
@@ -137,9 +137,13 @@ class DonationService {
           // This donation would have value of 0, stop the iteration before it is added
           if (delegatedAmount.isEqualTo(new BigNumber('0'))) return fullyDonated;
         }
-        pledgedDonations.push({ donation, delegatedAmount: delegatedAmount.toString() });
+        pledgedDonations.push({
+          donation,
+          delegatedAmount: utils.toWei(delegatedAmount.toString()),
+        });
 
         currentAmount = currentAmount.plus(delegatedAmount);
+
         if (pledge) {
           pledge.parents.push(donation.id);
           pledge.amount = pledge.amount.plus(delegatedAmount);
@@ -165,10 +169,10 @@ class DonationService {
         note =>
           // due to some issue in web3, utils.toHex(note.amount) breaks during minification.
           // BN.toString(16) will return a hex string as well
-          `0x${utils.padLeft(note.amount.toString(16), 48)}${utils.padLeft(
-            utils.toHex(note.id).substring(2),
-            16,
-          )}`,
+          `0x${utils.padLeft(
+            new BigNumber(utils.toWei(note.amount.toString())).toString(16),
+            48,
+          )}${utils.padLeft(utils.toHex(note.id).substring(2), 16)}`,
       );
     };
 
@@ -206,10 +210,12 @@ class DonationService {
 
             // Create new donation objects for all the new pledges
             pledges.forEach(donation => {
+              const _donationAmountInWei = utils.toWei(donation.amount.toString());
+
               const newDonation = {
                 txHash,
-                amount: donation.amount,
-                amountRemaining: donation.amount,
+                amount: _donationAmountInWei,
+                amountRemaining: _donationAmountInWei,
                 giverAddress: donation.giverAddress,
                 pledgeId: 0,
                 parentDonations: donation.parents,

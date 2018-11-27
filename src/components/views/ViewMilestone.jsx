@@ -9,6 +9,7 @@ import { Link } from 'react-router-dom';
 import BigNumber from 'bignumber.js';
 
 import User from 'models/User';
+import Campaign from 'models/Campaign';
 import MilestoneActions from 'components/MilestoneActions';
 
 import BackgroundImageHeader from 'components/BackgroundImageHeader';
@@ -54,7 +55,7 @@ class ViewMilestone extends Component {
         this.setState({
           milestone,
           isLoading: false,
-          campaign: milestone.campaign,
+          campaign: new Campaign(milestone.campaign),
           recipient: milestone.recipient,
         }),
       err => {

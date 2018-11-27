@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-globals */
 import React, { Component } from 'react';
 import Modal from 'react-modal';
 import BigNumber from 'bignumber.js';
@@ -68,7 +69,7 @@ class BaseDelegateMultipleButton extends Component {
       isLoadingDonations: true,
       modalVisible: false,
       delegations: [],
-      maxAmount: 0,
+      maxAmount: new BigNumber('0'),
       delegationOptions: [],
       objectToDelegateFrom: [],
       tokenWhitelistOptions: _getTokenWhitelist().map(t => ({
@@ -143,6 +144,13 @@ class BaseDelegateMultipleButton extends Component {
     );
   }
 
+  setAmount(amount) {
+    if (!isNaN(parseFloat(amount))) {
+      // protecting against overflow occuring when BigNumber receives something that results in NaN
+      this.setState({ amount: new BigNumber(amount) });
+    }
+  }
+
   selectedObject({ target }) {
     this.setState({ objectToDelegateFrom: target.value, isLoadingDonations: true });
 
@@ -193,8 +201,8 @@ class BaseDelegateMultipleButton extends Component {
         donations => {
           const delegations = donations.data.map(d => new Donation(d));
           let amount = delegations.reduce(
-            (sum, d) => sum.add(utils.toBN(d.amountRemaining)),
-            utils.toBN('0'),
+            (sum, d) => sum.plus(d.amountRemaining),
+            new BigNumber('0'),
           );
 
           if (this.props.milestone && this.props.milestone.maxAmount.lt(amount))
@@ -202,7 +210,7 @@ class BaseDelegateMultipleButton extends Component {
 
           this.setState({
             delegations,
-            maxAmount: amount.toNumber(),
+            maxAmount: amount,
             amount,
             isLoadingDonations: false,
           });
@@ -217,7 +225,7 @@ class BaseDelegateMultipleButton extends Component {
       .then(() => this.setState({ modalVisible: true }));
   }
 
-  submit(model) {
+  submit() {
     this.setState({ isSaving: true });
 
     const onCreated = txLink => {
@@ -264,7 +272,7 @@ class BaseDelegateMultipleButton extends Component {
 
     DonationService.delegateMultiple(
       this.state.delegations,
-      utils.toWei(model.amount),
+      utils.toWei(this.state.amount.toString()),
       this.props.milestone || this.props.campaign,
       onCreated,
       onSuccess,
@@ -283,6 +291,8 @@ class BaseDelegateMultipleButton extends Component {
       isLoadingDonations,
       tokenWhitelistOptions,
       selectedToken,
+      maxAmount,
+      amount,
     } = this.state;
     const { campaign, milestone, validProvider, isForeignNetwork } = this.props;
 
@@ -359,7 +369,7 @@ class BaseDelegateMultipleButton extends Component {
 
                     {delegations.length === 0 && (
                       <p>
-                        The amount available to delegate is {this.state.maxAmount}{' '}
+                        The amount available to delegate is {maxAmount.toString()}{' '}
                         {selectedToken.symbol}. Please select a different currency or different
                         source DAC/Campaign.
                       </p>
@@ -373,38 +383,27 @@ class BaseDelegateMultipleButton extends Component {
                             type="range"
                             name="amount2"
                             min={0}
-                            max={Number(this.state.maxAmount)}
-                            step={this.state.maxAmount / 10}
-                            value={Number(this.state.amount)}
-                            labels={{ 0: '0', [this.state.maxAmount]: this.state.maxAmount }}
+                            max={maxAmount.toNumber()}
+                            step={maxAmount.toNumber() / 10}
+                            value={Number(amount.toNumber())}
+                            labels={{ 0: '0', [maxAmount.toNumber()]: maxAmount.toFixed() }}
                             format={val => `${val} ${selectedToken.symbol}`}
-                            onChange={amount =>
-                              this.setState(prevState => ({
-                                amount:
-                                  Number(amount).toFixed(2) > prevState.maxAmount
-                                    ? prevState.maxAmount
-                                    : Number(amount).toFixed(2),
-                              }))
-                            }
+                            onChange={newAmount => this.setAmount(newAmount)}
                           />
                         </div>
 
                         <div className="form-group">
                           <Input
-                            type="text"
-                            validations={`greaterThan:0,isNumeric,lessOrEqualTo:${
-                              this.state.maxAmount
-                            }`}
+                            type="number"
+                            validations={`greaterThan:0,isNumeric,lessOrEqualTo:${maxAmount.toNumber()}`}
                             validationErrors={{
                               greaterThan: 'Enter value greater than 0',
-                              lessOrEqualTo: `The donations you are delegating have combined value of ${
-                                this.state.maxAmount
-                              }. Do not input higher amount than that.`,
+                              lessOrEqualTo: `The donations you are delegating have combined value of ${maxAmount.toNumber()}. Do not input higher amount than that.`,
                               isNumeric: 'Provide correct number',
                             }}
                             name="amount"
-                            value={this.state.amount}
-                            onChange={(name, amount) => this.setState({ amount })}
+                            value={amount.toString()}
+                            onChange={(name, newAmount) => this.setAmount(newAmount)}
                           />
                         </div>
 
