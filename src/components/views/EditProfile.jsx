@@ -6,7 +6,7 @@ import { Form, Input } from 'formsy-react-components';
 import GA from 'lib/GoogleAnalytics';
 import Loader from '../Loader';
 import FormsyImageUploader from '../FormsyImageUploader';
-import { checkBalance, checkForeignNetwork } from '../../lib/middleware';
+import { checkBalance, checkForeignNetwork, isLoggedIn } from '../../lib/middleware';
 import LoaderButton from '../LoaderButton';
 import User from '../../models/User';
 import { history } from '../../lib/helpers';
@@ -35,17 +35,24 @@ class EditProfile extends Component {
   }
 
   componentDidMount() {
-    checkForeignNetwork(this.props.isForeignNetwork)
-      .then(() => checkBalance(this.props.balance))
-      .then(() => this.setState({ isLoading: false }))
-      .catch(err => {
-        if (err === 'noBalance') history.goBack();
-        else {
-          this.setState({
-            isLoading: false,
-          });
-        }
-      });
+    this.mounted = true;
+    checkForeignNetwork(this.props.isForeignNetwork).then(() =>
+      isLoggedIn(this.props.currentUser)
+        .then(() => checkBalance(this.props.balance))
+        .then(() => this.setState({ isLoading: false }))
+        .catch(err => {
+          if (err === 'noBalance') history.goBack();
+          else {
+            this.setState({
+              isLoading: false,
+            });
+          }
+        }),
+    );
+  }
+
+  componentWillUnmount() {
+    this.mounted = false;
   }
 
   setImage(image) {
@@ -149,7 +156,7 @@ class EditProfile extends Component {
                   mapping={inputs => {
                     user.name = inputs.name;
                     user.email = inputs.email;
-                    user.linkedIn = inputs.linkedIn;
+                    user.linkedin = inputs.linkedin;
                   }}
                   onChange={this.togglePristine}
                   layout="vertical"
@@ -195,12 +202,12 @@ class EditProfile extends Component {
 
                   <div className="form-group">
                     <Input
-                      name="linkedIn"
+                      name="linkedin"
                       label="Your Profile"
                       type="text"
-                      value={user.linkedIn}
+                      value={user.linkedin}
                       placeholder="Your profile url"
-                      help="Provide a link to some more info about you, this will help to build trust. You could add your LinkedIn profile, Twitter account or a relevant website."
+                      help="Provide a link to some more info about you, this will help to build trust. You could add your linkedin profile, Twitter account or a relevant website."
                       validations="isUrl"
                       validationErrors={{
                         isUrl: 'Please enter a valid url',

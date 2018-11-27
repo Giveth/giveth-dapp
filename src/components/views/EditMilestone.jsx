@@ -127,14 +127,17 @@ class EditMilestone extends Component {
                   date,
                   token: milestone.token,
                 }),
+                campaignId: milestone.campaign._id,
                 campaignTitle: milestone.campaign.title,
                 campaignProjectId: milestone.campaign.projectId,
                 campaignReviewerAddress: milestone.campaign.reviewerAddress,
               });
 
-              return date;
+              return { date, milestone };
             })
-            .then(date => this.props.getEthConversion(date))
+            .then(({ date, milestone }) =>
+              this.props.getEthConversion(date, milestone.token.symbol),
+            )
             .then(() => {
               if (!this.state.hasWhitelist) this.getReviewers();
             })
@@ -167,7 +170,9 @@ class EditMilestone extends Component {
                 });
               }
             })
-            .then(() => this.props.getEthConversion(this.state.date, this.state.milestone.symbol))
+            .then(() =>
+              this.props.getEthConversion(this.state.date, this.state.milestone.token.symbol),
+            )
             .then(() => {
               if (!this.state.hasWhitelist) this.getReviewers();
             })
@@ -428,7 +433,6 @@ class EditMilestone extends Component {
               // TODO  fix this hack
               if (!parentProjectId || parentProjectId === '0') {
                 ErrorPopup(
-                  `It looks like the campaign has not been mined yet. Please try again in a bit`,
                   `It looks like the campaign has not been mined yet. Please try again in a bit`,
                 );
                 return null;
@@ -761,13 +765,12 @@ class EditMilestone extends Component {
                   <div className="form-header">
                     {isNew && !isProposed && <h3>Add a new milestone</h3>}
 
-                    {!isNew &&
-                      !isProposed && (
-                        <h3>
-                          Edit milestone
-                          {milestone.title}
-                        </h3>
-                      )}
+                    {!isNew && !isProposed && (
+                      <h3>
+                        Edit milestone
+                        {milestone.title}
+                      </h3>
+                    )}
 
                     {isNew && isProposed && <h3>Propose a Milestone</h3>}
 
