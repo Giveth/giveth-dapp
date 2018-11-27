@@ -277,7 +277,7 @@ export default class MilestoneModel extends BasicModel {
   }
 
   get currentBalance() {
-    if (this._donationCounters.length > 0) {
+    if (Array.isArray(this._donationCounters) && this._donationCounters.length > 0) {
       return this._donationCounters[0].currentBalance;
     }
     return '0';
