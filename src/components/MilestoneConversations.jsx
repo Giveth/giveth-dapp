@@ -103,6 +103,18 @@ class MilestoneConversations extends Component {
                     </p>
                     <div className="c-message">{ReactHtmlParser(c.message)}</div>
 
+                    {c.items &&
+                      c.items.length > 0 && (
+                        <Form className="items-form">
+                          <strong>Attachments</strong>
+                          <MilestoneProof
+                            items={c.items}
+                            isEditMode={false}
+                            token={milestone.token}
+                          />
+                        </Form>
+                      )}
+
                     {/* ---- action buttons ---- */}
                     <div className="c-action-footer">
                       <MilestoneConversationAction
@@ -112,14 +124,6 @@ class MilestoneConversations extends Component {
                         balance={balance}
                       />
                     </div>
-
-                    {c.items &&
-                      c.items.length > 0 && (
-                        <Form className="items-form">
-                          <strong>Attachments</strong>
-                          <MilestoneProof items={c.items} isEditMode={false} />
-                        </Form>
-                      )}
 
                     <div className="c-divider" />
                   </div>

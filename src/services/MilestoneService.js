@@ -368,7 +368,7 @@ class MilestoneService {
               .patch(milestone._id, {
                 status: Milestone.NEEDS_REVIEW,
                 message: proof.message,
-                proofItems: proof.items,
+                proofItems: proof.items.map(i => i.getItem()),
                 mined: false,
                 txHash,
               })
