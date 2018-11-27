@@ -9,7 +9,7 @@ import 'react-rangeslider/lib/index.css';
 import BigNumber from 'bignumber.js';
 import InputToken from 'react-input-token';
 
-import { checkBalance, isLoggedIn, authenticateIfPossible } from '../lib/middleware';
+import { checkBalance } from '../lib/middleware';
 import { feathersClient } from '../lib/feathersClient';
 import Loader from './Loader';
 import config from '../configuration';
@@ -108,17 +108,20 @@ class BaseDelegateMultipleButton extends Component {
             type: 'dac',
           }));
 
-          const delegationOptions = this.props.milestone
-            ? dacs.concat([
-                {
-                  id: this.props.campaign._id,
-                  name: this.props.campaign.title,
-                  projectId: this.props.campaign.projectId,
-                  ownerEntity: this.props.milestone.ownerEntity,
-                  type: 'campaign',
-                },
-              ])
-            : dacs;
+          const delegationOptions =
+            this.props.milestone &&
+            this.props.campaign.ownerAddress.toLowerCase() ===
+              this.props.currentUser.address.toLowerCase()
+              ? dacs.concat([
+                  {
+                    id: this.props.campaign._id,
+                    name: this.props.campaign.title,
+                    projectId: this.props.campaign.projectId,
+                    ownerEntity: this.props.milestone.ownerEntity,
+                    type: 'campaign',
+                  },
+                ])
+              : dacs;
 
           this.setState({ delegationOptions }, () => {
             if (delegationOptions.length === 1) {
@@ -213,11 +216,7 @@ class BaseDelegateMultipleButton extends Component {
   }
 
   openDialog() {
-    authenticateIfPossible(this.props.currentUser)
-      .then(() => isLoggedIn(this.props.currentUser))
-      .then(() =>
-        checkBalance(this.props.balance).then(() => this.setState({ modalVisible: true })),
-      );
+    checkBalance(this.props.balance).then(() => this.setState({ modalVisible: true }));
   }
 
   submit(model) {
@@ -342,87 +341,96 @@ class BaseDelegateMultipleButton extends Component {
                   {campaign ? campaign.title : milestone.title}{' '}
                 </p>
               )}
-              {this.state.objectToDelegateFrom.length === 1 && isLoadingDonations && (
-                <Loader className="small btn-loader" />
-              )}
-              {this.state.objectToDelegateFrom.length === 1 && !isLoadingDonations && (
-                <div>
-                  {!this.props.milestone && (
-                    <SelectFormsy
-                      name="token"
-                      id="token-select"
-                      label="Select token or ETH to delegate"
-                      helpText=""
-                      value={selectedToken && selectedToken.address}
-                      cta="--- Select ---"
-                      options={tokenWhitelistOptions}
-                      onChange={address => this.setToken(address)}
-                    />
-                  )}
+              {this.state.objectToDelegateFrom.length === 1 &&
+                isLoadingDonations && <Loader className="small btn-loader" />}
+              {this.state.objectToDelegateFrom.length === 1 &&
+                !isLoadingDonations && (
+                  <div>
+                    {!this.props.milestone && (
+                      <SelectFormsy
+                        name="token"
+                        id="token-select"
+                        label="Select token or ETH to delegate"
+                        helpText=""
+                        value={selectedToken && selectedToken.address}
+                        cta="--- Select ---"
+                        options={tokenWhitelistOptions}
+                        onChange={address => this.setToken(address)}
+                      />
+                    )}
 
-                  {delegations.length === 0 && (
-                    <p>
-                      The amount available to delegate is {this.state.maxAmount}{' '}
-                      {selectedToken.symbol}. Please select a different currency or different source
-                      DAC/Campaign.
-                    </p>
-                  )}
-                  {delegations.length > 0 && (
-                    <div>
-                      <span className="label">Amount {selectedToken.symbol} to delegate:</span>
+                    {delegations.length === 0 && (
+                      <p>
+                        The amount available to delegate is {this.state.maxAmount}{' '}
+                        {selectedToken.symbol}. Please select a different currency or different
+                        source DAC/Campaign.
+                      </p>
+                    )}
+                    {delegations.length > 0 && (
+                      <div>
+                        <span className="label">Amount {selectedToken.symbol} to delegate:</span>
 
-                      <div className="form-group">
-                        <Slider
-                          type="range"
-                          name="amount2"
-                          min={0}
-                          max={Number(this.state.maxAmount)}
-                          step={this.state.maxAmount / 10}
-                          value={Number(this.state.amount)}
-                          labels={{ 0: '0', [this.state.maxAmount]: this.state.maxAmount }}
-                          format={val => `${val} ${selectedToken.symbol}`}
-                          onChange={amount =>
-                            this.setState(prevState => ({
-                              amount:
-                                Number(amount).toFixed(2) > prevState.maxAmount
-                                  ? prevState.maxAmount
-                                  : Number(amount).toFixed(2),
-                            }))
-                          }
-                        />
-                      </div>
+                        <div className="form-group">
+                          <Slider
+                            type="range"
+                            name="amount2"
+                            min={0}
+                            max={Number(this.state.maxAmount)}
+                            step={this.state.maxAmount / 10}
+                            value={Number(this.state.amount)}
+                            labels={{ 0: '0', [this.state.maxAmount]: this.state.maxAmount }}
+                            format={val => `${val} ${selectedToken.symbol}`}
+                            onChange={amount =>
+                              this.setState(prevState => ({
+                                amount:
+                                  Number(amount).toFixed(2) > prevState.maxAmount
+                                    ? prevState.maxAmount
+                                    : Number(amount).toFixed(2),
+                              }))
+                            }
+                          />
+                        </div>
 
-                      <div className="form-group">
-                        <Input
-                          type="text"
-                          validations={`greaterThan:0,isNumeric,lessOrEqualTo:${
-                            this.state.maxAmount
-                          }`}
-                          validationErrors={{
-                            greaterThan: 'Enter value greater than 0',
-                            lessOrEqualTo: `The donations you are delegating have combined value of ${
+                        <div className="form-group">
+                          <Input
+                            type="text"
+                            validations={`greaterThan:0,isNumeric,lessOrEqualTo:${
                               this.state.maxAmount
-                            }. Do not input higher amount than that.`,
-                            isNumeric: 'Provide correct number',
-                          }}
-                          name="amount"
-                          value={this.state.amount}
-                          onChange={(name, amount) => this.setState({ amount })}
-                        />
-                      </div>
+                            }`}
+                            validationErrors={{
+                              greaterThan: 'Enter value greater than 0',
+                              lessOrEqualTo: `The donations you are delegating have combined value of ${
+                                this.state.maxAmount
+                              }. Do not input higher amount than that.`,
+                              isNumeric: 'Provide correct number',
+                            }}
+                            name="amount"
+                            value={this.state.amount}
+                            onChange={(name, amount) => this.setState({ amount })}
+                          />
+                        </div>
 
-                      <button
-                        className="btn btn-success"
-                        formNoValidate
-                        type="submit"
-                        disabled={isSaving || !isForeignNetwork}
-                      >
-                        {isSaving ? 'Delegating...' : 'Delegate here'}
-                      </button>
-                    </div>
-                  )}
-                </div>
-              )}
+                        <button
+                          className="btn btn-success"
+                          formNoValidate
+                          type="submit"
+                          disabled={isSaving || !isForeignNetwork}
+                        >
+                          {isSaving ? 'Delegating...' : 'Delegate here'}
+                        </button>
+                        <button
+                          className="btn btn-light float-right"
+                          type="button"
+                          onClick={() => {
+                            this.setState({ modalVisible: false });
+                          }}
+                        >
+                          Close
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
             </Form>
           )}
         </Modal>

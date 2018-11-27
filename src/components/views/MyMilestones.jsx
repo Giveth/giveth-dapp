@@ -12,7 +12,7 @@ import NetworkWarning from 'components/NetworkWarning';
 import { Consumer as Web3Consumer } from 'contextProviders/Web3Provider';
 
 import { feathersClient } from '../../lib/feathersClient';
-import { checkBalance } from '../../lib/middleware';
+import { isLoggedIn, checkBalance } from '../../lib/middleware';
 import confirmationDialog from '../../lib/confirmationDialog';
 import getNetwork from '../../lib/blockchain/getNetwork';
 import getWeb3 from '../../lib/blockchain/getWeb3';
@@ -21,7 +21,6 @@ import Loader from '../Loader';
 import User from '../../models/User';
 import { getTruncatedText, getReadableStatus, convertEthHelper, history } from '../../lib/helpers';
 import config from '../../configuration';
-import AuthenticationWarning from '../AuthenticationWarning';
 
 import ErrorPopup from '../ErrorPopup';
 import Donation from '../../models/Donation';
@@ -134,13 +133,18 @@ class MyMilestones extends Component {
     this.cancelMilestone = this.cancelMilestone.bind(this);
     this.approveMilestoneCompleted = this.approveMilestoneCompleted.bind(this);
     this.rejectMilestoneCompletion = this.rejectMilestoneCompletion.bind(this);
-    this.loadMileStones = this.loadMileStones.bind(this);
     this.requestWithdrawal = this.withdrawal.bind(this);
     // this.collect = this.collect.bind(this);
   }
 
   componentDidMount() {
-    this.loadMileStones();
+    isLoggedIn(this.props.currentUser)
+      .then(() => this.loadMileStones())
+      .catch(err => {
+        if (err === 'notLoggedIn') {
+          // default behavior is to go home or signin page after swal popup
+        }
+      });
   }
 
   componentDidUpdate(prevProps) {
@@ -158,7 +162,6 @@ class MyMilestones extends Component {
 
   async loadMileStones() {
     const myAddress = this.props.currentUser.address;
-    console.log(myAddress);
 
     const query = {
       query: {
@@ -953,7 +956,6 @@ class MyMilestones extends Component {
                 <div className="col-md-10 m-auto">
                   <h1>Your milestones</h1>
 
-                  <AuthenticationWarning currentUser={currentUser} />
                   <NetworkWarning
                     incorrectNetwork={!isForeignNetwork}
                     networkName={config.foreignNetworkName}
@@ -979,288 +981,298 @@ class MyMilestones extends Component {
 
                   {!isLoading && (
                     <div className="table-container">
-                      {milestones && milestones.length > 0 && (
-                        <div>
-                          <table className="table table-responsive table-striped table-hover">
-                            <thead>
-                              <tr>
-                                {currentUser.authenticated && (
-                                  <th className="td-actions">Actions</th>
-                                )}
-                                <th className="td-created-at">Created</th>
-                                <th className="td-name">Name</th>
-                                <th className="td-status">Status</th>
-                                <th className="td-donations-number">Requested</th>
-                                <th className="td-donations-number">Donations</th>
-                                <th className="td-donations-amount">Donated</th>
-                                <th className="td-reviewer">Reviewer</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {milestones.map(m => (
-                                <tr key={m._id} className={m.status === 'Pending' ? 'pending' : ''}>
-                                  {currentUser.authenticated && (
-                                    <td className="td-actions">
-                                      {/* Campaign and Milestone managers can edit milestone */}
-                                      {(m.ownerAddress === currentUser.address ||
-                                        m.campaign.ownerAddress === currentUser.address) &&
-                                        isForeignNetwork &&
-                                        [
-                                          'Proposed',
-                                          'Rejected',
-                                          'InProgress',
-                                          'NeedsReview',
-                                        ].includes(m.status) && (
-                                          <button
-                                            type="button"
-                                            className="btn btn-link"
-                                            onClick={() => this.editMilestone(m)}
-                                          >
-                                            <i className="fa fa-edit" />
-                                            &nbsp;Edit
-                                          </button>
-                                        )}
-
-                                      {m.campaign.ownerAddress === currentUser.address &&
-                                        isForeignNetwork &&
-                                        m.status === 'Proposed' && (
-                                          <span>
-                                            <button
-                                              type="button"
-                                              className="btn btn-success btn-sm"
-                                              onClick={() => this.acceptProposedMilestone(m)}
-                                            >
-                                              <i className="fa fa-check-square-o" />
-                                              &nbsp;Accept
-                                            </button>
-                                            <button
-                                              type="button"
-                                              className="btn btn-danger btn-sm"
-                                              onClick={() => rejectProposedMilestone(m)}
-                                            >
-                                              <i className="fa fa-times-circle-o" />
-                                              &nbsp;Reject
-                                            </button>
-                                          </span>
-                                        )}
-                                      {m.ownerAddress === currentUser.address &&
-                                        isForeignNetwork &&
-                                        m.status === 'Rejected' && (
-                                          <button
-                                            type="button"
-                                            className="btn btn-success btn-sm"
-                                            onClick={() => reproposeRejectedMilestone(m)}
-                                          >
-                                            <i className="fa fa-times-square-o" />
-                                            &nbsp;Re-propose
-                                          </button>
-                                        )}
-
-                                      {(m.recipientAddress === currentUser.address ||
-                                        m.ownerAddress === currentUser.address) &&
-                                        isForeignNetwork &&
-                                        m.status === 'InProgress' &&
-                                        m.mined && (
-                                          <button
-                                            type="button"
-                                            className="btn btn-success btn-sm"
-                                            onClick={() => this.requestMarkComplete(m)}
-                                            disabled={!utils.toBN(m.currentBalance || '0').gt('0')}
-                                          >
-                                            Mark complete
-                                          </button>
-                                        )}
-                                      {[
-                                        m.reviewerAddress,
-                                        m.campaignReviewerAddress,
-                                        m.recipientAddress,
-                                      ].includes(currentUser.address) &&
-                                        isForeignNetwork &&
-                                        ['InProgress', 'NeedReview'].includes(m.status) &&
-                                        m.mined && (
-                                          <button
-                                            type="button"
-                                            className="btn btn-danger btn-sm"
-                                            onClick={() => this.cancelMilestone(m)}
-                                          >
-                                            <i className="fa fa-times" />
-                                            &nbsp;Cancel
-                                          </button>
-                                        )}
-
-                                      {m.ownerAddress === currentUser.address &&
-                                        isForeignNetwork &&
-                                        ['Proposed', 'Rejected'].includes(m.status) && (
-                                          <span>
-                                            <button
-                                              type="button"
-                                              className="btn btn-danger btn-sm"
-                                              onClick={() => deleteProposedMilestone(m)}
-                                            >
-                                              <i className="fa fa-times-circle-o" />
-                                              &nbsp;Delete
-                                            </button>
-                                          </span>
-                                        )}
-
-                                      {m.reviewerAddress === currentUser.address &&
-                                        isForeignNetwork &&
-                                        m.status === 'NeedsReview' &&
-                                        m.mined && (
-                                          <span>
-                                            <button
-                                              type="button"
-                                              className="btn btn-success btn-sm"
-                                              onClick={() => this.approveMilestoneCompleted(m)}
-                                            >
-                                              <i className="fa fa-thumbs-up" />
-                                              &nbsp;Approve
-                                            </button>
-
-                                            <button
-                                              type="button"
-                                              className="btn btn-danger btn-sm"
-                                              onClick={() => this.rejectMilestoneCompletion(m)}
-                                            >
-                                              <i className="fa fa-thumbs-down" />
-                                              &nbsp;Reject
-                                            </button>
-                                          </span>
-                                        )}
-
-                                      {[m.recipientAddress, m.ownerAddress].includes(
-                                        currentUser.address,
-                                      ) &&
-                                        m.status === 'Completed' &&
-                                        isForeignNetwork &&
-                                        m.mined &&
-                                        m.donationCount > 0 && (
-                                          <button
-                                            type="button"
-                                            className="btn btn-success btn-sm"
-                                            onClick={() => this.withdrawal(m)}
-                                          >
-                                            <i className="fa fa-usd" />{' '}
-                                            {m.recipientAddress === currentUser.address
-                                              ? 'Collect'
-                                              : 'Disburse'}
-                                          </button>
-                                        )}
-
-                                      {/* {m.recipientAddress === currentUser.address &&
-                                    m.status === 'Paying' && (
-                                      <p>
-                                        Withdraw authorization pending. You will be able to collect
-                                        the funds when confirmed.
-                                      </p>
-                                    )}
-
-                                  {m.recipientAddress === currentUser.address &&
-                                    m.status === 'CanWithdraw' &&
-                                    m.mined && (
-                                      <button
-                                        className="btn btn-success btn-sm"
-                                        onClick={() => this.collect(m)}
-                                      >
-                                        <i className="fa fa-usd" />&nbsp;Collect
-                                      </button>
-                                    )} */}
-                                    </td>
-                                  )}
-                                  <td className="td-created-at">
-                                    {m.createdAt && (
-                                      <span>{moment.utc(m.createdAt).format('Do MMM YYYY')}</span>
-                                    )}
-                                  </td>
-                                  <td className="td-name">
-                                    <strong>
-                                      <Link to={`/campaigns/${m.campaign._id}/milestones/${m._id}`}>
-                                        MILESTONE <em>{getTruncatedText(m.title, 35)}</em>
-                                      </Link>
-                                    </strong>
-                                    <br />
-                                    <i className="fa fa-arrow-right" />
-                                    <Link
-                                      className="secondary-link"
-                                      to={`/campaigns/${m.campaign._id}`}
-                                    >
-                                      CAMPAIGN <em>{getTruncatedText(m.campaign.title, 40)}</em>
-                                    </Link>
-                                  </td>
-                                  <td className="td-status">
-                                    {(m.status === 'Pending' ||
-                                      (Object.keys(m).includes('mined') && !m.mined)) && (
-                                      <span>
-                                        <i className="fa fa-circle-o-notch fa-spin" />
-                                        &nbsp;
-                                      </span>
-                                    )}
-                                    {m.status === 'NeedsReview' && reviewDue(m.updatedAt) && (
-                                      <span>
-                                        <i className="fa fa-exclamation-triangle" />
-                                        &nbsp;
-                                      </span>
-                                    )}
-                                    {getReadableStatus(m.status)}
-                                  </td>
-                                  <td className="td-donations-number">
-                                    {convertEthHelper(m.maxAmount)} {m.token.symbol}
-                                  </td>
-                                  <td className="td-donations-number">
-                                    {(m.donationCounters &&
-                                      m.donationCounters.length &&
-                                      m.donationCounters[0].donationCount) ||
-                                      0}
-                                  </td>
-                                  <td className="td-donations-">
-                                    {convertEthHelper(
-                                      (m.donationCounters &&
-                                        m.donationCounters.length &&
-                                        m.donationCounters[0].currentBalance) ||
-                                        '0',
-                                    )}{' '}
-                                    {m.token.symbol}
-                                  </td>
-                                  <td className="td-reviewer">
-                                    {m.reviewer && m.reviewer.address && (
-                                      <Link to={`/profile/${m.reviewer.address}`}>
-                                        {m.reviewer.name || 'Anomynous user'}
-                                      </Link>
-                                    )}
-                                  </td>
+                      {milestones &&
+                        milestones.length > 0 && (
+                          <div>
+                            <table className="table table-responsive table-striped table-hover">
+                              <thead>
+                                <tr>
+                                  {currentUser.authenticated && <th className="td-actions" />}
+                                  <th className="td-created-at">Created</th>
+                                  <th className="td-name">Name</th>
+                                  <th className="td-status">Status</th>
+                                  <th className="td-donations-number">Requested</th>
+                                  <th className="td-donations-number">Donations</th>
+                                  <th className="td-donations-amount">Donated</th>
+                                  <th className="td-reviewer">Reviewer</th>
                                 </tr>
-                              ))}
-                            </tbody>
-                          </table>
+                              </thead>
+                              <tbody>
+                                {milestones.map(m => (
+                                  <tr
+                                    key={m._id}
+                                    className={m.status === 'Pending' ? 'pending' : ''}
+                                  >
+                                    {currentUser.authenticated && (
+                                      <td className="td-actions">
+                                        {/* Campaign and Milestone managers can edit milestone */}
+                                        {(m.ownerAddress === currentUser.address ||
+                                          m.campaign.ownerAddress === currentUser.address) &&
+                                          isForeignNetwork &&
+                                          [
+                                            'Proposed',
+                                            'Rejected',
+                                            'InProgress',
+                                            'NeedsReview',
+                                          ].includes(m.status) && (
+                                            <button
+                                              type="button"
+                                              className="btn btn-link"
+                                              onClick={() => this.editMilestone(m)}
+                                            >
+                                              <i className="fa fa-edit" />
+                                              &nbsp;Edit
+                                            </button>
+                                          )}
 
-                          {totalResults > itemsPerPage && (
+                                        {m.campaign.ownerAddress === currentUser.address &&
+                                          isForeignNetwork &&
+                                          m.status === 'Proposed' && (
+                                            <span>
+                                              <button
+                                                type="button"
+                                                className="btn btn-success btn-sm"
+                                                onClick={() => this.acceptProposedMilestone(m)}
+                                              >
+                                                <i className="fa fa-check-square-o" />
+                                                &nbsp;Accept
+                                              </button>
+                                              <button
+                                                type="button"
+                                                className="btn btn-danger btn-sm"
+                                                onClick={() => rejectProposedMilestone(m)}
+                                              >
+                                                <i className="fa fa-times-circle-o" />
+                                                &nbsp;Reject
+                                              </button>
+                                            </span>
+                                          )}
+                                        {m.ownerAddress === currentUser.address &&
+                                          isForeignNetwork &&
+                                          m.status === 'Rejected' && (
+                                            <button
+                                              type="button"
+                                              className="btn btn-success btn-sm"
+                                              onClick={() => reproposeRejectedMilestone(m)}
+                                            >
+                                              <i className="fa fa-times-square-o" />
+                                              &nbsp;Re-propose
+                                            </button>
+                                          )}
+
+                                        {(m.recipientAddress === currentUser.address ||
+                                          m.ownerAddress === currentUser.address) &&
+                                          isForeignNetwork &&
+                                          m.status === 'InProgress' &&
+                                          m.mined && (
+                                            <button
+                                              type="button"
+                                              className="btn btn-success btn-sm"
+                                              onClick={() => this.requestMarkComplete(m)}
+                                              disabled={
+                                                !utils.toBN(m.currentBalance || '0').gt('0')
+                                              }
+                                            >
+                                              Mark complete
+                                            </button>
+                                          )}
+                                        {[
+                                          m.reviewerAddress,
+                                          m.campaignReviewerAddress,
+                                          m.recipientAddress,
+                                        ].includes(currentUser.address) &&
+                                          isForeignNetwork &&
+                                          ['InProgress', 'NeedReview'].includes(m.status) &&
+                                          m.mined && (
+                                            <button
+                                              type="button"
+                                              className="btn btn-danger btn-sm"
+                                              onClick={() => this.cancelMilestone(m)}
+                                            >
+                                              <i className="fa fa-times" />
+                                              &nbsp;Cancel
+                                            </button>
+                                          )}
+
+                                        {m.ownerAddress === currentUser.address &&
+                                          isForeignNetwork &&
+                                          ['Proposed', 'Rejected'].includes(m.status) && (
+                                            <span>
+                                              <button
+                                                type="button"
+                                                className="btn btn-danger btn-sm"
+                                                onClick={() => deleteProposedMilestone(m)}
+                                              >
+                                                <i className="fa fa-times-circle-o" />
+                                                &nbsp;Delete
+                                              </button>
+                                            </span>
+                                          )}
+
+                                        {m.reviewerAddress === currentUser.address &&
+                                          isForeignNetwork &&
+                                          m.status === 'NeedsReview' &&
+                                          m.mined && (
+                                            <span>
+                                              <button
+                                                type="button"
+                                                className="btn btn-success btn-sm"
+                                                onClick={() => this.approveMilestoneCompleted(m)}
+                                              >
+                                                <i className="fa fa-thumbs-up" />
+                                                &nbsp;Approve
+                                              </button>
+
+                                              <button
+                                                type="button"
+                                                className="btn btn-danger btn-sm"
+                                                onClick={() => this.rejectMilestoneCompletion(m)}
+                                              >
+                                                <i className="fa fa-thumbs-down" />
+                                                &nbsp;Reject
+                                              </button>
+                                            </span>
+                                          )}
+
+                                        {[m.recipientAddress, m.ownerAddress].includes(
+                                          currentUser.address,
+                                        ) &&
+                                          m.status === 'Completed' &&
+                                          isForeignNetwork &&
+                                          m.mined &&
+                                          m.donationCount > 0 && (
+                                            <button
+                                              type="button"
+                                              className="btn btn-success btn-sm"
+                                              onClick={() => this.withdrawal(m)}
+                                            >
+                                              <i className="fa fa-usd" />{' '}
+                                              {m.recipientAddress === currentUser.address
+                                                ? 'Collect'
+                                                : 'Disburse'}
+                                            </button>
+                                          )}
+
+                                        {/* {m.recipientAddress === currentUser.address &&
+                                      m.status === 'Paying' && (
+                                        <p>
+                                          Withdraw authorization pending. You will be able to collect
+                                          the funds when confirmed.
+                                        </p>
+                                      )}
+
+                                    {m.recipientAddress === currentUser.address &&
+                                      m.status === 'CanWithdraw' &&
+                                      m.mined && (
+                                        <button
+                                          className="btn btn-success btn-sm"
+                                          onClick={() => this.collect(m)}
+                                        >
+                                          <i className="fa fa-usd" />&nbsp;Collect
+                                        </button>
+                                      )} */}
+                                      </td>
+                                    )}
+
+                                    <td className="td-created-at">
+                                      {m.createdAt && (
+                                        <span>{moment.utc(m.createdAt).format('Do MMM YYYY')}</span>
+                                      )}
+                                    </td>
+                                    <td className="td-name">
+                                      <strong>
+                                        <Link
+                                          to={`/campaigns/${m.campaign._id}/milestones/${m._id}`}
+                                        >
+                                          MILESTONE <em>{getTruncatedText(m.title, 35)}</em>
+                                        </Link>
+                                      </strong>
+                                      <br />
+                                      <i className="fa fa-arrow-right" />
+                                      <Link
+                                        className="secondary-link"
+                                        to={`/campaigns/${m.campaign._id}`}
+                                      >
+                                        CAMPAIGN <em>{getTruncatedText(m.campaign.title, 40)}</em>
+                                      </Link>
+                                    </td>
+                                    <td className="td-status">
+                                      {(m.status === 'Pending' ||
+                                        (Object.keys(m).includes('mined') && !m.mined)) && (
+                                        <span>
+                                          <i className="fa fa-circle-o-notch fa-spin" />
+                                          &nbsp;
+                                        </span>
+                                      )}
+                                      {m.status === 'NeedsReview' &&
+                                        reviewDue(m.updatedAt) && (
+                                          <span>
+                                            <i className="fa fa-exclamation-triangle" />
+                                            &nbsp;
+                                          </span>
+                                        )}
+                                      {getReadableStatus(m.status)}
+                                    </td>
+                                    <td className="td-donations-number">
+                                      {convertEthHelper(m.maxAmount)} {m.token.symbol}
+                                    </td>
+                                    <td className="td-donations-number">
+                                      {(m.donationCounters &&
+                                        m.donationCounters.length &&
+                                        m.donationCounters[0].donationCount) ||
+                                        0}
+                                    </td>
+                                    <td className="td-donations-">
+                                      {convertEthHelper(
+                                        (m.donationCounters &&
+                                          m.donationCounters.length &&
+                                          m.donationCounters[0].currentBalance) ||
+                                          '0',
+                                      )}{' '}
+                                      {m.token.symbol}
+                                    </td>
+                                    <td className="td-reviewer">
+                                      {m.reviewer &&
+                                        m.reviewer.address && (
+                                          <Link to={`/profile/${m.reviewer.address}`}>
+                                            {m.reviewer.name || 'Anomynous user'}
+                                          </Link>
+                                        )}
+                                    </td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+
+                            {totalResults > itemsPerPage && (
+                              <center>
+                                <Pagination
+                                  activePage={skipPages + 1}
+                                  itemsCountPerPage={itemsPerPage}
+                                  totalItemsCount={totalResults}
+                                  pageRangeDisplayed={visiblePages}
+                                  onChange={this.handlePageChanged}
+                                />
+                              </center>
+                            )}
+                          </div>
+                        )}
+
+                      {milestones &&
+                        milestones.length === 0 && (
+                          <div className="no-results">
                             <center>
-                              <Pagination
-                                activePage={skipPages + 1}
-                                itemsCountPerPage={itemsPerPage}
-                                totalItemsCount={totalResults}
-                                pageRangeDisplayed={visiblePages}
-                                onChange={this.handlePageChanged}
+                              <h3>No milestones here!</h3>
+                              <img
+                                className="empty-state-img"
+                                src={`${process.env.PUBLIC_URL}/img/delegation.svg`}
+                                width="200px"
+                                height="200px"
+                                alt="no-milestones-icon"
                               />
                             </center>
-                          )}
-                        </div>
-                      )}
-
-                      {milestones && milestones.length === 0 && (
-                        <div className="no-results">
-                          <center>
-                            <h3>No milestones here!</h3>
-                            <img
-                              className="empty-state-img"
-                              src={`${process.env.PUBLIC_URL}/img/delegation.svg`}
-                              width="200px"
-                              height="200px"
-                              alt="no-milestones-icon"
-                            />
-                          </center>
-                        </div>
-                      )}
+                          </div>
+                        )}
                     </div>
                   )}
                 </div>

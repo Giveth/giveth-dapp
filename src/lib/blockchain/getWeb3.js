@@ -29,7 +29,6 @@ export default () =>
     if (document.readyState !== 'complete') {
       // wait until complete
     }
-    // only support inject web3 provider for home network
     if (!newWeb3) {
       if (window.ethereum) {
         newWeb3 = new Web3(window.ethereum);

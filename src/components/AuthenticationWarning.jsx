@@ -1,15 +1,7 @@
+/* eslint-disable jsx-a11y/anchor-is-valid */
 import React from 'react';
 import PropTypes from 'prop-types';
 import User from '../models/User';
-import { isLoggedIn, authenticateIfPossible } from '../lib/middleware';
-
-const authenticate = user => {
-  authenticateIfPossible(user)
-    .then(() => isLoggedIn(user))
-    .catch(err => {
-      if (err === 'notLoggedIn') return; // eslint-disable-line
-    });
-};
 
 /**
  * Show a warning if the user is not authenticated
@@ -19,9 +11,9 @@ const AuthenticationWarning = ({ currentUser }) =>
     <div className="alert alert-warning">
       <i className="fa fa-exclamation-triangle" />
       You are not yet authenticated. Please
-      <button type="button" className="btn btn-link" onClick={() => authenticate(currentUser)}>
+      <a role="button" tabIndex="-1" onClick={() => React.signIn()} onKeyUp={() => React.signIn()}>
         Sign In
-      </button>{' '}
+      </a>
       to be able to perform actions.
     </div>
   );

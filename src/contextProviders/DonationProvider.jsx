@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { paramsForServer } from 'feathers-hooks-common';
 import { utils } from 'web3';
 
-import { authenticateIfPossible, checkBalance } from '../lib/middleware';
+import { checkBalance } from '../lib/middleware';
 import { feathersClient } from '../lib/feathersClient';
 import confirmationDialog from '../lib/confirmationDialog';
 import ErrorPopup from '../components/ErrorPopup';
@@ -59,7 +59,6 @@ class DonationProvider extends Component {
     if (prevProps.currentUser !== this.props.currentUser) {
       // eslint-disable-next-line react/no-did-update-set-state
       this.setState({ isLoading: true });
-      authenticateIfPossible(this.props.currentUser);
       if (this.donationsObserver) this.donationsObserver.unsubscribe();
       if (this.props.currentUser) this.loadDonations();
     }

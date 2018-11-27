@@ -103,10 +103,6 @@ class Web3Provider extends Component {
   }
 
   componentWillMount() {
-    const timeout = setTimeout(async () => {
-      this.setState({ setupTimeout: true });
-    }, 10000);
-
     getWeb3().then(web3 => {
       this.setState({
         validProvider: !web3.defaultNode,
@@ -137,15 +133,33 @@ class Web3Provider extends Component {
     });
 
     this.enableProvider();
-
-    clearTimeout(timeout);
   }
 
   async enableProvider() {
+    // we set this timeout b/c if the provider is connected to an invalid network,
+    // any rpc calls will hang
+    const timeout = setTimeout(async () => {
+      React.swal({
+        title: 'Web3 Connection Error',
+        content: React.swal.msg(
+          <p>
+            Unable to connect to the web3 provider. Please check if your MataMask or other wallet is
+            connected to a valid network. If so try and restart your browser or open the DApp in
+            private window.
+          </p>,
+        ),
+      });
+      this.setState({ setupTimeout: true }, () => this.props.onLoaded());
+    }, 5000);
+
     const web3 = await getWeb3();
 
     const { networkId, networkType } = await fetchNetwork(web3);
     this.setState(getNetworkState(networkId, networkType));
+
+    // clear timeout here b/c we have successfully made an rpc call thus we are
+    // successfully connected to a network
+    clearTimeout(timeout);
 
     if (web3.isEnabled) {
       this.setState(
@@ -166,10 +180,7 @@ class Web3Provider extends Component {
       this.setState(
         {
           isEnabled:
-            web3 &&
-            web3.currentProvider &&
-            web3.currentProvider._metamaks &&
-            web3.currentProvider._metamaks
+            web3.currentProvider._metamask && web3.currentProvider._metamask
               ? await web3.currentProvider._metamask.isApproved()
               : false,
         },
