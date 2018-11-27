@@ -13,7 +13,7 @@ import Donation from 'models/Donation';
 import Campaign from 'models/Campaign';
 import Milestone from 'models/Milestone';
 import User from 'models/User';
-import { checkBalance } from '../lib/middleware';
+import { isLoggedIn, checkBalance } from '../lib/middleware';
 import { feathersClient } from '../lib/feathersClient';
 import Loader from './Loader';
 import config from '../configuration';
@@ -212,7 +212,9 @@ class BaseDelegateMultipleButton extends Component {
   }
 
   openDialog() {
-    checkBalance(this.props.balance).then(() => this.setState({ modalVisible: true }));
+    isLoggedIn(this.props.currentUser)
+      .then(() => checkBalance(this.props.balance))
+      .then(() => this.setState({ modalVisible: true }));
   }
 
   submit(model) {

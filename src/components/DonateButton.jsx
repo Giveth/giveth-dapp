@@ -476,14 +476,14 @@ class BaseDonateButton extends React.Component {
                 name="amount"
                 id="amount-input"
                 type="number"
-                value={amount.toNumber()}
+                value={amount.toString()}
                 onChange={(name, newAmount) => this.setAmount(newAmount)}
                 validations={{
                   lessOrEqualTo: _getMaxAmount().toNumber(),
                   greaterThan: 0.009,
                 }}
                 validationErrors={{
-                  greaterThan: `Minimum value must be at least ${selectedToken.symbol}0.01`,
+                  greaterThan: `Minimum value must be at least 0.01 ${selectedToken.symbol}`,
                   lessOrEqualTo: `This donation exceeds your wallet balance or the milestone max amount: ${_getMaxAmount().toString()} ${
                     selectedToken.symbol
                   }.`,

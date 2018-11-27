@@ -263,7 +263,6 @@ class Donation extends Model {
   }
 
   set amountRemaining(value) {
-    console.log('value', value.toFixed());
     this.checkInstanceOf(value, BigNumber, 'amountRemaining');
     this._amountRemaining = value;
   }

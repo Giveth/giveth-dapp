@@ -111,13 +111,15 @@ class DelegateButton extends Component {
       React.swal({
         title: 'Delegated!',
         content: React.swal.msg(
-          <p>
-            The donation has been delegated,{' '}
-            <a href={`${txLink}`} target="_blank" rel="noopener noreferrer">
-              view the transaction here.
-            </a>
+          <div>
+            <p>
+              The donation has been delegated,{' '}
+              <a href={`${txLink}`} target="_blank" rel="noopener noreferrer">
+                view the transaction here.
+              </a>
+            </p>
             {msg}
-          </p>,
+          </div>,
         ),
         icon: 'success',
       });
@@ -139,7 +141,7 @@ class DelegateButton extends Component {
 
     DonationService.delegate(
       this.props.donation,
-      utils.toWei(model.amount),
+      utils.toWei(model.amount.toString()),
       admin,
       onCreated,
       onSuccess,
@@ -221,7 +223,7 @@ class DelegateButton extends Component {
 
             <div className="form-group">
               <Input
-                type="string"
+                type="number"
                 validations={`greaterThan:0,isNumeric,lessOrEqualTo:${maxAmount.toNumber()}`}
                 validationErrors={{
                   greaterThan: 'Enter value greater than 0',
@@ -229,7 +231,7 @@ class DelegateButton extends Component {
                   isNumeric: 'Provide correct number',
                 }}
                 name="amount"
-                value={this.state.amount.toNumber()}
+                value={this.state.amount.toString()}
                 onChange={(name, amount) => this.setAmount(amount)}
               />
             </div>

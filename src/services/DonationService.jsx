@@ -17,10 +17,11 @@ import ErrorPopup from '../components/ErrorPopup';
 
 function updateExistingDonation(donation, amount, status) {
   const mutation = {
-    pendingAmountRemaining: utils
-      .toBN(donation.amountRemaining)
-      .sub(utils.toBN(amount))
-      .toString(),
+    pendingAmountRemaining: utils.toWei(
+      new BigNumber(donation.amountRemaining)
+        .minus(new BigNumber(utils.fromWei(amount)))
+        .toString(),
+    ),
   };
   if (status) {
     mutation.status = status;
@@ -405,12 +406,13 @@ class DonationService {
     getNetwork()
       .then(network => {
         etherScanUrl = network.etherscan;
+        const _amountRemainingInWei = utils.toWei(donation.amountRemaining.toString());
 
         return network.liquidPledging
           .transfer(
             donation.ownerId,
             donation.pledgeId,
-            donation.amountRemaining,
+            _amountRemainingInWei,
             donation.delegateId,
             {
               from: address,
@@ -419,12 +421,12 @@ class DonationService {
           )
           .once('transactionHash', hash => {
             txHash = hash;
-            updateExistingDonation(donation, donation.amountRemaining, Donation.REJECTED);
+            updateExistingDonation(donation, _amountRemainingInWei, Donation.REJECTED);
 
             const newDonation = {
               txHash,
-              amount: donation.amountRemaining,
-              amountRemaining: donation.amountRemaining,
+              amount: _amountRemainingInWei,
+              amountRemaining: _amountRemainingInWei,
               status: Donation.TO_APPROVE,
               ownerId: donation.ownerId,
               ownerTypeId: donation.ownerTypeId,
@@ -476,15 +478,18 @@ class DonationService {
   static commit(donation, address, onCreated = () => {}, onSuccess = () => {}, onError = () => {}) {
     let txHash;
     let etherScanUrl;
+
     getNetwork()
       .then(network => {
         etherScanUrl = network.etherscan;
+
+        const _amountRemainingInWei = utils.toWei(donation.amountRemaining.toString());
 
         return network.liquidPledging
           .transfer(
             donation.ownerId,
             donation.pledgeId,
-            donation.amountRemaining,
+            _amountRemainingInWei,
             donation.intendedProjectId,
             {
               from: address,
@@ -493,12 +498,12 @@ class DonationService {
           )
           .once('transactionHash', hash => {
             txHash = hash;
-            updateExistingDonation(donation, donation.amountRemaining, Donation.COMMITTED);
+            updateExistingDonation(donation, _amountRemainingInWei, Donation.COMMITTED);
 
             const newDonation = {
               txHash,
-              amount: donation.amountRemaining,
-              amountRemaining: donation.amountRemaining,
+              amount: _amountRemainingInWei,
+              amountRemaining: _amountRemainingInWei,
               ownerId: donation.intendedProjectId,
               ownerTypeId: donation.intendedProjectTypeId,
               ownerType: donation.intendedProjectType,
@@ -550,20 +555,21 @@ class DonationService {
     getNetwork()
       .then(network => {
         etherScanUrl = network.etherscan;
+        const _amountRemainingInWei = utils.toWei(donation.amountRemaining.toString());
 
         return network.liquidPledging
-          .withdraw(donation.pledgeId, donation.amountRemaining, {
+          .withdraw(donation.pledgeId, _amountRemainingInWei, {
             from: address,
             $extraGas: extraGas(),
           })
           .once('transactionHash', hash => {
             txHash = hash;
-            updateExistingDonation(donation, donation.amountRemaining);
+            updateExistingDonation(donation, _amountRemainingInWei);
 
             const newDonation = {
               txHash,
-              amount: donation.amountRemaining,
-              amountRemaining: donation.amountRemaining,
+              amount: _amountRemainingInWei,
+              amountRemaining: _amountRemainingInWei,
               ownerId: donation.ownerId,
               ownerTypeId: donation.ownerTypeId,
               ownerType: donation.ownerType,
@@ -751,11 +757,11 @@ class DonationService {
           const pledge = pledges.find(n => n.id === donation.pledgeId);
 
           if (pledge) {
-            pledge.amount = pledge.amount.add(utils.toBN(donation.amountRemaining));
+            pledge.amount = pledge.amount.add(new BigNumber(donation.amountRemaining));
           } else {
             pledges.push({
               id: donation.pledgeId,
-              amount: utils.toBN(donation.amountRemaining),
+              amount: new BigNumber(donation.amountRemaining),
             });
           }
         });

@@ -211,6 +211,7 @@ class DonationProvider extends Component {
               this.props.currentUser.address,
               afterCreate,
               afterMined,
+              err => console.log('err', err),
             );
           }
         }),
