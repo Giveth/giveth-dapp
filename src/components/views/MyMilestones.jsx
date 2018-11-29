@@ -1140,7 +1140,6 @@ class MyMilestones extends Component {
                                           m.status === 'Completed' &&
                                           isForeignNetwork &&
                                           m.mined &&
-                                          m.donationCount > 0 && (
                                             <button
                                               type="button"
                                               className="btn btn-success btn-sm"
@@ -1152,6 +1151,7 @@ class MyMilestones extends Component {
                                                 : 'Disburse'}
                                             </button>
                                           )}
+                                        m.peopleCount > 0 && (
 
                                         {/* {m.recipientAddress === currentUser.address &&
                                       m.status === 'Paying' && (
