@@ -407,9 +407,11 @@ class ViewMilestone extends Component {
                   )}
                 </div>
               </div>
-              <div className="col-md-8 m-auto">
-                <h4>Share</h4>
-                <ShareOptions pageUrl={window.location.href} pageTitle={milestone.title} />
+              <div className="row spacer-top-50 spacer-bottom-50">
+                <div className="col-md-8 m-auto">
+                  <h4>Share</h4>
+                  <ShareOptions pageUrl={window.location.href} pageTitle={milestone.title} />
+                </div>
               </div>
             </div>
           </div>
