@@ -233,3 +233,13 @@ span.nav-link:focus {
   min-height: 400px;
   width: 100%;
 }
+
+.share-options {
+  display: flex;
+}
+
+.share-options > * {
+  margin: 5px;
+  cursor: pointer;
+}
+

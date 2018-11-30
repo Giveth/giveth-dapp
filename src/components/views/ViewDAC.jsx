@@ -17,6 +17,7 @@ import DAC from '../../models/DAC';
 import { getUserName, getUserAvatar } from '../../lib/helpers';
 import DACservice from '../../services/DACService';
 import CampaignCard from '../CampaignCard';
+import ShareOptions from '../ShareOptions';
 
 /**
  * The DAC detail view mapped to /dac/id
@@ -167,6 +168,13 @@ class ViewDAC extends Component {
                     currentUser={currentUser}
                     history={history}
                   />
+                </div>
+              </div>
+
+              <div className="row spacer-top-50 spacer-bottom-50">
+                <div className="col-md-8 m-auto">
+                  <h4>Share</h4>
+                  <ShareOptions pageUrl={window.location.href} pageTitle={dac.title} />
                 </div>
               </div>
             </div>

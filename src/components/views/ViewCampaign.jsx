@@ -24,6 +24,7 @@ import CampaignService from '../../services/CampaignService';
 
 import ErrorPopup from '../ErrorPopup';
 import ErrorBoundary from '../ErrorBoundary';
+import ShareOptions from '../ShareOptions';
 
 /**
  * The Campaign detail view mapped to /campaing/id
@@ -277,6 +278,12 @@ class ViewCampaign extends Component {
                       </Link>
                     )}
                     {(!campaign || !campaign.reviewer) && <span>Unknown user</span>}
+                  </div>
+                </div>
+                <div className="row spacer-top-50 spacer-bottom-50">
+                  <div className="col-md-8 m-auto">
+                    <h4>Share</h4>
+                    <ShareOptions pageUrl={window.location.href} pageTitle={campaign.title} />
                   </div>
                 </div>
               </div>
