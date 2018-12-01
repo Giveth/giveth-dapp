@@ -153,6 +153,7 @@ class Application extends Component {
                                         render={props => (
                                           <EditDAC
                                             isNew
+                                            key={currentUser ? currentUser.id : 0}
                                             currentUser={currentUser}
                                             balance={balance}
                                             isForeignNetwork={isForeignNetwork}
@@ -176,6 +177,7 @@ class Application extends Component {
                                         path="/dacs/:id/edit"
                                         render={props => (
                                           <EditDAC
+                                            key={currentUser ? currentUser.id : 0}
                                             currentUser={currentUser}
                                             balance={balance}
                                             isForeignNetwork={isForeignNetwork}
@@ -190,6 +192,7 @@ class Application extends Component {
                                         render={props => (
                                           <EditCampaign
                                             isNew
+                                            key={currentUser ? currentUser.id : 0}
                                             currentUser={currentUser}
                                             balance={balance}
                                             isForeignNetwork={isForeignNetwork}
@@ -213,6 +216,7 @@ class Application extends Component {
                                         path="/campaigns/:id/edit"
                                         render={props => (
                                           <EditCampaign
+                                            key={currentUser ? currentUser.id : 0}
                                             currentUser={currentUser}
                                             balance={balance}
                                             isForeignNetwork={isForeignNetwork}
@@ -227,6 +231,7 @@ class Application extends Component {
                                         render={props => (
                                           <EditMilestone
                                             isNew
+                                            key={currentUser ? currentUser.id : 0}
                                             currentUser={currentUser}
                                             balance={balance}
                                             isForeignNetwork={isForeignNetwork}
@@ -241,6 +246,7 @@ class Application extends Component {
                                           <EditMilestone
                                             isNew
                                             isProposed
+                                            key={currentUser ? currentUser.id : 0}
                                             currentUser={currentUser}
                                             isForeignNetwork={isForeignNetwork}
                                             balance={balance}
@@ -264,6 +270,7 @@ class Application extends Component {
                                         path="/campaigns/:id/milestones/:milestoneId/edit"
                                         render={props => (
                                           <EditMilestone
+                                            key={currentUser ? currentUser.id : 0}
                                             currentUser={currentUser}
                                             balance={balance}
                                             isForeignNetwork={isForeignNetwork}
@@ -283,6 +290,7 @@ class Application extends Component {
                                         path="/milestones/:milestoneId/edit"
                                         render={props => (
                                           <EditMilestone
+                                            key={currentUser ? currentUser.id : 0}
                                             currentUser={currentUser}
                                             balance={balance}
                                             isForeignNetwork={isForeignNetwork}
@@ -295,6 +303,7 @@ class Application extends Component {
                                         path="/milestones/:milestoneId/edit/proposed"
                                         render={props => (
                                           <EditMilestone
+                                            key={currentUser ? currentUser.id : 0}
                                             currentUser={currentUser}
                                             balance={balance}
                                             isForeignNetwork={isForeignNetwork}
@@ -308,6 +317,7 @@ class Application extends Component {
                                         path="/donations"
                                         render={props => (
                                           <Donations
+                                            key={currentUser ? currentUser.id : 0}
                                             currentUser={currentUser}
                                             balance={balance}
                                             {...props}
@@ -319,6 +329,7 @@ class Application extends Component {
                                         path="/delegations"
                                         render={props => (
                                           <Delegations
+                                            key={currentUser ? currentUser.id : 0}
                                             currentUser={currentUser}
                                             balance={balance}
                                             {...props}
@@ -330,6 +341,7 @@ class Application extends Component {
                                         path="/my-dacs"
                                         render={props => (
                                           <MyDACs
+                                            key={currentUser ? currentUser.id : 0}
                                             currentUser={currentUser}
                                             balance={balance}
                                             {...props}
@@ -341,6 +353,7 @@ class Application extends Component {
                                         path="/my-campaigns"
                                         render={props => (
                                           <MyCampaigns
+                                            key={currentUser ? currentUser.id : 0}
                                             currentUser={currentUser}
                                             balance={balance}
                                             {...props}
@@ -352,6 +365,7 @@ class Application extends Component {
                                         path="/my-milestones"
                                         render={props => (
                                           <MyMilestones
+                                            key={currentUser ? currentUser.id : 0}
                                             currentUser={currentUser}
                                             balance={balance}
                                             {...props}
@@ -375,6 +389,7 @@ class Application extends Component {
                                         path="/profile"
                                         render={props => (
                                           <EditProfile
+                                            key={currentUser ? currentUser.id : 0}
                                             currentUser={currentUser}
                                             balance={balance}
                                             isForeignNetwork={isForeignNetwork}
