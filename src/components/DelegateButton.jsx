@@ -204,7 +204,7 @@ class DelegateButton extends Component {
                   0: '0',
                   [maxAmount]: maxAmount,
                 }}
-                format={val => `${val} ${donation.token.symbol}`}
+                tooltip={false}
                 onChange={amount => this.setState({ amount: Number(amount).toFixed(2) })}
               />
             </div>
