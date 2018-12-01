@@ -122,7 +122,7 @@ class UserProvider extends Component {
           text:
             'We noticed you have a Giveth wallet. We have replaced the Giveth wallet with support for MetaMask. You can import your keystore file directly into MetaMask to continue to using your Giveth wallet.',
           icon: 'warning',
-          buttons: ['Ok', 'Download Keystore'],
+          buttons: ['Remind me later', 'Download Keystore'],
         }).then(download => {
           if (download) {
             const downloadLink = document.createElement('a');
@@ -134,7 +134,16 @@ class UserProvider extends Component {
             downloadLink.download = `UTC--${new Date().toISOString()}-${keystore[0].address}.json`;
 
             downloadLink.click();
-            GivethWallet.removeCachedKeystore();
+
+            React.swal({
+              title: 'Giveth Wallet Deprecation Notice',
+              text:
+                'Please confirm the wallet has been downloaded correctly and you can import it in MetaMask. We strongly advice to save this file in a secure location. Can we erase the original file?',
+              icon: 'warning',
+              buttons: ['Not Yet', 'Yes erase'],
+            }).then(isConfirmed => {
+              if (isConfirmed) GivethWallet.removeCachedKeystore();
+            });
           }
         });
       })
