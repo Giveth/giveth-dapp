@@ -443,7 +443,7 @@ class BaseDonateButton extends React.Component {
                     0: '0',
                     [maxAmount]: Number(Number(maxAmount).toFixed(4)),
                   }}
-                  format={val => `${val} ETH`}
+                  tooltip={false}
                   onChange={newAmount => this.setState({ amount: newAmount.toString() })}
                 />
               </div>

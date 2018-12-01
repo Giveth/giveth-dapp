@@ -379,7 +379,7 @@ class BaseDelegateMultipleButton extends Component {
                             step={this.state.maxAmount / 10}
                             value={Number(this.state.amount)}
                             labels={{ 0: '0', [this.state.maxAmount]: this.state.maxAmount }}
-                            format={val => `${val} ${selectedToken.symbol}`}
+                            tooltip={false}
                             onChange={amount =>
                               this.setState(prevState => ({
                                 amount:
