@@ -378,60 +378,66 @@ class BaseDonateButton extends React.Component {
                 networkName={config.homeNetworkName}
               />
             )}
-            {isHomeNetwork && currentUser && (
-              <p>
-                You&apos;re pledging: as long as the {model.type} owner does not lock your money you
-                can take it back any time.
-              </p>
-            )}
+            {isHomeNetwork &&
+              currentUser && (
+                <p>
+                  You&apos;re pledging: as long as the {model.type} owner does not lock your money
+                  you can take it back any time.
+                </p>
+              )}
 
-            {validProvider && !currentUser && (
-              <div className="alert alert-warning">
-                <i className="fa fa-exclamation-triangle" />
-                It looks like your Ethereum Provider is locked or you need to enable it.
-              </div>
-            )}
+            {validProvider &&
+              !currentUser && (
+                <div className="alert alert-warning">
+                  <i className="fa fa-exclamation-triangle" />
+                  It looks like your Ethereum Provider is locked or you need to enable it.
+                </div>
+              )}
 
-            {validProvider && isHomeNetwork && currentUser && (
-              <div>
-                {model.type !== 'milestone' && (
-                  <SelectFormsy
-                    name="token"
-                    id="token-select"
-                    label="Make your donation in"
-                    helpText="Select ETH or the token you want to donate"
-                    value={selectedToken.address}
-                    options={tokenWhitelistOptions}
-                    onChange={address => this.setToken(address)}
-                    disabled={model.type === 'milestone'}
-                  />
-                )}
-                {/* TODO: remove this b/c the wallet provider will contain this info */}
-                {config.homeNetworkName} {selectedToken.symbol} balance:&nbsp;
-                <em>{utils.fromWei(balance ? balance.toString() : '')}</em>
-              </div>
-            )}
+            {validProvider &&
+              isHomeNetwork &&
+              currentUser && (
+                <div>
+                  {model.type !== 'milestone' && (
+                    <SelectFormsy
+                      name="token"
+                      id="token-select"
+                      label="Make your donation in"
+                      helpText="Select ETH or the token you want to donate"
+                      value={selectedToken.address}
+                      options={tokenWhitelistOptions}
+                      onChange={address => this.setToken(address)}
+                      disabled={model.type === 'milestone'}
+                    />
+                  )}
+                  {/* TODO: remove this b/c the wallet provider will contain this info */}
+                  {config.homeNetworkName} {selectedToken.symbol} balance:&nbsp;
+                  <em>{utils.fromWei(balance ? balance.toString() : '')}</em>
+                </div>
+              )}
 
             <span className="label">How much ${selectedToken.symbol} do you want to donate?</span>
 
-            {validProvider && maxAmount !== 0 && balance.gtn(0) && (
-              <div className="form-group">
-                <Slider
-                  type="range"
-                  name="amount2"
-                  min={0}
-                  max={Number(maxAmount)}
-                  step={0.01}
-                  value={Number(Number(amount).toFixed(4))}
-                  labels={{
-                    0: '0',
-                    [maxAmount]: Number(Number(maxAmount).toFixed(4)),
-                  }}
-                  tooltip={false}
-                  onChange={newAmount => this.setState({ amount: newAmount.toString() })}
-                />
-              </div>
-            )}
+            {validProvider &&
+              maxAmount !== 0 &&
+              balance.gtn(0) && (
+                <div className="form-group">
+                  <Slider
+                    type="range"
+                    name="amount2"
+                    min={0}
+                    max={Number(maxAmount)}
+                    step={0.01}
+                    value={Number(Number(amount).toFixed(4))}
+                    labels={{
+                      0: '0',
+                      [maxAmount]: Number(Number(maxAmount).toFixed(4)),
+                    }}
+                    tooltip={false}
+                    onChange={newAmount => this.setState({ amount: newAmount.toString() })}
+                  />
+                </div>
+              )}
 
             <div className="form-group">
               <Input
@@ -498,18 +504,21 @@ class BaseDonateButton extends React.Component {
               </div>
             )}
 
-            {validProvider && currentUser && maxAmount !== 0 && balance !== '0' && (
-              <LoaderButton
-                className="btn btn-success"
-                formNoValidate
-                type="submit"
-                disabled={isSaving || !formIsValid || !isHomeNetwork}
-                isLoading={isSaving}
-                loadingText="Saving..."
-              >
-                Donate
-              </LoaderButton>
-            )}
+            {validProvider &&
+              currentUser &&
+              maxAmount !== 0 &&
+              balance !== '0' && (
+                <LoaderButton
+                  className="btn btn-success"
+                  formNoValidate
+                  type="submit"
+                  disabled={isSaving || !formIsValid || !isHomeNetwork}
+                  isLoading={isSaving}
+                  loadingText="Donating..."
+                >
+                  Donate
+                </LoaderButton>
+              )}
 
             <button
               className="btn btn-light float-right"
