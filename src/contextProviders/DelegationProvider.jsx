@@ -200,9 +200,9 @@ class DelegationProvider extends Component {
                 'projectId',
                 'campaignId',
                 'maxAmount',
-                'totalDonated',
                 'status',
                 'token',
+                'donationCounters',
               ],
               $limit: 100,
               $sort: {
