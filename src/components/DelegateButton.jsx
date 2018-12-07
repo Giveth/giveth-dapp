@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import Modal from 'react-modal';
+import BigNumber from 'bignumber.js';
 
 import { utils } from 'web3';
 import { Form, Input } from 'formsy-react-components';
@@ -11,6 +12,7 @@ import 'react-rangeslider/lib/index.css';
 import GA from 'lib/GoogleAnalytics';
 import Donation from 'models/Donation';
 import Milestone from 'models/Milestone';
+import Campaign from 'models/Campaign';
 import { checkBalance } from '../lib/middleware';
 
 import DonationService from '../services/DonationService';
@@ -62,9 +64,12 @@ class DelegateButton extends Component {
 
     let maxAmount = utils.fromWei(this.props.donation.amountRemaining);
 
-    if (admin && admin.type === Milestone.type) {
-      if (utils.toBN(admin.maxDelegationAmount).lt(utils.toBN(this.props.donation.amountRemaining)))
-        maxAmount = utils.fromWei(admin.maxDelegationAmount);
+    if (admin && admin instanceof Milestone) {
+      const maxDelegationAmount = new BigNumber(admin.maxAmount).minus(
+        utils.fromWei(admin.currentBalance),
+      );
+      if (maxDelegationAmount.lt(new BigNumber(utils.fromWei(this.props.donation.amountRemaining))))
+        maxAmount = utils.fromWei(maxDelegationAmount.toString());
     }
 
     this.setState({
@@ -149,6 +154,20 @@ class DelegateButton extends Component {
     const style = { display: 'inline-block' };
     const pStyle = { whiteSpace: 'normal' };
 
+    const getTypes = () =>
+      types.map(t => {
+        const el = {};
+        el.name = t.title;
+        el.type = t instanceof Milestone ? Milestone.type : Campaign.type;
+        el.id = t._id;
+        el.element = (
+          <span>
+            {t.title} <em>{t instanceof Milestone ? 'Milestone' : 'Campaign'}</em>
+          </span>
+        );
+        return el;
+      });
+
     return (
       <span style={style}>
         <button type="button" className="btn btn-success btn-sm" onClick={() => this.openDialog()}>
@@ -184,7 +203,7 @@ class DelegateButton extends Component {
                   milestoneOnly ? 'Select a Milestone' : 'Select a Campaign or Milestone'
                 }
                 value={objectsToDelegateTo}
-                options={types}
+                options={getTypes()}
                 onSelect={this.selectedObject}
                 maxLength={1}
               />

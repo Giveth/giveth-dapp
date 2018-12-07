@@ -179,17 +179,7 @@ class DelegationProvider extends Component {
             resp =>
               this.setState(
                 {
-                  campaigns: resp.data.map(c => {
-                    c.type = Campaign.type;
-                    c.name = c.title;
-                    c.id = c._id;
-                    c.element = (
-                      <span>
-                        {c.title} <em>Campaign</em>
-                      </span>
-                    );
-                    return c;
-                  }),
+                  campaigns: resp.data.map(c => new Campaign(c)),
                 },
                 resolve(),
               ),
@@ -212,6 +202,7 @@ class DelegationProvider extends Component {
                 'maxAmount',
                 'totalDonated',
                 'status',
+                'token',
               ],
               $limit: 100,
               $sort: {
@@ -223,17 +214,7 @@ class DelegationProvider extends Component {
             resp => {
               this.setState(
                 {
-                  milestones: resp.data.map(m => {
-                    m.type = Milestone.type;
-                    m.name = m.title;
-                    m.id = m._id;
-                    m.element = (
-                      <span>
-                        {m.title} <em>Milestone</em>
-                      </span>
-                    );
-                    return m;
-                  }), // .filter((m) => m.totalDonated < m.maxAmount)
+                  milestones: resp.data.map(m => new Milestone(m)), // .filter((m) => m.totalDonated < m.maxAmount)
                 },
                 resolve(),
               );
