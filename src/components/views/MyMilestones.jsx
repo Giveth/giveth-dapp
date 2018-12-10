@@ -1076,11 +1076,9 @@ class MyMilestones extends Component {
                                               Mark complete
                                             </button>
                                           )}
-                                        {[
-                                          m.reviewerAddress,
-                                          m.campaignReviewerAddress,
-                                          m.recipientAddress,
-                                        ].includes(currentUser.address) &&
+                                        {[m.reviewerAddress, m.ownerAddress].includes(
+                                          currentUser.address,
+                                        ) &&
                                           isForeignNetwork &&
                                           ['InProgress', 'NeedReview'].includes(m.status) &&
                                           m.mined && (
@@ -1140,7 +1138,7 @@ class MyMilestones extends Component {
                                           m.status === 'Completed' &&
                                           isForeignNetwork &&
                                           m.mined &&
-                                          m.donationCount > 0 && (
+                                          m.peopleCount > 0 && (
                                             <button
                                               type="button"
                                               className="btn btn-success btn-sm"

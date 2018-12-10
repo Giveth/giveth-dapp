@@ -101,21 +101,6 @@ class BaseDonateButton extends React.Component {
     );
   }
 
-  getDonationData() {
-    const { givethBridge } = this.state;
-    const { currentUser } = this.props;
-    const { adminId } = this.props.model;
-
-    if (currentUser) {
-      return currentUser.giverId > 0
-        ? givethBridge.$contract.methods.donate(currentUser.giverId, adminId).encodeABI()
-        : givethBridge.$contract.methods
-            .donateAndCreateGiver(currentUser.address, adminId)
-            .encodeABI();
-    }
-    return givethBridge.$contract.methods.donateAndCreateGiver('0x0', adminId).encodeABI();
-  }
-
   pollToken() {
     const { selectedToken } = this.state;
     const { isHomeNetwork, currentUser } = this.props;
@@ -333,7 +318,6 @@ class BaseDonateButton extends React.Component {
   render() {
     const { model, currentUser, isHomeNetwork, ETHBalance, validProvider } = this.props;
     const {
-      givethBridge,
       amount,
       formIsValid,
       isSaving,
@@ -443,7 +427,7 @@ class BaseDonateButton extends React.Component {
                     0: '0',
                     [maxAmount]: Number(Number(maxAmount).toFixed(4)),
                   }}
-                  format={val => `${val} ETH`}
+                  tooltip={false}
                   onChange={newAmount => this.setState({ amount: newAmount.toString() })}
                 />
               </div>
@@ -527,22 +511,6 @@ class BaseDonateButton extends React.Component {
               </LoaderButton>
             )}
 
-            {/* {!validProvider && <div>TODO: show donation data</div>} */}
-
-            {givethBridge && (
-              <a
-                style={{ marginLeft: '10px' }}
-                className={`btn btn-primary ${isSaving ? 'disabled' : ''}`}
-                disabled={!givethBridge || !amount}
-                href={`https://mycrypto.com?to=${
-                  givethBridge.$address
-                }&data=${this.getDonationData()}&value=${amount}&gasLimit=${DONATION_GAS}#send-transaction`}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                Donate via MyCrypto
-              </a>
-            )}
             <button
               className="btn btn-light float-right"
               type="button"
