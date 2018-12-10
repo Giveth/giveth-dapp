@@ -111,6 +111,14 @@ class MainMenu extends Component {
                               <NavLink className="dropdown-item" to="/my-campaigns">
                                 My Campaigns
                               </NavLink>
+                              <a
+                                className="dropdown-item"
+                                rel="noopener noreferrer"
+                                href="https://www.github.com/Giveth/giveth-dapp/issues/new"
+                                target="_blank"
+                              >
+                                Support
+                              </a>
                             </div>
                           </li>
                         )}
