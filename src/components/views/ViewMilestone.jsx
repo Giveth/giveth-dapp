@@ -182,11 +182,14 @@ class ViewMilestone extends Component {
               <div className="row">
                 <div className="col-md-8 m-auto">
                   <div>
-                    <GoBackButton
-                      history={history}
-                      styleName="inline"
-                      title={`Campaign: ${campaign.title}`}
-                    />
+                    <div className="go-back-section">
+                      <GoBackButton
+                        history={history}
+                        styleName="inline"
+                        title={`Campaign: ${campaign.title}`}
+                      />
+                      <ShareOptions pageUrl={window.location.href} pageTitle={milestone.title} />
+                    </div>
 
                     {(isOwner(milestone.owner.address, currentUser) ||
                       isOwner(campaign.ownerAddress, currentUser)) &&
@@ -405,12 +408,6 @@ class ViewMilestone extends Component {
                         .toString()}
                     />
                   )}
-                </div>
-              </div>
-              <div className="row spacer-top-50 spacer-bottom-50">
-                <div className="col-md-8 m-auto">
-                  <h4>Share</h4>
-                  <ShareOptions pageUrl={window.location.href} pageTitle={milestone.title} />
                 </div>
               </div>
             </div>

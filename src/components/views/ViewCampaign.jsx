@@ -169,7 +169,10 @@ class ViewCampaign extends Component {
               <div className="container-fluid">
                 <div className="row">
                   <div className="col-md-8 m-auto">
-                    <GoBackButton to="/" title="Campaigns" />
+                    <div className="go-back-section">
+                      <GoBackButton to="/" title="Campaigns" />
+                      <ShareOptions pageUrl={window.location.href} pageTitle={campaign.title} />
+                    </div>
 
                     <center>
                       <Link to={`/profile/${campaign.owner.address}`}>
@@ -278,12 +281,6 @@ class ViewCampaign extends Component {
                       </Link>
                     )}
                     {(!campaign || !campaign.reviewer) && <span>Unknown user</span>}
-                  </div>
-                </div>
-                <div className="row spacer-top-50 spacer-bottom-50">
-                  <div className="col-md-8 m-auto">
-                    <h4>Share</h4>
-                    <ShareOptions pageUrl={window.location.href} pageTitle={campaign.title} />
                   </div>
                 </div>
               </div>

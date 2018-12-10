@@ -113,7 +113,10 @@ class ViewDAC extends Component {
             <div className="container-fluid">
               <div className="row">
                 <div className="col-md-8 m-auto">
-                  <GoBackButton to="/" title="Communities" />
+                  <div className="go-back-section">
+                    <GoBackButton to="/" title="Communities" />
+                    <ShareOptions pageUrl={window.location.href} pageTitle={dac.title} />
+                  </div>
 
                   <center>
                     <Link to={`/profile/${dac.owner.address}`}>
@@ -168,13 +171,6 @@ class ViewDAC extends Component {
                     currentUser={currentUser}
                     history={history}
                   />
-                </div>
-              </div>
-
-              <div className="row spacer-top-50 spacer-bottom-50">
-                <div className="col-md-8 m-auto">
-                  <h4>Share</h4>
-                  <ShareOptions pageUrl={window.location.href} pageTitle={dac.title} />
                 </div>
               </div>
             </div>
