@@ -28,6 +28,7 @@ export default class MilestoneModel extends BasicModel {
       confirmations = 0,
       requiredConfirmations = 6,
       commitTime,
+      campaignId,
     } = data;
 
     this._maxAmount = maxAmount;
@@ -44,6 +45,7 @@ export default class MilestoneModel extends BasicModel {
     this._confirmations = confirmations;
     this._requiredConfirmations = requiredConfirmations;
     this._commitTime = commitTime;
+    this._campaignId = campaignId;
   }
 
   /**
@@ -281,5 +283,14 @@ export default class MilestoneModel extends BasicModel {
       return this._donationCounters[0].currentBalance;
     }
     return '0';
+  }
+
+  set campaignId(value) {
+    this.checkType(value, ['string'], 'campaignId');
+    this._campaignId = value;
+  }
+
+  get campaignId() {
+    return this._campaignId;
   }
 }
