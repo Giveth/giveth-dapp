@@ -24,6 +24,7 @@ import CampaignService from '../../services/CampaignService';
 
 import ErrorPopup from '../ErrorPopup';
 import ErrorBoundary from '../ErrorBoundary';
+import ShareOptions from '../ShareOptions';
 
 /**
  * The Campaign detail view mapped to /campaing/id
@@ -168,7 +169,10 @@ class ViewCampaign extends Component {
               <div className="container-fluid">
                 <div className="row">
                   <div className="col-md-8 m-auto">
-                    <GoBackButton to="/" title="Campaigns" />
+                    <div className="go-back-section">
+                      <GoBackButton to="/" title="Campaigns" />
+                      <ShareOptions pageUrl={window.location.href} pageTitle={campaign.title} />
+                    </div>
 
                     <center>
                       <Link to={`/profile/${campaign.owner.address}`}>
