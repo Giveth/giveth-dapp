@@ -12,19 +12,6 @@ export { Consumer };
 
 BigNumber.config({ DECIMAL_PLACES: 18 });
 
-export const fiatTypes = [
-  { value: 'BRL', title: 'BRL' },
-  { value: 'CAD', title: 'CAD' },
-  { value: 'CHF', title: 'CHF' },
-  { value: 'CZK', title: 'CZK' },
-  { value: 'ETH', title: 'ETH' },
-  { value: 'EUR', title: 'EUR' },
-  { value: 'GBP', title: 'GBP' },
-  { value: 'MXN', title: 'MXN' },
-  { value: 'THB', title: 'THB' },
-  { value: 'USD', title: 'USD' },
-];
-
 class EthConversionProvider extends Component {
   constructor() {
     super();
@@ -74,8 +61,8 @@ class EthConversionProvider extends Component {
 
   render() {
     const { conversionRates, currentRate } = this.state;
-
     const { getEthConversion } = this;
+    const fiatTypes = React.whitelist.fiatWhitelist.map(f => ({ value: f, title: f }));
 
     return (
       <Provider
