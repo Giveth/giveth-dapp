@@ -30,12 +30,17 @@ const Balances = ({ entity }) => (
                 {entity.donationCounters.map(dc => (
                   <tr key={dc._id}>
                     <td className="td-donations-amount">
-                      {dc.currentBalance !== 'null' ? utils.fromWei(dc.currentBalance) : 0}{' '}
+                      {dc.currentBalance && dc.currentBalance !== 'null'
+                        ? utils.fromWei(dc.currentBalance)
+                        : 0}{' '}
                       {dc.symbol}
                     </td>
                     <td className="td-donations-number">{dc.donationCount || 0}</td>
                     <td className="td-donations-amount">
-                      {dc.totalDonated !== 'null' ? utils.fromWei(dc.totalDonated) : 0} {dc.symbol}
+                      {dc.totalDonated && dc.totalDonated !== 'null'
+                        ? utils.fromWei(dc.totalDonated)
+                        : 0}{' '}
+                      {dc.symbol}
                     </td>
                   </tr>
                 ))}
