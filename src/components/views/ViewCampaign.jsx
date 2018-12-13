@@ -6,6 +6,7 @@ import Masonry, { ResponsiveMasonry } from 'react-responsive-masonry';
 import ReactHtmlParser from 'react-html-parser';
 import { utils } from 'web3';
 
+import Balances from 'components/Balances';
 import { feathersClient } from '../../lib/feathersClient';
 import Loader from '../Loader';
 import MilestoneCard from '../MilestoneCard';
@@ -16,7 +17,7 @@ import BackgroundImageHeader from '../BackgroundImageHeader';
 import DonateButton from '../DonateButton';
 import CommunityButton from '../CommunityButton';
 import DelegateMultipleButton from '../DelegateMultipleButton';
-import ShowTypeDonations from '../ShowTypeDonations';
+import ListDonations from '../ListDonations';
 
 import User from '../../models/User';
 import Campaign from '../../models/Campaign';
@@ -185,14 +186,15 @@ class ViewCampaign extends Component {
 
                     <div className="milestone-header spacer-top-50 card-view">
                       <h3>Milestones</h3>
-                      {campaign.projectId > 0 && isOwner(campaign.owner.address, currentUser) && (
-                        <Link
-                          className="btn btn-primary btn-sm pull-right"
-                          to={`/campaigns/${campaign.id}/milestones/new`}
-                        >
-                          Add Milestone
-                        </Link>
-                      )}
+                      {campaign.projectId > 0 &&
+                        isOwner(campaign.owner.address, currentUser) && (
+                          <Link
+                            className="btn btn-primary btn-sm pull-right"
+                            to={`/campaigns/${campaign.id}/milestones/new`}
+                          >
+                            Add Milestone
+                          </Link>
+                        )}
 
                       {campaign.projectId > 0 &&
                         !isOwner(campaign.owner.address, currentUser) &&
@@ -205,9 +207,8 @@ class ViewCampaign extends Component {
                           </Link>
                         )}
 
-                      {isLoadingMilestones && milestonesTotal === 0 && (
-                        <Loader className="relative" />
-                      )}
+                      {isLoadingMilestones &&
+                        milestonesTotal === 0 && <Loader className="relative" />}
                       <ResponsiveMasonry
                         columnsCountBreakPoints={{
                           0: 1,
@@ -253,8 +254,9 @@ class ViewCampaign extends Component {
 
                 <div className="row spacer-top-50 spacer-bottom-50">
                   <div className="col-md-8 m-auto">
-                    <h4>Donations</h4>
-                    <ShowTypeDonations donations={donations} isLoading={isLoadingDonations} />
+                    <Balances entity={campaign} />
+
+                    <ListDonations donations={donations} isLoading={isLoadingDonations} />
                     <DonateButton
                       model={{
                         type: Campaign.type,
@@ -271,11 +273,12 @@ class ViewCampaign extends Component {
                 <div className="row spacer-top-50 spacer-bottom-50">
                   <div className="col-md-8 m-auto">
                     <h4>Campaign Reviewer</h4>
-                    {campaign && campaign.reviewer && (
-                      <Link to={`/profile/${campaign.reviewer.address}`}>
-                        {getUserName(campaign.reviewer)}
-                      </Link>
-                    )}
+                    {campaign &&
+                      campaign.reviewer && (
+                        <Link to={`/profile/${campaign.reviewer.address}`}>
+                          {getUserName(campaign.reviewer)}
+                        </Link>
+                      )}
                     {(!campaign || !campaign.reviewer) && <span>Unknown user</span>}
                   </div>
                 </div>
