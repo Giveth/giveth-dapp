@@ -16,7 +16,7 @@ import BackgroundImageHeader from '../BackgroundImageHeader';
 import DonateButton from '../DonateButton';
 import ErrorPopup from '../ErrorPopup';
 import GoBackButton from '../GoBackButton';
-import ShowTypeDonations from '../ShowTypeDonations';
+import ListDonations from '../ListDonations';
 import { feathersClient } from '../../lib/feathersClient';
 import Loader from '../Loader';
 import MilestoneItem from '../MilestoneItem';
@@ -67,7 +67,6 @@ class ViewMilestone extends Component {
           });
         },
         err => {
-          console.log('err', err);
           ErrorPopup('Something went wrong with viewing the milestone. Please try a refresh.', err);
           this.setState({ isLoading: false });
         },
@@ -384,8 +383,7 @@ class ViewMilestone extends Component {
 
               <div className="row spacer-top-50 spacer-bottom-50">
                 <div className="col-md-8 m-auto">
-                  <h4>Donations</h4>
-                  <ShowTypeDonations donations={donations} isLoading={isLoadingDonations} />
+                  <ListDonations donations={donations} isLoading={isLoadingDonations} />
                   {this.isActiveMilestone() && (
                     <DonateButton
                       model={{
