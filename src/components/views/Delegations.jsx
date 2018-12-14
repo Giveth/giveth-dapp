@@ -88,7 +88,7 @@ const Delegations = ({ balance }) => (
                                                   <DelegateButton
                                                     types={campaigns.concat(
                                                       milestones.filter(
-                                                        m => m.symbol === d.token.symbol,
+                                                        m => m.token.symbol === d.token.symbol,
                                                       ),
                                                     )}
                                                     donation={d}

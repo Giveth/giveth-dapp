@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { paramsForServer } from 'feathers-hooks-common';
 import { utils } from 'web3';
 
-import { checkBalance } from '../lib/middleware';
+import { authenticateIfPossible, checkBalance } from '../lib/middleware';
 import { feathersClient } from '../lib/feathersClient';
 import confirmationDialog from '../lib/confirmationDialog';
 import ErrorPopup from '../components/ErrorPopup';
@@ -52,15 +52,8 @@ class DonationProvider extends Component {
     getNetwork().then(network => this.setState({ etherScanUrl: network.etherscan }));
 
     // Get the donations for current user
-    if (this.props.currentUser) this.loadDonations();
-  }
-
-  componentDidUpdate(prevProps) {
-    if (prevProps.currentUser !== this.props.currentUser) {
-      // eslint-disable-next-line react/no-did-update-set-state
-      this.setState({ isLoading: true });
-      if (this.donationsObserver) this.donationsObserver.unsubscribe();
-      if (this.props.currentUser) this.loadDonations();
+    if (this.props.currentUser) {
+      authenticateIfPossible(this.props.currentUser).then(() => this.loadDonations());
     }
   }
 

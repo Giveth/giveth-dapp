@@ -2,6 +2,7 @@ import React, { Component, createContext } from 'react';
 import PropTypes from 'prop-types';
 import { paramsForServer } from 'feathers-hooks-common';
 
+import { authenticateIfPossible } from 'lib/middleware';
 import Milestone from 'models/Milestone';
 import { feathersClient } from '../lib/feathersClient';
 import ErrorPopup from '../components/ErrorPopup';
@@ -45,15 +46,8 @@ class DelegationProvider extends Component {
   }
 
   componentWillMount() {
-    if (this.props.currentUser) this.load();
-  }
-
-  componentDidUpdate(prevProps) {
-    if (prevProps.currentUser !== this.props.currentUser) {
-      // eslint-disable-next-line react/no-did-update-set-state
-      this.setState({ isLoading: true });
-      this.cleanUp();
-      if (this.props.currentUser) this.load();
+    if (this.props.currentUser) {
+      authenticateIfPossible(this.props.currentUser).then(() => this.load());
     }
   }
 
@@ -185,17 +179,7 @@ class DelegationProvider extends Component {
             resp =>
               this.setState(
                 {
-                  campaigns: resp.data.map(c => {
-                    c.type = Campaign.type;
-                    c.name = c.title;
-                    c.id = c._id;
-                    c.element = (
-                      <span>
-                        {c.title} <em>Campaign</em>
-                      </span>
-                    );
-                    return c;
-                  }),
+                  campaigns: resp.data.map(c => new Campaign(c)),
                 },
                 resolve(),
               ),
@@ -216,8 +200,9 @@ class DelegationProvider extends Component {
                 'projectId',
                 'campaignId',
                 'maxAmount',
-                'totalDonated',
                 'status',
+                'token',
+                'donationCounters',
               ],
               $limit: 100,
               $sort: {
@@ -229,17 +214,7 @@ class DelegationProvider extends Component {
             resp => {
               this.setState(
                 {
-                  milestones: resp.data.map(m => {
-                    m.type = Milestone.type;
-                    m.name = m.title;
-                    m.id = m._id;
-                    m.element = (
-                      <span>
-                        {m.title} <em>Milestone</em>
-                      </span>
-                    );
-                    return m;
-                  }), // .filter((m) => m.totalDonated < m.maxAmount)
+                  milestones: resp.data.map(m => new Milestone(m)), // .filter((m) => m.totalDonated < m.maxAmount)
                 },
                 resolve(),
               );
