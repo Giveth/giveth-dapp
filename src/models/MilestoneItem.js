@@ -1,5 +1,5 @@
+import React from 'react';
 import { getStartOfDayUTC } from 'lib/helpers';
-import { fiatTypes } from 'contextProviders/EthConversionProvider';
 import moment from 'moment';
 import Model from './Model';
 
@@ -62,7 +62,7 @@ export default class MilestoneItemModel extends Model {
   }
 
   set selectedFiatType(value) {
-    this.checkValue(value, fiatTypes.map(t => t.value), 'selectedFiatType');
+    this.checkValue(value, React.whitelist.fiatWhitelists, 'selectedFiatType');
     this._selectedFiatType = value;
   }
 
