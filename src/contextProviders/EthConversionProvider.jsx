@@ -62,7 +62,11 @@ class EthConversionProvider extends Component {
   render() {
     const { conversionRates, currentRate } = this.state;
     const { getEthConversion } = this;
-    const fiatTypes = React.whitelist.fiatWhitelist.map(f => ({ value: f, title: f }));
+    // FIXME: calculations such as this should not be in the renderer...
+    const fiatTypes =
+      React.whitelist && Array.isArray(React.whitelist.fiatWhitelist)
+        ? React.whitelist.fiatWhitelist.map(f => ({ value: f, title: f }))
+        : [];
 
     return (
       <Provider
