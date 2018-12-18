@@ -96,7 +96,7 @@ class ViewMilestone extends Component {
     checkBalance(this.props.balance)
       .then(() => {
         this.props.history.push(
-          `/campaigns/${this.state.campaign.id}/milestones/${this.state.id}/edit`,
+          `/campaigns/${this.state.campaign.id}/milestones/${this.state.milestone.id}/edit`,
         );
       })
       .catch(err => {
