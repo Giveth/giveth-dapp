@@ -24,6 +24,7 @@ import MilestoneConversations from '../MilestoneConversations';
 import DelegateMultipleButton from '../DelegateMultipleButton';
 
 import MilestoneService from '../../services/MilestoneService';
+import ShareOptions from '../ShareOptions';
 
 /**
   Loads and shows a single milestone
@@ -158,10 +159,9 @@ class ViewMilestone extends Component {
                     }}
                     currentUser={currentUser}
                     history={history}
-                    maxAmount={utils
-                      .toBN(utils.toWei(milestone.maxAmount))
-                      .sub(utils.toBN(utils.toWei(milestone.currentBalance)))
-                      .toString()}
+                    maxDonationAmount={utils
+                      .toBN(utils.fromWei(milestone.maxAmount))
+                      .sub(utils.toBN(utils.fromWei(milestone.currentBalance)))}
                   />
                   {currentUser && (
                     <DelegateMultipleButton
@@ -180,11 +180,14 @@ class ViewMilestone extends Component {
               <div className="row">
                 <div className="col-md-8 m-auto">
                   <div>
-                    <GoBackButton
-                      history={history}
-                      styleName="inline"
-                      title={`Campaign: ${campaign.title}`}
-                    />
+                    <div className="go-back-section">
+                      <GoBackButton
+                        history={history}
+                        styleName="inline"
+                        title={`Campaign: ${campaign.title}`}
+                      />
+                      <ShareOptions pageUrl={window.location.href} pageTitle={milestone.title} />
+                    </div>
 
                     {(isOwner(milestone.owner.address, currentUser) ||
                       isOwner(campaign.ownerAddress, currentUser)) &&
@@ -397,10 +400,9 @@ class ViewMilestone extends Component {
                       currentUser={currentUser}
                       history={history}
                       type={milestone.type}
-                      maxAmount={utils
+                      maxDonationAmount={utils
                         .toBN(utils.toWei(milestone.maxAmount))
-                        .sub(utils.toBN(utils.toWei(milestone.currentBalance)))
-                        .toString()}
+                        .sub(utils.toBN(utils.fromWei(milestone.currentBalance)))}
                     />
                   )}
                 </div>
