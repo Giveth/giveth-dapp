@@ -75,6 +75,7 @@ class DonationProvider extends Component {
             amountRemaining: { $ne: 0 },
             $limit: this.state.itemsPerPage,
             $skip: this.state.skipPages * this.state.itemsPerPage,
+            $sort: { createdAt: -1 },
           },
         }),
       )
