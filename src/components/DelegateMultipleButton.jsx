@@ -198,11 +198,13 @@ class BaseDelegateMultipleButton extends Component {
               .toString(),
           );
 
-          if (
-            this.props.milestone &&
-            new BigNumber(this.props.milestone.maxAmount).lt(new BigNumber(amount))
-          )
-            amount = this.props.milestone.maxAmount;
+          if (this.props.milestone) {
+            const maxDonationAmount = new BigNumber(
+              utils.fromWei(this.props.milestone.maxAmount),
+            ).minus(new BigNumber(utils.fromWei(this.props.milestone.currentBalance)));
+
+            if (maxDonationAmount.lt(new BigNumber(amount))) amount = maxDonationAmount.toString();
+          }
 
           this.setState({
             delegations,
@@ -341,96 +343,96 @@ class BaseDelegateMultipleButton extends Component {
                   {campaign ? campaign.title : milestone.title}{' '}
                 </p>
               )}
-              {this.state.objectToDelegateFrom.length === 1 && isLoadingDonations && (
-                <Loader className="small btn-loader" />
-              )}
-              {this.state.objectToDelegateFrom.length === 1 && !isLoadingDonations && (
-                <div>
-                  {!this.props.milestone && (
-                    <SelectFormsy
-                      name="token"
-                      id="token-select"
-                      label="Select token or ETH to delegate"
-                      helpText=""
-                      value={selectedToken && selectedToken.address}
-                      cta="--- Select ---"
-                      options={tokenWhitelistOptions}
-                      onChange={address => this.setToken(address)}
-                    />
-                  )}
+              {this.state.objectToDelegateFrom.length === 1 &&
+                isLoadingDonations && <Loader className="small btn-loader" />}
+              {this.state.objectToDelegateFrom.length === 1 &&
+                !isLoadingDonations && (
+                  <div>
+                    {!this.props.milestone && (
+                      <SelectFormsy
+                        name="token"
+                        id="token-select"
+                        label="Select token or ETH to delegate"
+                        helpText=""
+                        value={selectedToken && selectedToken.address}
+                        cta="--- Select ---"
+                        options={tokenWhitelistOptions}
+                        onChange={address => this.setToken(address)}
+                      />
+                    )}
 
-                  {delegations.length === 0 && (
-                    <p>
-                      The amount available to delegate is {this.state.maxAmount}{' '}
-                      {selectedToken.symbol}. Please select a different currency or different source
-                      DAC/Campaign.
-                    </p>
-                  )}
-                  {delegations.length > 0 && (
-                    <div>
-                      <span className="label">Amount {selectedToken.symbol} to delegate:</span>
+                    {delegations.length === 0 && (
+                      <p>
+                        The amount available to delegate is {this.state.maxAmount}{' '}
+                        {selectedToken.symbol}. Please select a different currency or different
+                        source DAC/Campaign.
+                      </p>
+                    )}
+                    {delegations.length > 0 && (
+                      <div>
+                        <span className="label">Amount {selectedToken.symbol} to delegate:</span>
 
-                      <div className="form-group">
-                        <Slider
-                          type="range"
-                          name="amount2"
-                          min={0}
-                          max={Number(this.state.maxAmount)}
-                          step={this.state.maxAmount / 10}
-                          value={Number(this.state.amount)}
-                          labels={{ 0: '0', [this.state.maxAmount]: this.state.maxAmount }}
-                          tooltip={false}
-                          onChange={amount =>
-                            this.setState(prevState => ({
-                              amount:
-                                Number(amount).toFixed(2) > prevState.maxAmount
-                                  ? prevState.maxAmount
-                                  : Number(amount).toFixed(2),
-                            }))
-                          }
-                        />
-                      </div>
+                        <div className="form-group">
+                          <Slider
+                            type="range"
+                            name="amount2"
+                            min={0}
+                            max={Number(this.state.maxAmount)}
+                            step={this.state.maxAmount / 10}
+                            value={Number(this.state.amount)}
+                            labels={{ 0: '0', [this.state.maxAmount]: this.state.maxAmount }}
+                            tooltip={false}
+                            onChange={amount =>
+                              this.setState(prevState => ({
+                                amount:
+                                  Number(amount).toFixed(2) > prevState.maxAmount
+                                    ? prevState.maxAmount
+                                    : Number(amount).toFixed(2),
+                              }))
+                            }
+                          />
+                        </div>
 
-                      <div className="form-group">
-                        <Input
-                          type="text"
-                          validations={`greaterThan:0,isNumeric,lessOrEqualTo:${
-                            this.state.maxAmount
-                          }`}
-                          validationErrors={{
-                            greaterThan: 'Enter value greater than 0',
-                            lessOrEqualTo: `The donations you are delegating have combined value of ${
+                        <div className="form-group">
+                          <Input
+                            type="text"
+                            validations={`greaterThan:0,isNumeric,lessOrEqualTo:${
                               this.state.maxAmount
-                            }. Do not input higher amount than that.`,
-                            isNumeric: 'Provide correct number',
-                          }}
-                          name="amount"
-                          value={this.state.amount}
-                          onChange={(name, amount) => this.setState({ amount })}
-                        />
-                      </div>
+                            }`}
+                            validationErrors={{
+                              greaterThan: 'Enter value greater than 0',
+                              lessOrEqualTo: `The donations you are delegating have combined value of ${
+                                this.state.maxAmount
+                              }. Do not input higher amount than that.`,
+                              isNumeric: 'Provide correct number',
+                            }}
+                            name="amount"
+                            value={this.state.amount}
+                            onChange={(name, amount) => this.setState({ amount })}
+                          />
+                        </div>
 
-                      <button
-                        className="btn btn-success"
-                        formNoValidate
-                        type="submit"
-                        disabled={isSaving || !isForeignNetwork}
-                      >
-                        {isSaving ? 'Delegating...' : 'Delegate here'}
-                      </button>
-                      <button
-                        className="btn btn-light float-right"
-                        type="button"
-                        onClick={() => {
-                          this.setState({ modalVisible: false });
-                        }}
-                      >
-                        Close
-                      </button>
-                    </div>
-                  )}
-                </div>
-              )}
+                        <button
+                          className="btn btn-success"
+                          formNoValidate
+                          type="submit"
+                          disabled={isSaving || !isForeignNetwork}
+                        >
+                          {isSaving ? 'Delegating...' : 'Delegate here'}
+                        </button>
+                        <button
+                          className="btn btn-light float-right"
+                          type="button"
+                          onClick={() => {
+                            this.setState({ modalVisible: false });
+                          }}
+                        >
+                          Close
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
             </Form>
           )}
         </Modal>
