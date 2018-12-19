@@ -62,7 +62,7 @@ export default class MilestoneItemModel extends Model {
   }
 
   set selectedFiatType(value) {
-    this.checkValue(value, React.whitelist.fiatWhitelists, 'selectedFiatType');
+    this.checkValue(value, React.whitelist.fiatWhitelist, 'selectedFiatType');
     this._selectedFiatType = value;
   }
 
