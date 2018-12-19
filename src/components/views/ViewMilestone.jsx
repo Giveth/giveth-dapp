@@ -6,6 +6,7 @@ import Avatar from 'react-avatar';
 import ReactHtmlParser, { convertNodeToElement } from 'react-html-parser';
 import { Link } from 'react-router-dom';
 import { utils } from 'web3';
+import BigNumber from 'bignumber.js';
 
 import User from 'models/User';
 import Milestone from 'models/Milestone';
@@ -125,6 +126,11 @@ class ViewMilestone extends Component {
     const { history, currentUser, balance } = this.props;
     const { isLoading, donations, isLoadingDonations, campaign, milestone, recipient } = this.state;
 
+    const getMaxDonationAmount = () =>
+      new BigNumber(utils.fromWei(milestone.maxAmount)).minus(
+        new BigNumber(utils.fromWei(milestone.currentBalance)),
+      );
+
     return (
       <div id="view-milestone-view">
         {isLoading && <Loader className="fixed" />}
@@ -159,9 +165,7 @@ class ViewMilestone extends Component {
                     }}
                     currentUser={currentUser}
                     history={history}
-                    maxDonationAmount={utils
-                      .toBN(utils.fromWei(milestone.maxAmount))
-                      .sub(utils.toBN(utils.fromWei(milestone.currentBalance)))}
+                    maxDonationAmount={getMaxDonationAmount()}
                   />
                   {currentUser && (
                     <DelegateMultipleButton
@@ -400,9 +404,7 @@ class ViewMilestone extends Component {
                       currentUser={currentUser}
                       history={history}
                       type={milestone.type}
-                      maxDonationAmount={utils
-                        .toBN(utils.toWei(milestone.maxAmount))
-                        .sub(utils.toBN(utils.fromWei(milestone.currentBalance)))}
+                      maxDonationAmount={getMaxDonationAmount()}
                     />
                   )}
                 </div>
