@@ -280,27 +280,7 @@ class Application extends Component {
                                       />
                                       <Route
                                         exact
-                                        path="/campaigns/:id/milestones"
-                                        render={({ match }) => (
-                                          <Redirect to={`/campaigns/${match.params.id}`} />
-                                        )}
-                                      />
-                                      <Route
-                                        exact
-                                        path="/milestones/:milestoneId/edit"
-                                        render={props => (
-                                          <EditMilestone
-                                            key={currentUser ? currentUser.id : 0}
-                                            currentUser={currentUser}
-                                            balance={balance}
-                                            isForeignNetwork={isForeignNetwork}
-                                            {...props}
-                                          />
-                                        )}
-                                      />
-                                      <Route
-                                        exact
-                                        path="/milestones/:milestoneId/edit/proposed"
+                                        path="/campaigns/:id/milestones/:milestoneId/edit/proposed"
                                         render={props => (
                                           <EditMilestone
                                             key={currentUser ? currentUser.id : 0}
@@ -310,6 +290,13 @@ class Application extends Component {
                                             isProposed
                                             {...props}
                                           />
+                                        )}
+                                      />
+                                      <Route
+                                        exact
+                                        path="/campaigns/:id/milestones"
+                                        render={({ match }) => (
+                                          <Redirect to={`/campaigns/${match.params.id}`} />
                                         )}
                                       />
                                       <Route
