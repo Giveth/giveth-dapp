@@ -311,6 +311,7 @@ class EditMilestone extends Component {
     return authenticateIfPossible(this.props.currentUser)
       .then(() => {
         if (
+          this.props.isNew &&
           !this.props.isProposed &&
           !isInWhitelist(this.props.currentUser, React.whitelist.projectOwnerWhitelist)
         ) {
@@ -765,12 +766,13 @@ class EditMilestone extends Component {
                   <div className="form-header">
                     {isNew && !isProposed && <h3>Add a new milestone</h3>}
 
-                    {!isNew && !isProposed && (
-                      <h3>
-                        Edit milestone
-                        {milestone.title}
-                      </h3>
-                    )}
+                    {!isNew &&
+                      !isProposed && (
+                        <h3>
+                          Edit milestone
+                          {milestone.title}
+                        </h3>
+                      )}
 
                     {isNew && isProposed && <h3>Propose a Milestone</h3>}
 
@@ -972,7 +974,7 @@ class EditMilestone extends Component {
                                 id="fiatamount-input"
                                 type="number"
                                 step="any"
-                                label="Maximum amount in fiat"
+                                label={`Maximum amount in ${milestone.selectedFiatType}`}
                                 value={milestone.fiatAmount.toNumber()}
                                 placeholder="10"
                                 validations="greaterThan:0"

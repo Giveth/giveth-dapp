@@ -6,6 +6,7 @@ import Avatar from 'react-avatar';
 import ReactHtmlParser, { convertNodeToElement } from 'react-html-parser';
 import { Link } from 'react-router-dom';
 import { utils } from 'web3';
+import BigNumber from 'bignumber.js';
 
 import User from 'models/User';
 import Milestone from 'models/Milestone';
@@ -16,7 +17,7 @@ import BackgroundImageHeader from '../BackgroundImageHeader';
 import DonateButton from '../DonateButton';
 import ErrorPopup from '../ErrorPopup';
 import GoBackButton from '../GoBackButton';
-import ShowTypeDonations from '../ShowTypeDonations';
+import ListDonations from '../ListDonations';
 import { feathersClient } from '../../lib/feathersClient';
 import Loader from '../Loader';
 import MilestoneItem from '../MilestoneItem';
@@ -24,6 +25,7 @@ import MilestoneConversations from '../MilestoneConversations';
 import DelegateMultipleButton from '../DelegateMultipleButton';
 
 import MilestoneService from '../../services/MilestoneService';
+import ShareOptions from '../ShareOptions';
 
 /**
   Loads and shows a single milestone
@@ -67,7 +69,6 @@ class ViewMilestone extends Component {
           });
         },
         err => {
-          console.log('err', err);
           ErrorPopup('Something went wrong with viewing the milestone. Please try a refresh.', err);
           this.setState({ isLoading: false });
         },
@@ -96,7 +97,7 @@ class ViewMilestone extends Component {
     checkBalance(this.props.balance)
       .then(() => {
         this.props.history.push(
-          `/campaigns/${this.state.campaign.id}/milestones/${this.state.id}/edit`,
+          `/campaigns/${this.state.campaign._id}/milestones/${this.state.milestone.id}/edit`,
         );
       })
       .catch(err => {
@@ -124,6 +125,11 @@ class ViewMilestone extends Component {
   render() {
     const { history, currentUser, balance } = this.props;
     const { isLoading, donations, isLoadingDonations, campaign, milestone, recipient } = this.state;
+
+    const getMaxDonationAmount = () =>
+      new BigNumber(utils.fromWei(milestone.maxAmount)).minus(
+        new BigNumber(utils.fromWei(milestone.currentBalance)),
+      );
 
     return (
       <div id="view-milestone-view">
@@ -159,10 +165,7 @@ class ViewMilestone extends Component {
                     }}
                     currentUser={currentUser}
                     history={history}
-                    maxAmount={utils
-                      .toBN(utils.toWei(milestone.maxAmount))
-                      .sub(utils.toBN(utils.toWei(milestone.currentBalance)))
-                      .toString()}
+                    maxDonationAmount={getMaxDonationAmount()}
                   />
                   {currentUser && (
                     <DelegateMultipleButton
@@ -181,11 +184,14 @@ class ViewMilestone extends Component {
               <div className="row">
                 <div className="col-md-8 m-auto">
                   <div>
-                    <GoBackButton
-                      history={history}
-                      styleName="inline"
-                      title={`Campaign: ${campaign.title}`}
-                    />
+                    <div className="go-back-section">
+                      <GoBackButton
+                        history={history}
+                        styleName="inline"
+                        title={`Campaign: ${campaign.title}`}
+                      />
+                      <ShareOptions pageUrl={window.location.href} pageTitle={milestone.title} />
+                    </div>
 
                     {(isOwner(milestone.owner.address, currentUser) ||
                       isOwner(campaign.ownerAddress, currentUser)) &&
@@ -384,8 +390,7 @@ class ViewMilestone extends Component {
 
               <div className="row spacer-top-50 spacer-bottom-50">
                 <div className="col-md-8 m-auto">
-                  <h4>Donations</h4>
-                  <ShowTypeDonations donations={donations} isLoading={isLoadingDonations} />
+                  <ListDonations donations={donations} isLoading={isLoadingDonations} />
                   {this.isActiveMilestone() && (
                     <DonateButton
                       model={{
@@ -399,10 +404,7 @@ class ViewMilestone extends Component {
                       currentUser={currentUser}
                       history={history}
                       type={milestone.type}
-                      maxAmount={utils
-                        .toBN(utils.toWei(milestone.maxAmount))
-                        .sub(utils.toBN(utils.toWei(milestone.currentBalance)))
-                        .toString()}
+                      maxDonationAmount={getMaxDonationAmount()}
                     />
                   )}
                 </div>

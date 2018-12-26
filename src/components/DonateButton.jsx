@@ -101,6 +101,21 @@ class BaseDonateButton extends React.Component {
     );
   }
 
+  getMaxAmount() {
+    const { selectedToken } = this.state;
+    const { ETHBalance } = this.props;
+
+    const balance = selectedToken.symbol === 'ETH' ? ETHBalance : selectedToken.balance;
+
+    // Determine max amount
+    let maxAmount = utils.fromWei(balance.toString());
+
+    if (this.props.maxDonationAmount && balance.gt(this.props.maxDonationAmount))
+      maxAmount = this.props.maxDonationAmount.toString();
+
+    return maxAmount;
+  }
+
   pollToken() {
     const { selectedToken } = this.state;
     const { isHomeNetwork, currentUser } = this.props;
@@ -154,16 +169,11 @@ class BaseDonateButton extends React.Component {
   }
 
   openDialog() {
-    this.setState(prevState => ({
+    this.setState({
       modalVisible: true,
-      amount:
-        prevState.selectedToken.symbol === 'ETH'
-          ? utils.fromWei(this.props.ETHBalance ? this.props.ETHBalance.toString() : '')
-          : utils.fromWei(
-              prevState.selectedToken.balance ? prevState.selectedToken.balance.toString() : '',
-            ), // FIXME: Is it correct to use from wei? Shouldn't it consider precision of the token?
+      amount: this.getMaxAmount(),
       formIsValid: false,
-    }));
+    });
   }
 
   submit(model) {
@@ -333,11 +343,8 @@ class BaseDonateButton extends React.Component {
     };
 
     const balance = selectedToken.symbol === 'ETH' ? ETHBalance : selectedToken.balance;
+    const maxAmount = this.getMaxAmount();
 
-    // Determine max amount
-    let maxAmount = utils.fromWei(balance ? balance.toString() : ''); // FIXME: Is this correct, shouldn't it consider precision of the token?
-    if (this.props.maxAmount && balance.gt(utils.toBN(this.props.maxAmount)))
-      maxAmount = utils.fromWei(this.props.maxAmount);
     return (
       <span style={style}>
         <button type="button" className="btn btn-success" onClick={this.openDialog}>
@@ -378,60 +385,66 @@ class BaseDonateButton extends React.Component {
                 networkName={config.homeNetworkName}
               />
             )}
-            {isHomeNetwork && currentUser && (
-              <p>
-                You&apos;re pledging: as long as the {model.type} owner does not lock your money you
-                can take it back any time.
-              </p>
-            )}
+            {isHomeNetwork &&
+              currentUser && (
+                <p>
+                  You&apos;re pledging: as long as the {model.type} owner does not lock your money
+                  you can take it back any time.
+                </p>
+              )}
 
-            {validProvider && !currentUser && (
-              <div className="alert alert-warning">
-                <i className="fa fa-exclamation-triangle" />
-                It looks like your Ethereum Provider is locked or you need to enable it.
-              </div>
-            )}
+            {validProvider &&
+              !currentUser && (
+                <div className="alert alert-warning">
+                  <i className="fa fa-exclamation-triangle" />
+                  It looks like your Ethereum Provider is locked or you need to enable it.
+                </div>
+              )}
 
-            {validProvider && isHomeNetwork && currentUser && (
-              <div>
-                {model.type !== 'milestone' && (
-                  <SelectFormsy
-                    name="token"
-                    id="token-select"
-                    label="Make your donation in"
-                    helpText="Select ETH or the token you want to donate"
-                    value={selectedToken.address}
-                    options={tokenWhitelistOptions}
-                    onChange={address => this.setToken(address)}
-                    disabled={model.type === 'milestone'}
-                  />
-                )}
-                {/* TODO: remove this b/c the wallet provider will contain this info */}
-                {config.homeNetworkName} {selectedToken.symbol} balance:&nbsp;
-                <em>{utils.fromWei(balance ? balance.toString() : '')}</em>
-              </div>
-            )}
+            {validProvider &&
+              isHomeNetwork &&
+              currentUser && (
+                <div>
+                  {model.type !== 'milestone' && (
+                    <SelectFormsy
+                      name="token"
+                      id="token-select"
+                      label="Make your donation in"
+                      helpText="Select ETH or the token you want to donate"
+                      value={selectedToken.address}
+                      options={tokenWhitelistOptions}
+                      onChange={address => this.setToken(address)}
+                      disabled={model.type === 'milestone'}
+                    />
+                  )}
+                  {/* TODO: remove this b/c the wallet provider will contain this info */}
+                  {config.homeNetworkName} {selectedToken.symbol} balance:&nbsp;
+                  <em>{utils.fromWei(balance ? balance.toString() : '')}</em>
+                </div>
+              )}
 
             <span className="label">How much ${selectedToken.symbol} do you want to donate?</span>
 
-            {validProvider && maxAmount !== 0 && balance.gtn(0) && (
-              <div className="form-group">
-                <Slider
-                  type="range"
-                  name="amount2"
-                  min={0}
-                  max={Number(maxAmount)}
-                  step={0.01}
-                  value={Number(Number(amount).toFixed(4))}
-                  labels={{
-                    0: '0',
-                    [maxAmount]: Number(Number(maxAmount).toFixed(4)),
-                  }}
-                  tooltip={false}
-                  onChange={newAmount => this.setState({ amount: newAmount.toString() })}
-                />
-              </div>
-            )}
+            {validProvider &&
+              maxAmount !== 0 &&
+              balance.gtn(0) && (
+                <div className="form-group">
+                  <Slider
+                    type="range"
+                    name="amount2"
+                    min={0}
+                    max={Number(maxAmount)}
+                    step={0.01}
+                    value={Number(Number(amount).toFixed(4))}
+                    labels={{
+                      0: '0',
+                      [maxAmount]: Number(Number(maxAmount).toFixed(4)),
+                    }}
+                    tooltip={false}
+                    onChange={newAmount => this.setState({ amount: newAmount.toString() })}
+                  />
+                </div>
+              )}
 
             <div className="form-group">
               <Input
@@ -498,18 +511,21 @@ class BaseDonateButton extends React.Component {
               </div>
             )}
 
-            {validProvider && currentUser && maxAmount !== 0 && balance !== '0' && (
-              <LoaderButton
-                className="btn btn-success"
-                formNoValidate
-                type="submit"
-                disabled={isSaving || !formIsValid || !isHomeNetwork}
-                isLoading={isSaving}
-                loadingText="Saving..."
-              >
-                Donate
-              </LoaderButton>
-            )}
+            {validProvider &&
+              currentUser &&
+              maxAmount !== 0 &&
+              balance !== '0' && (
+                <LoaderButton
+                  className="btn btn-success"
+                  formNoValidate
+                  type="submit"
+                  disabled={isSaving || !formIsValid || !isHomeNetwork}
+                  isLoading={isSaving}
+                  loadingText="Donating..."
+                >
+                  Donate
+                </LoaderButton>
+              )}
 
             <button
               className="btn btn-light float-right"
@@ -527,7 +543,7 @@ class BaseDonateButton extends React.Component {
   }
 }
 
-const DonateButton = ({ model, currentUser, maxAmount }) => (
+const DonateButton = ({ model, currentUser, maxDonationAmount }) => (
   <Web3Consumer>
     {({ state: { isHomeNetwork, validProvider, balance } }) => (
       <BaseDonateButton
@@ -536,7 +552,7 @@ const DonateButton = ({ model, currentUser, maxAmount }) => (
         isHomeNetwork={isHomeNetwork}
         model={model}
         currentUser={currentUser}
-        maxAmount={maxAmount}
+        maxDonationAmount={maxDonationAmount}
       />
     )}
   </Web3Consumer>
@@ -554,7 +570,7 @@ const modelTypes = PropTypes.shape({
 DonateButton.propTypes = {
   model: modelTypes.isRequired,
   currentUser: PropTypes.instanceOf(User),
-  maxAmount: PropTypes.string,
+  maxDonationAmount: PropTypes.instanceOf(utils.BN),
 };
 
 // eslint isn't smart enough to be able to use Object.assign({}, DonateButton.propTypes, {...})
@@ -562,19 +578,19 @@ DonateButton.propTypes = {
 BaseDonateButton.propTypes = {
   model: modelTypes.isRequired,
   currentUser: PropTypes.instanceOf(User),
-  maxAmount: PropTypes.string,
+  maxDonationAmount: PropTypes.string,
   ETHBalance: PropTypes.objectOf(utils.BN).isRequired,
   validProvider: PropTypes.bool.isRequired,
   isHomeNetwork: PropTypes.bool.isRequired,
 };
 
 DonateButton.defaultProps = {
-  maxAmount: undefined,
+  maxDonationAmount: undefined,
   currentUser: undefined,
 };
 
 BaseDonateButton.defaultProps = {
-  maxAmount: undefined,
+  maxDonationAmount: undefined,
   currentUser: undefined,
 };
 

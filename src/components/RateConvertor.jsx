@@ -119,7 +119,7 @@ class RateConvertor extends Component {
           <div className="col-4">
             <Input
               type="text"
-              label="Amount in fiat"
+              label={`Amount in ${selectedFiatType}`}
               name="fiatAmount"
               value={fiatAmountForm}
               validations="greaterThan:0,isNumeric"

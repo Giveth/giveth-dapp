@@ -6,17 +6,19 @@ import { Link } from 'react-router-dom';
 import Avatar from 'react-avatar';
 import ReactHtmlParser from 'react-html-parser';
 
+import Balances from 'components/Balances';
 import Loader from '../Loader';
 import GoBackButton from '../GoBackButton';
 import BackgroundImageHeader from '../BackgroundImageHeader';
 import DonateButton from '../DonateButton';
-import ShowTypeDonations from '../ShowTypeDonations';
+import ListDonations from '../ListDonations';
 import CommunityButton from '../CommunityButton';
 import User from '../../models/User';
 import DAC from '../../models/DAC';
 import { getUserName, getUserAvatar } from '../../lib/helpers';
 import DACservice from '../../services/DACService';
 import CampaignCard from '../CampaignCard';
+import ShareOptions from '../ShareOptions';
 
 /**
  * The DAC detail view mapped to /dac/id
@@ -112,7 +114,10 @@ class ViewDAC extends Component {
             <div className="container-fluid">
               <div className="row">
                 <div className="col-md-8 m-auto">
-                  <GoBackButton to="/" title="Communities" />
+                  <div className="go-back-section">
+                    <GoBackButton to="/" title="Communities" />
+                    <ShareOptions pageUrl={window.location.href} pageTitle={dac.title} />
+                  </div>
 
                   <center>
                     <Link to={`/profile/${dac.owner.address}`}>
@@ -136,26 +141,28 @@ class ViewDAC extends Component {
                     </p>
                     {isLoadingCampaigns && <Loader className="small" />}
 
-                    {campaigns.length > 0 && !isLoadingCampaigns && (
-                      <div className="cards-grid-container">
-                        {campaigns.map(c => (
-                          <CampaignCard
-                            key={c.id}
-                            campaign={c}
-                            history={history}
-                            balance={balance}
-                          />
-                        ))}
-                      </div>
-                    )}
+                    {campaigns.length > 0 &&
+                      !isLoadingCampaigns && (
+                        <div className="cards-grid-container">
+                          {campaigns.map(c => (
+                            <CampaignCard
+                              key={c.id}
+                              campaign={c}
+                              history={history}
+                              balance={balance}
+                            />
+                          ))}
+                        </div>
+                      )}
                   </div>
                 </div>
               )}
 
               <div className="row spacer-top-50 spacer-bottom-50">
                 <div className="col-md-8 m-auto">
-                  <h4>Donations</h4>
-                  <ShowTypeDonations donations={donations} isLoading={isLoadingDonations} />
+                  <Balances entity={dac} />
+
+                  <ListDonations donations={donations} isLoading={isLoadingDonations} />
                   <DonateButton
                     model={{
                       type: DAC.type,
