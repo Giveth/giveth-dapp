@@ -311,6 +311,7 @@ class EditMilestone extends Component {
     return authenticateIfPossible(this.props.currentUser)
       .then(() => {
         if (
+          this.props.isNew &&
           !this.props.isProposed &&
           !isInWhitelist(this.props.currentUser, React.whitelist.projectOwnerWhitelist)
         ) {
