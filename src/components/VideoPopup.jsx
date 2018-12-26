@@ -9,6 +9,23 @@ Label.propTypes = {
   children: PropTypes.node.isRequired,
 };
 
+function convertVideoUrlToEmbeded(url) {
+  let match =
+    url.match(/^(https?):\/\/(?:(?:www|m)\.)?youtube\.com\/watch.*v=([a-zA-Z0-9_-]+)/) ||
+    url.match(/^(https?):\/\/(?:(?:www|m)\.)?youtu\.be\/([a-zA-Z0-9_-]+)/);
+
+  if (match) {
+    return `${match[1]}://www.youtube.com/embed/${match[2]}?showinfo=0`;
+  }
+
+  // eslint-disable-next-line no-cond-assign
+  if ((match = url.match(/^(https?):\/\/(?:www\.)?vimeo\.com\/(\d+)/))) {
+    return `${match[1]}://player.vimeo.com/video/${match[2]}/`;
+  }
+
+  return url;
+}
+
 class Content extends Component {
   constructor(props) {
     super(props);
@@ -39,7 +56,7 @@ class Content extends Component {
   }
 
   handleCamera() {
-    this.setState({ type: 'camera' }, () => {
+    this.setState({ type: 'camera', currentState: '' }, () => {
       navigator.getUserMedia(
         { audio: true, video: true },
         cameraStream => {
@@ -101,13 +118,13 @@ class Content extends Component {
 
   startRecording() {
     const { stream } = this.state;
+    this.setState({ currentState: 'recording' });
     window.setSrcObject(stream.getMixedStream(), document.getElementById('video'));
     this.setState(
       {
         recordVideo: window.RecordRTC(stream.getMixedStream(), {
           type: 'video',
         }),
-        currentState: 'recording',
       },
       () => this.state.recordVideo.startRecording(),
     );
@@ -119,7 +136,7 @@ class Content extends Component {
       this.setState({
         file: window.URL.createObjectURL(recordVideo.getBlob()),
         blob: recordVideo.getBlob(),
-        currentState: '',
+        currentState: 'recording-stopped',
       });
     });
   }
@@ -138,7 +155,7 @@ class Content extends Component {
   }
 
   handleScreenSharing() {
-    this.setState({ type: 'screen' });
+    this.setState({ type: 'screen', currentState: '' });
     window.getScreenId((err, sourceId, screenContraints) => {
       if (err) {
         console.log(err);
@@ -196,7 +213,10 @@ class Content extends Component {
                 placeholder="Insert video URL"
                 onChange={e => this.setState({ url: e.target.value })}
               />
-              <button type="button" onClick={() => handleQuillInsert(url)}>
+              <button
+                type="button"
+                onClick={() => handleQuillInsert(convertVideoUrlToEmbeded(url))}
+              >
                 Submit
               </button>
             </div>
@@ -223,13 +243,19 @@ class Content extends Component {
         {(file || type === 'camera' || type === 'screen') && (
           <div>
             <video
-              style={{ marginTop: '1rem', width: '100%' }}
+              style={{
+                marginTop: '1rem',
+                width: '100%',
+                display: currentState !== 'recording-stopped' ? '' : 'none',
+              }}
               controls
-              autoPlay
               muted
-              src={file}
+              autoPlay
               id="video"
             />
+            {currentState === 'recording-stopped' && (
+              <video style={{ marginTop: '1rem', width: '100%' }} controls autoPlay src={file} />
+            )}
             {(type === 'camera' || type === 'screen') && (
               <div style={{ marginTop: '1rem', marginBottom: '1rem' }}>
                 <button
