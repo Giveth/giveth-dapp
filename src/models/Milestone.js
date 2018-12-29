@@ -111,6 +111,11 @@ export default class MilestoneModel extends BasicModel {
     return 'milestone';
   }
 
+  // eslint-disable-next-line class-methods-use-this
+  get type() {
+    return MilestoneModel.type;
+  }
+
   get title() {
     return this._title;
   }

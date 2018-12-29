@@ -156,18 +156,20 @@ class DelegateButton extends Component {
     const pStyle = { whiteSpace: 'normal' };
 
     const getTypes = () =>
-      types.map(t => {
-        const el = {};
-        el.name = t.title;
-        el.type = t instanceof Milestone ? Milestone.type : Campaign.type;
-        el.id = t._id;
-        el.element = (
-          <span>
-            {t.title} <em>{t instanceof Milestone ? 'Milestone' : 'Campaign'}</em>
-          </span>
-        );
-        return el;
-      });
+      types
+        .filter(t => !(t instanceof Milestone) || t.token.symbol === donation.token.symbol)
+        .map(t => {
+          const el = {};
+          el.name = t.title;
+          el.type = t instanceof Milestone ? Milestone.type : Campaign.type;
+          el.id = t._id;
+          el.element = (
+            <span>
+              {t.title} <em>{t instanceof Milestone ? 'Milestone' : 'Campaign'}</em>
+            </span>
+          );
+          return el;
+        });
 
     return (
       <span style={style}>
