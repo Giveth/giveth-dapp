@@ -26,6 +26,11 @@ class Campaign extends BasicModel {
     return 'campaign';
   }
 
+  // eslint-disable-next-line class-methods-use-this
+  get type() {
+    return Campaign.type;
+  }
+
   constructor(data) {
     super(data);
 

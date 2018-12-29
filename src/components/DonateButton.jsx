@@ -101,6 +101,21 @@ class BaseDonateButton extends React.Component {
     );
   }
 
+  getMaxAmount() {
+    const { selectedToken } = this.state;
+    const { ETHBalance } = this.props;
+
+    const balance = selectedToken.symbol === 'ETH' ? ETHBalance : selectedToken.balance;
+
+    // Determine max amount
+    let maxAmount = utils.fromWei(balance.toString());
+
+    if (this.props.maxDonationAmount && balance.gt(this.props.maxDonationAmount))
+      maxAmount = this.props.maxDonationAmount.toString();
+
+    return maxAmount;
+  }
+
   pollToken() {
     const { selectedToken } = this.state;
     const { isHomeNetwork, currentUser } = this.props;
@@ -154,16 +169,11 @@ class BaseDonateButton extends React.Component {
   }
 
   openDialog() {
-    this.setState(prevState => ({
+    this.setState({
       modalVisible: true,
-      amount:
-        prevState.selectedToken.symbol === 'ETH'
-          ? utils.fromWei(this.props.ETHBalance ? this.props.ETHBalance.toString() : '')
-          : utils.fromWei(
-              prevState.selectedToken.balance ? prevState.selectedToken.balance.toString() : '',
-            ), // FIXME: Is it correct to use from wei? Shouldn't it consider precision of the token?
+      amount: this.getMaxAmount(),
       formIsValid: false,
-    }));
+    });
   }
 
   submit(model) {
@@ -333,11 +343,8 @@ class BaseDonateButton extends React.Component {
     };
 
     const balance = selectedToken.symbol === 'ETH' ? ETHBalance : selectedToken.balance;
+    const maxAmount = this.getMaxAmount();
 
-    // Determine max amount
-    let maxAmount = utils.fromWei(balance ? balance.toString() : ''); // FIXME: Is this correct, shouldn't it consider precision of the token?
-    if (this.props.maxAmount && balance.gt(utils.toBN(this.props.maxAmount)))
-      maxAmount = utils.fromWei(this.props.maxAmount);
     return (
       <span style={style}>
         <button type="button" className="btn btn-success" onClick={this.openDialog}>
@@ -367,8 +374,7 @@ class BaseDonateButton extends React.Component {
             {!validProvider && (
               <div className="alert alert-warning">
                 <i className="fa fa-exclamation-triangle" />
-                It is recommended that you install <a href="https://metamask.io/">MetaMask</a> to
-                donate
+                Please install <a href="https://metamask.io/">MetaMask</a> to donate
               </div>
             )}
 
@@ -536,7 +542,7 @@ class BaseDonateButton extends React.Component {
   }
 }
 
-const DonateButton = ({ model, currentUser, maxAmount }) => (
+const DonateButton = ({ model, currentUser, maxDonationAmount }) => (
   <Web3Consumer>
     {({ state: { isHomeNetwork, validProvider, balance } }) => (
       <BaseDonateButton
@@ -545,7 +551,7 @@ const DonateButton = ({ model, currentUser, maxAmount }) => (
         isHomeNetwork={isHomeNetwork}
         model={model}
         currentUser={currentUser}
-        maxAmount={maxAmount}
+        maxDonationAmount={maxDonationAmount}
       />
     )}
   </Web3Consumer>
@@ -563,7 +569,7 @@ const modelTypes = PropTypes.shape({
 DonateButton.propTypes = {
   model: modelTypes.isRequired,
   currentUser: PropTypes.instanceOf(User),
-  maxAmount: PropTypes.string,
+  maxDonationAmount: PropTypes.instanceOf(utils.BN),
 };
 
 // eslint isn't smart enough to be able to use Object.assign({}, DonateButton.propTypes, {...})
@@ -571,19 +577,19 @@ DonateButton.propTypes = {
 BaseDonateButton.propTypes = {
   model: modelTypes.isRequired,
   currentUser: PropTypes.instanceOf(User),
-  maxAmount: PropTypes.string,
+  maxDonationAmount: PropTypes.string,
   ETHBalance: PropTypes.objectOf(utils.BN).isRequired,
   validProvider: PropTypes.bool.isRequired,
   isHomeNetwork: PropTypes.bool.isRequired,
 };
 
 DonateButton.defaultProps = {
-  maxAmount: undefined,
+  maxDonationAmount: undefined,
   currentUser: undefined,
 };
 
 BaseDonateButton.defaultProps = {
-  maxAmount: undefined,
+  maxDonationAmount: undefined,
   currentUser: undefined,
 };
 

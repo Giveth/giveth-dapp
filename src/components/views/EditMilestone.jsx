@@ -311,6 +311,7 @@ class EditMilestone extends Component {
     return authenticateIfPossible(this.props.currentUser)
       .then(() => {
         if (
+          this.props.isNew &&
           !this.props.isProposed &&
           !isInWhitelist(this.props.currentUser, React.whitelist.projectOwnerWhitelist)
         ) {
@@ -914,7 +915,7 @@ class EditMilestone extends Component {
                           isEtherAddress: 'Please insert a valid Ethereum address.',
                         }}
                         required
-                        disabled={milestone.projectId}
+                        disabled={!isNew && !isProposed}
                       />
                     </div>
 
@@ -960,7 +961,7 @@ class EditMilestone extends Component {
                                   isMoment: 'Please provide a date.',
                                 }}
                                 required={!milestone.itemizeState}
-                                disabled={milestone.projectId}
+                                disabled={!isNew && !isProposed}
                               />
                             </div>
                           </div>
@@ -980,7 +981,7 @@ class EditMilestone extends Component {
                                 validationErrors={{
                                   greaterEqualTo: 'Minimum value must be greater than 0',
                                 }}
-                                disabled={milestone.projectId}
+                                disabled={!isNew && !isProposed}
                                 onChange={this.setMaxAmount}
                               />
                             </div>
@@ -995,7 +996,7 @@ class EditMilestone extends Component {
                                 helpText={`1 ${milestone.token.symbol} = ${
                                   currentRate.rates[milestone.selectedFiatType]
                                 } ${milestone.selectedFiatType}`}
-                                disabled={milestone.projectId}
+                                disabled={!isNew && !isProposed}
                                 required
                               />
                             </div>
@@ -1015,7 +1016,7 @@ class EditMilestone extends Component {
                                   greaterEqualTo: 'Minimum value must be greater than 0',
                                 }}
                                 required
-                                disabled={milestone.projectId}
+                                disabled={!isNew && !isProposed}
                                 onChange={this.setFiatAmount}
                               />
                             </div>

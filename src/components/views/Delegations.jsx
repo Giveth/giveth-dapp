@@ -86,11 +86,7 @@ const Delegations = ({ balance }) => (
                                                 isForeignNetwork &&
                                                 d.amountRemaining > 0 && (
                                                   <DelegateButton
-                                                    types={campaigns.concat(
-                                                      milestones.filter(
-                                                        m => m.token.symbol === d.token.symbol,
-                                                      ),
-                                                    )}
+                                                    types={campaigns.concat(milestones)}
                                                     donation={d}
                                                     balance={balance}
                                                     symbol={(d.token && d.token.symbol) || 'ETH'}

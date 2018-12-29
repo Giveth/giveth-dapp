@@ -6,6 +6,7 @@ import Avatar from 'react-avatar';
 import ReactHtmlParser, { convertNodeToElement } from 'react-html-parser';
 import { Link } from 'react-router-dom';
 import { utils } from 'web3';
+import BigNumber from 'bignumber.js';
 
 import User from 'models/User';
 import Milestone from 'models/Milestone';
@@ -96,7 +97,7 @@ class ViewMilestone extends Component {
     checkBalance(this.props.balance)
       .then(() => {
         this.props.history.push(
-          `/campaigns/${this.state.campaign.id}/milestones/${this.state.id}/edit`,
+          `/campaigns/${this.state.campaign._id}/milestones/${this.state.milestone.id}/edit`,
         );
       })
       .catch(err => {
@@ -124,6 +125,11 @@ class ViewMilestone extends Component {
   render() {
     const { history, currentUser, balance } = this.props;
     const { isLoading, donations, isLoadingDonations, campaign, milestone, recipient } = this.state;
+
+    const getMaxDonationAmount = () =>
+      new BigNumber(utils.fromWei(milestone.maxAmount)).minus(
+        new BigNumber(utils.fromWei(milestone.currentBalance)),
+      );
 
     return (
       <div id="view-milestone-view">
@@ -159,10 +165,7 @@ class ViewMilestone extends Component {
                     }}
                     currentUser={currentUser}
                     history={history}
-                    maxAmount={utils
-                      .toBN(utils.toWei(milestone.maxAmount))
-                      .sub(utils.toBN(utils.toWei(milestone.currentBalance)))
-                      .toString()}
+                    maxDonationAmount={getMaxDonationAmount()}
                   />
                   {currentUser && (
                     <DelegateMultipleButton
@@ -220,51 +223,52 @@ class ViewMilestone extends Component {
                 </div>
               </div>
 
-              {milestone.items && milestone.items.length > 0 && (
-                <div className="row spacer-top-50 dashboard-table-view">
-                  <div className="col-md-8 m-auto">
-                    <h4>Milestone proof</h4>
-                    <p>These receipts show how the money of this milestone was spent.</p>
+              {milestone.items &&
+                milestone.items.length > 0 && (
+                  <div className="row spacer-top-50 dashboard-table-view">
+                    <div className="col-md-8 m-auto">
+                      <h4>Milestone proof</h4>
+                      <p>These receipts show how the money of this milestone was spent.</p>
 
-                    {/* MilesteneItem needs to be wrapped in a form or it won't mount */}
-                    <Form>
-                      <div className="table-container">
-                        <table className="table table-responsive table-striped table-hover">
-                          <thead>
-                            <tr>
-                              <th className="td-item-date">Date</th>
-                              <th className="td-item-description">Description</th>
-                              <th className="td-item-amount-fiat">Amount Fiat</th>
-                              <th className="td-item-amount-ether">
-                                Amount {milestone.token.symbol}
-                              </th>
-                              <th className="td-item-file-upload">Attached proof</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {milestone.items.map((item, i) => (
-                              <MilestoneItem
-                                key={item.date}
-                                name={`milestoneItem-${i}`}
-                                item={{
-                                  date: item.date,
-                                  description: item.description,
-                                  selectedFiatType: item.selectedFiatType,
-                                  fiatAmount: item.fiatAmount,
-                                  conversionRate: item.conversionRate,
-                                  wei: item.wei || '0',
-                                  image: item.image,
-                                }}
-                                token={milestone.token}
-                              />
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
-                    </Form>
+                      {/* MilesteneItem needs to be wrapped in a form or it won't mount */}
+                      <Form>
+                        <div className="table-container">
+                          <table className="table table-responsive table-striped table-hover">
+                            <thead>
+                              <tr>
+                                <th className="td-item-date">Date</th>
+                                <th className="td-item-description">Description</th>
+                                <th className="td-item-amount-fiat">Amount Fiat</th>
+                                <th className="td-item-amount-ether">
+                                  Amount {milestone.token.symbol}
+                                </th>
+                                <th className="td-item-file-upload">Attached proof</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {milestone.items.map((item, i) => (
+                                <MilestoneItem
+                                  key={item.date}
+                                  name={`milestoneItem-${i}`}
+                                  item={{
+                                    date: item.date,
+                                    description: item.description,
+                                    selectedFiatType: item.selectedFiatType,
+                                    fiatAmount: item.fiatAmount,
+                                    conversionRate: item.conversionRate,
+                                    wei: item.wei || '0',
+                                    image: item.image,
+                                  }}
+                                  token={milestone.token}
+                                />
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      </Form>
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
 
               <div className="row spacer-top-50">
                 <div className="col-md-8 m-auto">
@@ -335,9 +339,9 @@ class ViewMilestone extends Component {
                             this Milestone. Based on the requested amount in fiat.
                           </small>
                           {utils.fromWei(milestone.maxAmount)} {milestone.token.symbol}
-                          {milestone.fiatAmount &&
+                          {milestone.items.length === 0 &&
                             milestone.selectedFiatType &&
-                            milestone.items.length === 0 && (
+                            milestone.fiatAmount && (
                               <span>
                                 {' '}
                                 ({milestone.fiatAmount} {milestone.selectedFiatType})
@@ -400,10 +404,7 @@ class ViewMilestone extends Component {
                       currentUser={currentUser}
                       history={history}
                       type={milestone.type}
-                      maxAmount={utils
-                        .toBN(utils.toWei(milestone.maxAmount))
-                        .sub(utils.toBN(utils.toWei(milestone.currentBalance)))
-                        .toString()}
+                      maxDonationAmount={getMaxDonationAmount()}
                     />
                   )}
                 </div>

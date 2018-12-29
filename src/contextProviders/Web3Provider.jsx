@@ -88,7 +88,7 @@ class Web3Provider extends Component {
 
     this.state = {
       account: undefined,
-      balance: toBN(-1),
+      balance: toBN(0),
       currentNetwork: undefined,
       validProvider: false,
       isHomeNetwork: false,
@@ -153,6 +153,14 @@ class Web3Provider extends Component {
     }, 5000);
 
     const web3 = await getWeb3();
+
+    // If we are using the default node, then the user doesn't have an injected
+    // web3 provider. Not need to enable the provider
+    if (web3.defaultNode) {
+      clearTimeout(timeout);
+      this.props.onLoaded();
+      return;
+    }
 
     const { networkId, networkType } = await fetchNetwork(web3);
     this.setState(getNetworkState(networkId, networkType));
