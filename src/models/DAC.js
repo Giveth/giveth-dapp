@@ -25,6 +25,11 @@ class DAC extends BasicModel {
     return 'dac';
   }
 
+  // eslint-disable-next-line class-methods-use-this
+  get type() {
+    return DAC.type;
+  }
+
   constructor(data) {
     super(data);
 
