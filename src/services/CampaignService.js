@@ -98,7 +98,7 @@ class CampaignService {
           query: {
             ownerTypeId: id,
             isReturn: false,
-            $sort: { createdAt: -1 },
+            $sort: { usdValue: -1, createdAt: -1 },
           },
           schema: 'includeTypeAndGiverDetails',
         }),

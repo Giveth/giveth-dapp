@@ -92,6 +92,7 @@ class Donation extends Model {
     this._updatedAt = data.updatedAt;
     this._isReturn = data.isReturn;
     this._token = data.token;
+    this._usdValue = data.usdValue;
 
     /**
      * Get the URL, name and type of the entity to which this donation has been donated to
@@ -475,6 +476,10 @@ class Donation extends Model {
 
   set token(value) {
     this._token = value;
+  }
+
+  get usdValue() {
+    return this._usdValue;
   }
 }
 
