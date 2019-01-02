@@ -377,12 +377,7 @@ class ViewMilestone extends Component {
                     <div className="col-md-6">
                       <h4>Status updates</h4>
 
-                      <MilestoneConversations
-                        milestoneId={milestone.id}
-                        ownerAddress={milestone.ownerAddress}
-                        reviewerAddress={milestone.reviewerAddress}
-                        recipientAddress={milestone.recipientAddress}
-                      />
+                      <MilestoneConversations milestone={milestone} />
                     </div>
                   </div>
                 </div>

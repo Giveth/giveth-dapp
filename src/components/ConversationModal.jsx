@@ -62,6 +62,7 @@ class ConversationModal extends Component {
       isBlocking: false,
       required: false,
       enableAttachProof: true,
+      token: {},
       textPlaceholder: '',
     };
 
@@ -80,7 +81,7 @@ class ConversationModal extends Component {
     this.triggerRouteBlocking();
   }
 
-  openModal({ title, description, cta, required, textPlaceholder, enableAttachProof }) {
+  openModal({ title, description, cta, required, textPlaceholder, enableAttachProof, token = {} }) {
     this.setState({
       items: [],
       title,
@@ -89,6 +90,7 @@ class ConversationModal extends Component {
       modalIsOpen: true,
       required,
       enableAttachProof,
+      token,
       textPlaceholder,
     });
 
@@ -191,6 +193,7 @@ class ConversationModal extends Component {
       items,
       isBlocking,
       enableAttachProof,
+      token,
       textPlaceholder,
     } = this.state;
 
@@ -246,6 +249,7 @@ class ConversationModal extends Component {
                   <MilestoneProof
                     isEditMode
                     items={items}
+                    token={token}
                     onItemsChanged={returnedItems => this.onItemsChanged(returnedItems)}
                   />
                 </div>

@@ -129,7 +129,7 @@ MilestoneProof.propTypes = {
 
 MilestoneProof.defaultProps = {
   onItemsChanged: () => {},
-  token: undefined,
+  token: {},
 };
 
 export default MilestoneProof;

@@ -78,6 +78,7 @@ const reproposeRejectedMilestone = milestone => {
       required: false,
       cta: 'Reject proposal',
       enableAttachProof: false,
+      token: milestone.token,
     })
     .then(proof =>
       feathersClient

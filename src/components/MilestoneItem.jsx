@@ -81,7 +81,7 @@ MilestoneItem.propTypes = {
 MilestoneItem.defaultProps = {
   isEditMode: false,
   removeItem: () => {},
-  token: undefined,
+  token: {},
 };
 
 export default withFormsy(MilestoneItem);
