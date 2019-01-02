@@ -116,7 +116,7 @@ class DACService {
             delegateTypeId: id,
             isReturn: false,
             intendedProjectId: { $exists: false },
-            $sort: { createdAt: -1 },
+            $sort: { usdValue: -1, createdAt: -1 },
           },
           schema: 'includeTypeAndGiverDetails',
         }),

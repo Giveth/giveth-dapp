@@ -339,9 +339,9 @@ class ViewMilestone extends Component {
                             this Milestone. Based on the requested amount in fiat.
                           </small>
                           {utils.fromWei(milestone.maxAmount)} {milestone.token.symbol}
-                          {milestone.fiatAmount &&
+                          {milestone.items.length === 0 &&
                             milestone.selectedFiatType &&
-                            milestone.items.length === 0 && (
+                            milestone.fiatAmount && (
                               <span>
                                 {' '}
                                 ({milestone.fiatAmount} {milestone.selectedFiatType})
