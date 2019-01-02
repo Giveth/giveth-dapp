@@ -10,6 +10,7 @@ import getNetwork from 'lib/blockchain/getNetwork';
 import MilestoneProof from 'components/MilestoneProof';
 import Loader from './Loader';
 import { feathersClient } from '../lib/feathersClient';
+import MilestoneModel from '../models/Milestone';
 
 /* eslint no-underscore-dangle: 0 */
 class MilestoneConversations extends Component {
@@ -32,7 +33,7 @@ class MilestoneConversations extends Component {
         .watch({ listStrategy: 'always' })
         .find({
           query: {
-            milestoneId: this.props.milestoneId,
+            milestoneId: this.props.milestone.id,
             $sort: { createdAt: -1 },
           },
         })
@@ -62,6 +63,7 @@ class MilestoneConversations extends Component {
 
   render() {
     const { isLoading, conversations, etherScanUrl } = this.state;
+    const { milestone } = this.props;
 
     return (
       <div id="milestone-conversations">
@@ -100,7 +102,11 @@ class MilestoneConversations extends Component {
                       c.items.length > 0 && (
                         <Form className="items-form">
                           <strong>Attachments</strong>
-                          <MilestoneProof items={c.items} isEditMode={false} />
+                          <MilestoneProof
+                            items={c.items}
+                            token={milestone.token}
+                            isEditMode={false}
+                          />
                         </Form>
                       )}
 
@@ -117,7 +123,7 @@ class MilestoneConversations extends Component {
 }
 
 MilestoneConversations.propTypes = {
-  milestoneId: PropTypes.string.isRequired,
+  milestone: PropTypes.instanceOf(MilestoneModel).isRequired,
 };
 
 export default MilestoneConversations;
