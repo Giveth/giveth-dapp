@@ -28,6 +28,8 @@ export default class MilestoneModel extends BasicModel {
       confirmations = 0,
       requiredConfirmations = 6,
       commitTime,
+      campaignId,
+      token,
 
       // transient
       campaign,
@@ -37,7 +39,6 @@ export default class MilestoneModel extends BasicModel {
       reviewer,
       mined = false,
       pluginAddress = '0x0000000000000000000000000000000000000000',
-      campaignId,
     } = data;
 
     this._selectedFiatType = selectedFiatType;
@@ -55,6 +56,7 @@ export default class MilestoneModel extends BasicModel {
     this._requiredConfirmations = requiredConfirmations;
     this._commitTime = commitTime;
     this._pluginAddress = pluginAddress;
+    this._token = token;
 
     // transient
     this._campaign = campaign;
@@ -177,6 +179,15 @@ export default class MilestoneModel extends BasicModel {
   set selectedFiatType(value) {
     this.checkType(value, ['string'], 'selectedFiatType');
     this._selectedFiatType = value;
+  }
+
+  get token() {
+    return this._token;
+  }
+
+  set token(value) {
+    this.checkInstanceOf(value, ['object'], 'token');
+    this._token = value;
   }
 
   get fiatAmount() {

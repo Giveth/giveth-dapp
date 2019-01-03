@@ -93,63 +93,65 @@ class EditMilestone extends Component {
 
         // load a single milestones (when editing)
         if (!this.props.isNew) {
-          const milestone = await MilestoneService.get(this.props.match.params.milestoneId);
+          try {
+            const milestone = await MilestoneService.get(this.props.match.params.milestoneId);
 
-          if (
-            !(
-              isOwner(milestone.owner.address, this.props.currentUser) ||
-              isOwner(milestone.campaign.ownerAddress, this.props.currentUser)
-            )
-          ) {
-            this.props.history.goBack();
-          }
-          this.setState({
-            milestone,
-            campaignTitle: milestone.campaign.title,
-            campaignProjectId: milestone.campaign.projectId,
-            campaignReviewerAddress: milestone.campaign.reviewerAddress,
-          });
-
-          await this.props.getConversionRates(milestone.date, milestone.token.symbol);
-          if (!this.state.hasWhitelist) await this.getReviewers();
-
-          this.setState({
-            isLoading: false,
-          });
-          // .catch(err => {
-          //   ErrorPopup(
-          //     'Sadly we were unable to load the requested milestone details. Please try again.',
-          //     err,
-          //   );
-          // });
-        } else {
-          const campaign = await CampaignService.get(this.props.match.params.id);
-
-          if (campaign.projectId < 0) {
-            this.props.history.goBack();
-          } else {
-            const { milestone } = this.state;
-            milestone.recipientAddress = this.props.currentUser.address;
+            if (
+              !(
+                isOwner(milestone.owner.address, this.props.currentUser) ||
+                isOwner(milestone.campaign.ownerAddress, this.props.currentUser)
+              )
+            ) {
+              this.props.history.goBack();
+            }
             this.setState({
-              campaignTitle: campaign.title,
-              campaignReviewerAddress: campaign.reviewerAddress,
-              campaignProjectId: campaign.projectId,
               milestone,
+              campaignTitle: milestone.campaign.title,
+              campaignProjectId: milestone.campaign.projectId,
+              campaignReviewerAddress: milestone.campaign.reviewerAddress,
             });
+
+            await this.props.getConversionRates(milestone.date, milestone.token.symbol);
+            if (!this.state.hasWhitelist) await this.getReviewers();
+
+            this.setState({
+              isLoading: false,
+            });
+          } catch (err) {
+            ErrorPopup(
+              'Sadly we were unable to load the requested milestone details. Please try again.',
+              err,
+            );
           }
+        } else {
+          try {
+            const campaign = await CampaignService.get(this.props.match.params.id);
 
-          await this.props.getConversionRates(this.state.date, this.state.milestone.token.symbol);
+            if (campaign.projectId < 0) {
+              this.props.history.goBack();
+            } else {
+              const milestone = new Milestone({ token: React.whitelist.tokenWhitelist[0] });
+              milestone.recipientAddress = this.props.currentUser.address;
+              this.setState({
+                campaignTitle: campaign.title,
+                campaignReviewerAddress: campaign.reviewerAddress,
+                campaignProjectId: campaign.projectId,
+                milestone,
+              });
+            }
 
-          if (!this.state.hasWhitelist) await this.getReviewers();
-          this.setState({
-            isLoading: false,
-          });
-          // .catch(err => {
-          //   ErrorPopup(
-          //     'Sadly we were unable to load the campaign in which this milestone was created. Please try again.',
-          //     err,
-          //   );
-          // });
+            await this.props.getConversionRates(this.state.date, this.state.milestone.token.symbol);
+
+            if (!this.state.hasWhitelist) await this.getReviewers();
+            this.setState({
+              isLoading: false,
+            });
+          } catch (e) {
+            ErrorPopup(
+              'Sadly we were unable to load the campaign in which this milestone was created. Please try again.',
+              e,
+            );
+          }
         }
       })
       .catch(err => {
