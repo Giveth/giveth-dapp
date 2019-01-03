@@ -32,7 +32,7 @@ import templates from '../../lib/milestoneTemplates';
 import ErrorPopup from '../ErrorPopup';
 import MilestoneProof from '../MilestoneProof';
 
-import getEthConversionContext from '../../containers/getEthConversionContext';
+import getConversionRatesContext from '../../containers/getConversionRatesContext';
 import MilestoneService from '../../services/MilestoneService';
 import CampaignService from '../../services/CampaignService';
 
@@ -86,80 +86,70 @@ class EditMilestone extends Component {
   componentDidMount() {
     checkForeignNetwork(this.props.isForeignNetwork)
       .then(() => this.checkUser())
-      .then(() => {
+      .then(async () => {
         this.setState({
           campaignId: this.props.match.params.id,
         });
 
         // load a single milestones (when editing)
         if (!this.props.isNew) {
-          MilestoneService.get(this.props.match.params.milestoneId)
-            .then(milestone => {
-              if (
-                !(
-                  isOwner(milestone.owner.address, this.props.currentUser) ||
-                  isOwner(milestone.campaign.ownerAddress, this.props.currentUser)
-                )
-              ) {
-                this.props.history.goBack();
-              }
-              this.setState({
-                milestone,
-                campaignTitle: milestone.campaign.title,
-                campaignProjectId: milestone.campaign.projectId,
-                campaignReviewerAddress: milestone.campaign.reviewerAddress,
-              });
+          const milestone = await MilestoneService.get(this.props.match.params.milestoneId);
 
-              return milestone;
-            })
-            .then(milestone => this.props.getEthConversion(milestone.date, milestone.token.symbol))
-            .then(() => {
-              if (!this.state.hasWhitelist) this.getReviewers();
-            })
-            .then(() =>
-              this.setState({
-                isLoading: false,
-              }),
+          if (
+            !(
+              isOwner(milestone.owner.address, this.props.currentUser) ||
+              isOwner(milestone.campaign.ownerAddress, this.props.currentUser)
             )
-            .catch(err => {
-              ErrorPopup(
-                'Sadly we were unable to load the requested milestone details. Please try again.',
-                err,
-              );
-            });
+          ) {
+            this.props.history.goBack();
+          }
+          this.setState({
+            milestone,
+            campaignTitle: milestone.campaign.title,
+            campaignProjectId: milestone.campaign.projectId,
+            campaignReviewerAddress: milestone.campaign.reviewerAddress,
+          });
+
+          await this.props.getConversionRates(milestone.date, milestone.token.symbol);
+          if (!this.state.hasWhitelist) await this.getReviewers();
+
+          this.setState({
+            isLoading: false,
+          });
+          // .catch(err => {
+          //   ErrorPopup(
+          //     'Sadly we were unable to load the requested milestone details. Please try again.',
+          //     err,
+          //   );
+          // });
         } else {
-          CampaignService.get(this.props.match.params.id)
-            .then(campaign => {
-              if (campaign.projectId < 0) {
-                this.props.history.goBack();
-              } else {
-                const { milestone } = this.state;
-                milestone.recipientAddress = this.props.currentUser.address;
-                this.setState({
-                  campaignTitle: campaign.title,
-                  campaignReviewerAddress: campaign.reviewerAddress,
-                  campaignProjectId: campaign.projectId,
-                  milestone,
-                });
-              }
-            })
-            .then(() =>
-              this.props.getEthConversion(this.state.date, this.state.milestone.token.symbol),
-            )
-            .then(() => {
-              if (!this.state.hasWhitelist) this.getReviewers();
-            })
-            .then(() =>
-              this.setState({
-                isLoading: false,
-              }),
-            )
-            .catch(err => {
-              ErrorPopup(
-                'Sadly we were unable to load the campaign in which this milestone was created. Please try again.',
-                err,
-              );
+          const campaign = await CampaignService.get(this.props.match.params.id);
+
+          if (campaign.projectId < 0) {
+            this.props.history.goBack();
+          } else {
+            const { milestone } = this.state;
+            milestone.recipientAddress = this.props.currentUser.address;
+            this.setState({
+              campaignTitle: campaign.title,
+              campaignReviewerAddress: campaign.reviewerAddress,
+              campaignProjectId: campaign.projectId,
+              milestone,
             });
+          }
+
+          await this.props.getConversionRates(this.state.date, this.state.milestone.token.symbol);
+
+          if (!this.state.hasWhitelist) await this.getReviewers();
+          this.setState({
+            isLoading: false,
+          });
+          // .catch(err => {
+          //   ErrorPopup(
+          //     'Sadly we were unable to load the campaign in which this milestone was created. Please try again.',
+          //     err,
+          //   );
+          // });
         }
       })
       .catch(err => {
@@ -229,7 +219,7 @@ class EditMilestone extends Component {
     const { milestone } = this.state;
     milestone.date = date;
 
-    this.props.getEthConversion(date, milestone.token.symbol).then(resp => {
+    this.props.getConversionRates(date, milestone.token.symbol).then(resp => {
       // update all the input fields
       const rate = resp.rates[milestone.selectedFiatType];
 
@@ -444,7 +434,6 @@ class EditMilestone extends Component {
               address _acceptedToken,
               uint _reviewTimeoutSeconds
               * */
-
               return network.lppCappedMilestoneFactory
                 .newMilestone(
                   title,
@@ -1030,8 +1019,6 @@ class EditMilestone extends Component {
   }
 }
 
-/* eslint react/forbid-prop-types: 0 */
-
 EditMilestone.propTypes = {
   currentUser: PropTypes.instanceOf(User),
   history: PropTypes.shape({
@@ -1048,8 +1035,11 @@ EditMilestone.propTypes = {
       milestoneId: PropTypes.string,
     }).isRequired,
   }).isRequired,
-  getEthConversion: PropTypes.func.isRequired,
-  currentRate: PropTypes.object.isRequired,
+  getConversionRates: PropTypes.func.isRequired,
+  currentRate: PropTypes.shape({
+    rates: PropTypes.string.isRequired,
+    timestamp: PropTypes.string.isRequired,
+  }),
   fiatTypes: PropTypes.arrayOf(PropTypes.object).isRequired,
 };
 
@@ -1057,6 +1047,7 @@ EditMilestone.defaultProps = {
   currentUser: undefined,
   isNew: false,
   isProposed: false,
+  currentRate: undefined,
 };
 
-export default getEthConversionContext(EditMilestone);
+export default getConversionRatesContext(EditMilestone);

@@ -76,9 +76,7 @@ class BaseDelegateMultipleButton extends Component {
         value: t.address,
         title: t.name,
       })),
-      selectedToken: this.props.milestone
-        ? this.props.milestone.token
-        : _getTokenWhitelist().find(t => t.symbol === 'ETH'),
+      selectedToken: this.props.milestone ? this.props.milestone.token : _getTokenWhitelist()[0],
     };
 
     this.loadDonations = this.loadDonations.bind(this);

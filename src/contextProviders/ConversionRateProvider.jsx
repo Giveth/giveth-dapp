@@ -12,7 +12,7 @@ export { Consumer };
 
 BigNumber.config({ DECIMAL_PLACES: 18 });
 
-class EthConversionProvider extends Component {
+class ConversionRateProvider extends Component {
   constructor() {
     super();
 
@@ -21,10 +21,10 @@ class EthConversionProvider extends Component {
       currentRate: undefined,
     };
 
-    this.getEthConversion = this.getEthConversion.bind(this);
+    this.getConversionRates = this.getConversionRates.bind(this);
   }
 
-  getEthConversion(date, symbol) {
+  getConversionRates(date, symbol) {
     console.log(`requesting conversion rates for date ${date} and symbol ${symbol}`);
 
     const dtUTC = getStartOfDayUTC(date); // Should not be necessary as the datepicker should provide UTC, but just to be sure
@@ -61,7 +61,7 @@ class EthConversionProvider extends Component {
 
   render() {
     const { conversionRates, currentRate } = this.state;
-    const { getEthConversion } = this;
+    const { getConversionRates } = this;
     // FIXME: calculations such as this should not be in the renderer...
     const fiatTypes =
       React.whitelist && Array.isArray(React.whitelist.fiatWhitelist)
@@ -77,7 +77,7 @@ class EthConversionProvider extends Component {
             fiatTypes,
           },
           actions: {
-            getEthConversion,
+            getConversionRates,
           },
         }}
       >
@@ -87,8 +87,8 @@ class EthConversionProvider extends Component {
   }
 }
 
-EthConversionProvider.propTypes = {
+ConversionRateProvider.propTypes = {
   children: PropTypes.oneOfType([PropTypes.arrayOf(PropTypes.node), PropTypes.node]).isRequired,
 };
 
-export default EthConversionProvider;
+export default ConversionRateProvider;

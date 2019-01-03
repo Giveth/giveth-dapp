@@ -79,10 +79,7 @@ class BaseDonateButton extends React.Component {
         value: t.address,
         title: t.name,
       })),
-      selectedToken:
-        props.model.type === 'milestone'
-          ? modelToken
-          : _getTokenWhitelist().find(t => t.symbol === 'ETH'),
+      selectedToken: props.model.type === 'milestone' ? modelToken : _getTokenWhitelist()[0],
     };
 
     this.submit = this.submit.bind(this);

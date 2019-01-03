@@ -46,7 +46,7 @@ import ErrorBoundary from '../components/ErrorBoundary';
 
 // context providers
 import UserProvider, { Consumer as UserConsumer } from '../contextProviders/UserProvider';
-import EthConversionProvider from '../contextProviders/EthConversionProvider';
+import ConversionRateProvider from '../contextProviders/ConversionRateProvider';
 import Web3Provider, { Consumer as Web3Consumer } from '../contextProviders/Web3Provider';
 
 import '../lib/validators';
@@ -128,7 +128,7 @@ class Application extends Component {
                 <div>
                   {web3Loading && <Loader className="fixed" />}
                   {!web3Loading && (
-                    <EthConversionProvider>
+                    <ConversionRateProvider>
                       <UserProvider account={account} onLoaded={this.userLoaded}>
                         <UserConsumer>
                           {({ state: { currentUser, hasError } }) => (
@@ -435,7 +435,7 @@ class Application extends Component {
                           )}
                         </UserConsumer>
                       </UserProvider>
-                    </EthConversionProvider>
+                    </ConversionRateProvider>
                   )}
                 </div>
               )}

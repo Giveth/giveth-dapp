@@ -8,7 +8,7 @@ import Modal from 'react-modal';
 import { Input, Form } from 'formsy-react-components';
 import { utils } from 'web3';
 
-import getEthConversionContext from 'containers/getEthConversionContext';
+import getConversionRatesContext from 'containers/getConversionRatesContext';
 import MilestoneItem from 'models/MilestoneItem';
 import FormsyImageUploader from './FormsyImageUploader';
 import RateConvertor from './RateConvertor';
@@ -185,4 +185,4 @@ AddMilestoneItemModal.defaultProps = {
   token: undefined,
 };
 
-export default getEthConversionContext(AddMilestoneItemModal);
+export default getConversionRatesContext(AddMilestoneItemModal);

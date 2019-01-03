@@ -8,7 +8,7 @@ import SelectFormsy from './SelectFormsy';
 import DatePickerFormsy from './DatePickerFormsy';
 
 import { getStartOfDayUTC } from '../lib/helpers';
-import getEthConversionContext from '../containers/getEthConversionContext';
+import getConversionRatesContext from '../containers/getConversionRatesContext';
 
 BigNumber.config({ DECIMAL_PLACES: 18 });
 
@@ -33,13 +33,13 @@ class RateConvertor extends Component {
 
   componentWillMount() {
     this.props
-      .getEthConversion(this.state.date, this.props.token.symbol)
+      .getConversionRates(this.state.date, this.props.token.symbol)
       .then(resp => this.setState({ conversionRate: resp }));
   }
 
   setDate(date) {
     this.setState({ date });
-    this.props.getEthConversion(date, this.props.token.symbol).then(resp => {
+    this.props.getConversionRates(date, this.props.token.symbol).then(resp => {
       // update all the input fields
       const rate = resp.rates[this.state.selectedFiatType];
 
@@ -187,7 +187,7 @@ class RateConvertor extends Component {
 }
 
 RateConvertor.propTypes = {
-  getEthConversion: PropTypes.func.isRequired,
+  getConversionRates: PropTypes.func.isRequired,
   disabled: PropTypes.bool,
   selectedFiatType: PropTypes.string,
   date: PropTypes.instanceOf(moment),
@@ -206,4 +206,4 @@ RateConvertor.defaultProps = {
   token: undefined,
 };
 
-export default getEthConversionContext(RateConvertor);
+export default getConversionRatesContext(RateConvertor);
