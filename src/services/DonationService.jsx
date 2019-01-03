@@ -267,7 +267,7 @@ class DonationService {
               onCancel(err);
             } else {
               ErrorPopup(
-                'Thare was a problem with the delegation transaction.',
+                'There was a problem with catching the transaction hash, but your transaction probably went through.',
                 `${etherScanUrl}tx/${txHash}`,
               );
               onError(err);
