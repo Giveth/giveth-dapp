@@ -73,7 +73,10 @@ class DelegationProvider extends Component {
         amountRemaining: { $ne: 0 },
         $or: [
           { ownerTypeId: { $in: campaignIds }, status: Donation.COMMITTED },
-          { delegateTypeId: { $in: dacsIds }, status: Donation.WAITING },
+          {
+            delegateTypeId: { $in: dacsIds },
+            status: { $in: [Donation.WAITING, Donation.TO_APPROVE] },
+          },
           {
             ownerTypeId: this.props.currentUser.address,
             delegateId: { $exists: false },

@@ -18,6 +18,7 @@ import { Consumer as UserConsumer } from '../../contextProviders/UserProvider';
 import DelegationProvider, {
   Consumer as DelegationConsumer,
 } from '../../contextProviders/DelegationProvider';
+import Donation from '../../models/Donation';
 
 /**
  * The my delegations view
@@ -84,6 +85,7 @@ const Delegations = ({ balance }) => (
                                               {(d.delegateId > 0 ||
                                                 d.ownerTypeId === currentUser.address) &&
                                                 isForeignNetwork &&
+                                                d.status === Donation.WAITING &&
                                                 d.amountRemaining > 0 && (
                                                   <DelegateButton
                                                     types={campaigns.concat(milestones)}
@@ -97,6 +99,7 @@ const Delegations = ({ balance }) => (
                                         to milestones of that campaign */}
                                               {d.ownerType === 'campaign' &&
                                                 isForeignNetwork &&
+                                                d.status === Donation.COMMITTED &&
                                                 d.amountRemaining > 0 && (
                                                   <DelegateButton
                                                     types={milestones.filter(
