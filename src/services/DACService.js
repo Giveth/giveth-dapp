@@ -113,6 +113,7 @@ class DACService {
       .find(
         paramsForServer({
           query: {
+            status: { $ne: Donation.FAILED },
             delegateTypeId: id,
             isReturn: false,
             intendedProjectId: { $exists: false },

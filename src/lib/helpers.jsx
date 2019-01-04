@@ -104,7 +104,7 @@ export const convertEthHelper = (amount, decimals) => {
   if (!amount) return 0;
 
   const eth = utils.fromWei(amount);
-  return new BigNumber(eth).toFixed(decimals || config.decimals);
+  return Number(new BigNumber(eth).toFixed(decimals || config.decimals));
 };
 
 // the back button will go one lower nested route inside of the DApp

@@ -96,6 +96,8 @@ class CampaignService {
       .find(
         paramsForServer({
           query: {
+            status: { $ne: Donation.FAILED },
+            $or: [{ intendedProjectTypeId: id }, { ownerTypeId: id }],
             ownerTypeId: id,
             isReturn: false,
             $sort: { usdValue: -1, createdAt: -1 },
