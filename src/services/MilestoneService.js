@@ -22,7 +22,7 @@ class MilestoneService {
         paramsForServer({
           query: {
             amountRemaining: { $ne: 0 },
-            status: { $nin: [Donation.FAILED] },
+            status: { $ne: Donation.FAILED },
             $or: [{ intendedProjectTypeId: id }, { ownerTypeId: id }],
             $sort: { createdAt: -1 },
           },
