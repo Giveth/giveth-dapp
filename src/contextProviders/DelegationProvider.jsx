@@ -76,7 +76,7 @@ class DelegationProvider extends Component {
           { delegateTypeId: { $in: dacsIds }, status: Donation.WAITING },
           {
             ownerTypeId: this.props.currentUser.address,
-            delegateId: undefined,
+            delegateId: { $exists: false },
             status: Donation.WAITING,
           },
           // {
