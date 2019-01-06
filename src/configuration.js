@@ -11,6 +11,7 @@ const {
   REACT_APP_BUGS_EMAIL = 'bugs@giveth.io',
   REACT_APP_DEFAULT_GASPRICE = 10,
   REACT_APP_NETWORK_NAME,
+  REACT_APP_NATIVE_TOKEN_NAME = 'ETH',
 } = process.env;
 
 const configurations = {
@@ -139,6 +140,7 @@ config.decimals = REACT_APP_DECIMALS;
 config.bugsEmail = REACT_APP_BUGS_EMAIL;
 config.defaultGasPrice = REACT_APP_DEFAULT_GASPRICE;
 config.networkName = REACT_APP_NETWORK_NAME || config.networkName;
+config.nativeTokenName = REACT_APP_NATIVE_TOKEN_NAME || config.nativeTokenName;
 config.sendErrors = ['develop', 'release', 'beta'].includes(REACT_APP_ENVIRONMENT);
 
 export default config;

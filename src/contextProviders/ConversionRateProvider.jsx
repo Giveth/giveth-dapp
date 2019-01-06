@@ -16,9 +16,15 @@ class ConversionRateProvider extends Component {
   constructor() {
     super();
 
+    const fiatTypes =
+      React.whitelist && Array.isArray(React.whitelist.fiatWhitelist)
+        ? React.whitelist.fiatWhitelist.map(f => ({ value: f, title: f }))
+        : [];
+
     this.state = {
       conversionRates: [],
       currentRate: undefined,
+      fiatTypes,
     };
 
     this.getConversionRates = this.getConversionRates.bind(this);
@@ -36,7 +42,7 @@ class ConversionRateProvider extends Component {
     if (!cachedConversionRate) {
       // we don't have the conversion rate in cache, fetch from feathers
       return feathersClient
-        .service('ethconversion')
+        .service('conversionRates')
         .find({ query: { date: dtUTC, symbol } })
         .then(resp => {
           this.setState({
@@ -60,13 +66,8 @@ class ConversionRateProvider extends Component {
   }
 
   render() {
-    const { conversionRates, currentRate } = this.state;
+    const { conversionRates, currentRate, fiatTypes } = this.state;
     const { getConversionRates } = this;
-    // FIXME: calculations such as this should not be in the renderer...
-    const fiatTypes =
-      React.whitelist && Array.isArray(React.whitelist.fiatWhitelist)
-        ? React.whitelist.fiatWhitelist.map(f => ({ value: f, title: f }))
-        : [];
 
     return (
       <Provider
