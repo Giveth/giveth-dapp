@@ -41,8 +41,8 @@ class DelegateButton extends Component {
       isSaving: false,
       objectsToDelegateTo: [],
       modalVisible: false,
-      amount: utils.fromWei(props.donation.amountRemaining),
-      maxAmount: utils.fromWei(props.donation.amountRemaining),
+      amount: '0',
+      maxAmount: '0',
     };
 
     this.submit = this.submit.bind(this);
@@ -51,7 +51,13 @@ class DelegateButton extends Component {
 
   openDialog() {
     checkBalance(this.props.balance)
-      .then(() => this.setState({ modalVisible: true }))
+      .then(() =>
+        this.setState({
+          modalVisible: true,
+          amount: utils.fromWei(this.props.donation.amountRemaining),
+          maxAmount: utils.fromWei(this.props.donation.amountRemaining),
+        }),
+      )
       .catch(err => {
         if (err === 'noBalance') {
           // handle no balance error
@@ -95,6 +101,7 @@ class DelegateButton extends Component {
     }
 
     const onCreated = txLink => {
+      this.setState({ isSaving: false });
       const msg =
         donation.delegateId > 0 ? (
           <p>
