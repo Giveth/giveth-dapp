@@ -39,6 +39,7 @@ export default class MilestoneModel extends BasicModel {
       reviewer,
       mined = false,
       pluginAddress = '0x0000000000000000000000000000000000000000',
+      conversionRateTimestamp,
     } = data;
 
     this._selectedFiatType = selectedFiatType;
@@ -57,6 +58,7 @@ export default class MilestoneModel extends BasicModel {
     this._commitTime = commitTime;
     this._pluginAddress = pluginAddress;
     this._token = token;
+    this._conversionRateTimestamp = conversionRateTimestamp;
 
     // transient
     this._campaign = campaign;
@@ -354,5 +356,14 @@ export default class MilestoneModel extends BasicModel {
 
   get campaignId() {
     return this._campaignId;
+  }
+
+  set conversionRateTimestamp(value) {
+    console.log('Setting conversion rate timestmap:', value);
+    this._conversionRateTimestamp = value;
+  }
+
+  get conversionRateTimestamp() {
+    return this._conversionRateTimestamp;
   }
 }

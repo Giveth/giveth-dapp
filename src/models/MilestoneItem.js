@@ -18,7 +18,7 @@ export default class MilestoneItemModel extends Model {
       fiatAmount = new BigNumber('0'),
       wei = '',
       conversionRate = parseFloat(0),
-      ethConversionRateTimestamp = new Date().toISOString(),
+      conversionRateTimestamp = new Date().toISOString(),
       _id,
     } = data;
 
@@ -29,7 +29,7 @@ export default class MilestoneItemModel extends Model {
     this._fiatAmount = new BigNumber(fiatAmount);
     this._wei = new BigNumber(utils.fromWei(wei));
     this._conversionRate = conversionRate;
-    this._ethConversionRateTimestamp = ethConversionRateTimestamp;
+    this._conversionRateTimestamp = conversionRateTimestamp;
     this._id = _id;
   }
 
@@ -98,13 +98,13 @@ export default class MilestoneItemModel extends Model {
     this._conversionRate = value;
   }
 
-  get ethConversionRateTimestamp() {
-    return this._ethConversionRateTimestamp;
+  get conversionRateTimestamp() {
+    return this._conversionRateTimestamp;
   }
 
-  set ethConversionRateTimestamp(value) {
-    this.checkType(value, ['string'], 'ethConversionRateTimestamp');
-    this._ethConversionRateTimestamp = value;
+  set conversionRateTimestamp(value) {
+    this.checkType(value, ['string'], 'conversionRateTimestamp');
+    this._conversionRateTimestamp = value;
   }
 
   getItem() {
@@ -116,7 +116,7 @@ export default class MilestoneItemModel extends Model {
       fiatAmount: this._fiatAmount,
       wei: this._wei,
       conversionRate: this._conversionRate,
-      ethConversionRateTimestamp: this._ethConversionRateTimestamp,
+      conversionRateTimestamp: this._conversionRateTimestamp,
     };
   }
 }

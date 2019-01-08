@@ -67,7 +67,7 @@ class AddMilestoneItemModal extends Component {
     item.fiatAmount = inputs.fiatAmount;
     item.wei = utils.toWei(inputs.etherAmount);
     item.conversionRate = parseFloat(inputs.conversionRate);
-    item.ethConversionRateTimestamp = inputs.ethConversionRateTimestamp;
+    item.conversionRateTimestamp = inputs.conversionRateTimestamp;
 
     this.setState({ item });
   }

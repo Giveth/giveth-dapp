@@ -140,7 +140,10 @@ class EditMilestone extends Component {
               });
             }
 
-            await this.props.getConversionRates(this.state.date, this.state.milestone.token.symbol);
+            await this.props.getConversionRates(
+              this.state.milestone.date,
+              this.state.milestone.token.symbol,
+            );
 
             if (!this.state.hasWhitelist) await this.getReviewers();
             this.setState({
@@ -158,10 +161,7 @@ class EditMilestone extends Component {
         // TODO: This is not super user friendly, fix it
         if (err === 'noBalance') this.props.history.goBack();
         else {
-          ErrorPopup(
-            'Sadly we were unable to load the campaign in which this milestone was created. Please try again.',
-            err,
-          );
+          ErrorPopup('Something went wrong. Please try again.', err);
         }
       });
   }
@@ -217,17 +217,29 @@ class EditMilestone extends Component {
   }
 
   setDate(date) {
-    this.setState({ date });
     const { milestone } = this.state;
     milestone.date = date;
 
     this.props.getConversionRates(date, milestone.token.symbol).then(resp => {
-      // update all the input fields
       const rate = resp.rates[milestone.selectedFiatType];
+      milestone.fiatAmount = rate ? milestone.fiatAmount.div(rate) : new BigNumber(0);
+      milestone.conversionRateTimestamp = resp.timestamp;
+      console.log('Conversion rate Timestamp:', resp.timestamp);
 
       milestone.maxAmount = milestone.fiatAmount.div(rate);
       this.setState({ milestone });
     });
+    //   // update all the input fields
+    //   const rate = resp.rates[milestone.selectedFiatType];
+    //
+    //   this.setState(prevState => {
+    //     milestone.fiatAmount = prevState.milestone.fiatAmount.div(rate);
+    //     return {
+    //       milestone,
+    //       maxAmount: milestone.fiatAmount,
+    //     };
+    //   });
+    // });
   }
 
   setFiatAmount(name, value) {
@@ -238,6 +250,7 @@ class EditMilestone extends Component {
     if (conversionRate && maxAmount.gte(0)) {
       milestone.maxAmount = maxAmount;
       milestone.fiatAmount = maxAmount.times(conversionRate);
+      milestone.conversionRateTimestamp = this.props.currentRate.timestamp;
 
       this.setState({ milestone });
     }
@@ -250,6 +263,7 @@ class EditMilestone extends Component {
     if (conversionRate && fiatAmount.gte(0)) {
       milestone.maxAmount = fiatAmount.div(conversionRate);
       milestone.fiatAmount = fiatAmount;
+      milestone.conversionRateTimestamp = this.props.currentRate.timestamp;
 
       this.setState({ milestone });
     }
@@ -343,13 +357,15 @@ class EditMilestone extends Component {
         status:
           this.props.isProposed || milestone.status === 'Rejected' ? 'Proposed' : milestone.status, // make sure not to change status!
         items: milestone.items.map(i => i.getItem()),
-        ethConversionRateTimestamp: this.props.currentRate.timestamp,
+        conversionRateTimestamp: milestone.conversionRateTimestamp,
         selectedFiatType: milestone.selectedFiatType,
         date: milestone.date,
         fiatAmount: milestone.fiatAmount.toFixed(),
         conversionRate: this.props.currentRate.rates[milestone.selectedFiatType],
         token: milestone.token,
       };
+
+      console.log('constructedModel updating: ', constructedModel);
 
       // in itemized mode, we calculate the maxAmount from the items
       // convert to string here, the milestone only works with BigNumber
@@ -953,6 +969,7 @@ class EditMilestone extends Component {
                                 options={fiatTypes}
                                 allowedOptions={currentRate.rates}
                                 onChange={this.changeSelectedFiat}
+                                selected={milestone.token.symbol}
                                 helpText={`1 ${milestone.token.symbol} = ${
                                   currentRate.rates[milestone.selectedFiatType]
                                 } ${milestone.selectedFiatType}`}
@@ -1040,7 +1057,7 @@ EditMilestone.propTypes = {
   }).isRequired,
   getConversionRates: PropTypes.func.isRequired,
   currentRate: PropTypes.shape({
-    rates: PropTypes.string.isRequired,
+    rates: PropTypes.shape().isRequired,
     timestamp: PropTypes.string.isRequired,
   }),
   fiatTypes: PropTypes.arrayOf(PropTypes.object).isRequired,

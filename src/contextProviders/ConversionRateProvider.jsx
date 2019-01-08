@@ -23,7 +23,10 @@ class ConversionRateProvider extends Component {
 
     this.state = {
       conversionRates: [],
-      currentRate: undefined,
+      currentRate: {
+        rates: {},
+        timestamp: (Math.round(getStartOfDayUTC().toDate()) / 1000).toString(),
+      },
       fiatTypes,
     };
 

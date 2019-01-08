@@ -177,7 +177,7 @@ class RateConvertor extends Component {
           />
           <Input
             type="hidden"
-            name="ethConversionRateTimestamp"
+            name="conversionRateTimestamp"
             value={this.state.conversionRate ? this.state.conversionRate.timestamp.toString() : ''}
           />
         </div>
