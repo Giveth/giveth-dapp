@@ -27,7 +27,6 @@ class SelectFormsy extends React.Component {
       <option
         key={option.title + option.value}
         value={option.value}
-        selected={this.props.selected === option.value}
         disabled={
           this.props.allowedOptions &&
           !this.props.allowedOptions[
@@ -93,7 +92,6 @@ SelectFormsy.propTypes = {
   allowedOptions: PropTypes.shape(),
   cta: PropTypes.string,
   className: PropTypes.string,
-  selected: PropTypes.string,
 };
 
 SelectFormsy.defaultProps = {
@@ -105,7 +103,6 @@ SelectFormsy.defaultProps = {
   className: '',
   allowedOptions: undefined,
   cta: undefined,
-  selected: undefined,
 };
 
 export default withFormsy(SelectFormsy);

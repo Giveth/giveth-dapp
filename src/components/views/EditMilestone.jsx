@@ -969,7 +969,6 @@ class EditMilestone extends Component {
                                 options={fiatTypes}
                                 allowedOptions={currentRate.rates}
                                 onChange={this.changeSelectedFiat}
-                                selected={milestone.token.symbol}
                                 helpText={`1 ${milestone.token.symbol} = ${
                                   currentRate.rates[milestone.selectedFiatType]
                                 } ${milestone.selectedFiatType}`}
