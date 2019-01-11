@@ -24,51 +24,51 @@ class User extends Model {
     this.authenticated = false;
 
     if (data) {
-      this.address = data.address;
-      this.avatar = data.avatar;
-      this.commitTime = data.commitTime;
-      this.email = data.email;
-      this.giverId = data.giverId;
-      this.linkedin = data.linkedin;
-      this.name = data.name;
-      this.updatedAt = data.updatedAt;
-      this.url = data.url;
-      this.authenticated = data.authenticated || false;
+      this._address = data.address;
+      this._avatar = data.avatar;
+      this._commitTime = data.commitTime;
+      this._email = data.email;
+      this._giverId = data.giverId;
+      this._linkedin = data.linkedin;
+      this._name = data.name;
+      this._updatedAt = data.updatedAt;
+      this._url = data.url;
+      this._authenticated = data.authenticated || false;
     }
   }
 
   toIpfs() {
     return {
-      name: this.name,
-      email: this.email,
-      linkedin: this.linkedin,
-      avatar: cleanIpfsPath(this.avatar),
+      name: this._name,
+      email: this._email,
+      linkedin: this._linkedin,
+      avatar: cleanIpfsPath(this._avatar),
       version: 1,
     };
   }
 
   toFeathers(txHash) {
     const user = {
-      name: this.name,
-      email: this.email,
-      linkedin: this.linkedin,
-      avatar: cleanIpfsPath(this.avatar),
+      name: this._name,
+      email: this._email,
+      linkedIn: this._linkedin,
+      avatar: cleanIpfsPath(this._avatar),
     };
-    if (this.giverId === undefined && txHash) {
+    if (this._giverId === undefined && txHash) {
       // set to 0 so we don't attempt to create multiple givers in lp for the same user
-      user.giverId = 0;
-      user.txHash = txHash;
+      user._giverId = 0;
+      user._txHash = txHash;
     }
     return user;
   }
 
   save(onSave, afterEmit) {
-    if (this.myNewAvatar) {
-      IPFSService.upload(this.myNewAvatar)
+    if (this._newAvatar) {
+      IPFSService.upload(this._newAvatar)
         .then(hash => {
           // Save the new avatar
-          this.avatar = hash;
-          delete this.myNewAvatar;
+          this._avatar = hash;
+          delete this._newAvatar;
         })
         .catch(err => ErrorPopup('Failed to upload avatar', err))
         .finally(() => UserService.save(this, onSave, afterEmit));
@@ -83,102 +83,102 @@ class User extends Model {
   }
 
   get id() {
-    return this.myAddress;
+    return this._address;
   }
 
   get address() {
-    return this.myAddress;
+    return this._address;
   }
 
   set address(value) {
     this.checkType(value, ['undefined', 'string'], 'address');
-    this.myAddress = value;
+    this._address = value;
   }
 
   get avatar() {
-    return this.myAvatar;
+    return this._avatar;
   }
 
   set avatar(value) {
     this.checkType(value, ['undefined', 'string'], 'avatar');
-    this.myAvatar = value;
+    this._avatar = value;
   }
 
   set newAvatar(value) {
     this.checkType(value, ['string'], 'newAvatar');
-    this.myNewAvatar = value;
+    this._newAvatar = value;
   }
 
   get commitTime() {
-    return this.myCommitTime;
+    return this._commitTime;
   }
 
   set commitTime(value) {
     this.checkType(value, ['undefined', 'number'], 'commitTime');
-    this.myCommitTime = value;
+    this._commitTime = value;
   }
 
   get email() {
-    return this.myEmail;
+    return this._email;
   }
 
   set email(value) {
     this.checkType(value, ['undefined', 'string'], 'email');
-    this.myEmail = value;
+    this._email = value;
   }
 
   get giverId() {
-    return this.myGiverId;
+    return this._giverId;
   }
 
   set giverId(value) {
     this.checkType(value, ['undefined', 'number'], 'giverId');
-    this.myGiverId = value;
+    this._giverId = value;
   }
 
   get linkedin() {
-    return this.mylinkedin;
+    return this._linkedin;
   }
 
   set linkedin(value) {
     this.checkType(value, ['undefined', 'string'], 'linkedin');
-    this.mylinkedin = value;
+    this._linkedin = value;
   }
 
   get name() {
-    return this.myName;
+    return this._name;
   }
 
   set name(value) {
     this.checkType(value, ['undefined', 'string'], 'name');
-    this.myName = value;
+    this._name = value;
   }
 
   get url() {
-    return this.myUrl;
+    return this._url;
   }
 
   set url(value) {
     this.checkType(value, ['undefined', 'string'], 'url');
-    this.myUrl = value;
+    this._url = value;
   }
 
   get updatedAt() {
-    return this.myUpdatedAt;
+    return this._updatedAt;
   }
 
   set updatedAt(value) {
     this.checkType(value, ['undefined', 'string'], 'updatedAt');
-    this.myUpdatedAt = value;
+    this._updatedAt = value;
   }
 
   get authenticated() {
-    return this.myIsAuthenticated;
+    return this._authenticated;
   }
 
   set authenticated(value) {
     this.checkType(value, ['boolean'], 'authenticated');
-    this.myIsAuthenticated = value;
+    this._authenticated = value;
   }
 }
 

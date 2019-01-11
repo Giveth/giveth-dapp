@@ -17,10 +17,11 @@ import ErrorPopup from '../components/ErrorPopup';
 
 function updateExistingDonation(donation, amount, status) {
   const mutation = {
-    pendingAmountRemaining: utils
-      .toBN(donation.amountRemaining)
-      .sub(utils.toBN(amount))
-      .toString(),
+    pendingAmountRemaining: utils.toWei(
+      new BigNumber(donation.amountRemaining)
+        .minus(new BigNumber(utils.fromWei(amount)))
+        .toString(),
+    ),
   };
   if (status) {
     mutation.status = status;
@@ -135,7 +136,7 @@ class DonationService {
       donations.every(donation => {
         const pledge = pledges.find(n => n.id === donation.pledgeId);
 
-        let delegatedAmount = new BigNumber(donation.amountRemaining);
+        let delegatedAmount = donation.amountRemaining; // 0.1
 
         // The next donation is too big, we have to split it
         if (currentAmount.plus(delegatedAmount).isGreaterThan(maxAmount)) {
@@ -145,9 +146,13 @@ class DonationService {
           // This donation would have value of 0, stop the iteration before it is added
           if (delegatedAmount.isEqualTo(new BigNumber('0'))) return fullyDonated;
         }
-        pledgedDonations.push({ donation, delegatedAmount: delegatedAmount.toString() });
+        pledgedDonations.push({
+          donation,
+          delegatedAmount: utils.toWei(delegatedAmount.toString()),
+        });
 
         currentAmount = currentAmount.plus(delegatedAmount);
+
         if (pledge) {
           pledge.parents.push(donation.id);
           pledge.amount = pledge.amount.plus(delegatedAmount);
@@ -173,10 +178,10 @@ class DonationService {
         note =>
           // due to some issue in web3, utils.toHex(note.amount) breaks during minification.
           // BN.toString(16) will return a hex string as well
-          `0x${utils.padLeft(note.amount.toString(16), 48)}${utils.padLeft(
-            utils.toHex(note.id).substring(2),
-            16,
-          )}`,
+          `0x${utils.padLeft(
+            new BigNumber(utils.toWei(note.amount.toString())).toString(16),
+            48,
+          )}${utils.padLeft(utils.toHex(note.id).substring(2), 16)}`,
       );
     };
 
@@ -214,10 +219,12 @@ class DonationService {
 
             // Create new donation objects for all the new pledges
             pledges.forEach(donation => {
+              const _donationAmountInWei = utils.toWei(donation.amount.toString());
+
               const newDonation = {
                 txHash,
-                amount: donation.amount,
-                amountRemaining: donation.amount,
+                amount: _donationAmountInWei,
+                amountRemaining: _donationAmountInWei,
                 giverAddress: donation.giverAddress,
                 pledgeId: 0,
                 parentDonations: donation.parents,
@@ -414,12 +421,13 @@ class DonationService {
     getNetwork()
       .then(network => {
         etherScanUrl = network.etherscan;
+        const _amountRemainingInWei = utils.toWei(donation.amountRemaining.toString());
 
         return network.liquidPledging
           .transfer(
             donation.ownerId,
             donation.pledgeId,
-            donation.amountRemaining,
+            _amountRemainingInWei,
             donation.delegateId,
             {
               from: address,
@@ -428,12 +436,12 @@ class DonationService {
           )
           .once('transactionHash', hash => {
             txHash = hash;
-            updateExistingDonation(donation, donation.amountRemaining, Donation.REJECTED);
+            updateExistingDonation(donation, _amountRemainingInWei, Donation.REJECTED);
 
             const newDonation = {
               txHash,
-              amount: donation.amountRemaining,
-              amountRemaining: donation.amountRemaining,
+              amount: _amountRemainingInWei,
+              amountRemaining: _amountRemainingInWei,
               status: Donation.TO_APPROVE,
               ownerId: donation.ownerId,
               ownerTypeId: donation.ownerTypeId,
@@ -485,15 +493,18 @@ class DonationService {
   static commit(donation, address, onCreated = () => {}, onSuccess = () => {}, onError = () => {}) {
     let txHash;
     let etherScanUrl;
+
     getNetwork()
       .then(network => {
         etherScanUrl = network.etherscan;
+
+        const _amountRemainingInWei = utils.toWei(donation.amountRemaining.toString());
 
         return network.liquidPledging
           .transfer(
             donation.ownerId,
             donation.pledgeId,
-            donation.amountRemaining,
+            _amountRemainingInWei,
             donation.intendedProjectId,
             {
               from: address,
@@ -502,12 +513,12 @@ class DonationService {
           )
           .once('transactionHash', hash => {
             txHash = hash;
-            updateExistingDonation(donation, donation.amountRemaining, Donation.COMMITTED);
+            updateExistingDonation(donation, _amountRemainingInWei, Donation.COMMITTED);
 
             const newDonation = {
               txHash,
-              amount: donation.amountRemaining,
-              amountRemaining: donation.amountRemaining,
+              amount: _amountRemainingInWei,
+              amountRemaining: _amountRemainingInWei,
               ownerId: donation.intendedProjectId,
               ownerTypeId: donation.intendedProjectTypeId,
               ownerType: donation.intendedProjectType,
@@ -534,7 +545,6 @@ class DonationService {
         onSuccess(`${etherScanUrl}tx/${txHash}`);
       })
       .catch(err => {
-        console.log('err', err);
         if (txHash && err.message && err.message.includes('unknown transaction')) return; // bug in web3 seems to constantly fail due to this error, but the tx is correct
         ErrorPopup(
           'Something went wrong with the transaction. Is your wallet unlocked?',
@@ -560,20 +570,21 @@ class DonationService {
     getNetwork()
       .then(network => {
         etherScanUrl = network.etherscan;
+        const _amountRemainingInWei = utils.toWei(donation.amountRemaining.toString());
 
         return network.liquidPledging
-          .withdraw(donation.pledgeId, donation.amountRemaining, {
+          .withdraw(donation.pledgeId, _amountRemainingInWei, {
             from: address,
             $extraGas: extraGas(),
           })
           .once('transactionHash', hash => {
             txHash = hash;
-            updateExistingDonation(donation, donation.amountRemaining);
+            updateExistingDonation(donation, _amountRemainingInWei);
 
             const newDonation = {
               txHash,
-              amount: donation.amountRemaining,
-              amountRemaining: donation.amountRemaining,
+              amount: _amountRemainingInWei,
+              amountRemaining: _amountRemainingInWei,
               ownerId: donation.ownerId,
               ownerTypeId: donation.ownerTypeId,
               ownerType: donation.ownerType,
@@ -740,6 +751,47 @@ class DonationService {
           err,
         );
       });
+  }
+
+  static getMilestoneDonations(milestoneId) {
+    feathersClient
+      .service('/donations')
+      .find({
+        query: {
+          ownerType: 'milestone',
+          ownerTypeId: milestoneId,
+          amountRemaining: { $ne: 0 },
+          status: Donation.COMMITTED,
+        },
+      })
+      .then(({ data }) => {
+        if (data.length === 0) throw new Error('no-donations');
+
+        const pledges = [];
+        data.forEach(donation => {
+          const pledge = pledges.find(n => n.id === donation.pledgeId);
+
+          if (pledge) {
+            pledge.amount = pledge.amount.add(new BigNumber(donation.amountRemaining));
+          } else {
+            pledges.push({
+              id: donation.pledgeId,
+              amount: new BigNumber(donation.amountRemaining),
+            });
+          }
+        });
+
+        return pledges.map(
+          pledge =>
+            // due to some issue in web3, utils.toHex(pledge.amount) breaks during minification.
+            // BN.toString(16) will return a hex string as well
+            `0x${utils.padLeft(pledge.amount.toString(16), 48)}${utils.padLeft(
+              utils.toHex(pledge.id).substring(2),
+              16,
+            )}`,
+        );
+      })
+      .catch(err => err);
   }
 }
 

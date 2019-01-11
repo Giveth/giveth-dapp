@@ -63,8 +63,8 @@ class UserProvider extends Component {
     const { account } = this.props;
     if ((account && !currentUser) || (currentUser && account !== prevProps.account)) {
       this.getUserData(account);
+      this.checkGivethWallet();
     }
-    this.checkGivethWallet();
   }
 
   componentWillUnmount() {

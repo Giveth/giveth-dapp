@@ -22,7 +22,7 @@ const Campaigns = () => (
                 <div>
                   <p>
                     These Campaigns work hard to solve causes. Help them realise their goals by
-                    giving Ether!
+                    giving Ether or tokens!
                   </p>
                   <div className="cards-grid-container">
                     {campaigns.map(campaign => (

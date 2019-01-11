@@ -78,7 +78,7 @@ class CampaignService {
           $skip,
         },
       })
-      .then(resp => onSuccess(resp.data, resp.total))
+      .then(resp => onSuccess(resp.data.map(m => new Milestone(m)), resp.total))
       .catch(onError);
   }
 
