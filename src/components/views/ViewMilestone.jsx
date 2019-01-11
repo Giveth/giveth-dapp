@@ -296,6 +296,7 @@ class ViewMilestone extends Component {
                           {milestone.maxAmount.toString()} {milestone.token.symbol}
                           {milestone.items.length === 0 &&
                             milestone.selectedFiatType &&
+                            milestone.selectedFiatType !== milestone.token.symbol &&
                             milestone.fiatAmount && (
                               <span>
                                 {' '}
