@@ -45,17 +45,23 @@ class RateConvertor extends Component {
       // Set rate, or if rate is undefined, use the first defined rate
       let rate = resp.rates[this.state.selectedFiatType];
 
-      // This rate is undefined, use the first defined rate
+      // This rate is undefined
       if (!rate) {
-        this.setState({ selectedFiatType: token.symbol });
         rate = resp.rates[token.symbol];
-      }
 
-      this.setState(prevState => ({
-        conversionRate: resp,
-        etherAmountForm: prevState.fiatAmountForm ? prevState.fiatAmount.div(rate).toFixed() : '',
-        isLoading: false,
-      }));
+        this.setState(prevState => ({
+          conversionRate: resp,
+          etherAmountForm: prevState.fiatAmountForm ? prevState.fiatAmount.div(rate).toFixed() : '',
+          selectedFiatType: token.symbol,
+          isLoading: false,
+        }));
+      } else {
+        this.setState(prevState => ({
+          conversionRate: resp,
+          etherAmountForm: prevState.fiatAmountForm ? prevState.fiatAmount.div(rate).toFixed() : '',
+          isLoading: false,
+        }));
+      }
     });
   }
 

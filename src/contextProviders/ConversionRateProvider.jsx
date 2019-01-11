@@ -12,15 +12,66 @@ export { Consumer };
 
 BigNumber.config({ DECIMAL_PLACES: 18 });
 
+// FIXME: The storage should store values with integers as keys rather than ISO date strings. That is using Date.getTime() method
+/**
+ * Storage of cached conversion rates. It stores the rates in objects per token as follows:
+ *
+ * BTC: {
+ *   2019-01-07T00:00:00.000Z: {BTC: 1, CZK: 89919.47, EUR: 3527.11, THB: 127648.26, BRL: 15081.51, …}
+ *   2019-01-14T00:00:00.000Z: {BTC: 1, MXN: 69718.29, GBP: 2827.18, BRL: 13916.09, AUD: 4975.01, …}
+ *   2019-01-15T00:00:00.000Z: {BTC: 1, GBP: 2856.89, THB: 117610.94, AUD: 5062.48, MXN: 69428.72, …}
+ *   2019-01-21T00:00:00.000Z: {BTC: 1, AUD: 4954.68, BRL: 13597.04, CAD: 5152.09, CZK: 79920.63, …}
+ * }
+ * GTT:
+ *   2019-01-09T00:00:00.000Z: {GTT: 1}
+ *   2019-01-15T00:00:00.000Z: {GTT: 1}
+ *   2019-01-16T00:00:00.000Z: {GTT: 1}
+ *   2019-01-22T00:00:00.000Z: {GTT: 1}
+ * }
+ */
+class ConversionStorage {
+  /**
+   * Get rates for given symbol and date
+   * @param {string} symbol Token symbol
+   * @param {string} date   ISO date string
+   *
+   * @return {object|boolean} If found return the pair {timestamp, rates}, else return false
+   */
+  get(symbol, date) {
+    if (this[symbol] && this[symbol][date]) return { timestamp: date, rates: this[symbol][date] };
+    return false;
+  }
+
+  /**
+   * Add new rate
+   *
+   * @param {string} symbol Token symbol
+   * @param {string} date   ISO date string
+   * @param {object} rates  Rates for given date
+   *
+   *  @return {object} Pair {timestamp, rates} that have been added
+   */
+  add(symbol, date, rates) {
+    if (!this[symbol]) this[symbol] = {};
+
+    this[symbol][date] = rates;
+
+    return { timestamp: date, rates: this[symbol][date] };
+  }
+}
+
 class ConversionRateProvider extends Component {
-  constructor() {
-    super();
+  constructor(props) {
+    super(props);
+
+    this.rates = new ConversionStorage();
 
     this.state = {
-      conversionRates: [],
       currentRate: {
         rates: {},
-        timestamp: Math.round(getStartOfDayUTC().toDate()),
+        timestamp: getStartOfDayUTC()
+          .subtract(1, 'd')
+          .toISOString(),
       },
     };
 
@@ -29,39 +80,37 @@ class ConversionRateProvider extends Component {
 
   getConversionRates(date, symbol) {
     const dtUTC = getStartOfDayUTC(date); // Should not be necessary as the datepicker should provide UTC, but just to be sure
-    const timestamp = Math.round(dtUTC.toDate());
 
-    const { conversionRates } = this.state;
-    const cachedConversionRate = conversionRates.find(c => c.timestamp === timestamp);
+    const rate = this.rates.get(symbol, dtUTC.toISOString());
 
-    if (!cachedConversionRate) {
-      // we don't have the conversion rate in cache, fetch from feathers
-      return feathersClient
-        .service('conversionRates')
-        .find({ query: { date: dtUTC, symbol } })
-        .then(resp => {
-          this.setState({
-            conversionRates: conversionRates.concat(resp),
-            currentRate: resp,
-          });
-
-          return resp;
-        })
-        .catch(err => {
-          ErrorPopup(
-            'Sadly we were unable to get the exchange rate. Please try again after refresh.',
-            err,
-          );
-        });
+    // We have the rate cached
+    if (rate) {
+      return new Promise(resolve => {
+        this.setState({ currentRate: rate }, () => resolve(rate));
+      });
     }
-    // we have the conversion rate in cache
-    return new Promise(resolve => {
-      this.setState({ currentRate: cachedConversionRate }, () => resolve(cachedConversionRate));
-    });
+
+    // We don't have the conversion rate in cache, fetch from feathers
+    return feathersClient
+      .service('conversionRates')
+      .find({ query: { date: dtUTC, symbol } })
+      .then(resp => {
+        const rt = this.rates.add(symbol, dtUTC.toISOString(), resp.rates);
+
+        this.setState({ currentRate: rt });
+
+        return rt;
+      })
+      .catch(err => {
+        ErrorPopup(
+          'Sadly we were unable to get the exchange rate. Please try again after refresh.',
+          err,
+        );
+      });
   }
 
   render() {
-    const { conversionRates, currentRate } = this.state;
+    const { currentRate } = this.state;
     const { fiatWhitelist } = this.props;
     const { getConversionRates } = this;
 
@@ -69,7 +118,6 @@ class ConversionRateProvider extends Component {
       <Provider
         value={{
           state: {
-            conversionRates,
             currentRate,
             fiatTypes: fiatWhitelist.map(f => ({ value: f, title: f })),
           },
