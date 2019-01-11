@@ -5,9 +5,13 @@ import moment from 'moment';
 import ReactHtmlParser from 'react-html-parser';
 import { Form } from 'formsy-react-components';
 
+import Milestone from 'models/Milestone';
+import User from 'models/User';
+import BigNumber from 'bignumber.js';
 import { getUserName, getUserAvatar } from 'lib/helpers';
 import getNetwork from 'lib/blockchain/getNetwork';
 import MilestoneProof from 'components/MilestoneProof';
+import MilestoneConversationAction from 'components/MilestoneConversationAction';
 import Loader from './Loader';
 import { feathersClient } from '../lib/feathersClient';
 
@@ -32,7 +36,7 @@ class MilestoneConversations extends Component {
         .watch({ listStrategy: 'always' })
         .find({
           query: {
-            milestoneId: this.props.milestoneId,
+            milestoneId: this.props.milestone.id,
             $sort: { createdAt: -1 },
           },
         })
@@ -62,6 +66,7 @@ class MilestoneConversations extends Component {
 
   render() {
     const { isLoading, conversations, etherScanUrl } = this.state;
+    const { milestone, balance, currentUser } = this.props;
 
     return (
       <div id="milestone-conversations">
@@ -88,21 +93,37 @@ class MilestoneConversations extends Component {
                         </a>
                       )}
                     </div>
-                    <span className={`owner-name ${c.messageContext.toLowerCase()}`}>
+
+                    <p className="badge badge-secondary">{c.performedByRole}</p>
+
+                    <p className={`owner-name ${c.messageContext.toLowerCase()}`}>
                       {getUserName(c.owner)}{' '}
                       {MilestoneConversations.getReadeableMessageContext(c.messageContext)}
-                      <span className="badge badge-secondary">{c.performedByRole}</span>
                       {/* <span className={`badge ${c.messageContext.toLowerCase()}`}>{c.messageContext}</span> */}
-                    </span>
+                    </p>
                     <div className="c-message">{ReactHtmlParser(c.message)}</div>
 
                     {c.items &&
                       c.items.length > 0 && (
                         <Form className="items-form">
                           <strong>Attachments</strong>
-                          <MilestoneProof items={c.items} isEditMode={false} />
+                          <MilestoneProof
+                            items={c.items}
+                            token={milestone.token}
+                            isEditMode={false}
+                          />
                         </Form>
                       )}
+
+                    {/* ---- action buttons ---- */}
+                    <div className="c-action-footer">
+                      <MilestoneConversationAction
+                        messageContext={c.messageContext}
+                        milestone={milestone}
+                        currentUser={currentUser}
+                        balance={balance}
+                      />
+                    </div>
 
                     <div className="c-divider" />
                   </div>
@@ -117,7 +138,9 @@ class MilestoneConversations extends Component {
 }
 
 MilestoneConversations.propTypes = {
-  milestoneId: PropTypes.string.isRequired,
+  milestone: PropTypes.instanceOf(Milestone).isRequired,
+  currentUser: PropTypes.instanceOf(User).isRequired,
+  balance: PropTypes.instanceOf(BigNumber).isRequired,
 };
 
 export default MilestoneConversations;

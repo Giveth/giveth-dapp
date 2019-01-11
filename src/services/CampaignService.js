@@ -78,7 +78,7 @@ class CampaignService {
           $skip,
         },
       })
-      .then(resp => onSuccess(resp.data, resp.total))
+      .then(resp => onSuccess(resp.data.map(m => new Milestone(m)), resp.total))
       .catch(onError);
   }
 
@@ -96,9 +96,11 @@ class CampaignService {
       .find(
         paramsForServer({
           query: {
+            status: { $ne: Donation.FAILED },
+            $or: [{ intendedProjectTypeId: id }, { ownerTypeId: id }],
             ownerTypeId: id,
             isReturn: false,
-            $sort: { createdAt: -1 },
+            $sort: { usdValue: -1, createdAt: -1 },
           },
           schema: 'includeTypeAndGiverDetails',
         }),

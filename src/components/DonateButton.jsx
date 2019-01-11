@@ -1,6 +1,9 @@
+/* eslint-disable react/no-unescaped-entities */
+/* eslint-disable no-restricted-globals */
 import React from 'react';
 import PropTypes from 'prop-types';
 import Modal from 'react-modal';
+import BigNumber from 'bignumber.js';
 import { utils } from 'web3';
 import { Form, Input } from 'formsy-react-components';
 import Toggle from 'react-toggle';
@@ -63,7 +66,7 @@ class BaseDonateButton extends React.Component {
     this.state = {
       isSaving: false,
       formIsValid: false,
-      amount: '',
+      amount: '0',
       givethBridge: undefined,
       etherscanUrl: '',
       modalVisible: false,
@@ -99,6 +102,21 @@ class BaseDonateButton extends React.Component {
     this.setState({ selectedToken: _getTokenWhitelist().find(t => t.address === address) }, () =>
       this.pollToken(),
     );
+  }
+
+  getMaxAmount() {
+    const { selectedToken } = this.state;
+    const { ETHBalance } = this.props;
+
+    const balance = selectedToken.symbol === 'ETH' ? ETHBalance : selectedToken.balance;
+
+    // Determine max amount
+    let maxAmount = new BigNumber(utils.fromWei(balance.toString()));
+
+    if (this.props.maxDonationAmount && balance.gt(this.props.maxDonationAmount))
+      maxAmount = this.props.maxDonationAmount;
+
+    return maxAmount;
   }
 
   pollToken() {
@@ -148,22 +166,17 @@ class BaseDonateButton extends React.Component {
   closeDialog() {
     this.setState({
       modalVisible: false,
-      amount: '',
+      amount: '0',
       formIsValid: false,
     });
   }
 
   openDialog() {
-    this.setState(prevState => ({
+    this.setState({
       modalVisible: true,
-      amount:
-        prevState.selectedToken.symbol === 'ETH'
-          ? utils.fromWei(this.props.ETHBalance ? this.props.ETHBalance.toString() : '')
-          : utils.fromWei(
-              prevState.selectedToken.balance ? prevState.selectedToken.balance.toString() : '',
-            ), // FIXME: Is it correct to use from wei? Shouldn't it consider precision of the token?
+      amount: this.getMaxAmount().toString(),
       formIsValid: false,
-    }));
+    });
   }
 
   submit(model) {
@@ -333,11 +346,8 @@ class BaseDonateButton extends React.Component {
     };
 
     const balance = selectedToken.symbol === 'ETH' ? ETHBalance : selectedToken.balance;
+    const maxAmount = this.getMaxAmount();
 
-    // Determine max amount
-    let maxAmount = utils.fromWei(balance ? balance.toString() : ''); // FIXME: Is this correct, shouldn't it consider precision of the token?
-    if (this.props.maxAmount && balance.gt(utils.toBN(this.props.maxAmount)))
-      maxAmount = utils.fromWei(this.props.maxAmount);
     return (
       <span style={style}>
         <button type="button" className="btn btn-success" onClick={this.openDialog}>
@@ -367,8 +377,7 @@ class BaseDonateButton extends React.Component {
             {!validProvider && (
               <div className="alert alert-warning">
                 <i className="fa fa-exclamation-triangle" />
-                It is recommended that you install <a href="https://metamask.io/">MetaMask</a> to
-                donate
+                Please install <a href="https://metamask.io/">MetaMask</a> to donate
               </div>
             )}
 
@@ -416,25 +425,25 @@ class BaseDonateButton extends React.Component {
                 </div>
               )}
 
-            <span className="label">How much ${selectedToken.symbol} do you want to donate?</span>
+            <span className="label">How much {selectedToken.symbol} do you want to donate?</span>
 
             {validProvider &&
-              maxAmount !== 0 &&
-              balance.gtn(0) && (
+              maxAmount.toNumber() !== 0 &&
+              balance.gt(0) && (
                 <div className="form-group">
                   <Slider
                     type="range"
                     name="amount2"
                     min={0}
-                    max={Number(maxAmount)}
-                    step={0.01}
+                    max={maxAmount.toNumber()}
+                    step={maxAmount.toNumber() / 10}
                     value={Number(Number(amount).toFixed(4))}
                     labels={{
                       0: '0',
-                      [maxAmount]: Number(Number(maxAmount).toFixed(4)),
+                      [maxAmount.toFixed()]: maxAmount.toFixed(4),
                     }}
                     tooltip={false}
-                    onChange={newAmount => this.setState({ amount: newAmount.toString() })}
+                    onChange={(name, newAmount) => this.setState({ amount: newAmount })}
                   />
                 </div>
               )}
@@ -444,17 +453,15 @@ class BaseDonateButton extends React.Component {
                 name="amount"
                 id="amount-input"
                 type="number"
-                step="any"
                 value={amount}
                 onChange={(name, newAmount) => this.setState({ amount: newAmount })}
-                placeholder="1"
                 validations={{
-                  lessOrEqualTo: maxAmount,
+                  lessOrEqualTo: maxAmount.toNumber(),
                   greaterThan: 0.009,
                 }}
                 validationErrors={{
-                  greaterThan: `Minimum value must be at least ${selectedToken.symbol}0.01`,
-                  lessOrEqualTo: `This donation exceeds your wallet balance or the milestone max amount: ${maxAmount} ${
+                  greaterThan: `Minimum value must be at least 0.01 ${selectedToken.symbol}`,
+                  lessOrEqualTo: `This donation exceeds your wallet balance or the milestone max amount: ${maxAmount.toString()} ${
                     selectedToken.symbol
                   }.`,
                 }}
@@ -506,7 +513,7 @@ class BaseDonateButton extends React.Component {
 
             {validProvider &&
               currentUser &&
-              maxAmount !== 0 &&
+              maxAmount.toNumber() !== 0 &&
               balance !== '0' && (
                 <LoaderButton
                   className="btn btn-success"
@@ -536,7 +543,7 @@ class BaseDonateButton extends React.Component {
   }
 }
 
-const DonateButton = ({ model, currentUser, maxAmount }) => (
+const DonateButton = ({ model, currentUser, maxDonationAmount }) => (
   <Web3Consumer>
     {({ state: { isHomeNetwork, validProvider, balance } }) => (
       <BaseDonateButton
@@ -545,7 +552,7 @@ const DonateButton = ({ model, currentUser, maxAmount }) => (
         isHomeNetwork={isHomeNetwork}
         model={model}
         currentUser={currentUser}
-        maxAmount={maxAmount}
+        maxDonationAmount={maxDonationAmount}
       />
     )}
   </Web3Consumer>
@@ -563,7 +570,7 @@ const modelTypes = PropTypes.shape({
 DonateButton.propTypes = {
   model: modelTypes.isRequired,
   currentUser: PropTypes.instanceOf(User),
-  maxAmount: PropTypes.string,
+  maxDonationAmount: PropTypes.instanceOf(BigNumber),
 };
 
 // eslint isn't smart enough to be able to use Object.assign({}, DonateButton.propTypes, {...})
@@ -571,20 +578,21 @@ DonateButton.propTypes = {
 BaseDonateButton.propTypes = {
   model: modelTypes.isRequired,
   currentUser: PropTypes.instanceOf(User),
-  maxAmount: PropTypes.string,
-  ETHBalance: PropTypes.objectOf(utils.BN).isRequired,
+  maxDonationAmount: PropTypes.instanceOf(BigNumber),
+  ETHBalance: PropTypes.instanceOf(BigNumber).isRequired,
   validProvider: PropTypes.bool.isRequired,
   isHomeNetwork: PropTypes.bool.isRequired,
 };
 
 DonateButton.defaultProps = {
-  maxAmount: undefined,
   currentUser: undefined,
+  maxDonationAmount: undefined, // new BigNumber(10000000000000000),
 };
 
 BaseDonateButton.defaultProps = {
-  maxAmount: undefined,
   currentUser: undefined,
+  maxDonationAmount: undefined, // new BigNumber(10000000000000000),
+  // maxDonationAmount: new BigNumber(10000000000000000),
 };
 
 export default DonateButton;

@@ -25,7 +25,7 @@ const DACs = () => (
                 <div>
                   <p>
                     These Communities are solving causes. Help them realise their goals by joining
-                    them and giving Ether!
+                    them and giving Ether or tokens!
                   </p>
                   <div className="cards-grid-container">
                     {dacs.map(dac => <DACCard key={dac.id} dac={dac} />)}

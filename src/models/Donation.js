@@ -1,3 +1,6 @@
+import BigNumber from 'bignumber.js';
+import { utils } from 'web3';
+
 import Model from './Model';
 import { getTruncatedText } from '../lib/helpers';
 import Milestone from './Milestone';
@@ -64,9 +67,9 @@ class Donation extends Model {
     super(data);
 
     this._id = data._id;
-    this._amount = data.amount;
-    this._amountRemaining = data.amountRemaining;
-    this._pendingAmountRemaining = data.pendingAmountRemaining;
+    this._amount = new BigNumber(utils.fromWei(data.amount));
+    this._amountRemaining = new BigNumber(utils.fromWei(data.amountRemaining || ''));
+    this._pendingAmountRemaining = new BigNumber(utils.fromWei(data.pendingAmountRemaining || ''));
     this._commitTime = data.commitTime;
     this._confirmations = data.confirmations || 0;
     this._createdAt = data.createdAt;
@@ -92,6 +95,7 @@ class Donation extends Model {
     this._updatedAt = data.updatedAt;
     this._isReturn = data.isReturn;
     this._token = data.token;
+    this._usdValue = data.usdValue;
 
     /**
      * Get the URL, name and type of the entity to which this donation has been donated to
@@ -155,6 +159,8 @@ class Donation extends Model {
         return 'canceled';
       case Donation.REJECTED:
         return 'rejected';
+      case Donation.FAILED:
+        return 'failed';
       default:
         return 'unknown';
     }
@@ -189,7 +195,7 @@ class Donation extends Model {
       isForeignNetwork &&
       this._ownerTypeId === user.address &&
       this._status === Donation.WAITING &&
-      this._amountRemaining > 0
+      this._amountRemaining.toNumber() > 0
     );
   }
 
@@ -229,7 +235,7 @@ class Donation extends Model {
   get isPending() {
     return (
       this._status === Donation.PENDING ||
-      this._pendingAmountRemaining !== undefined ||
+      (this._pendingAmountRemaining && this._pendingAmountRemaining.toFixed() !== '0') ||
       !this._mined
     );
   }
@@ -253,16 +259,19 @@ class Donation extends Model {
   }
 
   get amountRemaining() {
-    return this._pendingAmountRemaining || this._amountRemaining;
+    if (this._pendingAmountRemaining && this._pendingAmountRemaining.toFixed() !== '0') {
+      return this._pendingAmountRemaining;
+    }
+    return this._amountRemaining;
   }
 
   set amountRemaining(value) {
-    this.checkType(value, ['string'], 'amountRemaining');
+    this.checkInstanceOf(value, BigNumber, 'amountRemaining');
     this._amountRemaining = value;
   }
 
   set pendingAmountRemaining(value) {
-    this.checkType(value, ['string', 'undefined'], 'pendingAmountRemaining');
+    this.checkInstanceOf(value, BigNumber, 'pendingAmountRemaining');
     if (this._pendingAmountRemaining) {
       throw new Error('not allowed to set pendingAmountRemaining');
     }
@@ -475,6 +484,10 @@ class Donation extends Model {
 
   set token(value) {
     this._token = value;
+  }
+
+  get usdValue() {
+    return this._usdValue;
   }
 }
 

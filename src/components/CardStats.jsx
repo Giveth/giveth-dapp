@@ -1,5 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import BigNumber from 'bignumber.js';
 import { convertEthHelper } from '../lib/helpers';
 
 /**
@@ -33,7 +34,7 @@ const CardStats = ({ peopleCount, maxAmount, totalDonated, type, status, token }
       <div className="col-5 text-center card-center">
         <span>
           <p>Donations</p>
-          <p>{totalDonated}</p>
+          <p>{totalDonated.toString()}</p>
         </span>
       </div>
     )}
@@ -67,16 +68,18 @@ CardStats.propTypes = {
   type: PropTypes.string.isRequired,
   peopleCount: PropTypes.number.isRequired,
   status: PropTypes.string,
-  maxAmount: PropTypes.string,
-  totalDonated: PropTypes.number,
-  token: PropTypes.shape({}),
+  maxAmount: PropTypes.instanceOf(BigNumber),
+  totalDonated: PropTypes.instanceOf(BigNumber),
+  token: PropTypes.shape(),
 };
 
 CardStats.defaultProps = {
   status: 'In Progress',
-  maxAmount: undefined,
-  totalDonated: undefined,
-  token: undefined,
+  maxAmount: new BigNumber('0'),
+  totalDonated: new BigNumber('0'),
+  token: {
+    symbol: 'ETH',
+  },
 };
 
 export default CardStats;

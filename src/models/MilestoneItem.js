@@ -1,5 +1,8 @@
 import React from 'react';
 import { getStartOfDayUTC } from 'lib/helpers';
+import BigNumber from 'bignumber.js';
+import { utils } from 'web3';
+
 import moment from 'moment';
 import Model from './Model';
 
@@ -12,20 +15,22 @@ export default class MilestoneItemModel extends Model {
       description = '',
       image = '',
       selectedFiatType = 'EUR',
-      fiatAmount = 0,
+      fiatAmount = new BigNumber('0'),
       wei = '',
       conversionRate = parseFloat(0),
       ethConversionRateTimestamp = new Date().toISOString(),
+      _id,
     } = data;
 
     this._date = date;
     this._description = description;
     this._image = image;
     this._selectedFiatType = selectedFiatType;
-    this._fiatAmount = fiatAmount;
-    this._wei = wei;
+    this._fiatAmount = new BigNumber(fiatAmount);
+    this._wei = new BigNumber(utils.fromWei(wei).toString());
     this._conversionRate = conversionRate;
     this._ethConversionRateTimestamp = ethConversionRateTimestamp;
+    this._id = _id;
   }
 
   get date() {
@@ -62,7 +67,7 @@ export default class MilestoneItemModel extends Model {
   }
 
   set selectedFiatType(value) {
-    this.checkValue(value, React.whitelist.fiatWhitelists, 'selectedFiatType');
+    this.checkValue(value, React.whitelist.fiatWhitelist, 'selectedFiatType');
     this._selectedFiatType = value;
   }
 

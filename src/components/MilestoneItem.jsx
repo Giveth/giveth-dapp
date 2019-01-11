@@ -3,7 +3,7 @@ import moment from 'moment';
 import PropTypes from 'prop-types';
 import React from 'react';
 import { convertEthHelper, getTruncatedText } from 'lib/helpers';
-import Item from 'models/MilestoneItem';
+import MilestoneItemModel from 'models/MilestoneItem';
 
 /** *
  * NOTE: This component is created as a Formsy form component
@@ -30,7 +30,7 @@ class MilestoneItem extends React.Component {
         <td className="td-item-description">{getTruncatedText(item.description)}</td>
 
         <td className="td-item-amount-fiat">
-          {item.selectedFiatType} {item.fiatAmount}
+          {item.selectedFiatType} {item.fiatAmount.toString()}
           <br />
           <span className="help-block">
             {`1 ${token.name} = ${item.conversionRate} ${item.selectedFiatType}`}
@@ -73,15 +73,14 @@ MilestoneItem.propTypes = {
   setValue: PropTypes.func.isRequired,
 
   removeItem: PropTypes.func,
-  item: PropTypes.instanceOf(Item).isRequired,
+  item: PropTypes.instanceOf(MilestoneItemModel).isRequired,
   isEditMode: PropTypes.bool,
-  token: PropTypes.shape({}),
+  token: PropTypes.shape().isRequired,
 };
 
 MilestoneItem.defaultProps = {
   isEditMode: false,
   removeItem: () => {},
-  token: undefined,
 };
 
 export default withFormsy(MilestoneItem);

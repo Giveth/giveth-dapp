@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { Prompt } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import { Form, Input } from 'formsy-react-components';
-import { utils } from 'web3';
+import BigNumber from 'bignumber.js';
 
 import GA from 'lib/GoogleAnalytics';
 import Loader from '../Loader';
@@ -341,7 +341,7 @@ class EditDAC extends Component {
 EditDAC.propTypes = {
   currentUser: PropTypes.instanceOf(User),
   isNew: PropTypes.bool,
-  balance: PropTypes.objectOf(utils.BN).isRequired,
+  balance: PropTypes.instanceOf(BigNumber).isRequired,
   isForeignNetwork: PropTypes.bool.isRequired,
   match: PropTypes.shape({
     params: PropTypes.shape({

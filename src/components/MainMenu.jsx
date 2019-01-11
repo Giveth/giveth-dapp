@@ -76,7 +76,7 @@ class MainMenu extends Component {
                     className={`collapse navbar-collapse ${showMobileMenu ? 'show' : ''} `}
                     id="navbarSupportedContent"
                   >
-                    <ul className="navbar-nav mr-auto">
+                    <ul className="navbar-nav">
                       {validProvider &&
                         state.currentUser && (
                           <li className="nav-item dropdown">
@@ -122,6 +122,15 @@ class MainMenu extends Component {
               <button className="btn btn-outline-success my-2 my-sm-0" type="submit">Find</button>
             </form>
           */}
+
+                    <a
+                      className="dropdown-item support"
+                      rel="noopener noreferrer"
+                      href="https://www.github.com/Giveth/giveth-dapp/issues/new"
+                      target="_blank"
+                    >
+                      Support
+                    </a>
 
                     <ul className="navbar-nav">
                       {validProvider &&

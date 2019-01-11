@@ -1,3 +1,5 @@
+/* eslint-disable no-restricted-globals */
+/* eslint-disable react/sort-comp */
 import React, { Component } from 'react';
 import Modal from 'react-modal';
 import BigNumber from 'bignumber.js';
@@ -41,8 +43,8 @@ class DelegateButton extends Component {
       isSaving: false,
       objectsToDelegateTo: [],
       modalVisible: false,
-      amount: utils.fromWei(props.donation.amountRemaining),
-      maxAmount: utils.fromWei(props.donation.amountRemaining),
+      amount: '0',
+      maxAmount: new BigNumber('0'),
     };
 
     this.submit = this.submit.bind(this);
@@ -51,7 +53,13 @@ class DelegateButton extends Component {
 
   openDialog() {
     checkBalance(this.props.balance)
-      .then(() => this.setState({ modalVisible: true }))
+      .then(() =>
+        this.setState({
+          modalVisible: true,
+          amount: this.props.donation.amountRemaining.toString(),
+          maxAmount: this.props.donation.amountRemaining,
+        }),
+      )
       .catch(err => {
         if (err === 'noBalance') {
           // handle no balance error
@@ -62,26 +70,24 @@ class DelegateButton extends Component {
   selectedObject({ target }) {
     const admin = this.props.types.find(t => t._id === target.value[0]);
 
-    let maxAmount = utils.fromWei(this.props.donation.amountRemaining);
+    let maxAmount = this.props.donation.amountRemaining;
 
     if (admin && admin instanceof Milestone) {
-      const maxDelegationAmount = new BigNumber(utils.fromWei(admin.maxAmount)).minus(
-        new BigNumber(utils.fromWei(admin.currentBalance)),
-      );
+      const maxDelegationAmount = admin.maxAmount.minus(admin.currentBalance);
 
-      if (maxDelegationAmount.lt(new BigNumber(utils.fromWei(this.props.donation.amountRemaining))))
-        maxAmount = maxDelegationAmount.toString();
+      if (maxDelegationAmount.lt(this.props.donation.amountRemaining)) {
+        maxAmount = maxDelegationAmount;
+      }
     }
 
     this.setState({
       maxAmount,
-      amount: maxAmount,
+      amount: maxAmount.toString(),
       objectsToDelegateTo: target.value,
     });
   }
 
   submit(model) {
-    const { toBN } = utils;
     const { donation } = this.props;
     this.setState({ isSaving: true });
 
@@ -89,12 +95,13 @@ class DelegateButton extends Component {
     const admin = this.props.types.find(t => t._id === this.state.objectsToDelegateTo[0]);
 
     // TODO: find a more friendly way to do this.
-    if (admin instanceof Milestone && toBN(admin.maxAmount).lt(toBN(admin.currentBalance || 0))) {
+    if (admin instanceof Milestone && admin.maxAmount.lt(admin.currentBalance || 0)) {
       React.toast.error('That milestone has reached its funding goal. Please pick another.');
       return;
     }
 
     const onCreated = txLink => {
+      this.setState({ isSaving: false });
       const msg =
         donation.delegateId > 0 ? (
           <p>
@@ -114,13 +121,15 @@ class DelegateButton extends Component {
       React.swal({
         title: 'Delegated!',
         content: React.swal.msg(
-          <p>
-            The donation has been delegated,{' '}
-            <a href={`${txLink}`} target="_blank" rel="noopener noreferrer">
-              view the transaction here.
-            </a>
+          <div>
+            <p>
+              The donation has been delegated,{' '}
+              <a href={`${txLink}`} target="_blank" rel="noopener noreferrer">
+                view the transaction here.
+              </a>
+            </p>
             {msg}
-          </p>,
+          </div>,
         ),
         icon: 'success',
       });
@@ -156,18 +165,20 @@ class DelegateButton extends Component {
     const pStyle = { whiteSpace: 'normal' };
 
     const getTypes = () =>
-      types.map(t => {
-        const el = {};
-        el.name = t.title;
-        el.type = t instanceof Milestone ? Milestone.type : Campaign.type;
-        el.id = t._id;
-        el.element = (
-          <span>
-            {t.title} <em>{t instanceof Milestone ? 'Milestone' : 'Campaign'}</em>
-          </span>
-        );
-        return el;
-      });
+      types
+        .filter(t => !(t instanceof Milestone) || t.token.symbol === donation.token.symbol)
+        .map(t => {
+          const el = {};
+          el.name = t.title;
+          el.type = t instanceof Milestone ? Milestone.type : Campaign.type;
+          el.id = t._id;
+          el.element = (
+            <span>
+              {t.title} <em>{t instanceof Milestone ? 'Milestone' : 'Campaign'}</em>
+            </span>
+          );
+          return el;
+        });
 
     return (
       <span style={style}>
@@ -190,7 +201,7 @@ class DelegateButton extends Component {
             You are delegating donation from{' '}
             <strong>{donation.giver.name || donation.giverAddress}</strong> of a value{' '}
             <strong>
-              {utils.fromWei(donation.amountRemaining)} {donation.token.symbol}
+              {donation.amountRemaining.toFixed()} {donation.token.symbol}
             </strong>{' '}
             that has been donated to <strong>{donation.donatedTo.name}</strong>
           </p>
@@ -217,12 +228,12 @@ class DelegateButton extends Component {
                 type="range"
                 name="amount2"
                 min={0}
-                max={Number(maxAmount)}
-                step={maxAmount / 10}
+                max={maxAmount.toNumber()}
+                step={maxAmount.toNumber() / 10}
                 value={Number(this.state.amount)}
                 labels={{
                   0: '0',
-                  [maxAmount]: maxAmount,
+                  [maxAmount.toNumber()]: maxAmount.toFixed(),
                 }}
                 tooltip={false}
                 onChange={amount => this.setState({ amount: Number(amount).toFixed(2) })}
@@ -231,16 +242,16 @@ class DelegateButton extends Component {
 
             <div className="form-group">
               <Input
-                type="text"
-                validations={`greaterThan:0,isNumeric,lessOrEqualTo:${maxAmount}`}
+                type="number"
+                validations={`greaterThan:0,isNumeric,lessOrEqualTo:${maxAmount.toNumber()}`}
                 validationErrors={{
                   greaterThan: 'Enter value greater than 0',
-                  lessOrEqualTo: `The donation maximum amount you can delegate is ${maxAmount}. Do not input higher amount.`,
+                  lessOrEqualTo: `The donation maximum amount you can delegate is ${maxAmount.toFixed()}. Do not input higher amount.`,
                   isNumeric: 'Provide correct number',
                 }}
                 name="amount"
                 value={this.state.amount}
-                onChange={(name, amount) => this.setState({ amount })}
+                onChange={amount => this.setState({ amount })}
               />
             </div>
 
@@ -260,7 +271,7 @@ class DelegateButton extends Component {
 }
 
 DelegateButton.propTypes = {
-  balance: PropTypes.objectOf(utils.BN).isRequired,
+  balance: PropTypes.instanceOf(BigNumber).isRequired,
   types: PropTypes.arrayOf(PropTypes.shape({})).isRequired,
   milestoneOnly: PropTypes.bool,
   donation: PropTypes.instanceOf(Donation).isRequired,

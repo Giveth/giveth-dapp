@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
+import BigNumber from 'bignumber.js';
 import PropTypes from 'prop-types';
-import { utils } from 'web3';
 
 import { Link } from 'react-router-dom';
 import Avatar from 'react-avatar';
@@ -195,7 +195,7 @@ ViewDAC.propTypes = {
       id: PropTypes.string,
     }).isRequired,
   }).isRequired,
-  balance: PropTypes.objectOf(utils.BN).isRequired,
+  balance: PropTypes.instanceOf(BigNumber).isRequired,
 };
 
 ViewDAC.defaultProps = {

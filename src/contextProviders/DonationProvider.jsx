@@ -1,7 +1,7 @@
 import React, { Component, createContext } from 'react';
 import PropTypes from 'prop-types';
+import BigNumber from 'bignumber.js';
 import { paramsForServer } from 'feathers-hooks-common';
-import { utils } from 'web3';
 
 import { authenticateIfPossible, checkBalance } from '../lib/middleware';
 import { feathersClient } from '../lib/feathersClient';
@@ -75,6 +75,7 @@ class DonationProvider extends Component {
             amountRemaining: { $ne: 0 },
             $limit: this.state.itemsPerPage,
             $skip: this.state.skipPages * this.state.itemsPerPage,
+            $sort: { createdAt: -1 },
           },
         }),
       )
@@ -204,6 +205,7 @@ class DonationProvider extends Component {
               this.props.currentUser.address,
               afterCreate,
               afterMined,
+              err => console.log('err', err),
             );
           }
         }),
@@ -300,7 +302,7 @@ class DonationProvider extends Component {
 DonationProvider.propTypes = {
   children: PropTypes.oneOfType([PropTypes.arrayOf(PropTypes.node), PropTypes.node]).isRequired,
   currentUser: PropTypes.instanceOf(User),
-  balance: PropTypes.objectOf(utils.BN).isRequired,
+  balance: PropTypes.instanceOf(BigNumber).isRequired,
 };
 
 DonationProvider.defaultProps = {

@@ -7,6 +7,18 @@
     margin-bottom: 20px;
   }
 
+  .milestone-actions {
+    .btn {
+      margin: 0 4px;
+      padding: .375rem .75rem;
+      font-size: 1rem;
+    }
+
+    .btn-link {
+      color: white;
+    }
+  }
+
   table {
     font-size: 0.8rem;
     margin-top: 0;
@@ -17,7 +29,6 @@
 
       &.td-user {
         min-width: 80px;
-        text-align: center;
 
         .sb-avatar {
           display: inline-block !important;

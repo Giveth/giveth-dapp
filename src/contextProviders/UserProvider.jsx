@@ -1,4 +1,5 @@
 import React, { Component, createContext } from 'react';
+import BigNumber from 'bignumber.js';
 import PropTypes from 'prop-types';
 import { utils } from 'web3';
 import { authenticateIfPossible } from 'lib/middleware';
@@ -17,7 +18,7 @@ export { Consumer };
 // TO DO: This is the minimum transaction view required to:
 // create a DAC / Campaign / Milestone / Profile
 React.minimumWalletBalance = 0.01;
-React.minimumWalletBalanceInWei = utils.toBN(utils.toWei('0.01'));
+React.minimumWalletBalanceInWei = new BigNumber(utils.toWei('0.01'));
 
 React.whitelist = {};
 
@@ -63,8 +64,8 @@ class UserProvider extends Component {
     const { account } = this.props;
     if ((account && !currentUser) || (currentUser && account !== prevProps.account)) {
       this.getUserData(account);
+      this.checkGivethWallet();
     }
-    this.checkGivethWallet();
   }
 
   componentWillUnmount() {
