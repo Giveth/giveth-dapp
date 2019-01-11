@@ -1,5 +1,4 @@
 import React, { Fragment } from 'react';
-import { utils } from 'web3';
 import PropTypes from 'prop-types';
 
 import Campaign from 'models/Campaign';
@@ -31,14 +30,14 @@ const Balances = ({ entity }) => (
                   <tr key={dc._id}>
                     <td className="td-donations-amount">
                       {dc.currentBalance && dc.currentBalance !== 'null'
-                        ? utils.fromWei(dc.currentBalance)
+                        ? dc.currentBalance.toNumber()
                         : 0}{' '}
                       {dc.symbol}
                     </td>
                     <td className="td-donations-number">{dc.donationCount || 0}</td>
                     <td className="td-donations-amount">
                       {dc.totalDonated && dc.totalDonated !== 'null'
-                        ? utils.fromWei(dc.totalDonated)
+                        ? dc.totalDonated.toNumber()
                         : 0}{' '}
                       {dc.symbol}
                     </td>

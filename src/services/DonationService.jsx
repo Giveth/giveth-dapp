@@ -129,7 +129,7 @@ class DonationService {
      * @return {Array} Array of strings with encoded pledges to delegate
      */
     const getPledges = () => {
-      const maxAmount = new BigNumber(amount);
+      const maxAmount = new BigNumber(utils.fromWei(amount));
       let currentAmount = new BigNumber('0');
       let fullyDonated = true;
 
@@ -169,6 +169,7 @@ class DonationService {
             delegateId: donation.delegateId,
             delegateTypeId: donation.delegateTypeId,
             delegateType: donation.delegateType,
+            token: donation.token,
           });
         }
         return fullyDonated;
@@ -228,6 +229,7 @@ class DonationService {
                 giverAddress: donation.giverAddress,
                 pledgeId: 0,
                 parentDonations: donation.parents,
+                token: donation.token,
                 mined: false,
               };
               // delegate is making the transfer
@@ -454,6 +456,7 @@ class DonationService {
               parentDonations: [donation.id],
               mined: false,
               isReturn: true,
+              token: donation.token,
             };
 
             feathersClient
@@ -593,6 +596,7 @@ class DonationService {
               parentDonations: [donation.id],
               status: Donation.PAYING,
               mined: false,
+              token: donation.token,
             };
 
             feathersClient

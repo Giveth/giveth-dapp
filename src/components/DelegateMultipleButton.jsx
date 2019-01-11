@@ -144,15 +144,6 @@ class BaseDelegateMultipleButton extends Component {
     );
   }
 
-  setAmount(amount) {
-    if (!isNaN(parseFloat(amount))) {
-      // protecting against overflow occuring when BigNumber receives something that results in NaN
-      this.setState(prevState => ({
-        amount: amount.gt(prevState.maxAmount) ? prevState.maxAmount : amount,
-      }));
-    }
-  }
-
   selectedObject({ target }) {
     this.setState({ objectToDelegateFrom: target.value, isLoadingDonations: true });
 
@@ -218,7 +209,7 @@ class BaseDelegateMultipleButton extends Component {
           this.setState({
             delegations,
             maxAmount: amount,
-            amount,
+            amount: amount.toString(),
             isLoadingDonations: false,
           });
         },
@@ -279,7 +270,7 @@ class BaseDelegateMultipleButton extends Component {
 
     DonationService.delegateMultiple(
       this.state.delegations,
-      utils.toWei(this.state.amount.toString()),
+      utils.toWei(this.state.amount),
       this.props.milestone || this.props.campaign,
       onCreated,
       onSuccess,
@@ -342,7 +333,7 @@ class BaseDelegateMultipleButton extends Component {
                 <InputToken
                   name="delegateFrom"
                   label="Delegate from:"
-                  placeholder={this.props.campaign ? 'Select a DAC' : 'Select a DAC or Campaign'}
+                  placeholder={milestone ? 'Select a DAC or Campaign' : 'Select a DAC'}
                   value={this.state.objectToDelegateFrom}
                   options={delegationOptions}
                   onSelect={this.selectedObject}
@@ -353,7 +344,7 @@ class BaseDelegateMultipleButton extends Component {
               {this.state.objectToDelegateFrom.length !== 1 && (
                 <p>
                   Please select entity from which you want to delegate money to the{' '}
-                  {campaign ? campaign.title : milestone.title}{' '}
+                  {milestone ? milestone.title : campaign.title}{' '}
                 </p>
               )}
               {this.state.objectToDelegateFrom.length === 1 &&
@@ -377,7 +368,6 @@ class BaseDelegateMultipleButton extends Component {
                     {delegations.length === 0 && (
                       <p>
                         The amount available to delegate is {maxAmount.toString()}{' '}
-                        {/* TODO: The amount available to delegate is {this.state.maxAmount}{' '} */}
                         {selectedToken.symbol}. Please select a different currency or different
                         source DAC/Campaign.
                       </p>
@@ -393,10 +383,17 @@ class BaseDelegateMultipleButton extends Component {
                             min={0}
                             max={maxAmount.toNumber()}
                             step={maxAmount.toNumber() / 10}
-                            value={amount.toNumber()}
+                            value={Number(amount)}
                             labels={{ 0: '0', [maxAmount.toNumber()]: maxAmount.toFixed() }}
                             tooltip={false}
-                            onChange={newAmount => this.setAmount(newAmount)}
+                            onChange={newAmount =>
+                              this.setState(prevState => ({
+                                amount:
+                                  Number(newAmount).toFixed(2) > prevState.maxAmount
+                                    ? prevState.maxAmount
+                                    : Number(newAmount).toFixed(2),
+                              }))
+                            }
                           />
                         </div>
 
@@ -410,8 +407,8 @@ class BaseDelegateMultipleButton extends Component {
                               isNumeric: 'Provide correct number',
                             }}
                             name="amount"
-                            value={amount.toString()}
-                            onChange={(name, newAmount) => this.setAmount(newAmount)}
+                            value={amount}
+                            onChange={(name, newAmount) => this.setState({ amount: newAmount })}
                           />
                         </div>
 

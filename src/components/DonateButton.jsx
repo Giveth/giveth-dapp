@@ -66,7 +66,7 @@ class BaseDonateButton extends React.Component {
     this.state = {
       isSaving: false,
       formIsValid: false,
-      amount: new BigNumber('0'),
+      amount: '0',
       givethBridge: undefined,
       etherscanUrl: '',
       modalVisible: false,
@@ -111,10 +111,10 @@ class BaseDonateButton extends React.Component {
     const balance = selectedToken.symbol === 'ETH' ? ETHBalance : selectedToken.balance;
 
     // Determine max amount
-    let maxAmount = utils.fromWei(balance.toString());
+    let maxAmount = new BigNumber(utils.fromWei(balance.toString()));
 
     if (this.props.maxDonationAmount && balance.gt(this.props.maxDonationAmount))
-      maxAmount = this.props.maxDonationAmount.toString();
+      maxAmount = this.props.maxDonationAmount;
 
     return maxAmount;
   }
@@ -166,7 +166,7 @@ class BaseDonateButton extends React.Component {
   closeDialog() {
     this.setState({
       modalVisible: false,
-      amount: new BigNumber('0'),
+      amount: '0',
       formIsValid: false,
     });
   }
@@ -174,7 +174,7 @@ class BaseDonateButton extends React.Component {
   openDialog() {
     this.setState({
       modalVisible: true,
-      amount: this.getMaxAmount(),
+      amount: this.getMaxAmount().toString(),
       formIsValid: false,
     });
   }
@@ -429,7 +429,7 @@ class BaseDonateButton extends React.Component {
 
             {validProvider &&
               maxAmount.toNumber() !== 0 &&
-              balance.gtn(0) && (
+              balance.gt(0) && (
                 <div className="form-group">
                   <Slider
                     type="range"
@@ -437,13 +437,13 @@ class BaseDonateButton extends React.Component {
                     min={0}
                     max={maxAmount.toNumber()}
                     step={maxAmount.toNumber() / 10}
-                    value={amount.toNumber()}
+                    value={Number(Number(amount).toFixed(4))}
                     labels={{
                       0: '0',
-                      [maxAmount.toFixed()]: maxAmount.toFixed(),
+                      [maxAmount.toFixed()]: maxAmount.toFixed(4),
                     }}
                     tooltip={false}
-                    onChange={newAmount => this.setAmount(newAmount)}
+                    onChange={(name, newAmount) => this.setState({ amount: newAmount })}
                   />
                 </div>
               )}
@@ -453,8 +453,8 @@ class BaseDonateButton extends React.Component {
                 name="amount"
                 id="amount-input"
                 type="number"
-                value={amount.toString()}
-                onChange={(name, newAmount) => this.setAmount(newAmount)}
+                value={amount}
+                onChange={(name, newAmount) => this.setState({ amount: newAmount })}
                 validations={{
                   lessOrEqualTo: maxAmount.toNumber(),
                   greaterThan: 0.009,
@@ -586,12 +586,13 @@ BaseDonateButton.propTypes = {
 
 DonateButton.defaultProps = {
   currentUser: undefined,
-  maxDonationAmount: new BigNumber(10000000000000000),
+  maxDonationAmount: undefined, // new BigNumber(10000000000000000),
 };
 
 BaseDonateButton.defaultProps = {
   currentUser: undefined,
-  maxDonationAmount: new BigNumber(10000000000000000),
+  maxDonationAmount: undefined, // new BigNumber(10000000000000000),
+  // maxDonationAmount: new BigNumber(10000000000000000),
 };
 
 export default DonateButton;
