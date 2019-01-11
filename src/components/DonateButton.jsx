@@ -12,6 +12,7 @@ import Slider from 'react-rangeslider';
 import GA from 'lib/GoogleAnalytics';
 import getNetwork from '../lib/blockchain/getNetwork';
 import User from '../models/User';
+import Milestone from '../models/Milestone';
 import extraGas from '../lib/blockchain/extraGas';
 import pollEvery from '../lib/pollEvery';
 import LoaderButton from './LoaderButton';
@@ -66,7 +67,8 @@ class BaseDonateButton extends React.Component {
     this.state = {
       isSaving: false,
       formIsValid: false,
-      amount: '0',
+      defaultAmount: true,
+      amount: '1',
       givethBridge: undefined,
       etherscanUrl: '',
       modalVisible: false,
@@ -99,8 +101,19 @@ class BaseDonateButton extends React.Component {
   }
 
   setToken(address) {
-    this.setState({ selectedToken: _getTokenWhitelist().find(t => t.address === address) }, () =>
-      this.pollToken(),
+    const { amount, defaultAmount } = this.state;
+    const token = _getTokenWhitelist().find(t => t.address === address);
+
+    let amt = amount;
+    if (defaultAmount) {
+      amt = token.symbol === 'ETH' ? '1' : '100';
+    }
+    this.setState(
+      {
+        selectedToken: token,
+        amount: amt,
+      },
+      () => this.pollToken(),
     );
   }
 
@@ -166,16 +179,23 @@ class BaseDonateButton extends React.Component {
   closeDialog() {
     this.setState({
       modalVisible: false,
-      amount: '0',
+      amount: '1',
+      defaultAmount: true,
       formIsValid: false,
     });
   }
 
   openDialog() {
-    this.setState({
-      modalVisible: true,
-      amount: this.getMaxAmount().toString(),
-      formIsValid: false,
+    const { model } = this.props;
+    this.setState(prevState => {
+      const isMilestone = model.type === Milestone.type;
+      const amount = isMilestone ? this.getMaxAmount().toString() : prevState.amount;
+      return {
+        modalVisible: true,
+        amount,
+        defaultAmount: isMilestone ? false : prevState.defaultAmount,
+        formIsValid: false,
+      };
     });
   }
 
@@ -454,7 +474,9 @@ class BaseDonateButton extends React.Component {
                 id="amount-input"
                 type="number"
                 value={amount}
-                onChange={(name, newAmount) => this.setState({ amount: newAmount })}
+                onChange={(name, newAmount) =>
+                  this.setState({ amount: newAmount, defaultAmount: false })
+                }
                 validations={{
                   lessOrEqualTo: maxAmount.toNumber(),
                   greaterThan: 0.009,
