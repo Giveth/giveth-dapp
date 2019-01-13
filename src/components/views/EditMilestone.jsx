@@ -233,12 +233,8 @@ class EditMilestone extends Component {
       // update all the input fields
       const rate = resp.rates[milestone.selectedFiatType];
 
-      this.setState(prevState => {
-        milestone.fiatAmount = prevState.milestone.fiatAmount.div(rate);
-        return {
-          maxAmount: milestone.fiatAmount,
-        };
-      });
+      milestone.maxAmount = milestone.fiatAmount.div(rate);
+      this.setState({ milestone });
     });
   }
 

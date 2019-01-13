@@ -34,7 +34,7 @@ export const feathersRest = feathers()
   );
 
 export const feathersClient = feathers()
-  .configure(socketio(socket, { timeout: 5000 }))
+  .configure(socketio(socket, { timeout: 30000, pingTimeout: 30000, upgradeTimeout: 30000 }))
   .configure(auth({ storage: localforage }))
   .configure(hooks())
   .configure(
