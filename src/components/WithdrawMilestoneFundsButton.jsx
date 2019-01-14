@@ -113,7 +113,7 @@ class WithdrawMilestoneFundsButton extends Component {
             {[milestone.recipientAddress, milestone.ownerAddress].includes(currentUser.address) &&
               milestone.status === Milestone.COMPLETED &&
               milestone.mined &&
-              milestone.currentBalance.gt('0') > 0 && (
+              milestone.currentBalance.gt(0) && (
                 <button
                   type="button"
                   className="btn btn-success btn-sm"
