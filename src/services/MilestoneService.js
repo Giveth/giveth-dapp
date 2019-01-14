@@ -20,7 +20,6 @@ BigNumber.config({ DECIMAL_PLACES: 18 });
 class MilestoneService {
   constructor() {
     this.milestoneSubscription = null;
-    this.donationSubscription = null;
   }
 
   /**
@@ -180,7 +179,29 @@ class MilestoneService {
 
   static unsubscribe() {
     if (this.milestoneSubscription) this.milestoneSubscription.unsubscribe();
-    if (this.donationSubscription) this.donationSubscription.unsubscribe();
+  }
+
+  /**
+   * Get Active Milestones sorted by created date
+   *
+   * @param $limit    Amount of records to be loaded
+   * @param $skip     Amounds of records to be skipped
+   * @param onSuccess Callback function once response is obtained successfully
+   * @param onError   Callback function if error is encountered
+   */
+  static getActiveMilestones($limit = 100, $skip = 0, onSuccess = () => {}, onError = () => {}) {
+    return feathersClient
+      .service('milestones')
+      .find({
+        query: {
+          status: Milestone.IN_PROGRESS,
+          $sort: { createdAt: -1 },
+          $limit,
+          $skip,
+        },
+      })
+      .then(resp => onSuccess(resp.data.map(m => new Milestone(m)), resp.total))
+      .catch(onError);
   }
 
   /**
