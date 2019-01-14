@@ -44,7 +44,12 @@ class ViewMilestone extends Component {
       recipient: {},
       campaign: {},
       milestone: {},
+      donationsTotal: 0,
+      donationsPerBatch: 50,
+      newDonations: 0,
     };
+
+    this.loadMoreDonations = this.loadMoreDonations.bind(this);
   }
 
   componentDidMount() {
@@ -65,16 +70,37 @@ class ViewMilestone extends Component {
       },
     );
 
-    MilestoneService.subscribeDonations(milestoneId, donations =>
-      this.setState({
-        donations,
-        isLoadingDonations: false,
-      }),
+    this.loadMoreDonations();
+    // subscribe to donation count
+    this.donationsObserver = MilestoneService.subscribeNewDonations(
+      milestoneId,
+      newDonations =>
+        this.setState({
+          newDonations,
+        }),
+      () => this.setState({ newDonations: 0 }),
     );
   }
 
   componentWillUnmount() {
-    MilestoneService.unsubscribe();
+    this.donationsObserver.unsubscribe();
+  }
+
+  loadMoreDonations() {
+    this.setState({ isLoadingDonations: true }, () =>
+      MilestoneService.getDonations(
+        this.props.match.params.milestoneId,
+        this.state.donationsPerBatch,
+        this.state.donations.length,
+        (donations, donationsTotal) =>
+          this.setState(prevState => ({
+            donations: prevState.donations.concat(donations),
+            isLoadingDonations: false,
+            donationsTotal,
+          })),
+        () => this.setState({ isLoadingDonations: false }),
+      ),
+    );
   }
 
   isActiveMilestone() {
@@ -98,7 +124,16 @@ class ViewMilestone extends Component {
 
   render() {
     const { history, currentUser, balance } = this.props;
-    const { isLoading, donations, isLoadingDonations, campaign, milestone, recipient } = this.state;
+    const {
+      isLoading,
+      donations,
+      isLoadingDonations,
+      campaign,
+      milestone,
+      recipient,
+      donationsTotal,
+      newDonations,
+    } = this.state;
 
     return (
       <div id="view-milestone-view">
@@ -345,7 +380,13 @@ class ViewMilestone extends Component {
 
               <div className="row spacer-top-50 spacer-bottom-50">
                 <div className="col-md-8 m-auto">
-                  <ListDonations donations={donations} isLoading={isLoadingDonations} />
+                  <ListDonations
+                    donations={donations}
+                    isLoading={isLoadingDonations}
+                    total={donationsTotal}
+                    loadMore={this.loadMoreDonations}
+                    newDonations={newDonations}
+                  />
                   {this.isActiveMilestone() && (
                     <DonateButton
                       model={{
