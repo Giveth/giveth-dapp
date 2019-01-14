@@ -13,14 +13,18 @@ import { Consumer as Web3Consumer } from '../contextProviders/Web3Provider';
 class WithdrawMilestoneFundsButton extends Component {
   withdraw() {
     const { milestone, currentUser, balance } = this.props;
+    const isRecipient = milestone.recipient.address === currentUser.address;
 
     checkBalance(balance)
       .then(() => {
         React.swal({
-          title: 'Withdrawal Funds to Wallet',
+          title: isRecipient ? 'Withdrawal Funds to Wallet' : 'Disburse Funds to Recipient',
           content: React.swal.msg(
             <div>
-              <p>We will initiate the transfer of the funds to your wallet.</p>
+              <p>
+                We will initiate the transfer of the funds to{' '}
+                {isRecipient ? 'your' : "the recipient's"} wallet.
+              </p>
               <div className="alert alert-warning">
                 Note: For security reasons, there is a delay of approximately 48 hrs before the
                 funds will appear in your wallet.
