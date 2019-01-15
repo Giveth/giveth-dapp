@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import Avatar from 'react-avatar';
 import BigNumber from 'bignumber.js';
 
-import { getTruncatedText, isOwner, getUserAvatar, getUserName } from '../lib/helpers';
+import { getTruncatedText, isOwner, getUserAvatar, getUserName, history } from '../lib/helpers';
 import { checkBalance } from '../lib/middleware';
 import User from '../models/User';
 import CardStats from './CardStats';
@@ -24,14 +24,14 @@ class MilestoneCard extends Component {
   }
 
   viewMilestone() {
-    this.props.history.push(
+    history.push(
       `/campaigns/${this.props.milestone.campaign._id}/milestones/${this.props.milestone._id}`,
     );
   }
 
   viewProfile(e) {
     e.stopPropagation();
-    this.props.history.push(`/profile/${this.props.milestone.owner.address}`);
+    history.push(`/profile/${this.props.milestone.owner.address}`);
   }
 
   editMilestone(e) {
@@ -39,7 +39,7 @@ class MilestoneCard extends Component {
 
     checkBalance(this.props.balance)
       .then(() => {
-        this.props.history.push(
+        history.push(
           `/campaigns/${this.props.milestone.campaign._id}/milestones/${
             this.props.milestone._id
           }/edit`,
@@ -131,9 +131,6 @@ MilestoneCard.propTypes = {
   }).isRequired,
   currentUser: PropTypes.instanceOf(User),
   balance: PropTypes.instanceOf(BigNumber).isRequired,
-  history: PropTypes.shape({
-    push: PropTypes.func.isRequired,
-  }).isRequired,
 };
 
 MilestoneCard.defaultProps = {
