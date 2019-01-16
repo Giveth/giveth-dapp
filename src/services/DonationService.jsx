@@ -758,7 +758,7 @@ class DonationService {
   }
 
   static getMilestoneDonations(milestoneId) {
-    feathersClient
+    return feathersClient
       .service('/donations')
       .find({
         query: {
