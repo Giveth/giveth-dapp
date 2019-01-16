@@ -7,27 +7,44 @@ import Milestone from 'models/Milestone';
 import User from 'models/User';
 import ErrorPopup from 'components/ErrorPopup';
 import GA from 'lib/GoogleAnalytics';
-import { checkBalance } from 'lib/middleware';
+import { checkBalance, isLoggedIn } from 'lib/middleware';
 import { Consumer as Web3Consumer } from '../contextProviders/Web3Provider';
+import DonationService from '../services/DonationService';
 
 class WithdrawMilestoneFundsButton extends Component {
-  withdraw() {
+  async withdraw() {
     const { milestone, currentUser, balance } = this.props;
     const isRecipient = milestone.recipient.address === currentUser.address;
 
-    checkBalance(balance)
-      .then(() => {
+    try {
+      await isLoggedIn(currentUser, false);
+    } catch (e) {
+      // not logged in
+      // we require a login b/c if they don't feathers isn't updated & a subsequent call to this method
+      // to withdraw more funds will fail
+      return;
+    }
+
+    Promise.all([checkBalance(balance), DonationService.getMilestoneDonationsCount(milestone._id)])
+      .then(([, donationsCount]) => {
         React.swal({
           title: isRecipient ? 'Withdrawal Funds to Wallet' : 'Disburse Funds to Recipient',
           content: React.swal.msg(
             <div>
+              {donationsCount > 8 && (
+                <p>
+                  <strong>Note:</strong> Due to the current gas limitations you will be required to
+                  withdrawal multiple times. You have <strong>{donationsCount}</strong> donations to{' '}
+                  {isRecipient ? 'withdraw' : 'disburse'} and the current max is <strong>8</strong>.
+                </p>
+              )}
               <p>
                 We will initiate the transfer of the funds to{' '}
                 {isRecipient ? 'your' : "the recipient's"} wallet.
               </p>
               <div className="alert alert-warning">
                 Note: For security reasons, there is a delay of approximately 48 hrs before the
-                funds will appear in your wallet.
+                funds will appear in {isRecipient ? 'your' : "the recipient's"} wallet.
               </div>
             </div>,
           ),

@@ -57,6 +57,7 @@ class BasicModel extends Model {
     this._peopleCount = peopleCount;
     this._fullyFunded = fullyFunded;
     this._donationCounters = donationCounters.map(c => {
+      console.log(typeof c.totalDonated);
       c.totalDonated = new BigNumber(utils.fromWei(c.totalDonated));
       c.currentBalance = new BigNumber(utils.fromWei(c.currentBalance));
       return c;

@@ -19,17 +19,17 @@ import config from '../configuration';
  *      .catch((err) ...do something when not logged in
  *      returns new Error 'notLoggedIn' if not logged in
  */
-export const isLoggedIn = currentUser =>
+export const isLoggedIn = (currentUser, redirectOnFail = true) =>
   new Promise((resolve, reject) => {
     if (currentUser && currentUser.address && currentUser.authenticated) resolve();
     else {
       // this refers to UserProvider
-      React.signIn();
+      React.signIn(redirectOnFail);
       reject();
     }
   });
 
-const authenticate = async address => {
+const authenticate = async (address, redirectOnFail = true) => {
   const web3 = await getWeb3();
 
   const authData = {
@@ -66,7 +66,7 @@ const authenticate = async address => {
       });
 
       if (!res) {
-        history.goBack();
+        if (redirectOnFail) history.goBack();
         return false;
       }
 

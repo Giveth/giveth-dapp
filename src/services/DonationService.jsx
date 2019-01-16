@@ -757,6 +757,32 @@ class DonationService {
       });
   }
 
+  static updateSpentDonations(donations) {
+    return feathersClient
+      .service('donations')
+      .patch(
+        null,
+        { pendingAmountRemaining: 0 },
+        { query: { _id: { $in: donations.map(d => d._id) } } },
+      );
+  }
+
+  static getMilestoneDonationsCount(milestoneId) {
+    return feathersClient
+      .service('/donations')
+      .find({
+        query: {
+          ownerType: 'milestone',
+          ownerTypeId: milestoneId,
+          amountRemaining: { $ne: 0 },
+          pendingAmountRemaining: { $ne: 0 },
+          status: Donation.COMMITTED,
+          $limit: 0,
+        },
+      })
+      .then(({ total }) => total);
+  }
+
   static getMilestoneDonations(milestoneId) {
     return feathersClient
       .service('/donations')
@@ -765,10 +791,13 @@ class DonationService {
           ownerType: 'milestone',
           ownerTypeId: milestoneId,
           amountRemaining: { $ne: 0 },
+          pendingAmountRemaining: { $ne: 0 },
           status: Donation.COMMITTED,
+          $limit: 8, // current gas costs restict us to 8 pledges
         },
       })
-      .then(({ data }) => {
+      .then(resp => {
+        const { data } = resp;
         if (data.length === 0) throw new Error('no-donations');
 
         const pledges = [];
@@ -785,15 +814,19 @@ class DonationService {
           }
         });
 
-        return pledges.map(
-          pledge =>
-            // due to some issue in web3, utils.toHex(pledge.amount) breaks during minification.
-            // BN.toString(16) will return a hex string as well
-            `0x${utils.padLeft(pledge.amount.toString(16), 48)}${utils.padLeft(
-              utils.toHex(pledge.id).substring(2),
-              16,
-            )}`,
-        );
+        return {
+          donations: data,
+          hasMoreDonations: resp.data.length !== resp.total,
+          pledges: pledges.map(
+            pledge =>
+              // due to some issue in web3, utils.toHex(pledge.amount) breaks during minification.
+              // BN.toString(16) will return a hex string as well
+              `0x${utils.padLeft(pledge.amount.toString(16), 48)}${utils.padLeft(
+                utils.toHex(pledge.id).substring(2),
+                16,
+              )}`,
+          ),
+        };
       })
       .catch(err => err);
   }
