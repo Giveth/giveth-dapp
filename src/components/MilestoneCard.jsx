@@ -9,8 +9,6 @@ import User from '../models/User';
 import CardStats from './CardStats';
 import GivethLogo from '../assets/logo.svg';
 
-// TODO: Remove once rewritten to model
-/* eslint no-underscore-dangle: 0 */
 /**
  * A single milestone
  */
