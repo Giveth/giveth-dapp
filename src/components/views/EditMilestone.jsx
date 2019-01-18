@@ -7,6 +7,7 @@ import Toggle from 'react-toggle';
 import BigNumber from 'bignumber.js';
 import { Form, Input } from 'formsy-react-components';
 import GA from 'lib/GoogleAnalytics';
+import queryString from 'query-string';
 import Milestone from 'models/Milestone';
 import { feathersClient, feathersRest } from '../../lib/feathersClient';
 import Loader from '../Loader';
@@ -37,6 +38,18 @@ import MilestoneService from '../../services/MilestoneService';
 import CampaignService from '../../services/CampaignService';
 
 BigNumber.config({ DECIMAL_PLACES: 18 });
+
+const validQueryStringVariables = [
+  'title',
+  'recipientAddress',
+  'reviewerAddress',
+  'description',
+  'date',
+  'maxAmount',
+  'token',
+  'selectedFiatType',
+  'fiatAmount',
+];
 
 /**
  * Create or edit a Milestone
@@ -128,13 +141,27 @@ class EditMilestone extends Component {
               );
             });
         } else {
+          const qs = queryString.parse(this.props.location.search);
           CampaignService.get(this.props.match.params.id)
             .then(campaign => {
               if (campaign.projectId < 0) {
                 this.props.history.goBack();
               } else {
                 const { milestone } = this.state;
-                milestone.recipientAddress = this.props.currentUser.address;
+                validQueryStringVariables.forEach(variable => {
+                  if (qs[variable]) {
+                    if (variable === 'fiatAmount') {
+                      this.setFiatAmount(qs[variable]);
+                    } else if (variable === 'maxAmount') {
+                      this.setMaxAmount(qs[variable]);
+                    } else {
+                      milestone[variable] = qs[variable];
+                    }
+                  }
+                });
+                if (!milestone.recipientAddress) {
+                  milestone.recipientAddress = this.props.currentUser.address;
+                }
                 this.setState({
                   campaignTitle: campaign.title,
                   campaignReviewerAddress: campaign.reviewerAddress,
@@ -162,6 +189,7 @@ class EditMilestone extends Component {
             });
         }
       })
+
       .catch(err => {
         // TODO: This is not super user friendly, fix it
         if (err === 'noBalance') this.props.history.goBack();
@@ -1034,6 +1062,7 @@ class EditMilestone extends Component {
 
 EditMilestone.propTypes = {
   currentUser: PropTypes.instanceOf(User),
+  location: PropTypes.object.isRequired,
   history: PropTypes.shape({
     goBack: PropTypes.func.isRequired,
     push: PropTypes.func.isRequired,

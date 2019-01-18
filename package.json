@@ -28,6 +28,7 @@
     "node-fetch": "^2.1.1",
     "node-sass-chokidar": "^0.0.3",
     "prop-types": "^15.5.10",
+    "query-string": "^6.2.0",
     "react": "16.4.1",
     "react-addons-shallow-compare": "^15.6.0",
     "react-avatar": "^2.3.0",
