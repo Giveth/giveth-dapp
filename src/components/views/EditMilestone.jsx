@@ -132,6 +132,7 @@ class EditMilestone extends Component {
             } else {
               const milestone = new Milestone({ token: React.whitelist.tokenWhitelist[0] });
               milestone.recipientAddress = this.props.currentUser.address;
+              milestone.selectedFiatType = milestone.token.symbol;
               this.setState({
                 campaignTitle: campaign.title,
                 campaignReviewerAddress: campaign.reviewerAddress,
@@ -221,7 +222,13 @@ class EditMilestone extends Component {
     milestone.date = date;
 
     this.props.getConversionRates(date, milestone.token.symbol).then(resp => {
-      const rate = resp.rates[milestone.selectedFiatType];
+      let rate = resp.rates[milestone.selectedFiatType];
+
+      // This rate is undefined, use the first defined rate
+      if (!rate) {
+        milestone.selectedFiatType = milestone.token.symbol;
+        rate = resp.rates[milestone.token.symbol];
+      }
       milestone.fiatAmount = rate ? milestone.fiatAmount.div(rate) : new BigNumber(0);
       milestone.conversionRateTimestamp = resp.timestamp;
       console.log('Conversion rate Timestamp:', resp.timestamp);
@@ -229,6 +236,8 @@ class EditMilestone extends Component {
       milestone.maxAmount = milestone.fiatAmount.div(rate);
       this.setState({ milestone });
     });
+
+    // FIXME: this is an infinite loop, should be rewritten
     //   // update all the input fields
     //   const rate = resp.rates[milestone.selectedFiatType];
     //
