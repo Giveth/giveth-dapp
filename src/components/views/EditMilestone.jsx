@@ -8,6 +8,7 @@ import BigNumber from 'bignumber.js';
 import { Form, Input } from 'formsy-react-components';
 import GA from 'lib/GoogleAnalytics';
 import queryString from 'query-string';
+import moment from 'moment';
 import Milestone from 'models/Milestone';
 import { feathersClient, feathersRest } from '../../lib/feathersClient';
 import Loader from '../Loader';
@@ -44,11 +45,11 @@ const validQueryStringVariables = [
   'recipientAddress',
   'reviewerAddress',
   'description',
-  'date',
   'maxAmount',
   'token',
   'selectedFiatType',
   'fiatAmount',
+  'date',
 ];
 
 /**
@@ -154,6 +155,10 @@ class EditMilestone extends Component {
                       this.setFiatAmount(qs[variable]);
                     } else if (variable === 'maxAmount') {
                       this.setMaxAmount(qs[variable]);
+                    } else if (variable === 'token') {
+                      this.setToken(qs[variable]);
+                    } else if (variable === 'date') {
+                      this.setDate(moment(qs[variable]));
                     } else {
                       milestone[variable] = qs[variable];
                     }
@@ -253,6 +258,7 @@ class EditMilestone extends Component {
   }
 
   setDate(date) {
+    console.log(date);
     this.setState({ date });
     const { milestone } = this.state;
     milestone.date = date;
