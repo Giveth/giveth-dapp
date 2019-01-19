@@ -100,6 +100,7 @@ class EditMilestone extends Component {
   componentDidMount() {
     checkForeignNetwork(this.props.isForeignNetwork)
       .then(() => this.checkUser())
+      .then(() => this.props.getEthConversion(this.state.date, this.state.milestone.token.symbol))
       .then(() => {
         this.setState({
           campaignId: this.props.match.params.id,
@@ -152,9 +153,9 @@ class EditMilestone extends Component {
                 validQueryStringVariables.forEach(variable => {
                   if (qs[variable]) {
                     if (variable === 'fiatAmount') {
-                      this.setFiatAmount(qs[variable]);
+                      this.setMaxAmount('', qs[variable]);
                     } else if (variable === 'maxAmount') {
-                      this.setMaxAmount(qs[variable]);
+                      this.setFiatAmount('', qs[variable]);
                     } else if (variable === 'token') {
                       this.setToken(qs[variable]);
                     } else if (variable === 'date') {
@@ -175,9 +176,6 @@ class EditMilestone extends Component {
                 });
               }
             })
-            .then(() =>
-              this.props.getEthConversion(this.state.date, this.state.milestone.token.symbol),
-            )
             .then(() => {
               if (!this.state.hasWhitelist) this.getReviewers();
             })
@@ -258,7 +256,6 @@ class EditMilestone extends Component {
   }
 
   setDate(date) {
-    console.log(date);
     this.setState({ date });
     const { milestone } = this.state;
     milestone.date = date;
