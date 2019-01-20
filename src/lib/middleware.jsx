@@ -70,14 +70,6 @@ const authenticate = async (address, redirectOnFail = true) => {
         return false;
       }
 
-      React.swal({
-        title: 'Please sign the MetaMask transaction...',
-        text:
-          "A MetaMask transaction should have popped-up. If you don't see it check the pending transaction in the MetaMask browser extension. Alternatively make sure to check that your popup blocker is disabled.",
-        icon: 'success',
-        button: false,
-      });
-
       // we have to wrap in a timeout b/c if you close the chrome window MetaMask opens, the promise never resolves
       const signOrTimeout = () =>
         new Promise(async resolve => {
@@ -85,7 +77,27 @@ const authenticate = async (address, redirectOnFail = true) => {
             resolve(false);
             history.goBack();
             React.swal.close();
-          }, 10000);
+          }, 100000);
+
+          React.swal({
+            title: 'Please sign the MetaMask transaction...',
+            text:
+              "A MetaMask transaction should have popped-up. If you don't see it check the pending transaction in the MetaMask browser extension. Alternatively make sure to check that your popup blocker is disabled.",
+            icon: 'success',
+            buttons: [false, 'OK'],
+          }).then(async () => {
+            try {
+              authData.signature = 'Pre-Sign';
+              await feathersClient.authenticate(authData);
+              React.swal.close();
+              clearTimeout(timeOut);
+              resolve(true);
+            } catch (e) {
+              clearTimeout(timeOut);
+              history.goBack();
+              resolve(false);
+            }
+          });
 
           try {
             const signature = await web3.eth.personal.sign(msg, address);

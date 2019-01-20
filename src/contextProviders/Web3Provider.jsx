@@ -114,13 +114,13 @@ class Web3Provider extends Component {
 
       if (!web3.defaultNode) {
         pollAccount(web3, {
-          onAccount: async account => {
-            this.setState({
-              account,
-              // TODO: find a way for non metamask providers
-              isEnabled: await web3.currentProvider._metamask.isApproved(),
-            });
-          },
+          // onAccount: async account => {
+          //   this.setState({
+          //     account,
+          //     // TODO: find a way for non metamask providers
+          //     isEnabled: true //await web3.currentProvider._metamask.isApproved(),
+          //   });
+          // },
           onBalance: balance => {
             this.setState({
               balance,
