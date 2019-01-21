@@ -141,10 +141,7 @@ class EditMilestone extends Component {
               });
             }
 
-            await this.props.getConversionRates(
-              this.state.milestone.date,
-              this.state.milestone.token.symbol,
-            );
+            this.setDate(this.state.milestone.date);
 
             if (!this.state.hasWhitelist) await this.getReviewers();
             this.setState({
@@ -222,7 +219,9 @@ class EditMilestone extends Component {
     milestone.date = date;
 
     this.props.getConversionRates(date, milestone.token.symbol).then(resp => {
-      let rate = resp.rates[milestone.selectedFiatType];
+      let rate =
+        resp.rates[milestone.selectedFiatType] ||
+        Object.values(resp.rates).find(v => v !== undefined);
 
       // This rate is undefined, use the first defined rate
       if (!rate) {

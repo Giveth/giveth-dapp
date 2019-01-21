@@ -1,7 +1,6 @@
 import React from 'react';
 import { getStartOfDayUTC } from 'lib/helpers';
 import BigNumber from 'bignumber.js';
-import { utils } from 'web3';
 
 import moment from 'moment';
 import Model from './Model';
@@ -27,7 +26,7 @@ export default class MilestoneItemModel extends Model {
     this._image = image;
     this._selectedFiatType = selectedFiatType;
     this._fiatAmount = new BigNumber(fiatAmount);
-    this._wei = new BigNumber(utils.fromWei(wei));
+    this._wei = wei;
     this._conversionRate = conversionRate;
     this._conversionRateTimestamp = conversionRateTimestamp;
     this._id = _id;
@@ -76,7 +75,7 @@ export default class MilestoneItemModel extends Model {
   }
 
   set fiatAmount(value) {
-    this.checkType(value, ['string'], 'fiatAmount');
+    this.checkInstanceOf(value, BigNumber, 'fiatAmount');
     this._fiatAmount = value;
   }
 

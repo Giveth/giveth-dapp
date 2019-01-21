@@ -4,6 +4,7 @@ import React, { Component } from 'react';
 import { Prompt } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import Modal from 'react-modal';
+import BigNumber from 'bignumber.js';
 
 import { Input, Form } from 'formsy-react-components';
 import { utils } from 'web3';
@@ -64,7 +65,7 @@ class AddMilestoneItemModal extends Component {
     item.description = inputs.description;
     item.image = item.image;
     item.selectedFiatType = inputs.fiatType;
-    item.fiatAmount = inputs.fiatAmount;
+    item.fiatAmount = new BigNumber(inputs.fiatAmount);
     item.wei = utils.toWei(inputs.etherAmount);
     item.conversionRate = parseFloat(inputs.conversionRate);
     item.conversionRateTimestamp = inputs.conversionRateTimestamp;
