@@ -62,7 +62,7 @@ class EditDAC extends Component {
           DACservice.get(this.props.match.params.id)
             .then(dac => {
               // The user is not an owner, hence can not change the DAC
-              if (!isOwner(dac.owner.address, this.props.currentUser)) {
+              if (!isOwner(dac.ownerAddress, this.props.currentUser)) {
                 // TODO: Not really user friendly
                 history.goBack();
               } else {
@@ -91,7 +91,7 @@ class EditDAC extends Component {
   componentDidUpdate(prevProps) {
     if (prevProps.currentUser !== this.props.currentUser) {
       this.checkUser().then(() => {
-        if (!this.props.isNew && !isOwner(this.state.dac.owner.address, this.props.currentUser))
+        if (!this.props.isNew && !isOwner(this.state.dac.ownerAddress, this.props.currentUser))
           history.goBack();
       });
     } else if (this.props.currentUser && !prevProps.balance.eq(this.props.balance)) {

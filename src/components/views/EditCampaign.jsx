@@ -72,7 +72,7 @@ class EditCampaign extends Component {
         if (!this.props.isNew) {
           CampaignService.get(this.props.match.params.id)
             .then(campaign => {
-              if (isOwner(campaign.owner.address, this.props.currentUser)) {
+              if (isOwner(campaign.ownerAddress, this.props.currentUser)) {
                 this.setState({ campaign, isLoading: false });
               } else history.goBack();
             })
@@ -97,10 +97,7 @@ class EditCampaign extends Component {
   componentDidUpdate(prevProps) {
     if (prevProps.currentUser !== this.props.currentUser) {
       this.checkUser().then(() => {
-        if (
-          !this.props.isNew &&
-          !isOwner(this.state.campaign.owner.address, this.props.currentUser)
-        )
+        if (!this.props.isNew && !isOwner(this.state.campaign.ownerAddress, this.props.currentUser))
           history.goBack();
       });
     } else if (this.props.currentUser && !prevProps.balance.eq(this.props.balance)) {

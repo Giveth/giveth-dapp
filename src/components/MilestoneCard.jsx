@@ -29,7 +29,7 @@ class MilestoneCard extends Component {
 
   viewProfile(e) {
     e.stopPropagation();
-    history.push(`/profile/${this.props.milestone.owner.address}`);
+    history.push(`/profile/${this.props.milestone.ownerAddress}`);
   }
 
   editMilestone(e) {
@@ -74,7 +74,7 @@ class MilestoneCard extends Component {
             <Avatar size={30} src={getUserAvatar(milestone.owner)} round />
             <span className="owner-name">{getUserName(milestone.owner)}</span>
 
-            {((milestone && milestone.owner && isOwner(milestone.owner.address, currentUser)) ||
+            {((milestone && milestone.owner && isOwner(milestone.ownerAddress, currentUser)) ||
               isOwner(milestone.campaign.ownerAddress, currentUser)) &&
               ['Proposed', 'Rejected', 'InProgress', 'NeedsReview'].includes(milestone.status) && (
                 <span className="pull-right">
@@ -123,6 +123,7 @@ MilestoneCard.propTypes = {
   milestone: PropTypes.shape({
     _id: PropTypes.string.isRequired,
     campaign: PropTypes.shape().isRequired,
+    ownerAddress: PropTypes.string.isRequired,
     owner: PropTypes.shape({
       address: PropTypes.string.isRequired,
     }).isRequired,
