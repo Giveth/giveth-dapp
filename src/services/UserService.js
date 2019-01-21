@@ -25,7 +25,7 @@ class UserService {
     let txHash;
     let etherScanUrl;
     try {
-      let profileHash = '';
+      let profileHash;
       try {
         profileHash = await IPFSService.upload(user.toIpfs());
       } catch (err) {
@@ -55,7 +55,7 @@ class UserService {
             user.giverId,
             user.address,
             user.name,
-            profileHash,
+            profileHash || '',
             user.commitTime,
             { from, $extraGas: extraGas() },
           )

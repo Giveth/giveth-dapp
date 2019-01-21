@@ -214,7 +214,7 @@ class DACService {
     let txHash;
     let etherScanUrl;
     try {
-      let profileHash = '';
+      let profileHash;
       try {
         profileHash = await IPFSService.upload(dac.toIpfs());
       } catch (err) {
@@ -243,11 +243,14 @@ class DACService {
             dac.delegateId,
             dac.ownerAddress,
             dac.title,
-            profileHash,
+            profileHash || '',
             dac.commitTime,
             { from, $extraGas: extraGas() },
           )
-        : liquidPledging.addDelegate(dac.title, profileHash, 0, 0, { from, $extraGas: extraGas() });
+        : liquidPledging.addDelegate(dac.title, profileHash || '', 0, 0, {
+            from,
+            $extraGas: extraGas(),
+          });
 
       let { id } = dac;
       await promise.once('transactionHash', async hash => {
