@@ -18,9 +18,7 @@ import ErrorPopup from '../components/ErrorPopup';
 function updateExistingDonation(donation, amount, status) {
   const mutation = {
     pendingAmountRemaining: utils.toWei(
-      new BigNumber(donation.amountRemaining)
-        .minus(new BigNumber(utils.fromWei(amount)))
-        .toString(),
+      new BigNumber(donation.amountRemaining).minus(new BigNumber(utils.fromWei(amount))).toFixed(),
     ),
   };
   if (status) {
@@ -148,7 +146,7 @@ class DonationService {
         }
         pledgedDonations.push({
           donation,
-          delegatedAmount: utils.toWei(delegatedAmount.toString()),
+          delegatedAmount: utils.toWei(delegatedAmount.toFixed()),
         });
 
         currentAmount = currentAmount.plus(delegatedAmount);
@@ -180,7 +178,7 @@ class DonationService {
           // due to some issue in web3, utils.toHex(note.amount) breaks during minification.
           // BN.toString(16) will return a hex string as well
           `0x${utils.padLeft(
-            new BigNumber(utils.toWei(note.amount.toString())).toString(16),
+            new BigNumber(utils.toWei(note.amount.toFixed())).toString(16),
             48,
           )}${utils.padLeft(utils.toHex(note.id).substring(2), 16)}`,
       );
@@ -220,7 +218,7 @@ class DonationService {
 
             // Create new donation objects for all the new pledges
             pledges.forEach(donation => {
-              const _donationAmountInWei = utils.toWei(donation.amount.toString());
+              const _donationAmountInWei = utils.toWei(donation.amount.toFixed());
 
               const newDonation = {
                 txHash,
@@ -423,7 +421,7 @@ class DonationService {
     getNetwork()
       .then(network => {
         etherScanUrl = network.etherscan;
-        const _amountRemainingInWei = utils.toWei(donation.amountRemaining.toString());
+        const _amountRemainingInWei = utils.toWei(donation.amountRemaining.toFixed());
 
         return network.liquidPledging
           .transfer(
@@ -501,7 +499,7 @@ class DonationService {
       .then(network => {
         etherScanUrl = network.etherscan;
 
-        const _amountRemainingInWei = utils.toWei(donation.amountRemaining.toString());
+        const _amountRemainingInWei = utils.toWei(donation.amountRemaining.toFixed());
 
         return network.liquidPledging
           .transfer(
@@ -573,7 +571,7 @@ class DonationService {
     getNetwork()
       .then(network => {
         etherScanUrl = network.etherscan;
-        const _amountRemainingInWei = utils.toWei(donation.amountRemaining.toString());
+        const _amountRemainingInWei = utils.toWei(donation.amountRemaining.toFixed());
 
         return network.liquidPledging
           .withdraw(donation.pledgeId, _amountRemainingInWei, {

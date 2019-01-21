@@ -27,7 +27,7 @@ export default class MilestoneItemModel extends Model {
     this._image = image;
     this._selectedFiatType = selectedFiatType;
     this._fiatAmount = new BigNumber(fiatAmount);
-    this._wei = new BigNumber(utils.fromWei(wei).toString());
+    this._wei = new BigNumber(utils.fromWei(wei));
     this._conversionRate = conversionRate;
     this._ethConversionRateTimestamp = ethConversionRateTimestamp;
     this._id = _id;

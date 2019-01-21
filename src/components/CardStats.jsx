@@ -34,7 +34,7 @@ const CardStats = ({ peopleCount, maxAmount, totalDonated, type, status, token }
       <div className="col-5 text-center card-center">
         <span>
           <p>Donations</p>
-          <p>{totalDonated.toString()}</p>
+          <p>{totalDonated.toFixed()}</p>
         </span>
       </div>
     )}
