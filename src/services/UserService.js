@@ -59,7 +59,7 @@ class UserService {
             user.commitTime,
             { from, $extraGas: extraGas() },
           )
-        : liquidPledging.addGiver(user.name || '', profileHash, 259200, 0, {
+        : liquidPledging.addGiver(user.name || '', profileHash || '', 259200, 0, {
             from,
             $extraGas: extraGas(),
           }); // 3 days commitTime. TODO allow user to set commitTime
