@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import Avatar from 'react-avatar';
 import Masonry, { ResponsiveMasonry } from 'react-responsive-masonry';
 import ReactHtmlParser from 'react-html-parser';
-import { utils } from 'web3';
+import BigNumber from 'bignumber.js';
 
 import Balances from 'components/Balances';
 import { feathersClient } from '../../lib/feathersClient';
@@ -47,9 +47,13 @@ class ViewCampaign extends Component {
       milestonesLoaded: 0,
       milestonesTotal: 0,
       milestonesPerBatch: 50,
+      donationsTotal: 0,
+      donationsPerBatch: 50,
+      newDonations: 0,
     };
 
     this.loadMoreMilestones = this.loadMoreMilestones.bind(this);
+    this.loadMoreDonations = this.loadMoreDonations.bind(this);
   }
 
   componentDidMount() {
@@ -64,20 +68,37 @@ class ViewCampaign extends Component {
 
     this.loadMoreMilestones(campaignId);
 
-    // Lazy load donations
-    this.donationsObserver = CampaignService.subscribeDonations(
+    this.loadMoreDonations();
+    // subscribe to donation count
+    this.donationsObserver = CampaignService.subscribeNewDonations(
       campaignId,
-      donations =>
+      newDonations =>
         this.setState({
-          donations,
-          isLoadingDonations: false,
+          newDonations,
         }),
-      () => this.setState({ isLoadingDonations: false }),
+      () => this.setState({ newDonations: 0 }),
     );
   }
 
   componentWillUnmount() {
     if (this.donationsObserver) this.donationsObserver.unsubscribe();
+  }
+
+  loadMoreDonations() {
+    this.setState({ isLoadingDonations: true }, () =>
+      CampaignService.getDonations(
+        this.props.match.params.id,
+        this.state.donationsPerBatch,
+        this.state.donations.length,
+        (donations, donationsTotal) =>
+          this.setState(prevState => ({
+            donations: prevState.donations.concat(donations),
+            isLoadingDonations: false,
+            donationsTotal,
+          })),
+        () => this.setState({ isLoadingDonations: false }),
+      ),
+    );
   }
 
   loadMoreMilestones(campaignId = this.props.match.params.id) {
@@ -129,6 +150,8 @@ class ViewCampaign extends Component {
       isLoadingMilestones,
       milestonesLoaded,
       milestonesTotal,
+      donationsTotal,
+      newDonations,
     } = this.state;
     if (!campaign) return <p>Unable to find a campaign</p>;
     return (
@@ -260,7 +283,13 @@ class ViewCampaign extends Component {
                   <div className="col-md-8 m-auto">
                     <Balances entity={campaign} />
 
-                    <ListDonations donations={donations} isLoading={isLoadingDonations} />
+                    <ListDonations
+                      donations={donations}
+                      isLoading={isLoadingDonations}
+                      total={donationsTotal}
+                      loadMore={this.loadMoreDonations}
+                      newDonations={newDonations}
+                    />
                     <DonateButton
                       model={{
                         type: Campaign.type,
@@ -306,7 +335,7 @@ ViewCampaign.propTypes = {
       id: PropTypes.string,
     }).isRequired,
   }).isRequired,
-  balance: PropTypes.objectOf(utils.BN).isRequired,
+  balance: PropTypes.instanceOf(BigNumber).isRequired,
 };
 
 ViewCampaign.defaultProps = {

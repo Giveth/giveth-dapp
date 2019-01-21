@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
+import BigNumber from 'bignumber.js';
 import PropTypes from 'prop-types';
-import { utils } from 'web3';
 
 import { Link } from 'react-router-dom';
 import Avatar from 'react-avatar';
@@ -16,7 +16,7 @@ import CommunityButton from '../CommunityButton';
 import User from '../../models/User';
 import DAC from '../../models/DAC';
 import { getUserName, getUserAvatar } from '../../lib/helpers';
-import DACservice from '../../services/DACService';
+import DACService from '../../services/DACService';
 import CampaignCard from '../CampaignCard';
 import ShareOptions from '../ShareOptions';
 
@@ -36,18 +36,23 @@ class ViewDAC extends Component {
       isLoadingCampaigns: true,
       campaigns: [],
       donations: [],
+      donationsTotal: 0,
+      donationsPerBatch: 50,
+      newDonations: 0,
     };
+
+    this.loadMoreDonations = this.loadMoreDonations.bind(this);
   }
 
   componentDidMount() {
     const dacId = this.props.match.params.id;
 
     // Get the Campaign
-    DACservice.get(dacId)
+    DACService.get(dacId)
       .then(dac => {
         this.setState({ dac, isLoading: false });
 
-        this.campaignObserver = DACservice.subscribeCampaigns(
+        this.campaignObserver = DACService.subscribeCampaigns(
           dac.delegateId,
           campaigns => this.setState({ campaigns, isLoadingCampaigns: false }),
           () => this.setState({ isLoadingCampaigns: false }), // TODO: inform user of error
@@ -57,19 +62,38 @@ class ViewDAC extends Component {
         this.setState({ isLoading: false });
       }); // TODO: inform user of error
 
-    // Lazy load donations
-    this.donationsObserver = DACservice.subscribeDonations(
+    this.loadMoreDonations();
+    // subscribe to donation count
+    this.donationsObserver = DACService.subscribeNewDonations(
       dacId,
-      donations => {
-        this.setState({ donations, isLoadingDonations: false });
-      },
-      () => this.setState({ isLoadingDonations: false }), // TODO: inform user of error
+      newDonations =>
+        this.setState({
+          newDonations,
+        }),
+      () => this.setState({ newDonations: 0 }),
     );
   }
 
   componentWillUnmount() {
     if (this.donationsObserver) this.donationsObserver.unsubscribe();
     if (this.campaignObserver) this.campaignObserver.unsubscribe();
+  }
+
+  loadMoreDonations() {
+    this.setState({ isLoadingDonations: true }, () =>
+      DACService.getDonations(
+        this.props.match.params.id,
+        this.state.donationsPerBatch,
+        this.state.donations.length,
+        (donations, donationsTotal) =>
+          this.setState(prevState => ({
+            donations: prevState.donations.concat(donations),
+            isLoadingDonations: false,
+            donationsTotal,
+          })),
+        () => this.setState({ isLoadingDonations: false }),
+      ),
+    );
   }
 
   render() {
@@ -81,6 +105,8 @@ class ViewDAC extends Component {
       isLoadingDonations,
       campaigns,
       isLoadingCampaigns,
+      donationsTotal,
+      newDonations,
     } = this.state;
     return (
       <div id="view-cause-view">
@@ -162,7 +188,13 @@ class ViewDAC extends Component {
                 <div className="col-md-8 m-auto">
                   <Balances entity={dac} />
 
-                  <ListDonations donations={donations} isLoading={isLoadingDonations} />
+                  <ListDonations
+                    donations={donations}
+                    isLoading={isLoadingDonations}
+                    total={donationsTotal}
+                    loadMore={this.loadMoreDonations}
+                    newDonations={newDonations}
+                  />
                   <DonateButton
                     model={{
                       type: DAC.type,
@@ -195,7 +227,7 @@ ViewDAC.propTypes = {
       id: PropTypes.string,
     }).isRequired,
   }).isRequired,
-  balance: PropTypes.objectOf(utils.BN).isRequired,
+  balance: PropTypes.instanceOf(BigNumber).isRequired,
 };
 
 ViewDAC.defaultProps = {

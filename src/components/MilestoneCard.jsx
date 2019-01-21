@@ -1,16 +1,14 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import Avatar from 'react-avatar';
-import { utils } from 'web3';
+import BigNumber from 'bignumber.js';
 
-import { getTruncatedText, isOwner, getUserAvatar, getUserName } from '../lib/helpers';
+import { getTruncatedText, isOwner, getUserAvatar, getUserName, history } from '../lib/helpers';
 import { checkBalance } from '../lib/middleware';
 import User from '../models/User';
 import CardStats from './CardStats';
 import GivethLogo from '../assets/logo.svg';
 
-// TODO: Remove once rewritten to model
-/* eslint no-underscore-dangle: 0 */
 /**
  * A single milestone
  */
@@ -24,14 +22,14 @@ class MilestoneCard extends Component {
   }
 
   viewMilestone() {
-    this.props.history.push(
-      `/campaigns/${this.props.milestone.campaignId}/milestones/${this.props.milestone._id}`,
+    history.push(
+      `/campaigns/${this.props.milestone.campaign._id}/milestones/${this.props.milestone._id}`,
     );
   }
 
   viewProfile(e) {
     e.stopPropagation();
-    this.props.history.push(`/profile/${this.props.milestone.owner.address}`);
+    history.push(`/profile/${this.props.milestone.owner.address}`);
   }
 
   editMilestone(e) {
@@ -39,8 +37,8 @@ class MilestoneCard extends Component {
 
     checkBalance(this.props.balance)
       .then(() => {
-        this.props.history.push(
-          `/campaigns/${this.props.milestone.campaignId}/milestones/${
+        history.push(
+          `/campaigns/${this.props.milestone.campaign._id}/milestones/${
             this.props.milestone._id
           }/edit`,
         );
@@ -124,16 +122,13 @@ class MilestoneCard extends Component {
 MilestoneCard.propTypes = {
   milestone: PropTypes.shape({
     _id: PropTypes.string.isRequired,
-    campaignId: PropTypes.string.isRequired,
+    campaign: PropTypes.shape().isRequired,
     owner: PropTypes.shape({
       address: PropTypes.string.isRequired,
     }).isRequired,
   }).isRequired,
   currentUser: PropTypes.instanceOf(User),
-  balance: PropTypes.objectOf(utils.BN).isRequired,
-  history: PropTypes.shape({
-    push: PropTypes.func.isRequired,
-  }).isRequired,
+  balance: PropTypes.instanceOf(BigNumber).isRequired,
 };
 
 MilestoneCard.defaultProps = {

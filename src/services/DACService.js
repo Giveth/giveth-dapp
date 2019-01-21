@@ -100,16 +100,17 @@ class DACService {
   }
 
   /**
-   * Lazy-load DAC Donations by subscribing to donations listener
+   * Get DAC donations
    *
    * @param id        ID of the DAC which donations should be retrieved
+   * @param $limit    Amount of records to be loaded
+   * @param $skip     Amounds of records to be skipped
    * @param onSuccess Callback function once response is obtained successfully
    * @param onError   Callback function if error is encountered
    */
-  static subscribeDonations(id, onSuccess, onError) {
+  static getDonations(id, $limit = 100, $skip = 0, onSuccess = () => {}, onError = () => {}) {
     return feathersClient
       .service('donations')
-      .watch({ listStrategy: 'always' })
       .find(
         paramsForServer({
           query: {
@@ -118,12 +119,50 @@ class DACService {
             isReturn: false,
             intendedProjectId: { $exists: false },
             $sort: { usdValue: -1, createdAt: -1 },
+            $limit,
+            $skip,
+          },
+          schema: 'includeTypeAndGiverDetails',
+        }),
+      )
+      .then(resp => onSuccess(resp.data.map(d => new Donation(d)), resp.total))
+      .catch(onError);
+  }
+
+  /**
+   * Subscribe to count of new donations. Initial resp will always be 0. Any new donations
+   * that come in while subscribed, the onSuccess will be called with the # of newDonations
+   * since initial subscribe
+   *
+   * @param id        ID of the Campaign which donations should be retrieved
+   * @param onSuccess Callback function once response is obtained successfully
+   * @param onError   Callback function if error is encountered
+   */
+  static subscribeNewDonations(id, onSuccess, onError) {
+    let initalTotal;
+    return feathersClient
+      .service('donations')
+      .watch()
+      .find(
+        paramsForServer({
+          query: {
+            status: { $ne: Donation.FAILED },
+            delegateTypeId: id,
+            isReturn: false,
+            intendedProjectId: { $exists: false },
+            $sort: { usdValue: -1, createdAt: -1 },
+            $limit: 0,
           },
           schema: 'includeTypeAndGiverDetails',
         }),
       )
       .subscribe(resp => {
-        onSuccess(resp.data.map(d => new Donation(d)));
+        if (initalTotal === undefined) {
+          initalTotal = resp.total;
+          onSuccess(0);
+        } else {
+          onSuccess(resp.total - initalTotal);
+        }
       }, onError);
   }
 

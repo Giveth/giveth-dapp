@@ -1,12 +1,10 @@
 import React, { Component, createContext } from 'react';
 import PropTypes from 'prop-types';
-import { utils } from 'web3';
+import BigNumber from 'bignumber.js';
 
 import getWeb3 from '../lib/blockchain/getWeb3';
 import pollEvery from '../lib/pollEvery';
 import config from '../configuration';
-
-const { toBN } = utils;
 
 const POLL_DELAY_ACCOUNT = 1000;
 const POLL_DELAY_NETWORK = 2000;
@@ -26,7 +24,7 @@ const getAccount = async web3 => {
 
 const pollAccount = pollEvery((web3, { onAccount = () => {}, onBalance = () => {} } = {}) => {
   let lastAccount = -1;
-  let lastBalance = toBN(-1);
+  let lastBalance = new BigNumber(-1);
   return {
     request: async () => {
       try {
@@ -37,11 +35,11 @@ const pollAccount = pollEvery((web3, { onAccount = () => {}, onBalance = () => {
         const balance = await web3.eth.getBalance(account);
         return {
           account,
-          balance: toBN(balance),
+          balance: new BigNumber(balance),
         };
       } catch (e) {
         return {
-          balance: toBN(0),
+          balance: new BigNumber(0),
         };
       }
     },
@@ -88,7 +86,7 @@ class Web3Provider extends Component {
 
     this.state = {
       account: undefined,
-      balance: toBN(0),
+      balance: new BigNumber(0),
       currentNetwork: undefined,
       validProvider: false,
       isHomeNetwork: false,
@@ -203,7 +201,7 @@ class Web3Provider extends Component {
       isEnabled = true;
       account = accounts.length ? accounts[0] : undefined;
       if (account) {
-        balance = utils.toBN(await web3.eth.getBalance(account));
+        balance = new BigNumber(await web3.eth.getBalance(account));
       }
     } catch (e) {
       // ignore

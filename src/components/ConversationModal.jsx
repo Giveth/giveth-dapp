@@ -2,10 +2,13 @@
 /* eslint-disable jsx-a11y/label-has-for */
 
 import React, { Component } from 'react';
+import PropTypes from 'prop-types';
+
 import { Prompt } from 'react-router-dom';
 import { Form } from 'formsy-react-components';
 import Modal from 'react-modal';
 
+import Milestone from 'models/Milestone';
 import QuillFormsy from 'components/QuillFormsy';
 import LoaderButton from 'components/LoaderButton';
 import MilestoneProof from 'components/MilestoneProof';
@@ -62,7 +65,6 @@ class ConversationModal extends Component {
       isBlocking: false,
       required: false,
       enableAttachProof: true,
-      token: {},
       textPlaceholder: '',
     };
 
@@ -81,7 +83,7 @@ class ConversationModal extends Component {
     this.triggerRouteBlocking();
   }
 
-  openModal({ title, description, cta, required, textPlaceholder, enableAttachProof, token = {} }) {
+  openModal({ title, description, cta, required, textPlaceholder, enableAttachProof }) {
     this.setState({
       items: [],
       title,
@@ -90,7 +92,6 @@ class ConversationModal extends Component {
       modalIsOpen: true,
       required,
       enableAttachProof,
-      token,
       textPlaceholder,
     });
 
@@ -193,9 +194,10 @@ class ConversationModal extends Component {
       items,
       isBlocking,
       enableAttachProof,
-      token,
       textPlaceholder,
     } = this.state;
+
+    const { milestone } = this.props;
 
     return (
       <Modal
@@ -249,8 +251,9 @@ class ConversationModal extends Component {
                   <MilestoneProof
                     isEditMode
                     items={items}
-                    token={token}
                     onItemsChanged={returnedItems => this.onItemsChanged(returnedItems)}
+                    milestoneStatus={milestone.status}
+                    token={milestone.token}
                   />
                 </div>
               )}
@@ -259,7 +262,7 @@ class ConversationModal extends Component {
             <div className="row">
               <div className="col-12">
                 <LoaderButton
-                  className="btn btn-success"
+                  className="btn btn-success btn-inline"
                   formNoValidate
                   type="submit"
                   disabled={isSaving || !formIsValid}
@@ -287,5 +290,9 @@ class ConversationModal extends Component {
     );
   }
 }
+
+ConversationModal.propTypes = {
+  milestone: PropTypes.instanceOf(Milestone).isRequired,
+};
 
 export default ConversationModal;

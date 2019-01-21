@@ -1,8 +1,9 @@
 import React from 'react';
 import BigNumber from 'bignumber.js';
+import { utils } from 'web3';
+
 import { getStartOfDayUTC, getRandomWhitelistAddress } from 'lib/helpers';
 import BasicModel from './BasicModel';
-
 import MilestoneItemModel from './MilestoneItem';
 /**
  * The DApp Milestone model
@@ -13,38 +14,55 @@ export default class MilestoneModel extends BasicModel {
 
     const {
       id = data._id || undefined,
-      maxAmount = new BigNumber('0'),
+      maxAmount = '',
       selectedFiatType = 'EUR',
       fiatAmount = new BigNumber('0'),
       recipientAddress = '',
       status = MilestoneModel.PENDING,
-      projectId = '',
+      projectId = undefined,
       reviewerAddress = React.whitelist.reviewerWhitelist.length > 0
         ? getRandomWhitelistAddress(React.whitelist.reviewerWhitelist).address
         : '',
       items = [],
-      itemizeState = false,
       date = getStartOfDayUTC().subtract(1, 'd'),
       confirmations = 0,
       requiredConfirmations = 6,
       commitTime,
+
+      // transient
+      campaign,
+      owner,
+      campaignReviewer,
+      recipient,
+      reviewer,
+      mined = false,
+      pluginAddress = '0x0000000000000000000000000000000000000000',
       campaignId,
     } = data;
 
-    this._maxAmount = maxAmount;
     this._selectedFiatType = selectedFiatType;
-    this._fiatAmount = fiatAmount;
+    this._maxAmount = new BigNumber(utils.fromWei(maxAmount));
+    this._fiatAmount = new BigNumber(fiatAmount);
     this._recipientAddress = recipientAddress;
     this._status = status;
     this._projectId = projectId;
     this._reviewerAddress = reviewerAddress;
-    this._items = items;
-    this._itemizeState = itemizeState;
-    this._date = date;
+    this._items = items.map(i => new MilestoneItemModel(i));
+    this._itemizeState = items && items.length > 0;
+    this._date = getStartOfDayUTC(date);
     this._id = id;
     this._confirmations = confirmations;
     this._requiredConfirmations = requiredConfirmations;
     this._commitTime = commitTime;
+    this._pluginAddress = pluginAddress;
+
+    // transient
+    this._campaign = campaign;
+    this._owner = owner;
+    this._campaignReviewer = campaignReviewer;
+    this._recipient = recipient;
+    this._reviewer = reviewer;
+    this._mined = mined;
     this._campaignId = campaignId;
   }
 
@@ -245,17 +263,6 @@ export default class MilestoneModel extends BasicModel {
     this._date = value;
   }
 
-  get id() {
-    return this._id;
-  }
-
-  set id(value) {
-    if (value) {
-      this.checkType(value, ['string'], '_id');
-      this._id = value;
-    }
-  }
-
   get confirmations() {
     return this._confirmations;
   }
@@ -287,7 +294,46 @@ export default class MilestoneModel extends BasicModel {
     if (Array.isArray(this._donationCounters) && this._donationCounters.length > 0) {
       return this._donationCounters[0].currentBalance;
     }
-    return '0';
+    return new BigNumber('0');
+  }
+
+  get mined() {
+    return this._mined;
+  }
+
+  set mined(value) {
+    this.checkType(value, ['boolean'], 'mined');
+    this._mined = value;
+  }
+
+  get pluginAddress() {
+    return this._pluginAddress;
+  }
+
+  set pluginAddress(value) {
+    this.checkType(value, ['string'], 'pluginAddress');
+    this._pluginAddress = value;
+  }
+
+  // transient
+  get campaign() {
+    return this._campaign;
+  }
+
+  get owner() {
+    return this._owner;
+  }
+
+  get reviewer() {
+    return this._reviewer;
+  }
+
+  get campaignReviewer() {
+    return this._campaignReviewer;
+  }
+
+  get recipient() {
+    return this._recipient;
   }
 
   set campaignId(value) {

@@ -1,6 +1,9 @@
+/* eslint-disable react/no-unescaped-entities */
+/* eslint-disable no-restricted-globals */
 import React from 'react';
 import PropTypes from 'prop-types';
 import Modal from 'react-modal';
+import BigNumber from 'bignumber.js';
 import { utils } from 'web3';
 import { Form, Input } from 'formsy-react-components';
 import Toggle from 'react-toggle';
@@ -9,6 +12,7 @@ import Slider from 'react-rangeslider';
 import GA from 'lib/GoogleAnalytics';
 import getNetwork from '../lib/blockchain/getNetwork';
 import User from '../models/User';
+import Milestone from '../models/Milestone';
 import extraGas from '../lib/blockchain/extraGas';
 import pollEvery from '../lib/pollEvery';
 import LoaderButton from './LoaderButton';
@@ -63,7 +67,8 @@ class BaseDonateButton extends React.Component {
     this.state = {
       isSaving: false,
       formIsValid: false,
-      amount: '',
+      defaultAmount: true,
+      amount: '1',
       givethBridge: undefined,
       etherscanUrl: '',
       modalVisible: false,
@@ -96,8 +101,19 @@ class BaseDonateButton extends React.Component {
   }
 
   setToken(address) {
-    this.setState({ selectedToken: _getTokenWhitelist().find(t => t.address === address) }, () =>
-      this.pollToken(),
+    const { amount, defaultAmount } = this.state;
+    const token = _getTokenWhitelist().find(t => t.address === address);
+
+    let amt = amount;
+    if (defaultAmount) {
+      amt = token.symbol === 'ETH' ? '1' : '100';
+    }
+    this.setState(
+      {
+        selectedToken: token,
+        amount: amt,
+      },
+      () => this.pollToken(),
     );
   }
 
@@ -108,10 +124,10 @@ class BaseDonateButton extends React.Component {
     const balance = selectedToken.symbol === 'ETH' ? ETHBalance : selectedToken.balance;
 
     // Determine max amount
-    let maxAmount = utils.fromWei(balance.toString());
+    let maxAmount = new BigNumber(utils.fromWei(balance.toString()));
 
     if (this.props.maxDonationAmount && balance.gt(this.props.maxDonationAmount))
-      maxAmount = this.props.maxDonationAmount.toString();
+      maxAmount = this.props.maxDonationAmount;
 
     return maxAmount;
   }
@@ -163,16 +179,23 @@ class BaseDonateButton extends React.Component {
   closeDialog() {
     this.setState({
       modalVisible: false,
-      amount: '',
+      amount: '1',
+      defaultAmount: true,
       formIsValid: false,
     });
   }
 
   openDialog() {
-    this.setState({
-      modalVisible: true,
-      amount: this.getMaxAmount(),
-      formIsValid: false,
+    const { model } = this.props;
+    this.setState(prevState => {
+      const isMilestone = model.type === Milestone.type;
+      const amount = isMilestone ? this.getMaxAmount().toString() : prevState.amount;
+      return {
+        modalVisible: true,
+        amount,
+        defaultAmount: isMilestone ? false : prevState.defaultAmount,
+        formIsValid: false,
+      };
     });
   }
 
@@ -422,25 +445,25 @@ class BaseDonateButton extends React.Component {
                 </div>
               )}
 
-            <span className="label">How much ${selectedToken.symbol} do you want to donate?</span>
+            <span className="label">How much {selectedToken.symbol} do you want to donate?</span>
 
             {validProvider &&
-              maxAmount !== 0 &&
-              balance.gtn(0) && (
+              maxAmount.toNumber() !== 0 &&
+              balance.gt(0) && (
                 <div className="form-group">
                   <Slider
                     type="range"
                     name="amount2"
                     min={0}
-                    max={Number(maxAmount)}
-                    step={0.01}
+                    max={maxAmount.toNumber()}
+                    step={maxAmount.toNumber() / 10}
                     value={Number(Number(amount).toFixed(4))}
                     labels={{
                       0: '0',
-                      [maxAmount]: Number(Number(maxAmount).toFixed(4)),
+                      [maxAmount.toFixed()]: maxAmount.toFixed(4),
                     }}
                     tooltip={false}
-                    onChange={newAmount => this.setState({ amount: newAmount.toString() })}
+                    onChange={(name, newAmount) => this.setState({ amount: newAmount })}
                   />
                 </div>
               )}
@@ -450,17 +473,17 @@ class BaseDonateButton extends React.Component {
                 name="amount"
                 id="amount-input"
                 type="number"
-                step="any"
                 value={amount}
-                onChange={(name, newAmount) => this.setState({ amount: newAmount })}
-                placeholder="1"
+                onChange={(name, newAmount) =>
+                  this.setState({ amount: newAmount, defaultAmount: false })
+                }
                 validations={{
-                  lessOrEqualTo: maxAmount,
+                  lessOrEqualTo: maxAmount.toNumber(),
                   greaterThan: 0.009,
                 }}
                 validationErrors={{
-                  greaterThan: `Minimum value must be at least ${selectedToken.symbol}0.01`,
-                  lessOrEqualTo: `This donation exceeds your wallet balance or the milestone max amount: ${maxAmount} ${
+                  greaterThan: `Minimum value must be at least 0.01 ${selectedToken.symbol}`,
+                  lessOrEqualTo: `This donation exceeds your wallet balance or the milestone max amount: ${maxAmount.toString()} ${
                     selectedToken.symbol
                   }.`,
                 }}
@@ -512,7 +535,7 @@ class BaseDonateButton extends React.Component {
 
             {validProvider &&
               currentUser &&
-              maxAmount !== 0 &&
+              maxAmount.toNumber() !== 0 &&
               balance !== '0' && (
                 <LoaderButton
                   className="btn btn-success"
@@ -569,7 +592,7 @@ const modelTypes = PropTypes.shape({
 DonateButton.propTypes = {
   model: modelTypes.isRequired,
   currentUser: PropTypes.instanceOf(User),
-  maxDonationAmount: PropTypes.instanceOf(utils.BN),
+  maxDonationAmount: PropTypes.instanceOf(BigNumber),
 };
 
 // eslint isn't smart enough to be able to use Object.assign({}, DonateButton.propTypes, {...})
@@ -577,20 +600,21 @@ DonateButton.propTypes = {
 BaseDonateButton.propTypes = {
   model: modelTypes.isRequired,
   currentUser: PropTypes.instanceOf(User),
-  maxDonationAmount: PropTypes.string,
-  ETHBalance: PropTypes.objectOf(utils.BN).isRequired,
+  maxDonationAmount: PropTypes.instanceOf(BigNumber),
+  ETHBalance: PropTypes.instanceOf(BigNumber).isRequired,
   validProvider: PropTypes.bool.isRequired,
   isHomeNetwork: PropTypes.bool.isRequired,
 };
 
 DonateButton.defaultProps = {
-  maxDonationAmount: undefined,
   currentUser: undefined,
+  maxDonationAmount: undefined, // new BigNumber(10000000000000000),
 };
 
 BaseDonateButton.defaultProps = {
-  maxDonationAmount: undefined,
   currentUser: undefined,
+  maxDonationAmount: undefined, // new BigNumber(10000000000000000),
+  // maxDonationAmount: new BigNumber(10000000000000000),
 };
 
 export default DonateButton;
