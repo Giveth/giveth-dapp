@@ -151,11 +151,11 @@ class UserProvider extends Component {
       .catch(() => {});
   }
 
-  signIn() {
+  signIn(redirectOnFail = true) {
     const { currentUser } = this.state;
 
     if (currentUser) {
-      authenticateIfPossible(currentUser).then(isAuthenticated => {
+      authenticateIfPossible(currentUser, redirectOnFail).then(isAuthenticated => {
         if (isAuthenticated) {
           currentUser.authenticated = true;
           this.setState({ currentUser: new User(currentUser) });

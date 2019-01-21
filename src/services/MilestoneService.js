@@ -608,27 +608,36 @@ class MilestoneService {
     let etherScanUrl;
 
     Promise.all([getNetwork(), getWeb3(), DonationService.getMilestoneDonations(milestone._id)])
-      .then(([network, web3, donations]) => {
+      .then(([network, web3, data]) => {
         etherScanUrl = network.etherscan;
 
         const cappedMilestone = new LPPCappedMilestone(web3, milestone.pluginAddress);
 
         return cappedMilestone
-          .mWithdraw(donations, {
+          .mWithdraw(data.pledges, {
             from,
             $extraGas: extraGas(),
           })
           .once('transactionHash', hash => {
             txHash = hash;
 
-            return milestones
-              .patch(milestone._id, {
-                status: Milestone.PAYING,
-                mined: false,
-                txHash,
+            DonationService.updateSpentDonations(data.donations)
+              .then(() => {
+                if (!data.hasMoreDonations) {
+                  milestones
+                    .patch(milestone._id, {
+                      status: Milestone.PAYING,
+                      mined: false,
+                      txHash,
+                    })
+                    .then(() => onTxHash(`${etherScanUrl}tx/${txHash}`));
+                  return;
+                }
+                onTxHash(`${etherScanUrl}tx/${txHash}`);
               })
-              .then(() => onTxHash(`${etherScanUrl}tx/${txHash}`))
-              .catch(e => onError('patch-error', e));
+              .catch(e => {
+                if (e && e.name !== 'NotAuthenticated') onError('patch-error', e);
+              });
           })
           .on('receipt', () => onConfirmation(`${etherScanUrl}tx/${txHash}`));
       })
