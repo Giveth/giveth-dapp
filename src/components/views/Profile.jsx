@@ -365,8 +365,8 @@ class Profile extends Component {
                                   </td>
                                   <td className="td-reviewer">
                                     {m.reviewer &&
-                                      m.reviewer.address && (
-                                        <Link to={`/profile/${m.reviewer.address}`}>
+                                      m.reviewerAddress && (
+                                        <Link to={`/profile/${m.reviewerAddress}`}>
                                           {m.reviewer.name || 'Anomynous user'}
                                         </Link>
                                       )}
