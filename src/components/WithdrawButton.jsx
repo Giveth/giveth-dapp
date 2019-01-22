@@ -170,10 +170,10 @@ class WithdrawButton extends Component {
                   value={amount}
                   validations={{
                     lessThan: wallet.getBalance() - 0.1,
-                    greaterThan: 0.0099999999999,
+                    greaterThan: 0,
                   }}
                   validationErrors={{
-                    greaterThan: `Minimum value must be at least 0.01 ${config.nativeTokenName}`,
+                    greaterThan: `Pleas enter value greater than 0 ${config.nativeTokenName}`,
                     lessThan: 'This withdrawal amount exceeds your wallet balance.',
                   }}
                   required

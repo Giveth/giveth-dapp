@@ -11,7 +11,7 @@ const {
   REACT_APP_BUGS_EMAIL = 'bugs@giveth.io',
   REACT_APP_DEFAULT_GASPRICE = 10,
   REACT_APP_NETWORK_NAME,
-  REACT_APP_NATIVE_TOKEN_NAME = 'ETH',
+  REACT_APP_NATIVE_TOKEN_NAME,
 } = process.env;
 
 const configurations = {
@@ -41,6 +41,7 @@ const configurations = {
       useGoogleAnalytics: true,
       useHotjar: false,
     },
+    nativeTokenName: 'ETH',
   },
   develop: {
     title: 'develop',
@@ -64,6 +65,7 @@ const configurations = {
       useGoogleAnalytics: true,
       useHotjar: false,
     },
+    nativeTokenName: 'ETH',
   },
   release: {
     title: 'release',
@@ -87,6 +89,7 @@ const configurations = {
       useGoogleAnalytics: true,
       useHotjar: false,
     },
+    nativeTokenName: 'ETH',
   },
   beta: {
     title: 'beta',
@@ -110,6 +113,7 @@ const configurations = {
       useGoogleAnalytics: true,
       useHotjar: true,
     },
+    nativeTokenName: 'ETH',
   },
 };
 
