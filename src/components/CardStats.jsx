@@ -2,6 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import BigNumber from 'bignumber.js';
 import { convertEthHelper } from '../lib/helpers';
+import config from '../configuration';
 
 /**
  * Shows the statistics on DACs, Campaigns and milestonesCount
@@ -78,7 +79,7 @@ CardStats.defaultProps = {
   maxAmount: new BigNumber('0'),
   totalDonated: new BigNumber('0'),
   token: {
-    symbol: 'ETH',
+    symbol: config.nativeTokenName,
   },
 };
 

@@ -43,8 +43,8 @@ const modalStyles = {
 const _getTokenWhitelist = () => {
   const r = React.whitelist.tokenWhitelist;
   return r.map(t => {
-    if (t.symbol === 'ETH') {
-      t.name = `${config.homeNetworkName} ETH`;
+    if (t.symbol === config.nativeTokenName) {
+      t.name = `${config.homeNetworkName} ${config.nativeTokenName}`;
     }
     t.balance = '0';
     return t;
@@ -360,7 +360,7 @@ class BaseDelegateMultipleButton extends Component {
                       <SelectFormsy
                         name="token"
                         id="token-select"
-                        label="Select token or ETH to delegate"
+                        label={`Select token or ${config.nativeTokenName} to delegate`}
                         helpText=""
                         value={selectedToken && selectedToken.address}
                         cta="--- Select ---"
@@ -447,9 +447,8 @@ class BaseDelegateMultipleButton extends Component {
 
 const DelegateMultipleButton = props => (
   <Web3Consumer>
-    {({ state: { isForeignNetwork, validProvider, balance } }) => (
+    {({ state: { isForeignNetwork, validProvider } }) => (
       <BaseDelegateMultipleButton
-        ETHBalance={balance}
         validProvider={validProvider}
         isForeignNetwork={isForeignNetwork}
         {...props}

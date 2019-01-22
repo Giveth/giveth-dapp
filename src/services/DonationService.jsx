@@ -651,7 +651,7 @@ class DonationService {
                 A transaction to approve our contracts to transfer {utils.fromWei(amount)} tokens on
                 your behalf.
               </li>
-              <li>A transaction of 0 ETH to donate the tokens.</li>
+              <li>A transaction of 0 {config.nativeTokenName} to donate the tokens.</li>
             </ol>
           </div>,
         ),

@@ -95,7 +95,7 @@ In the following sections you will learn all you need to know to run the DApp lo
     npm start
     ```
 3. Once the dapp is up in your browser, click "Sign In" from the main menu.
-4. For testing locally, choose any of the wallet files found in the `giveth-dapp/keystores/` folder using the wallet password: `password`. **DO NOT USE THESE ON MAINNET ETHEREUM.**
+4. For testing locally, choose any of the wallet files found in the `giveth-dapp/keystores/` folder using the wallet password: `password`. **DO NOT USE THESE ON ANY MAINNET EVMs.**
 
 5. Using the test token
   To use the test token you need to import the keystore.json you use for your account to MetaMask.
@@ -121,9 +121,9 @@ Variable name | Default Value | Description |
 ---|---|---|
 PORT | 3010 | Port on which the DApp runs |
 REACT_APP_ENVIRONMENT | 'localhost' | To which feathers environment should the DApp connect. By default it connects to localhost feathers. Allowed values are: `localhost`, `develop`, `release`, `alpha`, `mainnet`. See [Deployment Environments](#deploy-environments). |
-REACT_APP_DECIMALS | 8 | How many decimal should be shown for ETH values. Note that the calculations are still done with 18 decimals. |
+REACT_APP_DECIMALS | 8 | How many decimal should be shown for cryptocurrency values. Note that the calculations are still done with 18 decimals. |
 REACT_APP_FEATHERJS_CONNECTION_URL | Differs per REACT_APP_ENVIRONMENT | Overwrites the environment injected feathers connection URL. |
-REACT_APP_ETH_NODE_CONNECTION_URL | Differs per REACT_APP_ENVIRONMENT | Overwrites the ethereum node connection URL for making ethereum transactions. |
+REACT_APP_NODE_CONNECTION_URL | Differs per REACT_APP_ENVIRONMENT | Overwrites the EVM node connection URL for making EVM transactions. |
 REACT_APP_LIQUIDPLEDGING_ADDRESS | Differs per REACT_APP_ENVIRONMENT | Overwrites the Liquid Pledging contract address. |
 REACT_APP_DAC_FACTORY_ADDRESS | Differs per REACT_APP_ENVIRONMENT | Overwrites the DACs contract address. |
 REACT_APP_CAMPAIGN_FACTORY_ADDRESS | Differs per REACT_APP_ENVIRONMENT | Overwrites the Campaign Factory contract address. |
@@ -172,7 +172,7 @@ If you want to better understand how does the development process works, please 
 
 ### Local Development
 At first you would like to run the DApp locally. When running `testrpc` locally in `deterministic` mode, you can use any of the keystores in the `giveth-dapp/keystores` as your wallet.
-This will provide you access to the testrpc accounts for local development. Each keystore uses the same password: `password`. **DO NOT USE THESE ON MAINNET ETHEREUM**
+This will provide you access to the testrpc accounts for local development. Each keystore uses the same password: `password`. **DO NOT USE THESE ON ANY MAINNET EVMs**
 
 The keystores are seeded with 10.000 ANT tokens for testing donations. To get started with testing donations,
 make sure to add your account's keystore to MetaMask and swith MetaMask to Ganache. The donation modal should

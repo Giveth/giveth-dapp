@@ -1,3 +1,5 @@
+import config from '../configuration';
+
 export default {
   templates: {
     None: ``,
@@ -45,11 +47,15 @@ export default {
             <span style="font-size: 18px;">Reward:</span>
           </p>
           <p>
-            <em style="font-size: 14px; color: rgb(36, 41, 46); font-family: -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Helvetica, Arial, sans-serif, &quot;Apple Color Emoji&quot;, &quot;Segoe UI Emoji&quot;, &quot;Segoe UI Symbol&quot;; background-color: rgb(255, 255, 255);">Amount of points, their type and how much they are worth in ETH and when</em>
+            <em style="font-size: 14px; color: rgb(36, 41, 46); font-family: -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Helvetica, Arial, sans-serif, &quot;Apple Color Emoji&quot;, &quot;Segoe UI Emoji&quot;, &quot;Segoe UI Symbol&quot;; background-color: rgb(255, 255, 255);">Amount of points, their type and how much they are worth in ${
+              config.nativeTokenName
+            } and when</em>
           </p>
           <p>
             <em style="font-size: 14px; color: rgb(36, 41, 46); font-family: -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Helvetica, Arial, sans-serif, &quot;Apple Color Emoji&quot;, &quot;Segoe UI Emoji&quot;, &quot;Segoe UI Symbol&quot;; background-color: rgb(255, 255, 255);">Format should be a list of&nbsp;
-                <code>&lt;amount&gt; &lt;type&gt; at &lt;rate&gt;/&lt;type&gt; which is &lt;amount in ETH&gt;</code>
+                <code>&lt;amount&gt; &lt;type&gt; at &lt;rate&gt;/&lt;type&gt; which is &lt;amount in ${
+                  config.nativeTokenName
+                }&gt;</code>
             </em>
           </p>
           `,
