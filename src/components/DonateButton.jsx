@@ -45,7 +45,7 @@ const _getTokenWhitelist = () => {
     if (t.symbol === 'ETH') {
       t.name = `${config.homeNetworkName} ETH`;
     }
-    t.balance = utils.toBN(0);
+    t.balance = new BigNumber(0);
     return t;
   });
 };
@@ -62,7 +62,7 @@ class BaseDonateButton extends React.Component {
 
     // set initial balance
     const modelToken = props.model.token;
-    modelToken.balance = utils.toBN(0);
+    modelToken.balance = new BigNumber(0);
 
     this.state = {
       isSaving: false,
@@ -153,12 +153,12 @@ class BaseDonateButton extends React.Component {
 
             // we are only interested in homeNetwork token balances
             if (!isHomeNetwork || !currentUser || !currentUser.address || !contract) {
-              return utils.toBN(0);
+              return new BigNumber(0);
             }
 
-            return utils.toBN(await contract.methods.balanceOf(currentUser.address).call());
+            return new BigNumber(await contract.methods.balanceOf(currentUser.address).call());
           } catch (e) {
-            return utils.toBN(0);
+            return new BigNumber(0);
           }
         },
         onResult: balance => {
