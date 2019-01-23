@@ -56,11 +56,11 @@ class BasicModel extends Model {
     this._donationCount = donationCount;
     this._peopleCount = peopleCount;
     this._fullyFunded = fullyFunded;
-    this._donationCounters = donationCounters.map(c => {
-      c.totalDonated = new BigNumber(utils.fromWei(c.totalDonated));
-      c.currentBalance = new BigNumber(utils.fromWei(c.currentBalance));
-      return c;
-    });
+    this._donationCounters = donationCounters.map(c => ({
+      ...c,
+      totalDonated: new BigNumber(utils.fromWei(c.totalDonated)),
+      currentBalance: new BigNumber(utils.fromWei(c.currentBalance)),
+    }));
     this._Order = -1;
     this._token = token;
     this._createdAt = createdAt;
