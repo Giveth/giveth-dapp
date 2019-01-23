@@ -4,7 +4,7 @@ import React from 'react';
  * Route not found page
  */
 const NotFound = () => (
-  <center>
+  <center style={{ marginTop: '50px' }}>
     <h1>You&apos;ve reached the edge of the universe</h1>
   </center>
 );
