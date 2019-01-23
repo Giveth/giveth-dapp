@@ -463,7 +463,7 @@ class BaseDonateButton extends React.Component {
                       [maxAmount.toFixed()]: maxAmount.toFixed(4),
                     }}
                     tooltip={false}
-                    onChange={(name, newAmount) => this.setState({ amount: newAmount })}
+                    onChange={newAmount => this.setState({ amount: newAmount.toString() })}
                   />
                 </div>
               )}
