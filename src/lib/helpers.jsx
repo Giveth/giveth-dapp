@@ -13,7 +13,10 @@ export const isOwner = (address, currentUser) =>
   address !== undefined && currentUser !== undefined && currentUser.address === address;
 
 export const getTruncatedText = (text = '', maxLength = 45) => {
-  const txt = text.replace(/<(?:.|\n)*?>/gm, '').trim();
+  const txt = text
+    .replace(/<\/(?:.|\n)*?>/gm, ' ') // replace closing tags w/ a space
+    .replace(/<(?:.|\n)*?>/gm, '') // strip opening tags
+    .trim();
   if (txt.length > maxLength) {
     return `${txt.substr(0, maxLength).trim()}...`;
   }
