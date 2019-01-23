@@ -153,7 +153,7 @@ class ViewCampaign extends Component {
       donationsTotal,
       newDonations,
     } = this.state;
-    if (!campaign) return <p>Unable to find a campaign</p>;
+    if (!isLoading && !campaign) return <p>Unable to find a campaign</p>;
     return (
       <ErrorBoundary>
         <div id="view-campaign-view">
