@@ -803,7 +803,7 @@ class DonationService {
           const pledge = pledges.find(n => n.id === donation.pledgeId);
 
           if (pledge) {
-            pledge.amount = pledge.amount.add(new BigNumber(donation.amountRemaining));
+            pledge.amount = pledge.amount.plus(donation.amountRemaining);
           } else {
             pledges.push({
               id: donation.pledgeId,

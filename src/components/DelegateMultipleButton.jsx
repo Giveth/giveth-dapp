@@ -224,7 +224,11 @@ class BaseDelegateMultipleButton extends Component {
   }
 
   submit() {
+    const { objectToDelegateFrom, delegationOptions } = this.state;
     this.setState({ isSaving: true });
+
+    const delegate = delegationOptions.find(o => o.id === objectToDelegateFrom[0]);
+    const delegateType = delegate.type;
 
     const onCreated = txLink => {
       this.setState({ isSaving: false, modalVisible: false, objectToDelegateFrom: [] });
@@ -236,10 +240,12 @@ class BaseDelegateMultipleButton extends Component {
             <a href={`${txLink}`} target="_blank" rel="noopener noreferrer">
               view the transaction here.
             </a>
-            <p>
-              The donations have been delegated. Please note the the Giver may have{' '}
-              <strong>3 days</strong> to reject your delegation before the money gets committed.
-            </p>
+            {delegateType === 'dac' && (
+              <p>
+                The donations have been delegated. Please note the the Giver may have{' '}
+                <strong>3 days</strong> to reject your delegation before the money gets committed.
+              </p>
+            )}
           </span>,
         ),
         icon: 'success',

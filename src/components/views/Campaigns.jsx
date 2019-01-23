@@ -15,7 +15,7 @@ const Campaigns = () => (
       {({ state: { campaigns, isLoading, total, hasError } }) => (
         <div id="campaigns-view" className="card-view">
           <div className="container-fluid page-layout reduced-padding">
-            <h4>Campaigns {total && <span className="badge badge-success">{total}</span>}</h4>
+            <h4>Campaigns {total > 0 && <span className="badge badge-success">{total}</span>}</h4>
             {// There are some Campaigns in the system, show them
             !hasError &&
               campaigns.length > 0 && (

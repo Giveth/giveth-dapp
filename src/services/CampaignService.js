@@ -198,7 +198,7 @@ class CampaignService {
     let txHash;
     let etherScanUrl;
     try {
-      let profileHash = '';
+      let profileHash;
       try {
         profileHash = await IPFSService.upload(campaign.toIpfs());
       } catch (err) {
@@ -224,7 +224,7 @@ class CampaignService {
         // LPPCampaign function update(string newName, string newUrl, uint64 newCommitTime)
         promise = new LPPCampaign(await getWeb3(), campaign.pluginAddress).update(
           campaign.title,
-          profileHash,
+          profileHash || '',
           0,
           {
             from,
@@ -236,7 +236,7 @@ class CampaignService {
         const { lppCampaignFactory } = network;
         promise = lppCampaignFactory.newCampaign(
           campaign.title,
-          profileHash,
+          profileHash || '',
           0,
           campaign.reviewerAddress,
           {
