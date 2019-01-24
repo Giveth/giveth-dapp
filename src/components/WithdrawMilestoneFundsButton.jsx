@@ -131,7 +131,8 @@ class WithdrawMilestoneFundsButton extends Component {
       <Web3Consumer>
         {({ state: { isForeignNetwork } }) => (
           <Fragment>
-            {[milestone.recipientAddress, milestone.ownerAddress].includes(currentUser.address) &&
+            {currentUser &&
+              [milestone.recipientAddress, milestone.ownerAddress].includes(currentUser.address) &&
               milestone.status === Milestone.COMPLETED &&
               milestone.mined &&
               milestone.currentBalance.gt(0) && (
