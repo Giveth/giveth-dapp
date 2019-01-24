@@ -1,4 +1,7 @@
 /* eslint-disable prefer-destructuring */
+/* eslint-disable no-restricted-syntax */
+
+/* eslint-disable no-await-in-loop */
 
 import BigNumber from 'bignumber.js';
 import { utils } from 'web3';
@@ -323,7 +326,7 @@ class MilestoneService {
 
       // upload new milestone item images for new milestones
       if (isNew && milestone.itemizeState) {
-        await milestone.items.forEach(async milestoneItem => {
+        for (const milestoneItem of milestone.items) {
           if (milestoneItem.image && milestoneItem.image.includes('data:image')) {
             try {
               milestoneItem.image = await IPFSService.upload(milestoneItem.image);
@@ -331,7 +334,7 @@ class MilestoneService {
               ErrorPopup('Failed to upload milestone item to ipfs');
             }
           }
-        });
+        }
       }
 
       // if a new proposed milestone, create it only in feathers
@@ -563,13 +566,13 @@ class MilestoneService {
           txHash = hash;
 
           if (proof.items && proof.items.length > 0) {
-            await proof.items.forEach(async proofItem => {
+            for (const proofItem of proof.items) {
               try {
                 proofItem.image = await IPFSService.upload(proofItem.image);
               } catch (err) {
                 ErrorPopup('Failed to upload milestone proof item image to ipfs', err);
               }
-            });
+            }
           }
 
           try {
