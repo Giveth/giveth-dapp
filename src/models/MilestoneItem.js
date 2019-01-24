@@ -1,9 +1,9 @@
 import React from 'react';
-import { getStartOfDayUTC } from 'lib/helpers';
 import BigNumber from 'bignumber.js';
 
 import moment from 'moment';
 import Model from './Model';
+import { cleanIpfsPath, getStartOfDayUTC } from '../lib/helpers';
 
 export default class MilestoneItemModel extends Model {
   constructor(data) {
@@ -30,6 +30,28 @@ export default class MilestoneItemModel extends Model {
     this._conversionRate = conversionRate;
     this._conversionRateTimestamp = conversionRateTimestamp;
     this._id = _id;
+  }
+
+  toIpfs() {
+    return {
+      date: this._date,
+      description: this._description,
+      image: cleanIpfsPath(this._image),
+      version: 1,
+    };
+  }
+
+  toFeathers() {
+    return {
+      date: this._date,
+      description: this._description,
+      image: cleanIpfsPath(this._image),
+      selectedFiatType: this._selectedFiatType,
+      fiatAmount: this._fiatAmount.toFixed(),
+      wei: this._wei,
+      conversionRate: this._conversionRate,
+      conversionRateTimestamp: this._conversionRateTimestamp,
+    };
   }
 
   get date() {
@@ -106,16 +128,12 @@ export default class MilestoneItemModel extends Model {
     this._conversionRateTimestamp = value;
   }
 
-  getItem() {
-    return {
-      date: this._date,
-      description: this._description,
-      image: this._image,
-      selectedFiatType: this._selectedFiatType,
-      fiatAmount: this._fiatAmount,
-      wei: this._wei,
-      conversionRate: this._conversionRate,
-      conversionRateTimestamp: this._conversionRateTimestamp,
-    };
+  set imageHash(value) {
+    this.checkType(value, ['string'], 'imageHash');
+    this._imageHash = value;
+  }
+
+  get imageHash() {
+    return this._imageHash;
   }
 }

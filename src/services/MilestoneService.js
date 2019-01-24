@@ -1,3 +1,5 @@
+/* eslint-disable prefer-destructuring */
+
 import BigNumber from 'bignumber.js';
 import { utils } from 'web3';
 import { paramsForServer } from 'feathers-hooks-common';
@@ -8,10 +10,10 @@ import getNetwork from 'lib/blockchain/getNetwork';
 import getWeb3 from 'lib/blockchain/getWeb3';
 import extraGas from 'lib/blockchain/extraGas';
 import DonationService from 'services/DonationService';
+import IPFSService from './IPFSService';
+import ErrorPopup from '../components/ErrorPopup';
 
 import Donation from '../models/Donation';
-// import IPFSService from './IPFSService';
-// import ErrorPopup from '../components/ErrorPopup';
 
 const milestones = feathersClient.service('milestones');
 
@@ -273,6 +275,135 @@ class MilestoneService {
           onSuccess(resp.total - initalTotal);
         }
       }, onError);
+  }
+
+  /**
+   * Save new Milestone to the blockchain or update existing one in feathers
+   * TODO: Handle error states properly
+   *
+   * @param milestone   Milestone object to be saved
+   * @param from        address of the user saving the Milestone
+   * @param afterSave   Callback to be triggered after the Milestone is saved in feathers
+   * @param afterMined  Callback to be triggered after the transaction is mined
+   */
+  static async save({
+    milestone,
+    from,
+    afterSave = () => {},
+    afterMined = () => {},
+    onError = () => {},
+  }) {
+    if (milestone.id && milestone.projectId === 0) {
+      return onError(
+        'You must wait for your Milestone creation to finish before you can update it',
+      );
+    }
+
+    if (!milestone.parentProjectId || milestone.parentProjectId === '0') {
+      return onError(
+        `It looks like the campaign has not been mined yet. Please try again in a bit`,
+      );
+    }
+
+    const isNew = !milestone._id || !milestone.projectId;
+    const isProposed = milestone.status === Milestone.PROPOSED;
+    const isRejected = milestone.status === Milestone.REJECTED;
+    let txHash;
+    let etherScanUrl;
+
+    try {
+      // upload new milestone image
+      if (milestone.image && milestone.image.includes('data:image')) {
+        try {
+          milestone.image = await IPFSService.upload(milestone.image);
+        } catch (err) {
+          ErrorPopup('Failed to upload milestone image to ipfs');
+        }
+      }
+
+      // upload new milestone item images for new milestones
+      if (isNew && milestone.itemizeState) {
+        await milestone.items.forEach(async milestoneItem => {
+          if (milestoneItem.image && milestoneItem.image.includes('data:image')) {
+            try {
+              milestoneItem.image = await IPFSService.upload(milestoneItem.image);
+            } catch (err) {
+              ErrorPopup('Failed to upload milestone item to ipfs');
+            }
+          }
+        });
+      }
+
+      // if a new proposed milestone, create it only in feathers
+      if (isProposed && !milestone._id) {
+        await milestones.create(milestone.toFeathers());
+        afterSave(true);
+        return true;
+      }
+
+      // if updating a proposed, rejected proposed, or already on chain milestone, patch it in feathers
+      if (isProposed || isRejected || milestone.projectId) {
+        await milestones.patch(milestone._id, milestone.toFeathers());
+        afterSave(false, null);
+        return true;
+      }
+
+      /**
+        Create a milestone on chain
+
+        lppCappedMilestoneFactory params
+
+        string _name,
+        string _url,
+        uint64 _parentProject,
+        address _reviewer,
+        address _recipient,
+        address _campaignReviewer,
+        address _milestoneManager,
+        uint _maxAmount,
+        address _acceptedToken,
+        uint _reviewTimeoutSeconds
+      * */
+
+      let milestoneId;
+      const network = await getNetwork();
+      const { lppCappedMilestoneFactory } = network;
+      etherScanUrl = network.etherScanUrl;
+
+      const tx = lppCappedMilestoneFactory.newMilestone(
+        milestone.title,
+        '',
+        milestone.parentProjectId,
+        milestone.reviewerAddress,
+        milestone.recipientAddress,
+        milestone.campaignReviewerAddress,
+        from,
+        utils.toWei(milestone.maxAmount),
+        milestone.token.address,
+        5 * 24 * 60 * 60, // 5 days in seconds
+        { from, $extraGas: extraGas() },
+      );
+
+      await tx.once('transactionHash', async hash => {
+        txHash = hash;
+
+        // create milestone in feathers
+        milestoneId = await milestones.create(milestone.toFeathers(txHash))._id;
+        afterSave(false, !milestone.projectId, `${etherScanUrl}tx/${txHash}`);
+      });
+
+      afterMined(!milestone.projectId, `${etherScanUrl}tx/${txHash}`, milestoneId);
+    } catch (err) {
+      ErrorPopup(
+        `Something went wrong with the Milestone ${
+          milestone.projectId > 0 ? 'update' : 'creation'
+        }. Is your wallet unlocked?`,
+        `${etherScanUrl}tx/${txHash} => ${JSON.stringify(err, null, 2)}`,
+      );
+      onError(err.message);
+    }
+
+    return true;
   }
 
   /**
@@ -646,7 +777,7 @@ class MilestoneService {
               });
           })
           .on('receipt', () => onConfirmation(`${etherScanUrl}tx/${txHash}`))
-          .catch(err => console.error(err));
+          .catch(err => onError(err));
       })
       .catch(err => {
         if (txHash && err.message && err.message.includes('unknown transaction')) onError(); // bug in web3 seems to constantly fail due to this error, but the tx is correct

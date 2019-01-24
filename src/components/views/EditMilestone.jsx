@@ -2,13 +2,12 @@
 import React, { Component } from 'react';
 import { Prompt } from 'react-router-dom';
 import PropTypes from 'prop-types';
-import { utils } from 'web3';
 import Toggle from 'react-toggle';
 import BigNumber from 'bignumber.js';
 import { Form, Input } from 'formsy-react-components';
 import GA from 'lib/GoogleAnalytics';
 import Milestone from 'models/Milestone';
-import { feathersClient, feathersRest } from '../../lib/feathersClient';
+import { feathersClient } from '../../lib/feathersClient';
 import Loader from '../Loader';
 import QuillFormsy from '../QuillFormsy';
 import SelectFormsy from '../SelectFormsy';
@@ -23,8 +22,6 @@ import {
   authenticateIfPossible,
   checkProfile,
 } from '../../lib/middleware';
-import getNetwork from '../../lib/blockchain/getNetwork';
-import extraGas from '../../lib/blockchain/extraGas';
 import LoaderButton from '../LoaderButton';
 import User from '../../models/User';
 import templates from '../../lib/milestoneTemplates';
@@ -109,6 +106,7 @@ class EditMilestone extends Component {
               campaignTitle: milestone.campaign.title,
               campaignProjectId: milestone.campaign.projectId,
               campaignReviewerAddress: milestone.campaign.reviewerAddress,
+              campaignId: milestone.campaignId,
             });
 
             await this.props.getConversionRates(milestone.date, milestone.token.symbol);
@@ -211,7 +209,6 @@ class EditMilestone extends Component {
   setImage(image) {
     const { milestone } = this.state;
     milestone.image = image;
-    this.setState({ image, uploadNewImage: true });
   }
 
   setDate(date) {
@@ -342,205 +339,36 @@ class EditMilestone extends Component {
   submit(/* model */) {
     const { milestone } = this.state;
 
-    const afterEmit = () => {
-      this.setState({
-        isSaving: false,
-        isBlocking: false,
-      });
-      this.props.history.goBack();
-    };
-    let txHash;
+    milestone.ownerAddress = this.props.currentUser.address;
+    milestone.campaignReviewerAddress = this.state.campaignReviewerAddress;
+    milestone.campaignId = this.state.campaignId;
+    milestone.status =
+      this.props.isProposed || milestone.status === Milestone.REJECTED
+        ? Milestone.PROPOSED
+        : milestone.status; // make sure not to change status!
+    milestone.conversionRate = this.props.currentRate.rates[milestone.selectedFiatType];
+    milestone.parentProjectId = this.state.campaignProjectId;
 
-    const updateMilestone = file => {
-      const constructedModel = {
-        title: milestone.title,
-        description: milestone.description,
-        maxAmount: milestone.maxAmount,
-        ownerAddress: this.props.currentUser.address,
-        reviewerAddress: milestone.reviewerAddress,
-        recipientAddress: milestone.recipientAddress,
-        campaignReviewerAddress: this.state.campaignReviewerAddress,
-        image: file,
-        campaignId: this.state.campaignId,
-        status:
-          this.props.isProposed || milestone.status === 'Rejected' ? 'Proposed' : milestone.status, // make sure not to change status!
-        items: milestone.items.map(i => i.getItem()),
-        conversionRateTimestamp: milestone.conversionRateTimestamp,
-        selectedFiatType: milestone.selectedFiatType,
-        date: milestone.date,
-        fiatAmount: milestone.fiatAmount.toFixed(),
-        conversionRate: this.props.currentRate.rates[milestone.selectedFiatType],
-        token: milestone.token,
-      };
-
-      console.log('constructedModel updating: ', constructedModel);
-
-      // in itemized mode, we calculate the maxAmount from the items
-      // convert to string here, the milestone only works with BigNumber
-      if (milestone.itemizeState) {
-        constructedModel.maxAmount = constructedModel.items
-          .reduce(
-            (accumulator, item) => accumulator.plus(new BigNumber(item.wei)),
-            new BigNumber(0),
-          )
-          .toFixed();
-      } else {
-        constructedModel.maxAmount = utils.toWei(milestone.maxAmount.toFixed());
-      }
-
-      if (this.props.isNew) {
-        const createMilestone = (txData, callback) => {
-          feathersClient
-            .service('milestones')
-            .create(Object.assign({}, constructedModel, txData))
-            .then(m => {
-              afterEmit(true);
-              callback(m);
-            })
-            .catch(err => {
-              this.setState({ isSaving: false, isBlocking: true });
-              ErrorPopup(
-                'There has been an issue creating the milestone. Please try again after refresh.',
-                err,
-              );
-            });
-        };
-
-        if (this.props.isProposed) {
-          createMilestone(
-            {
-              pluginAddress: '0x0000000000000000000000000000000000000000',
-              totalDonated: '0',
-              donationCount: 0,
-            },
-            m => {
-              GA.trackEvent({
-                category: 'Milestone',
-                action: 'proposed',
-                label: m._id,
-              });
+    const _saveMilestone = () =>
+      MilestoneService.save({
+        milestone,
+        from: this.props.currentUser.address,
+        afterSave: (created, txUrl) => {
+          if (created) {
+            if (this.props.isProposed) {
               React.toast.info(<p>Your Milestone has been proposed to the Campaign Owner.</p>);
-            },
-          );
-        } else {
-          let etherScanUrl;
-          Promise.all([getNetwork()])
-            .then(([network]) => {
-              etherScanUrl = network.etherscan;
-
-              const from = this.props.currentUser.address;
-              const {
-                title,
-                recipientAddress,
-                reviewerAddress,
-                campaignReviewerAddress,
-                maxAmount,
-                token,
-              } = constructedModel;
-              const parentProjectId = this.state.campaignProjectId;
-              // TODO  fix this hack
-              if (!parentProjectId || parentProjectId === '0') {
-                ErrorPopup(
-                  `It looks like the campaign has not been mined yet. Please try again in a bit`,
-                );
-                return null;
-              }
-
-              /**
-              lppCappedMilestoneFactory params
-
-              string _name,
-              string _url,
-              uint64 _parentProject,
-              address _reviewer,
-              address _recipient,
-              address _campaignReviewer,
-              address _milestoneManager,
-              uint _maxAmount,
-              address _acceptedToken,
-              uint _reviewTimeoutSeconds
-              * */
-              return network.lppCappedMilestoneFactory
-                .newMilestone(
-                  title,
-                  '',
-                  parentProjectId,
-                  reviewerAddress,
-                  recipientAddress,
-                  campaignReviewerAddress,
-                  from,
-                  maxAmount,
-                  token.foreignAddress,
-                  5 * 24 * 60 * 60, // 5 days in seconds
-                  { from, $extraGas: extraGas() },
-                )
-                .on('transactionHash', hash => {
-                  txHash = hash;
-                  createMilestone(
-                    {
-                      txHash,
-                      pluginAddress: '0x0000000000000000000000000000000000000000',
-                      totalDonated: '0',
-                      donationCount: '0',
-                    },
-                    m => {
-                      GA.trackEvent({
-                        category: 'Milestone',
-                        action: 'created',
-                        label: m._id,
-                      });
-                      React.toast.info(
-                        <p>
-                          Your Milestone is pending....
-                          <br />
-                          <a
-                            href={`${etherScanUrl}tx/${txHash}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                          >
-                            View transaction
-                          </a>
-                        </p>,
-                      );
-                    },
-                  );
-                })
-                .then(() => {
-                  React.toast.success(
-                    <p>
-                      Your Milestone has been created!
-                      <br />
-                      <a
-                        href={`${etherScanUrl}tx/${txHash}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        View transaction
-                      </a>
-                    </p>,
-                  );
-                })
-                .catch(e => {
-                  ErrorPopup(
-                    'Something went wrong with the transaction. Is your wallet unlocked?',
-                    e,
-                  );
-                });
-            })
-            .catch(err => {
-              if (txHash && err.message && err.message.includes('unknown transaction')) return; // bug in web3 seems to constantly fail due to this error, but the tx is correct
-              this.setState({ isSaving: false, isBlocking: true });
-              ErrorPopup(
-                'Something went wrong with the transaction.',
-                `${etherScanUrl}tx/${txHash}`,
-              );
-            });
-        }
-      } else {
-        feathersClient
-          .service('milestones')
-          .patch(milestone.id, constructedModel)
-          .then(() => {
+            }
+          } else if (txUrl) {
+            React.toast.info(
+              <p>
+                Your Milestone is pending....
+                <br />
+                <a href={txUrl} target="_blank" rel="noopener noreferrer">
+                  View transaction
+                </a>
+              </p>,
+            );
+          } else {
             React.toast.success(
               <p>
                 Your Milestone has been updated!
@@ -552,65 +380,30 @@ class EditMilestone extends Component {
               action: 'updated',
               label: this.state.id,
             });
-            afterEmit();
-          });
-      }
-    };
-
-    const saveMilestone = () => {
-      const uploadMilestoneImage = () => {
-        if (this.state.uploadNewImage) {
-          feathersRest
-            .service('uploads')
-            .create({
-              uri: this.state.image,
-            })
-            .then(file => updateMilestone(file.url))
-            .catch(err => {
-              ErrorPopup(
-                'Something went wrong when uploading your image. Please try again after refresh.',
-                err,
-              );
-              this.setState({ isSaving: false, isBlocking: true });
-            });
-        } else {
-          updateMilestone();
-        }
-      };
-
-      if (this.state.milestone.itemizeState && this.props.isNew) {
-        // upload all the item images
-        const uploadItemImages = [];
-        this.state.milestone.items.forEach(item => {
-          if (item.image) {
-            uploadItemImages.push(
-              new Promise((resolve, reject) => {
-                feathersRest
-                  .service('uploads')
-                  .create({ uri: item.image })
-                  .then(file => {
-                    item.image = file.url;
-                    resolve('done');
-                  })
-                  .catch(() => reject(new Error('could not upload item image')));
-              }),
-            );
           }
-        });
 
-        Promise.all(uploadItemImages)
-          .then(() => uploadMilestoneImage())
-          .catch(err => {
-            this.setState({ isSaving: false, isBlocking: true });
-            ErrorPopup(
-              'There has been an issue uploading one of the proof items. Please refresh the page and try again.',
-              err,
-            );
+          this.setState({
+            isSaving: false,
+            isBlocking: false,
           });
-      } else {
-        uploadMilestoneImage();
-      }
-    };
+          this.props.history.goBack();
+        },
+        afterMined: (created, txUrl) => {
+          React.toast.success(
+            <p>
+              Your Milestone has been created!
+              <br />
+              <a href={txUrl} target="_blank" rel="noopener noreferrer">
+                View transaction
+              </a>
+            </p>,
+          );
+        },
+        onError: errorMessage => {
+          React.toast.error(errorMessage);
+          this.setState({ isSaving: false });
+        },
+      });
 
     this.setState(
       {
@@ -627,11 +420,11 @@ class EditMilestone extends Component {
             dangerMode: true,
             buttons: ['Cancel', 'Yes, propose'],
           }).then(isConfirmed => {
-            if (isConfirmed) saveMilestone();
+            if (isConfirmed) _saveMilestone();
             else this.setState({ isSaving: false });
           });
         } else {
-          saveMilestone();
+          _saveMilestone();
         }
       },
     );
