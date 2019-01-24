@@ -16,6 +16,7 @@ import { getTruncatedText, getReadableStatus, convertEthHelper } from '../../lib
 import config from '../../configuration';
 
 import MilestoneService from '../../services/MilestoneService';
+import Milestone from '../../models/Milestone';
 
 const reviewDue = updatedAt =>
   moment()
@@ -212,8 +213,7 @@ class MyMilestones extends Component {
                                       </Link>
                                     </td>
                                     <td className="td-status">
-                                      {(m.status === 'Pending' ||
-                                        (Object.keys(m).includes('mined') && !m.mined)) && (
+                                      {(m.status === Milestone.PENDING || !m.mined) && (
                                         <span>
                                           <i className="fa fa-circle-o-notch fa-spin" />
                                           &nbsp;
