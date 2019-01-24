@@ -646,7 +646,7 @@ class MilestoneService {
               });
           })
           .on('receipt', () => onConfirmation(`${etherScanUrl}tx/${txHash}`))
-          .catch(err => console.log(err));
+          .catch(err => console.error(err));
       })
       .catch(err => {
         if (txHash && err.message && err.message.includes('unknown transaction')) onError(); // bug in web3 seems to constantly fail due to this error, but the tx is correct
