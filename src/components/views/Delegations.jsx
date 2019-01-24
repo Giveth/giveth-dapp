@@ -105,7 +105,9 @@ const Delegations = ({ balance, currentUser }) => (
                                             d.amountRemaining > 0 && (
                                               <DelegateButton
                                                 types={milestones.filter(
-                                                  m => m.campaignId === d.ownerTypeId,
+                                                  m =>
+                                                    m.campaignId === d.ownerTypeId &&
+                                                    m.token.symbol === d.token.symbol,
                                                 )}
                                                 donation={d}
                                                 balance={balance}
