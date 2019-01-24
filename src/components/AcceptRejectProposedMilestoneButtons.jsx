@@ -115,7 +115,8 @@ class AcceptRejectProposedMilestoneButtons extends Component {
       <Web3Consumer>
         {({ state: { isForeignNetwork } }) => (
           <Fragment>
-            {milestone.campaign.ownerAddress === currentUser.address &&
+            {currentUser &&
+              milestone.campaign.ownerAddress === currentUser.address &&
               milestone.status === 'Proposed' && (
                 <span>
                   <button
