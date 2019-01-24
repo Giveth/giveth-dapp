@@ -33,7 +33,7 @@ class MyMilestones extends Component {
       isLoading: true,
       milestones: [],
       visiblePages: 10,
-      itemsPerPage: 50,
+      itemsPerPage: 10,
       skipPages: 0,
       totalResults: 0,
       milestoneStatus: 'Active',
@@ -85,9 +85,11 @@ class MyMilestones extends Component {
           totalResults: resp.total,
           isLoading: false,
         }),
-      onError: () =>
+      onError: err => {
+        console.log('err', err);
         // TO DO: handle error here in view
-        this.setState({ isLoading: false }),
+        this.setState({ isLoading: false });
+      },
     });
   }
 

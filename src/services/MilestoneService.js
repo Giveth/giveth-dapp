@@ -542,41 +542,55 @@ class MilestoneService {
    * @param onConfirmation  Callback function once the transaction was mined
    * @param onError         Callback function if error is encountered
    */
-  static requestMarkComplete({ milestone, from, proof, onTxHash, onConfirmation, onError }) {
+  static async requestMarkComplete({ milestone, from, proof, onTxHash, onConfirmation, onError }) {
     let txHash;
     let etherScanUrl;
 
-    Promise.all([getNetwork(), getWeb3()])
-      .then(([network, web3]) => {
-        etherScanUrl = network.etherscan;
+    try {
+      const network = await getNetwork();
+      const web3 = await getWeb3();
 
-        const cappedMilestone = new LPPCappedMilestone(web3, milestone.pluginAddress);
+      etherScanUrl = network.etherscan;
 
-        return cappedMilestone
-          .requestMarkAsComplete({
-            from,
-            $extraGas: extraGas(),
-          })
-          .once('transactionHash', hash => {
-            txHash = hash;
+      const cappedMilestone = new LPPCappedMilestone(web3, milestone.pluginAddress);
 
-            return milestones
-              .patch(milestone._id, {
-                status: Milestone.NEEDS_REVIEW,
-                message: proof.message,
-                proofItems: proof.items.map(i => i.getItem()),
-                mined: false,
-                txHash,
-              })
-              .then(() => onTxHash(`${etherScanUrl}tx/${txHash}`))
-              .catch(e => onError('patch-error', e));
-          })
-          .on('receipt', () => onConfirmation(`${etherScanUrl}tx/${txHash}`));
-      })
-      .catch(err => {
-        if (txHash && err.message && err.message.includes('unknown transaction')) onError(); // bug in web3 seems to constantly fail due to this error, but the tx is correct
-        onError(err, `${etherScanUrl}tx/${txHash}`);
-      });
+      await cappedMilestone
+        .requestMarkAsComplete({
+          from,
+          $extraGas: extraGas(),
+        })
+        .once('transactionHash', async hash => {
+          txHash = hash;
+
+          if (proof.items && proof.items.length > 0) {
+            await proof.items.forEach(async proofItem => {
+              try {
+                proofItem.image = await IPFSService.upload(proofItem.image);
+              } catch (err) {
+                ErrorPopup('Failed to upload milestone proof item image to ipfs', err);
+              }
+            });
+          }
+
+          try {
+            await milestones.patch(milestone._id, {
+              status: Milestone.NEEDS_REVIEW,
+              message: proof.message,
+              proofItems: proof.items.map(i => i.toFeathers()),
+              mined: false,
+              txHash,
+            });
+          } catch (err) {
+            throw new Error('patch-error', err);
+          }
+
+          onTxHash(`${etherScanUrl}tx/${txHash}`);
+        })
+        .on('receipt', () => onConfirmation(`${etherScanUrl}tx/${txHash}`));
+    } catch (err) {
+      if (txHash && err.message && err.message.includes('unknown transaction')) onError(); // bug in web3 seems to constantly fail due to this error, but the tx is correct
+      onError(err, `${etherScanUrl}tx/${txHash}`);
+    }
   }
 
   /**

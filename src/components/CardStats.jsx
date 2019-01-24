@@ -69,7 +69,7 @@ CardStats.propTypes = {
   type: PropTypes.string.isRequired,
   peopleCount: PropTypes.number.isRequired,
   status: PropTypes.string,
-  maxAmount: PropTypes.instanceOf(BigNumber),
+  maxAmount: PropTypes.string,
   totalDonated: PropTypes.instanceOf(BigNumber),
   token: PropTypes.shape(),
 };
