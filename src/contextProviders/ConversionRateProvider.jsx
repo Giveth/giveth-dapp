@@ -16,18 +16,12 @@ class ConversionRateProvider extends Component {
   constructor() {
     super();
 
-    const fiatTypes =
-      React.whitelist && Array.isArray(React.whitelist.fiatWhitelist)
-        ? React.whitelist.fiatWhitelist.map(f => ({ value: f, title: f }))
-        : [];
-
     this.state = {
       conversionRates: [],
       currentRate: {
         rates: {},
         timestamp: (Math.round(getStartOfDayUTC().toDate()) / 1000).toString(),
       },
-      fiatTypes,
     };
 
     this.getConversionRates = this.getConversionRates.bind(this);
@@ -69,7 +63,8 @@ class ConversionRateProvider extends Component {
   }
 
   render() {
-    const { conversionRates, currentRate, fiatTypes } = this.state;
+    const { conversionRates, currentRate } = this.state;
+    const { fiatWhitelist } = this.props;
     const { getConversionRates } = this;
 
     return (
@@ -78,7 +73,7 @@ class ConversionRateProvider extends Component {
           state: {
             conversionRates,
             currentRate,
-            fiatTypes,
+            fiatTypes: fiatWhitelist.map(f => ({ value: f, title: f })),
           },
           actions: {
             getConversionRates,
@@ -93,6 +88,7 @@ class ConversionRateProvider extends Component {
 
 ConversionRateProvider.propTypes = {
   children: PropTypes.oneOfType([PropTypes.arrayOf(PropTypes.node), PropTypes.node]).isRequired,
+  fiatWhitelist: PropTypes.arrayOf(PropTypes.string).isRequired,
 };
 
 export default ConversionRateProvider;

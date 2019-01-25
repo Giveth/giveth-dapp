@@ -1,5 +1,3 @@
-/* eslint-disable react/no-unescaped-entities */
-/* eslint-disable no-restricted-globals */
 import React from 'react';
 import PropTypes from 'prop-types';
 import Modal from 'react-modal';
@@ -23,6 +21,7 @@ import { feathersClient } from '../lib/feathersClient';
 import { Consumer as Web3Consumer } from '../contextProviders/Web3Provider';
 import NetworkWarning from './NetworkWarning';
 import SelectFormsy from './SelectFormsy';
+import { Consumer as WhiteListConsumer } from '../contextProviders/WhiteListProvider';
 
 const POLL_DELAY_TOKENS = 2000;
 
@@ -39,24 +38,13 @@ const modalStyles = {
   },
 };
 
-const _getTokenWhitelist = () => {
-  const r = React.whitelist.tokenWhitelist;
-  return r.map(t => {
-    if (t.symbol === config.nativeTokenName) {
-      t.name = `${config.homeNetworkName} ${config.nativeTokenName}`;
-    }
-    t.balance = new BigNumber(0);
-    return t;
-  });
-};
-
 Modal.setAppElement('#root');
 
 // tx only requires 25400 gas, but for some reason we get an out of gas
 // error in web3 with that amount (even though the tx succeeds)
 const DONATION_GAS = 30400;
 
-class BaseDonateButton extends React.Component {
+class DonateButton extends React.Component {
   constructor(props) {
     super(props);
 
@@ -75,11 +63,11 @@ class BaseDonateButton extends React.Component {
       showCustomAddress: false,
       customAddress:
         props.currentUser && props.currentUser.address ? props.currentUser.address : undefined,
-      tokenWhitelistOptions: _getTokenWhitelist().map(t => ({
+      tokenWhitelistOptions: props.tokenWhitelist.map(t => ({
         value: t.address,
         title: t.name,
       })),
-      selectedToken: props.model.type === 'milestone' ? modelToken : _getTokenWhitelist()[0],
+      selectedToken: props.model.type === 'milestone' ? modelToken : props.tokenWhitelist[0],
     };
 
     this.submit = this.submit.bind(this);
@@ -99,7 +87,7 @@ class BaseDonateButton extends React.Component {
 
   setToken(address) {
     const { amount, defaultAmount } = this.state;
-    const token = _getTokenWhitelist().find(t => t.address === address);
+    const token = this.props.tokenWhitelist.find(t => t.address === address);
 
     let amt = amount;
     if (defaultAmount) {
@@ -132,7 +120,7 @@ class BaseDonateButton extends React.Component {
 
   pollToken() {
     const { selectedToken } = this.state;
-    const { isHomeNetwork, currentUser } = this.props;
+    const { isCorrectNetwork, currentUser } = this.props;
 
     // stop existing poll
     if (this.stopPolling) {
@@ -150,7 +138,7 @@ class BaseDonateButton extends React.Component {
             const contract = tokens[selectedToken.address];
 
             // we are only interested in homeNetwork token balances
-            if (!isHomeNetwork || !currentUser || !currentUser.address || !contract) {
+            if (!isCorrectNetwork || !currentUser || !currentUser.address || !contract) {
               return new BigNumber(0);
             }
 
@@ -347,7 +335,7 @@ class BaseDonateButton extends React.Component {
   }
 
   render() {
-    const { model, currentUser, NativeTokenBalance, validProvider, isHomeNetwork } = this.props;
+    const { model, currentUser, NativeTokenBalance, validProvider, isCorrectNetwork } = this.props;
     const {
       amount,
       formIsValid,
@@ -402,11 +390,11 @@ class BaseDonateButton extends React.Component {
 
             {validProvider && (
               <NetworkWarning
-                incorrectNetwork={!isHomeNetwork}
+                incorrectNetwork={!isCorrectNetwork}
                 networkName={config.homeNetworkName}
               />
             )}
-            {isHomeNetwork &&
+            {isCorrectNetwork &&
               currentUser && (
                 <p>
                   You&apos;re pledging: as long as the {model.type} owner does not lock your money
@@ -423,7 +411,7 @@ class BaseDonateButton extends React.Component {
               )}
 
             {validProvider &&
-              isHomeNetwork &&
+              isCorrectNetwork &&
               currentUser && (
                 <div>
                   {model.type !== 'milestone' && (
@@ -463,7 +451,7 @@ class BaseDonateButton extends React.Component {
                     }}
                     tooltip={false}
                     format={val => `${val} ${config.nativeTokenName}`}
-                    onChange={newAmount => this.setState({ amount: newAmount.toString() })}
+                    onChange={newAmount => this.setState({ amount: newAmount })}
                   />
                 </div>
               )}
@@ -541,7 +529,7 @@ class BaseDonateButton extends React.Component {
                   className="btn btn-success"
                   formNoValidate
                   type="submit"
-                  disabled={isSaving || !formIsValid || !isHomeNetwork}
+                  disabled={isSaving || !formIsValid || !isCorrectNetwork}
                   isLoading={isSaving}
                   loadingText="Donating..."
                 >
@@ -565,21 +553,6 @@ class BaseDonateButton extends React.Component {
   }
 }
 
-const DonateButton = ({ model, currentUser, maxDonationAmount }) => (
-  <Web3Consumer>
-    {({ state: { isHomeNetwork, validProvider, balance } }) => (
-      <BaseDonateButton
-        NativeTokenBalance={balance}
-        validProvider={validProvider}
-        isHomeNetwork={isHomeNetwork}
-        model={model}
-        currentUser={currentUser}
-        maxDonationAmount={maxDonationAmount}
-      />
-    )}
-  </Web3Consumer>
-);
-
 const modelTypes = PropTypes.shape({
   type: PropTypes.string.isRequired,
   adminId: PropTypes.oneOfType([PropTypes.number, PropTypes.string]).isRequired,
@@ -593,17 +566,10 @@ DonateButton.propTypes = {
   model: modelTypes.isRequired,
   currentUser: PropTypes.instanceOf(User),
   maxDonationAmount: PropTypes.instanceOf(BigNumber),
-};
-
-// eslint isn't smart enough to be able to use Object.assign({}, DonateButton.propTypes, {...})
-// so we have to duplicate them
-BaseDonateButton.propTypes = {
-  model: modelTypes.isRequired,
-  currentUser: PropTypes.instanceOf(User),
-  maxDonationAmount: PropTypes.instanceOf(BigNumber),
   NativeTokenBalance: PropTypes.instanceOf(BigNumber).isRequired,
   validProvider: PropTypes.bool.isRequired,
-  isHomeNetwork: PropTypes.bool.isRequired,
+  isCorrectNetwork: PropTypes.bool.isRequired,
+  tokenWhitelist: PropTypes.arrayOf(PropTypes.shape()).isRequired,
 };
 
 DonateButton.defaultProps = {
@@ -611,10 +577,20 @@ DonateButton.defaultProps = {
   maxDonationAmount: undefined, // new BigNumber(10000000000000000),
 };
 
-BaseDonateButton.defaultProps = {
-  currentUser: undefined,
-  maxDonationAmount: undefined, // new BigNumber(10000000000000000),
-  // maxDonationAmount: new BigNumber(10000000000000000),
-};
-
-export default DonateButton;
+export default props => (
+  <WhiteListConsumer>
+    {({ state: { tokenWhitelist } }) => (
+      <Web3Consumer>
+        {({ state: { isHomeNetwork, validProvider, balance } }) => (
+          <DonateButton
+            NativeTokenBalance={balance}
+            validProvider={validProvider}
+            isCorrectNetwork={isHomeNetwork}
+            tokenWhitelist={tokenWhitelist}
+            {...props}
+          />
+        )}
+      </Web3Consumer>
+    )}
+  </WhiteListConsumer>
+);

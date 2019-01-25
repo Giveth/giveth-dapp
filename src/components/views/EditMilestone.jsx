@@ -7,7 +7,6 @@ import BigNumber from 'bignumber.js';
 import { Form, Input } from 'formsy-react-components';
 import GA from 'lib/GoogleAnalytics';
 import Milestone from 'models/Milestone';
-import { feathersClient } from '../../lib/feathersClient';
 import Loader from '../Loader';
 import QuillFormsy from '../QuillFormsy';
 import SelectFormsy from '../SelectFormsy';
@@ -18,7 +17,6 @@ import { isOwner, getTruncatedText, getStartOfDayUTC } from '../../lib/helpers';
 import {
   checkForeignNetwork,
   checkBalance,
-  isInWhitelist,
   authenticateIfPossible,
   checkProfile,
 } from '../../lib/middleware';
@@ -29,6 +27,7 @@ import templates from '../../lib/milestoneTemplates';
 import ErrorPopup from '../ErrorPopup';
 import MilestoneProof from '../MilestoneProof';
 
+import { Consumer as WhiteListConsumer } from '../../contextProviders/WhiteListProvider';
 import getConversionRatesContext from '../../containers/getConversionRatesContext';
 import MilestoneService from '../../services/MilestoneService';
 import CampaignService from '../../services/CampaignService';
@@ -55,16 +54,10 @@ class EditMilestone extends Component {
       isSaving: false,
       formIsValid: false,
       milestone: new Milestone({}),
-      hasWhitelist: React.whitelist.reviewerWhitelist.length > 0,
-      whitelistReviewerOptions: React.whitelist.reviewerWhitelist.map(r => ({
-        value: r.address,
-        title: `${r.name ? r.name : 'Anonymous user'} - ${r.address}`,
-      })),
-      tokenWhitelistOptions: React.whitelist.tokenWhitelist.map(t => ({
+      tokenWhitelistOptions: props.tokenWhitelist.map(t => ({
         value: t.address,
         title: t.name,
       })),
-      reviewers: [],
       isBlocking: false,
     };
 
@@ -110,7 +103,6 @@ class EditMilestone extends Component {
             });
 
             await this.props.getConversionRates(milestone.date, milestone.token.symbol);
-            if (!this.state.hasWhitelist) await this.getReviewers();
 
             this.setState({
               isLoading: false,
@@ -128,7 +120,7 @@ class EditMilestone extends Component {
             if (campaign.projectId < 0) {
               this.props.history.goBack();
             } else {
-              const milestone = new Milestone({ token: React.whitelist.tokenWhitelist[0] });
+              const milestone = new Milestone({ token: this.props.tokenWhitelist[0] });
               milestone.recipientAddress = this.props.currentUser.address;
               milestone.selectedFiatType = milestone.token.symbol;
               this.setState({
@@ -141,7 +133,6 @@ class EditMilestone extends Component {
 
             this.setDate(this.state.milestone.date);
 
-            if (!this.state.hasWhitelist) await this.getReviewers();
             this.setState({
               isLoading: false,
             });
@@ -185,25 +176,6 @@ class EditMilestone extends Component {
     const { milestone } = this.state;
     milestone.items = items;
     this.setState({ milestone });
-  }
-
-  getReviewers() {
-    return feathersClient
-      .service('/users')
-      .find({
-        query: {
-          email: { $exists: true },
-          $select: ['_id', 'name', 'address'],
-        },
-      })
-      .then(resp =>
-        this.setState({
-          reviewers: resp.data.map(r => ({
-            value: r.address,
-            title: `${r.name ? r.name : 'Anonymous user'} - ${r.address}`,
-          })),
-        }),
-      );
   }
 
   setImage(image) {
@@ -298,7 +270,7 @@ class EditMilestone extends Component {
 
   setToken(address) {
     const { milestone } = this.state;
-    milestone.token = React.whitelist.tokenWhitelist.find(t => t.address === address);
+    milestone.token = this.props.tokenWhitelist.find(t => t.address === address);
     this.setState({ milestone }, () =>
       this.setDate(this.state.milestone.data || getStartOfDayUTC()),
     );
@@ -312,11 +284,7 @@ class EditMilestone extends Component {
 
     return authenticateIfPossible(this.props.currentUser)
       .then(() => {
-        if (
-          this.props.isNew &&
-          !this.props.isProposed &&
-          !isInWhitelist(this.props.currentUser, React.whitelist.projectOwnerWhitelist)
-        ) {
+        if (!this.props.isProposed && !this.props.isCampaignManager(this.props.currentUser)) {
           throw new Error('not whitelisted');
         }
       })
@@ -512,18 +480,13 @@ class EditMilestone extends Component {
   }
 
   render() {
-    const { isNew, isProposed, history, currentRate, fiatTypes } = this.props;
+    const { isNew, isProposed, history, currentRate, fiatTypes, reviewers } = this.props;
     const {
       isLoading,
       isSaving,
-
       formIsValid,
-
       campaignTitle,
-      hasWhitelist,
-      whitelistReviewerOptions,
       tokenWhitelistOptions,
-      reviewers,
       isBlocking,
       milestone,
     } = this.state;
@@ -639,43 +602,22 @@ class EditMilestone extends Component {
                     </div>
 
                     <div className="form-group">
-                      {hasWhitelist && (
-                        <SelectFormsy
-                          name="reviewerAddress"
-                          id="reviewer-select"
-                          label="Select a reviewer"
-                          helpText="Each milestone needs a reviewer who verifies that the milestone is
+                      <SelectFormsy
+                        name="reviewerAddress"
+                        id="reviewer-select"
+                        label="Select a reviewer"
+                        helpText="Each milestone needs a reviewer who verifies that the milestone is
                           completed successfully"
-                          value={milestone.reviewerAddress}
-                          cta="--- Select a reviewer ---"
-                          options={whitelistReviewerOptions}
-                          validations="isEtherAddress"
-                          validationErrors={{
-                            isEtherAddress: 'Please select a reviewer.',
-                          }}
-                          required
-                          disabled={!isNew && !isProposed}
-                        />
-                      )}
-
-                      {!hasWhitelist && (
-                        <SelectFormsy
-                          name="reviewerAddress"
-                          id="reviewer-select"
-                          label="Select a reviewer"
-                          helpText="Each milestone needs a reviewer who verifies that the milestone is
-                          completed successfully"
-                          value={milestone.reviewerAddress}
-                          cta="--- Select a reviewer ---"
-                          options={reviewers}
-                          validations="isEtherAddress"
-                          validationErrors={{
-                            isEtherAddress: 'Please select a reviewer.',
-                          }}
-                          required
-                          disabled={!isNew && !isProposed}
-                        />
-                      )}
+                        value={milestone.reviewerAddress}
+                        cta="--- Select a reviewer ---"
+                        options={reviewers}
+                        validations="isEtherAddress"
+                        validationErrors={{
+                          isEtherAddress: 'Please select a reviewer.',
+                        }}
+                        required
+                        disabled={!isNew && !isProposed}
+                      />
                     </div>
                     <div className="label">Where will the money go after completion? *</div>
                     <div className="form-group recipient-address-container">
@@ -861,6 +803,9 @@ EditMilestone.propTypes = {
     timestamp: PropTypes.string.isRequired,
   }),
   fiatTypes: PropTypes.arrayOf(PropTypes.object).isRequired,
+  isCampaignManager: PropTypes.func.isRequired,
+  reviewers: PropTypes.arrayOf(PropTypes.shape()).isRequired,
+  tokenWhitelist: PropTypes.arrayOf(PropTypes.shape()).isRequired,
 };
 
 EditMilestone.defaultProps = {
@@ -870,4 +815,15 @@ EditMilestone.defaultProps = {
   currentRate: undefined,
 };
 
-export default getConversionRatesContext(EditMilestone);
+export default getConversionRatesContext(props => (
+  <WhiteListConsumer>
+    {({ state: { tokenWhitelist, reviewers }, actions: { isCampaignManager } }) => (
+      <EditMilestone
+        tokenWhitelist={tokenWhitelist}
+        reviewers={reviewers}
+        isCampaignManager={isCampaignManager}
+        {...props}
+      />
+    )}
+  </WhiteListConsumer>
+));

@@ -165,28 +165,6 @@ export const checkForeignNetwork = async isForeignNetwork => {
 };
 
 /**
- * check if the currentUser is in a particular whitelist.
- *
- * @param currentUser {object} Current User object
- * @param whitelist   {array}  Array of whitelisted addresses
- *
- * @return boolean
- *
- */
-export const isInWhitelist = (currentUser, whitelist) => {
-  if (
-    (Array.isArray(whitelist) && whitelist.length === 0) ||
-    (Array.isArray(whitelist) &&
-      currentUser &&
-      currentUser.address &&
-      whitelist.find(u => u.address.toLowerCase() === currentUser.address.toLowerCase()))
-  ) {
-    return true;
-  }
-  return false;
-};
-
-/**
  * Checks for sufficient wallet balance.
  *
  * @param balance {BN} balance object

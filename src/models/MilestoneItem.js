@@ -1,4 +1,3 @@
-import React from 'react';
 import BigNumber from 'bignumber.js';
 
 import moment from 'moment';
@@ -88,7 +87,6 @@ export default class MilestoneItemModel extends Model {
   }
 
   set selectedFiatType(value) {
-    this.checkValue(value, React.whitelist.fiatWhitelist, 'selectedFiatType');
     this._selectedFiatType = value;
   }
 

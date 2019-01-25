@@ -6,7 +6,6 @@ import 'react-input-token/lib/style.css';
 
 import { Form, Input } from 'formsy-react-components';
 import GA from 'lib/GoogleAnalytics';
-import { feathersClient } from '../../lib/feathersClient';
 import Loader from '../Loader';
 import QuillFormsy from '../QuillFormsy';
 import SelectFormsy from '../SelectFormsy';
@@ -16,7 +15,6 @@ import { isOwner, getTruncatedText, history } from '../../lib/helpers';
 import {
   checkForeignNetwork,
   checkBalance,
-  isInWhitelist,
   authenticateIfPossible,
   checkProfile,
 } from '../../lib/middleware';
@@ -25,6 +23,7 @@ import User from '../../models/User';
 import Campaign from '../../models/Campaign';
 import CampaignService from '../../services/CampaignService';
 import ErrorPopup from '../ErrorPopup';
+import { Consumer as WhiteListConsumer } from '../../contextProviders/WhiteListProvider';
 
 /**
  * View to create or edit a Campaign
@@ -41,11 +40,6 @@ class EditCampaign extends Component {
       isLoading: true,
       isSaving: false,
       formIsValid: false,
-      hasWhitelist: React.whitelist.reviewerWhitelist.length > 0,
-      whitelistOptions: React.whitelist.reviewerWhitelist.map(r => ({
-        value: r.address,
-        title: `${r.name ? r.name : 'Anonymous user'} - ${r.address}`,
-      })),
       reviewers: [],
       // Campaign model
       campaign: new Campaign({
@@ -64,9 +58,6 @@ class EditCampaign extends Component {
     this.mounted = true;
     checkForeignNetwork(this.props.isForeignNetwork)
       .then(() => this.checkUser())
-      .then(() => {
-        if (!this.state.hasWhitelist) this.getReviewers();
-      })
       .then(() => {
         // Load this Campaign
         if (!this.props.isNew) {
@@ -109,31 +100,6 @@ class EditCampaign extends Component {
     this.mounted = false;
   }
 
-  getReviewers() {
-    return feathersClient
-      .service('/users')
-      .find({
-        query: {
-          email: { $exists: true },
-          $select: ['_id', 'name', 'address'],
-        },
-      })
-      .then(resp =>
-        this.setState({
-          reviewers: resp.data.map(r => ({
-            value: r.address,
-            title: `${r.name ? r.name : 'Anonymous user'} - ${r.address}`,
-          })),
-        }),
-      )
-      .catch(err => {
-        ErrorPopup(
-          'Unable to load Campaign reviewers. Please refresh the page and try again.',
-          err,
-        );
-      });
-  }
-
   setImage(image) {
     const { campaign } = this.state;
     campaign.image = image;
@@ -148,7 +114,7 @@ class EditCampaign extends Component {
 
     return authenticateIfPossible(this.props.currentUser)
       .then(() => {
-        if (!isInWhitelist(this.props.currentUser, React.whitelist.projectOwnerWhitelist)) {
+        if (!this.props.isCampaignManager(this.props.currentUser)) {
           throw new Error('not whitelisted');
         }
       })
@@ -222,16 +188,7 @@ class EditCampaign extends Component {
 
   render() {
     const { isNew } = this.props;
-    const {
-      isLoading,
-      isSaving,
-      campaign,
-      formIsValid,
-      hasWhitelist,
-      whitelistOptions,
-      reviewers,
-      isBlocking,
-    } = this.state;
+    const { isLoading, isSaving, campaign, formIsValid, reviewers, isBlocking } = this.state;
 
     return (
       <div id="edit-campaign-view">
@@ -332,25 +289,7 @@ class EditCampaign extends Component {
                     </div>
 
                     <div className="form-group">
-                      {hasWhitelist && (
-                        <SelectFormsy
-                          name="reviewerAddress"
-                          id="reviewer-select"
-                          label="Select a reviewer"
-                          helpText="This person or smart contract will be reviewing your Campaign to increase trust for Givers."
-                          value={campaign.reviewerAddress}
-                          cta="--- Select a reviewer ---"
-                          options={whitelistOptions}
-                          validations="isEtherAddress"
-                          validationErrors={{
-                            isEtherAddress: 'Please select a reviewer.',
-                          }}
-                          required
-                          disabled={!isNew}
-                        />
-                      )}
-
-                      {!hasWhitelist && (
+                      {
                         <SelectFormsy
                           name="reviewerAddress"
                           id="reviewer-select"
@@ -366,7 +305,7 @@ class EditCampaign extends Component {
                           required
                           disabled={!isNew}
                         />
-                      )}
+                      }
                     </div>
 
                     <div className="form-group row">
@@ -408,6 +347,7 @@ EditCampaign.propTypes = {
       id: PropTypes.string,
     }).isRequired,
   }).isRequired,
+  isCampaignManager: PropTypes.func.isRequired,
 };
 
 EditCampaign.defaultProps = {
@@ -415,4 +355,10 @@ EditCampaign.defaultProps = {
   isNew: false,
 };
 
-export default EditCampaign;
+export default props => (
+  <WhiteListConsumer>
+    {({ actions: { isCampaignManager } }) => (
+      <EditCampaign {...props} isCampaignManager={isCampaignManager} />
+    )}
+  </WhiteListConsumer>
+);

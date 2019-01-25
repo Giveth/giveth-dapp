@@ -1,10 +1,8 @@
-import React from 'react';
 import BigNumber from 'bignumber.js';
 import { utils } from 'web3';
 
 import Model from './Model';
 import { getTruncatedText } from '../lib/helpers';
-import config from '../configuration';
 
 /**
  * The DAC, Milestone and Campaign base model containing basic common interface
@@ -40,7 +38,7 @@ class BasicModel extends Model {
     peopleCount = 0,
     fullyFunded = false,
     donationCounters = [],
-    token = React.whitelist.tokenWhitelist.find(t => t.symbol === config.nativeTokenName),
+    token,
     createdAt,
   }) {
     super();

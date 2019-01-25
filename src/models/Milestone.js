@@ -1,8 +1,7 @@
-import React from 'react';
 import BigNumber from 'bignumber.js';
 import { utils } from 'web3';
 
-import { getStartOfDayUTC, getRandomWhitelistAddress, cleanIpfsPath } from 'lib/helpers';
+import { getStartOfDayUTC, cleanIpfsPath } from 'lib/helpers';
 import BasicModel from './BasicModel';
 import MilestoneItemModel from './MilestoneItem';
 
@@ -21,9 +20,7 @@ export default class MilestoneModel extends BasicModel {
       recipientAddress = '',
       status = MilestoneModel.PENDING,
       projectId = undefined,
-      reviewerAddress = React.whitelist.reviewerWhitelist.length > 0
-        ? getRandomWhitelistAddress(React.whitelist.reviewerWhitelist).address
-        : '',
+      reviewerAddress = '',
       items = [],
       date = getStartOfDayUTC().subtract(1, 'd'),
       confirmations = 0,
