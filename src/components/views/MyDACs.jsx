@@ -134,7 +134,7 @@ class MyDACs extends Component {
                                 <td className="td-donations-number">
                                   {d.donationCounters.length > 0 &&
                                     d.donationCounters.map(counter => (
-                                      <p>
+                                      <p key={`donations_count-${d.key}-${counter.symbol}`}>
                                         {counter.donationCount} donation(s) in {counter.symbol}
                                       </p>
                                     ))}
@@ -143,7 +143,7 @@ class MyDACs extends Component {
                                 <td className="td-donations-amount">
                                   {d.donationCounters.length > 0 &&
                                     d.donationCounters.map(counter => (
-                                      <p>
+                                      <p key={`total_donated-${d.key}-${counter.symbol}`}>
                                         {convertEthHelper(counter.totalDonated)} {counter.symbol}
                                       </p>
                                     ))}
