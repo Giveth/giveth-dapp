@@ -67,12 +67,12 @@ class MilestoneProof extends Component {
                     <table className="table table-responsive table-striped table-hover">
                       <thead>
                         <tr>
+                          {canEdit && <th className="td-item-action" />}
                           <th className="td-item-date">Date</th>
                           <th className="td-item-description">Description</th>
                           <th className="td-item-amount-fiat">Amount Fiat</th>
                           <th className="td-item-fiat-amount">Amount {token.name}</th>
                           <th className="td-item-file-upload">Attached proof</th>
-                          {canEdit && <th className="td-item-action" />}
                         </tr>
                       </thead>
                       <tbody>

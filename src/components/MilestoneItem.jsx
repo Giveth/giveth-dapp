@@ -25,12 +25,19 @@ class MilestoneItem extends React.Component {
     const { removeItem, item, isEditMode, token } = this.props;
     return (
       <tr>
+        {isEditMode && (
+          <td className="td-item-remove">
+            <button type="button" className="btn btn-link" onClick={removeItem}>
+              X
+            </button>
+          </td>
+        )}
         <td className="td-item-date">{moment.utc(item.date).format('Do MMM YYYY')}</td>
 
         <td className="td-item-description">{getTruncatedText(item.description)}</td>
 
         <td className="td-item-amount-fiat">
-          {item.selectedFiatType} {item.fiatAmount.toFixed()}
+          {item.selectedFiatType} {item.fiatAmount}
           <br />
           <span className="help-block">
             {`1 ${token.name} = ${item.conversionRate} ${item.selectedFiatType}`}
@@ -56,14 +63,6 @@ class MilestoneItem extends React.Component {
               </div>
             )}
         </td>
-
-        {isEditMode && (
-          <td className="td-item-remove">
-            <button type="button" className="btn btn-link" onClick={removeItem}>
-              X
-            </button>
-          </td>
-        )}
       </tr>
     );
   }
