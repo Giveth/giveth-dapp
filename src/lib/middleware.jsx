@@ -85,7 +85,7 @@ const authenticate = async (address, redirectOnFail = true) => {
             resolve(false);
             history.goBack();
             React.swal.close();
-          }, 10000);
+          }, 30000);
 
           try {
             const signature = await web3.eth.personal.sign(msg, address);

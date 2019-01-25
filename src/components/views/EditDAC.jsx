@@ -270,7 +270,7 @@ class EditDAC extends Component {
                     <div className="form-group">
                       <QuillFormsy
                         name="description"
-                        label="Explain how you are going to solve this your cause"
+                        label="Explain your cause"
                         helpText="Make it as extensive as necessary. Your goal is to build trust,
                         so that people join your Community and/or donate Ether."
                         value={dac.description}
