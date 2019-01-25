@@ -88,6 +88,7 @@ class DonateButton extends React.Component {
   setToken(address) {
     const { amount, defaultAmount } = this.state;
     const token = this.props.tokenWhitelist.find(t => t.address === address);
+    token.balance = new BigNumber('0'); // FIXME: There should be a balance provider handling all of this...
 
     let amt = amount;
     if (defaultAmount) {
