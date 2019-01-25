@@ -40,7 +40,6 @@ class EditCampaign extends Component {
       isLoading: true,
       isSaving: false,
       formIsValid: false,
-      reviewers: [],
       // Campaign model
       campaign: new Campaign({
         owner: props.currentUser,
@@ -187,8 +186,8 @@ class EditCampaign extends Component {
   }
 
   render() {
-    const { isNew } = this.props;
-    const { isLoading, isSaving, campaign, formIsValid, reviewers, isBlocking } = this.state;
+    const { isNew, reviewers } = this.props;
+    const { isLoading, isSaving, campaign, formIsValid, isBlocking } = this.state;
 
     return (
       <div id="edit-campaign-view">
@@ -348,6 +347,7 @@ EditCampaign.propTypes = {
     }).isRequired,
   }).isRequired,
   isCampaignManager: PropTypes.func.isRequired,
+  reviewers: PropTypes.arrayOf(PropTypes.shape()).isRequired,
 };
 
 EditCampaign.defaultProps = {
@@ -357,8 +357,8 @@ EditCampaign.defaultProps = {
 
 export default props => (
   <WhiteListConsumer>
-    {({ actions: { isCampaignManager } }) => (
-      <EditCampaign {...props} isCampaignManager={isCampaignManager} />
+    {({ state: { reviewers }, actions: { isCampaignManager } }) => (
+      <EditCampaign reviewers={reviewers} isCampaignManager={isCampaignManager} {...props} />
     )}
   </WhiteListConsumer>
 );
