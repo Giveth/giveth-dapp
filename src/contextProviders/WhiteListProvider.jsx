@@ -38,7 +38,7 @@ function isInWhitelist(currentUser, whitelist) {
 async function getUsers(addresses) {
   const query = { $select: ['_id', 'name', 'address'] };
 
-  if (Array.isArray(addresses) && addresses.length > 0) query.address = { $in: addresses };
+  if (Array.isArray(addresses) && addresses.length > 0) query.address = { $in: addresses.map(a => a.address) };
   else query.email = { $exists: true };
 
   const resp = await feathersClient.service('/users').find({ query });
