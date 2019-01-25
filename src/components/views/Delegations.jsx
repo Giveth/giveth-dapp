@@ -76,7 +76,6 @@ const Delegations = ({ balance, currentUser }) => (
                                 </thead>
                                 <tbody>
                                   {delegations.map(d => (
-                                    // TODO: <tr key={d.adminId}>
                                     <tr key={d._id}>
                                       {currentUser.authenticated && (
                                         <td className="td-actions">
