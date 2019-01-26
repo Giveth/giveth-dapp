@@ -693,7 +693,7 @@ class EditMilestone extends Component {
                                 type="number"
                                 step="any"
                                 label={`Maximum amount in ${milestone.selectedFiatType}`}
-                                value={milestone.fiatAmount.toNumber()}
+                                value={milestone.fiatAmount.toFixed()}
                                 placeholder="10"
                                 validations="greaterThan:0"
                                 validationErrors={{
@@ -800,7 +800,7 @@ EditMilestone.propTypes = {
   getConversionRates: PropTypes.func.isRequired,
   currentRate: PropTypes.shape({
     rates: PropTypes.shape().isRequired,
-    timestamp: PropTypes.string.isRequired,
+    timestamp: PropTypes.number.isRequired,
   }),
   fiatTypes: PropTypes.arrayOf(PropTypes.object).isRequired,
   isCampaignManager: PropTypes.func.isRequired,
