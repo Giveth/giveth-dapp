@@ -23,6 +23,7 @@ export default class MilestoneItemModel extends Model {
     this._date = date;
     this._description = description;
     this._image = image;
+    this._newImage = false;
     this._selectedFiatType = selectedFiatType;
     this._fiatAmount = new BigNumber(fiatAmount);
     this._wei = wei;
@@ -76,10 +77,19 @@ export default class MilestoneItemModel extends Model {
 
   set image(value) {
     this._image = value;
+    this._newImage = true;
   }
 
   get image() {
     return this._image;
+  }
+
+  get newImage() {
+    return this._newImage;
+  }
+
+  set newImage(value) {
+    this._newImage = value;
   }
 
   get selectedFiatType() {

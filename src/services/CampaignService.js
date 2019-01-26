@@ -198,9 +198,9 @@ class CampaignService {
     let txHash;
     let etherScanUrl;
     try {
-      let imageHash;
+      let profileHash;
       try {
-        imageHash = await IPFSService.upload(campaign.toIpfs());
+        profileHash = await IPFSService.upload(campaign.toIpfs());
       } catch (err) {
         ErrorPopup('Failed to upload campaign to ipfs');
       }
@@ -209,9 +209,9 @@ class CampaignService {
       etherScanUrl = network.etherscan;
 
       // nothing to update or failed ipfs upload
-      if (campaign.projectId && (campaign.url === imageHash || !imageHash)) {
+      if (campaign.projectId && (campaign.url === profileHash || !profileHash)) {
         // ipfs upload may have failed, but we still want to update feathers
-        if (!imageHash) {
+        if (!profileHash) {
           await campaigns.patch(campaign.id, campaign.toFeathers(txHash));
         }
         afterSave(null, false);
@@ -224,7 +224,7 @@ class CampaignService {
         // LPPCampaign function update(string newName, string newUrl, uint64 newCommitTime)
         promise = new LPPCampaign(await getWeb3(), campaign.pluginAddress).update(
           campaign.title,
-          imageHash || '',
+          profileHash || '',
           0,
           {
             from,
@@ -236,7 +236,7 @@ class CampaignService {
         const { lppCampaignFactory } = network;
         promise = lppCampaignFactory.newCampaign(
           campaign.title,
-          imageHash || '',
+          profileHash || '',
           0,
           campaign.reviewerAddress,
           {

@@ -308,28 +308,37 @@ class MilestoneService {
       );
     }
 
-    const isNew = !milestone._id || !milestone.projectId;
-    const isProposed = milestone.status === Milestone.PROPOSED;
-    const isRejected = milestone.status === Milestone.REJECTED;
     let txHash;
     let etherScanUrl;
 
     try {
+      // if a proposed or rejected milestone, create it only in feathers
+      if ([Milestone.PROPOSED, Milestone.REJECTED].includes(milestone.status)) {
+        await milestones.create(milestone.toFeathers());
+        afterSave(true);
+        return true;
+      }
+
       // upload new milestone image
-      if (milestone.image && milestone.image.includes('data:image')) {
+      if (milestone.newImage || (milestone.image && milestone.image.includes('data:image'))) {
         try {
           milestone.image = await IPFSService.upload(milestone.image);
+          milestone.newImage = false;
         } catch (err) {
           ErrorPopup('Failed to upload milestone image to ipfs');
         }
       }
 
       // upload new milestone item images for new milestones
-      if (isNew && milestone.itemizeState) {
+      if (milestone.itemizeState) {
         for (const milestoneItem of milestone.items) {
-          if (milestoneItem.image && milestoneItem.image.includes('data:image')) {
+          if (
+            milestoneItem.newImage ||
+            (milestoneItem.image && milestoneItem.image.includes('data:image'))
+          ) {
             try {
               milestoneItem.image = await IPFSService.upload(milestoneItem.image);
+              milestoneItem.newImage = false;
             } catch (err) {
               ErrorPopup('Failed to upload milestone item to ipfs');
             }
@@ -337,60 +346,79 @@ class MilestoneService {
         }
       }
 
-      // if a new proposed milestone, create it only in feathers
-      if (isProposed && !milestone._id) {
-        await milestones.create(milestone.toFeathers());
-        afterSave(true);
+      let profileHash;
+      try {
+        profileHash = await IPFSService.upload(milestone.toIpfs());
+      } catch (err) {
+        ErrorPopup('Failed to upload milestone to ipfs');
+      }
+
+      // nothing to update or failed ipfs upload
+      if (milestone.projectId && (milestone.url === profileHash || !profileHash)) {
+        // ipfs upload may have failed, but we still want to update feathers
+        if (!profileHash) {
+          await milestones.patch(milestone._id, milestone.toFeathers());
+        }
+        afterSave(null, false);
         return true;
       }
 
-      // if updating a proposed, rejected proposed, or already on chain milestone, patch it in feathers
-      if (isProposed || isRejected || milestone.projectId) {
-        await milestones.patch(milestone._id, milestone.toFeathers());
-        afterSave(false, null);
-        return true;
-      }
-
-      /**
-        Create a milestone on chain
-
-        lppCappedMilestoneFactory params
-
-        string _name,
-        string _url,
-        uint64 _parentProject,
-        address _reviewer,
-        address _recipient,
-        address _campaignReviewer,
-        address _milestoneManager,
-        uint _maxAmount,
-        address _acceptedToken,
-        uint _reviewTimeoutSeconds
-      * */
-
-      let milestoneId;
       const network = await getNetwork();
-      const { lppCappedMilestoneFactory } = network;
       etherScanUrl = network.etherScanUrl;
 
-      const tx = lppCappedMilestoneFactory.newMilestone(
-        milestone.title,
-        '',
-        milestone.parentProjectId,
-        milestone.reviewerAddress,
-        milestone.recipientAddress,
-        milestone.campaignReviewerAddress,
-        from,
-        utils.toWei(milestone.maxAmount),
-        milestone.token.address,
-        5 * 24 * 60 * 60, // 5 days in seconds
-        { from, $extraGas: extraGas() },
-      );
+      let tx;
+      if (milestone.projectId) {
+        // TODO: current milestone has no update function
+        // // LPPCampaign function update(string newName, string newUrl, uint64 newCommitTime)
+        // tx = new LPP(await getWeb3(), campaign.pluginAddress).update(
+        //   campaign.title,
+        //   profileHash || '',
+        //   0,
+        //   {
+        //     from,
+        //     $extraGas: extraGas(),
+        //   },
+        // );
+      } else {
+        /**
+          Create a milestone on chain
 
+          lppCappedMilestoneFactory params
+
+          string _name,
+          string _url,
+          uint64 _parentProject,
+          address _reviewer,
+          address _recipient,
+          address _campaignReviewer,
+          address _milestoneManager,
+          uint _maxAmount,
+          address _acceptedToken,
+          uint _reviewTimeoutSeconds
+        * */
+        const { lppCappedMilestoneFactory } = network;
+
+        tx = lppCappedMilestoneFactory.newMilestone(
+          milestone.title,
+          profileHash || '',
+          milestone.parentProjectId,
+          milestone.reviewerAddress,
+          milestone.recipientAddress,
+          milestone.campaignReviewerAddress,
+          from,
+          utils.toWei(milestone.maxAmount.toFixed()),
+          milestone.token.address,
+          5 * 24 * 60 * 60, // 5 days in seconds
+          { from, $extraGas: extraGas() },
+        );
+      }
+
+      let milestoneId;
       await tx.once('transactionHash', async hash => {
         txHash = hash;
 
         // create milestone in feathers
+        // if (milestone.id) await milestones.patch(milestone.id, milestone.toFeathers(txHash));
         milestoneId = await milestones.create(milestone.toFeathers(txHash))._id;
         afterSave(false, !milestone.projectId, `${etherScanUrl}tx/${txHash}`);
       });

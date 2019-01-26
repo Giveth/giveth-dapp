@@ -14,7 +14,7 @@ export default class MilestoneModel extends BasicModel {
 
     const {
       id = data._id || undefined,
-      maxAmount = new BigNumber(0),
+      maxAmount = '0',
       selectedFiatType = 'EUR',
       fiatAmount = new BigNumber('0'),
       recipientAddress = '',
@@ -206,12 +206,10 @@ export default class MilestoneModel extends BasicModel {
   get maxAmount() {
     // max amount is not stored in wei
     if (this.itemizeState) {
-      return this.items
-        .reduce(
-          (accumulator, item) => accumulator.plus(new BigNumber(utils.fromWei(item.wei))),
-          new BigNumber(0),
-        )
-        .toFixed();
+      return this.items.reduce(
+        (accumulator, item) => accumulator.plus(new BigNumber(utils.fromWei(item.wei))),
+        new BigNumber(0),
+      );
     }
 
     return this._maxAmount;
