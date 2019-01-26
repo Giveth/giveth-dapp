@@ -173,7 +173,7 @@ class WithdrawButton extends Component {
                     greaterThan: 0,
                   }}
                   validationErrors={{
-                    greaterThan: `Pleas enter value greater than 0 ${config.nativeTokenName}`,
+                    greaterThan: `Please enter value greater than 0 ${config.nativeTokenName}`,
                     lessThan: 'This withdrawal amount exceeds your wallet balance.',
                   }}
                   required
