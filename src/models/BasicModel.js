@@ -32,6 +32,7 @@ class BasicModel extends Model {
     image = '',
     txHash,
     owner,
+    ownerAddress = '0x0',
     reviewer,
     url,
     donationCount = 0,
@@ -50,18 +51,18 @@ class BasicModel extends Model {
     this._image = image;
     this._newImage = false;
     this._txHash = txHash;
-    this._owner = owner || { address: '0x0' }; // FIXME: Check in feathers, owner should be a model
+    this._owner = owner || { address: ownerAddress }; // FIXME: Check in feathers, owner should be a model
+    this._ownerAddress = ownerAddress;
     this._reviewer = reviewer;
     this._url = url;
     this._donationCount = donationCount;
     this._peopleCount = peopleCount;
     this._fullyFunded = fullyFunded;
-    this._donationCounters = donationCounters.map(c => {
-      console.log(typeof c.totalDonated);
-      c.totalDonated = new BigNumber(utils.fromWei(c.totalDonated));
-      c.currentBalance = new BigNumber(utils.fromWei(c.currentBalance));
-      return c;
-    });
+    this._donationCounters = donationCounters.map(c => ({
+      ...c,
+      totalDonated: new BigNumber(utils.fromWei(c.totalDonated)),
+      currentBalance: new BigNumber(utils.fromWei(c.currentBalance)),
+    }));
     this._Order = -1;
     this._token = token;
     this._createdAt = createdAt;
@@ -129,6 +130,16 @@ class BasicModel extends Model {
   set owner(value) {
     this.checkType(value, ['undefined', 'object'], 'owner');
     this._owner = value;
+    this._ownerAddress = value.address;
+  }
+
+  get ownerAddress() {
+    return this._ownerAddress;
+  }
+
+  set ownerAddress(value) {
+    this.checkType(value, ['undefined', 'string'], 'ownerAddress');
+    this._ownerAddress = value;
   }
 
   get reviewer() {

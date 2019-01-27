@@ -56,7 +56,7 @@ class DelegateButton extends Component {
       .then(() =>
         this.setState({
           modalVisible: true,
-          amount: this.props.donation.amountRemaining.toString(),
+          amount: this.props.donation.amountRemaining.toFixed(),
           maxAmount: this.props.donation.amountRemaining,
         }),
       )
@@ -82,7 +82,7 @@ class DelegateButton extends Component {
 
     this.setState({
       maxAmount,
-      amount: maxAmount.toString(),
+      amount: maxAmount.toFixed(),
       objectsToDelegateTo: target.value,
     });
   }

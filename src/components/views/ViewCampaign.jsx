@@ -153,7 +153,7 @@ class ViewCampaign extends Component {
       donationsTotal,
       newDonations,
     } = this.state;
-    if (!campaign) return <p>Unable to find a campaign</p>;
+    if (!isLoading && !campaign) return <p>Unable to find a campaign</p>;
     return (
       <ErrorBoundary>
         <div id="view-campaign-view">
@@ -308,7 +308,7 @@ class ViewCampaign extends Component {
                     <h4>Campaign Reviewer</h4>
                     {campaign &&
                       campaign.reviewer && (
-                        <Link to={`/profile/${campaign.reviewer.address}`}>
+                        <Link to={`/profile/${campaign.reviewerAddress}`}>
                           {getUserName(campaign.reviewer)}
                         </Link>
                       )}

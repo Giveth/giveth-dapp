@@ -45,7 +45,7 @@ class RateConvertor extends Component {
 
       this.setState(prevState => ({
         conversionRate: resp,
-        etherAmountForm: prevState.fiatAmountForm ? prevState.fiatAmount.div(rate).toString() : '',
+        etherAmountForm: prevState.fiatAmountForm ? prevState.fiatAmount.div(rate).toFixed() : '',
       }));
     });
   }
@@ -57,7 +57,7 @@ class RateConvertor extends Component {
 
       if (conversionRate && fiatAmount.gte(0)) {
         this.setState({
-          etherAmountForm: fiatAmount.div(conversionRate).toString(),
+          etherAmountForm: fiatAmount.div(conversionRate).toFixed(),
           fiatAmount,
           fiatAmountForm: value,
         });
@@ -73,7 +73,7 @@ class RateConvertor extends Component {
       if (conversionRate && etherAmount.gte(0)) {
         this.setState({
           fiatAmount: etherAmount.times(conversionRate),
-          fiatAmountForm: etherAmount.times(conversionRate).toString(),
+          fiatAmountForm: etherAmount.times(conversionRate).toFixed(),
           etherAmountForm: value,
         });
       }
@@ -83,7 +83,7 @@ class RateConvertor extends Component {
   changeSelectedFiat(fiatType) {
     const conversionRate = this.state.conversionRate.rates[fiatType];
     this.setState(prevState => ({
-      etherAmountForm: prevState.fiatAmount.div(conversionRate).toString(),
+      etherAmountForm: prevState.fiatAmount.div(conversionRate).toFixed(),
       selectedFiatType: fiatType,
     }));
   }
@@ -171,7 +171,7 @@ class RateConvertor extends Component {
             name="conversionRate"
             value={
               conversionRate && conversionRate.rates
-                ? conversionRate.rates[selectedFiatType].toString()
+                ? conversionRate.rates[selectedFiatType].toFixed()
                 : '0'
             }
           />

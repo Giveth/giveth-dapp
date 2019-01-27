@@ -367,9 +367,9 @@ class EditMilestone extends Component {
             (accumulator, item) => accumulator.plus(new BigNumber(item.wei)),
             new BigNumber(0),
           )
-          .toString();
+          .toFixed();
       } else {
-        constructedModel.maxAmount = utils.toWei(milestone.maxAmount.toString());
+        constructedModel.maxAmount = utils.toWei(milestone.maxAmount.toFixed());
       }
 
       if (this.props.isNew) {
@@ -977,7 +977,7 @@ class EditMilestone extends Component {
                                 type="number"
                                 step="any"
                                 label={`Maximum amount in ${milestone.token.name}`}
-                                value={milestone.maxAmount.toString()}
+                                value={milestone.maxAmount.toFixed()}
                                 placeholder="10"
                                 validations="greaterThan:0"
                                 validationErrors={{

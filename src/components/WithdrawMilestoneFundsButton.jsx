@@ -14,7 +14,7 @@ import DonationService from '../services/DonationService';
 class WithdrawMilestoneFundsButton extends Component {
   async withdraw() {
     const { milestone, currentUser, balance } = this.props;
-    const isRecipient = milestone.recipient.address === currentUser.address;
+    const isRecipient = milestone.recipientAddress === currentUser.address;
 
     try {
       await isLoggedIn(currentUser, false);
@@ -131,7 +131,8 @@ class WithdrawMilestoneFundsButton extends Component {
       <Web3Consumer>
         {({ state: { isForeignNetwork } }) => (
           <Fragment>
-            {[milestone.recipientAddress, milestone.ownerAddress].includes(currentUser.address) &&
+            {currentUser &&
+              [milestone.recipientAddress, milestone.ownerAddress].includes(currentUser.address) &&
               milestone.status === Milestone.COMPLETED &&
               milestone.mined &&
               milestone.currentBalance.gt(0) && (
@@ -142,7 +143,7 @@ class WithdrawMilestoneFundsButton extends Component {
                   disabled={!isForeignNetwork}
                 >
                   <i className="fa fa-usd" />{' '}
-                  {milestone.recipient.address === currentUser.address ? 'Collect' : 'Disburse'}
+                  {milestone.recipientAddress === currentUser.address ? 'Collect' : 'Disburse'}
                 </button>
               )}
           </Fragment>

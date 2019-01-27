@@ -151,7 +151,7 @@ class ViewMilestone extends Component {
 
               {!milestone.fullyFunded && (
                 <p>
-                  Amount requested: {milestone.maxAmount.toString()} {milestone.token.symbol}
+                  Amount requested: {milestone.maxAmount.toFixed()} {milestone.token.symbol}
                 </p>
               )}
               <p>Campaign: {campaign.title} </p>
@@ -328,14 +328,14 @@ class ViewMilestone extends Component {
                             The maximum amount of {milestone.token.symbol} that can be donated to
                             this Milestone. Based on the requested amount in fiat.
                           </small>
-                          {milestone.maxAmount.toString()} {milestone.token.symbol}
+                          {milestone.maxAmount.toFixed()} {milestone.token.symbol}
                           {milestone.items.length === 0 &&
                             milestone.selectedFiatType &&
                             milestone.selectedFiatType !== milestone.token.symbol &&
                             milestone.fiatAmount && (
                               <span>
                                 {' '}
-                                ({milestone.fiatAmount.toString()} {milestone.selectedFiatType})
+                                ({milestone.fiatAmount.toFixed()} {milestone.selectedFiatType})
                               </span>
                             )}
                         </div>
@@ -346,7 +346,7 @@ class ViewMilestone extends Component {
                             The amount of {milestone.token.symbol} currently donated to this
                             Milestone
                           </small>
-                          {milestone.currentBalance.toString()} {milestone.token.symbol}
+                          {milestone.currentBalance.toFixed()} {milestone.token.symbol}
                         </div>
 
                         <div className="form-group">
@@ -386,6 +386,7 @@ class ViewMilestone extends Component {
                     total={donationsTotal}
                     loadMore={this.loadMoreDonations}
                     newDonations={newDonations}
+                    useAmountRemaining
                   />
                   {this.isActiveMilestone() && (
                     <DonateButton

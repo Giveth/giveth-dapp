@@ -15,7 +15,7 @@ const DACs = () => (
           <div className="container-fluid page-layout reduced-padding">
             <h4>
               Decentralized Altruistic Communities{' '}
-              {total && <span className="badge badge-success">{total}</span>}
+              {total > 0 && <span className="badge badge-success">{total}</span>}
             </h4>
             {!hasError && isLoading && <Loader />}
             {// There are some DACs in the system, show them

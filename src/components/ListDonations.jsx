@@ -13,7 +13,7 @@ import Donation from '../models/Donation';
  * Shows a table of donations for a given type (dac, campaign, milestone)
  */
 const ListDonations = props => {
-  const { isLoading, donations, loadMore, total, newDonations } = props;
+  const { isLoading, donations, loadMore, total, newDonations, useAmountRemaining } = props;
   const hasProposedDelegation = props.donations.some(d => d.intendedProjectId);
   return (
     <div>
@@ -54,7 +54,8 @@ const ListDonations = props => {
                           &nbsp;
                         </span>
                       )}
-                      {convertEthHelper(d.amount)} {(d.token && d.token.symbol) || 'ETH'}
+                      {convertEthHelper(useAmountRemaining ? d.amountRemaining : d.amount)}{' '}
+                      {(d.token && d.token.symbol) || 'ETH'}
                     </td>
                     <td className="td-user">
                       {d.giver && (
@@ -119,8 +120,10 @@ ListDonations.propTypes = {
   total: PropTypes.number.isRequired,
   loadMore: PropTypes.func.isRequired,
   newDonations: PropTypes.number,
+  useAmountRemaining: PropTypes.bool,
 };
 
 ListDonations.defaultProps = {
   newDonations: 0,
+  useAmountRemaining: false,
 };

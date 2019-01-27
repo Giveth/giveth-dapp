@@ -163,12 +163,18 @@ class MilestoneService {
       .watch({ listStrategy: 'always' })
       .find({ query })
       .subscribe(
-        resp =>
-          onResult(
-            Object.assign({}, resp, {
-              data: resp.data.map(m => new Milestone(m)),
-            }),
-          ),
+        resp => {
+          try {
+            onResult(
+              Object.assign({}, resp, {
+                data: resp.data.map(m => new Milestone(m)),
+              }),
+            );
+          } catch (e) {
+            onError(e);
+          }
+        },
+
         onError,
       );
   }
@@ -345,7 +351,7 @@ class MilestoneService {
             recipientAddress,
             campaignReviewer.address,
             owner.address,
-            utils.toWei(maxAmount.toString()),
+            utils.toWei(maxAmount.toFixed()),
             token.foreignAddress,
             5 * 24 * 60 * 60, // 5 days in seconds
             { from, $extraGas: extraGas() },
@@ -355,7 +361,7 @@ class MilestoneService {
 
             return milestones
               .patch(milestone._id, {
-                status: Milestone.PROPOSED,
+                status: Milestone.PENDING,
                 mined: false,
                 message: proof.message,
                 proofItems: proof.items,

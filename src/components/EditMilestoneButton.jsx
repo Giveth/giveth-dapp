@@ -40,8 +40,9 @@ class EditMilestoneButton extends Component {
       <Web3Consumer>
         {({ state: { isForeignNetwork } }) => (
           <Fragment>
-            {(milestone.ownerAddress === currentUser.address ||
-              milestone.campaign.ownerAddress === currentUser.address) &&
+            {currentUser &&
+              (milestone.ownerAddress === currentUser.address ||
+                milestone.campaign.ownerAddress === currentUser.address) &&
               isForeignNetwork &&
               ['Proposed', 'Rejected', 'InProgress', 'NeedsReview'].includes(milestone.status) && (
                 <button type="button" className="btn btn-link" onClick={() => this.editMilestone()}>

@@ -92,8 +92,9 @@ class RequestMarkMilestoneCompleteButton extends Component {
       <Web3Consumer>
         {({ state: { isForeignNetwork } }) => (
           <Fragment>
-            {(milestone.recipient.address === currentUser.address ||
-              milestone.ownerAddress === currentUser.address) &&
+            {currentUser &&
+              (milestone.recipientAddress === currentUser.address ||
+                milestone.ownerAddress === currentUser.address) &&
               milestone.status === 'InProgress' &&
               milestone.mined && (
                 <button

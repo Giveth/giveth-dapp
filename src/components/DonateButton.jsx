@@ -45,7 +45,7 @@ const _getTokenWhitelist = () => {
     if (t.symbol === 'ETH') {
       t.name = `${config.homeNetworkName} ETH`;
     }
-    t.balance = utils.toBN(0);
+    t.balance = new BigNumber(0);
     return t;
   });
 };
@@ -62,7 +62,7 @@ class BaseDonateButton extends React.Component {
 
     // set initial balance
     const modelToken = props.model.token;
-    modelToken.balance = utils.toBN(0);
+    modelToken.balance = new BigNumber(0);
 
     this.state = {
       isSaving: false,
@@ -124,7 +124,7 @@ class BaseDonateButton extends React.Component {
     const balance = selectedToken.symbol === 'ETH' ? ETHBalance : selectedToken.balance;
 
     // Determine max amount
-    let maxAmount = new BigNumber(utils.fromWei(balance.toString()));
+    let maxAmount = new BigNumber(utils.fromWei(balance.toFixed()));
 
     if (this.props.maxDonationAmount && balance.gt(this.props.maxDonationAmount))
       maxAmount = this.props.maxDonationAmount;
@@ -153,12 +153,12 @@ class BaseDonateButton extends React.Component {
 
             // we are only interested in homeNetwork token balances
             if (!isHomeNetwork || !currentUser || !currentUser.address || !contract) {
-              return utils.toBN(0);
+              return new BigNumber(0);
             }
 
-            return utils.toBN(await contract.methods.balanceOf(currentUser.address).call());
+            return new BigNumber(await contract.methods.balanceOf(currentUser.address).call());
           } catch (e) {
-            return utils.toBN(0);
+            return new BigNumber(0);
           }
         },
         onResult: balance => {
@@ -189,7 +189,7 @@ class BaseDonateButton extends React.Component {
     const { model } = this.props;
     this.setState(prevState => {
       const isMilestone = model.type === Milestone.type;
-      const amount = isMilestone ? this.getMaxAmount().toString() : prevState.amount;
+      const amount = isMilestone ? this.getMaxAmount().toFixed() : prevState.amount;
       return {
         modalVisible: true,
         amount,
@@ -441,7 +441,7 @@ class BaseDonateButton extends React.Component {
                   )}
                   {/* TODO: remove this b/c the wallet provider will contain this info */}
                   {config.homeNetworkName} {selectedToken.symbol} balance:&nbsp;
-                  <em>{utils.fromWei(balance ? balance.toString() : '')}</em>
+                  <em>{utils.fromWei(balance ? balance.toFixed() : '')}</em>
                 </div>
               )}
 
@@ -463,7 +463,7 @@ class BaseDonateButton extends React.Component {
                       [maxAmount.toFixed()]: maxAmount.toFixed(4),
                     }}
                     tooltip={false}
-                    onChange={(name, newAmount) => this.setState({ amount: newAmount })}
+                    onChange={newAmount => this.setState({ amount: newAmount.toString() })}
                   />
                 </div>
               )}
@@ -483,7 +483,7 @@ class BaseDonateButton extends React.Component {
                 }}
                 validationErrors={{
                   greaterThan: `Minimum value must be at least 0.01 ${selectedToken.symbol}`,
-                  lessOrEqualTo: `This donation exceeds your wallet balance or the milestone max amount: ${maxAmount.toString()} ${
+                  lessOrEqualTo: `This donation exceeds your wallet balance or the milestone max amount: ${maxAmount.toFixed()} ${
                     selectedToken.symbol
                   }.`,
                 }}
