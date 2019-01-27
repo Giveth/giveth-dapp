@@ -21,8 +21,8 @@ const Explore = () => (
       )}
     </Web3Consumer>
 
-    <Campaigns />
     <DACs />
+    <Campaigns />
     <Milestones />
   </div>
 );
