@@ -194,7 +194,7 @@ class RateConvertor extends Component {
                 name="conversionRate"
                 value={
                   conversionRate && conversionRate.rates
-                    ? conversionRate.rates[selectedFiatType]
+                    ? conversionRate.rates[selectedFiatType].toString()
                     : '0'
                 }
               />

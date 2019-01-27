@@ -80,8 +80,10 @@ export default class MilestoneItemModel extends Model {
   }
 
   set image(value) {
+    if (value || this._newImage !== value) {
+      this._newImage = true;
+    }
     this._image = value;
-    this._newImage = true;
   }
 
   get image() {

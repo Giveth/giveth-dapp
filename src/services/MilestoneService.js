@@ -340,7 +340,7 @@ class MilestoneService {
               milestoneItem.image = await IPFSService.upload(milestoneItem.image);
               milestoneItem.newImage = false;
             } catch (err) {
-              ErrorPopup('Failed to upload milestone item to ipfs');
+              ErrorPopup('Failed to upload milestone item image to ipfs');
             }
           }
         }
