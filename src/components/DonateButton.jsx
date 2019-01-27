@@ -6,8 +6,9 @@ import { utils } from 'web3';
 import { Form, Input } from 'formsy-react-components';
 import Toggle from 'react-toggle';
 import Slider from 'react-rangeslider';
-
 import GA from 'lib/GoogleAnalytics';
+import { Link } from 'react-router-dom';
+
 import getNetwork from '../lib/blockchain/getNetwork';
 import User from '../models/User';
 import Milestone from '../models/Milestone';
@@ -22,6 +23,7 @@ import { Consumer as Web3Consumer } from '../contextProviders/Web3Provider';
 import NetworkWarning from './NetworkWarning';
 import SelectFormsy from './SelectFormsy';
 import { Consumer as WhiteListConsumer } from '../contextProviders/WhiteListProvider';
+import DAC from '../models/DAC';
 
 const POLL_DELAY_TOKENS = 2000;
 
@@ -398,8 +400,19 @@ class DonateButton extends React.Component {
             {isCorrectNetwork &&
               currentUser && (
                 <p>
-                  You&apos;re pledging: as long as the {model.type} owner does not lock your money
-                  you can take it back any time.
+                  {model.type.toLowerCase() === DAC.type && (
+                    <span>
+                      You&apos;re pledging: as long as the DAC owner does not lock your money you
+                      can take it back any time.
+                    </span>
+                  )}
+                  {model.type.toLowerCase() !== DAC.type && (
+                    <span>
+                      You&apos;re committing your funds to this {model.type}, if you have filled out
+                      contact information in your <Link to="/profile">Profile</Link> you will be
+                      notified about how your funds are spent
+                    </span>
+                  )}
                 </p>
               )}
 
