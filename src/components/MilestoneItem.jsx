@@ -4,7 +4,6 @@ import PropTypes from 'prop-types';
 import React from 'react';
 import { getTruncatedText } from 'lib/helpers';
 import MilestoneItemModel from 'models/MilestoneItem';
-import { utils } from 'web3';
 
 /** *
  * NOTE: This component is created as a Formsy form component
@@ -31,14 +30,14 @@ class MilestoneItem extends React.Component {
         <td className="td-item-description">{getTruncatedText(item.description)}</td>
 
         <td className="td-item-amount-fiat">
-          {item.selectedFiatType} {item.fiatAmount}
+          {item.selectedFiatType} {item.fiatAmount.toFixed()}
           <br />
           <span className="help-block">
             {`1 ${token.name} = ${item.conversionRate} ${item.selectedFiatType}`}
           </span>
         </td>
 
-        <td className="td-item-amount-ether">{utils.fromWei(item.wei)}</td>
+        <td className="td-item-amount-ether">{item.wei.toFixed()}</td>
 
         <td className="td-item-file-upload">
           {item.image &&
