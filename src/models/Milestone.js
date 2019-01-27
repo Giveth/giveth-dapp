@@ -73,6 +73,12 @@ export default class MilestoneModel extends BasicModel {
       title: this._title,
       description: this._description,
       image: cleanIpfsPath(this._image),
+      items: this._items.map(i => i.toIpfs()),
+      conversionRateTimestamp: this._conversionRateTimestamp,
+      selectedFiatType: this._selectedFiatType,
+      date: this._date,
+      fiatAmount: this._fiatAmount.toString(),
+      conversionRate: this._conversionRate,
       version: 1,
     };
   }
