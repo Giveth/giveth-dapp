@@ -39,6 +39,7 @@ export default class MilestoneItemModel extends Model {
       image: cleanIpfsPath(this._image),
       selectedFiatType: this._selectedFiatType,
       fiatAmount: this._fiatAmount.toFixed(),
+      wei: this._wei,
       conversionRate: this._conversionRate,
       conversionRateTimestamp: this._conversionRateTimestamp,
       version: 1,
