@@ -22,7 +22,7 @@ class AcceptRejectProposedMilestoneButtons extends Component {
       .openModal({
         title: 'Reject proposed milestone',
         description:
-          'Optionally explain why you reject this proposed milestone. This information will be publicly visible and emailed to the milestone owner.',
+          'Optionally explain why you reject this proposed Milestone. This information will be publicly visible and emailed to the Milestone owner.',
         textPlaceholder: 'Optionally explain why you reject this proposal...',
         required: false,
         cta: 'Reject proposal',
@@ -32,8 +32,8 @@ class AcceptRejectProposedMilestoneButtons extends Component {
         MilestoneService.rejectProposedMilestone({
           milestone: this.props.milestone,
           message: proof.message,
-          onSuccess: () => React.toast.info(<p>The proposed milestone has been rejected.</p>),
-          onError: e => ErrorPopup('Something went wrong with rejecting the proposed milestone', e),
+          onSuccess: () => React.toast.info(<p>The proposed Milestone has been rejected.</p>),
+          onError: e => ErrorPopup('Something went wrong with rejecting the proposed Milestone', e),
         });
       });
   }
@@ -47,7 +47,7 @@ class AcceptRejectProposedMilestoneButtons extends Component {
           .openModal({
             title: 'Accept proposed milestone',
             description:
-              'Optionally explain why you accept this proposed milestone. Compliments are appreciated! This information will be publicly visible and emailed to the milestone owner.',
+              'Optionally explain why you accept this proposed Milestone. Compliments are appreciated! This information will be publicly visible and emailed to the Milestone owner.',
             textPlaceholder: 'Optionally explain why you accept this proposal...',
             required: false,
             cta: 'Accept proposal',
@@ -67,7 +67,7 @@ class AcceptRejectProposedMilestoneButtons extends Component {
 
                 React.toast.info(
                   <p>
-                    Accepting this milestone is pending...
+                    Accepting this Milestone is pending...
                     <br />
                     <a href={txUrl} target="_blank" rel="noopener noreferrer">
                       View transaction
@@ -78,7 +78,7 @@ class AcceptRejectProposedMilestoneButtons extends Component {
               onConfirmation: txUrl => {
                 React.toast.success(
                   <p>
-                    The milestone has been accepted!
+                    The Milestone has been accepted!
                     <br />
                     <a href={txUrl} target="_blank" rel="noopener noreferrer">
                       View transaction
@@ -88,7 +88,7 @@ class AcceptRejectProposedMilestoneButtons extends Component {
               },
               onError: (err, txUrl) => {
                 if (err === 'patch-error') {
-                  ErrorPopup('Something went wrong with accepting this proposed milestone', err);
+                  ErrorPopup('Something went wrong with accepting this proposed Milestone', err);
                 } else {
                   ErrorPopup(
                     'Something went wrong with the transaction.',
