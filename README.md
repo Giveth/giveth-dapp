@@ -167,18 +167,19 @@ The following events are tracked with Google Analytics:
 ### Query Strings
 The milestone creation/proposal view now supports query string arguments!
 The following arguments are available:
-| Argument         | Expected Values                                            | Type   |
+
+| Argument | Expected Values | Type |
 |------------------|------------------------------------------------------------|--------|
-| title            | The title of the milestone                                 | string |
-| description      | The description of the milestone                           | string |
-| recipientAddress | The address of the recipient                               | string |
-| reviewerAddress  | The address of the reviewer                                | string |
-| selectedFiatType | A valid fiat type (i.e. USD)                               | string |
-| date             | A valid milestone date string                              | string |
-| token            | A valid token symbol (i.e. DAI)                            | string |
-| tokenAddress     | A valid token address                                      | string |
-| maxAmount        | A valid max amount of ETH or token                         | number |
-| fiatAmount       | A valid max amount of fiat (dependant on selectedFiatType) | number |
+| title | The title of the milestone | string |
+| description | The description of the milestone | string |
+| recipientAddress | The address of the recipient | string |
+| reviewerAddress | The address of the reviewer | string |
+| selectedFiatType | A valid fiat type (i.e. USD) | string |
+| date | A valid milestone date string | string |
+| token | A valid token symbol (i.e. DAI) | string |
+| tokenAddress | A valid token address | string |
+| maxAmount | A valid max amount of ETH or token | number |
+| fiatAmount | A valid max amount of fiat (dependant on selectedFiatType) | number |
 
 
 ## Contributing
