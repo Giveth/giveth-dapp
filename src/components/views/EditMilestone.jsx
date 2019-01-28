@@ -8,7 +8,6 @@ import BigNumber from 'bignumber.js';
 import { Form, Input } from 'formsy-react-components';
 import GA from 'lib/GoogleAnalytics';
 import queryString from 'query-string';
-import moment from 'moment';
 import Milestone from 'models/Milestone';
 import { feathersClient, feathersRest } from '../../lib/feathersClient';
 import Loader from '../Loader';
@@ -173,10 +172,7 @@ class EditMilestone extends Component {
                         milestone.token = token;
                       }
                     } else if (variable === 'date') {
-                      const date = moment(qs[variable])
-                        .utc()
-                        .add(1, 'hour');
-                      milestone.date = date;
+                      milestone.date = getStartOfDayUTC(qs[variable]);
                     } else {
                       milestone[variable] = qs[variable];
                     }
