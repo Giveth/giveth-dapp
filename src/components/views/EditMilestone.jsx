@@ -40,16 +40,18 @@ import CampaignService from '../../services/CampaignService';
 
 BigNumber.config({ DECIMAL_PLACES: 18 });
 
+// The following query string variables are loaded in the order displayed here
 const validQueryStringVariables = [
   'title',
   'recipientAddress',
   'reviewerAddress',
   'description',
-  'maxAmount',
-  'token',
   'selectedFiatType',
-  'fiatAmount',
   'date',
+  'token',
+  'tokenAddress',
+  'maxAmount',
+  'fiatAmount',
 ];
 
 /**
@@ -153,13 +155,28 @@ class EditMilestone extends Component {
                 validQueryStringVariables.forEach(variable => {
                   if (qs[variable]) {
                     if (variable === 'fiatAmount') {
-                      this.setMaxAmount('', qs[variable]);
+                      milestone.fiatAmount = new BigNumber(qs[variable]);
                     } else if (variable === 'maxAmount') {
-                      this.setFiatAmount('', qs[variable]);
+                      milestone.maxAmount = new BigNumber(qs[variable]);
+                    } else if (variable === 'tokenAddress') {
+                      const token = React.whitelist.tokenWhitelist.find(
+                        t => t.address === qs[variable],
+                      );
+                      if (token) {
+                        milestone.token = token;
+                      }
                     } else if (variable === 'token') {
-                      this.setToken(qs[variable]);
+                      const token = React.whitelist.tokenWhitelist.find(
+                        t => t.symbol === qs[variable],
+                      );
+                      if (token) {
+                        milestone.token = token;
+                      }
                     } else if (variable === 'date') {
-                      this.setDate(moment(qs[variable]));
+                      const date = moment(qs[variable])
+                        .utc()
+                        .add(1, 'hour');
+                      milestone.date = date;
                     } else {
                       milestone[variable] = qs[variable];
                     }
@@ -178,6 +195,20 @@ class EditMilestone extends Component {
             })
             .then(() => {
               if (!this.state.hasWhitelist) this.getReviewers();
+            })
+            .then(() => {
+              this.props
+                .getEthConversion(this.state.milestone.date, this.state.milestone.token.symbol)
+                .then(resp => {
+                  const { milestone } = this.state;
+                  const rate = resp.rates[milestone.selectedFiatType];
+                  if (rate && (milestone.maxAmount && milestone.maxAmount.gt(0))) {
+                    milestone.fiatAmount = milestone.maxAmount.times(rate);
+                  } else if (rate && (milestone.fiatAmount && milestone.fiatAmount.gt(0))) {
+                    milestone.maxAmount = milestone.fiatAmount.div(rate);
+                  }
+                  this.setState({ milestone });
+                });
             })
             .then(() =>
               this.setState({
