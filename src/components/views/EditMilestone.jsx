@@ -199,7 +199,6 @@ class EditMilestone extends Component {
       }
       milestone.fiatAmount = rate ? milestone.fiatAmount.div(rate) : new BigNumber(0);
       milestone.conversionRateTimestamp = resp.timestamp;
-      console.log('Conversion rate Timestamp:', resp.timestamp);
 
       milestone.maxAmount = milestone.fiatAmount.div(rate);
       this.setState({ milestone });

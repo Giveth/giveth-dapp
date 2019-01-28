@@ -28,8 +28,6 @@ class ConversionRateProvider extends Component {
   }
 
   getConversionRates(date, symbol) {
-    console.log(`requesting conversion rates for date ${date} and symbol ${symbol}`);
-
     const dtUTC = getStartOfDayUTC(date); // Should not be necessary as the datepicker should provide UTC, but just to be sure
     const timestamp = Math.round(dtUTC.toDate());
 
@@ -46,7 +44,6 @@ class ConversionRateProvider extends Component {
             conversionRates: conversionRates.concat(resp),
             currentRate: resp,
           });
-          console.log(resp);
 
           return resp;
         })
