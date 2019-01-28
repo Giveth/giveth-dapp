@@ -312,9 +312,10 @@ class MilestoneService {
     let etherScanUrl;
 
     try {
-      // if a proposed or rejected milestone, create it only in feathers
+      // if a proposed or rejected milestone, create/update it only in feathers
       if ([Milestone.PROPOSED, Milestone.REJECTED].includes(milestone.status)) {
-        await milestones.create(milestone.toFeathers());
+        if (milestone.id) await milestones.patch(milestone.id, milestone.toFeathers());
+        else await milestones.create(milestone.toFeathers());
         afterSave(true);
         return true;
       }
@@ -544,18 +545,15 @@ class MilestoneService {
    * Repropose a proposed milestone that has been rejected
    *
    * @param milestone       a Milestone model
-   * @param proof           A proof object:
-        message               Reason why the milestone was reproposed
-        items                 Attached proof
+   * @param message         (string, optional) Reason why the milestone was reproposed
    * @param onSuccess       Callback function once response is obtained successfully
    * @param onError         Callback function if error is encountered
    */
-  static reproposeRejectedMilestone({ milestone, proof, onSuccess, onError }) {
+  static reproposeRejectedMilestone({ milestone, message, onSuccess, onError }) {
     milestones
       .patch(milestone._id, {
         status: Milestone.PROPOSED,
-        message: proof.message,
-        proofItems: proof.proofItems,
+        message,
       })
       .then(() => onSuccess())
       .catch(e => onError(e));

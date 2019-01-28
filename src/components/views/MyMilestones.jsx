@@ -213,12 +213,15 @@ class MyMilestones extends Component {
                                       </Link>
                                     </td>
                                     <td className="td-status">
-                                      {(m.status === Milestone.PENDING || !m.mined) && (
-                                        <span>
-                                          <i className="fa fa-circle-o-notch fa-spin" />
-                                          &nbsp;
-                                        </span>
-                                      )}
+                                      {![Milestone.PROPOSED, Milestone.REJECTED].includes(
+                                        m.status,
+                                      ) &&
+                                        (m.status === Milestone.PENDING || !m.mined) && (
+                                          <span>
+                                            <i className="fa fa-circle-o-notch fa-spin" />
+                                            &nbsp;
+                                          </span>
+                                        )}
                                       {m.status === 'NeedsReview' &&
                                         reviewDue(m.updatedAt) && (
                                           <span>
