@@ -153,10 +153,11 @@ class EditMilestone extends Component {
                 const { milestone } = this.state;
                 validQueryStringVariables.forEach(variable => {
                   if (qs[variable]) {
-                    if (variable === 'fiatAmount') {
-                      milestone.fiatAmount = new BigNumber(qs[variable]);
-                    } else if (variable === 'maxAmount') {
-                      milestone.maxAmount = new BigNumber(qs[variable]);
+                    if (variable === 'fiatAmount' || variable === 'maxAmount') {
+                      const number = new BigNumber(qs[variable]);
+                      if (!number.isNaN()) {
+                        milestone[variable] = number;
+                      }
                     } else if (variable === 'tokenAddress') {
                       const token = React.whitelist.tokenWhitelist.find(
                         t => t.address === qs[variable],
@@ -172,7 +173,10 @@ class EditMilestone extends Component {
                         milestone.token = token;
                       }
                     } else if (variable === 'date') {
-                      milestone.date = getStartOfDayUTC(qs[variable]);
+                      const date = getStartOfDayUTC(qs[variable]);
+                      if (date.isValid()) {
+                        milestone.date = date;
+                      }
                     } else {
                       milestone[variable] = qs[variable];
                     }
