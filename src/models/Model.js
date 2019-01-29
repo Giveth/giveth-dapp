@@ -54,7 +54,6 @@ class Model {
    * @throws TypeError describing what was the passed type and which types were expected
    */
   checkInstanceOf(value, classInstance, propName) {
-    // console.log(value, classInstance)
     if (!(value instanceof classInstance)) {
       throw new TypeError(
         `The type of ${propName} supplied to ${

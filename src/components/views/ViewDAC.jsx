@@ -19,6 +19,7 @@ import { getUserName, getUserAvatar } from '../../lib/helpers';
 import DACService from '../../services/DACService';
 import CampaignCard from '../CampaignCard';
 import ShareOptions from '../ShareOptions';
+import config from '../../configuration';
 
 /**
  * The DAC detail view mapped to /dac/id
@@ -123,7 +124,7 @@ class ViewDAC extends Component {
                   type: DAC.type,
                   title: dac.title,
                   id: dac.id,
-                  token: { symbol: 'ETH' },
+                  token: { symbol: config.nativeTokenName },
                   adminId: dac.delegateId,
                 }}
                 currentUser={currentUser}
@@ -200,7 +201,7 @@ class ViewDAC extends Component {
                       type: DAC.type,
                       title: dac.title,
                       id: dac.id,
-                      token: { symbol: 'ETH' },
+                      token: { symbol: config.nativeTokenName },
                       adminId: dac.delegateId,
                     }}
                     currentUser={currentUser}

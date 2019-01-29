@@ -4,6 +4,7 @@ import PropTypes from 'prop-types';
 import { getTruncatedText, history } from '../lib/helpers';
 import CardStats from './CardStats';
 import Campaign from '../models/Campaign';
+import config from '../configuration';
 
 /**
  * Campaign Card visible in the DACs view.
@@ -48,7 +49,7 @@ class CampaignCard extends Component {
               peopleCount={campaign.peopleCount}
               totalDonated={campaign.totalDonationCount}
               currentBalance={campaign.currentBalance}
-              token={{ symbol: 'ETH', decimals: 18 }}
+              token={{ symbol: config.nativeTokenName, decimals: 18 }}
             />
           </div>
         </div>

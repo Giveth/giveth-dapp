@@ -2,7 +2,7 @@ const {
   REACT_APP_ENVIRONMENT = 'localhost', // optional
   REACT_APP_DECIMALS = 8, // optional
   REACT_APP_FEATHERJS_CONNECTION_URL,
-  REACT_APP_ETH_NODE_CONNECTION_URL,
+  REACT_APP_NODE_CONNECTION_URL,
   REACT_APP_LIQUIDPLEDGING_ADDRESS,
   REACT_APP_CAMPAIGN_FACTORY_ADDRESS,
   REACT_APP_CAPPED_MILESTONE_FACTORY_ADDRESS,
@@ -10,6 +10,8 @@ const {
   REACT_APP_BLOCKEXPLORER,
   REACT_APP_BUGS_EMAIL = 'bugs@giveth.io',
   REACT_APP_DEFAULT_GASPRICE = 10,
+  REACT_APP_NETWORK_NAME,
+  REACT_APP_NATIVE_TOKEN_NAME,
 } = process.env;
 
 const configurations = {
@@ -39,6 +41,7 @@ const configurations = {
       useGoogleAnalytics: true,
       useHotjar: false,
     },
+    nativeTokenName: 'ETH',
   },
   develop: {
     title: 'develop',
@@ -62,6 +65,7 @@ const configurations = {
       useGoogleAnalytics: true,
       useHotjar: false,
     },
+    nativeTokenName: 'ETH',
   },
   release: {
     title: 'release',
@@ -85,6 +89,7 @@ const configurations = {
       useGoogleAnalytics: true,
       useHotjar: false,
     },
+    nativeTokenName: 'ETH',
   },
   beta: {
     title: 'beta',
@@ -108,6 +113,7 @@ const configurations = {
       useGoogleAnalytics: true,
       useHotjar: true,
     },
+    nativeTokenName: 'ETH',
   },
 };
 
@@ -133,10 +139,12 @@ config.tokenAddresses = REACT_APP_TOKEN_ADDRESSES
   : config.tokenAddresses;
 config.etherscan = REACT_APP_BLOCKEXPLORER || config.etherscan;
 config.feathersConnection = REACT_APP_FEATHERJS_CONNECTION_URL || config.feathersConnection;
-config.foreignNodeConnection = REACT_APP_ETH_NODE_CONNECTION_URL || config.foreignNodeConnection;
+config.foreignNodeConnection = REACT_APP_NODE_CONNECTION_URL || config.foreignNodeConnection;
 config.decimals = REACT_APP_DECIMALS;
 config.bugsEmail = REACT_APP_BUGS_EMAIL;
 config.defaultGasPrice = REACT_APP_DEFAULT_GASPRICE;
+config.networkName = REACT_APP_NETWORK_NAME || config.networkName;
+config.nativeTokenName = REACT_APP_NATIVE_TOKEN_NAME || config.nativeTokenName;
 config.sendErrors = ['develop', 'release', 'beta'].includes(REACT_APP_ENVIRONMENT);
 
 export default config;

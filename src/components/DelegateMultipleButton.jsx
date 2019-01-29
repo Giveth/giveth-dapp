@@ -23,6 +23,7 @@ import NetworkWarning from './NetworkWarning';
 
 import DonationService from '../services/DonationService';
 import { Consumer as Web3Consumer } from '../contextProviders/Web3Provider';
+import { Consumer as WhiteListConsumer } from '../contextProviders/WhiteListProvider';
 
 BigNumber.config({ DECIMAL_PLACES: 18 });
 Modal.setAppElement('#root');
@@ -40,17 +41,6 @@ const modalStyles = {
   },
 };
 
-const _getTokenWhitelist = () => {
-  const r = React.whitelist.tokenWhitelist;
-  return r.map(t => {
-    if (t.symbol === 'ETH') {
-      t.name = `${config.homeNetworkName} ETH`;
-    }
-    t.balance = '0';
-    return t;
-  });
-};
-
 /**
  * Retrieves the oldest 100 donations that the user can delegate
  *
@@ -60,7 +50,7 @@ const _getTokenWhitelist = () => {
  * @prop {Object}       milestone   It the delegation is towards campaign, this contains the milestone
  * @prop {Object}       style       Styles added to the button
  */
-class BaseDelegateMultipleButton extends Component {
+class DelegateMultipleButton extends Component {
   constructor(props) {
     super(props);
 
@@ -72,13 +62,11 @@ class BaseDelegateMultipleButton extends Component {
       maxAmount: new BigNumber('0'),
       delegationOptions: [],
       objectToDelegateFrom: [],
-      tokenWhitelistOptions: _getTokenWhitelist().map(t => ({
+      tokenWhitelistOptions: props.tokenWhitelist.map(t => ({
         value: t.address,
         title: t.name,
       })),
-      selectedToken: this.props.milestone
-        ? this.props.milestone.token
-        : _getTokenWhitelist().find(t => t.symbol === 'ETH'),
+      selectedToken: this.props.milestone ? this.props.milestone.token : props.tokenWhitelist[0],
     };
 
     this.loadDonations = this.loadDonations.bind(this);
@@ -137,7 +125,7 @@ class BaseDelegateMultipleButton extends Component {
   setToken(address) {
     this.setState(
       {
-        selectedToken: _getTokenWhitelist().find(t => t.address === address),
+        selectedToken: this.props.tokenWhitelist.find(t => t.address === address),
         isLoadingDonations: true,
       },
       () => this.loadDonations(this.state.objectToDelegateFrom),
@@ -298,7 +286,7 @@ class BaseDelegateMultipleButton extends Component {
       maxAmount,
       amount,
     } = this.state;
-    const { campaign, milestone, validProvider, isForeignNetwork } = this.props;
+    const { campaign, milestone, validProvider, isCorrectNetwork } = this.props;
 
     return (
       <span style={style}>
@@ -322,7 +310,7 @@ class BaseDelegateMultipleButton extends Component {
           )}
           {validProvider && (
             <NetworkWarning
-              incorrectNetwork={!isForeignNetwork}
+              incorrectNetwork={!isCorrectNetwork}
               networkName={config.foreignNetworkName}
             />
           )}
@@ -362,7 +350,7 @@ class BaseDelegateMultipleButton extends Component {
                       <SelectFormsy
                         name="token"
                         id="token-select"
-                        label="Select token or ETH to delegate"
+                        label={`Select token or ${config.nativeTokenName} to delegate`}
                         helpText=""
                         value={selectedToken && selectedToken.address}
                         cta="--- Select ---"
@@ -422,7 +410,7 @@ class BaseDelegateMultipleButton extends Component {
                           className="btn btn-success"
                           formNoValidate
                           type="submit"
-                          disabled={isSaving || !isForeignNetwork}
+                          disabled={isSaving || !isCorrectNetwork}
                         >
                           {isSaving ? 'Delegating...' : 'Delegate here'}
                         </button>
@@ -447,33 +435,36 @@ class BaseDelegateMultipleButton extends Component {
   }
 }
 
-const DelegateMultipleButton = props => (
-  <Web3Consumer>
-    {({ state: { isForeignNetwork, validProvider, balance } }) => (
-      <BaseDelegateMultipleButton
-        ETHBalance={balance}
-        validProvider={validProvider}
-        isForeignNetwork={isForeignNetwork}
-        {...props}
-      />
-    )}
-  </Web3Consumer>
-);
-
-BaseDelegateMultipleButton.propTypes = {
+DelegateMultipleButton.propTypes = {
   balance: PropTypes.instanceOf(BigNumber).isRequired,
   currentUser: PropTypes.instanceOf(User).isRequired,
   campaign: PropTypes.instanceOf(Campaign),
   milestone: PropTypes.instanceOf(Milestone),
   style: PropTypes.shape(),
   validProvider: PropTypes.bool.isRequired,
-  isForeignNetwork: PropTypes.bool.isRequired,
+  isCorrectNetwork: PropTypes.bool.isRequired,
+  tokenWhitelist: PropTypes.arrayOf(PropTypes.shape()).isRequired,
 };
 
-BaseDelegateMultipleButton.defaultProps = {
+DelegateMultipleButton.defaultProps = {
   campaign: undefined,
   milestone: undefined,
   style: {},
 };
 
-export default DelegateMultipleButton;
+export default props => (
+  <WhiteListConsumer>
+    {({ state: { tokenWhitelist } }) => (
+      <Web3Consumer>
+        {({ state: { isForeignNetwork, validProvider } }) => (
+          <DelegateMultipleButton
+            validProvider={validProvider}
+            isCorrectNetwork={isForeignNetwork}
+            tokenWhitelist={tokenWhitelist}
+            {...props}
+          />
+        )}
+      </Web3Consumer>
+    )}
+  </WhiteListConsumer>
+);

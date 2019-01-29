@@ -1,4 +1,3 @@
-import React from 'react';
 import BigNumber from 'bignumber.js';
 import { utils } from 'web3';
 
@@ -39,7 +38,7 @@ class BasicModel extends Model {
     peopleCount = 0,
     fullyFunded = false,
     donationCounters = [],
-    token = React.whitelist.tokenWhitelist.find(t => t.symbol === 'ETH'),
+    token,
     createdAt,
   }) {
     super();

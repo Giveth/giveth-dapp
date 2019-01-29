@@ -15,7 +15,6 @@ import {
   checkProfile,
   authenticateIfPossible,
   checkBalance,
-  isInWhitelist,
 } from '../../lib/middleware';
 import LoaderButton from '../LoaderButton';
 
@@ -23,6 +22,7 @@ import DACservice from '../../services/DACService';
 import DAC from '../../models/DAC';
 import User from '../../models/User';
 import ErrorPopup from '../ErrorPopup';
+import { Consumer as WhiteListConsumer } from '../../contextProviders/WhiteListProvider';
 
 /**
  * View to create or edit a DAC
@@ -117,7 +117,7 @@ class EditDAC extends Component {
 
     return authenticateIfPossible(this.props.currentUser)
       .then(() => {
-        if (!isInWhitelist(this.props.currentUser, React.whitelist.delegateWhitelist)) {
+        if (!this.props.isDelegate(this.props.currentUser)) {
           throw new Error('not whitelisted');
         }
       })
@@ -270,7 +270,7 @@ class EditDAC extends Component {
                     <div className="form-group">
                       <QuillFormsy
                         name="description"
-                        label="Explain how you are going to solve this your cause"
+                        label="Explain your cause"
                         helpText="Make it as extensive as necessary. Your goal is to build trust,
                         so that people join your Community and/or donate Ether."
                         value={dac.description}
@@ -348,6 +348,7 @@ EditDAC.propTypes = {
       id: PropTypes.string,
     }).isRequired,
   }).isRequired,
+  isDelegate: PropTypes.func.isRequired,
 };
 
 EditDAC.defaultProps = {
@@ -355,4 +356,8 @@ EditDAC.defaultProps = {
   isNew: false,
 };
 
-export default EditDAC;
+export default props => (
+  <WhiteListConsumer>
+    {({ actions: { isDelegate } }) => <EditDAC {...props} isDelegate={isDelegate} />}
+  </WhiteListConsumer>
+);

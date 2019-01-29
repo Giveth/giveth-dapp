@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { Component, Fragment } from 'react';
 import BigNumber from 'bignumber.js';
 import PropTypes from 'prop-types';
 import moment from 'moment';
@@ -6,9 +6,10 @@ import moment from 'moment';
 import { Input } from 'formsy-react-components';
 import SelectFormsy from './SelectFormsy';
 import DatePickerFormsy from './DatePickerFormsy';
+import Loader from './Loader';
 
 import { getStartOfDayUTC } from '../lib/helpers';
-import getEthConversionContext from '../containers/getEthConversionContext';
+import getConversionRatesContext from '../containers/getConversionRatesContext';
 
 BigNumber.config({ DECIMAL_PLACES: 18 });
 
@@ -19,6 +20,7 @@ class RateConvertor extends Component {
     super(props);
 
     this.state = {
+      isLoading: true,
       date: props.date,
       selectedFiatType: props.selectedFiatType,
       fiatAmount: new BigNumber(`0${props.fiatAmount}`),
@@ -32,20 +34,27 @@ class RateConvertor extends Component {
   }
 
   componentWillMount() {
-    this.props
-      .getEthConversion(this.state.date, this.props.token.symbol)
-      .then(resp => this.setState({ conversionRate: resp }));
+    this.setDate(this.props.date);
   }
 
   setDate(date) {
     this.setState({ date });
-    this.props.getEthConversion(date, this.props.token.symbol).then(resp => {
-      // update all the input fields
-      const rate = resp.rates[this.state.selectedFiatType];
+    const { getConversionRates, token } = this.props;
+
+    getConversionRates(date, token.symbol).then(resp => {
+      // Set rate, or if rate is undefined, use the first defined rate
+      let rate = resp.rates[this.state.selectedFiatType];
+
+      // This rate is undefined, use the first defined rate
+      if (!rate) {
+        this.setState({ selectedFiatType: token.symbol });
+        rate = resp.rates[token.symbol];
+      }
 
       this.setState(prevState => ({
         conversionRate: resp,
         etherAmountForm: prevState.fiatAmountForm ? prevState.fiatAmount.div(rate).toFixed() : '',
+        isLoading: false,
       }));
     });
   }
@@ -90,104 +99,122 @@ class RateConvertor extends Component {
 
   render() {
     const { fiatTypes, token } = this.props;
-    const { date, selectedFiatType, fiatAmountForm, etherAmountForm, conversionRate } = this.state;
+    const {
+      date,
+      selectedFiatType,
+      fiatAmountForm,
+      etherAmountForm,
+      conversionRate,
+      isLoading,
+    } = this.state;
 
     return (
       <div>
-        <div className="form-group row">
-          <div className="col-12">
-            <DatePickerFormsy
-              label="Date of item"
-              name="date"
-              type="text"
-              value={date}
-              startDate={date}
-              changeDate={dt => this.setDate(getStartOfDayUTC(dt))}
-              placeholder="Select a date"
-              help="Select a date"
-              validations="isMoment"
-              validationErrors={{
-                isMoment: 'Please provide a date.',
-              }}
-              required
-              disabled={this.props.disabled}
-            />
-          </div>
-        </div>
+        {isLoading && <Loader className="small" />}
 
-        <div className="form-group row">
-          <div className="col-4">
-            <Input
-              type="text"
-              label={`Amount in ${selectedFiatType}`}
-              name="fiatAmount"
-              value={fiatAmountForm}
-              validations="greaterThan:0,isNumeric"
-              validationErrors={{
-                greaterThan: 'Enter value',
-                isNumeric: 'Provide correct number',
-              }}
-              onChange={this.setEtherAmount}
-              required
-              disabled={this.props.disabled}
-            />
-          </div>
+        {!isLoading && (
+          <Fragment>
+            <div className="form-group row">
+              <div className="col-12">
+                <DatePickerFormsy
+                  label="Date of item"
+                  name="date"
+                  type="text"
+                  value={date}
+                  startDate={date}
+                  changeDate={dt => this.setDate(getStartOfDayUTC(dt))}
+                  placeholder="Select a date"
+                  help="Select a date"
+                  validations="isMoment"
+                  validationErrors={{
+                    isMoment: 'Please provide a date.',
+                  }}
+                  required
+                  disabled={this.props.disabled}
+                />
+              </div>
+            </div>
 
-          <div className="col-4">
-            <SelectFormsy
-              name="fiatType"
-              label="Currency"
-              value={selectedFiatType}
-              options={fiatTypes}
-              onChange={this.changeSelectedFiat}
-              helpText={
-                conversionRate &&
-                conversionRate.rates &&
-                `1 ${token.symbol} = ${conversionRate.rates[selectedFiatType]} ${selectedFiatType}`
-              }
-              required
-              disabled={this.props.disabled}
-            />
-          </div>
+            <div className="form-group row">
+              <div className="col-4">
+                <Input
+                  type="text"
+                  label={`Amount in ${selectedFiatType}`}
+                  name="fiatAmount"
+                  value={fiatAmountForm}
+                  validations="greaterThan:0,isNumeric"
+                  validationErrors={{
+                    greaterThan: 'Enter value',
+                    isNumeric: 'Provide correct number',
+                  }}
+                  onChange={this.setEtherAmount}
+                  required
+                  disabled={this.props.disabled}
+                />
+              </div>
 
-          <div className="col-4">
-            <Input
-              type="text"
-              label={`Amount in ${token.name}`}
-              name="etherAmount"
-              value={etherAmountForm}
-              validations="greaterThan:0,isNumeric"
-              validationErrors={{
-                greaterThan: 'Enter value',
-                isNumeric: 'Provide correct number',
-              }}
-              onChange={this.setFiatAmount}
-              required
-              disabled={this.props.disabled}
-            />
-          </div>
-          <Input
-            type="hidden"
-            name="conversionRate"
-            value={
-              conversionRate && conversionRate.rates
-                ? conversionRate.rates[selectedFiatType].toFixed()
-                : '0'
-            }
-          />
-          <Input
-            type="hidden"
-            name="ethConversionRateTimestamp"
-            value={this.state.conversionRate ? this.state.conversionRate.timestamp.toString() : ''}
-          />
-        </div>
+              <div className="col-4">
+                <SelectFormsy
+                  name="fiatType"
+                  label="Currency"
+                  value={selectedFiatType}
+                  options={fiatTypes}
+                  allowedOptions={conversionRate && conversionRate.rates}
+                  onChange={this.changeSelectedFiat}
+                  helpText={
+                    conversionRate &&
+                    conversionRate.rates &&
+                    `1 ${token.symbol} = ${
+                      conversionRate.rates[selectedFiatType]
+                    } ${selectedFiatType}`
+                  }
+                  required
+                  disabled={this.props.disabled}
+                />
+              </div>
+
+              <div className="col-4">
+                <Input
+                  type="text"
+                  label={`Amount in ${token.name}`}
+                  name="etherAmount"
+                  value={etherAmountForm}
+                  validations="greaterThan:0,isNumeric"
+                  validationErrors={{
+                    greaterThan: 'Enter value',
+                    isNumeric: 'Provide correct number',
+                  }}
+                  onChange={this.setFiatAmount}
+                  required
+                  disabled={this.props.disabled}
+                />
+              </div>
+              <Input
+                type="hidden"
+                name="conversionRate"
+                value={
+                  conversionRate && conversionRate.rates
+                    ? conversionRate.rates[selectedFiatType].toString()
+                    : '0'
+                }
+              />
+              <Input
+                type="hidden"
+                name="conversionRateTimestamp"
+                value={
+                  this.state.conversionRate ? this.state.conversionRate.timestamp.toString() : ''
+                }
+              />
+            </div>
+          </Fragment>
+        )}
       </div>
     );
   }
 }
 
 RateConvertor.propTypes = {
-  getEthConversion: PropTypes.func.isRequired,
+  getConversionRates: PropTypes.func.isRequired,
   disabled: PropTypes.bool,
   selectedFiatType: PropTypes.string,
   date: PropTypes.instanceOf(moment),
@@ -206,4 +233,4 @@ RateConvertor.defaultProps = {
   token: undefined,
 };
 
-export default getEthConversionContext(RateConvertor);
+export default getConversionRatesContext(RateConvertor);

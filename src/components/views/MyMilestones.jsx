@@ -16,6 +16,7 @@ import { getTruncatedText, getReadableStatus, convertEthHelper } from '../../lib
 import config from '../../configuration';
 
 import MilestoneService from '../../services/MilestoneService';
+import Milestone from '../../models/Milestone';
 
 const reviewDue = updatedAt =>
   moment()
@@ -33,7 +34,7 @@ class MyMilestones extends Component {
       isLoading: true,
       milestones: [],
       visiblePages: 10,
-      itemsPerPage: 50,
+      itemsPerPage: 10,
       skipPages: 0,
       totalResults: 0,
       milestoneStatus: 'Active',
@@ -85,9 +86,11 @@ class MyMilestones extends Component {
           totalResults: resp.total,
           isLoading: false,
         }),
-      onError: () =>
+      onError: err => {
+        console.log('err', err);
         // TO DO: handle error here in view
-        this.setState({ isLoading: false }),
+        this.setState({ isLoading: false });
+      },
     });
   }
 
@@ -210,13 +213,15 @@ class MyMilestones extends Component {
                                       </Link>
                                     </td>
                                     <td className="td-status">
-                                      {(m.status === 'Pending' ||
-                                        (Object.keys(m).includes('mined') && !m.mined)) && (
-                                        <span>
-                                          <i className="fa fa-circle-o-notch fa-spin" />
-                                          &nbsp;
-                                        </span>
-                                      )}
+                                      {![Milestone.PROPOSED, Milestone.REJECTED].includes(
+                                        m.status,
+                                      ) &&
+                                        (m.status === Milestone.PENDING || !m.mined) && (
+                                          <span>
+                                            <i className="fa fa-circle-o-notch fa-spin" />
+                                            &nbsp;
+                                          </span>
+                                        )}
                                       {m.status === 'NeedsReview' &&
                                         reviewDue(m.updatedAt) && (
                                           <span>

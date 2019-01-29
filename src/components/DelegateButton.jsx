@@ -198,7 +198,8 @@ class DelegateButton extends Component {
           {!milestoneOnly && <p>Select a Campaign or Milestone to delegate this donation to:</p>}
 
           <p style={pStyle}>
-            You are delegating donation from{' '}
+            You are delegating donation made on{' '}
+            <strong>{new Date(donation.createdAt).toLocaleDateString()}</strong> by{' '}
             <strong>{donation.giver.name || donation.giverAddress}</strong> of a value{' '}
             <strong>
               {donation.amountRemaining.toFixed()} {donation.token.symbol}

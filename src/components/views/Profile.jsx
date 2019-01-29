@@ -440,7 +440,7 @@ class Profile extends Component {
                                   </td>
                                   <td className="td-donations-number">{c.donationCount || 0}</td>
                                   <td className="td-donations-amount">
-                                    {convertEthHelper(c.totalDonated)} ETH
+                                    {convertEthHelper(c.totalDonated)} config.nativeTokenName
                                   </td>
                                   <td className="td-status">
                                     {(c.status === Campaign.PENDING ||
@@ -513,7 +513,7 @@ class Profile extends Component {
                                   </td>
                                   <td className="td-donations-number">{d.donationCount}</td>
                                   <td className="td-donations-amount">
-                                    {convertEthHelper(d.totalDonated)} ETH
+                                    {convertEthHelper(d.totalDonated)} config.nativeTokenName
                                   </td>
                                   <td className="td-status">
                                     {d.status === DAC.PENDING && (
