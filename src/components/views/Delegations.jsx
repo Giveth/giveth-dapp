@@ -76,7 +76,6 @@ const Delegations = ({ balance, currentUser }) => (
                                 </thead>
                                 <tbody>
                                   {delegations.map(d => (
-                                    // TODO: <tr key={d.adminId}>
                                     <tr key={d._id}>
                                       {currentUser.authenticated && (
                                         <td className="td-actions">
@@ -91,7 +90,10 @@ const Delegations = ({ balance, currentUser }) => (
                                                 types={campaigns.concat(milestones)}
                                                 donation={d}
                                                 balance={balance}
-                                                symbol={(d.token && d.token.symbol) || 'ETH'}
+                                                symbol={
+                                                  (d.token && d.token.symbol) ||
+                                                  config.nativeTokenName
+                                                }
                                               />
                                             )}
 
@@ -103,7 +105,9 @@ const Delegations = ({ balance, currentUser }) => (
                                             d.amountRemaining > 0 && (
                                               <DelegateButton
                                                 types={milestones.filter(
-                                                  m => m.campaignId === d.ownerTypeId,
+                                                  m =>
+                                                    m.campaignId === d.ownerTypeId &&
+                                                    m.token.symbol === d.token.symbol,
                                                 )}
                                                 donation={d}
                                                 balance={balance}
@@ -130,7 +134,7 @@ const Delegations = ({ balance, currentUser }) => (
                                           </span>
                                         )}
                                         {convertEthHelper(d.amountRemaining)}{' '}
-                                        {(d.token && d.token.symbol) || 'ETH'}
+                                        {(d.token && d.token.symbol) || config.nativeTokenName}
                                       </td>
                                       <td className="td-user">
                                         <Link to={`profile/${d.giver.address}`}>

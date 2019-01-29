@@ -18,26 +18,24 @@ class AcceptRejectProposedMilestoneButtons extends Component {
   }
 
   rejectProposedMilestone() {
-    React.swal({
-      title: 'Reject Milestone?',
-      text: 'Are you sure you want to reject this Milestone?',
-      icon: 'warning',
-      dangerMode: true,
-      buttons: ['Cancel', 'Yes, reject'],
-      content: {
-        element: 'input',
-        attributes: {
-          placeholder: 'Add a reason why you reject this proposed milestone...',
-        },
-      },
-    }).then(rejectReason => {
-      MilestoneService.rejectProposedMilestone({
-        milestone: this.props.milestone,
-        rejectReason,
-        onSuccess: () => React.toast.info(<p>The proposed milestone has been rejected.</p>),
-        onError: e => ErrorPopup('Something went wrong with rejecting the proposed milestone', e),
+    this.conversationModal.current
+      .openModal({
+        title: 'Reject proposed milestone',
+        description:
+          'Optionally explain why you reject this proposed milestone. This information will be publicly visible and emailed to the milestone owner.',
+        textPlaceholder: 'Optionally explain why you reject this proposal...',
+        required: false,
+        cta: 'Reject proposal',
+        enableAttachProof: false,
+      })
+      .then(proof => {
+        MilestoneService.rejectProposedMilestone({
+          milestone: this.props.milestone,
+          message: proof.message,
+          onSuccess: () => React.toast.info(<p>The proposed milestone has been rejected.</p>),
+          onError: e => ErrorPopup('Something went wrong with rejecting the proposed milestone', e),
+        });
       });
-    });
   }
 
   acceptProposedMilestone() {

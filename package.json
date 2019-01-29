@@ -78,6 +78,7 @@
     "start-js": "react-scripts start",
     "start": "npm-run-all -p watch-css start-js",
     "build": "npm run build-css && react-scripts build",
+    "serve": "npm run build && pm2 serve -s build",
     "test": "react-scripts test --env=jsdom",
     "eslint": "eslint 'src/**/*.js*'",
     "eslint:fix": "npm run eslint --fix",

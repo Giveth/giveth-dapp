@@ -161,7 +161,7 @@ class DelegationProvider extends Component {
                 },
                 resolve(),
               ),
-            () => reject(),
+            err => reject(err),
           );
       }),
       new Promise((resolve, reject) => {
@@ -186,7 +186,7 @@ class DelegationProvider extends Component {
                 },
                 resolve(),
               ),
-            () => reject(),
+            err => reject(err),
           );
       }),
       new Promise((resolve, reject) => {
@@ -217,12 +217,12 @@ class DelegationProvider extends Component {
             resp => {
               this.setState(
                 {
-                  milestones: resp.data.map(m => new Milestone(m)), // .filter((m) => m.totalDonated < m.maxAmount)
+                  milestones: resp.data.map(m => new Milestone(m)),
                 },
                 resolve(),
               );
             },
-            () => reject(),
+            err => reject(err),
           );
       }),
     ])

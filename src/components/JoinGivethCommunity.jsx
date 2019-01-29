@@ -4,7 +4,8 @@ import BigNumber from 'bignumber.js';
 
 import CommunityButton from './CommunityButton';
 import User from '../models/User';
-import { isInWhitelist, checkBalance } from '../lib/middleware';
+import { checkBalance } from '../lib/middleware';
+import { Consumer as WhiteListConsumer } from '../contextProviders/WhiteListProvider';
 
 /**
  * The join Giveth community top-bar
@@ -18,7 +19,7 @@ class JoinGivethCommunity extends Component {
   }
 
   createDAC() {
-    if (!isInWhitelist(this.props.currentUser, React.whitelist.delegateWhitelist)) {
+    if (!this.props.isDelegate(this.props.currentUser)) {
       React.swal({
         title: 'Sorry, Giveth is in beta...',
         content: React.swal.msg(
@@ -64,7 +65,7 @@ class JoinGivethCommunity extends Component {
   }
 
   createCampaign() {
-    if (!isInWhitelist(this.props.currentUser, React.whitelist.projectOwnerWhitelist)) {
+    if (!this.props.isCampaignManager(this.props.currentUser)) {
       React.swal({
         title: 'Sorry, Giveth is in beta...',
         content: React.swal.msg(
@@ -109,9 +110,7 @@ class JoinGivethCommunity extends Component {
   }
 
   render() {
-    const { currentUser } = this.props;
-    const canCreateDAC = isInWhitelist(currentUser, React.whitelist.delegateWhitelist);
-    const canCreateCampaign = isInWhitelist(currentUser, React.whitelist.projectOwnerWhitelist);
+    const { currentUser, isDelegate, isCampaignManager } = this.props;
 
     return (
       <div id="join-giveth-community">
@@ -122,12 +121,12 @@ class JoinGivethCommunity extends Component {
               &nbsp;Join Giveth
             </CommunityButton>
             &nbsp;
-            {canCreateDAC && (
+            {isDelegate(currentUser) && (
               <button type="button" className="btn btn-info" onClick={() => this.createDAC()}>
                 Create a Community
               </button>
             )}
-            {canCreateCampaign && (
+            {isCampaignManager(currentUser) && (
               <button type="button" className="btn btn-info" onClick={() => this.createCampaign()}>
                 Start a Campaign
               </button>
@@ -139,8 +138,6 @@ class JoinGivethCommunity extends Component {
   }
 }
 
-export default JoinGivethCommunity;
-
 JoinGivethCommunity.propTypes = {
   history: PropTypes.shape({
     goBack: PropTypes.func.isRequired,
@@ -148,8 +145,22 @@ JoinGivethCommunity.propTypes = {
   }).isRequired,
   balance: PropTypes.instanceOf(BigNumber).isRequired,
   currentUser: PropTypes.instanceOf(User),
+  isDelegate: PropTypes.func.isRequired,
+  isCampaignManager: PropTypes.func.isRequired,
 };
 
 JoinGivethCommunity.defaultProps = {
   currentUser: undefined,
 };
+
+export default props => (
+  <WhiteListConsumer>
+    {({ actions: { isDelegate, isCampaignManager } }) => (
+      <JoinGivethCommunity
+        {...props}
+        isDelegate={isDelegate}
+        isCampaignManager={isCampaignManager}
+      />
+    )}
+  </WhiteListConsumer>
+);

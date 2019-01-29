@@ -1,5 +1,3 @@
-/* eslint-disable react/no-unescaped-entities */
-/* eslint-disable no-restricted-globals */
 import React from 'react';
 import PropTypes from 'prop-types';
 import Modal from 'react-modal';
@@ -8,8 +6,9 @@ import { utils } from 'web3';
 import { Form, Input } from 'formsy-react-components';
 import Toggle from 'react-toggle';
 import Slider from 'react-rangeslider';
-
 import GA from 'lib/GoogleAnalytics';
+import { Link } from 'react-router-dom';
+
 import getNetwork from '../lib/blockchain/getNetwork';
 import User from '../models/User';
 import Milestone from '../models/Milestone';
@@ -23,6 +22,8 @@ import { feathersClient } from '../lib/feathersClient';
 import { Consumer as Web3Consumer } from '../contextProviders/Web3Provider';
 import NetworkWarning from './NetworkWarning';
 import SelectFormsy from './SelectFormsy';
+import { Consumer as WhiteListConsumer } from '../contextProviders/WhiteListProvider';
+import DAC from '../models/DAC';
 
 const POLL_DELAY_TOKENS = 2000;
 
@@ -39,24 +40,13 @@ const modalStyles = {
   },
 };
 
-const _getTokenWhitelist = () => {
-  const r = React.whitelist.tokenWhitelist;
-  return r.map(t => {
-    if (t.symbol === 'ETH') {
-      t.name = `${config.homeNetworkName} ETH`;
-    }
-    t.balance = new BigNumber(0);
-    return t;
-  });
-};
-
 Modal.setAppElement('#root');
 
 // tx only requires 25400 gas, but for some reason we get an out of gas
 // error in web3 with that amount (even though the tx succeeds)
 const DONATION_GAS = 30400;
 
-class BaseDonateButton extends React.Component {
+class DonateButton extends React.Component {
   constructor(props) {
     super(props);
 
@@ -75,14 +65,11 @@ class BaseDonateButton extends React.Component {
       showCustomAddress: false,
       customAddress:
         props.currentUser && props.currentUser.address ? props.currentUser.address : undefined,
-      tokenWhitelistOptions: _getTokenWhitelist().map(t => ({
+      tokenWhitelistOptions: props.tokenWhitelist.map(t => ({
         value: t.address,
         title: t.name,
       })),
-      selectedToken:
-        props.model.type === 'milestone'
-          ? modelToken
-          : _getTokenWhitelist().find(t => t.symbol === 'ETH'),
+      selectedToken: props.model.type === 'milestone' ? modelToken : props.tokenWhitelist[0],
     };
 
     this.submit = this.submit.bind(this);
@@ -102,11 +89,12 @@ class BaseDonateButton extends React.Component {
 
   setToken(address) {
     const { amount, defaultAmount } = this.state;
-    const token = _getTokenWhitelist().find(t => t.address === address);
+    const token = this.props.tokenWhitelist.find(t => t.address === address);
+    token.balance = new BigNumber('0'); // FIXME: There should be a balance provider handling all of this...
 
     let amt = amount;
     if (defaultAmount) {
-      amt = token.symbol === 'ETH' ? '1' : '100';
+      amt = token.symbol === config.nativeTokenName ? '1' : '100';
     }
     this.setState(
       {
@@ -119,9 +107,10 @@ class BaseDonateButton extends React.Component {
 
   getMaxAmount() {
     const { selectedToken } = this.state;
-    const { ETHBalance } = this.props;
+    const { NativeTokenBalance } = this.props;
 
-    const balance = selectedToken.symbol === 'ETH' ? ETHBalance : selectedToken.balance;
+    const balance =
+      selectedToken.symbol === config.nativeTokenName ? NativeTokenBalance : selectedToken.balance;
 
     // Determine max amount
     let maxAmount = new BigNumber(utils.fromWei(balance.toFixed()));
@@ -134,15 +123,15 @@ class BaseDonateButton extends React.Component {
 
   pollToken() {
     const { selectedToken } = this.state;
-    const { isHomeNetwork, currentUser } = this.props;
+    const { isCorrectNetwork, currentUser } = this.props;
 
     // stop existing poll
     if (this.stopPolling) {
       this.stopPolling();
       this.stopPolling = undefined;
     }
-    // ETH balance is provided by the Web3Provider
-    if (selectedToken.symbol === 'ETH') return;
+    // Native token balance is provided by the Web3Provider
+    if (selectedToken.symbol === config.nativeTokenName) return;
 
     this.stopPolling = pollEvery(
       () => ({
@@ -152,7 +141,7 @@ class BaseDonateButton extends React.Component {
             const contract = tokens[selectedToken.address];
 
             // we are only interested in homeNetwork token balances
-            if (!isHomeNetwork || !currentUser || !currentUser.address || !contract) {
+            if (!isCorrectNetwork || !currentUser || !currentUser.address || !contract) {
               return new BigNumber(0);
             }
 
@@ -210,7 +199,7 @@ class BaseDonateButton extends React.Component {
     const { givethBridge, etherscanUrl, showCustomAddress, selectedToken } = this.state;
 
     const value = utils.toWei(model.amount);
-    const isDonationInToken = selectedToken.symbol !== 'ETH';
+    const isDonationInToken = selectedToken.symbol !== config.nativeTokenName;
     const tokenAddress = isDonationInToken ? selectedToken.address : 0;
 
     const _makeDonationTx = async () => {
@@ -349,7 +338,7 @@ class BaseDonateButton extends React.Component {
   }
 
   render() {
-    const { model, currentUser, isHomeNetwork, ETHBalance, validProvider } = this.props;
+    const { model, currentUser, NativeTokenBalance, validProvider, isCorrectNetwork } = this.props;
     const {
       amount,
       formIsValid,
@@ -365,7 +354,8 @@ class BaseDonateButton extends React.Component {
       display: 'inline-block',
     };
 
-    const balance = selectedToken.symbol === 'ETH' ? ETHBalance : selectedToken.balance;
+    const balance =
+      selectedToken.symbol === config.nativeTokenName ? NativeTokenBalance : selectedToken.balance;
     const maxAmount = this.getMaxAmount();
 
     return (
@@ -403,15 +393,26 @@ class BaseDonateButton extends React.Component {
 
             {validProvider && (
               <NetworkWarning
-                incorrectNetwork={!isHomeNetwork}
+                incorrectNetwork={!isCorrectNetwork}
                 networkName={config.homeNetworkName}
               />
             )}
-            {isHomeNetwork &&
+            {isCorrectNetwork &&
               currentUser && (
                 <p>
-                  You&apos;re pledging: as long as the {model.type} owner does not lock your money
-                  you can take it back any time.
+                  {model.type.toLowerCase() === DAC.type && (
+                    <span>
+                      You&apos;re pledging: as long as the DAC owner does not lock your money you
+                      can take it back any time.
+                    </span>
+                  )}
+                  {model.type.toLowerCase() !== DAC.type && (
+                    <span>
+                      You&apos;re committing your funds to this {model.type}, if you have filled out
+                      contact information in your <Link to="/profile">Profile</Link> you will be
+                      notified about how your funds are spent
+                    </span>
+                  )}
                 </p>
               )}
 
@@ -424,7 +425,7 @@ class BaseDonateButton extends React.Component {
               )}
 
             {validProvider &&
-              isHomeNetwork &&
+              isCorrectNetwork &&
               currentUser && (
                 <div>
                   {model.type !== 'milestone' && (
@@ -432,7 +433,7 @@ class BaseDonateButton extends React.Component {
                       name="token"
                       id="token-select"
                       label="Make your donation in"
-                      helpText="Select ETH or the token you want to donate"
+                      helpText={`Select ${config.nativeTokenName} or the token you want to donate`}
                       value={selectedToken.address}
                       options={tokenWhitelistOptions}
                       onChange={address => this.setToken(address)}
@@ -463,7 +464,8 @@ class BaseDonateButton extends React.Component {
                       [maxAmount.toFixed()]: maxAmount.toFixed(4),
                     }}
                     tooltip={false}
-                    onChange={newAmount => this.setState({ amount: newAmount.toString() })}
+                    format={val => `${val} ${config.nativeTokenName}`}
+                    onChange={newAmount => this.setState({ amount: newAmount })}
                   />
                 </div>
               )}
@@ -479,10 +481,10 @@ class BaseDonateButton extends React.Component {
                 }
                 validations={{
                   lessOrEqualTo: maxAmount.toNumber(),
-                  greaterThan: 0.009,
+                  greaterThan: 0,
                 }}
                 validationErrors={{
-                  greaterThan: `Minimum value must be at least 0.01 ${selectedToken.symbol}`,
+                  greaterThan: `Please enter value greater than 0 ${selectedToken.symbol}`,
                   lessOrEqualTo: `This donation exceeds your wallet balance or the milestone max amount: ${maxAmount.toFixed()} ${
                     selectedToken.symbol
                   }.`,
@@ -541,7 +543,7 @@ class BaseDonateButton extends React.Component {
                   className="btn btn-success"
                   formNoValidate
                   type="submit"
-                  disabled={isSaving || !formIsValid || !isHomeNetwork}
+                  disabled={isSaving || !formIsValid || !isCorrectNetwork}
                   isLoading={isSaving}
                   loadingText="Donating..."
                 >
@@ -565,21 +567,6 @@ class BaseDonateButton extends React.Component {
   }
 }
 
-const DonateButton = ({ model, currentUser, maxDonationAmount }) => (
-  <Web3Consumer>
-    {({ state: { isHomeNetwork, validProvider, balance } }) => (
-      <BaseDonateButton
-        ETHBalance={balance}
-        validProvider={validProvider}
-        isHomeNetwork={isHomeNetwork}
-        model={model}
-        currentUser={currentUser}
-        maxDonationAmount={maxDonationAmount}
-      />
-    )}
-  </Web3Consumer>
-);
-
 const modelTypes = PropTypes.shape({
   type: PropTypes.string.isRequired,
   adminId: PropTypes.oneOfType([PropTypes.number, PropTypes.string]).isRequired,
@@ -593,17 +580,10 @@ DonateButton.propTypes = {
   model: modelTypes.isRequired,
   currentUser: PropTypes.instanceOf(User),
   maxDonationAmount: PropTypes.instanceOf(BigNumber),
-};
-
-// eslint isn't smart enough to be able to use Object.assign({}, DonateButton.propTypes, {...})
-// so we have to duplicate them
-BaseDonateButton.propTypes = {
-  model: modelTypes.isRequired,
-  currentUser: PropTypes.instanceOf(User),
-  maxDonationAmount: PropTypes.instanceOf(BigNumber),
-  ETHBalance: PropTypes.instanceOf(BigNumber).isRequired,
+  NativeTokenBalance: PropTypes.instanceOf(BigNumber).isRequired,
   validProvider: PropTypes.bool.isRequired,
-  isHomeNetwork: PropTypes.bool.isRequired,
+  isCorrectNetwork: PropTypes.bool.isRequired,
+  tokenWhitelist: PropTypes.arrayOf(PropTypes.shape()).isRequired,
 };
 
 DonateButton.defaultProps = {
@@ -611,10 +591,20 @@ DonateButton.defaultProps = {
   maxDonationAmount: undefined, // new BigNumber(10000000000000000),
 };
 
-BaseDonateButton.defaultProps = {
-  currentUser: undefined,
-  maxDonationAmount: undefined, // new BigNumber(10000000000000000),
-  // maxDonationAmount: new BigNumber(10000000000000000),
-};
-
-export default DonateButton;
+export default props => (
+  <WhiteListConsumer>
+    {({ state: { tokenWhitelist } }) => (
+      <Web3Consumer>
+        {({ state: { isHomeNetwork, validProvider, balance } }) => (
+          <DonateButton
+            NativeTokenBalance={balance}
+            validProvider={validProvider}
+            isCorrectNetwork={isHomeNetwork}
+            tokenWhitelist={tokenWhitelist}
+            {...props}
+          />
+        )}
+      </Web3Consumer>
+    )}
+  </WhiteListConsumer>
+);

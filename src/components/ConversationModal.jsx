@@ -13,8 +13,6 @@ import QuillFormsy from 'components/QuillFormsy';
 import LoaderButton from 'components/LoaderButton';
 import MilestoneProof from 'components/MilestoneProof';
 
-import { feathersRest } from 'lib/feathersClient';
-
 /**
   A promise modal to file proof when taking action on a milestone
 
@@ -140,45 +138,14 @@ class ConversationModal extends Component {
     }));
   }
 
-  saveProofImages() {
-    // construct image upload promises
-    const uploadItemImages = [];
-
-    this.state.items.forEach(item => {
-      if (item.image) {
-        uploadItemImages.push(
-          new Promise((resolve, reject) => {
-            feathersRest
-              .service('uploads')
-              .create({ uri: item.image })
-              .then(file => {
-                item.image = file.url;
-                resolve('done');
-              })
-              .catch(() => reject(new Error('could not upload item image')));
-          }),
-        );
-      }
-    });
-
-    // upload images
-    return Promise.all(uploadItemImages);
-  }
-
   submit(model) {
-    this.saveProofImages()
-      .then(() => {
-        this.setState(
-          prevState => ({
-            items: prevState.items,
-            message: model.message,
-          }),
-          () => this.closeModal(),
-        );
-      })
-      .catch(() => {
-        this.setState({ isSaving: false, isBlocking: true });
-      });
+    this.setState(
+      prevState => ({
+        items: prevState.items,
+        message: model.message,
+      }),
+      () => this.closeModal(),
+    );
   }
 
   render() {

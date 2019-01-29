@@ -12,6 +12,7 @@ import { getUserName, getUserAvatar } from 'lib/helpers';
 import getNetwork from 'lib/blockchain/getNetwork';
 import MilestoneProof from 'components/MilestoneProof';
 import MilestoneConversationAction from 'components/MilestoneConversationAction';
+import MilestoneItemModel from 'models/MilestoneItem';
 import Loader from './Loader';
 import { feathersClient } from '../lib/feathersClient';
 
@@ -42,7 +43,10 @@ class MilestoneConversations extends Component {
         })
         .subscribe(resp => {
           this.setState({
-            conversations: resp,
+            conversations: resp.data.map(c => {
+              c.items = c.items.map(i => new MilestoneItemModel(i));
+              return c;
+            }),
             isLoading: false,
           });
         });
@@ -75,7 +79,7 @@ class MilestoneConversations extends Component {
         {!isLoading && (
           <div className="card">
             <div className="card-body content">
-              {conversations.data.map(c => (
+              {conversations.map(c => (
                 <div key={c._id}>
                   <Avatar size={30} src={getUserAvatar(c.owner)} round />
                   <div className="content-wrapper">

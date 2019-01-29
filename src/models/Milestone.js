@@ -1,10 +1,10 @@
-import React from 'react';
 import BigNumber from 'bignumber.js';
 import { utils } from 'web3';
 
-import { getStartOfDayUTC, getRandomWhitelistAddress } from 'lib/helpers';
+import { getStartOfDayUTC, cleanIpfsPath } from 'lib/helpers';
 import BasicModel from './BasicModel';
 import MilestoneItemModel from './MilestoneItem';
+
 /**
  * The DApp Milestone model
  */
@@ -14,20 +14,20 @@ export default class MilestoneModel extends BasicModel {
 
     const {
       id = data._id || undefined,
-      maxAmount = '',
+      maxAmount = '0',
       selectedFiatType = 'EUR',
       fiatAmount = new BigNumber('0'),
       recipientAddress = '',
       status = MilestoneModel.PENDING,
       projectId = undefined,
-      reviewerAddress = React.whitelist.reviewerWhitelist.length > 0
-        ? getRandomWhitelistAddress(React.whitelist.reviewerWhitelist).address
-        : '',
+      reviewerAddress = '',
       items = [],
       date = getStartOfDayUTC().subtract(1, 'd'),
       confirmations = 0,
       requiredConfirmations = 6,
       commitTime,
+      campaignId,
+      token,
 
       // transient
       campaign,
@@ -37,7 +37,7 @@ export default class MilestoneModel extends BasicModel {
       reviewer,
       mined = false,
       pluginAddress = '0x0000000000000000000000000000000000000000',
-      campaignId,
+      conversionRateTimestamp,
     } = data;
 
     this._selectedFiatType = selectedFiatType;
@@ -55,6 +55,8 @@ export default class MilestoneModel extends BasicModel {
     this._requiredConfirmations = requiredConfirmations;
     this._commitTime = commitTime;
     this._pluginAddress = pluginAddress;
+    this._token = token;
+    this._conversionRateTimestamp = conversionRateTimestamp;
 
     // transient
     this._campaign = campaign;
@@ -64,6 +66,48 @@ export default class MilestoneModel extends BasicModel {
     this._reviewer = reviewer;
     this._mined = mined;
     this._campaignId = campaignId;
+  }
+
+  toIpfs() {
+    return {
+      title: this._title,
+      description: this._description,
+      image: cleanIpfsPath(this._image),
+      items: this._items.map(i => i.toIpfs()),
+      conversionRateTimestamp: this._conversionRateTimestamp,
+      selectedFiatType: this._selectedFiatType,
+      date: this._date,
+      fiatAmount: this._fiatAmount.toString(),
+      conversionRate: this._conversionRate,
+      version: 1,
+    };
+  }
+
+  toFeathers(txHash) {
+    const milestone = {
+      title: this._title,
+      description: this._description,
+      image: cleanIpfsPath(this._image),
+      maxAmount: utils.toWei(this.maxAmount.toFixed()), // maxAmount is stored as wei in feathers
+      ownerAddress: this._ownerAddress,
+      reviewerAddress: this._reviewerAddress,
+      recipientAddress: this._recipientAddress,
+      campaignReviewerAddress: this._campaignReviewerAddress,
+      campaignId: this._campaignId,
+      projectId: this._projectId,
+      status: this._status,
+      items: this._items.map(i => i.toFeathers()),
+      conversionRateTimestamp: this._conversionRateTimestamp,
+      selectedFiatType: this._selectedFiatType,
+      date: this._date,
+      fiatAmount: this._fiatAmount.toString(),
+      conversionRate: this._conversionRate,
+      pluginAddress: this._pluginAddress,
+      token: this._token,
+    };
+    if (!this.id) milestone.txHash = txHash;
+
+    return milestone;
   }
 
   /**
@@ -143,6 +187,10 @@ export default class MilestoneModel extends BasicModel {
     this._title = value;
   }
 
+  get id() {
+    return this._id;
+  }
+
   get description() {
     return this._description;
   }
@@ -162,6 +210,14 @@ export default class MilestoneModel extends BasicModel {
   }
 
   get maxAmount() {
+    // max amount is not stored in wei
+    if (this.itemizeState) {
+      return this.items.reduce(
+        (accumulator, item) => accumulator.plus(new BigNumber(utils.fromWei(item.wei))),
+        new BigNumber(0),
+      );
+    }
+
     return this._maxAmount;
   }
 
@@ -177,6 +233,15 @@ export default class MilestoneModel extends BasicModel {
   set selectedFiatType(value) {
     this.checkType(value, ['string'], 'selectedFiatType');
     this._selectedFiatType = value;
+  }
+
+  get token() {
+    return this._token;
+  }
+
+  set token(value) {
+    this.checkType(value, ['object'], 'token');
+    this._token = value;
   }
 
   get fiatAmount() {
@@ -343,5 +408,31 @@ export default class MilestoneModel extends BasicModel {
 
   get campaignId() {
     return this._campaignId;
+  }
+
+  set conversionRateTimestamp(value) {
+    this._conversionRateTimestamp = value;
+  }
+
+  get conversionRateTimestamp() {
+    return this._conversionRateTimestamp;
+  }
+
+  set conversionRate(value) {
+    this.checkType(value, ['number'], 'conversionRate');
+    this._conversionRate = value;
+  }
+
+  get conversionRate() {
+    return this._conversionRate;
+  }
+
+  set campaignReviewerAddress(value) {
+    this.checkType(value, ['string'], 'campaignReviewerAddress');
+    this._campaignReviewerAddress = value;
+  }
+
+  get campaignReviewerAddress() {
+    return this._campaignReviewerAddress;
   }
 }

@@ -10,7 +10,7 @@ function AddMilestoneItem(props) {
         className="btn btn-primary btn-sm btn-add-milestone-item"
         onClick={onClick}
       >
-        Attach proof
+        Add Line Item
       </button>
     </div>
   );

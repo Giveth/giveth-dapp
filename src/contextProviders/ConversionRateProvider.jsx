@@ -12,23 +12,24 @@ export { Consumer };
 
 BigNumber.config({ DECIMAL_PLACES: 18 });
 
-class EthConversionProvider extends Component {
+class ConversionRateProvider extends Component {
   constructor() {
     super();
 
     this.state = {
       conversionRates: [],
-      currentRate: undefined,
+      currentRate: {
+        rates: {},
+        timestamp: Math.round(getStartOfDayUTC().toDate()),
+      },
     };
 
-    this.getEthConversion = this.getEthConversion.bind(this);
+    this.getConversionRates = this.getConversionRates.bind(this);
   }
 
-  getEthConversion(date, symbol) {
-    console.log(`requesting conversion rates for date ${date} and symbol ${symbol}`);
-
+  getConversionRates(date, symbol) {
     const dtUTC = getStartOfDayUTC(date); // Should not be necessary as the datepicker should provide UTC, but just to be sure
-    const timestamp = Math.round(dtUTC.toDate()) / 1000;
+    const timestamp = Math.round(dtUTC.toDate());
 
     const { conversionRates } = this.state;
     const cachedConversionRate = conversionRates.find(c => c.timestamp === timestamp);
@@ -36,7 +37,7 @@ class EthConversionProvider extends Component {
     if (!cachedConversionRate) {
       // we don't have the conversion rate in cache, fetch from feathers
       return feathersClient
-        .service('ethconversion')
+        .service('conversionRates')
         .find({ query: { date: dtUTC, symbol } })
         .then(resp => {
           this.setState({
@@ -61,12 +62,8 @@ class EthConversionProvider extends Component {
 
   render() {
     const { conversionRates, currentRate } = this.state;
-    const { getEthConversion } = this;
-    // FIXME: calculations such as this should not be in the renderer...
-    const fiatTypes =
-      React.whitelist && Array.isArray(React.whitelist.fiatWhitelist)
-        ? React.whitelist.fiatWhitelist.map(f => ({ value: f, title: f }))
-        : [];
+    const { fiatWhitelist } = this.props;
+    const { getConversionRates } = this;
 
     return (
       <Provider
@@ -74,10 +71,10 @@ class EthConversionProvider extends Component {
           state: {
             conversionRates,
             currentRate,
-            fiatTypes,
+            fiatTypes: fiatWhitelist.map(f => ({ value: f, title: f })),
           },
           actions: {
-            getEthConversion,
+            getConversionRates,
           },
         }}
       >
@@ -87,8 +84,9 @@ class EthConversionProvider extends Component {
   }
 }
 
-EthConversionProvider.propTypes = {
+ConversionRateProvider.propTypes = {
   children: PropTypes.oneOfType([PropTypes.arrayOf(PropTypes.node), PropTypes.node]).isRequired,
+  fiatWhitelist: PropTypes.arrayOf(PropTypes.string).isRequired,
 };
 
-export default EthConversionProvider;
+export default ConversionRateProvider;

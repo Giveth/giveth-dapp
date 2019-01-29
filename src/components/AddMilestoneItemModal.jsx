@@ -4,11 +4,12 @@ import React, { Component } from 'react';
 import { Prompt } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import Modal from 'react-modal';
+import BigNumber from 'bignumber.js';
 
 import { Input, Form } from 'formsy-react-components';
 import { utils } from 'web3';
 
-import getEthConversionContext from 'containers/getEthConversionContext';
+import getConversionRatesContext from 'containers/getConversionRatesContext';
 import MilestoneItem from 'models/MilestoneItem';
 import FormsyImageUploader from './FormsyImageUploader';
 import RateConvertor from './RateConvertor';
@@ -64,10 +65,10 @@ class AddMilestoneItemModal extends Component {
     item.description = inputs.description;
     item.image = item.image;
     item.selectedFiatType = inputs.fiatType;
-    item.fiatAmount = inputs.fiatAmount;
+    item.fiatAmount = new BigNumber(inputs.fiatAmount);
     item.wei = utils.toWei(inputs.etherAmount);
     item.conversionRate = parseFloat(inputs.conversionRate);
-    item.ethConversionRateTimestamp = inputs.ethConversionRateTimestamp;
+    item.conversionRateTimestamp = inputs.conversionRateTimestamp;
 
     this.setState({ item });
   }
@@ -185,4 +186,4 @@ AddMilestoneItemModal.defaultProps = {
   token: undefined,
 };
 
-export default getEthConversionContext(AddMilestoneItemModal);
+export default getConversionRatesContext(AddMilestoneItemModal);

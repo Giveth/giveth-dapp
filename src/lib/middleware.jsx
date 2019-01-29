@@ -85,7 +85,7 @@ const authenticate = async (address, redirectOnFail = true) => {
             resolve(false);
             history.goBack();
             React.swal.close();
-          }, 10000);
+          }, 30000);
 
           try {
             const signature = await web3.eth.personal.sign(msg, address);
@@ -165,28 +165,6 @@ export const checkForeignNetwork = async isForeignNetwork => {
 };
 
 /**
- * check if the currentUser is in a particular whitelist.
- *
- * @param currentUser {object} Current User object
- * @param whitelist   {array}  Array of whitelisted addresses
- *
- * @return boolean
- *
- */
-export const isInWhitelist = (currentUser, whitelist) => {
-  if (
-    (Array.isArray(whitelist) && whitelist.length === 0) ||
-    (Array.isArray(whitelist) &&
-      currentUser &&
-      currentUser.address &&
-      whitelist.find(u => u.address.toLowerCase() === currentUser.address.toLowerCase()))
-  ) {
-    return true;
-  }
-  return false;
-};
-
-/**
  * Checks for sufficient wallet balance.
  *
  * @param balance {BN} balance object
@@ -202,8 +180,9 @@ export const checkBalance = balance =>
         title: 'Insufficient wallet balance',
         content: React.swal.msg(
           <p>
-            Unfortunately you need at least {React.minimumWalletBalance} ETH in your wallet to
-            continue. Please transfer some ETH to your wallet first.
+            Unfortunately you need at least {React.minimumWalletBalance} {config.nativeTokenName} in
+            your wallet to continue. Please transfer some ${config.nativeTokenName} to your wallet
+            first.
           </p>,
         ),
         icon: 'warning',

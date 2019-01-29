@@ -21,7 +21,7 @@ import MilestoneItem from 'components/MilestoneItem';
 import ListDonations from 'components/ListDonations';
 import MilestoneConversations from 'components/MilestoneConversations';
 import DelegateMultipleButton from 'components/DelegateMultipleButton';
-import { getUserAvatar, getUserName } from '../../lib/helpers';
+import { convertEthHelper, getUserAvatar, getUserName } from '../../lib/helpers';
 
 import MilestoneService from '../../services/MilestoneService';
 import ShareOptions from '../ShareOptions';
@@ -151,7 +151,7 @@ class ViewMilestone extends Component {
 
               {!milestone.fullyFunded && (
                 <p>
-                  Amount requested: {milestone.maxAmount.toFixed()} {milestone.token.symbol}
+                  Amount requested: {convertEthHelper(milestone.maxAmount)} {milestone.token.symbol}
                 </p>
               )}
               <p>Campaign: {campaign.title} </p>
@@ -328,7 +328,7 @@ class ViewMilestone extends Component {
                             The maximum amount of {milestone.token.symbol} that can be donated to
                             this Milestone. Based on the requested amount in fiat.
                           </small>
-                          {milestone.maxAmount.toFixed()} {milestone.token.symbol}
+                          {convertEthHelper(milestone.maxAmount)} {milestone.token.symbol}
                           {milestone.items.length === 0 &&
                             milestone.selectedFiatType &&
                             milestone.selectedFiatType !== milestone.token.symbol &&
@@ -346,7 +346,7 @@ class ViewMilestone extends Component {
                             The amount of {milestone.token.symbol} currently donated to this
                             Milestone
                           </small>
-                          {milestone.currentBalance.toFixed()} {milestone.token.symbol}
+                          {convertEthHelper(milestone.currentBalance)} {milestone.token.symbol}
                         </div>
 
                         <div className="form-group">

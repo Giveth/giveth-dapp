@@ -109,10 +109,13 @@ export const getStartOfDayUTC = date => moment.utc(date || moment()).startOf('da
  * */
 export const convertEthHelper = (amount, decimals) => {
   if (!amount) return 0;
+  let amt = amount;
   if (!(amount instanceof BigNumber)) {
-    return 0;
+    if (amount) amt = new BigNumber(amount);
+    else return 0;
   }
-  return amount.toFixed(decimals || config.decimals);
+  if (amt.eq(0)) return 0;
+  return amt.toFixed(decimals || config.decimals);
 };
 
 // the back button will go one lower nested route inside of the DApp

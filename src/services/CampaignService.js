@@ -46,7 +46,10 @@ class CampaignService {
           status: Campaign.ACTIVE,
           $limit,
           $skip,
-          $sort: { milestonesCount: -1 },
+          // Should set a specific prop for "qualified" updates
+          // Current impl will allow a campaign manager to be first
+          // in the list by just editing the campaign
+          $sort: { updatedAt: 1 },
         },
       })
       .then(resp => {
