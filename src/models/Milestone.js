@@ -457,4 +457,75 @@ export default class Milestone extends BasicModel {
   get isCapped() {
     return this.maxAmount !== undefined;
   }
+
+  canUserAcceptRejectProposal(user) {
+    return (
+      user && this.campaign.ownerAddress === user.address && this.status === Milestone.PROPOSED
+    );
+  }
+
+  canUserRepropose(user) {
+    return user && this.ownerAddress === user.address && this.status === Milestone.REJECTED;
+  }
+
+  canUserDelete(user) {
+    return (
+      user &&
+      this.ownerAddress === user.address &&
+      [Milestone.REJECTED, Milestone.PROPOSED].includes(this.status)
+    );
+  }
+
+  canUserCancel(user) {
+    return (
+      user &&
+      [this.reviewerAddress, this.ownerAddress].includes(user.address) &&
+      [Milestone.IN_PROGRESS, Milestone.NEEDS_REVIEW].includes(this.status) &&
+      this.mined
+    );
+  }
+
+  canUserMarkComplete(user) {
+    return (
+      user &&
+      // if no reviewerAddress, then there is no need to markComplete
+      this.reviewerAddress &&
+      this.reviewerAddress !== ZERO_ADDRESS &&
+      this.status === Milestone.IN_PROGRESS &&
+      this.mined &&
+      [this.recipientAddress, this.ownerAddress].includes(user.address)
+    );
+  }
+
+  canUserApproveRejectCompletion(user) {
+    return (
+      user &&
+      this.status === Milestone.NEEDS_REVIEW &&
+      this.reviewerAddress === user.address &&
+      this.mined
+    );
+  }
+
+  canUserWithdraw(user) {
+    return (
+      user &&
+      [this.recipientAddress, this.ownerAddress].includes(user.address) &&
+      this.status === Milestone.COMPLETED &&
+      this.mined &&
+      this.donationCounters.some(dc => dc.currentBalance.gt(0))
+    );
+  }
+
+  canUserEdit(user) {
+    return (
+      user &&
+      [this.ownerAddress, this.campaign.ownerAddress].includes(user.address) &&
+      [
+        Milestone.PROPOSED,
+        Milestone.REJECTED,
+        Milestone.IN_PROGRESS,
+        Milestone.NEEDS_REVIEW,
+      ].includes(this.status)
+    );
+  }
 }

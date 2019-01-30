@@ -113,30 +113,28 @@ class AcceptRejectProposedMilestoneButtons extends Component {
       <Web3Consumer>
         {({ state: { isForeignNetwork } }) => (
           <Fragment>
-            {currentUser &&
-              milestone.campaign.ownerAddress === currentUser.address &&
-              milestone.status === 'Proposed' && (
-                <span>
-                  <button
-                    type="button"
-                    className="btn btn-success btn-sm"
-                    onClick={() => this.acceptProposedMilestone()}
-                    disabled={!isForeignNetwork}
-                  >
-                    <i className="fa fa-check-square-o" />
-                    &nbsp;Accept
-                  </button>
-                  <button
-                    type="button"
-                    className="btn btn-danger btn-sm"
-                    onClick={() => this.rejectProposedMilestone()}
-                    disabled={!isForeignNetwork}
-                  >
-                    <i className="fa fa-times-circle-o" />
-                    &nbsp;Reject
-                  </button>
-                </span>
-              )}
+            {milestone.canUserAcceptRejectProposal(currentUser) && (
+              <span>
+                <button
+                  type="button"
+                  className="btn btn-success btn-sm"
+                  onClick={() => this.acceptProposedMilestone()}
+                  disabled={!isForeignNetwork}
+                >
+                  <i className="fa fa-check-square-o" />
+                  &nbsp;Accept
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-danger btn-sm"
+                  onClick={() => this.rejectProposedMilestone()}
+                  disabled={!isForeignNetwork}
+                >
+                  <i className="fa fa-times-circle-o" />
+                  &nbsp;Reject
+                </button>
+              </span>
+            )}
 
             <ConversationModal ref={this.conversationModal} milestone={milestone} />
           </Fragment>
