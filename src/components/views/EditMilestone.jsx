@@ -1,5 +1,5 @@
 /* eslint-disable react/sort-comp */
-import React, { Component } from 'react';
+import React, { Component, Fragment } from 'react';
 import { Prompt } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import Toggle from 'react-toggle';
@@ -7,13 +7,20 @@ import BigNumber from 'bignumber.js';
 import { Form, Input } from 'formsy-react-components';
 import GA from 'lib/GoogleAnalytics';
 import Milestone from 'models/Milestone';
+import MilestoneFactory from 'models/MilestoneFactory';
 import Loader from '../Loader';
 import QuillFormsy from '../QuillFormsy';
 import SelectFormsy from '../SelectFormsy';
 import DatePickerFormsy from '../DatePickerFormsy';
 import FormsyImageUploader from '../FormsyImageUploader';
 import GoBackButton from '../GoBackButton';
-import { isOwner, getTruncatedText, getStartOfDayUTC } from '../../lib/helpers';
+import {
+  isOwner,
+  getTruncatedText,
+  getStartOfDayUTC,
+  ZERO_ADDRESS,
+  ANY_TOKEN,
+} from '../../lib/helpers';
 import {
   checkForeignNetwork,
   checkBalance,
@@ -53,7 +60,10 @@ class EditMilestone extends Component {
       isLoading: true,
       isSaving: false,
       formIsValid: false,
-      milestone: new Milestone({}),
+      milestone: MilestoneFactory.create({
+        maxAmount: '0',
+        fiatAmount: '0',
+      }),
       tokenWhitelistOptions: props.tokenWhitelist.map(t => ({
         value: t.address,
         title: t.name,
@@ -120,8 +130,12 @@ class EditMilestone extends Component {
             if (campaign.projectId < 0) {
               this.props.history.goBack();
             } else {
-              const milestone = new Milestone({ token: this.props.tokenWhitelist[0] });
-              milestone.recipientAddress = this.props.currentUser.address;
+              const milestone = MilestoneFactory.create({
+                maxAmount: '0',
+                fiatAmount: '0',
+                token: this.props.tokenWhitelist[0],
+              });
+              // milestone.recipientAddress = this.props.currentUser.address;
               milestone.selectedFiatType = milestone.token.symbol;
               this.setState({
                 campaignTitle: campaign.title,
@@ -297,10 +311,41 @@ class EditMilestone extends Component {
     this.setState({ milestone });
   }
 
+  toggleReviewer() {
+    const { milestone } = this.state;
+    milestone.reviewerAddress = milestone.hasReviewer ? ZERO_ADDRESS : '';
+    this.setState({ milestone });
+  }
+
+  toggleToken() {
+    const { milestone } = this.state;
+    milestone.token = milestone.acceptsSingleToken ? ANY_TOKEN : this.props.tokenWhitelist[0];
+    if (!milestone.acceptsSingleToken) {
+      // if ANY_TOKEN is allowed, then we can't have a cap
+      milestone.maxAmount = undefined;
+    }
+    this.setState({ milestone });
+  }
+
+  toggleIsCapped() {
+    const { milestone } = this.state;
+    milestone.maxAmount = milestone.isCapped ? undefined : new BigNumber(0);
+    if (milestone.isCapped) {
+      milestone.fiatAmount = new BigNumber(0);
+    }
+    this.setState({ milestone });
+  }
+
   toggleAddMilestoneItemModal() {
     this.setState(prevState => ({
       addMilestoneItemModalVisible: !prevState.addMilestoneItemModalVisible,
     }));
+  }
+
+  setMyAddressAsRecipient() {
+    const { milestone } = this.state;
+    milestone.recipientAddress = this.props.currentUser.address;
+    this.setState({ milestone });
   }
 
   submit(/* model */) {
@@ -403,7 +448,7 @@ class EditMilestone extends Component {
     milestone.title = inputs.title;
     milestone.description = inputs.description;
     milestone.reviewerAddress = inputs.reviewerAddress;
-    milestone.recipientAddress = inputs.recipientAddress;
+    milestone.recipientAddress = inputs.recipientAddress || ZERO_ADDRESS;
 
     // if(!milestone.itemizeState) milestone.maxAmount = inputs.maxAmount;
 
@@ -601,154 +646,210 @@ class EditMilestone extends Component {
                     </div>
 
                     <div className="form-group">
-                      <SelectFormsy
-                        name="reviewerAddress"
-                        id="reviewer-select"
-                        label="Select a reviewer"
-                        helpText="Each milestone needs a reviewer who verifies that the milestone is
-                          completed successfully"
-                        value={milestone.reviewerAddress}
-                        cta="--- Select a reviewer ---"
-                        options={reviewers}
-                        validations="isEtherAddress"
-                        validationErrors={{
-                          isEtherAddress: 'Please select a reviewer.',
-                        }}
-                        required
-                        disabled={!isNew && !isProposed}
-                      />
+                      <div className="form-group react-toggle-container">
+                        <Toggle
+                          id="itemize-state"
+                          checked={!milestone.hasReviewer}
+                          onChange={() => this.toggleReviewer()}
+                          disabled={!isNew && !isProposed}
+                        />
+                        <span className="label">Disable Milestone Reviewer</span>
+                        {!milestone.hasReviewer && (
+                          <span className="help-block">
+                            Choosing not to use a reviewer on your Milestone will allow you to
+                            withdraw donations at anytime. The downside is that you are no longer
+                            held accountable for completing the milestone before funds can be
+                            withdrawn and thus less likely to receive donations.
+                          </span>
+                        )}
+                      </div>
+                      {milestone.hasReviewer && (
+                        <SelectFormsy
+                          name="reviewerAddress"
+                          id="reviewer-select"
+                          label="Select a reviewer"
+                          helpText="The reviewer verifies that the milestone is completed successfully, thus building trust in your Milestone"
+                          value={milestone.reviewerAddress}
+                          cta="--- Select a reviewer ---"
+                          options={reviewers}
+                          validations="isEtherAddress"
+                          validationErrors={{
+                            isEtherAddress: 'Please select a reviewer.',
+                          }}
+                          required
+                          disabled={!isNew && !isProposed}
+                        />
+                      )}
                     </div>
-                    <div className="label">Where will the money go after completion? *</div>
+                    <div className="label">Where will the money go after completion?</div>
                     <div className="form-group recipient-address-container">
                       <Input
                         name="recipientAddress"
                         id="title-input"
                         type="text"
+                        rowClassName="yellow"
                         value={milestone.recipientAddress}
-                        placeholder="0x0000000000000000000000000000000000000000"
-                        help="Enter an Ethereum address."
+                        placeholder={ZERO_ADDRESS}
+                        help="Enter an Ethereum address. If left blank, you will be required to set the recipient address before you can withdraw from this Milestone"
                         validations="isEtherAddress"
                         validationErrors={{
                           isEtherAddress: 'Please insert a valid Ethereum address.',
                         }}
+                        disabled={!isNew && !isProposed}
+                      />
+                      <button
+                        type="button"
+                        className="btn btn-sm btn-link btn-setter"
+                        onClick={() => this.setMyAddressAsRecipient()}
+                      >
+                        Use My Address
+                      </button>
+                    </div>
+
+                    <div className="form-group react-toggle-container">
+                      <Toggle
+                        id="itemize-state"
+                        checked={!milestone.acceptsSingleToken}
+                        onChange={() => this.toggleToken()}
+                        disabled={!isNew && !isProposed}
+                      />
+                      <span className="label">Accept donations in all tokens</span>
+                    </div>
+                    {milestone.acceptsSingleToken && (
+                      <SelectFormsy
+                        name="token"
+                        id="token-select"
+                        label="Raising funds in"
+                        helpText="Select the token you're raising funds in"
+                        value={milestone.token && milestone.token.address}
+                        cta="--- Select a token ---"
+                        options={tokenWhitelistOptions}
+                        onChange={address => this.setToken(address)}
                         required
                         disabled={!isNew && !isProposed}
                       />
-                    </div>
-
-                    <SelectFormsy
-                      name="token"
-                      id="token-select"
-                      label="Raising funds in"
-                      helpText="Select the token you're raising funds in"
-                      value={milestone.token && milestone.token.address}
-                      cta="--- Select a token ---"
-                      options={tokenWhitelistOptions}
-                      onChange={address => this.setToken(address)}
-                      required
-                      disabled={!isNew && !isProposed}
-                    />
+                    )}
 
                     <div className="react-toggle-container">
                       <Toggle
                         id="itemize-state"
-                        defaultChecked={milestone.itemizeState}
-                        onChange={() => this.toggleItemize()}
-                        disabled={!isNew && !isProposed}
+                        checked={!milestone.isCapped}
+                        onChange={() => this.toggleIsCapped()}
+                        disabled={(!isNew && !isProposed) || !milestone.acceptsSingleToken}
                       />
-                      <span className="label">Add multiple expenses, invoices or items</span>
+                      <span className="label">Disable Milestone fundraising cap</span>
+                      {!milestone.isCapped && (
+                        <span className="help-block">
+                          {milestone.acceptsSingleToken
+                            ? 'It is recommended that you set a fundraising cap for your milestone.'
+                            : 'In order to set a fundraising cap, you must only accept donations in a single token'}
+                        </span>
+                      )}
                     </div>
-
-                    {!milestone.itemizeState ? (
-                      <div className="card milestone-items-card">
-                        <div className="card-body">
-                          <div className="form-group row">
-                            <div className="col-12">
-                              <DatePickerFormsy
-                                name="date"
-                                type="text"
-                                value={milestone.date}
-                                startDate={milestone.date}
-                                label="Milestone date"
-                                changeDate={dt => this.setDate(dt)}
-                                placeholder="Select a date"
-                                help="Select a date"
-                                validations="isMoment"
-                                validationErrors={{
-                                  isMoment: 'Please provide a date.',
-                                }}
-                                required={!milestone.itemizeState}
-                                disabled={!isNew && !isProposed}
-                              />
-                            </div>
-                          </div>
-
-                          <div className="form-group row">
-                            <div className="col-4">
-                              <Input
-                                name="fiatAmount"
-                                min="0"
-                                id="fiatamount-input"
-                                type="number"
-                                step="any"
-                                label={`Maximum amount in ${milestone.selectedFiatType}`}
-                                value={milestone.fiatAmount.toFixed()}
-                                placeholder="10"
-                                validations="greaterThan:0"
-                                validationErrors={{
-                                  greaterEqualTo: 'Minimum value must be greater than 0',
-                                }}
-                                disabled={!isNew && !isProposed}
-                                onChange={this.setMaxAmount}
-                              />
-                            </div>
-
-                            <div className="col-4">
-                              <SelectFormsy
-                                name="fiatType"
-                                label="Currency"
-                                value={milestone.selectedFiatType}
-                                options={fiatTypes}
-                                allowedOptions={currentRate.rates}
-                                onChange={this.changeSelectedFiat}
-                                helpText={`1 ${milestone.token.symbol} = ${
-                                  currentRate.rates[milestone.selectedFiatType]
-                                } ${milestone.selectedFiatType}`}
-                                disabled={!isNew && !isProposed}
-                                required
-                              />
-                            </div>
-
-                            <div className="col-4">
-                              <Input
-                                name="maxAmount"
-                                min="0"
-                                id="maxamount-input"
-                                type="number"
-                                step="any"
-                                label={`Maximum amount in ${milestone.token.name}`}
-                                value={milestone.maxAmount.toFixed()}
-                                placeholder="10"
-                                validations="greaterThan:0"
-                                validationErrors={{
-                                  greaterEqualTo: 'Minimum value must be greater than 0',
-                                }}
-                                required
-                                disabled={!isNew && !isProposed}
-                                onChange={this.setFiatAmount}
-                              />
-                            </div>
-                          </div>
+                    {milestone.isCapped && (
+                      <Fragment>
+                        <div className="react-toggle-container">
+                          <Toggle
+                            id="itemize-state"
+                            checked={milestone.itemizeState}
+                            onChange={() => this.toggleItemize()}
+                            disabled={!isNew && !isProposed}
+                          />
+                          <span className="label">Add multiple expenses, invoices or items</span>
                         </div>
-                      </div>
-                    ) : (
-                      <MilestoneProof
-                        isEditMode
-                        items={milestone.items}
-                        onItemsChanged={returnedItems => this.onItemsChanged(returnedItems)}
-                        token={milestone.token}
-                        milestoneStatus={milestone.status}
-                      />
+
+                        {!milestone.itemizeState ? (
+                          <div className="card milestone-items-card">
+                            <div className="card-body">
+                              <div className="form-group row">
+                                <div className="col-12">
+                                  <DatePickerFormsy
+                                    name="date"
+                                    type="text"
+                                    value={milestone.date}
+                                    startDate={milestone.date}
+                                    label="Milestone date"
+                                    changeDate={dt => this.setDate(dt)}
+                                    placeholder="Select a date"
+                                    help="Select a date"
+                                    validations="isMoment"
+                                    validationErrors={{
+                                      isMoment: 'Please provide a date.',
+                                    }}
+                                    required={!milestone.itemizeState}
+                                    disabled={!isNew && !isProposed}
+                                  />
+                                </div>
+                              </div>
+
+                              <div className="form-group row">
+                                <div className="col-4">
+                                  <Input
+                                    name="fiatAmount"
+                                    min="0"
+                                    id="fiatamount-input"
+                                    type="number"
+                                    step="any"
+                                    label={`Maximum amount in ${milestone.selectedFiatType}`}
+                                    value={milestone.fiatAmount.toFixed()}
+                                    placeholder="10"
+                                    validations="greaterThan:0"
+                                    validationErrors={{
+                                      greaterEqualTo: 'Minimum value must be greater than 0',
+                                    }}
+                                    disabled={!isNew && !isProposed}
+                                    onChange={this.setMaxAmount}
+                                  />
+                                </div>
+
+                                <div className="col-4">
+                                  <SelectFormsy
+                                    name="fiatType"
+                                    label="Currency"
+                                    value={milestone.selectedFiatType}
+                                    options={fiatTypes}
+                                    allowedOptions={currentRate.rates}
+                                    onChange={this.changeSelectedFiat}
+                                    helpText={`1 ${milestone.token.symbol} = ${
+                                      currentRate.rates[milestone.selectedFiatType]
+                                    } ${milestone.selectedFiatType}`}
+                                    disabled={!isNew && !isProposed}
+                                    required
+                                  />
+                                </div>
+
+                                <div className="col-4">
+                                  <Input
+                                    name="maxAmount"
+                                    min="0"
+                                    id="maxamount-input"
+                                    type="number"
+                                    step="any"
+                                    label={`Maximum amount in ${milestone.token.name}`}
+                                    value={milestone.maxAmount.toFixed()}
+                                    placeholder="10"
+                                    validations="greaterThan:0"
+                                    validationErrors={{
+                                      greaterEqualTo: 'Minimum value must be greater than 0',
+                                    }}
+                                    required
+                                    disabled={!isNew && !isProposed}
+                                    onChange={this.setFiatAmount}
+                                  />
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        ) : (
+                          <MilestoneProof
+                            isEditMode
+                            items={milestone.items}
+                            onItemsChanged={returnedItems => this.onItemsChanged(returnedItems)}
+                            token={milestone.token}
+                            milestoneStatus={milestone.status}
+                          />
+                        )}
+                      </Fragment>
                     )}
 
                     <div className="form-group row">

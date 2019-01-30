@@ -3,7 +3,7 @@ import { utils } from 'web3';
 
 import Model from './Model';
 import { getTruncatedText } from '../lib/helpers';
-import Milestone from './Milestone';
+import Milestone from './MilestoneFactory';
 import Campaign from './Campaign';
 // import User from './User';
 

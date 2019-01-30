@@ -142,3 +142,12 @@ export const cleanIpfsPath = path => {
   }
   return path;
 };
+
+export const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
+export const ANY_TOKEN = {
+  name: 'ANY_TOKEN',
+  address: '0xFFfFfFffFFfffFFfFFfFFFFFffFFFffffFfFFFfF',
+  foreignAddress: '0xFFfFfFffFFfffFFfFFfFFFFFffFFFffffFfFFFfF',
+  symbol: 'ANY_TOKEN',
+  decimals: 18,
+};
