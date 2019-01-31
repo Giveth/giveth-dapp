@@ -6,7 +6,6 @@
 import BigNumber from 'bignumber.js';
 import { utils } from 'web3';
 import { paramsForServer } from 'feathers-hooks-common';
-import { LPPCappedMilestone } from 'lpp-capped-milestone';
 import Milestone from 'models/Milestone';
 import MilestoneFactory from 'models/MilestoneFactory';
 import { feathersClient } from 'lib/feathersClient';
@@ -19,6 +18,7 @@ import ErrorPopup from '../components/ErrorPopup';
 
 import Donation from '../models/Donation';
 import BridgedMilestone from '../models/BridgedMilestone';
+import LPPCappedMilestone from '../models/LPPCappedMilestone';
 
 const milestones = feathersClient.service('milestones');
 
@@ -620,13 +620,15 @@ class MilestoneService {
 
       etherScanUrl = network.etherscan;
 
-      const cappedMilestone = new LPPCappedMilestone(web3, milestone.pluginAddress);
+      const milestoneContract = milestone.contract(web3);
 
-      await cappedMilestone
-        .requestMarkAsComplete({
-          from,
-          $extraGas: extraGas(),
-        })
+      const fnName =
+        milestone instanceof LPPCappedMilestone ? 'requestMarkAsComplete' : 'requestReview';
+
+      await milestoneContract[fnName]({
+        from,
+        $extraGas: extraGas(),
+      })
         .once('transactionHash', async hash => {
           txHash = hash;
 
@@ -682,9 +684,9 @@ class MilestoneService {
       .then(([network, web3]) => {
         etherScanUrl = network.etherscan;
 
-        const cappedMilestone = new LPPCappedMilestone(web3, milestone.pluginAddress);
+        const milestoneContract = milestone.contract(web3);
 
-        return cappedMilestone
+        return milestoneContract
           .cancelMilestone({
             from,
             $extraGas: extraGas(),
@@ -732,13 +734,17 @@ class MilestoneService {
       .then(([network, web3]) => {
         etherScanUrl = network.etherscan;
 
-        const cappedMilestone = new LPPCappedMilestone(web3, milestone.pluginAddress);
+        const milestoneContract = milestone.contract(web3);
 
-        return cappedMilestone
-          .approveMilestoneCompleted({
-            from,
-            $extraGas: extraGas(),
-          })
+        const fnName =
+          milestone instanceof LPPCappedMilestone
+            ? 'approveMilestoneCompleted'
+            : 'approveCompleted';
+
+        return milestoneContract[fnName]({
+          from,
+          $extraGas: extraGas(),
+        })
           .once('transactionHash', hash => {
             txHash = hash;
 
@@ -782,13 +788,15 @@ class MilestoneService {
       .then(([network, web3]) => {
         etherScanUrl = network.etherscan;
 
-        const cappedMilestone = new LPPCappedMilestone(web3, milestone.pluginAddress);
+        const milestoneContract = milestone.contract(web3);
 
-        return cappedMilestone
-          .rejectCompleteRequest({
-            from,
-            $extraGas: extraGas(),
-          })
+        const fnName =
+          milestone instanceof LPPCappedMilestone ? 'rejectCompleteRequest' : 'rejectCompleted';
+
+        return milestoneContract[fnName]({
+          from,
+          $extraGas: extraGas(),
+        })
           .once('transactionHash', hash => {
             txHash = hash;
 
@@ -812,6 +820,51 @@ class MilestoneService {
   }
 
   /**
+   * Change the recipient of the milestone
+   *
+   * @param milestone       a Milestone model
+   * @param from            (string) Ethereum address
+   * @param newRecipient    (string) Address of the new recipient
+   * @param onTxHash        Callback function once the transaction was created
+   * @param onConfirmation  Callback function once the transaction was mined
+   * @param onError         Callback function if error is encountered
+   */
+
+  static changeRecipient({ milestone, from, newRecipient, onTxHash, onConfirmation, onError }) {
+    let txHash;
+    let etherScanUrl;
+
+    Promise.all([getNetwork(), getWeb3()])
+      .then(([network, web3]) => {
+        etherScanUrl = network.etherscan;
+
+        const milestoneContract = milestone.contract(web3);
+
+        return milestoneContract
+          .changeRecipient(newRecipient, {
+            from,
+            $extraGas: extraGas(),
+          })
+          .once('transactionHash', hash => {
+            txHash = hash;
+
+            return milestones
+              .patch(milestone._id, {
+                recipientAddress: newRecipient,
+                mined: false,
+                txHash,
+              })
+              .then(() => onTxHash(`${etherScanUrl}tx/${txHash}`))
+              .catch(e => onError('patch-error', e));
+          })
+          .on('receipt', () => onConfirmation(`${etherScanUrl}tx/${txHash}`));
+      })
+      .catch(err => {
+        onError(err, `${etherScanUrl}tx/${txHash}`);
+      });
+  }
+
+  /**
    * Withdraw the donations (pledges) from a milestone
    * Only possible when the milestones was approved for completion
    *
@@ -830,9 +883,9 @@ class MilestoneService {
       .then(([network, web3, data]) => {
         etherScanUrl = network.etherscan;
 
-        const cappedMilestone = new LPPCappedMilestone(web3, milestone.pluginAddress);
+        const milestoneContract = milestone.contract(web3);
 
-        return cappedMilestone
+        return milestoneContract
           .mWithdraw(data.pledges, {
             from,
             $extraGas: extraGas(),

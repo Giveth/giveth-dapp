@@ -1,3 +1,4 @@
+import { LPPCappedMilestone as LPPCappedMilestoneContract } from 'lpp-capped-milestone';
 import Milestone from './Milestone';
 
 /**
@@ -23,6 +24,11 @@ export default class LPPCappedMilestone extends Milestone {
     return Object.assign({}, super.toFeathers(txHash), {
       campaignReviewerAddress: this._campaignReviewerAddress,
     });
+  }
+
+  contract(web3) {
+    if (!web3) throw new Error('web3 instance is required');
+    return new LPPCappedMilestoneContract(web3, this.pluginAddress);
   }
 
   /**
