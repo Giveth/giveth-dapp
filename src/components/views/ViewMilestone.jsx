@@ -300,7 +300,8 @@ class ViewMilestone extends Component {
                             </Fragment>
                           )}
                           {!milestone.hasReviewer && (
-                            <p className="form-text">
+                            <p className="form-text alert alert-warning missing-reviewer-alert">
+                              <i className="fa fa-exclamation-triangle" />
                               This milestone does not have a reviewer. Any donations to this
                               milestone can be withdrawn at any time and no checks are in place to
                               ensure this milestone is completed.
