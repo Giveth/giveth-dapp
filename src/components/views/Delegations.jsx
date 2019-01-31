@@ -107,7 +107,8 @@ const Delegations = ({ balance, currentUser }) => (
                                                 types={milestones.filter(
                                                   m =>
                                                     m.campaignId === d.ownerTypeId &&
-                                                    m.token.symbol === d.token.symbol,
+                                                    (!m.acceptsSingleToken ||
+                                                      m.token.symbol === d.token.symbol),
                                                 )}
                                                 donation={d}
                                                 balance={balance}
