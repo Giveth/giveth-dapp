@@ -10,6 +10,7 @@ import BigNumber from 'bignumber.js';
 
 import User from 'models/User';
 import Campaign from 'models/Campaign';
+import Milestone from 'models/Milestone';
 import MilestoneActions from 'components/MilestoneActions';
 
 import BackgroundImageHeader from 'components/BackgroundImageHeader';
@@ -404,9 +405,9 @@ class ViewMilestone extends Component {
                           </small>
                           {milestone.donationCounters.length &&
                             milestone.donationCounters.map(dc => (
-                              <Fragment>
-                                {convertEthHelper(dc.totalDonated)} {dc.token.symbol}
-                              </Fragment>
+                              <p>
+                                {convertEthHelper(dc.totalDonated)} {dc.symbol}
+                              </p>
                             ))}
                         </div>
 
@@ -418,9 +419,9 @@ class ViewMilestone extends Component {
                                 The current balances of this Milestone
                               </small>
                               {milestone.donationCounters.map(dc => (
-                                <Fragment>
-                                  {convertEthHelper(dc.currentBalance)} {dc.token.symbol}
-                                </Fragment>
+                                <p>
+                                  {convertEthHelper(dc.currentBalance)} {dc.symbol}
+                                </p>
                               ))}
                             </div>
                           )}
@@ -467,12 +468,13 @@ class ViewMilestone extends Component {
                   {this.isActiveMilestone() && (
                     <DonateButton
                       model={{
-                        type: 'milestone',
+                        type: Milestone.type,
+                        acceptsSingleToken: milestone.acceptsSingleToken,
                         title: milestone.title,
                         id: milestone.id,
                         adminId: milestone.projectId,
                         campaignId: campaign._id,
-                        token: milestone.token,
+                        token: milestone.acceptsSingleToken ? milestone.token : undefined,
                       }}
                       currentUser={currentUser}
                       history={history}

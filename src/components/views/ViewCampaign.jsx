@@ -170,7 +170,6 @@ class ViewCampaign extends Component {
                     type: Campaign.type,
                     title: campaign.title,
                     id: campaign.id,
-                    token: { symbol: config.nativeTokenName },
                     adminId: campaign.projectId,
                   }}
                   currentUser={currentUser}
