@@ -539,9 +539,10 @@ export default class Milestone extends BasicModel {
   canUserWithdraw(user) {
     return (
       user &&
+      this.hasRecipient &&
       (this.ownerAddress === user.address ||
         (!this.pendingRecipientAddress && this.recipientAddress === user.address)) &&
-      this.status === Milestone.COMPLETED &&
+      (!this.hasReviewer || this.status === Milestone.COMPLETED) &&
       this.mined &&
       this.donationCounters.some(dc => dc.currentBalance.gt(0))
     );

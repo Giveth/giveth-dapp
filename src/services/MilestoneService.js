@@ -883,11 +883,16 @@ class MilestoneService {
 
         const milestoneContract = milestone.contract(web3);
 
-        return milestoneContract
-          .mWithdraw(data.pledges, {
-            from,
-            $extraGas: extraGas(),
-          })
+        const execute = opts =>
+          milestone instanceof LPPCappedMilestone
+            ? milestoneContract.mWithdraw(data.pledges, opts)
+            : // BridgedMilestone, set autoDisburse = false if we have more donations to withdraw
+              milestoneContract.mWithdraw(data.pledges, data.tokens, !data.hasMoreDonations, opts);
+
+        return execute({
+          from,
+          $extraGas: extraGas(),
+        })
           .once('transactionHash', hash => {
             txHash = hash;
 
