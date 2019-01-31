@@ -18,6 +18,7 @@ export default class Milestone extends BasicModel {
       selectedFiatType,
       fiatAmount,
       recipientAddress = '',
+      pendingRecipientAddress,
       status = Milestone.PENDING,
       projectId = undefined,
       reviewerAddress = '',
@@ -34,6 +35,7 @@ export default class Milestone extends BasicModel {
       campaign,
       owner,
       recipient,
+      pendingRecipient,
       reviewer,
       mined = false,
       pluginAddress = '0x0000000000000000000000000000000000000000',
@@ -44,6 +46,7 @@ export default class Milestone extends BasicModel {
     this._maxAmount = maxAmount ? new BigNumber(utils.fromWei(maxAmount)) : undefined;
     this._fiatAmount = fiatAmount ? new BigNumber(fiatAmount) : undefined;
     this._recipientAddress = recipientAddress;
+    this._pendingRecipientAddress = pendingRecipientAddress;
     this._status = status;
     this._projectId = projectId;
     this._reviewerAddress = reviewerAddress;
@@ -63,6 +66,7 @@ export default class Milestone extends BasicModel {
     this._campaign = campaign;
     this._owner = owner;
     this._recipient = recipient;
+    this._pendingRecipient = pendingRecipient;
     this._reviewer = reviewer;
     this._mined = mined;
     this._campaignId = campaignId;
@@ -276,6 +280,15 @@ export default class Milestone extends BasicModel {
     this._recipientAddress = value;
   }
 
+  get pendingRecipientAddress() {
+    return this._pendingRecipientAddress;
+  }
+
+  set pendingRecipientAddress(value) {
+    this.checkType(value, ['string'], 'pendingRecipientAddress');
+    this._pendingRecipientAddress = value;
+  }
+
   get status() {
     return this._status;
   }
@@ -370,6 +383,7 @@ export default class Milestone extends BasicModel {
   }
 
   get currentBalance() {
+    if (!this.isCapped) return undefined;
     if (
       this.acceptsSingleToken &&
       Array.isArray(this._donationCounters) &&
@@ -415,6 +429,10 @@ export default class Milestone extends BasicModel {
     return this._recipient;
   }
 
+  get pendingRecipient() {
+    return this._pendingRecipient;
+  }
+
   set campaignId(value) {
     this.checkType(value, ['string'], 'campaignId');
     this._campaignId = value;
@@ -443,11 +461,14 @@ export default class Milestone extends BasicModel {
 
   // computed
   get hasReviewer() {
-    return this._reviewerAddress !== ZERO_ADDRESS;
+    return this._reviewerAddress !== undefined && this._reviewerAddress !== ZERO_ADDRESS;
   }
 
   get hasRecipient() {
-    return this._recipientAddress !== ZERO_ADDRESS;
+    return (
+      (this._recipientAddress !== undefined && this._recipientAddress !== ZERO_ADDRESS) ||
+      this._pendingRecipientAddress
+    );
   }
 
   get acceptsSingleToken() {
@@ -493,7 +514,8 @@ export default class Milestone extends BasicModel {
       this.reviewerAddress !== ZERO_ADDRESS &&
       this.status === Milestone.IN_PROGRESS &&
       this.mined &&
-      [this.recipientAddress, this.ownerAddress].includes(user.address)
+      (this.ownerAddress === user.address ||
+        (!this.pendingRecipientAddress && this.recipientAddress === user.address))
     );
   }
 
@@ -509,7 +531,8 @@ export default class Milestone extends BasicModel {
   canUserWithdraw(user) {
     return (
       user &&
-      [this.recipientAddress, this.ownerAddress].includes(user.address) &&
+      (this.ownerAddress === user.address ||
+        (!this.pendingRecipientAddress && this.recipientAddress === user.address)) &&
       this.status === Milestone.COMPLETED &&
       this.mined &&
       this.donationCounters.some(dc => dc.currentBalance.gt(0))
@@ -526,6 +549,15 @@ export default class Milestone extends BasicModel {
         Milestone.IN_PROGRESS,
         Milestone.NEEDS_REVIEW,
       ].includes(this.status)
+    );
+  }
+
+  canUserChangeRecipient(user) {
+    return (
+      user &&
+      !this.pendingRecipientAddress &&
+      ((!this.hasRecipient && this.ownerAddress === user.address) ||
+        (this.hasRecipient && this.recipientAddress === user.address))
     );
   }
 }

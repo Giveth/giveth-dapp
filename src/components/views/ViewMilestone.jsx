@@ -62,7 +62,9 @@ class ViewMilestone extends Component {
           milestone,
           isLoading: false,
           campaign: new Campaign(milestone.campaign),
-          recipient: milestone.recipient,
+          recipient: milestone.pendingRecipientAddress
+            ? milestone.pendingRecipient
+            : milestone.recipient,
         }),
       err => {
         ErrorPopup('Something went wrong with viewing the milestone. Please try a refresh.', err);
@@ -321,11 +323,24 @@ class ViewMilestone extends Component {
                                   ' after successful completion of the Milestone'}
                               </small>
 
+                              {milestone.pendingRecipientAddress && (
+                                <small className="form-text">
+                                  <span>
+                                    <i className="fa fa-circle-o-notch fa-spin" />
+                                    &nbsp;
+                                  </span>
+                                  This recipient is pending
+                                </small>
+                              )}
+
                               <table className="table-responsive">
                                 <tbody>
                                   <tr>
                                     <td className="td-user">
-                                      <Link to={`/profile/${milestone.recipientAddress}`}>
+                                      <Link
+                                        to={`/profile/${milestone.pendingRecipientAddress ||
+                                          milestone.recipientAddress}`}
+                                      >
                                         <Avatar size={30} src={getUserAvatar(recipient)} round />
                                         {getUserName(recipient)}
                                       </Link>

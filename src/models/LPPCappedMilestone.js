@@ -1,3 +1,4 @@
+/* eslint-disable class-methods-use-this */
 import { LPPCappedMilestone as LPPCappedMilestoneContract } from 'lpp-capped-milestone';
 import Milestone from './Milestone';
 
@@ -50,8 +51,14 @@ export default class LPPCappedMilestone extends Milestone {
 
   // computed properties
 
-  // eslint-disable-next-line class-methods-use-this
   get hasReviewer() {
     return true;
+  }
+
+  // while this is possible on the contract, this is a
+  // 2 step process and we don't support this in the ui
+  // b/c this contract is deprecated
+  canUserChangeRecipient() {
+    return false;
   }
 }

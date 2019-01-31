@@ -850,9 +850,7 @@ class MilestoneService {
 
             return milestones
               .patch(milestone._id, {
-                recipientAddress: newRecipient,
-                mined: false,
-                txHash,
+                pendingRecipientAddress: newRecipient,
               })
               .then(() => onTxHash(`${etherScanUrl}tx/${txHash}`))
               .catch(e => onError('patch-error', e));

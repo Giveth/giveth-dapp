@@ -108,7 +108,6 @@ class EditMilestone extends Component {
               milestone,
               campaignTitle: milestone.campaign.title,
               campaignProjectId: milestone.campaign.projectId,
-              campaignReviewerAddress: milestone.campaign.reviewerAddress,
               campaignId: milestone.campaignId,
             });
 
@@ -139,7 +138,6 @@ class EditMilestone extends Component {
               milestone.selectedFiatType = milestone.token.symbol;
               this.setState({
                 campaignTitle: campaign.title,
-                campaignReviewerAddress: campaign.reviewerAddress,
                 campaignProjectId: campaign.projectId,
                 milestone,
               });
@@ -352,7 +350,6 @@ class EditMilestone extends Component {
     const { milestone } = this.state;
 
     milestone.ownerAddress = this.props.currentUser.address;
-    milestone.campaignReviewerAddress = this.state.campaignReviewerAddress;
     milestone.campaignId = this.state.campaignId;
     milestone.status =
       this.props.isProposed || milestone.status === Milestone.REJECTED
@@ -447,7 +444,7 @@ class EditMilestone extends Component {
 
     milestone.title = inputs.title;
     milestone.description = inputs.description;
-    milestone.reviewerAddress = inputs.reviewerAddress;
+    milestone.reviewerAddress = inputs.reviewerAddress || ZERO_ADDRESS;
     milestone.recipientAddress = inputs.recipientAddress || ZERO_ADDRESS;
 
     // if(!milestone.itemizeState) milestone.maxAmount = inputs.maxAmount;
@@ -687,7 +684,6 @@ class EditMilestone extends Component {
                         name="recipientAddress"
                         id="title-input"
                         type="text"
-                        rowClassName="yellow"
                         value={milestone.recipientAddress}
                         placeholder={ZERO_ADDRESS}
                         help="Enter an Ethereum address. If left blank, you will be required to set the recipient address before you can withdraw from this Milestone"
