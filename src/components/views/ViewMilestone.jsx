@@ -405,7 +405,7 @@ class ViewMilestone extends Component {
                           </small>
                           {milestone.donationCounters.length &&
                             milestone.donationCounters.map(dc => (
-                              <p>
+                              <p className="donation-counter" key={dc.symbol}>
                                 {convertEthHelper(dc.totalDonated)} {dc.symbol}
                               </p>
                             ))}
@@ -419,7 +419,7 @@ class ViewMilestone extends Component {
                                 The current balances of this Milestone
                               </small>
                               {milestone.donationCounters.map(dc => (
-                                <p>
+                                <p className="donation-counter" key={dc.symbol}>
                                   {convertEthHelper(dc.currentBalance)} {dc.symbol}
                                 </p>
                               ))}
