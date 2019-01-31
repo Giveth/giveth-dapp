@@ -38,7 +38,7 @@ export default class Milestone extends BasicModel {
       pendingRecipient,
       reviewer,
       mined = false,
-      pluginAddress = '0x0000000000000000000000000000000000000000',
+      pluginAddress = ZERO_ADDRESS,
       conversionRateTimestamp,
     } = data;
 
