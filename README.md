@@ -163,6 +163,24 @@ The following events are tracked with Google Analytics:
 
 **DO NO USE ANY OTHER THAN DEVELOP ENVIRONMENT FOR DEVELOPING AND TESTING.**
 
+### Query Strings
+The milestone creation/proposal view now supports query string arguments!
+The following arguments are available:
+
+| Argument | Expected Values | Type |
+|------------------|------------------------------------------------------------|--------|
+| title | The title of the milestone | string |
+| description | The description of the milestone | string |
+| recipientAddress | The address of the recipient | string |
+| reviewerAddress | The address of the reviewer | string |
+| selectedFiatType | A valid fiat type (i.e. USD) | string |
+| date | A valid milestone date string | string |
+| token | A valid token symbol (i.e. DAI) | string |
+| tokenAddress | A valid token address | string |
+| maxAmount | A valid max amount of ETH or token | number |
+| fiatAmount | A valid max amount of fiat (dependant on selectedFiatType) | number |
+
+
 ## Contributing
 The DApp is fully open-source software, and we would love to have your helping hand! See [CONTRIBUTING.md](CONTRIBUTING.md) for more information on what we're looking for and how to get started. You can then look for issues labeled [good first issue](https://github.com/Giveth/giveth-dapp/labels/good%20first%20issue) or [help wanted](https://github.com/Giveth/giveth-dapp/labels/help%20wanted). We regularly reward contributions with ether using the Reward DAO.
 
