@@ -6,6 +6,7 @@ import Toggle from 'react-toggle';
 import BigNumber from 'bignumber.js';
 import { Form, Input } from 'formsy-react-components';
 import GA from 'lib/GoogleAnalytics';
+import queryString from 'query-string';
 import Milestone from 'models/Milestone';
 import Loader from '../Loader';
 import QuillFormsy from '../QuillFormsy';
@@ -34,6 +35,20 @@ import CampaignService from '../../services/CampaignService';
 
 BigNumber.config({ DECIMAL_PLACES: 18 });
 
+// The following query string variables are loaded in the order displayed here
+const validQueryStringVariables = [
+  'title',
+  'recipientAddress',
+  'reviewerAddress',
+  'description',
+  'selectedFiatType',
+  'date',
+  'token',
+  'tokenAddress',
+  'maxAmount',
+  // 'fiatAmount', // FIXME: The fiatAmount does not work because it is overwritten when the getConversionRates function is called. This function modifies th e provider and causes re-render which makes the maxAmount being updated incorrectly. The function needs to change to not update the provider state and not expose currentRate
+];
+
 /**
  * Create or edit a Milestone
  *
@@ -53,7 +68,7 @@ class EditMilestone extends Component {
       isLoading: true,
       isSaving: false,
       formIsValid: false,
-      milestone: new Milestone({}),
+      milestone: new Milestone({ token: props.tokenWhitelist[0] }),
       tokenWhitelistOptions: props.tokenWhitelist.map(t => ({
         value: t.address,
         title: t.name,
@@ -113,37 +128,87 @@ class EditMilestone extends Component {
               err,
             );
           }
-        } else {
+        } else if (this.props.isNew) {
           try {
+            const qs = queryString.parse(this.props.location.search);
             const campaign = await CampaignService.get(this.props.match.params.id);
 
             if (campaign.projectId < 0) {
               this.props.history.goBack();
-            } else {
-              const milestone = new Milestone({ token: this.props.tokenWhitelist[0] });
-              milestone.recipientAddress = this.props.currentUser.address;
-              milestone.selectedFiatType = milestone.token.symbol;
-              this.setState({
-                campaignTitle: campaign.title,
-                campaignReviewerAddress: campaign.reviewerAddress,
-                campaignProjectId: campaign.projectId,
-                milestone,
-              });
+              return;
             }
 
-            this.setDate(this.state.milestone.date);
+            const { milestone } = this.state;
+            validQueryStringVariables.forEach(variable => {
+              if (!qs[variable]) return;
+              switch (variable) {
+                case 'fiatAmount':
+                case 'maxAmount': {
+                  const number = new BigNumber(qs[variable]);
+                  if (!number.isNaN()) milestone[variable] = number;
+                  break;
+                }
+                case 'tokenAddress': {
+                  const token = this.props.tokenWhitelist.find(t => t.address === qs[variable]);
+                  if (token) milestone.token = token;
+                  break;
+                }
+                case 'token': {
+                  const token = this.props.tokenWhitelist.find(t => t.symbol === qs[variable]);
+                  if (token) milestone.token = token;
+                  break;
+                }
+                case 'date': {
+                  const date = getStartOfDayUTC(qs[variable]);
+                  if (date.isValid()) milestone.date = date;
+                  break;
+                }
+                default:
+                  milestone[variable] = qs[variable];
+                  break;
+              }
+            });
+
+            if (!milestone.recipientAddress) {
+              milestone.recipientAddress = this.props.currentUser.address;
+            }
+
+            const { rates } = await this.props.getConversionRates(
+              milestone.date,
+              milestone.token.symbol,
+            );
+
+            const rate = rates[milestone.selectedFiatType];
+            if (rate && (milestone.maxAmount && milestone.maxAmount.gt(0))) {
+              milestone.fiatAmount = milestone.maxAmount.times(rate);
+            } else if (rate && (milestone.fiatAmount && milestone.fiatAmount.gt(0))) {
+              milestone.maxAmount = milestone.fiatAmount.div(rate);
+            } else {
+              milestone.maxAmount = new BigNumber('0');
+              milestone.fiatAmount = new BigNumber('0');
+            }
 
             this.setState({
+              campaignTitle: campaign.title,
+              campaignReviewerAddress: campaign.reviewerAddress,
+              campaignProjectId: campaign.projectId,
+              milestone,
               isLoading: false,
             });
+
+            this.setDate(this.state.milestone.date);
           } catch (e) {
             ErrorPopup(
               'Sadly we were unable to load the campaign in which this milestone was created. Please try again.',
               e,
             );
+            this.setState({
+              isLoading: false,
+            });
           }
         }
       })
+
       .catch(err => {
         // TODO: This is not super user friendly, fix it
         if (err === 'noBalance') this.props.history.goBack();
@@ -203,19 +268,6 @@ class EditMilestone extends Component {
       milestone.maxAmount = milestone.fiatAmount.div(rate);
       this.setState({ milestone });
     });
-
-    // FIXME: this is an infinite loop, should be rewritten
-    //   // update all the input fields
-    //   const rate = resp.rates[milestone.selectedFiatType];
-    //
-    //   this.setState(prevState => {
-    //     milestone.fiatAmount = prevState.milestone.fiatAmount.div(rate);
-    //     return {
-    //       milestone,
-    //       maxAmount: milestone.fiatAmount,
-    //     };
-    //   });
-    // });
   }
 
   setFiatAmount(name, value) {
@@ -743,7 +795,7 @@ class EditMilestone extends Component {
                       </div>
                     ) : (
                       <MilestoneProof
-                        isEditMode
+                        isEditMode={isNew || isProposed}
                         items={milestone.items}
                         onItemsChanged={returnedItems => this.onItemsChanged(returnedItems)}
                         token={milestone.token}
@@ -782,6 +834,7 @@ class EditMilestone extends Component {
 
 EditMilestone.propTypes = {
   currentUser: PropTypes.instanceOf(User),
+  location: PropTypes.shape().isRequired,
   history: PropTypes.shape({
     goBack: PropTypes.func.isRequired,
     push: PropTypes.func.isRequired,
@@ -816,13 +869,18 @@ EditMilestone.defaultProps = {
 
 export default getConversionRatesContext(props => (
   <WhiteListConsumer>
-    {({ state: { tokenWhitelist, reviewers }, actions: { isCampaignManager } }) => (
-      <EditMilestone
-        tokenWhitelist={tokenWhitelist}
-        reviewers={reviewers}
-        isCampaignManager={isCampaignManager}
-        {...props}
-      />
+    {({ state: { tokenWhitelist, reviewers, isLoading }, actions: { isCampaignManager } }) => (
+      <div>
+        {isLoading && <Loader className="fixed" />}
+        {!isLoading && (
+          <EditMilestone
+            tokenWhitelist={tokenWhitelist}
+            reviewers={reviewers}
+            isCampaignManager={isCampaignManager}
+            {...props}
+          />
+        )}
+      </div>
     )}
   </WhiteListConsumer>
 ));
