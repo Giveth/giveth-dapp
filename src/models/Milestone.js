@@ -1,24 +1,25 @@
 import BigNumber from 'bignumber.js';
 import { utils } from 'web3';
 
-import { getStartOfDayUTC, cleanIpfsPath } from 'lib/helpers';
+import { getStartOfDayUTC, cleanIpfsPath, ZERO_ADDRESS, ANY_TOKEN } from 'lib/helpers';
 import BasicModel from './BasicModel';
 import MilestoneItemModel from './MilestoneItem';
 
 /**
  * The DApp Milestone model
  */
-export default class MilestoneModel extends BasicModel {
+export default class Milestone extends BasicModel {
   constructor(data) {
     super(data);
 
     const {
       id = data._id || undefined,
-      maxAmount = '0',
-      selectedFiatType = 'EUR',
-      fiatAmount = new BigNumber('0'),
+      maxAmount = undefined,
+      selectedFiatType,
+      fiatAmount,
       recipientAddress = '',
-      status = MilestoneModel.PENDING,
+      pendingRecipientAddress,
+      status = Milestone.PENDING,
       projectId = undefined,
       reviewerAddress = '',
       items = [],
@@ -28,22 +29,24 @@ export default class MilestoneModel extends BasicModel {
       commitTime,
       campaignId,
       token,
+      type,
 
       // transient
       campaign,
       owner,
-      campaignReviewer,
       recipient,
+      pendingRecipient,
       reviewer,
       mined = false,
-      pluginAddress = '0x0000000000000000000000000000000000000000',
+      pluginAddress = ZERO_ADDRESS,
       conversionRateTimestamp,
     } = data;
 
     this._selectedFiatType = selectedFiatType;
-    this._maxAmount = new BigNumber(utils.fromWei(maxAmount));
-    this._fiatAmount = new BigNumber(fiatAmount);
+    this._maxAmount = maxAmount ? new BigNumber(utils.fromWei(maxAmount)) : undefined;
+    this._fiatAmount = fiatAmount ? new BigNumber(fiatAmount) : undefined;
     this._recipientAddress = recipientAddress;
+    this._pendingRecipientAddress = pendingRecipientAddress;
     this._status = status;
     this._projectId = projectId;
     this._reviewerAddress = reviewerAddress;
@@ -57,30 +60,37 @@ export default class MilestoneModel extends BasicModel {
     this._pluginAddress = pluginAddress;
     this._token = token;
     this._conversionRateTimestamp = conversionRateTimestamp;
+    this._type = type;
 
     // transient
     this._campaign = campaign;
     this._owner = owner;
-    this._campaignReviewer = campaignReviewer;
     this._recipient = recipient;
+    this._pendingRecipient = pendingRecipient;
     this._reviewer = reviewer;
     this._mined = mined;
     this._campaignId = campaignId;
   }
 
   toIpfs() {
-    return {
+    const data = {
       title: this._title,
       description: this._description,
       image: cleanIpfsPath(this._image),
       items: this._items.map(i => i.toIpfs()),
-      conversionRateTimestamp: this._conversionRateTimestamp,
-      selectedFiatType: this._selectedFiatType,
       date: this._date,
-      fiatAmount: this._fiatAmount.toString(),
-      conversionRate: this._conversionRate,
       version: 1,
     };
+    if (this.isCapped) {
+      Object.assign(data, {
+        conversionRateTimestamp: this._conversionRateTimestamp,
+        selectedFiatType: this._selectedFiatType,
+        fiatAmount: this._fiatAmount.toString(),
+        conversionRate: this._conversionRate,
+      });
+    }
+
+    return data;
   }
 
   toFeathers(txHash) {
@@ -88,23 +98,27 @@ export default class MilestoneModel extends BasicModel {
       title: this._title,
       description: this._description,
       image: cleanIpfsPath(this._image),
-      maxAmount: utils.toWei(this.maxAmount.toFixed()), // maxAmount is stored as wei in feathers
       ownerAddress: this._ownerAddress,
       reviewerAddress: this._reviewerAddress,
       recipientAddress: this._recipientAddress,
-      campaignReviewerAddress: this._campaignReviewerAddress,
       campaignId: this._campaignId,
       projectId: this._projectId,
       status: this._status,
       items: this._items.map(i => i.toFeathers()),
-      conversionRateTimestamp: this._conversionRateTimestamp,
-      selectedFiatType: this._selectedFiatType,
       date: this._date,
-      fiatAmount: this._fiatAmount.toString(),
-      conversionRate: this._conversionRate,
       pluginAddress: this._pluginAddress,
       token: this._token,
+      type: this._type,
     };
+    if (this.isCapped) {
+      Object.assign(milestone, {
+        maxAmount: utils.toWei(this.maxAmount.toFixed()),
+        conversionRateTimestamp: this._conversionRateTimestamp,
+        selectedFiatType: this._selectedFiatType,
+        fiatAmount: this._fiatAmount.toString(),
+        conversionRate: this._conversionRate,
+      });
+    }
     if (!this.id) milestone.txHash = txHash;
 
     return milestone;
@@ -115,43 +129,43 @@ export default class MilestoneModel extends BasicModel {
   * */
 
   static get PROPOSED() {
-    return MilestoneModel.statuses.PROPOSED;
+    return Milestone.statuses.PROPOSED;
   }
 
   static get REJECTED() {
-    return MilestoneModel.statuses.REJECTED;
+    return Milestone.statuses.REJECTED;
   }
 
   static get PENDING() {
-    return MilestoneModel.statuses.PENDING;
+    return Milestone.statuses.PENDING;
   }
 
   static get IN_PROGRESS() {
-    return MilestoneModel.statuses.IN_PROGRESS;
+    return Milestone.statuses.IN_PROGRESS;
   }
 
   static get NEEDS_REVIEW() {
-    return MilestoneModel.statuses.NEEDS_REVIEW;
+    return Milestone.statuses.NEEDS_REVIEW;
   }
 
   static get COMPLETED() {
-    return MilestoneModel.statuses.COMPLETED;
+    return Milestone.statuses.COMPLETED;
   }
 
   static get CANCELED() {
-    return MilestoneModel.statuses.CANCELED;
+    return Milestone.statuses.CANCELED;
   }
 
   static get PAYING() {
-    return MilestoneModel.statuses.PAYING;
+    return Milestone.statuses.PAYING;
   }
 
   static get PAID() {
-    return MilestoneModel.statuses.PAID;
+    return Milestone.statuses.PAID;
   }
 
   static get FAILED() {
-    return MilestoneModel.statuses.FAILED;
+    return Milestone.statuses.FAILED;
   }
 
   static get statuses() {
@@ -175,7 +189,7 @@ export default class MilestoneModel extends BasicModel {
 
   // eslint-disable-next-line class-methods-use-this
   get type() {
-    return MilestoneModel.type;
+    return Milestone.type;
   }
 
   get title() {
@@ -222,6 +236,10 @@ export default class MilestoneModel extends BasicModel {
   }
 
   set maxAmount(value) {
+    if (value === undefined) {
+      this._maxAmount = value;
+      return;
+    }
     this.checkInstanceOf(value, BigNumber, 'maxAmount');
     this._maxAmount = value;
   }
@@ -262,12 +280,21 @@ export default class MilestoneModel extends BasicModel {
     this._recipientAddress = value;
   }
 
+  get pendingRecipientAddress() {
+    return this._pendingRecipientAddress;
+  }
+
+  set pendingRecipientAddress(value) {
+    this.checkType(value, ['string'], 'pendingRecipientAddress');
+    this._pendingRecipientAddress = value;
+  }
+
   get status() {
     return this._status;
   }
 
   set status(value) {
-    this.checkValue(value, Object.values(MilestoneModel.statuses), 'status');
+    this.checkValue(value, Object.values(Milestone.statuses), 'status');
     this._status = value;
   }
 
@@ -294,7 +321,7 @@ export default class MilestoneModel extends BasicModel {
   }
 
   set reviewerAddress(value) {
-    this.checkType(value, ['string'], 'reviewerAddress');
+    this.checkType(value, ['string', 'undefined'], 'reviewerAddress');
     this._reviewerAddress = value;
   }
 
@@ -356,10 +383,23 @@ export default class MilestoneModel extends BasicModel {
   }
 
   get currentBalance() {
-    if (Array.isArray(this._donationCounters) && this._donationCounters.length > 0) {
+    if (!this.isCapped) return undefined;
+    if (
+      this.acceptsSingleToken &&
+      Array.isArray(this._donationCounters) &&
+      this._donationCounters.length > 0
+    ) {
       return this._donationCounters[0].currentBalance;
     }
     return new BigNumber('0');
+  }
+
+  get totalDonations() {
+    return (
+      (Array.isArray(this._donationCounters) &&
+        this._donationCounters.reduce((count, dc) => count + dc.donationCount, 0)) ||
+      0
+    );
   }
 
   get mined() {
@@ -393,12 +433,12 @@ export default class MilestoneModel extends BasicModel {
     return this._reviewer;
   }
 
-  get campaignReviewer() {
-    return this._campaignReviewer;
-  }
-
   get recipient() {
     return this._recipient;
+  }
+
+  get pendingRecipient() {
+    return this._pendingRecipient;
   }
 
   set campaignId(value) {
@@ -427,12 +467,106 @@ export default class MilestoneModel extends BasicModel {
     return this._conversionRate;
   }
 
-  set campaignReviewerAddress(value) {
-    this.checkType(value, ['string'], 'campaignReviewerAddress');
-    this._campaignReviewerAddress = value;
+  // computed
+  get hasReviewer() {
+    return this._reviewerAddress !== undefined && this._reviewerAddress !== ZERO_ADDRESS;
   }
 
-  get campaignReviewerAddress() {
-    return this._campaignReviewerAddress;
+  get hasRecipient() {
+    return (
+      (this._recipientAddress !== undefined && this._recipientAddress !== ZERO_ADDRESS) ||
+      this._pendingRecipientAddress
+    );
+  }
+
+  get acceptsSingleToken() {
+    return this._token && this._token.foreignAddress !== ANY_TOKEN.foreignAddress;
+  }
+
+  get isCapped() {
+    return this.maxAmount !== undefined;
+  }
+
+  canUserAcceptRejectProposal(user) {
+    return (
+      user && this.campaign.ownerAddress === user.address && this.status === Milestone.PROPOSED
+    );
+  }
+
+  canUserRepropose(user) {
+    return user && this.ownerAddress === user.address && this.status === Milestone.REJECTED;
+  }
+
+  canUserDelete(user) {
+    return (
+      user &&
+      this.ownerAddress === user.address &&
+      [Milestone.REJECTED, Milestone.PROPOSED].includes(this.status)
+    );
+  }
+
+  canUserCancel(user) {
+    return (
+      user &&
+      [this.reviewerAddress, this.ownerAddress].includes(user.address) &&
+      [Milestone.IN_PROGRESS, Milestone.NEEDS_REVIEW].includes(this.status) &&
+      this.mined
+    );
+  }
+
+  canUserMarkComplete(user) {
+    return (
+      user &&
+      // if no reviewerAddress, then there is no need to markComplete
+      this.reviewerAddress &&
+      this.reviewerAddress !== ZERO_ADDRESS &&
+      this.status === Milestone.IN_PROGRESS &&
+      this.mined &&
+      (this.ownerAddress === user.address ||
+        (!this.pendingRecipientAddress && this.recipientAddress === user.address))
+    );
+  }
+
+  canUserApproveRejectCompletion(user) {
+    return (
+      user &&
+      this.status === Milestone.NEEDS_REVIEW &&
+      this.reviewerAddress === user.address &&
+      this.mined
+    );
+  }
+
+  canUserWithdraw(user) {
+    return (
+      user &&
+      this.hasRecipient &&
+      (this.ownerAddress === user.address ||
+        (!this.pendingRecipientAddress && this.recipientAddress === user.address)) &&
+      (!this.hasReviewer || this.status === Milestone.COMPLETED) &&
+      this.mined &&
+      this.donationCounters.some(dc => dc.currentBalance.gt(0))
+    );
+  }
+
+  canUserEdit(user) {
+    return (
+      user &&
+      [this.ownerAddress, this.campaign.ownerAddress].includes(user.address) &&
+      [
+        Milestone.PROPOSED,
+        Milestone.REJECTED,
+        Milestone.IN_PROGRESS,
+        Milestone.NEEDS_REVIEW,
+      ].includes(this.status)
+    );
+  }
+
+  canUserChangeRecipient(user) {
+    return (
+      user &&
+      !this.pendingRecipientAddress &&
+      ((!this.hasRecipient && this.ownerAddress === user.address) ||
+        (this.hasRecipient && this.recipientAddress === user.address))
+    );
   }
 }

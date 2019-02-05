@@ -6,8 +6,8 @@
 import BigNumber from 'bignumber.js';
 import { utils } from 'web3';
 import { paramsForServer } from 'feathers-hooks-common';
-import { LPPCappedMilestone } from 'lpp-capped-milestone';
 import Milestone from 'models/Milestone';
+import MilestoneFactory from 'models/MilestoneFactory';
 import { feathersClient } from 'lib/feathersClient';
 import getNetwork from 'lib/blockchain/getNetwork';
 import getWeb3 from 'lib/blockchain/getWeb3';
@@ -17,6 +17,8 @@ import IPFSService from './IPFSService';
 import ErrorPopup from '../components/ErrorPopup';
 
 import Donation from '../models/Donation';
+import BridgedMilestone from '../models/BridgedMilestone';
+import LPPCappedMilestone from '../models/LPPCappedMilestone';
 
 const milestones = feathersClient.service('milestones');
 
@@ -37,7 +39,7 @@ class MilestoneService {
       milestones
         .find({ query: { _id: id } })
         .then(resp => {
-          resolve(new Milestone(resp.data[0]));
+          resolve(MilestoneFactory.create(resp.data[0]));
         })
         .catch(reject);
     });
@@ -53,7 +55,7 @@ class MilestoneService {
       .watch({ listStrategy: 'always' })
       .find({ query: { _id: id } })
       .subscribe(resp => {
-        onResult(new Milestone(resp.data[0]));
+        onResult(MilestoneFactory.create(resp.data[0]));
       }, onError);
     return this.milestoneSubscription;
   }
@@ -172,7 +174,7 @@ class MilestoneService {
           try {
             onResult(
               Object.assign({}, resp, {
-                data: resp.data.map(m => new Milestone(m)),
+                data: resp.data.map(m => MilestoneFactory.create(m)),
               }),
             );
           } catch (e) {
@@ -211,7 +213,7 @@ class MilestoneService {
           $skip,
         },
       })
-      .then(resp => onSuccess(resp.data.map(m => new Milestone(m)), resp.total))
+      .then(resp => onSuccess(resp.data.map(m => MilestoneFactory.create(m)), resp.total))
       .catch(onError);
   }
 
@@ -369,58 +371,95 @@ class MilestoneService {
 
       let tx;
       if (milestone.projectId) {
-        // TODO: current milestone has no update function
-        // // LPPCampaign function update(string newName, string newUrl, uint64 newCommitTime)
-        // tx = new LPP(await getWeb3(), campaign.pluginAddress).update(
-        //   campaign.title,
-        //   profileHash || '',
-        //   0,
-        //   {
-        //     from,
-        //     $extraGas: extraGas(),
-        //   },
-        // );
+        if (milestone instanceof BridgedMilestone) {
+          tx = new BridgedMilestone(await getWeb3(), milestone.pluginAddress).update(
+            milestone.title,
+            profileHash || '',
+            0,
+            {
+              from,
+              $extraGas: extraGas(),
+            },
+          );
+          // } else if (milestone instanceof LPMilestone) {
+          //   tx = new LPMilestone(await getWeb3(), milestone.pluginAddress).update(
+          //     milestone.title,
+          //     profileHash || '',
+          //     0,
+          //     {
+          //       from,
+          //       $extraGas: extraGas(),
+          //     },
+          //   );
+        } else if (milestone instanceof LPPCappedMilestone) {
+          // LPPCappedMilestone has no update function, so just update feathers
+          await milestones.patch(milestone._id, milestone.toFeathers());
+          afterSave(null, false);
+          return true;
+        }
       } else {
         /**
           Create a milestone on chain
 
-          lppCappedMilestoneFactory params
+          milestoneFactory params
 
           string _name,
           string _url,
           uint64 _parentProject,
           address _reviewer,
           address _recipient,
-          address _campaignReviewer,
           address _milestoneManager,
           uint _maxAmount,
           address _acceptedToken,
           uint _reviewTimeoutSeconds
         * */
-        const { lppCappedMilestoneFactory } = network;
+        const { milestoneFactory } = network;
 
-        tx = lppCappedMilestoneFactory.newMilestone(
-          milestone.title,
-          profileHash || '',
-          milestone.parentProjectId,
-          milestone.reviewerAddress,
-          milestone.recipientAddress,
-          milestone.campaignReviewerAddress,
-          from,
-          utils.toWei(milestone.maxAmount.toFixed()),
-          milestone.token.foreignAddress,
-          5 * 24 * 60 * 60, // 5 days in seconds
-          { from, $extraGas: extraGas() },
-        );
+        // if (milestone instanceof LPMilestone) {
+        //   tx = milestoneFactory.newLPMilestone(
+        //     milestone.title,
+        //     profileHash || '',
+        //     milestone.parentProjectId,
+        //     milestone.reviewerAddress,
+        //     milestone.recipientId,
+        //     from,
+        //     milestone.isCapped ? utils.toWei(milestone.maxAmount.toFixed()) : 0,
+        //     milestone.token.foreignAddress,
+        //     5 * 24 * 60 * 60, // 5 days in seconds
+        //     { from, $extraGas: extraGas() },
+        //   );
+        // } else
+        if (milestone instanceof LPPCappedMilestone) {
+          throw new Error('LPPCappedMilestones are deprecated');
+        } else {
+          // default to creating a BridgedMilestone
+          tx = milestoneFactory.newBridgedMilestone(
+            milestone.title,
+            profileHash || '',
+            milestone.parentProjectId,
+            milestone.reviewerAddress,
+            milestone.recipientAddress,
+            from,
+            milestone.isCapped ? utils.toWei(milestone.maxAmount.toFixed()) : 0,
+            milestone.token.foreignAddress,
+            5 * 24 * 60 * 60, // 5 days in seconds
+            { from, $extraGas: extraGas() },
+          );
+        }
       }
 
       let milestoneId;
       await tx.once('transactionHash', async hash => {
         txHash = hash;
 
-        // create milestone in feathers
-        // if (milestone.id) await milestones.patch(milestone.id, milestone.toFeathers(txHash));
-        milestoneId = await milestones.create(milestone.toFeathers(txHash))._id;
+        // update milestone in feathers
+        if (milestone.id) {
+          await milestones.patch(milestone.id, milestone.toFeathers(txHash));
+          milestoneId = milestone.id;
+        } else {
+          // create milestone in feathers
+          milestoneId = (await milestones.create(milestone.toFeathers(txHash)))._id;
+        }
         afterSave(false, !milestone.projectId, `${etherScanUrl}tx/${txHash}`);
       });
 
@@ -581,13 +620,15 @@ class MilestoneService {
 
       etherScanUrl = network.etherscan;
 
-      const cappedMilestone = new LPPCappedMilestone(web3, milestone.pluginAddress);
+      const milestoneContract = milestone.contract(web3);
 
-      await cappedMilestone
-        .requestMarkAsComplete({
-          from,
-          $extraGas: extraGas(),
-        })
+      const fnName =
+        milestone instanceof LPPCappedMilestone ? 'requestMarkAsComplete' : 'requestReview';
+
+      await milestoneContract[fnName]({
+        from,
+        $extraGas: extraGas(),
+      })
         .once('transactionHash', async hash => {
           txHash = hash;
 
@@ -643,9 +684,9 @@ class MilestoneService {
       .then(([network, web3]) => {
         etherScanUrl = network.etherscan;
 
-        const cappedMilestone = new LPPCappedMilestone(web3, milestone.pluginAddress);
+        const milestoneContract = milestone.contract(web3);
 
-        return cappedMilestone
+        return milestoneContract
           .cancelMilestone({
             from,
             $extraGas: extraGas(),
@@ -693,13 +734,17 @@ class MilestoneService {
       .then(([network, web3]) => {
         etherScanUrl = network.etherscan;
 
-        const cappedMilestone = new LPPCappedMilestone(web3, milestone.pluginAddress);
+        const milestoneContract = milestone.contract(web3);
 
-        return cappedMilestone
-          .approveMilestoneCompleted({
-            from,
-            $extraGas: extraGas(),
-          })
+        const fnName =
+          milestone instanceof LPPCappedMilestone
+            ? 'approveMilestoneCompleted'
+            : 'approveCompleted';
+
+        return milestoneContract[fnName]({
+          from,
+          $extraGas: extraGas(),
+        })
           .once('transactionHash', hash => {
             txHash = hash;
 
@@ -743,13 +788,15 @@ class MilestoneService {
       .then(([network, web3]) => {
         etherScanUrl = network.etherscan;
 
-        const cappedMilestone = new LPPCappedMilestone(web3, milestone.pluginAddress);
+        const milestoneContract = milestone.contract(web3);
 
-        return cappedMilestone
-          .rejectCompleteRequest({
-            from,
-            $extraGas: extraGas(),
-          })
+        const fnName =
+          milestone instanceof LPPCappedMilestone ? 'rejectCompleteRequest' : 'rejectCompleted';
+
+        return milestoneContract[fnName]({
+          from,
+          $extraGas: extraGas(),
+        })
           .once('transactionHash', hash => {
             txHash = hash;
 
@@ -773,6 +820,49 @@ class MilestoneService {
   }
 
   /**
+   * Change the recipient of the milestone
+   *
+   * @param milestone       a Milestone model
+   * @param from            (string) Ethereum address
+   * @param newRecipient    (string) Address of the new recipient
+   * @param onTxHash        Callback function once the transaction was created
+   * @param onConfirmation  Callback function once the transaction was mined
+   * @param onError         Callback function if error is encountered
+   */
+
+  static changeRecipient({ milestone, from, newRecipient, onTxHash, onConfirmation, onError }) {
+    let txHash;
+    let etherScanUrl;
+
+    Promise.all([getNetwork(), getWeb3()])
+      .then(([network, web3]) => {
+        etherScanUrl = network.etherscan;
+
+        const milestoneContract = milestone.contract(web3);
+
+        return milestoneContract
+          .changeRecipient(newRecipient, {
+            from,
+            $extraGas: extraGas(),
+          })
+          .once('transactionHash', hash => {
+            txHash = hash;
+
+            return milestones
+              .patch(milestone._id, {
+                pendingRecipientAddress: newRecipient,
+              })
+              .then(() => onTxHash(`${etherScanUrl}tx/${txHash}`))
+              .catch(e => onError('patch-error', e));
+          })
+          .on('receipt', () => onConfirmation(`${etherScanUrl}tx/${txHash}`));
+      })
+      .catch(err => {
+        onError(err, `${etherScanUrl}tx/${txHash}`);
+      });
+  }
+
+  /**
    * Withdraw the donations (pledges) from a milestone
    * Only possible when the milestones was approved for completion
    *
@@ -791,13 +881,18 @@ class MilestoneService {
       .then(([network, web3, data]) => {
         etherScanUrl = network.etherscan;
 
-        const cappedMilestone = new LPPCappedMilestone(web3, milestone.pluginAddress);
+        const milestoneContract = milestone.contract(web3);
 
-        return cappedMilestone
-          .mWithdraw(data.pledges, {
-            from,
-            $extraGas: extraGas(),
-          })
+        const execute = opts =>
+          milestone instanceof LPPCappedMilestone
+            ? milestoneContract.mWithdraw(data.pledges, opts)
+            : // BridgedMilestone, set autoDisburse = false if we have more donations to withdraw
+              milestoneContract.mWithdraw(data.pledges, data.tokens, !data.hasMoreDonations, opts);
+
+        return execute({
+          from,
+          $extraGas: extraGas(),
+        })
           .once('transactionHash', hash => {
             txHash = hash;
 

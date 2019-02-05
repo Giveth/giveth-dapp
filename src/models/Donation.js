@@ -3,7 +3,7 @@ import { utils } from 'web3';
 
 import Model from './Model';
 import { getTruncatedText } from '../lib/helpers';
-import Milestone from './Milestone';
+import Milestone from './MilestoneFactory';
 import Campaign from './Campaign';
 // import User from './User';
 
@@ -68,8 +68,10 @@ class Donation extends Model {
 
     this._id = data._id;
     this._amount = new BigNumber(utils.fromWei(data.amount));
-    this._amountRemaining = new BigNumber(utils.fromWei(data.amountRemaining || ''));
-    this._pendingAmountRemaining = new BigNumber(utils.fromWei(data.pendingAmountRemaining || ''));
+    this._amountRemaining = new BigNumber(utils.fromWei(data.amountRemaining));
+    this._pendingAmountRemaining = data.pendingAmountRemaining
+      ? new BigNumber(utils.fromWei(data.pendingAmountRemaining))
+      : undefined;
     this._commitTime = data.commitTime;
     this._confirmations = data.confirmations || 0;
     this._createdAt = data.createdAt;
@@ -233,11 +235,7 @@ class Donation extends Model {
   }
 
   get isPending() {
-    return (
-      this._status === Donation.PENDING ||
-      (this._pendingAmountRemaining && this._pendingAmountRemaining.toFixed() !== '0') ||
-      !this._mined
-    );
+    return this._status === Donation.PENDING || this._pendingAmountRemaining || !this._mined;
   }
 
   get id() {
@@ -259,10 +257,7 @@ class Donation extends Model {
   }
 
   get amountRemaining() {
-    if (this._pendingAmountRemaining && this._pendingAmountRemaining.toFixed() !== '0') {
-      return this._pendingAmountRemaining;
-    }
-    return this._amountRemaining;
+    return this._pendingAmountRemaining || this._amountRemaining;
   }
 
   set amountRemaining(value) {

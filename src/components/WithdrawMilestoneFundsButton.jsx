@@ -24,6 +24,7 @@ class WithdrawMilestoneFundsButton extends Component {
       // to withdraw more funds will fail
       return;
     }
+    // TODO: ask which token to withdraw if multiple
 
     Promise.all([checkBalance(balance), DonationService.getMilestoneDonationsCount(milestone._id)])
       .then(([, donationsCount]) => {
@@ -31,11 +32,11 @@ class WithdrawMilestoneFundsButton extends Component {
           title: isRecipient ? 'Withdrawal Funds to Wallet' : 'Disburse Funds to Recipient',
           content: React.swal.msg(
             <div>
-              {donationsCount > 8 && (
+              {donationsCount > 18 && (
                 <p>
                   <strong>Note:</strong> Due to the current gas limitations you will be required to
                   withdrawal multiple times. You have <strong>{donationsCount}</strong> donations to{' '}
-                  {isRecipient ? 'withdraw' : 'disburse'} and the current max is <strong>8</strong>.
+                  {isRecipient ? 'withdraw' : 'disburse'} and the current max is <strong>18</strong>.
                 </p>
               )}
               <p>
@@ -131,21 +132,17 @@ class WithdrawMilestoneFundsButton extends Component {
       <Web3Consumer>
         {({ state: { isForeignNetwork } }) => (
           <Fragment>
-            {currentUser &&
-              [milestone.recipientAddress, milestone.ownerAddress].includes(currentUser.address) &&
-              milestone.status === Milestone.COMPLETED &&
-              milestone.mined &&
-              milestone.currentBalance.gt(0) && (
-                <button
-                  type="button"
-                  className="btn btn-success btn-sm"
-                  onClick={() => this.withdraw()}
-                  disabled={!isForeignNetwork}
-                >
-                  <i className="fa fa-usd" />{' '}
-                  {milestone.recipientAddress === currentUser.address ? 'Collect' : 'Disburse'}
-                </button>
-              )}
+            {milestone.canUserWithdraw(currentUser) && (
+              <button
+                type="button"
+                className="btn btn-success btn-sm"
+                onClick={() => this.withdraw()}
+                disabled={!isForeignNetwork}
+              >
+                <i className="fa fa-usd" />{' '}
+                {milestone.recipientAddress === currentUser.address ? 'Collect' : 'Disburse'}
+              </button>
+            )}
           </Fragment>
         )}
       </Web3Consumer>

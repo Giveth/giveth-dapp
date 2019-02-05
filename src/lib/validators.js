@@ -29,6 +29,7 @@ addValidationRule('isMoment', (formValues, inputValue) => moment.isMoment(inputV
 
 // Checks if input is a valid Ether address
 // TODO: Does not support ENS! (It's hard, ENS returns promises)
-addValidationRule('isEtherAddress', (formValues, inputValue, _value) =>
-  Web3.utils.isAddress(inputValue),
+addValidationRule(
+  'isEtherAddress',
+  (formValues, inputValue, _value) => !inputValue || Web3.utils.isAddress(inputValue),
 );

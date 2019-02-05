@@ -76,7 +76,7 @@ CardStats.propTypes = {
 
 CardStats.defaultProps = {
   status: 'In Progress',
-  maxAmount: new BigNumber('0'),
+  maxAmount: undefined,
   totalDonated: new BigNumber('0'),
   token: {
     symbol: config.nativeTokenName,

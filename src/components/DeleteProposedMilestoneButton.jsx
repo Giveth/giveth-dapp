@@ -24,21 +24,19 @@ const DeleteProposedMilestoneButton = ({ milestone, currentUser }) => {
     <Web3Consumer>
       {({ state: { isForeignNetwork } }) => (
         <Fragment>
-          {currentUser &&
-            milestone.ownerAddress === currentUser.address &&
-            ['Proposed', 'Rejected'].includes(milestone.status) && (
-              <span>
-                <button
-                  type="button"
-                  className="btn btn-danger btn-sm"
-                  onClick={_deleteProposedMilestone}
-                  disable={!isForeignNetwork ? true : undefined}
-                >
-                  <i className="fa fa-times-circle-o" />
-                  &nbsp;Delete
-                </button>
-              </span>
-            )}
+          {milestone.canUserDelete(currentUser) && (
+            <span>
+              <button
+                type="button"
+                className="btn btn-danger btn-sm"
+                onClick={_deleteProposedMilestone}
+                disable={!isForeignNetwork ? true : undefined}
+              >
+                <i className="fa fa-times-circle-o" />
+                &nbsp;Delete
+              </button>
+            </span>
+          )}
         </Fragment>
       )}
     </Web3Consumer>

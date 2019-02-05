@@ -21,7 +21,21 @@ class RequestMarkMilestoneCompleteButton extends Component {
     const { milestone, balance, currentUser } = this.props;
 
     checkBalance(balance)
-      .then(() => {
+      .then(async () => {
+        if (milestone.donationCounters.length === 0) {
+          const proceed = await React.swal({
+            title: 'Mark Milestone Complete?',
+            text:
+              'Are you sure you want to mark this Milestone as complete? You have yet to receive any donations.',
+            icon: 'warning',
+            dangerMode: true,
+            buttons: ['Cancel', 'Yes'],
+          });
+
+          // if null, then "Cancel" was pressed
+          if (proceed === null) return;
+        }
+
         this.conversationModal.current
           .openModal({
             title: 'Mark milestone complete',
@@ -78,11 +92,7 @@ class RequestMarkMilestoneCompleteButton extends Component {
             });
           });
       })
-      .catch(err => {
-        if (err === 'noBalance') {
-          // handle no balance error
-        }
-      });
+      .catch(console.error);
   }
 
   render() {
@@ -92,20 +102,16 @@ class RequestMarkMilestoneCompleteButton extends Component {
       <Web3Consumer>
         {({ state: { isForeignNetwork } }) => (
           <Fragment>
-            {currentUser &&
-              (milestone.recipientAddress === currentUser.address ||
-                milestone.ownerAddress === currentUser.address) &&
-              milestone.status === 'InProgress' &&
-              milestone.mined && (
-                <button
-                  type="button"
-                  className="btn btn-success btn-sm"
-                  onClick={() => this.requestMarkComplete()}
-                  disabled={!(milestone.currentBalance || '0').gt('0') || !isForeignNetwork}
-                >
-                  Mark complete
-                </button>
-              )}
+            {milestone.canUserMarkComplete(currentUser) && (
+              <button
+                type="button"
+                className="btn btn-success btn-sm"
+                onClick={() => this.requestMarkComplete()}
+                disabled={!isForeignNetwork}
+              >
+                Mark complete
+              </button>
+            )}
 
             <ConversationModal ref={this.conversationModal} milestone={milestone} />
           </Fragment>

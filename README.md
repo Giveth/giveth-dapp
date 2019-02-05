@@ -9,19 +9,19 @@ Welcome to the code for Giveth's DApp. This is an open source effort to realize 
 
 - [Table of content](#table-of-content)
 - [Getting Started](#getting-started)
-        - [Prerequisities](#prerequisities)
-    - [Install](#install)
-        - [OSX and Linux](#osx-and-linux)
-        - [Windows](#windows)
-    - [Run](#run)
-    - [Build](#build)
-    - [Configuration](#configuration)
-    - [Analytics](#analytics)
+    - [Prerequisities](#prerequisities)
+  - [Install](#install)
+    - [OSX and Linux](#osx-and-linux)
+    - [Windows](#windows)
+  - [Run](#run)
+  - [Build](#build)
+  - [Configuration](#configuration)
+  - [Analytics](#analytics)
 - [Contributing](#contributing)
-    - [Local Development](#local-development)
-    - [Development and PR Testing](#development-and-pr-testing)
-    - [Deployment Environments](#deployment-environments)
-    - [Release Process](#release-process)
+  - [Local Development](#local-development)
+  - [Development and PR Testing](#development-and-pr-testing)
+  - [Deployment Environments](#deployment-environments)
+  - [Release Process](#release-process)
 - [Help](#help)
 
 ## Getting Started
@@ -127,7 +127,7 @@ REACT_APP_NODE_CONNECTION_URL | Differs per REACT_APP_ENVIRONMENT | Overwrites t
 REACT_APP_LIQUIDPLEDGING_ADDRESS | Differs per REACT_APP_ENVIRONMENT | Overwrites the Liquid Pledging contract address. |
 REACT_APP_DAC_FACTORY_ADDRESS | Differs per REACT_APP_ENVIRONMENT | Overwrites the DACs contract address. |
 REACT_APP_CAMPAIGN_FACTORY_ADDRESS | Differs per REACT_APP_ENVIRONMENT | Overwrites the Campaign Factory contract address. |
-REACT_APP_CAPPED_MILESTONE_FACTORY_ADDRESS | Differs per REACT_APP_ENVIRONMENT | Overwrites the Milestone contract address. |
+REACT_APP_MILESTONE_FACTORY_ADDRESS | Differs per REACT_APP_ENVIRONMENT | Overwrites the MilestoneFactory contract address. |
 REACT_APP_TOKEN_ADDRESSES | Differs per REACT_APP_ENVIRONMENT | Overwrites the bridged token addresses. This is a JSON object string w/ token name : token address. |
 REACT_APP_BLOCKEXPLORER | Differs per REACT_APP_ENVIRONMENT | Overwrites the block explorer base URL. The DApp assumes such blockexplorer api is `\<BLOCKEXPLORER\>/tx/\<TRANSACTION_HASH\>` |
 REACT_APP_DEFAULT_GASPRICE | 10 | Overwrites the default gasPrice that is used if ethgasstation service is down. The value is in gwei. |
