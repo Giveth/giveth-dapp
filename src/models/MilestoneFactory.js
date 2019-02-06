@@ -1,5 +1,6 @@
 import LPPCappedMilestone from './LPPCappedMilestone';
 import BridgedMilestone from './BridgedMilestone';
+import LPMilestone from './LPMilestone';
 
 /**
  * milestone Factory
@@ -7,7 +8,7 @@ import BridgedMilestone from './BridgedMilestone';
 export default {
   create: data => {
     if (data.type === 'LPPCappedMilestone') return new LPPCappedMilestone(data);
-    // if (data.type === 'LPMilestone') return new LPMilestone(data);
-    return new BridgedMilestone(Object.assign({}, data, { type: 'BridgedMilestone' }));
+    if (data.type === 'LPMilestone') return new LPMilestone(data);
+    return new BridgedMilestone(Object.assign({}, data));
   },
 };

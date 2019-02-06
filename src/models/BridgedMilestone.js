@@ -9,4 +9,9 @@ export default class BridgedMilestone extends Milestone {
     if (!web3) throw new Error('web3 instance is required');
     return new BridgedMilestoneContract(web3, this.pluginAddress);
   }
+
+  // eslint-disable-next-line class-methods-use-this
+  get type() {
+    return 'BridgedMilestone';
+  }
 }

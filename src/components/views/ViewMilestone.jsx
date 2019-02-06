@@ -11,6 +11,7 @@ import BigNumber from 'bignumber.js';
 import User from 'models/User';
 import Campaign from 'models/Campaign';
 import Milestone from 'models/Milestone';
+import LPMilestone from 'models/LPMilestone';
 import MilestoneActions from 'components/MilestoneActions';
 
 import BackgroundImageHeader from 'components/BackgroundImageHeader';
@@ -338,13 +339,19 @@ class ViewMilestone extends Component {
                                 <tbody>
                                   <tr>
                                     <td className="td-user">
-                                      <Link
-                                        to={`/profile/${milestone.pendingRecipientAddress ||
-                                          milestone.recipientAddress}`}
-                                      >
-                                        <Avatar size={30} src={getUserAvatar(recipient)} round />
-                                        {getUserName(recipient)}
-                                      </Link>
+                                      {milestone instanceof LPMilestone ? (
+                                        <Link to={`/campaigns/${milestone.recipient._id}`}>
+                                          Campaign: {milestone.recipient.title}
+                                        </Link>
+                                      ) : (
+                                        <Link
+                                          to={`/profile/${milestone.pendingRecipientAddress ||
+                                            milestone.recipientAddress}`}
+                                        >
+                                          <Avatar size={30} src={getUserAvatar(recipient)} round />
+                                          {getUserName(recipient)}
+                                        </Link>
+                                      )}
                                     </td>
                                   </tr>
                                 </tbody>

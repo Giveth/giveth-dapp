@@ -39,6 +39,8 @@ import { Consumer as WhiteListConsumer } from '../../contextProviders/WhiteListP
 import getConversionRatesContext from '../../containers/getConversionRatesContext';
 import MilestoneService from '../../services/MilestoneService';
 import CampaignService from '../../services/CampaignService';
+import LPMilestone from '../../models/LPMilestone';
+import BridgedMilestone from '../../models/BridgedMilestone';
 
 BigNumber.config({ DECIMAL_PLACES: 18 });
 
@@ -372,6 +374,19 @@ class EditMilestone extends Component {
     this.setState({ milestone });
   }
 
+  toggleMilestoneType() {
+    const { milestone, campaignProjectId } = this.state;
+    if (milestone instanceof LPMilestone) {
+      this.setState({
+        milestone: new BridgedMilestone(milestone.toFeathers()),
+      });
+    } else if (milestone instanceof BridgedMilestone) {
+      this.setState({
+        milestone: new LPMilestone({ ...milestone.toFeathers(), recipientId: campaignProjectId }),
+      });
+    }
+  }
+
   toggleToken() {
     const { milestone } = this.state;
     milestone.token = milestone.acceptsSingleToken ? ANY_TOKEN : this.props.tokenWhitelist[0];
@@ -403,7 +418,7 @@ class EditMilestone extends Component {
     this.setState({ milestone });
   }
 
-  submit(/* model */) {
+  submit() {
     const { milestone } = this.state;
 
     milestone.ownerAddress = this.props.currentUser.address;
@@ -737,26 +752,39 @@ class EditMilestone extends Component {
                     </div>
                     <div className="label">Where will the money go after completion?</div>
                     <div className="form-group recipient-address-container">
-                      <Input
-                        name="recipientAddress"
-                        id="title-input"
-                        type="text"
-                        value={milestone.recipientAddress}
-                        placeholder={ZERO_ADDRESS}
-                        help="Enter an Ethereum address. If left blank, you will be required to set the recipient address before you can withdraw from this Milestone"
-                        validations="isEtherAddress"
-                        validationErrors={{
-                          isEtherAddress: 'Please insert a valid Ethereum address.',
-                        }}
-                        disabled={!isNew && !isProposed}
-                      />
-                      <button
-                        type="button"
-                        className="btn btn-sm btn-link btn-setter"
-                        onClick={() => this.setMyAddressAsRecipient()}
-                      >
-                        Use My Address
-                      </button>
+                      <div className="react-toggle-container">
+                        <Toggle
+                          id="itemize-state"
+                          checked={milestone instanceof LPMilestone}
+                          onChange={() => this.toggleMilestoneType()}
+                          disabled={!isNew && !isProposed}
+                        />
+                        <span className="label">Raise funds for Campaign: {campaignTitle} </span>
+                      </div>
+                      {!(milestone instanceof LPMilestone) && (
+                        <Fragment>
+                          <Input
+                            name="recipientAddress"
+                            id="title-input"
+                            type="text"
+                            value={milestone.recipientAddress}
+                            placeholder={ZERO_ADDRESS}
+                            help="Enter an Ethereum address. If left blank, you will be required to set the recipient address before you can withdraw from this Milestone"
+                            validations="isEtherAddress"
+                            validationErrors={{
+                              isEtherAddress: 'Please insert a valid Ethereum address.',
+                            }}
+                            disabled={!isNew && !isProposed}
+                          />
+                          <button
+                            type="button"
+                            className="btn btn-sm btn-link btn-setter"
+                            onClick={() => this.setMyAddressAsRecipient()}
+                          >
+                            Use My Address
+                          </button>
+                        </Fragment>
+                      )}
                     </div>
 
                     <div className="form-group react-toggle-container">

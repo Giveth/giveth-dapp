@@ -35,6 +35,9 @@ export default class LPPCappedMilestone extends Milestone {
   /**
     get & setters
   * */
+  get type() {
+    return 'LPPCappedMilestone';
+  }
 
   set campaignReviewerAddress(value) {
     this.checkType(value, ['string'], 'campaignReviewerAddress');

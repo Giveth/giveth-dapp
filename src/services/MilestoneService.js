@@ -19,6 +19,7 @@ import ErrorPopup from '../components/ErrorPopup';
 import Donation from '../models/Donation';
 import BridgedMilestone from '../models/BridgedMilestone';
 import LPPCappedMilestone from '../models/LPPCappedMilestone';
+import LPMilestone from '../models/LPMilestone';
 
 const milestones = feathersClient.service('milestones');
 
@@ -381,16 +382,16 @@ class MilestoneService {
               $extraGas: extraGas(),
             },
           );
-          // } else if (milestone instanceof LPMilestone) {
-          //   tx = new LPMilestone(await getWeb3(), milestone.pluginAddress).update(
-          //     milestone.title,
-          //     profileHash || '',
-          //     0,
-          //     {
-          //       from,
-          //       $extraGas: extraGas(),
-          //     },
-          //   );
+        } else if (milestone instanceof LPMilestone) {
+          tx = new LPMilestone(await getWeb3(), milestone.pluginAddress).update(
+            milestone.title,
+            profileHash || '',
+            0,
+            {
+              from,
+              $extraGas: extraGas(),
+            },
+          );
         } else if (milestone instanceof LPPCappedMilestone) {
           // LPPCappedMilestone has no update function, so just update feathers
           await milestones.patch(milestone._id, milestone.toFeathers());
@@ -415,21 +416,20 @@ class MilestoneService {
         * */
         const { milestoneFactory } = network;
 
-        // if (milestone instanceof LPMilestone) {
-        //   tx = milestoneFactory.newLPMilestone(
-        //     milestone.title,
-        //     profileHash || '',
-        //     milestone.parentProjectId,
-        //     milestone.reviewerAddress,
-        //     milestone.recipientId,
-        //     from,
-        //     milestone.isCapped ? utils.toWei(milestone.maxAmount.toFixed()) : 0,
-        //     milestone.token.foreignAddress,
-        //     5 * 24 * 60 * 60, // 5 days in seconds
-        //     { from, $extraGas: extraGas() },
-        //   );
-        // } else
-        if (milestone instanceof LPPCappedMilestone) {
+        if (milestone instanceof LPMilestone) {
+          tx = milestoneFactory.newLPMilestone(
+            milestone.title,
+            profileHash || '',
+            milestone.parentProjectId,
+            milestone.reviewerAddress,
+            milestone.recipientId,
+            from,
+            milestone.isCapped ? utils.toWei(milestone.maxAmount.toFixed()) : 0,
+            milestone.token.foreignAddress,
+            5 * 24 * 60 * 60, // 5 days in seconds
+            { from, $extraGas: extraGas() },
+          );
+        } else if (milestone instanceof LPPCappedMilestone) {
           throw new Error('LPPCappedMilestones are deprecated');
         } else {
           // default to creating a BridgedMilestone
