@@ -10,6 +10,7 @@ import GA from 'lib/GoogleAnalytics';
 import { checkBalance, isLoggedIn } from 'lib/middleware';
 import { Consumer as Web3Consumer } from '../contextProviders/Web3Provider';
 import DonationService from '../services/DonationService';
+import LPMilestone from '../models/LPMilestone';
 
 class WithdrawMilestoneFundsButton extends Component {
   async withdraw() {
@@ -24,7 +25,6 @@ class WithdrawMilestoneFundsButton extends Component {
       // to withdraw more funds will fail
       return;
     }
-    // TODO: ask which token to withdraw if multiple
 
     Promise.all([checkBalance(balance), DonationService.getMilestoneDonationsCount(milestone._id)])
       .then(([, donationsCount]) => {
@@ -41,12 +41,16 @@ class WithdrawMilestoneFundsButton extends Component {
               )}
               <p>
                 We will initiate the transfer of the funds to{' '}
-                {isRecipient ? 'your' : "the recipient's"} wallet.
+                {milestone instanceof LPMilestone && 'the campaign.'}
+                {!(milestone instanceof LPMilestone) &&
+                  (isRecipient ? 'your wallet.' : "the recipient's wallet.")}
               </p>
-              <div className="alert alert-warning">
-                Note: For security reasons, there is a delay of approximately 48 hrs before the
-                funds will appear in {isRecipient ? 'your' : "the recipient's"} wallet.
-              </div>
+              {!(milestone instanceof LPMilestone) && (
+                <div className="alert alert-warning">
+                  Note: For security reasons, there is a delay of approximately 48 hrs before the
+                  funds will appear in {isRecipient ? 'your' : "the recipient's"} wallet.
+                </div>
+              )}
             </div>,
           ),
           icon: 'warning',

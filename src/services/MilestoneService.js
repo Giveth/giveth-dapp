@@ -233,9 +233,17 @@ class MilestoneService {
       .find(
         paramsForServer({
           query: {
-            amountRemaining: { $ne: 0 },
-            status: { $ne: Donation.FAILED },
-            $or: [{ intendedProjectTypeId: id }, { ownerTypeId: id }],
+            $or: [
+              {
+                amountRemaining: { $ne: 0 },
+                status: { $ne: Donation.FAILED },
+                $or: [{ intendedProjectTypeId: id }, { ownerTypeId: id }],
+              },
+              {
+                status: Donation.PAID,
+                $or: [{ intendedProjectTypeId: id }, { ownerTypeId: id }],
+              },
+            ],
             $sort: { usdValue: -1, createdAt: -1 },
             $limit,
             $skip,
@@ -883,11 +891,19 @@ class MilestoneService {
 
         const milestoneContract = milestone.contract(web3);
 
-        const execute = opts =>
-          milestone instanceof LPPCappedMilestone
-            ? milestoneContract.mWithdraw(data.pledges, opts)
-            : // BridgedMilestone, set autoDisburse = false if we have more donations to withdraw
-              milestoneContract.mWithdraw(data.pledges, data.tokens, !data.hasMoreDonations, opts);
+        const execute = opts => {
+          if (milestone instanceof LPPCappedMilestone)
+            return milestoneContract.mWithdraw(data.pledges, opts);
+          if (milestone instanceof LPMilestone)
+            return milestoneContract.mTransfer(data.pledges, opts);
+          // BridgedMilestone, set autoDisburse = false if we have more donations to withdraw
+          return milestoneContract.mWithdraw(
+            data.pledges,
+            data.tokens,
+            !data.hasMoreDonations,
+            opts,
+          );
+        };
 
         return execute({
           from,

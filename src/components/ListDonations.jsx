@@ -54,7 +54,11 @@ const ListDonations = props => {
                           &nbsp;
                         </span>
                       )}
-                      {convertEthHelper(useAmountRemaining ? d.amountRemaining : d.amount)}{' '}
+                      {convertEthHelper(
+                        d.status !== Donation.PAID && useAmountRemaining
+                          ? d.amountRemaining
+                          : d.amount,
+                      )}{' '}
                       {(d.token && d.token.symbol) || config.nativeTokenName}
                     </td>
                     <td className="td-user">
