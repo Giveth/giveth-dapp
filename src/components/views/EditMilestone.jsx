@@ -192,30 +192,16 @@ class EditMilestone extends Component {
         resp.rates[milestone.selectedFiatType] ||
         Object.values(resp.rates).find(v => v !== undefined);
 
-      // This rate is undefined, use the first defined rate
+      // This rate is undefined, use the milestone rate
       if (!rate) {
         milestone.selectedFiatType = milestone.token.symbol;
         rate = resp.rates[milestone.token.symbol];
       }
-      milestone.fiatAmount = rate ? milestone.fiatAmount.div(rate) : new BigNumber(0);
+      milestone.maxAmount = milestone.fiatAmount.div(rate);
       milestone.conversionRateTimestamp = resp.timestamp;
 
-      milestone.maxAmount = milestone.fiatAmount.div(rate);
       this.setState({ milestone });
     });
-
-    // FIXME: this is an infinite loop, should be rewritten
-    //   // update all the input fields
-    //   const rate = resp.rates[milestone.selectedFiatType];
-    //
-    //   this.setState(prevState => {
-    //     milestone.fiatAmount = prevState.milestone.fiatAmount.div(rate);
-    //     return {
-    //       milestone,
-    //       maxAmount: milestone.fiatAmount,
-    //     };
-    //   });
-    // });
   }
 
   setFiatAmount(name, value) {
@@ -248,10 +234,8 @@ class EditMilestone extends Component {
   changeSelectedFiat(fiatType) {
     const { milestone } = this.state;
     const conversionRate = this.props.currentRate.rates[fiatType];
-    const maxAmount = milestone.fiatAmount.div(conversionRate);
 
-    milestone.maxAmount = maxAmount;
-    milestone.fiatAmount = maxAmount.times(conversionRate);
+    milestone.maxAmount = milestone.fiatAmount.div(conversionRate);
     milestone.selectedFiatType = fiatType;
 
     this.setState({ milestone });
