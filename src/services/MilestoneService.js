@@ -367,8 +367,11 @@ class MilestoneService {
       const network = await getNetwork();
       etherScanUrl = network.etherScanUrl;
 
-      let tx;
+      // let tx;
       if (milestone.projectId) {
+        await milestones.patch(milestone._id, milestone.toFeathers());
+        afterSave(null, false);
+        return true;
         // TODO: current milestone has no update function
         // // LPPCampaign function update(string newName, string newUrl, uint64 newCommitTime)
         // tx = new LPP(await getWeb3(), campaign.pluginAddress).update(
@@ -380,8 +383,8 @@ class MilestoneService {
         //     $extraGas: extraGas(),
         //   },
         // );
-      } else {
-        /**
+      } // else {
+      /**
           Create a milestone on chain
 
           lppCappedMilestoneFactory params
@@ -397,22 +400,22 @@ class MilestoneService {
           address _acceptedToken,
           uint _reviewTimeoutSeconds
         * */
-        const { lppCappedMilestoneFactory } = network;
+      const { lppCappedMilestoneFactory } = network;
 
-        tx = lppCappedMilestoneFactory.newMilestone(
-          milestone.title,
-          profileHash || '',
-          milestone.parentProjectId,
-          milestone.reviewerAddress,
-          milestone.recipientAddress,
-          milestone.campaignReviewerAddress,
-          from,
-          utils.toWei(milestone.maxAmount.toFixed()),
-          milestone.token.foreignAddress,
-          5 * 24 * 60 * 60, // 5 days in seconds
-          { from, $extraGas: extraGas() },
-        );
-      }
+      const tx = lppCappedMilestoneFactory.newMilestone(
+        milestone.title,
+        profileHash || '',
+        milestone.parentProjectId,
+        milestone.reviewerAddress,
+        milestone.recipientAddress,
+        milestone.campaignReviewerAddress,
+        from,
+        utils.toWei(milestone.maxAmount.toFixed()),
+        milestone.token.foreignAddress,
+        5 * 24 * 60 * 60, // 5 days in seconds
+        { from, $extraGas: extraGas() },
+      );
+      // }
 
       let milestoneId;
       await tx.once('transactionHash', async hash => {
