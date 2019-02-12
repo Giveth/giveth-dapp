@@ -35,7 +35,7 @@ export default class LPPCappedMilestone extends Milestone {
   /**
     get & setters
   * */
-  get type() {
+  get milestoneType() {
     return 'LPPCappedMilestone';
   }
 

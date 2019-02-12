@@ -485,7 +485,7 @@ class ViewMilestone extends Component {
                       }}
                       currentUser={currentUser}
                       history={history}
-                      type={milestone.type}
+                      type={Milestone.type}
                       maxDonationAmount={
                         milestone.isCapped
                           ? milestone.maxAmount.minus(milestone.currentBalance)

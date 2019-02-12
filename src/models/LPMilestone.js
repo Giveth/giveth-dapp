@@ -20,7 +20,7 @@ export default class LPMilestone extends Milestone {
     };
   }
 
-  get type() {
+  get milestoneType() {
     return 'LPMilestone';
   }
 

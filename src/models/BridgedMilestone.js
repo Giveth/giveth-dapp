@@ -11,7 +11,7 @@ export default class BridgedMilestone extends Milestone {
   }
 
   // eslint-disable-next-line class-methods-use-this
-  get type() {
+  get milestoneType() {
     return 'BridgedMilestone';
   }
 }

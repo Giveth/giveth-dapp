@@ -29,7 +29,6 @@ export default class Milestone extends BasicModel {
       commitTime,
       campaignId,
       token,
-      type,
 
       // transient
       campaign,
@@ -60,7 +59,6 @@ export default class Milestone extends BasicModel {
     this._pluginAddress = pluginAddress;
     this._token = token;
     this._conversionRateTimestamp = conversionRateTimestamp;
-    this._type = type;
 
     // transient
     this._campaign = campaign;
@@ -108,7 +106,7 @@ export default class Milestone extends BasicModel {
       date: this._date,
       pluginAddress: this._pluginAddress,
       token: this._token,
-      type: this._type,
+      type: this.milestoneType(),
     };
     if (this.isCapped) {
       Object.assign(milestone, {
@@ -190,6 +188,11 @@ export default class Milestone extends BasicModel {
   // eslint-disable-next-line class-methods-use-this
   get type() {
     return Milestone.type;
+  }
+
+  // eslint-disable-next-line class-methods-use-this
+  get milestoneType() {
+    throw new Error('type is not implemented');
   }
 
   get title() {
