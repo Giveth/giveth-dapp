@@ -36,7 +36,7 @@ class WithdrawMilestoneFundsButton extends Component {
                 <p>
                   <strong>Note:</strong> Due to the current gas limitations you will be required to
                   withdrawal multiple times. You have <strong>{donationsCount}</strong> donations to{' '}
-                  {isRecipient ? 'withdraw' : 'disburse'} and the current max is <strong>18</strong>.
+                  {isRecipient ? 'withdraw' : 'disburse'} and the current max is <strong>15</strong>.
                 </p>
               )}
               <p>

@@ -790,7 +790,7 @@ class DonationService {
           amountRemaining: { $ne: 0 },
           pendingAmountRemaining: { $ne: 0 },
           status: Donation.COMMITTED,
-          $limit: 18, // current gas costs restict us to 8 pledges
+          $limit: 15, // TODO create a better way to calculate this
           $sort: { 'token.symbol': 1 }, // group by token
         },
       })

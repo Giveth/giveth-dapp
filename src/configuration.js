@@ -71,7 +71,7 @@ const configurations = {
     title: 'release',
     liquidPledgingAddress: '0x8e17d4f6BD5fC32626B4224D0e372E380cfa1082',
     lppCampaignFactoryAddress: '0xDf1a5AEbF8b4B8a0be6a638b9FBF18FcDDA1A9f5',
-    milestoneFactoryAddress: '',
+    milestoneFactoryAddress: '0x69003e042d24cad2f0424ea926f6ef1e30933f2e',
     givethBridgeAddress: '0xC59dCE5CCC065A4b51A2321F857466A25ca49B40',
     foreignGivethBridgeAddress: '0x9423F77f919f90Ce02a063315A0F604b5D0b7aF6',
     tokenAddresses: { 'Ropsten ETH': '0x693128E9f785a380823fF00B0b21Dc80707096f5' },
