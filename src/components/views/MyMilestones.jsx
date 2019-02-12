@@ -232,22 +232,23 @@ class MyMilestones extends Component {
                                       {getReadableStatus(m.status)}
                                     </td>
                                     <td className="td-donations-number">
-                                      {convertEthHelper(m.maxAmount)} {m.token.symbol}
+                                      {m.isCapped && convertEthHelper(m.maxAmount)} {m.token.symbol}
                                     </td>
-                                    <td className="td-donations-number">
-                                      {(m.donationCounters &&
-                                        m.donationCounters.length &&
-                                        m.donationCounters[0].donationCount) ||
-                                        0}
-                                    </td>
+                                    <td className="td-donations-number">{m.totalDonations}</td>
                                     <td className="td-donations-">
-                                      {convertEthHelper(
-                                        (m.donationCounters &&
-                                          m.donationCounters.length &&
-                                          m.donationCounters[0].currentBalance) ||
-                                          '0',
-                                      )}{' '}
-                                      {m.token.symbol}
+                                      {m.isCapped &&
+                                        convertEthHelper(
+                                          (m.donationCounters &&
+                                            m.donationCounters.length &&
+                                            m.donationCounters[0].currentBalance) ||
+                                            '0',
+                                        )}{' '}
+                                      {m.isCapped && m.token.symbol}
+                                      {!m.isCapped && (
+                                        <Link to={`/campaigns/${m.campaignId}/milestones/${m.id}`}>
+                                          View Milestone
+                                        </Link>
+                                      )}
                                     </td>
                                     <td className="td-reviewer">
                                       {m.reviewer &&

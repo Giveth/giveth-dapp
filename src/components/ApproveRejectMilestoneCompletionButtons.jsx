@@ -168,32 +168,29 @@ class ApproveRejectMilestoneCompletionButtons extends Component {
       <Web3Consumer>
         {({ state: { isForeignNetwork } }) => (
           <Fragment>
-            {currentUser &&
-              milestone.reviewerAddress === currentUser.address &&
-              milestone.status === 'NeedsReview' &&
-              milestone.mined && (
-                <span>
-                  <button
-                    type="button"
-                    className="btn btn-success btn-sm"
-                    onClick={() => this.approveMilestoneCompleted()}
-                    disabled={!isForeignNetwork}
-                  >
-                    <i className="fa fa-thumbs-up" />
-                    &nbsp;Approve
-                  </button>
+            {milestone.canUserApproveRejectCompletion(currentUser) && (
+              <span>
+                <button
+                  type="button"
+                  className="btn btn-success btn-sm"
+                  onClick={() => this.approveMilestoneCompleted()}
+                  disabled={!isForeignNetwork}
+                >
+                  <i className="fa fa-thumbs-up" />
+                  &nbsp;Approve
+                </button>
 
-                  <button
-                    type="button"
-                    className="btn btn-danger btn-sm"
-                    onClick={() => this.rejectMilestoneCompleted()}
-                    disabled={!isForeignNetwork}
-                  >
-                    <i className="fa fa-thumbs-down" />
-                    &nbsp;Reject
-                  </button>
-                </span>
-              )}
+                <button
+                  type="button"
+                  className="btn btn-danger btn-sm"
+                  onClick={() => this.rejectMilestoneCompleted()}
+                  disabled={!isForeignNetwork}
+                >
+                  <i className="fa fa-thumbs-down" />
+                  &nbsp;Reject
+                </button>
+              </span>
+            )}
 
             <ConversationModal ref={this.conversationModal} milestone={milestone} />
           </Fragment>

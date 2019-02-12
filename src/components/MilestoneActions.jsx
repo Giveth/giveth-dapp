@@ -15,6 +15,7 @@ import CancelMilestoneButton from 'components/CancelMilestoneButton';
 import ApproveRejectMilestoneCompletionButtons from 'components/ApproveRejectMilestoneCompletionButtons';
 import WithdrawMilestoneFundsButton from 'components/WithdrawMilestoneFundsButton';
 import EditMilestoneButton from 'components/EditMilestoneButton';
+import ChangeMilestoneRecipientButton from './ChangeMilestoneRecipientButton';
 
 class MilestoneActions extends Component {
   render() {
@@ -31,6 +32,12 @@ class MilestoneActions extends Component {
         <ReproposeRejectedMilestoneButton milestone={milestone} currentUser={currentUser} />
 
         <RequestMarkMilestoneCompleteButton
+          milestone={milestone}
+          balance={balance}
+          currentUser={currentUser}
+        />
+
+        <ChangeMilestoneRecipientButton
           milestone={milestone}
           balance={balance}
           currentUser={currentUser}

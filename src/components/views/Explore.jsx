@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Fragment } from 'react';
 
 import { Consumer as Web3Consumer } from '../../contextProviders/Web3Provider';
 import { Consumer as UserConsumer } from '../../contextProviders/UserProvider';
@@ -15,15 +15,17 @@ const Explore = () => (
       {({ state: { balance } }) => (
         <UserConsumer>
           {({ state: { currentUser } }) => (
-            <JoinGivethCommunity currentUser={currentUser} balance={balance} history={history} />
+            <Fragment>
+              <JoinGivethCommunity currentUser={currentUser} balance={balance} history={history} />
+
+              <DACs />
+              <Campaigns />
+              <Milestones currentUser={currentUser} balance={balance} />
+            </Fragment>
           )}
         </UserConsumer>
       )}
     </Web3Consumer>
-
-    <DACs />
-    <Campaigns />
-    <Milestones />
   </div>
 );
 

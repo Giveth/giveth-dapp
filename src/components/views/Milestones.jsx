@@ -1,5 +1,8 @@
 import React from 'react';
+import PropTypes from 'prop-types';
+import BigNumber from 'bignumber.js';
 
+import User from 'models/User';
 import MilestoneCard from '../MilestoneCard';
 import MilestoneProvider, {
   Consumer as MilestoneConsumer,
@@ -7,9 +10,9 @@ import MilestoneProvider, {
 import Loader from '../Loader';
 
 /**
- * The Campaigns view mapped to /campaigns
+ * The Milestones view mapped to /milestones
  */
-const Campaigns = () => (
+const Milestones = ({ currentUser, balance }) => (
   <MilestoneProvider step={10}>
     <MilestoneConsumer>
       {({ state: { milestones, isLoading, total, hasError }, actions: { loadMore } }) => (
@@ -25,7 +28,12 @@ const Campaigns = () => (
                   </p>
                   <div className="cards-grid-container">
                     {milestones.map(milestone => (
-                      <MilestoneCard key={milestone.id} milestone={milestone} />
+                      <MilestoneCard
+                        key={milestone.id}
+                        milestone={milestone}
+                        currentUser={currentUser}
+                        balance={balance}
+                      />
                     ))}
                   </div>
                   {milestones.length < total && (
@@ -80,6 +88,9 @@ const Campaigns = () => (
   </MilestoneProvider>
 );
 
-Campaigns.propTypes = {};
+Milestones.propTypes = {
+  currentUser: PropTypes.instanceOf(User).isRequired,
+  balance: PropTypes.instanceOf(BigNumber).isRequired,
+};
 
-export default Campaigns;
+export default Milestones;

@@ -11,6 +11,7 @@ import { paramsForServer } from 'feathers-hooks-common';
 import { feathersClient } from '../../lib/feathersClient';
 import getNetwork from '../../lib/blockchain/getNetwork';
 import GoBackButton from '../GoBackButton';
+import config from '../../configuration';
 import Loader from '../Loader';
 import {
   getUserName,
@@ -25,6 +26,7 @@ import CampaignService from '../../services/CampaignService';
 import Campaign from '../../models/Campaign';
 import DAC from '../../models/DAC';
 import Donation from '../../models/Donation';
+import Milestone from '../../models/Milestone';
 
 const reviewDue = updatedAt =>
   moment()
@@ -141,7 +143,7 @@ class Profile extends Component {
       .subscribe(resp =>
         this.setState(prevState => ({
           userAddress: prevState.userAddress,
-          milestones: resp,
+          milestones: Object.assign({}, resp, { data: resp.data.map(m => new Milestone(m)) }),
           isLoadingMilestones: false,
         })),
       );
@@ -361,7 +363,7 @@ class Profile extends Component {
                                   </td>
                                   <td className="td-donations-number">{m.donationCount || 0}</td>
                                   <td className="td-donations-amount">
-                                    {convertEthHelper(m.totalDonated)} {m.token.symbol}
+                                    {convertEthHelper(m.currentBalance)} {m.token.symbol}
                                   </td>
                                   <td className="td-reviewer">
                                     {m.reviewer &&
@@ -440,7 +442,7 @@ class Profile extends Component {
                                   </td>
                                   <td className="td-donations-number">{c.donationCount || 0}</td>
                                   <td className="td-donations-amount">
-                                    {convertEthHelper(c.totalDonated)} config.nativeTokenName
+                                    {convertEthHelper(c.totalDonated)} {config.nativeTokenName}
                                   </td>
                                   <td className="td-status">
                                     {(c.status === Campaign.PENDING ||

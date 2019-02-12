@@ -790,7 +790,8 @@ class DonationService {
           amountRemaining: { $ne: 0 },
           pendingAmountRemaining: { $ne: 0 },
           status: Donation.COMMITTED,
-          $limit: 8, // current gas costs restict us to 8 pledges
+          $limit: 15, // TODO create a better way to calculate this
+          $sort: { 'token.symbol': 1 }, // group by token
         },
       })
       .then(resp => {
@@ -798,8 +799,10 @@ class DonationService {
         if (data.length === 0) throw new Error('no-donations');
 
         const pledges = [];
+        const tokens = new Set();
         data.forEach(donation => {
           const pledge = pledges.find(n => n.id === donation.pledgeId);
+          tokens.add(donation.token.foreignAddress);
 
           if (pledge) {
             pledge.amount = pledge.amount.plus(donation.amountRemaining);
@@ -813,6 +816,7 @@ class DonationService {
 
         return {
           donations: data,
+          tokens: Array.from(tokens),
           hasMoreDonations: resp.data.length !== resp.total,
           pledges: pledges.map(
             pledge =>

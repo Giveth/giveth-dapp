@@ -72,7 +72,7 @@ class DelegateButton extends Component {
 
     let maxAmount = this.props.donation.amountRemaining;
 
-    if (admin && admin instanceof Milestone) {
+    if (admin && admin instanceof Milestone && admin.isCapped) {
       const maxDelegationAmount = admin.maxAmount.minus(admin.currentBalance);
 
       if (maxDelegationAmount.lt(this.props.donation.amountRemaining)) {
@@ -95,7 +95,11 @@ class DelegateButton extends Component {
     const admin = this.props.types.find(t => t._id === this.state.objectsToDelegateTo[0]);
 
     // TODO: find a more friendly way to do this.
-    if (admin instanceof Milestone && admin.maxAmount.lt(admin.currentBalance || 0)) {
+    if (
+      admin instanceof Milestone &&
+      admin.isCapped &&
+      admin.maxAmount.lt(admin.currentBalance || 0)
+    ) {
       React.toast.error('That milestone has reached its funding goal. Please pick another.');
       return;
     }
@@ -166,7 +170,12 @@ class DelegateButton extends Component {
 
     const getTypes = () =>
       types
-        .filter(t => !(t instanceof Milestone) || t.token.symbol === donation.token.symbol)
+        .filter(
+          t =>
+            !(t instanceof Milestone) ||
+            !t.acceptsSingleToken ||
+            t.token.symbol === donation.token.symbol,
+        )
         .map(t => {
           const el = {};
           el.name = t.title;

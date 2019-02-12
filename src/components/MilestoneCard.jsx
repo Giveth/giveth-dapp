@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import Avatar from 'react-avatar';
 import BigNumber from 'bignumber.js';
 
-import { getTruncatedText, isOwner, getUserAvatar, getUserName, history } from '../lib/helpers';
+import { getTruncatedText, getUserAvatar, getUserName, history } from '../lib/helpers';
 import { checkBalance } from '../lib/middleware';
 import User from '../models/User';
 import CardStats from './CardStats';
@@ -74,9 +74,8 @@ class MilestoneCard extends Component {
             <Avatar size={30} src={getUserAvatar(milestone.owner)} round />
             <span className="owner-name">{getUserName(milestone.owner)}</span>
 
-            {((milestone && milestone.owner && isOwner(milestone.ownerAddress, currentUser)) ||
-              isOwner(milestone.campaign.ownerAddress, currentUser)) &&
-              ['Proposed', 'Rejected', 'InProgress', 'NeedsReview'].includes(milestone.status) && (
+            {milestone &&
+              milestone.canUserEdit(currentUser) && (
                 <span className="pull-right">
                   <button
                     type="button"
