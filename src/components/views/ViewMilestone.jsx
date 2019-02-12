@@ -167,15 +167,18 @@ class ViewMilestone extends Component {
                   <Fragment>
                     <DonateButton
                       model={{
-                        type: 'milestone',
+                        type: Milestone.type,
+                        acceptsSingleToken: milestone.acceptsSingleToken,
                         title: milestone.title,
                         id: milestone.id,
                         adminId: milestone.projectId,
                         campaignId: campaign._id,
-                        token: milestone.token,
+                        token: milestone.acceptsSingleToken ? milestone.token : undefined,
+                        isCapped: milestone.isCapped,
                       }}
                       currentUser={currentUser}
                       history={history}
+                      type={Milestone.type}
                       maxDonationAmount={
                         milestone.isCapped
                           ? milestone.maxAmount.minus(milestone.currentBalance)
@@ -482,6 +485,7 @@ class ViewMilestone extends Component {
                         adminId: milestone.projectId,
                         campaignId: campaign._id,
                         token: milestone.acceptsSingleToken ? milestone.token : undefined,
+                        isCapped: milestone.isCapped,
                       }}
                       currentUser={currentUser}
                       history={history}

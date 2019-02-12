@@ -114,8 +114,11 @@ class DonateButton extends React.Component {
     // Determine max amount
     let maxAmount = new BigNumber(utils.fromWei(balance.toFixed()));
 
-    if (this.props.maxDonationAmount && balance.gt(this.props.maxDonationAmount))
-      maxAmount = this.props.maxDonationAmount;
+    if (this.props.maxDonationAmount) {
+      maxAmount = maxAmount.gt(this.props.maxDonationAmount)
+        ? this.props.maxDonationAmount
+        : maxAmount;
+    }
 
     return maxAmount;
   }
@@ -176,12 +179,12 @@ class DonateButton extends React.Component {
   openDialog() {
     const { model } = this.props;
     this.setState(prevState => {
-      const { acceptsSingleToken } = model;
-      const amount = acceptsSingleToken ? this.getMaxAmount().toFixed() : prevState.amount;
+      const { isCapped } = model;
+      const amount = isCapped ? this.getMaxAmount().toFixed() : prevState.amount;
       return {
         modalVisible: true,
         amount,
-        defaultAmount: acceptsSingleToken ? false : prevState.defaultAmount,
+        defaultAmount: isCapped ? false : prevState.defaultAmount,
         formIsValid: false,
       };
     });
