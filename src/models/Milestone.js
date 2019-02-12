@@ -106,7 +106,7 @@ export default class Milestone extends BasicModel {
       date: this._date,
       pluginAddress: this._pluginAddress,
       token: this._token,
-      type: this.milestoneType(),
+      type: this.milestoneType,
     };
     if (this.isCapped) {
       Object.assign(milestone, {
