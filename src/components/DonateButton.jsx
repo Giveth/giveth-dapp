@@ -466,7 +466,7 @@ class DonateButton extends React.Component {
                     }}
                     tooltip={false}
                     format={val => `${val} ${config.nativeTokenName}`}
-                    onChange={newAmount => this.setState({ amount: newAmount })}
+                    onChange={newAmount => this.setState({ amount: newAmount.toString() })}
                   />
                 </div>
               )}
