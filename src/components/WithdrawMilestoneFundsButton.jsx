@@ -47,7 +47,7 @@ class WithdrawMilestoneFundsButton extends Component {
               </p>
               {!(milestone instanceof LPMilestone) && (
                 <div className="alert alert-warning">
-                  Note: For security reasons, there is a delay of approximately 48 hrs before the
+                  Note: For security reasons, there is a delay of approximately 72 hrs before the
                   funds will appear in {isRecipient ? 'your' : "the recipient's"} wallet.
                 </div>
               )}
