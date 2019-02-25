@@ -41,6 +41,7 @@ import MilestoneService from '../../services/MilestoneService';
 import CampaignService from '../../services/CampaignService';
 import LPMilestone from '../../models/LPMilestone';
 import BridgedMilestone from '../../models/BridgedMilestone';
+import { loadDraft, onDraftChange, saveDraft, DraftButton } from '../Draft';
 
 BigNumber.config({ DECIMAL_PLACES: 18 });
 
@@ -98,6 +99,9 @@ class EditMilestone extends Component {
     this.onItemsChanged = this.onItemsChanged.bind(this);
     this.handleTemplateChange = this.handleTemplateChange.bind(this);
     this.validateMilestoneDesc = this.validateMilestoneDesc.bind(this);
+    this.loadDraft = loadDraft.bind(this);
+    this.onDraftChange = onDraftChange.bind(this);
+    this.saveDraft = saveDraft.bind(this);
   }
 
   componentDidMount() {
@@ -235,6 +239,7 @@ class EditMilestone extends Component {
           ErrorPopup('Something went wrong. Please try again.', err);
         }
       });
+    this.loadDraft();
   }
 
   componentDidUpdate(prevProps) {
@@ -265,6 +270,7 @@ class EditMilestone extends Component {
   setImage(image) {
     const { milestone } = this.state;
     milestone.image = image;
+    this.onDraftChange(true);
   }
 
   setDate(date) {
@@ -550,6 +556,11 @@ class EditMilestone extends Component {
     });
   }
 
+  onFormChange() {
+    this.triggerRouteBlocking();
+    this.onDraftChange();
+  }
+
   triggerRouteBlocking() {
     const form = this.form.current.formsyForm;
     // we only block routing if the form state is not submitted
@@ -651,7 +662,7 @@ class EditMilestone extends Component {
                     mapping={inputs => this.mapInputs(inputs)}
                     onValid={() => this.toggleFormValid(true)}
                     onInvalid={() => this.toggleFormValid(false)}
-                    onChange={e => this.triggerRouteBlocking(e)}
+                    onChange={e => this.onFormChange(e)}
                     layout="vertical"
                   >
                     <Prompt
@@ -934,7 +945,10 @@ class EditMilestone extends Component {
                       <div className="col-6">
                         <GoBackButton history={history} title={`Campaign: ${campaignTitle}`} />
                       </div>
-                      <div className="col-6">
+                      <div className="col-3">
+                        <DraftButton disabled={!this.state.draftChanged} onClick={this.saveDraft} />
+                      </div>
+                      <div className="col-3">
                         <LoaderButton
                           className="btn btn-success pull-right"
                           formNoValidate
