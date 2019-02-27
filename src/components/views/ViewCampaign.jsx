@@ -16,6 +16,7 @@ import { checkBalance } from '../../lib/middleware';
 import BackgroundImageHeader from '../BackgroundImageHeader';
 import DonateButton from '../DonateButton';
 import CommunityButton from '../CommunityButton';
+import RiotButton from '../RiotButton';
 import DelegateMultipleButton from '../DelegateMultipleButton';
 import ListDonations from '../ListDonations';
 
@@ -187,6 +188,14 @@ class ViewCampaign extends Component {
                   <CommunityButton className="btn btn-secondary" url={campaign.communityUrl}>
                     Join our community
                   </CommunityButton>
+                )}
+                {campaign.roomId && (
+                  <RiotButton
+                    className="btn btn-primary"
+                    url={`https://riot.im/app/#/room/${campaign.roomId}`}
+                  >
+                    Chat on Riot
+                  </RiotButton>
                 )}
               </BackgroundImageHeader>
 

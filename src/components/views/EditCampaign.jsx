@@ -24,6 +24,7 @@ import Campaign from '../../models/Campaign';
 import CampaignService from '../../services/CampaignService';
 import ErrorPopup from '../ErrorPopup';
 import { Consumer as WhiteListConsumer } from '../../contextProviders/WhiteListProvider';
+import MatrixService from '../../services/MatrixService';
 
 /**
  * View to create or edit a Campaign
@@ -168,7 +169,11 @@ class EditCampaign extends Component {
         isSaving: true,
         isBlocking: false,
       },
-      () => {
+      async () => {
+        if (!this.state.campaign.roomId) {
+          const roomId = await MatrixService.createChatRoom();
+          this.state.campaign.roomId = roomId;
+        }
         // Save the campaign
         this.state.campaign.save(afterCreate, afterMined);
       },

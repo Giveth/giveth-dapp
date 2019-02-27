@@ -13,6 +13,7 @@ import BackgroundImageHeader from '../BackgroundImageHeader';
 import DonateButton from '../DonateButton';
 import ListDonations from '../ListDonations';
 import CommunityButton from '../CommunityButton';
+import RiotButton from '../RiotButton';
 import User from '../../models/User';
 import DAC from '../../models/DAC';
 import { getUserName, getUserAvatar } from '../../lib/helpers';
@@ -135,6 +136,14 @@ class ViewDAC extends Component {
                 <CommunityButton className="btn btn-secondary" url={dac.communityUrl}>
                   Join our community
                 </CommunityButton>
+              )}
+              {dac.roomId && (
+                <RiotButton
+                  className="btn btn-primary"
+                  url={`https://riot.im/app/#/room/${dac.roomId}`}
+                >
+                  Chat on Riot
+                </RiotButton>
               )}
             </BackgroundImageHeader>
 

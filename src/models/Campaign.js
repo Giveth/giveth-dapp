@@ -45,6 +45,7 @@ class Campaign extends BasicModel {
     this.mined = data.mined;
     this._id = data._id;
     this.commitTime = data.commitTime || 0;
+    this.roomId = data.roomId || '';
   }
 
   toIpfs() {
@@ -54,6 +55,7 @@ class Campaign extends BasicModel {
       communityUrl: this.communityUrl,
       image: cleanIpfsPath(this.image),
       version: 1,
+      roomId: this.roomId,
     };
   }
 
@@ -70,6 +72,7 @@ class Campaign extends BasicModel {
       peopleCount: this.peopleCount,
       reviewerAddress: this.reviewerAddress,
       status: this.status,
+      roomId: this.roomId,
     };
     if (!this.id) campaign.txHash = txHash;
     return campaign;

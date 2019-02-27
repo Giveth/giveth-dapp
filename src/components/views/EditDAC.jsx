@@ -19,6 +19,7 @@ import {
 import LoaderButton from '../LoaderButton';
 
 import DACservice from '../../services/DACService';
+import MatrixService from '../../services/MatrixService';
 import DAC from '../../models/DAC';
 import User from '../../models/User';
 import ErrorPopup from '../ErrorPopup';
@@ -178,7 +179,11 @@ class EditDAC extends Component {
         isSaving: true,
         isBlocking: false,
       },
-      () => {
+      async () => {
+        if (!this.state.dac.roomId) {
+          const roomId = await MatrixService.createChatRoom();
+          this.state.dac.roomId = roomId;
+        }
         // Save the DAC
         this.state.dac.save(afterSave, afterMined);
       },

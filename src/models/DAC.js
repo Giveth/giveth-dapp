@@ -41,6 +41,7 @@ class DAC extends BasicModel {
     this.confirmations = data.confirmations || 0;
     this.requiredConfirmations = data.requiredConfirmations;
     this.commitTime = data.commitTime || 0;
+    this.roomId = data.roomId || '';
   }
 
   toIpfs() {
@@ -50,6 +51,7 @@ class DAC extends BasicModel {
       communityUrl: this.communityUrl,
       image: cleanIpfsPath(this.image),
       version: 1,
+      roomId: this.roomId,
     };
   }
 
@@ -62,6 +64,7 @@ class DAC extends BasicModel {
       image: cleanIpfsPath(this.image),
       totalDonated: this.totalDonated,
       donationCount: this.donationCount,
+      roomId: this.roomId,
     };
     if (!this.id) dac.txHash = txHash;
     return dac;
