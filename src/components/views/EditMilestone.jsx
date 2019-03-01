@@ -189,8 +189,10 @@ class EditMilestone extends Component {
 
     this.props.getConversionRates(date, milestone.token.symbol).then(resp => {
       let rate =
-        resp.rates[milestone.selectedFiatType] ||
-        Object.values(resp.rates).find(v => v !== undefined);
+        resp &&
+        resp.rates &&
+        (resp.rates[milestone.selectedFiatType] ||
+          Object.values(resp.rates).find(v => v !== undefined));
 
       // This rate is undefined, use the milestone rate
       if (!rate) {
@@ -463,7 +465,15 @@ class EditMilestone extends Component {
   }
 
   render() {
-    const { isNew, isProposed, history, currentRate, fiatTypes, reviewers } = this.props;
+    const {
+      isNew,
+      isProposed,
+      history,
+      currentRate,
+      fiatTypes,
+      reviewers,
+      conversionRateLoading,
+    } = this.props;
     const {
       isLoading,
       isSaving,
@@ -646,6 +656,8 @@ class EditMilestone extends Component {
                     {!milestone.itemizeState ? (
                       <div className="card milestone-items-card">
                         <div className="card-body">
+                          {conversionRateLoading && <Loader className="" />}
+
                           <div className="form-group row">
                             <div className="col-12">
                               <DatePickerFormsy
@@ -695,9 +707,12 @@ class EditMilestone extends Component {
                                 options={fiatTypes}
                                 allowedOptions={currentRate.rates}
                                 onChange={this.changeSelectedFiat}
-                                helpText={`1 ${milestone.token.symbol} = ${
-                                  currentRate.rates[milestone.selectedFiatType]
-                                } ${milestone.selectedFiatType}`}
+                                helpText={
+                                  !conversionRateLoading &&
+                                  `1 ${milestone.token.symbol} = ${
+                                    currentRate.rates[milestone.selectedFiatType]
+                                  } ${milestone.selectedFiatType}`
+                                }
                                 disabled={!isNew && !isProposed}
                                 required
                               />
@@ -744,7 +759,7 @@ class EditMilestone extends Component {
                           className="btn btn-success pull-right"
                           formNoValidate
                           type="submit"
-                          disabled={isSaving || !formIsValid}
+                          disabled={conversionRateLoading || isSaving || !formIsValid}
                           isLoading={isSaving}
                           network="Foreign"
                           loadingText="Saving..."
@@ -785,6 +800,7 @@ EditMilestone.propTypes = {
     rates: PropTypes.shape().isRequired,
     timestamp: PropTypes.number.isRequired,
   }),
+  conversionRateLoading: PropTypes.bool.isRequired,
   fiatTypes: PropTypes.arrayOf(PropTypes.object).isRequired,
   isCampaignManager: PropTypes.func.isRequired,
   reviewers: PropTypes.arrayOf(PropTypes.shape()).isRequired,

@@ -90,6 +90,8 @@ class ConversionRateProvider extends Component {
       });
     }
 
+    this.setState({ isLoading: true });
+
     // We don't have the conversion rate in cache, fetch from feathers
     return feathersClient
       .service('conversionRates')
@@ -97,7 +99,7 @@ class ConversionRateProvider extends Component {
       .then(resp => {
         const rt = this.rates.add(symbol, dtUTC.toISOString(), resp.rates);
 
-        this.setState({ currentRate: rt });
+        this.setState({ currentRate: rt, isLoading: false });
 
         return rt;
       })
@@ -106,11 +108,12 @@ class ConversionRateProvider extends Component {
           'Sadly we were unable to get the exchange rate. Please try again after refresh.',
           err,
         );
+        this.setState({ isLoading: false });
       });
   }
 
   render() {
-    const { currentRate } = this.state;
+    const { currentRate, isLoading } = this.state;
     const { fiatWhitelist } = this.props;
     const { getConversionRates } = this;
 
@@ -119,6 +122,7 @@ class ConversionRateProvider extends Component {
         value={{
           state: {
             currentRate,
+            isLoading,
             fiatTypes: fiatWhitelist.map(f => ({ value: f, title: f })),
           },
           actions: {
