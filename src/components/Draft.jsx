@@ -1,67 +1,117 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 
+const draftStates = {
+  hidden: 0,
+  saved: 1,
+  changed: 2,
+  changedImage: 3,
+};
+
+function getDraftType(state) {
+  if ('milestone' in state) {
+    return 'milestone';
+  }
+  return 'TODO';
+}
+
 function loadDraft() {
-  this.setState({
-    draftChanged: false,
-    imageChanged: false,
+  if (!this.props.isNew) return;
+  this.setState(prevState => ({ draftType: getDraftType(prevState) }));
+  const { draftType } = this.state;
+  const { localStorage } = window;
+  this.form.current.formsyForm.inputs.forEach(input => {
+    const name = `${draftType}.${input.props.name}`;
+    input.setValue(localStorage.getItem(name));
   });
 }
 
-function onDraftChange(img) {
-  this.setState({ draftChanged: true });
-  if (img) {
-    this.setState({ imageChanged: true });
+function onDraftChange() {
+  if (!this.props.isNew) return;
+  if (this.state.draftState < draftStates.changed) {
+    this.setState({ draftState: draftStates.changed });
   }
 }
 
+function onImageChange() {
+  if (!this.props.isNew) return;
+  this.setState({ draftState: draftStates.changedImage });
+}
+
 function saveDraft() {
-  if (this.state.draftChanged) {
-    const id = this.props.match.params.milestoneId;
+  if (!this.props.isNew) return;
+  if (this.state.draftState >= draftStates.changed) {
+    const { draftType, draftState, milestone } = this.state;
+    const { localStorage } = window;
     const form = this.form.current.formsyForm.getCurrentValues();
-    Object.keys(form).forEach(field => {
-      if (field !== 'picture') {
-        window.localStorage.setItem(`${id}.${field}`, form[field]);
+    Object.keys(form).forEach(item => {
+      if (item !== 'picture') {
+        localStorage.setItem(`${draftType}.${item}`, form[item]);
       }
     });
-    if (this.state.imageChanged) {
-      window.localStorage.setItem(`${id}.picture`, this.state.milestone.image);
-      this.setState({ imageChanged: false });
+    if (draftState === draftStates.changedImage) {
+      localStorage.setItem(`${draftType}.picture`, milestone.image);
     }
   }
-  this.setState({ draftChanged: false });
+  this.setState({ draftState: draftStates.saved });
 }
+
+const labels = {
+  saved: 'Draft Saved',
+  changed: 'Save Draft',
+};
 
 class DraftButton extends Component {
   constructor(props) {
     super(props);
-    this.state = {
-      text: 'Draft Saved',
-    };
+    this.state = { hidden: true };
   }
 
   componentWillReceiveProps(nextProps) {
-    this.setState({ text: nextProps.disabled ? 'Draft Saved' : 'Save Draft' });
+    switch (nextProps.draftState) {
+      case draftStates.hidden: {
+        this.setState({ hidden: true });
+        break;
+      }
+      case draftStates.saved: {
+        this.setState({
+          hidden: false,
+          disabled: true,
+          label: labels.saved,
+        });
+        break;
+      }
+      default: {
+        this.setState({
+          hidden: false,
+          disabled: false,
+          label: labels.changed,
+        });
+        break;
+      }
+    }
   }
 
   render() {
-    return (
+    return this.state.hidden ? (
+      ''
+    ) : (
       <button
         type="button"
         className="btn btn-primary"
-        disabled={this.props.disabled}
+        disabled={this.state.disabled}
         onClick={this.props.onClick}
       >
         <i className="fa fa-save" />
-        &nbsp;{this.state.text}
+        &nbsp;{this.state.label}
       </button>
     );
   }
 }
 
 DraftButton.propTypes = {
-  disabled: PropTypes.bool.isRequired,
+  draftState: PropTypes.number.isRequired,
   onClick: PropTypes.func.isRequired,
 };
 
-export { loadDraft, onDraftChange, saveDraft, DraftButton };
+export { draftStates, loadDraft, onDraftChange, onImageChange, saveDraft, DraftButton };

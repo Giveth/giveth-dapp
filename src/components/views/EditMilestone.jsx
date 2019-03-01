@@ -41,7 +41,14 @@ import MilestoneService from '../../services/MilestoneService';
 import CampaignService from '../../services/CampaignService';
 import LPMilestone from '../../models/LPMilestone';
 import BridgedMilestone from '../../models/BridgedMilestone';
-import { loadDraft, onDraftChange, saveDraft, DraftButton } from '../Draft';
+import {
+  draftStates,
+  loadDraft,
+  onDraftChange,
+  onImageChange,
+  saveDraft,
+  DraftButton,
+} from '../Draft';
 
 BigNumber.config({ DECIMAL_PLACES: 18 });
 
@@ -87,6 +94,7 @@ class EditMilestone extends Component {
         title: t.name,
       })),
       isBlocking: false,
+      draftState: draftStates.hidden,
     };
 
     this.form = React.createRef();
@@ -101,6 +109,7 @@ class EditMilestone extends Component {
     this.validateMilestoneDesc = this.validateMilestoneDesc.bind(this);
     this.loadDraft = loadDraft.bind(this);
     this.onDraftChange = onDraftChange.bind(this);
+    this.onImageChange = onImageChange.bind(this);
     this.saveDraft = saveDraft.bind(this);
   }
 
@@ -239,7 +248,6 @@ class EditMilestone extends Component {
           ErrorPopup('Something went wrong. Please try again.', err);
         }
       });
-    this.loadDraft();
   }
 
   componentDidUpdate(prevProps) {
@@ -270,7 +278,7 @@ class EditMilestone extends Component {
   setImage(image) {
     const { milestone } = this.state;
     milestone.image = image;
-    this.onDraftChange(true);
+    this.onImageChange();
   }
 
   setDate(date) {
@@ -340,6 +348,10 @@ class EditMilestone extends Component {
       }));
     } else {
       this.setState({ formIsValid: formState });
+    }
+    if (!this.state.draftLoaded) {
+      this.loadDraft();
+      this.setState({ draftLoaded: true });
     }
   }
 
@@ -568,8 +580,13 @@ class EditMilestone extends Component {
 
   triggerRouteBlocking() {
     const form = this.form.current.formsyForm;
-    // we only block routing if the form state is not submitted
-    this.setState({ isBlocking: form && (!form.state.formSubmitted || form.state.isSubmitting) });
+    // we only block routing if the form state is not submitted and the draft has not been saved
+    this.setState(prevState => ({
+      isBlocking:
+        form &&
+        ((!form.state.formSubmitted && prevState.draftState !== draftStates.saved) ||
+          form.state.isSubmitting),
+    }));
   }
 
   validateMilestoneDesc(value) {
@@ -964,7 +981,7 @@ class EditMilestone extends Component {
                         <GoBackButton history={history} title={`Campaign: ${campaignTitle}`} />
                       </div>
                       <div className="col-3">
-                        <DraftButton disabled={!this.state.draftChanged} onClick={this.saveDraft} />
+                        <DraftButton draftState={this.state.draftState} onClick={this.saveDraft} />
                       </div>
                       <div className="col-3">
                         <LoaderButton
