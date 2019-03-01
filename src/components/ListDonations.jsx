@@ -71,7 +71,11 @@ const ListDonations = props => {
                     </td>
                     {config.homeEtherscan ? (
                       <td className="td-tx-address">
-                        <a href={`${config.homeEtherscan}address/${d.giverAddress}`}>
+                        <a
+                          href={`${config.homeEtherscan}address/${d.giverAddress}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
                           {d.giverAddress}
                         </a>
                       </td>
