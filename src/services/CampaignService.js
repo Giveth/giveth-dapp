@@ -81,6 +81,13 @@ class CampaignService {
           $skip,
         },
       })
+      .then(resp => ({
+        ...resp,
+        data: resp.data.filter(
+          milestone =>
+            !(milestone.donationCounters.length <= 0 && milestone.status === Milestone.COMPLETED),
+        ),
+      }))
       .then(resp => onSuccess(resp.data.map(m => new Milestone(m)), resp.total))
       .catch(onError);
   }
