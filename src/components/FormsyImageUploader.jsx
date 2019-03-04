@@ -27,6 +27,13 @@ class FormsyImageUploader extends Component {
     this.setState({ image: this.props.previewImage || this.props.avatar });
   }
 
+  componentDidUpdate() {
+    if (!this.state.image && this.props.previewImage) {
+      // eslint-disable-next-line
+      this.setState({ image: this.props.previewImage });
+    }
+  }
+
   cropImage() {
     if (!this.cropper) {
       return;
