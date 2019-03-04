@@ -104,7 +104,7 @@ class RateConvertor extends Component {
   }
 
   render() {
-    const { fiatTypes, token } = this.props;
+    const { fiatTypes, token, conversionRateLoading } = this.props;
     const {
       date,
       selectedFiatType,
@@ -121,6 +121,8 @@ class RateConvertor extends Component {
         {!isLoading && (
           <Fragment>
             <div className="form-group row">
+              {conversionRateLoading && <Loader />}
+
               <div className="col-12">
                 <DatePickerFormsy
                   label="Date of item"
@@ -168,6 +170,7 @@ class RateConvertor extends Component {
                   allowedOptions={conversionRate && conversionRate.rates}
                   onChange={this.changeSelectedFiat}
                   helpText={
+                    !conversionRateLoading &&
                     conversionRate &&
                     conversionRate.rates &&
                     `1 ${token.symbol} = ${
@@ -221,6 +224,7 @@ class RateConvertor extends Component {
 
 RateConvertor.propTypes = {
   getConversionRates: PropTypes.func.isRequired,
+  conversionRateLoading: PropTypes.bool.isRequired,
   disabled: PropTypes.bool,
   selectedFiatType: PropTypes.string,
   date: PropTypes.instanceOf(moment),
