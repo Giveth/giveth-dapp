@@ -18,17 +18,32 @@ function getDraftType(state) {
 function loadDraft() {
   if (!this.props.isNew) return;
   this.setState(prevState => ({ draftType: getDraftType(prevState) }));
-  const { draftType } = this.state;
+  const draftType = getDraftType(this.state);
   const { localStorage } = window;
+  if (!localStorage.getItem(`${draftType}.timestamp`)) return;
   this.form.current.formsyForm.inputs.forEach(input => {
     const name = `${draftType}.${input.props.name}`;
-    input.setValue(localStorage.getItem(name));
+    const value = localStorage.getItem(name);
+    if (input.props.name === 'picture') {
+      if (value) {
+        this.setImage(value);
+      }
+    } else {
+      input.setValue(value);
+    }
+  });
+  this.setState({
+    draftState: draftStates.hidden,
+    draftLoaded: Date.now(),
   });
 }
 
 function onDraftChange() {
   if (!this.props.isNew) return;
-  if (this.state.draftState < draftStates.changed) {
+  const { draftLoaded, draftSaved, draftState } = this.state;
+  if (draftLoaded + 1000 > Date.now()) return;
+  if (draftSaved && draftSaved + 1000 > Date.now()) return;
+  if (draftState < draftStates.changed) {
     this.setState({ draftState: draftStates.changed });
   }
 }
@@ -39,21 +54,39 @@ function onImageChange() {
 }
 
 function saveDraft() {
-  if (!this.props.isNew) return;
-  if (this.state.draftState >= draftStates.changed) {
-    const { draftType, draftState, milestone } = this.state;
-    const { localStorage } = window;
-    const form = this.form.current.formsyForm.getCurrentValues();
-    Object.keys(form).forEach(item => {
-      if (item !== 'picture') {
-        localStorage.setItem(`${draftType}.${item}`, form[item]);
-      }
-    });
-    if (draftState === draftStates.changedImage) {
-      localStorage.setItem(`${draftType}.picture`, milestone.image);
+  if (!this.props.isNew) return [];
+  if (this.state.draftState < draftStates.changed) return [];
+  const itemNames = [];
+  const { draftType, draftState, milestone } = this.state;
+  const { localStorage } = window;
+  const form = this.form.current.formsyForm.getCurrentValues();
+  Object.keys(form).forEach(item => {
+    if (item !== 'picture') {
+      const itemName = `${draftType}.${item}`;
+      localStorage.setItem(itemName, form[item]);
+      itemNames.push(itemName);
     }
+  });
+  if (draftState === draftStates.changedImage) {
+    const itemName = `${draftType}.picture`;
+    localStorage.setItem(itemName, milestone.image);
+    itemNames.push(itemName);
   }
-  this.setState({ draftState: draftStates.saved });
+  const itemName = `${draftType}.timestamp`;
+  localStorage.setItem(itemName, Date.now());
+  itemNames.push(itemName);
+  this.setState({
+    draftState: draftStates.saved,
+    draftSaved: Date.now(),
+  });
+  return itemNames;
+}
+
+function deleteDraft(itemNames) {
+  if (!itemNames) return;
+  itemNames.forEach(itemName => {
+    window.localStorage.removeItem(itemName);
+  });
 }
 
 const labels = {
@@ -114,4 +147,12 @@ DraftButton.propTypes = {
   onClick: PropTypes.func.isRequired,
 };
 
-export { draftStates, loadDraft, onDraftChange, onImageChange, saveDraft, DraftButton };
+export {
+  draftStates,
+  loadDraft,
+  onDraftChange,
+  onImageChange,
+  saveDraft,
+  deleteDraft,
+  DraftButton,
+};

@@ -47,6 +47,7 @@ import {
   onDraftChange,
   onImageChange,
   saveDraft,
+  deleteDraft,
   DraftButton,
 } from '../Draft';
 
@@ -437,6 +438,7 @@ class EditMilestone extends Component {
   }
 
   submit() {
+    const itemNames = this.saveDraft();
     const { milestone } = this.state;
 
     milestone.ownerAddress = this.props.currentUser.address;
@@ -490,6 +492,7 @@ class EditMilestone extends Component {
           this.props.history.goBack();
         },
         afterMined: (created, txUrl) => {
+          deleteDraft(itemNames);
           React.toast.success(
             <p>
               Your Milestone has been created!
@@ -580,13 +583,8 @@ class EditMilestone extends Component {
 
   triggerRouteBlocking() {
     const form = this.form.current.formsyForm;
-    // we only block routing if the form state is not submitted and the draft has not been saved
-    this.setState(prevState => ({
-      isBlocking:
-        form &&
-        ((!form.state.formSubmitted && prevState.draftState !== draftStates.saved) ||
-          form.state.isSubmitting),
-    }));
+    // we only block routing if the form state is not submitted
+    this.setState({ isBlocking: form && (!form.state.formSubmitted || form.state.isSubmitting) });
   }
 
   validateMilestoneDesc(value) {
@@ -640,6 +638,7 @@ class EditMilestone extends Component {
       tokenWhitelistOptions,
       isBlocking,
       milestone,
+      draftState,
     } = this.state;
 
     return (
@@ -696,7 +695,7 @@ class EditMilestone extends Component {
                     layout="vertical"
                   >
                     <Prompt
-                      when={isBlocking}
+                      when={isBlocking && draftState >= draftStates.changed}
                       message={() =>
                         `You have unsaved changes. Are you sure you want to navigate from this page?`
                       }
