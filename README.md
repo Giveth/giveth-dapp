@@ -9,19 +9,19 @@ Welcome to the code for Giveth's DApp. This is an open source effort to realize 
 
 - [Table of content](#table-of-content)
 - [Getting Started](#getting-started)
-        - [Prerequisities](#prerequisities)
-    - [Install](#install)
-        - [OSX and Linux](#osx-and-linux)
-        - [Windows](#windows)
-    - [Run](#run)
-    - [Build](#build)
-    - [Configuration](#configuration)
-    - [Analytics](#analytics)
+    - [Prerequisities](#prerequisities)
+  - [Install](#install)
+    - [OSX and Linux](#osx-and-linux)
+    - [Windows](#windows)
+  - [Run](#run)
+  - [Build](#build)
+  - [Configuration](#configuration)
+  - [Analytics](#analytics)
 - [Contributing](#contributing)
-    - [Local Development](#local-development)
-    - [Development and PR Testing](#development-and-pr-testing)
-    - [Deployment Environments](#deployment-environments)
-    - [Release Process](#release-process)
+  - [Local Development](#local-development)
+  - [Development and PR Testing](#development-and-pr-testing)
+  - [Deployment Environments](#deployment-environments)
+  - [Release Process](#release-process)
 - [Help](#help)
 
 ## Getting Started
@@ -127,7 +127,7 @@ REACT_APP_NODE_CONNECTION_URL | Differs per REACT_APP_ENVIRONMENT | Overwrites t
 REACT_APP_LIQUIDPLEDGING_ADDRESS | Differs per REACT_APP_ENVIRONMENT | Overwrites the Liquid Pledging contract address. |
 REACT_APP_DAC_FACTORY_ADDRESS | Differs per REACT_APP_ENVIRONMENT | Overwrites the DACs contract address. |
 REACT_APP_CAMPAIGN_FACTORY_ADDRESS | Differs per REACT_APP_ENVIRONMENT | Overwrites the Campaign Factory contract address. |
-REACT_APP_CAPPED_MILESTONE_FACTORY_ADDRESS | Differs per REACT_APP_ENVIRONMENT | Overwrites the Milestone contract address. |
+REACT_APP_MILESTONE_FACTORY_ADDRESS | Differs per REACT_APP_ENVIRONMENT | Overwrites the MilestoneFactory contract address. |
 REACT_APP_TOKEN_ADDRESSES | Differs per REACT_APP_ENVIRONMENT | Overwrites the bridged token addresses. This is a JSON object string w/ token name : token address. |
 REACT_APP_BLOCKEXPLORER | Differs per REACT_APP_ENVIRONMENT | Overwrites the block explorer base URL. The DApp assumes such blockexplorer api is `\<BLOCKEXPLORER\>/tx/\<TRANSACTION_HASH\>` |
 REACT_APP_DEFAULT_GASPRICE | 10 | Overwrites the default gasPrice that is used if ethgasstation service is down. The value is in gwei. |
@@ -162,6 +162,24 @@ The following events are tracked with Google Analytics:
 - actions on milestones
 
 **DO NO USE ANY OTHER THAN DEVELOP ENVIRONMENT FOR DEVELOPING AND TESTING.**
+
+### Query Strings
+The milestone creation/proposal view now supports query string arguments!
+The following arguments are available:
+
+| Argument | Expected Values | Type |
+|------------------|------------------------------------------------------------|--------|
+| title | The title of the milestone | string |
+| description | The description of the milestone | string |
+| recipientAddress | The address of the recipient | string |
+| reviewerAddress | The address of the reviewer | string |
+| selectedFiatType | A valid fiat type (i.e. USD) | string |
+| date | A valid milestone date string | string |
+| token | A valid token symbol (i.e. DAI) | string |
+| tokenAddress | A valid token address | string |
+| maxAmount | A valid max amount of ETH or token | number |
+| fiatAmount | A valid max amount of fiat (dependant on selectedFiatType) | number |
+
 
 ## Contributing
 The DApp is fully open-source software, and we would love to have your helping hand! See [CONTRIBUTING.md](CONTRIBUTING.md) for more information on what we're looking for and how to get started. You can then look for issues labeled [good first issue](https://github.com/Giveth/giveth-dapp/labels/good%20first%20issue) or [help wanted](https://github.com/Giveth/giveth-dapp/labels/help%20wanted). We regularly reward contributions with ether using the Reward DAO.

@@ -1,6 +1,6 @@
 import { LiquidPledging } from 'giveth-liquidpledging';
 import { LPPCampaignFactory } from 'lpp-campaign';
-import { LPPCappedMilestoneFactory } from 'lpp-capped-milestone';
+import { MilestoneFactory } from 'lpp-milestones';
 import { GivethBridge, ForeignGivethBridge } from 'giveth-bridge';
 
 import getWeb3 from './getWeb3';
@@ -54,10 +54,7 @@ export default async () => {
 
   network.liquidPledging = new LiquidPledging(web3, network.liquidPledgingAddress);
   network.lppCampaignFactory = new LPPCampaignFactory(web3, network.lppCampaignFactoryAddress);
-  network.lppCappedMilestoneFactory = new LPPCappedMilestoneFactory(
-    web3,
-    network.lppCappedMilestoneFactoryAddress,
-  );
+  network.milestoneFactory = new MilestoneFactory(web3, network.milestoneFactoryAddress);
   network.givethBridge = new GivethBridge(web3, network.givethBridgeAddress);
   network.foreignGivethBridge = new ForeignGivethBridge(web3, network.foreignGivethBridgeAddress);
 

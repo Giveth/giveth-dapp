@@ -10,6 +10,7 @@ import GA from 'lib/GoogleAnalytics';
 import { checkBalance, isLoggedIn } from 'lib/middleware';
 import { Consumer as Web3Consumer } from '../contextProviders/Web3Provider';
 import DonationService from '../services/DonationService';
+import LPMilestone from '../models/LPMilestone';
 
 class WithdrawMilestoneFundsButton extends Component {
   async withdraw() {
@@ -31,21 +32,25 @@ class WithdrawMilestoneFundsButton extends Component {
           title: isRecipient ? 'Withdrawal Funds to Wallet' : 'Disburse Funds to Recipient',
           content: React.swal.msg(
             <div>
-              {donationsCount > 8 && (
+              {donationsCount > 18 && (
                 <p>
                   <strong>Note:</strong> Due to the current gas limitations you will be required to
                   withdrawal multiple times. You have <strong>{donationsCount}</strong> donations to{' '}
-                  {isRecipient ? 'withdraw' : 'disburse'} and the current max is <strong>8</strong>.
+                  {isRecipient ? 'withdraw' : 'disburse'} and the current max is <strong>15</strong>.
                 </p>
               )}
               <p>
                 We will initiate the transfer of the funds to{' '}
-                {isRecipient ? 'your' : "the recipient's"} wallet.
+                {milestone instanceof LPMilestone && 'the campaign.'}
+                {!(milestone instanceof LPMilestone) &&
+                  (isRecipient ? 'your wallet.' : "the recipient's wallet.")}
               </p>
-              <div className="alert alert-warning">
-                Note: For security reasons, there is a delay of approximately 48 hrs before the
-                funds will appear in {isRecipient ? 'your' : "the recipient's"} wallet.
-              </div>
+              {!(milestone instanceof LPMilestone) && (
+                <div className="alert alert-warning">
+                  Note: For security reasons, there is a delay of approximately 72 hrs before the
+                  funds will appear in {isRecipient ? 'your' : "the recipient's"} wallet.
+                </div>
+              )}
             </div>,
           ),
           icon: 'warning',
@@ -131,21 +136,17 @@ class WithdrawMilestoneFundsButton extends Component {
       <Web3Consumer>
         {({ state: { isForeignNetwork } }) => (
           <Fragment>
-            {currentUser &&
-              [milestone.recipientAddress, milestone.ownerAddress].includes(currentUser.address) &&
-              milestone.status === Milestone.COMPLETED &&
-              milestone.mined &&
-              milestone.currentBalance.gt(0) && (
-                <button
-                  type="button"
-                  className="btn btn-success btn-sm"
-                  onClick={() => this.withdraw()}
-                  disabled={!isForeignNetwork}
-                >
-                  <i className="fa fa-usd" />{' '}
-                  {milestone.recipientAddress === currentUser.address ? 'Collect' : 'Disburse'}
-                </button>
-              )}
+            {milestone.canUserWithdraw(currentUser) && (
+              <button
+                type="button"
+                className="btn btn-success btn-sm"
+                onClick={() => this.withdraw()}
+                disabled={!isForeignNetwork}
+              >
+                <i className="fa fa-usd" />{' '}
+                {milestone.recipientAddress === currentUser.address ? 'Collect' : 'Disburse'}
+              </button>
+            )}
           </Fragment>
         )}
       </Web3Consumer>

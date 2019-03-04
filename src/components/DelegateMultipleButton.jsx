@@ -66,7 +66,10 @@ class DelegateMultipleButton extends Component {
         value: t.address,
         title: t.name,
       })),
-      selectedToken: this.props.milestone ? this.props.milestone.token : props.tokenWhitelist[0],
+      selectedToken:
+        this.props.milestone && this.props.milestone.acceptsSingleToken
+          ? this.props.milestone.token
+          : props.tokenWhitelist[0],
     };
 
     this.loadDonations = this.loadDonations.bind(this);
@@ -186,7 +189,7 @@ class DelegateMultipleButton extends Component {
             new BigNumber('0'),
           );
 
-          if (this.props.milestone) {
+          if (this.props.milestone && this.props.milestone.isCapped) {
             const maxDonationAmount = this.props.milestone.maxAmount.minus(
               this.props.milestone.currentBalance,
             );
@@ -346,7 +349,7 @@ class DelegateMultipleButton extends Component {
               {this.state.objectToDelegateFrom.length === 1 &&
                 !isLoadingDonations && (
                   <div>
-                    {!this.props.milestone && (
+                    {(!this.props.milestone || !this.props.milestone.acceptsSingleToken) && (
                       <SelectFormsy
                         name="token"
                         id="token-select"
@@ -382,10 +385,9 @@ class DelegateMultipleButton extends Component {
                             tooltip={false}
                             onChange={newAmount =>
                               this.setState(prevState => ({
-                                amount:
-                                  Number(newAmount).toFixed(2) > prevState.maxAmount
-                                    ? prevState.maxAmount
-                                    : Number(newAmount).toFixed(2),
+                                amount: prevState.maxAmount.gte(newAmount)
+                                  ? newAmount.toFixed(2)
+                                  : prevState.maxAmount.toFixed(2),
                               }))
                             }
                           />

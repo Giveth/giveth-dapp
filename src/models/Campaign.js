@@ -4,7 +4,7 @@ import BasicModel from './BasicModel';
 import CampaignService from '../services/CampaignService';
 import IPFSService from '../services/IPFSService';
 import ErrorPopup from '../components/ErrorPopup';
-import { cleanIpfsPath } from '../lib/helpers';
+import { cleanIpfsPath, ZERO_ADDRESS } from '../lib/helpers';
 
 /**
  * The DApp Campaign model
@@ -37,7 +37,7 @@ class Campaign extends BasicModel {
     this.communityUrl = data.communityUrl || '';
     this.confirmations = data.confirmations || 0;
     this.projectId = data.projectId || 0;
-    this.pluginAddress = data.pluginAddress || '0x0000000000000000000000000000000000000000';
+    this.pluginAddress = data.pluginAddress || ZERO_ADDRESS;
     this.status = data.status || Campaign.PENDING;
     this.requiredConfirmations = data.requiredConfirmations;
     this.reviewerAddress = data.reviewerAddress;

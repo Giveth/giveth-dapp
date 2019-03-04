@@ -11,7 +11,6 @@ import { Link } from 'react-router-dom';
 
 import getNetwork from '../lib/blockchain/getNetwork';
 import User from '../models/User';
-import Milestone from '../models/Milestone';
 import extraGas from '../lib/blockchain/extraGas';
 import pollEvery from '../lib/pollEvery';
 import LoaderButton from './LoaderButton';
@@ -52,7 +51,7 @@ class DonateButton extends React.Component {
 
     // set initial balance
     const modelToken = props.model.token;
-    modelToken.balance = new BigNumber(0);
+    if (modelToken) modelToken.balance = new BigNumber(0);
 
     this.state = {
       isSaving: false,
@@ -69,7 +68,7 @@ class DonateButton extends React.Component {
         value: t.address,
         title: t.name,
       })),
-      selectedToken: props.model.type === 'milestone' ? modelToken : props.tokenWhitelist[0],
+      selectedToken: props.model.acceptsSingleToken ? modelToken : props.tokenWhitelist[0],
     };
 
     this.submit = this.submit.bind(this);
@@ -115,8 +114,11 @@ class DonateButton extends React.Component {
     // Determine max amount
     let maxAmount = new BigNumber(utils.fromWei(balance.toFixed()));
 
-    if (this.props.maxDonationAmount && balance.gt(this.props.maxDonationAmount))
-      maxAmount = this.props.maxDonationAmount;
+    if (this.props.maxDonationAmount) {
+      maxAmount = maxAmount.gt(this.props.maxDonationAmount)
+        ? this.props.maxDonationAmount
+        : maxAmount;
+    }
 
     return maxAmount;
   }
@@ -177,12 +179,12 @@ class DonateButton extends React.Component {
   openDialog() {
     const { model } = this.props;
     this.setState(prevState => {
-      const isMilestone = model.type === Milestone.type;
-      const amount = isMilestone ? this.getMaxAmount().toFixed() : prevState.amount;
+      const { isCapped } = model;
+      const amount = isCapped ? this.getMaxAmount().toFixed() : prevState.amount;
       return {
         modalVisible: true,
         amount,
-        defaultAmount: isMilestone ? false : prevState.defaultAmount,
+        defaultAmount: isCapped ? false : prevState.defaultAmount,
         formIsValid: false,
       };
     });
@@ -428,7 +430,7 @@ class DonateButton extends React.Component {
               isCorrectNetwork &&
               currentUser && (
                 <div>
-                  {model.type !== 'milestone' && (
+                  {!model.acceptsSingleToken && (
                     <SelectFormsy
                       name="token"
                       id="token-select"
@@ -437,7 +439,6 @@ class DonateButton extends React.Component {
                       value={selectedToken.address}
                       options={tokenWhitelistOptions}
                       onChange={address => this.setToken(address)}
-                      disabled={model.type === 'milestone'}
                     />
                   )}
                   {/* TODO: remove this b/c the wallet provider will contain this info */}
@@ -465,7 +466,7 @@ class DonateButton extends React.Component {
                     }}
                     tooltip={false}
                     format={val => `${val} ${config.nativeTokenName}`}
-                    onChange={newAmount => this.setState({ amount: newAmount })}
+                    onChange={newAmount => this.setState({ amount: newAmount.toString() })}
                   />
                 </div>
               )}
@@ -574,6 +575,7 @@ const modelTypes = PropTypes.shape({
   title: PropTypes.string.isRequired,
   campaignId: PropTypes.string,
   token: PropTypes.shape({}),
+  acceptsSingleToken: PropTypes.bool,
 });
 
 DonateButton.propTypes = {

@@ -53,7 +53,10 @@ const LoaderButton = ({
             {!isLoading && <span>{children}</span>}
           </button>
           {incorrectNetwork && (
-            <small className="form-text loader-button-network-help">
+            <small
+              className="form-text loader-button-network-help pull-right"
+              style={{ clear: 'right', marginTop: '5px' }}
+            >
               Please choose the{' '}
               <strong>
                 {network === 'Home' ? config.homeNetworkName : config.foreignNetworkName}
