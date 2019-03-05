@@ -125,7 +125,7 @@ class ViewCampaign extends Component {
       .then(() => {
         React.swal({
           title: 'Delete Milestone?',
-          text: 'You will not be able to recover this milestone!',
+          text: 'You will not be able to recover this Milestone!',
           icon: 'warning',
           dangerMode: true,
         }).then(() => {
