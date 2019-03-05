@@ -67,6 +67,7 @@ class ConversionRateProvider extends Component {
     this.rates = new ConversionStorage();
 
     this.state = {
+      isLoading: false,
       currentRate: {
         rates: {},
         timestamp: getStartOfDayUTC()

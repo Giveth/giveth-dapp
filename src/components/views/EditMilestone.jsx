@@ -426,7 +426,9 @@ class EditMilestone extends Component {
       this.props.isProposed || milestone.status === Milestone.REJECTED
         ? Milestone.PROPOSED
         : milestone.status; // make sure not to change status!
-    milestone.conversionRate = this.props.currentRate.rates[milestone.selectedFiatType];
+    if (milestone.isCapped) {
+      milestone.conversionRate = this.props.currentRate.rates[milestone.selectedFiatType];
+    }
     milestone.parentProjectId = this.state.campaignProjectId;
 
     const _saveMilestone = () =>
