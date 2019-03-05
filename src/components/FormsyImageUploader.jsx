@@ -134,7 +134,7 @@ class FormsyImageUploader extends Component {
           validationErrors={{
             minLength: 'Please select a png or jpg file.',
           }}
-          required={this.props.isRequired}
+          required={this.props.isRequired && !this.state.image}
         />
       </div>
     );

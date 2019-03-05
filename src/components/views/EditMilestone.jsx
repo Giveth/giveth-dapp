@@ -44,6 +44,7 @@ import BridgedMilestone from '../../models/BridgedMilestone';
 import {
   draftStates,
   loadDraft,
+  loadMilestoneDraft,
   onDraftChange,
   onImageChange,
   saveDraft,
@@ -109,6 +110,7 @@ class EditMilestone extends Component {
     this.handleTemplateChange = this.handleTemplateChange.bind(this);
     this.validateMilestoneDesc = this.validateMilestoneDesc.bind(this);
     this.loadDraft = loadDraft.bind(this);
+    this.loadMilestoneDraft = loadMilestoneDraft.bind(this);
     this.onDraftChange = onDraftChange.bind(this);
     this.onImageChange = onImageChange.bind(this);
     this.saveDraft = saveDraft.bind(this);
@@ -348,10 +350,8 @@ class EditMilestone extends Component {
     } else {
       this.setState({ formIsValid: formState });
     }
-    if (!this.state.draftLoaded) {
-      this.loadDraft();
-      this.setState({ draftLoaded: true });
-    }
+    this.loadDraft();
+    this.loadMilestoneDraft();
   }
 
   setToken(address) {
@@ -378,48 +378,53 @@ class EditMilestone extends Component {
       .then(() => !this.props.isProposed && checkBalance(this.props.balance));
   }
 
-  toggleItemize() {
+  itemizeState(value) {
     const { milestone } = this.state;
-    milestone.itemizeState = !milestone.itemizeState;
+    milestone.itemizeState = value;
     this.setState({ milestone });
+    this.onDraftChange();
   }
 
-  toggleReviewer() {
+  hasReviewer(value) {
     const { milestone } = this.state;
-    milestone.reviewerAddress = milestone.hasReviewer ? ZERO_ADDRESS : '';
+    milestone.reviewerAddress = value ? '' : ZERO_ADDRESS;
     this.setState({ milestone });
+    this.onDraftChange();
   }
 
-  toggleMilestoneType() {
+  isLPMilestone(value) {
     const { milestone, campaignProjectId } = this.state;
-    if (milestone instanceof LPMilestone) {
+    if (!value) {
       this.setState({
         milestone: new BridgedMilestone(milestone.toFeathers()),
       });
-    } else if (milestone instanceof BridgedMilestone) {
+    } else {
       this.setState({
         milestone: new LPMilestone({ ...milestone.toFeathers(), recipientId: campaignProjectId }),
       });
     }
+    this.onDraftChange();
   }
 
-  toggleToken() {
+  acceptsSingleToken(value) {
     const { milestone } = this.state;
-    milestone.token = milestone.acceptsSingleToken ? ANY_TOKEN : this.props.tokenWhitelist[0];
-    if (!milestone.acceptsSingleToken) {
+    milestone.token = value ? this.props.tokenWhitelist[0] : ANY_TOKEN;
+    if (!value) {
       // if ANY_TOKEN is allowed, then we can't have a cap
       milestone.maxAmount = undefined;
     }
     this.setState({ milestone });
+    this.onDraftChange();
   }
 
-  toggleIsCapped() {
+  isCapped(value) {
     const { milestone } = this.state;
-    milestone.maxAmount = milestone.isCapped ? undefined : new BigNumber(0);
-    if (milestone.isCapped) {
+    milestone.maxAmount = value ? new BigNumber(0) : undefined;
+    if (value) {
       milestone.fiatAmount = new BigNumber(0);
     }
     this.setState({ milestone });
+    this.onDraftChange();
   }
 
   toggleAddMilestoneItemModal() {
@@ -435,7 +440,7 @@ class EditMilestone extends Component {
   }
 
   submit() {
-    const itemNames = this.saveDraft();
+    const itemNames = this.saveDraft(true);
     const { milestone } = this.state;
 
     milestone.ownerAddress = this.props.currentUser.address;
@@ -743,7 +748,7 @@ class EditMilestone extends Component {
                         <Toggle
                           id="itemize-state"
                           checked={!milestone.hasReviewer}
-                          onChange={() => this.toggleReviewer()}
+                          onChange={e => this.hasReviewer(!e.target.checked)}
                           disabled={!isNew && !isProposed}
                         />
                         <span className="label">Disable Milestone Reviewer</span>
@@ -780,7 +785,7 @@ class EditMilestone extends Component {
                         <Toggle
                           id="itemize-state"
                           checked={milestone instanceof LPMilestone}
-                          onChange={() => this.toggleMilestoneType()}
+                          onChange={e => this.isLPMilestone(e.target.checked)}
                           disabled={!isNew && !isProposed}
                         />
                         <span className="label">Raise funds for Campaign: {campaignTitle} </span>
@@ -815,7 +820,7 @@ class EditMilestone extends Component {
                       <Toggle
                         id="itemize-state"
                         checked={!milestone.acceptsSingleToken}
-                        onChange={() => this.toggleToken()}
+                        onChange={e => this.acceptsSingleToken(!e.target.checked)}
                         disabled={!isNew && !isProposed}
                       />
                       <span className="label">Accept donations in all tokens</span>
@@ -839,7 +844,7 @@ class EditMilestone extends Component {
                       <Toggle
                         id="itemize-state"
                         checked={!milestone.isCapped}
-                        onChange={() => this.toggleIsCapped()}
+                        onChange={e => this.isCapped(!e.target.checked)}
                         disabled={(!isNew && !isProposed) || !milestone.acceptsSingleToken}
                       />
                       <span className="label">Disable Milestone fundraising cap</span>
@@ -857,7 +862,7 @@ class EditMilestone extends Component {
                           <Toggle
                             id="itemize-state"
                             checked={milestone.itemizeState}
-                            onChange={() => this.toggleItemize()}
+                            onChange={e => this.itemizeState(e.target.checked)}
                             disabled={!isNew && !isProposed}
                           />
                           <span className="label">Add multiple expenses, invoices or items</span>
