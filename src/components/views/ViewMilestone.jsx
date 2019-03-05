@@ -424,9 +424,9 @@ class ViewMilestone extends Component {
                         {!milestone.isCapped &&
                           milestone.donationCounters.length > 0 && (
                             <div className="form-group">
-                              <span className="label">Current Balances</span>
+                              <span className="label">Current Balance</span>
                               <small className="form-text">
-                                The current balances of this Milestone
+                                The current balance(s) of this Milestone
                               </small>
                               {milestone.donationCounters.map(dc => (
                                 <p className="donation-counter" key={dc.symbol}>
