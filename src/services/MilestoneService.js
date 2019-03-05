@@ -438,7 +438,7 @@ class MilestoneService {
         milestone.parentProjectId,
         milestone.reviewerAddress,
         milestone.recipientId,
-        from,
+        milestone.ownerAddress,
         milestone.isCapped ? utils.toWei(milestone.maxAmount.toFixed()) : 0,
         milestone.token.foreignAddress,
         5 * 24 * 60 * 60, // 5 days in seconds
@@ -466,7 +466,7 @@ class MilestoneService {
         milestone.parentProjectId,
         milestone.reviewerAddress,
         milestone.recipientAddress,
-        from,
+        milestone.ownerAddress,
         milestone.isCapped ? utils.toWei(milestone.maxAmount.toFixed()) : 0,
         milestone.token.foreignAddress,
         5 * 24 * 60 * 60, // 5 days in seconds
