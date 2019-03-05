@@ -39,7 +39,7 @@ const Campaigns = () => (
               campaigns.length === 0 && (
                 <div>
                   <center>
-                    <p>There are no campaigns yet!</p>
+                    <p>There are no Campaigns yet!</p>
                     <img
                       className="empty-state-img"
                       src={`${process.env.PUBLIC_URL}/img/campaign.svg`}

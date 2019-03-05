@@ -133,7 +133,7 @@ class ViewDAC extends Component {
               />
               {dac.communityUrl && (
                 <CommunityButton className="btn btn-secondary" url={dac.communityUrl}>
-                  Join our community
+                  Join our Community
                 </CommunityButton>
               )}
             </BackgroundImageHeader>

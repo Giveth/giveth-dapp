@@ -218,7 +218,7 @@ class EditMilestone extends Component {
             this.setDate(this.state.milestone.date);
           } catch (e) {
             ErrorPopup(
-              'Sadly we were unable to load the campaign in which this Milestone was created. Please try again.',
+              'Sadly we were unable to load the Campaign in which this Milestone was created. Please try again.',
               e,
             );
             this.setState({
@@ -493,7 +493,7 @@ class EditMilestone extends Component {
           React.swal({
             title: 'Propose Milestone?',
             text:
-              'The Milestone will be proposed to the campaign owner and he or she might approve or reject your milestone.',
+              'The Milestone will be proposed to the Campaign owner and he or she might approve or reject your milestone.',
             icon: 'warning',
             dangerMode: true,
             buttons: ['Cancel', 'Yes, propose'],

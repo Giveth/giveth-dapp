@@ -39,7 +39,7 @@ const DACs = () => (
               dacs.length === 0 && (
                 <div>
                   <center>
-                    <p>There are no decentralized altruistic communities (DACs) yet!</p>
+                    <p>There are no Decentralized Altruistic Communities (DACs) yet!</p>
                     <img
                       className="empty-state-img"
                       src={`${process.env.PUBLIC_URL}/img/community.svg`}
