@@ -228,7 +228,7 @@ class DelegationProvider extends Component {
     ])
       .then(() => this.getAndWatchDonations())
       .catch(err => {
-        ErrorPopup('Unable to load dacs, campaigns or milestones.', err);
+        ErrorPopup('Unable to load dacs, campaigns or Milestones.', err);
         this.setState({ isLoading: false });
       });
   }
