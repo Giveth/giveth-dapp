@@ -24,6 +24,15 @@ import Campaign from '../../models/Campaign';
 import CampaignService from '../../services/CampaignService';
 import ErrorPopup from '../ErrorPopup';
 import { Consumer as WhiteListConsumer } from '../../contextProviders/WhiteListProvider';
+import {
+  draftStates,
+  loadDraft,
+  onDraftChange,
+  onImageChange,
+  saveDraft,
+  deleteDraft,
+  DraftButton,
+} from '../Draft';
 
 /**
  * View to create or edit a Campaign
@@ -45,12 +54,17 @@ class EditCampaign extends Component {
         owner: props.currentUser,
       }),
       isBlocking: false,
+      draftState: draftStates.hidden,
     };
 
     this.form = React.createRef();
 
     this.submit = this.submit.bind(this);
     this.setImage = this.setImage.bind(this);
+    this.loadDraft = loadDraft.bind(this);
+    this.onDraftChange = onDraftChange.bind(this);
+    this.onImageChange = onImageChange.bind(this);
+    this.saveDraft = saveDraft.bind(this);
   }
 
   componentDidMount() {
@@ -103,6 +117,7 @@ class EditCampaign extends Component {
     const { campaign } = this.state;
     campaign.image = image;
     this.setState({ campaign });
+    this.onImageChange();
   }
 
   checkUser() {
@@ -122,7 +137,9 @@ class EditCampaign extends Component {
   }
 
   submit() {
+    const itemNames = this.saveDraft(true);
     const afterMined = url => {
+      deleteDraft(itemNames);
       if (url) {
         const msg = (
           <p>
@@ -177,12 +194,17 @@ class EditCampaign extends Component {
 
   toggleFormValid(state) {
     this.setState({ formIsValid: state });
+    if (!this.state.draftLoaded) {
+      this.loadDraft();
+      this.setState({ draftLoaded: true });
+    }
   }
 
   triggerRouteBlocking() {
     const form = this.form.current.formsyForm;
     // we only block routing if the form state is not submitted
     this.setState({ isBlocking: form && (!form.state.formSubmitted || form.state.isSubmitting) });
+    this.onDraftChange();
   }
 
   render() {
@@ -228,7 +250,7 @@ class EditCampaign extends Component {
                     layout="vertical"
                   >
                     <Prompt
-                      when={isBlocking}
+                      when={isBlocking && this.state.draftState >= draftStates.changed}
                       message={() =>
                         `You have unsaved changes. Are you sure you want to navigate from this page?`
                       }
@@ -308,10 +330,13 @@ class EditCampaign extends Component {
                     </div>
 
                     <div className="form-group row">
-                      <div className="col-md-6">
+                      <div className="col-md-4">
                         <GoBackButton history={history} />
                       </div>
-                      <div className="col-md-6">
+                      <div className="col-md-4">
+                        <DraftButton draftState={this.state.draftState} onClick={this.saveDraft} />
+                      </div>
+                      <div className="col-md-4">
                         <LoaderButton
                           className="btn btn-success pull-right"
                           formNoValidate
