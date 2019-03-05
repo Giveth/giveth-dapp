@@ -567,6 +567,7 @@ export default class Milestone extends BasicModel {
   canUserChangeRecipient(user) {
     return (
       user &&
+      [Milestone.IN_PROGRESS, Milestone.NEEDS_REVIEW].includes(this.status) &&
       !this.pendingRecipientAddress &&
       ((!this.hasRecipient && this.ownerAddress === user.address) ||
         (this.hasRecipient && this.recipientAddress === user.address))
