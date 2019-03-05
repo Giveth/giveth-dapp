@@ -392,6 +392,7 @@ class EditMilestone extends Component {
     if (!milestone.acceptsSingleToken) {
       // if ANY_TOKEN is allowed, then we can't have a cap
       milestone.maxAmount = undefined;
+      milestone.itemizeState = false;
     }
     this.setState({ milestone });
   }
