@@ -63,7 +63,7 @@ class ViewCampaign extends Component {
     CampaignService.get(campaignId)
       .then(campaign => this.setState({ campaign, isLoading: false }))
       .catch(err => {
-        ErrorPopup('Something went wrong loading campaign. Please try refresh the page.', err);
+        ErrorPopup('Something went wrong loading Campaign. Please try refresh the page.', err);
         this.setState({ isLoading: false });
       }); // TODO: inform user of error
 
@@ -185,7 +185,7 @@ class ViewCampaign extends Component {
                 )}
                 {campaign.communityUrl && (
                   <CommunityButton className="btn btn-secondary" url={campaign.communityUrl}>
-                    Join our community
+                    Join our Community
                   </CommunityButton>
                 )}
               </BackgroundImageHeader>

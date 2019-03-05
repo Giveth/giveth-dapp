@@ -70,8 +70,8 @@ class JoinGivethCommunity extends Component {
         title: 'Sorry, Giveth is in beta...',
         content: React.swal.msg(
           <p>
-            It&#8217;s great to see that you want to start a campaign, however, Giveth is still in
-            beta and we only allow a select group of people to start campaigns
+            It&#8217;s great to see that you want to start a Campaign, however, Giveth is still in
+            beta and we only allow a select group of people to start Campaigns
             <br />
             Please <strong>contact us on our Slack</strong>
             , or keep browsing
@@ -97,7 +97,7 @@ class JoinGivethCommunity extends Component {
         title: "You're almost there...",
         content: React.swal.msg(
           <p>
-            It&#8217;s great to see that you want to start a campaign. To get started, please sign
+            It&#8217;s great to see that you want to start a Campaign. To get started, please sign
             up (or sign in) first.
           </p>,
         ),

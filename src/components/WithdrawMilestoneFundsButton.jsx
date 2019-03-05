@@ -41,7 +41,7 @@ class WithdrawMilestoneFundsButton extends Component {
               )}
               <p>
                 We will initiate the transfer of the funds to{' '}
-                {milestone instanceof LPMilestone && 'the campaign.'}
+                {milestone instanceof LPMilestone && 'the Campaign.'}
                 {!(milestone instanceof LPMilestone) &&
                   (isRecipient ? 'your wallet.' : "the recipient's wallet.")}
               </p>

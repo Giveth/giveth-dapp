@@ -439,7 +439,7 @@ class ViewMilestone extends Component {
                         <div className="form-group">
                           <span className="label">Campaign</span>
                           <small className="form-text">
-                            The campaign this Milestone belongs to.
+                            The Campaign this Milestone belongs to.
                           </small>
                           {campaign.title}
                         </div>

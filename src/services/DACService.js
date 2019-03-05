@@ -219,7 +219,7 @@ class DACService {
       try {
         ipfsHash = await IPFSService.upload(dac.toIpfs());
       } catch (err) {
-        ErrorPopup('Failed to upload dac to ipfs');
+        ErrorPopup('Failed to upload DAC to IPFS');
       }
 
       const network = await getNetwork();
