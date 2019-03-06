@@ -7,12 +7,18 @@ import BigNumber from 'bignumber.js';
 
 import NetworkWarning from 'components/NetworkWarning';
 import { Consumer as Web3Consumer } from 'contextProviders/Web3Provider';
+import { Consumer as WhiteListConsumer } from 'contextProviders/WhiteListProvider';
 
 import MilestoneActions from 'components/MilestoneActions';
 import { isLoggedIn } from 'lib/middleware';
 import Loader from '../Loader';
 import User from '../../models/User';
-import { getTruncatedText, getReadableStatus, convertEthHelper } from '../../lib/helpers';
+import {
+  getTruncatedText,
+  getReadableStatus,
+  convertEthHelper,
+  ANY_TOKEN,
+} from '../../lib/helpers';
 import config from '../../configuration';
 
 import MilestoneService from '../../services/MilestoneService';
@@ -42,6 +48,7 @@ class MyMilestones extends Component {
 
     this.milestoneTabs = ['Active', 'Paid', 'Canceled', 'Rejected'];
     this.handlePageChanged = this.handlePageChanged.bind(this);
+    this.getTokenSymbol = this.getTokenSymbol.bind(this);
   }
 
   componentDidMount() {
@@ -66,6 +73,13 @@ class MyMilestones extends Component {
 
   componentWillUnmount() {
     MilestoneService.unsubscribe();
+  }
+
+  getTokenSymbol(token) {
+    if (token.foreignAddress === ANY_TOKEN.foreignAddress) {
+      return this.props.tokenWhitelist.map(t => t.symbol).join(', ');
+    }
+    return token.symbol;
   }
 
   loadMileStones() {
@@ -232,7 +246,8 @@ class MyMilestones extends Component {
                                       {getReadableStatus(m.status)}
                                     </td>
                                     <td className="td-donations-number">
-                                      {m.isCapped && convertEthHelper(m.maxAmount)} {m.token.symbol}
+                                      {m.isCapped && convertEthHelper(m.maxAmount)}{' '}
+                                      {this.getTokenSymbol(m.token)}
                                     </td>
                                     <td className="td-donations-number">{m.totalDonations}</td>
                                     <td className="td-donations-">
@@ -307,6 +322,11 @@ class MyMilestones extends Component {
 MyMilestones.propTypes = {
   currentUser: PropTypes.instanceOf(User).isRequired,
   balance: PropTypes.instanceOf(BigNumber).isRequired,
+  tokenWhitelist: PropTypes.arrayOf(PropTypes.shape()).isRequired,
 };
 
-export default MyMilestones;
+export default props => (
+  <WhiteListConsumer>
+    {({ state: { tokenWhitelist } }) => <MyMilestones tokenWhitelist={tokenWhitelist} {...props} />}
+  </WhiteListConsumer>
+);

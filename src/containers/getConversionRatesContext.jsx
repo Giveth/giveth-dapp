@@ -3,11 +3,12 @@ import { Consumer as ConversionRateConsumer } from '../contextProviders/Conversi
 
 const getConversionRatesContext = Component => props => (
   <ConversionRateConsumer>
-    {({ state: { fiatTypes, currentRate }, actions: { getConversionRates } }) => (
+    {({ state: { fiatTypes, currentRate, isLoading }, actions: { getConversionRates } }) => (
       <Component
         getConversionRates={getConversionRates}
         fiatTypes={fiatTypes}
         currentRate={currentRate}
+        conversionRateLoading={isLoading}
         {...props}
       />
     )}
