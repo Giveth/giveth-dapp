@@ -1,6 +1,10 @@
+/* eslint-disable import/no-cycle */
 import BasicModel from './BasicModel';
-import DACservice from '../services/DAC';
-import UploadService from '../services/Uploads';
+import DACService from '../services/DACService';
+import IPFSService from '../services/IPFSService';
+import ErrorPopup from '../components/ErrorPopup';
+import { cleanIpfsPath } from '../lib/helpers';
+
 /**
  * The DApp DAC model
  */
@@ -8,51 +12,73 @@ class DAC extends BasicModel {
   static get CANCELED() {
     return 'Canceled';
   }
+
   static get PENDING() {
     return 'Pending';
   }
+
   static get ACTIVE() {
     return 'Active';
+  }
+
+  static get type() {
+    return 'dac';
+  }
+
+  // eslint-disable-next-line class-methods-use-this
+  get type() {
+    return DAC.type;
   }
 
   constructor(data) {
     super(data);
 
     this.communityUrl = data.communityUrl || '';
-    this.delegateId = data.delegateId || '';
-    this.tokenName = data.tokenName || '';
-    this.tokenSymbol = data.tokenSymbol || '';
+    this.delegateId = data.delegateId || 0;
     this.status = data.status || DAC.PENDING;
+    this.ownerAddress = data.ownerAddress;
+    this._id = data._id;
+    this.confirmations = data.confirmations || 0;
+    this.requiredConfirmations = data.requiredConfirmations;
+    this.commitTime = data.commitTime || 0;
   }
 
-  toFeathers() {
+  toIpfs() {
     return {
-      id: this.id,
       title: this.title,
       description: this.description,
       communityUrl: this.communityUrl,
-      summary: this.summary,
-      delegateId: this.delegateId,
-      image: this.image,
-      txHash: this.txHash,
-      totalDonated: this.totalDonated,
-      donationCount: this.donationCount,
-      tokenName: this.tokenName,
-      tokenSymbol: this.tokenSymbol,
+      image: cleanIpfsPath(this.image),
+      version: 1,
     };
   }
 
-  save(onCreated, afterEmit) {
-    if (this.newImage) {
-      UploadService.save(this.image).then(file => {
-        // Save the new image address and mark it as old
-        this.image = file.url;
-        this.newImage = false;
+  toFeathers(txHash) {
+    const dac = {
+      title: this.title,
+      description: this.description,
+      communityUrl: this.communityUrl,
+      delegateId: this.delegateId,
+      image: cleanIpfsPath(this.image),
+      totalDonated: this.totalDonated,
+      donationCount: this.donationCount,
+    };
+    if (!this.id) dac.txHash = txHash;
+    return dac;
+  }
 
-        DACservice.save(this, this.owner.address, onCreated, afterEmit);
-      });
+  save(afterSave, afterMined) {
+    if (this.newImage) {
+      IPFSService.upload(this.image)
+        .then(hash => {
+          // Save the new image address and mark it as old
+          this.image = hash;
+          this.newImage = false;
+        })
+        .catch(err => ErrorPopup('Failed to upload image', err))
+        .finally(() => DACService.save(this, this.owner.address, afterSave, afterMined));
     } else {
-      DACservice.save(this, this.owner.address, onCreated, afterEmit);
+      DACService.save(this, this.owner.address, afterSave, afterMined);
     }
   }
 
@@ -70,30 +96,20 @@ class DAC extends BasicModel {
   }
 
   set delegateId(value) {
-    this.checkType(value, ['string'], 'delegateId');
+    this.checkType(value, ['number', 'string'], 'delegateId');
     this.myDelegateId = value;
   }
 
-  get tokenName() {
-    return this.myTokenName;
+  get commitTime() {
+    return this.myCommitTime;
   }
 
-  set tokenName(value) {
-    this.checkType(value, ['string'], 'tokenName');
-    this.myTokenName = value;
-  }
-
-  get tokenSymbol() {
-    return this.myTokenSymbol;
-  }
-
-  set tokenSymbol(value) {
-    this.checkType(value, ['string'], 'tokenSymbol');
-    this.myTokenSymbol = value;
+  set commitTime(value) {
+    this.checkType(value, ['number'], 'commitTime');
+    this.myCommitTime = value;
   }
 
   get status() {
-    if (this.delegateId !== '') return DAC.ACTIVE; // TODO: Remove once status is added to feathers
     return this.myStatus;
   }
 

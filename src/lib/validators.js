@@ -8,7 +8,16 @@ import Web3 from 'web3';
 addValidationRule('greaterThan', (formValues, inputValue, value) => parseFloat(inputValue) > value);
 
 // Less than number
-addValidationRule('lessThan', (formValues, inputValue, value) => parseFloat(inputValue) < value);
+addValidationRule(
+  'lessThan',
+  (formValues, inputValue, value) => (inputValue ? parseFloat(inputValue) < value : true),
+);
+
+// Less or equal to number
+addValidationRule(
+  'lessOrEqualTo',
+  (formValues, inputValue, value) => (inputValue ? parseFloat(inputValue) <= value : true),
+);
 
 // Greater than number
 addValidationRule(
@@ -20,6 +29,7 @@ addValidationRule('isMoment', (formValues, inputValue) => moment.isMoment(inputV
 
 // Checks if input is a valid Ether address
 // TODO: Does not support ENS! (It's hard, ENS returns promises)
-addValidationRule('isEtherAddress', (formValues, inputValue, _value) =>
-  Web3.utils.isAddress(inputValue),
+addValidationRule(
+  'isEtherAddress',
+  (formValues, inputValue, _value) => !inputValue || Web3.utils.isAddress(inputValue),
 );

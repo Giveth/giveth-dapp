@@ -1,9 +1,10 @@
-import React from 'react';
 import { withFormsy } from 'formsy-react';
-import PropTypes from 'prop-types';
 import moment from 'moment';
-
-import { getTruncatedText, convertEthHelper } from './../lib/helpers';
+import PropTypes from 'prop-types';
+import React from 'react';
+import { convertEthHelper, getTruncatedText } from 'lib/helpers';
+import MilestoneItemModel from 'models/MilestoneItem';
+import { utils } from 'web3';
 
 /** *
  * NOTE: This component is created as a Formsy form component
@@ -18,27 +19,33 @@ import { getTruncatedText, convertEthHelper } from './../lib/helpers';
 
 class MilestoneItem extends React.Component {
   componentDidMount() {
-    this.props.setValue(true); // required for validation being true
+    if (this.props.isEditMode) this.props.setValue(true); // required for validation being true
   }
 
   render() {
-    const { removeItem, item, isEditMode } = this.props;
-
+    const { removeItem, item, isEditMode, token } = this.props;
     return (
       <tr>
+        {isEditMode && (
+          <td className="td-item-remove">
+            <button type="button" className="btn btn-link" onClick={removeItem}>
+              X
+            </button>
+          </td>
+        )}
         <td className="td-item-date">{moment.utc(item.date).format('Do MMM YYYY')}</td>
 
         <td className="td-item-description">{getTruncatedText(item.description)}</td>
 
         <td className="td-item-amount-fiat">
-          {item.selectedFiatType} {item.fiatAmount}
+          {item.selectedFiatType} {item.fiatAmount.toFixed()}
           <br />
           <span className="help-block">
-            {`1 ETH = ${item.conversionRate} ${item.selectedFiatType}`}
+            {`1 ${token.name} = ${item.conversionRate} ${item.selectedFiatType}`}
           </span>
         </td>
 
-        <td className="td-item-amount-ether">{convertEthHelper(item.wei)}</td>
+        <td className="td-item-amount-ether">{convertEthHelper(utils.fromWei(item.wei))}</td>
 
         <td className="td-item-file-upload">
           {item.image &&
@@ -52,19 +59,11 @@ class MilestoneItem extends React.Component {
             !isEditMode && (
               <div className="image-preview small">
                 <a href={item.image} target="_blank" rel="noopener noreferrer">
-                  <img src={item.image} alt="View uploaded file" />
+                  <img src={item.image} alt="View uploaded file" style={{ height: 'initial' }} />
                 </a>
               </div>
             )}
         </td>
-
-        {isEditMode && (
-          <td className="td-item-remove">
-            <button type="button" className="btn btn-link" onClick={removeItem}>
-              X
-            </button>
-          </td>
-        )}
       </tr>
     );
   }
@@ -74,16 +73,9 @@ MilestoneItem.propTypes = {
   setValue: PropTypes.func.isRequired,
 
   removeItem: PropTypes.func,
-  item: PropTypes.shape({
-    date: PropTypes.string.isRequired,
-    description: PropTypes.string.isRequired,
-    selectedFiatType: PropTypes.string.isRequired,
-    fiatAmount: PropTypes.string.isRequired,
-    conversionRate: PropTypes.number.isRequired,
-    wei: PropTypes.string.isRequired,
-    image: PropTypes.string,
-  }).isRequired,
+  item: PropTypes.instanceOf(MilestoneItemModel).isRequired,
   isEditMode: PropTypes.bool,
+  token: PropTypes.shape().isRequired,
 };
 
 MilestoneItem.defaultProps = {

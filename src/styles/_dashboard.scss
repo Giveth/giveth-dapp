@@ -29,7 +29,11 @@
     .td-donations-number,
     .td-donations-amount {
       min-width: 80px;
-      text-align: center;   
+      // text-align: center;  
+
+      p {
+        margin: 0;
+      } 
     }
 
     .td-status {

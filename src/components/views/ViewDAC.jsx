@@ -1,28 +1,31 @@
 import React, { Component } from 'react';
+import BigNumber from 'bignumber.js';
 import PropTypes from 'prop-types';
 
 import { Link } from 'react-router-dom';
 import Avatar from 'react-avatar';
 import ReactHtmlParser from 'react-html-parser';
 
+import Balances from 'components/Balances';
 import Loader from '../Loader';
 import GoBackButton from '../GoBackButton';
 import BackgroundImageHeader from '../BackgroundImageHeader';
 import DonateButton from '../DonateButton';
-import ShowTypeDonations from '../ShowTypeDonations';
+import ListDonations from '../ListDonations';
 import CommunityButton from '../CommunityButton';
 import User from '../../models/User';
-import CampaignCard from '../CampaignCard';
+import DAC from '../../models/DAC';
 import { getUserName, getUserAvatar } from '../../lib/helpers';
-import GivethWallet from '../../lib/blockchain/GivethWallet';
-import DACservice from '../../services/DAC';
+import DACService from '../../services/DACService';
+import CampaignCard from '../CampaignCard';
+import ShareOptions from '../ShareOptions';
+import config from '../../configuration';
 
 /**
  * The DAC detail view mapped to /dac/id
  *
  * @param currentUser  Currently logged in user information
  * @param history      Browser history object
- * @param wallet       Wallet object with the balance and all keystores
  */
 class ViewDAC extends Component {
   constructor() {
@@ -31,60 +34,81 @@ class ViewDAC extends Component {
     this.state = {
       isLoading: true,
       isLoadingDonations: true,
-      donations: [],
       isLoadingCampaigns: true,
       campaigns: [],
+      donations: [],
+      donationsTotal: 0,
+      donationsPerBatch: 50,
+      newDonations: 0,
     };
+
+    this.loadMoreDonations = this.loadMoreDonations.bind(this);
   }
 
   componentDidMount() {
     const dacId = this.props.match.params.id;
 
     // Get the Campaign
-    DACservice.get(dacId)
+    DACService.get(dacId)
       .then(dac => {
         this.setState({ dac, isLoading: false });
+
+        this.campaignObserver = DACService.subscribeCampaigns(
+          dac.delegateId,
+          campaigns => this.setState({ campaigns, isLoadingCampaigns: false }),
+          () => this.setState({ isLoadingCampaigns: false }), // TODO: inform user of error
+        );
       })
       .catch(() => {
         this.setState({ isLoading: false });
       }); // TODO: inform user of error
 
-    // Lazy load donations
-    this.donationsObserver = DACservice.subscribeDonations(
+    this.loadMoreDonations();
+    // subscribe to donation count
+    this.donationsObserver = DACService.subscribeNewDonations(
       dacId,
-      donations => {
-        this.setState({ donations, isLoadingDonations: false });
-      },
-      () => this.setState({ isLoadingDonations: false }), // TODO: inform user of error
-    );
-
-    // Lazy load campaigns
-    this.campaignsObserver = DACservice.subscribeCampaigns(
-      dacId,
-      campaigns => {
-        this.setState({ campaigns, isLoadingCampaigns: false });
-      },
-      () => this.setState({ isLoadingCampaigns: false }), // TODO: inform user of error
+      newDonations =>
+        this.setState({
+          newDonations,
+        }),
+      () => this.setState({ newDonations: 0 }),
     );
   }
 
   componentWillUnmount() {
     if (this.donationsObserver) this.donationsObserver.unsubscribe();
-    if (this.campaignsObserver) this.campaignsObserver.unsubscribe();
+    if (this.campaignObserver) this.campaignObserver.unsubscribe();
+  }
+
+  loadMoreDonations() {
+    this.setState({ isLoadingDonations: true }, () =>
+      DACService.getDonations(
+        this.props.match.params.id,
+        this.state.donationsPerBatch,
+        this.state.donations.length,
+        (donations, donationsTotal) =>
+          this.setState(prevState => ({
+            donations: prevState.donations.concat(donations),
+            isLoadingDonations: false,
+            donationsTotal,
+          })),
+        () => this.setState({ isLoadingDonations: false }),
+      ),
+    );
   }
 
   render() {
-    const { wallet, history, currentUser } = this.props;
+    const { balance, history, currentUser } = this.props;
     const {
       isLoading,
       donations,
       dac,
       isLoadingDonations,
-      communityUrl,
-      isLoadingCampaigns,
       campaigns,
+      isLoadingCampaigns,
+      donationsTotal,
+      newDonations,
     } = this.state;
-
     return (
       <div id="view-cause-view">
         {isLoading && <Loader className="fixed" />}
@@ -96,20 +120,20 @@ class ViewDAC extends Component {
               <h1>{dac.title}</h1>
 
               <DonateButton
-                type="DAC"
                 model={{
+                  type: DAC.type,
                   title: dac.title,
                   id: dac.id,
+                  token: { symbol: config.nativeTokenName },
                   adminId: dac.delegateId,
                 }}
-                wallet={wallet}
                 currentUser={currentUser}
-                commmunityUrl={communityUrl}
+                commmunityUrl={dac.communityUrl}
                 history={history}
               />
-              {communityUrl && (
-                <CommunityButton className="btn btn-secondary" url={communityUrl}>
-                  &nbsp;Join our community
+              {dac.communityUrl && (
+                <CommunityButton className="btn btn-secondary" url={dac.communityUrl}>
+                  Join our community
                 </CommunityButton>
               )}
             </BackgroundImageHeader>
@@ -117,7 +141,10 @@ class ViewDAC extends Component {
             <div className="container-fluid">
               <div className="row">
                 <div className="col-md-8 m-auto">
-                  <GoBackButton history={history} />
+                  <div className="go-back-section">
+                    <GoBackButton to="/" title="Communities" />
+                    <ShareOptions pageUrl={window.location.href} pageTitle={dac.title} />
+                  </div>
 
                   <center>
                     <Link to={`/profile/${dac.owner.address}`}>
@@ -132,46 +159,51 @@ class ViewDAC extends Component {
                 </div>
               </div>
 
-              <div className="row spacer-top-50 spacer-bottom-50">
-                <div className="col-md-8 m-auto card-view">
-                  <h4>{campaigns ? campaigns.length : 0} Campaign(s)</h4>
-                  <p>
-                    These Campaigns are working hard to solve the cause of this Community (DAC){' '}
-                  </p>
-                  {campaigns &&
-                    campaigns.length > 0 &&
-                    isLoadingCampaigns && <Loader className="small" />}
+              {(isLoadingCampaigns || campaigns.length > 0) && (
+                <div className="row spacer-top-50 spacer-bottom-50">
+                  <div className="col-md-8 m-auto card-view">
+                    <h4>{campaigns.length} Campaign(s)</h4>
+                    <p>
+                      These Campaigns are working hard to solve the cause of this Community (DAC){' '}
+                    </p>
+                    {isLoadingCampaigns && <Loader className="small" />}
 
-                  {campaigns &&
-                    campaigns.length > 0 &&
-                    !isLoadingCampaigns && (
-                      <div className="cards-grid-container">
-                        {campaigns.map(c => (
-                          <CampaignCard
-                            key={c.id}
-                            campaign={c}
-                            currentUser={currentUser}
-                            wallet={wallet}
-                            history={history}
-                          />
-                        ))}
-                      </div>
-                    )}
+                    {campaigns.length > 0 &&
+                      !isLoadingCampaigns && (
+                        <div className="cards-grid-container">
+                          {campaigns.map(c => (
+                            <CampaignCard
+                              key={c.id}
+                              campaign={c}
+                              history={history}
+                              balance={balance}
+                            />
+                          ))}
+                        </div>
+                      )}
+                  </div>
                 </div>
-              </div>
+              )}
 
               <div className="row spacer-top-50 spacer-bottom-50">
                 <div className="col-md-8 m-auto">
-                  <h4>Donations</h4>
-                  <ShowTypeDonations donations={donations} isLoading={isLoadingDonations} />
+                  <Balances entity={dac} />
+
+                  <ListDonations
+                    donations={donations}
+                    isLoading={isLoadingDonations}
+                    total={donationsTotal}
+                    loadMore={this.loadMoreDonations}
+                    newDonations={newDonations}
+                  />
                   <DonateButton
-                    type="DAC"
                     model={{
+                      type: DAC.type,
                       title: dac.title,
                       id: dac.id,
+                      token: { symbol: config.nativeTokenName },
                       adminId: dac.delegateId,
                     }}
-                    wallet={wallet}
                     currentUser={currentUser}
                     history={history}
                   />
@@ -196,12 +228,11 @@ ViewDAC.propTypes = {
       id: PropTypes.string,
     }).isRequired,
   }).isRequired,
-  wallet: PropTypes.instanceOf(GivethWallet),
+  balance: PropTypes.instanceOf(BigNumber).isRequired,
 };
 
 ViewDAC.defaultProps = {
   currentUser: undefined,
-  wallet: undefined,
 };
 
 export default ViewDAC;

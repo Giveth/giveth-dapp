@@ -24,7 +24,16 @@ class SelectFormsy extends React.Component {
     const errorMessage = this.props.getErrorMessage();
 
     const options = this.props.options.map(option => (
-      <option key={option.title + option.value} value={option.value}>
+      <option
+        key={option.title + option.value}
+        value={option.value}
+        disabled={
+          this.props.allowedOptions &&
+          !this.props.allowedOptions[
+            option.value
+          ] /* FIXME: This logic should probably be elsewhere, probably in the provider */
+        }
+      >
         {option.title}
       </option>
     ));
@@ -39,14 +48,13 @@ class SelectFormsy extends React.Component {
 
     return (
       <div className={`form-group ${className}`}>
-        <label htmlFor>
+        <label htmlFor={this.props.name}>
           {this.props.label} {this.props.isRequired() ? '*' : null}
           <select
             className="form-control"
             name={this.props.name}
             onChange={this.changeValue}
             value={this.props.getValue()}
-            defaultValue={this.props.getValue()}
             disabled={this.props.disabled}
           >
             {options}
@@ -81,6 +89,7 @@ SelectFormsy.propTypes = {
       value: PropTypes.string.isRequired,
     }),
   ).isRequired,
+  allowedOptions: PropTypes.shape(),
   cta: PropTypes.string,
   className: PropTypes.string,
 };
@@ -92,6 +101,7 @@ SelectFormsy.defaultProps = {
   onChange: () => {},
   label: '',
   className: '',
+  allowedOptions: undefined,
   cta: undefined,
 };
 

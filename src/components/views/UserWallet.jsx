@@ -1,19 +1,16 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { Link } from 'react-router-dom';
-import { utils } from 'web3';
 
-import BackupWallet from '../BackupWallet';
+import GA from 'lib/GoogleAnalytics';
+import BackupWalletButton from '../BackupWalletButton';
 import { isLoggedIn } from '../../lib/middleware';
 // import WithdrawButton from '../WithdrawButton';
 import User from '../../models/User';
 import GivethWallet from '../../lib/blockchain/GivethWallet';
 import Loader from '../Loader';
-import { feathersClient } from '../../lib/feathersClient';
-import { getTruncatedText } from '../../lib/helpers';
-import getNetwork from '../../lib/blockchain/getNetwork';
+import config from '../../configuration';
+import BridgeWithdrawButton from '../BridgeWithdrawButton';
 
-import ErrorPopup from '../ErrorPopup';
 // TODO: Remove the eslint exception after extracting to model
 /* eslint no-underscore-dangle: 0 */
 
@@ -30,95 +27,40 @@ class UserWallet extends Component {
 
     this.state = {
       isLoadingWallet: true,
-      isLoadingTokens: true,
-      tokens: [],
+      insufficientBalance: false,
       hasError: false,
-      etherScanUrl: '',
-      tokenAddress: '',
     };
-
-    getNetwork().then(network => {
-      this.setState({
-        etherScanUrl: network.etherscan,
-        tokenAddress: network.tokenAddress,
-      });
-    });
   }
 
   componentWillMount() {
-    isLoggedIn(this.props.currentUser).then(() => {
-      this.setState({ isLoadingWallet: false });
-
-      // load tokens
-      feathersClient
-        .service('/tokens')
-        .find({ query: { userAddress: this.props.currentUser.myAddress } })
-        .then(resp => {
-          this.setState(
-            {
-              tokens: resp.data,
-              isLoadingTokens: false,
-              hasError: false,
-              tokenSymbols: resp.data.map(t => t.tokenSymbol),
-            },
-            this.getObjectsByTokenSymbol(),
-          );
-        })
-        .catch(e => {
-          ErrorPopup('Something went wrong with loading tokens', e);
-          this.setState({ hasError: true });
-        });
-    });
-  }
-
-  getObjectsByTokenSymbol() {
-    // find the campaign and dac data for the token symbols
-    Promise.all([
-      new Promise((resolve, reject) => {
-        feathersClient
-          .service('dacs')
-          .find({ tokenSymbol: { $in: this.state.tokenSymbols } })
-          .then(res => resolve(res.data))
-          .catch(() => reject());
-      }),
-      new Promise((resolve, reject) => {
-        feathersClient
-          .service('campaigns')
-          .find({ tokenSymbol: { $in: this.state.tokenSymbols } })
-          .then(res => resolve(res.data))
-          .catch(() => reject());
-      }),
-    ])
-      .then(([dacs, campaigns]) => {
-        this.setState({
-          tokens: this.state.tokens.map(t => {
-            const matchingDac = dacs.find(d => d.tokenSymbol === t.tokenSymbol);
-            const matchingCampaign = campaigns.find(c => c.tokenSymbol === t.tokenSymbol);
-
-            t.meta = matchingDac || matchingCampaign;
-            if (matchingDac) t.type = 'dac';
-            else if (matchingCampaign) t.type = 'campaign';
-            else t.type = 'removed';
-            return t;
-          }),
-          isLoadingTokens: false,
-          hasError: false,
-        });
+    isLoggedIn(this.props.currentUser)
+      .then(() => {
+        const bal = this.props.wallet.getBalance();
+        const insufficientBalance = bal === undefined || bal < React.minimumWalletBalance;
+        this.setState({ isLoadingWallet: false, insufficientBalance });
       })
-      .catch(() => {
-        this.setState({ isLoadingTokens: false, hasError: true });
+      .catch(err => {
+        if (err === 'notLoggedIn') {
+          // default behavior is to go home or signin page after swal popup
+        }
       });
   }
 
+  /* eslint-disable class-methods-use-this */
+  onBackup() {
+    GA.trackEvent({
+      category: 'User',
+      action: 'backed up wallet',
+    });
+  }
+
+  hasTokenBalance() {
+    return Object.values(config.tokenAddresses).some(a => this.props.wallet.getTokenBalance(a) > 0);
+  }
+
   render() {
-    const {
-      isLoadingWallet,
-      isLoadingTokens,
-      tokens,
-      hasError,
-      etherScanUrl,
-      tokenAddress,
-    } = this.state;
+    const { isLoadingWallet, insufficientBalance, hasError } = this.state;
+    const { etherscan, tokenAddresses } = config;
 
     return (
       <div id="profile-view" className="container-fluid page-layout dashboard-table-view">
@@ -138,81 +80,95 @@ class UserWallet extends Component {
           {!isLoadingWallet &&
             !hasError && (
               <div>
-                <p>{this.props.currentUser.address}</p>
+                <div className="alert alert-warning">
+                  <i className="fa fa-exclamation-triangle" />
+                  Please <strong>do not send any main network ether</strong> to this address. All
+                  the transactions in the DApp are made on{' '}
+                  <strong>{config.foreignNetworkName}</strong> network. To interact with the DApp
+                  you do not need any main network ether.
+                </div>
                 <p>
-                  {' '}
-                  <strong>Rinkeby ETH</strong> balance: {this.props.wallet.getBalance()} ETH
+                  <a
+                    href={`${config.etherscan}/address/${this.props.currentUser.address}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    {this.props.currentUser.address}
+                  </a>
                 </p>
-                {etherScanUrl && (
-                  <p>
-                    <a
-                      href={`${etherScanUrl}token/${tokenAddress}?a=${
-                        this.props.currentUser.address
-                      }`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      GivETH
-                    </a>{' '}
-                    balance: {this.props.wallet.getTokenBalance()} ETH
-                  </p>
+
+                {insufficientBalance && (
+                  <div className="alert alert-warning">
+                    <p>
+                      We noticed that you do not have a sufficient balance in your wallet. Your
+                      wallet should be automatically topped up, however if you are a frequent user
+                      or use this wallet on the <strong>{config.foreignNetworkName}</strong>{' '}
+                      network, we may not be able to replenish it fast enough.
+                    </p>
+                    <p>
+                      <strong>{config.foreignNetworkName}</strong> balance:{' '}
+                      {this.props.wallet.getBalance()} ETH
+                    </p>
+                    <p>
+                      You can visit the{' '}
+                      <a
+                        href="https://faucet.rinkeby.io/"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        faucet
+                      </a>{' '}
+                      to get more ETH
+                    </p>
+                  </div>
                 )}
-                {!etherScanUrl && <p>GivETH balance: {this.props.wallet.getTokenBalance()} ETH</p>}
-                {/* <WithdrawButton wallet={this.props.wallet} currentUser={this.props.currentUser} /> */}
-                <BackupWallet wallet={this.props.wallet} />
 
-                {isLoadingTokens && <Loader className="small" />}
+                <p>
+                  <BackupWalletButton wallet={this.props.wallet} onBackup={this.onBackup} />
+                </p>
 
-                {!isLoadingTokens &&
-                  tokens.length > 0 && (
-                    <div className="table-container">
-                      <table className="table table-responsive table-striped table-hover">
-                        <thead>
-                          <tr>
-                            <th className="td-token-name">Token</th>
-                            <th className="td-token-symbol">Symbol</th>
-                            <th className="td-donations-amount">Amount</th>
-                            <th className="td-tx-address">Token address</th>
-                            <th className="td-name">Received from a donation to</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {tokens.map(t => (
-                            <tr key={t._id}>
-                              <td className="td-token-name">{t.tokenName}</td>
-                              <td className="td-token-symbol">{t.tokenSymbol}</td>
-                              <td className="td-donations-amount">
-                                {t.balance ? utils.fromWei(t.balance) : 0}
-                              </td>
-                              <td className="td-tx-address">
-                                {etherScanUrl && (
-                                  <a href={`${etherScanUrl}address/${t.tokenAddress}`}>
-                                    {t.tokenAddress}
-                                  </a>
-                                )}
-                                {!etherScanUrl && <span>{t.tokenAddress}</span>}
-                              </td>
-                              <td className="td-received-from">
-                                {t.type === 'campaign' && (
-                                  <Link to={`/campaigns/${t.meta._id}`}>
-                                    <em>{t.type} </em>
-                                    {getTruncatedText(t.meta.title, 45)}
-                                  </Link>
-                                )}
-                                {t.type === 'dac' && (
-                                  <Link to={`/dacs/${t.meta._id}`}>
-                                    <em>{t.type} </em>
-                                    {getTruncatedText(t.meta.title, 45)}
-                                  </Link>
-                                )}
-                                {t.type === 'revomed' && <span>Does not exist anymore</span>}
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
+                {this.hasTokenBalance() && (
+                  <div>
+                    {Object.keys(tokenAddresses)
+                      .filter(t => this.props.wallet.getTokenBalance(tokenAddresses[t]) > 0)
+                      .map(
+                        t =>
+                          etherscan ? (
+                            <p>
+                              <a
+                                href={`${etherscan}token/${tokenAddresses[t]}?a=${
+                                  this.props.currentUser.address
+                                }`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                              >
+                                <strong>
+                                  Bridged -
+                                  {t}
+                                </strong>
+                              </a>
+                              balance: {this.props.wallet.getTokenBalance(tokenAddresses[t])}
+                            </p>
+                          ) : (
+                            <p>
+                              Bridged - <strong>{t}</strong> balance:{' '}
+                              {this.props.wallet.getTokenBalance(tokenAddresses[t])}
+                            </p>
+                          ),
+                      )}
+                    <div className="alert alert-warning">
+                      We noticed you have some tokens on the{' '}
+                      <strong>{config.foreignNetworkName}</strong> network that have not been
+                      transfered across the bridge to the
+                      <strong>{config.homeNetworkName}</strong> network.
                     </div>
-                  )}
+                    <BridgeWithdrawButton
+                      wallet={this.props.wallet}
+                      currentUser={this.props.currentUser}
+                    />
+                  </div>
+                )}
+                {/* <WithdrawButton wallet={this.props.wallet} currentUser={this.props.currentUser} /> */}
               </div>
             )}
 

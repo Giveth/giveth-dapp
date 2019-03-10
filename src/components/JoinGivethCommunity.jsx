@@ -1,10 +1,11 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
+import BigNumber from 'bignumber.js';
 
 import CommunityButton from './CommunityButton';
 import User from '../models/User';
-import { takeActionAfterWalletUnlock, checkWalletBalance, isInWhitelist } from '../lib/middleware';
-import GivethWallet from '../lib/blockchain/GivethWallet';
+import { checkBalance } from '../lib/middleware';
+import { Consumer as WhiteListConsumer } from '../contextProviders/WhiteListProvider';
 
 /**
  * The join Giveth community top-bar
@@ -13,124 +14,120 @@ class JoinGivethCommunity extends Component {
   constructor(props) {
     super(props);
 
-    this.state = {
-      canCreateCampaign: false,
-      canCreateDAC: false,
-    };
-
     this.createDAC = this.createDAC.bind(this);
     this.createCampaign = this.createCampaign.bind(this);
   }
 
-  componentDidMount() {
-    isInWhitelist(this.props.currentUser, React.whitelist.delegateWhitelist)
-      .then(() => this.setState({ canCreateCampaign: true }))
-      .catch(() => {}); // nothing
-    isInWhitelist(this.props.currentUser, React.whitelist.projectOwnerWhitelist)
-      .then(() => this.setState({ canCreateDAC: true }))
-      .catch(() => {}); // nothing
-  }
-
   createDAC() {
-    isInWhitelist(this.props.currentUser, React.whitelist.delegateWhitelist)
-      .then(() => {
-        if (this.props.currentUser) {
-          takeActionAfterWalletUnlock(this.props.wallet, () => {
-            checkWalletBalance(this.props.wallet).then(() => {
-              this.props.history.push('/dacs/new');
-            });
-          });
-        } else {
-          React.swal({
-            title: "You're almost there...",
-            content: React.swal.msg(
-              <p>
-                It&#8217;s great to see that you want to start a Decentralized Altruistic Community,
-                or DAC. To get started, please sign up (or sign in) first.
-              </p>,
-            ),
-            icon: 'info',
-            buttons: ['Cancel', 'Sign up now!'],
-          }).then(isConfirmed => {
-            if (isConfirmed) this.props.history.push('/signup');
-          });
-        }
-      })
-      .catch(() => {
-        React.swal({
-          title: 'Sorry, Giveth is in beta...',
-          content: React.swal.msg(
-            <p>
-              It&#8217;s great to see that you want to start a Decentralized Altruistic Community,
-              or DAC! However, Giveth is still in alpha and we only allow a select group of people
-              to start DACs<br />
-              Please <strong>contact us on our Slack</strong>, or keep browsing
-            </p>,
-          ),
-          icon: 'info',
-          buttons: [false, 'Got it'],
-        });
+    if (!this.props.isDelegate(this.props.currentUser)) {
+      React.swal({
+        title: 'Sorry, Giveth is in beta...',
+        content: React.swal.msg(
+          <p>
+            It&#8217;s great to see that you want to start a Decentralized Altruistic Community, or
+            DAC! However, Giveth is still in alpha and we only allow a select group of people to
+            start DACs
+            <br />
+            Please <strong>contact us on our Slack</strong>
+            , or keep browsing
+          </p>,
+        ),
+        icon: 'info',
+        buttons: [false, 'Got it'],
       });
+      return;
+    }
+    if (this.props.currentUser) {
+      checkBalance(this.props.balance)
+        .then(() => {
+          this.props.history.push('/dacs/new');
+        })
+        .catch(err => {
+          if (err === 'noBalance') {
+            // handle no balance error
+          }
+        });
+    } else {
+      React.swal({
+        title: "You're almost there...",
+        content: React.swal.msg(
+          <p>
+            It&#8217;s great to see that you want to start a Decentralized Altruistic Community, or
+            DAC. To get started, please sign up (or sign in) first.
+          </p>,
+        ),
+        icon: 'info',
+        buttons: ['Cancel', 'Sign up now!'],
+      }).then(isConfirmed => {
+        if (isConfirmed) this.props.history.push('/signup');
+      });
+    }
   }
 
   createCampaign() {
-    isInWhitelist(this.props.currentUser, React.whitelist.projectOwnerWhitelist)
-      .then(() => {
-        if (this.props.currentUser) {
-          takeActionAfterWalletUnlock(this.props.wallet, () => {
-            checkWalletBalance(this.props.wallet).then(() => {
-              this.props.history.push('/campaigns/new');
-            });
-          });
-        } else {
-          React.swal({
-            title: "You're almost there...",
-            content: React.swal.msg(
-              <p>
-                It&#8217;s great to see that you want to start a campaign. To get started, please
-                sign up (or sign in) first.
-              </p>,
-            ),
-            icon: 'info',
-            buttons: ['Cancel', 'Sign up now!'],
-          }).then(isConfirmed => {
-            if (isConfirmed) this.props.history.push('/signup');
-          });
-        }
-      })
-      .catch(() => {
-        React.swal({
-          title: 'Sorry, Giveth is in beta...',
-          content: React.swal.msg(
-            <p>
-              It&#8217;s great to see that you want to start a campaign, however, Giveth is still in
-              alpha and we only allow a select group of people to start campaigns<br />
-              Please <strong>contact us on our Slack</strong>, or keep browsing
-            </p>,
-          ),
-          icon: 'info',
-          buttons: [false, 'Got it'],
-        });
+    if (!this.props.isCampaignManager(this.props.currentUser)) {
+      React.swal({
+        title: 'Sorry, Giveth is in beta...',
+        content: React.swal.msg(
+          <p>
+            It&#8217;s great to see that you want to start a campaign, however, Giveth is still in
+            beta and we only allow a select group of people to start campaigns
+            <br />
+            Please <strong>contact us on our Slack</strong>
+            , or keep browsing
+          </p>,
+        ),
+        icon: 'info',
+        buttons: [false, 'Got it'],
       });
+      return;
+    }
+    if (this.props.currentUser) {
+      checkBalance(this.props.balance)
+        .then(() => {
+          this.props.history.push('/campaigns/new');
+        })
+        .catch(err => {
+          if (err === 'noBalance') {
+            // handle no balance error
+          }
+        });
+    } else {
+      React.swal({
+        title: "You're almost there...",
+        content: React.swal.msg(
+          <p>
+            It&#8217;s great to see that you want to start a campaign. To get started, please sign
+            up (or sign in) first.
+          </p>,
+        ),
+        icon: 'info',
+        buttons: ['Cancel', 'Sign up now!'],
+      }).then(isConfirmed => {
+        if (isConfirmed) this.props.history.push('/signup');
+      });
+    }
   }
 
   render() {
+    const { currentUser, isDelegate, isCampaignManager } = this.props;
+
     return (
       <div id="join-giveth-community">
         <div className="vertical-align">
           <center>
             <h3>Building the Future of Giving, with You.</h3>
-            <CommunityButton className="btn btn-success" url="https://giveth.slack.com">
+            <CommunityButton className="btn btn-success" url="https://giveth.io/join">
               &nbsp;Join Giveth
             </CommunityButton>
             &nbsp;
-            {this.state.canCreateCampaign && (
-              <button className="btn btn-info" onClick={() => this.createDAC()}>
+            {isDelegate(currentUser) && (
+              <button type="button" className="btn btn-info" onClick={() => this.createDAC()}>
                 Create a Community
               </button>
             )}
-            {this.state.canCreateDAC && (
-              <button className="btn btn-info" onClick={() => this.createCampaign()}>
+            {isCampaignManager(currentUser) && (
+              <button type="button" className="btn btn-info" onClick={() => this.createCampaign()}>
                 Start a Campaign
               </button>
             )}
@@ -141,18 +138,29 @@ class JoinGivethCommunity extends Component {
   }
 }
 
-export default JoinGivethCommunity;
-
 JoinGivethCommunity.propTypes = {
   history: PropTypes.shape({
     goBack: PropTypes.func.isRequired,
     push: PropTypes.func.isRequired,
   }).isRequired,
+  balance: PropTypes.instanceOf(BigNumber).isRequired,
   currentUser: PropTypes.instanceOf(User),
-  wallet: PropTypes.instanceOf(GivethWallet),
+  isDelegate: PropTypes.func.isRequired,
+  isCampaignManager: PropTypes.func.isRequired,
 };
 
 JoinGivethCommunity.defaultProps = {
-  wallet: undefined,
   currentUser: undefined,
 };
+
+export default props => (
+  <WhiteListConsumer>
+    {({ actions: { isDelegate, isCampaignManager } }) => (
+      <JoinGivethCommunity
+        {...props}
+        isDelegate={isDelegate}
+        isCampaignManager={isCampaignManager}
+      />
+    )}
+  </WhiteListConsumer>
+);

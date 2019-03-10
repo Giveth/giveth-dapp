@@ -1,25 +1,28 @@
 import React, { Component } from 'react';
+import { Prompt } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import { Form, Input } from 'formsy-react-components';
+import BigNumber from 'bignumber.js';
 
+import GA from 'lib/GoogleAnalytics';
 import Loader from '../Loader';
 import QuillFormsy from '../QuillFormsy';
-import FormsyImageUploader from './../FormsyImageUploader';
+import FormsyImageUploader from '../FormsyImageUploader';
 import GoBackButton from '../GoBackButton';
 import { isOwner, getTruncatedText, history } from '../../lib/helpers';
 import {
-  isAuthenticated,
-  checkWalletBalance,
-  isInWhitelist,
-  confirmBlockchainTransaction,
+  checkForeignNetwork,
+  checkProfile,
+  authenticateIfPossible,
+  checkBalance,
 } from '../../lib/middleware';
-import LoaderButton from '../../components/LoaderButton';
+import LoaderButton from '../LoaderButton';
 
-import DACservice from '../../services/DAC';
+import DACservice from '../../services/DACService';
 import DAC from '../../models/DAC';
 import User from '../../models/User';
-import GivethWallet from '../../lib/blockchain/GivethWallet';
 import ErrorPopup from '../ErrorPopup';
+import { Consumer as WhiteListConsumer } from '../../contextProviders/WhiteListProvider';
 
 /**
  * View to create or edit a DAC
@@ -28,7 +31,6 @@ import ErrorPopup from '../ErrorPopup';
  *                 Otherwise component expects an id param and will load a DAC object
  * @param id       URL parameter which is an id of a campaign object
  * @param history  Browser history object
- * @param wallet   Wallet object with the balance and all keystores
  */
 class EditDAC extends Component {
   constructor(props) {
@@ -43,22 +45,24 @@ class EditDAC extends Component {
       dac: new DAC({
         owner: props.currentUser,
       }),
+      isBlocking: false,
     };
+
+    this.form = React.createRef();
 
     this.submit = this.submit.bind(this);
     this.setImage = this.setImage.bind(this);
   }
 
   componentDidMount() {
-    isAuthenticated(this.props.currentUser, this.props.wallet)
-      .then(() => isInWhitelist(this.props.currentUser, React.whitelist.delegateWhitelist))
-      .then(() => checkWalletBalance(this.props.wallet))
+    checkForeignNetwork(this.props.isForeignNetwork)
+      .then(() => this.checkUser())
       .then(() => {
         if (!this.props.isNew) {
           DACservice.get(this.props.match.params.id)
             .then(dac => {
               // The user is not an owner, hence can not change the DAC
-              if (!isOwner(dac.owner.address, this.props.currentUser)) {
+              if (!isOwner(dac.ownerAddress, this.props.currentUser)) {
                 // TODO: Not really user friendly
                 history.goBack();
               } else {
@@ -84,6 +88,17 @@ class EditDAC extends Component {
     this.mounted = true;
   }
 
+  componentDidUpdate(prevProps) {
+    if (prevProps.currentUser !== this.props.currentUser) {
+      this.checkUser().then(() => {
+        if (!this.props.isNew && !isOwner(this.state.dac.ownerAddress, this.props.currentUser))
+          history.goBack();
+      });
+    } else if (this.props.currentUser && !prevProps.balance.eq(this.props.balance)) {
+      checkBalance(this.props.balance);
+    }
+  }
+
   componentWillUnmount() {
     this.mounted = false;
   }
@@ -94,44 +109,79 @@ class EditDAC extends Component {
     this.setState({ dac });
   }
 
-  submit() {
-    this.setState({ isSaving: true });
+  checkUser() {
+    if (!this.props.currentUser) {
+      history.push('/');
+      return Promise.reject();
+    }
 
-    const afterMined = url => {
-      if (url) {
-        const msg = (
-          <p>
-            Your DAC has been created!<br />
-            <a href={url} target="_blank" rel="noopener noreferrer">
-              View transaction
-            </a>
-          </p>
-        );
-        React.toast.success(msg);
-      } else {
-        if (this.mounted) this.setState({ isSaving: false });
-        React.toast.success('Your DAC has been updated!');
-        history.push(`/dacs/${this.state.dac.id}`);
-      }
-    };
-    const afterCreate = url => {
-      if (this.mounted) this.setState({ isSaving: false });
-      const msg = (
+    return authenticateIfPossible(this.props.currentUser)
+      .then(() => {
+        if (!this.props.isDelegate(this.props.currentUser)) {
+          throw new Error('not whitelisted');
+        }
+      })
+      .then(() => checkProfile(this.props.currentUser))
+      .then(() => checkBalance(this.props.balance));
+  }
+
+  submit() {
+    // Save dac
+    const showToast = (msg, url, isSuccess = false) => {
+      const toast = url ? (
         <p>
-          Your DAC is pending....<br />
+          {msg}
+          <br />
           <a href={url} target="_blank" rel="noopener noreferrer">
             View transaction
           </a>
         </p>
+      ) : (
+        msg
       );
-      React.toast.info(msg);
-      history.push('/my-dacs');
+
+      if (isSuccess) React.toast.success(toast);
+      else React.toast.info(toast);
     };
 
-    // Save the DAC
-    confirmBlockchainTransaction(
-      () => this.state.dac.save(afterCreate, afterMined),
-      () => this.setState({ isSaving: false }),
+    const afterMined = (created, url, id) => {
+      const msg = `Your DAC has been ${created ? 'created' : 'updated'}`;
+      showToast(msg, url, true);
+
+      if (created) {
+        GA.trackEvent({
+          category: 'DAC',
+          action: 'created',
+          label: id,
+        });
+      } else {
+        if (this.mounted) this.setState({ isSaving: false });
+        GA.trackEvent({
+          category: 'DAC',
+          action: 'updated',
+          label: id,
+        });
+        history.push(`/dacs/${id}`);
+      }
+    };
+    const afterSave = (err, created, url) => {
+      if (this.mounted) this.setState({ isSaving: false });
+      if (err) return;
+      const msg = created ? 'Your DAC is pending...' : 'Your DAC is being updated...';
+      showToast(msg, url);
+
+      if (created) history.push('/my-dacs');
+    };
+
+    this.setState(
+      {
+        isSaving: true,
+        isBlocking: false,
+      },
+      () => {
+        // Save the DAC
+        this.state.dac.save(afterSave, afterMined);
+      },
     );
   }
 
@@ -139,9 +189,15 @@ class EditDAC extends Component {
     this.setState({ formIsValid: state });
   }
 
+  triggerRouteBlocking() {
+    const form = this.form.current.formsyForm;
+    // we only block routing if the form state is not submitted
+    this.setState({ isBlocking: form && (!form.state.formSubmitted || form.state.isSubmitting) });
+  }
+
   render() {
     const { isNew } = this.props;
-    const { isLoading, isSaving, dac, formIsValid } = this.state;
+    const { isLoading, isSaving, dac, formIsValid, isBlocking } = this.state;
 
     return (
       <div id="edit-dac-view">
@@ -160,27 +216,41 @@ class EditDAC extends Component {
                     {!isNew && <h3>Edit DAC</h3>}
 
                     <p>
-                      <i className="fa fa-question-circle" />A DAC aims to solve a cause by building
-                      a Community, raising funds and delegating those funds to Campaigns that solve
-                      its cause. Should you create a Campaign or Community? Read more
-                      [here.](http://wiki.giveth.io)
+                      <i className="fa fa-question-circle" />
+                      A DAC aims to solve a cause by building a Community, raising funds and
+                      delegating those funds to Campaigns that solve its cause. Should you create a
+                      Campaign or Community? Read more{' '}
+                      <a
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        href="https://wiki.giveth.io/documentation/glossary/"
+                      >
+                        here
+                      </a>.
                     </p>
                   </div>
 
                   <Form
                     onSubmit={this.submit}
+                    ref={this.form}
                     mapping={inputs => {
                       dac.title = inputs.title;
                       dac.description = inputs.description;
                       dac.communityUrl = inputs.communityUrl;
-                      dac.tokenName = inputs.tokenName;
-                      dac.tokenSymbol = inputs.tokenSymbol;
                       dac.summary = getTruncatedText(inputs.description, 100);
                     }}
                     onValid={() => this.toggleFormValid(true)}
                     onInvalid={() => this.toggleFormValid(false)}
+                    onChange={e => this.triggerRouteBlocking(e)}
                     layout="vertical"
                   >
+                    <Prompt
+                      when={isBlocking}
+                      message={() =>
+                        `You have unsaved changes. Are you sure you want to navigate from this page?`
+                      }
+                    />
+
                     <Input
                       name="title"
                       id="title-input"
@@ -200,7 +270,7 @@ class EditDAC extends Component {
                     <div className="form-group">
                       <QuillFormsy
                         name="description"
-                        label="Explain how you are going to solve this your cause"
+                        label="Explain your cause"
                         helpText="Make it as extensive as necessary. Your goal is to build trust,
                         so that people join your Community and/or donate Ether."
                         value={dac.description}
@@ -231,47 +301,11 @@ class EditDAC extends Component {
                         type="text"
                         value={dac.communityUrl}
                         placeholder="https://slack.giveth.com"
-                        help="Where can people join your community? Giveth redirect people there."
+                        help="Where can people join your community? Paste a link here for your community's website, social or chatroom."
                         validations="isUrl"
                         validationErrors={{
                           isUrl: 'Please provide a url.',
                         }}
-                      />
-                    </div>
-
-                    <div className="form-group">
-                      <Input
-                        name="tokenName"
-                        id="token-name-input"
-                        label="Token Name"
-                        type="text"
-                        value={dac.tokenName}
-                        help="The name of the token that givers will receive when they donate to
-                        this dac."
-                        validations="minLength:3"
-                        validationErrors={{
-                          minLength: 'Please provide at least 3 characters.',
-                        }}
-                        required
-                        disabled={!isNew}
-                      />
-                    </div>
-
-                    <div className="form-group">
-                      <Input
-                        name="tokenSymbol"
-                        id="token-symbol-input"
-                        label="Token Symbol"
-                        type="text"
-                        value={dac.tokenSymbol}
-                        help="The symbol of the token that givers will receive when they donate to
-                        this dac."
-                        validations="minLength:2"
-                        validationErrors={{
-                          minLength: 'Please provide at least 2 characters.',
-                        }}
-                        required
-                        disabled={!isNew}
                       />
                     </div>
 
@@ -284,8 +318,9 @@ class EditDAC extends Component {
                           className="btn btn-success pull-right"
                           formNoValidate
                           type="submit"
-                          disabled={isSaving || !formIsValid}
+                          disabled={isSaving || !formIsValid || (dac.id && dac.delegateId === 0)}
                           isLoading={isSaving}
+                          network="Foreign"
                           loadingText="Saving..."
                         >
                           {isNew ? 'Create DAC' : 'Update DAC'}
@@ -304,18 +339,25 @@ class EditDAC extends Component {
 }
 
 EditDAC.propTypes = {
-  currentUser: PropTypes.instanceOf(User).isRequired,
+  currentUser: PropTypes.instanceOf(User),
   isNew: PropTypes.bool,
-  wallet: PropTypes.instanceOf(GivethWallet).isRequired,
+  balance: PropTypes.instanceOf(BigNumber).isRequired,
+  isForeignNetwork: PropTypes.bool.isRequired,
   match: PropTypes.shape({
     params: PropTypes.shape({
       id: PropTypes.string,
     }).isRequired,
   }).isRequired,
+  isDelegate: PropTypes.func.isRequired,
 };
 
 EditDAC.defaultProps = {
+  currentUser: undefined,
   isNew: false,
 };
 
-export default EditDAC;
+export default props => (
+  <WhiteListConsumer>
+    {({ actions: { isDelegate } }) => <EditDAC {...props} isDelegate={isDelegate} />}
+  </WhiteListConsumer>
+);

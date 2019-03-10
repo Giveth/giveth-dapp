@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 
 import { File } from 'formsy-react-components';
 import Cropper from 'react-cropper';
-import ImageTools from './../lib/ImageResizer';
+import ImageTools from '../lib/ImageResizer';
 
 /* global FileReader */
 /**
@@ -84,6 +84,7 @@ class FormsyImageUploader extends Component {
                   highlight={false}
                   autoCropArea={1}
                   zoomOnWheel={false}
+                  viewMode={1}
                 />
               </div>
             </div>

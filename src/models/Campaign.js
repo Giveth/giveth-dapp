@@ -1,6 +1,11 @@
+/* eslint-disable import/no-cycle */
+
 import BasicModel from './BasicModel';
-import CampaignService from '../services/Campaign';
-import UploadService from '../services/Uploads';
+import CampaignService from '../services/CampaignService';
+import IPFSService from '../services/IPFSService';
+import ErrorPopup from '../components/ErrorPopup';
+import { cleanIpfsPath, ZERO_ADDRESS } from '../lib/helpers';
+
 /**
  * The DApp Campaign model
  */
@@ -8,67 +13,94 @@ class Campaign extends BasicModel {
   static get CANCELED() {
     return 'Canceled';
   }
+
   static get PENDING() {
     return 'Pending';
   }
+
   static get ACTIVE() {
     return 'Active';
+  }
+
+  static get type() {
+    return 'campaign';
+  }
+
+  // eslint-disable-next-line class-methods-use-this
+  get type() {
+    return Campaign.type;
   }
 
   constructor(data) {
     super(data);
 
     this.communityUrl = data.communityUrl || '';
-    this.projectId = data.projectId || '0';
-    this.tokenName = data.tokenName || '';
-    this.tokenSymbol = data.tokenSymbol || '';
-    this.dacs = data.dacs || [];
-    this.pluginAddress = data.pluginAddress || '0x0000000000000000000000000000000000000000';
+    this.confirmations = data.confirmations || 0;
+    this.projectId = data.projectId || 0;
+    this.pluginAddress = data.pluginAddress || ZERO_ADDRESS;
     this.status = data.status || Campaign.PENDING;
+    this.requiredConfirmations = data.requiredConfirmations;
     this.reviewerAddress = data.reviewerAddress;
+    this.ownerAddress = data.ownerAddress;
+    this.mined = data.mined;
+    this._id = data._id;
+    this.commitTime = data.commitTime || 0;
   }
 
-  toFeathers() {
+  toIpfs() {
     return {
+      title: this.title,
+      description: this.description,
+      communityUrl: this.communityUrl,
+      image: cleanIpfsPath(this.image),
+      version: 1,
+    };
+  }
+
+  toFeathers(txHash) {
+    const campaign = {
       id: this.id,
       title: this.title,
       description: this.description,
       communityUrl: this.communityUrl,
-      summary: this.summary,
       projectId: this.projectId,
-      image: this.image,
-      txHash: this.txHash,
+      image: cleanIpfsPath(this.image),
       totalDonated: this.totalDonated,
       donationCount: this.donationCount,
       peopleCount: this.peopleCount,
-      tokenName: this.tokenName,
-      tokenSymbol: this.tokenSymbol,
-      dacs: this.dacs,
       reviewerAddress: this.reviewerAddress,
+      status: this.status,
     };
+    if (!this.id) campaign.txHash = txHash;
+    return campaign;
   }
 
   get isActive() {
     return this.status === Campaign.ACTIVE;
   }
 
+  get isPending() {
+    return this.status === Campaign.PENDING || !this.mined;
+  }
+
   /**
    * Save the campaign to feathers and blockchain if necessary
    *
-   * @param afterCreate Callback function once a transaction is created
-   * @param afterMined  Callback function once the transaction is mined and feathers updated
+   * @param afterSve Callback function once the campaign has been saved to feathers
+   * @param afterMined  Callback function once the transaction is mined
    */
-  save(afterCreate, afterMined) {
+  save(afterSave, afterMined) {
     if (this.newImage) {
-      UploadService.save(this.image).then(file => {
-        // Save the new image address and mark it as old
-        this.image = file.url;
-        this.newImage = false;
-
-        CampaignService.save(this, this.owner.address, afterCreate, afterMined);
-      });
+      IPFSService.upload(this.image)
+        .then(hash => {
+          // Save the new image address and mark it as old
+          this.image = hash;
+          this.newImage = false;
+        })
+        .catch(err => ErrorPopup('Failed to upload image', err))
+        .finally(() => CampaignService.save(this, this.owner.address, afterSave, afterMined));
     } else {
-      CampaignService.save(this, this.owner.address, afterCreate, afterMined);
+      CampaignService.save(this, this.owner.address, afterSave, afterMined);
     }
   }
 
@@ -97,26 +129,8 @@ class Campaign extends BasicModel {
   }
 
   set projectId(value) {
-    this.checkType(value, ['string'], 'projectId');
+    this.checkType(value, ['number', 'string'], 'projectId');
     this.myProjectId = value;
-  }
-
-  get tokenName() {
-    return this.myTokenName;
-  }
-
-  set tokenName(value) {
-    this.checkType(value, ['string'], 'tokenName');
-    this.myTokenName = value;
-  }
-
-  get tokenSymbol() {
-    return this.myTokenSymbol;
-  }
-
-  set tokenSymbol(value) {
-    this.checkType(value, ['string'], 'tokenSymbol');
-    this.myTokenSymbol = value;
   }
 
   get status() {
@@ -130,15 +144,6 @@ class Campaign extends BasicModel {
     else if (value === Campaign.ACTIVE) this.myOrder = 2;
     else if (value === Campaign.CANCELED) this.myOrder = 3;
     else this.myOrder = 4;
-  }
-
-  get dacs() {
-    return this.myDacs;
-  }
-
-  set dacs(value) {
-    this.checkType(value, ['object', 'array'], 'dacs');
-    this.myDacs = value;
   }
 
   get pluginAddress() {
@@ -157,6 +162,15 @@ class Campaign extends BasicModel {
   set reviewerAddress(value) {
     this.checkType(value, ['string', 'undefined'], 'reviewerAddress');
     this.myReviewerAddress = value;
+  }
+
+  get commitTime() {
+    return this.myCommitTime;
+  }
+
+  set commitTime(value) {
+    this.checkType(value, ['number'], 'commitTime');
+    this.myCommitTime = value;
   }
 }
 

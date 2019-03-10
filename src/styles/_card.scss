@@ -53,6 +53,7 @@ $aspect-ratio: percentage(9/16); //16:9 ratio
     .card-content {
       padding: 20px;
       height: 250px;
+      word-break: break-all;
 
       .card-title {
         font-weight: 700;
@@ -142,4 +143,5 @@ $aspect-ratio: percentage(9/16); //16:9 ratio
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-direction: column;
 }

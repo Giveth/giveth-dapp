@@ -1,28 +1,29 @@
 import React, { Component } from 'react';
+import { Prompt } from 'react-router-dom';
 import PropTypes from 'prop-types';
-import InputToken from 'react-input-token';
+import BigNumber from 'bignumber.js';
 import 'react-input-token/lib/style.css';
 
 import { Form, Input } from 'formsy-react-components';
-import { feathersClient } from '../../lib/feathersClient';
+import GA from 'lib/GoogleAnalytics';
 import Loader from '../Loader';
 import QuillFormsy from '../QuillFormsy';
-import SelectFormsy from './../SelectFormsy';
-import FormsyImageUploader from './../FormsyImageUploader';
+import SelectFormsy from '../SelectFormsy';
+import FormsyImageUploader from '../FormsyImageUploader';
 import GoBackButton from '../GoBackButton';
 import { isOwner, getTruncatedText, history } from '../../lib/helpers';
 import {
-  isAuthenticated,
-  checkWalletBalance,
-  isInWhitelist,
-  confirmBlockchainTransaction,
+  checkForeignNetwork,
+  checkBalance,
+  authenticateIfPossible,
+  checkProfile,
 } from '../../lib/middleware';
-import LoaderButton from '../../components/LoaderButton';
+import LoaderButton from '../LoaderButton';
 import User from '../../models/User';
-import GivethWallet from '../../lib/blockchain/GivethWallet';
 import Campaign from '../../models/Campaign';
-import CampaignService from '../../services/Campaign';
+import CampaignService from '../../services/CampaignService';
 import ErrorPopup from '../ErrorPopup';
+import { Consumer as WhiteListConsumer } from '../../contextProviders/WhiteListProvider';
 
 /**
  * View to create or edit a Campaign
@@ -30,7 +31,6 @@ import ErrorPopup from '../ErrorPopup';
  * @param isNew    If set, component will load an empty model.
  *                 Otherwise component expects an id param and will load a campaign object
  * @param id       URL parameter which is an id of a campaign object
- * @param wallet   Wallet object with the balance and all keystores
  */
 class EditCampaign extends Component {
   constructor(props) {
@@ -40,56 +40,29 @@ class EditCampaign extends Component {
       isLoading: true,
       isSaving: false,
       formIsValid: false,
-      dacsOptions: [],
-      hasWhitelist: React.whitelist.reviewerWhitelist.length > 0,
-      whitelistOptions: React.whitelist.projectOwnerWhitelist.map(r => ({
-        value: r.address,
-        title: `${r.name ? r.name : 'Anonymous user'} - ${r.address}`,
-      })),
-      reviewers: [],
       // Campaign model
       campaign: new Campaign({
         owner: props.currentUser,
       }),
+      isBlocking: false,
     };
+
+    this.form = React.createRef();
 
     this.submit = this.submit.bind(this);
     this.setImage = this.setImage.bind(this);
-    this.selectDACs = this.selectDACs.bind(this);
   }
 
   componentDidMount() {
-    isAuthenticated(this.props.currentUser, this.props.wallet)
-      .then(() => isInWhitelist(this.props.currentUser, React.whitelist.projectOwnerWhitelist))
-      .then(() => checkWalletBalance(this.props.wallet))
+    this.mounted = true;
+    checkForeignNetwork(this.props.isForeignNetwork)
+      .then(() => this.checkUser())
       .then(() => {
-        if (!this.state.hasWhitelist) this.getReviewers();
-      })
-      .then(() => {
-        this.dacsObserver = feathersClient
-          .service('dacs')
-          .watch({ listStrategy: 'always' })
-          .find({ query: { $select: ['title', '_id'] } })
-          .subscribe(
-            resp =>
-              this.setState({
-                // TODO: should we filter the available causes to those that have been mined?
-                // It is possible that a createCause tx will fail and the dac will not be
-                // available
-                dacsOptions: resp.data.map(({ _id, title }) => ({
-                  name: title,
-                  id: _id,
-                  element: <span key={_id}>{title}</span>,
-                })),
-              }),
-            () => this.setState({ isLoading: false }),
-          );
-
         // Load this Campaign
         if (!this.props.isNew) {
           CampaignService.get(this.props.match.params.id)
             .then(campaign => {
-              if (isOwner(campaign.owner.address, this.props.currentUser)) {
+              if (isOwner(campaign.ownerAddress, this.props.currentUser)) {
                 this.setState({ campaign, isLoading: false });
               } else history.goBack();
             })
@@ -103,36 +76,27 @@ class EditCampaign extends Component {
         } else {
           this.setState({ isLoading: false });
         }
+      })
+      .catch(err => {
+        if (err === 'noBalance') {
+          // handle no balance error
+        }
       });
+  }
+
+  componentDidUpdate(prevProps) {
+    if (prevProps.currentUser !== this.props.currentUser) {
+      this.checkUser().then(() => {
+        if (!this.props.isNew && !isOwner(this.state.campaign.ownerAddress, this.props.currentUser))
+          history.goBack();
+      });
+    } else if (this.props.currentUser && !prevProps.balance.eq(this.props.balance)) {
+      checkBalance(this.props.balance);
+    }
   }
 
   componentWillUnmount() {
-    if (this.dacsObserver) this.dacsObserver.unsubscribe();
-  }
-
-  getReviewers() {
-    return feathersClient
-      .service('/users')
-      .find({
-        query: {
-          email: { $exists: true },
-          $select: ['_id', 'name', 'address'],
-        },
-      })
-      .then(resp =>
-        this.setState({
-          reviewers: resp.data.map(r => ({
-            value: r.address,
-            title: `${r.name ? r.name : 'Anonymous user'} - ${r.address}`,
-          })),
-        }),
-      )
-      .catch(err => {
-        ErrorPopup(
-          'Unable to load Campaign reviewers. Please refresh the page and try again.',
-          err,
-        );
-      });
+    this.mounted = false;
   }
 
   setImage(image) {
@@ -141,14 +105,29 @@ class EditCampaign extends Component {
     this.setState({ campaign });
   }
 
-  submit() {
-    this.setState({ isSaving: true });
+  checkUser() {
+    if (!this.props.currentUser) {
+      history.push('/');
+      return Promise.reject();
+    }
 
+    return authenticateIfPossible(this.props.currentUser)
+      .then(() => {
+        if (!this.props.isCampaignManager(this.props.currentUser)) {
+          throw new Error('not whitelisted');
+        }
+      })
+      .then(() => checkProfile(this.props.currentUser))
+      .then(() => checkBalance(this.props.balance));
+  }
+
+  submit() {
     const afterMined = url => {
       if (url) {
         const msg = (
           <p>
-            Your Campaign has been created!<br />
+            Your Campaign has been created!
+            <br />
             <a href={url} target="_blank" rel="noopener noreferrer">
               View transaction
             </a>
@@ -162,24 +141,37 @@ class EditCampaign extends Component {
       }
     };
 
-    const afterCreate = url => {
+    const afterCreate = (err, url, id) => {
       if (this.mounted) this.setState({ isSaving: false });
-      const msg = (
-        <p>
-          Your Campaign is pending....<br />
-          <a href={url} target="_blank" rel="noopener noreferrer">
-            View transaction
-          </a>
-        </p>
-      );
-      React.toast.info(msg);
-      history.push('/my-campaigns');
+      if (!err) {
+        const msg = (
+          <p>
+            Your Campaign is pending....
+            <br />
+            <a href={url} target="_blank" rel="noopener noreferrer">
+              View transaction
+            </a>
+          </p>
+        );
+        React.toast.info(msg);
+        GA.trackEvent({
+          category: 'Campaign',
+          action: 'created',
+          label: id,
+        });
+        history.push('/my-campaigns');
+      }
     };
 
-    // Save the capaign
-    confirmBlockchainTransaction(
-      () => this.state.campaign.save(afterCreate, afterMined),
-      () => this.setState({ isSaving: false }),
+    this.setState(
+      {
+        isSaving: true,
+        isBlocking: false,
+      },
+      () => {
+        // Save the campaign
+        this.state.campaign.save(afterCreate, afterMined);
+      },
     );
   }
 
@@ -187,25 +179,15 @@ class EditCampaign extends Component {
     this.setState({ formIsValid: state });
   }
 
-  selectDACs({ target }) {
-    const { campaign } = this.state;
-    campaign.dacs = target.value;
-
-    this.setState({ campaign });
+  triggerRouteBlocking() {
+    const form = this.form.current.formsyForm;
+    // we only block routing if the form state is not submitted
+    this.setState({ isBlocking: form && (!form.state.formSubmitted || form.state.isSubmitting) });
   }
 
   render() {
-    const { isNew } = this.props;
-    const {
-      isLoading,
-      isSaving,
-      campaign,
-      formIsValid,
-      dacsOptions,
-      hasWhitelist,
-      whitelistOptions,
-      reviewers,
-    } = this.state;
+    const { isNew, reviewers } = this.props;
+    const { isLoading, isSaving, campaign, formIsValid, isBlocking } = this.state;
 
     return (
       <div id="edit-campaign-view">
@@ -221,7 +203,7 @@ class EditCampaign extends Component {
                   <div className="form-header">
                     {isNew && <h3>Start a new campaign!</h3>}
 
-                    {!isNew && <h3>Edit campaign {campaign.title}</h3>}
+                    {!isNew && <h3>Edit campaign{campaign.title}</h3>}
                     <p>
                       <i className="fa fa-question-circle" />
                       A campaign solves a specific cause by executing a project via its Milestones.
@@ -232,19 +214,26 @@ class EditCampaign extends Component {
 
                   <Form
                     onSubmit={this.submit}
+                    ref={this.form}
                     mapping={inputs => {
                       campaign.title = inputs.title;
                       campaign.description = inputs.description;
                       campaign.communityUrl = inputs.communityUrl;
                       campaign.reviewerAddress = inputs.reviewerAddress;
-                      campaign.tokenName = inputs.tokenName;
-                      campaign.tokenSymbol = inputs.tokenSymbol;
                       campaign.summary = getTruncatedText(inputs.description, 100);
                     }}
                     onValid={() => this.toggleFormValid(true)}
                     onInvalid={() => this.toggleFormValid(false)}
+                    onChange={e => this.triggerRouteBlocking(e)}
                     layout="vertical"
                   >
+                    <Prompt
+                      when={isBlocking}
+                      message={() =>
+                        `You have unsaved changes. Are you sure you want to navigate from this page?`
+                      }
+                    />
+
                     <Input
                       name="title"
                       id="title-input"
@@ -285,25 +274,6 @@ class EditCampaign extends Component {
                     </div>
 
                     <div className="form-group">
-                      <label htmlFor>
-                        Relate your campaign to a community
-                        <small className="form-text">
-                          By linking your Campaign to a Community, Ether from that community can be
-                          delegated to your Campaign. This increases your chances of successfully
-                          funding your Campaign.
-                        </small>
-                        <InputToken
-                          name="dac"
-                          id="dac"
-                          placeholder="Select one or more Communities (DACs)"
-                          value={campaign.dacs}
-                          options={dacsOptions}
-                          onSelect={this.selectDACs}
-                        />
-                      </label>
-                    </div>
-
-                    <div className="form-group">
                       <Input
                         name="communityUrl"
                         id="community-url"
@@ -318,62 +288,7 @@ class EditCampaign extends Component {
                     </div>
 
                     <div className="form-group">
-                      <Input
-                        name="tokenName"
-                        id="token-name-input"
-                        label="Token Name"
-                        type="text"
-                        value={campaign.tokenName}
-                        placeholder={campaign.title}
-                        help="The name of the token that Givers will receive when they
-                        donate to this Campaign."
-                        validations="minLength:3"
-                        validationErrors={{
-                          minLength: 'Please provide at least 3 characters.',
-                        }}
-                        required
-                        disabled={!isNew}
-                      />
-                    </div>
-
-                    <div className="form-group">
-                      <Input
-                        name="tokenSymbol"
-                        id="token-symbol-input"
-                        label="Token Symbol"
-                        type="text"
-                        value={campaign.tokenSymbol}
-                        help="The symbol of the token that Givers will receive when
-                        they donate to this Campaign."
-                        validations="minLength:2"
-                        validationErrors={{
-                          minLength: 'Please provide at least 2 characters.',
-                        }}
-                        required
-                        disabled={!isNew}
-                      />
-                    </div>
-
-                    <div className="form-group">
-                      {hasWhitelist && (
-                        <SelectFormsy
-                          name="reviewerAddress"
-                          id="reviewer-select"
-                          label="Select a reviewer"
-                          helpText="This person or smart contract will be reviewing your Campaign to increase trust for Givers."
-                          value={campaign.reviewerAddress}
-                          cta="--- Select a reviewer ---"
-                          options={whitelistOptions}
-                          validations="isEtherAddress"
-                          validationErrors={{
-                            isEtherAddress: 'Please select a reviewer.',
-                          }}
-                          required
-                          disabled={!isNew}
-                        />
-                      )}
-
-                      {!hasWhitelist && (
+                      {
                         <SelectFormsy
                           name="reviewerAddress"
                           id="reviewer-select"
@@ -389,7 +304,7 @@ class EditCampaign extends Component {
                           required
                           disabled={!isNew}
                         />
-                      )}
+                      }
                     </div>
 
                     <div className="form-group row">
@@ -403,6 +318,7 @@ class EditCampaign extends Component {
                           type="submit"
                           disabled={isSaving || !formIsValid}
                           isLoading={isSaving}
+                          network="Foreign"
                           loadingText="Saving..."
                         >
                           {isNew ? 'Create' : 'Update'} Campaign
@@ -421,18 +337,28 @@ class EditCampaign extends Component {
 }
 
 EditCampaign.propTypes = {
-  currentUser: PropTypes.instanceOf(User).isRequired,
+  currentUser: PropTypes.instanceOf(User),
   isNew: PropTypes.bool,
-  wallet: PropTypes.instanceOf(GivethWallet).isRequired,
+  balance: PropTypes.instanceOf(BigNumber).isRequired,
+  isForeignNetwork: PropTypes.bool.isRequired,
   match: PropTypes.shape({
     params: PropTypes.shape({
       id: PropTypes.string,
     }).isRequired,
   }).isRequired,
+  isCampaignManager: PropTypes.func.isRequired,
+  reviewers: PropTypes.arrayOf(PropTypes.shape()).isRequired,
 };
 
 EditCampaign.defaultProps = {
+  currentUser: undefined,
   isNew: false,
 };
 
-export default EditCampaign;
+export default props => (
+  <WhiteListConsumer>
+    {({ state: { reviewers }, actions: { isCampaignManager } }) => (
+      <EditCampaign reviewers={reviewers} isCampaignManager={isCampaignManager} {...props} />
+    )}
+  </WhiteListConsumer>
+);

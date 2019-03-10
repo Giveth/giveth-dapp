@@ -1,5 +1,5 @@
 #join-giveth-community {
-  height: 300px;
+  height: 260px;
   background: 
     linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.9)), 
     // linear-gradient(rgba(0, 172, 193, 0.1), rgba(10, 14, 13, 0.9)),
@@ -7,7 +7,7 @@
   background-size: cover;
   background-repeat: no-repeat;
   background-position: 10% center;
-  padding: 80px 20px 50px 20px;
+  padding: 20px 20px 50px 20px;
   color: white;
 
   @include make-flex();

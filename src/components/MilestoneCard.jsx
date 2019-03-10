@@ -1,16 +1,14 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import Avatar from 'react-avatar';
+import BigNumber from 'bignumber.js';
 
-import { getTruncatedText, isOwner, getUserAvatar, getUserName } from './../lib/helpers';
-import { redirectAfterWalletUnlock, checkWalletBalance } from './../lib/middleware';
+import { getTruncatedText, getUserAvatar, getUserName, history } from '../lib/helpers';
+import { checkBalance } from '../lib/middleware';
 import User from '../models/User';
 import CardStats from './CardStats';
-import GivethWallet from '../lib/blockchain/GivethWallet';
 import GivethLogo from '../assets/logo.svg';
 
-// TODO: Remove once rewritten to model
-/* eslint no-underscore-dangle: 0 */
 /**
  * A single milestone
  */
@@ -24,37 +22,32 @@ class MilestoneCard extends Component {
   }
 
   viewMilestone() {
-    this.props.history.push(
-      `/campaigns/${this.props.milestone.campaignId}/milestones/${this.props.milestone._id}`,
+    history.push(
+      `/campaigns/${this.props.milestone.campaign._id}/milestones/${this.props.milestone._id}`,
     );
   }
 
   viewProfile(e) {
     e.stopPropagation();
-    this.props.history.push(`/profile/${this.props.milestone.owner.address}`);
+    history.push(`/profile/${this.props.milestone.ownerAddress}`);
   }
 
   editMilestone(e) {
     e.stopPropagation();
 
-    checkWalletBalance(this.props.wallet).then(() => {
-      React.swal({
-        title: 'Edit Milestone?',
-        text: 'Are you sure you want to edit this milestone?',
-        icon: 'warning',
-        dangerMode: true,
-        buttons: ['Cancel', 'Yes, edit'],
-      }).then(isConfirmed => {
-        if (isConfirmed) {
-          redirectAfterWalletUnlock(
-            `/campaigns/${this.props.milestone.campaignId}/milestones/${
-              this.props.milestone._id
-            }/edit`,
-            this.props.wallet,
-          );
+    checkBalance(this.props.balance)
+      .then(() => {
+        history.push(
+          `/campaigns/${this.props.milestone.campaign._id}/milestones/${
+            this.props.milestone._id
+          }/edit`,
+        );
+      })
+      .catch(err => {
+        if (err === 'noBalance') {
+          // handle no balance error
         }
       });
-    });
   }
 
   render() {
@@ -81,14 +74,18 @@ class MilestoneCard extends Component {
             <Avatar size={30} src={getUserAvatar(milestone.owner)} round />
             <span className="owner-name">{getUserName(milestone.owner)}</span>
 
-            {(isOwner(milestone.owner.address, currentUser) ||
-              isOwner(milestone.campaignOwnerAddress, currentUser)) && (
-              <span className="pull-right">
-                <button className="btn btn-link btn-edit" onClick={e => this.editMilestone(e)}>
-                  <i className="fa fa-edit" />
-                </button>
-              </span>
-            )}
+            {milestone &&
+              milestone.canUserEdit(currentUser) && (
+                <span className="pull-right">
+                  <button
+                    type="button"
+                    className="btn btn-link btn-edit"
+                    onClick={e => this.editMilestone(e)}
+                  >
+                    <i className="fa fa-edit" />
+                  </button>
+                </span>
+              )}
           </div>
 
           <div
@@ -100,18 +97,19 @@ class MilestoneCard extends Component {
           />
 
           <div className="card-content">
-            <h4 className="card-title">{getTruncatedText(milestone.title, 30)}</h4>
-            <div className="card-text">{milestone.summary}</div>
+            <h4 className="card-title">{getTruncatedText(milestone.title, 40)}</h4>
+            <div className="card-text">{getTruncatedText(milestone.description, 100)}</div>
           </div>
 
           <div className="card-footer">
             <CardStats
               type="milestone"
               peopleCount={milestone.peopleCount}
-              totalDonated={milestone.totalDonated}
+              totalDonated={milestone.currentBalance}
               maxAmount={milestone.maxAmount}
               milestonesCount={milestone.milestonesCount}
               status={milestone.status}
+              token={milestone.token}
             />
           </div>
         </div>
@@ -123,21 +121,18 @@ class MilestoneCard extends Component {
 MilestoneCard.propTypes = {
   milestone: PropTypes.shape({
     _id: PropTypes.string.isRequired,
-    campaignId: PropTypes.string.isRequired,
+    campaign: PropTypes.shape().isRequired,
+    ownerAddress: PropTypes.string.isRequired,
     owner: PropTypes.shape({
       address: PropTypes.string.isRequired,
     }).isRequired,
   }).isRequired,
   currentUser: PropTypes.instanceOf(User),
-  wallet: PropTypes.instanceOf(GivethWallet),
-  history: PropTypes.shape({
-    push: PropTypes.func.isRequired,
-  }).isRequired,
+  balance: PropTypes.instanceOf(BigNumber).isRequired,
 };
 
 MilestoneCard.defaultProps = {
   currentUser: undefined,
-  wallet: undefined,
 };
 
 export default MilestoneCard;

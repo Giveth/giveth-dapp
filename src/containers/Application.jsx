@@ -1,7 +1,9 @@
 import React, { Component } from 'react';
 import ReactDOM from 'react-dom';
+import { Helmet } from 'react-helmet';
 
-import { Router, Route, Switch } from 'react-router-dom';
+import { Router, Route, Redirect, Switch } from 'react-router-dom';
+
 import localforage from 'localforage';
 
 import { ToastContainer, toast } from 'react-toastify';
@@ -9,41 +11,48 @@ import 'react-toastify/dist/ReactToastify.min.css';
 
 import Sweetalert from 'sweetalert';
 
-import DataRoutes from './DataRoutes';
+import GA from 'lib/GoogleAnalytics';
 
 import { history } from '../lib/helpers';
 
+import config from '../configuration';
+
 // views
-import Profile from './../components/views/Profile';
-import UserWallet from './../components/views/UserWallet';
-import EditProfile from './../components/views/EditProfile';
-import SignIn from './../components/views/SignIn';
-import Signup from './../components/views/SignUp';
-import ChangeAccount from './../components/views/ChangeAccount';
+import Profile from '../components/views/Profile';
+// import UserWallet from '../components/views/UserWallet';
+import EditProfile from '../components/views/EditProfile';
 
-import ViewMilestone from './../components/views/ViewMilestone';
-import EditDAC from './../components/views/EditDAC';
-import ViewDAC from './../components/views/ViewDAC';
-import Donations from './../components/views/Donations';
-import Delegations from './../components/views/Delegations';
-import MyDACs from './../components/views/MyDACs';
-import MyCampaigns from './../components/views/MyCampaigns';
-import MyMilestones from './../components/views/MyMilestones';
-import NotFound from './../components/views/NotFound';
+import ViewMilestone from '../components/views/ViewMilestone';
+import EditDAC from '../components/views/EditDAC';
+import ViewDAC from '../components/views/ViewDAC';
+import Donations from '../components/views/Donations';
+import Delegations from '../components/views/Delegations';
+import MyDACs from '../components/views/MyDACs';
+import MyCampaigns from '../components/views/MyCampaigns';
+import MyMilestones from '../components/views/MyMilestones';
+import NotFound from '../components/views/NotFound';
+import Explore from '../components/views/Explore';
+import Campaigns from '../components/views/Campaigns';
+import DACs from '../components/views/DACs';
 
-import EditCampaign from './../components/views/EditCampaign';
-import ViewCampaign from './../components/views/ViewCampaign';
-import EditMilestone from './../components/views/EditMilestone';
+import EditCampaign from '../components/views/EditCampaign';
+import ViewCampaign from '../components/views/ViewCampaign';
+import EditMilestone from '../components/views/EditMilestone';
 
 // components
-import MainMenu from './../components/MainMenu';
-import Loader from './../components/Loader';
-import UnlockWallet from '../components/UnlockWallet';
+import MainMenu from '../components/MainMenu';
+import Loader from '../components/Loader';
+import ErrorBoundary from '../components/ErrorBoundary';
 
 // context providers
 import UserProvider, { Consumer as UserConsumer } from '../contextProviders/UserProvider';
+import ConversionRateProvider from '../contextProviders/ConversionRateProvider';
+import Web3Provider, { Consumer as Web3Consumer } from '../contextProviders/Web3Provider';
+import WhiteListProvider, {
+  Consumer as WhiteListConsumer,
+} from '../contextProviders/WhiteListProvider';
 
-import './../lib/validators';
+import '../lib/validators';
 
 /* global document */
 /**
@@ -62,10 +71,6 @@ React.swal.msg = reactNode => {
 // make toast globally available
 React.toast = toast;
 
-// TO DO: This is the minimum transaction view required to:
-// create a DAC / Campaign / Milestone / Profile
-React.minimumWalletBalance = 0.02;
-
 /**
  * This container holds the application and its routes.
  * It is also responsible for loading application persistent data.
@@ -81,285 +86,379 @@ class Application extends Component {
       name: 'giveth',
     });
 
-    // Making unlock wallet global
-    React.unlockWallet = this.unlockWallet;
+    this.state = {
+      web3Loading: true,
+      userLoading: true,
+    };
+
+    this.web3Loaded = this.web3Loaded.bind(this);
+    this.userLoaded = this.userLoaded.bind(this);
+  }
+
+  web3Loaded() {
+    this.setState({ web3Loading: false });
+  }
+
+  userLoaded() {
+    this.setState({ userLoading: false });
   }
 
   render() {
+    const { web3Loading, userLoading } = this.state;
     return (
-      <Router history={history}>
-        <UserProvider>
-          <UserConsumer>
-            {({
-              state: {
-                wallet,
-                currentUser,
-                web3,
-                isLoading,
-                hasError,
-                showUnlockWalletModal,
-                redirectAfter,
-              },
-              actions: {
-                onSignIn,
-                onSignOut,
-                walletUnlocked,
-                hideUnlockWalletModal,
-                handleWalletChange,
-              },
-            }) => (
-              <div>
-                {isLoading && <Loader className="fixed" />}
+      <ErrorBoundary>
+        {/* Header stuff goes here */}
+        {config.analytics.useHotjar &&
+          window.location.origin.includes('beta') && (
+            <Helmet>
+              <script>{`
+              (function(h,o,t,j,a,r){
+                h.hj=h.hj||function(){(h.hj.q=h.hj.q||[]).push(arguments)};
+                h._hjSettings={hjid:944408,hjsv:6};
+                a=o.getElementsByTagName('head')[0];
+                r=o.createElement('script');r.async=1;
+                r.src=t+h._hjSettings.hjid+j+h._hjSettings.hjsv;
+                a.appendChild(r);
+              })(window,document,'https://static.hotjar.com/c/hotjar-','.js?sv=');
+            `}</script>
+            </Helmet>
+          )}
 
-                {wallet &&
-                  showUnlockWalletModal && (
-                    <UnlockWallet
-                      wallet={wallet}
-                      redirectAfter={redirectAfter}
-                      onClose={walletUnlocked}
-                      onCloseClicked={hideUnlockWalletModal}
-                    />
+        <Router history={history}>
+          <WhiteListProvider>
+            <WhiteListConsumer>
+              {({ state: { fiatWhitelist, isLoading } }) => (
+                <div>
+                  {isLoading && <Loader className="fixed" />}
+                  {!isLoading && (
+                    <Web3Provider onLoaded={this.web3Loaded}>
+                      <Web3Consumer>
+                        {({ state: { account, balance, isForeignNetwork } }) => (
+                          <div>
+                            {web3Loading && <Loader className="fixed" />}
+                            {!web3Loading && (
+                              <ConversionRateProvider fiatWhitelist={fiatWhitelist}>
+                                <UserProvider account={account} onLoaded={this.userLoaded}>
+                                  <UserConsumer>
+                                    {({ state: { currentUser, hasError } }) => (
+                                      <div>
+                                        {GA.init() && <GA.RouteTracker />}
+
+                                        {userLoading && <Loader className="fixed" />}
+
+                                        {!userLoading &&
+                                          !hasError && (
+                                            <div>
+                                              <MainMenu />
+
+                                              <Switch>
+                                                {/* Routes are defined here. Persistent data is set as props on components
+                                NOTE order matters, wrong order breaks routes!
+                            */}
+
+                                                <Route
+                                                  exact
+                                                  path="/dacs/new"
+                                                  render={props => (
+                                                    <EditDAC
+                                                      isNew
+                                                      key={currentUser ? currentUser.id : 0}
+                                                      currentUser={currentUser}
+                                                      balance={balance}
+                                                      isForeignNetwork={isForeignNetwork}
+                                                      {...props}
+                                                    />
+                                                  )}
+                                                />
+                                                <Route
+                                                  exact
+                                                  path="/dacs/:id"
+                                                  render={props => (
+                                                    <ViewDAC
+                                                      currentUser={currentUser}
+                                                      balance={balance}
+                                                      {...props}
+                                                    />
+                                                  )}
+                                                />
+                                                <Route
+                                                  exact
+                                                  path="/dacs/:id/edit"
+                                                  render={props => (
+                                                    <EditDAC
+                                                      key={currentUser ? currentUser.id : 0}
+                                                      currentUser={currentUser}
+                                                      balance={balance}
+                                                      isForeignNetwork={isForeignNetwork}
+                                                      {...props}
+                                                    />
+                                                  )}
+                                                />
+
+                                                <Route
+                                                  exact
+                                                  path="/campaigns/new"
+                                                  render={props => (
+                                                    <EditCampaign
+                                                      isNew
+                                                      key={currentUser ? currentUser.id : 0}
+                                                      currentUser={currentUser}
+                                                      balance={balance}
+                                                      isForeignNetwork={isForeignNetwork}
+                                                      {...props}
+                                                    />
+                                                  )}
+                                                />
+                                                <Route
+                                                  exact
+                                                  path="/campaigns/:id"
+                                                  render={props => (
+                                                    <ViewCampaign
+                                                      currentUser={currentUser}
+                                                      balance={balance}
+                                                      {...props}
+                                                    />
+                                                  )}
+                                                />
+                                                <Route
+                                                  exact
+                                                  path="/campaigns/:id/edit"
+                                                  render={props => (
+                                                    <EditCampaign
+                                                      key={currentUser ? currentUser.id : 0}
+                                                      currentUser={currentUser}
+                                                      balance={balance}
+                                                      isForeignNetwork={isForeignNetwork}
+                                                      {...props}
+                                                    />
+                                                  )}
+                                                />
+
+                                                <Route
+                                                  exact
+                                                  path="/campaigns/:id/milestones/new"
+                                                  render={props => (
+                                                    <EditMilestone
+                                                      isNew
+                                                      key={currentUser ? currentUser.id : 0}
+                                                      currentUser={currentUser}
+                                                      balance={balance}
+                                                      isForeignNetwork={isForeignNetwork}
+                                                      {...props}
+                                                    />
+                                                  )}
+                                                />
+                                                <Route
+                                                  exact
+                                                  path="/campaigns/:id/milestones/propose"
+                                                  render={props => (
+                                                    <EditMilestone
+                                                      isNew
+                                                      isProposed
+                                                      key={currentUser ? currentUser.id : 0}
+                                                      currentUser={currentUser}
+                                                      isForeignNetwork={isForeignNetwork}
+                                                      balance={balance}
+                                                      {...props}
+                                                    />
+                                                  )}
+                                                />
+                                                <Route
+                                                  exact
+                                                  path="/campaigns/:id/milestones/:milestoneId"
+                                                  render={props => (
+                                                    <ViewMilestone
+                                                      currentUser={currentUser}
+                                                      balance={balance}
+                                                      {...props}
+                                                    />
+                                                  )}
+                                                />
+                                                <Route
+                                                  exact
+                                                  path="/campaigns/:id/milestones/:milestoneId/edit"
+                                                  render={props => (
+                                                    <EditMilestone
+                                                      key={currentUser ? currentUser.id : 0}
+                                                      currentUser={currentUser}
+                                                      balance={balance}
+                                                      isForeignNetwork={isForeignNetwork}
+                                                      {...props}
+                                                    />
+                                                  )}
+                                                />
+                                                <Route
+                                                  exact
+                                                  path="/campaigns/:id/milestones/:milestoneId/edit/proposed"
+                                                  render={props => (
+                                                    <EditMilestone
+                                                      key={currentUser ? currentUser.id : 0}
+                                                      currentUser={currentUser}
+                                                      balance={balance}
+                                                      isForeignNetwork={isForeignNetwork}
+                                                      isProposed
+                                                      {...props}
+                                                    />
+                                                  )}
+                                                />
+                                                <Route
+                                                  exact
+                                                  path="/campaigns/:id/milestones"
+                                                  render={({ match }) => (
+                                                    <Redirect
+                                                      to={`/campaigns/${match.params.id}`}
+                                                    />
+                                                  )}
+                                                />
+                                                <Route
+                                                  exact
+                                                  path="/donations"
+                                                  render={props => (
+                                                    <Donations
+                                                      key={currentUser ? currentUser.id : 0}
+                                                      currentUser={currentUser}
+                                                      balance={balance}
+                                                      {...props}
+                                                    />
+                                                  )}
+                                                />
+                                                <Route
+                                                  exact
+                                                  path="/delegations"
+                                                  render={props => (
+                                                    <Delegations
+                                                      key={currentUser ? currentUser.id : 0}
+                                                      currentUser={currentUser}
+                                                      balance={balance}
+                                                      {...props}
+                                                    />
+                                                  )}
+                                                />
+                                                <Route
+                                                  exact
+                                                  path="/my-dacs"
+                                                  render={props => (
+                                                    <MyDACs
+                                                      key={currentUser ? currentUser.id : 0}
+                                                      currentUser={currentUser}
+                                                      balance={balance}
+                                                      {...props}
+                                                    />
+                                                  )}
+                                                />
+                                                <Route
+                                                  exact
+                                                  path="/my-campaigns"
+                                                  render={props => (
+                                                    <MyCampaigns
+                                                      key={currentUser ? currentUser.id : 0}
+                                                      currentUser={currentUser}
+                                                      balance={balance}
+                                                      {...props}
+                                                    />
+                                                  )}
+                                                />
+                                                <Route
+                                                  exact
+                                                  path="/my-milestones"
+                                                  render={props => (
+                                                    <MyMilestones
+                                                      key={currentUser ? currentUser.id : 0}
+                                                      currentUser={currentUser}
+                                                      balance={balance}
+                                                      {...props}
+                                                    />
+                                                  )}
+                                                />
+
+                                                {/* <Route
+                                        exact
+                                        path="/wallet"
+                                        render={props => (
+                                          <UserWallet
+                                            currentUser={currentUser}
+                                            // wallet={wallet}
+                                            {...props}
+                                          />
+                                        )}
+                                      /> */}
+                                                <Route
+                                                  exact
+                                                  path="/profile"
+                                                  render={props => (
+                                                    <EditProfile
+                                                      key={currentUser ? currentUser.id : 0}
+                                                      currentUser={currentUser}
+                                                      balance={balance}
+                                                      isForeignNetwork={isForeignNetwork}
+                                                      {...props}
+                                                    />
+                                                  )}
+                                                />
+                                                <Route
+                                                  exact
+                                                  path="/profile/:userAddress"
+                                                  render={props => <Profile {...props} />}
+                                                />
+
+                                                <Route
+                                                  exact
+                                                  path="/"
+                                                  render={props => <Explore {...props} />}
+                                                />
+                                                <Route
+                                                  exact
+                                                  path="/campaigns"
+                                                  render={props => <Campaigns {...props} />}
+                                                />
+                                                <Route
+                                                  exact
+                                                  path="/dacs"
+                                                  render={props => <DACs {...props} />}
+                                                />
+
+                                                <Route component={NotFound} />
+                                              </Switch>
+                                            </div>
+                                          )}
+
+                                        {!userLoading &&
+                                          hasError && (
+                                            <center>
+                                              <h2>Oops, something went wrong...</h2>
+                                              <p>
+                                                The Giveth dapp could not load for some reason.
+                                                Please try again...
+                                              </p>
+                                            </center>
+                                          )}
+
+                                        <ToastContainer
+                                          position="top-right"
+                                          type="default"
+                                          autoClose={5000}
+                                          hideProgressBar
+                                          newestOnTop={false}
+                                          closeOnClick
+                                          pauseOnHover
+                                        />
+                                      </div>
+                                    )}
+                                  </UserConsumer>
+                                </UserProvider>
+                              </ConversionRateProvider>
+                            )}
+                          </div>
+                        )}
+                      </Web3Consumer>
+                    </Web3Provider>
                   )}
-
-                {!isLoading &&
-                  !hasError && (
-                    <div>
-                      <MainMenu onSignOut={onSignOut} wallet={wallet} currentUser={currentUser} />
-
-                      <Switch>
-                        {/* Routes are defined here. Persistent data is set as props on components
-                  NOTE order matters, wrong order breaks routes!
-               */}
-
-                        <Route
-                          exact
-                          path="/dacs/new"
-                          component={props => (
-                            <EditDAC isNew currentUser={currentUser} wallet={wallet} {...props} />
-                          )}
-                        />
-                        <Route
-                          exact
-                          path="/dacs/:id"
-                          component={props => (
-                            <ViewDAC currentUser={currentUser} wallet={wallet} {...props} />
-                          )}
-                        />
-                        <Route
-                          exact
-                          path="/dacs/:id/edit"
-                          component={props => (
-                            <EditDAC currentUser={currentUser} wallet={wallet} {...props} />
-                          )}
-                        />
-
-                        <Route
-                          exact
-                          path="/campaigns/new"
-                          component={props => (
-                            <EditCampaign
-                              isNew
-                              currentUser={currentUser}
-                              wallet={wallet}
-                              {...props}
-                            />
-                          )}
-                        />
-                        <Route
-                          exact
-                          path="/campaigns/:id"
-                          component={props => (
-                            <ViewCampaign currentUser={currentUser} wallet={wallet} {...props} />
-                          )}
-                        />
-                        <Route
-                          exact
-                          path="/campaigns/:id/edit"
-                          component={props => (
-                            <EditCampaign currentUser={currentUser} wallet={wallet} {...props} />
-                          )}
-                        />
-
-                        <Route
-                          exact
-                          path="/campaigns/:id/milestones/new"
-                          component={props => (
-                            <EditMilestone
-                              isNew
-                              currentUser={currentUser}
-                              wallet={wallet}
-                              {...props}
-                            />
-                          )}
-                        />
-                        <Route
-                          exact
-                          path="/campaigns/:id/milestones/propose"
-                          component={props => (
-                            <EditMilestone
-                              isNew
-                              isProposed
-                              currentUser={currentUser}
-                              wallet={wallet}
-                              {...props}
-                            />
-                          )}
-                        />
-                        <Route
-                          exact
-                          path="/campaigns/:id/milestones/:milestoneId"
-                          component={props => (
-                            <ViewMilestone currentUser={currentUser} wallet={wallet} {...props} />
-                          )}
-                        />
-                        <Route
-                          exact
-                          path="/campaigns/:id/milestones/:milestoneId/edit"
-                          component={props => (
-                            <EditMilestone currentUser={currentUser} wallet={wallet} {...props} />
-                          )}
-                        />
-                        <Route
-                          exact
-                          path="/milestones/:milestoneId/edit"
-                          component={props => (
-                            <EditMilestone currentUser={currentUser} wallet={wallet} {...props} />
-                          )}
-                        />
-                        <Route
-                          exact
-                          path="/milestones/:milestoneId/edit/proposed"
-                          component={props => (
-                            <EditMilestone
-                              currentUser={currentUser}
-                              wallet={wallet}
-                              isProposed
-                              {...props}
-                            />
-                          )}
-                        />
-                        <Route
-                          exact
-                          path="/donations"
-                          component={props => (
-                            <Donations currentUser={currentUser} wallet={wallet} {...props} />
-                          )}
-                        />
-                        <Route
-                          exact
-                          path="/delegations"
-                          component={props => (
-                            <Delegations currentUser={currentUser} wallet={wallet} {...props} />
-                          )}
-                        />
-                        <Route
-                          exact
-                          path="/my-dacs"
-                          component={props => (
-                            <MyDACs currentUser={currentUser} wallet={wallet} {...props} />
-                          )}
-                        />
-                        <Route
-                          exact
-                          path="/my-campaigns"
-                          component={props => (
-                            <MyCampaigns currentUser={currentUser} wallet={wallet} {...props} />
-                          )}
-                        />
-                        <Route
-                          exact
-                          path="/my-milestones"
-                          component={props => (
-                            <MyMilestones currentUser={currentUser} wallet={wallet} {...props} />
-                          )}
-                        />
-
-                        <Route
-                          exact
-                          path="/signin"
-                          component={props => (
-                            <SignIn
-                              wallet={wallet}
-                              cachedWallet={wallet}
-                              onSignIn={onSignIn}
-                              {...props}
-                            />
-                          )}
-                        />
-
-                        <Route
-                          exact
-                          path="/signup"
-                          render={props => (
-                            <Signup
-                              provider={web3 ? web3.currentProvider : undefined}
-                              walletCreated={handleWalletChange}
-                              {...props}
-                            />
-                          )}
-                        />
-
-                        <Route
-                          exact
-                          path="/change-account"
-                          render={props => (
-                            <ChangeAccount
-                              provider={web3 ? web3.currentProvider : undefined}
-                              handleWalletChange={handleWalletChange}
-                              {...props}
-                            />
-                          )}
-                        />
-
-                        <Route
-                          exact
-                          path="/wallet"
-                          component={props => (
-                            <UserWallet currentUser={currentUser} wallet={wallet} {...props} />
-                          )}
-                        />
-                        <Route
-                          exact
-                          path="/profile"
-                          component={props => (
-                            <EditProfile currentUser={currentUser} wallet={wallet} {...props} />
-                          )}
-                        />
-                        <Route
-                          exact
-                          path="/profile/:userAddress"
-                          component={props => <Profile {...props} />}
-                        />
-
-                        <DataRoutes currentUser={currentUser} wallet={wallet} />
-
-                        <Route component={NotFound} />
-                      </Switch>
-                    </div>
-                  )}
-
-                {!isLoading &&
-                  hasError && (
-                    <center>
-                      <h2>Oops, something went wrong...</h2>
-                      <p>The Giveth dapp could not load for some reason. Please try again...</p>
-                    </center>
-                  )}
-
-                <ToastContainer
-                  position="top-right"
-                  type="default"
-                  autoClose={5000}
-                  hideProgressBar
-                  newestOnTop={false}
-                  closeOnClick
-                  pauseOnHover
-                />
-              </div>
-            )}
-          </UserConsumer>
-        </UserProvider>
-      </Router>
+                </div>
+              )}
+            </WhiteListConsumer>
+          </WhiteListProvider>
+        </Router>
+      </ErrorBoundary>
     );
   }
 }

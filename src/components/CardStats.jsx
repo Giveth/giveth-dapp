@@ -1,76 +1,86 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import BigNumber from 'bignumber.js';
 import { convertEthHelper } from '../lib/helpers';
+import config from '../configuration';
 
 /**
  * Shows the statistics on DACs, Campaigns and milestonesCount
  *
  * TODO: Check the properties that are passed, sometimes they are number, sometimes strings...
  */
-const CardStats = ({ peopleCount, maxAmount, campaignsCount, milestonesCount, type, status }) => (
+const CardStats = ({ peopleCount, maxAmount, totalDonated, type, status, token }) => (
   <div className="row card-stats">
-    <div className="col-4 text-left">
-      <span>
-        <i className="fa fa-male" />
-        {peopleCount}
-      </span>
-      <p>Giver(s)</p>
-    </div>
+    {['dac', 'campaign'].includes(type) && (
+      <div className="col-6 text-left">
+        <p>Giver(s)</p>
+        <span>
+          <i className="fa fa-male" />
+          {peopleCount}
+        </span>
+      </div>
+    )}
 
-    <div className={`col-4 text-center ${maxAmount ? 'card-center' : ''}`}>
-      {maxAmount && <span>Amount requested: {convertEthHelper(maxAmount)} ETH</span>}
+    {type === 'milestone' && (
+      <div className="col-3 text-left">
+        <p>Giver(s)</p>
+        <span>
+          <i className="fa fa-male" />
+          {peopleCount}
+        </span>
+      </div>
+    )}
 
-      {!maxAmount && <p>Donated</p>}
-    </div>
+    {['dac', 'campaign'].includes(type) && (
+      <div className="col-5 text-center card-center">
+        <span>
+          <p>Donations</p>
+          <p>{totalDonated.toFixed()}</p>
+        </span>
+      </div>
+    )}
 
-    <div className="col-4 text-right">
-      {type === 'dac' && (
-        <div>
+    {type === 'milestone' && (
+      <div className="col-5 text-center card-center">
+        {maxAmount && (
           <span>
-            <i className="fa fa-flag" />
-            {campaignsCount}
+            <p>Requested</p>
+            <p>
+              {convertEthHelper(maxAmount)} {token.symbol}
+            </p>
           </span>
-          <p>campaign(s)</p>
-        </div>
-      )}
+        )}
+      </div>
+    )}
 
-      {type === 'campaign' && (
-        <div>
-          <span>
-            <i className="fa fa-check-circle" />
-            {milestonesCount}
-          </span>
-          <p>Milestone(s)</p>
-        </div>
-      )}
-
-      {type === 'milestone' && (
-        <div>
-          <span>
-            <i className="fa fa-check-circle" />
-            {status}
-          </span>
-          <p>status</p>
-        </div>
-      )}
-    </div>
+    {type === 'milestone' && (
+      <div className="col-4 text-right">
+        <p>status</p>
+        <span>
+          <i className="fa fa-check-circle" />
+          {status}
+        </span>
+      </div>
+    )}
   </div>
 );
 
 CardStats.propTypes = {
   type: PropTypes.string.isRequired,
   peopleCount: PropTypes.number.isRequired,
-  campaignsCount: PropTypes.number,
-  milestonesCount: PropTypes.number,
   status: PropTypes.string,
-  maxAmount: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  maxAmount: PropTypes.instanceOf(BigNumber),
+  totalDonated: PropTypes.instanceOf(BigNumber),
+  token: PropTypes.shape(),
 };
 
 CardStats.defaultProps = {
   status: 'In Progress',
-  milestonesCount: 0,
   maxAmount: undefined,
-  campaignsCount: 0,
+  totalDonated: new BigNumber('0'),
+  token: {
+    symbol: config.nativeTokenName,
+  },
 };
 
 export default CardStats;

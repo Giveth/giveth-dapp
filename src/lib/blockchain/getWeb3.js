@@ -1,110 +1,49 @@
-import { MiniMeToken } from 'minimetoken';
 import Web3 from 'web3';
-import ZeroClientProvider from './ZeroClientProvider';
-import getNetwork from './getNetwork';
 import config from '../../configuration';
 
-import ErrorPopup from '../../components/ErrorPopup';
+let newWeb3;
 
-let givethWeb3;
-/* ///////////// custom Web3 Functions ///////////// */
+let enablePromise;
+function enable(force = false) {
+  if (!force && enablePromise) return enablePromise;
 
-let intervalId;
-function setWallet(wallet) {
-  if (!wallet) throw new Error('a wallet is required');
-
-  const engine = new ZeroClientProvider({
-    wsProvider: this.currentProvider,
-    getAccounts: cb => cb(null, wallet.getAddresses()),
-    approveTransaction: (txParams, cb) => {
-      // TODO: handle locked wallet here?
-      cb(null, true);
-    },
-    signTransaction: (txData, cb) => {
-      // provide chainId as GivethWallet.Account does not have a provider set. If we don't provide
-      // a chainId, the account will attempt to fetch it via the provider.
-      const getId = txData.chainId ? Promise.resolve(txData.chainId) : this.eth.net.getId;
-
-      getId()
-        .then(id => {
-          txData.chainId = id;
-          return wallet.signTransaction(txData);
-        })
-        .then(sig => {
-          cb(null, sig.rawTransaction);
-        })
-        .catch(err => {
-          cb(err);
-        });
-    },
-  });
-
-  const getBalance = () =>
-    Promise.all([getWeb3(), getNetwork()]) // eslint-disable-line no-use-before-define
-      .then(([web3, network]) => {
-        const { tokenAddress } = network;
-        const addr = wallet.getAddresses()[0];
-
-        const tokenBal = () =>
-          addr ? new MiniMeToken(web3, tokenAddress).balanceOf(addr) : undefined;
-        const bal = () => (addr ? web3.eth.getBalance(addr) : undefined);
-
-        return Promise.all([tokenBal(), bal()]);
+  enablePromise = new Promise((resolve, reject) =>
+    this.currentProvider
+      .enable()
+      .then(addrs => {
+        this.isEnabled = true;
+        resolve(addrs);
       })
-      .then(([tokenBalance, balance]) => {
-        wallet.balance = balance;
-        wallet.tokenBalance = tokenBalance;
-      })
-      .catch(err => {
-        ErrorPopup(
-          'Something went wrong with getting the balance. Please try again after refresh.',
-          err,
-        );
-      });
+      .catch(e => {
+        enablePromise = false;
+        this.isEnabled = false;
+        reject(e);
+      }),
+  );
 
-  getBalance();
-  // engine.on('block', getBalance); //TODO get this to work
-  if (intervalId > 0) {
-    clearInterval(intervalId);
-  }
-  // TODO: if removing this interval, need to uncomment the ws timeout fix below
-  intervalId = setInterval(getBalance, 15000);
-  this.setProvider(engine);
+  return enablePromise;
 }
 
-const getWeb3 = () =>
+export default () =>
   new Promise(resolve => {
-    if (!givethWeb3) {
-      givethWeb3 = new Web3(config.nodeConnection);
-
-      // hack to keep the ws connection from timing-out
-      // I commented this out b/c we have the getBalance interval above
-      // setInterval(() => {
-      //   givethWeb3.eth.net.getId();
-      // }, 30000); // every 30 seconds
-
-      // web3 1.0 expects the chainId to be no longer then 1 byte. If the chainId is longer
-      // then 1 byte, an error will be thrown. Testrpc by default uses the timestamp for the
-      // networkId, thus causing an error to be thrown. Here we override getId if necessary
-      // Since web3-eth-account account.js uses the following formula when signing a tx
-      // (Nat.toNumber(tx.chainId || "0x1") * 2 + 35), and that number is added to the
-      // signature.recoveryParam the max value the network ID can be is
-      // 110 (110 * 2 + 35 === 255) - recoveryParam
-      givethWeb3.eth.net.getId().then(id => {
-        if (id > 110) {
-          const msg = `Web3 will throw errors when signing transactions if the networkId > 255 (1 byte).
-          networkID = ${id}. Overriding eth.net.getId() to return 100`;
-
-          console.warn(msg); // eslint-disable-line no-console
-
-          givethWeb3.eth.net.getId = () => Promise.resolve(100);
-        }
-      });
-
-      givethWeb3.setWallet = setWallet;
+    if (document.readyState !== 'complete') {
+      // wait until complete
+    }
+    if (!newWeb3) {
+      if (window.ethereum) {
+        newWeb3 = new Web3(window.ethereum);
+        newWeb3.enable = enable.bind(newWeb3);
+        // newWeb3.accountsEnabled = false;
+      } else if (window.web3) {
+        newWeb3 = new Web3(window.web3.currentProvider);
+        newWeb3.enable = newWeb3.eth.getAccounts;
+        newWeb3.accountsEnabled = true;
+      } else {
+        // we provide a fallback so we can generate/read data
+        newWeb3 = new Web3(config.foreignNodeConnection);
+        newWeb3.defaultNode = true;
+      }
     }
 
-    resolve(givethWeb3);
+    resolve(newWeb3);
   });
-
-export default getWeb3;

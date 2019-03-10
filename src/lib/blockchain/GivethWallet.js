@@ -20,24 +20,23 @@ const mapPassword = new WeakMap();
 class GivethWallet {
   /**
    * @param keystores     array of keystores to add to the wallet
-   * @param provider      optional. This is necessary when signing a transaction to
-   *                      retrieve chainId, gasPrice, and nonce automatically
    */
-  constructor(keystores, provider) {
+  constructor(keystores) {
     if (!Array.isArray(keystores) || keystores.length === 0)
       throw new Error('keystores is required. and must be an array');
 
-    const accounts = new Accounts(provider);
+    const accounts = new Accounts();
     mapSet.call(mapAccounts, this, accounts);
 
     this.keystores = keystores;
     this.unlocked = false;
     this.balance = undefined;
-    this.tokenBalance = undefined;
+    this.homeBalance = undefined;
+    this.tokenBalances = {};
   }
 
   /**
-   * return the balance of the wallet
+   * return the balance of the wallet on the foreign network
    *
    * @param unit (optional) ether, finney, wei, etc
    * @return {String}
@@ -46,8 +45,20 @@ class GivethWallet {
     return this.balance ? utils.fromWei(this.balance, unit || 'ether') : undefined;
   }
 
-  getTokenBalance(unit) {
-    return this.tokenBalance ? utils.fromWei(this.tokenBalance, unit || 'ether') : undefined;
+  /**
+   * return the balance of the wallet on the home network
+   *
+   * @param unit (optional) ether, finney, wei, etc
+   * @return {String}
+   */
+  getHomeBalance(unit) {
+    return this.homeBalance ? utils.fromWei(this.homeBalance, unit || 'ether') : undefined;
+  }
+
+  getTokenBalance(address, unit) {
+    return this.tokenBalances[address]
+      ? utils.fromWei(this.tokenBalances[address], unit || 'ether')
+      : undefined;
   }
 
   /**
@@ -59,12 +70,13 @@ class GivethWallet {
   signTransaction(txData) {
     if (!this.unlocked) return Promise.reject(new Error('Locked Wallet'));
 
-    if (!txData.gasPrice || !txData.nonce || !txData.chainId)
+    if (!txData.gasPrice || (!txData.nonce && txData.nonce < 0) || !txData.chainId)
       return Promise.reject(new Error('gasPrice, nonce, and chainId are required'));
 
     const accounts = mapGet.call(mapAccounts, this);
 
-    return accounts.wallet[0].signTransaction(txData);
+    // signTransaction returns a promise sometimes, but not always
+    return Promise.resolve(accounts.wallet[0].signTransaction(txData));
   }
 
   /**
@@ -84,7 +96,8 @@ class GivethWallet {
   unlock(password) {
     return new Promise((resolve, reject) => {
       if (this.unlocked) {
-        return resolve(true);
+        resolve(true);
+        return;
       }
 
       mapSet.call(mapPassword, this, password);
@@ -94,17 +107,16 @@ class GivethWallet {
         try {
           accounts.wallet.decrypt(this.keystores, password);
         } catch (e) {
-          return reject(e);
+          reject(e);
+          return;
         }
 
         this.unlocked = true;
-        return resolve(true);
+        resolve(true);
       };
 
-      return decrypt();
-
       // web3 blocks all rendering, so we need to request an animation frame
-      // window.requestAnimationFrame(decrypt)
+      window.requestAnimationFrame(decrypt);
     });
   }
 
@@ -155,8 +167,8 @@ class GivethWallet {
     return addr.toLowerCase().startsWith('0x') ? addr : `0x${addr}`;
   }
 
-  static createGivethWallet(keystore, provider, password) {
-    const wallet = new GivethWallet(keystore, provider);
+  static createGivethWallet(keystore, password) {
+    const wallet = new GivethWallet(keystore);
     if (password) {
       return wallet.unlock(password).then(() => wallet);
     }
@@ -165,14 +177,13 @@ class GivethWallet {
 
   /**
    * generate a new wallet with a new keystore
-   * @param provider - optional
    * @param password - password to encrypt the wallet with
    */
-  static createWallet(provider, password) {
+  static createWallet(password) {
     return new Promise(resolve => {
       const createWallet = () => {
-        const keystore = new Accounts(provider).wallet.create(1).encrypt(password);
-        resolve(GivethWallet.createGivethWallet(keystore, provider, password));
+        const keystore = new Accounts().wallet.create(1).encrypt(password);
+        resolve(GivethWallet.createGivethWallet(keystore, password));
       };
 
       // web3 blocks all rendering, so we need to request an animation frame
@@ -184,11 +195,10 @@ class GivethWallet {
    * loads a GivethWallet with the provided keystores.
    *
    * @param keystore    the keystores to hold in the wallet
-   * @param provider    optional. web3 provider
    * @param password    optional. if provided, the returned wallet will be unlocked,
    *                    otherwise the wallet will be locked
    */
-  static loadWallet(keystore, provider, password) {
+  static loadWallet(keystore, password) {
     if (!keystore) throw new Error('keystore is required');
 
     let modifiedKeystore = keystore;
@@ -196,7 +206,7 @@ class GivethWallet {
       modifiedKeystore = [keystore];
     }
 
-    return GivethWallet.createGivethWallet(modifiedKeystore, provider, password);
+    return GivethWallet.createGivethWallet(modifiedKeystore, password);
   }
 
   /**

@@ -10,7 +10,7 @@ function AddMilestoneItem(props) {
         className="btn btn-primary btn-sm btn-add-milestone-item"
         onClick={onClick}
       >
-        Add item
+        Add Line Item
       </button>
     </div>
   );

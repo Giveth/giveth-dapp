@@ -1,22 +1,19 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
+import BigNumber from 'bignumber.js';
 
 import { Form, Input } from 'formsy-react-components';
-import { feathersClient, feathersRest } from '../../lib/feathersClient';
+import GA from 'lib/GoogleAnalytics';
 import Loader from '../Loader';
-import FormsyImageUploader from './../FormsyImageUploader';
-import { isLoggedIn, checkWalletBalance, confirmBlockchainTransaction } from '../../lib/middleware';
-import LoaderButton from '../../components/LoaderButton';
-import getNetwork from '../../lib/blockchain/getNetwork';
+import FormsyImageUploader from '../FormsyImageUploader';
+import { checkBalance, checkForeignNetwork, isLoggedIn } from '../../lib/middleware';
+import LoaderButton from '../LoaderButton';
 import User from '../../models/User';
-import { getGasPrice, history } from '../../lib/helpers';
-import GivethWallet from '../../lib/blockchain/GivethWallet';
-import ErrorPopup from '../ErrorPopup';
+import { history } from '../../lib/helpers';
 
 /**
  * The edit user profile view mapped to /profile/
  *
- * @param wallet       Wallet object with the balance and all keystores
  * @param currentUser  The current user's address
  */
 class EditProfile extends Component {
@@ -28,12 +25,7 @@ class EditProfile extends Component {
       isSaving: false,
 
       // user model
-      name: props.currentUser.name,
-      avatar: props.currentUser.avatar,
-      email: props.currentUser.email,
-      linkedIn: props.currentUser.linkedIn,
-      giverId: props.currentUser.giverId,
-      uploadNewAvatar: false,
+      user: props.currentUser ? new User(props.currentUser) : new User(),
       isPristine: true,
     };
 
@@ -43,141 +35,87 @@ class EditProfile extends Component {
   }
 
   componentDidMount() {
-    isLoggedIn(this.props.currentUser)
-      .then(() => checkWalletBalance(this.props.wallet))
-      .then(() => this.setState({ isLoading: false }))
-      .catch(err => {
-        if (err === 'noBalance') history.goBack();
-        else {
-          // set giverId to '0'. This way we don't create 2 Givers for the same user
-          this.setState({
-            giverId: '0',
-            isLoading: false,
-          });
-        }
-      });
+    this.mounted = true;
+    checkForeignNetwork(this.props.isForeignNetwork).then(() =>
+      isLoggedIn(this.props.currentUser)
+        .then(() => checkBalance(this.props.balance))
+        .then(() => this.setState({ isLoading: false }))
+        .catch(err => {
+          if (err === 'noBalance') history.goBack();
+          else {
+            this.setState({
+              isLoading: false,
+            });
+          }
+        }),
+    );
+  }
+
+  componentWillUnmount() {
+    this.mounted = false;
   }
 
   setImage(image) {
-    this.setState({ avatar: image, uploadNewAvatar: true, isPristine: false });
+    const { user } = this.state;
+    user.newAvatar = image;
+    this.setState({ user, isPristine: false });
   }
 
-  submit(model) {
-    this.setState({ isSaving: true });
+  submit() {
+    // Save user profile
+    const showToast = (msg, url, isSuccess = false) => {
+      const toast = url ? (
+        <p>
+          {msg}
+          <br />
+          <a href={url} target="_blank" rel="noopener noreferrer">
+            View transaction
+          </a>
+        </p>
+      ) : (
+        msg
+      );
 
-    const updateUser = file => {
-      const constructedModel = {
-        name: model.name,
-        email: model.email,
-        linkedIn: model.linkedIn,
-        avatar: file,
-        // If no giverId, set to 0 so we don't add 2 givers for the same user if they update their
-        // profile before the AddGiver tx has been mined. 0 is a reserved giverId
-        giverId: this.state.giverId || '0',
-      };
-
-      // TODO: if (giverId > 0), need to send tx if commitTime or name has changed
-      // TODO: store user profile on ipfs and add Giver in liquidpledging contract
-      if (this.state.giverId === undefined) {
-        Promise.all([getNetwork(), getGasPrice()]).then(([network, gasPrice]) => {
-          const { liquidPledging } = network;
-          const from = this.props.currentUser.address;
-
-          let txHash;
-          liquidPledging
-            .addGiver(model.name || '', '', 259200, '0x0', {
-              $extraGas: 50000,
-              gasPrice,
-              from,
-            }) // 3 days commitTime. TODO allow user to set commitTime
-            .once('transactionHash', hash => {
-              txHash = hash;
-              feathersClient
-                .service('/users')
-                .patch(this.props.currentUser.address, constructedModel)
-                .then(user => {
-                  React.toast.success(
-                    <p>
-                      Your profile was created!<br />
-                      <a
-                        href={`${network.etherscan}tx/${txHash}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        View transaction
-                      </a>
-                    </p>,
-                  );
-                  this.setState(Object.assign({}, user, { isSaving: false }));
-                })
-                .catch(err => {
-                  ErrorPopup(
-                    'There has been a problem creating your user profile. Please refresh the page and try again.',
-                    err,
-                  );
-                });
-            })
-            .then(() =>
-              React.toast.success(
-                <p>
-                  You are now a registered user<br />
-                  <a
-                    href={`${network.etherscan}tx/${txHash}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    View transaction
-                  </a>
-                </p>,
-              ),
-            )
-            .catch(() => {
-              // TODO: Actually inform the user about error
-              ErrorPopup(
-                'Something went wrong with the transaction. Is your wallet unlocked?',
-                `${network.etherscan}tx/${txHash}`,
-              );
-            });
-        });
-      } else {
-        feathersClient
-          .service('/users')
-          .patch(this.props.currentUser.address, constructedModel)
-          .then(user => {
-            React.toast.success('Your profile has been updated.');
-            this.setState(Object.assign({}, user, { isSaving: false }));
-          })
-          // TODO: Actually inform the user about error
-          .catch(err => {
-            ErrorPopup(
-              'There has been a problem updating your user profile. Please refresh the page and try again.',
-              err,
-            );
-          });
-      }
+      if (isSuccess) React.toast.success(toast);
+      else React.toast.info(toast);
     };
 
-    // Save user profile
-    confirmBlockchainTransaction(
-      () => {
-        if (this.state.uploadNewAvatar) {
-          feathersRest
-            .service('uploads')
-            .create({ uri: this.state.avatar })
-            .then(file => {
-              updateUser(file.url);
-            })
-            .catch(err => {
-              ErrorPopup(
-                'We could not upload your new profile image. Please refresh the page and try again.',
-                err,
-              );
-            });
-        } else {
-          updateUser();
-        }
+    const afterMined = (created, url) => {
+      const msg = created ? 'You are now a registered user' : 'Your profile has been updated';
+      showToast(msg, url, true);
+
+      if (created) {
+        GA.trackEvent({
+          category: 'User',
+          action: 'created',
+          label: this.state.user.address,
+        });
+      } else {
+        if (this.mounted) this.setState({ isSaving: false });
+        GA.trackEvent({
+          category: 'User',
+          action: 'updated',
+          label: this.state.user.address,
+        });
+      }
+    };
+    const afterSave = (created, url) => {
+      if (this.mounted) this.setState({ isSaving: false });
+
+      const msg = created ? 'We are registering you as a user' : 'Your profile is being updated';
+      showToast(msg, url);
+
+      if (created) history.push('/');
+    };
+
+    this.setState(
+      {
+        isSaving: true,
       },
-      () => this.setState({ isSaving: false }),
+      () => {
+        // Save the User
+        this.state.user.save(afterSave, afterMined);
+      },
     );
   }
 
@@ -186,7 +124,8 @@ class EditProfile extends Component {
   }
 
   render() {
-    const { isLoading, isSaving, name, email, linkedIn, avatar, isPristine } = this.state;
+    const { isLoading, isSaving, user, isPristine } = this.state;
+    const { currentUser } = this.props;
 
     return (
       <div id="edit-cause-view" className="container-fluid page-layout">
@@ -204,24 +143,32 @@ class EditProfile extends Component {
                   <strong>fill out your profile </strong>
                   when you want to start Communities or Campaigns on Giveth.
                 </p>
+                <div className="alert alert-warning">
+                  <i className="fa fa-exclamation-triangle" />
+                  Please note that all the information entered will be stored on a publicly
+                  accessible permanent storage like blockchain. We are not able to erase or alter
+                  any of the information. Do not input anything that you do not have permision to
+                  share or you are not comfortable with being forever accessible.
+                </div>
 
                 <Form
                   onSubmit={this.submit}
-                  mapping={inputs => ({
-                    name: inputs.name,
-                    email: inputs.email,
-                    linkedIn: inputs.linkedIn,
-                  })}
+                  mapping={inputs => {
+                    user.name = inputs.name;
+                    user.email = inputs.email;
+                    user.linkedin = inputs.linkedin;
+                  }}
                   onChange={this.togglePristine}
                   layout="vertical"
                 >
                   <div className="form-group">
                     <Input
                       name="name"
+                      autoComplete="name"
                       id="name-input"
                       label="Your name"
                       type="text"
-                      value={name}
+                      value={user.name}
                       placeholder="John Doe."
                       validations="minLength:3"
                       validationErrors={{
@@ -235,28 +182,32 @@ class EditProfile extends Component {
                   <div className="form-group">
                     <Input
                       name="email"
+                      autoComplete="email"
                       label="Email"
-                      value={email}
+                      value={user.email}
                       placeholder="email@example.com"
                       validations="isEmail"
                       help="Please enter your email address."
                       validationErrors={{
                         isEmail: "Oops, that's not a valid email address.",
                       }}
-                      required
                     />
                   </div>
 
-                  <FormsyImageUploader setImage={this.setImage} avatar={avatar} aspectRatio={1} />
+                  <FormsyImageUploader
+                    setImage={this.setImage}
+                    avatar={user.avatar}
+                    aspectRatio={1}
+                  />
 
                   <div className="form-group">
                     <Input
-                      name="linkedIn"
+                      name="linkedin"
                       label="Your Profile"
                       type="text"
-                      value={linkedIn}
+                      value={user.linkedin}
                       placeholder="Your profile url"
-                      help="Provide a link to some more info about you, this will help to build trust. You could add your LinkedIn profile, Twitter account or a relevant website."
+                      help="Provide a link to some more info about you, this will help to build trust. You could add your linkedin profile, Twitter account or a relevant website."
                       validations="isUrl"
                       validationErrors={{
                         isUrl: 'Please enter a valid url',
@@ -268,7 +219,8 @@ class EditProfile extends Component {
                     className="btn btn-success"
                     formNoValidate
                     type="submit"
-                    disabled={isSaving || isPristine}
+                    network="Foreign"
+                    disabled={isSaving || isPristine || (currentUser && currentUser.giverId === 0)}
                     isLoading={isSaving}
                     loadingText="Saving..."
                   >
@@ -285,8 +237,9 @@ class EditProfile extends Component {
 }
 
 EditProfile.propTypes = {
-  wallet: PropTypes.instanceOf(GivethWallet).isRequired,
   currentUser: PropTypes.instanceOf(User),
+  balance: PropTypes.instanceOf(BigNumber).isRequired,
+  isForeignNetwork: PropTypes.bool.isRequired,
 };
 
 EditProfile.defaultProps = {
