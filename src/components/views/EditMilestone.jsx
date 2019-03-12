@@ -97,6 +97,13 @@ class EditMilestone extends Component {
       })),
       isBlocking: false,
       draftState: draftStates.hidden,
+      toggles: {
+        hasReviewer: true,
+        isLPMilestone: false,
+        acceptsSingleToken: true,
+        isCapped: true,
+        itemizeState: false,
+      },
     };
 
     this.form = React.createRef();
@@ -220,7 +227,7 @@ class EditMilestone extends Component {
             } else if (rate && (milestone.fiatAmount && milestone.fiatAmount.gt(0))) {
               milestone.maxAmount = milestone.fiatAmount.div(rate);
             } else {
-              milestone.maxAmount = new BigNumber('0');
+              milestone.maxAmount = this.state.toggles.isCapped ? new BigNumber('0') : undefined;
               milestone.fiatAmount = new BigNumber('0');
             }
 
@@ -298,7 +305,9 @@ class EditMilestone extends Component {
         milestone.selectedFiatType = milestone.token.symbol;
         rate = resp.rates[milestone.token.symbol];
       }
-      milestone.maxAmount = milestone.fiatAmount.div(rate);
+      milestone.maxAmount = this.state.toggles.isCapped
+        ? milestone.fiatAmount.div(rate)
+        : undefined;
       milestone.conversionRateTimestamp = resp.timestamp;
 
       this.setState({ milestone });
@@ -379,21 +388,23 @@ class EditMilestone extends Component {
   }
 
   itemizeState(value) {
-    const { milestone } = this.state;
+    const { milestone, toggles } = this.state;
     milestone.itemizeState = value;
-    this.setState({ milestone });
+    toggles.itemizeState = value;
+    this.setState({ milestone, toggles });
     this.onDraftChange();
   }
 
   hasReviewer(value) {
-    const { milestone } = this.state;
+    const { milestone, toggles } = this.state;
     milestone.reviewerAddress = value ? '' : ZERO_ADDRESS;
-    this.setState({ milestone });
+    toggles.hasReviewer = value;
+    this.setState({ milestone, toggles });
     this.onDraftChange();
   }
 
   isLPMilestone(value) {
-    const { milestone, campaignProjectId } = this.state;
+    const { milestone, campaignProjectId, toggles } = this.state;
     if (!value) {
       this.setState({
         milestone: new BridgedMilestone(milestone.toFeathers()),
@@ -404,26 +415,30 @@ class EditMilestone extends Component {
       });
     }
     this.onDraftChange();
+    toggles.isLPMilestone = value;
+    this.setState({ toggles });
   }
 
   acceptsSingleToken(value) {
-    const { milestone } = this.state;
+    const { milestone, toggles } = this.state;
     milestone.token = value ? this.props.tokenWhitelist[0] : ANY_TOKEN;
     if (!value) {
       // if ANY_TOKEN is allowed, then we can't have a cap
       milestone.maxAmount = undefined;
     }
-    this.setState({ milestone });
+    toggles.acceptsSingleToken = value;
+    this.setState({ milestone, toggles });
     this.onDraftChange();
   }
 
   isCapped(value) {
-    const { milestone } = this.state;
+    const { milestone, toggles } = this.state;
     milestone.maxAmount = value ? new BigNumber(0) : undefined;
     if (value) {
       milestone.fiatAmount = new BigNumber(0);
     }
-    this.setState({ milestone });
+    toggles.isCapped = value;
+    this.setState({ milestone, toggles });
     this.onDraftChange();
   }
 

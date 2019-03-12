@@ -57,8 +57,8 @@ function loadMilestoneDraft() {
     this.hasReviewer(false);
   }
   const acceptsSingleToken = localStorage.getItem('milestone.acceptsSingleToken');
-  if (acceptsSingleToken === 'true') {
-    this.acceptsSingleToken(true);
+  if (acceptsSingleToken === 'false') {
+    this.acceptsSingleToken(false);
   }
   const isCapped = localStorage.getItem('milestone.isCapped');
   if (isCapped === 'false') {
