@@ -1,6 +1,8 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import moment from 'moment';
+import MilestoneItem from 'models/MilestoneItem';
+import BigNumber from 'bignumber.js';
 import LPMilestone from '../models/LPMilestone';
 
 const draftStates = {
@@ -67,6 +69,20 @@ function loadMilestoneDraft() {
   const itemizeState = localStorage.getItem('milestone.itemizeState');
   if (itemizeState === 'true') {
     this.itemizeState(true);
+    const itemCount = +localStorage.getItem('milestone.itemCount');
+    for (let i = 0; i < itemCount; i += 1) {
+      const id = `milestone.items.${i}`;
+      const item = new MilestoneItem({});
+      item.date = localStorage.getItem(`${id}.date`);
+      item.description = localStorage.getItem(`${id}.description`);
+      item.image = localStorage.getItem(`${id}.image`);
+      item.selectedFiatType = localStorage.getItem(`${id}.selectedFiatType`);
+      item.fiatAmount = new BigNumber(localStorage.getItem(`${id}.fiatAmount`));
+      item.wei = localStorage.getItem(`${id}.wei`);
+      item.conversionRate = parseFloat(localStorage.getItem(`${id}.conversionRate`));
+      item.conversionRateTimestamp = localStorage.getItem(`${id}.conversionRateTimestamp`);
+      this.addItem(item);
+    }
   }
   const isLPMilestone = localStorage.getItem('milestone.isLPMilestone');
   if (isLPMilestone === 'true') {
@@ -112,8 +128,11 @@ function saveMilestoneDraft(that, itemNames) {
       set(`${id}.fiatAmount`, item.props.item.fiatAmount, itemNames);
       set(`${id}.selectedFiatType`, item.props.item.selectedFiatType, itemNames);
       set(`${id}.conversionRate`, item.props.item.conversionRate, itemNames);
+      set(`${id}.conversionRateTimestamp`, item.props.item.conversionRateTimestamp, itemNames);
+      set(`${id}.wei`, item.props.item.wei, itemNames);
       set(`${id}.image`, item.props.item.image, itemNames);
     });
+    set('milestone.itemCount', items.length, itemNames);
   }
 }
 
