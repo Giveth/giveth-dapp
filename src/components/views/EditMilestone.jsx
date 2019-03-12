@@ -283,6 +283,7 @@ class EditMilestone extends Component {
     const { milestone } = this.state;
     milestone.items = items;
     this.setState({ milestone });
+    this.onDraftChange();
   }
 
   setImage(image) {
