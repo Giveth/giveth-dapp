@@ -43,7 +43,7 @@ function loadDraft() {
     if (input.props.name === 'date') {
       const date = moment.utc(value);
       this.setDate(date);
-    } else {
+    } else if (value) {
       input.setValue(value);
     }
   });
@@ -92,11 +92,15 @@ function loadMilestoneDraft() {
 
 function onDraftChange() {
   if (!this.props.isNew) return;
-  const { draftLoaded, draftSaved, draftState } = this.state;
+  const { draftLoaded, draftSaved, draftChanged, draftState } = this.state;
   if (draftLoaded + 1000 > Date.now()) return;
   if (draftSaved && draftSaved + 1000 > Date.now()) return;
+  if (draftChanged && Date.now() < draftChanged + 1000) return;
   if (draftState < draftStates.changed) {
-    this.setState({ draftState: draftStates.changed });
+    this.setState({
+      draftState: draftStates.changed,
+      draftChanged: Date.now(),
+    });
   }
 }
 
@@ -197,12 +201,17 @@ class DraftButton extends Component {
         });
         break;
       }
-      default: {
+      case draftStates.changedImage:
+      // eslint-disable-next-line
+      case draftStates.changed: {
         this.setState({
           hidden: false,
           disabled: false,
           label: labels.changed,
         });
+        break;
+      }
+      default: {
         break;
       }
     }
