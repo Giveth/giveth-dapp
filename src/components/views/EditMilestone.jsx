@@ -407,13 +407,13 @@ class EditMilestone extends Component {
   isLPMilestone(value) {
     const { milestone, campaignProjectId, toggles } = this.state;
     if (!value) {
-      this.setState({
-        milestone: new BridgedMilestone(milestone.toFeathers()),
-      });
+      const ms = new BridgedMilestone(milestone.toFeathers());
+      ms.itemizeState = toggles.itemizeState;
+      this.setState({ milestone: ms });
     } else {
-      this.setState({
-        milestone: new LPMilestone({ ...milestone.toFeathers(), recipientId: campaignProjectId }),
-      });
+      const ms = new LPMilestone({ ...milestone.toFeathers(), recipientId: campaignProjectId });
+      ms.itemizeState = toggles.itemizeState;
+      this.setState({ milestone: ms });
     }
     this.onDraftChange();
     toggles.isLPMilestone = value;

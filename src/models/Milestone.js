@@ -487,7 +487,7 @@ export default class Milestone extends BasicModel {
   }
 
   get isCapped() {
-    return this.maxAmount !== undefined;
+    return this._maxAmount !== undefined;
   }
 
   canUserAcceptRejectProposal(user) {
