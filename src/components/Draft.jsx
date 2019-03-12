@@ -89,19 +89,32 @@ function onImageChange() {
   this.setState({ draftState: draftStates.changedImage });
 }
 
+function set(name, value, itemNames) {
+  window.localStorage.setItem(name, value);
+  itemNames.push(name);
+}
+
 function saveMilestoneDraft(that, itemNames) {
-  const { localStorage } = window;
   const { milestone } = that.state;
-  localStorage.setItem('milestone.hasReviewer', milestone.hasReviewer);
-  itemNames.push('milestone.hasReviewer');
-  localStorage.setItem('milestone.isLPMilestone', milestone instanceof LPMilestone);
-  itemNames.push('milestone.isLPMilestone');
-  localStorage.setItem('milestone.acceptsSingleToken', milestone.acceptsSingleToken);
-  itemNames.push('milestone.acceptsSingleToken');
-  localStorage.setItem('milestone.isCapped', milestone.isCapped);
-  itemNames.push('milestone.isCapped');
-  localStorage.setItem('milestone.itemizeState', milestone.itemizeState);
-  itemNames.push('milestone.itemizeState');
+  set('milestone.hasReviewer', milestone.hasReviewer, itemNames);
+  set('milestone.isLPMilestone', milestone instanceof LPMilestone, itemNames);
+  set('milestone.acceptsSingleToken', milestone.acceptsSingleToken, itemNames);
+  set('milestone.isCapped', milestone.isCapped, itemNames);
+  set('milestone.itemizeState', milestone.itemizeState, itemNames);
+  if (milestone.itemizeState) {
+    const items = that.form.current.formsyForm.inputs.filter(input =>
+      input.props.name.startsWith('milestoneItem'),
+    );
+    items.forEach((item, i) => {
+      const id = `milestone.items.${i}`;
+      set(`${id}.description`, item.props.item.description, itemNames);
+      set(`${id}.date`, item.props.item.date, itemNames);
+      set(`${id}.fiatAmount`, item.props.item.fiatAmount, itemNames);
+      set(`${id}.selectedFiatType`, item.props.item.selectedFiatType, itemNames);
+      set(`${id}.conversionRate`, item.props.item.conversionRate, itemNames);
+      set(`${id}.image`, item.props.item.image, itemNames);
+    });
+  }
 }
 
 function saveDraft(force = false) {
@@ -110,23 +123,19 @@ function saveDraft(force = false) {
   const itemNames = [];
   const { draftType, draftState } = this.state;
   const object = this.state[draftType];
-  const { localStorage } = window;
   const form = this.form.current.formsyForm.getCurrentValues();
   Object.keys(form).forEach(item => {
-    if (item !== 'picture') {
+    if (item !== 'picture' && !item.startsWith('milestoneItem')) {
       const itemName = `${draftType}.${item}`;
-      localStorage.setItem(itemName, form[item]);
-      itemNames.push(itemName);
+      set(itemName, form[item], itemNames);
     }
   });
   if (draftState === draftStates.changedImage || force) {
     const itemName = `${draftType}.picture`;
-    localStorage.setItem(itemName, object.image);
-    itemNames.push(itemName);
+    set(itemName, object.image, itemNames);
   }
   const itemName = `${draftType}.timestamp`;
-  localStorage.setItem(itemName, Date.now());
-  itemNames.push(itemName);
+  set(itemName, Date.now(), itemNames);
   if (draftType === 'milestone') {
     saveMilestoneDraft(this, itemNames);
   }
