@@ -276,7 +276,7 @@ class EditDAC extends Component {
                         value={dac.description}
                         placeholder="Describe how you're going to solve your cause..."
                         validations="minLength:20"
-                        help="Describe your dac."
+                        help="Describe your DAC."
                         validationErrors={{
                           minLength: 'Please provide at least 10 characters.',
                         }}
@@ -301,7 +301,7 @@ class EditDAC extends Component {
                         type="text"
                         value={dac.communityUrl}
                         placeholder="https://slack.giveth.com"
-                        help="Where can people join your community? Paste a link here for your community's website, social or chatroom."
+                        help="Where can people join your Community? Paste a link here for your community's website, social or chatroom."
                         validations="isUrl"
                         validationErrors={{
                           isUrl: 'Please provide a url.',

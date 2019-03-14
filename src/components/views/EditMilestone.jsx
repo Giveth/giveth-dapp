@@ -135,7 +135,7 @@ class EditMilestone extends Component {
             });
           } catch (err) {
             ErrorPopup(
-              'Sadly we were unable to load the requested milestone details. Please try again.',
+              'Sadly we were unable to load the requested Milestone details. Please try again.',
               err,
             );
           }
@@ -218,7 +218,7 @@ class EditMilestone extends Component {
             this.setDate(this.state.milestone.date);
           } catch (e) {
             ErrorPopup(
-              'Sadly we were unable to load the campaign in which this milestone was created. Please try again.',
+              'Sadly we were unable to load the Campaign in which this Milestone was created. Please try again.',
               e,
             );
             this.setState({
@@ -496,9 +496,9 @@ class EditMilestone extends Component {
       () => {
         if (this.props.isProposed && this.props.isNew) {
           React.swal({
-            title: 'Propose milestone?',
+            title: 'Propose Milestone?',
             text:
-              'The milestone will be proposed to the campaign owner and he or she might approve or reject your milestone.',
+              'The Milestone will be proposed to the Campaign owner and he or she might approve or reject your milestone.',
             icon: 'warning',
             dangerMode: true,
             buttons: ['Cancel', 'Yes, propose'],
@@ -626,15 +626,9 @@ class EditMilestone extends Component {
                   <GoBackButton history={history} title={`Campaign: ${campaignTitle}`} />
 
                   <div className="form-header">
-                    {isNew && !isProposed && <h3>Add a new milestone</h3>}
+                    {isNew && !isProposed && <h3>Add a new Milestone</h3>}
 
-                    {!isNew &&
-                      !isProposed && (
-                        <h3>
-                          Edit milestone
-                          {milestone.title}
-                        </h3>
-                      )}
+                    {!isNew && !isProposed && <h3>Edit Milestone {milestone.title}</h3>}
 
                     {isNew && isProposed && <h3>Propose a Milestone</h3>}
 
@@ -737,7 +731,7 @@ class EditMilestone extends Component {
                           <span className="help-block">
                             Choosing not to use a reviewer on your Milestone will allow you to
                             withdraw donations at anytime. The downside is that you are no longer
-                            held accountable for completing the milestone before funds can be
+                            held accountable for completing the Milestone before funds can be
                             withdrawn and thus less likely to receive donations.
                           </span>
                         )}
@@ -747,7 +741,7 @@ class EditMilestone extends Component {
                           name="reviewerAddress"
                           id="reviewer-select"
                           label="Select a reviewer"
-                          helpText="The reviewer verifies that the milestone is completed successfully, thus building trust in your Milestone"
+                          helpText="The reviewer verifies that the Milestone is completed successfully, thus building trust in your Milestone"
                           value={milestone.reviewerAddress}
                           cta="--- Select a reviewer ---"
                           options={reviewers}
@@ -832,7 +826,7 @@ class EditMilestone extends Component {
                       {!milestone.isCapped && (
                         <span className="help-block">
                           {milestone.acceptsSingleToken
-                            ? 'It is recommended that you set a fundraising cap for your milestone.'
+                            ? 'It is recommended that you set a fundraising cap for your Milestone.'
                             : 'In order to set a fundraising cap, you must only accept donations in a single token'}
                         </span>
                       )}
