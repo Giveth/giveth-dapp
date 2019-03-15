@@ -330,13 +330,13 @@ class EditCampaign extends Component {
                     </div>
 
                     <div className="form-group row">
-                      <div className="col-md-4">
+                      <div className="col-4">
                         <GoBackButton history={history} />
                       </div>
-                      <div className="col-md-4">
+                      <div className="col-4">
                         <DraftButton draftState={this.state.draftState} onClick={this.saveDraft} />
                       </div>
-                      <div className="col-md-4">
+                      <div className="col-4">
                         <LoaderButton
                           className="btn btn-success pull-right"
                           formNoValidate

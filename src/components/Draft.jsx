@@ -185,6 +185,15 @@ class DraftButton extends Component {
   constructor(props) {
     super(props);
     this.state = { hidden: true };
+    this.updateWidth = this.updateWidth.bind(this);
+  }
+
+  componentWillMount() {
+    this.updateWidth();
+  }
+
+  componentDidMount() {
+    window.addEventListener('resize', this.updateWidth);
   }
 
   componentWillReceiveProps(nextProps) {
@@ -217,18 +226,26 @@ class DraftButton extends Component {
     }
   }
 
+  componentWillUnmount() {
+    window.removeEventListener('resize', this.updateWidth);
+  }
+
+  updateWidth() {
+    this.setState({ width: window.innerWidth });
+  }
+
   render() {
-    return this.state.hidden ? (
+    return this.state.hidden || this.state.width < 348 ? (
       ''
     ) : (
       <button
         type="button"
-        className="btn btn-primary pull-right"
+        className="btn btn-primary pull-left"
         disabled={this.state.disabled}
         onClick={this.props.onClick}
       >
         <i className="fa fa-save" />
-        &nbsp;{this.state.label}
+        {this.state.width >= 460 && this.state.label}
       </button>
     );
   }
