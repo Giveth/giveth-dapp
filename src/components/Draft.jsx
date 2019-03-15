@@ -28,6 +28,7 @@ function getDraftType(state) {
 function loadDraft() {
   if (this.state.draftLoaded) return;
   if (!this.props.isNew) return;
+  window.setInterval(this.saveDraft, 60000);
   this.setState(prevState => ({ draftType: getDraftType(prevState) }));
   const draftType = getDraftType(this.state);
   const { localStorage } = window;
@@ -143,6 +144,7 @@ function saveMilestoneDraft(that, itemNames) {
 function saveDraft(force = false) {
   if (!this.props.isNew) return [];
   if (this.state.draftState < draftStates.changed && !force) return [];
+  if (!this.form.current) return [];
   const itemNames = [];
   const { draftType, draftState } = this.state;
   const object = this.state[draftType];
