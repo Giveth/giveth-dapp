@@ -979,13 +979,13 @@ class EditMilestone extends Component {
                     )}
 
                     <div className="form-group row">
-                      <div className="col-6">
+                      <div className="col-4">
                         <GoBackButton history={history} title={`Campaign: ${campaignTitle}`} />
                       </div>
-                      <div className="col-3">
+                      <div className="col-4">
                         <DraftButton draftState={this.state.draftState} onClick={this.saveDraft} />
                       </div>
-                      <div className="col-3">
+                      <div className="col-4">
                         <LoaderButton
                           className="btn btn-success pull-right"
                           formNoValidate
