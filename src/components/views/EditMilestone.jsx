@@ -321,10 +321,11 @@ class EditMilestone extends Component {
         milestone.selectedFiatType = milestone.token.symbol;
         rate = resp.rates[milestone.token.symbol];
       }
-      milestone.maxAmount = this.state.toggles.isCapped
-        ? milestone.fiatAmount.div(rate)
-        : undefined;
-      milestone.conversionRateTimestamp = resp.timestamp;
+
+      if (milestone.isCapped) {
+        milestone.maxAmount = milestone.fiatAmount.div(rate);
+        milestone.conversionRateTimestamp = resp.timestamp;
+      }
 
       this.setState({ milestone });
     });
