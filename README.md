@@ -179,6 +179,8 @@ The following arguments are available:
 | tokenAddress | A valid token address | string |
 | maxAmount | A valid max amount of ETH or token | number |
 | fiatAmount | A valid max amount of fiat (dependant on selectedFiatType) | number |
+| isCapped | Determines whether the milestone should be capped | 0 or 1 (boolean) |
+| requireReviewer | Determines whether the milestone should require a reviewer | 0 or 1 (boolean) |
 
 
 ## Contributing

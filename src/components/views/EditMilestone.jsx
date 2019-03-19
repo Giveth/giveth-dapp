@@ -55,6 +55,8 @@ const validQueryStringVariables = [
   'token',
   'tokenAddress',
   'maxAmount',
+  'isCapped',
+  'requireReviewer',
   // 'fiatAmount', // FIXME: The fiatAmount does not work because it is overwritten when the getConversionRates function is called. This function modifies th e provider and causes re-render which makes the maxAmount being updated incorrectly. The function needs to change to not update the provider state and not expose currentRate
 ];
 
@@ -179,6 +181,15 @@ class EditMilestone extends Component {
                   if (date.isValid()) milestone.date = date;
                   break;
                 }
+                case 'isCapped':
+                  milestone.maxAmount = qs[variable] === '1' ? new BigNumber(0) : undefined;
+                  if (qs[variable] === '1') {
+                    milestone.fiatAmount = new BigNumber(0);
+                  }
+                  break;
+                case 'requireReviewer':
+                  milestone.reviewerAddress = qs[variable] === '1' ? '' : ZERO_ADDRESS;
+                  break;
                 default:
                   milestone[variable] = qs[variable];
                   break;
@@ -198,14 +209,16 @@ class EditMilestone extends Component {
               milestone.token.symbol,
             );
 
-            const rate = rates[milestone.selectedFiatType];
-            if (rate && (milestone.maxAmount && milestone.maxAmount.gt(0))) {
-              milestone.fiatAmount = milestone.maxAmount.times(rate);
-            } else if (rate && (milestone.fiatAmount && milestone.fiatAmount.gt(0))) {
-              milestone.maxAmount = milestone.fiatAmount.div(rate);
-            } else {
-              milestone.maxAmount = new BigNumber('0');
-              milestone.fiatAmount = new BigNumber('0');
+            if (milestone.isCapped) {
+              const rate = rates[milestone.selectedFiatType];
+              if (rate && (milestone.maxAmount && milestone.maxAmount.gt(0))) {
+                milestone.fiatAmount = milestone.maxAmount.times(rate);
+              } else if (rate && (milestone.fiatAmount && milestone.fiatAmount.gt(0))) {
+                milestone.maxAmount = milestone.fiatAmount.div(rate);
+              } else {
+                milestone.maxAmount = new BigNumber('0');
+                milestone.fiatAmount = new BigNumber('0');
+              }
             }
 
             this.setState({
@@ -283,8 +296,10 @@ class EditMilestone extends Component {
         milestone.selectedFiatType = milestone.token.symbol;
         rate = resp.rates[milestone.token.symbol];
       }
-      milestone.maxAmount = milestone.fiatAmount.div(rate);
-      milestone.conversionRateTimestamp = resp.timestamp;
+      if (milestone.isCapped) {
+        milestone.maxAmount = milestone.fiatAmount.div(rate);
+        milestone.conversionRateTimestamp = resp.timestamp;
+      }
 
       this.setState({ milestone });
     });
