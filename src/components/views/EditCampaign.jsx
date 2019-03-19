@@ -201,13 +201,13 @@ class EditCampaign extends Component {
                   <GoBackButton history={history} />
 
                   <div className="form-header">
-                    {isNew && <h3>Start a new campaign!</h3>}
+                    {isNew && <h3>Start a new Campaign!</h3>}
 
-                    {!isNew && <h3>Edit campaign{campaign.title}</h3>}
+                    {!isNew && <h3>Edit Campaign{campaign.title}</h3>}
                     <p>
                       <i className="fa fa-question-circle" />
-                      A campaign solves a specific cause by executing a project via its Milestones.
-                      Funds raised by a campaign need to be delegated to its Milestones in order to
+                      A Campaign solves a specific cause by executing a project via its Milestones.
+                      Funds raised by a Campaign need to be delegated to its Milestones in order to
                       be paid out.
                     </p>
                   </div>
@@ -241,7 +241,7 @@ class EditCampaign extends Component {
                       type="text"
                       value={campaign.title}
                       placeholder="E.g. Installing 1000 solar panels."
-                      help="Describe your campaign in 1 sentence."
+                      help="Describe your Campaign in 1 sentence."
                       validations="minLength:3"
                       validationErrors={{
                         minLength: 'Please provide at least 3 characters.',
@@ -254,11 +254,11 @@ class EditCampaign extends Component {
                       name="description"
                       label="Explain how you are going to do this successfully."
                       helpText="Make it as extensive as necessary.
-                      Your goal is to build trust, so that people donate Ether to your campaign."
+                      Your goal is to build trust, so that people donate Ether to your Campaign."
                       value={campaign.description}
-                      placeholder="Describe how you're going to execute your campaign successfully..."
+                      placeholder="Describe how you're going to execute your Campaign successfully..."
                       validations="minLength:20"
-                      help="Describe your campaign."
+                      help="Describe your Campaign."
                       validationErrors={{
                         minLength: 'Please provide at least 10 characters.',
                       }}

@@ -144,7 +144,7 @@ class MyMilestones extends Component {
             <div className="container-fluid page-layout dashboard-table-view">
               <div className="row">
                 <div className="col-md-10 m-auto">
-                  <h1>Your milestones</h1>
+                  <h1>Your Milestones</h1>
 
                   <NetworkWarning
                     incorrectNetwork={!isForeignNetwork}
@@ -296,7 +296,7 @@ class MyMilestones extends Component {
                         milestones.length === 0 && (
                           <div className="no-results">
                             <center>
-                              <h3>No milestones here!</h3>
+                              <h3>No Milestones here!</h3>
                               <img
                                 className="empty-state-img"
                                 src={`${process.env.PUBLIC_URL}/img/delegation.svg`}

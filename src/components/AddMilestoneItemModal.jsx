@@ -105,7 +105,7 @@ class AddMilestoneItemModal extends Component {
       <Modal
         isOpen={openModal}
         onRequestClose={this.closeModal}
-        contentLabel="Add an item to this milestone"
+        contentLabel="Add an item to this Milestone"
         style={modalStyles}
       >
         <Form

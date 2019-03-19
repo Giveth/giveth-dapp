@@ -69,7 +69,7 @@ class ViewMilestone extends Component {
             : milestone.recipient,
         }),
       err => {
-        ErrorPopup('Something went wrong with viewing the milestone. Please try a refresh.', err);
+        ErrorPopup('Something went wrong with viewing the Milestone. Please try a refresh.', err);
         this.setState({ isLoading: false });
       },
     );
@@ -149,9 +149,9 @@ class ViewMilestone extends Component {
               <h6>Milestone</h6>
               <h1>{milestone.title}</h1>
 
-              {!milestone.status === 'InProgress' && <p>This milestone is not active anymore</p>}
+              {!milestone.status === 'InProgress' && <p>This Milestone is not active anymore</p>}
 
-              {milestone.fullyFunded && <p>This milestone has reached its funding goal!</p>}
+              {milestone.fullyFunded && <p>This Milestone has reached its funding goal!</p>}
 
               {milestone.isCapped &&
                 !milestone.fullyFunded && (
@@ -239,7 +239,7 @@ class ViewMilestone extends Component {
                   <div className="row spacer-top-50 dashboard-table-view">
                     <div className="col-md-8 m-auto">
                       <h4>Milestone proof</h4>
-                      <p>These receipts show how the money of this milestone was spent.</p>
+                      <p>These receipts show how the money of this Milestone was spent.</p>
 
                       {/* MilesteneItem needs to be wrapped in a form or it won't mount */}
                       <Form>
@@ -309,9 +309,9 @@ class ViewMilestone extends Component {
                           {!milestone.hasReviewer && (
                             <p className="form-text alert alert-warning missing-reviewer-alert">
                               <i className="fa fa-exclamation-triangle" />
-                              This milestone does not have a reviewer. Any donations to this
-                              milestone can be withdrawn at any time and no checks are in place to
-                              ensure this milestone is completed.
+                              This Milestone does not have a reviewer. Any donations to this
+                              Milestone can be withdrawn at any time and no checks are in place to
+                              ensure this Milestone is completed.
                             </p>
                           )}
                         </div>
@@ -363,8 +363,8 @@ class ViewMilestone extends Component {
                           )}
                           {!milestone.hasRecipient && (
                             <p className="form-text">
-                              This milestone does not have a recipient. If you are interested in
-                              completing the work for this milestone, contact the milestone manager
+                              This Milestone does not have a recipient. If you are interested in
+                              completing the work for this Milestone, contact the Milestone manager
                               and let them know!
                             </p>
                           )}
@@ -372,13 +372,13 @@ class ViewMilestone extends Component {
 
                         {milestone.date && (
                           <div className="form-group">
-                            <span className="label">Date of milestone</span>
+                            <span className="label">Date of Milestone</span>
                             <small className="form-text">
                               {milestone.isCapped
                                 ? `This date defines the ${
                                     milestone.token.symbol
                                   }-fiat conversion rate`
-                                : 'The date this milestone was created'}
+                                : 'The date this Milestone was created'}
                             </small>
                             {moment.utc(milestone.date).format('Do MMM YYYY')}
                           </div>
@@ -411,7 +411,7 @@ class ViewMilestone extends Component {
                               ? `
                               The amount of ${milestone.token.symbol} currently donated to this
                               Milestone`
-                              : 'The total amount(s) donated to this milestone'}
+                              : 'The total amount(s) donated to this Milestone'}
                           </small>
                           {milestone.donationCounters.length &&
                             milestone.donationCounters.map(dc => (
@@ -439,7 +439,7 @@ class ViewMilestone extends Component {
                         <div className="form-group">
                           <span className="label">Campaign</span>
                           <small className="form-text">
-                            The campaign this milestone belongs to.
+                            The Campaign this Milestone belongs to.
                           </small>
                           {campaign.title}
                         </div>

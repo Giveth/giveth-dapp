@@ -12,8 +12,8 @@ const DeleteProposedMilestoneButton = ({ milestone, currentUser }) => {
   const _confirmDeleteMilestone = () => {
     MilestoneService.deleteProposedMilestone({
       milestone,
-      onSuccess: () => React.toast.info(<p>The milestone has been deleted.</p>),
-      onError: e => ErrorPopup('Something went wrong with deleting your milestone', e),
+      onSuccess: () => React.toast.info(<p>The Milestone has been deleted.</p>),
+      onError: e => ErrorPopup('Something went wrong with deleting your Milestone', e),
     });
   };
 

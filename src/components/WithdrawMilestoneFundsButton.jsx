@@ -41,7 +41,7 @@ class WithdrawMilestoneFundsButton extends Component {
               )}
               <p>
                 We will initiate the transfer of the funds to{' '}
-                {milestone instanceof LPMilestone && 'the campaign.'}
+                {milestone instanceof LPMilestone && 'the Campaign.'}
                 {!(milestone instanceof LPMilestone) &&
                   (isRecipient ? 'your wallet.' : "the recipient's wallet.")}
               </p>
@@ -70,7 +70,7 @@ class WithdrawMilestoneFundsButton extends Component {
 
                 React.toast.info(
                   <p>
-                    Initiating withdrawal from milestone...
+                    Initiating withdrawal from Milestone...
                     <br />
                     <a href={txUrl} target="_blank" rel="noopener noreferrer">
                       View transaction
@@ -81,7 +81,7 @@ class WithdrawMilestoneFundsButton extends Component {
               onConfirmation: txUrl => {
                 React.toast.info(
                   <p>
-                    The milestone withdraw has been initiated...
+                    The Milestone withdraw has been initiated...
                     <br />
                     <a href={txUrl} target="_blank" rel="noopener noreferrer">
                       View transaction
@@ -95,7 +95,7 @@ class WithdrawMilestoneFundsButton extends Component {
                 if (err === 'patch-error') {
                   ErrorPopup('Something went wrong with witdrawing your funds', err);
                 } else if (err.message === 'no-donations') {
-                  msg = <p>Nothing to withdraw. There are no donations to this milestone.</p>;
+                  msg = <p>Nothing to withdraw. There are no donations to this Milestone.</p>;
                 } else if (txUrl) {
                   // TODO: need to update feathers to reset the donations to previous state as this
                   // tx failed.
