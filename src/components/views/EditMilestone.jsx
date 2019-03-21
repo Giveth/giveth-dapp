@@ -473,6 +473,7 @@ class EditMilestone extends Component {
         milestone,
         from: this.props.currentUser.address,
         afterSave: (created, txUrl) => {
+          deleteDraft(itemNames);
           if (created) {
             if (this.props.isProposed) {
               React.toast.info(<p>Your Milestone has been proposed to the Campaign Owner.</p>);
@@ -508,7 +509,6 @@ class EditMilestone extends Component {
           this.props.history.goBack();
         },
         afterMined: (created, txUrl) => {
-          deleteDraft(itemNames);
           React.toast.success(
             <p>
               Your Milestone has been created!

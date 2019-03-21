@@ -139,7 +139,6 @@ class EditCampaign extends Component {
   submit() {
     const itemNames = this.saveDraft(true);
     const afterMined = url => {
-      deleteDraft(itemNames);
       if (url) {
         const msg = (
           <p>
@@ -159,6 +158,7 @@ class EditCampaign extends Component {
     };
 
     const afterCreate = (err, url, id) => {
+      deleteDraft(itemNames);
       if (this.mounted) this.setState({ isSaving: false });
       if (!err) {
         const msg = (
