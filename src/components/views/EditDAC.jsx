@@ -161,7 +161,6 @@ class EditDAC extends Component {
     };
 
     const afterMined = (created, url, id) => {
-      deleteDraft(itemNames);
       const msg = `Your DAC has been ${created ? 'created' : 'updated'}`;
       showToast(msg, url, true);
 
@@ -182,6 +181,7 @@ class EditDAC extends Component {
       }
     };
     const afterSave = (err, created, url) => {
+      deleteDraft(itemNames);
       if (this.mounted) this.setState({ isSaving: false });
       if (err) return;
       const msg = created ? 'Your DAC is pending...' : 'Your DAC is being updated...';
