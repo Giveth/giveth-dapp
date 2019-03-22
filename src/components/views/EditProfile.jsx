@@ -147,7 +147,7 @@ class EditProfile extends Component {
                   <i className="fa fa-exclamation-triangle" />
                   Please note that all the information entered will be stored on a publicly
                   accessible permanent storage like blockchain. We are not able to erase or alter
-                  any of the information. Do not input anything that you do not have permision to
+                  any of the information. Do not input anything that you do not have permission to
                   share or you are not comfortable with being forever accessible.
                 </div>
 
