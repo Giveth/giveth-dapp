@@ -18,7 +18,8 @@
     }
     &.active > a {
       text-decoration: none;
-      background-color: #daecff;
+	  color: #000;
+      background-color: #fff;
     }
     &:first-child a {
       margin-left: 0;
@@ -31,8 +32,8 @@
     }
     &:hover {
       a {
-        text-decoration: none;
-        background-color: darken(#fff, 2%);
+		text-decoration: none;
+		background-color: darken(#fff, 20%);
       }
     }
   }
