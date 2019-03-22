@@ -64,7 +64,7 @@ const Milestones = ({ currentUser, balance }) => (
               milestones.length === 0 && (
                 <div>
                   <center>
-                    <p>There are no milestones yet!</p>
+                    <p>There are no Milestones yet!</p>
                     <img
                       className="empty-state-img"
                       src={`${process.env.PUBLIC_URL}/img/milestone.svg`}

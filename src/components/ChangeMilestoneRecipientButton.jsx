@@ -58,7 +58,7 @@ class ChangeMilestoneRecipientButton extends Component {
         onTxHash: txUrl => {
           React.toast.info(
             <p>
-              {milestone.hasRecipient ? 'Changing ' : 'Setting '} milestone recipient is pending...
+              {milestone.hasRecipient ? 'Changing ' : 'Setting '} Milestone recipient is pending...
               <br />
               <a href={txUrl} target="_blank" rel="noopener noreferrer">
                 View transaction
@@ -69,7 +69,7 @@ class ChangeMilestoneRecipientButton extends Component {
         onConfirmation: txUrl => {
           React.toast.success(
             <p>
-              The milestone recipient has been {milestone.hasRecipient ? 'changed' : 'set'}!
+              The Milestone recipient has been {milestone.hasRecipient ? 'changed' : 'set'}!
               <br />
               <a href={txUrl} target="_blank" rel="noopener noreferrer">
                 View transaction
@@ -83,7 +83,7 @@ class ChangeMilestoneRecipientButton extends Component {
             ErrorPopup(
               `Something went wrong ${
                 milestone.hasRecipient ? 'changing ' : 'setting '
-              } the milestone recipient.`,
+              } the Milestone recipient.`,
               err,
             );
           } else {

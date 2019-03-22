@@ -296,7 +296,7 @@ Content.propTypes = {
 
 export default handleQuillInsert => {
   React.swal({
-    title: 'Attach a video to milestone',
+    title: 'Attach a video to Milestone',
     content: React.swal.msg(<Content handleQuillInsert={handleQuillInsert} />),
     button: {
       visible: false,

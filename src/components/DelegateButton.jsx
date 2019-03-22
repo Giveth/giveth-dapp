@@ -100,7 +100,7 @@ class DelegateButton extends Component {
       admin.isCapped &&
       admin.maxAmount.lt(admin.currentBalance || 0)
     ) {
-      React.toast.error('That milestone has reached its funding goal. Please pick another.');
+      React.toast.error('That Milestone has reached its funding goal. Please pick another.');
       return;
     }
 

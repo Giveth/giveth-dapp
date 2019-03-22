@@ -98,14 +98,14 @@ class AddMilestoneItemModal extends Component {
   }
 
   render() {
-    const { openModal, token } = this.props;
+    const { openModal, token, conversionRateLoading } = this.props;
     const { formIsValid, item, isBlocking } = this.state;
 
     return (
       <Modal
         isOpen={openModal}
         onRequestClose={this.closeModal}
-        contentLabel="Add an item to this milestone"
+        contentLabel="Add an item to this Milestone"
         style={modalStyles}
       >
         <Form
@@ -158,8 +158,8 @@ class AddMilestoneItemModal extends Component {
           <a
             role="button"
             tabIndex="-1"
-            className="btn btn-primary"
-            disabled={!formIsValid}
+            className={`btn btn-primary ${!formIsValid || conversionRateLoading ? 'disabled' : ''}`}
+            disabled={!formIsValid || conversionRateLoading}
             onClick={() => this.submit()}
             onKeyUp={() => this.submit()}
           >
@@ -180,6 +180,7 @@ AddMilestoneItemModal.propTypes = {
   onClose: PropTypes.func.isRequired,
   onAddItem: PropTypes.func.isRequired,
   token: PropTypes.shape({}),
+  conversionRateLoading: PropTypes.bool.isRequired,
 };
 
 AddMilestoneItemModal.defaultProps = {

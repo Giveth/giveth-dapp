@@ -324,10 +324,15 @@ class DonationService {
           if (donation.ownerType === 'campaign') {
             const contract = new LPPCampaign(web3, donation.ownerEntity.pluginAddress);
 
-            return contract.transfer(donation.pledgeId, amount, receiverId, {
-              from,
-              $extraGas: extraGas(),
-            });
+            return contract.transfer(
+              donation.canceledPledgeId || donation.pledgeId,
+              amount,
+              receiverId,
+              {
+                from,
+                $extraGas: extraGas(),
+              },
+            );
           }
 
           return network.liquidPledging.transfer(senderId, donation.pledgeId, amount, receiverId, {
@@ -573,8 +578,12 @@ class DonationService {
         etherScanUrl = network.etherscan;
         const _amountRemainingInWei = utils.toWei(donation.amountRemaining.toFixed());
 
+        // this isn't the most gas efficient, but should always work. If the canceledPledge
+        // has been partially transferred already, then it will have been normalized and the entire
+        // value will exist in pledgeId. It would avoid an on-chain loop to find the normalized pledge
+        // if we pass pledgeId when the canceledPledge has already been normalized
         return network.liquidPledging
-          .withdraw(donation.pledgeId, _amountRemainingInWei, {
+          .withdraw(donation.canceledPledgeId || donation.pledgeId, _amountRemainingInWei, {
             from: address,
             $extraGas: extraGas(),
           })

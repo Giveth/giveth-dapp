@@ -25,11 +25,11 @@ class ApproveRejectMilestoneCompletionButtons extends Component {
       .then(() => {
         this.conversationModal.current
           .openModal({
-            title: 'Approve milestone completion',
+            title: 'Approve Milestone completion',
             description:
-              'Optionally explain why you approve the completion of this milestone. Compliments are appreciated! This information will be publicly visible and emailed to the milestone owner.',
+              'Optionally explain why you approve the completion of this Milestone. Compliments are appreciated! This information will be publicly visible and emailed to the Milestone owner.',
             textPlaceholder:
-              'Optionally explain why you approve the completion of this milestone...',
+              'Optionally explain why you approve the completion of this Milestone...',
             required: false,
             cta: 'Approve completion',
             enableAttachProof: false,
@@ -48,7 +48,7 @@ class ApproveRejectMilestoneCompletionButtons extends Component {
 
                 React.toast.info(
                   <p>
-                    Approving this milestone is pending...
+                    Approving this Milestone is pending...
                     <br />
                     <a href={txUrl} target="_blank" rel="noopener noreferrer">
                       View transaction
@@ -59,7 +59,7 @@ class ApproveRejectMilestoneCompletionButtons extends Component {
               onConfirmation: txUrl => {
                 React.toast.success(
                   <p>
-                    The milestone has been approved!
+                    The Milestone has been approved!
                     <br />
                     <a href={txUrl} target="_blank" rel="noopener noreferrer">
                       View transaction
@@ -70,7 +70,7 @@ class ApproveRejectMilestoneCompletionButtons extends Component {
               onError: (err, txUrl) => {
                 if (err === 'patch-error') {
                   ErrorPopup(
-                    "Something went wrong with approving this milestone's completion",
+                    "Something went wrong with approving this Milestone's completion",
                     err,
                   );
                 } else {
@@ -97,10 +97,10 @@ class ApproveRejectMilestoneCompletionButtons extends Component {
       .then(() => {
         this.conversationModal.current
           .openModal({
-            title: 'Reject milestone completion',
+            title: 'Reject Milestone completion',
             description:
-              'Explain why you rejected the completion of this milestone. This information will be publicly visible and emailed to the milestone owner.',
-            textPlaceholder: 'Explain why you rejected the completion of this milestone...',
+              'Explain why you rejected the completion of this Milestone. This information will be publicly visible and emailed to the Milestone owner.',
+            textPlaceholder: 'Explain why you rejected the completion of this Milestone...',
             required: true,
             cta: 'Reject completion',
             enableAttachProof: false,
@@ -119,7 +119,7 @@ class ApproveRejectMilestoneCompletionButtons extends Component {
 
                 React.toast.info(
                   <p>
-                    Rejecting this milestone's completion is pending...
+                    Rejecting this Milestone's completion is pending...
                     <br />
                     <a href={txUrl} target="_blank" rel="noopener noreferrer">
                       View transaction
@@ -130,7 +130,7 @@ class ApproveRejectMilestoneCompletionButtons extends Component {
               onConfirmation: txUrl => {
                 React.toast.success(
                   <p>
-                    The milestone's completion has been rejected.
+                    The Milestone's completion has been rejected.
                     <br />
                     <a href={txUrl} target="_blank" rel="noopener noreferrer">
                       View transaction
@@ -141,7 +141,7 @@ class ApproveRejectMilestoneCompletionButtons extends Component {
               onError: (err, txUrl) => {
                 if (err === 'patch-error') {
                   ErrorPopup(
-                    "Something went wrong with rejecting this milestone's completion",
+                    "Something went wrong with rejecting this Milestone's completion",
                     err,
                   );
                 } else {

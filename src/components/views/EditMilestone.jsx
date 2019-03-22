@@ -65,6 +65,8 @@ const validQueryStringVariables = [
   'token',
   'tokenAddress',
   'maxAmount',
+  'isCapped',
+  'requireReviewer',
   // 'fiatAmount', // FIXME: The fiatAmount does not work because it is overwritten when the getConversionRates function is called. This function modifies th e provider and causes re-render which makes the maxAmount being updated incorrectly. The function needs to change to not update the provider state and not expose currentRate
 ];
 
@@ -158,7 +160,7 @@ class EditMilestone extends Component {
             });
           } catch (err) {
             ErrorPopup(
-              'Sadly we were unable to load the requested milestone details. Please try again.',
+              'Sadly we were unable to load the requested Milestone details. Please try again.',
               err,
             );
           }
@@ -202,6 +204,15 @@ class EditMilestone extends Component {
                   if (date.isValid()) milestone.date = date;
                   break;
                 }
+                case 'isCapped':
+                  milestone.maxAmount = qs[variable] === '1' ? new BigNumber(0) : undefined;
+                  if (qs[variable] === '1') {
+                    milestone.fiatAmount = new BigNumber(0);
+                  }
+                  break;
+                case 'requireReviewer':
+                  milestone.reviewerAddress = qs[variable] === '1' ? '' : ZERO_ADDRESS;
+                  break;
                 default:
                   milestone[variable] = qs[variable];
                   break;
@@ -221,14 +232,16 @@ class EditMilestone extends Component {
               milestone.token.symbol,
             );
 
-            const rate = rates[milestone.selectedFiatType];
-            if (rate && (milestone.maxAmount && milestone.maxAmount.gt(0))) {
-              milestone.fiatAmount = milestone.maxAmount.times(rate);
-            } else if (rate && (milestone.fiatAmount && milestone.fiatAmount.gt(0))) {
-              milestone.maxAmount = milestone.fiatAmount.div(rate);
-            } else {
-              milestone.maxAmount = this.state.toggles.isCapped ? new BigNumber('0') : undefined;
-              milestone.fiatAmount = new BigNumber('0');
+            if (milestone.isCapped) {
+              const rate = rates[milestone.selectedFiatType];
+              if (rate && (milestone.maxAmount && milestone.maxAmount.gt(0))) {
+                milestone.fiatAmount = milestone.maxAmount.times(rate);
+              } else if (rate && (milestone.fiatAmount && milestone.fiatAmount.gt(0))) {
+                milestone.maxAmount = milestone.fiatAmount.div(rate);
+              } else {
+                milestone.maxAmount = new BigNumber('0');
+                milestone.fiatAmount = new BigNumber('0');
+              }
             }
 
             this.setState({
@@ -241,7 +254,7 @@ class EditMilestone extends Component {
             this.setDate(this.state.milestone.date);
           } catch (e) {
             ErrorPopup(
-              'Sadly we were unable to load the campaign in which this milestone was created. Please try again.',
+              'Sadly we were unable to load the Campaign in which this Milestone was created. Please try again.',
               e,
             );
             this.setState({
@@ -298,19 +311,22 @@ class EditMilestone extends Component {
 
     this.props.getConversionRates(date, milestone.token.symbol).then(resp => {
       let rate =
-        resp.rates[milestone.selectedFiatType] ||
-        Object.values(resp.rates).find(v => v !== undefined);
+        resp &&
+        resp.rates &&
+        (resp.rates[milestone.selectedFiatType] ||
+          Object.values(resp.rates).find(v => v !== undefined));
 
       // This rate is undefined, use the milestone rate
       if (!rate) {
         milestone.selectedFiatType = milestone.token.symbol;
         rate = resp.rates[milestone.token.symbol];
       }
-      milestone.maxAmount = this.state.toggles.isCapped
-        ? milestone.fiatAmount.div(rate)
-        : undefined;
-      milestone.conversionRateTimestamp = resp.timestamp;
 
+      if (milestone.isCapped) {
+        milestone.maxAmount = milestone.fiatAmount.div(rate);
+        milestone.conversionRateTimestamp = resp.timestamp;
+      }
+      
       this.setState({ milestone });
     });
   }
@@ -426,6 +442,7 @@ class EditMilestone extends Component {
     if (!value) {
       // if ANY_TOKEN is allowed, then we can't have a cap
       milestone.maxAmount = undefined;
+      milestone.itemizeState = false;
     }
     toggles.acceptsSingleToken = value;
     this.setState({ milestone, toggles });
@@ -465,7 +482,9 @@ class EditMilestone extends Component {
       this.props.isProposed || milestone.status === Milestone.REJECTED
         ? Milestone.PROPOSED
         : milestone.status; // make sure not to change status!
-    milestone.conversionRate = this.props.currentRate.rates[milestone.selectedFiatType];
+    if (milestone.isCapped) {
+      milestone.conversionRate = this.props.currentRate.rates[milestone.selectedFiatType];
+    }
     milestone.parentProjectId = this.state.campaignProjectId;
 
     const _saveMilestone = () =>
@@ -533,9 +552,9 @@ class EditMilestone extends Component {
       () => {
         if (this.props.isProposed && this.props.isNew) {
           React.swal({
-            title: 'Propose milestone?',
+            title: 'Propose Milestone?',
             text:
-              'The milestone will be proposed to the campaign owner and he or she might approve or reject your milestone.',
+              'The Milestone will be proposed to the Campaign owner and he or she might approve or reject your milestone.',
             icon: 'warning',
             dangerMode: true,
             buttons: ['Cancel', 'Yes, propose'],
@@ -637,7 +656,15 @@ class EditMilestone extends Component {
   }
 
   render() {
-    const { isNew, isProposed, history, currentRate, fiatTypes, reviewers } = this.props;
+    const {
+      isNew,
+      isProposed,
+      history,
+      currentRate,
+      fiatTypes,
+      reviewers,
+      conversionRateLoading,
+    } = this.props;
     const {
       isLoading,
       isSaving,
@@ -661,15 +688,9 @@ class EditMilestone extends Component {
                   <GoBackButton history={history} title={`Campaign: ${campaignTitle}`} />
 
                   <div className="form-header">
-                    {isNew && !isProposed && <h3>Add a new milestone</h3>}
+                    {isNew && !isProposed && <h3>Add a new Milestone</h3>}
 
-                    {!isNew &&
-                      !isProposed && (
-                        <h3>
-                          Edit milestone
-                          {milestone.title}
-                        </h3>
-                      )}
+                    {!isNew && !isProposed && <h3>Edit Milestone {milestone.title}</h3>}
 
                     {isNew && isProposed && <h3>Propose a Milestone</h3>}
 
@@ -772,7 +793,7 @@ class EditMilestone extends Component {
                           <span className="help-block">
                             Choosing not to use a reviewer on your Milestone will allow you to
                             withdraw donations at anytime. The downside is that you are no longer
-                            held accountable for completing the milestone before funds can be
+                            held accountable for completing the Milestone before funds can be
                             withdrawn and thus less likely to receive donations.
                           </span>
                         )}
@@ -782,7 +803,7 @@ class EditMilestone extends Component {
                           name="reviewerAddress"
                           id="reviewer-select"
                           label="Select a reviewer"
-                          helpText="The reviewer verifies that the milestone is completed successfully, thus building trust in your Milestone"
+                          helpText="The reviewer verifies that the Milestone is completed successfully, thus building trust in your Milestone"
                           value={milestone.reviewerAddress}
                           cta="--- Select a reviewer ---"
                           options={reviewers}
@@ -867,7 +888,7 @@ class EditMilestone extends Component {
                       {!milestone.isCapped && (
                         <span className="help-block">
                           {milestone.acceptsSingleToken
-                            ? 'It is recommended that you set a fundraising cap for your milestone.'
+                            ? 'It is recommended that you set a fundraising cap for your Milestone.'
                             : 'In order to set a fundraising cap, you must only accept donations in a single token'}
                         </span>
                       )}
@@ -887,6 +908,8 @@ class EditMilestone extends Component {
                         {!milestone.itemizeState ? (
                           <div className="card milestone-items-card">
                             <div className="card-body">
+                              {conversionRateLoading && <Loader />}
+
                               <div className="form-group row">
                                 <div className="col-12">
                                   <DatePickerFormsy
@@ -936,9 +959,12 @@ class EditMilestone extends Component {
                                     options={fiatTypes}
                                     allowedOptions={currentRate.rates}
                                     onChange={this.changeSelectedFiat}
-                                    helpText={`1 ${milestone.token.symbol} = ${
-                                      currentRate.rates[milestone.selectedFiatType]
-                                    } ${milestone.selectedFiatType}`}
+                                    helpText={
+                                      !conversionRateLoading &&
+                                      `1 ${milestone.token.symbol} = ${
+                                        currentRate.rates[milestone.selectedFiatType]
+                                      } ${milestone.selectedFiatType}`
+                                    }
                                     disabled={!isNew && !isProposed}
                                     required
                                   />
@@ -990,7 +1016,7 @@ class EditMilestone extends Component {
                           className="btn btn-success pull-right"
                           formNoValidate
                           type="submit"
-                          disabled={isSaving || !formIsValid}
+                          disabled={conversionRateLoading || isSaving || !formIsValid}
                           isLoading={isSaving}
                           network="Foreign"
                           loadingText="Saving..."
@@ -1032,6 +1058,7 @@ EditMilestone.propTypes = {
     rates: PropTypes.shape().isRequired,
     timestamp: PropTypes.number.isRequired,
   }),
+  conversionRateLoading: PropTypes.bool.isRequired,
   fiatTypes: PropTypes.arrayOf(PropTypes.object).isRequired,
   isCampaignManager: PropTypes.func.isRequired,
   reviewers: PropTypes.arrayOf(PropTypes.shape()).isRequired,

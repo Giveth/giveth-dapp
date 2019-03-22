@@ -139,7 +139,11 @@ const Donations = () => (
 
                                         {etherScanUrl && (
                                           <td className="td-tx-address">
-                                            <a href={`${etherScanUrl}address/${d.giverAddress}`}>
+                                            <a
+                                              href={`${etherScanUrl}address/${d.giverAddress}`}
+                                              target="_blank"
+                                              rel="noopener noreferrer"
+                                            >
                                               {d.giverAddress}
                                             </a>
                                           </td>
