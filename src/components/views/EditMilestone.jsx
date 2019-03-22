@@ -41,6 +41,16 @@ import MilestoneService from '../../services/MilestoneService';
 import CampaignService from '../../services/CampaignService';
 import LPMilestone from '../../models/LPMilestone';
 import BridgedMilestone from '../../models/BridgedMilestone';
+import {
+  draftStates,
+  loadDraft,
+  loadMilestoneDraft,
+  onDraftChange,
+  onImageChange,
+  saveDraft,
+  deleteDraft,
+  DraftButton,
+} from '../Draft';
 
 BigNumber.config({ DECIMAL_PLACES: 18 });
 
@@ -88,6 +98,14 @@ class EditMilestone extends Component {
         title: t.name,
       })),
       isBlocking: false,
+      draftState: draftStates.hidden,
+      toggles: {
+        hasReviewer: true,
+        isLPMilestone: false,
+        acceptsSingleToken: true,
+        isCapped: true,
+        itemizeState: false,
+      },
     };
 
     this.form = React.createRef();
@@ -100,6 +118,11 @@ class EditMilestone extends Component {
     this.onItemsChanged = this.onItemsChanged.bind(this);
     this.handleTemplateChange = this.handleTemplateChange.bind(this);
     this.validateMilestoneDesc = this.validateMilestoneDesc.bind(this);
+    this.loadDraft = loadDraft.bind(this);
+    this.loadMilestoneDraft = loadMilestoneDraft.bind(this);
+    this.onDraftChange = onDraftChange.bind(this);
+    this.onImageChange = onImageChange.bind(this);
+    this.saveDraft = saveDraft.bind(this);
   }
 
   componentDidMount() {
@@ -273,11 +296,13 @@ class EditMilestone extends Component {
     const { milestone } = this.state;
     milestone.items = items;
     this.setState({ milestone });
+    this.onDraftChange();
   }
 
   setImage(image) {
     const { milestone } = this.state;
     milestone.image = image;
+    this.onImageChange();
   }
 
   setDate(date) {
@@ -296,11 +321,12 @@ class EditMilestone extends Component {
         milestone.selectedFiatType = milestone.token.symbol;
         rate = resp.rates[milestone.token.symbol];
       }
+
       if (milestone.isCapped) {
         milestone.maxAmount = milestone.fiatAmount.div(rate);
         milestone.conversionRateTimestamp = resp.timestamp;
       }
-
+      
       this.setState({ milestone });
     });
   }
@@ -350,6 +376,8 @@ class EditMilestone extends Component {
     } else {
       this.setState({ formIsValid: formState });
     }
+    this.loadDraft();
+    this.loadMilestoneDraft();
   }
 
   setToken(address) {
@@ -376,49 +404,60 @@ class EditMilestone extends Component {
       .then(() => !this.props.isProposed && checkBalance(this.props.balance));
   }
 
-  toggleItemize() {
-    const { milestone } = this.state;
-    milestone.itemizeState = !milestone.itemizeState;
-    this.setState({ milestone });
+  itemizeState(value) {
+    const { milestone, toggles } = this.state;
+    milestone.itemizeState = value;
+    toggles.itemizeState = value;
+    this.setState({ milestone, toggles });
+    this.onDraftChange();
   }
 
-  toggleReviewer() {
-    const { milestone } = this.state;
-    milestone.reviewerAddress = milestone.hasReviewer ? ZERO_ADDRESS : '';
-    this.setState({ milestone });
+  hasReviewer(value) {
+    const { milestone, toggles } = this.state;
+    milestone.reviewerAddress = value ? '' : ZERO_ADDRESS;
+    toggles.hasReviewer = value;
+    this.setState({ milestone, toggles });
+    this.onDraftChange();
   }
 
-  toggleMilestoneType() {
-    const { milestone, campaignProjectId } = this.state;
-    if (milestone instanceof LPMilestone) {
-      this.setState({
-        milestone: new BridgedMilestone(milestone.toFeathers()),
-      });
-    } else if (milestone instanceof BridgedMilestone) {
-      this.setState({
-        milestone: new LPMilestone({ ...milestone.toFeathers(), recipientId: campaignProjectId }),
-      });
+  isLPMilestone(value) {
+    const { milestone, campaignProjectId, toggles } = this.state;
+    if (!value) {
+      const ms = new BridgedMilestone(milestone.toFeathers());
+      ms.itemizeState = toggles.itemizeState;
+      this.setState({ milestone: ms });
+    } else {
+      const ms = new LPMilestone({ ...milestone.toFeathers(), recipientId: campaignProjectId });
+      ms.itemizeState = toggles.itemizeState;
+      this.setState({ milestone: ms });
     }
+    this.onDraftChange();
+    toggles.isLPMilestone = value;
+    this.setState({ toggles });
   }
 
-  toggleToken() {
-    const { milestone } = this.state;
-    milestone.token = milestone.acceptsSingleToken ? ANY_TOKEN : this.props.tokenWhitelist[0];
-    if (!milestone.acceptsSingleToken) {
+  acceptsSingleToken(value) {
+    const { milestone, toggles } = this.state;
+    milestone.token = value ? this.props.tokenWhitelist[0] : ANY_TOKEN;
+    if (!value) {
       // if ANY_TOKEN is allowed, then we can't have a cap
       milestone.maxAmount = undefined;
       milestone.itemizeState = false;
     }
-    this.setState({ milestone });
+    toggles.acceptsSingleToken = value;
+    this.setState({ milestone, toggles });
+    this.onDraftChange();
   }
 
-  toggleIsCapped() {
-    const { milestone } = this.state;
-    milestone.maxAmount = milestone.isCapped ? undefined : new BigNumber(0);
-    if (milestone.isCapped) {
+  isCapped(value) {
+    const { milestone, toggles } = this.state;
+    milestone.maxAmount = value ? new BigNumber(0) : undefined;
+    if (value) {
       milestone.fiatAmount = new BigNumber(0);
     }
-    this.setState({ milestone });
+    toggles.isCapped = value;
+    this.setState({ milestone, toggles });
+    this.onDraftChange();
   }
 
   toggleAddMilestoneItemModal() {
@@ -434,6 +473,7 @@ class EditMilestone extends Component {
   }
 
   submit() {
+    const itemNames = this.saveDraft(true);
     const { milestone } = this.state;
 
     milestone.ownerAddress = this.props.currentUser.address;
@@ -452,6 +492,7 @@ class EditMilestone extends Component {
         milestone,
         from: this.props.currentUser.address,
         afterSave: (created, txUrl) => {
+          deleteDraft(itemNames);
           if (created) {
             if (this.props.isProposed) {
               React.toast.info(<p>Your Milestone has been proposed to the Campaign Owner.</p>);
@@ -570,6 +611,11 @@ class EditMilestone extends Component {
     });
   }
 
+  onFormChange() {
+    this.triggerRouteBlocking();
+    this.onDraftChange();
+  }
+
   triggerRouteBlocking() {
     const form = this.form.current.formsyForm;
     // we only block routing if the form state is not submitted
@@ -627,6 +673,7 @@ class EditMilestone extends Component {
       tokenWhitelistOptions,
       isBlocking,
       milestone,
+      draftState,
     } = this.state;
 
     return (
@@ -673,11 +720,11 @@ class EditMilestone extends Component {
                     mapping={inputs => this.mapInputs(inputs)}
                     onValid={() => this.toggleFormValid(true)}
                     onInvalid={() => this.toggleFormValid(false)}
-                    onChange={e => this.triggerRouteBlocking(e)}
+                    onChange={e => this.onFormChange(e)}
                     layout="vertical"
                   >
                     <Prompt
-                      when={isBlocking}
+                      when={isBlocking && draftState >= draftStates.changed}
                       message={() =>
                         `You have unsaved changes. Are you sure you want to navigate from this page?`
                       }
@@ -738,7 +785,7 @@ class EditMilestone extends Component {
                         <Toggle
                           id="itemize-state"
                           checked={!milestone.hasReviewer}
-                          onChange={() => this.toggleReviewer()}
+                          onChange={e => this.hasReviewer(!e.target.checked)}
                           disabled={!isNew && !isProposed}
                         />
                         <span className="label">Disable Milestone Reviewer</span>
@@ -775,7 +822,7 @@ class EditMilestone extends Component {
                         <Toggle
                           id="itemize-state"
                           checked={milestone instanceof LPMilestone}
-                          onChange={() => this.toggleMilestoneType()}
+                          onChange={e => this.isLPMilestone(e.target.checked)}
                           disabled={!isNew && !isProposed}
                         />
                         <span className="label">Raise funds for Campaign: {campaignTitle} </span>
@@ -810,7 +857,7 @@ class EditMilestone extends Component {
                       <Toggle
                         id="itemize-state"
                         checked={!milestone.acceptsSingleToken}
-                        onChange={() => this.toggleToken()}
+                        onChange={e => this.acceptsSingleToken(!e.target.checked)}
                         disabled={!isNew && !isProposed}
                       />
                       <span className="label">Accept donations in all tokens</span>
@@ -834,7 +881,7 @@ class EditMilestone extends Component {
                       <Toggle
                         id="itemize-state"
                         checked={!milestone.isCapped}
-                        onChange={() => this.toggleIsCapped()}
+                        onChange={e => this.isCapped(!e.target.checked)}
                         disabled={(!isNew && !isProposed) || !milestone.acceptsSingleToken}
                       />
                       <span className="label">Disable Milestone fundraising cap</span>
@@ -852,7 +899,7 @@ class EditMilestone extends Component {
                           <Toggle
                             id="itemize-state"
                             checked={milestone.itemizeState}
-                            onChange={() => this.toggleItemize()}
+                            onChange={e => this.itemizeState(e.target.checked)}
                             disabled={!isNew && !isProposed}
                           />
                           <span className="label">Add multiple expenses, invoices or items</span>
@@ -958,10 +1005,13 @@ class EditMilestone extends Component {
                     )}
 
                     <div className="form-group row">
-                      <div className="col-6">
+                      <div className="col-4">
                         <GoBackButton history={history} title={`Campaign: ${campaignTitle}`} />
                       </div>
-                      <div className="col-6">
+                      <div className="col-4">
+                        <DraftButton draftState={this.state.draftState} onClick={this.saveDraft} />
+                      </div>
+                      <div className="col-4">
                         <LoaderButton
                           className="btn btn-success pull-right"
                           formNoValidate

@@ -27,6 +27,13 @@ class FormsyImageUploader extends Component {
     this.setState({ image: this.props.previewImage || this.props.avatar });
   }
 
+  componentDidUpdate() {
+    if (!this.state.image && this.props.previewImage) {
+      // eslint-disable-next-line
+      this.setState({ image: this.props.previewImage });
+    }
+  }
+
   cropImage() {
     if (!this.cropper) {
       return;
@@ -127,7 +134,7 @@ class FormsyImageUploader extends Component {
           validationErrors={{
             minLength: 'Please select a png or jpg file.',
           }}
-          required={this.props.isRequired}
+          required={this.props.isRequired && !this.state.image}
         />
       </div>
     );
