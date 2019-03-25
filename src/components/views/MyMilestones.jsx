@@ -269,7 +269,7 @@ class MyMilestones extends Component {
                                       {m.reviewer &&
                                         m.reviewerAddress && (
                                           <Link to={`/profile/${m.reviewerAddress}`}>
-                                            {m.reviewer.name || 'Anomynous user'}
+                                            {m.reviewer.name || 'Anonymous user'}
                                           </Link>
                                         )}
                                     </td>
@@ -281,7 +281,7 @@ class MyMilestones extends Component {
                             {totalResults > itemsPerPage && (
                               <center>
                                 <Pagination
-                                  activePage={skipPages + 1}
+                                  activePage={Math.floor(skipPages / itemsPerPage) + 1}
                                   itemsCountPerPage={itemsPerPage}
                                   totalItemsCount={totalResults}
                                   pageRangeDisplayed={visiblePages}
