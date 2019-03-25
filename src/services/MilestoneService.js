@@ -331,39 +331,7 @@ class MilestoneService {
         return true;
       }
 
-      // upload new milestone image
-      if (milestone.newImage || (milestone.image && milestone.image.includes('data:image'))) {
-        try {
-          milestone.image = await IPFSService.upload(milestone.image);
-          milestone.newImage = false;
-        } catch (err) {
-          ErrorPopup('Failed to upload milestone image to ipfs');
-        }
-      }
-
-      // upload new milestone item images for new milestones
-      if (milestone.itemizeState) {
-        for (const milestoneItem of milestone.items) {
-          if (
-            milestoneItem.newImage ||
-            (milestoneItem.image && milestoneItem.image.includes('data:image'))
-          ) {
-            try {
-              milestoneItem.image = await IPFSService.upload(milestoneItem.image);
-              milestoneItem.newImage = false;
-            } catch (err) {
-              ErrorPopup('Failed to upload milestone item image to ipfs');
-            }
-          }
-        }
-      }
-
-      let profileHash;
-      try {
-        profileHash = await IPFSService.upload(milestone.toIpfs());
-      } catch (err) {
-        ErrorPopup('Failed to upload milestone to ipfs');
-      }
+      const profileHash = await this.uploadToIPFS(milestone);
 
       // nothing to update or failed ipfs upload
       if (milestone.projectId && (milestone.url === profileHash || !profileHash)) {
@@ -407,53 +375,11 @@ class MilestoneService {
           return true;
         }
       } else {
-        /**
-          Create a milestone on chain
-
-          milestoneFactory params
-
-          string _name,
-          string _url,
-          uint64 _parentProject,
-          address _reviewer,
-          address _recipient,
-          address _milestoneManager,
-          uint _maxAmount,
-          address _acceptedToken,
-          uint _reviewTimeoutSeconds
-        * */
-        const { milestoneFactory } = network;
-
-        if (milestone instanceof LPMilestone) {
-          tx = milestoneFactory.newLPMilestone(
-            milestone.title,
-            profileHash || '',
-            milestone.parentProjectId,
-            milestone.reviewerAddress,
-            milestone.recipientId,
-            from,
-            milestone.isCapped ? utils.toWei(milestone.maxAmount.toFixed()) : 0,
-            milestone.token.foreignAddress,
-            5 * 24 * 60 * 60, // 5 days in seconds
-            { from, $extraGas: extraGas() },
-          );
-        } else if (milestone instanceof LPPCappedMilestone) {
+        if (milestone instanceof LPPCappedMilestone) {
           throw new Error('LPPCappedMilestones are deprecated');
-        } else {
-          // default to creating a BridgedMilestone
-          tx = milestoneFactory.newBridgedMilestone(
-            milestone.title,
-            profileHash || '',
-            milestone.parentProjectId,
-            milestone.reviewerAddress,
-            milestone.recipientAddress,
-            from,
-            milestone.isCapped ? utils.toWei(milestone.maxAmount.toFixed()) : 0,
-            milestone.token.foreignAddress,
-            5 * 24 * 60 * 60, // 5 days in seconds
-            { from, $extraGas: extraGas() },
-          );
         }
+
+        tx = this.deployMilestone(milestone, from, network, profileHash);
       }
 
       let milestoneId;
@@ -483,6 +409,108 @@ class MilestoneService {
     }
 
     return true;
+  }
+
+  static deployMilestone(milestone, from, network, profileHash) {
+    const { milestoneFactory, lppCappedMilestoneFactory } = network;
+
+    /**
+      Create a milestone on chain
+
+      milestoneFactory params
+
+      string _name,
+      string _url,
+      uint64 _parentProject,
+      address _reviewer,
+      address _recipient,
+      address _milestoneManager,
+      uint _maxAmount,
+      address _acceptedToken,
+      uint _reviewTimeoutSeconds
+    * */
+
+    let tx;
+    if (milestone instanceof LPMilestone) {
+      tx = milestoneFactory.newLPMilestone(
+        milestone.title,
+        profileHash || '',
+        milestone.parentProjectId,
+        milestone.reviewerAddress,
+        milestone.recipientId,
+        milestone.ownerAddress,
+        milestone.isCapped ? utils.toWei(milestone.maxAmount.toFixed()) : 0,
+        milestone.token.foreignAddress,
+        5 * 24 * 60 * 60, // 5 days in seconds
+        { from, $extraGas: extraGas() },
+      );
+    } else if (milestone instanceof LPPCappedMilestone) {
+      tx = lppCappedMilestoneFactory.newMilestone(
+        milestone.title,
+        profileHash || '',
+        milestone.parentProjectId,
+        milestone.reviewerAddress,
+        milestone.recipientAddress,
+        milestone.campaignReviewerAddress,
+        milestone.ownerAddress,
+        utils.toWei(milestone.maxAmount.toFixed()),
+        milestone.token.foreignAddress,
+        5 * 24 * 60 * 60, // 5 days in seconds
+        { from, $extraGas: extraGas() },
+      );
+    } else {
+      // default to creating a BridgedMilestone
+      tx = milestoneFactory.newBridgedMilestone(
+        milestone.title,
+        profileHash || '',
+        milestone.parentProjectId,
+        milestone.reviewerAddress,
+        milestone.recipientAddress,
+        milestone.ownerAddress,
+        milestone.isCapped ? utils.toWei(milestone.maxAmount.toFixed()) : 0,
+        milestone.token.foreignAddress,
+        5 * 24 * 60 * 60, // 5 days in seconds
+        { from, $extraGas: extraGas() },
+      );
+    }
+
+    return tx;
+  }
+
+  static async uploadToIPFS(milestone) {
+    // upload new milestone image
+    try {
+      if (milestone.newImage || (milestone.image && milestone.image.includes('data:image'))) {
+        try {
+          milestone.image = await IPFSService.upload(milestone.image);
+          milestone.newImage = false;
+        } catch (err) {
+          ErrorPopup('Failed to upload milestone image to ipfs');
+        }
+      }
+
+      // upload new milestone item images for new milestones
+      if (milestone.itemizeState) {
+        for (const milestoneItem of milestone.items) {
+          if (
+            milestoneItem.newImage ||
+            (milestoneItem.image && milestoneItem.image.includes('data:image'))
+          ) {
+            try {
+              milestoneItem.image = await IPFSService.upload(milestoneItem.image);
+              milestoneItem.newImage = false;
+            } catch (err) {
+              ErrorPopup('Failed to upload milestone item image to ipfs');
+            }
+          }
+        }
+      }
+
+      return await IPFSService.upload(milestone.toIpfs());
+    } catch (err) {
+      ErrorPopup('Failed to upload milestone to ipfs');
+    }
+    return undefined;
   }
 
   /**
@@ -533,18 +561,9 @@ class MilestoneService {
     let etherScanUrl;
 
     getNetwork()
-      .then(network => {
+      .then(async network => {
         etherScanUrl = network.etherscan;
 
-        const {
-          title,
-          maxAmount,
-          recipientAddress,
-          reviewerAddress,
-          owner, // TODO change this to managerAddress. There is no owner
-          campaignReviewer,
-          token,
-        } = milestone;
         const parentProjectId = milestone.campaign.projectId;
 
         // TODO fix this hack
@@ -552,20 +571,10 @@ class MilestoneService {
           throw new Error('campaign-not-mined');
         }
 
-        network.lppCappedMilestoneFactory
-          .newMilestone(
-            title,
-            '',
-            parentProjectId,
-            reviewerAddress,
-            recipientAddress,
-            campaignReviewer.address,
-            owner.address,
-            utils.toWei(maxAmount.toFixed()),
-            token.foreignAddress,
-            5 * 24 * 60 * 60, // 5 days in seconds
-            { from, $extraGas: extraGas() },
-          )
+        const profileHash = await this.uploadToIPFS(milestone);
+        milestone.parentProjectId = parentProjectId;
+
+        this.deployMilestone(milestone, from, network, profileHash)
           .once('transactionHash', hash => {
             txHash = hash;
 

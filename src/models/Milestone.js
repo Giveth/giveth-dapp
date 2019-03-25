@@ -21,6 +21,7 @@ export default class Milestone extends BasicModel {
       pendingRecipientAddress,
       status = Milestone.PENDING,
       projectId = undefined,
+      ownerAddress = '',
       reviewerAddress = '',
       items = [],
       date = getStartOfDayUTC().subtract(1, 'd'),
@@ -44,6 +45,7 @@ export default class Milestone extends BasicModel {
     this._selectedFiatType = selectedFiatType;
     this._maxAmount = maxAmount ? new BigNumber(utils.fromWei(maxAmount)) : undefined;
     this._fiatAmount = fiatAmount ? new BigNumber(fiatAmount) : undefined;
+    this._ownerAddress = ownerAddress;
     this._recipientAddress = recipientAddress;
     this._pendingRecipientAddress = pendingRecipientAddress;
     this._status = status;
@@ -274,6 +276,15 @@ export default class Milestone extends BasicModel {
     this._fiatAmount = value;
   }
 
+  get ownerAddress() {
+    return this._ownerAddress;
+  }
+
+  set ownerAddress(value) {
+    this.checkType(value, ['string'], 'ownerAddress');
+    this._ownerAddress = value;
+  }
+
   get recipientAddress() {
     return this._recipientAddress;
   }
@@ -487,7 +498,7 @@ export default class Milestone extends BasicModel {
   }
 
   get isCapped() {
-    return this.maxAmount !== undefined;
+    return this._maxAmount !== undefined;
   }
 
   canUserAcceptRejectProposal(user) {
@@ -567,6 +578,7 @@ export default class Milestone extends BasicModel {
   canUserChangeRecipient(user) {
     return (
       user &&
+      [Milestone.IN_PROGRESS, Milestone.NEEDS_REVIEW].includes(this.status) &&
       !this.pendingRecipientAddress &&
       ((!this.hasRecipient && this.ownerAddress === user.address) ||
         (this.hasRecipient && this.recipientAddress === user.address))

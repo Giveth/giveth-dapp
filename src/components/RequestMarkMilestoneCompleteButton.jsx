@@ -38,9 +38,9 @@ class RequestMarkMilestoneCompleteButton extends Component {
 
         this.conversationModal.current
           .openModal({
-            title: 'Mark milestone complete',
+            title: 'Mark Milestone complete',
             description:
-              "Describe what you've done to finish the work of this milestone and attach proof if necessary. This information will be publicly visible and emailed to the reviewer.",
+              "Describe what you've done to finish the work of this Milestone and attach proof if necessary. This information will be publicly visible and emailed to the reviewer.",
             required: false,
             cta: 'Mark complete',
             enableAttachProof: true,
@@ -60,7 +60,7 @@ class RequestMarkMilestoneCompleteButton extends Component {
 
                 React.toast.info(
                   <p>
-                    Marking this milestone as complete is pending...
+                    Marking this Milestone as complete is pending...
                     <br />
                     <a href={txUrl} target="_blank" rel="noopener noreferrer">
                       View transaction
@@ -71,7 +71,7 @@ class RequestMarkMilestoneCompleteButton extends Component {
               onConfirmation: txUrl => {
                 React.toast.success(
                   <p>
-                    The milestone has been marked as complete!
+                    The Milestone has been marked as complete!
                     <br />
                     <a href={txUrl} target="_blank" rel="noopener noreferrer">
                       View transaction
@@ -81,7 +81,7 @@ class RequestMarkMilestoneCompleteButton extends Component {
               },
               onError: (err, txUrl) => {
                 if (err === 'patch-error') {
-                  ErrorPopup('Something went wrong with marking your milestone as complete', err);
+                  ErrorPopup('Something went wrong with marking your Milestone as complete', err);
                 } else {
                   ErrorPopup(
                     'Something went wrong with the transaction.',

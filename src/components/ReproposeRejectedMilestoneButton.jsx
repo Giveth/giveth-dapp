@@ -21,7 +21,7 @@ class ReproposeRejectedMilestoneButton extends Component {
       content: {
         element: 'input',
         attributes: {
-          placeholder: 'Add a reason why you re-propose this rejected milestone...',
+          placeholder: 'Add a reason why you re-propose this rejected Milestone...',
         },
       },
     }).then(reason => {
@@ -37,9 +37,9 @@ class ReproposeRejectedMilestoneButton extends Component {
             action: 'reproposed rejected milestone',
             label: milestone._id,
           });
-          React.toast.info(<p>The milestone has been re-proposed.</p>);
+          React.toast.info(<p>The Milestone has been re-proposed.</p>);
         },
-        onError: e => ErrorPopup('Something went wrong with re-proposing your milestone', e),
+        onError: e => ErrorPopup('Something went wrong with re-proposing your Milestone', e),
       });
     });
   }

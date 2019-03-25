@@ -107,7 +107,7 @@ class MyCampaigns extends Component {
         const afterMined = url => {
           const msg = (
             <p>
-              The campaign has been cancelled!
+              The Campaign has been cancelled!
               <br />
               <a href={url} target="_blank" rel="noopener noreferrer">
                 View transaction
@@ -141,7 +141,7 @@ class MyCampaigns extends Component {
               <div className="row">
                 <div className="col-md-10 m-auto">
                   {(isLoading || (campaigns && campaigns.data.length > 0)) && (
-                    <h1>Your campaigns</h1>
+                    <h1>Your Campaigns</h1>
                   )}
 
                   <AuthenticationWarning currentUser={currentUser} />
@@ -274,7 +274,7 @@ class MyCampaigns extends Component {
                         campaigns.data.length === 0 && (
                           <div>
                             <center>
-                              <h3>You didn&apos;t create any campaigns yet!</h3>
+                              <h3>You didn&apos;t create any Campaigns yet!</h3>
                               <img
                                 className="empty-state-img"
                                 src={`${process.env.PUBLIC_URL}/img/campaign.svg`}

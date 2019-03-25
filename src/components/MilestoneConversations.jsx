@@ -58,13 +58,13 @@ class MilestoneConversations extends Component {
   }
 
   static getReadeableMessageContext(context) {
-    if (context === 'proposed') return 'proposed milestone';
+    if (context === 'proposed') return 'proposed Milestone';
     if (context === 'rejected') return 'rejected completion';
     if (context === 'NeedsReview') return 'requested review';
     if (context === 'Completed') return 'accepted completion';
-    if (context === 'Canceled') return 'canceled milestone';
-    if (context === 'proposedRejected') return 'rejected proposed milestone';
-    if (context === 'proposedAccepted') return 'accepted proposed milestone';
+    if (context === 'Canceled') return 'canceled Milestone';
+    if (context === 'proposedRejected') return 'rejected proposed Milestone';
+    if (context === 'proposedAccepted') return 'accepted proposed Milestone';
     return 'unknown';
   }
 
