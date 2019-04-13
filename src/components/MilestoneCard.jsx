@@ -19,12 +19,17 @@ class MilestoneCard extends Component {
     this.viewMilestone = this.viewMilestone.bind(this);
     this.editMilestone = this.editMilestone.bind(this);
     this.viewProfile = this.viewProfile.bind(this);
+    this.createMilestoneLink = this.createMilestoneLink.bind(this);
   }
 
   viewMilestone() {
     history.push(
       `/campaigns/${this.props.milestone.campaign._id}/milestones/${this.props.milestone._id}`,
     );
+  }
+
+  createMilestoneLink() {
+    return `/campaigns/${this.props.milestone.campaign._id}/milestones/${this.props.milestone._id}`;
   }
 
   viewProfile(e) {
@@ -58,7 +63,6 @@ class MilestoneCard extends Component {
     return (
       <div
         className="card milestone-card overview-card"
-        onClick={this.viewMilestone}
         onKeyPress={this.viewMilestone}
         role="button"
         tabIndex="0"
@@ -87,7 +91,9 @@ class MilestoneCard extends Component {
                 </span>
               )}
           </div>
+        </div>
 
+        <a className="card-body" href={this.createMilestoneLink()}>
           <div
             className="card-img"
             style={{
@@ -112,7 +118,7 @@ class MilestoneCard extends Component {
               token={milestone.token}
             />
           </div>
-        </div>
+        </a>
       </div>
     );
   }
