@@ -15,10 +15,15 @@ class DacCard extends Component {
     super(props);
 
     this.viewDAC = this.viewDAC.bind(this);
+    this.createDACLink = this.createDACLink.bind(this);
   }
 
   viewDAC() {
     history.push(`/dacs/${this.props.dac.id}`);
+  }
+
+  createDACLink() {
+    return `/dacs/${this.props.dac.id}`;
   }
 
   render() {
@@ -28,12 +33,11 @@ class DacCard extends Component {
       <div
         className="card overview-card"
         id={dac.id}
-        onClick={this.viewDAC}
         onKeyPress={this.viewDAC}
         role="button"
         tabIndex="0"
       >
-        <div className="card-body">
+        <a className="card-body" href={this.createDACLink()}>
           <div className="card-img" style={{ backgroundImage: `url(${dac.image})` }} />
 
           <div className="card-content">
@@ -49,7 +53,7 @@ class DacCard extends Component {
               currentBalance={dac.currentBalance}
             />
           </div>
-        </div>
+        </a>
       </div>
     );
   }

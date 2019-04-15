@@ -31,6 +31,7 @@ $aspect-ratio: percentage(9/16); //16:9 ratio
     @include bullet-styling(8);
     box-shadow: 0 0 20px darken($page-background, 10%);
     padding: 0;
+    color: black;
 
     .card-avatar {
       padding: 10px 20px;
@@ -75,6 +76,10 @@ $aspect-ratio: percentage(9/16); //16:9 ratio
       right: 0;   
       border: none;   
     }
+  }
+
+  .card-body:hover {
+    text-decoration: none
   }
 }
 
