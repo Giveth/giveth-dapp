@@ -326,7 +326,7 @@ class EditMilestone extends Component {
         milestone.maxAmount = milestone.fiatAmount.div(rate);
         milestone.conversionRateTimestamp = resp.timestamp;
       }
-      
+
       this.setState({ milestone });
     });
   }
