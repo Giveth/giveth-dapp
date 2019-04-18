@@ -923,7 +923,7 @@ class MilestoneService {
 
             DonationService.updateSpentDonations(data.donations)
               .then(() => {
-                if (!data.hasMoreDonations) {
+                if (!data.hasMoreDonations && milestone.fullyFunded) {
                   milestones
                     .patch(milestone._id, {
                       status: Milestone.PAYING,

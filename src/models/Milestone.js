@@ -408,6 +408,18 @@ export default class Milestone extends BasicModel {
     return new BigNumber('0');
   }
 
+  get totalDonated() {
+    if (!this.isCapped) return undefined;
+    if (
+      this.acceptsSingleToken &&
+      Array.isArray(this._donationCounters) &&
+      this._donationCounters.length > 0
+    ) {
+      return this._donationCounters[0].totalDonated;
+    }
+    return new BigNumber('0');
+  }
+
   get totalDonations() {
     return (
       (Array.isArray(this._donationCounters) &&
