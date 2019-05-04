@@ -107,8 +107,24 @@ class MilestoneService {
             { recipientAddress },
           ],
         },
-        { status: milestoneStatus },
       ];
+
+      if (milestoneStatus === Milestone.PAID) {
+        query.$and.push({
+          $or: [
+            { status: milestoneStatus },
+            {
+              status: Milestone.ARCHIVED,
+              $or: [
+                { donationCounters: { $size: 0 } },
+                { donationCounters: { $not: { $elemMatch: { currentBalance: { $ne: '0' } } } } },
+              ],
+            },
+          ],
+        });
+      } else {
+        query.$and.push({ status: milestoneStatus });
+      }
     } else if (milestoneStatus === Milestone.REJECTED) {
       query.$and = [
         {
@@ -142,7 +158,20 @@ class MilestoneService {
             },
           ],
         },
-        { status: { $nin: [Milestone.PAID, Milestone.CANCELED, Milestone.REJECTED] } },
+        {
+          $or: [
+            {
+              status: {
+                $nin: [Milestone.PAID, Milestone.CANCELED, Milestone.REJECTED, Milestone.ARCHIVED],
+              },
+            },
+            {
+              status: Milestone.ARCHIVED,
+              donationCounters: { $elemMatch: { currentBalance: { $ne: '0' } } },
+              'donationCounters.totalDonated': { $exists: true },
+            },
+          ],
+        },
       ];
     }
 
@@ -349,25 +378,15 @@ class MilestoneService {
       let tx;
       if (milestone.projectId) {
         if (milestone instanceof BridgedMilestone) {
-          tx = new BridgedMilestone(await getWeb3(), milestone.pluginAddress).update(
-            milestone.title,
-            profileHash || '',
-            0,
-            {
-              from,
-              $extraGas: extraGas(),
-            },
-          );
+          tx = milestone.contract(await getWeb3()).update(milestone.title, profileHash || '', 0, {
+            from,
+            $extraGas: extraGas(),
+          });
         } else if (milestone instanceof LPMilestone) {
-          tx = new LPMilestone(await getWeb3(), milestone.pluginAddress).update(
-            milestone.title,
-            profileHash || '',
-            0,
-            {
-              from,
-              $extraGas: extraGas(),
-            },
-          );
+          tx = milestone.contract(await getWeb3()).update(milestone.title, profileHash || '', 0, {
+            from,
+            $extraGas: extraGas(),
+          });
         } else if (milestone instanceof LPPCappedMilestone) {
           // LPPCappedMilestone has no update function, so just update feathers
           await milestones.patch(milestone._id, milestone.toFeathers());
