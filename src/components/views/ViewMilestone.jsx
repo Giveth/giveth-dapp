@@ -112,13 +112,17 @@ class ViewMilestone extends Component {
   }
 
   renderDescription() {
-    // Convert the iframe to video element
+    // Make a copy to transform
     let description = this.state.milestone.description;
-    let src = description.match(/(?<=\bsrc=")[^"]*/)[0];
-    if(src){
-      description = `<video controls="" autoplay="false" name="media">
-                  <source src=${src} type="video/webm">
-      </video>`;
+    // Sometimes description is set undefined
+    if(description){
+      // Convert the iframe to video element
+      let src = description.match(/(?<=\bsrc=")[^"]*/)[0];
+      if(src){
+        description = `<video controls="" autoplay="false" name="media">
+                    <source src=${src} type="video/webm">
+        </video>`;
+      }
     }
     // Pass the transformed description
     return ReactHtmlParser(description, {
