@@ -41,7 +41,9 @@ export default class LPMilestone extends Milestone {
     return (
       user &&
       [this.reviewerAddress, this.ownerAddress].includes(user.address) &&
-      ![Milestone.PROPOSED, Milestone.REJECTED, Milestone.PENDING].includes(this.status) &&
+      ![Milestone.PROPOSED, Milestone.REJECTED, Milestone.PENDING, Milestone.ARCHIVED].includes(
+        this._status,
+      ) &&
       this.mined
     );
   }

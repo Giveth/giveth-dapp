@@ -45,6 +45,7 @@ class Campaign extends BasicModel {
     this.mined = data.mined;
     this._id = data._id;
     this.commitTime = data.commitTime || 0;
+    this.archivedMilestones = new Set(data.archivedMilestones || []);
   }
 
   toIpfs() {
@@ -53,6 +54,7 @@ class Campaign extends BasicModel {
       description: this.description,
       communityUrl: this.communityUrl,
       image: cleanIpfsPath(this.image),
+      archivedMilestones: Array.from(this.archivedMilestones),
       version: 1,
     };
   }
@@ -70,6 +72,7 @@ class Campaign extends BasicModel {
       peopleCount: this.peopleCount,
       reviewerAddress: this.reviewerAddress,
       status: this.status,
+      archivedMilestones: Array.from(this.archivedMilestones),
     };
     if (!this.id) campaign.txHash = txHash;
     return campaign;

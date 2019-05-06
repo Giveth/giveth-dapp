@@ -253,10 +253,12 @@ class MyMilestones extends Component {
                                     <td className="td-donations-">
                                       {m.isCapped &&
                                         convertEthHelper(
-                                          (m.donationCounters &&
+                                          m.donationCounters &&
                                             m.donationCounters.length &&
-                                            m.donationCounters[0].currentBalance) ||
-                                            '0',
+                                            ((m.status === Milestone.PAID &&
+                                              m.donationCounters[0].totalDonated) ||
+                                              m.donationCounters[0].currentBalance ||
+                                              '0'),
                                         )}{' '}
                                       {m.isCapped && m.token.symbol}
                                       {!m.isCapped && (
