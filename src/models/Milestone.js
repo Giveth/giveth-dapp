@@ -44,7 +44,7 @@ export default class Milestone extends BasicModel {
 
     this._selectedFiatType = selectedFiatType;
     this._maxAmount = maxAmount ? new BigNumber(utils.fromWei(maxAmount)) : undefined;
-    this._fiatAmount = fiatAmount ? new BigNumber(fiatAmount) : undefined;
+    this._fiatAmount = fiatAmount ? new BigNumber(fiatAmount) : new BigNumber(0);
     this._ownerAddress = ownerAddress;
     this._recipientAddress = recipientAddress;
     this._pendingRecipientAddress = pendingRecipientAddress;
