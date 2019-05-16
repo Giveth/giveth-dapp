@@ -383,9 +383,12 @@ class EditMilestone extends Component {
   setToken(address) {
     const { milestone } = this.state;
     milestone.token = this.props.tokenWhitelist.find(t => t.address === address);
-    this.setState({ milestone }, () =>
-      this.setDate(this.state.milestone.data || getStartOfDayUTC()),
-    );
+    this.setState({ milestone }, () => {
+      // milestone.items.forEach(function(item, i) {
+      //   milestone.items[i].wei = 24272248282842
+      // })
+      this.setDate(this.state.milestone.data || getStartOfDayUTC());
+    });
   }
 
   checkUser() {

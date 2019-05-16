@@ -141,7 +141,7 @@ class Web3Provider extends Component {
         title: 'Web3 Connection Error',
         content: React.swal.msg(
           <p>
-            Unable to connect to the web3 provider. Please check if your MataMask or other wallet is
+            Unable to connect to the web3 provider. Please check if your MetaMask or other wallet is
             connected to a valid network. If so try and restart your browser or open the DApp in
             private window.
           </p>,
