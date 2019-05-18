@@ -66,9 +66,11 @@ export default async () => {
   network.tokens = {};
   const { tokenWhitelist } = await feathersClient.service('/whitelist').find();
   if (tokenWhitelist) {
-    tokenWhitelist.filter(token => web3.utils.isAddress(token.address)).forEach(token => {
-      network.tokens[token.address] = new web3.eth.Contract(ERC20ABI, token.address);
-    });
+    tokenWhitelist
+      .filter(token => web3.utils.isAddress(token.address))
+      .forEach(token => {
+        network.tokens[token.address] = new web3.eth.Contract(ERC20ABI, token.address);
+      });
   }
 
   return network;
