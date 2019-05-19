@@ -5,7 +5,7 @@ describe('User Model', () => {
   const TestUserData = {
     address: '0x0',
     avatar: 'test',
-    commitTime: '2018-03-03',
+    commitTime: new Date('2018-03-03').getTime(),
     email: 'test@test.te',
     giverId: '0',
     linkedin: 'https://join.giveth.io',
@@ -14,7 +14,7 @@ describe('User Model', () => {
   const TestUserData2 = {
     address: '0x01',
     avatar: 'test2',
-    commitTime: '2018-03-04',
+    commitTime: new Date('2018-03-04').getTime(),
     email: 'test2@test.te',
     giverId: 1,
     linkedin: 'https://join.giveth.io/',
