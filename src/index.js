@@ -4,7 +4,7 @@ import localForage from 'localforage';
 
 import registerServiceWorker from './lib/registerServiceWorker';
 import Application from './containers/Application';
-import './styles/application.css';
+import './styles/application.scss';
 
 try {
   localForage
