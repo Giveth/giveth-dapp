@@ -242,15 +242,7 @@ class MyMilestones extends Component {
                                   </td>
                                   <td className="td-donations-number">{m.totalDonations}</td>
                                   <td className="td-donations-">
-                                    {m.isCapped &&
-                                      convertEthHelper(
-                                        m.donationCounters &&
-                                          m.donationCounters.length &&
-                                          ((m.status === Milestone.PAID &&
-                                            m.donationCounters[0].totalDonated) ||
-                                            m.donationCounters[0].currentBalance ||
-                                            '0'),
-                                      )}{' '}
+                                    {m.isCapped && convertEthHelper(m.totalDonated)}{' '}
                                     {m.isCapped && m.token.symbol}
                                     {!m.isCapped && (
                                       <Link to={`/campaigns/${m.campaignId}/milestones/${m.id}`}>
