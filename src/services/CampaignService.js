@@ -1,6 +1,6 @@
 import { LPPCampaign } from 'lpp-campaign';
 import { paramsForServer } from 'feathers-hooks-common';
-import Milestone from 'models/Milestone';
+import Milestone from '../models/Milestone';
 import getNetwork from '../lib/blockchain/getNetwork';
 import getWeb3 from '../lib/blockchain/getWeb3';
 import extraGas from '../lib/blockchain/extraGas';
