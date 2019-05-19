@@ -3,7 +3,11 @@ import PropTypes from 'prop-types';
 import IPFSService from '../services/IPFSService';
 import config from '../configuration';
 
-const Label = ({ children }) => <label style={{ marginRight: '0.5rem' }}>{children}</label>;
+const Label = ({ children }) => (
+  <span className="label" style={{ marginRight: '0.5rem' }}>
+    {children}
+  </span>
+);
 
 Label.propTypes = {
   children: PropTypes.node.isRequired,
@@ -191,7 +195,9 @@ class Content extends Component {
     const { type, url, file, currentState } = this.state;
     return (
       <div>
-        <label style={{ display: 'block', marginBottom: '1rem' }}>Choose type of video</label>
+        <span className="label" style={{ display: 'block', marginBottom: '1rem' }}>
+          Choose type of video
+        </span>
         <Label>
           <input name="type" type="radio" onClick={() => this.setState({ type: 'link' })} /> Link
         </Label>
