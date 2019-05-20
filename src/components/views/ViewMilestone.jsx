@@ -4,7 +4,7 @@ import PropTypes from 'prop-types';
 import { Form } from 'formsy-react-components';
 import moment from 'moment';
 import Avatar from 'react-avatar';
-import ReactHtmlParser, { convertNodeToElement } from 'react-html-parser';
+import ReactHtmlParser from 'react-html-parser';
 import { Link } from 'react-router-dom';
 import BigNumber from 'bignumber.js';
 
@@ -116,9 +116,9 @@ class ViewMilestone extends Component {
       transform(node, index) {
         if (node.attribs && node.attribs.class === 'ql-video') {
           return (
-            <div className="video-wrapper" key={index}>
-              {convertNodeToElement(node, index)}
-            </div>
+            <video width={"100%"} height={"auto"} controls={true} name={"media"}>
+                <source src={node.attribs.src} type="video/webm"></source>
+            </video>
           );
         }
         return undefined;

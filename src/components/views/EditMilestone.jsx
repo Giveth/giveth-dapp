@@ -383,9 +383,9 @@ class EditMilestone extends Component {
   setToken(address) {
     const { milestone } = this.state;
     milestone.token = this.props.tokenWhitelist.find(t => t.address === address);
-    this.setState({ milestone }, () =>
-      this.setDate(this.state.milestone.data || getStartOfDayUTC()),
-    );
+    this.setState({ milestone }, () => {
+      this.setDate(this.state.milestone.data || getStartOfDayUTC());
+    });
   }
 
   checkUser() {
@@ -869,7 +869,6 @@ class EditMilestone extends Component {
                         label="Raising funds in"
                         helpText="Select the token you're raising funds in"
                         value={milestone.token && milestone.token.address}
-                        cta="--- Select a token ---"
                         options={tokenWhitelistOptions}
                         onChange={address => this.setToken(address)}
                         required

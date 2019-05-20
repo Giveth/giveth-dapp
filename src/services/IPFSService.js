@@ -1,5 +1,6 @@
 import config from '../configuration';
 import ImageTools from '../lib/ImageResizer';
+import ErrorPopup from '../components/ErrorPopup';
 
 class IPFSService {
   /**
@@ -30,6 +31,7 @@ class IPFSService {
       body,
     }).then(res => {
       if (res.ok) return `/ipfs/${res.headers.get('Ipfs-Hash')}`;
+      ErrorPopup('Something went wrong with the upload.', 'IPFS upload unsuccessful');
       throw new Error('IPFS upload unsuccessful', res);
     });
   }

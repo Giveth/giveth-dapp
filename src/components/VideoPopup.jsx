@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import IPFSService from '../services/IPFSService';
 import config from '../configuration';
+import ErrorPopup from './ErrorPopup';
 
 const Label = ({ children }) => <label style={{ marginRight: '0.5rem' }}>{children}</label>;
 
@@ -111,7 +112,10 @@ class Content extends Component {
 
             this.props.handleQuillInsert(config.ipfsGateway + hash.slice(6));
           })
-          .catch(err => console.log(err));
+          .catch(err => {
+            ErrorPopup('Something went wrong with the upload.', err);
+            console.log(err);
+          });
       },
     );
   }
