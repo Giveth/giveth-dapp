@@ -107,17 +107,16 @@ class MilestoneConversations extends Component {
                     </p>
                     <div className="c-message">{ReactHtmlParser(c.message)}</div>
 
-                    {c.items &&
-                      c.items.length > 0 && (
-                        <Form className="items-form">
-                          <strong>Attachments</strong>
-                          <MilestoneProof
-                            items={c.items}
-                            token={milestone.token}
-                            isEditMode={false}
-                          />
-                        </Form>
-                      )}
+                    {c.items && c.items.length > 0 && (
+                      <Form className="items-form">
+                        <strong>Attachments</strong>
+                        <MilestoneProof
+                          items={c.items}
+                          token={milestone.token}
+                          isEditMode={false}
+                        />
+                      </Form>
+                    )}
 
                     {/* ---- action buttons ---- */}
                     <div className="c-action-footer">

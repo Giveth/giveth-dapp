@@ -168,19 +168,18 @@ class ViewDAC extends Component {
                     </p>
                     {isLoadingCampaigns && <Loader className="small" />}
 
-                    {campaigns.length > 0 &&
-                      !isLoadingCampaigns && (
-                        <div className="cards-grid-container">
-                          {campaigns.map(c => (
-                            <CampaignCard
-                              key={c.id}
-                              campaign={c}
-                              history={history}
-                              balance={balance}
-                            />
-                          ))}
-                        </div>
-                      )}
+                    {campaigns.length > 0 && !isLoadingCampaigns && (
+                      <div className="cards-grid-container">
+                        {campaigns.map(c => (
+                          <CampaignCard
+                            key={c.id}
+                            campaign={c}
+                            history={history}
+                            balance={balance}
+                          />
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </div>
               )}
