@@ -74,43 +74,42 @@ class MainMenu extends Component {
                   id="navbarSupportedContent"
                 >
                   <ul className="navbar-nav">
-                    {validProvider &&
-                      state.currentUser && (
-                        <li className="nav-item dropdown">
-                          <NavLink
-                            className="nav-link dropdown-toggle"
-                            id="navbarDropdownDashboard"
-                            to="/dashboard"
-                            disabled={!state.currentUser}
-                            activeClassName="active"
-                            data-toggle="dropdown"
-                            aria-haspopup="true"
-                            aria-expanded="false"
-                          >
-                            Manage
+                    {validProvider && state.currentUser && (
+                      <li className="nav-item dropdown">
+                        <NavLink
+                          className="nav-link dropdown-toggle"
+                          id="navbarDropdownDashboard"
+                          to="/dashboard"
+                          disabled={!state.currentUser}
+                          activeClassName="active"
+                          data-toggle="dropdown"
+                          aria-haspopup="true"
+                          aria-expanded="false"
+                        >
+                          Manage
+                        </NavLink>
+                        <div
+                          className={`dropdown-menu ${showMobileMenu ? 'show' : ''} `}
+                          aria-labelledby="navbarDropdownDashboard"
+                        >
+                          <NavLink className="dropdown-item" to="/my-milestones">
+                            My Milestones
                           </NavLink>
-                          <div
-                            className={`dropdown-menu ${showMobileMenu ? 'show' : ''} `}
-                            aria-labelledby="navbarDropdownDashboard"
-                          >
-                            <NavLink className="dropdown-item" to="/my-milestones">
-                              My Milestones
-                            </NavLink>
-                            <NavLink className="dropdown-item" to="/donations">
-                              My Donations
-                            </NavLink>
-                            <NavLink className="dropdown-item" to="/delegations">
-                              My Delegations
-                            </NavLink>
-                            <NavLink className="dropdown-item" to="/my-dacs">
-                              My Communities
-                            </NavLink>
-                            <NavLink className="dropdown-item" to="/my-campaigns">
-                              My Campaigns
-                            </NavLink>
-                          </div>
-                        </li>
-                      )}
+                          <NavLink className="dropdown-item" to="/donations">
+                            My Donations
+                          </NavLink>
+                          <NavLink className="dropdown-item" to="/delegations">
+                            My Delegations
+                          </NavLink>
+                          <NavLink className="dropdown-item" to="/my-dacs">
+                            My Communities
+                          </NavLink>
+                          <NavLink className="dropdown-item" to="/my-campaigns">
+                            My Campaigns
+                          </NavLink>
+                        </div>
+                      </li>
+                    )}
                   </ul>
 
                   {/*
@@ -130,23 +129,18 @@ class MainMenu extends Component {
                   </a>
 
                   <ul className="navbar-nav">
-                    {validProvider &&
-                      !failedToLoad &&
-                      !isEnabled && (
-                        <button
-                          type="button"
-                          className="btn btn-outline-success btn-sm"
-                          onClick={() => enableProvider()}
-                        >
-                          Enable Web3
-                        </button>
-                      )}
-                    {validProvider &&
-                      !failedToLoad &&
-                      isEnabled &&
-                      !state.currentUser && (
-                        <small className="text-muted">Please unlock MetaMask</small>
-                      )}
+                    {validProvider && !failedToLoad && !isEnabled && (
+                      <button
+                        type="button"
+                        className="btn btn-outline-success btn-sm"
+                        onClick={() => enableProvider()}
+                      >
+                        Enable Web3
+                      </button>
+                    )}
+                    {validProvider && !failedToLoad && isEnabled && !state.currentUser && (
+                      <small className="text-muted">Please unlock MetaMask</small>
+                    )}
                     {!validProvider && (
                       <button
                         type="button"

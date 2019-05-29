@@ -68,7 +68,9 @@ class Donation extends Model {
 
     this._id = data._id;
     this._amount = new BigNumber(utils.fromWei(data.amount));
-    this._amountRemaining = new BigNumber(utils.fromWei(data.amountRemaining));
+    this._amountRemaining = new BigNumber(
+      utils.fromWei(data.amountRemaining ? data.amountRemaining : data.amount),
+    ); // use amount as amount remaining when absent
     this._pendingAmountRemaining = data.pendingAmountRemaining
       ? new BigNumber(utils.fromWei(data.pendingAmountRemaining))
       : undefined;

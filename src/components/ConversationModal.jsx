@@ -214,7 +214,7 @@ class ConversationModal extends Component {
 
               {enableAttachProof && (
                 <div className="col-md-6">
-                  <label>Attachments</label>
+                  <span className="label">Attachments</span>
                   <MilestoneProof
                     isEditMode
                     items={items}

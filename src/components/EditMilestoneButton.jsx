@@ -40,13 +40,12 @@ class EditMilestoneButton extends Component {
       <Web3Consumer>
         {({ state: { isForeignNetwork } }) => (
           <Fragment>
-            {milestone.canUserEdit(currentUser) &&
-              isForeignNetwork && (
-                <button type="button" className="btn btn-link" onClick={() => this.editMilestone()}>
-                  <i className="fa fa-edit" />
-                  &nbsp;Edit
-                </button>
-              )}
+            {milestone.canUserEdit(currentUser) && isForeignNetwork && (
+              <button type="button" className="btn btn-link" onClick={() => this.editMilestone()}>
+                <i className="fa fa-edit" />
+                &nbsp;Edit
+              </button>
+            )}
           </Fragment>
         )}
       </Web3Consumer>

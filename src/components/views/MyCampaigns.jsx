@@ -155,136 +155,132 @@ class MyCampaigns extends Component {
 
                   {!isLoading && (
                     <div className="table-container">
-                      {campaigns &&
-                        campaigns.data.length > 0 && (
-                          <div>
-                            <table className="table table-responsive table-striped table-hover">
-                              <thead>
-                                <tr>
-                                  {currentUser.authenticated && <th className="td-actions" />}
-                                  <th className="td-name">Name</th>
-                                  <th className="td-donations-number">Donations</th>
-                                  <th className="td-donations-amount">Amount</th>
-                                  <th className="td-status">Status</th>
-                                  <th className="td-confirmations">
-                                    {isPendingCampaign && 'Confirmations'}
-                                  </th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                {campaigns.data.map(c => (
-                                  <tr
-                                    key={c.id}
-                                    className={c.status === Campaign.PENDING ? 'pending' : ''}
-                                  >
-                                    {currentUser.authenticated && (
-                                      <td className="td-actions">
-                                        {c.owner.address === currentUser.address &&
-                                          c.isActive && (
-                                            <button
-                                              type="button"
-                                              className="btn btn-link"
-                                              onClick={() => this.editCampaign(c.id)}
-                                            >
-                                              <i className="fa fa-edit" />
-                                              &nbsp;Edit
-                                            </button>
-                                          )}
+                      {campaigns && campaigns.data.length > 0 && (
+                        <div>
+                          <table className="table table-responsive table-striped table-hover">
+                            <thead>
+                              <tr>
+                                {currentUser.authenticated && <th className="td-actions" />}
+                                <th className="td-name">Name</th>
+                                <th className="td-donations-number">Donations</th>
+                                <th className="td-donations-amount">Amount</th>
+                                <th className="td-status">Status</th>
+                                <th className="td-confirmations">
+                                  {isPendingCampaign && 'Confirmations'}
+                                </th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {campaigns.data.map(c => (
+                                <tr
+                                  key={c.id}
+                                  className={c.status === Campaign.PENDING ? 'pending' : ''}
+                                >
+                                  {currentUser.authenticated && (
+                                    <td className="td-actions">
+                                      {c.owner.address === currentUser.address && c.isActive && (
+                                        <button
+                                          type="button"
+                                          className="btn btn-link"
+                                          onClick={() => this.editCampaign(c.id)}
+                                        >
+                                          <i className="fa fa-edit" />
+                                          &nbsp;Edit
+                                        </button>
+                                      )}
 
-                                        {(c.reviewerAddress === currentUser.address ||
-                                          c.owner.address === currentUser.address) &&
-                                          isForeignNetwork &&
-                                          c.isActive && (
-                                            <button
-                                              type="button"
-                                              className="btn btn-danger btn-sm"
-                                              onClick={() => this.cancelCampaign(c)}
-                                            >
-                                              <i className="fa fa-ban" />
-                                              &nbsp;Cancel
-                                            </button>
-                                          )}
-                                      </td>
+                                      {(c.reviewerAddress === currentUser.address ||
+                                        c.owner.address === currentUser.address) &&
+                                        isForeignNetwork &&
+                                        c.isActive && (
+                                          <button
+                                            type="button"
+                                            className="btn btn-danger btn-sm"
+                                            onClick={() => this.cancelCampaign(c)}
+                                          >
+                                            <i className="fa fa-ban" />
+                                            &nbsp;Cancel
+                                          </button>
+                                        )}
+                                    </td>
+                                  )}
+                                  <td className="td-name">
+                                    <Link to={`/campaigns/${c.id}`}>
+                                      {getTruncatedText(c.title, 45)}
+                                    </Link>
+                                    {c.reviewerAddress === currentUser.address && (
+                                      <span className="badge badge-info">
+                                        <i className="fa fa-eye" />
+                                        &nbsp;I&apos;m reviewer
+                                      </span>
                                     )}
-                                    <td className="td-name">
-                                      <Link to={`/campaigns/${c.id}`}>
-                                        {getTruncatedText(c.title, 45)}
-                                      </Link>
-                                      {c.reviewerAddress === currentUser.address && (
-                                        <span className="badge badge-info">
-                                          <i className="fa fa-eye" />
-                                          &nbsp;I&apos;m reviewer
-                                        </span>
-                                      )}
-                                    </td>
-                                    <td className="td-donations-number">
-                                      {c.donationCounters.length > 0 &&
-                                        c.donationCounters.map(counter => (
-                                          <p key={`donation_count-${c.key}-${counter.symbol}`}>
-                                            {counter.donationCount} donation(s) in {counter.symbol}
-                                          </p>
-                                        ))}
-                                      {c.donationCounters.length === 0 && <span>-</span>}
-                                    </td>
-                                    <td className="td-donations-amount">
-                                      {c.donationCounters.length > 0 &&
-                                        c.donationCounters.map(counter => (
-                                          <p key={`total_donated-${c.key}-${counter.symbol}`}>
-                                            {convertEthHelper(counter.totalDonated)}{' '}
-                                            {counter.symbol}
-                                          </p>
-                                        ))}
-                                      {c.donationCounters.length === 0 && <span>-</span>}
-                                    </td>
-                                    <td className="td-status">
-                                      {(c.status === Campaign.PENDING ||
-                                        (Object.keys(c).includes('mined') && !c.mined)) && (
-                                        <span>
-                                          <i className="fa fa-circle-o-notch fa-spin" />
-                                          &nbsp;
-                                        </span>
-                                      )}
-                                      {c.status}
-                                    </td>
-                                    <td className="td-confirmations">
-                                      {(isPendingCampaign ||
-                                        c.requiredConfirmations !== c.confirmations) &&
-                                        `${c.confirmations}/${c.requiredConfirmations}`}
-                                    </td>
-                                  </tr>
-                                ))}
-                              </tbody>
-                            </table>
+                                  </td>
+                                  <td className="td-donations-number">
+                                    {c.donationCounters.length > 0 &&
+                                      c.donationCounters.map(counter => (
+                                        <p key={`donation_count-${c.key}-${counter.symbol}`}>
+                                          {counter.donationCount} donation(s) in {counter.symbol}
+                                        </p>
+                                      ))}
+                                    {c.donationCounters.length === 0 && <span>-</span>}
+                                  </td>
+                                  <td className="td-donations-amount">
+                                    {c.donationCounters.length > 0 &&
+                                      c.donationCounters.map(counter => (
+                                        <p key={`total_donated-${c.key}-${counter.symbol}`}>
+                                          {convertEthHelper(counter.totalDonated)} {counter.symbol}
+                                        </p>
+                                      ))}
+                                    {c.donationCounters.length === 0 && <span>-</span>}
+                                  </td>
+                                  <td className="td-status">
+                                    {(c.status === Campaign.PENDING ||
+                                      (Object.keys(c).includes('mined') && !c.mined)) && (
+                                      <span>
+                                        <i className="fa fa-circle-o-notch fa-spin" />
+                                        &nbsp;
+                                      </span>
+                                    )}
+                                    {c.status}
+                                  </td>
+                                  <td className="td-confirmations">
+                                    {(isPendingCampaign ||
+                                      c.requiredConfirmations !== c.confirmations) &&
+                                      `${c.confirmations}/${c.requiredConfirmations}`}
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
 
-                            {campaigns.total > this.state.itemsPerPage && (
-                              <center>
-                                <Pagination
-                                  activePage={campaigns.skip / campaigns.limit + 1}
-                                  itemsCountPerPage={campaigns.limit}
-                                  totalItemsCount={campaigns.total}
-                                  pageRangeDisplayed={visiblePages}
-                                  onChange={this.handlePageChanged}
-                                />
-                              </center>
-                            )}
-                          </div>
-                        )}
-
-                      {campaigns &&
-                        campaigns.data.length === 0 && (
-                          <div>
+                          {campaigns.total > this.state.itemsPerPage && (
                             <center>
-                              <h3>You didn&apos;t create any Campaigns yet!</h3>
-                              <img
-                                className="empty-state-img"
-                                src={`${process.env.PUBLIC_URL}/img/campaign.svg`}
-                                width="200px"
-                                height="200px"
-                                alt="no-campaigns-icon"
+                              <Pagination
+                                activePage={campaigns.skip / campaigns.limit + 1}
+                                itemsCountPerPage={campaigns.limit}
+                                totalItemsCount={campaigns.total}
+                                pageRangeDisplayed={visiblePages}
+                                onChange={this.handlePageChanged}
                               />
                             </center>
-                          </div>
-                        )}
+                          )}
+                        </div>
+                      )}
+
+                      {campaigns && campaigns.data.length === 0 && (
+                        <div>
+                          <center>
+                            <h3>You didn&apos;t create any Campaigns yet!</h3>
+                            <img
+                              className="empty-state-img"
+                              src={`${process.env.PUBLIC_URL}/img/campaign.svg`}
+                              width="200px"
+                              height="200px"
+                              alt="no-campaigns-icon"
+                            />
+                          </center>
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
