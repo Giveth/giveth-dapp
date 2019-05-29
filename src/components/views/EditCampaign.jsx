@@ -227,10 +227,9 @@ class EditCampaign extends Component {
 
                     {!isNew && <h3>Edit Campaign{campaign.title}</h3>}
                     <p>
-                      <i className="fa fa-question-circle" />
-                      A Campaign solves a specific cause by executing a project via its Milestones.
-                      Funds raised by a Campaign need to be delegated to its Milestones in order to
-                      be paid out.
+                      <i className="fa fa-question-circle" />A Campaign solves a specific cause by
+                      executing a project via its Milestones. Funds raised by a Campaign need to be
+                      delegated to its Milestones in order to be paid out.
                     </p>
                   </div>
 

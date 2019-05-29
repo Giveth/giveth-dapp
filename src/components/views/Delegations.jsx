@@ -59,126 +59,123 @@ const Delegations = ({ balance, currentUser }) => (
 
                     {!isLoading && (
                       <div>
-                        {delegations &&
-                          delegations.length > 0 && (
-                            <div className="table-container">
-                              <table className="table table-responsive table-striped table-hover">
-                                <thead>
-                                  <tr>
-                                    {currentUser.authenticated && <th className="td-actions" />}
-                                    <th className="td-date">Date</th>
-                                    <th className="td-donated-to">Donated to</th>
-                                    <th className="td-donations-amount">Amount</th>
-                                    <th className="td-user">Received from</th>
-                                    <th className="td-tx-address">Address</th>
-                                    <th className="td-status">Status</th>
-                                  </tr>
-                                </thead>
-                                <tbody>
-                                  {delegations.map(d => (
-                                    <tr key={d._id}>
-                                      {currentUser.authenticated && (
-                                        <td className="td-actions">
-                                          {/* When donated to a dac, allow delegation
+                        {delegations && delegations.length > 0 && (
+                          <div className="table-container">
+                            <table className="table table-responsive table-striped table-hover">
+                              <thead>
+                                <tr>
+                                  {currentUser.authenticated && <th className="td-actions" />}
+                                  <th className="td-date">Date</th>
+                                  <th className="td-donated-to">Donated to</th>
+                                  <th className="td-donations-amount">Amount</th>
+                                  <th className="td-user">Received from</th>
+                                  <th className="td-tx-address">Address</th>
+                                  <th className="td-status">Status</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {delegations.map(d => (
+                                  <tr key={d._id}>
+                                    {currentUser.authenticated && (
+                                      <td className="td-actions">
+                                        {/* When donated to a dac, allow delegation
                                     to campaigns and milestones */}
-                                          {(d.delegateId > 0 ||
-                                            d.ownerTypeId === currentUser.address) &&
-                                            isForeignNetwork &&
-                                            d.status === Donation.WAITING &&
-                                            d.amountRemaining > 0 && (
-                                              <DelegateButton
-                                                types={campaigns.concat(milestones)}
-                                                donation={d}
-                                                balance={balance}
-                                                symbol={
-                                                  (d.token && d.token.symbol) ||
-                                                  config.nativeTokenName
-                                                }
-                                              />
-                                            )}
+                                        {(d.delegateId > 0 ||
+                                          d.ownerTypeId === currentUser.address) &&
+                                          isForeignNetwork &&
+                                          d.status === Donation.WAITING &&
+                                          d.amountRemaining > 0 && (
+                                            <DelegateButton
+                                              types={campaigns.concat(milestones)}
+                                              donation={d}
+                                              balance={balance}
+                                              symbol={
+                                                (d.token && d.token.symbol) ||
+                                                config.nativeTokenName
+                                              }
+                                            />
+                                          )}
 
-                                          {/* When donated to a campaign, only allow delegation
+                                        {/* When donated to a campaign, only allow delegation
                                     to milestones of that campaign */}
-                                          {d.ownerType === 'campaign' &&
-                                            isForeignNetwork &&
-                                            d.status === Donation.COMMITTED &&
-                                            d.amountRemaining > 0 && (
-                                              <DelegateButton
-                                                types={milestones.filter(
-                                                  m =>
-                                                    m.campaignId === d.ownerTypeId &&
-                                                    (!m.acceptsSingleToken ||
-                                                      m.token.symbol === d.token.symbol),
-                                                )}
-                                                donation={d}
-                                                balance={balance}
-                                                milestoneOnly
-                                              />
-                                            )}
-                                        </td>
+                                        {d.ownerType === 'campaign' &&
+                                          isForeignNetwork &&
+                                          d.status === Donation.COMMITTED &&
+                                          d.amountRemaining > 0 && (
+                                            <DelegateButton
+                                              types={milestones.filter(
+                                                m =>
+                                                  m.campaignId === d.ownerTypeId &&
+                                                  (!m.acceptsSingleToken ||
+                                                    m.token.symbol === d.token.symbol),
+                                              )}
+                                              donation={d}
+                                              balance={balance}
+                                              milestoneOnly
+                                            />
+                                          )}
+                                      </td>
+                                    )}
+
+                                    <td className="td-date">
+                                      {moment(d.createdAt).format('MM/DD/YYYY')}
+                                    </td>
+
+                                    <td className="td-donated-to">
+                                      <Link to={d.donatedTo.url}>
+                                        {d.donatedTo.type} <em>{d.donatedTo.name}</em>
+                                      </Link>
+                                    </td>
+                                    <td className="td-donations-amount">
+                                      {d.isPending && (
+                                        <span>
+                                          <i className="fa fa-circle-o-notch fa-spin" />
+                                          &nbsp;
+                                        </span>
                                       )}
+                                      {convertEthHelper(d.amountRemaining)}{' '}
+                                      {(d.token && d.token.symbol) || config.nativeTokenName}
+                                    </td>
+                                    <td className="td-user">
+                                      <Link to={`profile/${d.giver.address}`}>
+                                        <Avatar size={30} src={getUserAvatar(d.giver)} round />
+                                        {getUserName(d.giver)}
+                                      </Link>
+                                    </td>
+                                    <td className="td-tx-address">{d.giverAddress}</td>
+                                    <td className="td-status">{d.statusDescription}</td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
+                        )}
 
-                                      <td className="td-date">
-                                        {moment(d.createdAt).format('MM/DD/YYYY')}
-                                      </td>
-
-                                      <td className="td-donated-to">
-                                        <Link to={d.donatedTo.url}>
-                                          {d.donatedTo.type} <em>{d.donatedTo.name}</em>
-                                        </Link>
-                                      </td>
-                                      <td className="td-donations-amount">
-                                        {d.isPending && (
-                                          <span>
-                                            <i className="fa fa-circle-o-notch fa-spin" />
-                                            &nbsp;
-                                          </span>
-                                        )}
-                                        {convertEthHelper(d.amountRemaining)}{' '}
-                                        {(d.token && d.token.symbol) || config.nativeTokenName}
-                                      </td>
-                                      <td className="td-user">
-                                        <Link to={`profile/${d.giver.address}`}>
-                                          <Avatar size={30} src={getUserAvatar(d.giver)} round />
-                                          {getUserName(d.giver)}
-                                        </Link>
-                                      </td>
-                                      <td className="td-tx-address">{d.giverAddress}</td>
-                                      <td className="td-status">{d.statusDescription}</td>
-                                    </tr>
-                                  ))}
-                                </tbody>
-                              </table>
-                            </div>
-                          )}
-
-                        {delegations &&
-                          totalResults > itemsPerPage && (
+                        {delegations && totalResults > itemsPerPage && (
+                          <center>
+                            <Pagination
+                              activePage={skipPages + 1}
+                              itemsCountPerPage={itemsPerPage}
+                              totalItemsCount={totalResults}
+                              pageRangeDisplayed={visiblePages}
+                              onChange={handlePageChanged}
+                            />
+                          </center>
+                        )}
+                        {delegations && delegations.length === 0 && (
+                          <div>
                             <center>
-                              <Pagination
-                                activePage={skipPages + 1}
-                                itemsCountPerPage={itemsPerPage}
-                                totalItemsCount={totalResults}
-                                pageRangeDisplayed={visiblePages}
-                                onChange={handlePageChanged}
+                              <h3>There&apos;s nothing to delegate (yet)!</h3>
+                              <img
+                                className="empty-state-img"
+                                src={`${process.env.PUBLIC_URL}/img/delegation.svg`}
+                                width="200px"
+                                height="200px"
+                                alt="no-delegations-icon"
                               />
                             </center>
-                          )}
-                        {delegations &&
-                          delegations.length === 0 && (
-                            <div>
-                              <center>
-                                <h3>There&apos;s nothing to delegate (yet)!</h3>
-                                <img
-                                  className="empty-state-img"
-                                  src={`${process.env.PUBLIC_URL}/img/delegation.svg`}
-                                  width="200px"
-                                  height="200px"
-                                  alt="no-delegations-icon"
-                                />
-                              </center>
-                            </div>
-                          )}
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>

@@ -111,10 +111,9 @@ const ListDonations = props => {
           </div>
         )}
 
-        {!isLoading &&
-          donations.length === 0 && (
-            <p>No donations have been made yet. Be the first to donate now!</p>
-          )}
+        {!isLoading && donations.length === 0 && (
+          <p>No donations have been made yet. Be the first to donate now!</p>
+        )}
       </div>
     </div>
   );

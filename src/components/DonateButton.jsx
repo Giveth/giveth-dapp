@@ -399,77 +399,71 @@ class DonateButton extends React.Component {
                 networkName={config.homeNetworkName}
               />
             )}
-            {isCorrectNetwork &&
-              currentUser && (
-                <p>
-                  {model.type.toLowerCase() === DAC.type && (
-                    <span>
-                      You&apos;re pledging: as long as the DAC owner does not lock your money you
-                      can take it back any time.
-                    </span>
-                  )}
-                  {model.type.toLowerCase() !== DAC.type && (
-                    <span>
-                      You&apos;re committing your funds to this {model.type}, if you have filled out
-                      contact information in your <Link to="/profile">Profile</Link> you will be
-                      notified about how your funds are spent
-                    </span>
-                  )}
-                </p>
-              )}
+            {isCorrectNetwork && currentUser && (
+              <p>
+                {model.type.toLowerCase() === DAC.type && (
+                  <span>
+                    You&apos;re pledging: as long as the DAC owner does not lock your money you can
+                    take it back any time.
+                  </span>
+                )}
+                {model.type.toLowerCase() !== DAC.type && (
+                  <span>
+                    You&apos;re committing your funds to this {model.type}, if you have filled out
+                    contact information in your <Link to="/profile">Profile</Link> you will be
+                    notified about how your funds are spent
+                  </span>
+                )}
+              </p>
+            )}
 
-            {validProvider &&
-              !currentUser && (
-                <div className="alert alert-warning">
-                  <i className="fa fa-exclamation-triangle" />
-                  It looks like your Ethereum Provider is locked or you need to enable it.
-                </div>
-              )}
+            {validProvider && !currentUser && (
+              <div className="alert alert-warning">
+                <i className="fa fa-exclamation-triangle" />
+                It looks like your Ethereum Provider is locked or you need to enable it.
+              </div>
+            )}
 
-            {validProvider &&
-              isCorrectNetwork &&
-              currentUser && (
-                <div>
-                  {!model.acceptsSingleToken && (
-                    <SelectFormsy
-                      name="token"
-                      id="token-select"
-                      label="Make your donation in"
-                      helpText={`Select ${config.nativeTokenName} or the token you want to donate`}
-                      value={selectedToken.address}
-                      options={tokenWhitelistOptions}
-                      onChange={address => this.setToken(address)}
-                    />
-                  )}
-                  {/* TODO: remove this b/c the wallet provider will contain this info */}
-                  {config.homeNetworkName} {selectedToken.symbol} balance:&nbsp;
-                  <em>{utils.fromWei(balance ? balance.toFixed() : '')}</em>
-                </div>
-              )}
+            {validProvider && isCorrectNetwork && currentUser && (
+              <div>
+                {!model.acceptsSingleToken && (
+                  <SelectFormsy
+                    name="token"
+                    id="token-select"
+                    label="Make your donation in"
+                    helpText={`Select ${config.nativeTokenName} or the token you want to donate`}
+                    value={selectedToken.address}
+                    options={tokenWhitelistOptions}
+                    onChange={address => this.setToken(address)}
+                  />
+                )}
+                {/* TODO: remove this b/c the wallet provider will contain this info */}
+                {config.homeNetworkName} {selectedToken.symbol} balance:&nbsp;
+                <em>{utils.fromWei(balance ? balance.toFixed() : '')}</em>
+              </div>
+            )}
 
             <span className="label">How much {selectedToken.symbol} do you want to donate?</span>
 
-            {validProvider &&
-              maxAmount.toNumber() !== 0 &&
-              balance.gt(0) && (
-                <div className="form-group">
-                  <Slider
-                    type="range"
-                    name="amount2"
-                    min={0}
-                    max={maxAmount.toNumber()}
-                    step={maxAmount.toNumber() / 10}
-                    value={Number(Number(amount).toFixed(4))}
-                    labels={{
-                      0: '0',
-                      [maxAmount.toFixed()]: maxAmount.toFixed(4),
-                    }}
-                    tooltip={false}
-                    format={val => `${val} ${config.nativeTokenName}`}
-                    onChange={newAmount => this.setState({ amount: newAmount.toString() })}
-                  />
-                </div>
-              )}
+            {validProvider && maxAmount.toNumber() !== 0 && balance.gt(0) && (
+              <div className="form-group">
+                <Slider
+                  type="range"
+                  name="amount2"
+                  min={0}
+                  max={maxAmount.toNumber()}
+                  step={maxAmount.toNumber() / 10}
+                  value={Number(Number(amount).toFixed(4))}
+                  labels={{
+                    0: '0',
+                    [maxAmount.toFixed()]: maxAmount.toFixed(4),
+                  }}
+                  tooltip={false}
+                  format={val => `${val} ${config.nativeTokenName}`}
+                  onChange={newAmount => this.setState({ amount: newAmount.toString() })}
+                />
+              </div>
+            )}
 
             <div className="form-group">
               <Input
@@ -536,21 +530,18 @@ class DonateButton extends React.Component {
               </div>
             )}
 
-            {validProvider &&
-              currentUser &&
-              maxAmount.toNumber() !== 0 &&
-              balance !== '0' && (
-                <LoaderButton
-                  className="btn btn-success"
-                  formNoValidate
-                  type="submit"
-                  disabled={isSaving || !formIsValid || !isCorrectNetwork}
-                  isLoading={isSaving}
-                  loadingText="Donating..."
-                >
-                  Donate
-                </LoaderButton>
-              )}
+            {validProvider && currentUser && maxAmount.toNumber() !== 0 && balance !== '0' && (
+              <LoaderButton
+                className="btn btn-success"
+                formNoValidate
+                type="submit"
+                disabled={isSaving || !formIsValid || !isCorrectNetwork}
+                isLoading={isSaving}
+                loadingText="Donating..."
+              >
+                Donate
+              </LoaderButton>
+            )}
 
             <button
               className="btn btn-light float-right"
