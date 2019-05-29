@@ -4,7 +4,7 @@ import PropTypes from 'prop-types';
 import { Form } from 'formsy-react-components';
 import moment from 'moment';
 import Avatar from 'react-avatar';
-import ReactHtmlParser, { convertNodeToElement } from 'react-html-parser';
+import ReactHtmlParser from 'react-html-parser';
 import { Link } from 'react-router-dom';
 import BigNumber from 'bignumber.js';
 
@@ -116,9 +116,9 @@ class ViewMilestone extends Component {
       transform(node, index) {
         if (node.attribs && node.attribs.class === 'ql-video') {
           return (
-            <div className="video-wrapper" key={index}>
-              {convertNodeToElement(node, index)}
-            </div>
+            <video width={"100%"} height={"auto"} controls={true} name={"media"}>
+                <source src={node.attribs.src} type="video/webm"></source>
+            </video>
           );
         }
         return undefined;
@@ -153,13 +153,11 @@ class ViewMilestone extends Component {
 
               {milestone.fullyFunded && <p>This Milestone has reached its funding goal!</p>}
 
-              {milestone.isCapped &&
-                !milestone.fullyFunded && (
-                  <p>
-                    Amount requested: {convertEthHelper(milestone.maxAmount)}{' '}
-                    {milestone.token.symbol}
-                  </p>
-                )}
+              {milestone.isCapped && !milestone.fullyFunded && (
+                <p>
+                  Amount requested: {convertEthHelper(milestone.maxAmount)} {milestone.token.symbol}
+                </p>
+              )}
               <p>Campaign: {campaign.title} </p>
 
               <div className="milestone-actions">
@@ -234,44 +232,43 @@ class ViewMilestone extends Component {
                 </div>
               </div>
 
-              {milestone.items &&
-                milestone.items.length > 0 && (
-                  <div className="row spacer-top-50 dashboard-table-view">
-                    <div className="col-md-8 m-auto">
-                      <h4>Milestone proof</h4>
-                      <p>These receipts show how the money of this Milestone was spent.</p>
+              {milestone.items && milestone.items.length > 0 && (
+                <div className="row spacer-top-50 dashboard-table-view">
+                  <div className="col-md-8 m-auto">
+                    <h4>Milestone proof</h4>
+                    <p>These receipts show how the money of this Milestone was spent.</p>
 
-                      {/* MilesteneItem needs to be wrapped in a form or it won't mount */}
-                      <Form>
-                        <div className="table-container">
-                          <table className="table table-striped table-hover">
-                            <thead>
-                              <tr>
-                                <th className="td-item-date">Date</th>
-                                <th className="td-item-description">Description</th>
-                                <th className="td-item-amount-fiat">Amount Fiat</th>
-                                <th className="td-item-amount-ether">
-                                  Amount {milestone.token.symbol}
-                                </th>
-                                <th className="td-item-file-upload">Attached proof</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {milestone.items.map((item, i) => (
-                                <MilestoneItem
-                                  key={item._id}
-                                  name={`milestoneItem-${i}`}
-                                  item={item}
-                                  token={milestone.token}
-                                />
-                              ))}
-                            </tbody>
-                          </table>
-                        </div>
-                      </Form>
-                    </div>
+                    {/* MilesteneItem needs to be wrapped in a form or it won't mount */}
+                    <Form>
+                      <div className="table-container">
+                        <table className="table table-striped table-hover">
+                          <thead>
+                            <tr>
+                              <th className="td-item-date">Date</th>
+                              <th className="td-item-description">Description</th>
+                              <th className="td-item-amount-fiat">Amount Fiat</th>
+                              <th className="td-item-amount-ether">
+                                Amount {milestone.token.symbol}
+                              </th>
+                              <th className="td-item-file-upload">Attached proof</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {milestone.items.map((item, i) => (
+                              <MilestoneItem
+                                key={item._id}
+                                name={`milestoneItem-${i}`}
+                                item={item}
+                                token={milestone.token}
+                              />
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </Form>
                   </div>
-                )}
+                </div>
+              )}
 
               <div className="row spacer-top-50">
                 <div className="col-md-8 m-auto">
@@ -421,20 +418,19 @@ class ViewMilestone extends Component {
                             ))}
                         </div>
 
-                        {!milestone.isCapped &&
-                          milestone.donationCounters.length > 0 && (
-                            <div className="form-group">
-                              <span className="label">Current Balance</span>
-                              <small className="form-text">
-                                The current balance(s) of this Milestone
-                              </small>
-                              {milestone.donationCounters.map(dc => (
-                                <p className="donation-counter" key={dc.symbol}>
-                                  {convertEthHelper(dc.currentBalance)} {dc.symbol}
-                                </p>
-                              ))}
-                            </div>
-                          )}
+                        {!milestone.isCapped && milestone.donationCounters.length > 0 && (
+                          <div className="form-group">
+                            <span className="label">Current Balance</span>
+                            <small className="form-text">
+                              The current balance(s) of this Milestone
+                            </small>
+                            {milestone.donationCounters.map(dc => (
+                              <p className="donation-counter" key={dc.symbol}>
+                                {convertEthHelper(dc.currentBalance)} {dc.symbol}
+                              </p>
+                            ))}
+                          </div>
+                        )}
 
                         <div className="form-group">
                           <span className="label">Campaign</span>

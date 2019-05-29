@@ -1,3 +1,4 @@
+import { utils } from 'web3';
 import Donation from './Donation';
 
 // Test User model
@@ -99,6 +100,7 @@ describe('Donation Model', () => {
 
   attributes.forEach(a => {
     it(`should have correct ${a}`, () => {
+      if (a === 'amount') TestDonation[a] = utils.toWei(TestDonation[a].toFixed(), 'ether'); // convert bigNumber object to wei string
       expect(TestDonation[a]).toBe(TestDonationData[a]);
     });
   });
@@ -110,6 +112,7 @@ describe('Donation Model', () => {
   });
   attributes.forEach(a => {
     it(`should have correct ${a}`, () => {
+      if (a === 'amount') TestDonation2[a] = utils.toWei(TestDonation2[a].toFixed(), 'ether'); // convert bigNumber object to wei string
       expect(TestDonation2[a]).toBe(TestDonationData2[a]);
     });
   });
@@ -121,6 +124,7 @@ describe('Donation Model', () => {
   });
   attributes.forEach(a => {
     it(`should have correct ${a}`, () => {
+      if (a === 'amount') TestDonation3[a] = utils.toWei(TestDonation3[a].toFixed(), 'ether'); // convert bigNumber object to wei string
       expect(TestDonation3[a]).toBe(TestDonationData3[a]);
     });
   });

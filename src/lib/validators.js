@@ -8,15 +8,13 @@ import Web3 from 'web3';
 addValidationRule('greaterThan', (formValues, inputValue, value) => parseFloat(inputValue) > value);
 
 // Less than number
-addValidationRule(
-  'lessThan',
-  (formValues, inputValue, value) => (inputValue ? parseFloat(inputValue) < value : true),
+addValidationRule('lessThan', (formValues, inputValue, value) =>
+  inputValue ? parseFloat(inputValue) < value : true,
 );
 
 // Less or equal to number
-addValidationRule(
-  'lessOrEqualTo',
-  (formValues, inputValue, value) => (inputValue ? parseFloat(inputValue) <= value : true),
+addValidationRule('lessOrEqualTo', (formValues, inputValue, value) =>
+  inputValue ? parseFloat(inputValue) <= value : true,
 );
 
 // Greater than number
