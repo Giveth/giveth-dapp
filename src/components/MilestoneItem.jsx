@@ -2,7 +2,7 @@ import { withFormsy } from 'formsy-react';
 import moment from 'moment';
 import PropTypes from 'prop-types';
 import React from 'react';
-import { convertEthHelper, getTruncatedText } from 'lib/helpers';
+import { convertEthHelper } from 'lib/helpers';
 import MilestoneItemModel from 'models/MilestoneItem';
 import { utils } from 'web3';
 
@@ -24,6 +24,7 @@ class MilestoneItem extends React.Component {
 
   render() {
     const { removeItem, item, isEditMode, token } = this.props;
+    
     return (
       <tr>
         {isEditMode && (
@@ -35,9 +36,11 @@ class MilestoneItem extends React.Component {
         )}
         <td className="td-item-date">{moment.utc(item.date).format('Do MMM YYYY')}</td>
 
-        <td className="td-item-description">{getTruncatedText(item.description)}</td>
 
-        <td className="td-item-amount-fiat">
+        <td className="td-item-description" style={{"white-space":"pre-wrap", "word-wrap":"break-word", minWidth: 150, marginBottom: 20}}>{item.description}</td>
+        
+
+        <td className="td-item-amount-fiat" >
           {item.selectedFiatType} {item.fiatAmount.toFixed()}
           <br />
           <span className="help-block">
