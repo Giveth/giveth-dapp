@@ -5,6 +5,7 @@ import Avatar from 'react-avatar';
 import Masonry, { ResponsiveMasonry } from 'react-responsive-masonry';
 import ReactHtmlParser from 'react-html-parser';
 import BigNumber from 'bignumber.js';
+import { Helmet } from 'react-helmet';
 
 import Balances from 'components/Balances';
 import { feathersClient } from '../../lib/feathersClient';
@@ -35,6 +36,7 @@ import config from '../../configuration';
  * @param history      Browser history object
  * @param balance      User's current balance
  */
+
 class ViewCampaign extends Component {
   constructor(props) {
     super(props);
@@ -142,6 +144,7 @@ class ViewCampaign extends Component {
 
   render() {
     const { history, currentUser, balance } = this.props;
+    const { campaignUrl } = config;
     const {
       isLoading,
       campaign,
@@ -162,6 +165,27 @@ class ViewCampaign extends Component {
 
           {!isLoading && (
             <div>
+              <Helmet>
+                <title>{campaign.title}</title>
+
+                {/* Google / Search Engine Tags */}
+                <meta itemProp="name" content={campaign.title} />
+                <meta itemProp="description" content={campaign.description} />
+                <meta itemProp="image" content={campaign.image} />
+
+                {/* Facebook Meta Tags */}
+                <meta property="og:url" content={campaignUrl + campaign.id} />
+                <meta property="og:type" content="website" />
+                <meta property="og:title" content={campaign.title} />
+                <meta property="og:description" content={campaign.description} />
+                <meta property="og:image" content={campaign.image} />
+
+                {/* Twitter Meta Tags */}
+                <meta name="twitter:card" content="summary_large_image" />
+                <meta name="twitter:title" content={campaign.title} />
+                <meta name="twitter:description" content={campaign.description} />
+                <meta name="twitter:image" content={campaign.image} />
+              </Helmet>
               <BackgroundImageHeader image={campaign.image} height={300}>
                 <h6>Campaign</h6>
                 <h1>{campaign.title}</h1>
