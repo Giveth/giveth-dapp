@@ -48,6 +48,7 @@
     "react-router": "^4.1.2",
     "react-router-dom": "^4.1.2",
     "react-share": "^2.4.0",
+    "react-snap": "^1.23.0",
     "react-toastify": "2.1.7",
     "react-toggle": "^4.0.2",
     "request": "^2.88.0",
@@ -86,7 +87,8 @@
     "eslint:fix": "eslint --fix src/**/*.js*",
     "eject": "react-scripts eject",
     "prettify": "prettier --write 'src/**/*.js*'",
-    "doc": "jsdoc src -r -d docs"
+    "doc": "jsdoc src -r -d docs",
+    "postbuild": "react-snap"
   },
   "lint-staged": {
     "src/**/*.{js,jsx,json}": [
