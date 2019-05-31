@@ -5,13 +5,14 @@ import Avatar from 'react-avatar';
 import Masonry, { ResponsiveMasonry } from 'react-responsive-masonry';
 import ReactHtmlParser from 'react-html-parser';
 import BigNumber from 'bignumber.js';
-
+import { Helmet } from 'react-helmet';
 import Balances from 'components/Balances';
+
 import { feathersClient } from '../../lib/feathersClient';
 import Loader from '../Loader';
 import MilestoneCard from '../MilestoneCard';
 import GoBackButton from '../GoBackButton';
-import { isOwner, getUserName, getUserAvatar } from '../../lib/helpers';
+import { isOwner, getUserName, getUserAvatar, history } from '../../lib/helpers';
 import { checkBalance } from '../../lib/middleware';
 import BackgroundImageHeader from '../BackgroundImageHeader';
 import DonateButton from '../DonateButton';
@@ -35,6 +36,7 @@ import config from '../../configuration';
  * @param history      Browser history object
  * @param balance      User's current balance
  */
+
 class ViewCampaign extends Component {
   constructor(props) {
     super(props);
@@ -140,8 +142,21 @@ class ViewCampaign extends Component {
       });
   }
 
+  editCampaign(id) {
+    checkBalance(this.props.balance)
+      .then(() => {
+        history.push(`/campaigns/${id}/edit`);
+      })
+      .catch(err => {
+        if (err === 'noBalance') {
+          // handle no balance error
+        }
+      });
+  }
+
   render() {
-    const { history, currentUser, balance } = this.props;
+    const { currentUser, balance } = this.props;
+    const { campaignUrl } = config;
     const {
       isLoading,
       campaign,
@@ -154,6 +169,7 @@ class ViewCampaign extends Component {
       donationsTotal,
       newDonations,
     } = this.state;
+
     if (!isLoading && !campaign) return <p>Unable to find a campaign</p>;
     return (
       <ErrorBoundary>
@@ -162,9 +178,41 @@ class ViewCampaign extends Component {
 
           {!isLoading && (
             <div>
+              <Helmet>
+                <title>{campaign.title}</title>
+
+                {/* Google / Search Engine Tags */}
+                <meta itemProp="name" content={campaign.title} />
+                <meta itemProp="description" content={campaign.description} />
+                <meta itemProp="image" content={campaign.image} />
+
+                {/* Facebook Meta Tags */}
+                <meta property="og:url" content={campaignUrl + campaign.id} />
+                <meta property="og:type" content="website" />
+                <meta property="og:title" content={campaign.title} />
+                <meta property="og:description" content={campaign.description} />
+                <meta property="og:image" content={campaign.image} />
+
+                {/* Twitter Meta Tags */}
+                <meta name="twitter:card" content="summary_large_image" />
+                <meta name="twitter:title" content={campaign.title} />
+                <meta name="twitter:description" content={campaign.description} />
+                <meta name="twitter:image" content={campaign.image} />
+              </Helmet>
               <BackgroundImageHeader image={campaign.image} height={300}>
                 <h6>Campaign</h6>
                 <h1>{campaign.title}</h1>
+                {campaign.owner.address === currentUser.address && campaign.isActive && (
+                  <button
+                    type="button"
+                    className="btn btn-success"
+                    style={{ marginRight: 10 }}
+                    onClick={() => this.editCampaign(campaign.id)}
+                  >
+                    <i className="fa fa-edit" />
+                    &nbsp;Edit
+                  </button>
+                )}
                 <DonateButton
                   model={{
                     type: Campaign.type,

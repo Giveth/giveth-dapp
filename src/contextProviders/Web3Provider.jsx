@@ -141,9 +141,9 @@ class Web3Provider extends Component {
         title: 'Web3 Connection Error',
         content: React.swal.msg(
           <p>
-            Unable to connect to the web3 provider. Please check if your MetaMask (or other web3 provider) is
-            connected to a valid network. If so try restarting your browser or open the DApp in
-            private window.
+            Unable to connect to the web3 provider. Please check if your MetaMask (or other web3
+            provider) is connected to a valid network. If so try restarting your browser or open the
+            DApp in private window.
           </p>,
         ),
       });

@@ -36,6 +36,7 @@ const configurations = {
     homeNetworkName: 'Home Ganache',
     homeNetworkId: 66,
     ipfsGateway: 'http://localhost:8080/ipfs/',
+    campaignUrl: 'http://localhost:3010/campaigns/',
     sendErrors: false,
     analytics: {
       ga_UA: 'UA-103956937-3',
@@ -62,6 +63,7 @@ const configurations = {
     homeNetworkName: 'Ropsten',
     homeNetworkId: 3,
     ipfsGateway: 'https://ipfs.giveth.io/ipfs/',
+    campaignUrl: 'https://develop.giveth.io/campaigns/',
     analytics: {
       ga_UA: 'UA-103956937-5',
       useGoogleAnalytics: true,
@@ -87,6 +89,7 @@ const configurations = {
     homeNetworkName: 'Ropsten',
     homeNetworkId: 3,
     ipfsGateway: 'https://ipfs.giveth.io/ipfs/',
+    campaignUrl: 'https://beta.giveth.io/campaigns/',
     analytics: {
       ga_UA: 'UA-103956937-4',
       useGoogleAnalytics: true,
@@ -111,7 +114,7 @@ const configurations = {
     foreignNetworkId: 4,
     homeNetworkName: 'Mainnet',
     homeNetworkId: 1,
-    ipfsGateway: 'https://giveth.ipfs.alibre.io/ipfs/',
+    ipfsGateway: 'https://ipfs.giveth.io/ipfs/',
     analytics: {
       ga_UA: 'UA-103956937-2',
       useGoogleAnalytics: true,
