@@ -114,7 +114,7 @@ const configurations = {
     foreignNetworkId: 4,
     homeNetworkName: 'Mainnet',
     homeNetworkId: 1,
-    ipfsGateway: 'https://giveth.ipfs.alibre.io/ipfs/',
+    ipfsGateway: 'https://ipfs.giveth.io/ipfs/',
     analytics: {
       ga_UA: 'UA-103956937-2',
       useGoogleAnalytics: true,
