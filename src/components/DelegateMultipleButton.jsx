@@ -60,7 +60,7 @@ class DelegateMultipleButton extends Component {
       modalVisible: false,
       delegations: [],
       maxAmount: new BigNumber('0'),
-      selectedAmount: '0',
+      selectedAmount: new BigNumber('0'),
       delegationOptions: [],
       objectToDelegateFrom: [],
       tokenWhitelistOptions: props.tokenWhitelist.map(t => ({
@@ -118,7 +118,10 @@ class DelegateMultipleButton extends Component {
 
           this.setState({ delegationOptions }, () => {
             if (delegationOptions.length === 1) {
-              this.selectedObject({ target: { value: [delegationOptions[0].id] } });
+              this.selectedObject(
+                { target: { value: [delegationOptions[0].id] } },
+                new BigNumber(0),
+              );
             }
           });
         },
@@ -189,7 +192,12 @@ class DelegateMultipleButton extends Component {
             (sum, d) => sum.plus(d.amountRemaining),
             new BigNumber('0'),
           );
-          if (selectedAmount !== 0) amount = selectedAmount;
+
+          const localMax = amount;
+
+          if (selectedAmount.toNumber() !== 0) {
+            amount = selectedAmount;
+          }
 
           if (this.props.milestone && this.props.milestone.isCapped) {
             const maxDonationAmount = this.props.milestone.maxAmount.minus(
@@ -201,9 +209,9 @@ class DelegateMultipleButton extends Component {
 
           this.setState({
             delegations,
-            maxAmount: amount,
-            amount: amount.toFixed(),
+            maxAmount: localMax,
             isLoadingDonations: false,
+            amount,
           });
         },
         () => this.setState({ isLoadingDonations: false }),
@@ -335,7 +343,7 @@ class DelegateMultipleButton extends Component {
                   placeholder={milestone ? 'Select a DAC or Campaign' : 'Select a DAC'}
                   value={this.state.objectToDelegateFrom}
                   options={delegationOptions}
-                  onSelect={this.selectedObject(this.state.selectedAmount)}
+                  onSelect={v => this.selectedObject(v, this.state.selectedAmount)}
                   maxLength={1}
                 />
               </div>
@@ -390,7 +398,7 @@ class DelegateMultipleButton extends Component {
                               amount: prevState.maxAmount.gte(newAmount)
                                 ? newAmount.toFixed(2)
                                 : prevState.maxAmount.toFixed(2),
-                              selectedAmount: amount,
+                              selectedAmount: new BigNumber(newAmount),
                             }))
                           }
                         />
@@ -408,7 +416,10 @@ class DelegateMultipleButton extends Component {
                           name="amount"
                           value={amount}
                           onChange={(name, newAmount) =>
-                            this.setState({ amount: newAmount, selectedAmount: newAmount })
+                            this.setState({
+                              amount: newAmount,
+                              selectedAmount: new BigNumber(newAmount),
+                            })
                           }
                         />
                       </div>

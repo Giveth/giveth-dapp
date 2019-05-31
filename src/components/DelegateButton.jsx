@@ -128,7 +128,6 @@ class DelegateButton extends Component {
       this.setState({
         curProjectId: admin ? admin.projectId : null,
         objectsToDelegateToCampaign: target.value,
-        objectsToDelegateToMilestone: [],
       });
     }
   }
