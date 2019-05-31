@@ -87,8 +87,7 @@
     "eslint:fix": "eslint --fix src/**/*.js*",
     "eject": "react-scripts eject",
     "prettify": "prettier --write 'src/**/*.js*'",
-    "doc": "jsdoc src -r -d docs",
-    "postbuild": "react-snap"
+    "doc": "jsdoc src -r -d docs"
   },
   "lint-staged": {
     "src/**/*.{js,jsx,json}": [
