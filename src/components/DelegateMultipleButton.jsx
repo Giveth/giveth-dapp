@@ -60,6 +60,7 @@ class DelegateMultipleButton extends Component {
       modalVisible: false,
       delegations: [],
       maxAmount: new BigNumber('0'),
+      selectedAmount: '0',
       delegationOptions: [],
       objectToDelegateFrom: [],
       tokenWhitelistOptions: props.tokenWhitelist.map(t => ({
@@ -135,13 +136,13 @@ class DelegateMultipleButton extends Component {
     );
   }
 
-  selectedObject({ target }) {
+  selectedObject({ target }, selectedAmount) {
     this.setState({ objectToDelegateFrom: target.value, isLoadingDonations: true });
 
-    this.loadDonations(target.value);
+    this.loadDonations(target.value, selectedAmount);
   }
 
-  loadDonations(ids) {
+  loadDonations(ids, selectedAmount) {
     if (ids.length !== 1) return;
 
     const entity = this.state.delegationOptions.find(c => c.id === ids[0]);
@@ -188,6 +189,7 @@ class DelegateMultipleButton extends Component {
             (sum, d) => sum.plus(d.amountRemaining),
             new BigNumber('0'),
           );
+          if (selectedAmount !== 0) amount = selectedAmount;
 
           if (this.props.milestone && this.props.milestone.isCapped) {
             const maxDonationAmount = this.props.milestone.maxAmount.minus(
@@ -333,7 +335,7 @@ class DelegateMultipleButton extends Component {
                   placeholder={milestone ? 'Select a DAC or Campaign' : 'Select a DAC'}
                   value={this.state.objectToDelegateFrom}
                   options={delegationOptions}
-                  onSelect={this.selectedObject}
+                  onSelect={this.selectedObject(this.state.selectedAmount)}
                   maxLength={1}
                 />
               </div>
@@ -388,6 +390,7 @@ class DelegateMultipleButton extends Component {
                               amount: prevState.maxAmount.gte(newAmount)
                                 ? newAmount.toFixed(2)
                                 : prevState.maxAmount.toFixed(2),
+                              selectedAmount: amount,
                             }))
                           }
                         />
@@ -404,7 +407,9 @@ class DelegateMultipleButton extends Component {
                           }}
                           name="amount"
                           value={amount}
-                          onChange={(name, newAmount) => this.setState({ amount: newAmount })}
+                          onChange={(name, newAmount) =>
+                            this.setState({ amount: newAmount, selectedAmount: newAmount })
+                          }
                         />
                       </div>
 

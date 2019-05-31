@@ -73,6 +73,7 @@ class DelegateButton extends Component {
       objectsToDelegateToMilestone: [],
       modalVisible: false,
       amount: '0',
+      amountSelected: '0',
       maxAmount: new BigNumber('0'),
       curProjectId: null,
     };
@@ -97,7 +98,7 @@ class DelegateButton extends Component {
       });
   }
 
-  selectedObject(type, { target }) {
+  selectedObject(type, { target }, amountSelected) {
     const admin = this.props.types.find(t => t._id === target.value[0]);
 
     let maxAmount = this.props.donation.amountRemaining;
@@ -109,10 +110,16 @@ class DelegateButton extends Component {
         maxAmount = maxDelegationAmount;
       }
     }
+    let tempAmount = 0;
+    if (amountSelected !== 0) {
+      tempAmount = amountSelected;
+    } else {
+      tempAmount = maxAmount.toFixed();
+    }
 
     this.setState({
       maxAmount,
-      amount: maxAmount.toFixed(),
+      amount: tempAmount,
       objectsToDelegateToCampaign: target.value,
     });
     if (type === Milestone.type) {
@@ -297,7 +304,7 @@ class DelegateButton extends Component {
                   placeholder="Select a Campaign"
                   value={campaignValue}
                   options={milestoneOnly ? milestoneOnlyCampaignTypes : campaignTypes}
-                  onSelect={v => this.selectedObject(Campaign.type, v)}
+                  onSelect={v => this.selectedObject(Campaign.type, v, this.state.amountSelected)}
                   maxLength={1}
                 />
                 <InputToken
@@ -306,7 +313,7 @@ class DelegateButton extends Component {
                   placeholder="Select a Milestone"
                   value={objectsToDelegateToMilestone}
                   options={milestoneTypes}
-                  onSelect={v => this.selectedObject(Milestone.type, v)}
+                  onSelect={v => this.selectedObject(Milestone.type, v, this.state.amountSelected)}
                 />
               </div>
             </div>
@@ -326,7 +333,12 @@ class DelegateButton extends Component {
                   [maxAmount.toNumber()]: maxAmount.toFixed(),
                 }}
                 tooltip={false}
-                onChange={amount => this.setState({ amount: Number(amount).toFixed(2) })}
+                onChange={amount =>
+                  this.setState({
+                    amount: Number(amount).toFixed(2),
+                    amountSelected: Number(amount).toFixed(2),
+                  })
+                }
               />
             </div>
 
@@ -341,7 +353,9 @@ class DelegateButton extends Component {
                 }}
                 name="amount"
                 value={this.state.amount}
-                onChange={amount => this.setState({ amount })}
+                onChange={amount =>
+                  this.setState({ amount }, this.setState({ amountSelected: amount }))
+                }
               />
             </div>
 
