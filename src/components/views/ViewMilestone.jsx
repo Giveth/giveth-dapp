@@ -113,13 +113,16 @@ class ViewMilestone extends Component {
 
   renderDescription() {
     return ReactHtmlParser(this.state.milestone.description, {
-      transform(node, index) {
+      transform(node) {
         if (node.attribs && node.attribs.class === 'ql-video') {
           return (
-            <video width={"100%"} height={"auto"} controls={true} name={"media"}>
-                <source src={node.attribs.src} type="video/webm"></source>
+            <video width="100%" height="auto" controls name="media">
+              <source src={node.attribs.src} type="video/webm" />
             </video>
           );
+        }
+        if (node.name === 'img') {
+          return <img style={{ height: 'auto', width: '100%' }} alt="" src={node.attribs.src} />;
         }
         return undefined;
       },
