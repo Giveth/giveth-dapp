@@ -17,6 +17,7 @@ import { getTruncatedText, convertEthHelper, history } from '../../lib/helpers';
 import CampaignService from '../../services/CampaignService';
 import Campaign from '../../models/Campaign';
 import AuthenticationWarning from '../AuthenticationWarning';
+import ErrorPopup from '../ErrorPopup';
 
 /**
  * The my campaings view
@@ -43,7 +44,9 @@ class MyCampaigns extends Component {
       .then(() => this.loadCampaigns())
       .catch(err => {
         if (err === 'notLoggedIn') {
-          // default behavior is to go home or signin page after swal popup
+          ErrorPopup('You are not logged in.', err);
+        } else {
+          ErrorPopup('Something went wrong.', err);
         }
       });
   }

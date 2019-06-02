@@ -6,6 +6,7 @@ import Milestone from 'models/Milestone';
 import User from 'models/User';
 import { checkBalance } from 'lib/middleware';
 import { history } from 'lib/helpers';
+import ErrorPopup from './ErrorPopup';
 import { Consumer as Web3Consumer } from '../contextProviders/Web3Provider';
 
 class EditMilestoneButton extends Component {
@@ -28,7 +29,9 @@ class EditMilestoneButton extends Component {
       })
       .catch(err => {
         if (err === 'noBalance') {
-          // handle no balance error
+          ErrorPopup('There is no balance left on the account.', err);
+        } else {
+          ErrorPopup('Something went wrong.', err);
         }
       });
   }

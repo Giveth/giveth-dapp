@@ -266,8 +266,10 @@ class EditMilestone extends Component {
 
       .catch(err => {
         // TODO: This is not super user friendly, fix it
-        if (err === 'noBalance') this.props.history.goBack();
-        else {
+        if (err === 'noBalance') {
+          ErrorPopup('Something went wrong.', err);
+          this.props.history.goBack();
+        } else {
           ErrorPopup('Something went wrong. Please try again.', err);
         }
       });

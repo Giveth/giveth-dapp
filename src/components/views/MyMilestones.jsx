@@ -11,6 +11,7 @@ import { Consumer as WhiteListConsumer } from 'contextProviders/WhiteListProvide
 
 import MilestoneActions from 'components/MilestoneActions';
 import { isLoggedIn } from 'lib/middleware';
+import ErrorPopup from '../ErrorPopup';
 import Loader from '../Loader';
 import User from '../../models/User';
 import {
@@ -56,7 +57,9 @@ class MyMilestones extends Component {
       .then(() => this.loadMileStones())
       .catch(err => {
         if (err === 'notLoggedIn') {
-          // default behavior is to go home or signin page after swal popup
+          ErrorPopup('You are not logged in.', err);
+        } else {
+          ErrorPopup('Something went wrong.', err);
         }
       });
   }
@@ -101,7 +104,7 @@ class MyMilestones extends Component {
           isLoading: false,
         }),
       onError: err => {
-        console.log('err', err);
+        ErrorPopup('Something went wrong.', err);
         // TO DO: handle error here in view
         this.setState({ isLoading: false });
       },
