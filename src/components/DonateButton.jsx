@@ -332,6 +332,8 @@ class DonateButton extends React.Component {
               'Something went wrong with your donation. Could not approve token allowance.',
               err,
             );
+          } else {
+            ErrorPopup('Something went wrong.', err);
           }
         });
     } else {

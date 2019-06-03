@@ -152,7 +152,9 @@ class DonationProvider extends Component {
       )
       .catch(err => {
         if (err === 'noBalance') {
-          // handle no balance error
+          ErrorPopup('There is no balance left on the account.', err);
+        } else {
+          ErrorPopup('Something went wrong.', err);
         }
       });
   }
@@ -205,14 +207,16 @@ class DonationProvider extends Component {
               this.props.currentUser.address,
               afterCreate,
               afterMined,
-              err => console.log('err', err),
+              err => ErrorPopup('Something went wrong.', err),
             );
           }
         }),
       )
       .catch(err => {
         if (err === 'noBalance') {
-          // handle no balance error
+          ErrorPopup('There is no balance left on the account.', err);
+        } else {
+          ErrorPopup('Something went wrong.', err);
         }
       });
   }

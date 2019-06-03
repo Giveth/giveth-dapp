@@ -15,6 +15,7 @@ import GA from 'lib/GoogleAnalytics';
 import Donation from 'models/Donation';
 import Milestone from 'models/Milestone';
 import Campaign from 'models/Campaign';
+import ErrorPopup from './ErrorPopup';
 import { checkBalance } from '../lib/middleware';
 
 import DonationService from '../services/DonationService';
@@ -93,7 +94,9 @@ class DelegateButton extends Component {
       )
       .catch(err => {
         if (err === 'noBalance') {
-          // handle no balance error
+          ErrorPopup('There is no balance left on the account.', err);
+        } else {
+          ErrorPopup('Something went wrong.', err);
         }
       });
   }
