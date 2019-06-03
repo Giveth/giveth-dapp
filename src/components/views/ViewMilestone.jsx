@@ -117,9 +117,9 @@ class ViewMilestone extends Component {
         if (node.attribs && node.attribs.class === 'ql-video') {
           const url = node.attribs.src;
           const match =
-            url.match(/^(https?):\/\/(?:(?:www|m)\.)?youtube\.com\/watch.*v=([a-zA-Z0-9_-]+)/) ||
+            url.match(/^(https?):\/\/(?:(?:www|m)\.)?youtube\.com\/([a-zA-Z0-9_-]+)/) ||
             url.match(/^(https?):\/\/(?:(?:www|m)\.)?youtu\.be\/([a-zA-Z0-9_-]+)/) ||
-            url.match(/^(https?):\/\/(?:(?:fame|m)\.)?giveth\.io\/([a-zA-Z0-9_-]+)/);
+            url.match(/^(https?):\/\/(?:(?:fame)\.)?giveth\.io\/([a-zA-Z0-9_-]+)/);
           if (match) {
             return (
               <div className="video-wrapper" key={index}>
