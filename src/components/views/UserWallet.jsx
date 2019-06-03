@@ -10,6 +10,7 @@ import GivethWallet from '../../lib/blockchain/GivethWallet';
 import Loader from '../Loader';
 import config from '../../configuration';
 import BridgeWithdrawButton from '../BridgeWithdrawButton';
+import ErrorPopup from '../ErrorPopup';
 
 // TODO: Remove the eslint exception after extracting to model
 /* eslint no-underscore-dangle: 0 */
@@ -41,7 +42,9 @@ class UserWallet extends Component {
       })
       .catch(err => {
         if (err === 'notLoggedIn') {
-          // default behavior is to go home or signin page after swal popup
+          ErrorPopup('You are not logged in.', err);
+        } else {
+          ErrorPopup('Something went wrong.', err);
         }
       });
   }

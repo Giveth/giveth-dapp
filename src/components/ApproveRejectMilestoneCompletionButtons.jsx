@@ -85,7 +85,9 @@ class ApproveRejectMilestoneCompletionButtons extends Component {
       })
       .catch(err => {
         if (err === 'noBalance') {
-          // handle no balance error
+          ErrorPopup('There is no balance left on the account.', err);
+        } else {
+          ErrorPopup('Something went wrong.', err);
         }
       });
   }
@@ -156,7 +158,9 @@ class ApproveRejectMilestoneCompletionButtons extends Component {
       })
       .catch(err => {
         if (err === 'noBalance') {
-          // handle no balance error
+          ErrorPopup('There is no balance left on the account.', err);
+        } else {
+          ErrorPopup('Something went wrong.', err);
         }
       });
   }

@@ -10,6 +10,7 @@ import { checkBalance, checkForeignNetwork, isLoggedIn } from '../../lib/middlew
 import LoaderButton from '../LoaderButton';
 import User from '../../models/User';
 import { history } from '../../lib/helpers';
+import ErrorPopup from '../ErrorPopup';
 
 /**
  * The edit user profile view mapped to /profile/
@@ -41,8 +42,10 @@ class EditProfile extends Component {
         .then(() => checkBalance(this.props.balance))
         .then(() => this.setState({ isLoading: false }))
         .catch(err => {
-          if (err === 'noBalance') history.goBack();
-          else {
+          if (err === 'noBalance') {
+            ErrorPopup('Something went wrong.', err);
+            history.goBack();
+          } else {
             this.setState({
               isLoading: false,
             });

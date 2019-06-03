@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 import Pagination from 'react-js-pagination';
 import { utils } from 'web3';
+import ErrorPopup from '../ErrorPopup';
 
 import { isLoggedIn, checkBalance } from '../../lib/middleware';
 import { getTruncatedText, convertEthHelper, history } from '../../lib/helpers';
@@ -37,7 +38,9 @@ class MyDACs extends Component {
       .then(() => this.loadDACs())
       .catch(err => {
         if (err === 'notLoggedIn') {
-          // default behavior is to go home or signin page after swal popup
+          ErrorPopup('You are not logged in.', err);
+        } else {
+          ErrorPopup('Something went wrong.', err);
         }
       });
   }
@@ -72,7 +75,9 @@ class MyDACs extends Component {
       })
       .catch(err => {
         if (err === 'noBalance') {
-          // handle no balance error
+          ErrorPopup('There is no balance left on the account.', err);
+        } else {
+          ErrorPopup('Something went wrong.', err);
         }
       });
   }

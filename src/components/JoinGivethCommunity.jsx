@@ -5,6 +5,7 @@ import BigNumber from 'bignumber.js';
 import CommunityButton from './CommunityButton';
 import User from '../models/User';
 import { checkBalance } from '../lib/middleware';
+import ErrorPopup from './ErrorPopup';
 import { Consumer as WhiteListConsumer } from '../contextProviders/WhiteListProvider';
 
 /**
@@ -43,7 +44,9 @@ class JoinGivethCommunity extends Component {
         })
         .catch(err => {
           if (err === 'noBalance') {
-            // handle no balance error
+            ErrorPopup('There is no balance left on the account.', err);
+          } else {
+            ErrorPopup('Something went wrong.', err);
           }
         });
     } else {
@@ -87,7 +90,9 @@ class JoinGivethCommunity extends Component {
         })
         .catch(err => {
           if (err === 'noBalance') {
-            // handle no balance error
+            ErrorPopup('There is no balance left on the account.', err);
+          } else {
+            ErrorPopup('Something went wrong.', err);
           }
         });
     } else {

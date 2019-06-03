@@ -84,9 +84,10 @@ class ArchiveMilestoneButton extends Component {
         }
       })
       .catch(err => {
-        console.error(err);
         if (err === 'noBalance') {
-          // handle no balance error
+          ErrorPopup('There is no balance left on the account.', err);
+        } else {
+          ErrorPopup('Something went wrong.', err);
         }
       });
   }

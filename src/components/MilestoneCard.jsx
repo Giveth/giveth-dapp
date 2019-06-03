@@ -8,6 +8,7 @@ import { checkBalance } from '../lib/middleware';
 import User from '../models/User';
 import CardStats from './CardStats';
 import GivethLogo from '../assets/logo.svg';
+import ErrorPopup from './ErrorPopup';
 
 /**
  * A single milestone
@@ -50,7 +51,9 @@ class MilestoneCard extends Component {
       })
       .catch(err => {
         if (err === 'noBalance') {
-          // handle no balance error
+          ErrorPopup('There is no balance left on the account.', err);
+        } else {
+          ErrorPopup('Something went wrong.', err);
         }
       });
   }
