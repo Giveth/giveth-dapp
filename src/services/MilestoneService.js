@@ -527,7 +527,9 @@ class MilestoneService {
 
       return await IPFSService.upload(milestone.toIpfs());
     } catch (err) {
-      ErrorPopup('Failed to upload milestone to ipfs');
+      if (err != null) {
+        ErrorPopup('Failed to upload milestone to ipfs');
+      }
     }
     return undefined;
   }
