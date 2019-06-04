@@ -28,7 +28,12 @@ function convertVideoUrlToEmbeded(url) {
     return `${match[1]}://player.vimeo.com/video/${match[2]}/`;
   }
 
-  return url;
+  const thisHtml = (
+    <video width="100%" height="auto" controls name="media">
+      <source src={url} type="video/webm" />
+    </video>
+  );
+  return thisHtml;
 }
 
 class Content extends Component {
