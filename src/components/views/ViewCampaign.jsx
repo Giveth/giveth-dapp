@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 import Avatar from 'react-avatar';
 import Masonry, { ResponsiveMasonry } from 'react-responsive-masonry';
-import ReactHtmlParser from 'react-html-parser';
+import ReactHtmlParser, { convertNodeToElement } from 'react-html-parser';
 import BigNumber from 'bignumber.js';
 import { Helmet } from 'react-helmet';
 import Balances from 'components/Balances';
@@ -158,6 +158,36 @@ class ViewCampaign extends Component {
       });
   }
 
+  renderDescription() {
+    return ReactHtmlParser(this.state.campaign.description, {
+      transform(node, index) {
+        if (node.attribs && node.attribs.class === 'ql-video') {
+          const url = node.attribs.src;
+          const match =
+            url.match(/^(https?):\/\/(?:(?:www|m)\.)?youtube\.com\/([a-zA-Z0-9_-]+)/) ||
+            url.match(/^(https?):\/\/(?:(?:www|m)\.)?youtu\.be\/([a-zA-Z0-9_-]+)/) ||
+            url.match(/^(https?):\/\/(?:(?:fame)\.)?giveth\.io\/([a-zA-Z0-9_-]+)/);
+          if (match) {
+            return (
+              <div className="video-wrapper" key={index}>
+                {convertNodeToElement(node, index)}
+              </div>
+            );
+          }
+          return (
+            <video width="100%" height="auto" controls name="media">
+              <source src={node.attribs.src} type="video/webm" />
+            </video>
+          );
+        }
+        if (node.name === 'img') {
+          return <img style={{ height: 'auto', width: '100%' }} alt="" src={node.attribs.src} />;
+        }
+        return undefined;
+      },
+    });
+  }
+
   render() {
     const { currentUser, balance } = this.props;
     const { campaignUrl } = config;
@@ -206,17 +236,20 @@ class ViewCampaign extends Component {
               <BackgroundImageHeader image={campaign.image} height={300}>
                 <h6>Campaign</h6>
                 <h1>{campaign.title}</h1>
-                {campaign.owner.address === currentUser.address && campaign.isActive && (
-                  <button
-                    type="button"
-                    className="btn btn-success"
-                    style={{ marginRight: 10 }}
-                    onClick={() => this.editCampaign(campaign.id)}
-                  >
-                    <i className="fa fa-edit" />
-                    &nbsp;Edit
-                  </button>
-                )}
+                {campaign.owner &&
+                  currentUser &&
+                  campaign.owner.address === currentUser.address &&
+                  campaign.isActive && (
+                    <button
+                      type="button"
+                      className="btn btn-success"
+                      style={{ marginRight: 10 }}
+                      onClick={() => this.editCampaign(campaign.id)}
+                    >
+                      <i className="fa fa-edit" />
+                      &nbsp;Edit
+                    </button>
+                  )}
                 <DonateButton
                   model={{
                     type: Campaign.type,
@@ -258,9 +291,7 @@ class ViewCampaign extends Component {
                     </center>
 
                     <div className="card content-card ">
-                      <div className="card-body content">
-                        {ReactHtmlParser(campaign.description)}
-                      </div>
+                      <div className="card-body content">{this.renderDescription()}</div>
                     </div>
 
                     <div className="milestone-header spacer-top-50 card-view">
