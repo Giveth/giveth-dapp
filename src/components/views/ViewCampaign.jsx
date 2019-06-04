@@ -206,17 +206,20 @@ class ViewCampaign extends Component {
               <BackgroundImageHeader image={campaign.image} height={300}>
                 <h6>Campaign</h6>
                 <h1>{campaign.title}</h1>
-                {campaign.owner.address === currentUser.address && campaign.isActive && (
-                  <button
-                    type="button"
-                    className="btn btn-success"
-                    style={{ marginRight: 10 }}
-                    onClick={() => this.editCampaign(campaign.id)}
-                  >
-                    <i className="fa fa-edit" />
-                    &nbsp;Edit
-                  </button>
-                )}
+                {campaign.owner &&
+                  currentUser &&
+                  campaign.owner.address === currentUser.address &&
+                  campaign.isActive && (
+                    <button
+                      type="button"
+                      className="btn btn-success"
+                      style={{ marginRight: 10 }}
+                      onClick={() => this.editCampaign(campaign.id)}
+                    >
+                      <i className="fa fa-edit" />
+                      &nbsp;Edit
+                    </button>
+                  )}
                 <DonateButton
                   model={{
                     type: Campaign.type,
