@@ -27,13 +27,7 @@ function convertVideoUrlToEmbeded(url) {
   if ((match = url.match(/^(https?):\/\/(?:www\.)?vimeo\.com\/(\d+)/))) {
     return `${match[1]}://player.vimeo.com/video/${match[2]}/`;
   }
-
-  const thisHtml = (
-    <video width="100%" height="auto" controls name="media">
-      <source src={url} type="video/webm" />
-    </video>
-  );
-  return thisHtml;
+  return url;
 }
 
 class Content extends Component {
