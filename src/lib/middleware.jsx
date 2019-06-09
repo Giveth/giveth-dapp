@@ -4,6 +4,7 @@ import { history } from './helpers';
 import { feathersClient } from './feathersClient';
 import getWeb3 from './blockchain/getWeb3';
 import config from '../configuration';
+import ErrorPopup from '../components/ErrorPopup';
 
 /**
  * Check if there is a currentUser. If not, routes back. If yes, resolves returned promise
@@ -27,6 +28,8 @@ export const isLoggedIn = (currentUser, redirectOnFail = true) =>
       React.signIn(redirectOnFail);
       reject();
     }
+  }).catch(e => {
+    ErrorPopup('An error has ocurred', e);
   });
 
 const authenticate = async (address, redirectOnFail = true) => {

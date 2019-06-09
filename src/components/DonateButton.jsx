@@ -8,6 +8,7 @@ import Toggle from 'react-toggle';
 import Slider from 'react-rangeslider';
 import GA from 'lib/GoogleAnalytics';
 import { Link } from 'react-router-dom';
+// import { isLoggedIn } from '../lib/middleware'
 
 import getNetwork from '../lib/blockchain/getNetwork';
 import User from '../models/User';
@@ -178,6 +179,7 @@ class DonateButton extends React.Component {
 
   openDialog() {
     const { model } = this.props;
+    // isLoggedIn(currentUser, false);
     this.setState(prevState => {
       const { isCapped } = model;
       const amount = isCapped ? this.getMaxAmount().toFixed() : prevState.amount;

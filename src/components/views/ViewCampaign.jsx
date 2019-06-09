@@ -7,13 +7,12 @@ import ReactHtmlParser, { convertNodeToElement } from 'react-html-parser';
 import BigNumber from 'bignumber.js';
 import { Helmet } from 'react-helmet';
 import Balances from 'components/Balances';
-
 import { feathersClient } from '../../lib/feathersClient';
 import Loader from '../Loader';
 import MilestoneCard from '../MilestoneCard';
 import GoBackButton from '../GoBackButton';
 import { isOwner, getUserName, getUserAvatar, history } from '../../lib/helpers';
-import { checkBalance } from '../../lib/middleware';
+import { checkBalance, isLoggedIn } from '../../lib/middleware';
 import BackgroundImageHeader from '../BackgroundImageHeader';
 import DonateButton from '../DonateButton';
 import CommunityButton from '../CommunityButton';
@@ -61,9 +60,15 @@ class ViewCampaign extends Component {
 
   componentDidMount() {
     const campaignId = this.props.match.params.id;
+    const { currentUser } = this.props;
 
     CampaignService.get(campaignId)
-      .then(campaign => this.setState({ campaign, isLoading: false }))
+      .then(campaign => {
+        if (campaign.owner && currentUser && campaign.owner.address === currentUser.address) {
+          isLoggedIn(currentUser, false);
+        }
+        this.setState({ campaign, isLoading: false });
+      })
       .catch(err => {
         ErrorPopup('Something went wrong loading Campaign. Please try refresh the page.', err);
         this.setState({ isLoading: false });
