@@ -24,8 +24,6 @@ import ListDonations from 'components/ListDonations';
 import MilestoneConversations from 'components/MilestoneConversations';
 import DelegateMultipleButton from 'components/DelegateMultipleButton';
 import { convertEthHelper, getUserAvatar, getUserName } from '../../lib/helpers';
-import { isLoggedIn } from '../../lib/middleware';
-
 import MilestoneService from '../../services/MilestoneService';
 import ShareOptions from '../ShareOptions';
 
@@ -57,14 +55,10 @@ class ViewMilestone extends Component {
 
   componentDidMount() {
     const { milestoneId } = this.props.match.params;
-    const { currentUser } = this.props;
 
     MilestoneService.subscribeOne(
       milestoneId,
       milestone => {
-        if (milestone.owner && currentUser && milestone.ownerAddress === currentUser.address) {
-          isLoggedIn(currentUser, false);
-        }
         this.setState({
           milestone,
           isLoading: false,

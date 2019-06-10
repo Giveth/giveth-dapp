@@ -12,7 +12,7 @@ import Loader from '../Loader';
 import MilestoneCard from '../MilestoneCard';
 import GoBackButton from '../GoBackButton';
 import { isOwner, getUserName, getUserAvatar, history } from '../../lib/helpers';
-import { checkBalance, isLoggedIn } from '../../lib/middleware';
+import { checkBalance } from '../../lib/middleware';
 import BackgroundImageHeader from '../BackgroundImageHeader';
 import DonateButton from '../DonateButton';
 import CommunityButton from '../CommunityButton';
@@ -62,13 +62,9 @@ class ViewCampaign extends Component {
 
   componentDidMount() {
     const campaignId = this.props.match.params.id;
-    const { currentUser } = this.props;
 
     CampaignService.get(campaignId)
       .then(campaign => {
-        if (campaign.owner && currentUser && campaign.owner.address === currentUser.address) {
-          isLoggedIn(currentUser, false);
-        }
         this.setState({ campaign, isLoading: false });
       })
       .catch(err => {
