@@ -27,6 +27,8 @@ export const isLoggedIn = (currentUser, redirectOnFail = true) =>
       React.signIn(redirectOnFail);
       reject();
     }
+  }).catch({
+    // ErrorPopup('An error has ocurred', e);
   });
 
 const authenticate = async (address, redirectOnFail = true) => {

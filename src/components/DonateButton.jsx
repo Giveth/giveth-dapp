@@ -8,6 +8,7 @@ import Toggle from 'react-toggle';
 import Slider from 'react-rangeslider';
 import GA from 'lib/GoogleAnalytics';
 import { Link } from 'react-router-dom';
+// import { isLoggedIn } from '../lib/middleware'
 
 import getNetwork from '../lib/blockchain/getNetwork';
 import User from '../models/User';
@@ -112,7 +113,14 @@ class DonateButton extends React.Component {
       selectedToken.symbol === config.nativeTokenName ? NativeTokenBalance : selectedToken.balance;
 
     // Determine max amount
-    let maxAmount = new BigNumber(utils.fromWei(balance.toFixed()));
+
+    const maxFromWei = utils.fromWei(balance.toFixed());
+    let maxAmount = new BigNumber(0);
+    if (maxFromWei.isNaN || maxFromWei === 'NaN') {
+      maxAmount = new BigNumber(0);
+    } else {
+      maxAmount = new BigNumber(maxFromWei);
+    }
 
     if (this.props.maxDonationAmount) {
       maxAmount = maxAmount.gt(this.props.maxDonationAmount)
@@ -178,6 +186,7 @@ class DonateButton extends React.Component {
 
   openDialog() {
     const { model } = this.props;
+    // isLoggedIn(currentUser, false);
     this.setState(prevState => {
       const { isCapped } = model;
       const amount = isCapped ? this.getMaxAmount().toFixed() : prevState.amount;

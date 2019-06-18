@@ -24,7 +24,6 @@ import ListDonations from 'components/ListDonations';
 import MilestoneConversations from 'components/MilestoneConversations';
 import DelegateMultipleButton from 'components/DelegateMultipleButton';
 import { convertEthHelper, getUserAvatar, getUserName } from '../../lib/helpers';
-
 import MilestoneService from '../../services/MilestoneService';
 import ShareOptions from '../ShareOptions';
 
@@ -59,7 +58,7 @@ class ViewMilestone extends Component {
 
     MilestoneService.subscribeOne(
       milestoneId,
-      milestone =>
+      milestone => {
         this.setState({
           milestone,
           isLoading: false,
@@ -67,7 +66,8 @@ class ViewMilestone extends Component {
           recipient: milestone.pendingRecipientAddress
             ? milestone.pendingRecipient
             : milestone.recipient,
-        }),
+        });
+      },
       err => {
         ErrorPopup('Something went wrong with viewing the Milestone. Please try a refresh.', err);
         this.setState({ isLoading: false });
