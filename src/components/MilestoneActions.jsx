@@ -32,11 +32,13 @@ class MilestoneActions extends Component {
 
         <ReproposeRejectedMilestoneButton milestone={milestone} currentUser={currentUser} />
 
-        <RequestMarkMilestoneCompleteButton
-          milestone={milestone}
-          balance={balance}
-          currentUser={currentUser}
-        />
+        {milestone.hasRecipient ? (
+          <RequestMarkMilestoneCompleteButton
+            milestone={milestone}
+            balance={balance}
+            currentUser={currentUser}
+          />
+        ) : null}
 
         <ArchiveMilestoneButton milestone={milestone} balance={balance} currentUser={currentUser} />
 
