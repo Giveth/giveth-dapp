@@ -113,7 +113,14 @@ class DonateButton extends React.Component {
       selectedToken.symbol === config.nativeTokenName ? NativeTokenBalance : selectedToken.balance;
 
     // Determine max amount
-    let maxAmount = new BigNumber(utils.fromWei(balance.toFixed()));
+
+    const maxFromWei = utils.fromWei(balance.toFixed());
+    let maxAmount = new BigNumber(0);
+    if (maxFromWei.isNaN || maxFromWei === 'NaN') {
+      maxAmount = new BigNumber(0);
+    } else {
+      maxAmount = new BigNumber(maxFromWei);
+    }
 
     if (this.props.maxDonationAmount) {
       maxAmount = maxAmount.gt(this.props.maxDonationAmount)
