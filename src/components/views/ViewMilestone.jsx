@@ -160,7 +160,11 @@ class ViewMilestone extends Component {
 
         {!isLoading && (
           <div>
-            <BackgroundImageHeader image={milestone.image} height={300}>
+            <BackgroundImageHeader
+              image={milestone.image}
+              height={300}
+              adminId={milestone.projectId}
+            >
               <h6>Milestone</h6>
               <h1>{milestone.title}</h1>
 
