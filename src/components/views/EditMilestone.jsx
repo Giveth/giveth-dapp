@@ -9,13 +9,13 @@ import GA from 'lib/GoogleAnalytics';
 import queryString from 'query-string';
 import Milestone from 'models/Milestone';
 import MilestoneFactory from 'models/MilestoneFactory';
+import { utils } from 'web3';
 import Loader from '../Loader';
 import QuillFormsy from '../QuillFormsy';
 import SelectFormsy from '../SelectFormsy';
 import DatePickerFormsy from '../DatePickerFormsy';
 import FormsyImageUploader from '../FormsyImageUploader';
 import GoBackButton from '../GoBackButton';
-import { utils } from 'web3';
 import {
   isOwner,
   getTruncatedText,
@@ -223,7 +223,7 @@ class EditMilestone extends Component {
             // milestone.recipientAddress = this.props.currentUser.address;
             milestone.selectedFiatType = milestone.token.symbol;
 
-            //TODO add an object for rates for all the item dates and put it on state
+            // TODO add an object for rates for all the item dates and put it on state
             const { rates } = await this.props.getConversionRates(
               milestone.date,
               milestone.token.symbol,
@@ -233,9 +233,7 @@ class EditMilestone extends Component {
               campaignTitle: campaign.title,
               campaignProjectId: campaign.projectId,
               milestone,
-              rates
             });
-
 
             if (milestone.isCapped) {
               const rate = rates[milestone.selectedFiatType];
@@ -387,35 +385,32 @@ class EditMilestone extends Component {
   }
 
   setToken(address) {
-    this.getNewRates(address)
+    this.getNewRates(address);
   }
 
   async getNewRates(address) {
     const { milestone } = this.state;
     const token = this.props.tokenWhitelist.find(t => t.address === address);
-    
-    milestone.token = token
+
+    milestone.token = token;
     for (const item in milestone.items) {
-      var rates = await this.getDateRate(item.date, token)
+      const rates = await this.getDateRate(item.date, token);
       if (rates[item.selectedFiatType] === undefined) {
-        item.conversionRate = rates[token.symbol]
-        item.wei = utils.toWei(new BigNumber(item.fiatAmount).div(item.conversionRate).toFixed(18))
+        item.conversionRate = rates[token.symbol];
+        item.wei = utils.toWei(new BigNumber(item.fiatAmount).div(item.conversionRate).toFixed(18));
       } else {
-        item.conversionRate = rates[item.selectedFiatType]
-        item.wei = utils.toWei(new BigNumber(item.fiatAmount).div(item.conversionRate).toFixed(18))
+        item.conversionRate = rates[item.selectedFiatType];
+        item.wei = utils.toWei(new BigNumber(item.fiatAmount).div(item.conversionRate).toFixed(18));
       }
-    };
+    }
     this.setState({ milestone }, () => {
       this.setDate(this.state.milestone.data || getStartOfDayUTC());
     });
   }
 
   async getDateRate(date, token) {
-    const { rates } = await this.props.getConversionRates(
-      date,
-      token.symbol,
-    );
-    return rates
+    const { rates } = await this.props.getConversionRates(date, token.symbol);
+    return rates;
   }
 
   checkUser() {
@@ -628,14 +623,14 @@ class EditMilestone extends Component {
 
   addItem(item) {
     const { milestone } = this.state;
-    var rates = this.getDateRate(item.date, milestone.token.symbol)
+    const rates = this.getDateRate(item.date, milestone.token.symbol);
     if (rates[item.selectedFiatType] === undefined) {
-      item.conversionRate = rates["EUR"]
-      item.selectedFiatType = "EUR"
-      item.wei = utils.toWei(new BigNumber(item.fiatAmount).div(item.conversionRate).toFixed(18))
+      item.conversionRate = rates.EUR;
+      item.selectedFiatType = 'EUR';
+      item.wei = utils.toWei(new BigNumber(item.fiatAmount).div(item.conversionRate).toFixed(18));
     } else {
-      item.conversionRate = rates[item.selectedFiatType]
-      item.wei = utils.toWei(new BigNumber(item.fiatAmount).div(item.conversionRate).toFixed(18))
+      item.conversionRate = rates[item.selectedFiatType];
+      item.wei = utils.toWei(new BigNumber(item.fiatAmount).div(item.conversionRate).toFixed(18));
     }
     milestone.items = milestone.items.concat(item);
     this.setState({ milestone });
