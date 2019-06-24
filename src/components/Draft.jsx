@@ -12,6 +12,8 @@ const draftStates = {
   changedImage: 3,
 };
 
+let milestoneDraftLoaded = false;
+
 function getDraftType(state) {
   if ('milestone' in state) {
     return 'milestone';
@@ -52,8 +54,13 @@ function loadDraft() {
   this.setState({ draftLoaded: Date.now() });
 }
 
-function loadMilestoneDraft() {
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+async function loadMilestoneDraft() {
   if (!this.state.draftLoaded) return;
+  if (milestoneDraftLoaded) return;
   if (Date.now() > this.state.draftLoaded + 1000) return;
   const { localStorage } = window;
   const hasReviewer = localStorage.getItem('milestone.hasReviewer');
@@ -84,12 +91,28 @@ function loadMilestoneDraft() {
       item.conversionRate = parseFloat(localStorage.getItem(`${id}.conversionRate`));
       item.conversionRateTimestamp = localStorage.getItem(`${id}.conversionRateTimestamp`);
       this.addItem(item);
+      milestoneDraftLoaded = true;
     }
   }
   const isLPMilestone = localStorage.getItem('milestone.isLPMilestone');
   if (isLPMilestone === 'true') {
     this.isLPMilestone(true);
   }
+  await sleep(1000);
+  const tokenAddress = localStorage.getItem('milestone.tokenAddress');
+  if (tokenAddress) {
+    this.setToken(tokenAddress);
+  }
+}
+
+function milestoneIdMatch(id) {
+  const { localStorage } = window;
+  const campaignId = localStorage.getItem('milestone.campaignId');
+  if (!campaignId) return true;
+  if (campaignId === id) {
+    return true;
+  }
+  return false;
 }
 
 function onDraftChange() {
@@ -118,15 +141,26 @@ function set(name, value, itemNames) {
 
 function saveMilestoneDraft(that, itemNames) {
   const { milestone } = that.state;
+  set('milestone.campaignId', that.state.campaignId, itemNames);
   set('milestone.hasReviewer', milestone.hasReviewer, itemNames);
   set('milestone.isLPMilestone', milestone instanceof LPMilestone, itemNames);
   set('milestone.acceptsSingleToken', milestone.acceptsSingleToken, itemNames);
   set('milestone.isCapped', milestone.isCapped, itemNames);
   set('milestone.itemizeState', milestone.itemizeState, itemNames);
+  set('milestone.tokenAddress', milestone.token.address, itemNames);
   if (milestone.itemizeState) {
     const items = that.form.current.formsyForm.inputs.filter(input =>
       input.props.name.startsWith('milestoneItem'),
     );
+    items.sort((a, b) => {
+      if (a.props.item.date > b.props.item.date) {
+        return 1;
+      }
+      if (a.props.item.date < b.props.item.date) {
+        return -1;
+      }
+      return 0;
+    });
     items.forEach((item, i) => {
       const id = `milestone.items.${i}`;
       set(`${id}.description`, item.props.item.description, itemNames);
@@ -158,7 +192,9 @@ function saveDraft(force = false) {
   });
   if (draftState === draftStates.changedImage || force) {
     const itemName = `${draftType}.picture`;
-    set(itemName, object.image, itemNames);
+    if (object) {
+      set(itemName, object.image, itemNames);
+    }
   }
   const itemName = `${draftType}.timestamp`;
   set(itemName, Date.now(), itemNames);
@@ -170,6 +206,10 @@ function saveDraft(force = false) {
     draftSaved: Date.now(),
   });
   return itemNames;
+}
+
+function setDraftType() {
+  this.setState(prevState => ({ draftType: getDraftType(prevState) }));
 }
 
 function deleteDraft(itemNames) {
@@ -263,6 +303,8 @@ export {
   draftStates,
   loadDraft,
   loadMilestoneDraft,
+  setDraftType,
+  milestoneIdMatch,
   onDraftChange,
   onImageChange,
   saveDraft,
