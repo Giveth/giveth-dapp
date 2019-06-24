@@ -499,7 +499,7 @@ class MilestoneService {
   static async uploadToIPFS(milestone) {
     // upload new milestone image
     try {
-      if (milestone.newImage || (milestone.image && milestone.image.includes('data:image'))) {
+      if (milestone.image && milestone.image.includes('data:image')) {
         try {
           milestone.image = await IPFSService.upload(milestone.image);
           milestone.newImage = false;
@@ -511,10 +511,7 @@ class MilestoneService {
       // upload new milestone item images for new milestones
       if (milestone.itemizeState) {
         for (const milestoneItem of milestone.items) {
-          if (
-            milestoneItem.newImage ||
-            (milestoneItem.image && milestoneItem.image.includes('data:image'))
-          ) {
+          if (milestoneItem.image && milestoneItem.image.includes('data:image')) {
             try {
               milestoneItem.image = await IPFSService.upload(milestoneItem.image);
               milestoneItem.newImage = false;

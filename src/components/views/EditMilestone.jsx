@@ -9,6 +9,7 @@ import GA from 'lib/GoogleAnalytics';
 import queryString from 'query-string';
 import Milestone from 'models/Milestone';
 import MilestoneFactory from 'models/MilestoneFactory';
+import { utils } from 'web3';
 import Loader from '../Loader';
 import QuillFormsy from '../QuillFormsy';
 import SelectFormsy from '../SelectFormsy';
@@ -45,6 +46,8 @@ import {
   draftStates,
   loadDraft,
   loadMilestoneDraft,
+  setDraftType,
+  milestoneIdMatch,
   onDraftChange,
   onImageChange,
   saveDraft,
@@ -81,12 +84,14 @@ const validQueryStringVariables = [
  *  @params
  *    id (string): an id of a milestone object
  */
+
 class EditMilestone extends Component {
   constructor(props) {
     super(props);
 
     this.state = {
       isLoading: true,
+      refreshList: [],
       isSaving: false,
       formIsValid: false,
       milestone: MilestoneFactory.create({
@@ -123,6 +128,8 @@ class EditMilestone extends Component {
     this.onDraftChange = onDraftChange.bind(this);
     this.onImageChange = onImageChange.bind(this);
     this.saveDraft = saveDraft.bind(this);
+    this.setDraftType = setDraftType.bind(this);
+    this.saveDraftAndDelete = this.saveDraftAndDelete.bind(this);
   }
 
   componentDidMount() {
@@ -221,16 +228,17 @@ class EditMilestone extends Component {
 
             // milestone.recipientAddress = this.props.currentUser.address;
             milestone.selectedFiatType = milestone.token.symbol;
-            this.setState({
-              campaignTitle: campaign.title,
-              campaignProjectId: campaign.projectId,
-              milestone,
-            });
 
             const { rates } = await this.props.getConversionRates(
               milestone.date,
               milestone.token.symbol,
             );
+
+            this.setState({
+              campaignTitle: campaign.title,
+              campaignProjectId: campaign.projectId,
+              milestone,
+            });
 
             if (milestone.isCapped) {
               const rate = rates[milestone.selectedFiatType];
@@ -297,7 +305,7 @@ class EditMilestone extends Component {
   onItemsChanged(items) {
     const { milestone } = this.state;
     milestone.items = items;
-    this.setState({ milestone });
+    this.setState({ milestone, refreshList: milestone.items });
     this.onDraftChange();
   }
 
@@ -310,7 +318,6 @@ class EditMilestone extends Component {
   setDate(date) {
     const { milestone } = this.state;
     milestone.date = date;
-
     this.props.getConversionRates(date, milestone.token.symbol).then(resp => {
       let rate =
         resp &&
@@ -319,9 +326,12 @@ class EditMilestone extends Component {
           Object.values(resp.rates).find(v => v !== undefined));
 
       // This rate is undefined, use the milestone rate
-      if (!rate) {
+
+      if (milestone.token.symbol) {
         milestone.selectedFiatType = milestone.token.symbol;
-        rate = resp.rates[milestone.token.symbol];
+        if (resp.rates[milestone.token.symbol]) {
+          rate = resp.rates[milestone.token.symbol];
+        }
       }
 
       if (milestone.isCapped) {
@@ -370,7 +380,13 @@ class EditMilestone extends Component {
     this.setState({ milestone });
   }
 
-  toggleFormValid(formState) {
+  saveDraftAndDelete() {
+    const itemNames = this.saveDraft(true);
+    deleteDraft(itemNames);
+    this.saveDraft();
+  }
+
+  async toggleFormValid(formState) {
     if (this.state.milestone.itemizeState) {
       this.setState(prevState => ({
         formIsValid: formState && prevState.milestone.items.length > 0,
@@ -378,16 +394,56 @@ class EditMilestone extends Component {
     } else {
       this.setState({ formIsValid: formState });
     }
+    this.setDraftType();
+    if (!milestoneIdMatch(this.state.campaignId)) return;
     this.loadDraft();
     this.loadMilestoneDraft();
   }
 
   setToken(address) {
+    this.getNewRates(address);
+  }
+
+  async getNewRates(address) {
+    if (!address) return;
     const { milestone } = this.state;
-    milestone.token = this.props.tokenWhitelist.find(t => t.address === address);
+    const token = this.props.tokenWhitelist.find(t => t.address === address);
+    milestone.token = token;
+    if (!milestone.items || milestone.items.length === 0) return;
+    const results = [];
+    const ratesCollection = {};
+    milestone.items.forEach(item => {
+      results.push(
+        this.getDateRate(item.date, token).then(rate => {
+          ratesCollection[item.date] = rate;
+        }),
+      );
+    });
+    await Promise.all(results);
+    milestone.items.forEach(item => {
+      const rates = ratesCollection[item.date];
+      if (rates) {
+        if (rates[item.selectedFiatType] === undefined) {
+          item.conversionRate = rates[token.symbol];
+          item.wei = utils.toWei(
+            new BigNumber(item.fiatAmount).div(item.conversionRate).toFixed(18),
+          );
+        } else {
+          item.conversionRate = rates[item.selectedFiatType];
+          item.wei = utils.toWei(
+            new BigNumber(item.fiatAmount).div(item.conversionRate).toFixed(18),
+          );
+        }
+      }
+    });
     this.setState({ milestone }, () => {
       this.setDate(this.state.milestone.data || getStartOfDayUTC());
     });
+  }
+
+  async getDateRate(date, token) {
+    const { rates } = await this.props.getConversionRates(date, token.symbol);
+    return rates;
   }
 
   checkUser() {
@@ -494,7 +550,9 @@ class EditMilestone extends Component {
         milestone,
         from: this.props.currentUser.address,
         afterSave: (created, txUrl) => {
-          deleteDraft(itemNames);
+          if (milestoneIdMatch(this.state.campaignId)) {
+            deleteDraft(itemNames);
+          }
           if (created) {
             if (this.props.isProposed) {
               React.toast.info(<p>Your Milestone has been proposed to the Campaign Owner.</p>);
@@ -600,8 +658,18 @@ class EditMilestone extends Component {
 
   addItem(item) {
     const { milestone } = this.state;
-    milestone.items = milestone.items.concat(item);
-    this.setState({ milestone });
+    this.getDateRate(item.date, milestone.token.symbol).then(rate => {
+      if (rate[item.selectedFiatType] === undefined) {
+        item.conversionRate = rate.EUR;
+        item.selectedFiatType = 'EUR';
+        item.wei = utils.toWei(new BigNumber(item.fiatAmount).div(item.conversionRate).toFixed(18));
+      } else {
+        item.conversionRate = rate[item.selectedFiatType];
+        item.wei = utils.toWei(new BigNumber(item.fiatAmount).div(item.conversionRate).toFixed(18));
+      }
+      milestone.items = milestone.items.concat(item);
+      this.setState({ milestone, refreshList: milestone.items });
+    });
   }
 
   handleTemplateChange(option) {
@@ -670,6 +738,7 @@ class EditMilestone extends Component {
     const {
       isLoading,
       isSaving,
+      refreshList,
       formIsValid,
       campaignTitle,
       tokenWhitelistOptions,
@@ -1000,6 +1069,7 @@ class EditMilestone extends Component {
                             onItemsChanged={returnedItems => this.onItemsChanged(returnedItems)}
                             token={milestone.token}
                             milestoneStatus={milestone.status}
+                            refreshList={refreshList}
                           />
                         )}
                       </Fragment>
@@ -1010,7 +1080,10 @@ class EditMilestone extends Component {
                         <GoBackButton history={history} title={`Campaign: ${campaignTitle}`} />
                       </div>
                       <div className="col-4">
-                        <DraftButton draftState={this.state.draftState} onClick={this.saveDraft} />
+                        <DraftButton
+                          draftState={this.state.draftState}
+                          onClick={this.saveDraftAndDelete}
+                        />
                       </div>
                       <div className="col-4">
                         <LoaderButton
