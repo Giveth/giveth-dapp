@@ -409,7 +409,10 @@ class EditMilestone extends Component {
     const { milestone } = this.state;
     const token = this.props.tokenWhitelist.find(t => t.address === address);
     milestone.token = token;
-    if (!milestone.items || milestone.items.length === 0) return;
+    if (!milestone.items || milestone.items.length === 0) {
+      this.updateMilestoneState(milestone);
+      return;
+    }
     const results = [];
     const ratesCollection = {};
     milestone.items.forEach(item => {
@@ -436,6 +439,10 @@ class EditMilestone extends Component {
         }
       }
     });
+    this.updateMilestoneState(milestone);
+  }
+
+  updateMilestoneState(milestone) {
     this.setState({ milestone }, () => {
       this.setDate(this.state.milestone.data || getStartOfDayUTC());
     });
