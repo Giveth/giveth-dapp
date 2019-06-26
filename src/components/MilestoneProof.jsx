@@ -15,20 +15,19 @@ class MilestoneProof extends Component {
     super(props);
 
     this.state = {
-      items: props.items,
+      items: props.refreshList,
       addMilestoneItemModalVisible: false,
     };
   }
 
   componentDidMount() {
-    this.setState({ items: this.props.items });
+    this.setState({ items: this.props.refreshList });
   }
 
   componentWillReceiveProps(props) {
     const { refreshList } = props;
     if (refreshList !== 'undefined' && refreshList.length > 0) {
       this.setState({ items: refreshList });
-      this.forceUpdate();
     }
   }
 
@@ -126,7 +125,6 @@ class MilestoneProof extends Component {
 }
 
 MilestoneProof.propTypes = {
-  items: PropTypes.arrayOf(PropTypes.object).isRequired,
   onItemsChanged: PropTypes.func,
   refreshList: PropTypes.arrayOf(PropTypes.object),
   isEditMode: PropTypes.bool.isRequired,

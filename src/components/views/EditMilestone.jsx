@@ -94,6 +94,7 @@ class EditMilestone extends Component {
       refreshList: [],
       isSaving: false,
       formIsValid: false,
+      draftLoaded: false,
       milestone: MilestoneFactory.create({
         maxAmount: '0',
         fiatAmount: '0',
@@ -395,9 +396,12 @@ class EditMilestone extends Component {
       this.setState({ formIsValid: formState });
     }
     this.setDraftType();
-    if (!milestoneIdMatch(this.state.campaignId)) return;
+    if (!milestoneIdMatch(this.state.campaignId) || this.state.draftLoaded) return;
     this.loadDraft();
     this.loadMilestoneDraft();
+    this.setState({
+      draftLoaded: true,
+    });
   }
 
   setToken(address) {
@@ -1072,7 +1076,6 @@ class EditMilestone extends Component {
                         ) : (
                           <MilestoneProof
                             isEditMode
-                            items={milestone.items}
                             onItemsChanged={returnedItems => this.onItemsChanged(returnedItems)}
                             token={milestone.token}
                             milestoneStatus={milestone.status}
