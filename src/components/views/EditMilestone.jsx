@@ -154,11 +154,13 @@ class EditMilestone extends Component {
             ) {
               this.props.history.goBack();
             }
+
             this.setState({
               milestone,
               campaignTitle: milestone.campaign.title,
               campaignProjectId: milestone.campaign.projectId,
               campaignId: milestone.campaignId,
+              refreshList: milestone.items,
             });
 
             await this.props.getConversionRates(milestone.date, milestone.token.symbol);
