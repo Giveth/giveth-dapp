@@ -115,7 +115,7 @@ class ViewDAC extends Component {
 
         {!isLoading && (
           <div>
-            <BackgroundImageHeader image={dac.image} height={300}>
+            <BackgroundImageHeader image={dac.image} height={300} adminId={dac.delegateId}>
               <h6>Decentralized Altruistic Community</h6>
               <h1>{dac.title}</h1>
 

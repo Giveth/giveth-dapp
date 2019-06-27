@@ -239,7 +239,11 @@ class ViewCampaign extends Component {
                   <meta name="twitter:description" content={campaign.description} />
                   <meta name="twitter:image" content={campaign.image} />
                 </Helmet>
-                <BackgroundImageHeader image={campaign.image} height={300}>
+                <BackgroundImageHeader
+                  image={campaign.image}
+                  height={300}
+                  adminId={campaign.projectId}
+                >
                   <h6>Campaign</h6>
                   <h1>{campaign.title}</h1>
                   {campaign.owner &&
