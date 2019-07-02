@@ -39,7 +39,7 @@ class MyDACs extends Component {
       .catch(err => {
         if (err === 'notLoggedIn') {
           ErrorPopup('You are not logged in.', err);
-        } else {
+        } else if (err !== undefined) {
           ErrorPopup('Something went wrong.', err);
         }
       });
@@ -76,7 +76,7 @@ class MyDACs extends Component {
       .catch(err => {
         if (err === 'noBalance') {
           ErrorPopup('There is no balance left on the account.', err);
-        } else {
+        } else if (err !== undefined) {
           ErrorPopup('Something went wrong.', err);
         }
       });

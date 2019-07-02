@@ -280,7 +280,7 @@ class EditMilestone extends Component {
         if (err === 'noBalance') {
           ErrorPopup('Something went wrong.', err);
           this.props.history.goBack();
-        } else {
+        } else if (err !== undefined) {
           ErrorPopup('Something went wrong. Please try again.', err);
         }
       });

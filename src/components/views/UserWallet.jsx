@@ -43,7 +43,7 @@ class UserWallet extends Component {
       .catch(err => {
         if (err === 'notLoggedIn') {
           ErrorPopup('You are not logged in.', err);
-        } else {
+        } else if (err !== undefined) {
           ErrorPopup('Something went wrong.', err);
         }
       });
