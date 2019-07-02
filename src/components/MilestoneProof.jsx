@@ -61,7 +61,7 @@ class MilestoneProof extends Component {
     const { items, addMilestoneItemModalVisible } = this.state;
     const { isEditMode, token, milestoneStatus } = this.props;
 
-    const canEdit = isEditMode || ['Proposed', 'Pending'].includes(milestoneStatus);
+    const canEdit = isEditMode && ['Proposed', 'Pending'].includes(milestoneStatus);
 
     return (
       <div>
