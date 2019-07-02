@@ -64,6 +64,7 @@ class DonationProvider extends Component {
 
   // Function to fetch donations of the current user.
   loadDonations() {
+    if (this.props.currentUser === undefined) return;
     this.donationsObserver = feathersClient
       .service('donations')
       .watch({ listStrategy: 'always' })
@@ -153,7 +154,7 @@ class DonationProvider extends Component {
       .catch(err => {
         if (err === 'noBalance') {
           ErrorPopup('There is no balance left on the account.', err);
-        } else {
+        } else if (err !== undefined) {
           ErrorPopup('Something went wrong.', err);
         }
       });
@@ -215,7 +216,7 @@ class DonationProvider extends Component {
       .catch(err => {
         if (err === 'noBalance') {
           ErrorPopup('There is no balance left on the account.', err);
-        } else {
+        } else if (err !== undefined) {
           ErrorPopup('Something went wrong.', err);
         }
       });
