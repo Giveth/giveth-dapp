@@ -64,7 +64,7 @@ const authenticate = async (address, redirectOnFail = true) => {
           // 'By signing in we are able to provide instant updates to the app after you take an action. The signin process simply requires you to verify that you own this address by signing a randomly generated message. If you choose to skip this step, the app will not reflect any actions you make until the transactions have been mined.',
           'In order to provide the best experience possible, we are going to ask you to sign a randomly generated message proving that you own the current account. This will enable us to provide instant updates to the app after any action.',
         icon: 'info',
-        buttons: [false, 'OK'],
+        buttons: ['Not now', 'OK'],
       });
 
       if (!res) {
