@@ -114,6 +114,7 @@ class DonateButton extends React.Component {
 
     // Determine max amount
 
+    if (balance === undefined) return new BigNumber(0);
     const maxFromWei = utils.fromWei(balance.toFixed());
     let maxAmount = new BigNumber(0);
     if (maxFromWei.isNaN || maxFromWei === 'NaN') {
@@ -186,7 +187,6 @@ class DonateButton extends React.Component {
 
   openDialog() {
     const { model } = this.props;
-    // isLoggedIn(currentUser, false);
     this.setState(prevState => {
       const { isCapped } = model;
       const amount = isCapped ? this.getMaxAmount().toFixed() : prevState.amount;
@@ -341,7 +341,7 @@ class DonateButton extends React.Component {
               'Something went wrong with your donation. Could not approve token allowance.',
               err,
             );
-          } else {
+          } else if (err !== undefined) {
             ErrorPopup('Something went wrong.', err);
           }
         });
@@ -351,7 +351,15 @@ class DonateButton extends React.Component {
   }
 
   render() {
-    const { model, currentUser, NativeTokenBalance, validProvider, isCorrectNetwork } = this.props;
+    const {
+      model,
+      currentUser,
+      NativeTokenBalance,
+      isEnabled,
+      validProvider,
+      isCorrectNetwork,
+      enableProvider,
+    } = this.props;
     const {
       amount,
       formIsValid,
@@ -373,7 +381,17 @@ class DonateButton extends React.Component {
 
     return (
       <span style={style}>
-        <button type="button" className="btn btn-success" onClick={this.openDialog}>
+        <button
+          type="button"
+          className="btn btn-success"
+          onClick={() => {
+            if (!isEnabled) {
+              enableProvider();
+            } else {
+              this.openDialog();
+            }
+          }}
+        >
           Donate
         </button>
         <Modal
@@ -586,6 +604,8 @@ DonateButton.propTypes = {
   maxDonationAmount: PropTypes.instanceOf(BigNumber),
   NativeTokenBalance: PropTypes.instanceOf(BigNumber).isRequired,
   validProvider: PropTypes.bool.isRequired,
+  isEnabled: PropTypes.bool.isRequired,
+  enableProvider: PropTypes.func.isRequired,
   isCorrectNetwork: PropTypes.bool.isRequired,
   tokenWhitelist: PropTypes.arrayOf(PropTypes.shape()).isRequired,
 };
@@ -599,12 +619,17 @@ export default props => (
   <WhiteListConsumer>
     {({ state: { tokenWhitelist } }) => (
       <Web3Consumer>
-        {({ state: { isHomeNetwork, validProvider, balance } }) => (
+        {({
+          state: { isHomeNetwork, isEnabled, validProvider, balance },
+          actions: { enableProvider },
+        }) => (
           <DonateButton
             NativeTokenBalance={balance}
             validProvider={validProvider}
             isCorrectNetwork={isHomeNetwork}
             tokenWhitelist={tokenWhitelist}
+            isEnabled={isEnabled}
+            enableProvider={enableProvider}
             {...props}
           />
         )}
