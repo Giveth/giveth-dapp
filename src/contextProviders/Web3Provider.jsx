@@ -129,8 +129,7 @@ class Web3Provider extends Component {
         });
       }
     });
-
-    this.enableProvider();
+    this.setState({ setupTimeout: false, isEnabled: false }, () => this.props.onLoaded());
   }
 
   async enableProvider() {
