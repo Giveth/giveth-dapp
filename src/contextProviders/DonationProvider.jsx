@@ -53,7 +53,9 @@ class DonationProvider extends Component {
 
     // Get the donations for current user
     if (this.props.currentUser) {
-      authenticateIfPossible(this.props.currentUser).then(() => this.loadDonations());
+      authenticateIfPossible(this.props.currentUser, true)
+        .then(() => this.loadDonations())
+        .catch(_ => {});
     }
   }
 

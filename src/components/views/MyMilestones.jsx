@@ -53,7 +53,7 @@ class MyMilestones extends Component {
   }
 
   componentDidMount() {
-    isLoggedIn(this.props.currentUser)
+    isLoggedIn(this.props.currentUser, true)
       .then(() => this.loadMileStones())
       .catch(err => {
         if (err === 'notLoggedIn') {
@@ -306,9 +306,13 @@ class MyMilestones extends Component {
 }
 
 MyMilestones.propTypes = {
-  currentUser: PropTypes.instanceOf(User).isRequired,
+  currentUser: PropTypes.instanceOf(User),
   balance: PropTypes.instanceOf(BigNumber).isRequired,
   tokenWhitelist: PropTypes.arrayOf(PropTypes.shape()).isRequired,
+};
+
+MyMilestones.defaultProps = {
+  currentUser: undefined,
 };
 
 export default props => (

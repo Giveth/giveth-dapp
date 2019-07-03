@@ -40,7 +40,7 @@ class MyCampaigns extends Component {
   }
 
   componentDidMount() {
-    isLoggedIn(this.props.currentUser)
+    isLoggedIn(this.props.currentUser, true)
       .then(() => this.loadCampaigns())
       .catch(err => {
         if (err === 'notLoggedIn') {

@@ -465,7 +465,7 @@ class EditMilestone extends Component {
       return Promise.reject();
     }
 
-    return authenticateIfPossible(this.props.currentUser)
+    return authenticateIfPossible(this.props.currentUser, true)
       .then(() => {
         if (!this.props.isProposed && !this.props.isCampaignManager(this.props.currentUser)) {
           throw new Error('not whitelisted');
