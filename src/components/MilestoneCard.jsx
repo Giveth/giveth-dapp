@@ -52,7 +52,7 @@ class MilestoneCard extends Component {
       .catch(err => {
         if (err === 'noBalance') {
           ErrorPopup('There is no balance left on the account.', err);
-        } else {
+        } else if (err !== undefined) {
           ErrorPopup('Something went wrong.', err);
         }
       });
@@ -136,11 +136,12 @@ MilestoneCard.propTypes = {
     }).isRequired,
   }).isRequired,
   currentUser: PropTypes.instanceOf(User),
-  balance: PropTypes.instanceOf(BigNumber).isRequired,
+  balance: PropTypes.instanceOf(BigNumber),
 };
 
 MilestoneCard.defaultProps = {
   currentUser: undefined,
+  balance: new BigNumber(0),
 };
 
 export default MilestoneCard;

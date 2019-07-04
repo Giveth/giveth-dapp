@@ -141,7 +141,7 @@ class ViewCampaign extends Component {
       .catch(err => {
         if (err === 'noBalance') {
           ErrorPopup('There is no balance .', err);
-        } else {
+        } else if (err !== undefined) {
           ErrorPopup('Something went wrong.', err);
         }
       });
@@ -155,7 +155,7 @@ class ViewCampaign extends Component {
       .catch(err => {
         if (err === 'noBalance') {
           ErrorPopup('There is no balance left on the account.', err);
-        } else {
+        } else if (err !== undefined) {
           ErrorPopup('Something went wrong.', err);
         }
       });
@@ -428,11 +428,12 @@ ViewCampaign.propTypes = {
       id: PropTypes.string,
     }).isRequired,
   }).isRequired,
-  balance: PropTypes.instanceOf(BigNumber).isRequired,
+  balance: PropTypes.instanceOf(BigNumber),
 };
 
 ViewCampaign.defaultProps = {
   currentUser: undefined,
+  balance: new BigNumber(0),
 };
 
 export default ViewCampaign;

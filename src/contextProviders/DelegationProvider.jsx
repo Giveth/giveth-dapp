@@ -47,7 +47,9 @@ class DelegationProvider extends Component {
 
   componentWillMount() {
     if (this.props.currentUser) {
-      authenticateIfPossible(this.props.currentUser).then(() => this.load());
+      authenticateIfPossible(this.props.currentUser, true)
+        .then(() => this.load())
+        .catch(_ => {});
     }
   }
 

@@ -23,27 +23,40 @@ class CampaignProvider extends Component {
       total: 0,
     };
 
+    this._isMounted = false;
     this.loadMore = this.loadMore.bind(this);
   }
 
-  componentWillMount() {
+  componentDidMount() {
+    this._isMounted = true;
     this.loadMore(true);
   }
 
+  componentWillUnmount() {
+    this._isMounted = false;
+  }
+
   loadMore(init = false) {
-    if (init || (!this.state.isLoading && this.state.total > this.state.campaigns.length)) {
+    if (
+      init ||
+      (!this.state.isLoading && this._isMounted && this.state.total > this.state.campaigns.length)
+    ) {
       this.setState({ isLoading: true }, () =>
         CampaignService.getCampaigns(
           this.props.step, // Limit
           this.state.campaigns.length, // Skip
           (campaigns, total) => {
+            if (!this._isMounted) return;
             this.setState(prevState => ({
               campaigns: prevState.campaigns.concat(campaigns),
               total,
               isLoading: false,
             }));
           },
-          () => this.setState({ hasError: true, isLoading: false }),
+          () => {
+            if (!this._isMounted) return;
+            this.setState({ hasError: true, isLoading: false });
+          },
         ),
       );
     }

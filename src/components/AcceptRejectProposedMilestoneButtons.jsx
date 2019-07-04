@@ -6,7 +6,7 @@ import MilestoneService from 'services/MilestoneService';
 import Milestone from 'models/Milestone';
 import User from 'models/User';
 import ErrorPopup from 'components/ErrorPopup';
-import { checkBalance } from 'lib/middleware';
+import { checkBalance, isLoggedIn } from 'lib/middleware';
 import ConversationModal from 'components/ConversationModal';
 import GA from 'lib/GoogleAnalytics';
 import { Consumer as Web3Consumer } from '../contextProviders/Web3Provider';
@@ -14,10 +14,33 @@ import { Consumer as Web3Consumer } from '../contextProviders/Web3Provider';
 class AcceptRejectProposedMilestoneButtons extends Component {
   constructor() {
     super();
+    this._isLoggedIn = false;
+    this._isLoaded = false;
     this.conversationModal = React.createRef();
   }
 
-  rejectProposedMilestone() {
+  componentDidMount() {
+    this.checkLogin();
+  }
+
+  componentDidUpdate() {
+    this.checkLogin();
+  }
+
+  async checkLogin() {
+    const { currentUser } = this.props;
+    if (currentUser === undefined) return;
+    this._isLoggedIn = currentUser._authenticated;
+    isLoggedIn(currentUser, false)
+      .then(_ => {})
+      .catch(_ => {});
+    if (this._isLoggedIn && !this._isLoaded) {
+      this._isLoaded = true;
+      this.forceUpdate();
+    }
+  }
+
+  async rejectProposedMilestone() {
     this.conversationModal.current
       .openModal({
         title: 'Reject proposed Milestone',
@@ -38,7 +61,7 @@ class AcceptRejectProposedMilestoneButtons extends Component {
       });
   }
 
-  acceptProposedMilestone() {
+  async acceptProposedMilestone() {
     const { milestone, currentUser } = this.props;
 
     checkBalance(this.props.balance)
@@ -102,7 +125,7 @@ class AcceptRejectProposedMilestoneButtons extends Component {
       .catch(err => {
         if (err === 'noBalance') {
           ErrorPopup('There is no balance left on the account.', err);
-        } else {
+        } else if (err !== undefined) {
           ErrorPopup('Something went wrong.', err);
         }
       });
@@ -121,7 +144,7 @@ class AcceptRejectProposedMilestoneButtons extends Component {
                   type="button"
                   className="btn btn-success btn-sm"
                   onClick={() => this.acceptProposedMilestone()}
-                  disabled={!isForeignNetwork}
+                  disabled={!isForeignNetwork || !this._isLoggedIn}
                 >
                   <i className="fa fa-check-square-o" />
                   &nbsp;Accept
@@ -130,7 +153,7 @@ class AcceptRejectProposedMilestoneButtons extends Component {
                   type="button"
                   className="btn btn-danger btn-sm"
                   onClick={() => this.rejectProposedMilestone()}
-                  disabled={!isForeignNetwork}
+                  disabled={!isForeignNetwork || !this._isLoggedIn}
                 >
                   <i className="fa fa-times-circle-o" />
                   &nbsp;Reject
@@ -147,9 +170,13 @@ class AcceptRejectProposedMilestoneButtons extends Component {
 }
 
 AcceptRejectProposedMilestoneButtons.propTypes = {
-  currentUser: PropTypes.instanceOf(User).isRequired,
+  currentUser: PropTypes.instanceOf(User),
   balance: PropTypes.instanceOf(BigNumber).isRequired,
   milestone: PropTypes.instanceOf(Milestone).isRequired,
+};
+
+AcceptRejectProposedMilestoneButtons.defaultProps = {
+  currentUser: undefined,
 };
 
 export default AcceptRejectProposedMilestoneButtons;

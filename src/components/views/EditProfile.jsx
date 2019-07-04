@@ -38,7 +38,7 @@ class EditProfile extends Component {
   componentDidMount() {
     this.mounted = true;
     checkForeignNetwork(this.props.isForeignNetwork).then(() =>
-      isLoggedIn(this.props.currentUser)
+      isLoggedIn(this.props.currentUser, true)
         .then(() => checkBalance(this.props.balance))
         .then(() => this.setState({ isLoading: false }))
         .catch(err => {

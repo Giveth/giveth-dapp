@@ -9,16 +9,39 @@ import MilestoneService from 'services/MilestoneService';
 import ErrorPopup from 'components/ErrorPopup';
 import ConversationModal from 'components/ConversationModal';
 import GA from 'lib/GoogleAnalytics';
-import { checkBalance } from 'lib/middleware';
+import { checkBalance, isLoggedIn } from 'lib/middleware';
 import { Consumer as Web3Consumer } from '../contextProviders/Web3Provider';
 
 class ApproveRejectMilestoneCompletionButtons extends Component {
   constructor() {
     super();
+    this._isLoggedIn = false;
+    this._isLoaded = false;
     this.conversationModal = React.createRef();
   }
 
-  approveMilestoneCompleted() {
+  componentDidMount() {
+    this.checkLogin();
+  }
+
+  componentDidUpdate() {
+    this.checkLogin();
+  }
+
+  async checkLogin() {
+    const { currentUser } = this.props;
+    if (currentUser === undefined) return;
+    this._isLoggedIn = currentUser._authenticated;
+    isLoggedIn(currentUser, false)
+      .then(_ => {})
+      .catch(_ => {});
+    if (this._isLoggedIn && !this._isLoaded) {
+      this._isLoaded = true;
+      this.forceUpdate();
+    }
+  }
+
+  async approveMilestoneCompleted() {
     const { milestone, currentUser, balance } = this.props;
 
     checkBalance(balance)
@@ -86,13 +109,13 @@ class ApproveRejectMilestoneCompletionButtons extends Component {
       .catch(err => {
         if (err === 'noBalance') {
           ErrorPopup('There is no balance left on the account.', err);
-        } else {
+        } else if (err !== undefined) {
           ErrorPopup('Something went wrong.', err);
         }
       });
   }
 
-  rejectMilestoneCompleted() {
+  async rejectMilestoneCompleted() {
     const { milestone, currentUser } = this.props;
 
     checkBalance(this.props.balance)
@@ -159,7 +182,7 @@ class ApproveRejectMilestoneCompletionButtons extends Component {
       .catch(err => {
         if (err === 'noBalance') {
           ErrorPopup('There is no balance left on the account.', err);
-        } else {
+        } else if (err !== undefined) {
           ErrorPopup('Something went wrong.', err);
         }
       });
@@ -178,7 +201,7 @@ class ApproveRejectMilestoneCompletionButtons extends Component {
                   type="button"
                   className="btn btn-success btn-sm"
                   onClick={() => this.approveMilestoneCompleted()}
-                  disabled={!isForeignNetwork}
+                  disabled={!isForeignNetwork || !this._isLoggedIn}
                 >
                   <i className="fa fa-thumbs-up" />
                   &nbsp;Approve
@@ -188,7 +211,7 @@ class ApproveRejectMilestoneCompletionButtons extends Component {
                   type="button"
                   className="btn btn-danger btn-sm"
                   onClick={() => this.rejectMilestoneCompleted()}
-                  disabled={!isForeignNetwork}
+                  disabled={!isForeignNetwork || !this._isLoggedIn}
                 >
                   <i className="fa fa-thumbs-down" />
                   &nbsp;Reject
@@ -205,9 +228,13 @@ class ApproveRejectMilestoneCompletionButtons extends Component {
 }
 
 ApproveRejectMilestoneCompletionButtons.propTypes = {
-  currentUser: PropTypes.instanceOf(User).isRequired,
+  currentUser: PropTypes.instanceOf(User),
   balance: PropTypes.instanceOf(BigNumber).isRequired,
   milestone: PropTypes.instanceOf(Milestone).isRequired,
+};
+
+ApproveRejectMilestoneCompletionButtons.defaultProps = {
+  currentUser: undefined,
 };
 
 export default ApproveRejectMilestoneCompletionButtons;

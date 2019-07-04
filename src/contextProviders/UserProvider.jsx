@@ -140,7 +140,7 @@ class UserProvider extends Component {
       .catch(() => {});
   }
 
-  signIn(redirectOnFail = true) {
+  signIn(redirectOnFail) {
     const { currentUser } = this.state;
 
     if (currentUser) {

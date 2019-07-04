@@ -94,7 +94,7 @@ class EditCampaign extends Component {
       .catch(err => {
         if (err === 'noBalance') {
           ErrorPopup('There is no balance left on the account.', err);
-        } else {
+        } else if (err !== undefined) {
           ErrorPopup('Something went wrong.', err);
         }
       });
@@ -128,7 +128,7 @@ class EditCampaign extends Component {
       return Promise.reject();
     }
 
-    return authenticateIfPossible(this.props.currentUser)
+    return authenticateIfPossible(this.props.currentUser, true)
       .then(() => {
         if (!this.props.isCampaignManager(this.props.currentUser)) {
           throw new Error('not whitelisted');
