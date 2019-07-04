@@ -34,7 +34,7 @@ class MyDACs extends Component {
   }
 
   componentDidMount() {
-    isLoggedIn(this.props.currentUser)
+    isLoggedIn(this.props.currentUser, true)
       .then(() => this.loadDACs())
       .catch(err => {
         if (err === 'notLoggedIn') {

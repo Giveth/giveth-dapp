@@ -115,9 +115,13 @@ class CancelMilestoneButton extends Component {
 }
 
 CancelMilestoneButton.propTypes = {
-  currentUser: PropTypes.instanceOf(User).isRequired,
+  currentUser: PropTypes.instanceOf(User),
   balance: PropTypes.instanceOf(BigNumber).isRequired,
   milestone: PropTypes.instanceOf(Milestone).isRequired,
+};
+
+CancelMilestoneButton.defaultProps = {
+  currentUser: undefined,
 };
 
 export default CancelMilestoneButton;

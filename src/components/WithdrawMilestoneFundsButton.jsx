@@ -158,9 +158,13 @@ class WithdrawMilestoneFundsButton extends Component {
 }
 
 WithdrawMilestoneFundsButton.propTypes = {
-  currentUser: PropTypes.instanceOf(User).isRequired,
+  currentUser: PropTypes.instanceOf(User),
   balance: PropTypes.instanceOf(BigNumber).isRequired,
   milestone: PropTypes.instanceOf(Milestone).isRequired,
+};
+
+WithdrawMilestoneFundsButton.defaultProps = {
+  currentUser: undefined,
 };
 
 export default WithdrawMilestoneFundsButton;

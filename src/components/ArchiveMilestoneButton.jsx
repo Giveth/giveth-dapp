@@ -117,9 +117,13 @@ class ArchiveMilestoneButton extends Component {
 }
 
 ArchiveMilestoneButton.propTypes = {
-  currentUser: PropTypes.instanceOf(User).isRequired,
+  currentUser: PropTypes.instanceOf(User),
   balance: PropTypes.instanceOf(BigNumber).isRequired,
   milestone: PropTypes.instanceOf(Milestone).isRequired,
+};
+
+ArchiveMilestoneButton.defaultProps = {
+  currentUser: undefined,
 };
 
 export default ArchiveMilestoneButton;

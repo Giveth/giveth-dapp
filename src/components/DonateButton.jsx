@@ -602,7 +602,7 @@ DonateButton.propTypes = {
   model: modelTypes.isRequired,
   currentUser: PropTypes.instanceOf(User),
   maxDonationAmount: PropTypes.instanceOf(BigNumber),
-  NativeTokenBalance: PropTypes.instanceOf(BigNumber).isRequired,
+  NativeTokenBalance: PropTypes.instanceOf(BigNumber),
   validProvider: PropTypes.bool.isRequired,
   isEnabled: PropTypes.bool.isRequired,
   enableProvider: PropTypes.func.isRequired,
@@ -612,6 +612,7 @@ DonateButton.propTypes = {
 
 DonateButton.defaultProps = {
   currentUser: undefined,
+  NativeTokenBalance: new BigNumber(0),
   maxDonationAmount: undefined, // new BigNumber(10000000000000000),
 };
 

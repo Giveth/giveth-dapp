@@ -175,7 +175,7 @@ JoinGivethCommunity.propTypes = {
     goBack: PropTypes.func.isRequired,
     push: PropTypes.func.isRequired,
   }).isRequired,
-  balance: PropTypes.instanceOf(BigNumber).isRequired,
+  balance: PropTypes.instanceOf(BigNumber),
   currentUser: PropTypes.instanceOf(User),
   isDelegate: PropTypes.func.isRequired,
   isCampaignManager: PropTypes.func.isRequired,
@@ -183,6 +183,7 @@ JoinGivethCommunity.propTypes = {
 
 JoinGivethCommunity.defaultProps = {
   currentUser: undefined,
+  balance: new BigNumber(0),
 };
 
 export default props => (

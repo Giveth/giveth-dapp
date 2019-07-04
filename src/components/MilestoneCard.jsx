@@ -136,11 +136,12 @@ MilestoneCard.propTypes = {
     }).isRequired,
   }).isRequired,
   currentUser: PropTypes.instanceOf(User),
-  balance: PropTypes.instanceOf(BigNumber).isRequired,
+  balance: PropTypes.instanceOf(BigNumber),
 };
 
 MilestoneCard.defaultProps = {
   currentUser: undefined,
+  balance: new BigNumber(0),
 };
 
 export default MilestoneCard;

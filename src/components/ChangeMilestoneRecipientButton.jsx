@@ -124,9 +124,13 @@ class ChangeMilestoneRecipientButton extends Component {
 }
 
 ChangeMilestoneRecipientButton.propTypes = {
-  currentUser: PropTypes.instanceOf(User).isRequired,
+  currentUser: PropTypes.instanceOf(User),
   balance: PropTypes.instanceOf(BigNumber).isRequired,
   milestone: PropTypes.instanceOf(Milestone).isRequired,
+};
+
+ChangeMilestoneRecipientButton.defaultProps = {
+  currentUser: undefined,
 };
 
 export default ChangeMilestoneRecipientButton;

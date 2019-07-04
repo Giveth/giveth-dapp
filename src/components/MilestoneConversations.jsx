@@ -142,8 +142,12 @@ class MilestoneConversations extends Component {
 
 MilestoneConversations.propTypes = {
   milestone: PropTypes.instanceOf(Milestone).isRequired,
-  currentUser: PropTypes.instanceOf(User).isRequired,
+  currentUser: PropTypes.instanceOf(User),
   balance: PropTypes.instanceOf(BigNumber).isRequired,
+};
+
+MilestoneConversations.defaultProps = {
+  currentUser: undefined,
 };
 
 export default MilestoneConversations;
