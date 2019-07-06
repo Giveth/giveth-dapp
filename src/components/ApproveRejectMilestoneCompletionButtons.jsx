@@ -191,7 +191,7 @@ class ApproveRejectMilestoneCompletionButtons extends Component {
                   disabled={!isForeignNetwork}
                 >
                   <i className="fa fa-thumbs-down" />
-                  &nbsp;Reject
+                  &nbsp;Reject Completion
                 </button>
               </span>
             )}
