@@ -28,6 +28,8 @@ import {
   checkBalance,
   authenticateIfPossible,
   checkProfile,
+  sleep,
+  historyBackWFallback,
 } from '../../lib/middleware';
 import LoaderButton from '../LoaderButton';
 import User from '../../models/User';
@@ -115,6 +117,7 @@ class EditMilestone extends Component {
     };
 
     this.form = React.createRef();
+    this._isMounted = false;
 
     this.submit = this.submit.bind(this);
     this.setImage = this.setImage.bind(this);
@@ -134,9 +137,15 @@ class EditMilestone extends Component {
   }
 
   componentDidMount() {
+    this._isMounted = true;
+    this.initComponent();
+  }
+
+  async initComponent() {
     checkForeignNetwork(this.props.isForeignNetwork)
       .then(() => this.checkUser())
       .then(async () => {
+        if (!this._isMounted) return;
         this.setState({
           campaignId: this.props.match.params.id,
         });
@@ -287,6 +296,7 @@ class EditMilestone extends Component {
   }
 
   componentDidUpdate(prevProps) {
+    if (!this._isMounted) return;
     if (prevProps.currentUser !== this.props.currentUser) {
       this.checkUser().then(() => {
         if (
@@ -300,12 +310,18 @@ class EditMilestone extends Component {
     }
   }
 
+  componentWillUnmount() {
+    this._isMounted = false;
+  }
+
   onAddItem(item) {
+    if (!this._isMounted) return;
     this.addItem(item);
     this.setState({ addMilestoneItemModalVisible: false });
   }
 
   onItemsChanged(items) {
+    if (!this._isMounted) return;
     const { milestone } = this.state;
     milestone.items = items;
     this.setState({ milestone, refreshList: milestone.items });
@@ -313,15 +329,18 @@ class EditMilestone extends Component {
   }
 
   setImage(image) {
+    if (!this._isMounted) return;
     const { milestone } = this.state;
     milestone.image = image;
     this.onImageChange();
   }
 
   setDate(date) {
+    if (!this._isMounted) return;
     const { milestone } = this.state;
     milestone.date = date;
     this.props.getConversionRates(date, milestone.token.symbol).then(resp => {
+      if (!this._isMounted) return;
       let rate =
         resp &&
         resp.rates &&
@@ -347,6 +366,7 @@ class EditMilestone extends Component {
   }
 
   setFiatAmount(name, value) {
+    if (!this._isMounted) return;
     const { milestone } = this.state;
     const maxAmount = new BigNumber(value || '0');
     const conversionRate = this.props.currentRate.rates[milestone.selectedFiatType];
@@ -361,6 +381,7 @@ class EditMilestone extends Component {
   }
 
   setMaxAmount(name, value) {
+    if (!this._isMounted) return;
     const { milestone } = this.state;
     const fiatAmount = new BigNumber(value || '0');
     const conversionRate = this.props.currentRate.rates[milestone.selectedFiatType];
@@ -374,6 +395,7 @@ class EditMilestone extends Component {
   }
 
   changeSelectedFiat(fiatType) {
+    if (!this._isMounted) return;
     const { milestone } = this.state;
     const conversionRate = this.props.currentRate.rates[fiatType];
 
@@ -384,12 +406,14 @@ class EditMilestone extends Component {
   }
 
   saveDraftAndDelete() {
+    if (!this._isMounted) return;
     const itemNames = this.saveDraft(true);
     deleteDraft(itemNames);
     this.saveDraft();
   }
 
   async toggleFormValid(formState) {
+    if (!this._isMounted) return;
     if (this.state.milestone.itemizeState) {
       this.setState(prevState => ({
         formIsValid: formState && prevState.milestone.items.length > 0,
@@ -407,10 +431,12 @@ class EditMilestone extends Component {
   }
 
   setToken(address) {
+    if (!this._isMounted) return;
     this.getNewRates(address);
   }
 
   async getNewRates(address) {
+    if (!this._isMounted) return;
     if (!address) return;
     const { milestone } = this.state;
     const token = this.props.tokenWhitelist.find(t => t.address === address);
@@ -449,26 +475,31 @@ class EditMilestone extends Component {
   }
 
   updateMilestoneState(milestone) {
+    if (!this._isMounted) return;
     this.setState({ milestone }, () => {
       this.setDate(this.state.milestone.data || getStartOfDayUTC());
     });
   }
 
   async getDateRate(date, token) {
+    if (!this._isMounted) return null;
     const { rates } = await this.props.getConversionRates(date, token.symbol);
     return rates;
   }
 
   checkUser() {
+    if (!this._isMounted) return null;
     if (!this.props.currentUser) {
       this.props.history.push('/');
       return Promise.reject();
     }
 
     return authenticateIfPossible(this.props.currentUser, true)
-      .then(() => {
+      .then(async () => {
         if (!this.props.isProposed && !this.props.isCampaignManager(this.props.currentUser)) {
-          throw new Error('not whitelisted');
+          historyBackWFallback();
+          await sleep(2000);
+          ErrorPopup('You are not whitelisted', null);
         }
       })
       .then(() => checkProfile(this.props.currentUser))
@@ -476,6 +507,7 @@ class EditMilestone extends Component {
   }
 
   itemizeState(value) {
+    if (!this._isMounted) return;
     const { milestone, toggles } = this.state;
     milestone.itemizeState = value;
     toggles.itemizeState = value;
@@ -484,6 +516,7 @@ class EditMilestone extends Component {
   }
 
   hasReviewer(value) {
+    if (!this._isMounted) return;
     const { milestone, toggles } = this.state;
     milestone.reviewerAddress = value ? '' : ZERO_ADDRESS;
     toggles.hasReviewer = value;
@@ -492,6 +525,7 @@ class EditMilestone extends Component {
   }
 
   isLPMilestone(value) {
+    if (!this._isMounted) return;
     const { milestone, campaignProjectId, toggles } = this.state;
     if (!value) {
       const ms = new BridgedMilestone(milestone.toFeathers());
@@ -508,6 +542,7 @@ class EditMilestone extends Component {
   }
 
   acceptsSingleToken(value) {
+    if (!this._isMounted) return;
     const { milestone, toggles } = this.state;
     milestone.token = value ? this.props.tokenWhitelist[0] : ANY_TOKEN;
     if (!value) {
@@ -521,6 +556,7 @@ class EditMilestone extends Component {
   }
 
   isCapped(value) {
+    if (!this._isMounted) return;
     const { milestone, toggles } = this.state;
     milestone.maxAmount = value ? new BigNumber(0) : undefined;
     if (value) {
@@ -532,18 +568,21 @@ class EditMilestone extends Component {
   }
 
   toggleAddMilestoneItemModal() {
+    if (!this._isMounted) return;
     this.setState(prevState => ({
       addMilestoneItemModalVisible: !prevState.addMilestoneItemModalVisible,
     }));
   }
 
   setMyAddressAsRecipient() {
+    if (!this._isMounted) return;
     const { milestone } = this.state;
     milestone.recipientAddress = this.props.currentUser.address;
     this.setState({ milestone });
   }
 
   submit() {
+    if (!this._isMounted) return;
     const itemNames = this.saveDraft(true);
     const { milestone } = this.state;
 
@@ -643,6 +682,7 @@ class EditMilestone extends Component {
   }
 
   mapInputs(inputs) {
+    if (!this._isMounted) return;
     const { milestone } = this.state;
 
     milestone.title = inputs.title;
@@ -656,6 +696,7 @@ class EditMilestone extends Component {
   }
 
   removeItem(index) {
+    if (!this._isMounted) return;
     const { milestone } = this.state;
     delete milestone.items[index];
     milestone.items = milestone.items.filter(() => true);
@@ -670,8 +711,10 @@ class EditMilestone extends Component {
   }
 
   addItem(item) {
+    if (!this._isMounted) return;
     const { milestone } = this.state;
     this.getDateRate(item.date, milestone.token.symbol).then(rate => {
+      if (!this._isMounted) return;
       if (rate[item.selectedFiatType] === undefined) {
         item.conversionRate = rate.EUR;
         item.selectedFiatType = 'EUR';
@@ -686,6 +729,7 @@ class EditMilestone extends Component {
   }
 
   handleTemplateChange(option) {
+    if (!this._isMounted) return;
     const { milestone } = this.state;
     milestone.description = templates.templates[option];
     this.setState({
@@ -695,17 +739,20 @@ class EditMilestone extends Component {
   }
 
   onFormChange() {
+    if (!this._isMounted) return;
     this.triggerRouteBlocking();
     this.onDraftChange();
   }
 
   triggerRouteBlocking() {
+    if (!this._isMounted) return;
     const form = this.form.current.formsyForm;
     // we only block routing if the form state is not submitted
     this.setState({ isBlocking: form && (!form.state.formSubmitted || form.state.isSubmitting) });
   }
 
   validateMilestoneDesc(value) {
+    if (!this._isMounted) return null;
     if (this.state.template === 'Reward DAO') {
       return (
         value.includes('Intro') &&
@@ -1142,7 +1189,7 @@ EditMilestone.propTypes = {
   getConversionRates: PropTypes.func.isRequired,
   currentRate: PropTypes.shape({
     rates: PropTypes.shape().isRequired,
-    timestamp: PropTypes.number.isRequired,
+    timestamp: PropTypes.string.isRequired,
   }),
   conversionRateLoading: PropTypes.bool.isRequired,
   fiatTypes: PropTypes.arrayOf(PropTypes.object).isRequired,
