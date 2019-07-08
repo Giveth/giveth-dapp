@@ -528,7 +528,7 @@ ViewMilestone.propTypes = {
     push: PropTypes.func.isRequired,
   }).isRequired,
   currentUser: PropTypes.instanceOf(User),
-  balance: PropTypes.instanceOf(BigNumber).isRequired,
+  balance: PropTypes.instanceOf(BigNumber),
   match: PropTypes.shape({
     params: PropTypes.shape({
       milestoneId: PropTypes.string.isRequired,
@@ -538,6 +538,7 @@ ViewMilestone.propTypes = {
 
 ViewMilestone.defaultProps = {
   currentUser: undefined,
+  balance: new BigNumber(0),
 };
 
 export default ViewMilestone;

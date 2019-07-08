@@ -5,6 +5,7 @@ import BigNumber from 'bignumber.js';
 import CommunityButton from './CommunityButton';
 import User from '../models/User';
 import { checkBalance } from '../lib/middleware';
+import { Consumer as Web3Consumer } from '../contextProviders/Web3Provider';
 import ErrorPopup from './ErrorPopup';
 import { Consumer as WhiteListConsumer } from '../contextProviders/WhiteListProvider';
 
@@ -45,7 +46,7 @@ class JoinGivethCommunity extends Component {
         .catch(err => {
           if (err === 'noBalance') {
             ErrorPopup('There is no balance left on the account.', err);
-          } else {
+          } else if (err !== undefined) {
             ErrorPopup('Something went wrong.', err);
           }
         });
@@ -61,7 +62,9 @@ class JoinGivethCommunity extends Component {
         icon: 'info',
         buttons: ['Cancel', 'Sign up now!'],
       }).then(isConfirmed => {
-        if (isConfirmed) this.props.history.push('/signup');
+        if (isConfirmed) {
+          this.props.history.push('/signup');
+        }
       });
     }
   }
@@ -91,7 +94,7 @@ class JoinGivethCommunity extends Component {
         .catch(err => {
           if (err === 'noBalance') {
             ErrorPopup('There is no balance left on the account.', err);
-          } else {
+          } else if (err !== undefined) {
             ErrorPopup('Something went wrong.', err);
           }
         });
@@ -107,7 +110,9 @@ class JoinGivethCommunity extends Component {
         icon: 'info',
         buttons: ['Cancel', 'Sign up now!'],
       }).then(isConfirmed => {
-        if (isConfirmed) this.props.history.push('/signup');
+        if (isConfirmed) {
+          this.props.history.push('/signup');
+        }
       });
     }
   }
@@ -116,27 +121,51 @@ class JoinGivethCommunity extends Component {
     const { currentUser, isDelegate, isCampaignManager } = this.props;
 
     return (
-      <div id="join-giveth-community">
-        <div className="vertical-align">
-          <center>
-            <h3>Building the Future of Giving, with You.</h3>
-            <CommunityButton className="btn btn-success" url="https://giveth.io/join">
-              &nbsp;Join Giveth
-            </CommunityButton>
-            &nbsp;
-            {isDelegate(currentUser) && (
-              <button type="button" className="btn btn-info" onClick={() => this.createDAC()}>
-                Create a Community
-              </button>
-            )}
-            {isCampaignManager(currentUser) && (
-              <button type="button" className="btn btn-info" onClick={() => this.createCampaign()}>
-                Start a Campaign
-              </button>
-            )}
-          </center>
-        </div>
-      </div>
+      <Web3Consumer>
+        {({ state: { isEnabled }, actions: { enableProvider } }) => (
+          <div id="join-giveth-community">
+            <div className="vertical-align">
+              <center>
+                <h3>Building the Future of Giving, with You.</h3>
+                <CommunityButton className="btn btn-success" url="https://giveth.io/join">
+                  &nbsp;Join Giveth
+                </CommunityButton>
+                &nbsp;
+                {isDelegate(currentUser) && (
+                  <button
+                    type="button"
+                    className="btn btn-info"
+                    onClick={() => {
+                      if (!isEnabled) {
+                        enableProvider();
+                      } else {
+                        this.createDAC();
+                      }
+                    }}
+                  >
+                    Create a Community
+                  </button>
+                )}
+                {isCampaignManager(currentUser) && (
+                  <button
+                    type="button"
+                    className="btn btn-info"
+                    onClick={() => {
+                      if (!isEnabled) {
+                        enableProvider();
+                      } else {
+                        this.createCampaign();
+                      }
+                    }}
+                  >
+                    Start a Campaign
+                  </button>
+                )}
+              </center>
+            </div>
+          </div>
+        )}
+      </Web3Consumer>
     );
   }
 }
@@ -146,7 +175,7 @@ JoinGivethCommunity.propTypes = {
     goBack: PropTypes.func.isRequired,
     push: PropTypes.func.isRequired,
   }).isRequired,
-  balance: PropTypes.instanceOf(BigNumber).isRequired,
+  balance: PropTypes.instanceOf(BigNumber),
   currentUser: PropTypes.instanceOf(User),
   isDelegate: PropTypes.func.isRequired,
   isCampaignManager: PropTypes.func.isRequired,
@@ -154,6 +183,7 @@ JoinGivethCommunity.propTypes = {
 
 JoinGivethCommunity.defaultProps = {
   currentUser: undefined,
+  balance: new BigNumber(0),
 };
 
 export default props => (

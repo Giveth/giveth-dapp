@@ -19,7 +19,21 @@ import config from '../configuration';
  *      .catch((err) ...do something when not logged in
  *      returns new Error 'notLoggedIn' if not logged in
  */
-export const isLoggedIn = (currentUser, redirectOnFail = true) =>
+
+export const historyBackWFallback = fallbackUrl => {
+  const destUrl = fallbackUrl || '/';
+  const prevPage = window.location.href;
+
+  window.history.go(-1);
+
+  setTimeout(() => {
+    if (window.location.href === prevPage) {
+      window.location.href = destUrl;
+    }
+  }, 500);
+};
+
+export const isLoggedIn = (currentUser, redirectOnFail) =>
   new Promise((resolve, reject) => {
     if (currentUser && currentUser.address && currentUser.authenticated) resolve();
     else {
@@ -31,7 +45,7 @@ export const isLoggedIn = (currentUser, redirectOnFail = true) =>
     // ErrorPopup('An error has ocurred', e);
   });
 
-const authenticate = async (address, redirectOnFail = true) => {
+const authenticate = async (address, redirectOnFail) => {
   const web3 = await getWeb3();
 
   const authData = {
@@ -64,11 +78,11 @@ const authenticate = async (address, redirectOnFail = true) => {
           // 'By signing in we are able to provide instant updates to the app after you take an action. The signin process simply requires you to verify that you own this address by signing a randomly generated message. If you choose to skip this step, the app will not reflect any actions you make until the transactions have been mined.',
           'In order to provide the best experience possible, we are going to ask you to sign a randomly generated message proving that you own the current account. This will enable us to provide instant updates to the app after any action.',
         icon: 'info',
-        buttons: [false, 'OK'],
+        buttons: ['Not now', 'OK'],
       });
 
       if (!res) {
-        if (redirectOnFail) history.goBack();
+        if (redirectOnFail) historyBackWFallback();
         return false;
       }
 
@@ -85,7 +99,7 @@ const authenticate = async (address, redirectOnFail = true) => {
         new Promise(async resolve => {
           const timeOut = setTimeout(() => {
             resolve(false);
-            history.goBack();
+            historyBackWFallback();
             React.swal.close();
           }, 30000);
 
@@ -98,7 +112,7 @@ const authenticate = async (address, redirectOnFail = true) => {
             resolve(true);
           } catch (e) {
             clearTimeout(timeOut);
-            history.goBack();
+            historyBackWFallback();
             resolve(false);
           }
         });
@@ -118,14 +132,14 @@ let authPromise;
  *
  * @returns {boolean} true if authenticate, otherwise false
  */
-export const authenticateIfPossible = async currentUser => {
+export const authenticateIfPossible = async (currentUser, redirectOnFail) => {
   if (authPromise) return !!(await authPromise);
   if (!currentUser || !currentUser.address) return false;
 
   if (currentUser.authenticated) return true;
 
   // prevent asking user to sign multiple msgs if currently authenticating
-  authPromise = authenticate(currentUser.address);
+  authPromise = authenticate(currentUser.address, redirectOnFail);
   currentUser.authenticated = await authPromise;
   authPromise = undefined;
 
@@ -164,7 +178,10 @@ export const checkForeignNetwork = async isForeignNetwork => {
     } network before proceeding. Depending on your provider, the page will be reloaded upon changing the network which may result in loosing data`,
     icon: 'warning',
   });
+  historyBackWFallback();
 };
+
+export const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 
 /**
  * Checks for sufficient wallet balance.

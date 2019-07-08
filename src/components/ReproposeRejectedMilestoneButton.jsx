@@ -70,8 +70,12 @@ class ReproposeRejectedMilestoneButton extends Component {
 }
 
 ReproposeRejectedMilestoneButton.propTypes = {
-  currentUser: PropTypes.instanceOf(User).isRequired,
+  currentUser: PropTypes.instanceOf(User),
   milestone: PropTypes.instanceOf(Milestone).isRequired,
+};
+
+ReproposeRejectedMilestoneButton.defaultProps = {
+  currentUser: undefined,
 };
 
 export default ReproposeRejectedMilestoneButton;

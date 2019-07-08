@@ -122,9 +122,13 @@ class RequestMarkMilestoneCompleteButton extends Component {
 }
 
 RequestMarkMilestoneCompleteButton.propTypes = {
-  currentUser: PropTypes.instanceOf(User).isRequired,
+  currentUser: PropTypes.instanceOf(User),
   balance: PropTypes.instanceOf(BigNumber).isRequired,
   milestone: PropTypes.instanceOf(Milestone).isRequired,
+};
+
+RequestMarkMilestoneCompleteButton.defaultProps = {
+  currentUser: undefined,
 };
 
 export default RequestMarkMilestoneCompleteButton;

@@ -86,8 +86,13 @@ const Milestones = ({ currentUser, balance }) => (
 );
 
 Milestones.propTypes = {
-  currentUser: PropTypes.instanceOf(User).isRequired,
-  balance: PropTypes.instanceOf(BigNumber).isRequired,
+  currentUser: PropTypes.instanceOf(User),
+  balance: PropTypes.instanceOf(BigNumber),
+};
+
+Milestones.defaultProps = {
+  currentUser: undefined,
+  balance: new BigNumber(0),
 };
 
 export default Milestones;

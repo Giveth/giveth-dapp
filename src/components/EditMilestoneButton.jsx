@@ -30,7 +30,7 @@ class EditMilestoneButton extends Component {
       .catch(err => {
         if (err === 'noBalance') {
           ErrorPopup('There is no balance left on the account.', err);
-        } else {
+        } else if (err !== undefined) {
           ErrorPopup('Something went wrong.', err);
         }
       });
@@ -57,9 +57,13 @@ class EditMilestoneButton extends Component {
 }
 
 EditMilestoneButton.propTypes = {
-  currentUser: PropTypes.instanceOf(User).isRequired,
+  currentUser: PropTypes.instanceOf(User),
   balance: PropTypes.instanceOf(BigNumber).isRequired,
   milestone: PropTypes.instanceOf(Milestone).isRequired,
+};
+
+EditMilestoneButton.defaultProps = {
+  currentUser: undefined,
 };
 
 export default EditMilestoneButton;

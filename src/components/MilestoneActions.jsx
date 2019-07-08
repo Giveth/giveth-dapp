@@ -76,8 +76,12 @@ class MilestoneActions extends Component {
 
 MilestoneActions.propTypes = {
   milestone: PropTypes.instanceOf(Milestone).isRequired,
-  currentUser: PropTypes.instanceOf(User).isRequired,
+  currentUser: PropTypes.instanceOf(User),
   balance: PropTypes.instanceOf(BigNumber).isRequired,
+};
+
+MilestoneActions.defaultProps = {
+  currentUser: undefined,
 };
 
 export default MilestoneActions;

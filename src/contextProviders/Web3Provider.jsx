@@ -101,6 +101,10 @@ class Web3Provider extends Component {
   }
 
   componentWillMount() {
+    this.initWeb3Provider();
+  }
+
+  initWeb3Provider() {
     getWeb3().then(web3 => {
       this.setState({
         validProvider: !web3.defaultNode,
@@ -128,9 +132,23 @@ class Web3Provider extends Component {
           },
         });
       }
+      this.finishLoading(web3);
     });
+  }
 
-    this.enableProvider();
+  async finishLoading(web3) {
+    const { networkId, networkType } = await fetchNetwork(web3);
+    this.setState(getNetworkState(networkId, networkType));
+    this.setState(
+      {
+        setupTimeout: false,
+        isEnabled:
+          web3.currentProvider._metamask && web3.currentProvider._metamask
+            ? await web3.currentProvider._metamask.isApproved()
+            : false,
+      },
+      () => this.props.onLoaded(),
+    );
   }
 
   async enableProvider() {

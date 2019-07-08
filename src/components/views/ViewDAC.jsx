@@ -227,11 +227,12 @@ ViewDAC.propTypes = {
       id: PropTypes.string,
     }).isRequired,
   }).isRequired,
-  balance: PropTypes.instanceOf(BigNumber).isRequired,
+  balance: PropTypes.instanceOf(BigNumber),
 };
 
 ViewDAC.defaultProps = {
   currentUser: undefined,
+  balance: new BigNumber(0),
 };
 
 export default ViewDAC;

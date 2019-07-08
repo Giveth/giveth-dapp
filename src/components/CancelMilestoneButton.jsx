@@ -81,7 +81,7 @@ class CancelMilestoneButton extends Component {
       .catch(err => {
         if (err === 'noBalance') {
           ErrorPopup('There is no balance left on the account.', err);
-        } else {
+        } else if (err !== undefined) {
           ErrorPopup('Something went wrong.', err);
         }
       });
@@ -115,9 +115,13 @@ class CancelMilestoneButton extends Component {
 }
 
 CancelMilestoneButton.propTypes = {
-  currentUser: PropTypes.instanceOf(User).isRequired,
+  currentUser: PropTypes.instanceOf(User),
   balance: PropTypes.instanceOf(BigNumber).isRequired,
   milestone: PropTypes.instanceOf(Milestone).isRequired,
+};
+
+CancelMilestoneButton.defaultProps = {
+  currentUser: undefined,
 };
 
 export default CancelMilestoneButton;

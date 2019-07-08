@@ -86,7 +86,7 @@ class ArchiveMilestoneButton extends Component {
       .catch(err => {
         if (err === 'noBalance') {
           ErrorPopup('There is no balance left on the account.', err);
-        } else {
+        } else if (err !== undefined) {
           ErrorPopup('Something went wrong.', err);
         }
       });
@@ -117,9 +117,13 @@ class ArchiveMilestoneButton extends Component {
 }
 
 ArchiveMilestoneButton.propTypes = {
-  currentUser: PropTypes.instanceOf(User).isRequired,
+  currentUser: PropTypes.instanceOf(User),
   balance: PropTypes.instanceOf(BigNumber).isRequired,
   milestone: PropTypes.instanceOf(Milestone).isRequired,
+};
+
+ArchiveMilestoneButton.defaultProps = {
+  currentUser: undefined,
 };
 
 export default ArchiveMilestoneButton;

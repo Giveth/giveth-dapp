@@ -87,9 +87,13 @@ class MilestoneConversationAction extends Component {
 
 MilestoneConversationAction.propTypes = {
   milestone: PropTypes.instanceOf(Milestone).isRequired,
-  currentUser: PropTypes.instanceOf(User).isRequired,
+  currentUser: PropTypes.instanceOf(User),
   balance: PropTypes.instanceOf(BigNumber).isRequired,
   messageContext: PropTypes.string.isRequired,
+};
+
+MilestoneConversationAction.defaultProps = {
+  currentUser: undefined,
 };
 
 export default MilestoneConversationAction;

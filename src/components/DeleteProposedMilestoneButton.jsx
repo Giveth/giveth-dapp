@@ -44,8 +44,12 @@ const DeleteProposedMilestoneButton = ({ milestone, currentUser }) => {
 };
 
 DeleteProposedMilestoneButton.propTypes = {
-  currentUser: PropTypes.instanceOf(User).isRequired,
+  currentUser: PropTypes.instanceOf(User),
   milestone: PropTypes.instanceOf(Milestone).isRequired,
+};
+
+DeleteProposedMilestoneButton.defaultProps = {
+  currentUser: undefined,
 };
 
 export default DeleteProposedMilestoneButton;
