@@ -182,6 +182,7 @@ class QuillFormsy extends Component {
           placeholder={placeholder}
           onChange={setValue}
           id="quill-formsy"
+          scrollingContainer={document.documentElement}
         />
         <span className="help-block validation-message">{errorMessage}</span>
       </div>
