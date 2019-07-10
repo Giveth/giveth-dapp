@@ -395,7 +395,7 @@ class DelegateMultipleButton extends Component {
                           tooltip={false}
                           onChange={newAmount =>
                             this.setState(prevState => ({
-                              amount: prevState.maxAmount.gte(newAmount)
+                              amount: new BigNumber(prevState.maxAmount.gte(newAmount))
                                 ? newAmount.toFixed(2)
                                 : prevState.maxAmount.toFixed(2),
                               selectedAmount: new BigNumber(newAmount),
@@ -417,7 +417,7 @@ class DelegateMultipleButton extends Component {
                           value={amount}
                           onChange={(name, newAmount) =>
                             this.setState({
-                              amount: newAmount,
+                              amount: new BigNumber(newAmount),
                               selectedAmount: new BigNumber(newAmount),
                             })
                           }
