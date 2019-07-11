@@ -11,30 +11,42 @@ export default (shortDescription, error) => {
   const errorHandler = value => {
     let body;
     if (error instanceof Error) {
-      body = `
-      Description of the Error:
-      ${shortDescription}
+      if (value !== 'github') {
+        body = `
+        Description of the Error:
+        ${shortDescription}
 
-      Error name:
-      ${error.message}
+        Error name:
+        ${error.message}
       
-      Error lineNumber:
-      ${error.lineNumber}
+        Error lineNumber:
+        ${error.lineNumber}
       
-      Error fileName:
-      ${error.fileName}
+        Error fileName:
+        ${error.fileName}
       
-      Error stack:
-      ${error.stack}
-    `;
-    } else {
+        Error stack:
+        ${error.stack}
+       `;
+      } else {
+        // language=GitHub Markdown
+        body =
+          `Issue type: **Error**\n${shortDescription}\n\n` +
+          `**Name:**\n${error.message}\n\n` +
+          `**LineNumber:**\n${error.lineNumber}\n\n` +
+          `**FileName:**\n${error.fileName}\n` +
+          `<details><summary>Stack</summary>\n\n${error.stack}\n</details>`;
+      }
+    } else if (value !== 'github') {
       body = `
       Description of the Error:
       ${shortDescription}
 
       Transaction link:
       ${error}
-    `;
+      `;
+    } else {
+      body = `Issue type: **Error**\n${shortDescription}\n\n**TransactionLink:**\n${error}`;
     }
 
     if (value === 'email') {
@@ -47,6 +59,8 @@ export default (shortDescription, error) => {
           config.bugsEmail
         }&su=Error in DApp&body=${encodeURIComponent(body)}`,
       );
+    } else if (value === 'github') {
+      window.open(`${config.githubUrl}/issues/new?body=${encodeURIComponent(body)}`);
     }
   };
 
@@ -80,7 +94,14 @@ export default (shortDescription, error) => {
           visible: true,
           closeModal: true,
         },
+        github: {
+          text: 'Report Issue',
+          value: 'github',
+          visible: true,
+          closeModal: true,
+        },
       },
+      className: 'swal-wide',
     }).then(value => {
       if (value) {
         errorHandler(value);
