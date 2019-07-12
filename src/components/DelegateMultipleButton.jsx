@@ -276,11 +276,6 @@ class DelegateMultipleButton extends Component {
       React.toast.error(<p>The delegation transaction has been cancelled</p>);
     };
 
-    if (this.state.amount instanceof BigNumber) {
-      console.log('it is!!');
-    }
-    console.log(this.state.amount);
-
     DonationService.delegateMultiple(
       this.state.delegations,
       utils.toWei(this.state.amount),
