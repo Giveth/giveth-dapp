@@ -125,7 +125,7 @@ class MainMenu extends Component {
                     href="https://www.github.com/Giveth/giveth-dapp/issues/new"
                     target="_blank"
                   >
-                    Support
+                    Tech Support
                   </a>
 
                   <ul className="navbar-nav">
