@@ -193,7 +193,7 @@ class DelegateMultipleButton extends Component {
             new BigNumber('0'),
           );
 
-          const localMax = amount;
+          let localMax = amount;
 
           if (selectedAmount.toNumber() !== 0) {
             amount = selectedAmount;
@@ -205,13 +205,14 @@ class DelegateMultipleButton extends Component {
             );
 
             if (maxDonationAmount.lt(amount)) amount = maxDonationAmount;
+            localMax = maxDonationAmount;
           }
 
           this.setState({
             delegations,
             maxAmount: localMax,
             isLoadingDonations: false,
-            amount,
+            amount: amount.toString(),
           });
         },
         () => this.setState({ isLoadingDonations: false }),
@@ -274,6 +275,11 @@ class DelegateMultipleButton extends Component {
       this.setState({ isSaving: false });
       React.toast.error(<p>The delegation transaction has been cancelled</p>);
     };
+
+    if (this.state.amount instanceof BigNumber) {
+      console.log('it is!!');
+    }
+    console.log(this.state.amount);
 
     DonationService.delegateMultiple(
       this.state.delegations,
@@ -395,7 +401,7 @@ class DelegateMultipleButton extends Component {
                           tooltip={false}
                           onChange={newAmount =>
                             this.setState(prevState => ({
-                              amount: new BigNumber(prevState.maxAmount.gte(newAmount))
+                              amount: prevState.maxAmount.gte(newAmount)
                                 ? newAmount.toFixed(2)
                                 : prevState.maxAmount.toFixed(2),
                               selectedAmount: new BigNumber(newAmount),
@@ -414,10 +420,10 @@ class DelegateMultipleButton extends Component {
                             isNumeric: 'Provide correct number',
                           }}
                           name="amount"
-                          value={amount}
+                          value={amount.toString()}
                           onChange={(name, newAmount) =>
                             this.setState({
-                              amount: new BigNumber(newAmount),
+                              amount: newAmount,
                               selectedAmount: new BigNumber(newAmount),
                             })
                           }
