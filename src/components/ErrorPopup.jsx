@@ -53,12 +53,6 @@ export default (shortDescription, error) => {
       window.open(
         `mailto:${config.bugsEmail}?subject=Error in DApp&body=${encodeURIComponent(body)}`,
       );
-    } else if (value === 'gmail') {
-      window.open(
-        `https://mail.google.com/mail/u/0/?view=cm&fs=1&tf=1&to=${
-          config.bugsEmail
-        }&su=Error in DApp&body=${encodeURIComponent(body)}`,
-      );
     } else if (value === 'github') {
       window.open(`${config.githubUrl}/issues/new?body=${encodeURIComponent(body)}`);
     }
@@ -85,12 +79,6 @@ export default (shortDescription, error) => {
         email: {
           text: 'Report',
           value: 'email',
-          visible: true,
-          closeModal: true,
-        },
-        gmail: {
-          text: 'Report in Gmail',
-          value: 'gmail',
           visible: true,
           closeModal: true,
         },
