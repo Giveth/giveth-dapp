@@ -193,7 +193,7 @@ class DelegateMultipleButton extends Component {
             new BigNumber('0'),
           );
 
-          const localMax = amount;
+          let localMax = amount;
 
           if (selectedAmount.toNumber() !== 0) {
             amount = selectedAmount;
@@ -205,13 +205,14 @@ class DelegateMultipleButton extends Component {
             );
 
             if (maxDonationAmount.lt(amount)) amount = maxDonationAmount;
+            localMax = maxDonationAmount;
           }
 
           this.setState({
             delegations,
             maxAmount: localMax,
             isLoadingDonations: false,
-            amount,
+            amount: amount.toString(),
           });
         },
         () => this.setState({ isLoadingDonations: false }),
@@ -414,7 +415,7 @@ class DelegateMultipleButton extends Component {
                             isNumeric: 'Provide correct number',
                           }}
                           name="amount"
-                          value={amount}
+                          value={amount.toString()}
                           onChange={(name, newAmount) =>
                             this.setState({
                               amount: newAmount,

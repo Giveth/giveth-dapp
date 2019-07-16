@@ -19,6 +19,20 @@ import config from '../configuration';
  *      .catch((err) ...do something when not logged in
  *      returns new Error 'notLoggedIn' if not logged in
  */
+
+export const historyBackWFallback = fallbackUrl => {
+  const destUrl = fallbackUrl || '/';
+  const prevPage = window.location.href;
+
+  window.history.go(-1);
+
+  setTimeout(() => {
+    if (window.location.href === prevPage) {
+      window.location.href = destUrl;
+    }
+  }, 500);
+};
+
 export const isLoggedIn = (currentUser, redirectOnFail) =>
   new Promise((resolve, reject) => {
     if (currentUser && currentUser.address && currentUser.authenticated) resolve();
@@ -68,7 +82,7 @@ const authenticate = async (address, redirectOnFail) => {
       });
 
       if (!res) {
-        if (redirectOnFail) history.push('/');
+        if (redirectOnFail) historyBackWFallback();
         return false;
       }
 
@@ -85,7 +99,7 @@ const authenticate = async (address, redirectOnFail) => {
         new Promise(async resolve => {
           const timeOut = setTimeout(() => {
             resolve(false);
-            history.push('/');
+            historyBackWFallback();
             React.swal.close();
           }, 30000);
 
@@ -98,7 +112,7 @@ const authenticate = async (address, redirectOnFail) => {
             resolve(true);
           } catch (e) {
             clearTimeout(timeOut);
-            history.push('/');
+            historyBackWFallback();
             resolve(false);
           }
         });
@@ -164,8 +178,10 @@ export const checkForeignNetwork = async isForeignNetwork => {
     } network before proceeding. Depending on your provider, the page will be reloaded upon changing the network which may result in loosing data`,
     icon: 'warning',
   });
-  history.push('/');
+  historyBackWFallback();
 };
+
+export const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 
 /**
  * Checks for sufficient wallet balance.

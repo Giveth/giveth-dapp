@@ -104,7 +104,8 @@ class ApproveRejectMilestoneCompletionButtons extends Component {
                 }
               },
             });
-          });
+          })
+          .catch(_ => {});
       })
       .catch(err => {
         if (err === 'noBalance') {
@@ -177,7 +178,8 @@ class ApproveRejectMilestoneCompletionButtons extends Component {
                 }
               },
             });
-          });
+          })
+          .catch(_ => {});
       })
       .catch(err => {
         if (err === 'noBalance') {
