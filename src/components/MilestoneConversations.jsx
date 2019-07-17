@@ -111,7 +111,7 @@ class MilestoneConversations extends Component {
                       <Form className="items-form">
                         <strong>Attachments</strong>
                         <MilestoneProof
-                          items={c.items}
+                          refreshList={c.items}
                           token={milestone.token}
                           isEditMode={false}
                         />

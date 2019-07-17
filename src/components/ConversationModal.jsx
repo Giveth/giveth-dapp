@@ -217,7 +217,7 @@ class ConversationModal extends Component {
                   <span className="label">Attachments</span>
                   <MilestoneProof
                     isEditMode
-                    items={items}
+                    refreshList={items}
                     onItemsChanged={returnedItems => this.onItemsChanged(returnedItems)}
                     milestoneStatus={milestone.status}
                     token={milestone.token}
