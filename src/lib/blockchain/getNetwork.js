@@ -1,6 +1,7 @@
 import { LiquidPledging } from 'giveth-liquidpledging';
 import { LPPCampaignFactory } from 'lpp-campaign';
 import { MilestoneFactory } from 'lpp-milestones';
+import { LPPCappedMilestoneFactory } from 'lpp-capped-milestone';
 import { GivethBridge, ForeignGivethBridge } from 'giveth-bridge';
 
 import getWeb3 from './getWeb3';
@@ -55,15 +56,21 @@ export default async () => {
   network.liquidPledging = new LiquidPledging(web3, network.liquidPledgingAddress);
   network.lppCampaignFactory = new LPPCampaignFactory(web3, network.lppCampaignFactoryAddress);
   network.milestoneFactory = new MilestoneFactory(web3, network.milestoneFactoryAddress);
+  network.lppCappedMilestoneFactory = new LPPCappedMilestoneFactory(
+    web3,
+    network.lppCappedMilestoneFactoryAddress,
+  );
   network.givethBridge = new GivethBridge(web3, network.givethBridgeAddress);
   network.foreignGivethBridge = new ForeignGivethBridge(web3, network.foreignGivethBridgeAddress);
 
   network.tokens = {};
   const { tokenWhitelist } = await feathersClient.service('/whitelist').find();
   if (tokenWhitelist) {
-    tokenWhitelist.filter(token => web3.utils.isAddress(token.address)).forEach(token => {
-      network.tokens[token.address] = new web3.eth.Contract(ERC20ABI, token.address);
-    });
+    tokenWhitelist
+      .filter(token => web3.utils.isAddress(token.address))
+      .forEach(token => {
+        network.tokens[token.address] = new web3.eth.Contract(ERC20ABI, token.address);
+      });
   }
 
   return network;

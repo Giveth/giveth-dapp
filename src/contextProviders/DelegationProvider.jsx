@@ -47,7 +47,9 @@ class DelegationProvider extends Component {
 
   componentWillMount() {
     if (this.props.currentUser) {
-      authenticateIfPossible(this.props.currentUser).then(() => this.load());
+      authenticateIfPossible(this.props.currentUser, true)
+        .then(() => this.load())
+        .catch(_ => {});
     }
   }
 
@@ -228,7 +230,7 @@ class DelegationProvider extends Component {
     ])
       .then(() => this.getAndWatchDonations())
       .catch(err => {
-        ErrorPopup('Unable to load dacs, campaigns or milestones.', err);
+        ErrorPopup('Unable to load dacs, Campaigns or Milestones.', err);
         this.setState({ isLoading: false });
       });
   }

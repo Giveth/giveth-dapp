@@ -53,7 +53,9 @@ class DonationProvider extends Component {
 
     // Get the donations for current user
     if (this.props.currentUser) {
-      authenticateIfPossible(this.props.currentUser).then(() => this.loadDonations());
+      authenticateIfPossible(this.props.currentUser, true)
+        .then(() => this.loadDonations())
+        .catch(_ => {});
     }
   }
 
@@ -64,6 +66,7 @@ class DonationProvider extends Component {
 
   // Function to fetch donations of the current user.
   loadDonations() {
+    if (this.props.currentUser === undefined) return;
     this.donationsObserver = feathersClient
       .service('donations')
       .watch({ listStrategy: 'always' })
@@ -152,7 +155,9 @@ class DonationProvider extends Component {
       )
       .catch(err => {
         if (err === 'noBalance') {
-          // handle no balance error
+          ErrorPopup('There is no balance left on the account.', err);
+        } else if (err !== undefined) {
+          ErrorPopup('Something went wrong.', err);
         }
       });
   }
@@ -205,14 +210,16 @@ class DonationProvider extends Component {
               this.props.currentUser.address,
               afterCreate,
               afterMined,
-              err => console.log('err', err),
+              err => ErrorPopup('Something went wrong.', err),
             );
           }
         }),
       )
       .catch(err => {
         if (err === 'noBalance') {
-          // handle no balance error
+          ErrorPopup('There is no balance left on the account.', err);
+        } else if (err !== undefined) {
+          ErrorPopup('Something went wrong.', err);
         }
       });
   }

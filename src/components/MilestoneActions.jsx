@@ -9,6 +9,7 @@ import BigNumber from 'bignumber.js';
 
 import DeleteProposedMilestoneButton from 'components/DeleteProposedMilestoneButton';
 import AcceptRejectProposedMilestoneButtons from 'components/AcceptRejectProposedMilestoneButtons';
+import ArchiveMilestoneButton from 'components/ArchiveMilestoneButton';
 import ReproposeRejectedMilestoneButton from 'components/ReproposeRejectedMilestoneButton';
 import RequestMarkMilestoneCompleteButton from 'components/RequestMarkMilestoneCompleteButton';
 import CancelMilestoneButton from 'components/CancelMilestoneButton';
@@ -31,11 +32,15 @@ class MilestoneActions extends Component {
 
         <ReproposeRejectedMilestoneButton milestone={milestone} currentUser={currentUser} />
 
-        <RequestMarkMilestoneCompleteButton
-          milestone={milestone}
-          balance={balance}
-          currentUser={currentUser}
-        />
+        {milestone.hasRecipient ? (
+          <RequestMarkMilestoneCompleteButton
+            milestone={milestone}
+            balance={balance}
+            currentUser={currentUser}
+          />
+        ) : null}
+
+        <ArchiveMilestoneButton milestone={milestone} balance={balance} currentUser={currentUser} />
 
         <ChangeMilestoneRecipientButton
           milestone={milestone}
@@ -71,8 +76,12 @@ class MilestoneActions extends Component {
 
 MilestoneActions.propTypes = {
   milestone: PropTypes.instanceOf(Milestone).isRequired,
-  currentUser: PropTypes.instanceOf(User).isRequired,
+  currentUser: PropTypes.instanceOf(User),
   balance: PropTypes.instanceOf(BigNumber).isRequired,
+};
+
+MilestoneActions.defaultProps = {
+  currentUser: undefined,
 };
 
 export default MilestoneActions;

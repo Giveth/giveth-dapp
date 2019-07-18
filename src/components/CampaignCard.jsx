@@ -17,10 +17,15 @@ class CampaignCard extends Component {
     super(props);
 
     this.viewCampaign = this.viewCampaign.bind(this);
+    this.createCampaignLink = this.createCampaignLink.bind(this);
   }
 
   viewCampaign() {
     history.push(`/campaigns/${this.props.campaign.id}`);
+  }
+
+  createCampaignLink() {
+    return `/campaigns/${this.props.campaign.id}`;
   }
 
   render() {
@@ -30,12 +35,11 @@ class CampaignCard extends Component {
       <div
         className="card overview-card"
         id={campaign.id} // eslint-disable-line no-underscore-dangle
-        onClick={this.viewCampaign}
         onKeyPress={this.viewCampaign}
         role="button"
         tabIndex="0"
       >
-        <div className="card-body">
+        <a className="card-body" href={this.createCampaignLink()}>
           <div className="card-img" style={{ backgroundImage: `url(${campaign.image})` }} />
 
           <div className="card-content">
@@ -52,7 +56,7 @@ class CampaignCard extends Component {
               token={{ symbol: config.nativeTokenName, decimals: 18 }}
             />
           </div>
-        </div>
+        </a>
       </div>
     );
   }

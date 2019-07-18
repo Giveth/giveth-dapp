@@ -15,6 +15,7 @@ import GA from 'lib/GoogleAnalytics';
 import Donation from 'models/Donation';
 import Milestone from 'models/Milestone';
 import Campaign from 'models/Campaign';
+import ErrorPopup from './ErrorPopup';
 import { checkBalance } from '../lib/middleware';
 
 import DonationService from '../services/DonationService';
@@ -34,6 +35,34 @@ const modalStyles = {
 
 Modal.setAppElement('#root');
 
+function getFilterType(types, donation) {
+  return types.filter(
+    t =>
+      !(t instanceof Milestone) ||
+      !t.acceptsSingleToken ||
+      t.token.symbol === donation.token.symbol,
+  );
+}
+
+function getTypes(types) {
+  return types.map(t => {
+    const isMilestone = t instanceof Milestone;
+    const el = {};
+    el.name = t.title;
+    el.type = isMilestone ? Milestone.type : Campaign.type;
+    el.id = t._id;
+    el.element = (
+      <span>
+        {t.title} <em>{t instanceof Milestone ? 'Milestone' : 'Campaign'}</em>
+      </span>
+    );
+    if (isMilestone) {
+      el.campaignProjectId = t.campaign.projectId;
+    }
+    return el;
+  });
+}
+
 // FIXME: We need slider component that uses bignumbers, there are some precision issues here
 class DelegateButton extends Component {
   constructor(props) {
@@ -41,10 +70,13 @@ class DelegateButton extends Component {
 
     this.state = {
       isSaving: false,
-      objectsToDelegateTo: [],
+      objectsToDelegateToCampaign: [],
+      objectsToDelegateToMilestone: [],
       modalVisible: false,
       amount: '0',
+      amountSelected: '0',
       maxAmount: new BigNumber('0'),
+      curProjectId: null,
     };
 
     this.submit = this.submit.bind(this);
@@ -62,12 +94,48 @@ class DelegateButton extends Component {
       )
       .catch(err => {
         if (err === 'noBalance') {
-          // handle no balance error
+          ErrorPopup('There is no balance left on the account.', err);
+        } else if (err !== undefined) {
+          ErrorPopup('Something went wrong.', err);
         }
       });
   }
 
-  selectedObject({ target }) {
+  selectedObject(type, { target }, amountSelected) {
+    const admin = this.props.types.find(t => t._id === target.value[0]);
+
+    let maxAmount = this.props.donation.amountRemaining;
+
+    if (admin && admin instanceof Campaign && admin.isCapped) {
+      const maxDelegationAmount = admin.maxAmount.minus(admin.currentBalance);
+
+      if (maxDelegationAmount.lt(this.props.donation.amountRemaining)) {
+        maxAmount = maxDelegationAmount;
+      }
+    }
+    let tempAmount = 0;
+    if (amountSelected !== 0) {
+      tempAmount = amountSelected;
+    } else {
+      tempAmount = maxAmount.toFixed();
+    }
+
+    this.setState({
+      maxAmount,
+      amount: tempAmount,
+      objectsToDelegateToCampaign: target.value,
+    });
+    if (type === Milestone.type) {
+      this.setState({ objectsToDelegateToMilestone: target.value });
+    } else {
+      this.setState({
+        curProjectId: admin ? admin.projectId : null,
+        objectsToDelegateToCampaign: target.value,
+      });
+    }
+  }
+
+  selectedMilestoneObject({ target }) {
     const admin = this.props.types.find(t => t._id === target.value[0]);
 
     let maxAmount = this.props.donation.amountRemaining;
@@ -83,7 +151,7 @@ class DelegateButton extends Component {
     this.setState({
       maxAmount,
       amount: maxAmount.toFixed(),
-      objectsToDelegateTo: target.value,
+      objectsToDelegateToMilestone: target.value,
     });
   }
 
@@ -91,8 +159,10 @@ class DelegateButton extends Component {
     const { donation } = this.props;
     this.setState({ isSaving: true });
 
+    const { objectsToDelegateToCampaign, objectsToDelegateToMilestone } = this.state;
+    const objectsToDelegateTo = objectsToDelegateToMilestone[0] || objectsToDelegateToCampaign[0];
     // find the type of where we delegate to
-    const admin = this.props.types.find(t => t._id === this.state.objectsToDelegateTo[0]);
+    const admin = this.props.types.find(t => t._id === objectsToDelegateTo);
 
     // TODO: find a more friendly way to do this.
     if (
@@ -100,7 +170,7 @@ class DelegateButton extends Component {
       admin.isCapped &&
       admin.maxAmount.lt(admin.currentBalance || 0)
     ) {
-      React.toast.error('That milestone has reached its funding goal. Please pick another.');
+      React.toast.error('That Milestone has reached its funding goal. Please pick another.');
       return;
     }
 
@@ -164,30 +234,40 @@ class DelegateButton extends Component {
 
   render() {
     const { types, milestoneOnly, donation } = this.props;
-    const { isSaving, objectsToDelegateTo, maxAmount } = this.state;
+    const {
+      isSaving,
+      objectsToDelegateToMilestone,
+      objectsToDelegateToCampaign,
+      maxAmount,
+      curProjectId,
+    } = this.state;
     const style = { display: 'inline-block' };
     const pStyle = { whiteSpace: 'normal' };
 
-    const getTypes = () =>
-      types
-        .filter(
-          t =>
-            !(t instanceof Milestone) ||
-            !t.acceptsSingleToken ||
-            t.token.symbol === donation.token.symbol,
-        )
-        .map(t => {
-          const el = {};
-          el.name = t.title;
-          el.type = t instanceof Milestone ? Milestone.type : Campaign.type;
-          el.id = t._id;
-          el.element = (
-            <span>
-              {t.title} <em>{t instanceof Milestone ? 'Milestone' : 'Campaign'}</em>
-            </span>
-          );
-          return el;
-        });
+    const campaignTypes = [];
+    const milestoneTypes = [];
+
+    const milestoneOnlyCampaignTypes = [];
+    const filteredTypes = getFilterType(types, donation);
+    const objectsToDelegateTypes = getTypes(filteredTypes);
+
+    objectsToDelegateTypes.forEach(t => {
+      if (t.type === Milestone.type) {
+        if ([null, t.campaignProjectId].includes(curProjectId)) {
+          milestoneTypes.push(t);
+        }
+      } else {
+        campaignTypes.push(t);
+      }
+    });
+
+    const campaignValue = [];
+    if (milestoneOnly && filteredTypes.length > 0) {
+      milestoneOnlyCampaignTypes.push(...getTypes([filteredTypes[0].campaign]));
+      campaignValue.push(milestoneOnlyCampaignTypes[0].id);
+    } else {
+      campaignValue.push(...objectsToDelegateToCampaign);
+    }
 
     return (
       <span style={style}>
@@ -218,17 +298,26 @@ class DelegateButton extends Component {
           <Form onSubmit={this.submit} layout="vertical">
             <div className="form-group">
               <span className="label">Delegate to:</span>
-              <InputToken
-                name="delegateTo"
-                label="Delegate to:"
-                placeholder={
-                  milestoneOnly ? 'Select a Milestone' : 'Select a Campaign or Milestone'
-                }
-                value={objectsToDelegateTo}
-                options={getTypes()}
-                onSelect={this.selectedObject}
-                maxLength={1}
-              />
+              <div layout="vertical">
+                <InputToken
+                  disabled={milestoneOnly}
+                  name="delegateTo"
+                  label="Delegate to:"
+                  placeholder="Select a Campaign"
+                  value={campaignValue}
+                  options={milestoneOnly ? milestoneOnlyCampaignTypes : campaignTypes}
+                  onSelect={v => this.selectedObject(Campaign.type, v, this.state.amountSelected)}
+                  maxLength={1}
+                />
+                <InputToken
+                  name="delegateToMilestone"
+                  label="Delegate to:"
+                  placeholder="Select a Milestone"
+                  value={objectsToDelegateToMilestone}
+                  options={milestoneTypes}
+                  onSelect={v => this.selectedObject(Milestone.type, v, this.state.amountSelected)}
+                />
+              </div>
             </div>
 
             <span className="label">Amount to delegate:</span>
@@ -246,7 +335,12 @@ class DelegateButton extends Component {
                   [maxAmount.toNumber()]: maxAmount.toFixed(),
                 }}
                 tooltip={false}
-                onChange={amount => this.setState({ amount: Number(amount).toFixed(2) })}
+                onChange={amount =>
+                  this.setState({
+                    amount: Number(amount).toFixed(2),
+                    amountSelected: Number(amount).toFixed(2),
+                  })
+                }
               />
             </div>
 
@@ -261,7 +355,9 @@ class DelegateButton extends Component {
                 }}
                 name="amount"
                 value={this.state.amount}
-                onChange={amount => this.setState({ amount })}
+                onChange={amount =>
+                  this.setState({ amount }, this.setState({ amountSelected: amount }))
+                }
               />
             </div>
 
@@ -269,7 +365,11 @@ class DelegateButton extends Component {
               className="btn btn-success"
               formNoValidate
               type="submit"
-              disabled={isSaving || objectsToDelegateTo.length !== 1}
+              disabled={
+                isSaving || milestoneOnly
+                  ? objectsToDelegateToMilestone.length !== 1
+                  : campaignValue.length !== 1
+              }
             >
               {isSaving ? 'Delegating...' : 'Delegate here'}
             </button>

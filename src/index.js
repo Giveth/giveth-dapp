@@ -1,10 +1,11 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
 import localForage from 'localforage';
-
+import { hydrate, render } from 'react-dom';
 import registerServiceWorker from './lib/registerServiceWorker';
 import Application from './containers/Application';
 import './styles/application.css';
+
+const rootElement = document.getElementById('root');
 
 try {
   localForage
@@ -19,10 +20,16 @@ try {
   // console.log(e);
 }
 
-/* global document */
-ReactDOM.render(
-  <Application />, // eslint-disable-line react/jsx-filename-extension
-  document.getElementById('root'),
-);
+if (rootElement.hasChildNodes()) {
+  hydrate(
+    <Application />, // eslint-disable-line react/jsx-filename-extension
+    document.getElementById('root'),
+  );
+} else {
+  render(
+    <Application />, // eslint-disable-line react/jsx-filename-extension
+    document.getElementById('root'),
+  );
+}
 
 registerServiceWorker();

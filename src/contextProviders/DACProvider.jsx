@@ -23,27 +23,40 @@ class DACProvider extends Component {
       total: 0,
     };
 
+    this._isMounted = false;
     this.loadMore = this.loadMore.bind(this);
   }
 
-  componentWillMount() {
+  componentDidMount() {
+    this._isMounted = true;
     this.loadMore(true);
   }
 
+  componentWillUnmount() {
+    this._isMounted = false;
+  }
+
   loadMore(init = false) {
-    if (init || (!this.state.isLoading && this.state.total > this.state.dacs.length)) {
+    if (
+      init ||
+      (!this.state.isLoading && this._isMounted && this.state.total > this.state.dacs.length)
+    ) {
       this.setState({ isLoading: true }, () =>
         DACService.getDACs(
           this.props.step, // Limit
           this.state.dacs.length, // Skip
           (dacs, total) => {
+            if (!this._isMounted) return;
             this.setState(prevState => ({
               dacs: prevState.dacs.concat(dacs),
               total,
               isLoading: false,
             }));
           },
-          () => this.setState({ hasError: true, isLoading: false }),
+          () => {
+            if (!this._isMounted) return;
+            this.setState({ hasError: true, isLoading: false });
+          },
         ),
       );
     }

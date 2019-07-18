@@ -9,27 +9,50 @@ import MilestoneService from 'services/MilestoneService';
 import ErrorPopup from 'components/ErrorPopup';
 import ConversationModal from 'components/ConversationModal';
 import GA from 'lib/GoogleAnalytics';
-import { checkBalance } from 'lib/middleware';
+import { checkBalance, isLoggedIn } from 'lib/middleware';
 import { Consumer as Web3Consumer } from '../contextProviders/Web3Provider';
 
 class ApproveRejectMilestoneCompletionButtons extends Component {
   constructor() {
     super();
+    this._isLoggedIn = false;
+    this._isLoaded = false;
     this.conversationModal = React.createRef();
   }
 
-  approveMilestoneCompleted() {
+  componentDidMount() {
+    this.checkLogin();
+  }
+
+  componentDidUpdate() {
+    this.checkLogin();
+  }
+
+  async checkLogin() {
+    const { currentUser } = this.props;
+    if (currentUser === undefined) return;
+    this._isLoggedIn = currentUser._authenticated;
+    isLoggedIn(currentUser, false)
+      .then(_ => {})
+      .catch(_ => {});
+    if (this._isLoggedIn && !this._isLoaded) {
+      this._isLoaded = true;
+      this.forceUpdate();
+    }
+  }
+
+  async approveMilestoneCompleted() {
     const { milestone, currentUser, balance } = this.props;
 
     checkBalance(balance)
       .then(() => {
         this.conversationModal.current
           .openModal({
-            title: 'Approve milestone completion',
+            title: 'Approve Milestone completion',
             description:
-              'Optionally explain why you approve the completion of this milestone. Compliments are appreciated! This information will be publicly visible and emailed to the milestone owner.',
+              'Optionally explain why you approve the completion of this Milestone. Compliments are appreciated! This information will be publicly visible and emailed to the Milestone owner.',
             textPlaceholder:
-              'Optionally explain why you approve the completion of this milestone...',
+              'Optionally explain why you approve the completion of this Milestone...',
             required: false,
             cta: 'Approve completion',
             enableAttachProof: false,
@@ -48,7 +71,7 @@ class ApproveRejectMilestoneCompletionButtons extends Component {
 
                 React.toast.info(
                   <p>
-                    Approving this milestone is pending...
+                    Approving this Milestone is pending...
                     <br />
                     <a href={txUrl} target="_blank" rel="noopener noreferrer">
                       View transaction
@@ -59,7 +82,7 @@ class ApproveRejectMilestoneCompletionButtons extends Component {
               onConfirmation: txUrl => {
                 React.toast.success(
                   <p>
-                    The milestone has been approved!
+                    The Milestone has been approved!
                     <br />
                     <a href={txUrl} target="_blank" rel="noopener noreferrer">
                       View transaction
@@ -70,7 +93,7 @@ class ApproveRejectMilestoneCompletionButtons extends Component {
               onError: (err, txUrl) => {
                 if (err === 'patch-error') {
                   ErrorPopup(
-                    "Something went wrong with approving this milestone's completion",
+                    "Something went wrong with approving this Milestone's completion",
                     err,
                   );
                 } else {
@@ -81,26 +104,29 @@ class ApproveRejectMilestoneCompletionButtons extends Component {
                 }
               },
             });
-          });
+          })
+          .catch(_ => {});
       })
       .catch(err => {
         if (err === 'noBalance') {
-          // handle no balance error
+          ErrorPopup('There is no balance left on the account.', err);
+        } else if (err !== undefined) {
+          ErrorPopup('Something went wrong.', err);
         }
       });
   }
 
-  rejectMilestoneCompleted() {
+  async rejectMilestoneCompleted() {
     const { milestone, currentUser } = this.props;
 
     checkBalance(this.props.balance)
       .then(() => {
         this.conversationModal.current
           .openModal({
-            title: 'Reject milestone completion',
+            title: 'Reject Milestone completion',
             description:
-              'Explain why you rejected the completion of this milestone. This information will be publicly visible and emailed to the milestone owner.',
-            textPlaceholder: 'Explain why you rejected the completion of this milestone...',
+              'Explain why you rejected the completion of this Milestone. This information will be publicly visible and emailed to the Milestone owner.',
+            textPlaceholder: 'Explain why you rejected the completion of this Milestone...',
             required: true,
             cta: 'Reject completion',
             enableAttachProof: false,
@@ -119,7 +145,7 @@ class ApproveRejectMilestoneCompletionButtons extends Component {
 
                 React.toast.info(
                   <p>
-                    Rejecting this milestone's completion is pending...
+                    Rejecting this Milestone's completion is pending...
                     <br />
                     <a href={txUrl} target="_blank" rel="noopener noreferrer">
                       View transaction
@@ -130,7 +156,7 @@ class ApproveRejectMilestoneCompletionButtons extends Component {
               onConfirmation: txUrl => {
                 React.toast.success(
                   <p>
-                    The milestone's completion has been rejected.
+                    The Milestone's completion has been rejected.
                     <br />
                     <a href={txUrl} target="_blank" rel="noopener noreferrer">
                       View transaction
@@ -141,7 +167,7 @@ class ApproveRejectMilestoneCompletionButtons extends Component {
               onError: (err, txUrl) => {
                 if (err === 'patch-error') {
                   ErrorPopup(
-                    "Something went wrong with rejecting this milestone's completion",
+                    "Something went wrong with rejecting this Milestone's completion",
                     err,
                   );
                 } else {
@@ -152,11 +178,14 @@ class ApproveRejectMilestoneCompletionButtons extends Component {
                 }
               },
             });
-          });
+          })
+          .catch(_ => {});
       })
       .catch(err => {
         if (err === 'noBalance') {
-          // handle no balance error
+          ErrorPopup('There is no balance left on the account.', err);
+        } else if (err !== undefined) {
+          ErrorPopup('Something went wrong.', err);
         }
       });
   }
@@ -174,7 +203,7 @@ class ApproveRejectMilestoneCompletionButtons extends Component {
                   type="button"
                   className="btn btn-success btn-sm"
                   onClick={() => this.approveMilestoneCompleted()}
-                  disabled={!isForeignNetwork}
+                  disabled={!isForeignNetwork || !this._isLoggedIn}
                 >
                   <i className="fa fa-thumbs-up" />
                   &nbsp;Approve
@@ -184,10 +213,10 @@ class ApproveRejectMilestoneCompletionButtons extends Component {
                   type="button"
                   className="btn btn-danger btn-sm"
                   onClick={() => this.rejectMilestoneCompleted()}
-                  disabled={!isForeignNetwork}
+                  disabled={!isForeignNetwork || !this._isLoggedIn}
                 >
                   <i className="fa fa-thumbs-down" />
-                  &nbsp;Reject
+                  &nbsp;Reject Completion
                 </button>
               </span>
             )}
@@ -201,9 +230,13 @@ class ApproveRejectMilestoneCompletionButtons extends Component {
 }
 
 ApproveRejectMilestoneCompletionButtons.propTypes = {
-  currentUser: PropTypes.instanceOf(User).isRequired,
+  currentUser: PropTypes.instanceOf(User),
   balance: PropTypes.instanceOf(BigNumber).isRequired,
   milestone: PropTypes.instanceOf(Milestone).isRequired,
+};
+
+ApproveRejectMilestoneCompletionButtons.defaultProps = {
+  currentUser: undefined,
 };
 
 export default ApproveRejectMilestoneCompletionButtons;

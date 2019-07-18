@@ -17,22 +17,20 @@ const BackupWalletButton = ({ wallet, onBackup }) => (
       // No wallet found
     ) */}
 
-    {wallet &&
-      Array.isArray(wallet.keystores) &&
-      wallet.keystores.length > 0 && (
-        <a
-          className="btn btn-success"
-          onClick={onBackup}
-          href={URL.createObjectURL(
-            new Blob([JSON.stringify(wallet.keystores)], {
-              type: 'application/json',
-            }),
-          )}
-          download={`UTC--${new Date().toISOString()}-${wallet.keystores[0].address}.json`}
-        >
-          Download Backup File
-        </a>
-      )}
+    {wallet && Array.isArray(wallet.keystores) && wallet.keystores.length > 0 && (
+      <a
+        className="btn btn-success"
+        onClick={onBackup}
+        href={URL.createObjectURL(
+          new Blob([JSON.stringify(wallet.keystores)], {
+            type: 'application/json',
+          }),
+        )}
+        download={`UTC--${new Date().toISOString()}-${wallet.keystores[0].address}.json`}
+      >
+        Download Backup File
+      </a>
+    )}
   </span>
 );
 

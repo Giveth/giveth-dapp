@@ -23,6 +23,15 @@ import DAC from '../../models/DAC';
 import User from '../../models/User';
 import ErrorPopup from '../ErrorPopup';
 import { Consumer as WhiteListConsumer } from '../../contextProviders/WhiteListProvider';
+import {
+  draftStates,
+  loadDraft,
+  onDraftChange,
+  onImageChange,
+  saveDraft,
+  deleteDraft,
+  DraftButton,
+} from '../Draft';
 
 /**
  * View to create or edit a DAC
@@ -40,6 +49,7 @@ class EditDAC extends Component {
       isLoading: true,
       isSaving: false,
       formIsValid: false,
+      draftState: draftStates.hidden,
 
       // DAC model
       dac: new DAC({
@@ -52,6 +62,10 @@ class EditDAC extends Component {
 
     this.submit = this.submit.bind(this);
     this.setImage = this.setImage.bind(this);
+    this.loadDraft = loadDraft.bind(this);
+    this.onDraftChange = onDraftChange.bind(this);
+    this.onImageChange = onImageChange.bind(this);
+    this.saveDraft = saveDraft.bind(this);
   }
 
   componentDidMount() {
@@ -107,6 +121,7 @@ class EditDAC extends Component {
     const { dac } = this.state;
     dac.image = image;
     this.setState({ dac });
+    this.onImageChange();
   }
 
   checkUser() {
@@ -115,7 +130,7 @@ class EditDAC extends Component {
       return Promise.reject();
     }
 
-    return authenticateIfPossible(this.props.currentUser)
+    return authenticateIfPossible(this.props.currentUser, true)
       .then(() => {
         if (!this.props.isDelegate(this.props.currentUser)) {
           throw new Error('not whitelisted');
@@ -126,6 +141,7 @@ class EditDAC extends Component {
   }
 
   submit() {
+    const itemNames = this.saveDraft(true);
     // Save dac
     const showToast = (msg, url, isSuccess = false) => {
       const toast = url ? (
@@ -165,6 +181,7 @@ class EditDAC extends Component {
       }
     };
     const afterSave = (err, created, url) => {
+      deleteDraft(itemNames);
       if (this.mounted) this.setState({ isSaving: false });
       if (err) return;
       const msg = created ? 'Your DAC is pending...' : 'Your DAC is being updated...';
@@ -187,12 +204,17 @@ class EditDAC extends Component {
 
   toggleFormValid(state) {
     this.setState({ formIsValid: state });
+    if (!this.state.draftLoaded) {
+      this.loadDraft();
+      this.setState({ draftLoaded: true });
+    }
   }
 
   triggerRouteBlocking() {
     const form = this.form.current.formsyForm;
     // we only block routing if the form state is not submitted
     this.setState({ isBlocking: form && (!form.state.formSubmitted || form.state.isSubmitting) });
+    this.onDraftChange();
   }
 
   render() {
@@ -216,17 +238,17 @@ class EditDAC extends Component {
                     {!isNew && <h3>Edit DAC</h3>}
 
                     <p>
-                      <i className="fa fa-question-circle" />
-                      A DAC aims to solve a cause by building a Community, raising funds and
-                      delegating those funds to Campaigns that solve its cause. Should you create a
-                      Campaign or Community? Read more{' '}
+                      <i className="fa fa-question-circle" />A DAC aims to solve a cause by building
+                      a Community, raising funds and delegating those funds to Campaigns that solve
+                      its cause. Should you create a Campaign or Community? Read more{' '}
                       <a
                         target="_blank"
                         rel="noopener noreferrer"
                         href="https://wiki.giveth.io/documentation/glossary/"
                       >
                         here
-                      </a>.
+                      </a>
+                      .
                     </p>
                   </div>
 
@@ -245,7 +267,7 @@ class EditDAC extends Component {
                     layout="vertical"
                   >
                     <Prompt
-                      when={isBlocking}
+                      when={isBlocking && this.state.draftState >= draftStates.changed}
                       message={() =>
                         `You have unsaved changes. Are you sure you want to navigate from this page?`
                       }
@@ -276,7 +298,7 @@ class EditDAC extends Component {
                         value={dac.description}
                         placeholder="Describe how you're going to solve your cause..."
                         validations="minLength:20"
-                        help="Describe your dac."
+                        help="Describe your DAC."
                         validationErrors={{
                           minLength: 'Please provide at least 10 characters.',
                         }}
@@ -301,7 +323,7 @@ class EditDAC extends Component {
                         type="text"
                         value={dac.communityUrl}
                         placeholder="https://slack.giveth.com"
-                        help="Where can people join your community? Paste a link here for your community's website, social or chatroom."
+                        help="Where can people join your Community? Paste a link here for your community's website, social or chatroom."
                         validations="isUrl"
                         validationErrors={{
                           isUrl: 'Please provide a url.',
@@ -310,10 +332,13 @@ class EditDAC extends Component {
                     </div>
 
                     <div className="form-group row">
-                      <div className="col-6">
+                      <div className="col-4">
                         <GoBackButton history={history} />
                       </div>
-                      <div className="col-6">
+                      <div className="col-4">
+                        <DraftButton draftState={this.state.draftState} onClick={this.saveDraft} />
+                      </div>
+                      <div className="col-4">
                         <LoaderButton
                           className="btn btn-success pull-right"
                           formNoValidate

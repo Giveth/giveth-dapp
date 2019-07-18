@@ -24,12 +24,12 @@ class CancelMilestoneButton extends Component {
       .then(() => {
         this.conversationModal.current
           .openModal({
-            title: 'Cancel milestone',
+            title: 'Cancel Milestone',
             description:
-              'Explain why you cancel this milestone. Compliments are appreciated! This information will be publicly visible and emailed to the milestone owner.',
-            textPlaceholder: 'Explain why you cancel this milestone...',
+              'Explain why you cancel this Milestone. Compliments are appreciated! This information will be publicly visible and emailed to the Milestone owner.',
+            textPlaceholder: 'Explain why you cancel this Milestone...',
             required: true,
-            cta: 'Cancel milestone',
+            cta: 'Cancel Milestone',
             enableAttachProof: false,
           })
           .then(proof => {
@@ -46,7 +46,7 @@ class CancelMilestoneButton extends Component {
 
                 React.toast.info(
                   <p>
-                    Canceling this milestone is pending...
+                    Canceling this Milestone is pending...
                     <br />
                     <a href={txUrl} target="_blank" rel="noopener noreferrer">
                       View transaction
@@ -57,7 +57,7 @@ class CancelMilestoneButton extends Component {
               onConfirmation: txUrl => {
                 React.toast.success(
                   <p>
-                    The milestone has been cancelled!
+                    The Milestone has been cancelled!
                     <br />
                     <a href={txUrl} target="_blank" rel="noopener noreferrer">
                       View transaction
@@ -67,7 +67,7 @@ class CancelMilestoneButton extends Component {
               },
               onError: (err, txUrl) => {
                 if (err === 'patch-error') {
-                  ErrorPopup('Something went wrong with canceling your milestone', err);
+                  ErrorPopup('Something went wrong with canceling your Milestone', err);
                 } else {
                   ErrorPopup(
                     'Something went wrong with the transaction.',
@@ -80,7 +80,9 @@ class CancelMilestoneButton extends Component {
       })
       .catch(err => {
         if (err === 'noBalance') {
-          // handle no balance error
+          ErrorPopup('There is no balance left on the account.', err);
+        } else if (err !== undefined) {
+          ErrorPopup('Something went wrong.', err);
         }
       });
   }
@@ -113,9 +115,13 @@ class CancelMilestoneButton extends Component {
 }
 
 CancelMilestoneButton.propTypes = {
-  currentUser: PropTypes.instanceOf(User).isRequired,
+  currentUser: PropTypes.instanceOf(User),
   balance: PropTypes.instanceOf(BigNumber).isRequired,
   milestone: PropTypes.instanceOf(Milestone).isRequired,
+};
+
+CancelMilestoneButton.defaultProps = {
+  currentUser: undefined,
 };
 
 export default CancelMilestoneButton;

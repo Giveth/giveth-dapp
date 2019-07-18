@@ -2,8 +2,13 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import IPFSService from '../services/IPFSService';
 import config from '../configuration';
+import ErrorPopup from './ErrorPopup';
 
-const Label = ({ children }) => <label style={{ marginRight: '0.5rem' }}>{children}</label>;
+const Label = ({ children }) => (
+  <span className="label" style={{ marginRight: '0.5rem' }}>
+    {children}
+  </span>
+);
 
 Label.propTypes = {
   children: PropTypes.node.isRequired,
@@ -22,7 +27,6 @@ function convertVideoUrlToEmbeded(url) {
   if ((match = url.match(/^(https?):\/\/(?:www\.)?vimeo\.com\/(\d+)/))) {
     return `${match[1]}://player.vimeo.com/video/${match[2]}/`;
   }
-
   return url;
 }
 
@@ -111,7 +115,10 @@ class Content extends Component {
 
             this.props.handleQuillInsert(config.ipfsGateway + hash.slice(6));
           })
-          .catch(err => console.log(err));
+          .catch(err => {
+            ErrorPopup('Something went wrong with the upload.', err);
+            console.log(err);
+          });
       },
     );
   }
@@ -191,7 +198,9 @@ class Content extends Component {
     const { type, url, file, currentState } = this.state;
     return (
       <div>
-        <label style={{ display: 'block', marginBottom: '1rem' }}>Choose type of video</label>
+        <span className="label" style={{ display: 'block', marginBottom: '1rem' }}>
+          Choose type of video
+        </span>
         <Label>
           <input name="type" type="radio" onClick={() => this.setState({ type: 'link' })} /> Link
         </Label>
@@ -296,7 +305,7 @@ Content.propTypes = {
 
 export default handleQuillInsert => {
   React.swal({
-    title: 'Attach a video to milestone',
+    title: 'Attach a video to Milestone',
     content: React.swal.msg(<Content handleQuillInsert={handleQuillInsert} />),
     button: {
       visible: false,

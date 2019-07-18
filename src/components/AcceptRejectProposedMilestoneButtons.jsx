@@ -6,7 +6,7 @@ import MilestoneService from 'services/MilestoneService';
 import Milestone from 'models/Milestone';
 import User from 'models/User';
 import ErrorPopup from 'components/ErrorPopup';
-import { checkBalance } from 'lib/middleware';
+import { checkBalance, isLoggedIn } from 'lib/middleware';
 import ConversationModal from 'components/ConversationModal';
 import GA from 'lib/GoogleAnalytics';
 import { Consumer as Web3Consumer } from '../contextProviders/Web3Provider';
@@ -14,15 +14,38 @@ import { Consumer as Web3Consumer } from '../contextProviders/Web3Provider';
 class AcceptRejectProposedMilestoneButtons extends Component {
   constructor() {
     super();
+    this._isLoggedIn = false;
+    this._isLoaded = false;
     this.conversationModal = React.createRef();
   }
 
-  rejectProposedMilestone() {
+  componentDidMount() {
+    this.checkLogin();
+  }
+
+  componentDidUpdate() {
+    this.checkLogin();
+  }
+
+  async checkLogin() {
+    const { currentUser } = this.props;
+    if (currentUser === undefined) return;
+    this._isLoggedIn = currentUser._authenticated;
+    isLoggedIn(currentUser, false)
+      .then(_ => {})
+      .catch(_ => {});
+    if (this._isLoggedIn && !this._isLoaded) {
+      this._isLoaded = true;
+      this.forceUpdate();
+    }
+  }
+
+  async rejectProposedMilestone() {
     this.conversationModal.current
       .openModal({
-        title: 'Reject proposed milestone',
+        title: 'Reject proposed Milestone',
         description:
-          'Optionally explain why you reject this proposed milestone. This information will be publicly visible and emailed to the milestone owner.',
+          'Optionally explain why you reject this proposed Milestone. This information will be publicly visible and emailed to the Milestone owner.',
         textPlaceholder: 'Optionally explain why you reject this proposal...',
         required: false,
         cta: 'Reject proposal',
@@ -32,22 +55,22 @@ class AcceptRejectProposedMilestoneButtons extends Component {
         MilestoneService.rejectProposedMilestone({
           milestone: this.props.milestone,
           message: proof.message,
-          onSuccess: () => React.toast.info(<p>The proposed milestone has been rejected.</p>),
-          onError: e => ErrorPopup('Something went wrong with rejecting the proposed milestone', e),
+          onSuccess: () => React.toast.info(<p>The proposed Milestone has been rejected.</p>),
+          onError: e => ErrorPopup('Something went wrong with rejecting the proposed Milestone', e),
         });
       });
   }
 
-  acceptProposedMilestone() {
+  async acceptProposedMilestone() {
     const { milestone, currentUser } = this.props;
 
     checkBalance(this.props.balance)
       .then(() =>
         this.conversationModal.current
           .openModal({
-            title: 'Accept proposed milestone',
+            title: 'Accept proposed Milestone',
             description:
-              'Optionally explain why you accept this proposed milestone. Compliments are appreciated! This information will be publicly visible and emailed to the milestone owner.',
+              'Optionally explain why you accept this proposed Milestone. Compliments are appreciated! This information will be publicly visible and emailed to the Milestone owner.',
             textPlaceholder: 'Optionally explain why you accept this proposal...',
             required: false,
             cta: 'Accept proposal',
@@ -61,13 +84,13 @@ class AcceptRejectProposedMilestoneButtons extends Component {
               onTxHash: txUrl => {
                 GA.trackEvent({
                   category: 'Milestone',
-                  action: 'accepted proposed milestone',
+                  action: 'accepted proposed Milestone',
                   label: milestone._id,
                 });
 
                 React.toast.info(
                   <p>
-                    Accepting this milestone is pending...
+                    Accepting this Milestone is pending...
                     <br />
                     <a href={txUrl} target="_blank" rel="noopener noreferrer">
                       View transaction
@@ -78,7 +101,7 @@ class AcceptRejectProposedMilestoneButtons extends Component {
               onConfirmation: txUrl => {
                 React.toast.success(
                   <p>
-                    The milestone has been accepted!
+                    The Milestone has been accepted!
                     <br />
                     <a href={txUrl} target="_blank" rel="noopener noreferrer">
                       View transaction
@@ -88,7 +111,7 @@ class AcceptRejectProposedMilestoneButtons extends Component {
               },
               onError: (err, txUrl) => {
                 if (err === 'patch-error') {
-                  ErrorPopup('Something went wrong with accepting this proposed milestone', err);
+                  ErrorPopup('Something went wrong with accepting this proposed Milestone', err);
                 } else {
                   ErrorPopup(
                     'Something went wrong with the transaction.',
@@ -101,7 +124,9 @@ class AcceptRejectProposedMilestoneButtons extends Component {
       )
       .catch(err => {
         if (err === 'noBalance') {
-          // handle no balance error
+          ErrorPopup('There is no balance left on the account.', err);
+        } else if (err !== undefined) {
+          ErrorPopup('Something went wrong.', err);
         }
       });
   }
@@ -119,7 +144,7 @@ class AcceptRejectProposedMilestoneButtons extends Component {
                   type="button"
                   className="btn btn-success btn-sm"
                   onClick={() => this.acceptProposedMilestone()}
-                  disabled={!isForeignNetwork}
+                  disabled={!isForeignNetwork || !this._isLoggedIn}
                 >
                   <i className="fa fa-check-square-o" />
                   &nbsp;Accept
@@ -128,7 +153,7 @@ class AcceptRejectProposedMilestoneButtons extends Component {
                   type="button"
                   className="btn btn-danger btn-sm"
                   onClick={() => this.rejectProposedMilestone()}
-                  disabled={!isForeignNetwork}
+                  disabled={!isForeignNetwork || !this._isLoggedIn}
                 >
                   <i className="fa fa-times-circle-o" />
                   &nbsp;Reject
@@ -145,9 +170,13 @@ class AcceptRejectProposedMilestoneButtons extends Component {
 }
 
 AcceptRejectProposedMilestoneButtons.propTypes = {
-  currentUser: PropTypes.instanceOf(User).isRequired,
+  currentUser: PropTypes.instanceOf(User),
   balance: PropTypes.instanceOf(BigNumber).isRequired,
   milestone: PropTypes.instanceOf(Milestone).isRequired,
+};
+
+AcceptRejectProposedMilestoneButtons.defaultProps = {
+  currentUser: undefined,
 };
 
 export default AcceptRejectProposedMilestoneButtons;

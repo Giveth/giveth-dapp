@@ -10,6 +10,7 @@ import { checkBalance, checkForeignNetwork, isLoggedIn } from '../../lib/middlew
 import LoaderButton from '../LoaderButton';
 import User from '../../models/User';
 import { history } from '../../lib/helpers';
+import ErrorPopup from '../ErrorPopup';
 
 /**
  * The edit user profile view mapped to /profile/
@@ -37,12 +38,14 @@ class EditProfile extends Component {
   componentDidMount() {
     this.mounted = true;
     checkForeignNetwork(this.props.isForeignNetwork).then(() =>
-      isLoggedIn(this.props.currentUser)
+      isLoggedIn(this.props.currentUser, true)
         .then(() => checkBalance(this.props.balance))
         .then(() => this.setState({ isLoading: false }))
         .catch(err => {
-          if (err === 'noBalance') history.goBack();
-          else {
+          if (err === 'noBalance') {
+            ErrorPopup('Something went wrong.', err);
+            history.goBack();
+          } else {
             this.setState({
               isLoading: false,
             });
@@ -147,7 +150,7 @@ class EditProfile extends Component {
                   <i className="fa fa-exclamation-triangle" />
                   Please note that all the information entered will be stored on a publicly
                   accessible permanent storage like blockchain. We are not able to erase or alter
-                  any of the information. Do not input anything that you do not have permision to
+                  any of the information. Do not input anything that you do not have permission to
                   share or you are not comfortable with being forever accessible.
                 </div>
 

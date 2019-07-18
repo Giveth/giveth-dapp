@@ -58,13 +58,13 @@ class MilestoneConversations extends Component {
   }
 
   static getReadeableMessageContext(context) {
-    if (context === 'proposed') return 'proposed milestone';
+    if (context === 'proposed') return 'proposed Milestone';
     if (context === 'rejected') return 'rejected completion';
     if (context === 'NeedsReview') return 'requested review';
     if (context === 'Completed') return 'accepted completion';
-    if (context === 'Canceled') return 'canceled milestone';
-    if (context === 'proposedRejected') return 'rejected proposed milestone';
-    if (context === 'proposedAccepted') return 'accepted proposed milestone';
+    if (context === 'Canceled') return 'canceled Milestone';
+    if (context === 'proposedRejected') return 'rejected proposed Milestone';
+    if (context === 'proposedAccepted') return 'accepted proposed Milestone';
     return 'unknown';
   }
 
@@ -107,17 +107,16 @@ class MilestoneConversations extends Component {
                     </p>
                     <div className="c-message">{ReactHtmlParser(c.message)}</div>
 
-                    {c.items &&
-                      c.items.length > 0 && (
-                        <Form className="items-form">
-                          <strong>Attachments</strong>
-                          <MilestoneProof
-                            items={c.items}
-                            token={milestone.token}
-                            isEditMode={false}
-                          />
-                        </Form>
-                      )}
+                    {c.items && c.items.length > 0 && (
+                      <Form className="items-form">
+                        <strong>Attachments</strong>
+                        <MilestoneProof
+                          refreshList={c.items}
+                          token={milestone.token}
+                          isEditMode={false}
+                        />
+                      </Form>
+                    )}
 
                     {/* ---- action buttons ---- */}
                     <div className="c-action-footer">
@@ -143,8 +142,12 @@ class MilestoneConversations extends Component {
 
 MilestoneConversations.propTypes = {
   milestone: PropTypes.instanceOf(Milestone).isRequired,
-  currentUser: PropTypes.instanceOf(User).isRequired,
+  currentUser: PropTypes.instanceOf(User),
   balance: PropTypes.instanceOf(BigNumber).isRequired,
+};
+
+MilestoneConversations.defaultProps = {
+  currentUser: undefined,
 };
 
 export default MilestoneConversations;

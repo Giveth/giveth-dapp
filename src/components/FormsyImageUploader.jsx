@@ -27,6 +27,13 @@ class FormsyImageUploader extends Component {
     this.setState({ image: this.props.previewImage || this.props.avatar });
   }
 
+  componentDidUpdate() {
+    if (!this.state.image && this.props.previewImage) {
+      // eslint-disable-next-line
+      this.setState({ image: this.props.previewImage });
+    }
+  }
+
   cropImage() {
     if (!this.cropper) {
       return;
@@ -67,67 +74,64 @@ class FormsyImageUploader extends Component {
   render() {
     return (
       <div>
-        {(this.props.previewImage || this.previewImage) &&
-          this.props.resize && (
-            <div>
-              <div style={{ width: '100%' }}>
-                <Cropper
-                  style={{ maxHeight: 300 }}
-                  guides={false}
-                  aspectRatio={this.props.aspectRatio}
-                  src={this.state.image}
-                  ref={cropper => {
-                    this.cropper = cropper;
-                  }}
-                  cropend={this.cropImage}
-                  modal={false}
-                  highlight={false}
-                  autoCropArea={1}
-                  zoomOnWheel={false}
-                  viewMode={1}
-                />
-              </div>
+        {(this.props.previewImage || this.previewImage) && this.props.resize && (
+          <div>
+            <div style={{ width: '100%' }}>
+              <Cropper
+                style={{ maxHeight: 300 }}
+                guides={false}
+                aspectRatio={this.props.aspectRatio}
+                src={this.state.image}
+                ref={cropper => {
+                  this.cropper = cropper;
+                }}
+                cropend={this.cropImage}
+                modal={false}
+                highlight={false}
+                autoCropArea={1}
+                zoomOnWheel={false}
+                viewMode={1}
+              />
             </div>
-          )}
-        {this.props.avatar &&
-          this.props.resize && (
-            <div>
-              <div style={{ width: '100%' }}>
-                <Cropper
-                  style={{ maxHeight: 300 }}
-                  guides={false}
-                  aspectRatio={this.props.aspectRatio}
-                  src={this.state.image}
-                  ref={cropper => {
-                    this.cropper = cropper;
-                  }}
-                  cropend={this.cropImage}
-                  modal={false}
-                  highlight={false}
-                  autoCropArea={1}
-                  zoomOnWheel={false}
-                />
-              </div>
+          </div>
+        )}
+        {this.props.avatar && this.props.resize && (
+          <div>
+            <div style={{ width: '100%' }}>
+              <Cropper
+                style={{ maxHeight: 300 }}
+                guides={false}
+                aspectRatio={this.props.aspectRatio}
+                src={this.state.image}
+                ref={cropper => {
+                  this.cropper = cropper;
+                }}
+                cropend={this.cropImage}
+                modal={false}
+                highlight={false}
+                autoCropArea={1}
+                zoomOnWheel={false}
+              />
             </div>
-          )}
-        {!this.props.resize &&
-          (this.props.previewImage || this.previewImage) && (
-            <div className="image-preview">
-              <img src={this.state.image} alt="Preview of uploaded file" />
-            </div>
-          )}
+          </div>
+        )}
+        {!this.props.resize && (this.props.previewImage || this.previewImage) && (
+          <div className="image-preview">
+            <img src={this.state.image} alt="Preview of uploaded file" />
+          </div>
+        )}
 
         <File
           label="Add a picture"
           name="picture"
           accept=".png,.jpeg,.jpg"
           onChange={this.loadAndPreviewImage}
-          help="A picture says more than a thousand words. Select a png or jpg file."
+          help="A picture says more than a thousand words. Select a png or jpg file in a 16:9 aspect ratio."
           validations="minLength: 1"
           validationErrors={{
             minLength: 'Please select a png or jpg file.',
           }}
-          required={this.props.isRequired}
+          required={this.props.isRequired && !this.state.image}
         />
       </div>
     );

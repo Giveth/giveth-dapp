@@ -24,9 +24,9 @@ import ListDonations from 'components/ListDonations';
 import MilestoneConversations from 'components/MilestoneConversations';
 import DelegateMultipleButton from 'components/DelegateMultipleButton';
 import { convertEthHelper, getUserAvatar, getUserName } from '../../lib/helpers';
-
 import MilestoneService from '../../services/MilestoneService';
 import ShareOptions from '../ShareOptions';
+import { Consumer as WhiteListConsumer } from '../../contextProviders/WhiteListProvider';
 
 /**
   Loads and shows a single milestone
@@ -59,7 +59,7 @@ class ViewMilestone extends Component {
 
     MilestoneService.subscribeOne(
       milestoneId,
-      milestone =>
+      milestone => {
         this.setState({
           milestone,
           isLoading: false,
@@ -67,9 +67,10 @@ class ViewMilestone extends Component {
           recipient: milestone.pendingRecipientAddress
             ? milestone.pendingRecipient
             : milestone.recipient,
-        }),
+        });
+      },
       err => {
-        ErrorPopup('Something went wrong with viewing the milestone. Please try a refresh.', err);
+        ErrorPopup('Something went wrong with viewing the Milestone. Please try a refresh.', err);
         this.setState({ isLoading: false });
       },
     );
@@ -115,15 +116,71 @@ class ViewMilestone extends Component {
     return ReactHtmlParser(this.state.milestone.description, {
       transform(node, index) {
         if (node.attribs && node.attribs.class === 'ql-video') {
+          const url = node.attribs.src;
+          const match =
+            url.match(/^(https?):\/\/(?:(?:www|m)\.)?youtube\.com\/([a-zA-Z0-9_-]+)/) ||
+            url.match(/^(https?):\/\/(?:(?:www|m)\.)?youtu\.be\/([a-zA-Z0-9_-]+)/) ||
+            url.match(/^(https?):\/\/(?:(?:fame)\.)?giveth\.io\/([a-zA-Z0-9_-]+)/);
+          if (match) {
+            return (
+              <div className="video-wrapper" key={index}>
+                {convertNodeToElement(node, index)}
+              </div>
+            );
+          }
           return (
-            <div className="video-wrapper" key={index}>
-              {convertNodeToElement(node, index)}
-            </div>
+            <video width="100%" height="auto" controls name="media">
+              <source src={node.attribs.src} type="video/webm" />
+            </video>
           );
+        }
+        if (node.name === 'img') {
+          return <img style={{ height: 'auto', width: '100%' }} alt="" src={node.attribs.src} />;
         }
         return undefined;
       },
     });
+  }
+
+  renderTitleHelper() {
+    const { milestone } = this.state;
+
+    if (milestone.isCapped) {
+      if (!milestone.fullyFunded) {
+        return (
+          <p>
+            Amount requested: {convertEthHelper(milestone.maxAmount)} {milestone.token.symbol}
+          </p>
+        );
+      }
+      return <p>This Milestone has reached its funding goal!</p>;
+    }
+
+    // Milestone is uncap
+    if (milestone.acceptsSingleToken) {
+      return <p>This milestone accepts only {milestone.token.symbol}</p>;
+    }
+
+    return (
+      <WhiteListConsumer>
+        {({ state: { tokenWhitelist } }) => {
+          const symbols = tokenWhitelist.map(t => t.symbol);
+          switch (symbols.length) {
+            case 0:
+              return <p>No token is defined to contribute.</p>;
+            case 1:
+              return <p>This milestone accepts only ${symbols}</p>;
+
+            default: {
+              const symbolsStr = `${symbols.slice(0, -1).join(', ')} or ${
+                symbols[symbols.length - 1]
+              }`;
+              return <p>This milestone accepts {symbolsStr}</p>;
+            }
+          }
+        }}
+      </WhiteListConsumer>
+    );
   }
 
   render() {
@@ -145,21 +202,18 @@ class ViewMilestone extends Component {
 
         {!isLoading && (
           <div>
-            <BackgroundImageHeader image={milestone.image} height={300}>
+            <BackgroundImageHeader
+              image={milestone.image}
+              height={300}
+              adminId={milestone.projectId}
+            >
               <h6>Milestone</h6>
               <h1>{milestone.title}</h1>
 
-              {!milestone.status === 'InProgress' && <p>This milestone is not active anymore</p>}
+              {!milestone.status === 'InProgress' && <p>This Milestone is not active anymore</p>}
 
-              {milestone.fullyFunded && <p>This milestone has reached its funding goal!</p>}
+              {this.renderTitleHelper()}
 
-              {milestone.isCapped &&
-                !milestone.fullyFunded && (
-                  <p>
-                    Amount requested: {convertEthHelper(milestone.maxAmount)}{' '}
-                    {milestone.token.symbol}
-                  </p>
-                )}
               <p>Campaign: {campaign.title} </p>
 
               <div className="milestone-actions">
@@ -181,7 +235,7 @@ class ViewMilestone extends Component {
                       type={Milestone.type}
                       maxDonationAmount={
                         milestone.isCapped
-                          ? milestone.maxAmount.minus(milestone.currentBalance)
+                          ? milestone.maxAmount.minus(milestone.totalDonated)
                           : undefined
                       }
                     />
@@ -234,44 +288,43 @@ class ViewMilestone extends Component {
                 </div>
               </div>
 
-              {milestone.items &&
-                milestone.items.length > 0 && (
-                  <div className="row spacer-top-50 dashboard-table-view">
-                    <div className="col-md-8 m-auto">
-                      <h4>Milestone proof</h4>
-                      <p>These receipts show how the money of this milestone was spent.</p>
+              {milestone.items && milestone.items.length > 0 && (
+                <div className="row spacer-top-50 dashboard-table-view">
+                  <div className="col-md-8 m-auto">
+                    <h4>Milestone proof</h4>
+                    <p>These receipts show how the money of this Milestone was spent.</p>
 
-                      {/* MilesteneItem needs to be wrapped in a form or it won't mount */}
-                      <Form>
-                        <div className="table-container">
-                          <table className="table table-striped table-hover">
-                            <thead>
-                              <tr>
-                                <th className="td-item-date">Date</th>
-                                <th className="td-item-description">Description</th>
-                                <th className="td-item-amount-fiat">Amount Fiat</th>
-                                <th className="td-item-amount-ether">
-                                  Amount {milestone.token.symbol}
-                                </th>
-                                <th className="td-item-file-upload">Attached proof</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {milestone.items.map((item, i) => (
-                                <MilestoneItem
-                                  key={item._id}
-                                  name={`milestoneItem-${i}`}
-                                  item={item}
-                                  token={milestone.token}
-                                />
-                              ))}
-                            </tbody>
-                          </table>
-                        </div>
-                      </Form>
-                    </div>
+                    {/* MilesteneItem needs to be wrapped in a form or it won't mount */}
+                    <Form>
+                      <div className="table-container">
+                        <table className="table table-striped table-hover">
+                          <thead>
+                            <tr>
+                              <th className="td-item-date">Date</th>
+                              <th className="td-item-description">Description</th>
+                              <th className="td-item-amount-fiat">Amount Fiat</th>
+                              <th className="td-item-amount-ether">
+                                Amount {milestone.token.symbol}
+                              </th>
+                              <th className="td-item-file-upload">Attached proof</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {milestone.items.map((item, i) => (
+                              <MilestoneItem
+                                key={item._id}
+                                name={`milestoneItem-${i}`}
+                                item={item}
+                                token={milestone.token}
+                              />
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </Form>
                   </div>
-                )}
+                </div>
+              )}
 
               <div className="row spacer-top-50">
                 <div className="col-md-8 m-auto">
@@ -309,9 +362,9 @@ class ViewMilestone extends Component {
                           {!milestone.hasReviewer && (
                             <p className="form-text alert alert-warning missing-reviewer-alert">
                               <i className="fa fa-exclamation-triangle" />
-                              This milestone does not have a reviewer. Any donations to this
-                              milestone can be withdrawn at any time and no checks are in place to
-                              ensure this milestone is completed.
+                              This Milestone does not have a reviewer. Any donations to this
+                              Milestone can be withdrawn at any time and no checks are in place to
+                              ensure this Milestone is completed.
                             </p>
                           )}
                         </div>
@@ -363,8 +416,8 @@ class ViewMilestone extends Component {
                           )}
                           {!milestone.hasRecipient && (
                             <p className="form-text">
-                              This milestone does not have a recipient. If you are interested in
-                              completing the work for this milestone, contact the milestone manager
+                              This Milestone does not have a recipient. If you are interested in
+                              completing the work for this Milestone, contact the Milestone manager
                               and let them know!
                             </p>
                           )}
@@ -372,13 +425,13 @@ class ViewMilestone extends Component {
 
                         {milestone.date && (
                           <div className="form-group">
-                            <span className="label">Date of milestone</span>
+                            <span className="label">Date of Milestone</span>
                             <small className="form-text">
                               {milestone.isCapped
                                 ? `This date defines the ${
                                     milestone.token.symbol
                                   }-fiat conversion rate`
-                                : 'The date this milestone was created'}
+                                : 'The date this Milestone was created'}
                             </small>
                             {moment.utc(milestone.date).format('Do MMM YYYY')}
                           </div>
@@ -411,7 +464,7 @@ class ViewMilestone extends Component {
                               ? `
                               The amount of ${milestone.token.symbol} currently donated to this
                               Milestone`
-                              : 'The total amount(s) donated to this milestone'}
+                              : 'The total amount(s) donated to this Milestone'}
                           </small>
                           {milestone.donationCounters.length &&
                             milestone.donationCounters.map(dc => (
@@ -421,25 +474,24 @@ class ViewMilestone extends Component {
                             ))}
                         </div>
 
-                        {!milestone.isCapped &&
-                          milestone.donationCounters.length > 0 && (
-                            <div className="form-group">
-                              <span className="label">Current Balances</span>
-                              <small className="form-text">
-                                The current balances of this Milestone
-                              </small>
-                              {milestone.donationCounters.map(dc => (
-                                <p className="donation-counter" key={dc.symbol}>
-                                  {convertEthHelper(dc.currentBalance)} {dc.symbol}
-                                </p>
-                              ))}
-                            </div>
-                          )}
+                        {!milestone.isCapped && milestone.donationCounters.length > 0 && (
+                          <div className="form-group">
+                            <span className="label">Current Balance</span>
+                            <small className="form-text">
+                              The current balance(s) of this Milestone
+                            </small>
+                            {milestone.donationCounters.map(dc => (
+                              <p className="donation-counter" key={dc.symbol}>
+                                {convertEthHelper(dc.currentBalance)} {dc.symbol}
+                              </p>
+                            ))}
+                          </div>
+                        )}
 
                         <div className="form-group">
                           <span className="label">Campaign</span>
                           <small className="form-text">
-                            The campaign this milestone belongs to.
+                            The Campaign this Milestone belongs to.
                           </small>
                           {campaign.title}
                         </div>
@@ -492,7 +544,7 @@ class ViewMilestone extends Component {
                       type={Milestone.type}
                       maxDonationAmount={
                         milestone.isCapped
-                          ? milestone.maxAmount.minus(milestone.currentBalance)
+                          ? milestone.maxAmount.minus(milestone.totalDonated)
                           : undefined
                       }
                     />
@@ -513,7 +565,7 @@ ViewMilestone.propTypes = {
     push: PropTypes.func.isRequired,
   }).isRequired,
   currentUser: PropTypes.instanceOf(User),
-  balance: PropTypes.instanceOf(BigNumber).isRequired,
+  balance: PropTypes.instanceOf(BigNumber),
   match: PropTypes.shape({
     params: PropTypes.shape({
       milestoneId: PropTypes.string.isRequired,
@@ -523,6 +575,7 @@ ViewMilestone.propTypes = {
 
 ViewMilestone.defaultProps = {
   currentUser: undefined,
+  balance: new BigNumber(0),
 };
 
 export default ViewMilestone;

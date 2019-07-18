@@ -36,12 +36,13 @@ class WithdrawMilestoneFundsButton extends Component {
                 <p>
                   <strong>Note:</strong> Due to the current gas limitations you will be required to
                   withdrawal multiple times. You have <strong>{donationsCount}</strong> donations to{' '}
-                  {isRecipient ? 'withdraw' : 'disburse'} and the current max is <strong>15</strong>.
+                  {isRecipient ? 'withdraw' : 'disburse'} and the current max is <strong>15</strong>
+                  .
                 </p>
               )}
               <p>
                 We will initiate the transfer of the funds to{' '}
-                {milestone instanceof LPMilestone && 'the campaign.'}
+                {milestone instanceof LPMilestone && 'the Campaign.'}
                 {!(milestone instanceof LPMilestone) &&
                   (isRecipient ? 'your wallet.' : "the recipient's wallet.")}
               </p>
@@ -70,7 +71,7 @@ class WithdrawMilestoneFundsButton extends Component {
 
                 React.toast.info(
                   <p>
-                    Initiating withdrawal from milestone...
+                    Initiating withdrawal from Milestone...
                     <br />
                     <a href={txUrl} target="_blank" rel="noopener noreferrer">
                       View transaction
@@ -81,7 +82,7 @@ class WithdrawMilestoneFundsButton extends Component {
               onConfirmation: txUrl => {
                 React.toast.info(
                   <p>
-                    The milestone withdraw has been initiated...
+                    The Milestone withdraw has been initiated...
                     <br />
                     <a href={txUrl} target="_blank" rel="noopener noreferrer">
                       View transaction
@@ -95,7 +96,7 @@ class WithdrawMilestoneFundsButton extends Component {
                 if (err === 'patch-error') {
                   ErrorPopup('Something went wrong with witdrawing your funds', err);
                 } else if (err.message === 'no-donations') {
-                  msg = <p>Nothing to withdraw. There are no donations to this milestone.</p>;
+                  msg = <p>Nothing to withdraw. There are no donations to this Milestone.</p>;
                 } else if (txUrl) {
                   // TODO: need to update feathers to reset the donations to previous state as this
                   // tx failed.
@@ -124,7 +125,9 @@ class WithdrawMilestoneFundsButton extends Component {
       })
       .catch(err => {
         if (err === 'noBalance') {
-          // handle no balance error
+          ErrorPopup('There is no balance left on the account.', err);
+        } else if (err !== undefined) {
+          ErrorPopup('Something went wrong.', err);
         }
       });
   }
@@ -155,9 +158,13 @@ class WithdrawMilestoneFundsButton extends Component {
 }
 
 WithdrawMilestoneFundsButton.propTypes = {
-  currentUser: PropTypes.instanceOf(User).isRequired,
+  currentUser: PropTypes.instanceOf(User),
   balance: PropTypes.instanceOf(BigNumber).isRequired,
   milestone: PropTypes.instanceOf(Milestone).isRequired,
+};
+
+WithdrawMilestoneFundsButton.defaultProps = {
+  currentUser: undefined,
 };
 
 export default WithdrawMilestoneFundsButton;

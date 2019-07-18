@@ -7,12 +7,19 @@ import BigNumber from 'bignumber.js';
 
 import NetworkWarning from 'components/NetworkWarning';
 import { Consumer as Web3Consumer } from 'contextProviders/Web3Provider';
+import { Consumer as WhiteListConsumer } from 'contextProviders/WhiteListProvider';
 
 import MilestoneActions from 'components/MilestoneActions';
 import { isLoggedIn } from 'lib/middleware';
+import ErrorPopup from '../ErrorPopup';
 import Loader from '../Loader';
 import User from '../../models/User';
-import { getTruncatedText, getReadableStatus, convertEthHelper } from '../../lib/helpers';
+import {
+  getTruncatedText,
+  getReadableStatus,
+  convertEthHelper,
+  ANY_TOKEN,
+} from '../../lib/helpers';
 import config from '../../configuration';
 
 import MilestoneService from '../../services/MilestoneService';
@@ -42,14 +49,17 @@ class MyMilestones extends Component {
 
     this.milestoneTabs = ['Active', 'Paid', 'Canceled', 'Rejected'];
     this.handlePageChanged = this.handlePageChanged.bind(this);
+    this.getTokenSymbol = this.getTokenSymbol.bind(this);
   }
 
   componentDidMount() {
-    isLoggedIn(this.props.currentUser)
+    isLoggedIn(this.props.currentUser, true)
       .then(() => this.loadMileStones())
       .catch(err => {
         if (err === 'notLoggedIn') {
-          // default behavior is to go home or signin page after swal popup
+          ErrorPopup('You are not logged in.', err);
+        } else if (err !== undefined) {
+          ErrorPopup('Something went wrong.', err);
         }
       });
   }
@@ -66,6 +76,13 @@ class MyMilestones extends Component {
 
   componentWillUnmount() {
     MilestoneService.unsubscribe();
+  }
+
+  getTokenSymbol(token) {
+    if (token.foreignAddress === ANY_TOKEN.foreignAddress) {
+      return this.props.tokenWhitelist.map(t => t.symbol).join(', ');
+    }
+    return token.symbol;
   }
 
   loadMileStones() {
@@ -87,7 +104,7 @@ class MyMilestones extends Component {
           isLoading: false,
         }),
       onError: err => {
-        console.log('err', err);
+        ErrorPopup('Something went wrong.', err);
         // TO DO: handle error here in view
         this.setState({ isLoading: false });
       },
@@ -130,7 +147,7 @@ class MyMilestones extends Component {
             <div className="container-fluid page-layout dashboard-table-view">
               <div className="row">
                 <div className="col-md-10 m-auto">
-                  <h1>Your milestones</h1>
+                  <h1>Your Milestones</h1>
 
                   <NetworkWarning
                     incorrectNetwork={!isForeignNetwork}
@@ -157,141 +174,125 @@ class MyMilestones extends Component {
 
                   {!isLoading && (
                     <div className="table-container">
-                      {milestones &&
-                        milestones.length > 0 && (
-                          <div>
-                            <table className="table table-responsive table-striped table-hover">
-                              <thead>
-                                <tr>
+                      {milestones && milestones.length > 0 && (
+                        <div>
+                          <table className="table table-responsive table-striped table-hover">
+                            <thead>
+                              <tr>
+                                {currentUser.authenticated && (
+                                  <th className="td-actions">Actions</th>
+                                )}
+                                <th className="td-created-at">Created</th>
+                                <th className="td-name">Name</th>
+                                <th className="td-status">Status</th>
+                                <th className="td-donations-number">Requested</th>
+                                <th className="td-donations-number">Donations</th>
+                                <th className="td-donations-amount">Donated</th>
+                                <th className="td-reviewer">Reviewer</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {milestones.map(m => (
+                                <tr key={m._id} className={m.status === 'Pending' ? 'pending' : ''}>
                                   {currentUser.authenticated && (
-                                    <th className="td-actions">Actions</th>
+                                    <td className="td-actions">
+                                      <MilestoneActions
+                                        milestone={m}
+                                        balance={balance}
+                                        currentUser={currentUser}
+                                      />
+                                    </td>
                                   )}
-                                  <th className="td-created-at">Created</th>
-                                  <th className="td-name">Name</th>
-                                  <th className="td-status">Status</th>
-                                  <th className="td-donations-number">Requested</th>
-                                  <th className="td-donations-number">Donations</th>
-                                  <th className="td-donations-amount">Donated</th>
-                                  <th className="td-reviewer">Reviewer</th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                {milestones.map(m => (
-                                  <tr
-                                    key={m._id}
-                                    className={m.status === 'Pending' ? 'pending' : ''}
-                                  >
-                                    {currentUser.authenticated && (
-                                      <td className="td-actions">
-                                        <MilestoneActions
-                                          milestone={m}
-                                          balance={balance}
-                                          currentUser={currentUser}
-                                        />
-                                      </td>
+                                  <td className="td-created-at">
+                                    {m.createdAt && (
+                                      <span>{moment.utc(m.createdAt).format('Do MMM YYYY')}</span>
                                     )}
-                                    <td className="td-created-at">
-                                      {m.createdAt && (
-                                        <span>{moment.utc(m.createdAt).format('Do MMM YYYY')}</span>
-                                      )}
-                                    </td>
-                                    <td className="td-name">
-                                      <strong>
-                                        <Link
-                                          to={`/campaigns/${m.campaign._id}/milestones/${m._id}`}
-                                        >
-                                          MILESTONE <em>{getTruncatedText(m.title, 35)}</em>
-                                        </Link>
-                                      </strong>
-                                      <br />
-                                      <i className="fa fa-arrow-right" />
-                                      <Link
-                                        className="secondary-link"
-                                        to={`/campaigns/${m.campaign._id}`}
-                                      >
-                                        CAMPAIGN <em>{getTruncatedText(m.campaign.title, 40)}</em>
+                                  </td>
+                                  <td className="td-name">
+                                    <strong>
+                                      <Link to={`/campaigns/${m.campaign._id}/milestones/${m._id}`}>
+                                        MILESTONE <em>{getTruncatedText(m.title, 35)}</em>
                                       </Link>
-                                    </td>
-                                    <td className="td-status">
-                                      {![Milestone.PROPOSED, Milestone.REJECTED].includes(
-                                        m.status,
-                                      ) &&
-                                        (m.status === Milestone.PENDING || !m.mined) && (
-                                          <span>
-                                            <i className="fa fa-circle-o-notch fa-spin" />
-                                            &nbsp;
-                                          </span>
-                                        )}
-                                      {m.status === 'NeedsReview' &&
-                                        reviewDue(m.updatedAt) && (
-                                          <span>
-                                            <i className="fa fa-exclamation-triangle" />
-                                            &nbsp;
-                                          </span>
-                                        )}
-                                      {getReadableStatus(m.status)}
-                                    </td>
-                                    <td className="td-donations-number">
-                                      {m.isCapped && convertEthHelper(m.maxAmount)} {m.token.symbol}
-                                    </td>
-                                    <td className="td-donations-number">{m.totalDonations}</td>
-                                    <td className="td-donations-">
-                                      {m.isCapped &&
-                                        convertEthHelper(
-                                          (m.donationCounters &&
-                                            m.donationCounters.length &&
-                                            m.donationCounters[0].currentBalance) ||
-                                            '0',
-                                        )}{' '}
-                                      {m.isCapped && m.token.symbol}
-                                      {!m.isCapped && (
-                                        <Link to={`/campaigns/${m.campaignId}/milestones/${m.id}`}>
-                                          View Milestone
-                                        </Link>
+                                    </strong>
+                                    <br />
+                                    <i className="fa fa-arrow-right" />
+                                    <Link
+                                      className="secondary-link"
+                                      to={`/campaigns/${m.campaign._id}`}
+                                    >
+                                      CAMPAIGN <em>{getTruncatedText(m.campaign.title, 40)}</em>
+                                    </Link>
+                                  </td>
+                                  <td className="td-status">
+                                    {![Milestone.PROPOSED, Milestone.REJECTED].includes(m.status) &&
+                                      (m.status === Milestone.PENDING || !m.mined) && (
+                                        <span>
+                                          <i className="fa fa-circle-o-notch fa-spin" />
+                                          &nbsp;
+                                        </span>
                                       )}
-                                    </td>
-                                    <td className="td-reviewer">
-                                      {m.reviewer &&
-                                        m.reviewerAddress && (
-                                          <Link to={`/profile/${m.reviewerAddress}`}>
-                                            {m.reviewer.name || 'Anomynous user'}
-                                          </Link>
-                                        )}
-                                    </td>
-                                  </tr>
-                                ))}
-                              </tbody>
-                            </table>
+                                    {m.status === 'NeedsReview' && reviewDue(m.updatedAt) && (
+                                      <span>
+                                        <i className="fa fa-exclamation-triangle" />
+                                        &nbsp;
+                                      </span>
+                                    )}
+                                    {getReadableStatus(m.status)}
+                                  </td>
+                                  <td className="td-donations-number">
+                                    {m.isCapped && convertEthHelper(m.maxAmount)}{' '}
+                                    {this.getTokenSymbol(m.token)}
+                                  </td>
+                                  <td className="td-donations-number">{m.totalDonations}</td>
+                                  <td className="td-donations-">
+                                    {m.isCapped && convertEthHelper(m.totalDonated)}{' '}
+                                    {m.isCapped && m.token.symbol}
+                                    {!m.isCapped && (
+                                      <Link to={`/campaigns/${m.campaignId}/milestones/${m.id}`}>
+                                        View Milestone
+                                      </Link>
+                                    )}
+                                  </td>
+                                  <td className="td-reviewer">
+                                    {m.reviewer && m.reviewerAddress && (
+                                      <Link to={`/profile/${m.reviewerAddress}`}>
+                                        {m.reviewer.name || 'Anonymous user'}
+                                      </Link>
+                                    )}
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
 
-                            {totalResults > itemsPerPage && (
-                              <center>
-                                <Pagination
-                                  activePage={skipPages + 1}
-                                  itemsCountPerPage={itemsPerPage}
-                                  totalItemsCount={totalResults}
-                                  pageRangeDisplayed={visiblePages}
-                                  onChange={this.handlePageChanged}
-                                />
-                              </center>
-                            )}
-                          </div>
-                        )}
-
-                      {milestones &&
-                        milestones.length === 0 && (
-                          <div className="no-results">
+                          {totalResults > itemsPerPage && (
                             <center>
-                              <h3>No milestones here!</h3>
-                              <img
-                                className="empty-state-img"
-                                src={`${process.env.PUBLIC_URL}/img/delegation.svg`}
-                                width="200px"
-                                height="200px"
-                                alt="no-milestones-icon"
+                              <Pagination
+                                activePage={Math.floor(skipPages / itemsPerPage) + 1}
+                                itemsCountPerPage={itemsPerPage}
+                                totalItemsCount={totalResults}
+                                pageRangeDisplayed={visiblePages}
+                                onChange={this.handlePageChanged}
                               />
                             </center>
-                          </div>
-                        )}
+                          )}
+                        </div>
+                      )}
+
+                      {milestones && milestones.length === 0 && (
+                        <div className="no-results">
+                          <center>
+                            <h3>No Milestones here!</h3>
+                            <img
+                              className="empty-state-img"
+                              src={`${process.env.PUBLIC_URL}/img/delegation.svg`}
+                              width="200px"
+                              height="200px"
+                              alt="no-milestones-icon"
+                            />
+                          </center>
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
@@ -305,8 +306,17 @@ class MyMilestones extends Component {
 }
 
 MyMilestones.propTypes = {
-  currentUser: PropTypes.instanceOf(User).isRequired,
+  currentUser: PropTypes.instanceOf(User),
   balance: PropTypes.instanceOf(BigNumber).isRequired,
+  tokenWhitelist: PropTypes.arrayOf(PropTypes.shape()).isRequired,
 };
 
-export default MyMilestones;
+MyMilestones.defaultProps = {
+  currentUser: undefined,
+};
+
+export default props => (
+  <WhiteListConsumer>
+    {({ state: { tokenWhitelist } }) => <MyMilestones tokenWhitelist={tokenWhitelist} {...props} />}
+  </WhiteListConsumer>
+);

@@ -6,6 +6,7 @@ import Milestone from 'models/Milestone';
 import User from 'models/User';
 import { checkBalance } from 'lib/middleware';
 import { history } from 'lib/helpers';
+import ErrorPopup from './ErrorPopup';
 import { Consumer as Web3Consumer } from '../contextProviders/Web3Provider';
 
 class EditMilestoneButton extends Component {
@@ -28,7 +29,9 @@ class EditMilestoneButton extends Component {
       })
       .catch(err => {
         if (err === 'noBalance') {
-          // handle no balance error
+          ErrorPopup('There is no balance left on the account.', err);
+        } else if (err !== undefined) {
+          ErrorPopup('Something went wrong.', err);
         }
       });
   }
@@ -40,13 +43,12 @@ class EditMilestoneButton extends Component {
       <Web3Consumer>
         {({ state: { isForeignNetwork } }) => (
           <Fragment>
-            {milestone.canUserEdit(currentUser) &&
-              isForeignNetwork && (
-                <button type="button" className="btn btn-link" onClick={() => this.editMilestone()}>
-                  <i className="fa fa-edit" />
-                  &nbsp;Edit
-                </button>
-              )}
+            {milestone.canUserEdit(currentUser) && isForeignNetwork && (
+              <button type="button" className="btn btn-link" onClick={() => this.editMilestone()}>
+                <i className="fa fa-edit" />
+                &nbsp;Edit
+              </button>
+            )}
           </Fragment>
         )}
       </Web3Consumer>
@@ -55,9 +57,13 @@ class EditMilestoneButton extends Component {
 }
 
 EditMilestoneButton.propTypes = {
-  currentUser: PropTypes.instanceOf(User).isRequired,
+  currentUser: PropTypes.instanceOf(User),
   balance: PropTypes.instanceOf(BigNumber).isRequired,
   milestone: PropTypes.instanceOf(Milestone).isRequired,
+};
+
+EditMilestoneButton.defaultProps = {
+  currentUser: undefined,
 };
 
 export default EditMilestoneButton;

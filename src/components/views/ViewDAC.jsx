@@ -115,7 +115,7 @@ class ViewDAC extends Component {
 
         {!isLoading && (
           <div>
-            <BackgroundImageHeader image={dac.image} height={300}>
+            <BackgroundImageHeader image={dac.image} height={300} adminId={dac.delegateId}>
               <h6>Decentralized Altruistic Community</h6>
               <h1>{dac.title}</h1>
 
@@ -133,7 +133,7 @@ class ViewDAC extends Component {
               />
               {dac.communityUrl && (
                 <CommunityButton className="btn btn-secondary" url={dac.communityUrl}>
-                  Join our community
+                  Join our Community
                 </CommunityButton>
               )}
             </BackgroundImageHeader>
@@ -168,19 +168,18 @@ class ViewDAC extends Component {
                     </p>
                     {isLoadingCampaigns && <Loader className="small" />}
 
-                    {campaigns.length > 0 &&
-                      !isLoadingCampaigns && (
-                        <div className="cards-grid-container">
-                          {campaigns.map(c => (
-                            <CampaignCard
-                              key={c.id}
-                              campaign={c}
-                              history={history}
-                              balance={balance}
-                            />
-                          ))}
-                        </div>
-                      )}
+                    {campaigns.length > 0 && !isLoadingCampaigns && (
+                      <div className="cards-grid-container">
+                        {campaigns.map(c => (
+                          <CampaignCard
+                            key={c.id}
+                            campaign={c}
+                            history={history}
+                            balance={balance}
+                          />
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </div>
               )}
@@ -228,11 +227,12 @@ ViewDAC.propTypes = {
       id: PropTypes.string,
     }).isRequired,
   }).isRequired,
-  balance: PropTypes.instanceOf(BigNumber).isRequired,
+  balance: PropTypes.instanceOf(BigNumber),
 };
 
 ViewDAC.defaultProps = {
   currentUser: undefined,
+  balance: new BigNumber(0),
 };
 
 export default ViewDAC;

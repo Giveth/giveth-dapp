@@ -3,15 +3,15 @@ import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 import Avatar from 'react-avatar';
 import Masonry, { ResponsiveMasonry } from 'react-responsive-masonry';
-import ReactHtmlParser from 'react-html-parser';
+import ReactHtmlParser, { convertNodeToElement } from 'react-html-parser';
 import BigNumber from 'bignumber.js';
-
+import { Helmet, HelmetProvider } from 'react-helmet-async';
 import Balances from 'components/Balances';
 import { feathersClient } from '../../lib/feathersClient';
 import Loader from '../Loader';
 import MilestoneCard from '../MilestoneCard';
 import GoBackButton from '../GoBackButton';
-import { isOwner, getUserName, getUserAvatar } from '../../lib/helpers';
+import { isOwner, getUserName, getUserAvatar, history } from '../../lib/helpers';
 import { checkBalance } from '../../lib/middleware';
 import BackgroundImageHeader from '../BackgroundImageHeader';
 import DonateButton from '../DonateButton';
@@ -35,6 +35,9 @@ import config from '../../configuration';
  * @param history      Browser history object
  * @param balance      User's current balance
  */
+
+const helmetContext = {};
+
 class ViewCampaign extends Component {
   constructor(props) {
     super(props);
@@ -61,9 +64,11 @@ class ViewCampaign extends Component {
     const campaignId = this.props.match.params.id;
 
     CampaignService.get(campaignId)
-      .then(campaign => this.setState({ campaign, isLoading: false }))
+      .then(campaign => {
+        this.setState({ campaign, isLoading: false });
+      })
       .catch(err => {
-        ErrorPopup('Something went wrong loading campaign. Please try refresh the page.', err);
+        ErrorPopup('Something went wrong loading Campaign. Please try refresh the page.', err);
         this.setState({ isLoading: false });
       }); // TODO: inform user of error
 
@@ -125,7 +130,7 @@ class ViewCampaign extends Component {
       .then(() => {
         React.swal({
           title: 'Delete Milestone?',
-          text: 'You will not be able to recover this milestone!',
+          text: 'You will not be able to recover this Milestone!',
           icon: 'warning',
           dangerMode: true,
         }).then(() => {
@@ -135,13 +140,62 @@ class ViewCampaign extends Component {
       })
       .catch(err => {
         if (err === 'noBalance') {
-          // handle no balance error
+          ErrorPopup('There is no balance .', err);
+        } else if (err !== undefined) {
+          ErrorPopup('Something went wrong.', err);
         }
       });
   }
 
+  editCampaign(id) {
+    checkBalance(this.props.balance)
+      .then(() => {
+        history.push(`/campaigns/${id}/edit`);
+      })
+      .catch(err => {
+        if (err === 'noBalance') {
+          ErrorPopup('There is no balance left on the account.', err);
+        } else if (err !== undefined) {
+          ErrorPopup('Something went wrong.', err);
+        }
+      });
+  }
+
+  renderDescription() {
+    return ReactHtmlParser(this.state.campaign.description, {
+      transform(node, index) {
+        if (node.attribs && node.attribs.class === 'ql-video') {
+          const url = node.attribs.src;
+          const match =
+            url.match(/^(https?):\/\/(?:(?:www|m)\.)?youtube\.com\/([a-zA-Z0-9_-]+)/) ||
+            url.match(/^(https?):\/\/(?:(?:www|m)\.)?youtu\.be\/([a-zA-Z0-9_-]+)/) ||
+            url.match(/^(https?):\/\/(?:(?:fame)\.)?giveth\.io\/([a-zA-Z0-9_-]+)/);
+          if (match) {
+            return (
+              <div className="video-wrapper" key={index}>
+                {convertNodeToElement(node, index)}
+              </div>
+            );
+          }
+          return (
+            <video width="100%" height="auto" controls name="media">
+              <source src={node.attribs.src} type="video/webm" />
+            </video>
+          );
+        }
+        if (node.name === 'img') {
+          return (
+            <img key="" style={{ height: 'auto', width: '100%' }} alt="" src={node.attribs.src} />
+          );
+        }
+        return undefined;
+      },
+    });
+  }
+
   render() {
-    const { history, currentUser, balance } = this.props;
+    const { currentUser, balance } = this.props;
+    const { campaignUrl } = config;
     const {
       isLoading,
       campaign,
@@ -154,67 +208,105 @@ class ViewCampaign extends Component {
       donationsTotal,
       newDonations,
     } = this.state;
+
     if (!isLoading && !campaign) return <p>Unable to find a campaign</p>;
     return (
-      <ErrorBoundary>
-        <div id="view-campaign-view">
-          {isLoading && <Loader className="fixed" />}
+      <HelmetProvider context={helmetContext}>
+        <ErrorBoundary>
+          <div id="view-campaign-view">
+            {isLoading && <Loader className="fixed" />}
 
-          {!isLoading && (
-            <div>
-              <BackgroundImageHeader image={campaign.image} height={300}>
-                <h6>Campaign</h6>
-                <h1>{campaign.title}</h1>
-                <DonateButton
-                  model={{
-                    type: Campaign.type,
-                    title: campaign.title,
-                    id: campaign.id,
-                    adminId: campaign.projectId,
-                  }}
-                  currentUser={currentUser}
-                  history={history}
-                />
-                {currentUser && (
-                  <DelegateMultipleButton
-                    style={{ padding: '10px 10px' }}
-                    campaign={campaign}
-                    balance={balance}
+            {!isLoading && (
+              <div>
+                <Helmet>
+                  <title>{campaign.title}</title>
+
+                  {/* Google / Search Engine Tags */}
+                  <meta itemProp="name" content={campaign.title} />
+                  <meta itemProp="description" content={campaign.description} />
+                  <meta itemProp="image" content={campaign.image} />
+
+                  {/* Facebook Meta Tags */}
+                  <meta property="og:url" content={campaignUrl + campaign.id} />
+                  <meta property="og:type" content="website" />
+                  <meta property="og:title" content={campaign.title} />
+                  <meta property="og:description" content={campaign.description} />
+                  <meta property="og:image" content={campaign.image} />
+
+                  {/* Twitter Meta Tags */}
+                  <meta name="twitter:card" content="summary_large_image" />
+                  <meta name="twitter:title" content={campaign.title} />
+                  <meta name="twitter:description" content={campaign.description} />
+                  <meta name="twitter:image" content={campaign.image} />
+                </Helmet>
+                <BackgroundImageHeader
+                  image={campaign.image}
+                  height={300}
+                  adminId={campaign.projectId}
+                >
+                  <h6>Campaign</h6>
+                  <h1>{campaign.title}</h1>
+                  {campaign.owner &&
+                    currentUser &&
+                    campaign.owner.address === currentUser.address &&
+                    campaign.isActive && (
+                      <button
+                        type="button"
+                        className="btn btn-success"
+                        style={{ marginRight: 10 }}
+                        onClick={() => this.editCampaign(campaign.id)}
+                      >
+                        <i className="fa fa-edit" />
+                        &nbsp;Edit
+                      </button>
+                    )}
+                  <DonateButton
+                    model={{
+                      type: Campaign.type,
+                      title: campaign.title,
+                      id: campaign.id,
+                      adminId: campaign.projectId,
+                    }}
                     currentUser={currentUser}
+                    history={history}
                   />
-                )}
-                {campaign.communityUrl && (
-                  <CommunityButton className="btn btn-secondary" url={campaign.communityUrl}>
-                    Join our community
-                  </CommunityButton>
-                )}
-              </BackgroundImageHeader>
+                  {currentUser && (
+                    <DelegateMultipleButton
+                      style={{ padding: '10px 10px' }}
+                      campaign={campaign}
+                      balance={balance}
+                      currentUser={currentUser}
+                    />
+                  )}
+                  {campaign.communityUrl && (
+                    <CommunityButton className="btn btn-secondary" url={campaign.communityUrl}>
+                      Join our Community
+                    </CommunityButton>
+                  )}
+                </BackgroundImageHeader>
 
-              <div className="container-fluid">
-                <div className="row">
-                  <div className="col-md-8 m-auto">
-                    <div className="go-back-section">
-                      <GoBackButton to="/" title="Campaigns" />
-                      <ShareOptions pageUrl={window.location.href} pageTitle={campaign.title} />
-                    </div>
-
-                    <center>
-                      <Link to={`/profile/${campaign.owner.address}`}>
-                        <Avatar size={50} src={getUserAvatar(campaign.owner)} round />
-                        <p className="small">{getUserName(campaign.owner)}</p>
-                      </Link>
-                    </center>
-
-                    <div className="card content-card ">
-                      <div className="card-body content">
-                        {ReactHtmlParser(campaign.description)}
+                <div className="container-fluid">
+                  <div className="row">
+                    <div className="col-md-8 m-auto">
+                      <div className="go-back-section">
+                        <GoBackButton to="/" title="Campaigns" />
+                        <ShareOptions pageUrl={window.location.href} pageTitle={campaign.title} />
                       </div>
-                    </div>
 
-                    <div className="milestone-header spacer-top-50 card-view">
-                      <h3>Milestones</h3>
-                      {campaign.projectId > 0 &&
-                        isOwner(campaign.owner.address, currentUser) && (
+                      <center>
+                        <Link to={`/profile/${campaign.owner.address}`}>
+                          <Avatar size={50} src={getUserAvatar(campaign.owner)} round />
+                          <p className="small">{getUserName(campaign.owner)}</p>
+                        </Link>
+                      </center>
+
+                      <div className="card content-card ">
+                        <div className="card-body content">{this.renderDescription()}</div>
+                      </div>
+
+                      <div className="milestone-header spacer-top-50 card-view">
+                        <h3>Milestones</h3>
+                        {campaign.projectId > 0 && isOwner(campaign.owner.address, currentUser) && (
                           <Link
                             className="btn btn-primary btn-sm pull-right"
                             to={`/campaigns/${campaign.id}/milestones/new`}
@@ -223,103 +315,104 @@ class ViewCampaign extends Component {
                           </Link>
                         )}
 
-                      {campaign.projectId > 0 &&
-                        !isOwner(campaign.owner.address, currentUser) &&
-                        currentUser && (
-                          <Link
-                            className="btn btn-primary btn-sm pull-right"
-                            to={`/campaigns/${campaign.id}/milestones/propose`}
-                          >
-                            Propose Milestone
-                          </Link>
+                        {campaign.projectId > 0 &&
+                          !isOwner(campaign.owner.address, currentUser) &&
+                          currentUser && (
+                            <Link
+                              className="btn btn-primary btn-sm pull-right"
+                              to={`/campaigns/${campaign.id}/milestones/propose`}
+                            >
+                              Propose Milestone
+                            </Link>
+                          )}
+
+                        {isLoadingMilestones && milestonesTotal === 0 && (
+                          <Loader className="relative" />
                         )}
+                        <ResponsiveMasonry
+                          columnsCountBreakPoints={{
+                            0: 1,
+                            470: 2,
+                            900: 3,
+                            1200: 4,
+                          }}
+                        >
+                          <Masonry gutter="10px">
+                            {milestones.map(m => (
+                              <MilestoneCard
+                                milestone={m}
+                                currentUser={currentUser}
+                                key={m._id}
+                                history={history}
+                                balance={balance}
+                                removeMilestone={() => this.removeMilestone(m._id)}
+                              />
+                            ))}
+                          </Masonry>
+                        </ResponsiveMasonry>
 
-                      {isLoadingMilestones &&
-                        milestonesTotal === 0 && <Loader className="relative" />}
-                      <ResponsiveMasonry
-                        columnsCountBreakPoints={{
-                          0: 1,
-                          470: 2,
-                          900: 3,
-                          1200: 4,
-                        }}
-                      >
-                        <Masonry gutter="10px">
-                          {milestones.map(m => (
-                            <MilestoneCard
-                              milestone={m}
-                              currentUser={currentUser}
-                              key={m._id}
-                              history={history}
-                              balance={balance}
-                              removeMilestone={() => this.removeMilestone(m._id)}
-                            />
-                          ))}
-                        </Masonry>
-                      </ResponsiveMasonry>
-
-                      {milestonesLoaded < milestonesTotal && (
-                        <center>
-                          <button
-                            type="button"
-                            className="btn btn-info"
-                            onClick={() => this.loadMoreMilestones()}
-                            disabled={isLoadingMilestones}
-                          >
-                            {isLoadingMilestones && (
-                              <span>
-                                <i className="fa fa-circle-o-notch fa-spin" /> Loading
-                              </span>
-                            )}
-                            {!isLoadingMilestones && <span>Load More</span>}
-                          </button>
-                        </center>
-                      )}
+                        {milestonesLoaded < milestonesTotal && (
+                          <center>
+                            <button
+                              type="button"
+                              className="btn btn-info"
+                              onClick={() => this.loadMoreMilestones()}
+                              disabled={isLoadingMilestones}
+                            >
+                              {isLoadingMilestones && (
+                                <span>
+                                  <i className="fa fa-circle-o-notch fa-spin" /> Loading
+                                </span>
+                              )}
+                              {!isLoadingMilestones && <span>Load More</span>}
+                            </button>
+                          </center>
+                        )}
+                      </div>
                     </div>
                   </div>
-                </div>
 
-                <div className="row spacer-top-50 spacer-bottom-50">
-                  <div className="col-md-8 m-auto">
-                    <Balances entity={campaign} />
+                  <div className="row spacer-top-50 spacer-bottom-50">
+                    <div className="col-md-8 m-auto">
+                      <Balances entity={campaign} />
 
-                    <ListDonations
-                      donations={donations}
-                      isLoading={isLoadingDonations}
-                      total={donationsTotal}
-                      loadMore={this.loadMoreDonations}
-                      newDonations={newDonations}
-                    />
-                    <DonateButton
-                      model={{
-                        type: Campaign.type,
-                        title: campaign.title,
-                        id: campaign.id,
-                        adminId: campaign.projectId,
-                        token: { symbol: config.nativeTokenName },
-                      }}
-                      currentUser={currentUser}
-                      history={history}
-                    />
+                      <ListDonations
+                        donations={donations}
+                        isLoading={isLoadingDonations}
+                        total={donationsTotal}
+                        loadMore={this.loadMoreDonations}
+                        newDonations={newDonations}
+                      />
+                      <DonateButton
+                        model={{
+                          type: Campaign.type,
+                          title: campaign.title,
+                          id: campaign.id,
+                          adminId: campaign.projectId,
+                          token: { symbol: config.nativeTokenName },
+                        }}
+                        currentUser={currentUser}
+                        history={history}
+                      />
+                    </div>
                   </div>
-                </div>
-                <div className="row spacer-top-50 spacer-bottom-50">
-                  <div className="col-md-8 m-auto">
-                    <h4>Campaign Reviewer</h4>
-                    {campaign &&
-                      campaign.reviewer && (
+                  <div className="row spacer-top-50 spacer-bottom-50">
+                    <div className="col-md-8 m-auto">
+                      <h4>Campaign Reviewer</h4>
+                      {campaign && campaign.reviewer && (
                         <Link to={`/profile/${campaign.reviewerAddress}`}>
                           {getUserName(campaign.reviewer)}
                         </Link>
                       )}
-                    {(!campaign || !campaign.reviewer) && <span>Unknown user</span>}
+                      {(!campaign || !campaign.reviewer) && <span>Unknown user</span>}
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          )}
-        </div>
-      </ErrorBoundary>
+            )}
+          </div>
+        </ErrorBoundary>
+      </HelmetProvider>
     );
   }
 }
@@ -335,11 +428,12 @@ ViewCampaign.propTypes = {
       id: PropTypes.string,
     }).isRequired,
   }).isRequired,
-  balance: PropTypes.instanceOf(BigNumber).isRequired,
+  balance: PropTypes.instanceOf(BigNumber),
 };
 
 ViewCampaign.defaultProps = {
   currentUser: undefined,
+  balance: new BigNumber(0),
 };
 
 export default ViewCampaign;

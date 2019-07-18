@@ -1,7 +1,7 @@
 import BigNumber from 'bignumber.js';
 import { utils } from 'web3';
 
-import { getStartOfDayUTC, cleanIpfsPath, ZERO_ADDRESS, ANY_TOKEN } from 'lib/helpers';
+import { getStartOfDayUTC, cleanIpfsPath, ZERO_ADDRESS, ANY_TOKEN } from '../lib/helpers';
 import BasicModel from './BasicModel';
 import MilestoneItemModel from './MilestoneItem';
 
@@ -21,6 +21,7 @@ export default class Milestone extends BasicModel {
       pendingRecipientAddress,
       status = Milestone.PENDING,
       projectId = undefined,
+      ownerAddress = '',
       reviewerAddress = '',
       items = [],
       date = getStartOfDayUTC().subtract(1, 'd'),
@@ -43,7 +44,8 @@ export default class Milestone extends BasicModel {
 
     this._selectedFiatType = selectedFiatType;
     this._maxAmount = maxAmount ? new BigNumber(utils.fromWei(maxAmount)) : undefined;
-    this._fiatAmount = fiatAmount ? new BigNumber(fiatAmount) : undefined;
+    this._fiatAmount = fiatAmount ? new BigNumber(fiatAmount) : new BigNumber(0);
+    this._ownerAddress = ownerAddress;
     this._recipientAddress = recipientAddress;
     this._pendingRecipientAddress = pendingRecipientAddress;
     this._status = status;
@@ -77,6 +79,7 @@ export default class Milestone extends BasicModel {
       image: cleanIpfsPath(this._image),
       items: this._items.map(i => i.toIpfs()),
       date: this._date,
+      isArchived: this._status === Milestone.ARCHIVED,
       version: 1,
     };
     if (this.isCapped) {
@@ -166,6 +169,10 @@ export default class Milestone extends BasicModel {
     return Milestone.statuses.FAILED;
   }
 
+  static get ARCHIVED() {
+    return Milestone.statuses.ARCHIVED;
+  }
+
   static get statuses() {
     return {
       PROPOSED: 'Proposed',
@@ -178,6 +185,7 @@ export default class Milestone extends BasicModel {
       PAYING: 'Paying',
       PAID: 'Paid',
       FAILED: 'Failed',
+      ARCHIVED: 'Archived',
     };
   }
 
@@ -274,6 +282,15 @@ export default class Milestone extends BasicModel {
     this._fiatAmount = value;
   }
 
+  get ownerAddress() {
+    return this._ownerAddress;
+  }
+
+  set ownerAddress(value) {
+    this.checkType(value, ['string'], 'ownerAddress');
+    this._ownerAddress = value;
+  }
+
   get recipientAddress() {
     return this._recipientAddress;
   }
@@ -293,6 +310,12 @@ export default class Milestone extends BasicModel {
   }
 
   get status() {
+    if (this._status === Milestone.ARCHIVED) {
+      return this.donationCounters.some(dc => dc.currentBalance.gt(0))
+        ? Milestone.COMPLETED
+        : Milestone.PAID;
+    }
+
     return this._status;
   }
 
@@ -397,6 +420,18 @@ export default class Milestone extends BasicModel {
     return new BigNumber('0');
   }
 
+  get totalDonated() {
+    if (!this.isCapped) return undefined;
+    if (
+      this.acceptsSingleToken &&
+      Array.isArray(this._donationCounters) &&
+      this._donationCounters.length > 0
+    ) {
+      return this._donationCounters[0].totalDonated;
+    }
+    return new BigNumber('0');
+  }
+
   get totalDonations() {
     return (
       (Array.isArray(this._donationCounters) &&
@@ -487,7 +522,7 @@ export default class Milestone extends BasicModel {
   }
 
   get isCapped() {
-    return this.maxAmount !== undefined;
+    return this._maxAmount !== undefined;
   }
 
   canUserAcceptRejectProposal(user) {
@@ -567,9 +602,19 @@ export default class Milestone extends BasicModel {
   canUserChangeRecipient(user) {
     return (
       user &&
+      [Milestone.IN_PROGRESS, Milestone.NEEDS_REVIEW].includes(this.status) &&
       !this.pendingRecipientAddress &&
       ((!this.hasRecipient && this.ownerAddress === user.address) ||
         (this.hasRecipient && this.recipientAddress === user.address))
+    );
+  }
+
+  canUserArchive(user) {
+    return (
+      user &&
+      !this.isCapped &&
+      this.status === Milestone.IN_PROGRESS &&
+      [this.ownerAddress, this.campaign.ownerAddress].includes(user.address)
     );
   }
 }

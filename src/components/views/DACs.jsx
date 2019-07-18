@@ -19,37 +19,35 @@ const DACs = () => (
             </h4>
             {!hasError && isLoading && <Loader />}
             {// There are some DACs in the system, show them
-            !hasError &&
-              !isLoading &&
-              dacs.length > 0 && (
-                <div>
-                  <p>
-                    These Communities are solving causes. Help them realise their goals by joining
-                    them and giving Ether or tokens!
-                  </p>
-                  <div className="cards-grid-container">
-                    {dacs.map(dac => <DACCard key={dac.id} dac={dac} />)}
-                  </div>
+            !hasError && !isLoading && dacs.length > 0 && (
+              <div>
+                <p>
+                  These Communities are solving causes. Help them realise their goals by joining
+                  them and giving Ether or tokens!
+                </p>
+                <div className="cards-grid-container">
+                  {dacs.map(dac => (
+                    <DACCard key={dac.id} dac={dac} />
+                  ))}
                 </div>
-              )}
+              </div>
+            )}
 
             {// There are no DACs, show empty state
-            !hasError &&
-              !isLoading &&
-              dacs.length === 0 && (
-                <div>
-                  <center>
-                    <p>There are no decentralized altruistic communities (DACs) yet!</p>
-                    <img
-                      className="empty-state-img"
-                      src={`${process.env.PUBLIC_URL}/img/community.svg`}
-                      width="200px"
-                      height="200px"
-                      alt="no-campaigns-icon"
-                    />
-                  </center>
-                </div>
-              )}
+            !hasError && !isLoading && dacs.length === 0 && (
+              <div>
+                <center>
+                  <p>There are no Decentralized Altruistic Communities (DACs) yet!</p>
+                  <img
+                    className="empty-state-img"
+                    src={`${process.env.PUBLIC_URL}/img/community.svg`}
+                    width="200px"
+                    height="200px"
+                    alt="no-campaigns-icon"
+                  />
+                </center>
+              </div>
+            )}
             {hasError && (
               <p>
                 <strong>Oops, something went wrong...</strong> The Giveth dapp could not load any

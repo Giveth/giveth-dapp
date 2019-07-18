@@ -8,6 +8,7 @@ import Toggle from 'react-toggle';
 import Slider from 'react-rangeslider';
 import GA from 'lib/GoogleAnalytics';
 import { Link } from 'react-router-dom';
+// import { isLoggedIn } from '../lib/middleware'
 
 import getNetwork from '../lib/blockchain/getNetwork';
 import User from '../models/User';
@@ -112,7 +113,15 @@ class DonateButton extends React.Component {
       selectedToken.symbol === config.nativeTokenName ? NativeTokenBalance : selectedToken.balance;
 
     // Determine max amount
-    let maxAmount = new BigNumber(utils.fromWei(balance.toFixed()));
+
+    if (balance === undefined) return new BigNumber(0);
+    const maxFromWei = utils.fromWei(balance.toFixed());
+    let maxAmount = new BigNumber(0);
+    if (maxFromWei.isNaN || maxFromWei === 'NaN') {
+      maxAmount = new BigNumber(0);
+    } else {
+      maxAmount = new BigNumber(maxFromWei);
+    }
 
     if (this.props.maxDonationAmount) {
       maxAmount = maxAmount.gt(this.props.maxDonationAmount)
@@ -332,6 +341,8 @@ class DonateButton extends React.Component {
               'Something went wrong with your donation. Could not approve token allowance.',
               err,
             );
+          } else if (err !== undefined) {
+            ErrorPopup('Something went wrong.', err);
           }
         });
     } else {
@@ -340,7 +351,15 @@ class DonateButton extends React.Component {
   }
 
   render() {
-    const { model, currentUser, NativeTokenBalance, validProvider, isCorrectNetwork } = this.props;
+    const {
+      model,
+      currentUser,
+      NativeTokenBalance,
+      isEnabled,
+      validProvider,
+      isCorrectNetwork,
+      enableProvider,
+    } = this.props;
     const {
       amount,
       formIsValid,
@@ -362,7 +381,17 @@ class DonateButton extends React.Component {
 
     return (
       <span style={style}>
-        <button type="button" className="btn btn-success" onClick={this.openDialog}>
+        <button
+          type="button"
+          className="btn btn-success"
+          onClick={() => {
+            if (!isEnabled) {
+              enableProvider();
+            } else {
+              this.openDialog();
+            }
+          }}
+        >
           Donate
         </button>
         <Modal
@@ -399,77 +428,71 @@ class DonateButton extends React.Component {
                 networkName={config.homeNetworkName}
               />
             )}
-            {isCorrectNetwork &&
-              currentUser && (
-                <p>
-                  {model.type.toLowerCase() === DAC.type && (
-                    <span>
-                      You&apos;re pledging: as long as the DAC owner does not lock your money you
-                      can take it back any time.
-                    </span>
-                  )}
-                  {model.type.toLowerCase() !== DAC.type && (
-                    <span>
-                      You&apos;re committing your funds to this {model.type}, if you have filled out
-                      contact information in your <Link to="/profile">Profile</Link> you will be
-                      notified about how your funds are spent
-                    </span>
-                  )}
-                </p>
-              )}
+            {isCorrectNetwork && currentUser && (
+              <p>
+                {model.type.toLowerCase() === DAC.type && (
+                  <span>
+                    You&apos;re pledging: as long as the DAC owner does not lock your money you can
+                    take it back any time.
+                  </span>
+                )}
+                {model.type.toLowerCase() !== DAC.type && (
+                  <span>
+                    You&apos;re committing your funds to this {model.type}, if you have filled out
+                    contact information in your <Link to="/profile">Profile</Link> you will be
+                    notified about how your funds are spent
+                  </span>
+                )}
+              </p>
+            )}
 
-            {validProvider &&
-              !currentUser && (
-                <div className="alert alert-warning">
-                  <i className="fa fa-exclamation-triangle" />
-                  It looks like your Ethereum Provider is locked or you need to enable it.
-                </div>
-              )}
+            {validProvider && !currentUser && (
+              <div className="alert alert-warning">
+                <i className="fa fa-exclamation-triangle" />
+                It looks like your Ethereum Provider is locked or you need to enable it.
+              </div>
+            )}
 
-            {validProvider &&
-              isCorrectNetwork &&
-              currentUser && (
-                <div>
-                  {!model.acceptsSingleToken && (
-                    <SelectFormsy
-                      name="token"
-                      id="token-select"
-                      label="Make your donation in"
-                      helpText={`Select ${config.nativeTokenName} or the token you want to donate`}
-                      value={selectedToken.address}
-                      options={tokenWhitelistOptions}
-                      onChange={address => this.setToken(address)}
-                    />
-                  )}
-                  {/* TODO: remove this b/c the wallet provider will contain this info */}
-                  {config.homeNetworkName} {selectedToken.symbol} balance:&nbsp;
-                  <em>{utils.fromWei(balance ? balance.toFixed() : '')}</em>
-                </div>
-              )}
+            {validProvider && isCorrectNetwork && currentUser && (
+              <div>
+                {!model.acceptsSingleToken && (
+                  <SelectFormsy
+                    name="token"
+                    id="token-select"
+                    label="Make your donation in"
+                    helpText={`Select ${config.nativeTokenName} or the token you want to donate`}
+                    value={selectedToken.address}
+                    options={tokenWhitelistOptions}
+                    onChange={address => this.setToken(address)}
+                  />
+                )}
+                {/* TODO: remove this b/c the wallet provider will contain this info */}
+                {config.homeNetworkName} {selectedToken.symbol} balance:&nbsp;
+                <em>{utils.fromWei(balance ? balance.toFixed() : '')}</em>
+              </div>
+            )}
 
             <span className="label">How much {selectedToken.symbol} do you want to donate?</span>
 
-            {validProvider &&
-              maxAmount.toNumber() !== 0 &&
-              balance.gt(0) && (
-                <div className="form-group">
-                  <Slider
-                    type="range"
-                    name="amount2"
-                    min={0}
-                    max={maxAmount.toNumber()}
-                    step={maxAmount.toNumber() / 10}
-                    value={Number(Number(amount).toFixed(4))}
-                    labels={{
-                      0: '0',
-                      [maxAmount.toFixed()]: maxAmount.toFixed(4),
-                    }}
-                    tooltip={false}
-                    format={val => `${val} ${config.nativeTokenName}`}
-                    onChange={newAmount => this.setState({ amount: newAmount.toString() })}
-                  />
-                </div>
-              )}
+            {validProvider && maxAmount.toNumber() !== 0 && balance.gt(0) && (
+              <div className="form-group">
+                <Slider
+                  type="range"
+                  name="amount2"
+                  min={0}
+                  max={maxAmount.toNumber()}
+                  step={maxAmount.toNumber() / 10}
+                  value={Number(Number(amount).toFixed(4))}
+                  labels={{
+                    0: '0',
+                    [maxAmount.toFixed()]: maxAmount.toFixed(4),
+                  }}
+                  tooltip={false}
+                  format={val => `${val} ${config.nativeTokenName}`}
+                  onChange={newAmount => this.setState({ amount: newAmount.toString() })}
+                />
+              </div>
+            )}
 
             <div className="form-group">
               <Input
@@ -486,7 +509,7 @@ class DonateButton extends React.Component {
                 }}
                 validationErrors={{
                   greaterThan: `Please enter value greater than 0 ${selectedToken.symbol}`,
-                  lessOrEqualTo: `This donation exceeds your wallet balance or the milestone max amount: ${maxAmount.toFixed()} ${
+                  lessOrEqualTo: `This donation exceeds your wallet balance or the Milestone max amount: ${maxAmount.toFixed()} ${
                     selectedToken.symbol
                   }.`,
                 }}
@@ -536,21 +559,18 @@ class DonateButton extends React.Component {
               </div>
             )}
 
-            {validProvider &&
-              currentUser &&
-              maxAmount.toNumber() !== 0 &&
-              balance !== '0' && (
-                <LoaderButton
-                  className="btn btn-success"
-                  formNoValidate
-                  type="submit"
-                  disabled={isSaving || !formIsValid || !isCorrectNetwork}
-                  isLoading={isSaving}
-                  loadingText="Donating..."
-                >
-                  Donate
-                </LoaderButton>
-              )}
+            {validProvider && currentUser && maxAmount.toNumber() !== 0 && balance !== '0' && (
+              <LoaderButton
+                className="btn btn-success"
+                formNoValidate
+                type="submit"
+                disabled={isSaving || !formIsValid || !isCorrectNetwork}
+                isLoading={isSaving}
+                loadingText="Donating..."
+              >
+                Donate
+              </LoaderButton>
+            )}
 
             <button
               className="btn btn-light float-right"
@@ -582,14 +602,17 @@ DonateButton.propTypes = {
   model: modelTypes.isRequired,
   currentUser: PropTypes.instanceOf(User),
   maxDonationAmount: PropTypes.instanceOf(BigNumber),
-  NativeTokenBalance: PropTypes.instanceOf(BigNumber).isRequired,
+  NativeTokenBalance: PropTypes.instanceOf(BigNumber),
   validProvider: PropTypes.bool.isRequired,
+  isEnabled: PropTypes.bool.isRequired,
+  enableProvider: PropTypes.func.isRequired,
   isCorrectNetwork: PropTypes.bool.isRequired,
   tokenWhitelist: PropTypes.arrayOf(PropTypes.shape()).isRequired,
 };
 
 DonateButton.defaultProps = {
   currentUser: undefined,
+  NativeTokenBalance: new BigNumber(0),
   maxDonationAmount: undefined, // new BigNumber(10000000000000000),
 };
 
@@ -597,12 +620,17 @@ export default props => (
   <WhiteListConsumer>
     {({ state: { tokenWhitelist } }) => (
       <Web3Consumer>
-        {({ state: { isHomeNetwork, validProvider, balance } }) => (
+        {({
+          state: { isHomeNetwork, isEnabled, validProvider, balance },
+          actions: { enableProvider },
+        }) => (
           <DonateButton
             NativeTokenBalance={balance}
             validProvider={validProvider}
             isCorrectNetwork={isHomeNetwork}
             tokenWhitelist={tokenWhitelist}
+            isEnabled={isEnabled}
+            enableProvider={enableProvider}
             {...props}
           />
         )}

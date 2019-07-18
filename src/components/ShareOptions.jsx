@@ -2,14 +2,12 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import {
   FacebookShareButton,
-  GooglePlusShareButton,
   TwitterShareButton,
   TelegramShareButton,
   LinkedinShareButton,
   FacebookIcon,
   TwitterIcon,
   TelegramIcon,
-  GooglePlusIcon,
   LinkedinIcon,
 } from 'react-share';
 
@@ -24,10 +22,6 @@ const ShareOptions = props => {
       <TwitterShareButton url={pageUrl} title={pageTitle}>
         <TwitterIcon size={32} round />
       </TwitterShareButton>
-
-      <GooglePlusShareButton url={pageUrl}>
-        <GooglePlusIcon size={32} round />
-      </GooglePlusShareButton>
 
       <TelegramShareButton url={pageUrl} title={pageTitle}>
         <TelegramIcon size={32} round />

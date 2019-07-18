@@ -10,6 +10,7 @@ import GivethWallet from '../../lib/blockchain/GivethWallet';
 import Loader from '../Loader';
 import config from '../../configuration';
 import BridgeWithdrawButton from '../BridgeWithdrawButton';
+import ErrorPopup from '../ErrorPopup';
 
 // TODO: Remove the eslint exception after extracting to model
 /* eslint no-underscore-dangle: 0 */
@@ -41,7 +42,9 @@ class UserWallet extends Component {
       })
       .catch(err => {
         if (err === 'notLoggedIn') {
-          // default behavior is to go home or signin page after swal popup
+          ErrorPopup('You are not logged in.', err);
+        } else if (err !== undefined) {
+          ErrorPopup('Something went wrong.', err);
         }
       });
   }
@@ -77,110 +80,98 @@ class UserWallet extends Component {
 
           {isLoadingWallet && <Loader className="fixed" />}
 
-          {!isLoadingWallet &&
-            !hasError && (
-              <div>
+          {!isLoadingWallet && !hasError && (
+            <div>
+              <div className="alert alert-warning">
+                <i className="fa fa-exclamation-triangle" />
+                Please <strong>do not send any main network ether</strong> to this address. All the
+                transactions in the DApp are made on <strong>{config.foreignNetworkName}</strong>{' '}
+                network. To interact with the DApp you do not need any main network ether.
+              </div>
+              <p>
+                <a
+                  href={`${config.etherscan}/address/${this.props.currentUser.address}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  {this.props.currentUser.address}
+                </a>
+              </p>
+
+              {insufficientBalance && (
                 <div className="alert alert-warning">
-                  <i className="fa fa-exclamation-triangle" />
-                  Please <strong>do not send any main network ether</strong> to this address. All
-                  the transactions in the DApp are made on{' '}
-                  <strong>{config.foreignNetworkName}</strong> network. To interact with the DApp
-                  you do not need any main network ether.
+                  <p>
+                    We noticed that you do not have a sufficient balance in your wallet. Your wallet
+                    should be automatically topped up, however if you are a frequent user or use
+                    this wallet on the <strong>{config.foreignNetworkName}</strong> network, we may
+                    not be able to replenish it fast enough.
+                  </p>
+                  <p>
+                    <strong>{config.foreignNetworkName}</strong> balance:{' '}
+                    {this.props.wallet.getBalance()} ETH
+                  </p>
+                  <p>
+                    You can visit the{' '}
+                    <a href="https://faucet.rinkeby.io/" target="_blank" rel="noopener noreferrer">
+                      faucet
+                    </a>{' '}
+                    to get more ETH
+                  </p>
                 </div>
-                <p>
-                  <a
-                    href={`${config.etherscan}/address/${this.props.currentUser.address}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    {this.props.currentUser.address}
-                  </a>
-                </p>
+              )}
 
-                {insufficientBalance && (
+              <p>
+                <BackupWalletButton wallet={this.props.wallet} onBackup={this.onBackup} />
+              </p>
+
+              {this.hasTokenBalance() && (
+                <div>
+                  {Object.keys(tokenAddresses)
+                    .filter(t => this.props.wallet.getTokenBalance(tokenAddresses[t]) > 0)
+                    .map(t =>
+                      etherscan ? (
+                        <p>
+                          <a
+                            href={`${etherscan}token/${tokenAddresses[t]}?a=${
+                              this.props.currentUser.address
+                            }`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            <strong>Bridged -{t}</strong>
+                          </a>
+                          balance: {this.props.wallet.getTokenBalance(tokenAddresses[t])}
+                        </p>
+                      ) : (
+                        <p>
+                          Bridged - <strong>{t}</strong> balance:{' '}
+                          {this.props.wallet.getTokenBalance(tokenAddresses[t])}
+                        </p>
+                      ),
+                    )}
                   <div className="alert alert-warning">
-                    <p>
-                      We noticed that you do not have a sufficient balance in your wallet. Your
-                      wallet should be automatically topped up, however if you are a frequent user
-                      or use this wallet on the <strong>{config.foreignNetworkName}</strong>{' '}
-                      network, we may not be able to replenish it fast enough.
-                    </p>
-                    <p>
-                      <strong>{config.foreignNetworkName}</strong> balance:{' '}
-                      {this.props.wallet.getBalance()} ETH
-                    </p>
-                    <p>
-                      You can visit the{' '}
-                      <a
-                        href="https://faucet.rinkeby.io/"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        faucet
-                      </a>{' '}
-                      to get more ETH
-                    </p>
+                    We noticed you have some tokens on the{' '}
+                    <strong>{config.foreignNetworkName}</strong> network that have not been
+                    transfered across the bridge to the
+                    <strong>{config.homeNetworkName}</strong> network.
                   </div>
-                )}
+                  <BridgeWithdrawButton
+                    wallet={this.props.wallet}
+                    currentUser={this.props.currentUser}
+                  />
+                </div>
+              )}
+              {/* <WithdrawButton wallet={this.props.wallet} currentUser={this.props.currentUser} /> */}
+            </div>
+          )}
 
-                <p>
-                  <BackupWalletButton wallet={this.props.wallet} onBackup={this.onBackup} />
-                </p>
-
-                {this.hasTokenBalance() && (
-                  <div>
-                    {Object.keys(tokenAddresses)
-                      .filter(t => this.props.wallet.getTokenBalance(tokenAddresses[t]) > 0)
-                      .map(
-                        t =>
-                          etherscan ? (
-                            <p>
-                              <a
-                                href={`${etherscan}token/${tokenAddresses[t]}?a=${
-                                  this.props.currentUser.address
-                                }`}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                              >
-                                <strong>
-                                  Bridged -
-                                  {t}
-                                </strong>
-                              </a>
-                              balance: {this.props.wallet.getTokenBalance(tokenAddresses[t])}
-                            </p>
-                          ) : (
-                            <p>
-                              Bridged - <strong>{t}</strong> balance:{' '}
-                              {this.props.wallet.getTokenBalance(tokenAddresses[t])}
-                            </p>
-                          ),
-                      )}
-                    <div className="alert alert-warning">
-                      We noticed you have some tokens on the{' '}
-                      <strong>{config.foreignNetworkName}</strong> network that have not been
-                      transfered across the bridge to the
-                      <strong>{config.homeNetworkName}</strong> network.
-                    </div>
-                    <BridgeWithdrawButton
-                      wallet={this.props.wallet}
-                      currentUser={this.props.currentUser}
-                    />
-                  </div>
-                )}
-                {/* <WithdrawButton wallet={this.props.wallet} currentUser={this.props.currentUser} /> */}
-              </div>
-            )}
-
-          {!isLoadingWallet &&
-            hasError && (
-              <div>
-                <h1>
-                  Oops, something went wrong loading your wallet. Please refresh the page to try
-                  again
-                </h1>
-              </div>
-            )}
+          {!isLoadingWallet && hasError && (
+            <div>
+              <h1>
+                Oops, something went wrong loading your wallet. Please refresh the page to try again
+              </h1>
+            </div>
+          )}
         </center>
       </div>
     );

@@ -8,6 +8,7 @@ import { checkBalance } from '../lib/middleware';
 import User from '../models/User';
 import CardStats from './CardStats';
 import GivethLogo from '../assets/logo.svg';
+import ErrorPopup from './ErrorPopup';
 
 /**
  * A single milestone
@@ -19,12 +20,17 @@ class MilestoneCard extends Component {
     this.viewMilestone = this.viewMilestone.bind(this);
     this.editMilestone = this.editMilestone.bind(this);
     this.viewProfile = this.viewProfile.bind(this);
+    this.createMilestoneLink = this.createMilestoneLink.bind(this);
   }
 
   viewMilestone() {
     history.push(
       `/campaigns/${this.props.milestone.campaign._id}/milestones/${this.props.milestone._id}`,
     );
+  }
+
+  createMilestoneLink() {
+    return `/campaigns/${this.props.milestone.campaign._id}/milestones/${this.props.milestone._id}`;
   }
 
   viewProfile(e) {
@@ -45,7 +51,9 @@ class MilestoneCard extends Component {
       })
       .catch(err => {
         if (err === 'noBalance') {
-          // handle no balance error
+          ErrorPopup('There is no balance left on the account.', err);
+        } else if (err !== undefined) {
+          ErrorPopup('Something went wrong.', err);
         }
       });
   }
@@ -58,7 +66,6 @@ class MilestoneCard extends Component {
     return (
       <div
         className="card milestone-card overview-card"
-        onClick={this.viewMilestone}
         onKeyPress={this.viewMilestone}
         role="button"
         tabIndex="0"
@@ -74,20 +81,21 @@ class MilestoneCard extends Component {
             <Avatar size={30} src={getUserAvatar(milestone.owner)} round />
             <span className="owner-name">{getUserName(milestone.owner)}</span>
 
-            {milestone &&
-              milestone.canUserEdit(currentUser) && (
-                <span className="pull-right">
-                  <button
-                    type="button"
-                    className="btn btn-link btn-edit"
-                    onClick={e => this.editMilestone(e)}
-                  >
-                    <i className="fa fa-edit" />
-                  </button>
-                </span>
-              )}
+            {milestone && milestone.canUserEdit(currentUser) && (
+              <span className="pull-right">
+                <button
+                  type="button"
+                  className="btn btn-link btn-edit"
+                  onClick={e => this.editMilestone(e)}
+                >
+                  <i className="fa fa-edit" />
+                </button>
+              </span>
+            )}
           </div>
+        </div>
 
+        <a className="card-body" href={this.createMilestoneLink()}>
           <div
             className="card-img"
             style={{
@@ -112,7 +120,7 @@ class MilestoneCard extends Component {
               token={milestone.token}
             />
           </div>
-        </div>
+        </a>
       </div>
     );
   }
@@ -128,11 +136,12 @@ MilestoneCard.propTypes = {
     }).isRequired,
   }).isRequired,
   currentUser: PropTypes.instanceOf(User),
-  balance: PropTypes.instanceOf(BigNumber).isRequired,
+  balance: PropTypes.instanceOf(BigNumber),
 };
 
 MilestoneCard.defaultProps = {
   currentUser: undefined,
+  balance: new BigNumber(0),
 };
 
 export default MilestoneCard;
