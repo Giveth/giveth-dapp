@@ -32,12 +32,11 @@ class WithdrawMilestoneFundsButton extends Component {
           title: isRecipient ? 'Withdrawal Funds to Wallet' : 'Disburse Funds to Recipient',
           content: React.swal.msg(
             <div>
-              {donationsCount > 18 && (
+              {donationsCount > 8 && (
                 <p>
                   <strong>Note:</strong> Due to the current gas limitations you will be required to
                   withdrawal multiple times. You have <strong>{donationsCount}</strong> donations to{' '}
-                  {isRecipient ? 'withdraw' : 'disburse'} and the current max is <strong>15</strong>
-                  .
+                  {isRecipient ? 'withdraw' : 'disburse'} and the current max is <strong>8</strong>.
                 </p>
               )}
               <p>
