@@ -26,6 +26,7 @@ import DelegateMultipleButton from 'components/DelegateMultipleButton';
 import { convertEthHelper, getUserAvatar, getUserName } from '../../lib/helpers';
 import MilestoneService from '../../services/MilestoneService';
 import ShareOptions from '../ShareOptions';
+import { Consumer as WhiteListConsumer } from '../../contextProviders/WhiteListProvider';
 
 /**
   Loads and shows a single milestone
@@ -141,6 +142,47 @@ class ViewMilestone extends Component {
     });
   }
 
+  renderTitleHelper() {
+    const { milestone } = this.state;
+
+    if (milestone.isCapped) {
+      if (!milestone.fullyFunded) {
+        return (
+          <p>
+            Amount requested: {convertEthHelper(milestone.maxAmount)} {milestone.token.symbol}
+          </p>
+        );
+      }
+      return <p>This Milestone has reached its funding goal!</p>;
+    }
+
+    // Milestone is uncap
+    if (milestone.acceptsSingleToken) {
+      return <p>This milestone accepts only {milestone.token.symbol}</p>;
+    }
+
+    return (
+      <WhiteListConsumer>
+        {({ state: { tokenWhitelist } }) => {
+          const symbols = tokenWhitelist.map(t => t.symbol);
+          switch (symbols.length) {
+            case 0:
+              return <p>No token is defined to contribute.</p>;
+            case 1:
+              return <p>This milestone accepts only ${symbols}</p>;
+
+            default: {
+              const symbolsStr = `${symbols.slice(0, -1).join(', ')} or ${
+                symbols[symbols.length - 1]
+              }`;
+              return <p>This milestone accepts {symbolsStr}</p>;
+            }
+          }
+        }}
+      </WhiteListConsumer>
+    );
+  }
+
   render() {
     const { history, currentUser, balance } = this.props;
     const {
@@ -170,13 +212,8 @@ class ViewMilestone extends Component {
 
               {!milestone.status === 'InProgress' && <p>This Milestone is not active anymore</p>}
 
-              {milestone.fullyFunded && <p>This Milestone has reached its funding goal!</p>}
+              {this.renderTitleHelper()}
 
-              {milestone.isCapped && !milestone.fullyFunded && (
-                <p>
-                  Amount requested: {convertEthHelper(milestone.maxAmount)} {milestone.token.symbol}
-                </p>
-              )}
               <p>Campaign: {campaign.title} </p>
 
               <div className="milestone-actions">

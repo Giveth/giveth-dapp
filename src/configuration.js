@@ -9,6 +9,7 @@ const {
   REACT_APP_TOKEN_ADDRESSES,
   REACT_APP_BLOCKEXPLORER,
   REACT_APP_BUGS_EMAIL = 'bugs@giveth.io',
+  REACT_APP_GITHUB_URL = 'https://github.com/Giveth/giveth-dapp',
   REACT_APP_DEFAULT_GASPRICE = 10,
   REACT_APP_NETWORK_NAME,
   REACT_APP_NATIVE_TOKEN_NAME,
@@ -149,6 +150,7 @@ config.feathersConnection = REACT_APP_FEATHERJS_CONNECTION_URL || config.feather
 config.foreignNodeConnection = REACT_APP_NODE_CONNECTION_URL || config.foreignNodeConnection;
 config.decimals = REACT_APP_DECIMALS;
 config.bugsEmail = REACT_APP_BUGS_EMAIL;
+config.githubUrl = REACT_APP_GITHUB_URL;
 config.defaultGasPrice = REACT_APP_DEFAULT_GASPRICE;
 config.networkName = REACT_APP_NETWORK_NAME || config.networkName;
 config.nativeTokenName = REACT_APP_NATIVE_TOKEN_NAME || config.nativeTokenName;
