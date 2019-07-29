@@ -54,31 +54,26 @@ function loadDraft() {
   this.setState({ draftLoaded: Date.now() });
 }
 
-function sleep(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms));
-}
-
 async function loadMilestoneDraft() {
+  const isLate = Date.now() > this.state.draftLoaded + 1000;
   if (!this.state.draftLoaded) return;
   if (milestoneDraftLoaded) return;
-  if (Date.now() > this.state.draftLoaded + 1000) return;
+  milestoneDraftLoaded = true;
+  if (isLate) return;
+
   const { localStorage } = window;
   const hasReviewer = localStorage.getItem('milestone.hasReviewer');
-  if (hasReviewer === 'false') {
-    this.hasReviewer(false);
-  }
+
   const acceptsSingleToken = localStorage.getItem('milestone.acceptsSingleToken');
-  if (acceptsSingleToken === 'false') {
-    this.acceptsSingleToken(false);
-  }
+
   const isCapped = localStorage.getItem('milestone.isCapped');
-  if (isCapped === 'false') {
-    this.isCapped(false);
-  }
+  const dacId = localStorage.getItem('milestone.dacId');
+
   const itemizeState = localStorage.getItem('milestone.itemizeState');
+  const itemCount = +localStorage.getItem('milestone.itemCount');
+  const itemsList = [];
   if (itemizeState === 'true') {
     this.itemizeState(true);
-    const itemCount = +localStorage.getItem('milestone.itemCount');
     for (let i = 0; i < itemCount; i += 1) {
       const id = `milestone.items.${i}`;
       const item = new MilestoneItem({});
@@ -90,19 +85,35 @@ async function loadMilestoneDraft() {
       item.wei = localStorage.getItem(`${id}.wei`);
       item.conversionRate = parseFloat(localStorage.getItem(`${id}.conversionRate`));
       item.conversionRateTimestamp = localStorage.getItem(`${id}.conversionRateTimestamp`);
-      this.addItem(item);
-      milestoneDraftLoaded = true;
+      itemsList.push(item);
     }
   }
+
   const isLPMilestone = localStorage.getItem('milestone.isLPMilestone');
-  if (isLPMilestone === 'true') {
-    this.isLPMilestone(true);
-  }
-  await sleep(1000);
+
   const tokenAddress = localStorage.getItem('milestone.tokenAddress');
-  if (tokenAddress) {
-    this.setToken(tokenAddress);
-  }
+
+  const maxAmount = localStorage.getItem('milestone.maxAmount');
+
+  const fiatAmount = localStorage.getItem('milestone.fiatAmount');
+
+  const selectedFiatType = localStorage.getItem('milestone.selectedFiatType');
+
+  const draftSettings = {
+    hasReviewer,
+    acceptsSingleToken,
+    isCapped,
+    dacId,
+    itemizeState,
+    itemCount,
+    itemsList,
+    isLPMilestone,
+    tokenAddress,
+    maxAmount,
+    fiatAmount,
+    selectedFiatType,
+  };
+  this.loadDraftStatus(draftSettings);
 }
 
 function milestoneIdMatch(id) {
@@ -146,8 +157,12 @@ function saveMilestoneDraft(that, itemNames) {
   set('milestone.isLPMilestone', milestone instanceof LPMilestone, itemNames);
   set('milestone.acceptsSingleToken', milestone.acceptsSingleToken, itemNames);
   set('milestone.isCapped', milestone.isCapped, itemNames);
+  set('milestone.maxAmount', milestone.maxAmount.toNumber(), itemNames);
+  set('milestone.fiatAmount', milestone.fiatAmount.toNumber(), itemNames);
   set('milestone.itemizeState', milestone.itemizeState, itemNames);
   set('milestone.tokenAddress', milestone.token.address, itemNames);
+  set('milestone.selectedFiatType', milestone.selectedFiatType, itemNames);
+  set('milestone.dacId', milestone.dacId, itemNames);
   if (milestone.itemizeState) {
     const items = that.form.current.formsyForm.inputs.filter(input =>
       input.props.name.startsWith('milestoneItem'),

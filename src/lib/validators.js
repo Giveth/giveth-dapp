@@ -31,3 +31,8 @@ addValidationRule(
   'isEtherAddress',
   (formValues, inputValue, _value) => !inputValue || Web3.utils.isAddress(inputValue),
 );
+
+addValidationRule(
+  'isNumber',
+  (formValues, inputValue, _value) => !inputValue || /^\d+$/.test(inputValue),
+);

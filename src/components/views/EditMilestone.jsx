@@ -42,6 +42,7 @@ import { Consumer as WhiteListConsumer } from '../../contextProviders/WhiteListP
 import getConversionRatesContext from '../../containers/getConversionRatesContext';
 import MilestoneService from '../../services/MilestoneService';
 import CampaignService from '../../services/CampaignService';
+import DACService from '../../services/DACService';
 import LPMilestone from '../../models/LPMilestone';
 import BridgedMilestone from '../../models/BridgedMilestone';
 import {
@@ -94,6 +95,7 @@ class EditMilestone extends Component {
     this.state = {
       isLoading: true,
       refreshList: [],
+      dacs: [],
       isSaving: false,
       formIsValid: false,
       draftLoaded: false,
@@ -109,6 +111,7 @@ class EditMilestone extends Component {
       draftState: draftStates.hidden,
       toggles: {
         hasReviewer: true,
+        delegatePercent: true,
         isLPMilestone: false,
         acceptsSingleToken: true,
         isCapped: true,
@@ -149,6 +152,22 @@ class EditMilestone extends Component {
         this.setState({
           campaignId: this.props.match.params.id,
         });
+
+        DACService.getDACs(
+          undefined, // Limit
+          0, // Skip
+          (dacs, _) => {
+            if (!this._isMounted) return;
+            const formatDACS = dacs.map(r => ({
+              value: r.myDelegateId,
+              title: `${r.myDelegateId ? r.myDelegateId : '?'} - ${r._title}`,
+            }));
+            this.setState(prevState => ({
+              dacs: prevState.dacs.concat(formatDACS),
+            }));
+          },
+          () => {},
+        );
 
         // load a single milestones (when editing)
         if (!this.props.isNew) {
@@ -272,6 +291,8 @@ class EditMilestone extends Component {
             });
 
             this.setDate(this.state.milestone.date);
+
+            this.delegatePercent(true);
           } catch (e) {
             ErrorPopup(
               'Sadly we were unable to load the Campaign in which this Milestone was created. Please try again.',
@@ -424,6 +445,7 @@ class EditMilestone extends Component {
     this.setDraftType();
     if (!milestoneIdMatch(this.state.campaignId) || this.state.draftLoaded) return;
     this.loadDraft();
+    await sleep(500);
     this.loadMilestoneDraft();
     this.setState({
       draftLoaded: true,
@@ -433,6 +455,13 @@ class EditMilestone extends Component {
   setToken(address) {
     if (!this._isMounted) return;
     this.getNewRates(address);
+  }
+
+  setDacId(dacId) {
+    if (!this._isMounted) return;
+    const { milestone } = this.state;
+    milestone.dacId = dacId;
+    this.setState({ milestone });
   }
 
   async getNewRates(address) {
@@ -522,6 +551,88 @@ class EditMilestone extends Component {
     toggles.hasReviewer = value;
     this.setState({ milestone, toggles });
     this.onDraftChange();
+  }
+
+  delegatePercent(value) {
+    if (!this._isMounted) return;
+    const { milestone, toggles } = this.state;
+    const dacIdMilestone = value ? 5 : 0;
+    milestone.dacId = parseInt(dacIdMilestone, 10);
+    toggles.delegatePercent = value;
+    this.setState({ milestone, toggles });
+    this.onDraftChange();
+  }
+
+  async loadDraftStatus(draftSettings) {
+    const { milestone, campaignProjectId, toggles } = this.state;
+
+    const {
+      hasReviewer,
+      acceptsSingleToken,
+      maxAmount,
+      fiatAmount,
+      selectedFiatType,
+      isCapped,
+      itemizeState,
+      tokenAddress,
+      dacId,
+      isLPMilestone,
+      itemsList,
+    } = draftSettings;
+
+    if (hasReviewer === 'false') {
+      milestone.reviewerAddress = hasReviewer ? '' : ZERO_ADDRESS;
+      toggles.hasReviewer = hasReviewer;
+    }
+    if (acceptsSingleToken === 'false') {
+      if (!acceptsSingleToken) {
+        // if ANY_TOKEN is allowed, then we can't have a cap
+        milestone.maxAmount = undefined;
+        milestone.itemizeState = false;
+      }
+      toggles.acceptsSingleToken = acceptsSingleToken;
+    }
+    if (maxAmount) {
+      milestone.maxAmount = new BigNumber(maxAmount);
+    }
+    if (fiatAmount) {
+      milestone.fiatAmount = new BigNumber(fiatAmount);
+    }
+    if (selectedFiatType) {
+      milestone.selectedFiatType = selectedFiatType;
+    }
+    if (isCapped === 'false') {
+      milestone.maxAmount = isCapped ? new BigNumber(0) : undefined;
+      toggles.isCapped = isCapped;
+    }
+    if (itemizeState === 'true') {
+      milestone.itemizeState = itemizeState;
+      toggles.itemizeState = itemizeState;
+      itemsList.forEach(i => {
+        this.addItem(i);
+      });
+    }
+    if (tokenAddress) {
+      const token = this.props.tokenWhitelist.find(t => t.address === tokenAddress);
+      milestone.token = token;
+    }
+    if (parseInt(dacId, 10) !== 0) {
+      milestone.dacId = parseInt(dacId, 10);
+    }
+    this.setState({ toggles });
+    if (isLPMilestone === 'true') {
+      if (!isLPMilestone) {
+        const ms = new BridgedMilestone(milestone.toFeathers());
+        ms.itemizeState = toggles.itemizeState;
+        this.setState({ milestone: ms });
+      } else {
+        const ms = new LPMilestone({ ...milestone.toFeathers(), recipientId: campaignProjectId });
+        ms.itemizeState = toggles.itemizeState;
+        this.setState({ milestone: ms });
+      }
+      toggles.isLPMilestone = isLPMilestone;
+    }
+    this.setToken(tokenAddress);
   }
 
   isLPMilestone(value) {
@@ -796,6 +907,7 @@ class EditMilestone extends Component {
       conversionRateLoading,
     } = this.props;
     const {
+      dacs,
       isLoading,
       isSaving,
       refreshList,
@@ -909,6 +1021,40 @@ class EditMilestone extends Component {
                         previewImage={milestone.image}
                         required={isNew}
                       />
+                    </div>
+
+                    <div className="form-group">
+                      <div className="form-group react-toggle-container">
+                        <Toggle
+                          id="itemize-state"
+                          checked={milestone.delegatePercent}
+                          onChange={e => this.delegatePercent(e.target.checked)}
+                          disabled={!isNew && !isProposed}
+                        />
+                        <span className="label">Donate 3% to a DAC</span>
+                        {!milestone.delegatePercent && (
+                          <span className="help-block">
+                            Supporting a DAC is optional, this will help a lot the growth of amazing
+                            proyects.
+                          </span>
+                        )}
+                      </div>
+                      {milestone.delegatePercent && (
+                        <SelectFormsy
+                          name="dacId"
+                          id="dac-select"
+                          label="DAC to delegate"
+                          helpText="Funds will be delegated when collecting this milestone"
+                          value={milestone.dacId}
+                          options={dacs}
+                          validations="isNumber"
+                          validationErrors={{
+                            isNumber: 'Please select a delegate.',
+                          }}
+                          required
+                          disabled={!isNew && !isProposed}
+                        />
+                      )}
                     </div>
 
                     <div className="form-group">
