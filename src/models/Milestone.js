@@ -23,6 +23,7 @@ export default class Milestone extends BasicModel {
       projectId = undefined,
       ownerAddress = '',
       reviewerAddress = '',
+      dacId = 0,
       items = [],
       date = getStartOfDayUTC().subtract(1, 'd'),
       confirmations = 0,
@@ -51,6 +52,7 @@ export default class Milestone extends BasicModel {
     this._status = status;
     this._projectId = projectId;
     this._reviewerAddress = reviewerAddress;
+    this._dacId = dacId;
     this._items = items.map(i => new MilestoneItemModel(i));
     this._itemizeState = items && items.length > 0;
     this._date = getStartOfDayUTC(date);
@@ -101,6 +103,7 @@ export default class Milestone extends BasicModel {
       image: cleanIpfsPath(this._image),
       ownerAddress: this._ownerAddress,
       reviewerAddress: this._reviewerAddress,
+      dacId: this._dacId,
       recipientAddress: this._recipientAddress,
       campaignId: this._campaignId,
       projectId: this._projectId,
@@ -351,6 +354,15 @@ export default class Milestone extends BasicModel {
     this._reviewerAddress = value;
   }
 
+  get dacId() {
+    return this._dacId;
+  }
+
+  set dacId(value) {
+    this.checkType(value, ['number'], 'dacId');
+    this._dacId = value;
+  }
+
   get items() {
     return this._items;
   }
@@ -508,6 +520,10 @@ export default class Milestone extends BasicModel {
   // computed
   get hasReviewer() {
     return this._reviewerAddress !== undefined && this._reviewerAddress !== ZERO_ADDRESS;
+  }
+
+  get delegatePercent() {
+    return this._dacId !== undefined && this._dacId !== 0;
   }
 
   get hasRecipient() {
