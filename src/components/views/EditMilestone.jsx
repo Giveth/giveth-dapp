@@ -291,6 +291,8 @@ class EditMilestone extends Component {
             });
 
             this.setDate(this.state.milestone.date);
+
+            this.delegatePercent(true);
           } catch (e) {
             ErrorPopup(
               'Sadly we were unable to load the Campaign in which this Milestone was created. Please try again.',
@@ -554,7 +556,7 @@ class EditMilestone extends Component {
   delegatePercent(value) {
     if (!this._isMounted) return;
     const { milestone, toggles } = this.state;
-    const dacIdMilestone = value ? 2 : 0;
+    const dacIdMilestone = value ? 5 : 0;
     milestone.dacId = parseInt(dacIdMilestone, 10);
     toggles.delegatePercent = value;
     this.setState({ milestone, toggles });
@@ -577,6 +579,7 @@ class EditMilestone extends Component {
       isLPMilestone,
       itemsList,
     } = draftSettings;
+
     if (hasReviewer === 'false') {
       milestone.reviewerAddress = hasReviewer ? '' : ZERO_ADDRESS;
       toggles.hasReviewer = hasReviewer;
