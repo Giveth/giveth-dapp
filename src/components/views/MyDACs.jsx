@@ -34,6 +34,24 @@ class MyDACs extends Component {
   }
 
   componentDidMount() {
+    this.updatePending = setInterval(() => {
+      if (this.isPendingDac) {
+        this.state.dacs.data
+          .filter(d => d.confirmations !== d.requiredConfirmations)
+          .forEach(d => {
+            const currentDac = d;
+            DACservice.get(d._id).then(newDac => {
+              if (currentDac.confirmations !== newDac.confirmations)
+                this.setState(prevState => ({
+                  dacs: {
+                    ...prevState.dacs,
+                    data: prevState.dacs.data.map(dac => (dac._id === newDac._id ? newDac : dac)),
+                  },
+                }));
+            });
+          });
+      }
+    }, 1000); // Fetch every seconds
     isLoggedIn(this.props.currentUser, true)
       .then(() => this.loadDACs())
       .catch(err => {
@@ -55,6 +73,7 @@ class MyDACs extends Component {
   }
 
   componentWillUnmount() {
+    if (this.updatePending) clearInterval(this.updatePending);
     if (this.dacsObserver) this.dacsObserver.unsubscribe();
   }
 
@@ -89,7 +108,7 @@ class MyDACs extends Component {
   render() {
     const { dacs, isLoading, visiblePages } = this.state;
     const { currentUser } = this.props;
-    const isPendingDac =
+    this.isPendingDac =
       (dacs.data && dacs.data.some(d => d.confirmations !== d.requiredConfirmations)) || false;
 
     return (
@@ -113,7 +132,9 @@ class MyDACs extends Component {
                             <th className="td-donations-number">Number of donations</th>
                             <th className="td-donations-amount">Amount donated</th>
                             <th className="td-status">Status</th>
-                            <th className="td-confirmations">{isPendingDac && 'Confirmations'}</th>
+                            <th className="td-confirmations">
+                              {this.isPendingDac && 'Confirmations'}
+                            </th>
                           </tr>
                         </thead>
                         <tbody>
@@ -162,7 +183,8 @@ class MyDACs extends Component {
                                 {d.status}
                               </td>
                               <td className="td-confirmations">
-                                {(isPendingDac || d.requiredConfirmations !== d.confirmations) &&
+                                {(this.isPendingDac ||
+                                  d.requiredConfirmations !== d.confirmations) &&
                                   `${d.confirmations}/${d.requiredConfirmations}`}
                               </td>
                             </tr>

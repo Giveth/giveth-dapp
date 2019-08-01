@@ -40,6 +40,27 @@ class MyCampaigns extends Component {
   }
 
   componentDidMount() {
+    this.updatePending = setInterval(() => {
+      if (this.isPendingCampaign) {
+        this.state.campaigns.data
+          .filter(c => c.confirmations !== c.requiredConfirmations)
+          .forEach(c => {
+            const currentCampaign = c;
+            CampaignService.get(c._id).then(newCampaign => {
+              if (currentCampaign.confirmations !== newCampaign.confirmations)
+                this.setState(prevState => ({
+                  campaigns: {
+                    ...prevState.campaigns,
+                    data: prevState.campaigns.data.map(campaign =>
+                      campaign._id === newCampaign._id ? newCampaign : campaign,
+                    ),
+                  },
+                }));
+            });
+          });
+      }
+    }, 1000); // Fetch every seconds
+
     isLoggedIn(this.props.currentUser, true)
       .then(() => this.loadCampaigns())
       .catch(err => {
@@ -61,6 +82,7 @@ class MyCampaigns extends Component {
   }
 
   componentWillUnmount() {
+    if (this.updatePending) clearInterval(this.updatePending);
     if (this.campaignsObserver) this.campaignsObserver.unsubscribe();
   }
 
@@ -132,7 +154,7 @@ class MyCampaigns extends Component {
   render() {
     const { campaigns, isLoading, visiblePages } = this.state;
     const { currentUser } = this.props;
-    const isPendingCampaign =
+    this.isPendingCampaign =
       (campaigns.data && campaigns.data.some(d => d.confirmations !== d.requiredConfirmations)) ||
       false;
 
@@ -169,7 +191,7 @@ class MyCampaigns extends Component {
                                 <th className="td-donations-amount">Amount</th>
                                 <th className="td-status">Status</th>
                                 <th className="td-confirmations">
-                                  {isPendingCampaign && 'Confirmations'}
+                                  {this.isPendingCampaign && 'Confirmations'}
                                 </th>
                               </tr>
                             </thead>
@@ -247,7 +269,7 @@ class MyCampaigns extends Component {
                                     {c.status}
                                   </td>
                                   <td className="td-confirmations">
-                                    {(isPendingCampaign ||
+                                    {(this.isPendingCampaign ||
                                       c.requiredConfirmations !== c.confirmations) &&
                                       `${c.confirmations}/${c.requiredConfirmations}`}
                                   </td>

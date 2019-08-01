@@ -53,6 +53,23 @@ class MyMilestones extends Component {
   }
 
   componentDidMount() {
+    this.updatePending = setInterval(() => {
+      if (this.isPendingMilestone) {
+        this.state.milestones
+          .filter(m => m.confirmations !== m.requiredConfirmations)
+          .forEach(m => {
+            const currentMilestone = m;
+            MilestoneService.get(m._id).then(newMilestone => {
+              if (currentMilestone.confirmations !== newMilestone.confirmations)
+                this.setState(prevState => ({
+                  milestones: prevState.milestones.map(milestone =>
+                    milestone._id === newMilestone._id ? newMilestone : milestone,
+                  ),
+                }));
+            });
+          });
+      }
+    }, 1000); // Fetch every seconds
     isLoggedIn(this.props.currentUser, true)
       .then(() => this.loadMileStones())
       .catch(err => {
@@ -75,6 +92,7 @@ class MyMilestones extends Component {
   }
 
   componentWillUnmount() {
+    if (this.updatePending) clearInterval(this.updatePending);
     MilestoneService.unsubscribe();
   }
 
@@ -139,6 +157,8 @@ class MyMilestones extends Component {
       visiblePages,
     } = this.state;
     const { currentUser, balance } = this.props;
+    this.isPendingMilestone =
+      (milestones && milestones.some(m => m.confirmations !== m.requiredConfirmations)) || false;
 
     return (
       <Web3Consumer>
@@ -185,6 +205,9 @@ class MyMilestones extends Component {
                                 <th className="td-created-at">Created</th>
                                 <th className="td-name">Name</th>
                                 <th className="td-status">Status</th>
+                                <th className="td-confirmations">
+                                  {this.isPendingMilestone && 'Confirmations'}
+                                </th>
                                 <th className="td-donations-number">Requested</th>
                                 <th className="td-donations-number">Donations</th>
                                 <th className="td-donations-amount">Donated</th>
@@ -238,6 +261,11 @@ class MyMilestones extends Component {
                                       </span>
                                     )}
                                     {getReadableStatus(m.status)}
+                                  </td>
+                                  <td className="td-confirmations">
+                                    {(this.isPendingMilestone ||
+                                      m.requiredConfirmations !== m.confirmations) &&
+                                      `${m.confirmations}/${m.requiredConfirmations}`}
                                   </td>
                                   <td className="td-donations-number">
                                     {m.isCapped && convertEthHelper(m.maxAmount)}{' '}
