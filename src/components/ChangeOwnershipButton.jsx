@@ -82,8 +82,8 @@ class ChangeOwnershipButton extends Component {
     };
 
     const afterMined = () => {
-      const msg = <p>The owner has been updated!</p>;
-      React.toast.success(msg);
+      // const msg = <p>The owner has been updated!</p>;
+      // React.toast.success(msg);
     };
 
     CampaignService.changeOwnership(
