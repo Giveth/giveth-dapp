@@ -17,6 +17,7 @@ import BackgroundImageHeader from '../BackgroundImageHeader';
 import DonateButton from '../DonateButton';
 import CommunityButton from '../CommunityButton';
 import DelegateMultipleButton from '../DelegateMultipleButton';
+import ChangeOwnershipButton from '../ChangeOwnershipButton';
 import ListDonations from '../ListDonations';
 
 import User from '../../models/User';
@@ -278,6 +279,18 @@ class ViewCampaign extends Component {
                       currentUser={currentUser}
                     />
                   )}
+                  {campaign.owner &&
+                    currentUser &&
+                    campaign.owner.address === currentUser.address &&
+                    campaign.isActive && (
+                      <ChangeOwnershipButton
+                        campaign={campaign}
+                        balance={balance}
+                        currentUser={currentUser}
+                        {...this.props}
+                      />
+                    )}
+
                   {campaign.communityUrl && (
                     <CommunityButton className="btn btn-secondary" url={campaign.communityUrl}>
                       Join our Community
