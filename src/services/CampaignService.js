@@ -173,7 +173,11 @@ class CampaignService {
       .watch({ listStrategy: 'always' })
       .find({
         query: {
-          $or: [{ ownerAddress: userAddress }, { reviewerAddress: userAddress }],
+          $or: [
+            { ownerAddress: userAddress },
+            { reviewerAddress: userAddress },
+            { coownerAddress: userAddress },
+          ],
           $sort: {
             createdAt: -1,
           },
@@ -274,6 +278,46 @@ class CampaignService {
       );
       afterSave(err);
     }
+  }
+
+  /**
+   * Change ownership from campaign
+   *
+   * //TODO: update contact for transaction on this
+   *
+   * @param campaign    Campaign to be modified
+   * @param from        Address of the user changing the Campaign
+   * @param owner       Address of the user that will own the Campaign
+   * @param coowner     Address of the user that will coown the Campaign
+   * @param afterCreate Callback to be triggered after the Campaign is cancelled in feathers
+   * @param afterMined  Callback to be triggered after the transaction is mined
+   */
+  static changeOwnership(
+    campaign,
+    from,
+    owner,
+    coowner,
+    afterCreate = () => {},
+    afterMined = () => {},
+  ) {
+    Promise.all([getNetwork(), getWeb3()])
+      .then(([_]) => {
+        campaigns
+          .patch(campaign.id, {
+            ownerAddress: owner,
+            coownerAddress: coowner,
+          })
+          .then(() => {
+            afterCreate();
+            afterMined();
+          })
+          .catch(err => {
+            ErrorPopup('Something went wrong with updating campaign', err);
+          });
+      })
+      .catch(err => {
+        ErrorPopup('Something went wrong with cancelling your campaign', err);
+      });
   }
 
   /**

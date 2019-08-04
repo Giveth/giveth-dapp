@@ -92,6 +92,7 @@ class MyMilestones extends Component {
     MilestoneService.subscribeMyMilestones({
       milestoneStatus,
       ownerAddress: myAddress,
+      coownerAddress: myAddress,
       recipientAddress: myAddress,
       skipPages,
       itemsPerPage,
