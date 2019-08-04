@@ -35,6 +35,7 @@ export default class Milestone extends BasicModel {
       // transient
       campaign,
       owner,
+      coowner,
       recipient,
       pendingRecipient,
       reviewer,
@@ -67,6 +68,7 @@ export default class Milestone extends BasicModel {
     // transient
     this._campaign = campaign;
     this._owner = owner;
+    this._coowner = coowner;
     this._recipient = recipient;
     this._pendingRecipient = pendingRecipient;
     this._reviewer = reviewer;
@@ -479,6 +481,10 @@ export default class Milestone extends BasicModel {
     return this._owner;
   }
 
+  get coowner() {
+    return this._coowner;
+  }
+
   get reviewer() {
     return this._reviewer;
   }
@@ -543,7 +549,10 @@ export default class Milestone extends BasicModel {
 
   canUserAcceptRejectProposal(user) {
     return (
-      user && this.campaign.ownerAddress === user.address && this.status === Milestone.PROPOSED
+      user &&
+      (this.campaign.ownerAddress === user.address ||
+        this.campaign.coownerAddress === user.address) &&
+      this.status === Milestone.PROPOSED
     );
   }
 
