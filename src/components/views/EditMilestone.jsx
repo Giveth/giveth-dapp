@@ -153,7 +153,7 @@ class EditMilestone extends Component {
           campaignId: this.props.match.params.id,
         });
 
-        DACService.getDACs(
+        await DACService.getDACs(
           undefined, // Limit
           0, // Skip
           (dacs, _) => {
@@ -555,8 +555,8 @@ class EditMilestone extends Component {
 
   delegatePercent(value) {
     if (!this._isMounted) return;
-    const { milestone, toggles } = this.state;
-    const dacIdMilestone = value ? 5 : 0;
+    const { milestone, toggles, dacs } = this.state;
+    const dacIdMilestone = value ? parseInt(dacs[0].value, 10) : 0;
     milestone.dacId = parseInt(dacIdMilestone, 10);
     toggles.delegatePercent = value;
     this.setState({ milestone, toggles });
@@ -708,6 +708,11 @@ class EditMilestone extends Component {
     }
     milestone.parentProjectId = this.state.campaignProjectId;
 
+    if (milestone.dacId !== 0 && milestone.maxAmount) {
+      milestone.maxAmount = new BigNumber(milestone.maxAmount.toNumber() * 0.97);
+      milestone.fiatAmount = new BigNumber(milestone.fiatAmount * 0.97);
+    }
+
     const _saveMilestone = () =>
       MilestoneService.save({
         milestone,
@@ -790,20 +795,6 @@ class EditMilestone extends Component {
         }
       },
     );
-  }
-
-  mapInputs(inputs) {
-    if (!this._isMounted) return;
-    const { milestone } = this.state;
-
-    milestone.title = inputs.title;
-    milestone.description = inputs.description;
-    milestone.reviewerAddress = inputs.reviewerAddress || ZERO_ADDRESS;
-    milestone.recipientAddress = inputs.recipientAddress || ZERO_ADDRESS;
-
-    // if(!milestone.itemizeState) milestone.maxAmount = inputs.maxAmount;
-
-    this.setState({ milestone });
   }
 
   removeItem(index) {
@@ -960,7 +951,13 @@ class EditMilestone extends Component {
                     id="edit-milestone-form"
                     onSubmit={this.submit}
                     ref={this.form}
-                    mapping={inputs => this.mapInputs(inputs)}
+                    mapping={inputs => {
+                      milestone.title = inputs.title;
+                      milestone.description = inputs.description;
+                      milestone.reviewerAddress = inputs.reviewerAddress || ZERO_ADDRESS;
+                      milestone.dacId = parseInt(inputs.dacId, 10) || 5;
+                      milestone.recipientAddress = inputs.recipientAddress || ZERO_ADDRESS;
+                    }}
                     onValid={() => this.toggleFormValid(true)}
                     onInvalid={() => this.toggleFormValid(false)}
                     onChange={e => this.onFormChange(e)}
@@ -1044,7 +1041,7 @@ class EditMilestone extends Component {
                           name="dacId"
                           id="dac-select"
                           label="DAC to delegate"
-                          helpText="Funds will be delegated when collecting this milestone"
+                          helpText="Funds will be delegated each time someone donates"
                           value={milestone.dacId}
                           options={dacs}
                           validations="isNumber"
