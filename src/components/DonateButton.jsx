@@ -18,6 +18,7 @@ import LoaderButton from './LoaderButton';
 import ErrorPopup from './ErrorPopup';
 import config from '../configuration';
 import DonationService from '../services/DonationService';
+import DACService from '../services/DACService';
 import { feathersClient } from '../lib/feathersClient';
 import { Consumer as Web3Consumer } from '../contextProviders/Web3Provider';
 import NetworkWarning from './NetworkWarning';
@@ -132,6 +133,60 @@ class DonateButton extends React.Component {
     return maxAmount;
   }
 
+  async getDacTitle(model, adminId, dacId) {
+    DACService.getDACs(
+      1, // Limit
+      0, // Skip
+      (dacs, _) => {
+        let dacTitle = '';
+        dacs.forEach(d => {
+          if (d.myDelegateId === dacId) dacTitle = d._title;
+        });
+        this.donateToDac(model, adminId, dacId, dacTitle, model.amount);
+      },
+      () => {},
+    );
+  }
+
+  toggleFormValid(state) {
+    this.setState({ formIsValid: state });
+  }
+
+  closeDialog() {
+    this.setState({
+      modalVisible: false,
+      amount: '1',
+      defaultAmount: true,
+      formIsValid: false,
+    });
+  }
+
+  openDialog() {
+    const { model } = this.props;
+    this.setState(prevState => {
+      const { isCapped } = model;
+      const amount = isCapped ? this.getMaxAmount().toFixed() : prevState.amount;
+      return {
+        modalVisible: true,
+        amount,
+        defaultAmount: isCapped ? false : prevState.defaultAmount,
+        formIsValid: false,
+      };
+    });
+  }
+
+  submit(model) {
+    const { adminId, dacId } = this.props.model;
+
+    if (dacId !== undefined && dacId !== 0) {
+      this.getDacTitle(model, adminId, dacId, model.amount);
+    } else {
+      this.donateWithBridge(model, adminId, model.amount);
+    }
+
+    this.setState({ isSaving: true });
+  }
+
   pollToken() {
     const { selectedToken } = this.state;
     const { isCorrectNetwork, currentUser } = this.props;
@@ -172,44 +227,48 @@ class DonateButton extends React.Component {
     )();
   }
 
-  toggleFormValid(state) {
-    this.setState({ formIsValid: state });
-  }
-
-  closeDialog() {
-    this.setState({
-      modalVisible: false,
-      amount: '1',
-      defaultAmount: true,
-      formIsValid: false,
+  async donateToDac(model, adminId, dacId, dacTitle, amount) {
+    const amountDAC = (amount * 0.03).toString();
+    const amountMilestoneOwner = (amount * 0.97).toString();
+    const tokenSymbol = this.props.model.token.symbol;
+    const isConfirmed = await React.swal({
+      title: 'Twice as good!',
+      content: React.swal.msg(
+        <div>
+          <p>For your donation you need to make 2 transactions:</p>
+          <ol style={{ textAlign: 'left' }}>
+            <li>
+              The milestone owner decided to support the <b>{dacTitle}</b>! Woo-hoo! <br />{' '}
+              <b>
+                {amountDAC} {tokenSymbol}
+              </b>{' '}
+              will be delegated.
+            </li>
+            <li>
+              The rest (
+              <b>
+                {amountMilestoneOwner} {tokenSymbol}
+              </b>
+              ) will go to the milestone owner.
+            </li>
+          </ol>
+        </div>,
+      ),
+      icon: 'info',
+      buttons: ['Cancel', 'Lets do it!'],
     });
+
+    if (isConfirmed) {
+      await this.donateWithBridge(model, dacId, amountDAC, adminId, amountMilestoneOwner);
+    }
+    this.setState({ isSaving: false });
   }
 
-  openDialog() {
-    const { model } = this.props;
-    this.setState(prevState => {
-      const { isCapped } = model;
-      const amount = isCapped ? this.getMaxAmount().toFixed() : prevState.amount;
-      return {
-        modalVisible: true,
-        amount,
-        defaultAmount: isCapped ? false : prevState.defaultAmount,
-        formIsValid: false,
-      };
-    });
-  }
-
-  submit(model) {
-    this.donateWithBridge(model);
-    this.setState({ isSaving: true });
-  }
-
-  donateWithBridge(model) {
+  async donateWithBridge(model, adminId, amount, adminIdTwo, amountTwo) {
     const { currentUser } = this.props;
-    const { adminId } = this.props.model;
     const { givethBridge, etherscanUrl, showCustomAddress, selectedToken } = this.state;
 
-    const value = utils.toWei(model.amount);
+    const value = utils.toWei(amount);
     const isDonationInToken = selectedToken.symbol !== config.nativeTokenName;
     const tokenAddress = isDonationInToken ? selectedToken.address : 0;
 
@@ -267,7 +326,12 @@ class DonateButton extends React.Component {
       method
         .on('transactionHash', async transactionHash => {
           txHash = transactionHash;
-          this.closeDialog();
+          const closeDialog = adminIdTwo === undefined && amountTwo === undefined;
+          if (!closeDialog) {
+            this.donateWithBridge(model, adminIdTwo, amountTwo);
+          } else {
+            this.closeDialog();
+          }
           await DonationService.newFeathersDonation(
             donationUser,
             this.props.model,
@@ -277,7 +341,7 @@ class DonateButton extends React.Component {
           );
 
           this.setState({
-            modalVisible: false,
+            modalVisible: !closeDialog,
             isSaving: false,
           });
 
@@ -330,12 +394,13 @@ class DonateButton extends React.Component {
     // if donating in token, first approve transfer of token by bridge
     if (isDonationInToken) {
       DonationService.approveERC20tokenTransfer(tokenAddress, currentUser.address, value)
-        .then(() => _makeDonationTx())
+        .then(async () => {
+          await _makeDonationTx();
+        })
         .catch(err => {
           this.setState({
             isSaving: false,
           });
-
           if (err.message !== 'cancelled') {
             ErrorPopup(
               'Something went wrong with your donation. Could not approve token allowance.',
@@ -346,7 +411,7 @@ class DonateButton extends React.Component {
           }
         });
     } else {
-      _makeDonationTx();
+      await _makeDonationTx();
     }
   }
 
@@ -592,6 +657,7 @@ const modelTypes = PropTypes.shape({
   type: PropTypes.string.isRequired,
   adminId: PropTypes.oneOfType([PropTypes.number, PropTypes.string]).isRequired,
   id: PropTypes.string.isRequired,
+  dacId: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
   title: PropTypes.string.isRequired,
   campaignId: PropTypes.string,
   token: PropTypes.shape({}),

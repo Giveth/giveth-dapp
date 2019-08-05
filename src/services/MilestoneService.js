@@ -84,6 +84,7 @@ class MilestoneService {
   static async subscribeMyMilestones({
     milestoneStatus,
     ownerAddress,
+    coownerAddress,
     recipientAddress,
     skipPages,
     itemsPerPage,
@@ -130,6 +131,7 @@ class MilestoneService {
         {
           $or: [
             { ownerAddress },
+            { coownerAddress },
             // { reviewerAddress: myAddress }, // Not really "My Milestones"
             { recipientAddress },
           ],
@@ -139,7 +141,7 @@ class MilestoneService {
     } else {
       const resp = await feathersClient.service('campaigns').find({
         query: {
-          ownerAddress,
+          $or: [{ ownerAddress }, { coownerAddress }],
           $select: ['_id'],
         },
       });
@@ -148,6 +150,7 @@ class MilestoneService {
         {
           $or: [
             { ownerAddress },
+            { coownerAddress },
             { reviewerAddress: ownerAddress },
             { recipientAddress: ownerAddress },
             {
