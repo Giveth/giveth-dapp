@@ -22,6 +22,7 @@ import {
   getStartOfDayUTC,
   ZERO_ADDRESS,
   ANY_TOKEN,
+  history,
 } from '../../lib/helpers';
 import {
   checkForeignNetwork,
@@ -75,6 +76,15 @@ const validQueryStringVariables = [
   'requireReviewer',
   // 'fiatAmount', // FIXME: The fiatAmount does not work because it is overwritten when the getConversionRates function is called. This function modifies th e provider and causes re-render which makes the maxAmount being updated incorrectly. The function needs to change to not update the provider state and not expose currentRate
 ];
+
+function returnHelpText(conversionRateLoading, milestone, currentRate) {
+  if (!conversionRateLoading) {
+    return `1 ${milestone.token.symbol} = ${currentRate.rates[milestone.selectedFiatType]} ${
+      milestone.selectedFiatType
+    }`;
+  }
+  return ``;
+}
 
 /**
  * Create or edit a Milestone
@@ -159,7 +169,7 @@ class EditMilestone extends Component {
           (dacs, _) => {
             if (!this._isMounted) return;
             const formatDACS = dacs.map(r => ({
-              value: r.myDelegateId,
+              value: r.myDelegateId.toString(),
               title: `${r.myDelegateId ? r.myDelegateId : '?'} - ${r._title}`,
             }));
             this.setState(prevState => ({
@@ -265,6 +275,8 @@ class EditMilestone extends Component {
               milestone.token.symbol,
             );
 
+            if (!this._isMounted) return;
+
             this.setState({
               campaignTitle: campaign.title,
               campaignProjectId: campaign.projectId,
@@ -291,8 +303,6 @@ class EditMilestone extends Component {
             });
 
             this.setDate(this.state.milestone.date);
-
-            this.delegatePercent(true);
           } catch (e) {
             ErrorPopup(
               'Sadly we were unable to load the Campaign in which this Milestone was created. Please try again.',
@@ -317,16 +327,21 @@ class EditMilestone extends Component {
   }
 
   componentDidUpdate(prevProps) {
+    const milestoneOwner = this.state.milestone.owner;
+    const { currentUser } = this.props;
     if (!this._isMounted) return;
-    if (prevProps.currentUser !== this.props.currentUser) {
+    if (prevProps.currentUser !== currentUser) {
+      const milestoneOwnerAddress = this.state.milestone.owner.address;
+      const campaignOwner = this.state.milestone.campaign.ownerAddress;
+      if (!milestoneOwner || !campaignOwner || !currentUser) {
+        history.goBack();
+        return;
+      }
       this.checkUser().then(() => {
-        if (
-          !isOwner(this.state.milestone.owner.address, this.props.currentUser) ||
-          !isOwner(this.state.milestone.campaign.ownerAddress, this.props.currentUser)
-        )
+        if (!isOwner(milestoneOwnerAddress, currentUser) || !isOwner(campaignOwner, currentUser))
           this.props.history.goBack();
       });
-    } else if (this.props.currentUser && !prevProps.balance.eq(this.props.balance)) {
+    } else if (currentUser && !prevProps.balance.eq(this.props.balance)) {
       checkBalance(this.props.balance);
     }
   }
@@ -891,7 +906,6 @@ class EditMilestone extends Component {
     const {
       isNew,
       isProposed,
-      history,
       currentRate,
       fiatTypes,
       reviewers,
@@ -955,7 +969,7 @@ class EditMilestone extends Component {
                       milestone.title = inputs.title;
                       milestone.description = inputs.description;
                       milestone.reviewerAddress = inputs.reviewerAddress || ZERO_ADDRESS;
-                      milestone.dacId = parseInt(inputs.dacId, 10) || 5;
+                      milestone.dacId = parseInt(inputs.dacId, 10) || 0;
                       milestone.recipientAddress = inputs.recipientAddress || ZERO_ADDRESS;
                     }}
                     onValid={() => this.toggleFormValid(true)}
@@ -1232,12 +1246,11 @@ class EditMilestone extends Component {
                                     options={fiatTypes}
                                     allowedOptions={currentRate.rates}
                                     onChange={this.changeSelectedFiat}
-                                    helpText={
-                                      !conversionRateLoading &&
-                                      `1 ${milestone.token.symbol} = ${
-                                        currentRate.rates[milestone.selectedFiatType]
-                                      } ${milestone.selectedFiatType}`
-                                    }
+                                    helpText={returnHelpText(
+                                      conversionRateLoading,
+                                      milestone,
+                                      currentRate,
+                                    )}
                                     disabled={!isNew && !isProposed}
                                     required
                                   />
