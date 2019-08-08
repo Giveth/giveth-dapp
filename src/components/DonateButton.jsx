@@ -109,6 +109,7 @@ class DonateButton extends React.Component {
   getMaxAmount() {
     const { selectedToken } = this.state;
     const { NativeTokenBalance } = this.props;
+    const { dacId } = this.props.model;
 
     const balance =
       selectedToken.symbol === config.nativeTokenName ? NativeTokenBalance : selectedToken.balance;
@@ -130,6 +131,9 @@ class DonateButton extends React.Component {
         : maxAmount;
     }
 
+    if (dacId !== 0) {
+      maxAmount = new BigNumber(maxAmount * 1.03);
+    }
     return maxAmount;
   }
 
@@ -228,8 +232,8 @@ class DonateButton extends React.Component {
   }
 
   async donateToDac(model, adminId, dacId, dacTitle, amount) {
-    const amountDAC = (amount * 0.03).toString();
-    const amountMilestoneOwner = (amount * 0.97).toString();
+    const amountDAC = (amount - amount / 1.03).toString();
+    const amountMilestoneOwner = (amount / 1.03).toString();
     const tokenSymbol = this.props.model.token.symbol;
     const { ownerAddress } = this.props.model;
     const isConfirmed = await React.swal({
@@ -284,19 +288,19 @@ class DonateButton extends React.Component {
       let method;
       let donationUser;
       const opts = { from: currentUser.address, $extraGas: extraGas() };
+      let customAddress = '';
+      const { customAddress: modelAddress } = model;
+      if (!ownerAddress) {
+        customAddress = modelAddress;
+      } else {
+        customAddress = ownerAddress;
+      }
 
       // actually uses 84766, but runs out of gas if exact
       if (!isDonationInToken) Object.assign(opts, { value, gas: DONATION_GAS });
 
-      if (showCustomAddress || ownerAddress) {
+      if (showCustomAddress || ownerAddress !== undefined) {
         // Donating on behalf of another user or address
-        let customAddress = '';
-        const { customAddress: modelAddress } = model;
-        if (ownerAddress) {
-          customAddress = ownerAddress;
-        } else {
-          customAddress = modelAddress;
-        }
         try {
           const user = await feathersClient.service('users').get(customAddress);
           if (user && user.giverId > 0) {
@@ -332,21 +336,20 @@ class DonateButton extends React.Component {
           const closeDialog = adminIdTwo === undefined && amountTwo === undefined;
           if (!closeDialog) {
             if (showCustomAddress) {
-              this.donateWithBridge(model, adminIdTwo, amountTwo);
+              this.donateWithBridge(model, customAddress, amountTwo);
             } else {
               await this.setState({ showCustomAddress: false });
               this.donateWithBridge(model, adminIdTwo, amountTwo);
             }
           } else {
-            this.closeDialog();
+            await DonationService.newFeathersDonation(
+              donationUser,
+              this.props.model,
+              value,
+              selectedToken,
+              txHash,
+            );
           }
-          await DonationService.newFeathersDonation(
-            donationUser,
-            this.props.model,
-            value,
-            selectedToken,
-            txHash,
-          );
 
           this.setState({
             modalVisible: !closeDialog,
@@ -368,6 +371,7 @@ class DonateButton extends React.Component {
               </a>
             </p>,
           );
+          if (closeDialog) this.closeDialog();
         })
         .then(() => {
           React.toast.success(
