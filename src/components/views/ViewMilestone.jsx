@@ -25,6 +25,7 @@ import MilestoneConversations from 'components/MilestoneConversations';
 import DelegateMultipleButton from 'components/DelegateMultipleButton';
 import { convertEthHelper, getUserAvatar, getUserName } from '../../lib/helpers';
 import MilestoneService from '../../services/MilestoneService';
+import DACService from '../../services/DACService';
 import ShareOptions from '../ShareOptions';
 import { Consumer as WhiteListConsumer } from '../../contextProviders/WhiteListProvider';
 
@@ -46,12 +47,14 @@ class ViewMilestone extends Component {
       recipient: {},
       campaign: {},
       milestone: {},
+      dacTitle: '',
       donationsTotal: 0,
       donationsPerBatch: 50,
       newDonations: 0,
     };
 
     this.loadMoreDonations = this.loadMoreDonations.bind(this);
+    this.getDacTitle = this.getDacTitle.bind(this);
   }
 
   componentDidMount() {
@@ -68,6 +71,7 @@ class ViewMilestone extends Component {
             ? milestone.pendingRecipient
             : milestone.recipient,
         });
+        this.getDacTitle(milestone.dacId);
       },
       err => {
         ErrorPopup('Something went wrong with viewing the Milestone. Please try a refresh.', err);
@@ -76,6 +80,7 @@ class ViewMilestone extends Component {
     );
 
     this.loadMoreDonations();
+
     // subscribe to donation count
     this.donationsObserver = MilestoneService.subscribeNewDonations(
       milestoneId,
@@ -89,6 +94,22 @@ class ViewMilestone extends Component {
 
   componentWillUnmount() {
     this.donationsObserver.unsubscribe();
+  }
+
+  async getDacTitle(dacId) {
+    if (dacId === 0) return;
+    DACService.getDACs(
+      1, // Limit
+      0, // Skip
+      (dacs, _) => {
+        let dacTitle = '';
+        dacs.forEach(d => {
+          if (d.myDelegateId === dacId) dacTitle = d._title;
+        });
+        this.setState({ dacTitle });
+      },
+      () => {},
+    );
   }
 
   loadMoreDonations() {
@@ -425,6 +446,15 @@ class ViewMilestone extends Component {
                           )}
                         </div>
 
+                        {milestone.dacId !== 0 && milestone.dacId !== undefined && (
+                          <div className="form-group">
+                            <span className="label">Delegating 3% to:</span>
+                            <small className="form-text">
+                              This milestone is contributing to this DAC on every donation.
+                            </small>
+                            {this.state.dacTitle}
+                          </div>
+                        )}
                         {milestone.date && (
                           <div className="form-group">
                             <span className="label">Date of Milestone</span>
