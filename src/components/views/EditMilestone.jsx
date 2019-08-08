@@ -731,11 +731,6 @@ class EditMilestone extends Component {
     }
     milestone.parentProjectId = this.state.campaignProjectId;
 
-    if (milestone.dacId !== 0 && milestone.maxAmount) {
-      milestone.maxAmount = new BigNumber(milestone.maxAmount.toNumber() * 0.97);
-      milestone.fiatAmount = new BigNumber(milestone.fiatAmount * 0.97);
-    }
-
     const _saveMilestone = () =>
       MilestoneService.save({
         milestone,
