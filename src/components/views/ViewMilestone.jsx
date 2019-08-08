@@ -230,6 +230,7 @@ class ViewMilestone extends Component {
                         campaignId: campaign._id,
                         token: milestone.acceptsSingleToken ? milestone.token : undefined,
                         isCapped: milestone.isCapped,
+                        ownerAddress: milestone.ownerAddress,
                       }}
                       currentUser={currentUser}
                       history={history}
@@ -540,6 +541,7 @@ class ViewMilestone extends Component {
                         campaignId: campaign._id,
                         token: milestone.acceptsSingleToken ? milestone.token : undefined,
                         isCapped: milestone.isCapped,
+                        ownerAddress: milestone.ownerAddress,
                       }}
                       currentUser={currentUser}
                       history={history}
