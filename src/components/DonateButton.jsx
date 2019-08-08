@@ -132,7 +132,7 @@ class DonateButton extends React.Component {
     }
 
     if (dacId !== 0) {
-      maxAmount = new BigNumber(maxAmount * 1.03);
+      maxAmount = new BigNumber(parseFloat(maxAmount * 1.03).toFixed(6));
     }
     return maxAmount;
   }
@@ -232,8 +232,12 @@ class DonateButton extends React.Component {
   }
 
   async donateToDac(model, adminId, dacId, dacTitle, amount) {
-    const amountDAC = (amount - amount / 1.03).toString();
-    const amountMilestoneOwner = (amount / 1.03).toString();
+    const amountDAC = parseFloat(amount - amount / 1.03)
+      .toFixed(6)
+      .toString();
+    const amountMilestoneOwner = parseFloat(amount / 1.03)
+      .toFixed(6)
+      .toString();
     const tokenSymbol = this.props.model.token.symbol;
     const { ownerAddress } = this.props.model;
     const isConfirmed = await React.swal({
