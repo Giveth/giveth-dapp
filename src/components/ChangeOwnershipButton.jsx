@@ -142,7 +142,6 @@ class ChangeOwnershipButton extends Component {
                 campaign.ownerAddress = inputs.ownerAddress || ZERO_ADDRESS;
                 campaign.coownerAddress = inputs.coownerAddress || ZERO_ADDRESS;
               }}
-              onChange={e => this.onFormChange(e)}
             >
               {
                 <div>
