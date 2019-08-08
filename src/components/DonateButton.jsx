@@ -109,6 +109,7 @@ class DonateButton extends React.Component {
   getMaxAmount() {
     const { selectedToken } = this.state;
     const { NativeTokenBalance } = this.props;
+    const { dacId } = this.props.model;
 
     const balance =
       selectedToken.symbol === config.nativeTokenName ? NativeTokenBalance : selectedToken.balance;
@@ -130,6 +131,9 @@ class DonateButton extends React.Component {
         : maxAmount;
     }
 
+    if (dacId !== 0) {
+      maxAmount = new BigNumber(maxAmount * 1.03);
+    }
     return maxAmount;
   }
 
@@ -228,9 +232,10 @@ class DonateButton extends React.Component {
   }
 
   async donateToDac(model, adminId, dacId, dacTitle, amount) {
-    const amountDAC = (amount * 0.03).toString();
-    const amountMilestoneOwner = (amount * 0.97).toString();
+    const amountDAC = (amount - amount / 1.03).toString();
+    const amountMilestoneOwner = (amount / 1.03).toString();
     const tokenSymbol = this.props.model.token.symbol;
+    const { ownerAddress } = this.props.model;
     const isConfirmed = await React.swal({
       title: 'Twice as good!',
       content: React.swal.msg(
@@ -259,12 +264,19 @@ class DonateButton extends React.Component {
     });
 
     if (isConfirmed) {
-      await this.donateWithBridge(model, dacId, amountDAC, adminId, amountMilestoneOwner);
+      await this.donateWithBridge(
+        model,
+        dacId,
+        amountDAC,
+        adminId,
+        amountMilestoneOwner,
+        ownerAddress,
+      );
     }
     this.setState({ isSaving: false });
   }
 
-  async donateWithBridge(model, adminId, amount, adminIdTwo, amountTwo) {
+  async donateWithBridge(model, adminId, amount, adminIdTwo, amountTwo, ownerAddress) {
     const { currentUser } = this.props;
     const { givethBridge, etherscanUrl, showCustomAddress, selectedToken } = this.state;
 
@@ -276,36 +288,31 @@ class DonateButton extends React.Component {
       let method;
       let donationUser;
       const opts = { from: currentUser.address, $extraGas: extraGas() };
+      let customAddress = '';
+      const { customAddress: modelAddress } = model;
+      if (!ownerAddress) {
+        customAddress = modelAddress;
+      } else {
+        customAddress = ownerAddress;
+      }
 
       // actually uses 84766, but runs out of gas if exact
       if (!isDonationInToken) Object.assign(opts, { value, gas: DONATION_GAS });
 
-      if (showCustomAddress) {
+      if (showCustomAddress || ownerAddress !== undefined) {
         // Donating on behalf of another user or address
         try {
-          const user = await feathersClient.service('users').get(model.customAddress);
+          const user = await feathersClient.service('users').get(customAddress);
           if (user && user.giverId > 0) {
             method = givethBridge.donate(user.giverId, adminId, tokenAddress, value, opts);
             donationUser = user;
           } else {
-            givethBridge.donateAndCreateGiver(
-              model.customAddress,
-              adminId,
-              tokenAddress,
-              value,
-              opts,
-            );
-            donationUser = { address: model.customAddress };
+            givethBridge.donateAndCreateGiver(customAddress, adminId, tokenAddress, value, opts);
+            donationUser = { address: customAddress };
           }
         } catch (e) {
-          givethBridge.donateAndCreateGiver(
-            model.customAddress,
-            adminId,
-            tokenAddress,
-            value,
-            opts,
-          );
-          donationUser = { address: model.customAddress };
+          givethBridge.donateAndCreateGiver(customAddress, adminId, tokenAddress, value, opts);
+          donationUser = { address: customAddress };
         }
       } else {
         // Donating on behalf of logged in DApp user
@@ -328,17 +335,21 @@ class DonateButton extends React.Component {
           txHash = transactionHash;
           const closeDialog = adminIdTwo === undefined && amountTwo === undefined;
           if (!closeDialog) {
-            this.donateWithBridge(model, adminIdTwo, amountTwo);
+            if (showCustomAddress) {
+              this.donateWithBridge(model, customAddress, amountTwo);
+            } else {
+              await this.setState({ showCustomAddress: false });
+              this.donateWithBridge(model, adminIdTwo, amountTwo);
+            }
           } else {
-            this.closeDialog();
+            await DonationService.newFeathersDonation(
+              donationUser,
+              this.props.model,
+              value,
+              selectedToken,
+              txHash,
+            );
           }
-          await DonationService.newFeathersDonation(
-            donationUser,
-            this.props.model,
-            value,
-            selectedToken,
-            txHash,
-          );
 
           this.setState({
             modalVisible: !closeDialog,
@@ -360,6 +371,7 @@ class DonateButton extends React.Component {
               </a>
             </p>,
           );
+          if (closeDialog) this.closeDialog();
         })
         .then(() => {
           React.toast.success(
@@ -662,6 +674,7 @@ const modelTypes = PropTypes.shape({
   campaignId: PropTypes.string,
   token: PropTypes.shape({}),
   acceptsSingleToken: PropTypes.bool,
+  ownerAddress: PropTypes.string,
 });
 
 DonateButton.propTypes = {

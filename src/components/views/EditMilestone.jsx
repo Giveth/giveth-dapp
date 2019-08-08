@@ -595,6 +595,10 @@ class EditMilestone extends Component {
       itemsList,
     } = draftSettings;
 
+    if (!hasReviewer) {
+      this.delegatePercent(true);
+      return;
+    }
     if (hasReviewer === 'false') {
       milestone.reviewerAddress = hasReviewer ? '' : ZERO_ADDRESS;
       toggles.hasReviewer = hasReviewer;
@@ -632,8 +636,12 @@ class EditMilestone extends Component {
       milestone.token = token;
     }
     if (parseInt(dacId, 10) !== 0) {
+      this.delegatePercent(true);
       milestone.dacId = parseInt(dacId, 10);
+    } else {
+      this.delegatePercent(false);
     }
+
     this.setState({ toggles });
     if (isLPMilestone === 'true') {
       if (!isLPMilestone) {
@@ -722,11 +730,6 @@ class EditMilestone extends Component {
       milestone.conversionRate = this.props.currentRate.rates[milestone.selectedFiatType];
     }
     milestone.parentProjectId = this.state.campaignProjectId;
-
-    if (milestone.dacId !== 0 && milestone.maxAmount) {
-      milestone.maxAmount = new BigNumber(milestone.maxAmount.toNumber() * 0.97);
-      milestone.fiatAmount = new BigNumber(milestone.fiatAmount * 0.97);
-    }
 
     const _saveMilestone = () =>
       MilestoneService.save({

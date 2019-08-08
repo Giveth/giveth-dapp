@@ -27,15 +27,31 @@ function getDraftType(state) {
   return undefined;
 }
 
+function setDraftLoaded(_this) {
+  _this.setState({ draftLoaded: Date.now() });
+}
+
 function loadDraft() {
-  if (this.state.draftLoaded) return;
-  if (!this.props.isNew) return;
-  if (!this.form.current || !this.form.current.formsyForm) return;
+  if (this.state.draftLoaded) {
+    setDraftLoaded(this);
+    return;
+  }
+  if (!this.props.isNew) {
+    setDraftLoaded(this);
+    return;
+  }
+  if (!this.form.current || !this.form.current.formsyForm) {
+    setDraftLoaded(this);
+    return;
+  }
   window.setInterval(this.saveDraft, 60000);
   this.setState(prevState => ({ draftType: getDraftType(prevState) }));
   const draftType = getDraftType(this.state);
   const { localStorage } = window;
-  if (!localStorage.getItem(`${draftType}.timestamp`)) return;
+  if (!localStorage.getItem(`${draftType}.timestamp`)) {
+    setDraftLoaded(this);
+    return;
+  }
   this.form.current.formsyForm.inputs.forEach(input => {
     const name = `${draftType}.${input.props.name}`;
     const value = localStorage.getItem(name);
