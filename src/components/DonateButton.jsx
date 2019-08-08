@@ -231,6 +231,7 @@ class DonateButton extends React.Component {
     const amountDAC = (amount * 0.03).toString();
     const amountMilestoneOwner = (amount * 0.97).toString();
     const tokenSymbol = this.props.model.token.symbol;
+    const { ownerAddress } = this.props.model;
     const isConfirmed = await React.swal({
       title: 'Twice as good!',
       content: React.swal.msg(
@@ -259,12 +260,19 @@ class DonateButton extends React.Component {
     });
 
     if (isConfirmed) {
-      await this.donateWithBridge(model, dacId, amountDAC, adminId, amountMilestoneOwner);
+      await this.donateWithBridge(
+        model,
+        dacId,
+        amountDAC,
+        adminId,
+        amountMilestoneOwner,
+        ownerAddress,
+      );
     }
     this.setState({ isSaving: false });
   }
 
-  async donateWithBridge(model, adminId, amount, adminIdTwo, amountTwo) {
+  async donateWithBridge(model, adminId, amount, adminIdTwo, amountTwo, ownerAddress) {
     const { currentUser } = this.props;
     const { givethBridge, etherscanUrl, showCustomAddress, selectedToken } = this.state;
 
@@ -280,32 +288,27 @@ class DonateButton extends React.Component {
       // actually uses 84766, but runs out of gas if exact
       if (!isDonationInToken) Object.assign(opts, { value, gas: DONATION_GAS });
 
-      if (showCustomAddress) {
+      if (showCustomAddress || ownerAddress) {
         // Donating on behalf of another user or address
+        let customAddress = '';
+        const { customAddress: modelAddress } = model;
+        if (ownerAddress) {
+          customAddress = ownerAddress;
+        } else {
+          customAddress = modelAddress;
+        }
         try {
-          const user = await feathersClient.service('users').get(model.customAddress);
+          const user = await feathersClient.service('users').get(customAddress);
           if (user && user.giverId > 0) {
             method = givethBridge.donate(user.giverId, adminId, tokenAddress, value, opts);
             donationUser = user;
           } else {
-            givethBridge.donateAndCreateGiver(
-              model.customAddress,
-              adminId,
-              tokenAddress,
-              value,
-              opts,
-            );
-            donationUser = { address: model.customAddress };
+            givethBridge.donateAndCreateGiver(customAddress, adminId, tokenAddress, value, opts);
+            donationUser = { address: customAddress };
           }
         } catch (e) {
-          givethBridge.donateAndCreateGiver(
-            model.customAddress,
-            adminId,
-            tokenAddress,
-            value,
-            opts,
-          );
-          donationUser = { address: model.customAddress };
+          givethBridge.donateAndCreateGiver(customAddress, adminId, tokenAddress, value, opts);
+          donationUser = { address: customAddress };
         }
       } else {
         // Donating on behalf of logged in DApp user
@@ -328,7 +331,12 @@ class DonateButton extends React.Component {
           txHash = transactionHash;
           const closeDialog = adminIdTwo === undefined && amountTwo === undefined;
           if (!closeDialog) {
-            this.donateWithBridge(model, adminIdTwo, amountTwo);
+            if (showCustomAddress) {
+              this.donateWithBridge(model, adminIdTwo, amountTwo);
+            } else {
+              await this.setState({ showCustomAddress: false });
+              this.donateWithBridge(model, adminIdTwo, amountTwo);
+            }
           } else {
             this.closeDialog();
           }
@@ -662,6 +670,7 @@ const modelTypes = PropTypes.shape({
   campaignId: PropTypes.string,
   token: PropTypes.shape({}),
   acceptsSingleToken: PropTypes.bool,
+  ownerAddress: PropTypes.string,
 });
 
 DonateButton.propTypes = {
