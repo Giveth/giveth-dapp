@@ -842,6 +842,28 @@ class DonationService {
       })
       .catch(err => err);
   }
+
+  static getDonationCommittedParents(donationIds, onSuccess) {
+    feathersClient
+      .service('/donations')
+      .find({
+        query: {
+          _id: { $in: donationIds },
+        },
+      })
+      .then(res => {
+        if (res.data.length > 0) {
+          // Reached to committed level
+          if (res.data[0].status === Donation.COMMITTED) {
+            return onSuccess(res.data.map(d => new Donation(d)));
+          }
+          const parents = res.data.map(d => d.parentDonations).flat();
+          return DonationService.getDonationCommittedParents(parents, onSuccess);
+        }
+        return onSuccess([]);
+      })
+      .catch(err => err);
+  }
 }
 
 export default DonationService;
