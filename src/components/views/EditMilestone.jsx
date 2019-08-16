@@ -1049,7 +1049,7 @@ class EditMilestone extends Component {
                         {!milestone.delegatePercent && (
                           <span className="help-block">
                             Supporting a DAC is optional, this will help a lot the growth of amazing
-                            proyects.
+                            projects.
                           </span>
                         )}
                       </div>
@@ -1057,7 +1057,7 @@ class EditMilestone extends Component {
                         <SelectFormsy
                           name="dacId"
                           id="dac-select"
-                          label="DAC to delegate"
+                          label="DAC to donate to"
                           helpText="Funds will be delegated each time someone donates"
                           value={milestone.dacId}
                           options={dacs}

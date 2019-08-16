@@ -109,7 +109,11 @@ async function loadMilestoneDraft() {
 
   const tokenAddress = localStorage.getItem('milestone.tokenAddress');
 
-  const maxAmount = localStorage.getItem('milestone.maxAmount');
+  const maxAmountItem = localStorage.getItem('milestone.maxAmount');
+  let maxAmount;
+  if (maxAmountItem) {
+    maxAmount = maxAmountItem;
+  }
 
   const fiatAmount = localStorage.getItem('milestone.fiatAmount');
 
@@ -173,7 +177,9 @@ function saveMilestoneDraft(that, itemNames) {
   set('milestone.isLPMilestone', milestone instanceof LPMilestone, itemNames);
   set('milestone.acceptsSingleToken', milestone.acceptsSingleToken, itemNames);
   set('milestone.isCapped', milestone.isCapped, itemNames);
-  set('milestone.maxAmount', milestone.maxAmount.toNumber(), itemNames);
+  if (milestone.maxAmount) {
+    set('milestone.maxAmount', milestone.maxAmount.toNumber(), itemNames);
+  }
   set('milestone.fiatAmount', milestone.fiatAmount.toNumber(), itemNames);
   set('milestone.itemizeState', milestone.itemizeState, itemNames);
   set('milestone.tokenAddress', milestone.token.address, itemNames);
