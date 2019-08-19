@@ -151,7 +151,17 @@ class MilestoneService {
           $or: [
             { ownerAddress },
             { coownerAddress },
-            { reviewerAddress: ownerAddress },
+            {
+              $and: [
+                { reviewerAddress: ownerAddress },
+                {
+                  // Reviewer does not need to see completed (Waiting for collect/disburse) milestones
+                  status: {
+                    $ne: Milestone.COMPLETED,
+                  },
+                },
+              ],
+            },
             { recipientAddress: ownerAddress },
             {
               $and: [

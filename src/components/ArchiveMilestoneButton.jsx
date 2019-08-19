@@ -15,7 +15,7 @@ class ArchiveMilestoneButton extends Component {
   archiveMilestone() {
     const { milestone, balance, currentUser } = this.props;
 
-    const status = milestone.donationCounters.some(dc => dc.currentBalance.gte(0))
+    const status = milestone.donationCounters.some(dc => dc.currentBalance.gt(0))
       ? Milestone.COMPLETED
       : Milestone.PAID;
 
