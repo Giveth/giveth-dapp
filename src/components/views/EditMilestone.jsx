@@ -172,9 +172,16 @@ class EditMilestone extends Component {
               value: r.myDelegateId.toString(),
               title: `${r.myDelegateId ? r.myDelegateId : '?'} - ${r._title}`,
             }));
-            this.setState(prevState => ({
-              dacs: prevState.dacs.concat(formatDACS),
-            }));
+            this.setState(prevState => {
+              const newToggles = { ...prevState.toggles };
+              if (dacs.length === 0) {
+                newToggles.delegatePercent = false;
+              }
+              return {
+                dacs: prevState.dacs.concat(formatDACS),
+                toggles: newToggles,
+              };
+            });
           },
           () => {},
         );
@@ -576,7 +583,7 @@ class EditMilestone extends Component {
   delegatePercent(value) {
     if (!this._isMounted) return;
     const { milestone, toggles, dacs } = this.state;
-    const dacIdMilestone = value ? parseInt(dacs[0].value, 10) : 0;
+    const dacIdMilestone = value && dacs.length > 0 ? parseInt(dacs[0].value, 10) : 0;
     milestone.dacId = parseInt(dacIdMilestone, 10);
     toggles.delegatePercent = value;
     this.setState({ milestone, toggles });
@@ -1058,39 +1065,41 @@ class EditMilestone extends Component {
                       />
                     </div>
 
-                    <div className="form-group">
-                      <div className="form-group react-toggle-container">
-                        <Toggle
-                          id="itemize-state"
-                          checked={milestone.delegatePercent}
-                          onChange={e => this.delegatePercent(e.target.checked)}
-                          disabled={!isNew && !isProposed}
-                        />
-                        <span className="label">Donate 3% to a DAC</span>
-                        {!milestone.delegatePercent && (
-                          <span className="help-block">
-                            Supporting a DAC is optional, this will help a lot the growth of amazing
-                            projects.
-                          </span>
+                    {this.state.dacs.length > 0 && (
+                      <div className="form-group">
+                        <div className="form-group react-toggle-container">
+                          <Toggle
+                            id="itemize-state"
+                            checked={milestone.delegatePercent}
+                            onChange={e => this.delegatePercent(e.target.checked)}
+                            disabled={!isNew && !isProposed}
+                          />
+                          <span className="label">Donate 3% to a DAC</span>
+                          {!milestone.delegatePercent && (
+                            <span className="help-block">
+                              Supporting a DAC is optional, this will help a lot the growth of
+                              amazing projects.
+                            </span>
+                          )}
+                        </div>
+                        {milestone.delegatePercent && (
+                          <SelectFormsy
+                            name="dacId"
+                            id="dac-select"
+                            label="DAC to donate to"
+                            helpText="Funds will be delegated each time someone donates"
+                            value={milestone.dacId}
+                            options={dacs}
+                            validations="isNumber"
+                            validationErrors={{
+                              isNumber: 'Please select a delegate.',
+                            }}
+                            required
+                            disabled={!isNew && !isProposed}
+                          />
                         )}
                       </div>
-                      {milestone.delegatePercent && (
-                        <SelectFormsy
-                          name="dacId"
-                          id="dac-select"
-                          label="DAC to donate to"
-                          helpText="Funds will be delegated each time someone donates"
-                          value={milestone.dacId}
-                          options={dacs}
-                          validations="isNumber"
-                          validationErrors={{
-                            isNumber: 'Please select a delegate.',
-                          }}
-                          required
-                          disabled={!isNew && !isProposed}
-                        />
-                      )}
-                    </div>
+                    )}
 
                     <div className="form-group">
                       <div className="form-group react-toggle-container">
