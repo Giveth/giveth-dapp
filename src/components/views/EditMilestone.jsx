@@ -77,6 +77,8 @@ const validQueryStringVariables = [
   // 'fiatAmount', // FIXME: The fiatAmount does not work because it is overwritten when the getConversionRates function is called. This function modifies th e provider and causes re-render which makes the maxAmount being updated incorrectly. The function needs to change to not update the provider state and not expose currentRate
 ];
 
+let milestoneTemp = null;
+
 function returnHelpText(conversionRateLoading, milestone, currentRate) {
   if (!conversionRateLoading) {
     return `1 ${milestone.token.symbol} = ${currentRate.rates[milestone.selectedFiatType]} ${
@@ -84,6 +86,17 @@ function returnHelpText(conversionRateLoading, milestone, currentRate) {
     }`;
   }
   return ``;
+}
+
+function returnMilestone(_this) {
+  try {
+    return _this.retrieveMilestone();
+  } catch (e) {
+    if (milestoneTemp == null) {
+      milestoneTemp = _this.state.milestone;
+    }
+    return milestoneTemp;
+  }
 }
 
 /**
@@ -147,6 +160,7 @@ class EditMilestone extends Component {
     this.saveDraft = saveDraft.bind(this);
     this.setDraftType = setDraftType.bind(this);
     this.saveDraftAndDelete = this.saveDraftAndDelete.bind(this);
+    this.retrieveMilestone = this.retrieveMilestone(this);
   }
 
   componentDidMount() {
@@ -172,9 +186,16 @@ class EditMilestone extends Component {
               value: r.myDelegateId.toString(),
               title: `${r.myDelegateId ? r.myDelegateId : '?'} - ${r._title}`,
             }));
-            this.setState(prevState => ({
-              dacs: prevState.dacs.concat(formatDACS),
-            }));
+            this.setState(prevState => {
+              const newToggles = { ...prevState.toggles };
+              if (dacs.length === 0) {
+                newToggles.delegatePercent = false;
+              }
+              return {
+                dacs: prevState.dacs.concat(formatDACS),
+                toggles: newToggles,
+              };
+            });
           },
           () => {},
         );
@@ -353,27 +374,44 @@ class EditMilestone extends Component {
   onAddItem(item) {
     if (!this._isMounted) return;
     this.addItem(item);
+    if (!this.state.draftLoaded) return;
     this.setState({ addMilestoneItemModalVisible: false });
+  }
+
+  retrieveMilestone() {
+    if (this.state.draftLoaded) {
+      const { milestone } = this.state;
+      return milestone;
+    }
+    return milestoneTemp;
   }
 
   onItemsChanged(items) {
     if (!this._isMounted) return;
-    const { milestone } = this.state;
+    const milestone = this.retrieveMilestone();
     milestone.items = items;
+    if (!this.state.draftLoaded) {
+      milestoneTemp = milestone;
+      return;
+    }
     this.setState({ milestone, refreshList: milestone.items });
     this.onDraftChange();
   }
 
   setImage(image) {
     if (!this._isMounted) return;
-    const { milestone } = this.state;
+    const milestone = this.retrieveMilestone();
     milestone.image = image;
+    if (!this.state.draftLoaded) {
+      milestoneTemp = milestone;
+      return;
+    }
     this.onImageChange();
   }
 
   setDate(date) {
     if (!this._isMounted) return;
-    const { milestone } = this.state;
+    const milestone = returnMilestone(this);
     milestone.date = date;
     this.props.getConversionRates(date, milestone.token.symbol).then(resp => {
       if (!this._isMounted) return;
@@ -396,14 +434,17 @@ class EditMilestone extends Component {
         milestone.maxAmount = milestone.fiatAmount.div(rate);
         milestone.conversionRateTimestamp = resp.timestamp;
       }
-
+      if (!this.state.draftLoaded) {
+        milestoneTemp = milestone;
+        return;
+      }
       this.setState({ milestone });
     });
   }
 
   setFiatAmount(name, value) {
     if (!this._isMounted) return;
-    const { milestone } = this.state;
+    const milestone = returnMilestone(this);
     const maxAmount = new BigNumber(value || '0');
     const conversionRate = this.props.currentRate.rates[milestone.selectedFiatType];
 
@@ -411,38 +452,47 @@ class EditMilestone extends Component {
       milestone.maxAmount = maxAmount;
       milestone.fiatAmount = maxAmount.times(conversionRate);
       milestone.conversionRateTimestamp = this.props.currentRate.timestamp;
-
+      if (!this.state.draftLoaded) {
+        milestoneTemp = milestone;
+        return;
+      }
       this.setState({ milestone });
     }
   }
 
   setMaxAmount(name, value) {
     if (!this._isMounted) return;
-    const { milestone } = this.state;
+    const milestone = returnMilestone(this);
     const fiatAmount = new BigNumber(value || '0');
     const conversionRate = this.props.currentRate.rates[milestone.selectedFiatType];
     if (conversionRate && fiatAmount.gte(0)) {
       milestone.maxAmount = fiatAmount.div(conversionRate);
       milestone.fiatAmount = fiatAmount;
       milestone.conversionRateTimestamp = this.props.currentRate.timestamp;
-
+      if (!this.state.draftLoaded) {
+        milestoneTemp = milestone;
+        return;
+      }
       this.setState({ milestone });
     }
   }
 
   changeSelectedFiat(fiatType) {
     if (!this._isMounted) return;
-    const { milestone } = this.state;
+    const milestone = returnMilestone(this);
     const conversionRate = this.props.currentRate.rates[fiatType];
-
     milestone.maxAmount = milestone.fiatAmount.div(conversionRate);
     milestone.selectedFiatType = fiatType;
-
+    if (!this.state.draftLoaded) {
+      milestoneTemp = milestone;
+      return;
+    }
     this.setState({ milestone });
   }
 
   saveDraftAndDelete() {
     if (!this._isMounted) return;
+    if (!this.state.draftLoaded) return;
     const itemNames = this.saveDraft(true);
     deleteDraft(itemNames);
     this.saveDraft();
@@ -468,21 +518,25 @@ class EditMilestone extends Component {
   }
 
   setToken(address) {
-    if (!this._isMounted) return;
+    if (!this._isMounted || address === ANY_TOKEN.address) return;
     this.getNewRates(address);
   }
 
   setDacId(dacId) {
     if (!this._isMounted) return;
-    const { milestone } = this.state;
+    const milestone = returnMilestone(this);
     milestone.dacId = dacId;
+    if (!this.state.draftLoaded) {
+      milestoneTemp = milestone;
+      return;
+    }
     this.setState({ milestone });
   }
 
   async getNewRates(address) {
     if (!this._isMounted) return;
     if (!address) return;
-    const { milestone } = this.state;
+    const milestone = returnMilestone(this);
     const token = this.props.tokenWhitelist.find(t => t.address === address);
     milestone.token = token;
     if (!milestone.items || milestone.items.length === 0) {
@@ -527,6 +581,7 @@ class EditMilestone extends Component {
 
   async getDateRate(date, token) {
     if (!this._isMounted) return null;
+    if (!this.state.draftLoaded) return null;
     const { rates } = await this.props.getConversionRates(date, token.symbol);
     return rates;
   }
@@ -552,34 +607,50 @@ class EditMilestone extends Component {
 
   itemizeState(value) {
     if (!this._isMounted) return;
-    const { milestone, toggles } = this.state;
+    const { toggles } = this.state;
+    const milestone = returnMilestone(this);
     milestone.itemizeState = value;
     toggles.itemizeState = value;
+    if (!this.state.draftLoaded) {
+      milestoneTemp = milestone;
+      return;
+    }
     this.setState({ milestone, toggles });
     this.onDraftChange();
   }
 
   hasReviewer(value) {
     if (!this._isMounted) return;
-    const { milestone, toggles } = this.state;
+    const { toggles } = this.state;
+    const milestone = returnMilestone(this);
     milestone.reviewerAddress = value ? '' : ZERO_ADDRESS;
     toggles.hasReviewer = value;
+    if (!this.state.draftLoaded) {
+      milestoneTemp = milestone;
+      return;
+    }
     this.setState({ milestone, toggles });
     this.onDraftChange();
   }
 
   delegatePercent(value) {
     if (!this._isMounted) return;
-    const { milestone, toggles, dacs } = this.state;
-    const dacIdMilestone = value ? parseInt(dacs[0].value, 10) : 0;
+    const { toggles, dacs } = this.state;
+    const milestone = returnMilestone(this);
+    const dacIdMilestone = value && dacs.length > 0 ? parseInt(dacs[0].value, 10) : 0;
     milestone.dacId = parseInt(dacIdMilestone, 10);
     toggles.delegatePercent = value;
+    if (!this.state.draftLoaded) {
+      milestoneTemp = milestone;
+      return;
+    }
     this.setState({ milestone, toggles });
     this.onDraftChange();
   }
 
   async loadDraftStatus(draftSettings) {
-    const { milestone, campaignProjectId, toggles } = this.state;
+    const { campaignProjectId, toggles } = this.state;
+    const milestone = milestoneTemp;
 
     const {
       hasReviewer,
@@ -595,21 +666,44 @@ class EditMilestone extends Component {
       itemsList,
     } = draftSettings;
 
-    if (!hasReviewer) {
+    let cappedBool = false;
+    if (isCapped !== undefined && isCapped === 'true') {
+      cappedBool = true;
+    } else cappedBool = false;
+    let hasRevBool = false;
+    if (hasReviewer !== undefined && hasReviewer === 'true') {
+      hasRevBool = true;
+    } else hasRevBool = false;
+    let acceptsBool = false;
+    if (acceptsSingleToken !== undefined && acceptsSingleToken === 'true') {
+      acceptsBool = true;
+    } else acceptsBool = false;
+    let itemBool = false;
+    if (itemizeState !== undefined && itemizeState === 'true') {
+      itemBool = true;
+    } else itemBool = false;
+
+    if (hasReviewer === undefined && this.props.isNew) {
       this.delegatePercent(true);
       return;
     }
-    if (hasReviewer === 'false') {
-      milestone.reviewerAddress = hasReviewer ? '' : ZERO_ADDRESS;
-      toggles.hasReviewer = hasReviewer;
+
+    if (!this.props.isNew) return;
+    if (!milestone.reviewerAddress == null) return;
+
+    if (hasReviewer !== undefined) {
+      milestone.reviewerAddress = hasRevBool ? '' : ZERO_ADDRESS;
+      toggles.hasReviewer = hasRevBool;
+      this.hasReviewer(hasRevBool);
     }
-    if (acceptsSingleToken === 'false') {
+    if (acceptsSingleToken !== undefined) {
       if (!acceptsSingleToken) {
         // if ANY_TOKEN is allowed, then we can't have a cap
         milestone.maxAmount = undefined;
         milestone.itemizeState = false;
       }
-      toggles.acceptsSingleToken = acceptsSingleToken;
+      this.acceptsSingleToken(acceptsBool);
+      toggles.acceptsSingleToken = acceptsBool;
     }
     if (maxAmount) {
       milestone.maxAmount = new BigNumber(maxAmount);
@@ -620,20 +714,35 @@ class EditMilestone extends Component {
     if (selectedFiatType) {
       milestone.selectedFiatType = selectedFiatType;
     }
-    if (isCapped === 'false') {
-      milestone.maxAmount = isCapped ? new BigNumber(0) : undefined;
-      toggles.isCapped = isCapped;
+
+    if (isCapped !== undefined) {
+      milestone.maxAmount = cappedBool ? new BigNumber(0) : undefined;
+      toggles.isCapped = cappedBool;
+      this.isCapped(cappedBool);
+    }
+    if (itemizeState !== undefined) {
+      milestone.itemizeState = itemBool;
+      toggles.itemizeState = itemBool;
     }
     if (itemizeState === 'true') {
-      milestone.itemizeState = itemizeState;
-      toggles.itemizeState = itemizeState;
       itemsList.forEach(i => {
         this.addItem(i);
       });
     }
     if (tokenAddress) {
-      const token = this.props.tokenWhitelist.find(t => t.address === tokenAddress);
+      const token = this.props.tokenWhitelist.find(t => t.address === tokenAddress)
+        ? this.props.tokenWhitelist.find(t => t.address === tokenAddress)
+        : ANY_TOKEN;
       milestone.token = token;
+      if (milestone.token === undefined) {
+        milestone.token = ANY_TOKEN;
+        toggles.acceptsSingleToken = true;
+        this.acceptsSingleToken(true);
+      }
+    } else {
+      milestone.token = ANY_TOKEN;
+      toggles.acceptsSingleToken = true;
+      this.acceptsSingleToken(true);
     }
     if (parseInt(dacId, 10) !== 0) {
       this.delegatePercent(true);
@@ -642,7 +751,6 @@ class EditMilestone extends Component {
       this.delegatePercent(false);
     }
 
-    this.setState({ toggles });
     if (isLPMilestone === 'true') {
       if (!isLPMilestone) {
         const ms = new BridgedMilestone(milestone.toFeathers());
@@ -654,22 +762,32 @@ class EditMilestone extends Component {
         this.setState({ milestone: ms });
       }
       toggles.isLPMilestone = isLPMilestone;
+    } else {
+      this.setState({ milestone });
     }
-    this.setToken(tokenAddress);
+    this.setState({ toggles });
+    if (tokenAddress !== ANY_TOKEN.address) {
+      this.setToken(tokenAddress);
+    }
   }
 
   isLPMilestone(value) {
     if (!this._isMounted) return;
-    const { milestone, campaignProjectId, toggles } = this.state;
+    const { campaignProjectId, toggles } = this.state;
+    const milestone = returnMilestone(this);
+    let ms = null;
     if (!value) {
-      const ms = new BridgedMilestone(milestone.toFeathers());
+      ms = new BridgedMilestone(milestone.toFeathers());
       ms.itemizeState = toggles.itemizeState;
-      this.setState({ milestone: ms });
     } else {
-      const ms = new LPMilestone({ ...milestone.toFeathers(), recipientId: campaignProjectId });
+      ms = new LPMilestone({ ...milestone.toFeathers(), recipientId: campaignProjectId });
       ms.itemizeState = toggles.itemizeState;
-      this.setState({ milestone: ms });
     }
+    if (!this.state.draftLoaded) {
+      milestoneTemp = milestone;
+      return;
+    }
+    this.setState({ milestone: ms });
     this.onDraftChange();
     toggles.isLPMilestone = value;
     this.setState({ toggles });
@@ -677,7 +795,8 @@ class EditMilestone extends Component {
 
   acceptsSingleToken(value) {
     if (!this._isMounted) return;
-    const { milestone, toggles } = this.state;
+    const { toggles } = this.state;
+    const milestone = returnMilestone(this);
     milestone.token = value ? this.props.tokenWhitelist[0] : ANY_TOKEN;
     if (!value) {
       // if ANY_TOKEN is allowed, then we can't have a cap
@@ -685,18 +804,27 @@ class EditMilestone extends Component {
       milestone.itemizeState = false;
     }
     toggles.acceptsSingleToken = value;
+    if (!this.state.draftLoaded) {
+      milestoneTemp = milestone;
+      return;
+    }
     this.setState({ milestone, toggles });
     this.onDraftChange();
   }
 
   isCapped(value) {
     if (!this._isMounted) return;
-    const { milestone, toggles } = this.state;
+    const { toggles } = this.state;
+    const milestone = returnMilestone(this);
     milestone.maxAmount = value ? new BigNumber(0) : undefined;
     if (value) {
       milestone.fiatAmount = new BigNumber(0);
     }
     toggles.isCapped = value;
+    if (!this.state.draftLoaded) {
+      milestoneTemp = milestone;
+      return;
+    }
     this.setState({ milestone, toggles });
     this.onDraftChange();
   }
@@ -710,8 +838,12 @@ class EditMilestone extends Component {
 
   setMyAddressAsRecipient() {
     if (!this._isMounted) return;
-    const { milestone } = this.state;
+    const milestone = returnMilestone(this);
     milestone.recipientAddress = this.props.currentUser.address;
+    if (!this.state.draftLoaded) {
+      milestoneTemp = milestone;
+      return;
+    }
     this.setState({ milestone });
   }
 
@@ -850,8 +982,12 @@ class EditMilestone extends Component {
 
   handleTemplateChange(option) {
     if (!this._isMounted) return;
-    const { milestone } = this.state;
+    const milestone = this.retrieveMilestone();
     milestone.description = templates.templates[option];
+    if (!this.state.draftLoaded) {
+      milestoneTemp = milestone;
+      return;
+    }
     this.setState({
       milestone,
       template: option,
@@ -1037,39 +1173,41 @@ class EditMilestone extends Component {
                       />
                     </div>
 
-                    <div className="form-group">
-                      <div className="form-group react-toggle-container">
-                        <Toggle
-                          id="itemize-state"
-                          checked={milestone.delegatePercent}
-                          onChange={e => this.delegatePercent(e.target.checked)}
-                          disabled={!isNew && !isProposed}
-                        />
-                        <span className="label">Donate 3% to a DAC</span>
-                        {!milestone.delegatePercent && (
-                          <span className="help-block">
-                            Supporting a DAC is optional, this will help a lot the growth of amazing
-                            projects.
-                          </span>
+                    {this.state.dacs.length > 0 && (
+                      <div className="form-group">
+                        <div className="form-group react-toggle-container">
+                          <Toggle
+                            id="itemize-state"
+                            checked={milestone.delegatePercent}
+                            onChange={e => this.delegatePercent(e.target.checked)}
+                            disabled={!isNew && !isProposed}
+                          />
+                          <span className="label">Donate 3% to a DAC</span>
+                          {!milestone.delegatePercent && (
+                            <span className="help-block">
+                              Supporting a DAC is optional, this will help a lot the growth of
+                              amazing projects.
+                            </span>
+                          )}
+                        </div>
+                        {milestone.delegatePercent && (
+                          <SelectFormsy
+                            name="dacId"
+                            id="dac-select"
+                            label="DAC to donate to"
+                            helpText="Funds will be delegated each time someone donates"
+                            value={milestone.dacId}
+                            options={dacs}
+                            validations="isNumber"
+                            validationErrors={{
+                              isNumber: 'Please select a delegate.',
+                            }}
+                            required
+                            disabled={!isNew && !isProposed}
+                          />
                         )}
                       </div>
-                      {milestone.delegatePercent && (
-                        <SelectFormsy
-                          name="dacId"
-                          id="dac-select"
-                          label="DAC to donate to"
-                          helpText="Funds will be delegated each time someone donates"
-                          value={milestone.dacId}
-                          options={dacs}
-                          validations="isNumber"
-                          validationErrors={{
-                            isNumber: 'Please select a delegate.',
-                          }}
-                          required
-                          disabled={!isNew && !isProposed}
-                        />
-                      )}
-                    </div>
+                    )}
 
                     <div className="form-group">
                       <div className="form-group react-toggle-container">

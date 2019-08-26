@@ -83,7 +83,7 @@ export default class Milestone extends BasicModel {
       image: cleanIpfsPath(this._image),
       items: this._items.map(i => i.toIpfs()),
       date: this._date,
-      isArchived: this._status === Milestone.ARCHIVED,
+      isArchived: this.isArchived,
       version: 1,
     };
     if (this.isCapped) {
@@ -315,7 +315,7 @@ export default class Milestone extends BasicModel {
   }
 
   get status() {
-    if (this._status === Milestone.ARCHIVED) {
+    if (this.isArchived) {
       return this.donationCounters.some(dc => dc.currentBalance.gt(0))
         ? Milestone.COMPLETED
         : Milestone.PAID;
@@ -547,6 +547,10 @@ export default class Milestone extends BasicModel {
     return this._maxAmount !== undefined;
   }
 
+  get isArchived() {
+    return this._status === Milestone.ARCHIVED;
+  }
+
   canUserAcceptRejectProposal(user) {
     return (
       user &&
@@ -638,7 +642,9 @@ export default class Milestone extends BasicModel {
     return (
       user &&
       !this.isCapped &&
-      this.status === Milestone.IN_PROGRESS &&
+      this.hasRecipient &&
+      ((this.status === Milestone.IN_PROGRESS && !this.hasReviewer) ||
+        (this.status === Milestone.COMPLETED && !this.isArchived)) &&
       [this.ownerAddress, this.campaign.ownerAddress].includes(user.address)
     );
   }
