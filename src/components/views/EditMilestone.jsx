@@ -78,6 +78,8 @@ const validQueryStringVariables = [
 ];
 
 let milestoneTemp = null;
+let inDraft = false;
+let isValid = false;
 
 function returnHelpText(conversionRateLoading, milestone, currentRate) {
   if (!conversionRateLoading) {
@@ -121,7 +123,8 @@ class EditMilestone extends Component {
       dacs: [],
       isSaving: false,
       formIsValid: false,
-      draftLoaded: false,
+      loadTime: Date.now(),
+      componentDraftLoaded: false,
       milestone: MilestoneFactory.create({
         maxAmount: '0',
         fiatAmount: '0',
@@ -374,12 +377,12 @@ class EditMilestone extends Component {
   onAddItem(item) {
     if (!this._isMounted) return;
     this.addItem(item);
-    if (!this.state.draftLoaded) return;
+    if (this.state.componentDraft === false) return;
     this.setState({ addMilestoneItemModalVisible: false });
   }
 
   retrieveMilestone() {
-    if (this.state.draftLoaded) {
+    if (this.state.componentDraftLoaded === true) {
       const { milestone } = this.state;
       return milestone;
     }
@@ -390,7 +393,7 @@ class EditMilestone extends Component {
     if (!this._isMounted) return;
     const milestone = this.retrieveMilestone();
     milestone.items = items;
-    if (!this.state.draftLoaded) {
+    if (this.state.componentDraft === false) {
       milestoneTemp = milestone;
       return;
     }
@@ -402,7 +405,7 @@ class EditMilestone extends Component {
     if (!this._isMounted) return;
     const milestone = this.retrieveMilestone();
     milestone.image = image;
-    if (!this.state.draftLoaded) {
+    if (this.state.componentDraft === false) {
       milestoneTemp = milestone;
       return;
     }
@@ -434,7 +437,7 @@ class EditMilestone extends Component {
         milestone.maxAmount = milestone.fiatAmount.div(rate);
         milestone.conversionRateTimestamp = resp.timestamp;
       }
-      if (!this.state.draftLoaded) {
+      if (this.state.componentDraft === false) {
         milestoneTemp = milestone;
         return;
       }
@@ -452,7 +455,7 @@ class EditMilestone extends Component {
       milestone.maxAmount = maxAmount;
       milestone.fiatAmount = maxAmount.times(conversionRate);
       milestone.conversionRateTimestamp = this.props.currentRate.timestamp;
-      if (!this.state.draftLoaded) {
+      if (this.state.componentDraft === false) {
         milestoneTemp = milestone;
         return;
       }
@@ -469,7 +472,7 @@ class EditMilestone extends Component {
       milestone.maxAmount = fiatAmount.div(conversionRate);
       milestone.fiatAmount = fiatAmount;
       milestone.conversionRateTimestamp = this.props.currentRate.timestamp;
-      if (!this.state.draftLoaded) {
+      if (this.state.componentDraft === false) {
         milestoneTemp = milestone;
         return;
       }
@@ -483,7 +486,7 @@ class EditMilestone extends Component {
     const conversionRate = this.props.currentRate.rates[fiatType];
     milestone.maxAmount = milestone.fiatAmount.div(conversionRate);
     milestone.selectedFiatType = fiatType;
-    if (!this.state.draftLoaded) {
+    if (this.state.componentDraft === false) {
       milestoneTemp = milestone;
       return;
     }
@@ -492,7 +495,7 @@ class EditMilestone extends Component {
 
   saveDraftAndDelete() {
     if (!this._isMounted) return;
-    if (!this.state.draftLoaded) return;
+    if (this.state.componentDraft === false) return;
     const itemNames = this.saveDraft(true);
     deleteDraft(itemNames);
     this.saveDraft();
@@ -500,20 +503,28 @@ class EditMilestone extends Component {
 
   async toggleFormValid(formState) {
     if (!this._isMounted) return;
-    if (this.state.milestone.itemizeState) {
-      this.setState(prevState => ({
-        formIsValid: formState && prevState.milestone.items.length > 0,
-      }));
-    } else {
-      this.setState({ formIsValid: formState });
+    if (this.state.loadTime + 5000 <= Date.now()) {
+      if (this.state.milestone.itemizeState) {
+        this.setState(prevState => ({
+          formIsValid: formState && prevState.milestone.items.length > 0,
+        }));
+      } else {
+        this.setState({ formIsValid: formState });
+      }
     }
     this.setDraftType();
-    if (!milestoneIdMatch(this.state.campaignId) || this.state.draftLoaded) return;
+    if (
+      !milestoneIdMatch(this.state.campaignId) ||
+      this.state.componentDraftLoaded === true ||
+      inDraft === true
+    )
+      return;
+    inDraft = true;
     this.loadDraft();
     await sleep(500);
     this.loadMilestoneDraft();
     this.setState({
-      draftLoaded: true,
+      componentDraftLoaded: true,
     });
   }
 
@@ -526,7 +537,7 @@ class EditMilestone extends Component {
     if (!this._isMounted) return;
     const milestone = returnMilestone(this);
     milestone.dacId = dacId;
-    if (!this.state.draftLoaded) {
+    if (this.state.componentDraft === false) {
       milestoneTemp = milestone;
       return;
     }
@@ -581,7 +592,7 @@ class EditMilestone extends Component {
 
   async getDateRate(date, token) {
     if (!this._isMounted) return null;
-    if (!this.state.draftLoaded) return null;
+    if (this.state.componentDraft === false) return null;
     const { rates } = await this.props.getConversionRates(date, token.symbol);
     return rates;
   }
@@ -611,7 +622,7 @@ class EditMilestone extends Component {
     const milestone = returnMilestone(this);
     milestone.itemizeState = value;
     toggles.itemizeState = value;
-    if (!this.state.draftLoaded) {
+    if (this.state.componentDraft === false) {
       milestoneTemp = milestone;
       return;
     }
@@ -625,7 +636,7 @@ class EditMilestone extends Component {
     const milestone = returnMilestone(this);
     milestone.reviewerAddress = value ? '' : ZERO_ADDRESS;
     toggles.hasReviewer = value;
-    if (!this.state.draftLoaded) {
+    if (this.state.componentDraft === false) {
       milestoneTemp = milestone;
       return;
     }
@@ -640,7 +651,7 @@ class EditMilestone extends Component {
     const dacIdMilestone = value && dacs.length > 0 ? parseInt(dacs[0].value, 10) : 0;
     milestone.dacId = parseInt(dacIdMilestone, 10);
     toggles.delegatePercent = value;
-    if (!this.state.draftLoaded) {
+    if (this.state.componentDraft === false) {
       milestoneTemp = milestone;
       return;
     }
@@ -769,6 +780,10 @@ class EditMilestone extends Component {
     if (tokenAddress !== ANY_TOKEN.address) {
       this.setToken(tokenAddress);
     }
+    await sleep(5000);
+    if (isValid) {
+      this.toggleFormValid(true);
+    }
   }
 
   isLPMilestone(value) {
@@ -783,7 +798,7 @@ class EditMilestone extends Component {
       ms = new LPMilestone({ ...milestone.toFeathers(), recipientId: campaignProjectId });
       ms.itemizeState = toggles.itemizeState;
     }
-    if (!this.state.draftLoaded) {
+    if (this.state.componentDraft === false) {
       milestoneTemp = milestone;
       return;
     }
@@ -804,7 +819,7 @@ class EditMilestone extends Component {
       milestone.itemizeState = false;
     }
     toggles.acceptsSingleToken = value;
-    if (!this.state.draftLoaded) {
+    if (this.state.componentDraft === false) {
       milestoneTemp = milestone;
       return;
     }
@@ -821,7 +836,7 @@ class EditMilestone extends Component {
       milestone.fiatAmount = new BigNumber(0);
     }
     toggles.isCapped = value;
-    if (!this.state.draftLoaded) {
+    if (this.state.componentDraft === false) {
       milestoneTemp = milestone;
       return;
     }
@@ -840,7 +855,7 @@ class EditMilestone extends Component {
     if (!this._isMounted) return;
     const milestone = returnMilestone(this);
     milestone.recipientAddress = this.props.currentUser.address;
-    if (!this.state.draftLoaded) {
+    if (this.state.componentDraft === false) {
       milestoneTemp = milestone;
       return;
     }
@@ -984,7 +999,7 @@ class EditMilestone extends Component {
     if (!this._isMounted) return;
     const milestone = this.retrieveMilestone();
     milestone.description = templates.templates[option];
-    if (!this.state.draftLoaded) {
+    if (this.state.componentDraft === false) {
       milestoneTemp = milestone;
       return;
     }
@@ -1004,6 +1019,7 @@ class EditMilestone extends Component {
     if (!this._isMounted) return;
     const form = this.form.current.formsyForm;
     // we only block routing if the form state is not submitted
+    if (this.state.loadTime + 5000 >= Date.now()) return;
     this.setState({ isBlocking: form && (!form.state.formSubmitted || form.state.isSubmitting) });
   }
 
@@ -1111,7 +1127,10 @@ class EditMilestone extends Component {
                       milestone.dacId = parseInt(inputs.dacId, 10) || 0;
                       milestone.recipientAddress = inputs.recipientAddress || ZERO_ADDRESS;
                     }}
-                    onValid={() => this.toggleFormValid(true)}
+                    onValid={() => {
+                      isValid = true;
+                      this.toggleFormValid(true);
+                    }}
                     onInvalid={() => this.toggleFormValid(false)}
                     onChange={e => this.onFormChange(e)}
                     layout="vertical"
