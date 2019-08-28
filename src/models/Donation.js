@@ -124,8 +124,8 @@ class Donation extends Model {
     ) {
       // Campaign
       const entity = this._intendedProjectId ? this._intendedProjectEntity : this._ownerEntity;
-      donatedTo.url = `/campaigns/${entity._id}`;
-      donatedTo.name = getTruncatedText(entity.title, 45);
+      donatedTo.url = entity !== undefined ? `/campaigns/${entity._id}` : null;
+      donatedTo.name = entity !== undefined ? getTruncatedText(entity.title, 45) : null;
       donatedTo.type = 'CAMPAIGN';
     } else if (
       (!this._delegateId && this._ownerType === Milestone.type) ||
@@ -133,8 +133,9 @@ class Donation extends Model {
     ) {
       // Milestone
       const entity = this._intendedProjectId ? this._intendedProjectEntity : this._ownerEntity;
-      donatedTo.url = `/campaigns/${entity.campaign._id}/milestones/${entity._id}`;
-      donatedTo.name = getTruncatedText(entity.title, 45);
+      donatedTo.url =
+        entity !== undefined ? `/campaigns/${entity.campaign._id}/milestones/${entity._id}` : null;
+      donatedTo.name = entity !== undefined ? getTruncatedText(entity.title, 45) : null;
       donatedTo.type = 'MILESTONE';
     } else {
       // User
