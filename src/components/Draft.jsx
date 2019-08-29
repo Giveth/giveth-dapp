@@ -45,7 +45,6 @@ function loadDraft() {
     return;
   }
   window.setInterval(this.saveDraft, 60000);
-  this.setState(prevState => ({ draftType: getDraftType(prevState) }));
   const draftType = getDraftType(this.state);
   const { localStorage } = window;
   if (!localStorage.getItem(`${draftType}.timestamp`)) {
