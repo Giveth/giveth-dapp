@@ -80,6 +80,7 @@ const validQueryStringVariables = [
 let milestoneTemp = null;
 let inDraft = false;
 let isValid = false;
+const lastFormState = false;
 
 function returnHelpText(conversionRateLoading, milestone, currentRate) {
   if (!conversionRateLoading) {
@@ -374,7 +375,7 @@ class EditMilestone extends Component {
   onAddItem(item) {
     if (!this._isMounted) return;
     this.addItem(item);
-    if (this.state.componentDraft === false) return;
+    if (this.state.componentDraftLoaded === false) return;
 
     this.setState({ addMilestoneItemModalVisible: false });
   }
@@ -391,7 +392,7 @@ class EditMilestone extends Component {
     if (!this._isMounted) return;
     const milestone = this.retrieveMilestone();
     milestone.items = items;
-    if (this.state.componentDraft === false) {
+    if (this.state.componentDraftLoaded === false) {
       milestoneTemp = milestone;
       return;
     }
@@ -404,7 +405,7 @@ class EditMilestone extends Component {
     if (!this._isMounted) return;
     const milestone = this.retrieveMilestone();
     milestone.image = image;
-    if (this.state.componentDraft === false) {
+    if (this.state.componentDraftLoaded === false) {
       milestoneTemp = milestone;
       return;
     }
@@ -436,7 +437,7 @@ class EditMilestone extends Component {
         milestone.maxAmount = milestone.fiatAmount.div(rate);
         milestone.conversionRateTimestamp = resp.timestamp;
       }
-      if (this.state.componentDraft === false) {
+      if (this.state.componentDraftLoaded === false) {
         milestoneTemp = milestone;
         return;
       }
@@ -455,7 +456,7 @@ class EditMilestone extends Component {
       milestone.maxAmount = maxAmount;
       milestone.fiatAmount = maxAmount.times(conversionRate);
       milestone.conversionRateTimestamp = this.props.currentRate.timestamp;
-      if (this.state.componentDraft === false) {
+      if (this.state.componentDraftLoaded === false) {
         milestoneTemp = milestone;
         return;
       }
@@ -473,7 +474,7 @@ class EditMilestone extends Component {
       milestone.maxAmount = fiatAmount.div(conversionRate);
       milestone.fiatAmount = fiatAmount;
       milestone.conversionRateTimestamp = this.props.currentRate.timestamp;
-      if (this.state.componentDraft === false) {
+      if (this.state.componentDraftLoaded === false) {
         milestoneTemp = milestone;
         return;
       }
@@ -488,7 +489,7 @@ class EditMilestone extends Component {
     const conversionRate = this.props.currentRate.rates[fiatType];
     milestone.maxAmount = milestone.fiatAmount.div(conversionRate);
     milestone.selectedFiatType = fiatType;
-    if (this.state.componentDraft === false) {
+    if (this.state.componentDraftLoaded === false) {
       milestoneTemp = milestone;
       return;
     }
@@ -498,14 +499,16 @@ class EditMilestone extends Component {
 
   saveDraftAndDelete() {
     if (!this._isMounted) return;
-    if (this.state.componentDraft === false) return;
+    if (this.state.componentDraftLoaded === false) return;
     const itemNames = this.saveDraft(true);
     deleteDraft(itemNames);
     this.saveDraft();
   }
 
   async toggleFormValid(formState) {
-    if (!this._isMounted) return;
+    if (!this._isMounted) return formState;
+    if (inDraft === false) this.initializeDraft();
+    if (lastFormState === formState) return formState;
     if (this.state.loadTime + 5000 <= Date.now()) {
       if (this.state.milestone.itemizeState) {
         this.setState(prevState => ({
@@ -515,7 +518,10 @@ class EditMilestone extends Component {
         this.setState({ formIsValid: formState });
       }
     }
-    this.setDraftType();
+    return formState;
+  }
+
+  async initializeDraft() {
     if (
       !milestoneIdMatch(this.state.campaignId) ||
       this.state.componentDraftLoaded === true ||
@@ -523,10 +529,10 @@ class EditMilestone extends Component {
     )
       return;
     inDraft = true;
+    this.setDraftType();
     this.loadDraft();
     await sleep(500);
     this.loadMilestoneDraft();
-
     this.setState({
       componentDraftLoaded: true,
     });
@@ -541,7 +547,7 @@ class EditMilestone extends Component {
     if (!this._isMounted) return;
     const milestone = returnMilestone(this);
     milestone.dacId = dacId;
-    if (this.state.componentDraft === false) {
+    if (this.state.componentDraftLoaded === false) {
       milestoneTemp = milestone;
       return;
     }
@@ -598,7 +604,7 @@ class EditMilestone extends Component {
 
   async getDateRate(date, token) {
     if (!this._isMounted) return null;
-    if (this.state.componentDraft === false) return null;
+    if (this.state.componentDraftLoaded === false) return null;
     const { rates } = await this.props.getConversionRates(date, token.symbol);
     return rates;
   }
@@ -628,7 +634,7 @@ class EditMilestone extends Component {
     const milestone = returnMilestone(this);
     milestone.itemizeState = value;
     toggles.itemizeState = value;
-    if (this.state.componentDraft === false) {
+    if (this.state.componentDraftLoaded === false) {
       milestoneTemp = milestone;
       return;
     }
@@ -643,7 +649,7 @@ class EditMilestone extends Component {
     const milestone = returnMilestone(this);
     milestone.reviewerAddress = value ? '' : ZERO_ADDRESS;
     toggles.hasReviewer = value;
-    if (this.state.componentDraft === false) {
+    if (this.state.componentDraftLoaded === false) {
       milestoneTemp = milestone;
       return;
     }
@@ -659,11 +665,10 @@ class EditMilestone extends Component {
     const dacIdMilestone = value && dacs.length > 0 ? parseInt(dacs[0].value, 10) : 0;
     milestone.dacId = parseInt(dacIdMilestone, 10);
     toggles.delegatePercent = value;
-    if (this.state.componentDraft === false) {
+    if (this.state.componentDraftLoaded === false && this.props.isNew) {
       milestoneTemp = milestone;
       return;
     }
-
     this.setState({ milestone, toggles });
     this.onDraftChange();
   }
@@ -686,6 +691,11 @@ class EditMilestone extends Component {
       itemsList,
     } = draftSettings;
 
+    if ((hasReviewer === undefined || hasReviewer === null) && this.props.isNew) {
+      this.delegatePercent(true);
+      return;
+    }
+
     let cappedBool = false;
     if (isCapped !== undefined && isCapped === 'true') {
       cappedBool = true;
@@ -702,11 +712,6 @@ class EditMilestone extends Component {
     if (itemizeState !== undefined && itemizeState === 'true') {
       itemBool = true;
     } else itemBool = false;
-
-    if (hasReviewer === undefined && this.props.isNew) {
-      this.delegatePercent(true);
-      return;
-    }
 
     if (!this.props.isNew) return;
     if (!milestone.reviewerAddress == null) return;
@@ -810,7 +815,7 @@ class EditMilestone extends Component {
       ms = new LPMilestone({ ...milestone.toFeathers(), recipientId: campaignProjectId });
       ms.itemizeState = toggles.itemizeState;
     }
-    if (this.state.componentDraft === false) {
+    if (this.state.componentDraftLoaded === false) {
       milestoneTemp = milestone;
       return;
     }
@@ -833,7 +838,7 @@ class EditMilestone extends Component {
       milestone.itemizeState = false;
     }
     toggles.acceptsSingleToken = value;
-    if (this.state.componentDraft === false) {
+    if (this.state.componentDraftLoaded === false) {
       milestoneTemp = milestone;
       return;
     }
@@ -851,7 +856,7 @@ class EditMilestone extends Component {
       milestone.fiatAmount = new BigNumber(0);
     }
     toggles.isCapped = value;
-    if (this.state.componentDraft === false) {
+    if (this.state.componentDraftLoaded === false) {
       milestoneTemp = milestone;
       return;
     }
@@ -872,7 +877,7 @@ class EditMilestone extends Component {
     if (!this._isMounted) return;
     const milestone = returnMilestone(this);
     milestone.recipientAddress = this.props.currentUser.address;
-    if (this.state.componentDraft === false) {
+    if (this.state.componentDraftLoaded === false) {
       milestoneTemp = milestone;
       return;
     }
@@ -1020,7 +1025,7 @@ class EditMilestone extends Component {
     if (!this._isMounted) return;
     const milestone = this.retrieveMilestone();
     milestone.description = templates.templates[option];
-    if (this.state.componentDraft === false) {
+    if (this.state.componentDraftLoaded === false) {
       milestoneTemp = milestone;
       return;
     }
