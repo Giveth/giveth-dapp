@@ -8,11 +8,12 @@ import { Form } from 'formsy-react-components';
 import Milestone from 'models/Milestone';
 import User from 'models/User';
 import BigNumber from 'bignumber.js';
-import { getUserName, getUserAvatar } from 'lib/helpers';
+import { convertEthHelper, getUserName, getUserAvatar } from 'lib/helpers';
 import getNetwork from 'lib/blockchain/getNetwork';
 import MilestoneProof from 'components/MilestoneProof';
 import MilestoneConversationAction from 'components/MilestoneConversationAction';
 import MilestoneItemModel from 'models/MilestoneItem';
+import { utils } from 'web3';
 import Loader from './Loader';
 import { feathersClient } from '../lib/feathersClient';
 
@@ -57,16 +58,26 @@ class MilestoneConversations extends Component {
     if (this.conversationObserver) this.conversationObserver.unsubscribe();
   }
 
-  static getReadeableMessageContext(context) {
-    if (context === 'proposed') return 'proposed Milestone';
-    if (context === 'rePropose') return 'reproposed Milestone';
-    if (context === 'rejected') return 'rejected completion';
-    if (context === 'NeedsReview') return 'requested review';
-    if (context === 'Completed') return 'accepted completion';
-    if (context === 'Canceled') return 'canceled Milestone';
-    if (context === 'proposedRejected') return 'rejected proposed Milestone';
-    if (context === 'proposedAccepted') return 'accepted proposed Milestone';
-    if (context === 'archived') return 'archived Milestone';
+  
+  static getReadableMessageContext(conversation) {
+    const { messageContext } = conversation;
+    if (messageContext === 'proposed') return 'proposed Milestone';
+    if (messageContext === 'rejected') return 'rejected completion';
+    if (messageContext === 'NeedsReview') return 'requested review';
+    if (messageContext === 'Completed') return 'accepted completion';
+    if (messageContext === 'Canceled') return 'canceled Milestone';
+    if (messageContext === 'proposedRejected') return 'rejected proposed Milestone';
+    if (messageContext === 'proposedAccepted') return 'accepted proposed Milestone';
+    if (messageContext === 'archived') return 'archived Milestone';
+    if (messageContext === 'payment') {
+      const { owner, recipient, paidAmount, paidSymbol } = conversation;
+      const paidAmountStr = convertEthHelper(new BigNumber(utils.fromWei(paidAmount)));
+      if (owner.address === recipient.address) {
+        return `collected ${paidAmountStr} ${paidSymbol}`;
+      }
+      // else
+      return `disbursed ${paidAmountStr} ${paidSymbol} to ${getUserName(recipient)}`;
+    }
     return 'unknown';
   }
 
@@ -103,8 +114,7 @@ class MilestoneConversations extends Component {
                     <p className="badge badge-secondary">{c.performedByRole}</p>
 
                     <p className={`owner-name ${c.messageContext.toLowerCase()}`}>
-                      {getUserName(c.owner)}{' '}
-                      {MilestoneConversations.getReadeableMessageContext(c.messageContext)}
+                      {getUserName(c.owner)} {MilestoneConversations.getReadableMessageContext(c)}
                       {/* <span className={`badge ${c.messageContext.toLowerCase()}`}>{c.messageContext}</span> */}
                     </p>
                     <div className="c-message">{ReactHtmlParser(c.message)}</div>

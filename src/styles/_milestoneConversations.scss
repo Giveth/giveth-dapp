@@ -32,7 +32,7 @@
     }
 
     &.completed,
-    &.proposedaccepted, {
+    &.proposedaccepted {
       color: $green;
     }
 
@@ -44,6 +44,10 @@
 
     &.repropose {
       // color: #aaa;
+    }
+
+    &.payment {
+      color: $blue;
     }
   }
 
