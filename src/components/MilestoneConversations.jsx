@@ -67,6 +67,7 @@ class MilestoneConversations extends Component {
     if (messageContext === 'Canceled') return 'canceled Milestone';
     if (messageContext === 'proposedRejected') return 'rejected proposed Milestone';
     if (messageContext === 'proposedAccepted') return 'accepted proposed Milestone';
+    if (messageContext === 'archived') return 'archived Milestone';
     if (messageContext === 'payment') {
       const { owner, recipient, paidAmount, paidSymbol } = conversation;
       const paidAmountStr = convertEthHelper(new BigNumber(utils.fromWei(paidAmount)));
