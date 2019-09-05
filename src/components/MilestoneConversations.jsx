@@ -58,7 +58,6 @@ class MilestoneConversations extends Component {
     if (this.conversationObserver) this.conversationObserver.unsubscribe();
   }
 
-  
   static getReadableMessageContext(conversation) {
     const { messageContext } = conversation;
     if (messageContext === 'proposed') return 'proposed Milestone';
