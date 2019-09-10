@@ -126,7 +126,7 @@ class FormsyImageUploader extends Component {
           name="picture"
           accept=".png,.jpeg,.jpg"
           onChange={this.loadAndPreviewImage}
-          help="A picture says more than a thousand words. Select a png or jpg file in a 16:9 aspect ratio."
+          help="A picture says more than a thousand words. Select a png or jpg file in a 1:1 aspect ratio."
           validations="minLength: 1"
           validationErrors={{
             minLength: 'Please select a png or jpg file.',
