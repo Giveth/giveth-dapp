@@ -403,10 +403,16 @@ class EditMilestone extends Component {
 
   setImage(image) {
     if (!this._isMounted) return;
-    const milestone = this.retrieveMilestone();
-    milestone.image = image;
+    let milestoneObject = null;
+    try {
+      milestoneObject = this.retrieveMilestone();
+    } catch (e) {
+      const { milestone } = this.state;
+      milestoneObject = milestone;
+    }
+    milestoneObject.image = image;
     if (this.state.componentDraftLoaded === false) {
-      milestoneTemp = milestone;
+      milestoneTemp = milestoneObject;
       return;
     }
     this.onImageChange();
