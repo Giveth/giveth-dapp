@@ -390,14 +390,20 @@ class EditMilestone extends Component {
 
   onItemsChanged(items) {
     if (!this._isMounted) return;
-    const milestone = this.retrieveMilestone();
-    milestone.items = items;
+    let milestoneObject = null;
+    try {
+      milestoneObject = this.retrieveMilestone();
+    } catch (e) {
+      const { milestone } = this.state;
+      milestoneObject = milestone;
+    }
+    milestoneObject.items = items;
     if (this.state.componentDraftLoaded === false) {
-      milestoneTemp = milestone;
+      milestoneTemp = milestoneObject;
       return;
     }
 
-    this.setState({ milestone, refreshList: milestone.items });
+    this.setState({ milestone: milestoneObject, refreshList: milestoneObject.items });
     this.onDraftChange();
   }
 
