@@ -78,6 +78,15 @@ class UserService {
       );
     }
   }
+
+  /**
+   * Update user profile on feathers
+   *
+   * @param user        User object to be saved
+   */
+  static async saveFeathers(user) {
+    await users.patch(user.address, user.toFeathers());
+  }
 }
 
 export default UserService;

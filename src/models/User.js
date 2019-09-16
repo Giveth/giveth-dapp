@@ -3,6 +3,7 @@ import IPFSService from '../services/IPFSService';
 import UserService from '../services/UserService';
 import ErrorPopup from '../components/ErrorPopup';
 import { cleanIpfsPath } from '../lib/helpers';
+import { update3boxSpace } from '../lib/boxProfile';
 
 /**
  * The DApp User model
@@ -62,8 +63,15 @@ class User extends Model {
     return user;
   }
 
-  save(onSave, afterEmit) {
-    if (this._newAvatar) {
+  from3box(profile) {
+    this._address = profile.address;
+    this._avatar = profile.avatar;
+    this._name = profile.name;
+    this._linkedin = profile.linkedin;
+  }
+
+  async save(givethProfile, defaultProfile, onSave, afterEmit) {
+    if (this._newAvatar && defaultProfile !== '3box') {
       IPFSService.upload(this._newAvatar)
         .then(hash => {
           // Save the new avatar
@@ -71,9 +79,17 @@ class User extends Model {
           delete this._newAvatar;
         })
         .catch(err => ErrorPopup('Failed to upload avatar', err))
-        .finally(() => UserService.save(this, onSave, afterEmit));
+        .finally(async () => {
+          UserService.saveFeathers(this);
+          await update3boxSpace(givethProfile, this, defaultProfile, onSave, afterEmit);
+          // Previous approch for storing users as PledgeAdmin on lp
+          // UserService.save(this, onSave, afterEmit);
+        });
     } else {
-      UserService.save(this, onSave, afterEmit);
+      UserService.saveFeathers(this);
+      await update3boxSpace(givethProfile, this, defaultProfile, onSave, afterEmit);
+      // Previous approch for storing users as PledgeAdmin on lp
+      // UserService.save(this, onSave, afterEmit);
     }
   }
 

@@ -3,6 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "3box": "^1.10.0",
+    "babel-eslint": "10.0.2",
     "bignumber.js": "^7.2.1",
     "ethereumjs-abi": "^0.6.7",
     "feathers": "^2.2.3",
@@ -60,19 +62,15 @@
     "whatwg-fetch": "^2.0.3"
   },
   "devDependencies": {
-    "eslint": "^4.19.1",
-    "eslint-config-airbnb": "^17.1.0",
-    "eslint-config-prettier": "^2.10.0",
-    "eslint-plugin-import": "^2.16.0",
-    "eslint-plugin-jsx-a11y": "^6.2.1",
-    "eslint-plugin-prettier": "^2.7.0",
-    "eslint-plugin-react": "^7.12.4",
-    "giveth-react-scripts": "1.1.4",
+    "eslint-config-airbnb": "^17.1.1",
+    "eslint-config-prettier": "^6.0.0",
+    "eslint-plugin-prettier": "^3.1.0",
     "husky": "^1.3.1",
     "jsdoc": "^3.5.5",
     "lint-staged": "^7.3.0",
     "npm-run-all": "^4.1.5",
-    "prettier": "^1.16.4"
+    "prettier": "^1.16.4",
+    "react-scripts": "^3.0.1"
   },
   "scripts": {
     "precommit": "lint-staged",
@@ -80,7 +78,7 @@
     "watch-css": "npm run build-css && node-sass-chokidar --include-path ./src --include-path ./node_modules src/ -o src/ --watch --recursive",
     "start-js": "react-scripts start",
     "start": "npm-run-all -p watch-css start-js",
-    "build": "npm run build-css && react-scripts build",
+    "build": "npm run build-css && export NODE_OPTIONS=--max_old_space_size=4096 && react-scripts build",
     "serve": "npm run build && pm2 serve -s build",
     "test": "react-scripts test --env=jsdom",
     "eslint": "eslint src/**/*.js*",
@@ -105,5 +103,17 @@
     "email": "info@giveth.io",
     "url": "http://giveth.io"
   },
-  "license": "GPL-3.0"
+  "license": "GPL-3.0",
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  }
 }

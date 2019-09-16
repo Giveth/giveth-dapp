@@ -5,6 +5,7 @@ import BigNumber from 'bignumber.js';
 
 import { getTruncatedText, getUserAvatar, getUserName, history } from '../lib/helpers';
 import { checkBalance } from '../lib/middleware';
+import { load3BoxPublicProfile } from '../lib/boxProfile';
 import User from '../models/User';
 import CardStats from './CardStats';
 import GivethLogo from '../assets/logo.svg';
@@ -16,6 +17,14 @@ import ErrorPopup from './ErrorPopup';
 class MilestoneCard extends Component {
   constructor(props) {
     super(props);
+
+    this.state = {
+      ownerBoxProfile: undefined,
+    };
+
+    load3BoxPublicProfile(this.props.milestone.ownerAddress).then(ownerBoxProfile => {
+      this.setState({ ownerBoxProfile });
+    });
 
     this.viewMilestone = this.viewMilestone.bind(this);
     this.editMilestone = this.editMilestone.bind(this);
@@ -60,6 +69,7 @@ class MilestoneCard extends Component {
 
   render() {
     const { milestone, currentUser } = this.props;
+    const { ownerBoxProfile } = this.state;
     const colors = ['#76318f', '#50b0cf', '#1a1588', '#2A6813', '#95d114', '#155388', '#604a7d'];
     const color = colors[Math.floor(Math.random() * colors.length)];
 
@@ -78,8 +88,14 @@ class MilestoneCard extends Component {
             role="button"
             tabIndex="0"
           >
-            <Avatar size={30} src={getUserAvatar(milestone.owner)} round />
-            <span className="owner-name">{getUserName(milestone.owner)}</span>
+            <Avatar
+              size={30}
+              src={ownerBoxProfile ? ownerBoxProfile.avatar : getUserAvatar(milestone.owner)}
+              round
+            />
+            <span className="owner-name">
+              {ownerBoxProfile ? ownerBoxProfile.name : getUserName(milestone.owner)}
+            </span>
 
             {milestone && milestone.canUserEdit(currentUser) && (
               <span className="pull-right">

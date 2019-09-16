@@ -132,6 +132,7 @@ class FormsyImageUploader extends Component {
             minLength: 'Please select a png or jpg file.',
           }}
           required={this.props.isRequired && !this.state.image}
+          disabled={this.props.disabled}
         />
       </div>
     );
@@ -145,6 +146,7 @@ FormsyImageUploader.propTypes = {
   previewImage: PropTypes.string,
   aspectRatio: PropTypes.number,
   resize: PropTypes.bool,
+  disabled: PropTypes.bool,
 };
 
 FormsyImageUploader.defaultProps = {
@@ -153,6 +155,7 @@ FormsyImageUploader.defaultProps = {
   previewImage: undefined,
   aspectRatio: 16 / 9,
   resize: true,
+  disabled: false,
 };
 
 export default FormsyImageUploader;

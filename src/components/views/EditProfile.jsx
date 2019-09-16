@@ -7,6 +7,7 @@ import GA from 'lib/GoogleAnalytics';
 import Loader from '../Loader';
 import FormsyImageUploader from '../FormsyImageUploader';
 import { checkBalance, checkForeignNetwork, isLoggedIn } from '../../lib/middleware';
+import { confirm3boxProfileImport } from '../../lib/boxProfile';
 import LoaderButton from '../LoaderButton';
 import User from '../../models/User';
 import { history } from '../../lib/helpers';
@@ -27,6 +28,7 @@ class EditProfile extends Component {
 
       // user model
       user: props.currentUser ? new User(props.currentUser) : new User(),
+      defaultProfile: props.defaultProfile,
       isPristine: true,
     };
 
@@ -37,21 +39,40 @@ class EditProfile extends Component {
 
   componentDidMount() {
     this.mounted = true;
-    checkForeignNetwork(this.props.isForeignNetwork).then(() =>
-      isLoggedIn(this.props.currentUser, true)
-        .then(() => checkBalance(this.props.balance))
-        .then(() => this.setState({ isLoading: false }))
-        .catch(err => {
-          if (err === 'noBalance') {
-            ErrorPopup('Something went wrong.', err);
-            history.goBack();
-          } else {
-            this.setState({
-              isLoading: false,
-            });
+    checkForeignNetwork(this.props.isForeignNetwork)
+      .then(() => this.check3boxProfile())
+      .then(() =>
+        isLoggedIn(this.props.currentUser)
+          .then(() => this.setState({ isLoading: false }))
+          .catch(err => {
+            if (err === 'noBalance') {
+              ErrorPopup('Something went wrong', err);
+              history.goBack();
+            } else {
+              this.setState({
+                isLoading: false,
+              });
+            }
+          }),
+      );
+  }
+
+  check3boxProfile() {
+    return new Promise(async (resolve, reject) => {
+      if (!this.state.defaultProfile) {
+        if (this.props.currentUser) {
+          const rs = await confirm3boxProfileImport(this.props.currentUser.address);
+          this.setState({ defaultProfile: rs.defaultProfile });
+          if (rs.userData) {
+            this.state.user.from3box(rs.userData);
+            this.setState({ user: this.state.user });
           }
-        }),
-    );
+        } else {
+          history.push('/');
+        }
+      }
+      resolve();
+    });
   }
 
   componentWillUnmount() {
@@ -115,9 +136,15 @@ class EditProfile extends Component {
       {
         isSaving: true,
       },
-      () => {
+      async () => {
         // Save the User
-        this.state.user.save(afterSave, afterMined);
+        this.props.updateProfile(this.state.user, this.state.defaultProfile);
+        await this.state.user.save(
+          this.props.givethProfile,
+          this.state.defaultProfile,
+          afterSave,
+          afterMined,
+        );
       },
     );
   }
@@ -127,7 +154,7 @@ class EditProfile extends Component {
   }
 
   render() {
-    const { isLoading, isSaving, user, isPristine } = this.state;
+    const { isLoading, isSaving, user, defaultProfile, isPristine } = this.state;
     const { currentUser } = this.props;
 
     return (
@@ -146,12 +173,27 @@ class EditProfile extends Component {
                   <strong>fill out your profile </strong>
                   when you want to start Communities or Campaigns on Giveth.
                 </p>
-                <div className="alert alert-warning">
+                <div className="alert alert-warning" hidden>
                   <i className="fa fa-exclamation-triangle" />
                   Please note that all the information entered will be stored on a publicly
                   accessible permanent storage like blockchain. We are not able to erase or alter
                   any of the information. Do not input anything that you do not have permission to
                   share or you are not comfortable with being forever accessible.
+                </div>
+                <div className="alert alert-warning">
+                  <i className="fa fa-exclamation-triangle" />
+                  Please note that all the information entered will be stored on a public 3Box
+                  profile. Nevertheless,{' '}
+                  <strong>
+                    your email address will be cryptographically encrypted on private storage
+                  </strong>
+                  .
+                </div>
+                <div className="alert alert-warning" hidden={defaultProfile !== '3box'}>
+                  <i className="fa fa-exclamation-triangle" />
+                  <strong>You are using your 3Box public profile data</strong>. Please set your
+                  email address if you wish, and{' '}
+                  <strong>don't forget to click on Save Profile</strong>
                 </div>
 
                 <Form
@@ -177,6 +219,7 @@ class EditProfile extends Component {
                       validationErrors={{
                         minLength: 'Please enter your name',
                       }}
+                      disabled={defaultProfile === '3box'}
                       required
                       autoFocus
                     />
@@ -194,6 +237,7 @@ class EditProfile extends Component {
                       validationErrors={{
                         isEmail: "Oops, that's not a valid email address.",
                       }}
+                      autoFocus={defaultProfile === '3box'}
                     />
                   </div>
 
@@ -201,6 +245,7 @@ class EditProfile extends Component {
                     setImage={this.setImage}
                     avatar={user.avatar}
                     aspectRatio={1}
+                    disabled={defaultProfile === '3box'}
                   />
 
                   <div className="form-group">
@@ -215,6 +260,7 @@ class EditProfile extends Component {
                       validationErrors={{
                         isUrl: 'Please enter a valid url',
                       }}
+                      disabled={defaultProfile === '3box'}
                     />
                   </div>
 

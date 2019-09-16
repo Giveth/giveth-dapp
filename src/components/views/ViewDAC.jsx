@@ -16,6 +16,7 @@ import CommunityButton from '../CommunityButton';
 import User from '../../models/User';
 import DAC from '../../models/DAC';
 import { getUserName, getUserAvatar } from '../../lib/helpers';
+import { load3BoxPublicProfile } from '../../lib/boxProfile';
 import DACService from '../../services/DACService';
 import CampaignCard from '../CampaignCard';
 import ShareOptions from '../ShareOptions';
@@ -40,6 +41,7 @@ class ViewDAC extends Component {
       donationsTotal: 0,
       donationsPerBatch: 50,
       newDonations: 0,
+      ownerBoxProfile: undefined,
     };
 
     this.loadMoreDonations = this.loadMoreDonations.bind(this);
@@ -52,6 +54,10 @@ class ViewDAC extends Component {
     DACService.get(dacId)
       .then(dac => {
         this.setState({ dac, isLoading: false });
+
+        load3BoxPublicProfile(dac.owner.address).then(ownerBoxProfile => {
+          this.setState({ ownerBoxProfile });
+        });
 
         this.campaignObserver = DACService.subscribeCampaigns(
           dac.delegateId,
@@ -103,6 +109,7 @@ class ViewDAC extends Component {
       isLoading,
       donations,
       dac,
+      ownerBoxProfile,
       isLoadingDonations,
       campaigns,
       isLoadingCampaigns,
@@ -148,8 +155,14 @@ class ViewDAC extends Component {
 
                   <center>
                     <Link to={`/profile/${dac.owner.address}`}>
-                      <Avatar size={50} src={getUserAvatar(dac.owner)} round />
-                      <p className="small">{getUserName(dac.owner)}</p>
+                      <Avatar
+                        size={50}
+                        src={ownerBoxProfile ? ownerBoxProfile.avatar : getUserAvatar(dac.owner)}
+                        round
+                      />
+                      <p className="small">
+                        {ownerBoxProfile ? ownerBoxProfile.name : getUserName(dac.owner)}
+                      </p>
                     </Link>
                   </center>
 

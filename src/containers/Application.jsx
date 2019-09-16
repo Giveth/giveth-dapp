@@ -139,7 +139,15 @@ class Application extends Component {
                               <ConversionRateProvider fiatWhitelist={fiatWhitelist}>
                                 <UserProvider account={account} onLoaded={this.userLoaded}>
                                   <UserConsumer>
-                                    {({ state: { currentUser, hasError } }) => (
+                                    {({
+                                      state: {
+                                        currentUser,
+                                        hasError,
+                                        defaultProfile,
+                                        givethProfile,
+                                        updateProfile,
+                                      },
+                                    }) => (
                                       <div>
                                         {GA.init() && <GA.RouteTracker />}
 
@@ -385,6 +393,9 @@ class Application extends Component {
                                                   <EditProfile
                                                     key={currentUser ? currentUser.id : 0}
                                                     currentUser={currentUser}
+                                                    defaultProfile={defaultProfile}
+                                                    givethProfile={givethProfile}
+                                                    updateProfile={updateProfile}
                                                     balance={balance}
                                                     isForeignNetwork={isForeignNetwork}
                                                     {...props}

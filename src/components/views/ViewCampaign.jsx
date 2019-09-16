@@ -13,6 +13,7 @@ import MilestoneCard from '../MilestoneCard';
 import GoBackButton from '../GoBackButton';
 import { isOwner, getUserName, getUserAvatar, history } from '../../lib/helpers';
 import { checkBalance } from '../../lib/middleware';
+import { load3BoxPublicProfile } from '../../lib/boxProfile';
 import BackgroundImageHeader from '../BackgroundImageHeader';
 import DonateButton from '../DonateButton';
 import CommunityButton from '../CommunityButton';
@@ -55,6 +56,8 @@ class ViewCampaign extends Component {
       donationsTotal: 0,
       donationsPerBatch: 50,
       newDonations: 0,
+      ownerBoxProfile: undefined,
+      reviewerBoxProfile: undefined,
     };
 
     this.loadMoreMilestones = this.loadMoreMilestones.bind(this);
@@ -67,6 +70,16 @@ class ViewCampaign extends Component {
     CampaignService.get(campaignId)
       .then(campaign => {
         this.setState({ campaign, isLoading: false });
+
+        load3BoxPublicProfile(campaign.owner.address).then(ownerBoxProfile => {
+          this.setState({ ownerBoxProfile });
+        });
+
+        if (campaign.reviewer) {
+          load3BoxPublicProfile(campaign.reviewerAddress).then(reviewerBoxProfile => {
+            this.setState({ reviewerBoxProfile });
+          });
+        }
       })
       .catch(err => {
         ErrorPopup('Something went wrong loading Campaign. Please try refresh the page.', err);
@@ -200,6 +213,8 @@ class ViewCampaign extends Component {
     const {
       isLoading,
       campaign,
+      ownerBoxProfile,
+      reviewerBoxProfile,
       milestones,
       donations,
       isLoadingDonations,
@@ -306,12 +321,20 @@ class ViewCampaign extends Component {
                         <ShareOptions pageUrl={window.location.href} pageTitle={campaign.title} />
                       </div>
 
-                      <center>
-                        <Link to={`/profile/${campaign.owner.address}`}>
-                          <Avatar size={50} src={getUserAvatar(campaign.owner)} round />
-                          <p className="small">{getUserName(campaign.owner)}</p>
-                        </Link>
-                      </center>
+                    <center>
+                      <Link to={`/profile/${campaign.owner.address}`}>
+                        <Avatar
+                          size={50}
+                          src={
+                            ownerBoxProfile ? ownerBoxProfile.avatar : getUserAvatar(campaign.owner)
+                          }
+                          round
+                        />
+                        <p className="small">
+                          {ownerBoxProfile ? ownerBoxProfile.name : getUserName(campaign.owner)}
+                        </p>
+                      </Link>
+                    </center>
 
                       <div className="card content-card ">
                         <div className="card-body content">{this.renderDescription()}</div>
@@ -409,16 +432,18 @@ class ViewCampaign extends Component {
                       />
                     </div>
                   </div>
-                  <div className="row spacer-top-50 spacer-bottom-50">
-                    <div className="col-md-8 m-auto">
-                      <h4>Campaign Reviewer</h4>
-                      {campaign && campaign.reviewer && (
-                        <Link to={`/profile/${campaign.reviewerAddress}`}>
-                          {getUserName(campaign.reviewer)}
-                        </Link>
-                      )}
-                      {(!campaign || !campaign.reviewer) && <span>Unknown user</span>}
-                    </div>
+                </div>
+                <div className="row spacer-top-50 spacer-bottom-50">
+                  <div className="col-md-8 m-auto">
+                    <h4>Campaign Reviewer</h4>
+                    {campaign && campaign.reviewer && (
+                      <Link to={`/profile/${campaign.reviewerAddress}`}>
+                        {reviewerBoxProfile
+                          ? reviewerBoxProfile.name
+                          : getUserName(campaign.reviewer)}
+                      </Link>
+                    )}
+                    {(!campaign || !campaign.reviewer) && <span>Unknown user</span>}
                   </div>
                 </div>
               </div>

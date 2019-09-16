@@ -15,7 +15,8 @@ const { Provider, Consumer } = Context;
 const getAccount = async web3 => {
   try {
     const addrs = await web3.eth.getAccounts();
-    if (addrs.length > 0) return addrs[0];
+    const { networkId } = await fetchNetwork(web3);
+    if (addrs.length > 0) return web3.utils.toChecksumAddress(addrs[0], networkId);
   } catch (e) {
     // ignore
   }
@@ -217,7 +218,7 @@ class Web3Provider extends Component {
       const accounts = await web3.enable(this.enableTimedout);
       clearTimeout(timeoutId);
       isEnabled = true;
-      account = accounts.length ? accounts[0] : undefined;
+      account = accounts.length ? web3.utils.toChecksumAddress(accounts[0], networkId) : undefined;
       if (account) {
         balance = new BigNumber(await web3.eth.getBalance(account));
       }

@@ -38,3 +38,11 @@
     width: 80%;
   }
 }
+
+div.box-profile img {
+  border-radius: 100%;
+  width: 130px;
+  height: 130px;
+  object-fit: cover;
+  border: 6px solid #000;
+}

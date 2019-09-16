@@ -24,6 +24,7 @@ import ListDonations from 'components/ListDonations';
 import MilestoneConversations from 'components/MilestoneConversations';
 import DelegateMultipleButton from 'components/DelegateMultipleButton';
 import { convertEthHelper, getUserAvatar, getUserName } from '../../lib/helpers';
+import { load3BoxPublicProfile } from '../../lib/boxProfile';
 import MilestoneService from '../../services/MilestoneService';
 import DACService from '../../services/DACService';
 import ShareOptions from '../ShareOptions';
@@ -51,6 +52,9 @@ class ViewMilestone extends Component {
       donationsTotal: 0,
       donationsPerBatch: 50,
       newDonations: 0,
+      ownerBoxProfile: undefined,
+      reviewerBoxProfile: undefined,
+      recipientBoxProfile: undefined,
     };
 
     this.loadMoreDonations = this.loadMoreDonations.bind(this);
@@ -72,6 +76,22 @@ class ViewMilestone extends Component {
             : milestone.recipient,
         });
         this.getDacTitle(milestone.dacId);
+
+        load3BoxPublicProfile(milestone.ownerAddress).then(ownerBoxProfile =>
+          this.setState({ ownerBoxProfile }),
+        );
+
+        if (milestone.hasReviewer) {
+          load3BoxPublicProfile(milestone.reviewerAddress).then(reviewerBoxProfile =>
+            this.setState({ reviewerBoxProfile }),
+          );
+        }
+
+        if (!(milestone instanceof LPMilestone)) {
+          load3BoxPublicProfile(
+            milestone.pendingRecipientAddress || milestone.recipientAddress,
+          ).then(recipientBoxProfile => this.setState({ recipientBoxProfile }));
+        }
       },
       err => {
         ErrorPopup('Something went wrong with viewing the Milestone. Please try a refresh.', err);
@@ -213,6 +233,9 @@ class ViewMilestone extends Component {
       campaign,
       milestone,
       recipient,
+      ownerBoxProfile,
+      reviewerBoxProfile,
+      recipientBoxProfile,
       donationsTotal,
       newDonations,
     } = this.state;
@@ -299,8 +322,18 @@ class ViewMilestone extends Component {
 
                     <center>
                       <Link to={`/profile/${milestone.ownerAddress}`}>
-                        <Avatar size={50} src={getUserAvatar(milestone.owner)} round />
-                        <p className="small">{getUserName(milestone.owner)}</p>
+                        <Avatar
+                          size={50}
+                          src={
+                            ownerBoxProfile
+                              ? ownerBoxProfile.avatar
+                              : getUserAvatar(milestone.owner)
+                          }
+                          round
+                        />
+                        <p className="small">
+                          {ownerBoxProfile ? ownerBoxProfile.name : getUserName(milestone.owner)}
+                        </p>
                       </Link>
                     </center>
 
@@ -371,10 +404,16 @@ class ViewMilestone extends Component {
                                       <Link to={`/profile/${milestone.reviewerAddress}`}>
                                         <Avatar
                                           size={30}
-                                          src={getUserAvatar(milestone.reviewer)}
+                                          src={
+                                            reviewerBoxProfile
+                                              ? reviewerBoxProfile.avatar
+                                              : getUserAvatar(milestone.reviewer)
+                                          }
                                           round
                                         />
-                                        {getUserName(milestone.reviewer)}
+                                        {reviewerBoxProfile
+                                          ? reviewerBoxProfile.name
+                                          : getUserName(milestone.reviewer)}
                                       </Link>
                                     </td>
                                   </tr>
@@ -427,8 +466,18 @@ class ViewMilestone extends Component {
                                           to={`/profile/${milestone.pendingRecipientAddress ||
                                             milestone.recipientAddress}`}
                                         >
-                                          <Avatar size={30} src={getUserAvatar(recipient)} round />
-                                          {getUserName(recipient)}
+                                          <Avatar
+                                            size={30}
+                                            src={
+                                              recipientBoxProfile
+                                                ? recipientBoxProfile.avatar
+                                                : getUserAvatar(recipient)
+                                            }
+                                            round
+                                          />
+                                          {recipientBoxProfile
+                                            ? recipientBoxProfile.name
+                                            : getUserName(recipient)}
                                         </Link>
                                       )}
                                     </td>

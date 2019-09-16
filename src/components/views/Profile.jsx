@@ -20,6 +20,7 @@ import {
   getReadableStatus,
   convertEthHelper,
 } from '../../lib/helpers';
+import { load3BoxPublicProfile } from '../../lib/boxProfile';
 
 import DACservice from '../../services/DACService';
 import CampaignService from '../../services/CampaignService';
@@ -86,25 +87,33 @@ class Profile extends Component {
       .service('users')
       .find({ query: { address: userAddress } })
       .then(resp => {
-        this.setState(
-          Object.assign(
-            {},
-            {
-              userAddress,
+        const userData = resp.data[0];
+        load3BoxPublicProfile(userAddress).then(boxProfile => {
+          if (boxProfile) {
+            userData.name = boxProfile.name;
+            userData.avatar = boxProfile.avatar;
+            userData.linkedin = boxProfile.linkedin;
+          }
+          this.setState(
+            Object.assign(
+              {},
+              {
+                userAddress,
+              },
+              userData,
+              {
+                isLoading: false,
+                hasError: false,
+              },
+            ),
+            () => {
+              this.loadUserCampaigns();
+              this.loadUserMilestones();
+              this.loadUserDacs();
+              this.loadUserDonations();
             },
-            resp.data[0],
-            {
-              isLoading: false,
-              hasError: false,
-            },
-          ),
-          () => {
-            this.loadUserCampaigns();
-            this.loadUserMilestones();
-            this.loadUserDacs();
-            this.loadUserDonations();
-          },
-        );
+          );
+        });
       })
       .catch(() =>
         this.setState({
