@@ -13,9 +13,6 @@ class CampaignCsvService {
       campaigncsv
         .get(id)
         .then(resp => {
-          const data = new Blob([resp], { type: 'text/plain' });
-          const url = window.URL.createObjectURL(data);
-          document.getElementById('download_link').href = url;
           resolve(resp);
         })
         .catch(reject);
