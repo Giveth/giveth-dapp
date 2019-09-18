@@ -78,6 +78,7 @@ class Donation extends Model {
     this._confirmations = data.confirmations || 0;
     this._createdAt = data.createdAt;
     this._delegateId = data.delegateId;
+    this._delegateType = data.delegateType;
     this._delegateEntity = data.delegateEntity;
     this._delegateTypeId = data.delegateTypeId;
     this._giver = data.giver;
@@ -100,6 +101,7 @@ class Donation extends Model {
     this._isReturn = data.isReturn;
     this._token = data.token;
     this._usdValue = data.usdValue;
+    this._parentDonations = data.parentDonations;
 
     /**
      * Get the URL, name and type of the entity to which this donation has been donated to
@@ -486,6 +488,10 @@ class Donation extends Model {
 
   get usdValue() {
     return this._usdValue;
+  }
+
+  get parentDonations() {
+    return this._parentDonations;
   }
 }
 

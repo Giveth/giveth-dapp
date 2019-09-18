@@ -8,8 +8,8 @@ import config from 'configuration';
 import Loader from './Loader';
 import { getUserName, getUserAvatar, convertEthHelper } from '../lib/helpers';
 import Donation from '../models/Donation';
-import DonationService from '../services/DonationService';
 import Milestone from '../models/Milestone';
+import DonationHistory from './DonationHistory';
 
 /**
  * Shows a table of donations for a given type (dac, campaign, milestone)
@@ -21,27 +21,12 @@ class ListDonationItem extends Component {
 
     this.state = {
       showDetails: false,
-      parentsLoaded: false,
-      parents: undefined,
     };
 
     this.toggleDetail = this.toggleDetail.bind(this);
   }
 
-  loadParents() {
-    if (!this.state.parentsLoaded) {
-      const { d } = this.props;
-      DonationService.getDonationCommittedParents(d, parents => {
-        this.setState({ parentsLoaded: true, parents });
-      });
-    }
-  }
-
   toggleDetail() {
-    if (!this.state.showDetails) {
-      this.loadParents();
-    }
-
     this.setState(prevState => ({
       ...prevState,
       showDetails: !prevState.showDetails,
@@ -49,41 +34,34 @@ class ListDonationItem extends Component {
   }
 
   render() {
-    const { d, isSecondary, hasDetailsExpandColumn, hasProposedDelegation } = this.props;
+    const { d, hasDetailsExpandColumn, hasProposedDelegation } = this.props;
     const totalColumns = 5 + (hasDetailsExpandColumn ? 1 : 0) + (hasProposedDelegation ? 1 : 0);
     const hasDetails = d.status === Donation.PAID;
-    const detailRowId = `_detail_${d._id}`;
-    const textColor = isSecondary ? 'text-white' : '';
-    const linkColor = isSecondary ? 'text-warning' : '';
     return (
       <Fragment>
         <tr key={d._id}>
           {hasDetailsExpandColumn && (
             <td>
               {hasDetails ? (
-                <button
-                  type="button"
-                  className="btn btn-info btn-sm"
-                  onClick={this.toggleDetail}
-                  data-toggle="collapse"
-                  data-target={`#${detailRowId}`}
-                  aria-controls={detailRowId}
-                  aria-expanded="false"
-                >
+                <button type="button" className="btn btn-info btn-sm" onClick={this.toggleDetail}>
                   <i className={this.state.showDetails ? 'fa fa-minus' : 'fa fa-plus'} />
                 </button>
               ) : null}
             </td>
           )}
           <td className="td-date">
-            <span className={textColor}>{moment(d.createdAt).format('MM/DD/YYYY')}</span>
+            <span>{moment(d.createdAt).format('MM/DD/YYYY')}</span>
           </td>
           <td>
-            <span className={textColor}>{d.statusDescription}</span>
+            <span>{d.statusDescription}</span>
+            <span className="badge badge-warning">
+              <i className="fa fa-diamond" />
+              Delegated
+            </span>
           </td>
 
           <td className="td-donations-amount">
-            <span className={textColor}>
+            <span>
               {d.isPending && (
                 <span>
                   <i className="fa fa-circle-o-notch fa-spin" />
@@ -102,7 +80,7 @@ class ListDonationItem extends Component {
             {d.giver && (
               <Link to={`/profile/${d.giver.address}`}>
                 <Avatar size={30} src={getUserAvatar(d.giver)} round />
-                <span className={linkColor}> {getUserName(d.giver)}</span>
+                <span> {getUserName(d.giver)}</span>
               </Link>
             )}
           </td>
@@ -112,7 +90,6 @@ class ListDonationItem extends Component {
                 href={`${config.homeEtherscan}address/${d.giverAddress}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className={linkColor}
               >
                 {d.giverAddress}
               </a>
@@ -126,27 +103,11 @@ class ListDonationItem extends Component {
             </td>
           )}
         </tr>
-        {hasDetails && (
-          <tr className="">
-            <td colSpan={totalColumns} className={this.state.showDetails ? '' : 'td-hidden-row'}>
-              <div id={detailRowId} className="bg-secondary collapse ml-5">
-                {this.state.parentsLoaded ? (
-                  <ListDonations
-                    donations={this.state.parents}
-                    isLoading={false}
-                    total={this.state.parents.length}
-                    loadMore={() => {}}
-                    newDonations={0}
-                    isSecondary
-                  />
-                ) : (
-                  <div className="text-center">
-                    <div className="spinner-grow text-info" role="status">
-                      <span className="sr-only">Loading...</span>
-                    </div>
-                  </div>
-                )}
-              </div>
+        {hasDetails && this.state.showDetails && (
+          <tr>
+            <td>&nbsp;</td>
+            <td colSpan={totalColumns}>
+              <DonationHistory donation={d} />
             </td>
           </tr>
         )}
@@ -159,12 +120,7 @@ ListDonationItem.propTypes = {
   d: PropTypes.instanceOf(Donation).isRequired,
   hasProposedDelegation: PropTypes.bool.isRequired,
   useAmountRemaining: PropTypes.bool.isRequired,
-  isSecondary: PropTypes.bool,
   hasDetailsExpandColumn: PropTypes.bool.isRequired,
-};
-
-ListDonationItem.defaultProps = {
-  isSecondary: false,
 };
 
 const ListDonations = props => {
