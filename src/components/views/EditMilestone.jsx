@@ -1016,9 +1016,22 @@ class EditMilestone extends Component {
 
   addItem(item) {
     if (!this._isMounted) return;
-    const { milestone } = this.state;
-    this.getDateRate(item.date, milestone.token.symbol).then(rate => {
-      if (!this._isMounted) return;
+    let milestoneObject = null;
+    try {
+      milestoneObject = this.retrieveMilestone();
+    } catch (e) {
+      const { milestone } = this.state;
+      milestoneObject = milestone;
+    }
+    let tokenSymbol = null;
+    if (!milestoneObject.token.symbol) {
+      tokenSymbol = 'ETH';
+    } else {
+      const { symbol } = milestoneObject.token;
+      tokenSymbol = symbol;
+    }
+    this.getDateRate(item.date, tokenSymbol).then(rate => {
+      if (!this._isMounted || !rate) return;
       if (rate[item.selectedFiatType] === undefined) {
         item.conversionRate = rate.EUR;
         item.selectedFiatType = 'EUR';
@@ -1027,9 +1040,9 @@ class EditMilestone extends Component {
         item.conversionRate = rate[item.selectedFiatType];
         item.wei = utils.toWei(new BigNumber(item.fiatAmount).div(item.conversionRate).toFixed(18));
       }
-      milestone.items = milestone.items.concat(item);
+      milestoneObject.items = milestoneObject.items.concat(item);
 
-      this.setState({ milestone, refreshList: milestone.items });
+      this.setState({ milestone: milestoneObject, refreshList: milestoneObject.items });
     });
   }
 
