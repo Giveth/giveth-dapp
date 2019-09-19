@@ -19,6 +19,7 @@ class DonationHistory extends Component {
       delegateEntity: donation._delegateEntity,
       createdAt: donation._createdAt,
       parentIds: donation._parentDonations,
+      donatedTo: donation.donatedTo,
       parents: [],
     };
   }
@@ -66,10 +67,36 @@ class DonationHistory extends Component {
     const root = DonationHistory.createHistoryItem(donation);
 
     await this.loadCommittedParents(root);
-    console.log('root:', root);
+    const { parents } = root;
+
+    if (parents.length > 0) {
+      this.props.setItemHasHistory(true);
+      if (parents[0].parents.length > 0) {
+        this.props.setItemType('delegated');
+      } else {
+        this.props.setItemType('direct');
+      }
+    }
+
+    if (donation.status === Donation.COMMITTED) {
+      if (parents.length > 0) {
+        this.props.setItemHasHistory(true);
+        this.props.setItemType('delegated');
+      } else {
+        this.props.setItemType('direct');
+      }
+    } else if (parents.length > 0) {
+      this.props.setItemHasHistory(true);
+      if (parents[0].parents.length > 0) {
+        this.props.setItemType('delegated');
+      } else {
+        this.props.setItemType('direct');
+      }
+    }
+
     this.setState({
       parentsLoaded: true,
-      parents: root.parents,
+      parents,
     });
   }
 
@@ -78,30 +105,29 @@ class DonationHistory extends Component {
 
     const { donation } = this.props;
     let message;
-    if (item.delegateType !== undefined) {
+    const link = item.delegateEntity ? (
+      DonationHistory.generateEntityLink(item.delegateType, item.delegateEntity)
+    ) : (
+      <Link to={item.donatedTo.url}>{item.donatedTo.name}</Link>
+    );
+    if (hasParents) {
       message = (
         <Fragment>
           <span> delegated to </span>
-          {DonationHistory.generateEntityLink(item.delegateType, item.delegateEntity)}
-          <span> by </span>
-          {DonationHistory.generateEntityLink(item.ownerType, item.ownerEntity)}
+          {link}
         </Fragment>
       );
-    } else if (item.ownerType !== 'milestone') {
+    } else {
       message = (
         <Fragment>
-          {DonationHistory.generateEntityLink(item.ownerType, item.ownerEntity)}
-          <span> delegated to milestone</span>
+          <span> donated to </span>
+          {link}
         </Fragment>
       );
-    } else if (hasParents) {
-      message = <span> committed to milestone.</span>;
-    } else {
-      message = <span> directly donated to milestone.</span>;
     }
 
     return (
-      <li>
+      <li key={item.id}>
         <span>
           {moment(item.createdAt).format('MM/DD/YYYY')} {convertEthHelper(item.amount)}{' '}
           {(donation.token && donation.token.symbol) || config.nativeTokenName}{' '}
@@ -114,7 +140,6 @@ class DonationHistory extends Component {
 
   render() {
     if (this.state.parentsLoaded) {
-      console.log(this.state.parents);
       return (
         <ul className="donation-history">{this.state.parents.map(p => this.renderHistory(p))}</ul>
       );
@@ -133,4 +158,11 @@ export default DonationHistory;
 
 DonationHistory.propTypes = {
   donation: PropTypes.instanceOf(Donation).isRequired,
+  setItemType: PropTypes.func,
+  setItemHasHistory: PropTypes.func,
+};
+
+DonationHistory.defaultProps = {
+  setItemType: () => {},
+  setItemHasHistory: () => {},
 };

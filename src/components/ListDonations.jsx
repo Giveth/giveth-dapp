@@ -8,7 +8,6 @@ import config from 'configuration';
 import Loader from './Loader';
 import { getUserName, getUserAvatar, convertEthHelper } from '../lib/helpers';
 import Donation from '../models/Donation';
-import Milestone from '../models/Milestone';
 import DonationHistory from './DonationHistory';
 
 /**
@@ -21,9 +20,25 @@ class ListDonationItem extends Component {
 
     this.state = {
       showDetails: false,
+      itemType: null, // Delegated ro Directly donated
+      hasHistory: this.props.d.status === Donation.PAID, // PAID donations always has history
     };
 
     this.toggleDetail = this.toggleDetail.bind(this);
+    this.setItemType = this.setItemType.bind(this);
+    this.setItemHasHistory = this.setItemHasHistory.bind(this);
+  }
+
+  setItemType(type) {
+    this.setState({
+      itemType: type,
+    });
+  }
+
+  setItemHasHistory(hasHistory) {
+    this.setState({
+      hasHistory,
+    });
   }
 
   toggleDetail() {
@@ -34,32 +49,46 @@ class ListDonationItem extends Component {
   }
 
   render() {
-    const { d, hasDetailsExpandColumn, hasProposedDelegation } = this.props;
-    const totalColumns = 5 + (hasDetailsExpandColumn ? 1 : 0) + (hasProposedDelegation ? 1 : 0);
-    const hasDetails = d.status === Donation.PAID;
+    const { d, hasProposedDelegation } = this.props;
+    const totalColumns = 6 + (hasProposedDelegation ? 1 : 0);
+    let typeLabel;
+    switch (this.state.itemType) {
+      case 'delegated':
+        typeLabel = (
+          <span className="badge badge-info">
+            <i className="fa fa-random " />
+            Delegated
+          </span>
+        );
+        break;
+      case 'direct':
+        typeLabel = (
+          <span className="badge badge-warning">
+            <i className="fa fa-plug" />
+            Direct
+          </span>
+        );
+        break;
+      default:
+        typeLabel = null;
+    }
     return (
       <Fragment>
         <tr key={d._id}>
-          {hasDetailsExpandColumn && (
-            <td>
-              {hasDetails ? (
-                <button type="button" className="btn btn-info btn-sm" onClick={this.toggleDetail}>
-                  <i className={this.state.showDetails ? 'fa fa-minus' : 'fa fa-plus'} />
-                </button>
-              ) : null}
-            </td>
-          )}
+          <td>
+            {this.state.hasHistory ? (
+              <button type="button" className="btn btn-info btn-sm" onClick={this.toggleDetail}>
+                <i className={this.state.showDetails ? 'fa fa-minus' : 'fa fa-plus'} />
+              </button>
+            ) : null}
+          </td>
           <td className="td-date">
             <span>{moment(d.createdAt).format('MM/DD/YYYY')}</span>
           </td>
           <td>
             <span>{d.statusDescription}</span>
-            <span className="badge badge-warning">
-              <i className="fa fa-diamond" />
-              Delegated
-            </span>
+            {typeLabel}
           </td>
-
           <td className="td-donations-amount">
             <span>
               {d.isPending && (
@@ -103,14 +132,17 @@ class ListDonationItem extends Component {
             </td>
           )}
         </tr>
-        {hasDetails && this.state.showDetails && (
-          <tr>
-            <td>&nbsp;</td>
-            <td colSpan={totalColumns}>
-              <DonationHistory donation={d} />
-            </td>
-          </tr>
-        )}
+
+        <tr style={this.state.showDetails ? {} : { display: 'none' }}>
+          <td>&nbsp;</td>
+          <td colSpan={totalColumns}>
+            <DonationHistory
+              donation={d}
+              setItemType={this.setItemType}
+              setItemHasHistory={this.setItemHasHistory}
+            />
+          </td>
+        </tr>
       </Fragment>
     );
   }
@@ -120,24 +152,14 @@ ListDonationItem.propTypes = {
   d: PropTypes.instanceOf(Donation).isRequired,
   hasProposedDelegation: PropTypes.bool.isRequired,
   useAmountRemaining: PropTypes.bool.isRequired,
-  hasDetailsExpandColumn: PropTypes.bool.isRequired,
 };
 
 const ListDonations = props => {
-  const {
-    isLoading,
-    donations,
-    loadMore,
-    total,
-    newDonations,
-    useAmountRemaining,
-    isSecondary,
-  } = props;
+  const { isLoading, donations, loadMore, total, newDonations, useAmountRemaining } = props;
   const hasProposedDelegation = props.donations.some(d => d.intendedProjectId);
-  const hasDetailsExpandColumn = props.donations.some(d => d.status === Milestone.PAID);
   return (
     <div>
-      {!isSecondary && (
+      {
         <div>
           <h2 style={{ display: 'inline-block' }}>Donations</h2>
           {newDonations > 0 && (
@@ -146,7 +168,7 @@ const ListDonations = props => {
             </span>
           )}
         </div>
-      )}
+      }
 
       <div className="dashboard-table-view">
         {isLoading && total === 0 && <Loader className="relative" />}
@@ -155,7 +177,7 @@ const ListDonations = props => {
             <table className="table table-responsive table-hover" style={{ marginTop: 0 }}>
               <thead>
                 <tr>
-                  {hasDetailsExpandColumn && <th />}
+                  <th />
                   <th className="td-date">Date</th>
                   <th>Status</th>
                   <th className="td-donations-amount">Amount</th>
@@ -171,8 +193,6 @@ const ListDonations = props => {
                     key={d._id}
                     hasProposedDelegation={hasProposedDelegation}
                     useAmountRemaining={useAmountRemaining}
-                    isSecondary={isSecondary}
-                    hasDetailsExpandColumn={hasDetailsExpandColumn}
                   />
                 ))}
               </tbody>
@@ -214,11 +234,9 @@ ListDonations.propTypes = {
   loadMore: PropTypes.func.isRequired,
   newDonations: PropTypes.number,
   useAmountRemaining: PropTypes.bool,
-  isSecondary: PropTypes.bool,
 };
 
 ListDonations.defaultProps = {
   newDonations: 0,
   useAmountRemaining: false,
-  isSecondary: false,
 };
