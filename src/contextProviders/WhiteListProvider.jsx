@@ -36,7 +36,7 @@ function isInWhitelist(currentUser, whitelist) {
  * @return {array}           List of users as pairs {address, title}
  */
 async function getUsers(addresses) {
-  const query = { $select: ['_id', 'name', 'address'] };
+  const query = { $select: ['_id', 'name', 'address'], $limit: 100 };
 
   if (Array.isArray(addresses) && addresses.length > 0)
     query.address = { $in: addresses.map(a => a.address) };
