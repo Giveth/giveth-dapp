@@ -97,7 +97,7 @@ class ChangeOwnershipButton extends Component {
   }
 
   render() {
-    const style = { display: 'inline-block', ...this.props.style };
+    const style = { display: 'inline-block', paddingRight: '10px', ...this.props.style };
     const { isSaving, isLoading, campaign } = this.state;
     const { milestone, validProvider, isCorrectNetwork, campaignManagers } = this.props;
 
