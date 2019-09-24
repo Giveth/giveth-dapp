@@ -8,8 +8,7 @@ import config from 'configuration';
 import Loader from './Loader';
 import { getUserName, getUserAvatar, convertEthHelper } from '../lib/helpers';
 import Donation from '../models/Donation';
-import DonationService from '../services/DonationService';
-import Milestone from '../models/Milestone';
+import DonationHistory from './DonationHistory';
 
 /**
  * Shows a table of donations for a given type (dac, campaign, milestone)
@@ -21,27 +20,28 @@ class ListDonationItem extends Component {
 
     this.state = {
       showDetails: false,
-      parentsLoaded: false,
-      parents: undefined,
+      itemType: null, // Delegated ro Directly donated
+      hasHistory: this.props.d.status === Donation.PAID, // PAID donations always has history
     };
 
     this.toggleDetail = this.toggleDetail.bind(this);
+    this.setItemType = this.setItemType.bind(this);
+    this.setItemHasHistory = this.setItemHasHistory.bind(this);
   }
 
-  loadParents() {
-    if (!this.state.parentsLoaded) {
-      const { d } = this.props;
-      DonationService.getDonationCommittedParents(d, parents => {
-        this.setState({ parentsLoaded: true, parents });
-      });
-    }
+  setItemType(type) {
+    this.setState({
+      itemType: type,
+    });
+  }
+
+  setItemHasHistory(hasHistory) {
+    this.setState({
+      hasHistory,
+    });
   }
 
   toggleDetail() {
-    if (!this.state.showDetails) {
-      this.loadParents();
-    }
-
     this.setState(prevState => ({
       ...prevState,
       showDetails: !prevState.showDetails,
@@ -49,41 +49,51 @@ class ListDonationItem extends Component {
   }
 
   render() {
-    const { d, isSecondary, hasDetailsExpandColumn, hasProposedDelegation } = this.props;
-    const totalColumns = 5 + (hasDetailsExpandColumn ? 1 : 0) + (hasProposedDelegation ? 1 : 0);
-    const hasDetails = d.status === Donation.PAID;
-    const detailRowId = `_detail_${d._id}`;
-    const textColor = isSecondary ? 'text-white' : '';
-    const linkColor = isSecondary ? 'text-warning' : '';
+    const { d, hasProposedDelegation } = this.props;
+    const totalColumns = 6 + (hasProposedDelegation ? 1 : 0);
+    let typeLabel;
+    let historyClassName = '';
+    switch (this.state.itemType) {
+      case 'delegated':
+        typeLabel = (
+          <span className="badge badge-info">
+            <i className="fa fa-random " />
+            Delegated
+          </span>
+        );
+        historyClassName = 'table-info';
+        break;
+      case 'direct':
+        typeLabel = (
+          <span className="badge badge-warning">
+            <i className="fa fa-plug" />
+            Direct
+          </span>
+        );
+        historyClassName = 'table-warning';
+        break;
+      default:
+        typeLabel = null;
+    }
     return (
       <Fragment>
         <tr key={d._id}>
-          {hasDetailsExpandColumn && (
-            <td>
-              {hasDetails ? (
-                <button
-                  type="button"
-                  className="btn btn-info btn-sm"
-                  onClick={this.toggleDetail}
-                  data-toggle="collapse"
-                  data-target={`#${detailRowId}`}
-                  aria-controls={detailRowId}
-                  aria-expanded="false"
-                >
-                  <i className={this.state.showDetails ? 'fa fa-minus' : 'fa fa-plus'} />
-                </button>
-              ) : null}
-            </td>
-          )}
+          <td>
+            {this.state.hasHistory ? (
+              <button type="button" className="btn btn-info btn-sm" onClick={this.toggleDetail}>
+                <i className={this.state.showDetails ? 'fa fa-minus' : 'fa fa-plus'} />
+              </button>
+            ) : null}
+          </td>
           <td className="td-date">
-            <span className={textColor}>{moment(d.createdAt).format('MM/DD/YYYY')}</span>
+            <span>{moment(d.createdAt).format('MM/DD/YYYY')}</span>
           </td>
           <td>
-            <span className={textColor}>{d.statusDescription}</span>
+            <span>{d.statusDescription}</span>
+            {typeLabel}
           </td>
-
           <td className="td-donations-amount">
-            <span className={textColor}>
+            <span>
               {d.isPending && (
                 <span>
                   <i className="fa fa-circle-o-notch fa-spin" />
@@ -102,7 +112,7 @@ class ListDonationItem extends Component {
             {d.giver && (
               <Link to={`/profile/${d.giver.address}`}>
                 <Avatar size={30} src={getUserAvatar(d.giver)} round />
-                <span className={linkColor}> {getUserName(d.giver)}</span>
+                <span> {getUserName(d.giver)}</span>
               </Link>
             )}
           </td>
@@ -112,7 +122,6 @@ class ListDonationItem extends Component {
                 href={`${config.homeEtherscan}address/${d.giverAddress}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className={linkColor}
               >
                 {d.giverAddress}
               </a>
@@ -126,30 +135,17 @@ class ListDonationItem extends Component {
             </td>
           )}
         </tr>
-        {hasDetails && (
-          <tr className="">
-            <td colSpan={totalColumns} className={this.state.showDetails ? '' : 'td-hidden-row'}>
-              <div id={detailRowId} className="bg-secondary collapse ml-5">
-                {this.state.parentsLoaded ? (
-                  <ListDonations
-                    donations={this.state.parents}
-                    isLoading={false}
-                    total={this.state.parents.length}
-                    loadMore={() => {}}
-                    newDonations={0}
-                    isSecondary
-                  />
-                ) : (
-                  <div className="text-center">
-                    <div className="spinner-grow text-info" role="status">
-                      <span className="sr-only">Loading...</span>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </td>
-          </tr>
-        )}
+
+        <tr style={this.state.showDetails ? {} : { display: 'none' }}>
+          <td>&nbsp;</td>
+          <td colSpan={totalColumns} className={historyClassName}>
+            <DonationHistory
+              donation={d}
+              setItemType={this.setItemType}
+              setItemHasHistory={this.setItemHasHistory}
+            />
+          </td>
+        </tr>
       </Fragment>
     );
   }
@@ -159,29 +155,14 @@ ListDonationItem.propTypes = {
   d: PropTypes.instanceOf(Donation).isRequired,
   hasProposedDelegation: PropTypes.bool.isRequired,
   useAmountRemaining: PropTypes.bool.isRequired,
-  isSecondary: PropTypes.bool,
-  hasDetailsExpandColumn: PropTypes.bool.isRequired,
-};
-
-ListDonationItem.defaultProps = {
-  isSecondary: false,
 };
 
 const ListDonations = props => {
-  const {
-    isLoading,
-    donations,
-    loadMore,
-    total,
-    newDonations,
-    useAmountRemaining,
-    isSecondary,
-  } = props;
+  const { isLoading, donations, loadMore, total, newDonations, useAmountRemaining } = props;
   const hasProposedDelegation = props.donations.some(d => d.intendedProjectId);
-  const hasDetailsExpandColumn = props.donations.some(d => d.status === Milestone.PAID);
   return (
     <div>
-      {!isSecondary && (
+      {
         <div>
           <h2 style={{ display: 'inline-block' }}>Donations</h2>
           {newDonations > 0 && (
@@ -190,7 +171,7 @@ const ListDonations = props => {
             </span>
           )}
         </div>
-      )}
+      }
 
       <div className="dashboard-table-view">
         {isLoading && total === 0 && <Loader className="relative" />}
@@ -199,7 +180,7 @@ const ListDonations = props => {
             <table className="table table-responsive table-hover" style={{ marginTop: 0 }}>
               <thead>
                 <tr>
-                  {hasDetailsExpandColumn && <th />}
+                  <th />
                   <th className="td-date">Date</th>
                   <th>Status</th>
                   <th className="td-donations-amount">Amount</th>
@@ -215,8 +196,6 @@ const ListDonations = props => {
                     key={d._id}
                     hasProposedDelegation={hasProposedDelegation}
                     useAmountRemaining={useAmountRemaining}
-                    isSecondary={isSecondary}
-                    hasDetailsExpandColumn={hasDetailsExpandColumn}
                   />
                 ))}
               </tbody>
@@ -258,11 +237,9 @@ ListDonations.propTypes = {
   loadMore: PropTypes.func.isRequired,
   newDonations: PropTypes.number,
   useAmountRemaining: PropTypes.bool,
-  isSecondary: PropTypes.bool,
 };
 
 ListDonations.defaultProps = {
   newDonations: 0,
   useAmountRemaining: false,
-  isSecondary: false,
 };
