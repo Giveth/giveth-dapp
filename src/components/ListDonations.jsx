@@ -52,6 +52,7 @@ class ListDonationItem extends Component {
     const { d, hasProposedDelegation } = this.props;
     const totalColumns = 6 + (hasProposedDelegation ? 1 : 0);
     let typeLabel;
+    let historyClassName = '';
     switch (this.state.itemType) {
       case 'delegated':
         typeLabel = (
@@ -60,6 +61,7 @@ class ListDonationItem extends Component {
             Delegated
           </span>
         );
+        historyClassName = 'table-info';
         break;
       case 'direct':
         typeLabel = (
@@ -68,6 +70,7 @@ class ListDonationItem extends Component {
             Direct
           </span>
         );
+        historyClassName = 'table-warning';
         break;
       default:
         typeLabel = null;
@@ -135,7 +138,7 @@ class ListDonationItem extends Component {
 
         <tr style={this.state.showDetails ? {} : { display: 'none' }}>
           <td>&nbsp;</td>
-          <td colSpan={totalColumns}>
+          <td colSpan={totalColumns} className={historyClassName}>
             <DonationHistory
               donation={d}
               setItemType={this.setItemType}
