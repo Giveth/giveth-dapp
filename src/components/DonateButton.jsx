@@ -552,105 +552,108 @@ class DonateButton extends React.Component {
                 <em>{utils.fromWei(balance ? balance.toFixed() : '')}</em>
               </div>
             )}
+            {isCorrectNetwork && validProvider && currentUser && (
+              <React.Fragment>
+                <span className="label">
+                  How much {selectedToken.symbol} do you want to donate?
+                </span>
 
-            <span className="label">How much {selectedToken.symbol} do you want to donate?</span>
+                {validProvider && maxAmount.toNumber() !== 0 && balance.gt(0) && (
+                  <div className="form-group">
+                    <Slider
+                      type="range"
+                      name="amount2"
+                      min={0}
+                      max={maxAmount.toNumber()}
+                      step={maxAmount.toNumber() / 10}
+                      value={Number(Number(amount).toFixed(4))}
+                      labels={{
+                        0: '0',
+                        [maxAmount.toFixed()]: maxAmount.toFixed(4),
+                      }}
+                      tooltip={false}
+                      format={val => `${val} ${config.nativeTokenName}`}
+                      onChange={newAmount => this.setState({ amount: newAmount.toString() })}
+                    />
+                  </div>
+                )}
+                <div className="form-group">
+                  <Input
+                    name="amount"
+                    id="amount-input"
+                    type="number"
+                    value={amount}
+                    onChange={(name, newAmount) =>
+                      this.setState({ amount: newAmount, defaultAmount: false })
+                    }
+                    validations={{
+                      lessOrEqualTo: maxAmount.toNumber(),
+                      greaterThan: 0,
+                    }}
+                    validationErrors={{
+                      greaterThan: `Please enter value greater than 0 ${selectedToken.symbol}`,
+                      lessOrEqualTo: `This donation exceeds your wallet balance or the Milestone max amount: ${maxAmount.toFixed()} ${
+                        selectedToken.symbol
+                      }.`,
+                    }}
+                    autoFocus
+                  />
+                </div>
 
-            {validProvider && maxAmount.toNumber() !== 0 && balance.gt(0) && (
-              <div className="form-group">
-                <Slider
-                  type="range"
-                  name="amount2"
-                  min={0}
-                  max={maxAmount.toNumber()}
-                  step={maxAmount.toNumber() / 10}
-                  value={Number(Number(amount).toFixed(4))}
-                  labels={{
-                    0: '0',
-                    [maxAmount.toFixed()]: maxAmount.toFixed(4),
-                  }}
-                  tooltip={false}
-                  format={val => `${val} ${config.nativeTokenName}`}
-                  onChange={newAmount => this.setState({ amount: newAmount.toString() })}
-                />
-              </div>
-            )}
+                {showCustomAddress && (
+                  <div className="alert alert-success">
+                    <i className="fa fa-exclamation-triangle" />
+                    The donation will be donated on behalf of address:
+                  </div>
+                )}
 
-            <div className="form-group">
-              <Input
-                name="amount"
-                id="amount-input"
-                type="number"
-                value={amount}
-                onChange={(name, newAmount) =>
-                  this.setState({ amount: newAmount, defaultAmount: false })
-                }
-                validations={{
-                  lessOrEqualTo: maxAmount.toNumber(),
-                  greaterThan: 0,
-                }}
-                validationErrors={{
-                  greaterThan: `Please enter value greater than 0 ${selectedToken.symbol}`,
-                  lessOrEqualTo: `This donation exceeds your wallet balance or the Milestone max amount: ${maxAmount.toFixed()} ${
-                    selectedToken.symbol
-                  }.`,
-                }}
-                autoFocus
-              />
-            </div>
-
-            {showCustomAddress && (
-              <div className="alert alert-success">
-                <i className="fa fa-exclamation-triangle" />
-                The donation will be donated on behalf of address:
-              </div>
-            )}
-
-            <div className="react-toggle-container">
-              <Toggle
-                id="show-recipient-address"
-                defaultChecked={showCustomAddress}
-                onChange={() =>
-                  this.setState(prevState => ({
-                    showCustomAddress: !prevState.showCustomAddress,
-                  }))
-                }
-              />
-              <div className="label">I want to donate on behalf of another address</div>
-            </div>
-            {showCustomAddress && (
-              <div className="form-group recipient-address-container">
-                <Input
-                  name="customAddress"
-                  id="title-input"
-                  type="text"
-                  value={customAddress}
-                  placeholder="0x0000000000000000000000000000000000000000"
-                  validations="isEtherAddress"
-                  validationErrors={{
-                    isEtherAddress: 'Please insert a valid Ethereum address.',
-                  }}
-                  required={this.state.showRecipientAddress}
-                />
-              </div>
-            )}
-            {!showCustomAddress && (
-              <div>
-                <br />
-                <br />
-              </div>
-            )}
-
-            {validProvider && currentUser && maxAmount.toNumber() !== 0 && balance !== '0' && (
-              <LoaderButton
-                className="btn btn-success"
-                formNoValidate
-                type="submit"
-                disabled={isSaving || !formIsValid || !isCorrectNetwork}
-                isLoading={isSaving}
-                loadingText="Donating..."
-              >
-                Donate
-              </LoaderButton>
+                <div className="react-toggle-container">
+                  <Toggle
+                    id="show-recipient-address"
+                    defaultChecked={showCustomAddress}
+                    onChange={() =>
+                      this.setState(prevState => ({
+                        showCustomAddress: !prevState.showCustomAddress,
+                      }))
+                    }
+                  />
+                  <div className="label">I want to donate on behalf of another address</div>
+                </div>
+                {showCustomAddress && (
+                  <div className="form-group recipient-address-container">
+                    <Input
+                      name="customAddress"
+                      id="title-input"
+                      type="text"
+                      value={customAddress}
+                      placeholder="0x0000000000000000000000000000000000000000"
+                      validations="isEtherAddress"
+                      validationErrors={{
+                        isEtherAddress: 'Please insert a valid Ethereum address.',
+                      }}
+                      required={this.state.showRecipientAddress}
+                    />
+                  </div>
+                )}
+                {!showCustomAddress && (
+                  <div>
+                    <br />
+                    <br />
+                  </div>
+                )}
+                {maxAmount.toNumber() !== 0 && balance !== '0' && (
+                  <LoaderButton
+                    className="btn btn-success"
+                    formNoValidate
+                    type="submit"
+                    disabled={isSaving || !formIsValid || !isCorrectNetwork}
+                    isLoading={isSaving}
+                    loadingText="Donating..."
+                  >
+                    Donate
+                  </LoaderButton>
+                )}
+              </React.Fragment>
             )}
 
             <button
