@@ -456,9 +456,12 @@ class DonateButton extends React.Component {
       display: 'inline-block',
     };
 
+    console.log('amount:', amount);
+    console.log('Number.isNan(amount): ', Number.isNaN(amount));
     const balance =
       selectedToken.symbol === config.nativeTokenName ? NativeTokenBalance : selectedToken.balance;
     const maxAmount = this.getMaxAmount();
+    const maxAmountWei = new BigNumber(utils.toWei(maxAmount.toString()));
 
     return (
       <span style={style}>
@@ -561,16 +564,21 @@ class DonateButton extends React.Component {
                   type="range"
                   name="amount2"
                   min={0}
-                  max={maxAmount.toNumber()}
-                  step={maxAmount.toNumber() / 10}
-                  value={Number(Number(amount).toFixed(4))}
+                  max={maxAmountWei.toNumber()}
+                  step={maxAmountWei.toNumber() / 10}
+                  value={Number(utils.toWei(amount))}
                   labels={{
                     0: '0',
-                    [maxAmount.toFixed()]: maxAmount.toFixed(4),
+                    [maxAmountWei]: maxAmount.toFixed(),
                   }}
                   tooltip={false}
-                  format={val => `${val} ${config.nativeTokenName}`}
-                  onChange={newAmount => this.setState({ amount: newAmount.toString() })}
+                  onChange={newAmount => {
+                    console.log('newAmount:', newAmount);
+                    console.log('Number.isNaN(newAmount):', Number.isNaN(newAmount));
+                    if (!Number.isNaN(newAmount)) {
+                      this.setState({ amount: utils.fromWei(newAmount.toString()).toString() });
+                    }
+                  }}
                 />
               </div>
             )}
@@ -581,9 +589,14 @@ class DonateButton extends React.Component {
                 id="amount-input"
                 type="number"
                 value={amount}
-                onChange={(name, newAmount) =>
-                  this.setState({ amount: newAmount, defaultAmount: false })
-                }
+                onChange={(name, newAmount) => {
+                  console.log('name:', name);
+                  console.log('newAmount:', newAmount);
+                  console.log('Number.isNaN(newAmount):', Number.isNaN(newAmount));
+                  if (!Number.isNaN(newAmount)) {
+                    this.setState({ amount: newAmount, defaultAmount: false });
+                  }
+                }}
                 validations={{
                   lessOrEqualTo: maxAmount.toNumber(),
                   greaterThan: 0,
