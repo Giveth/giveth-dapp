@@ -278,7 +278,7 @@ class DelegateMultipleButton extends Component {
 
     DonationService.delegateMultiple(
       this.state.delegations,
-      utils.toWei(this.state.amount),
+      utils.toWei(Number(this.state.amount).toFixed(18)),
       this.props.milestone || this.props.campaign,
       onCreated,
       onSuccess,
@@ -390,15 +390,15 @@ class DelegateMultipleButton extends Component {
                           name="amount2"
                           min={0}
                           max={maxAmount.toNumber()}
-                          step={maxAmount.toNumber() / 10}
+                          step={maxAmount.dividedBy(1000).toNumber()}
                           value={Number(amount)}
-                          labels={{ 0: '0', [maxAmount.toNumber()]: maxAmount.toFixed() }}
+                          labels={{ 0: '0', [maxAmount.toNumber()]: maxAmount.toFixed(6) }}
                           tooltip={false}
                           onChange={newAmount =>
                             this.setState(prevState => ({
                               amount: prevState.maxAmount.gte(newAmount)
-                                ? newAmount.toFixed(2)
-                                : prevState.maxAmount.toFixed(2),
+                                ? newAmount.toFixed(4)
+                                : prevState.maxAmount.toFixed(4),
                               selectedAmount: new BigNumber(newAmount),
                             }))
                           }

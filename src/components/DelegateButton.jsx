@@ -225,7 +225,7 @@ class DelegateButton extends Component {
 
     DonationService.delegate(
       this.props.donation,
-      utils.toWei(model.amount),
+      utils.toWei(Number(model.amount).toFixed(18)),
       admin,
       onCreated,
       onSuccess,
@@ -328,7 +328,7 @@ class DelegateButton extends Component {
                 name="amount2"
                 min={0}
                 max={maxAmount.toNumber()}
-                step={maxAmount.toNumber() / 10}
+                step={maxAmount.dividedBy(1000).toNumber()}
                 value={Number(this.state.amount)}
                 labels={{
                   0: '0',
@@ -337,8 +337,8 @@ class DelegateButton extends Component {
                 tooltip={false}
                 onChange={amount =>
                   this.setState({
-                    amount: Number(amount).toFixed(2),
-                    amountSelected: Number(amount).toFixed(2),
+                    amount: amount.toFixed(4),
+                    amountSelected: amount.toFixed(4),
                   })
                 }
               />

@@ -284,7 +284,7 @@ class DonateButton extends React.Component {
     const { currentUser } = this.props;
     const { givethBridge, etherscanUrl, showCustomAddress, selectedToken } = this.state;
 
-    const value = utils.toWei(amount);
+    const value = utils.toWei(Number(amount).toFixed(18));
     const isDonationInToken = selectedToken.symbol !== config.nativeTokenName;
     const tokenAddress = isDonationInToken ? selectedToken.address : 0;
 
@@ -456,12 +456,9 @@ class DonateButton extends React.Component {
       display: 'inline-block',
     };
 
-    console.log('amount:', amount);
-    console.log('Number.isNan(amount): ', Number.isNaN(amount));
     const balance =
       selectedToken.symbol === config.nativeTokenName ? NativeTokenBalance : selectedToken.balance;
     const maxAmount = this.getMaxAmount();
-    const maxAmountWei = new BigNumber(utils.toWei(maxAmount.toString()));
 
     return (
       <span style={style}>
@@ -564,21 +561,15 @@ class DonateButton extends React.Component {
                   type="range"
                   name="amount2"
                   min={0}
-                  max={maxAmountWei.toNumber()}
-                  step={maxAmountWei.toNumber() / 10}
-                  value={Number(utils.toWei(amount))}
+                  max={maxAmount.toNumber()}
+                  step={maxAmount.dividedBy(1000).toNumber()}
+                  value={Number(amount)}
                   labels={{
                     0: '0',
-                    [maxAmountWei]: maxAmount.toFixed(),
+                    [maxAmount.toNumber()]: maxAmount.toFixed(4),
                   }}
                   tooltip={false}
-                  onChange={newAmount => {
-                    console.log('newAmount:', newAmount);
-                    console.log('Number.isNaN(newAmount):', Number.isNaN(newAmount));
-                    if (!Number.isNaN(newAmount)) {
-                      this.setState({ amount: utils.fromWei(newAmount.toString()).toString() });
-                    }
-                  }}
+                  onChange={newAmount => this.setState({ amount: newAmount.toFixed(4) })}
                 />
               </div>
             )}
@@ -589,14 +580,9 @@ class DonateButton extends React.Component {
                 id="amount-input"
                 type="number"
                 value={amount}
-                onChange={(name, newAmount) => {
-                  console.log('name:', name);
-                  console.log('newAmount:', newAmount);
-                  console.log('Number.isNaN(newAmount):', Number.isNaN(newAmount));
-                  if (!Number.isNaN(newAmount)) {
-                    this.setState({ amount: newAmount, defaultAmount: false });
-                  }
-                }}
+                onChange={(name, newAmount) =>
+                  this.setState({ amount: newAmount.toFixed(4), defaultAmount: false })
+                }
                 validations={{
                   lessOrEqualTo: maxAmount.toNumber(),
                   greaterThan: 0,
