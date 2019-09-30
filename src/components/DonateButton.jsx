@@ -284,7 +284,7 @@ class DonateButton extends React.Component {
     const { currentUser } = this.props;
     const { givethBridge, etherscanUrl, showCustomAddress, selectedToken } = this.state;
 
-    const value = utils.toWei(amount);
+    const value = utils.toWei(Number(amount).toFixed(18));
     const isDonationInToken = selectedToken.symbol !== config.nativeTokenName;
     const tokenAddress = isDonationInToken ? selectedToken.address : 0;
 
@@ -565,27 +565,43 @@ class DonateButton extends React.Component {
                       name="amount2"
                       min={0}
                       max={maxAmount.toNumber()}
-                      step={maxAmount.toNumber() / 10}
-                      value={Number(Number(amount).toFixed(4))}
+                      step={maxAmount.dividedBy(100).toNumber()}
+                      value={Number(amount)}
                       labels={{
                         0: '0',
-                        [maxAmount.toFixed()]: maxAmount.toFixed(4),
+                        [maxAmount.toNumber()]: maxAmount.precision(6).toString(),
                       }}
                       tooltip={false}
-                      format={val => `${val} ${config.nativeTokenName}`}
-                      onChange={newAmount => this.setState({ amount: newAmount.toString() })}
+                      onChange={newAmount => {
+                        let result = newAmount.toString();
+
+                        if (maxAmount.gt(newAmount) && Number(newAmount.toFixed(4)) > 0) {
+                          result = BigNumber(newAmount).toFixed(4, BigNumber.ROUND_DOWN);
+                        } else {
+                          result = newAmount.toString();
+                        }
+
+                        return this.setState({ amount: result });
+                      }}
                     />
                   </div>
                 )}
+
                 <div className="form-group">
                   <Input
                     name="amount"
                     id="amount-input"
                     type="number"
-                    value={amount}
-                    onChange={(name, newAmount) =>
-                      this.setState({ amount: newAmount, defaultAmount: false })
+                    value={
+                      Number(amount) >= 1
+                        ? amount
+                        : Number(amount)
+                            .toFixed(18, 1)
+                            .replace(/\.?0+$/, '')
                     }
+                    onChange={(name, newAmount) => {
+                      this.setState({ amount: newAmount, defaultAmount: false });
+                    }}
                     validations={{
                       lessOrEqualTo: maxAmount.toNumber(),
                       greaterThan: 0,

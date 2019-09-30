@@ -278,7 +278,7 @@ class DelegateMultipleButton extends Component {
 
     DonationService.delegateMultiple(
       this.state.delegations,
-      utils.toWei(this.state.amount),
+      utils.toWei(Number(this.state.amount).toFixed(18)),
       this.props.milestone || this.props.campaign,
       onCreated,
       onSuccess,
@@ -390,17 +390,32 @@ class DelegateMultipleButton extends Component {
                           name="amount2"
                           min={0}
                           max={maxAmount.toNumber()}
-                          step={maxAmount.toNumber() / 10}
+                          step={maxAmount.dividedBy(100).toNumber()}
                           value={Number(amount)}
-                          labels={{ 0: '0', [maxAmount.toNumber()]: maxAmount.toFixed() }}
+                          labels={{
+                            0: '0',
+                            [maxAmount.toNumber()]: maxAmount.precision(6).toString(),
+                          }}
                           tooltip={false}
                           onChange={newAmount =>
-                            this.setState(prevState => ({
-                              amount: prevState.maxAmount.gte(newAmount)
-                                ? newAmount.toFixed(2)
-                                : prevState.maxAmount.toFixed(2),
-                              selectedAmount: new BigNumber(newAmount),
-                            }))
+                            this.setState(prevState => {
+                              const { maxAmount: prevMaxAmount } = prevState;
+                              let result;
+                              const number = prevMaxAmount.gte(newAmount)
+                                ? newAmount
+                                : prevMaxAmount;
+
+                              if (prevMaxAmount.gt(number) && Number(number.toFixed(4)) > 0) {
+                                result = BigNumber(number).toFixed(4, BigNumber.ROUND_DOWN);
+                              } else {
+                                result = number.toString();
+                              }
+
+                              return {
+                                amount: result,
+                                selectedAmount: new BigNumber(newAmount),
+                              };
+                            })
                           }
                         />
                       </div>
@@ -415,7 +430,13 @@ class DelegateMultipleButton extends Component {
                             isNumeric: 'Provide correct number',
                           }}
                           name="amount"
-                          value={amount.toString()}
+                          value={
+                            Number(amount) >= 1
+                              ? amount
+                              : Number(amount)
+                                  .toFixed(18, 1)
+                                  .replace(/\.?0+$/, '')
+                          }
                           onChange={(name, newAmount) =>
                             this.setState({
                               amount: newAmount,
