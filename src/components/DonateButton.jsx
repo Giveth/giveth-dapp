@@ -562,14 +562,14 @@ class DonateButton extends React.Component {
                   name="amount2"
                   min={0}
                   max={maxAmount.toNumber()}
-                  step={maxAmount.dividedBy(1000).toNumber()}
+                  step={maxAmount.dividedBy(10).toNumber()}
                   value={Number(amount)}
                   labels={{
                     0: '0',
-                    [maxAmount.toNumber()]: maxAmount.toFixed(4),
+                    [maxAmount.toNumber()]: maxAmount.precision(6).toString(),
                   }}
                   tooltip={false}
-                  onChange={newAmount => this.setState({ amount: newAmount.toFixed(4) })}
+                  onChange={newAmount => this.setState({ amount: newAmount.toString() })}
                 />
               </div>
             )}
@@ -580,9 +580,9 @@ class DonateButton extends React.Component {
                 id="amount-input"
                 type="number"
                 value={amount}
-                onChange={(name, newAmount) =>
-                  this.setState({ amount: newAmount.toFixed(4), defaultAmount: false })
-                }
+                onChange={(name, newAmount) => {
+                  this.setState({ amount: newAmount, defaultAmount: false });
+                }}
                 validations={{
                   lessOrEqualTo: maxAmount.toNumber(),
                   greaterThan: 0,

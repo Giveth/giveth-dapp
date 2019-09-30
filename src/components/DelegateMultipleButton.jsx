@@ -390,15 +390,18 @@ class DelegateMultipleButton extends Component {
                           name="amount2"
                           min={0}
                           max={maxAmount.toNumber()}
-                          step={maxAmount.dividedBy(1000).toNumber()}
+                          step={maxAmount.dividedBy(10).toNumber()}
                           value={Number(amount)}
-                          labels={{ 0: '0', [maxAmount.toNumber()]: maxAmount.toFixed(6) }}
+                          labels={{
+                            0: '0',
+                            [maxAmount.toNumber()]: maxAmount.precision(6).toString(),
+                          }}
                           tooltip={false}
                           onChange={newAmount =>
                             this.setState(prevState => ({
                               amount: prevState.maxAmount.gte(newAmount)
-                                ? newAmount.toFixed(4)
-                                : prevState.maxAmount.toFixed(4),
+                                ? newAmount.toString()
+                                : prevState.maxAmount.toString(),
                               selectedAmount: new BigNumber(newAmount),
                             }))
                           }

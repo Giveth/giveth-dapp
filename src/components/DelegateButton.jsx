@@ -332,13 +332,13 @@ class DelegateButton extends Component {
                 value={Number(this.state.amount)}
                 labels={{
                   0: '0',
-                  [maxAmount.toNumber()]: maxAmount.toFixed(),
+                  [maxAmount.toNumber()]: maxAmount.precision(6).toString(),
                 }}
                 tooltip={false}
                 onChange={amount =>
                   this.setState({
-                    amount: amount.toFixed(4),
-                    amountSelected: amount.toFixed(4),
+                    amount: amount.toString(),
+                    amountSelected: amount.toString(),
                   })
                 }
               />
