@@ -390,7 +390,7 @@ class DelegateMultipleButton extends Component {
                           name="amount2"
                           min={0}
                           max={maxAmount.toNumber()}
-                          step={maxAmount.dividedBy(10).toNumber()}
+                          step={maxAmount.dividedBy(100).toNumber()}
                           value={Number(amount)}
                           labels={{
                             0: '0',
@@ -398,12 +398,24 @@ class DelegateMultipleButton extends Component {
                           }}
                           tooltip={false}
                           onChange={newAmount =>
-                            this.setState(prevState => ({
-                              amount: prevState.maxAmount.gte(newAmount)
-                                ? newAmount.toString()
-                                : prevState.maxAmount.toString(),
-                              selectedAmount: new BigNumber(newAmount),
-                            }))
+                            this.setState(prevState => {
+                              const { maxAmount: prevMaxAmount } = prevState;
+                              let result;
+                              const number = prevMaxAmount.gte(newAmount)
+                                ? newAmount
+                                : prevMaxAmount;
+
+                              if (prevMaxAmount.gt(number) && Number(number.toFixed(4)) > 0) {
+                                result = BigNumber(number).toFixed(4, BigNumber.ROUND_DOWN);
+                              } else {
+                                result = number.toString();
+                              }
+
+                              return {
+                                amount: result,
+                                selectedAmount: new BigNumber(newAmount),
+                              };
+                            })
                           }
                         />
                       </div>
@@ -418,7 +430,13 @@ class DelegateMultipleButton extends Component {
                             isNumeric: 'Provide correct number',
                           }}
                           name="amount"
-                          value={amount.toString()}
+                          value={
+                            Number(amount) >= 1
+                              ? amount
+                              : Number(amount)
+                                  .toFixed(18, 1)
+                                  .replace(/\.?0+$/, '')
+                          }
                           onChange={(name, newAmount) =>
                             this.setState({
                               amount: newAmount,

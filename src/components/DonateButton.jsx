@@ -562,14 +562,24 @@ class DonateButton extends React.Component {
                   name="amount2"
                   min={0}
                   max={maxAmount.toNumber()}
-                  step={maxAmount.dividedBy(10).toNumber()}
+                  step={maxAmount.dividedBy(100).toNumber()}
                   value={Number(amount)}
                   labels={{
                     0: '0',
                     [maxAmount.toNumber()]: maxAmount.precision(6).toString(),
                   }}
                   tooltip={false}
-                  onChange={newAmount => this.setState({ amount: newAmount.toString() })}
+                  onChange={newAmount => {
+                    let result = newAmount.toString();
+
+                    if (maxAmount.gt(newAmount) && Number(newAmount.toFixed(4)) > 0) {
+                      result = BigNumber(newAmount).toFixed(4, BigNumber.ROUND_DOWN);
+                    } else {
+                      result = newAmount.toString();
+                    }
+
+                    return this.setState({ amount: result });
+                  }}
                 />
               </div>
             )}
@@ -579,7 +589,13 @@ class DonateButton extends React.Component {
                 name="amount"
                 id="amount-input"
                 type="number"
-                value={amount}
+                value={
+                  Number(amount) >= 1
+                    ? amount
+                    : Number(amount)
+                        .toFixed(18, 1)
+                        .replace(/\.?0+$/, '')
+                }
                 onChange={(name, newAmount) => {
                   this.setState({ amount: newAmount, defaultAmount: false });
                 }}
