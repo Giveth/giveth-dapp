@@ -238,7 +238,8 @@ class DonateButton extends React.Component {
     const amountMilestoneOwner = parseFloat(amount / 1.03)
       .toFixed(6)
       .toString();
-    const tokenSymbol = this.props.model.token.symbol;
+    const { selectedToken } = this.state;
+    const tokenSymbol = selectedToken.symbol;
     const { ownerAddress } = this.props.model;
     const isConfirmed = await React.swal({
       title: 'Twice as good!',
