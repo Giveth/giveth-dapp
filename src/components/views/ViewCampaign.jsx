@@ -18,6 +18,7 @@ import DonateButton from '../DonateButton';
 import CommunityButton from '../CommunityButton';
 import DelegateMultipleButton from '../DelegateMultipleButton';
 import ChangeOwnershipButton from '../ChangeOwnershipButton';
+import DownloadCsvButton from '../DownloadCsvButton';
 import ListDonations from '../ListDonations';
 
 import User from '../../models/User';
@@ -290,7 +291,14 @@ class ViewCampaign extends Component {
                         {...this.props}
                       />
                     )}
-
+                  {currentUser && (
+                    <DownloadCsvButton
+                      campaign={campaign}
+                      balance={balance}
+                      currentUser={currentUser}
+                      {...this.props}
+                    />
+                  )}
                   {campaign.communityUrl && (
                     <CommunityButton className="btn btn-secondary" url={campaign.communityUrl}>
                       Join our Community

@@ -225,7 +225,7 @@ class DelegateButton extends Component {
 
     DonationService.delegate(
       this.props.donation,
-      utils.toWei(model.amount),
+      utils.toWei(Number(model.amount).toFixed(18)),
       admin,
       onCreated,
       onSuccess,
@@ -328,19 +328,27 @@ class DelegateButton extends Component {
                 name="amount2"
                 min={0}
                 max={maxAmount.toNumber()}
-                step={maxAmount.toNumber() / 10}
+                step={maxAmount.dividedBy(100).toNumber()}
                 value={Number(this.state.amount)}
                 labels={{
                   0: '0',
-                  [maxAmount.toNumber()]: maxAmount.toFixed(),
+                  [maxAmount.toNumber()]: maxAmount.precision(6).toString(),
                 }}
                 tooltip={false}
-                onChange={amount =>
-                  this.setState({
-                    amount: Number(amount).toFixed(2),
-                    amountSelected: Number(amount).toFixed(2),
-                  })
-                }
+                onChange={amount => {
+                  let result;
+
+                  if (maxAmount.gt(amount) && Number(amount.toFixed(4)) > 0) {
+                    result = BigNumber(amount).toFixed(4, BigNumber.ROUND_DOWN);
+                  } else {
+                    result = amount.toString();
+                  }
+
+                  return this.setState({
+                    amount: result,
+                    amountSelected: amount.toString(),
+                  });
+                }}
               />
             </div>
 
@@ -354,7 +362,13 @@ class DelegateButton extends Component {
                   isNumeric: 'Provide correct number',
                 }}
                 name="amount"
-                value={this.state.amount}
+                value={
+                  Number(this.state.amount) >= 1
+                    ? this.state.amount
+                    : Number(this.state.amount)
+                        .toFixed(18)
+                        .replace(/\.?0+$/, '')
+                }
                 onChange={amount =>
                   this.setState({ amount }, this.setState({ amountSelected: amount }))
                 }

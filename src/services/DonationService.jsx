@@ -2,6 +2,7 @@ import React from 'react';
 import { LPPCampaign } from 'lpp-campaign';
 import { utils } from 'web3';
 import BigNumber from 'bignumber.js';
+import { paramsForServer } from 'feathers-hooks-common';
 
 import Donation from '../models/Donation';
 import DAC from '../models/DAC';
@@ -843,26 +844,31 @@ class DonationService {
       .catch(err => err);
   }
 
-  static getDonationCommittedParents(donationIds, onSuccess) {
-    feathersClient
-      .service('/donations')
-      .find({
+  /**
+   * traverse donation parents up to reach a level at which donations have COMMITTED status
+   *
+   * @param {string[]} parentIds Id of donation
+   */
+  static async getDonationNextCommittedParents(parentIds) {
+    const res = await feathersClient.service('/donations').find(
+      paramsForServer({
         query: {
-          _id: { $in: donationIds },
+          _id: { $in: parentIds },
         },
-      })
-      .then(res => {
-        if (res.data.length > 0) {
-          // Reached to committed level
-          if (res.data[0].status === Donation.COMMITTED) {
-            return onSuccess(res.data.map(d => new Donation(d)));
-          }
-          const parents = res.data.map(d => d.parentDonations).flat();
-          return DonationService.getDonationCommittedParents(parents, onSuccess);
-        }
-        return onSuccess([]);
-      })
-      .catch(err => err);
+        schema: 'includeTypeAndGiverDetails',
+      }),
+    );
+    if (res.data.length > 0) {
+      // Reached to committed level
+      if (res.data[0].status === Donation.COMMITTED) {
+        return Promise.resolve(res.data.map(d => new Donation(d)));
+      }
+      const parents = res.data.map(d => d.parentDonations).flat();
+      if (parents.length > 0) {
+        return DonationService.getDonationNextCommittedParents(parents);
+      }
+    }
+    return Promise.resolve([]);
   }
 }
 
