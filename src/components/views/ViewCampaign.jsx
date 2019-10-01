@@ -291,13 +291,14 @@ class ViewCampaign extends Component {
                         {...this.props}
                       />
                     )}
-                  <DownloadCsvButton
-                    campaign={campaign}
-                    balance={balance}
-                    currentUser={currentUser}
-                    {...this.props}
-                  />
-
+                  {currentUser && (
+                    <DownloadCsvButton
+                      campaign={campaign}
+                      balance={balance}
+                      currentUser={currentUser}
+                      {...this.props}
+                    />
+                  )}
                   {campaign.communityUrl && (
                     <CommunityButton className="btn btn-secondary" url={campaign.communityUrl}>
                       Join our Community
