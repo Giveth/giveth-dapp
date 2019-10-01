@@ -182,6 +182,7 @@ class Profile extends Component {
             // no parentDonations is the 1st of 2 Transfer events emitted when a new donation occurs
             // we want to exclude those
             parentDonations: { $ne: [] },
+            canceledPledgeId: null,
             $limit: this.state.itemsPerPage,
             $skip: this.state.skipDonationsPages * this.state.itemsPerPage,
           },
