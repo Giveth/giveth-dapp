@@ -392,7 +392,7 @@ class DelegateMultipleButton extends Component {
                               name="amount2"
                               min={0}
                               max={maxAmount.toNumber()}
-                              step={maxAmount.dividedBy(100).toNumber()}
+                              step={maxAmount.dividedBy(20).toNumber()}
                               value={Number(amount)}
                               labels={{
                                 0: '0',
@@ -432,13 +432,7 @@ class DelegateMultipleButton extends Component {
                                 isNumeric: 'Provide correct number',
                               }}
                               name="amount"
-                              value={
-                                Number(amount) >= 1
-                                  ? amount
-                                  : Number(amount)
-                                      .toFixed(18, 1)
-                                      .replace(/\.?0+$/, '')
-                              }
+                              value={amount}
                               onChange={(name, newAmount) =>
                                 this.setState({
                                   amount: newAmount,
