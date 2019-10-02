@@ -641,7 +641,7 @@ export default class Milestone extends BasicModel {
   canUserArchive(user) {
     return (
       user &&
-      !this.isCapped &&
+      (!this.isCapped || this.fullyFunded === false) && // There is no reason to archive fully funded capped milestone
       this.hasRecipient &&
       ((this.status === Milestone.IN_PROGRESS && !this.hasReviewer) ||
         (this.status === Milestone.COMPLETED && !this.isArchived)) &&
