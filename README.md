@@ -39,6 +39,8 @@ In the following sections you will learn all you need to know to run the DApp lo
 5. The rest of these steps must be done from your machine's command line. See the [OSX and Linux](#for-osx-and-linux) or [Windows](#for-windows) section to continue.
 
 #### OSX and Linux
+If your operative system is any distrubution of linux you can use an All in One installation scripts special thanks to Dapp contributor Jurek Brisbane, available [here](https://github.com/Giveth/giveth-dapp/files/3674808/givethBuildStartScripts_2019-09-29.zip) along with a youtube [video](https://www.youtube.com/watch?v=rzLhxxAz73k&feature=youtu.be), otherwise try the following:
+
 1. From the desired directory you wish to copy the "giveth-dapp" folder with source files to.
     ```
     git clone {paste your own repo link here}
