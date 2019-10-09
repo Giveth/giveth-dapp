@@ -434,7 +434,8 @@ export default class Milestone extends BasicModel {
     return new BigNumber('0');
   }
 
-  get totalDonated() {
+  // It has meaning just for capped milestones
+  get totalDonatedSingleToken() {
     if (!this.isCapped) return undefined;
     if (
       this.acceptsSingleToken &&
@@ -444,6 +445,14 @@ export default class Milestone extends BasicModel {
       return this._donationCounters[0].totalDonated;
     }
     return new BigNumber('0');
+  }
+
+  get totalDonated() {
+    return (
+      (Array.isArray(this._donationCounters) &&
+        this._donationCounters.map(dc => ({ symbol: dc.symbol, amount: dc.totalDonated }))) ||
+      []
+    );
   }
 
   get totalDonations() {

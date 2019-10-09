@@ -11,7 +11,6 @@ import { paramsForServer } from 'feathers-hooks-common';
 import { feathersClient } from '../../lib/feathersClient';
 import getNetwork from '../../lib/blockchain/getNetwork';
 import GoBackButton from '../GoBackButton';
-import config from '../../configuration';
 import Loader from '../Loader';
 import {
   getUserName,
@@ -296,7 +295,7 @@ class Profile extends Component {
                           <th className="td-status">Status</th>
                           <th className="td-donations-number">Requested</th>
                           <th className="td-donations-number">Donations</th>
-                          <th className="td-donations-amount">Donated</th>
+                          <th className="td-donations-amount">Amount</th>
                           <th className="td-reviewer">Reviewer</th>
                         </tr>
                       </thead>
@@ -357,11 +356,17 @@ class Profile extends Component {
                               {getReadableStatus(m.status)}
                             </td>
                             <td className="td-donations-number">
-                              {convertEthHelper(m.maxAmount)} {m.token.symbol}
+                              {m.isCapped
+                                ? `${convertEthHelper(m.maxAmount)} ${m.token.symbol}`
+                                : 'Uncapped'}
                             </td>
-                            <td className="td-donations-number">{m.donationCount || 0}</td>
+                            <td className="td-donations-number">{m.totalDonations}</td>
                             <td className="td-donations-amount">
-                              {convertEthHelper(m.currentBalance)} {m.token.symbol}
+                              {m.totalDonated.map(td => (
+                                <div>
+                                  {convertEthHelper(td.amount)} {td.symbol}
+                                </div>
+                              ))}
                             </td>
                             <td className="td-reviewer">
                               {m.reviewer && m.reviewerAddress && (
@@ -431,9 +436,13 @@ class Profile extends Component {
                                 )}
                               </div>
                             </td>
-                            <td className="td-donations-number">{c.donationCount || 0}</td>
+                            <td className="td-donations-number">{c.totalDonations || 0}</td>
                             <td className="td-donations-amount">
-                              {convertEthHelper(c.totalDonated)} {config.nativeTokenName}
+                              {c.totalDonated.map(td => (
+                                <div>
+                                  {convertEthHelper(td.amount)} {td.symbol}
+                                </div>
+                              ))}
                             </td>
                             <td className="td-status">
                               {(c.status === Campaign.PENDING ||
@@ -474,8 +483,8 @@ class Profile extends Component {
                       <thead>
                         <tr>
                           <th className="td-name">Name</th>
-                          <th className="td-donations-number">Number of donations</th>
-                          <th className="td-donations-amount">Amount donated</th>
+                          <th className="td-donations-number">Donations</th>
+                          <th className="td-donations-amount">Amount</th>
                           <th className="td-status">Status</th>
                         </tr>
                       </thead>
@@ -493,9 +502,13 @@ class Profile extends Component {
                                 )}
                               </div>
                             </td>
-                            <td className="td-donations-number">{d.donationCount}</td>
+                            <td className="td-donations-number">{d.totalDonations || 0}</td>
                             <td className="td-donations-amount">
-                              {convertEthHelper(d.totalDonated)} config.nativeTokenName
+                              {d.totalDonated.map(td => (
+                                <div>
+                                  {convertEthHelper(td.amount)} {td.symbol}
+                                </div>
+                              ))}
                             </td>
                             <td className="td-status">
                               {d.status === DAC.PENDING && (
