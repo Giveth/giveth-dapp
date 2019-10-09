@@ -407,8 +407,13 @@ class DelegateMultipleButton extends Component {
                                     ? newAmount
                                     : prevMaxAmount;
 
-                                  if (prevMaxAmount.gt(number) && Number(number.toFixed(4)) > 0) {
-                                    result = BigNumber(number).toFixed(4, BigNumber.ROUND_DOWN);
+                                  const roundedNumber = BigNumber(number).toFixed(
+                                    4,
+                                    BigNumber.ROUND_DOWN,
+                                  );
+
+                                  if (prevMaxAmount.gt(number) && Number(roundedNumber) > 0) {
+                                    result = roundedNumber;
                                   } else {
                                     result = number.toString();
                                   }
