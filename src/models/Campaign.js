@@ -176,6 +176,22 @@ class Campaign extends BasicModel {
     this.checkType(value, ['number'], 'commitTime');
     this.myCommitTime = value;
   }
+
+  get totalDonated() {
+    return (
+      (Array.isArray(this._donationCounters) &&
+        this._donationCounters.map(dc => ({ symbol: dc.symbol, amount: dc.totalDonated }))) ||
+      []
+    );
+  }
+
+  get totalDonations() {
+    return (
+      (Array.isArray(this._donationCounters) &&
+        this._donationCounters.reduce((count, dc) => count + dc.donationCount, 0)) ||
+      0
+    );
+  }
 }
 
 export default Campaign;
