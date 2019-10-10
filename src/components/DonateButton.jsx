@@ -576,8 +576,9 @@ class DonateButton extends React.Component {
                       onChange={newAmount => {
                         let result = newAmount.toString();
 
-                        if (maxAmount.gt(newAmount) && Number(newAmount.toFixed(4)) > 0) {
-                          result = BigNumber(newAmount).toFixed(4, BigNumber.ROUND_DOWN);
+                        const roundedNumber = BigNumber(newAmount).toFixed(4, BigNumber.ROUND_DOWN);
+                        if (maxAmount.gt(newAmount) && Number(roundedNumber) > 0) {
+                          result = roundedNumber;
                         } else {
                           result = newAmount.toString();
                         }
