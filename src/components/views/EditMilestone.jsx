@@ -1134,7 +1134,10 @@ class EditMilestone extends Component {
 
               {!isLoading && (
                 <div>
-                  <GoBackButton history={history} title={`Campaign: ${campaignTitle}`} />
+                  <GoBackButton
+                    history={history}
+                    title={isNew ? 'Back' : `Milestone: ${milestone.title}`}
+                  />
 
                   <div className="form-header">
                     {isNew && !isProposed && <h3>Add a new Milestone</h3>}
@@ -1498,7 +1501,10 @@ class EditMilestone extends Component {
 
                     <div className="form-group row">
                       <div className="col-4">
-                        <GoBackButton history={history} title={`Campaign: ${campaignTitle}`} />
+                        <GoBackButton
+                          history={history}
+                          title={isNew ? 'Back' : `Milestone: ${milestone.title}`}
+                        />
                       </div>
                       <div className="col-4">
                         <DraftButton

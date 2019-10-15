@@ -257,9 +257,9 @@ class Profile extends Component {
 
               {!isLoading && !hasError && (
                 <div>
-                  <GoBackButton history={history} />
+                  <GoBackButton history={history} goPreviousPage />
 
-                  <dive className="text-center">
+                  <div className="text-center">
                     <Avatar size={100} src={getUserAvatar(user)} round />
                     <h1>{getUserName(user)}</h1>
                     {etherScanUrl && (
@@ -276,7 +276,7 @@ class Profile extends Component {
                     {!etherScanUrl && <p>{userAddress}</p>}
                     <p>{email}</p>
                     <p>{linkedin}</p>
-                  </dive>
+                  </div>
                 </div>
               )}
 
