@@ -448,9 +448,9 @@ class ViewMilestone extends Component {
 
                         {milestone.dacId !== 0 && milestone.dacId !== undefined && (
                           <div className="form-group">
-                            <span className="label">Delegating 3% to:</span>
+                            <span className="label">Delegating 3% to DAC</span>
                             <small className="form-text">
-                              This milestone is contributing to this DAC on every donation.
+                              The DAC that this milestone is contributing to on every donation
                             </small>
                             {this.state.dacTitle}
                           </div>
@@ -523,7 +523,7 @@ class ViewMilestone extends Component {
                         <div className="form-group">
                           <span className="label">Campaign</span>
                           <small className="form-text">
-                            The Campaign this Milestone belongs to.
+                            The Campaign this Milestone belongs to
                           </small>
                           {campaign.title}
                         </div>
