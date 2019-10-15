@@ -11,7 +11,6 @@ import { paramsForServer } from 'feathers-hooks-common';
 import { feathersClient } from '../../lib/feathersClient';
 import getNetwork from '../../lib/blockchain/getNetwork';
 import GoBackButton from '../GoBackButton';
-import config from '../../configuration';
 import Loader from '../Loader';
 import {
   getUserName,
@@ -182,6 +181,7 @@ class Profile extends Component {
             // no parentDonations is the 1st of 2 Transfer events emitted when a new donation occurs
             // we want to exclude those
             parentDonations: { $ne: [] },
+            canceledPledgeId: null,
             $limit: this.state.itemsPerPage,
             $skip: this.state.skipDonationsPages * this.state.itemsPerPage,
           },
@@ -257,9 +257,9 @@ class Profile extends Component {
 
               {!isLoading && !hasError && (
                 <div>
-                  <GoBackButton history={history} />
+                  <GoBackButton history={history} goPreviousPage />
 
-                  <center>
+                  <div className="text-center">
                     <Avatar size={100} src={getUserAvatar(user)} round />
                     <h1>{getUserName(user)}</h1>
                     {etherScanUrl && (
@@ -276,7 +276,7 @@ class Profile extends Component {
                     {!etherScanUrl && <p>{userAddress}</p>}
                     <p>{email}</p>
                     <p>{linkedin}</p>
-                  </center>
+                  </div>
                 </div>
               )}
 
@@ -285,112 +285,110 @@ class Profile extends Component {
               )}
               <div>
                 {isLoadingMilestones && <Loader className="small" />}
-
-                {!isLoadingMilestones && (
+                {!isLoadingMilestones && milestones && milestones.data.length > 0 && (
                   <div className="table-container">
-                    {milestones && milestones.data.length > 0 && (
-                      <div>
-                        <table className="table table-responsive table-striped table-hover">
-                          <thead>
-                            <tr>
-                              <th className="td-created-at">Created</th>
-                              <th className="td-name">Name</th>
-                              <th className="td-status">Status</th>
-                              <th className="td-donations-number">Requested</th>
-                              <th className="td-donations-number">Donations</th>
-                              <th className="td-donations-amount">Donated</th>
-                              <th className="td-reviewer">Reviewer</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {milestones.data.map(m => (
-                              <tr key={m._id} className={m.status === 'Pending' ? 'pending' : ''}>
-                                <td className="td-created-at">
-                                  {m.createdAt && (
-                                    <span>{moment.utc(m.createdAt).format('Do MMM YYYY')}</span>
-                                  )}
-                                </td>
-                                <td className="td-name">
-                                  <strong>
-                                    <Link to={`/campaigns/${m.campaign._id}/milestones/${m._id}`}>
-                                      MILESTONE <em>{getTruncatedText(m.title, 35)}</em>
-                                    </Link>
-                                  </strong>
-                                  <br />
-                                  <i className="fa fa-arrow-right" />
-                                  <Link
-                                    className="secondary-link"
-                                    to={`/campaigns/${m.campaign._id}`}
-                                  >
-                                    CAMPAIGN <em>{getTruncatedText(m.campaign.title, 40)}</em>
-                                  </Link>
-                                  <div>
-                                    {m.ownerAddress === userAddress && (
-                                      <span className="badge badge-success">
-                                        <i className="fa fa-flag-o" />
-                                        Owner
-                                      </span>
-                                    )}
-                                    {m.reviewerAddress === userAddress && (
-                                      <span className="badge badge-info">
-                                        <i className="fa fa-eye" />
-                                        Reviewer
-                                      </span>
-                                    )}
-                                    {m.recipientAddress === userAddress && (
-                                      <span className="badge badge-warning">
-                                        <i className="fa fa-diamond" />
-                                        Recipient
-                                      </span>
-                                    )}
-                                  </div>
-                                </td>
-                                <td className="td-status">
-                                  {(m.status === 'Pending' ||
-                                    (Object.keys(m).includes('mined') && !m.mined)) && (
-                                    <span>
-                                      <i className="fa fa-circle-o-notch fa-spin" />
-                                      &nbsp;
-                                    </span>
-                                  )}
-                                  {m.status === 'NeedsReview' && reviewDue(m.updatedAt) && (
-                                    <span>
-                                      <i className="fa fa-exclamation-triangle" />
-                                      &nbsp;
-                                    </span>
-                                  )}
-                                  {getReadableStatus(m.status)}
-                                </td>
-                                <td className="td-donations-number">
-                                  {convertEthHelper(m.maxAmount)} {m.token.symbol}
-                                </td>
-                                <td className="td-donations-number">{m.donationCount || 0}</td>
-                                <td className="td-donations-amount">
-                                  {convertEthHelper(m.currentBalance)} {m.token.symbol}
-                                </td>
-                                <td className="td-reviewer">
-                                  {m.reviewer && m.reviewerAddress && (
-                                    <Link to={`/profile/${m.reviewerAddress}`}>
-                                      {m.reviewer.name || 'Anomynous user'}
-                                    </Link>
-                                  )}
-                                </td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
+                    <table className="table table-responsive table-striped table-hover">
+                      <thead>
+                        <tr>
+                          <th className="td-created-at">Created</th>
+                          <th className="td-name">Name</th>
+                          <th className="td-status">Status</th>
+                          <th className="td-donations-number">Requested</th>
+                          <th className="td-donations-number">Donations</th>
+                          <th className="td-donations-amount">Amount</th>
+                          <th className="td-reviewer">Reviewer</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {milestones.data.map(m => (
+                          <tr key={m._id} className={m.status === 'Pending' ? 'pending' : ''}>
+                            <td className="td-created-at">
+                              {m.createdAt && (
+                                <span>{moment.utc(m.createdAt).format('Do MMM YYYY')}</span>
+                              )}
+                            </td>
+                            <td className="td-name">
+                              <strong>
+                                <Link to={`/campaigns/${m.campaign._id}/milestones/${m._id}`}>
+                                  MILESTONE <em>{getTruncatedText(m.title, 35)}</em>
+                                </Link>
+                              </strong>
+                              <br />
+                              <i className="fa fa-arrow-right" />
+                              <Link className="secondary-link" to={`/campaigns/${m.campaign._id}`}>
+                                CAMPAIGN <em>{getTruncatedText(m.campaign.title, 40)}</em>
+                              </Link>
+                              <div>
+                                {m.ownerAddress === userAddress && (
+                                  <span className="badge badge-success">
+                                    <i className="fa fa-flag-o" />
+                                    Owner
+                                  </span>
+                                )}
+                                {m.reviewerAddress === userAddress && (
+                                  <span className="badge badge-info">
+                                    <i className="fa fa-eye" />
+                                    Reviewer
+                                  </span>
+                                )}
+                                {m.recipientAddress === userAddress && (
+                                  <span className="badge badge-warning">
+                                    <i className="fa fa-diamond" />
+                                    Recipient
+                                  </span>
+                                )}
+                              </div>
+                            </td>
+                            <td className="td-status">
+                              {(m.status === 'Pending' ||
+                                (Object.keys(m).includes('mined') && !m.mined)) && (
+                                <span>
+                                  <i className="fa fa-circle-o-notch fa-spin" />
+                                  &nbsp;
+                                </span>
+                              )}
+                              {m.status === 'NeedsReview' && reviewDue(m.updatedAt) && (
+                                <span>
+                                  <i className="fa fa-exclamation-triangle" />
+                                  &nbsp;
+                                </span>
+                              )}
+                              {getReadableStatus(m.status)}
+                            </td>
+                            <td className="td-donations-number">
+                              {m.isCapped
+                                ? `${convertEthHelper(m.maxAmount)} ${m.token.symbol}`
+                                : 'Uncapped'}
+                            </td>
+                            <td className="td-donations-number">{m.totalDonations}</td>
+                            <td className="td-donations-amount">
+                              {m.totalDonated.map(td => (
+                                <div>
+                                  {convertEthHelper(td.amount)} {td.symbol}
+                                </div>
+                              ))}
+                            </td>
+                            <td className="td-reviewer">
+                              {m.reviewer && m.reviewerAddress && (
+                                <Link to={`/profile/${m.reviewerAddress}`}>
+                                  {m.reviewer.name || 'Anomynous user'}
+                                </Link>
+                              )}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
 
-                        {milestones.total > milestones.limit && (
-                          <center>
-                            <Pagination
-                              activePage={milestones.skipPages + 1}
-                              itemsCountPerPage={milestones.limit}
-                              totalItemsCount={milestones.total}
-                              pageRangeDisplayed={visiblePages}
-                              onChange={this.handleMilestonePageChanged}
-                            />
-                          </center>
-                        )}
+                    {milestones.total > milestones.limit && (
+                      <div className="text-center">
+                        <Pagination
+                          activePage={milestones.skipPages + 1}
+                          itemsCountPerPage={milestones.limit}
+                          totalItemsCount={milestones.total}
+                          pageRangeDisplayed={visiblePages}
+                          onChange={this.handleMilestonePageChanged}
+                        />
                       </div>
                     )}
                   </div>
@@ -402,75 +400,74 @@ class Profile extends Component {
               )}
               <div>
                 {isLoadingCampaigns && <Loader className="small" />}
-
-                {!isLoadingCampaigns && (
+                {!isLoadingCampaigns && campaigns && campaigns.data.length > 0 && (
                   <div className="table-container">
-                    {campaigns && campaigns.data.length > 0 && (
-                      <div>
-                        <table className="table table-responsive table-striped table-hover">
-                          <thead>
-                            <tr>
-                              <th className="td-name">Name</th>
-                              <th className="td-donations-number">Donations</th>
-                              <th className="td-donations-amount">Amount</th>
-                              <th className="td-status">Status</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {campaigns.data.map(c => (
-                              <tr
-                                key={c._id}
-                                className={c.status === Campaign.PENDING ? 'pending' : ''}
-                              >
-                                <td className="td-name">
-                                  <Link to={`/campaigns/${c._id}`}>
-                                    {getTruncatedText(c.title, 45)}
-                                  </Link>
-                                  <div>
-                                    {c.ownerAddress === userAddress && (
-                                      <span className="badge badge-success">
-                                        <i className="fa fa-flag-o" />
-                                        Owner
-                                      </span>
-                                    )}
-                                    {c.reviewerAddress === userAddress && (
-                                      <span className="badge badge-info">
-                                        <i className="fa fa-eye" />
-                                        Reviewer
-                                      </span>
-                                    )}
-                                  </div>
-                                </td>
-                                <td className="td-donations-number">{c.donationCount || 0}</td>
-                                <td className="td-donations-amount">
-                                  {convertEthHelper(c.totalDonated)} {config.nativeTokenName}
-                                </td>
-                                <td className="td-status">
-                                  {(c.status === Campaign.PENDING ||
-                                    (Object.keys(c).includes('mined') && !c.mined)) && (
-                                    <span>
-                                      <i className="fa fa-circle-o-notch fa-spin" />
-                                      &nbsp;
-                                    </span>
-                                  )}
-                                  {c.status}
-                                </td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
+                    <table className="table table-responsive table-striped table-hover">
+                      <thead>
+                        <tr>
+                          <th className="td-name">Name</th>
+                          <th className="td-donations-number">Donations</th>
+                          <th className="td-donations-amount">Amount</th>
+                          <th className="td-status">Status</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {campaigns.data.map(c => (
+                          <tr
+                            key={c._id}
+                            className={c.status === Campaign.PENDING ? 'pending' : ''}
+                          >
+                            <td className="td-name">
+                              <Link to={`/campaigns/${c._id}`}>
+                                {getTruncatedText(c.title, 45)}
+                              </Link>
+                              <div>
+                                {c.ownerAddress === userAddress && (
+                                  <span className="badge badge-success">
+                                    <i className="fa fa-flag-o" />
+                                    Owner
+                                  </span>
+                                )}
+                                {c.reviewerAddress === userAddress && (
+                                  <span className="badge badge-info">
+                                    <i className="fa fa-eye" />
+                                    Reviewer
+                                  </span>
+                                )}
+                              </div>
+                            </td>
+                            <td className="td-donations-number">{c.totalDonations || 0}</td>
+                            <td className="td-donations-amount">
+                              {c.totalDonated.map(td => (
+                                <div>
+                                  {convertEthHelper(td.amount)} {td.symbol}
+                                </div>
+                              ))}
+                            </td>
+                            <td className="td-status">
+                              {(c.status === Campaign.PENDING ||
+                                (Object.keys(c).includes('mined') && !c.mined)) && (
+                                <span>
+                                  <i className="fa fa-circle-o-notch fa-spin" />
+                                  &nbsp;
+                                </span>
+                              )}
+                              {c.status}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
 
-                        {campaigns.total > campaigns.limit && (
-                          <center>
-                            <Pagination
-                              activePage={campaigns.skipPages + 1}
-                              itemsCountPerPage={campaigns.limit}
-                              totalItemsCount={campaigns.total}
-                              pageRangeDisplayed={visiblePages}
-                              onChange={this.handleCampaignsPageChanged}
-                            />
-                          </center>
-                        )}
+                    {campaigns.total > campaigns.limit && (
+                      <div className="text-center">
+                        <Pagination
+                          activePage={campaigns.skipPages + 1}
+                          itemsCountPerPage={campaigns.limit}
+                          totalItemsCount={campaigns.total}
+                          pageRangeDisplayed={visiblePages}
+                          onChange={this.handleCampaignsPageChanged}
+                        />
                       </div>
                     )}
                   </div>
@@ -478,65 +475,64 @@ class Profile extends Component {
               </div>
 
               {(isLoadingDacs || (dacs && dacs.data.length > 0)) && <h4>Communities</h4>}
-              <div className="table-container">
+              <div>
                 {isLoadingDacs && <Loader className="small" />}
+                {!isLoadingDacs && dacs && dacs.data.length > 0 && (
+                  <div className="table-container">
+                    <table className="table table-responsive table-striped table-hover">
+                      <thead>
+                        <tr>
+                          <th className="td-name">Name</th>
+                          <th className="td-donations-number">Donations</th>
+                          <th className="td-donations-amount">Amount</th>
+                          <th className="td-status">Status</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {dacs.data.map(d => (
+                          <tr key={d._id} className={d.status === DAC.PENDING ? 'pending' : ''}>
+                            <td className="td-name">
+                              <Link to={`/dacs/${d._id}`}>{getTruncatedText(d.title, 45)}</Link>
+                              <div>
+                                {d.ownerAddress === userAddress && (
+                                  <span className="badge badge-success">
+                                    <i className="fa fa-flag-o" />
+                                    Owner
+                                  </span>
+                                )}
+                              </div>
+                            </td>
+                            <td className="td-donations-number">{d.totalDonations || 0}</td>
+                            <td className="td-donations-amount">
+                              {d.totalDonated.map(td => (
+                                <div>
+                                  {convertEthHelper(td.amount)} {td.symbol}
+                                </div>
+                              ))}
+                            </td>
+                            <td className="td-status">
+                              {d.status === DAC.PENDING && (
+                                <span>
+                                  <i className="fa fa-circle-o-notch fa-spin" />
+                                  &nbsp;
+                                </span>
+                              )}
+                              {d.status}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
 
-                {!isLoadingDacs && (
-                  <div>
-                    {dacs && dacs.data.length > 0 && (
-                      <div>
-                        <table className="table table-responsive table-striped table-hover">
-                          <thead>
-                            <tr>
-                              <th className="td-name">Name</th>
-                              <th className="td-donations-number">Number of donations</th>
-                              <th className="td-donations-amount">Amount donated</th>
-                              <th className="td-status">Status</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {dacs.data.map(d => (
-                              <tr key={d._id} className={d.status === DAC.PENDING ? 'pending' : ''}>
-                                <td className="td-name">
-                                  <Link to={`/dacs/${d._id}`}>{getTruncatedText(d.title, 45)}</Link>
-                                  <div>
-                                    {d.ownerAddress === userAddress && (
-                                      <span className="badge badge-success">
-                                        <i className="fa fa-flag-o" />
-                                        Owner
-                                      </span>
-                                    )}
-                                  </div>
-                                </td>
-                                <td className="td-donations-number">{d.donationCount}</td>
-                                <td className="td-donations-amount">
-                                  {convertEthHelper(d.totalDonated)} config.nativeTokenName
-                                </td>
-                                <td className="td-status">
-                                  {d.status === DAC.PENDING && (
-                                    <span>
-                                      <i className="fa fa-circle-o-notch fa-spin" />
-                                      &nbsp;
-                                    </span>
-                                  )}
-                                  {d.status}
-                                </td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-
-                        {dacs.total > dacs.limit && (
-                          <center>
-                            <Pagination
-                              activePage={dacs.skipPages + 1}
-                              itemsCountPerPage={dacs.limit}
-                              totalItemsCount={dacs.total}
-                              pageRangeDisplayed={visiblePages}
-                              onChange={this.handleDacPageChanged}
-                            />
-                          </center>
-                        )}
+                    {dacs.total > dacs.limit && (
+                      <div className="text-center">
+                        <Pagination
+                          activePage={dacs.skipPages + 1}
+                          itemsCountPerPage={dacs.limit}
+                          totalItemsCount={dacs.total}
+                          pageRangeDisplayed={visiblePages}
+                          onChange={this.handleDacPageChanged}
+                        />
                       </div>
                     )}
                   </div>
@@ -546,11 +542,10 @@ class Profile extends Component {
               {(isLoadingDonations || (donations && donations.data.length > 0)) && (
                 <h4>Donations</h4>
               )}
-              <div className="table-container">
+              <div>
                 {isLoadingDonations && <Loader className="small" />}
-
                 {!isLoadingDonations && (
-                  <div>
+                  <div className="table-container">
                     {donations && donations.data.length > 0 && (
                       <div>
                         <table className="table table-responsive table-striped table-hover">
@@ -618,7 +613,7 @@ class Profile extends Component {
                         </table>
 
                         {donations.total > donations.limit && (
-                          <center>
+                          <div className="text-center">
                             <Pagination
                               activePage={donations.skipPages + 1}
                               itemsCountPerPage={donations.limit}
@@ -626,7 +621,7 @@ class Profile extends Component {
                               pageRangeDisplayed={visiblePages}
                               onChange={this.handleDonationsPageChanged}
                             />
-                          </center>
+                          </div>
                         )}
                       </div>
                     )}

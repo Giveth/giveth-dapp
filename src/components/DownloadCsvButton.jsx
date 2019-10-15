@@ -19,7 +19,9 @@ function buildURI(res, filename) {
   const csvURL = window.URL.createObjectURL(data);
   const tempLink = document.createElement('a');
   tempLink.href = csvURL;
+  tempLink.target = '_blank';
   tempLink.setAttribute('download', filename);
+  document.getElementById('container').appendChild(tempLink);
   tempLink.click();
 }
 class DownloadCsvButton extends Component {
@@ -42,6 +44,7 @@ class DownloadCsvButton extends Component {
 
     return (
       <span style={style}>
+        <div id="container" style={{ display: 'none' }} />
         {
           <button type="button" className="btn btn-warning" onClick={() => this.generateCsv()}>
             Download CSV

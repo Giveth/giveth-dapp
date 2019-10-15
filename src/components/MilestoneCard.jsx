@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import { Link } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import Avatar from 'react-avatar';
 import BigNumber from 'bignumber.js';
@@ -95,7 +96,7 @@ class MilestoneCard extends Component {
           </div>
         </div>
 
-        <a className="card-body" href={this.createMilestoneLink()}>
+        <Link className="card-body" to={this.createMilestoneLink()}>
           <div
             className="card-img"
             style={{
@@ -120,7 +121,7 @@ class MilestoneCard extends Component {
               token={milestone.token}
             />
           </div>
-        </a>
+        </Link>
       </div>
     );
   }

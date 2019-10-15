@@ -110,8 +110,8 @@ class MyDACs extends Component {
                           <tr>
                             {currentUser.authenticated && <th className="td-actions" />}
                             <th className="td-name">Name</th>
-                            <th className="td-donations-number">Number of donations</th>
-                            <th className="td-donations-amount">Amount donated</th>
+                            <th className="td-donations-number">Donations</th>
+                            <th className="td-donations-amount">Amount</th>
                             <th className="td-status">Status</th>
                             <th className="td-confirmations">{isPendingDac && 'Confirmations'}</th>
                           </tr>

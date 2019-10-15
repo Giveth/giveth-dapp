@@ -566,7 +566,7 @@ class DonateButton extends React.Component {
                       name="amount2"
                       min={0}
                       max={maxAmount.toNumber()}
-                      step={maxAmount.dividedBy(100).toNumber()}
+                      step={maxAmount.dividedBy(20).toNumber()}
                       value={Number(amount)}
                       labels={{
                         0: '0',
@@ -576,8 +576,9 @@ class DonateButton extends React.Component {
                       onChange={newAmount => {
                         let result = newAmount.toString();
 
-                        if (maxAmount.gt(newAmount) && Number(newAmount.toFixed(4)) > 0) {
-                          result = BigNumber(newAmount).toFixed(4, BigNumber.ROUND_DOWN);
+                        const roundedNumber = BigNumber(newAmount).toFixed(4, BigNumber.ROUND_DOWN);
+                        if (maxAmount.gt(newAmount) && Number(roundedNumber) > 0) {
+                          result = roundedNumber;
                         } else {
                           result = newAmount.toString();
                         }
@@ -593,13 +594,7 @@ class DonateButton extends React.Component {
                     name="amount"
                     id="amount-input"
                     type="number"
-                    value={
-                      Number(amount) >= 1
-                        ? amount
-                        : Number(amount)
-                            .toFixed(18, 1)
-                            .replace(/\.?0+$/, '')
-                    }
+                    value={amount}
                     onChange={(name, newAmount) => {
                       this.setState({ amount: newAmount, defaultAmount: false });
                     }}

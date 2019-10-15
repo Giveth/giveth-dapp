@@ -258,7 +258,7 @@ class ViewMilestone extends Component {
                       type={Milestone.type}
                       maxDonationAmount={
                         milestone.isCapped
-                          ? milestone.maxAmount.minus(milestone.totalDonated)
+                          ? milestone.maxAmount.minus(milestone.totalDonatedSingleToken)
                           : undefined
                       }
                     />
@@ -578,7 +578,7 @@ class ViewMilestone extends Component {
                       type={Milestone.type}
                       maxDonationAmount={
                         milestone.isCapped
-                          ? milestone.maxAmount.minus(milestone.totalDonated)
+                          ? milestone.maxAmount.minus(milestone.totalDonatedSingleToken)
                           : undefined
                       }
                     />

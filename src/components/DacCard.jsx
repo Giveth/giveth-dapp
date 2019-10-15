@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
+import { Link } from 'react-router-dom';
 
 import { getTruncatedText, history } from '../lib/helpers';
 import CardStats from './CardStats';
@@ -37,7 +38,7 @@ class DacCard extends Component {
         role="button"
         tabIndex="0"
       >
-        <a className="card-body" href={this.createDACLink()}>
+        <Link className="card-body" to={this.createDACLink()}>
           <div className="card-img" style={{ backgroundImage: `url(${dac.image})` }} />
 
           <div className="card-content">
@@ -53,7 +54,7 @@ class DacCard extends Component {
               currentBalance={dac.currentBalance}
             />
           </div>
-        </a>
+        </Link>
       </div>
     );
   }
