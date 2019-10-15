@@ -392,7 +392,7 @@ class DelegateMultipleButton extends Component {
                               name="amount2"
                               min={0}
                               max={maxAmount.toNumber()}
-                              step={maxAmount.dividedBy(100).toNumber()}
+                              step={maxAmount.dividedBy(20).toNumber()}
                               value={Number(amount)}
                               labels={{
                                 0: '0',
@@ -407,8 +407,13 @@ class DelegateMultipleButton extends Component {
                                     ? newAmount
                                     : prevMaxAmount;
 
-                                  if (prevMaxAmount.gt(number) && Number(number.toFixed(4)) > 0) {
-                                    result = BigNumber(number).toFixed(4, BigNumber.ROUND_DOWN);
+                                  const roundedNumber = BigNumber(number).toFixed(
+                                    4,
+                                    BigNumber.ROUND_DOWN,
+                                  );
+
+                                  if (prevMaxAmount.gt(number) && Number(roundedNumber) > 0) {
+                                    result = roundedNumber;
                                   } else {
                                     result = number.toString();
                                   }
@@ -432,13 +437,7 @@ class DelegateMultipleButton extends Component {
                                 isNumeric: 'Provide correct number',
                               }}
                               name="amount"
-                              value={
-                                Number(amount) >= 1
-                                  ? amount
-                                  : Number(amount)
-                                      .toFixed(18, 1)
-                                      .replace(/\.?0+$/, '')
-                              }
+                              value={amount}
                               onChange={(name, newAmount) =>
                                 this.setState({
                                   amount: newAmount,

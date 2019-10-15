@@ -328,7 +328,7 @@ class DelegateButton extends Component {
                 name="amount2"
                 min={0}
                 max={maxAmount.toNumber()}
-                step={maxAmount.dividedBy(100).toNumber()}
+                step={maxAmount.dividedBy(20).toNumber()}
                 value={Number(this.state.amount)}
                 labels={{
                   0: '0',
@@ -338,8 +338,9 @@ class DelegateButton extends Component {
                 onChange={amount => {
                   let result;
 
-                  if (maxAmount.gt(amount) && Number(amount.toFixed(4)) > 0) {
-                    result = BigNumber(amount).toFixed(4, BigNumber.ROUND_DOWN);
+                  const roundedNumber = BigNumber(amount).toFixed(4, BigNumber.ROUND_DOWN);
+                  if (maxAmount.gt(amount) && Number(roundedNumber) > 0) {
+                    result = roundedNumber;
                   } else {
                     result = amount.toString();
                   }
@@ -362,13 +363,7 @@ class DelegateButton extends Component {
                   isNumeric: 'Provide correct number',
                 }}
                 name="amount"
-                value={
-                  Number(this.state.amount) >= 1
-                    ? this.state.amount
-                    : Number(this.state.amount)
-                        .toFixed(18)
-                        .replace(/\.?0+$/, '')
-                }
+                value={this.state.amount}
                 onChange={amount =>
                   this.setState({ amount }, this.setState({ amountSelected: amount }))
                 }

@@ -188,7 +188,7 @@ class MyMilestones extends Component {
                                 <th className="td-status">Status</th>
                                 <th className="td-donations-number">Requested</th>
                                 <th className="td-donations-number">Donations</th>
-                                <th className="td-donations-amount">Donated</th>
+                                <th className="td-donations-amount">Amount</th>
                                 <th className="td-reviewer">Reviewer</th>
                               </tr>
                             </thead>
@@ -246,13 +246,11 @@ class MyMilestones extends Component {
                                   </td>
                                   <td className="td-donations-number">{m.totalDonations}</td>
                                   <td className="td-donations-">
-                                    {m.isCapped && convertEthHelper(m.totalDonated)}{' '}
-                                    {m.isCapped && m.token.symbol}
-                                    {!m.isCapped && (
-                                      <Link to={`/campaigns/${m.campaignId}/milestones/${m.id}`}>
-                                        View Milestone
-                                      </Link>
-                                    )}
+                                    {m.totalDonated.map(td => (
+                                      <div>
+                                        {convertEthHelper(td.amount)} {td.symbol}
+                                      </div>
+                                    ))}
                                   </td>
                                   <td className="td-reviewer">
                                     {m.reviewer && m.reviewerAddress && (
