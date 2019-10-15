@@ -1,6 +1,6 @@
 /* eslint-disable react/sort-comp */
 import React, { Component, Fragment } from 'react';
-import { Prompt } from 'react-router-dom';
+import { Prompt, Link } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import Toggle from 'react-toggle';
 import BigNumber from 'bignumber.js';
@@ -917,13 +917,19 @@ class EditMilestone extends Component {
       MilestoneService.save({
         milestone,
         from: this.props.currentUser.address,
-        afterSave: (created, txUrl) => {
+        afterSave: (created, txUrl, res) => {
           if (milestoneIdMatch(this.state.campaignId)) {
             deleteDraft(itemNames);
           }
           if (created) {
             if (this.props.isProposed) {
-              React.toast.info(<p>Your Milestone has been proposed to the Campaign Owner.</p>);
+              const url = res ? `/campaigns/${res.campaign._id}/milestones/${res._id}` : undefined;
+              React.toast.info(
+                <Fragment>
+                  <p>Your Milestone has been proposed to the Campaign Owner.</p>
+                  {url && <Link to={url}>View milestone</Link>}
+                </Fragment>,
+              );
             }
           } else if (txUrl) {
             React.toast.info(
