@@ -367,9 +367,14 @@ class MilestoneService {
     try {
       // if a proposed or rejected milestone, create/update it only in feathers
       if ([Milestone.PROPOSED, Milestone.REJECTED].includes(milestone.status)) {
-        if (milestone.id) await milestones.patch(milestone.id, milestone.toFeathers());
-        else await milestones.create(milestone.toFeathers());
-        afterSave(true);
+        let res;
+        if (milestone.id) {
+          res = await milestones.patch(milestone.id, milestone.toFeathers());
+        } else {
+          res = await milestones.create(milestone.toFeathers());
+        }
+
+        afterSave(true, null, MilestoneFactory.create(res));
         return true;
       }
 

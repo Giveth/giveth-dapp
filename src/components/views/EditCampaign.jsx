@@ -222,12 +222,15 @@ class EditCampaign extends Component {
 
               {!isLoading && (
                 <div>
-                  <GoBackButton history={history} />
+                  <GoBackButton
+                    history={history}
+                    title={isNew ? 'Back' : `Campaign: ${campaign.title}`}
+                  />
 
                   <div className="form-header">
                     {isNew && <h3>Start a new Campaign!</h3>}
 
-                    {!isNew && <h3>Edit Campaign{campaign.title}</h3>}
+                    {!isNew && <h3>Edit Campaign {campaign.title}</h3>}
                     <p>
                       <i className="fa fa-question-circle" />A Campaign solves a specific cause by
                       executing a project via its Milestones. Funds raised by a Campaign need to be
@@ -332,7 +335,10 @@ class EditCampaign extends Component {
 
                     <div className="form-group row">
                       <div className="col-4">
-                        <GoBackButton history={history} />
+                        <GoBackButton
+                          history={history}
+                          title={isNew ? 'Back' : `Campaign: ${campaign.title}`}
+                        />
                       </div>
                       <div className="col-4">
                         <DraftButton draftState={this.state.draftState} onClick={this.saveDraft} />

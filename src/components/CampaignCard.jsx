@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
+import { Link } from 'react-router-dom';
 
 import { getTruncatedText, history } from '../lib/helpers';
 import CardStats from './CardStats';
@@ -39,7 +40,7 @@ class CampaignCard extends Component {
         role="button"
         tabIndex="0"
       >
-        <a className="card-body" href={this.createCampaignLink()}>
+        <Link className="card-body" to={this.createCampaignLink()}>
           <div className="card-img" style={{ backgroundImage: `url(${campaign.image})` }} />
 
           <div className="card-content">
@@ -56,7 +57,7 @@ class CampaignCard extends Component {
               token={{ symbol: config.nativeTokenName, decimals: 18 }}
             />
           </div>
-        </a>
+        </Link>
       </div>
     );
   }
