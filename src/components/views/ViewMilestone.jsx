@@ -7,6 +7,7 @@ import Avatar from 'react-avatar';
 import ReactHtmlParser, { convertNodeToElement } from 'react-html-parser';
 import { Link } from 'react-router-dom';
 import BigNumber from 'bignumber.js';
+import ReactTooltip from 'react-tooltip';
 
 import User from 'models/User';
 import Campaign from 'models/Campaign';
@@ -217,6 +218,22 @@ class ViewMilestone extends Component {
       newDonations,
     } = this.state;
 
+    const DetailLabel = ({ id, title, explanation }) => (
+      <div>
+        <span className="label">
+          {title}
+          <i
+            className="fa fa-question-circle-o btn btn-sm btn-explain"
+            data-tip="React-tooltip"
+            data-for={id}
+          />
+        </span>
+        <ReactTooltip id={id} place="top" type="dark" effect="solid">
+          {explanation}
+        </ReactTooltip>
+      </div>
+    );
+
     return (
       <div id="view-milestone-view">
         {isLoading && <Loader className="fixed" />}
@@ -287,26 +304,29 @@ class ViewMilestone extends Component {
             <div className="container-fluid">
               <div className="row">
                 <div className="col-md-8 m-auto">
-                  <div>
-                    <div className="go-back-section">
-                      <GoBackButton
-                        history={history}
-                        styleName="inline"
-                        title={`Campaign: ${campaign.title}`}
+                  <div className="go-back-section">
+                    <GoBackButton
+                      history={history}
+                      styleName="inline"
+                      title={`Campaign: ${campaign.title}`}
+                    />
+                    <ShareOptions pageUrl={window.location.href} pageTitle={milestone.title} />
+                  </div>
+
+                  <div className="text-center">
+                    <Link to={`/profile/${milestone.ownerAddress}`}>
+                      <Avatar
+                        className="text-center"
+                        size={50}
+                        src={getUserAvatar(milestone.owner)}
+                        round
                       />
-                      <ShareOptions pageUrl={window.location.href} pageTitle={milestone.title} />
-                    </div>
+                      <p className="small">{getUserName(milestone.owner)}</p>
+                    </Link>
+                  </div>
 
-                    <center>
-                      <Link to={`/profile/${milestone.ownerAddress}`}>
-                        <Avatar size={50} src={getUserAvatar(milestone.owner)} round />
-                        <p className="small">{getUserName(milestone.owner)}</p>
-                      </Link>
-                    </center>
-
-                    <div className="card content-card">
-                      <div className="card-body content">{this.renderDescription()}</div>
-                    </div>
+                  <div className="card content-card">
+                    <div className="card-body content">{this.renderDescription()}</div>
                   </div>
                 </div>
               </div>
@@ -357,13 +377,13 @@ class ViewMilestone extends Component {
 
                       <div className="card details-card">
                         <div className="form-group">
-                          <span className="label">Reviewer</span>
+                          <DetailLabel
+                            id="reviewer"
+                            title="Reviewer"
+                            explanation="This person will review the actual completion of the Milestone"
+                          />
                           {milestone.hasReviewer && (
                             <Fragment>
-                              <small className="form-text">
-                                This person will review the actual completion of the Milestone
-                              </small>
-
                               <table className="table-responsive">
                                 <tbody>
                                   <tr>
@@ -393,17 +413,21 @@ class ViewMilestone extends Component {
                         </div>
 
                         <div className="form-group">
-                          <span className="label">Recipient</span>
+                          <DetailLabel
+                            id="recipient"
+                            title="Recipient"
+                            explanation={`
+                          Where the ${
+                            milestone.isCapped ? milestone.token.symbol : 'tokens'
+                          } will go
+                          ${
+                            milestone.hasReviewer
+                              ? ' after successful completion of the Milestone'
+                              : ''
+                          }`}
+                          />
                           {milestone.hasRecipient && (
                             <Fragment>
-                              <small className="form-text">
-                                Where the{' '}
-                                {milestone.isCapped ? `${milestone.token.symbol} ` : 'tokens '}
-                                will go
-                                {milestone.hasReviewer &&
-                                  ' after successful completion of the Milestone'}
-                              </small>
-
                               {milestone.pendingRecipientAddress && (
                                 <small className="form-text">
                                   <span>
@@ -448,34 +472,40 @@ class ViewMilestone extends Component {
 
                         {milestone.dacId !== 0 && milestone.dacId !== undefined && (
                           <div className="form-group">
-                            <span className="label">Delegating 3% to:</span>
-                            <small className="form-text">
-                              This milestone is contributing to this DAC on every donation.
-                            </small>
+                            <DetailLabel
+                              id="dac-delegation"
+                              title="Delegating 3% to DAC"
+                              explanation="The DAC that this milestone is contributing to on every donation"
+                            />
                             {this.state.dacTitle}
                           </div>
                         )}
                         {milestone.date && (
                           <div className="form-group">
-                            <span className="label">Date of Milestone</span>
-                            <small className="form-text">
-                              {milestone.isCapped
-                                ? `This date defines the ${
-                                    milestone.token.symbol
-                                  }-fiat conversion rate`
-                                : 'The date this Milestone was created'}
-                            </small>
+                            <DetailLabel
+                              id="milestone-date"
+                              title="Date of Milestone"
+                              explanation={
+                                milestone.isCapped
+                                  ? `This date defines the ${
+                                      milestone.token.symbol
+                                    }-fiat conversion rate`
+                                  : 'The date this Milestone was created'
+                              }
+                            />
                             {moment.utc(milestone.date).format('Do MMM YYYY')}
                           </div>
                         )}
 
                         {milestone.isCapped && (
                           <div className="form-group">
-                            <span className="label">Max amount to raise</span>
-                            <small className="form-text">
-                              The maximum amount of {milestone.token.symbol} that can be donated to
-                              this Milestone. Based on the requested amount in fiat.
-                            </small>
+                            <DetailLabel
+                              id="max-amount"
+                              title="Max amount to raise"
+                              explanation={`The maximum amount of ${
+                                milestone.token.symbol
+                              } that can be donated to this Milestone. Based on the requested amount in fiat.`}
+                            />
                             {convertEthHelper(milestone.maxAmount)} {milestone.token.symbol}
                             {milestone.items.length === 0 &&
                               milestone.selectedFiatType &&
@@ -490,14 +520,17 @@ class ViewMilestone extends Component {
                         )}
 
                         <div className="form-group">
-                          <span className="label">Amount donated</span>
-                          <small className="form-text">
-                            {milestone.acceptsSingleToken
-                              ? `
+                          <DetailLabel
+                            id="amount-donated"
+                            title="Amount donated"
+                            explanation={
+                              milestone.acceptsSingleToken
+                                ? `
                               The amount of ${milestone.token.symbol} currently donated to this
                               Milestone`
-                              : 'The total amount(s) donated to this Milestone'}
-                          </small>
+                                : 'The total amount(s) donated to this Milestone'
+                            }
+                          />
                           {milestone.donationCounters.length &&
                             milestone.donationCounters.map(dc => (
                               <p className="donation-counter" key={dc.symbol}>
@@ -508,10 +541,11 @@ class ViewMilestone extends Component {
 
                         {!milestone.isCapped && milestone.donationCounters.length > 0 && (
                           <div className="form-group">
-                            <span className="label">Current Balance</span>
-                            <small className="form-text">
-                              The current balance(s) of this Milestone
-                            </small>
+                            <DetailLabel
+                              id="current-balance"
+                              title="Current balance"
+                              explanation="The current balance(s) of this Milestone"
+                            />
                             {milestone.donationCounters.map(dc => (
                               <p className="donation-counter" key={dc.symbol}>
                                 {convertEthHelper(dc.currentBalance)} {dc.symbol}
@@ -521,10 +555,11 @@ class ViewMilestone extends Component {
                         )}
 
                         <div className="form-group">
-                          <span className="label">Campaign</span>
-                          <small className="form-text">
-                            The Campaign this Milestone belongs to.
-                          </small>
+                          <DetailLabel
+                            id="campaign"
+                            title="Campaign"
+                            explanation="The Campaign this Milestone belongs to"
+                          />
                           {campaign.title}
                         </div>
 

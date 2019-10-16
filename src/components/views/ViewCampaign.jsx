@@ -314,12 +314,12 @@ class ViewCampaign extends Component {
                         <ShareOptions pageUrl={window.location.href} pageTitle={campaign.title} />
                       </div>
 
-                      <center>
+                      <div className="text-center">
                         <Link to={`/profile/${campaign.owner.address}`}>
                           <Avatar size={50} src={getUserAvatar(campaign.owner)} round />
                           <p className="small">{getUserName(campaign.owner)}</p>
                         </Link>
-                      </center>
+                      </div>
 
                       <div className="card content-card ">
                         <div className="card-body content">{this.renderDescription()}</div>
