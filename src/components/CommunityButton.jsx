@@ -5,7 +5,7 @@ class CommunityButton extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      icon: 'external-link',
+      icon: 'fa-external-link',
     };
   }
 
@@ -23,6 +23,7 @@ class CommunityButton extends Component {
   }
 
   render() {
+    const icon = this.state.icon ? <i className={`fa ${this.state.icon}`} /> : null
     return (
       <a
         className={this.props.className}
@@ -30,7 +31,7 @@ class CommunityButton extends Component {
         target="_blank"
         rel="noopener noreferrer"
       >
-        <i className={`fa ${this.state.icon}`} />
+        {icon}
         {this.props.children}
       </a>
     );

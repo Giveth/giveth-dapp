@@ -128,7 +128,7 @@ class JoinGivethCommunity extends Component {
               <center>
                 <h3>Building the Future of Giving, with You.</h3>
                 <CommunityButton className="btn btn-success" url="https://giveth.io/join">
-                  &nbsp;Join Giveth
+                  Join Giveth
                 </CommunityButton>
                 &nbsp;
                 {isDelegate(currentUser) && (
