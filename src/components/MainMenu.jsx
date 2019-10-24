@@ -20,6 +20,92 @@ const signUpSwal = () => {
     buttons: ['Ok'],
   });
 };
+
+const getEnableWeb3Button = (enableProvider) => {
+  return (
+    <button
+      type="button"
+      className="btn btn-outline-success btn-sm"
+      onClick={() => enableProvider()}
+    >
+      Enable Web3
+    </button>
+  )
+}
+
+const getUnlockMessage = () => {
+  return (
+    <small className="text-muted">Please unlock MetaMask</small>
+  )
+}
+
+const getSignUpButton = () => {
+  (
+    <button
+      type="button"
+      className="btn btn-outline-info btn-sm"
+      onClick={signUpSwal}
+    >
+      Sign Up!
+    </button>
+  )
+}
+
+const getCurrentUserDisplay = (showMobileMenu, currentUser) => {
+  return (
+    <li className="nav-item dropdown">
+      <Link
+        className="nav-link dropdown-toggle"
+        id="navbarDropdownYou"
+        to="/"
+        data-toggle="dropdown"
+        aria-haspopup="true"
+        aria-expanded="false"
+      >
+        {currentUser.avatar && (
+          <Avatar
+            className="menu-avatar"
+            size={30}
+            src={currentUser.avatar}
+            round
+          />
+        )}
+        {currentUser.name && <span>{currentUser.name}</span>}
+        {!currentUser.name && <span>Hi, you!</span>}
+      </Link>
+      <div
+        className={`dropdown-menu dropdown-profile ${
+          showMobileMenu ? 'show' : ''
+        }`}
+        aria-labelledby="navbarDropdownYou"
+      >
+        <NavLink className="dropdown-item" to="/profile">
+          Profile
+        </NavLink>
+        {/* <NavLink className="dropdown-item" to="/wallet">
+            Wallet
+          </NavLink> */}
+      </div>
+    </li>
+  )
+}
+
+const getTopRightUserControls = (validProvider, failedToLoad, isEnabled, currentUser, showMobileMenu, enableProvider) => {
+  if (!validProvider) {
+    return getSignUpButton();
+  }
+  if (validProvider && !failedToLoad && !isEnabled) {
+    return getEnableWeb3Button(enableProvider);
+  }
+  if (validProvider && !failedToLoad && isEnabled && !currentUser) {
+    return getUnlockMessage();
+  }
+  if (currentUser) {
+    return getCurrentUserDisplay(showMobileMenu, currentUser);
+  }
+  return null;
+}
+
 // Broken rule that can not find the correct id tag
 /* eslint jsx-a11y/aria-proptypes: 0 */
 /**
@@ -129,66 +215,7 @@ class MainMenu extends Component {
                   </a>
 
                   <ul className="navbar-nav">
-                    {validProvider && !failedToLoad && !isEnabled && (
-                      <button
-                        type="button"
-                        className="btn btn-outline-success btn-sm"
-                        onClick={() => enableProvider()}
-                      >
-                        Enable Web3
-                      </button>
-                    )}
-                    {validProvider && !failedToLoad && isEnabled && !state.currentUser && (
-                      <small className="text-muted">Please unlock MetaMask</small>
-                    )}
-                    {!validProvider && (
-                      <button
-                        type="button"
-                        className="btn btn-outline-info btn-sm"
-                        onClick={signUpSwal}
-                      >
-                        Sign Up!
-                      </button>
-                    )}
-
-                    {state.currentUser && (
-                      <li className="nav-item dropdown">
-                        <Link
-                          className="nav-link dropdown-toggle"
-                          id="navbarDropdownYou"
-                          to="/"
-                          data-toggle="dropdown"
-                          aria-haspopup="true"
-                          aria-expanded="false"
-                        >
-                          {state.currentUser.avatar && (
-                            <Avatar
-                              className="menu-avatar"
-                              size={30}
-                              src={state.currentUser.avatar}
-                              round
-                            />
-                          )}
-
-                          {state.currentUser.name && <span>{state.currentUser.name}</span>}
-
-                          {!state.currentUser.name && <span>Hi, you!</span>}
-                        </Link>
-                        <div
-                          className={`dropdown-menu dropdown-profile ${
-                            showMobileMenu ? 'show' : ''
-                          }`}
-                          aria-labelledby="navbarDropdownYou"
-                        >
-                          <NavLink className="dropdown-item" to="/profile">
-                            Profile
-                          </NavLink>
-                          {/* <NavLink className="dropdown-item" to="/wallet">
-                              Wallet
-                            </NavLink> */}
-                        </div>
-                      </li>
-                    )}
+                    {getTopRightUserControls(validProvider, failedToLoad, isEnabled, state.currentUser, showMobileMenu, enableProvider)}
                   </ul>
                 </div>
               </nav>
