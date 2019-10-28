@@ -5,6 +5,8 @@ import { Link, NavLink, withRouter } from 'react-router-dom';
 import { Consumer as UserConsumer } from '../contextProviders/UserProvider';
 import { Consumer as Web3Consumer } from '../contextProviders/Web3Provider';
 import { history } from '../lib/helpers';
+import portis from '../lib/portisSingleton'
+import { WEB3_PROVIDER_NAMES } from '../lib/blockchain/getWeb3'
 
 const signUpSwal = () => {
   React.swal({
@@ -21,6 +23,16 @@ const signUpSwal = () => {
   });
 };
 
+const PortisButton = () => (
+  <button
+    type="button"
+    className="btn btn-outline-info btn-sm btn-signup"
+    onClick={() => { portis.showPortis() }}
+  >
+    Portis
+</button>
+)
+
 const getEnableWeb3Button = (enableProvider) => {
   return (
     <button
@@ -35,23 +47,34 @@ const getEnableWeb3Button = (enableProvider) => {
 
 const getUnlockMessage = () => {
   return (
-    <small className="text-muted">Please unlock MetaMask</small>
+    <small className="text-muted">
+      {'Please '}
+      <strong>unlock MetaMask</strong>
+      {' or use'}
+      <PortisButton />
+    </small>
   )
 }
 
-const getSignUpButton = () => {
-  (
+const getSignUpButton = () => (
+  <span>
+    <span>Sign Up! Use one of the following wallets: </span>
     <button
       type="button"
-      className="btn btn-outline-info btn-sm"
+      className="btn btn-outline-info btn-sm btn-signup"
       onClick={signUpSwal}
     >
-      Sign Up!
+      MetaMask
     </button>
-  )
-}
+    <PortisButton />
+  </span>
+)
 
-const getCurrentUserDisplay = (showMobileMenu, currentUser) => {
+
+const getCurrentUserDisplay = (showMobileMenu, currentUser, providerName) => {
+  const showPortisNavItem = providerName === WEB3_PROVIDER_NAMES.portis
+    ? <div className="dropdown-item dropdown-item-show-portis" onClick={() => portis.showPortis()}>Show Portis wallet</div>
+    : null
   return (
     <li className="nav-item dropdown">
       <Link
@@ -82,6 +105,7 @@ const getCurrentUserDisplay = (showMobileMenu, currentUser) => {
         <NavLink className="dropdown-item" to="/profile">
           Profile
         </NavLink>
+        {showPortisNavItem}
         {/* <NavLink className="dropdown-item" to="/wallet">
             Wallet
           </NavLink> */}
@@ -90,7 +114,7 @@ const getCurrentUserDisplay = (showMobileMenu, currentUser) => {
   )
 }
 
-const getTopRightUserControls = (validProvider, failedToLoad, isEnabled, currentUser, showMobileMenu, enableProvider) => {
+const getTopRightUserControls = (validProvider, failedToLoad, isEnabled, currentUser, showMobileMenu, enableProvider, providerName) => {
   if (!validProvider) {
     return getSignUpButton();
   }
@@ -101,7 +125,7 @@ const getTopRightUserControls = (validProvider, failedToLoad, isEnabled, current
     return getUnlockMessage();
   }
   if (currentUser) {
-    return getCurrentUserDisplay(showMobileMenu, currentUser);
+    return getCurrentUserDisplay(showMobileMenu, currentUser, providerName);
   }
   return null;
 }
@@ -134,7 +158,7 @@ class MainMenu extends Component {
 
     return (
       <Web3Consumer>
-        {({ state: { validProvider, isEnabled, failedToLoad }, actions: { enableProvider } }) => (
+        {({ state: { validProvider, isEnabled, failedToLoad, providerName }, actions: { enableProvider } }) => (
           <UserConsumer>
             {({ state }) => (
               <nav
@@ -215,7 +239,7 @@ class MainMenu extends Component {
                   </a>
 
                   <ul className="navbar-nav">
-                    {getTopRightUserControls(validProvider, failedToLoad, isEnabled, state.currentUser, showMobileMenu, enableProvider)}
+                    {getTopRightUserControls(validProvider, failedToLoad, isEnabled, state.currentUser, showMobileMenu, enableProvider, providerName)}
                   </ul>
                 </div>
               </nav>

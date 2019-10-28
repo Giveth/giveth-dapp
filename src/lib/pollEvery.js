@@ -1,6 +1,7 @@
 export default (fn, delay) => {
   let timer = -1;
   let stop = false;
+
   const poll = async (request, onResult) => {
     const result = await request();
     if (!stop) {
@@ -8,6 +9,7 @@ export default (fn, delay) => {
       timer = setTimeout(poll.bind(null, request, onResult), delay);
     }
   };
+
   return (...params) => {
     const { request, onResult } = fn(...params);
     poll(request, onResult);
