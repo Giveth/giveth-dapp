@@ -55,6 +55,8 @@ class DonateButton extends React.Component {
     const modelToken = props.model.token;
     if (modelToken) modelToken.balance = new BigNumber(0);
 
+    const defaultToken = this.props.tokenWhitelist.find(t => t.symbol === config.nativeTokenName);
+
     this.state = {
       isSaving: false,
       formIsValid: false,
@@ -70,7 +72,7 @@ class DonateButton extends React.Component {
         value: t.address,
         title: t.name,
       })),
-      selectedToken: props.model.acceptsSingleToken ? modelToken : props.tokenWhitelist[0],
+      selectedToken: props.model.acceptsSingleToken ? modelToken : defaultToken,
     };
 
     this.submit = this.submit.bind(this);
