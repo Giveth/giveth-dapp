@@ -2,7 +2,7 @@
 import React from 'react';
 import { history } from './helpers';
 import { feathersClient } from './feathersClient';
-import getWeb3 from './blockchain/getWeb3';
+import getWeb3, { WEB3_PROVIDER_NAMES } from './blockchain/getWeb3';
 import config from '../configuration';
 
 /**
@@ -19,6 +19,17 @@ import config from '../configuration';
  *      .catch((err) ...do something when not logged in
  *      returns new Error 'notLoggedIn' if not logged in
  */
+
+ const SIGN_IN_TRANSACTION_TEXT = {
+  [WEB3_PROVIDER_NAMES.metaMask]: {
+    title: 'Please sign the MetaMask transaction...',
+    text: 'A MetaMask transaction should have popped-up. If you don\'t see it check the pending transaction in the MetaMask browser extension. Alternatively make sure to check that your popup blocker is disabled.'
+  },
+  [WEB3_PROVIDER_NAMES.portis]: {
+    title: 'Please sign the Portis transaction...',
+    text: 'A Portis pop-up should be showing right now.\n\nYou can turn "Turst This App" on to automatically approve any transaction made in Giveth. You can always change your mind in Portis\' wallet settings.'
+  }
+ };
 
 export const historyBackWFallback = fallbackUrl => {
   const destUrl = fallbackUrl || '/';
@@ -87,9 +98,8 @@ const authenticate = async (address, redirectOnFail) => {
       }
 
       React.swal({
-        title: 'Please sign the MetaMask transaction...',
-        text:
-          "A MetaMask transaction should have popped-up. If you don't see it check the pending transaction in the MetaMask browser extension. Alternatively make sure to check that your popup blocker is disabled.",
+        title: SIGN_IN_TRANSACTION_TEXT[web3.providerName].title,
+        text: SIGN_IN_TRANSACTION_TEXT[web3.providerName].text,
         icon: 'success',
         button: false,
       });

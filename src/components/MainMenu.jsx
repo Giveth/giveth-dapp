@@ -5,6 +5,8 @@ import { Link, NavLink, withRouter } from 'react-router-dom';
 import { Consumer as UserConsumer } from '../contextProviders/UserProvider';
 import { Consumer as Web3Consumer } from '../contextProviders/Web3Provider';
 import { history } from '../lib/helpers';
+import portis from '../lib/portisSingleton';
+import { WEB3_PROVIDER_NAMES } from '../lib/blockchain/getWeb3';
 
 const signUpSwal = () => {
   React.swal({
@@ -21,37 +23,56 @@ const signUpSwal = () => {
   });
 };
 
-const getEnableWeb3Button = (enableProvider) => {
-  return (
-    <button
-      type="button"
-      className="btn btn-outline-success btn-sm"
-      onClick={() => enableProvider()}
-    >
-      Enable Web3
+const onPortisButtonClick = () => {
+  portis.showPortis();
+};
+
+const PortisButton = () => (
+  <button
+    type="button"
+    className="btn btn-outline-info btn-sm btn-signup"
+    onClick={onPortisButtonClick}
+  >
+    Portis
+  </button>
+);
+
+const getEnableWeb3Button = enableProvider => (
+  <button type="button" className="btn btn-outline-success btn-sm" onClick={() => enableProvider()}>
+    Enable Web3
+  </button>
+);
+
+const getUnlockMessage = () => (
+  <small className="text-muted">
+    {'Please '}
+    <strong>unlock MetaMask</strong>
+    {' or use'}
+    <PortisButton />
+  </small>
+);
+
+const getSignUpButton = () => (
+  <span>
+    <span>Sign Up! Use one of the following wallets: </span>
+    <button type="button" className="btn btn-outline-info btn-sm btn-signup" onClick={signUpSwal}>
+      MetaMask
     </button>
-  )
-}
+    <PortisButton />
+  </span>
+);
 
-const getUnlockMessage = () => {
-  return (
-    <small className="text-muted">Please unlock MetaMask</small>
-  )
-}
-
-const getSignUpButton = () => {
-  (
-    <button
-      type="button"
-      className="btn btn-outline-info btn-sm"
-      onClick={signUpSwal}
-    >
-      Sign Up!
-    </button>
-  )
-}
-
-const getCurrentUserDisplay = (showMobileMenu, currentUser) => {
+const getCurrentUserDisplay = (showMobileMenu, currentUser, providerName) => {
+  const showPortisNavItem =
+    providerName === WEB3_PROVIDER_NAMES.portis ? (
+      <button
+        className="dropdown-item dropdown-item-show-portis"
+        onClick={onPortisButtonClick}
+        type="button"
+      >
+        Show Portis wallet
+      </button>
+    ) : null;
   return (
     <li className="nav-item dropdown">
       <Link
@@ -63,34 +84,36 @@ const getCurrentUserDisplay = (showMobileMenu, currentUser) => {
         aria-expanded="false"
       >
         {currentUser.avatar && (
-          <Avatar
-            className="menu-avatar"
-            size={30}
-            src={currentUser.avatar}
-            round
-          />
+          <Avatar className="menu-avatar" size={30} src={currentUser.avatar} round />
         )}
         {currentUser.name && <span>{currentUser.name}</span>}
         {!currentUser.name && <span>Hi, you!</span>}
       </Link>
       <div
-        className={`dropdown-menu dropdown-profile ${
-          showMobileMenu ? 'show' : ''
-        }`}
+        className={`dropdown-menu dropdown-profile ${showMobileMenu ? 'show' : ''}`}
         aria-labelledby="navbarDropdownYou"
       >
         <NavLink className="dropdown-item" to="/profile">
           Profile
         </NavLink>
+        {showPortisNavItem}
         {/* <NavLink className="dropdown-item" to="/wallet">
             Wallet
           </NavLink> */}
       </div>
     </li>
-  )
-}
+  );
+};
 
-const getTopRightUserControls = (validProvider, failedToLoad, isEnabled, currentUser, showMobileMenu, enableProvider) => {
+const getTopRightUserControls = (
+  validProvider,
+  failedToLoad,
+  isEnabled,
+  currentUser,
+  showMobileMenu,
+  enableProvider,
+  providerName,
+) => {
   if (!validProvider) {
     return getSignUpButton();
   }
@@ -101,10 +124,10 @@ const getTopRightUserControls = (validProvider, failedToLoad, isEnabled, current
     return getUnlockMessage();
   }
   if (currentUser) {
-    return getCurrentUserDisplay(showMobileMenu, currentUser);
+    return getCurrentUserDisplay(showMobileMenu, currentUser, providerName);
   }
   return null;
-}
+};
 
 // Broken rule that can not find the correct id tag
 /* eslint jsx-a11y/aria-proptypes: 0 */
@@ -134,7 +157,10 @@ class MainMenu extends Component {
 
     return (
       <Web3Consumer>
-        {({ state: { validProvider, isEnabled, failedToLoad }, actions: { enableProvider } }) => (
+        {({
+          state: { validProvider, isEnabled, failedToLoad, providerName },
+          actions: { enableProvider },
+        }) => (
           <UserConsumer>
             {({ state }) => (
               <nav
@@ -215,7 +241,15 @@ class MainMenu extends Component {
                   </a>
 
                   <ul className="navbar-nav">
-                    {getTopRightUserControls(validProvider, failedToLoad, isEnabled, state.currentUser, showMobileMenu, enableProvider)}
+                    {getTopRightUserControls(
+                      validProvider,
+                      failedToLoad,
+                      isEnabled,
+                      state.currentUser,
+                      showMobileMenu,
+                      enableProvider,
+                      providerName,
+                    )}
                   </ul>
                 </div>
               </nav>

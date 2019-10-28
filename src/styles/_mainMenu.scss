@@ -86,7 +86,20 @@
       font-size: 1.2rem;
       font-weight: 300;
       padding: .05rem 1.5rem;      
-    }      
+    }
+    
+    &-show-portis {
+      color: $menu-item-color;
+      cursor: pointer;
+
+      &:hover {
+        color: darken($green, 10%);
+      }
+    }
+  }
+
+  .btn-signup {
+    margin-left: 0.4rem;
   }
 }
 

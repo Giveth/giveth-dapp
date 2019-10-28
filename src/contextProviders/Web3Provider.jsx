@@ -2,9 +2,10 @@ import React, { Component, createContext } from 'react';
 import PropTypes from 'prop-types';
 import BigNumber from 'bignumber.js';
 
-import getWeb3 from '../lib/blockchain/getWeb3';
-import pollEvery from '../lib/pollEvery';
 import config from '../configuration';
+import getWeb3, { WEB3_PROVIDER_NAMES } from '../lib/blockchain/getWeb3';
+import pollEvery from '../lib/pollEvery';
+import portis from '../lib/portisSingleton';
 
 const POLL_DELAY_ACCOUNT = 1000;
 const POLL_DELAY_NETWORK = 2000;
@@ -22,9 +23,10 @@ const getAccount = async web3 => {
   return undefined;
 };
 
-const pollAccount = pollEvery((web3, { onAccount = () => {}, onBalance = () => {} } = {}) => {
+const pollAccountFunction = (web3, { onAccount = () => {}, onBalance = () => {} } = {}) => {
   let lastAccount = -1;
   let lastBalance = new BigNumber(-1);
+
   return {
     request: async () => {
       try {
@@ -54,7 +56,9 @@ const pollAccount = pollEvery((web3, { onAccount = () => {}, onBalance = () => {
       }
     },
   };
-}, POLL_DELAY_ACCOUNT);
+};
+const pollAccount = (...args) => pollEvery(pollAccountFunction, POLL_DELAY_ACCOUNT)(...args);
+let stopPollAccount = () => {};
 
 const fetchNetwork = async web3 => ({
   networkId: await web3.eth.net.getId(),
@@ -79,6 +83,15 @@ const pollNetwork = pollEvery((web3, { onNetwork = () => {} } = {}) => {
     },
   };
 }, POLL_DELAY_NETWORK);
+const getIsEnabled = async web3 => {
+  if (web3.isDefaultNode) {
+    return false;
+  }
+  const isPortisLoggedIn =
+    web3.providerName === WEB3_PROVIDER_NAMES.portis ? (await portis.isLoggedIn()).result : false;
+  const isApproved = await web3.isApprovedMethod();
+  return isPortisLoggedIn || isApproved;
+};
 
 class Web3Provider extends Component {
   constructor() {
@@ -98,16 +111,22 @@ class Web3Provider extends Component {
     this.enableTimedout = false;
 
     this.enableProvider = this.enableProvider.bind(this);
+    this.initWeb3Provider = this.initWeb3Provider.bind(this);
+    this.loginToPortis = this.loginToPortis.bind(this);
+    this.logoutFromPortis = this.logoutFromPortis.bind(this);
   }
 
   componentWillMount() {
     this.initWeb3Provider();
+    portis.onLogin(this.loginToPortis);
+    portis.onLogout(this.logoutFromPortis);
   }
 
   initWeb3Provider() {
     getWeb3().then(web3 => {
       this.setState({
-        validProvider: !web3.defaultNode,
+        validProvider: !web3.isDefaultNode,
+        providerName: web3.providerName,
       });
 
       pollNetwork(web3, {
@@ -116,19 +135,14 @@ class Web3Provider extends Component {
         },
       });
 
-      if (!web3.defaultNode) {
-        pollAccount(web3, {
+      if (!web3.isDefaultNode) {
+        stopPollAccount();
+        stopPollAccount = pollAccount(web3, {
           onAccount: async account => {
-            this.setState({
-              account,
-              // TODO: find a way for non metamask providers
-              isEnabled: await web3.currentProvider._metamask.isApproved(),
-            });
+            this.setState({ account, isEnabled: await getIsEnabled(web3) });
           },
           onBalance: balance => {
-            this.setState({
-              balance,
-            });
+            this.setState({ balance });
           },
         });
       }
@@ -142,10 +156,7 @@ class Web3Provider extends Component {
     this.setState(
       {
         setupTimeout: false,
-        isEnabled:
-          web3.currentProvider._metamask && web3.currentProvider._metamask
-            ? await web3.currentProvider._metamask.isApproved()
-            : false,
+        isEnabled: await getIsEnabled(web3),
       },
       () => this.props.onLoaded(),
     );
@@ -172,7 +183,7 @@ class Web3Provider extends Component {
 
     // If we are using the default node, then the user doesn't have an injected
     // web3 provider. Not need to enable the provider
-    if (web3.defaultNode) {
+    if (web3.isDefaultNode) {
       clearTimeout(timeout);
       this.props.onLoaded();
       return;
@@ -203,10 +214,7 @@ class Web3Provider extends Component {
     const timeoutId = setTimeout(async () => {
       this.setState(
         {
-          isEnabled:
-            web3.currentProvider._metamask && web3.currentProvider._metamask
-              ? await web3.currentProvider._metamask.isApproved()
-              : false,
+          isEnabled: await getIsEnabled(web3),
         },
         () => this.props.onLoaded(),
       );
@@ -227,6 +235,16 @@ class Web3Provider extends Component {
     this.setState({ isEnabled, account, balance }, () => this.props.onLoaded());
   }
 
+  async loginToPortis() {
+    this.initWeb3Provider();
+    this.enableProvider();
+  }
+
+  async logoutFromPortis() {
+    this.initWeb3Provider();
+    this.setState({ isEnabled: false, account: null });
+  }
+
   render() {
     const {
       account,
@@ -237,6 +255,7 @@ class Web3Provider extends Component {
       isForeignNetwork,
       isEnabled,
       setupTimeout,
+      providerName,
     } = this.state;
 
     return (
@@ -251,6 +270,7 @@ class Web3Provider extends Component {
             isHomeNetwork,
             isForeignNetwork,
             isEnabled,
+            providerName,
           },
           actions: {
             enableProvider: this.enableProvider,
