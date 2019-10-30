@@ -1231,7 +1231,6 @@ class EditMilestone extends Component {
                         ..."
                         onTextChanged={content => this.constructSummary(content)}
                         validations={{
-                          // eslint-disable-next-line
                           templateValidator: function(values, value) {
                             return this.validateMilestoneDesc(value);
                           }.bind(this),

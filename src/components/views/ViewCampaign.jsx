@@ -2,7 +2,6 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 import Avatar from 'react-avatar';
-import Masonry, { ResponsiveMasonry } from 'react-responsive-masonry';
 import ReactHtmlParser, { convertNodeToElement } from 'react-html-parser';
 import BigNumber from 'bignumber.js';
 import { Helmet, HelmetProvider } from 'react-helmet-async';
@@ -52,9 +51,9 @@ class ViewCampaign extends Component {
       milestones: [],
       milestonesLoaded: 0,
       milestonesTotal: 0,
-      milestonesPerBatch: 50,
+      milestonesPerBatch: 12,
       donationsTotal: 0,
-      donationsPerBatch: 50,
+      donationsPerBatch: 5,
       newDonations: 0,
     };
 
@@ -314,12 +313,12 @@ class ViewCampaign extends Component {
                         <ShareOptions pageUrl={window.location.href} pageTitle={campaign.title} />
                       </div>
 
-                      <center>
+                      <div className="text-center">
                         <Link to={`/profile/${campaign.owner.address}`}>
                           <Avatar size={50} src={getUserAvatar(campaign.owner)} round />
                           <p className="small">{getUserName(campaign.owner)}</p>
                         </Link>
-                      </center>
+                      </div>
 
                       <div className="card content-card ">
                         <div className="card-body content">{this.renderDescription()}</div>
@@ -350,30 +349,21 @@ class ViewCampaign extends Component {
                         {isLoadingMilestones && milestonesTotal === 0 && (
                           <Loader className="relative" />
                         )}
-                        <ResponsiveMasonry
-                          columnsCountBreakPoints={{
-                            0: 1,
-                            470: 2,
-                            900: 3,
-                            1200: 4,
-                          }}
-                        >
-                          <Masonry gutter="10px">
-                            {milestones.map(m => (
-                              <MilestoneCard
-                                milestone={m}
-                                currentUser={currentUser}
-                                key={m._id}
-                                history={history}
-                                balance={balance}
-                                removeMilestone={() => this.removeMilestone(m._id)}
-                              />
-                            ))}
-                          </Masonry>
-                        </ResponsiveMasonry>
+                        <div className="milestone-cards-grid-container">
+                          {milestones.map(m => (
+                            <MilestoneCard
+                              milestone={m}
+                              currentUser={currentUser}
+                              key={m._id}
+                              history={history}
+                              balance={balance}
+                              removeMilestone={() => this.removeMilestone(m._id)}
+                            />
+                          ))}
+                        </div>
 
                         {milestonesLoaded < milestonesTotal && (
-                          <center>
+                          <div className="text-center">
                             <button
                               type="button"
                               className="btn btn-info"
@@ -387,7 +377,7 @@ class ViewCampaign extends Component {
                               )}
                               {!isLoadingMilestones && <span>Load More</span>}
                             </button>
-                          </center>
+                          </div>
                         )}
                       </div>
                     </div>

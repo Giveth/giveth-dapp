@@ -8,12 +8,12 @@
   }
 
   .milestone-header h3 {
-      display: inline-block;    
+      display: inline-block;
   }
 
  .card-body.content{
     @include bullet-styling(8);
-    
+
     iframe.ql-video{
       width: 100%;
       height: 300px;
@@ -25,7 +25,7 @@
       box-sizing: border-box;
       display: block;
     }
-  }  
+  }
 
   .milestone-card {
     margin-bottom: 10px;
@@ -35,4 +35,12 @@
       color: lighten(black, 60%);
     }
   }
-}  
+
+  .milestone-cards-grid-container{
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-gap: 25px;
+    width: 100%;
+    justify-content: space-around;
+  }
+}

@@ -93,4 +93,9 @@
   .form-group > .donation-counter:last-child {
     margin-bottom: 0;
   }
+
+  .label > .btn-explain {
+    padding: 0 5px;
+    color: lighten($link-color, 40%);
+  }
 }
