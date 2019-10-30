@@ -36,7 +36,7 @@ const Milestones = ({ currentUser, balance }) => (
                   ))}
                 </div>
                 {milestones.length < total && (
-                  <center>
+                  <div className="text-center">
                     <button
                       type="button"
                       className="btn btn-info mt-2"
@@ -50,7 +50,7 @@ const Milestones = ({ currentUser, balance }) => (
                       )}
                       {!isLoading && <span>Load More</span>}
                     </button>
-                  </center>
+                  </div>
                 )}
               </div>
             )}
@@ -60,7 +60,7 @@ const Milestones = ({ currentUser, balance }) => (
             {// There are no Milestones, show empty state
             !hasError && !isLoading && milestones.length === 0 && (
               <div>
-                <center>
+                <div className="text-center">
                   <p>There are no Milestones yet!</p>
                   <img
                     className="empty-state-img"
@@ -69,7 +69,7 @@ const Milestones = ({ currentUser, balance }) => (
                     height="200px"
                     alt="no-milestones-icon"
                   />
-                </center>
+                </div>
               </div>
             )}
             {hasError && (
