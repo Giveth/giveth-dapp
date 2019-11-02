@@ -10,6 +10,7 @@ import Donation from '../models/Donation';
 import IPFSService from './IPFSService';
 
 import ErrorPopup from '../components/ErrorPopup';
+import { ZERO_ADDRESS } from '../lib/helpers';
 
 BigNumber.config({ DECIMAL_PLACES: 18 });
 
@@ -248,7 +249,7 @@ class DACService {
             dac.commitTime,
             { from, $extraGas: extraGas() },
           )
-        : liquidPledging.addDelegate(dac.title, ipfsHash || '', 0, 0, {
+        : liquidPledging.addDelegate(dac.title, ipfsHash || '', 0, ZERO_ADDRESS, {
             from,
             $extraGas: extraGas(),
           });
