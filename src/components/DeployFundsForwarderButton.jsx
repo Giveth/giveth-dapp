@@ -11,6 +11,9 @@ import config from '../configuration';
 import { Consumer as Web3Consumer } from '../contextProviders/Web3Provider';
 import NetworkWarning from './NetworkWarning';
 
+const buttonText = 'Create donation address';
+const newFundForwarderEventName = 'NewFundForwarder';
+
 const modalStyles = {
   content: {
     top: '50%',
@@ -25,6 +28,14 @@ const modalStyles = {
 };
 
 Modal.setAppElement('#root');
+
+function getNewFundForwarderAddressFromTx(tx) {
+  const { events } = tx;
+  const newFundForwarderEvent = events[newFundForwarderEventName];
+  // Early return with empty address
+  if (!newFundForwarderEvent || !newFundForwarderEvent.returnValues) return '';
+  return newFundForwarderEvent.returnValues.fundsForwarder;
+}
 
 class DeployFundsForwarderButton extends React.Component {
   constructor(props) {
@@ -73,7 +84,7 @@ class DeployFundsForwarderButton extends React.Component {
       txHash = _txHash;
       React.toast.info(
         <p>
-          Awesome! Your donation is pending...
+          Creating donation address...
           <br />
           <a href={`${etherscanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">
             View transaction
@@ -82,17 +93,25 @@ class DeployFundsForwarderButton extends React.Component {
       );
       this.closeDialog();
     })
-      .then(() => {
+      .then(receipt => {
+        const newDonationAddress = getNewFundForwarderAddressFromTx(receipt);
         React.toast.success(
           <p>
-            Woot! Woot! Donation received. You are awesome!
+            Donation address successfully created
             <br />
-            Note: because we are bridging networks, there will be a delay before your donation
-            appears.
-            <br />
-            <a href={`${etherscanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">
-              View transaction
-            </a>
+            {newDonationAddress ? (
+              <a
+                href={`${etherscanUrl}address/${newDonationAddress}`}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                View address {newDonationAddress}
+              </a>
+            ) : (
+              <a href={`${etherscanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">
+                View transaction
+              </a>
+            )}
           </p>,
         );
       })
@@ -102,11 +121,11 @@ class DeployFundsForwarderButton extends React.Component {
         if (!e.message.includes('User denied transaction signature')) {
           const err = !(e instanceof Error) ? JSON.stringify(e, null, 2) : e;
           ErrorPopup(
-            'Something went wrong with your donation.',
+            'Something went wrong with the transaction',
             `${etherscanUrl}tx/${txHash} => ${err}`,
           );
         } else {
-          React.toast.info('The transaction was cancelled. No donation has been made :-(');
+          React.toast.info('The transaction was cancelled');
         }
       });
   }
@@ -138,7 +157,7 @@ class DeployFundsForwarderButton extends React.Component {
             else this.openDialog();
           }}
         >
-          Deploy Funds Forwarder
+          {buttonText}
         </button>
         <Modal
           isOpen={modalVisible}
@@ -149,7 +168,7 @@ class DeployFundsForwarderButton extends React.Component {
         >
           <Form onSubmit={this.deployFundsForwarder}>
             <h3>
-              Deploy a Funds Forwarder for <em>{campaignTitle}</em>
+              Create a donation address for <em>{campaignTitle}</em>
             </h3>
 
             {!validProvider && (
@@ -168,11 +187,11 @@ class DeployFundsForwarderButton extends React.Component {
             {isCorrectNetwork && currentUser && (
               <p>
                 <span>
-                  You will deploy a funds forwarder contract for this campaing. This means that
-                  anyone can transfer ETH or approved tokens to the resulting address and those
-                  funds will automatically be donated to this specific campaign. This functionality
-                  is appropiate for DAOs (i.e. Aragon, Moloch) and for users who cannot execute
-                  contract calls.
+                  You will create a donation address for this campaing by deploying a funds
+                  forwarder contract. This means that anyone can transfer ETH or approved tokens to
+                  the resulting address and those funds will automatically be donated to this
+                  specific campaign. This functionality is appropiate for DAOs (i.e. Aragon, Moloch)
+                  and for users who cannot execute contract calls.
                 </span>
               </p>
             )}
@@ -198,7 +217,7 @@ class DeployFundsForwarderButton extends React.Component {
                     isLoading={false}
                     loadingText="Donating..."
                   >
-                    Deploy Funds Forwarder
+                    {buttonText}
                   </LoaderButton>
                 }
               </React.Fragment>
