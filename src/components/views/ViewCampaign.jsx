@@ -28,7 +28,7 @@ import ErrorPopup from '../ErrorPopup';
 import ErrorBoundary from '../ErrorBoundary';
 import ShareOptions from '../ShareOptions';
 import config from '../../configuration';
-import DeployFundsForwarderButton from '../DeployFundsForwarderButton';
+import CreateDonationAddressButton from '../CreateDonationAddressButton';
 
 /**
  * The Campaign detail view mapped to /campaing/id
@@ -272,7 +272,7 @@ class ViewCampaign extends Component {
                     currentUser={currentUser}
                     history={history}
                   />
-                  <DeployFundsForwarderButton
+                  <CreateDonationAddressButton
                     campaignTitle={campaign.title}
                     receiverId={campaign.projectId}
                     giverId={(campaign._owner || {}).giverId}

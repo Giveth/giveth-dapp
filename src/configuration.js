@@ -139,6 +139,7 @@ const config = Object.assign({}, configurations[REACT_APP_ENVIRONMENT]);
 
 // Overwrite the environment values with parameters
 config.fundsForwarderFactoryAddress = '0xA04D4F31c2aAcEAe21279f4C1143741625D79eFb';
+config.fundsForwarderFactoryDeployBlock = 8873615;
 config.liquidPledgingAddress = REACT_APP_LIQUIDPLEDGING_ADDRESS || config.liquidPledgingAddress;
 config.campaignFactoryAddress =
   REACT_APP_CAMPAIGN_FACTORY_ADDRESS || config.lppCampaignFactoryAddress;
