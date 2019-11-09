@@ -802,7 +802,7 @@ class DonationService {
           amountRemaining: { $ne: 0 },
           pendingAmountRemaining: { $ne: 0 },
           status: Donation.COMMITTED,
-          $limit: 5, // TODO create a better way to calculate this
+          $limit: config.donationCollectCountLimit, // TODO create a better way to calculate this
           $sort: { 'token.symbol': 1 }, // group by token
         },
       })

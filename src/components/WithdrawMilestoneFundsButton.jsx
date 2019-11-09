@@ -11,6 +11,7 @@ import { checkBalance, isLoggedIn } from 'lib/middleware';
 import { Consumer as Web3Consumer } from '../contextProviders/Web3Provider';
 import DonationService from '../services/DonationService';
 import LPMilestone from '../models/LPMilestone';
+import config from '../configuration';
 
 class WithdrawMilestoneFundsButton extends Component {
   async withdraw() {
@@ -32,11 +33,12 @@ class WithdrawMilestoneFundsButton extends Component {
           title: isRecipient ? 'Withdrawal Funds to Wallet' : 'Disburse Funds to Recipient',
           content: React.swal.msg(
             <div>
-              {donationsCount > 5 && (
+              {donationsCount > config.donationCollectCountLimit && (
                 <p>
                   <strong>Note:</strong> Due to the current gas limitations you will be required to
                   withdrawal multiple times. You have <strong>{donationsCount}</strong> donations to{' '}
-                  {isRecipient ? 'withdraw' : 'disburse'} and the current max is <strong>7</strong>.
+                  {isRecipient ? 'withdraw' : 'disburse'} and the current max is{' '}
+                  <strong>{config.donationCollectCountLimit}</strong>.
                 </p>
               )}
               <p>
