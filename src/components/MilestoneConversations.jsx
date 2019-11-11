@@ -69,21 +69,13 @@ class MilestoneConversations extends Component {
     if (messageContext === 'proposedAccepted') return 'accepted proposed Milestone';
     if (messageContext === 'archived') return 'archived Milestone';
     if (messageContext === 'payment') {
-      const { owner, recipient, payments } = conversation;
-      if (payments) {
-        const paymentsStr = payments.map(p => {
-          const amountStr = convertEthHelper(new BigNumber(utils.fromWei(p.amount)));
-          return `${amountStr} ${p.symbol}`;
-        });
-        const phrase = `${paymentsStr.slice(0, -1).join(', ')} and ${
-          paymentsStr[paymentsStr.length - 1]
-        }`;
-        if (owner.address === recipient.address) {
-          return `collected ${phrase}`;
-        }
-        // else
-        return `disbursed ${phrase} to ${getUserName(recipient)}`;
+      const { owner, recipient, paidAmount, paidSymbol } = conversation;
+      const paidAmountStr = convertEthHelper(new BigNumber(utils.fromWei(paidAmount)));
+      if (owner.address === recipient.address) {
+        return `collected ${paidAmountStr} ${paidSymbol}`;
       }
+      // else
+      return `disbursed ${paidAmountStr} ${paidSymbol} to ${getUserName(recipient)}`;
     }
     return 'unknown';
   }
