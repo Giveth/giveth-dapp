@@ -39,7 +39,7 @@ class MilestoneItem extends React.Component {
           className="td-item-description"
           style={{
             'white-space': 'pre-wrap',
-            'word-wrap': 'break-word',
+            wordWrap: 'break-word',
             minWidth: 150,
             marginBottom: 20,
           }}
