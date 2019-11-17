@@ -1045,7 +1045,6 @@ class EditMilestone extends Component {
   }
 
   addItem(item) {
-    if (!this._isMounted) return;
     let milestoneObject = null;
     try {
       milestoneObject = this.retrieveMilestone();
@@ -1061,7 +1060,7 @@ class EditMilestone extends Component {
       tokenSymbol = symbol;
     }
     this.getDateRate(item.date, tokenSymbol).then(rate => {
-      if (!this._isMounted || !rate) return;
+      if (!rate) return;
       if (rate[item.selectedFiatType] === undefined) {
         item.conversionRate = rate.EUR;
         item.selectedFiatType = 'EUR';
