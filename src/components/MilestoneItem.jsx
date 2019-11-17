@@ -38,7 +38,7 @@ class MilestoneItem extends React.Component {
         <td
           className="td-item-description"
           style={{
-            'white-space': 'pre-wrap',
+            whiteSpace: 'pre-wrap',
             wordWrap: 'break-word',
             minWidth: 150,
             marginBottom: 20,

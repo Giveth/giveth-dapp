@@ -12,7 +12,7 @@ import { utils } from 'web3';
 import getConversionRatesContext from 'containers/getConversionRatesContext';
 import MilestoneItem from 'models/MilestoneItem';
 import FormsyImageUploader from './FormsyImageUploader';
-import RateConvertor from './RateConvertor';
+import RateConverter from './RateConverter';
 
 const modalStyles = {
   content: {
@@ -63,7 +63,6 @@ class AddMilestoneItemModal extends Component {
     // set values on MilestoneItem
     item.date = inputs.date.format();
     item.description = inputs.description;
-    item.image = item.image;
     item.selectedFiatType = inputs.fiatType;
     item.fiatAmount = new BigNumber(inputs.fiatAmount);
     item.wei = utils.toWei(inputs.etherAmount);
@@ -142,7 +141,7 @@ class AddMilestoneItemModal extends Component {
             </div>
           </div>
 
-          <RateConvertor token={token} />
+          <RateConverter token={token} />
 
           <FormsyImageUploader
             name="image"

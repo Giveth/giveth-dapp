@@ -372,13 +372,6 @@ class EditMilestone extends Component {
     }
   }
 
-  onAddItem(item) {
-    this.addItem(item);
-    if (this.state.componentDraftLoaded === false) return;
-
-    this.setState({ addMilestoneItemModalVisible: false });
-  }
-
   retrieveMilestone() {
     if (this.state.componentDraftLoaded === true) {
       const { milestone } = this.state;
@@ -711,22 +704,10 @@ class EditMilestone extends Component {
       return;
     }
 
-    let cappedBool = false;
-    if (isCapped !== undefined && isCapped === 'true') {
-      cappedBool = true;
-    } else cappedBool = false;
-    let hasRevBool = false;
-    if (hasReviewer !== undefined && hasReviewer === 'true') {
-      hasRevBool = true;
-    } else hasRevBool = false;
-    let acceptsBool = false;
-    if (acceptsSingleToken !== undefined && acceptsSingleToken === 'true') {
-      acceptsBool = true;
-    } else acceptsBool = false;
-    let itemBool = false;
-    if (itemizeState !== undefined && itemizeState === 'true') {
-      itemBool = true;
-    } else itemBool = false;
+    const cappedBool = isCapped !== undefined && isCapped === 'true';
+    const hasRevBool = hasReviewer !== undefined && hasReviewer === 'true';
+    const acceptsBool = acceptsSingleToken !== undefined && acceptsSingleToken === 'true';
+    const itemBool = itemizeState !== undefined && itemizeState === 'true';
 
     if (!this.props.isNew) return;
     if (!milestone.reviewerAddress == null) return;
@@ -773,10 +754,9 @@ class EditMilestone extends Component {
       });
     }
     if (tokenAddress) {
-      const token = this.props.tokenWhitelist.find(t => t.address === tokenAddress)
+      milestone.token = this.props.tokenWhitelist.find(t => t.address === tokenAddress)
         ? this.props.tokenWhitelist.find(t => t.address === tokenAddress)
         : ANY_TOKEN;
-      milestone.token = token;
       if (milestone.token === undefined) {
         milestone.token = ANY_TOKEN;
         toggles.acceptsSingleToken = true;
@@ -880,12 +860,6 @@ class EditMilestone extends Component {
 
     this.setState({ milestone });
     this.onDraftChange();
-  }
-
-  toggleAddMilestoneItemModal() {
-    this.setState(prevState => ({
-      addMilestoneItemModalVisible: !prevState.addMilestoneItemModalVisible,
-    }));
   }
 
   setMyAddressAsRecipient() {
