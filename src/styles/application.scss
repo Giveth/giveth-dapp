@@ -4,7 +4,6 @@
 @import 'layout.scss';
 @import 'colors.scss';
 @import 'typography.scss';
-
 // views
 @import 'causesView.scss';
 @import 'editCausesView.scss';
@@ -55,12 +54,15 @@ body {
 
 .page-layout {
   padding: 80px 20px 50px 20px;
+
   &.reduced-padding {
     padding-top: 50px;
   }
+
   &.extended-padding {
     padding-top: 80px + 50px;
   }
+
   @media (max-width: 768px) {
     padding: 80px 20px 50px 20px;
   }
@@ -69,6 +71,7 @@ body {
 a,
 button {
   cursor: pointer;
+
   &.secondary-link {
     color: $secondary-link;
   }
@@ -107,6 +110,7 @@ input[type='file'] {
 
 i {
   margin-right: 5px;
+
   &.fa-question-circle-o,
   &.fa-question-circle {
     color: $green;
@@ -115,6 +119,7 @@ i {
 
 .empty-state-img {
   margin: 40px 0;
+
   &.reduce-margin {
     margin: 20px 0;
   }
@@ -130,12 +135,14 @@ i {
   label {
     // color: $valid-green;
   }
+
   input {
     // border-color: $valid-green;
     &[type='file'] {
       margin-top: 2px;
     }
   }
+
   // &.is-valid {
   //   .ql-toolbar {
   //     border-top-color: $valid-green;
@@ -152,28 +159,34 @@ i {
     label {
       color: $error-red;
     }
+
     input {
       border-color: $error-red !important;
     }
+
     .ql-toolbar {
       border-top-color: $error-red !important;
       border-right-color: $error-red !important;
       border-left-color: $error-red !important;
     }
+
     .ql-container {
       border-bottom-color: $error-red !important;
       border-right-color: $error-red !important;
       border-left-color: $error-red !important;
     }
+
     .help-block {
       color: $error-red;
       margin-left: 0;
       font-weight: 500;
+
       &:not(.validation-message) {
         display: none;
       }
     }
   }
+
   // &.has-feedback > input {
   //   border-color: $valid-green;
   // }
@@ -203,6 +216,7 @@ i {
   border-radius: 3px;
   margin-bottom: 10px;
   max-width: 150px;
+
   img {
     width: 100%;
   }
@@ -219,6 +233,7 @@ i {
     margin-left: 10px;
   }
 }
+
 .inline {
   display: inline;
 }
@@ -226,6 +241,7 @@ i {
 span.nav-link {
   cursor: pointer;
 }
+
 span.nav-link:focus {
   outline: 0;
 }
