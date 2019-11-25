@@ -20,16 +20,18 @@ import config from '../configuration';
  *      returns new Error 'notLoggedIn' if not logged in
  */
 
- const SIGN_IN_TRANSACTION_TEXT = {
+const SIGN_IN_TRANSACTION_TEXT = {
   [WEB3_PROVIDER_NAMES.metaMask]: {
     title: 'Please sign the MetaMask transaction...',
-    text: 'A MetaMask transaction should have popped-up. If you don\'t see it check the pending transaction in the MetaMask browser extension. Alternatively make sure to check that your popup blocker is disabled.'
+    text:
+      "A MetaMask transaction should have popped-up. If you don't see it check the pending transaction in the MetaMask browser extension. Alternatively make sure to check that your popup blocker is disabled.",
   },
   [WEB3_PROVIDER_NAMES.portis]: {
     title: 'Please sign the Portis transaction...',
-    text: 'A Portis pop-up should be showing right now.\n\nYou can turn "Turst This App" on to automatically approve any transaction made in Giveth. You can always change your mind in Portis\' wallet settings.'
-  }
- };
+    text:
+      'A Portis pop-up should be showing right now.\n\nYou can turn "Trust This App" on to automatically approve any transaction made in Giveth. You can always change your mind in Portis\' wallet settings.',
+  },
+};
 
 export const historyBackWFallback = fallbackUrl => {
   const destUrl = fallbackUrl || '/';

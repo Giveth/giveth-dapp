@@ -23,7 +23,7 @@ class CommunityButton extends Component {
   }
 
   render() {
-    const icon = this.state.icon ? <i className={`fa ${this.state.icon}`} /> : null
+    const icon = this.state.icon ? <i className={`fa ${this.state.icon}`} /> : null;
     return (
       <a
         className={this.props.className}
