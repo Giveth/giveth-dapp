@@ -173,9 +173,7 @@ class RateConvertor extends Component {
                     !conversionRateLoading &&
                     conversionRate &&
                     conversionRate.rates &&
-                    `1 ${token.symbol} = ${
-                      conversionRate.rates[selectedFiatType]
-                    } ${selectedFiatType}`
+                    `1 ${token.symbol} = ${conversionRate.rates[selectedFiatType]} ${selectedFiatType}`
                   }
                   required
                   disabled={this.props.disabled}
@@ -231,7 +229,10 @@ RateConvertor.propTypes = {
   fiatAmount: PropTypes.string,
   etherAmount: PropTypes.string,
   fiatTypes: PropTypes.arrayOf(PropTypes.object).isRequired,
-  token: PropTypes.shape({ symbol: PropTypes.string }),
+  token: PropTypes.shape({
+    symbol: PropTypes.string,
+    name: PropTypes.string,
+  }),
 };
 
 RateConvertor.defaultProps = {

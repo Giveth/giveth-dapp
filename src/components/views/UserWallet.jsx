@@ -132,9 +132,7 @@ class UserWallet extends Component {
                       etherscan ? (
                         <p>
                           <a
-                            href={`${etherscan}token/${tokenAddresses[t]}?a=${
-                              this.props.currentUser.address
-                            }`}
+                            href={`${etherscan}token/${tokenAddresses[t]}?a=${this.props.currentUser.address}`}
                             target="_blank"
                             rel="noopener noreferrer"
                           >
