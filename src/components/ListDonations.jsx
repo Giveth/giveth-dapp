@@ -162,16 +162,14 @@ const ListDonations = props => {
   const hasProposedDelegation = props.donations.some(d => d.intendedProjectId);
   return (
     <div>
-      {
-        <div>
-          <h2 style={{ display: 'inline-block' }}>Donations</h2>
-          {newDonations > 0 && (
-            <span className="badge badge-primary ml-2 mb-2" style={{ verticalAlign: 'middle' }}>
-              {newDonations} new
-            </span>
-          )}
-        </div>
-      }
+      <div>
+        <h2 style={{ display: 'inline-block' }}>Donations</h2>
+        {newDonations > 0 && (
+          <span className="badge badge-primary ml-2 mb-2" style={{ verticalAlign: 'middle' }}>
+            {newDonations} new
+          </span>
+        )}
+      </div>
 
       <div className="dashboard-table-view">
         {isLoading && total === 0 && <Loader className="relative" />}

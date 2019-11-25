@@ -143,59 +143,57 @@ class ChangeOwnershipButton extends Component {
                 campaign.coownerAddress = inputs.coownerAddress || ZERO_ADDRESS;
               }}
             >
-              {
-                <div>
-                  {
-                    <SelectFormsy
-                      name="ownerAddress"
-                      id="owner-select"
-                      label="Select a new owner"
-                      helpText="This person or smart contract will be owning your Campaign from now on."
-                      value={campaign.ownerAddress}
-                      options={campaignManagers}
-                      validations="isEtherAddress"
-                      validationErrors={{
-                        isEtherAddress: 'Please select an owner.',
-                      }}
-                      required
-                    />
-                  }
-
-                  {
-                    <SelectFormsy
-                      name="coownerAddress"
-                      id="co-owner-select"
-                      label="Select a new co-owner"
-                      helpText="This person or smart contract will be co-owning your Campaign from now on."
-                      value={campaign.coownerAddress}
-                      cta="------ Select a co-owner ------"
-                      options={campaignManagers}
-                      validations="isEtherAddress"
-                      validationErrors={{
-                        isEtherAddress: 'Please select a co-owner.',
-                      }}
-                      required
-                    />
-                  }
-                  <button
-                    className="btn btn-success"
-                    formNoValidate
-                    type="submit"
-                    disabled={isSaving || !isCorrectNetwork}
-                  >
-                    {isSaving ? 'Changing...' : 'Change ownership'}
-                  </button>
-                  <button
-                    className="btn btn-light float-right"
-                    type="button"
-                    onClick={() => {
-                      this.setState({ modalVisible: false });
+              <div>
+                {
+                  <SelectFormsy
+                    name="ownerAddress"
+                    id="owner-select"
+                    label="Select a new owner"
+                    helpText="This person or smart contract will be owning your Campaign from now on."
+                    value={campaign.ownerAddress}
+                    options={campaignManagers}
+                    validations="isEtherAddress"
+                    validationErrors={{
+                      isEtherAddress: 'Please select an owner.',
                     }}
-                  >
-                    Close
-                  </button>
-                </div>
-              }
+                    required
+                  />
+                }
+
+                {
+                  <SelectFormsy
+                    name="coownerAddress"
+                    id="co-owner-select"
+                    label="Select a new co-owner"
+                    helpText="This person or smart contract will be co-owning your Campaign from now on."
+                    value={campaign.coownerAddress}
+                    cta="------ Select a co-owner ------"
+                    options={campaignManagers}
+                    validations="isEtherAddress"
+                    validationErrors={{
+                      isEtherAddress: 'Please select a co-owner.',
+                    }}
+                    required
+                  />
+                }
+                <button
+                  className="btn btn-success"
+                  formNoValidate
+                  type="submit"
+                  disabled={isSaving || !isCorrectNetwork}
+                >
+                  {isSaving ? 'Changing...' : 'Change ownership'}
+                </button>
+                <button
+                  className="btn btn-light float-right"
+                  type="button"
+                  onClick={() => {
+                    this.setState({ modalVisible: false });
+                  }}
+                >
+                  Close
+                </button>
+              </div>
             </Form>
           )}
         </Modal>
