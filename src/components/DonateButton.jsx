@@ -25,6 +25,7 @@ import NetworkWarning from './NetworkWarning';
 import SelectFormsy from './SelectFormsy';
 import { Consumer as WhiteListConsumer } from '../contextProviders/WhiteListProvider';
 import DAC from '../models/DAC';
+import { ZERO_ADDRESS } from '../lib/helpers';
 
 const POLL_DELAY_TOKENS = 2000;
 
@@ -79,7 +80,10 @@ class DonateButton extends React.Component {
 
   componentDidMount() {
     getNetwork().then(network => {
-      this.setState({ givethBridge: network.givethBridge, etherscanUrl: network.homeEtherscan });
+      this.setState({
+        givethBridge: network.givethBridge,
+        etherscanUrl: network.homeEtherscan,
+      });
     });
     this.pollToken();
   }
@@ -287,7 +291,7 @@ class DonateButton extends React.Component {
 
     const value = utils.toWei(Number(amount).toFixed(18));
     const isDonationInToken = selectedToken.symbol !== config.nativeTokenName;
-    const tokenAddress = isDonationInToken ? selectedToken.address : 0;
+    const tokenAddress = isDonationInToken ? selectedToken.address : ZERO_ADDRESS;
 
     const _makeDonationTx = async () => {
       let method;
@@ -596,7 +600,10 @@ class DonateButton extends React.Component {
                     type="number"
                     value={amount}
                     onChange={(name, newAmount) => {
-                      this.setState({ amount: newAmount, defaultAmount: false });
+                      this.setState({
+                        amount: newAmount,
+                        defaultAmount: false,
+                      });
                     }}
                     validations={{
                       lessOrEqualTo: maxAmount.toNumber(),
@@ -638,7 +645,7 @@ class DonateButton extends React.Component {
                       id="title-input"
                       type="text"
                       value={customAddress}
-                      placeholder="0x0000000000000000000000000000000000000000"
+                      placeholder={ZERO_ADDRESS}
                       validations="isEtherAddress"
                       validationErrors={{
                         isEtherAddress: 'Please insert a valid Ethereum address.',

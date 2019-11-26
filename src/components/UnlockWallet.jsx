@@ -7,7 +7,6 @@ import Modal from 'react-modal';
 import UnlockWalletForm from './UnlockWalletForm';
 import GivethWallet from '../lib/blockchain/GivethWallet';
 
-/* global window */
 /**
  * Modal with a form to unlock a GivethWallet
  */

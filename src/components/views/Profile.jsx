@@ -86,17 +86,12 @@ class Profile extends Component {
       .find({ query: { address: userAddress } })
       .then(resp => {
         this.setState(
-          Object.assign(
-            {},
-            {
-              userAddress,
-            },
-            resp.data[0],
-            {
-              isLoading: false,
-              hasError: false,
-            },
-          ),
+          {
+            userAddress,
+            ...resp.data[0],
+            isLoading: false,
+            hasError: false,
+          },
           () => {
             this.loadUserCampaigns();
             this.loadUserMilestones();
@@ -142,7 +137,7 @@ class Profile extends Component {
       .subscribe(resp =>
         this.setState(prevState => ({
           userAddress: prevState.userAddress,
-          milestones: Object.assign({}, resp, { data: resp.data.map(m => new Milestone(m)) }),
+          milestones: { ...resp, data: resp.data.map(m => new Milestone(m)) },
           isLoadingMilestones: false,
         })),
       );
@@ -190,7 +185,7 @@ class Profile extends Component {
       .subscribe(
         resp => {
           this.setState({
-            donations: Object.assign({}, resp, { data: resp.data.map(d => new Donation(d)) }),
+            donations: { ...resp, data: resp.data.map(d => new Donation(d)) },
             isLoadingDonations: false,
           });
         },

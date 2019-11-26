@@ -3,7 +3,6 @@ import PropTypes from 'prop-types';
 
 import GivethWallet from '../lib/blockchain/GivethWallet';
 
-/* global URL, Blob */
 /**
  * BackupWallet lets users download backup file of their wallet.
  *

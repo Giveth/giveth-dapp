@@ -54,7 +54,9 @@ class AddMilestoneItemModal extends Component {
   triggerRouteBlocking() {
     const form = this.form.current.formsyForm;
     // we only block routing if the form state is not submitted
-    this.setState({ isBlocking: form && (!form.state.formSubmitted || form.state.isSubmitting) });
+    this.setState({
+      isBlocking: form && (!form.state.formSubmitted || form.state.isSubmitting),
+    });
   }
 
   mapInputs(inputs) {
@@ -63,7 +65,7 @@ class AddMilestoneItemModal extends Component {
     // set values on MilestoneItem
     item.date = inputs.date.format();
     item.description = inputs.description;
-    item.image = item.image;
+    // item.image = item.image;
     item.selectedFiatType = inputs.fiatType;
     item.fiatAmount = new BigNumber(inputs.fiatAmount);
     item.wei = utils.toWei(inputs.etherAmount);

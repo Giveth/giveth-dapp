@@ -108,6 +108,8 @@ const authenticate = async (address, redirectOnFail) => {
 
       // we have to wrap in a timeout b/c if you close the chrome window MetaMask opens, the promise never resolves
       const signOrTimeout = () =>
+        // TODO: take care of this warning
+        // eslint-disable-next-line no-async-promise-executor
         new Promise(async resolve => {
           const timeOut = setTimeout(() => {
             resolve(false);
@@ -185,9 +187,7 @@ export const checkForeignNetwork = async isForeignNetwork => {
   // we block the user b/c MetaMask will reload the page on a network change
   await React.swal({
     title: 'Network Change Required!',
-    text: `Please connect to the ${
-      config.foreignNetworkName
-    } network before proceeding. Depending on your provider, the page will be reloaded upon changing the network which may result in loosing data`,
+    text: `Please connect to the ${config.foreignNetworkName} network before proceeding. Depending on your provider, the page will be reloaded upon changing the network which may result in loosing data`,
     icon: 'warning',
   });
   historyBackWFallback();
