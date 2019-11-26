@@ -30,6 +30,7 @@ const LoaderButton = ({
   loadingText,
   children,
   network,
+  ...props
 }) => (
   <Web3Consumer>
     {({ state: { isHomeNetwork, isForeignNetwork } }) => {
@@ -44,6 +45,7 @@ const LoaderButton = ({
             type={type}
             onClick={onClick}
             disabled={disabled || incorrectNetwork}
+            {...props}
           >
             {isLoading && (
               <span>

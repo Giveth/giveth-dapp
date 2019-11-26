@@ -62,7 +62,7 @@ class CreateDonationAddressButton extends React.Component {
     this.deployFundsForwarder = this.deployFundsForwarder.bind(this);
     this.findExistingDonationAddress = this.findExistingDonationAddress.bind(this);
     this.fetchDonationAddressBalances = this.fetchDonationAddressBalances.bind(this);
-    this.fordwardBalances = this.fordwardBalances.bind(this);
+    this.fordwardBalance = this.fordwardBalance.bind(this);
   }
 
   componentDidMount() {
@@ -151,23 +151,22 @@ class CreateDonationAddressButton extends React.Component {
     }
   }
 
-  async fordwardBalances() {
+  /**
+   * Calls forward(address)
+   * @param {string} addressToForward "0x00000000" for ETH, "0xab3123a" for a token
+   */
+  async fordwardBalance(addressToForward) {
     try {
       const web3 = await getWeb3();
       const { currentUser } = this.props;
       const { donationAddress, balances } = this.state;
       const { homeEtherscan: etherscanUrl } = config;
-      const addressesToForward = Object.keys(balances);
       const from = currentUser.address;
-      if (!donationAddress) throw Error('donation address not defined');
-      if (!addressesToForward.length) throw Error('No balance to forward');
+      if (!balances[addressToForward]) throw Error('No balance to forward');
 
       const fundsForwarder = new web3.eth.Contract(fundForwarder.abi, donationAddress);
 
-      const tx =
-        addressesToForward.length > 1
-          ? fundsForwarder.methods.forwardMultiple(addressesToForward).send({ from })
-          : fundsForwarder.methods.forward(addressesToForward[0]).send({ from });
+      const tx = fundsForwarder.methods.forward(addressToForward).send({ from });
 
       let txHash;
       await tx
@@ -320,6 +319,7 @@ class CreateDonationAddressButton extends React.Component {
     const balancesPretty = Object.entries(balances).map(([tokenAddress, balance]) => ({
       symbol: tokenSymbols[tokenAddress] || `??? ${tokenAddress}`,
       balance,
+      tokenAddress,
     }));
 
     return (
@@ -371,21 +371,38 @@ class CreateDonationAddressButton extends React.Component {
 
               {/* I have to write this ugly code because of eslint(no-nested-ternary) */}
               {fetchingBalances && <p>Fetching balances in donation address...</p>}
-              {!fetchingBalances && balancesPretty.length && <p>Balances in donation address</p>}
-              {!fetchingBalances && !balancesPretty.length && <p>No balance in donation address</p>}
+              {!fetchingBalances && balancesPretty.length > 0 && (
+                <p>Balances in donation address</p>
+              )}
+              {!fetchingBalances && balancesPretty.length === 0 && (
+                <p>No balances in donation address</p>
+              )}
 
-              <ul>
-                {balancesPretty.map(({ symbol, balance }) => (
-                  <li key={symbol}>
-                    {balance} {symbol}
-                  </li>
+              <table>
+                {balancesPretty.map(({ symbol, balance, tokenAddress }) => (
+                  <tr key={symbol}>
+                    <td style={{ textAlign: 'right' }}>{balance}</td>
+                    <td style={{ padding: '0 16px 0 8px' }}>{symbol}</td>
+                    <td style={{ padding: '8px 0' }}>
+                      {isCorrectNetwork && validProvider && currentUser && (
+                        <LoaderButton
+                          className="btn btn-success"
+                          disabled={!isCorrectNetwork}
+                          isLoading={false}
+                          onClick={() => this.fordwardBalance(tokenAddress)}
+                          loadingText="Forwarding balances..."
+                          style={{ padding: '2px 10px' }}
+                        >
+                          Forward balance
+                        </LoaderButton>
+                      )}
+                    </td>
+                  </tr>
                 ))}
-              </ul>
+              </table>
 
               {balancesPretty.length > 0 && (
                 <React.Fragment>
-                  <p>Forward all donation address balances to the bridge</p>
-
                   {!validProvider && (
                     <div className="alert alert-warning">
                       <i className="fa fa-exclamation-triangle" />
@@ -407,17 +424,8 @@ class CreateDonationAddressButton extends React.Component {
                     </div>
                   )}
 
-                  {isCorrectNetwork && validProvider && currentUser && (
-                    <LoaderButton
-                      className="btn btn-success"
-                      disabled={!isCorrectNetwork}
-                      isLoading={false}
-                      onClick={this.fordwardBalances}
-                      loadingText="Forwarding balances..."
-                    >
-                      Forward balances
-                    </LoaderButton>
-                  )}
+                  {/* Buttons show up above when metamask and network is correct */}
+                  {/* {isCorrectNetwork && validProvider && currentUser && ()} */}
                 </React.Fragment>
               )}
 
