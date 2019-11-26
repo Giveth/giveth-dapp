@@ -2,20 +2,20 @@
   background-color: $header-background;
 
   .navbar-brand {
-    padding-bottom: .5225rem;    
+    padding-bottom: .5225rem;
     padding-top: 0;
   }
 
   &.show {
 
-    .navbar-collapse { 
+    .navbar-collapse {
       animation: pop 0.1s ease-out 1;
     }
 
     .navbar-toggler {
       border-radius: 50%;
       border: 1px solid #efefef;
-  
+
       .navbar-toggler-icon {
         color: $red;
       }
@@ -35,7 +35,7 @@
 
     @media (max-width: 991px) {
       font-size: 1.6rem;
-    }     
+    }
   }
 
   .navbar-toggler {
@@ -67,8 +67,8 @@
       text-align: center;
       border: none;
       margin-top: -9px;
-      padding: 0 0 20px 0;      
-    }      
+      padding: 0 0 20px 0;
+    }
   }
 
   .dropdown-item {
@@ -85,9 +85,9 @@
     @media (max-width: 991px) {
       font-size: 1.2rem;
       font-weight: 300;
-      padding: .05rem 1.5rem;      
+      padding: .05rem 1.5rem;
     }
-    
+
     &-show-portis {
       color: $menu-item-color;
       cursor: pointer;
@@ -106,7 +106,7 @@
 @media (max-width: 991px) {
   .navbar-toggler {
     width: 40px;
-    height: 40px;        
+    height: 40px;
   }
 
   .navbar-collapse {
@@ -118,8 +118,8 @@
     right: 0;
     left: 0;
     padding: .5rem 1rem;
-    overflow-y: scroll;  
-    -webkit-overflow-scrolling: touch;   
+    overflow-y: scroll;
+    -webkit-overflow-scrolling: touch;
 
     text-align: center;
 
@@ -138,11 +138,11 @@
 
     .menu-avatar {
       position: relative;
-      margin: 0 auto;   
-      display: block !important;   
+      margin: 0 auto;
+      display: block !important;
       width: 50px !important;
-      height: 50px !important;      
-     
+      height: 50px !important;
+
       img {
         width: 50px !important;
         height: 50px !important;
@@ -163,7 +163,16 @@
 }
 
 @keyframes pop {
-  0%   {transform: scale(0);    opacity: 0;           }  
-  50%  {transform: scale(0.8);  opacity: 0.5;         }
-  100% {transform: scale(1);    opacity: 1;           }
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(0.8);
+    opacity: 0.5;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
 }

@@ -3,21 +3,25 @@ ul.donation-history {
   margin: 0;
   margin-left: 0em;
   padding: 0;
+
   ul {
     list-style: none;
     margin: 0;
     padding: 0;
     margin-left: 10px;
   }
+
   li {
     margin: 0;
     padding: 0 7px;
     line-height: 20px;
     color: #369;
     border-left: 1px solid rgb(100, 100, 100);
+
     &:last-child {
       border-left: none;
     }
+
     &:before {
       position: relative;
       top: -0.3em;
@@ -29,6 +33,7 @@ ul.donation-history {
       display: inline-block;
       left: -7px;
     }
+
     &:last-child:before {
       border-left: 1px solid rgb(100, 100, 100);
     }

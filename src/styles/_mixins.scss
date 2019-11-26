@@ -1,10 +1,10 @@
 // generate bullet nesting classes;
 @mixin bullet-styling($depth) {
-    $i: 0;
-    @while $i < $depth {
-        li.ql-indent-#{$i} {
-            margin-left: $i * 1.5em;
-        }
-        $i: $i + 1;
+  $i: 0;
+  @while $i < $depth {
+    li.ql-indent-#{$i} {
+      margin-left: $i * 1.5em;
     }
+    $i: $i + 1;
+  }
 }
