@@ -45,9 +45,9 @@ const getEnableWeb3Button = enableProvider => (
 
 const getUnlockMessage = () => (
   <small className="text-muted">
-    {'Please '}
+    Please
     <strong>unlock MetaMask</strong>
-    {' or use'}
+    or use
     <PortisButton />
   </small>
 );
