@@ -96,6 +96,8 @@ const authenticate = async (address, redirectOnFail) => {
 
       // we have to wrap in a timeout b/c if you close the chrome window MetaMask opens, the promise never resolves
       const signOrTimeout = () =>
+        // TODO: take care of this warning
+        // eslint-disable-next-line no-async-promise-executor
         new Promise(async resolve => {
           const timeOut = setTimeout(() => {
             resolve(false);

@@ -306,9 +306,9 @@ class EditMilestone extends Component {
 
             if (milestone.isCapped) {
               const rate = rates[milestone.selectedFiatType];
-              if (rate && (milestone.maxAmount && milestone.maxAmount.gt(0))) {
+              if (rate && milestone.maxAmount && milestone.maxAmount.gt(0)) {
                 milestone.fiatAmount = milestone.maxAmount.times(rate);
-              } else if (rate && (milestone.fiatAmount && milestone.fiatAmount.gt(0))) {
+              } else if (rate && milestone.fiatAmount && milestone.fiatAmount.gt(0)) {
                 milestone.maxAmount = milestone.fiatAmount.div(rate);
               } else {
                 milestone.maxAmount = new BigNumber('0');
@@ -403,7 +403,10 @@ class EditMilestone extends Component {
       return;
     }
 
-    this.setState({ milestone: milestoneObject, refreshList: milestoneObject.items });
+    this.setState({
+      milestone: milestoneObject,
+      refreshList: milestoneObject.items,
+    });
     this.onDraftChange();
   }
 
@@ -795,7 +798,10 @@ class EditMilestone extends Component {
 
         this.setState({ milestone: ms });
       } else {
-        const ms = new LPMilestone({ ...milestone.toFeathers(), recipientId: campaignProjectId });
+        const ms = new LPMilestone({
+          ...milestone.toFeathers(),
+          recipientId: campaignProjectId,
+        });
         ms.itemizeState = toggles.itemizeState;
 
         this.setState({ milestone: ms });
@@ -824,7 +830,10 @@ class EditMilestone extends Component {
       ms = new BridgedMilestone(milestone.toFeathers());
       ms.itemizeState = toggles.itemizeState;
     } else {
-      ms = new LPMilestone({ ...milestone.toFeathers(), recipientId: campaignProjectId });
+      ms = new LPMilestone({
+        ...milestone.toFeathers(),
+        recipientId: campaignProjectId,
+      });
       ms.itemizeState = toggles.itemizeState;
     }
     if (this.state.componentDraftLoaded === false) {
@@ -1066,7 +1075,9 @@ class EditMilestone extends Component {
     // we only block routing if the form state is not submitted
     if (this.state.loadTime + 5000 >= Date.now()) return;
 
-    this.setState({ isBlocking: form && (!form.state.formSubmitted || form.state.isSubmitting) });
+    this.setState({
+      isBlocking: form && (!form.state.formSubmitted || form.state.isSubmitting),
+    });
   }
 
   validateMilestoneDesc(value) {

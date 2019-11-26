@@ -47,52 +47,48 @@ const createAllowance = async (tokenContractAddress, tokenHolderAddress, amount)
   const ERC20 = network.tokens[tokenContractAddress];
 
   let txHash;
-  try {
-    return ERC20.methods
-      .approve(config.givethBridgeAddress, amount)
-      .send({ from: tokenHolderAddress })
-      .on('transactionHash', transactionHash => {
-        txHash = transactionHash;
+  return ERC20.methods
+    .approve(config.givethBridgeAddress, amount)
+    .send({ from: tokenHolderAddress })
+    .on('transactionHash', transactionHash => {
+      txHash = transactionHash;
 
-        if (amount === 0) {
-          React.toast.info(
-            <p>
-              Please wait until your transaction is mined...
-              <br />
-              <strong>
-                You will be asked to make another transaction to set the correct allowance!
-              </strong>
-              <br />
-              <a
-                href={`${config.homeEtherscan}tx/${txHash}`}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                View transaction
-              </a>
-            </p>,
-          );
-        } else {
-          React.toast.info(
-            <p>
-              Please wait until your transaction is mined...
-              <br />
-              <strong>You will be asked to make another transaction for your donation!</strong>
-              <br />
-              <a
-                href={`${config.homeEtherscan}tx/${txHash}`}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                View transaction
-              </a>
-            </p>,
-          );
-        }
-      });
-  } catch (e) {
-    throw e;
-  }
+      if (amount === 0) {
+        React.toast.info(
+          <p>
+            Please wait until your transaction is mined...
+            <br />
+            <strong>
+              You will be asked to make another transaction to set the correct allowance!
+            </strong>
+            <br />
+            <a
+              href={`${config.homeEtherscan}tx/${txHash}`}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              View transaction
+            </a>
+          </p>,
+        );
+      } else {
+        React.toast.info(
+          <p>
+            Please wait until your transaction is mined...
+            <br />
+            <strong>You will be asked to make another transaction for your donation!</strong>
+            <br />
+            <a
+              href={`${config.homeEtherscan}tx/${txHash}`}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              View transaction
+            </a>
+          </p>,
+        );
+      }
+    });
 };
 
 class DonationService {

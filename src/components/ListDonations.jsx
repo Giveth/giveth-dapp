@@ -178,6 +178,7 @@ const ListDonations = props => {
             <table className="table table-responsive table-hover" style={{ marginTop: 0 }}>
               <thead>
                 <tr>
+                  {/* eslint-disable-next-line jsx-a11y/control-has-associated-label */}
                   <th />
                   <th className="td-date">Date</th>
                   <th>Status</th>

@@ -1,3 +1,4 @@
+// eslint-disable-next-line max-classes-per-file
 import React, { Component, createContext } from 'react';
 import PropTypes from 'prop-types';
 import BigNumber from 'bignumber.js';

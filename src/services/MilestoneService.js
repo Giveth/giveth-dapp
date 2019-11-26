@@ -118,7 +118,11 @@ class MilestoneService {
               status: Milestone.ARCHIVED,
               $or: [
                 { donationCounters: { $size: 0 } },
-                { donationCounters: { $not: { $elemMatch: { currentBalance: { $ne: '0' } } } } },
+                {
+                  donationCounters: {
+                    $not: { $elemMatch: { currentBalance: { $ne: '0' } } },
+                  },
+                },
               ],
             },
           ],
@@ -180,7 +184,9 @@ class MilestoneService {
             },
             {
               status: Milestone.ARCHIVED,
-              donationCounters: { $elemMatch: { currentBalance: { $ne: '0' } } },
+              donationCounters: {
+                $elemMatch: { currentBalance: { $ne: '0' } },
+              },
               'donationCounters.totalDonated': { $exists: true },
             },
           ],
@@ -215,11 +221,10 @@ class MilestoneService {
       .subscribe(
         resp => {
           try {
-            onResult(
-              Object.assign({}, resp, {
-                data: resp.data.map(m => MilestoneFactory.create(m)),
-              }),
-            );
+            onResult({
+              ...resp,
+              data: resp.data.map(m => MilestoneFactory.create(m)),
+            });
           } catch (e) {
             onError(e);
           }
@@ -256,7 +261,12 @@ class MilestoneService {
           $skip,
         },
       })
-      .then(resp => onSuccess(resp.data.map(m => MilestoneFactory.create(m)), resp.total))
+      .then(resp =>
+        onSuccess(
+          resp.data.map(m => MilestoneFactory.create(m)),
+          resp.total,
+        ),
+      )
       .catch(onError);
   }
 
@@ -293,7 +303,12 @@ class MilestoneService {
           schema: 'includeTypeAndGiverDetails',
         }),
       )
-      .then(resp => onSuccess(resp.data.map(d => new Donation(d)), resp.total))
+      .then(resp =>
+        onSuccess(
+          resp.data.map(d => new Donation(d)),
+          resp.total,
+        ),
+      )
       .catch(onError);
   }
 

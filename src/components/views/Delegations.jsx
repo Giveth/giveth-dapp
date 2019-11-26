@@ -64,6 +64,7 @@ const Delegations = ({ balance, currentUser }) => (
                             <table className="table table-responsive table-striped table-hover">
                               <thead>
                                 <tr>
+                                  {/* eslint-disable-next-line jsx-a11y/control-has-associated-label */}
                                   {currentUser.authenticated && <th className="td-actions" />}
                                   <th className="td-date">Date</th>
                                   <th className="td-donated-to">Donated to</th>
