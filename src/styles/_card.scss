@@ -1,11 +1,11 @@
 $aspect-ratio: percentage(9/16); //16:9 ratio
 
-.cards-grid-container{
-    display: grid;
-    grid-template-columns: repeat( auto-fill, minmax(250px, 1fr) );
-    grid-gap: 10px;
-    width: 100%;
-    justify-content: space-around;
+.cards-grid-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  grid-gap: 10px;
+  width: 100%;
+  justify-content: space-around;
 }
 
 .overview-card {
@@ -37,17 +37,17 @@ $aspect-ratio: percentage(9/16); //16:9 ratio
       padding: 10px 20px;
 
       .sb-avatar {
-        margin-right: 4px;      
+        margin-right: 4px;
       }
 
       .owner-name {
         position: relative;
-        top: 1px;   
+        top: 1px;
         font-size: 0.75rem;
       }
 
       .btn-edit {
-        padding: 4px 0;        
+        padding: 4px 0;
       }
     }
 
@@ -60,7 +60,7 @@ $aspect-ratio: percentage(9/16); //16:9 ratio
         font-weight: 700;
         font-size: 20px;
         margin-bottom: 5px;
-      }    
+      }
 
       .card-text {
         color: lighten($link-color, 50%);
@@ -73,8 +73,8 @@ $aspect-ratio: percentage(9/16); //16:9 ratio
       position: absolute;
       bottom: 0;
       left: 0;
-      right: 0;   
-      border: none;   
+      right: 0;
+      border: none;
     }
   }
 
@@ -88,7 +88,7 @@ $aspect-ratio: percentage(9/16); //16:9 ratio
 
   .card-body {
     @include bullet-styling(8);
-    
+
     box-shadow: none;
     border: none;
   }
@@ -116,7 +116,7 @@ $aspect-ratio: percentage(9/16); //16:9 ratio
     border-color: transparent transparent #dfdfdf transparent;
     top: -14px;
     left: 50%;
-    margin-left: -12px;      
+    margin-left: -12px;
   }
 }
 
