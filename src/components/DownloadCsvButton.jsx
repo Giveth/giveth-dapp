@@ -45,11 +45,9 @@ class DownloadCsvButton extends Component {
     return (
       <span style={style}>
         <div id="container" style={{ display: 'none' }} />
-        {
-          <button type="button" className="btn btn-warning" onClick={() => this.generateCsv()}>
-            Download CSV
-          </button>
-        }
+        <button type="button" className="btn btn-warning" onClick={() => this.generateCsv()}>
+          Download CSV
+        </button>
       </span>
     );
   }

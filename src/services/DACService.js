@@ -10,6 +10,7 @@ import Donation from '../models/Donation';
 import IPFSService from './IPFSService';
 
 import ErrorPopup from '../components/ErrorPopup';
+import { ZERO_ADDRESS } from '../lib/helpers';
 
 BigNumber.config({ DECIMAL_PLACES: 18 });
 
@@ -55,7 +56,12 @@ class DACService {
           $sort: { campaignsCount: -1 },
         },
       })
-      .then(resp => onSuccess(resp.data.map(d => new DAC(d)), resp.total))
+      .then(resp =>
+        onSuccess(
+          resp.data.map(d => new DAC(d)),
+          resp.total,
+        ),
+      )
       .catch(onError);
   }
 
@@ -125,7 +131,12 @@ class DACService {
           schema: 'includeTypeAndGiverDetails',
         }),
       )
-      .then(resp => onSuccess(resp.data.map(d => new Donation(d)), resp.total))
+      .then(resp =>
+        onSuccess(
+          resp.data.map(d => new Donation(d)),
+          resp.total,
+        ),
+      )
       .catch(onError);
   }
 
@@ -189,9 +200,7 @@ class DACService {
         },
       })
       .subscribe(resp => {
-        const newResp = Object.assign({}, resp, {
-          data: resp.data.map(d => new DAC(d)),
-        });
+        const newResp = { ...resp, data: resp.data.map(d => new DAC(d)) };
         onSuccess(newResp);
       }, onError);
   }
@@ -248,7 +257,7 @@ class DACService {
             dac.commitTime,
             { from, $extraGas: extraGas() },
           )
-        : liquidPledging.addDelegate(dac.title, ipfsHash || '', 0, 0, {
+        : liquidPledging.addDelegate(dac.title, ipfsHash || '', 0, ZERO_ADDRESS, {
             from,
             $extraGas: extraGas(),
           });

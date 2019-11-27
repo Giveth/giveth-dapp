@@ -53,7 +53,7 @@ function getTypes(types) {
     el.id = t._id;
     el.element = (
       <span>
-        {t.title} <em>{t instanceof Milestone ? 'Milestone' : 'Campaign'}</em>
+        {t.title} <em>{isMilestone ? 'Milestone' : 'Campaign'}</em>
       </span>
     );
     if (isMilestone) {
@@ -168,7 +168,7 @@ class DelegateButton extends Component {
     if (
       admin instanceof Milestone &&
       admin.isCapped &&
-      admin.maxAmount.lt(admin.currentBalance || 0)
+      admin.maxAmount.lt(admin.currentBalance || 0) // TODO: Why lt? probably lte is correct
     ) {
       React.toast.error('That Milestone has reached its funding goal. Please pick another.');
       return;

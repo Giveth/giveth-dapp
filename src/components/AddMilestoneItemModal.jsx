@@ -54,7 +54,9 @@ class AddMilestoneItemModal extends Component {
   triggerRouteBlocking() {
     const form = this.form.current.formsyForm;
     // we only block routing if the form state is not submitted
-    this.setState({ isBlocking: form && (!form.state.formSubmitted || form.state.isSubmitting) });
+    this.setState({
+      isBlocking: form && (!form.state.formSubmitted || form.state.isSubmitting),
+    });
   }
 
   mapInputs(inputs) {

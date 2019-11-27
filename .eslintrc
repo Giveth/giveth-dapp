@@ -8,6 +8,8 @@
     "prettier/standard"
   ],
   "rules": {
+    "react/jsx-props-no-spreading": "off",
+    "react/jsx-fragments": "enabled",
     "jsx-a11y/anchor-is-valid": [
       "error",
       {
@@ -36,7 +38,8 @@
       "error",
       {
         "singleQuote": true,
-        "trailingComma": "all"
+        "trailingComma": "all",
+        "printWidth": 100
       }
     ],
     "react-app/jsx-a11y/href-no-hash": "off", // This rule is dropped but create-react-app uses old rules

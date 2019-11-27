@@ -57,6 +57,7 @@ const Donations = () => (
                               <table className="table table-responsive table-striped table-hover">
                                 <thead>
                                   <tr>
+                                    {/* eslint-disable-next-line jsx-a11y/control-has-associated-label */}
                                     {currentUser.authenticated && <th className="td-action" />}
                                     <th className="td-transaction-status">Status</th>
                                     <th className="td-date">Date</th>

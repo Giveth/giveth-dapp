@@ -22,9 +22,10 @@ export default class LPPCappedMilestone extends Milestone {
   }
 
   toFeathers(txHash) {
-    return Object.assign({}, super.toFeathers(txHash), {
+    return {
+      ...super.toFeathers(txHash),
       campaignReviewerAddress: this._campaignReviewerAddress,
-    });
+    };
   }
 
   contract(web3) {

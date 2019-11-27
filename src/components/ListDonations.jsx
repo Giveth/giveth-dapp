@@ -162,16 +162,14 @@ const ListDonations = props => {
   const hasProposedDelegation = props.donations.some(d => d.intendedProjectId);
   return (
     <div>
-      {
-        <div>
-          <h2 style={{ display: 'inline-block' }}>Donations</h2>
-          {newDonations > 0 && (
-            <span className="badge badge-primary ml-2 mb-2" style={{ verticalAlign: 'middle' }}>
-              {newDonations} new
-            </span>
-          )}
-        </div>
-      }
+      <div>
+        <h2 style={{ display: 'inline-block' }}>Donations</h2>
+        {newDonations > 0 && (
+          <span className="badge badge-primary ml-2 mb-2" style={{ verticalAlign: 'middle' }}>
+            {newDonations} new
+          </span>
+        )}
+      </div>
 
       <div className="dashboard-table-view">
         {isLoading && total === 0 && <Loader className="relative" />}
@@ -180,6 +178,7 @@ const ListDonations = props => {
             <table className="table table-responsive table-hover" style={{ marginTop: 0 }}>
               <thead>
                 <tr>
+                  {/* eslint-disable-next-line jsx-a11y/control-has-associated-label */}
                   <th />
                   <th className="td-date">Date</th>
                   <th>Status</th>

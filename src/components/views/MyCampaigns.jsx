@@ -163,6 +163,7 @@ class MyCampaigns extends Component {
                           <table className="table table-responsive table-striped table-hover">
                             <thead>
                               <tr>
+                                {/* eslint-disable-next-line jsx-a11y/control-has-associated-label */}
                                 {currentUser.authenticated && <th className="td-actions" />}
                                 <th className="td-name">Name</th>
                                 <th className="td-donations-number">Donations</th>

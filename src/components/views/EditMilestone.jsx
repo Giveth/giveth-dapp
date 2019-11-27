@@ -307,9 +307,9 @@ class EditMilestone extends Component {
 
             if (milestone.isCapped) {
               const rate = rates[milestone.selectedFiatType];
-              if (rate && (milestone.maxAmount && milestone.maxAmount.gt(0))) {
+              if (rate && milestone.maxAmount && milestone.maxAmount.gt(0)) {
                 milestone.fiatAmount = milestone.maxAmount.times(rate);
-              } else if (rate && (milestone.fiatAmount && milestone.fiatAmount.gt(0))) {
+              } else if (rate && milestone.fiatAmount && milestone.fiatAmount.gt(0)) {
                 milestone.maxAmount = milestone.fiatAmount.div(rate);
               } else {
                 milestone.maxAmount = new BigNumber('0');
@@ -782,7 +782,10 @@ class EditMilestone extends Component {
 
         newMilestone = ms;
       } else {
-        const ms = new LPMilestone({ ...milestone.toFeathers(), recipientId: campaignProjectId });
+        const ms = new LPMilestone({
+          ...milestone.toFeathers(),
+          recipientId: campaignProjectId,
+        });
         ms.itemizeState = toggles.itemizeState;
 
         newMilestone = ms;
@@ -1073,7 +1076,9 @@ class EditMilestone extends Component {
     // we only block routing if the form state is not submitted
     if (this.state.loadTime + 5000 >= Date.now()) return;
 
-    this.setState({ isBlocking: form && (!form.state.formSubmitted || form.state.isSubmitting) });
+    this.setState({
+      isBlocking: form && (!form.state.formSubmitted || form.state.isSubmitting),
+    });
   }
 
   validateMilestoneDesc(value) {
