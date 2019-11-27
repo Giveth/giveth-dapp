@@ -15,7 +15,7 @@ BigNumber.config({ DECIMAL_PLACES: 18 });
 
 const numberRegex = RegExp('^[0-9]*[.]?[0-9]*$');
 
-class RateConvertor extends Component {
+class RateConverter extends Component {
   constructor(props) {
     super(props);
 
@@ -144,7 +144,7 @@ class RateConvertor extends Component {
             </div>
 
             <div className="form-group row">
-              <div className="col-4">
+              <div className="col-5">
                 <Input
                   type="text"
                   label={`Amount in ${selectedFiatType}`}
@@ -161,7 +161,7 @@ class RateConvertor extends Component {
                 />
               </div>
 
-              <div className="col-4">
+              <div className="col-2">
                 <SelectFormsy
                   name="fiatType"
                   label="Currency"
@@ -180,7 +180,7 @@ class RateConvertor extends Component {
                 />
               </div>
 
-              <div className="col-4">
+              <div className="col-5">
                 <Input
                   type="text"
                   label={`Amount in ${token.name}`}
@@ -220,7 +220,7 @@ class RateConvertor extends Component {
   }
 }
 
-RateConvertor.propTypes = {
+RateConverter.propTypes = {
   getConversionRates: PropTypes.func.isRequired,
   conversionRateLoading: PropTypes.bool.isRequired,
   disabled: PropTypes.bool,
@@ -235,7 +235,7 @@ RateConvertor.propTypes = {
   }),
 };
 
-RateConvertor.defaultProps = {
+RateConverter.defaultProps = {
   disabled: false,
   selectedFiatType: 'EUR',
   date: getStartOfDayUTC().subtract(1, 'd'),
@@ -244,4 +244,4 @@ RateConvertor.defaultProps = {
   token: undefined,
 };
 
-export default getConversionRatesContext(RateConvertor);
+export default getConversionRatesContext(RateConverter);
