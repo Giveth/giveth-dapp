@@ -8,6 +8,8 @@ import ErrorPopup from 'components/ErrorPopup';
 import confirmationDialog from 'lib/confirmationDialog';
 import { Consumer as Web3Consumer } from '../contextProviders/Web3Provider';
 
+import { actionWithLoggedIn } from '../lib/middleware';
+
 const DeleteProposedMilestoneButton = ({ milestone, currentUser }) => {
   const _confirmDeleteMilestone = () => {
     MilestoneService.deleteProposedMilestone({
@@ -18,7 +20,9 @@ const DeleteProposedMilestoneButton = ({ milestone, currentUser }) => {
   };
 
   const _deleteProposedMilestone = () =>
-    confirmationDialog('milestone', milestone.title, _confirmDeleteMilestone);
+    actionWithLoggedIn(currentUser).then(() =>
+      confirmationDialog('milestone', milestone.title, _confirmDeleteMilestone),
+    );
 
   return (
     <Web3Consumer>
@@ -30,7 +34,7 @@ const DeleteProposedMilestoneButton = ({ milestone, currentUser }) => {
                 type="button"
                 className="btn btn-danger btn-sm"
                 onClick={_deleteProposedMilestone}
-                disable={!isForeignNetwork ? true : undefined}
+                disable={!isForeignNetwork}
               >
                 <i className="fa fa-times-circle-o" />
                 &nbsp;Delete

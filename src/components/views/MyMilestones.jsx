@@ -10,7 +10,7 @@ import { Consumer as Web3Consumer } from 'contextProviders/Web3Provider';
 import { Consumer as WhiteListConsumer } from 'contextProviders/WhiteListProvider';
 
 import MilestoneActions from 'components/MilestoneActions';
-import { isLoggedIn } from 'lib/middleware';
+import AuthenticationWarning from '../AuthenticationWarning';
 import ErrorPopup from '../ErrorPopup';
 import Loader from '../Loader';
 import User from '../../models/User';
@@ -53,15 +53,7 @@ class MyMilestones extends Component {
   }
 
   componentDidMount() {
-    isLoggedIn(this.props.currentUser, true)
-      .then(() => this.loadMileStones())
-      .catch(err => {
-        if (err === 'notLoggedIn') {
-          ErrorPopup('You are not logged in.', err);
-        } else if (err !== undefined) {
-          ErrorPopup('Something went wrong.', err);
-        }
-      });
+    this.loadMileStones();
   }
 
   componentDidUpdate(prevProps) {
@@ -155,6 +147,8 @@ class MyMilestones extends Component {
                     networkName={config.foreignNetworkName}
                   />
 
+                  <AuthenticationWarning currentUser={currentUser} />
+
                   <ul className="nav nav-tabs">
                     {this.milestoneTabs.map(st => (
                       <li className="nav-item" key={st}>
@@ -180,9 +174,7 @@ class MyMilestones extends Component {
                           <table className="table table-responsive table-striped table-hover">
                             <thead>
                               <tr>
-                                {currentUser.authenticated && (
-                                  <th className="td-actions">Actions</th>
-                                )}
+                                <th className="td-actions">Actions</th>
                                 <th className="td-created-at">Created</th>
                                 <th className="td-name">Name</th>
                                 <th className="td-status">Status</th>
@@ -195,15 +187,13 @@ class MyMilestones extends Component {
                             <tbody>
                               {milestones.map(m => (
                                 <tr key={m._id} className={m.status === 'Pending' ? 'pending' : ''}>
-                                  {currentUser.authenticated && (
-                                    <td className="td-actions">
-                                      <MilestoneActions
-                                        milestone={m}
-                                        balance={balance}
-                                        currentUser={currentUser}
-                                      />
-                                    </td>
-                                  )}
+                                  <td className="td-actions">
+                                    <MilestoneActions
+                                      milestone={m}
+                                      balance={balance}
+                                      currentUser={currentUser}
+                                    />
+                                  </td>
                                   <td className="td-created-at">
                                     {m.createdAt && (
                                       <span>{moment.utc(m.createdAt).format('Do MMM YYYY')}</span>

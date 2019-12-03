@@ -9,111 +9,90 @@ import MilestoneService from 'services/MilestoneService';
 import ErrorPopup from 'components/ErrorPopup';
 import ConversationModal from 'components/ConversationModal';
 import GA from 'lib/GoogleAnalytics';
-import { checkBalance, isLoggedIn } from 'lib/middleware';
+import { checkBalance, actionWithLoggedIn } from 'lib/middleware';
 import { Consumer as Web3Consumer } from '../contextProviders/Web3Provider';
 
 class ApproveRejectMilestoneCompletionButtons extends Component {
   constructor() {
     super();
-    this._isLoggedIn = false;
-    this._isLoaded = false;
     this.conversationModal = React.createRef();
-  }
-
-  componentDidMount() {
-    this.checkLogin();
-  }
-
-  componentDidUpdate() {
-    this.checkLogin();
-  }
-
-  async checkLogin() {
-    const { currentUser } = this.props;
-    if (currentUser === undefined) return;
-    this._isLoggedIn = currentUser._authenticated;
-    isLoggedIn(currentUser, false)
-      .then(_ => {})
-      .catch(_ => {});
-    if (this._isLoggedIn && !this._isLoaded) {
-      this._isLoaded = true;
-      this.forceUpdate();
-    }
   }
 
   async approveMilestoneCompleted() {
     const { milestone, currentUser, balance } = this.props;
 
-    checkBalance(balance)
-      .then(() => {
-        this.conversationModal.current
-          .openModal({
-            title: 'Approve Milestone completion',
-            description:
-              'Optionally explain why you approve the completion of this Milestone. Compliments are appreciated! This information will be publicly visible and emailed to the Milestone owner.',
-            textPlaceholder:
-              'Optionally explain why you approve the completion of this Milestone...',
-            required: false,
-            cta: 'Approve completion',
-            enableAttachProof: false,
-          })
-          .then(proof => {
-            MilestoneService.approveMilestoneCompletion({
-              milestone,
-              from: currentUser.address,
-              proof,
-              onTxHash: txUrl => {
-                GA.trackEvent({
-                  category: 'Milestone',
-                  action: 'approved completion',
-                  label: milestone._id,
-                });
+    actionWithLoggedIn(currentUser).then(() =>
+      checkBalance(balance)
+        .then(() => {
+          this.conversationModal.current
+            .openModal({
+              title: 'Approve Milestone completion',
+              description:
+                'Optionally explain why you approve the completion of this Milestone. Compliments are appreciated! This information will be publicly visible and emailed to the Milestone owner.',
+              textPlaceholder:
+                'Optionally explain why you approve the completion of this Milestone...',
+              required: false,
+              cta: 'Approve completion',
+              enableAttachProof: false,
+            })
+            .then(proof => {
+              MilestoneService.approveMilestoneCompletion({
+                milestone,
+                from: currentUser.address,
+                proof,
+                onTxHash: txUrl => {
+                  GA.trackEvent({
+                    category: 'Milestone',
+                    action: 'approved completion',
+                    label: milestone._id,
+                  });
 
-                React.toast.info(
-                  <p>
-                    Approving this Milestone is pending...
-                    <br />
-                    <a href={txUrl} target="_blank" rel="noopener noreferrer">
-                      View transaction
-                    </a>
-                  </p>,
-                );
-              },
-              onConfirmation: txUrl => {
-                React.toast.success(
-                  <p>
-                    The Milestone has been approved!
-                    <br />
-                    <a href={txUrl} target="_blank" rel="noopener noreferrer">
-                      View transaction
-                    </a>
-                  </p>,
-                );
-              },
-              onError: (err, txUrl) => {
-                if (err === 'patch-error') {
-                  ErrorPopup(
-                    "Something went wrong with approving this Milestone's completion",
-                    err,
+                  React.toast.info(
+                    <p>
+                      Approving this Milestone is pending...
+                      <br />
+                      <a href={txUrl} target="_blank" rel="noopener noreferrer">
+                        View transaction
+                      </a>
+                    </p>,
                   );
-                } else {
-                  ErrorPopup(
-                    'Something went wrong with the transaction.',
-                    `${txUrl} => ${JSON.stringify(err, null, 2)}`,
+                },
+                onConfirmation: txUrl => {
+                  React.toast.success(
+                    <p>
+                      The Milestone has been approved!
+                      <br />
+                      <a href={txUrl} target="_blank" rel="noopener noreferrer">
+                        View transaction
+                      </a>
+                    </p>,
                   );
-                }
-              },
-            });
-          })
-          .catch(_ => {});
-      })
-      .catch(err => {
-        if (err === 'noBalance') {
-          ErrorPopup('There is no balance left on the account.', err);
-        } else if (err !== undefined) {
-          ErrorPopup('Something went wrong.', err);
-        }
-      });
+                },
+                onError: (err, txUrl) => {
+                  if (err === 'patch-error') {
+                    ErrorPopup(
+                      "Something went wrong with approving this Milestone's completion",
+                      err,
+                    );
+                  } else {
+                    ErrorPopup(
+                      'Something went wrong with the transaction.',
+                      `${txUrl} => ${JSON.stringify(err, null, 2)}`,
+                    );
+                  }
+                },
+              });
+            })
+            .catch(_ => {});
+        })
+        .catch(err => {
+          if (err === 'noBalance') {
+            ErrorPopup('There is no balance left on the account.', err);
+          } else if (err !== undefined) {
+            ErrorPopup('Something went wrong.', err);
+          }
+        }),
+    );
   }
 
   async rejectMilestoneCompleted() {
@@ -203,7 +182,7 @@ class ApproveRejectMilestoneCompletionButtons extends Component {
                   type="button"
                   className="btn btn-success btn-sm"
                   onClick={() => this.approveMilestoneCompleted()}
-                  disabled={!isForeignNetwork || !this._isLoggedIn}
+                  disabled={!isForeignNetwork}
                 >
                   <i className="fa fa-thumbs-up" />
                   &nbsp;Approve
@@ -213,7 +192,7 @@ class ApproveRejectMilestoneCompletionButtons extends Component {
                   type="button"
                   className="btn btn-danger btn-sm"
                   onClick={() => this.rejectMilestoneCompleted()}
-                  disabled={!isForeignNetwork || !this._isLoggedIn}
+                  disabled={!isForeignNetwork}
                 >
                   <i className="fa fa-thumbs-down" />
                   &nbsp;Reject Completion

@@ -793,7 +793,11 @@ class EditMilestone extends Component {
       toggles.isLPMilestone = isLPMilestone;
     }
 
-    this.setState({ milestone: newMilestone, maxAmount: milestone.maxAmount, ...toggles });
+    this.setState({
+      milestone: newMilestone,
+      maxAmount: milestone.maxAmount,
+      ...toggles,
+    });
     if (tokenAddress !== ANY_TOKEN.address) {
       this.setToken(tokenAddress);
     }
@@ -811,7 +815,10 @@ class EditMilestone extends Component {
       ms = new BridgedMilestone(milestone.toFeathers());
       ms.itemizeState = itemizeState;
     } else {
-      ms = new LPMilestone({ ...milestone.toFeathers(), recipientId: campaignProjectId });
+      ms = new LPMilestone({
+        ...milestone.toFeathers(),
+        recipientId: campaignProjectId,
+      });
       ms.itemizeState = itemizeState;
     }
 
@@ -835,7 +842,10 @@ class EditMilestone extends Component {
       milestone.itemizeState = false;
     }
 
-    this.setState({ acceptsSingleToken: value, maxAmount: milestone.maxAmount });
+    this.setState({
+      acceptsSingleToken: value,
+      maxAmount: milestone.maxAmount,
+    });
 
     if (this.state.componentDraftLoaded === false) {
       milestoneTemp = milestone;
@@ -882,7 +892,11 @@ class EditMilestone extends Component {
   triggerChange() {
     const milestone = returnMilestone(this);
     const { maxAmount, fiatAmount, recipientAddress } = milestone;
-    this.setState({ fiatAmount, maxAmount, recipientAddress: recipientAddress || '' });
+    this.setState({
+      fiatAmount,
+      maxAmount,
+      recipientAddress: recipientAddress || '',
+    });
   }
 
   setRecipientAddress(name, value) {
@@ -1048,7 +1062,10 @@ class EditMilestone extends Component {
       }
       milestoneObject.items = milestoneObject.items.concat(item);
 
-      this.setState({ milestone: milestoneObject, refreshList: milestoneObject.items });
+      this.setState({
+        milestone: milestoneObject,
+        refreshList: milestoneObject.items,
+      });
     });
   }
 
@@ -1457,7 +1474,7 @@ class EditMilestone extends Component {
                                     type="number"
                                     step="any"
                                     label={`Maximum amount in ${selectedFiatType}`}
-                                    value={fiatAmount.toFixed()}
+                                    value={BigNumber(fiatAmount).toFixed()}
                                     placeholder="10"
                                     validations="greaterThan:0"
                                     validationErrors={{
@@ -1494,7 +1511,7 @@ class EditMilestone extends Component {
                                     type="number"
                                     step="any"
                                     label={`Maximum amount in ${milestone.token.name}`}
-                                    value={maxAmount.toFixed()}
+                                    value={BigNumber(maxAmount).toFixed()}
                                     placeholder="10"
                                     validations="greaterThan:0"
                                     validationErrors={{
