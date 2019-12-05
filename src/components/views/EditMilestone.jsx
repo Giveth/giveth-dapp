@@ -201,7 +201,8 @@ class EditMilestone extends Component {
               campaignProjectId: milestone.campaign.projectId,
               campaignId: milestone.campaignId,
               refreshList: milestone.items,
-              hasReviewer: milestone.reviewerAddress !== '',
+              hasReviewer:
+                milestone.reviewerAddress !== '' && milestone.reviewerAddress !== ZERO_ADDRESS,
               delegatePercent: milestone.dacId !== 0,
               isLPMilestone: milestone instanceof LPMilestone,
               acceptsSingleToken: milestone.token !== ANY_TOKEN,
@@ -370,8 +371,10 @@ class EditMilestone extends Component {
     }
     milestoneObject.items = items;
 
-    this.setState({ refreshList: milestoneObject.items });
-    this.setState({ milestone: milestoneObject });
+    this.setState({
+      refreshList: milestoneObject.items,
+      milestone: milestoneObject,
+    });
   }
 
   setImage(image) {
@@ -408,9 +411,7 @@ class EditMilestone extends Component {
       }
 
       const { selectedFiatType, maxAmount } = milestone;
-      this.setState({ selectedFiatType, maxAmount });
-
-      this.setState({ milestone });
+      this.setState({ selectedFiatType, maxAmount, milestone });
     });
   }
 
@@ -456,9 +457,7 @@ class EditMilestone extends Component {
     milestone.selectedFiatType = fiatType;
 
     const { selectedFiatType, maxAmount } = milestone;
-    this.setState({ selectedFiatType, maxAmount });
-
-    this.setState({ milestone });
+    this.setState({ selectedFiatType, maxAmount, milestone });
   }
 
   async toggleFormValid(formState) {
@@ -558,18 +557,14 @@ class EditMilestone extends Component {
     const milestone = returnMilestone(this);
     milestone.itemizeState = value;
 
-    this.setState({ itemizeState: value });
-
-    this.setState({ milestone });
+    this.setState({ itemizeState: value, milestone });
   }
 
   hasReviewer(value) {
     const milestone = returnMilestone(this);
     milestone.reviewerAddress = value ? '' : ZERO_ADDRESS;
 
-    this.setState({ hasReviewer: value });
-
-    this.setState({ milestone });
+    this.setState({ hasReviewer: value, milestone });
   }
 
   delegatePercent(value) {
@@ -577,8 +572,7 @@ class EditMilestone extends Component {
     const milestone = returnMilestone(this);
     const dacIdMilestone = value && dacs.length > 0 ? parseInt(dacs[0].value, 10) : 0;
     milestone.dacId = parseInt(dacIdMilestone, 10);
-    this.setState({ delegatePercent: value });
-    this.setState({ milestone });
+    this.setState({ delegatePercent: value, milestone });
   }
 
   isLPMilestone(value) {
@@ -592,12 +586,16 @@ class EditMilestone extends Component {
       ms = new LPMilestone({
         ...milestone.toFeathers(),
         recipientId: campaignProjectId,
+        recipientAddress: undefined,
       });
       ms.itemizeState = itemizeState;
     }
 
-    this.setState({ isLPMilestone: value });
-    this.setState({ milestone: ms });
+    if (!this.props.isNew) {
+      ms._id = milestone.id;
+    }
+
+    this.setState({ isLPMilestone: value, milestone: ms });
   }
 
   acceptsSingleToken(value) {
@@ -612,9 +610,8 @@ class EditMilestone extends Component {
     this.setState({
       acceptsSingleToken: value,
       maxAmount: milestone.maxAmount,
+      milestone,
     });
-
-    this.setState({ milestone });
   }
 
   isCapped(value) {
@@ -625,18 +622,14 @@ class EditMilestone extends Component {
     }
 
     const { fiatAmount, maxAmount } = milestone;
-    this.setState({ fiatAmount, maxAmount, isCapped: value });
-
-    this.setState({ milestone });
+    this.setState({ fiatAmount, maxAmount, isCapped: value, milestone });
   }
 
   setMyAddressAsRecipient() {
     const milestone = returnMilestone(this);
     milestone.recipientAddress = this.props.currentUser.address;
 
-    this.setState({ recipientAddress: milestone.recipientAddress });
-
-    this.setState({ milestone });
+    this.setState({ recipientAddress: milestone.recipientAddress, milestone });
   }
 
   triggerChange() {
@@ -811,9 +804,7 @@ class EditMilestone extends Component {
     const milestone = this.retrieveMilestone();
     milestone.description = templates.templates[option];
 
-    this.setState({ template: option });
-
-    this.setState({ milestone });
+    this.setState({ milestone, template: option });
   }
 
   validateMilestoneDesc(value) {
