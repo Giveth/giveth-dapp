@@ -75,9 +75,10 @@ class MilestoneConversations extends Component {
           const amountStr = convertEthHelper(new BigNumber(utils.fromWei(p.amount)));
           return `${amountStr} ${p.symbol}`;
         });
-        const phrase = `${paymentsStr.slice(0, -1).join(', ')} and ${
-          paymentsStr[paymentsStr.length - 1]
-        }`;
+        const phrase =
+          paymentsStr.length === 1
+            ? paymentsStr[0]
+            : `${paymentsStr.slice(0, -1).join(', ')} and ${paymentsStr[paymentsStr.length - 1]}`;
         if (owner.address === recipient.address) {
           return `collected ${phrase}`;
         }
