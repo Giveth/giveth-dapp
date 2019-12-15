@@ -428,8 +428,6 @@ class EditMilestone extends Component {
       milestone.conversionRateTimestamp = this.props.currentRate.timestamp;
 
       this.timer = setTimeout(this.triggerChange, WAIT_INTERVAL);
-
-      this.setState({ milestone });
     }
   }
 
@@ -445,8 +443,6 @@ class EditMilestone extends Component {
       milestone.conversionRateTimestamp = this.props.currentRate.timestamp;
 
       this.timer = setTimeout(this.triggerChange, WAIT_INTERVAL);
-
-      this.setState({ milestone });
     }
   }
 
