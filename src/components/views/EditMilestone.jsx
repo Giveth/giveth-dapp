@@ -141,7 +141,8 @@ class EditMilestone extends Component {
     this.onItemsChanged = this.onItemsChanged.bind(this);
     this.handleTemplateChange = this.handleTemplateChange.bind(this);
     this.validateMilestoneDesc = this.validateMilestoneDesc.bind(this);
-    this.retrieveMilestone = this.retrieveMilestone(this);
+    this.retrieveMilestone = this.retrieveMilestone.bind(this);
+    this.setDelegatePercent = this.setDelegatePercent.bind(this);
 
     this.timer = null;
   }
@@ -167,16 +168,23 @@ class EditMilestone extends Component {
               title: `${r.myDelegateId ? r.myDelegateId : '?'} - ${r._title}`,
             }));
 
-            this.setState(prevState => {
-              let { delegatePercent } = prevState;
-              if (dacs.length === 0) {
-                delegatePercent = false;
-              }
-              return {
-                dacs: prevState.dacs.concat(formatDACS),
-                delegatePercent,
-              };
-            });
+            this.setState(
+              prevState => {
+                let { delegatePercent } = prevState;
+                if (dacs.length === 0) {
+                  delegatePercent = false;
+                }
+                return {
+                  dacs: prevState.dacs.concat(formatDACS),
+                  delegatePercent,
+                };
+              },
+              () => {
+                if (this.state.delegatePercent) {
+                  this.setDelegatePercent(true);
+                }
+              },
+            );
           },
           () => {},
         );
@@ -302,15 +310,20 @@ class EditMilestone extends Component {
             }
 
             const { maxAmount, fiatAmount, selectedFiatType } = milestone;
-            this.setState({
-              campaignTitle: campaign.title,
-              campaignProjectId: campaign.projectId,
-              milestone,
-              isLoading: false,
-              selectedFiatType,
-              fiatAmount,
-              maxAmount,
-            });
+            this.setState(
+              {
+                campaignTitle: campaign.title,
+                campaignProjectId: campaign.projectId,
+                milestone,
+                isLoading: false,
+                selectedFiatType,
+                fiatAmount,
+                maxAmount,
+              },
+              () => {
+                this.setDelegatePercent(true);
+              },
+            );
 
             this.setDate(this.state.milestone.date);
           } catch (e) {
@@ -563,7 +576,7 @@ class EditMilestone extends Component {
     this.setState({ hasReviewer: value, milestone });
   }
 
-  delegatePercent(value) {
+  setDelegatePercent(value) {
     const { dacs } = this.state;
     const milestone = returnMilestone(this);
     const dacIdMilestone = value && dacs.length > 0 ? parseInt(dacs[0].value, 10) : 0;
@@ -978,7 +991,7 @@ class EditMilestone extends Component {
                           <Toggle
                             id="itemize-state"
                             checked={delegatePercent}
-                            onChange={e => this.delegatePercent(e.target.checked)}
+                            onChange={e => this.setDelegatePercent(e.target.checked)}
                             disabled={!isNew && !isProposed}
                           />
                           <span className="label">Donate 3% to a DAC</span>
