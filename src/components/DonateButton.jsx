@@ -8,8 +8,6 @@ import Toggle from 'react-toggle';
 import Slider from 'react-rangeslider';
 import GA from 'lib/GoogleAnalytics';
 import { Link } from 'react-router-dom';
-// import { isLoggedIn } from '../lib/middleware'
-
 import getNetwork from '../lib/blockchain/getNetwork';
 import User from '../models/User';
 import extraGas from '../lib/blockchain/extraGas';
@@ -80,7 +78,10 @@ class DonateButton extends React.Component {
 
   componentDidMount() {
     getNetwork().then(network => {
-      this.setState({ givethBridge: network.givethBridge, etherscanUrl: network.homeEtherscan });
+      this.setState({
+        givethBridge: network.givethBridge,
+        etherscanUrl: network.homeEtherscan,
+      });
     });
     this.pollToken();
   }
@@ -110,7 +111,8 @@ class DonateButton extends React.Component {
   getMaxAmount() {
     const { selectedToken } = this.state;
     const { NativeTokenBalance } = this.props;
-    const { dacId } = this.props.model;
+    const { model } = this.props;
+    const { dacId } = model;
 
     const balance =
       selectedToken.symbol === config.nativeTokenName ? NativeTokenBalance : selectedToken.balance;
@@ -126,15 +128,14 @@ class DonateButton extends React.Component {
       maxAmount = new BigNumber(maxFromWei);
     }
 
-    if (this.props.maxDonationAmount) {
-      maxAmount = maxAmount.gt(this.props.maxDonationAmount)
-        ? this.props.maxDonationAmount
-        : maxAmount;
+    let { maxDonationAmount } = this.props;
+    if (maxDonationAmount) {
+      if (dacId !== undefined && dacId !== 0) {
+        maxDonationAmount *= 1.03;
+      }
+      maxAmount = maxAmount.gt(maxDonationAmount) ? BigNumber(maxDonationAmount) : maxAmount;
     }
 
-    if (dacId !== 0) {
-      maxAmount = new BigNumber(parseFloat(maxAmount * 1.03).toFixed(6));
-    }
     return maxAmount;
   }
 
@@ -597,7 +598,10 @@ class DonateButton extends React.Component {
                     type="number"
                     value={amount}
                     onChange={(name, newAmount) => {
-                      this.setState({ amount: newAmount, defaultAmount: false });
+                      this.setState({
+                        amount: newAmount,
+                        defaultAmount: false,
+                      });
                     }}
                     validations={{
                       lessOrEqualTo: maxAmount.toNumber(),
