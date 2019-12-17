@@ -582,139 +582,6 @@ class EditMilestone extends Component {
     const dacIdMilestone = value && dacs.length > 0 ? parseInt(dacs[0].value, 10) : 0;
     milestone.dacId = parseInt(dacIdMilestone, 10);
     this.setState({ delegatePercent: value, milestone });
-    if (this.state.componentDraftLoaded === false && this.props.isNew) {
-      milestoneTemp = milestone;
-      return;
-    }
-    this.setState({ milestone });
-    this.onDraftChange();
-  }
-
-  async loadDraftStatus(draftSettings) {
-    const { campaignProjectId } = this.state;
-    const toggles = {};
-    const milestone = milestoneTemp;
-
-    const {
-      hasReviewer,
-      acceptsSingleToken,
-      maxAmount,
-      fiatAmount,
-      selectedFiatType,
-      isCapped,
-      itemizeState,
-      tokenAddress,
-      dacId,
-      isLPMilestone,
-      itemsList,
-    } = draftSettings;
-
-    if ((hasReviewer === undefined || hasReviewer === null) && this.props.isNew) {
-      this.delegatePercent(true);
-      return;
-    }
-
-    const cappedBool = isCapped !== undefined && isCapped === 'true';
-    const hasRevBool = hasReviewer !== undefined && hasReviewer === 'true';
-    const acceptsBool = acceptsSingleToken !== undefined && acceptsSingleToken === 'true';
-    const itemBool = itemizeState !== undefined && itemizeState === 'true';
-
-    if (!this.props.isNew) return;
-    if (!milestone.reviewerAddress == null) return;
-
-    if (hasReviewer !== undefined) {
-      milestone.reviewerAddress = hasRevBool ? '' : ZERO_ADDRESS;
-      toggles.hasReviewer = hasRevBool;
-      this.hasReviewer(hasRevBool);
-    }
-    if (acceptsSingleToken !== undefined) {
-      if (!acceptsSingleToken) {
-        // if ANY_TOKEN is allowed, then we can't have a cap
-        milestone.maxAmount = undefined;
-        milestone.itemizeState = false;
-      }
-      this.acceptsSingleToken(acceptsBool);
-      toggles.acceptsSingleToken = acceptsBool;
-    }
-    if (maxAmount) {
-      milestone.maxAmount = new BigNumber(maxAmount);
-      toggles.maxAmount = milestone.maxAmount;
-    }
-    if (fiatAmount) {
-      milestone.fiatAmount = new BigNumber(fiatAmount);
-      toggles.fiatAmount = fiatAmount;
-    }
-    if (selectedFiatType) {
-      milestone.selectedFiatType = selectedFiatType;
-      toggles.selectedFiatType = selectedFiatType;
-    }
-
-    if (isCapped !== undefined) {
-      milestone.maxAmount = cappedBool ? new BigNumber(0) : undefined;
-      toggles.isCapped = cappedBool;
-      this.isCapped(cappedBool);
-    }
-    if (itemizeState !== undefined) {
-      milestone.itemizeState = itemBool;
-      toggles.itemizeState = itemBool;
-    }
-    if (itemizeState === 'true') {
-      itemsList.forEach(i => {
-        this.addItem(i);
-      });
-    }
-    if (tokenAddress) {
-      milestone.token = this.props.tokenWhitelist.find(t => t.address === tokenAddress)
-        ? this.props.tokenWhitelist.find(t => t.address === tokenAddress)
-        : ANY_TOKEN;
-      if (milestone.token === undefined) {
-        milestone.token = ANY_TOKEN;
-        toggles.acceptsSingleToken = true;
-        this.acceptsSingleToken(true);
-      }
-    } else {
-      milestone.token = ANY_TOKEN;
-      toggles.acceptsSingleToken = true;
-      this.acceptsSingleToken(true);
-    }
-    if (parseInt(dacId, 10) !== 0) {
-      this.delegatePercent(true);
-      milestone.dacId = parseInt(dacId, 10);
-    } else {
-      this.delegatePercent(false);
-    }
-
-    let newMilestone = milestone;
-    if (isLPMilestone === 'true') {
-      if (!isLPMilestone) {
-        const ms = new BridgedMilestone(milestone.toFeathers());
-        ms.itemizeState = toggles.itemizeState;
-
-        newMilestone = ms;
-      } else {
-        const ms = new LPMilestone({
-          ...milestone.toFeathers(),
-          recipientId: campaignProjectId,
-        });
-        ms.itemizeState = toggles.itemizeState;
-
-        newMilestone = ms;
-      }
-      toggles.isLPMilestone = isLPMilestone;
-    }
-
-    this.setState({
-      milestone: newMilestone,
-      maxAmount: milestone.maxAmount,
-      ...toggles,
-    });
-    if (tokenAddress !== ANY_TOKEN.address) {
-      this.setToken(tokenAddress);
-    }
-    await sleep(5000);
-    if (isValid) {
-      this.toggleFormValid(true);
-    }
   }
 
   isLPMilestone(value) {
@@ -729,7 +596,6 @@ class EditMilestone extends Component {
         ...milestone.toFeathers(),
         recipientId: campaignProjectId,
         recipientAddress: undefined,
-
       });
       ms.itemizeState = itemizeState;
     }
@@ -755,14 +621,6 @@ class EditMilestone extends Component {
       maxAmount: milestone.maxAmount,
       milestone,
     });
-
-    if (this.state.componentDraftLoaded === false) {
-      milestoneTemp = milestone;
-      return;
-    }
-
-    this.setState({ milestone });
-    this.onDraftChange();
   }
 
   isCapped(value) {
