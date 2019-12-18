@@ -1,5 +1,5 @@
 /* eslint-disable react/prefer-stateless-function */
-// @dev: not prefering stateless here because functionality will be extended
+// @dev: not preferring stateless here because functionality will be extended
 import React, { Component, Fragment } from 'react';
 import PropTypes from 'prop-types';
 

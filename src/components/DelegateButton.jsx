@@ -1,5 +1,3 @@
-/* eslint-disable no-restricted-globals */
-/* eslint-disable react/sort-comp */
 import React, { Component } from 'react';
 import Modal from 'react-modal';
 import BigNumber from 'bignumber.js';
@@ -17,9 +15,10 @@ import Milestone from 'models/Milestone';
 import Campaign from 'models/Campaign';
 import ReactTooltip from 'react-tooltip';
 import ErrorPopup from './ErrorPopup';
-import { checkBalance } from '../lib/middleware';
+import { actionWithLoggedIn, checkBalance } from '../lib/middleware';
 
 import DonationService from '../services/DonationService';
+import User from '../models/User';
 
 const modalStyles = {
   content: {
@@ -85,21 +84,23 @@ class DelegateButton extends Component {
   }
 
   openDialog() {
-    checkBalance(this.props.balance)
-      .then(() =>
-        this.setState({
-          modalVisible: true,
-          amount: this.props.donation.amountRemaining.toFixed(),
-          maxAmount: this.props.donation.amountRemaining,
+    actionWithLoggedIn(this.props.currentUser).then(() =>
+      checkBalance(this.props.balance)
+        .then(() =>
+          this.setState({
+            modalVisible: true,
+            amount: this.props.donation.amountRemaining.toFixed(),
+            maxAmount: this.props.donation.amountRemaining,
+          }),
+        )
+        .catch(err => {
+          if (err === 'noBalance') {
+            ErrorPopup('There is no balance left on the account.', err);
+          } else if (err !== undefined) {
+            ErrorPopup('Something went wrong.', err);
+          }
         }),
-      )
-      .catch(err => {
-        if (err === 'noBalance') {
-          ErrorPopup('There is no balance left on the account.', err);
-        } else if (err !== undefined) {
-          ErrorPopup('Something went wrong.', err);
-        }
-      });
+    );
   }
 
   selectedObject(type, { target }, amountSelected) {
@@ -409,6 +410,7 @@ DelegateButton.propTypes = {
   types: PropTypes.arrayOf(PropTypes.shape({})).isRequired,
   milestoneOnly: PropTypes.bool,
   donation: PropTypes.instanceOf(Donation).isRequired,
+  currentUser: PropTypes.instanceOf(User).isRequired,
 };
 
 DelegateButton.defaultProps = {

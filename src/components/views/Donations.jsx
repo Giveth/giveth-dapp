@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Fragment } from 'react';
 import { Link } from 'react-router-dom';
 import moment from 'moment';
 import Pagination from 'react-js-pagination';
@@ -13,6 +13,7 @@ import { Consumer as UserConsumer } from '../../contextProviders/UserProvider';
 import DonationProvider, {
   Consumer as DonationConsumer,
 } from '../../contextProviders/DonationProvider';
+import AuthenticationWarning from '../AuthenticationWarning';
 
 /**
  * The my donations view
@@ -49,6 +50,8 @@ const Donations = () => (
                           networkName={config.foreignNetworkName}
                         />
 
+                        <AuthenticationWarning currentUser={currentUser} />
+
                         {isLoading && <Loader className="fixed" />}
 
                         {!isLoading && (
@@ -58,7 +61,7 @@ const Donations = () => (
                                 <thead>
                                   <tr>
                                     {/* eslint-disable-next-line jsx-a11y/control-has-associated-label */}
-                                    {currentUser.authenticated && <th className="td-action" />}
+                                    <th className="td-action" />
                                     <th className="td-transaction-status">Status</th>
                                     <th className="td-date">Date</th>
                                     <th className="td-donated-to">Donated to</th>
@@ -72,37 +75,35 @@ const Donations = () => (
                                 <tbody>
                                   {donations.map(d => (
                                     <tr key={d.id} className={d.isPending ? 'pending' : ''}>
-                                      {currentUser.authenticated && (
-                                        <td className="td-actions">
-                                          {d.canRefund(currentUser, isForeignNetwork) && (
+                                      <td className="td-actions">
+                                        {d.canRefund(currentUser, isForeignNetwork) && (
+                                          <button
+                                            type="button"
+                                            className="btn btn-sm btn-danger"
+                                            onClick={() => refund(d)}
+                                          >
+                                            Refund
+                                          </button>
+                                        )}
+                                        {d.canApproveReject(currentUser, isForeignNetwork) && (
+                                          <div>
+                                            <button
+                                              type="button"
+                                              className="btn btn-sm btn-success"
+                                              onClick={() => commit(d)}
+                                            >
+                                              Commit
+                                            </button>
                                             <button
                                               type="button"
                                               className="btn btn-sm btn-danger"
-                                              onClick={() => refund(d)}
+                                              onClick={() => reject(d)}
                                             >
-                                              Refund
+                                              Reject
                                             </button>
-                                          )}
-                                          {d.canApproveReject(currentUser, isForeignNetwork) && (
-                                            <div>
-                                              <button
-                                                type="button"
-                                                className="btn btn-sm btn-success"
-                                                onClick={() => commit(d)}
-                                              >
-                                                Commit
-                                              </button>
-                                              <button
-                                                type="button"
-                                                className="btn btn-sm btn-danger"
-                                                onClick={() => reject(d)}
-                                              >
-                                                Reject
-                                              </button>
-                                            </div>
-                                          )}
-                                        </td>
-                                      )}
+                                          </div>
+                                        )}
+                                      </td>
                                       <td className="td-transaction-status">
                                         {d.isPending && (
                                           <span>
@@ -123,10 +124,13 @@ const Donations = () => (
 
                                       <td className="td-donated-to">
                                         {d.intendedProjectId > 0 && (
-                                          <span className="badge badge-info">
-                                            <i className="fa fa-random" />
-                                            &nbsp;Delegated
-                                          </span>
+                                          <Fragment>
+                                            <span className="badge badge-info">
+                                              <i className="fa fa-random" />
+                                              &nbsp;Delegated
+                                            </span>
+                                            <span>&nbsp;</span>
+                                          </Fragment>
                                         )}
                                         <Link to={d.donatedTo.url}>
                                           {d.donatedTo.type} <em>{d.donatedTo.name}</em>
@@ -162,7 +166,7 @@ const Donations = () => (
                               </table>
                             )}
                             {donations && totalResults > itemsPerPage && (
-                              <center>
+                              <div className="text-center">
                                 <Pagination
                                   activePage={skipPages + 1}
                                   itemsCountPerPage={itemsPerPage}
@@ -170,12 +174,12 @@ const Donations = () => (
                                   pageRangeDisplayed={visiblePages}
                                   onChange={handlePageChanged}
                                 />
-                              </center>
+                              </div>
                             )}
 
                             {donations.length === 0 && (
                               <div>
-                                <center>
+                                <div className="text-center">
                                   <h3>You didn&apos;t make any donations yet!</h3>
                                   <img
                                     className="empty-state-img"
@@ -184,7 +188,7 @@ const Donations = () => (
                                     height="200px"
                                     alt="no-donations-icon"
                                   />
-                                </center>
+                                </div>
                               </div>
                             )}
                           </div>

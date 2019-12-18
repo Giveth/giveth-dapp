@@ -5,7 +5,7 @@ import Pagination from 'react-js-pagination';
 import { utils } from 'web3';
 import ErrorPopup from '../ErrorPopup';
 
-import { isLoggedIn, checkBalance } from '../../lib/middleware';
+import { checkBalance } from '../../lib/middleware';
 import { getTruncatedText, convertEthHelper, history } from '../../lib/helpers';
 
 import Loader from '../Loader';
@@ -13,6 +13,7 @@ import Loader from '../Loader';
 import User from '../../models/User';
 import DACservice from '../../services/DACService';
 import DAC from '../../models/DAC';
+import AuthenticationWarning from '../AuthenticationWarning';
 
 /**
  * The my dacs view
@@ -34,15 +35,9 @@ class MyDACs extends Component {
   }
 
   componentDidMount() {
-    isLoggedIn(this.props.currentUser, true)
-      .then(() => this.loadDACs())
-      .catch(err => {
-        if (err === 'notLoggedIn') {
-          ErrorPopup('You are not logged in.', err);
-        } else if (err !== undefined) {
-          ErrorPopup('Something went wrong.', err);
-        }
-      });
+    if (this.props.currentUser) {
+      this.loadDACs();
+    }
   }
 
   componentDidUpdate(prevProps) {
@@ -99,6 +94,8 @@ class MyDACs extends Component {
             <div className="col-md-10 m-auto">
               {(isLoading || (dacs && dacs.data.length > 0)) && <h1>Your Communities (DACs)</h1>}
 
+              <AuthenticationWarning currentUser={currentUser} />
+
               {isLoading && <Loader className="fixed" />}
 
               {!isLoading && (
@@ -109,7 +106,7 @@ class MyDACs extends Component {
                         <thead>
                           <tr>
                             {/* eslint-disable-next-line jsx-a11y/control-has-associated-label */}
-                            {currentUser.authenticated && <th className="td-actions" />}
+                            <th className="td-actions" />
                             <th className="td-name">Name</th>
                             <th className="td-donations-number">Donations</th>
                             <th className="td-donations-amount">Amount</th>
@@ -120,17 +117,15 @@ class MyDACs extends Component {
                         <tbody>
                           {dacs.data.map(d => (
                             <tr key={d.id} className={d.status === DAC.PENDING ? 'pending' : ''}>
-                              {currentUser.authenticated && (
-                                <td className="td-actions">
-                                  <button
-                                    type="button"
-                                    className="btn btn-link"
-                                    onClick={() => this.editDAC(d.id)}
-                                  >
-                                    <i className="fa fa-edit" />
-                                  </button>
-                                </td>
-                              )}
+                              <td className="td-actions">
+                                <button
+                                  type="button"
+                                  className="btn btn-link"
+                                  onClick={() => this.editDAC(d.id)}
+                                >
+                                  <i className="fa fa-edit" />
+                                </button>
+                              </td>
                               <td className="td-name">
                                 <Link to={`/dacs/${d.id}`}>{getTruncatedText(d.title, 45)}</Link>
                               </td>
