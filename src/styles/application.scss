@@ -264,3 +264,8 @@ span.nav-link:focus {
   display: flex;
   justify-content: space-between;
 }
+
+.label > .btn-explain {
+  padding: 0 5px;
+  color: lighten($link-color, 40%);
+}
