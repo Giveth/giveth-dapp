@@ -1,5 +1,3 @@
-/* eslint-disable no-restricted-globals */
-/* eslint-disable react/sort-comp */
 import React, { Component } from 'react';
 import Modal from 'react-modal';
 import BigNumber from 'bignumber.js';
@@ -15,10 +13,12 @@ import GA from 'lib/GoogleAnalytics';
 import Donation from 'models/Donation';
 import Milestone from 'models/Milestone';
 import Campaign from 'models/Campaign';
+import ReactTooltip from 'react-tooltip';
 import ErrorPopup from './ErrorPopup';
-import { checkBalance } from '../lib/middleware';
+import { actionWithLoggedIn, checkBalance } from '../lib/middleware';
 
 import DonationService from '../services/DonationService';
+import User from '../models/User';
 
 const modalStyles = {
   content: {
@@ -53,7 +53,7 @@ function getTypes(types) {
     el.id = t._id;
     el.element = (
       <span>
-        {t.title} <em>{t instanceof Milestone ? 'Milestone' : 'Campaign'}</em>
+        {t.title} <em>{isMilestone ? 'Milestone' : 'Campaign'}</em>
       </span>
     );
     if (isMilestone) {
@@ -84,21 +84,23 @@ class DelegateButton extends Component {
   }
 
   openDialog() {
-    checkBalance(this.props.balance)
-      .then(() =>
-        this.setState({
-          modalVisible: true,
-          amount: this.props.donation.amountRemaining.toFixed(),
-          maxAmount: this.props.donation.amountRemaining,
+    actionWithLoggedIn(this.props.currentUser).then(() =>
+      checkBalance(this.props.balance)
+        .then(() =>
+          this.setState({
+            modalVisible: true,
+            amount: this.props.donation.amountRemaining.toFixed(),
+            maxAmount: this.props.donation.amountRemaining,
+          }),
+        )
+        .catch(err => {
+          if (err === 'noBalance') {
+            ErrorPopup('There is no balance left on the account.', err);
+          } else if (err !== undefined) {
+            ErrorPopup('Something went wrong.', err);
+          }
         }),
-      )
-      .catch(err => {
-        if (err === 'noBalance') {
-          ErrorPopup('There is no balance left on the account.', err);
-        } else if (err !== undefined) {
-          ErrorPopup('Something went wrong.', err);
-        }
-      });
+    );
   }
 
   selectedObject(type, { target }, amountSelected) {
@@ -106,7 +108,7 @@ class DelegateButton extends Component {
 
     let maxAmount = this.props.donation.amountRemaining;
 
-    if (admin && admin instanceof Campaign && admin.isCapped) {
+    if (admin && admin instanceof Milestone && admin.isCapped) {
       const maxDelegationAmount = admin.maxAmount.minus(admin.currentBalance);
 
       if (maxDelegationAmount.lt(this.props.donation.amountRemaining)) {
@@ -123,36 +125,33 @@ class DelegateButton extends Component {
     this.setState({
       maxAmount,
       amount: tempAmount,
-      objectsToDelegateToCampaign: target.value,
     });
     if (type === Milestone.type) {
-      this.setState({ objectsToDelegateToMilestone: target.value });
+      this.setState({
+        objectsToDelegateToMilestone: target.value,
+      });
+      if (admin) {
+        const campaign = this.props.types.find(t => admin.campaign.projectId === t.projectId);
+        this.setState({
+          objectsToDelegateToCampaign: campaign ? [campaign._id] : [],
+        });
+      }
     } else {
       this.setState({
         curProjectId: admin ? admin.projectId : null,
         objectsToDelegateToCampaign: target.value,
       });
-    }
-  }
 
-  selectedMilestoneObject({ target }) {
-    const admin = this.props.types.find(t => t._id === target.value[0]);
-
-    let maxAmount = this.props.donation.amountRemaining;
-
-    if (admin && admin instanceof Milestone && admin.isCapped) {
-      const maxDelegationAmount = admin.maxAmount.minus(admin.currentBalance);
-
-      if (maxDelegationAmount.lt(this.props.donation.amountRemaining)) {
-        maxAmount = maxDelegationAmount;
+      const { objectsToDelegateToMilestone } = this.state;
+      if (objectsToDelegateToMilestone.length > 0) {
+        const milestone = this.props.types.find(
+          t => t.type === Milestone.type && t._id === objectsToDelegateToMilestone[0],
+        );
+        if (!admin || !milestone || milestone.campaign.projectId !== admin.projectId) {
+          this.setState({ objectsToDelegateToMilestone: [] });
+        }
       }
     }
-
-    this.setState({
-      maxAmount,
-      amount: maxAmount.toFixed(),
-      objectsToDelegateToMilestone: target.value,
-    });
   }
 
   submit(model) {
@@ -168,7 +167,7 @@ class DelegateButton extends Component {
     if (
       admin instanceof Milestone &&
       admin.isCapped &&
-      admin.maxAmount.lt(admin.currentBalance || 0)
+      admin.maxAmount.lte(admin.currentBalance || 0)
     ) {
       React.toast.error('That Milestone has reached its funding goal. Please pick another.');
       return;
@@ -278,7 +277,12 @@ class DelegateButton extends Component {
         <Modal
           isOpen={this.state.modalVisible}
           onRequestClose={() => {
-            this.setState({ modalVisible: false });
+            this.setState({
+              modalVisible: false,
+              amount: '0',
+              objectsToDelegateToCampaign: [],
+              objectsToDelegateToMilestone: [],
+            });
           }}
           contentLabel="Delegate Donation"
           style={modalStyles}
@@ -297,7 +301,18 @@ class DelegateButton extends Component {
           </p>
           <Form onSubmit={this.submit} layout="vertical">
             <div className="form-group">
-              <span className="label">Delegate to:</span>
+              <span className="label">
+                Delegate to:
+                <i
+                  className="fa fa-question-circle-o btn btn-sm btn-explain"
+                  data-tip="React-tooltip"
+                  data-for="delegateHint"
+                />
+                <ReactTooltip id="delegateHint" place="right" type="dark" effect="solid">
+                  Just fill campaign field to delegate to campaign, otherwise fund is delegated to
+                  milestone
+                </ReactTooltip>
+              </span>
               <div layout="vertical">
                 <InputToken
                   disabled={milestoneOnly}
@@ -316,6 +331,7 @@ class DelegateButton extends Component {
                   value={objectsToDelegateToMilestone}
                   options={milestoneTypes}
                   onSelect={v => this.selectedObject(Milestone.type, v, this.state.amountSelected)}
+                  maxLength={1}
                 />
               </div>
             </div>
@@ -394,6 +410,7 @@ DelegateButton.propTypes = {
   types: PropTypes.arrayOf(PropTypes.shape({})).isRequired,
   milestoneOnly: PropTypes.bool,
   donation: PropTypes.instanceOf(Donation).isRequired,
+  currentUser: PropTypes.instanceOf(User).isRequired,
 };
 
 DelegateButton.defaultProps = {

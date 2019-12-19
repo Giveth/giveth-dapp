@@ -487,9 +487,7 @@ class ViewMilestone extends Component {
                               title="Date of Milestone"
                               explanation={
                                 milestone.isCapped
-                                  ? `This date defines the ${
-                                      milestone.token.symbol
-                                    }-fiat conversion rate`
+                                  ? `This date defines the ${milestone.token.symbol}-fiat conversion rate`
                                   : 'The date this Milestone was created'
                               }
                             />
@@ -502,9 +500,7 @@ class ViewMilestone extends Component {
                             <DetailLabel
                               id="max-amount"
                               title="Max amount to raise"
-                              explanation={`The maximum amount of ${
-                                milestone.token.symbol
-                              } that can be donated to this Milestone. Based on the requested amount in fiat.`}
+                              explanation={`The maximum amount of ${milestone.token.symbol} that can be donated to this Milestone. Based on the requested amount in fiat.`}
                             />
                             {convertEthHelper(milestone.maxAmount)} {milestone.token.symbol}
                             {milestone.items.length === 0 &&

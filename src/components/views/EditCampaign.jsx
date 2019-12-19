@@ -205,7 +205,9 @@ class EditCampaign extends Component {
   triggerRouteBlocking() {
     const form = this.form.current.formsyForm;
     // we only block routing if the form state is not submitted
-    this.setState({ isBlocking: form && (!form.state.formSubmitted || form.state.isSubmitting) });
+    this.setState({
+      isBlocking: form && (!form.state.formSubmitted || form.state.isSubmitting),
+    });
     this.onDraftChange();
   }
 
@@ -314,23 +316,21 @@ class EditCampaign extends Component {
                     </div>
 
                     <div className="form-group">
-                      {
-                        <SelectFormsy
-                          name="reviewerAddress"
-                          id="reviewer-select"
-                          label="Select a reviewer"
-                          helpText="This person or smart contract will be reviewing your Campaign to increase trust for Givers."
-                          value={campaign.reviewerAddress}
-                          cta="--- Select a reviewer ---"
-                          options={reviewers}
-                          validations="isEtherAddress"
-                          validationErrors={{
-                            isEtherAddress: 'Please select a reviewer.',
-                          }}
-                          required
-                          disabled={!isNew}
-                        />
-                      }
+                      <SelectFormsy
+                        name="reviewerAddress"
+                        id="reviewer-select"
+                        label="Select a reviewer"
+                        helpText="This person or smart contract will be reviewing your Campaign to increase trust for Givers."
+                        value={campaign.reviewerAddress}
+                        cta="--- Select a reviewer ---"
+                        options={reviewers}
+                        validations="isEtherAddress"
+                        validationErrors={{
+                          isEtherAddress: 'Please select a reviewer.',
+                        }}
+                        required
+                        disabled={!isNew}
+                      />
                     </div>
 
                     <div className="form-group row">

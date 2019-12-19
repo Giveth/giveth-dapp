@@ -2,7 +2,6 @@ import React, { Component, createContext } from 'react';
 import PropTypes from 'prop-types';
 import { paramsForServer } from 'feathers-hooks-common';
 
-import { authenticateIfPossible } from 'lib/middleware';
 import Milestone from 'models/Milestone';
 import { feathersClient } from '../lib/feathersClient';
 import ErrorPopup from '../components/ErrorPopup';
@@ -47,9 +46,7 @@ class DelegationProvider extends Component {
 
   componentWillMount() {
     if (this.props.currentUser) {
-      authenticateIfPossible(this.props.currentUser, true)
-        .then(() => this.load())
-        .catch(_ => {});
+      this.load();
     }
   }
 

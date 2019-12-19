@@ -8,18 +8,18 @@
   }
 
   .milestone-header h3 {
-      display: inline-block;
+    display: inline-block;
   }
 
- .card-body.content{
+  .card-body.content {
     @include bullet-styling(8);
 
-    iframe.ql-video{
+    iframe.ql-video {
       width: 100%;
       height: 300px;
     }
 
-    img{
+    img {
       max-width: 100%;
       width: auto;
       box-sizing: border-box;
@@ -36,9 +36,9 @@
     }
   }
 
-  .milestone-cards-grid-container{
+  .milestone-cards-grid-container {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
     grid-gap: 25px;
     width: 100%;
     justify-content: space-around;

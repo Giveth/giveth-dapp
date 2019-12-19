@@ -1,4 +1,3 @@
-/* global window */
 import localforage from 'localforage';
 import Accounts from 'web3-eth-accounts';
 import { utils } from 'web3';

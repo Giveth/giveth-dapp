@@ -29,7 +29,10 @@ const ERC20ABI = [
   // set allowance approval
   {
     constant: false,
-    inputs: [{ name: '_spender', type: 'address' }, { name: '_amount', type: 'uint256' }],
+    inputs: [
+      { name: '_spender', type: 'address' },
+      { name: '_amount', type: 'uint256' },
+    ],
     name: 'approve',
     outputs: [{ name: 'success', type: 'bool' }],
     type: 'function',
@@ -37,7 +40,10 @@ const ERC20ABI = [
   // read allowance of a specific address
   {
     constant: true,
-    inputs: [{ name: '_owner', type: 'address' }, { name: '_spender', type: 'address' }],
+    inputs: [
+      { name: '_owner', type: 'address' },
+      { name: '_spender', type: 'address' },
+    ],
     name: 'allowance',
     outputs: [{ name: 'remaining', type: 'uint256' }],
     type: 'function',
@@ -51,7 +57,7 @@ export default async () => {
 
   const web3 = await getWeb3();
 
-  network = Object.assign({}, config);
+  network = { ...config };
 
   network.liquidPledging = new LiquidPledging(web3, network.liquidPledgingAddress);
   network.lppCampaignFactory = new LPPCampaignFactory(web3, network.lppCampaignFactoryAddress);

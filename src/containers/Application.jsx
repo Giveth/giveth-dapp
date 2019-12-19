@@ -54,7 +54,6 @@ import WhiteListProvider, {
 
 import '../lib/validators';
 
-/* global document */
 /**
  * Here we hack to make stuff globally available
  */
