@@ -1,9 +1,11 @@
 import React from 'react';
 import localForage from 'localforage';
 import { hydrate, render } from 'react-dom';
-import registerServiceWorker from './lib/registerServiceWorker';
+import { unregister } from './lib/registerServiceWorker';
 import Application from './containers/Application';
 import './styles/application.css';
+
+unregister();
 
 const rootElement = document.getElementById('root');
 
@@ -31,5 +33,3 @@ if (rootElement.hasChildNodes()) {
     document.getElementById('root'),
   );
 }
-
-registerServiceWorker();
