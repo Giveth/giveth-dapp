@@ -420,7 +420,9 @@ class EditMilestone extends Component {
 
       if (milestone.isCapped) {
         milestone.maxAmount = milestone.fiatAmount.div(rate);
-        milestone.conversionRateTimestamp = resp.timestamp;
+        if (resp) {
+          milestone.conversionRateTimestamp = resp.timestamp;
+        }
       }
 
       const { selectedFiatType, maxAmount } = milestone;
@@ -501,7 +503,6 @@ class EditMilestone extends Component {
     milestone.token = token;
     if (!milestone.items || milestone.items.length === 0) {
       this.updateMilestoneState(milestone);
-      this.setDate(milestone.date);
       return;
     }
     const results = [];
