@@ -6,6 +6,7 @@ import getWeb3 from '../lib/blockchain/getWeb3';
 import * as fundForwarder from '../lib/blockchain/fundsForwarder';
 import User from '../models/User';
 import LoaderButton from './LoaderButton';
+import CampaignService from '../services/CampaignService';
 import ErrorPopup from './ErrorPopup';
 import config from '../configuration';
 import { Consumer as Web3Consumer } from '../contextProviders/Web3Provider';
@@ -223,7 +224,7 @@ class CreateDonationAddressButton extends React.Component {
   }
 
   async deployFundsForwarder() {
-    const { currentUser, receiverId, giverId } = this.props;
+    const { currentUser, receiverId, giverId, campaignId } = this.props;
     const { fundsForwarderFactoryAddress, homeEtherscan: etherscanUrl } = config;
     const web3 = await getWeb3();
     const from = currentUser.address;
@@ -260,6 +261,7 @@ class CreateDonationAddressButton extends React.Component {
     })
       .then(receipt => {
         const newDonationAddress = getNewFundForwarderAddressFromTx(receipt);
+        CampaignService.fundForwarder(campaignId, newDonationAddress);
         React.toast.success(
           <p>
             Donation address successfully created
@@ -518,6 +520,7 @@ class CreateDonationAddressButton extends React.Component {
 
 CreateDonationAddressButton.propTypes = {
   campaignTitle: PropTypes.string.isRequired,
+  campaignId: PropTypes.string.isRequired,
   receiverId: PropTypes.number.isRequired,
   giverId: PropTypes.number.isRequired,
   currentUser: PropTypes.instanceOf(User),
