@@ -24,11 +24,13 @@ const LoaderButton = ({
   className,
   formNoValidate,
   type,
+  onClick,
   disabled,
   isLoading,
   loadingText,
   children,
   network,
+  ...props
 }) => (
   <Web3Consumer>
     {({ state: { isHomeNetwork, isForeignNetwork } }) => {
@@ -41,7 +43,9 @@ const LoaderButton = ({
             className={className}
             formNoValidate={formNoValidate}
             type={type}
+            onClick={onClick}
             disabled={disabled || incorrectNetwork}
+            {...props}
           >
             {isLoading && (
               <span>
@@ -78,6 +82,7 @@ LoaderButton.propTypes = {
   loadingText: PropTypes.string,
   children: PropTypes.node,
   type: PropTypes.string,
+  onClick: PropTypes.func,
   network: PropTypes.oneOf(['Home', 'Foreign', undefined]),
 };
 
@@ -89,6 +94,7 @@ LoaderButton.defaultProps = {
   loadingText: '',
   children: null,
   type: 'button',
+  onClick: undefined,
   network: undefined,
 };
 

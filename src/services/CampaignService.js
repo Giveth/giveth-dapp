@@ -332,6 +332,39 @@ class CampaignService {
   }
 
   /**
+   * Change funds forwarder address on a campaign
+   *
+   * //TODO: update contact for transaction on this
+   *
+   * @param campaign    Campaign to be modified
+   * @param address        Address of the funds forwarder
+   */
+  static addFundsForwarderAddress(
+    campaign,
+    address,
+    afterCreate = () => {},
+    afterMined = () => {},
+  ) {
+    Promise.all([getNetwork(), getWeb3()])
+      .then(([_]) => {
+        campaigns
+          .patch(campaign.id, {
+            fundsForwarder: address,
+          })
+          .then(() => {
+            afterCreate();
+            afterMined();
+          })
+          .catch(err => {
+            ErrorPopup('Something went wrong with updating campaign', err);
+          });
+      })
+      .catch(err => {
+        ErrorPopup('Something went wrong with cancelling your campaign', err);
+      });
+  }
+
+  /**
    * Cancel Campaign in the blockchain and update it in feathers
    * TODO: Handle error states properly
    *
