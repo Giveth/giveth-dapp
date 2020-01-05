@@ -43,6 +43,7 @@ class Campaign extends BasicModel {
     this.reviewerAddress = data.reviewerAddress;
     this.ownerAddress = data.ownerAddress;
     this.coownerAddress = data.coownerAddress;
+    this.fundsForwarder = data.fundsForwarder;
     this.mined = data.mined;
     this._id = data._id;
     this.commitTime = data.commitTime || 0;
