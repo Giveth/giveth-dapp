@@ -11,7 +11,7 @@ import ErrorPopup from './ErrorPopup';
 import config from '../configuration';
 import { Consumer as Web3Consumer } from '../contextProviders/Web3Provider';
 import NetworkWarning from './NetworkWarning';
-import { authenticateIfPossible, checkProfile } from '../lib/middleware';
+import { authenticateIfPossible, checkProfile, sleep } from '../lib/middleware';
 import { history } from '../lib/helpers';
 
 const newFundForwarderEventName = 'NewFundForwarder';
@@ -106,7 +106,6 @@ class CreateDonationAddressButton extends React.Component {
     try {
       const { campaignId } = this.props;
       CampaignService.get(campaignId).then(async campaign => {
-        console.log(campaign);
         if (campaign.fundsForwarder && campaign.fundsForwarder !== '0x0') {
           this.setAddressAndFetch(campaign.fundsForwarder);
         } else {
@@ -223,7 +222,7 @@ class CreateDonationAddressButton extends React.Component {
           );
           this.closeDialog();
         })
-        .then(() => {
+        .then(async () => {
           React.toast.success(
             <p>
               Balances successfully forwarded to the bridge
@@ -233,6 +232,8 @@ class CreateDonationAddressButton extends React.Component {
               </a>
             </p>,
           );
+          await sleep(3000);
+          window.location.reload();
         })
         .catch(e => {
           /* eslint-disable-next-line no-console */
@@ -269,7 +270,7 @@ class CreateDonationAddressButton extends React.Component {
     const from = currentUser.address;
 
     /* eslint-disable-next-line no-console */
-    console.log('Deploying funds forwarder', { giverId, receiverId, from });
+    // console.log('Deploying funds forwarder', { giverId, receiverId, from });
 
     const fundsForwarderFactory = new web3.eth.Contract(
       fundForwarder.factoryAbi,
