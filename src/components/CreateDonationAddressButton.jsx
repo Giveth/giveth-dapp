@@ -11,6 +11,8 @@ import ErrorPopup from './ErrorPopup';
 import config from '../configuration';
 import { Consumer as Web3Consumer } from '../contextProviders/Web3Provider';
 import NetworkWarning from './NetworkWarning';
+import { authenticateIfPossible, checkProfile } from '../lib/middleware';
+import { history } from '../lib/helpers';
 
 const newFundForwarderEventName = 'NewFundForwarder';
 const zeroAddress = '0x0000000000000000000000000000000000000000';
@@ -67,46 +69,83 @@ class CreateDonationAddressButton extends React.Component {
   }
 
   componentDidMount() {
+    this.checkUser()
+      .then(() => {})
+      .catch(err => {
+        if (err === 'noBalance') {
+          ErrorPopup('There is no balance left on the account.', err);
+        } else if (err !== undefined) {
+          ErrorPopup('Something went wrong.', err);
+        }
+      });
     this.findExistingDonationAddress();
+  }
+
+  async setAddressAndFetch(address) {
+    this.setState({ donationAddress: address });
+    this.fetchDonationAddressBalances();
+    this.stopLoadingDonationAddress();
+  }
+
+  checkUser() {
+    if (!this.props.currentUser) {
+      history.push('/');
+      return Promise.reject();
+    }
+
+    return authenticateIfPossible(this.props.currentUser, true).then(() =>
+      checkProfile(this.props.currentUser),
+    );
+  }
+
+  async stopLoadingDonationAddress() {
+    this.setState({ fetchingExistingAddress: false });
   }
 
   async findExistingDonationAddress() {
     try {
-      this.setState({ fetchingExistingAddress: true });
-      const { fundsForwarderFactoryAddress, fundsForwarderFactoryDeployBlock } = config;
-      const { receiverId } = this.props;
-      const web3 = await getWeb3();
+      const { campaignId } = this.props;
+      CampaignService.get(campaignId).then(async campaign => {
+        console.log(campaign);
+        if (campaign.fundsForwarder && campaign.fundsForwarder !== '0x0') {
+          this.setAddressAndFetch(campaign.fundsForwarder);
+        } else {
+          this.setState({ fetchingExistingAddress: true });
+          // const { fundsForwarderFactoryAddress, fundsForwarderFactoryDeployBlock } = config;
+          // const { receiverId } = this.props;
+          // const web3 = await getWeb3();
 
-      const fundsForwarderFactory = new web3.eth.Contract(
-        fundForwarder.factoryAbi,
-        fundsForwarderFactoryAddress,
-      );
-      const donationAddresses = await fundsForwarderFactory
-        .getPastEvents(newFundForwarderEventName, {
-          filter: { _receiverId: receiverId },
-          fromBlock: fundsForwarderFactoryDeployBlock,
-          toBlock: 'latest',
-        })
-        .then(events =>
-          events.map(({ blockNumber, returnValues }) => ({
-            blockNumber,
-            giverId: parseInt(returnValues._giver, 16),
-            receiverId: returnValues._receiverId,
-            donationAddress: returnValues.fundsForwarder,
-          })),
-        );
-      if (donationAddresses.length > 0) {
-        const { blockNumber, donationAddress } = donationAddresses[0];
-        console.log('Found donation address', { blockNumber, donationAddress });
-        this.setState({ donationAddress });
-        this.fetchDonationAddressBalances();
-      } else {
-        //
-      }
+          // const fundsForwarderFactory = new web3.eth.Contract(
+          //   fundForwarder.factoryAbi,
+          //   fundsForwarderFactoryAddress,
+          // );
+          // const donationAddresses = await fundsForwarderFactory
+          //   .getPastEvents(newFundForwarderEventName, {
+          //     filter: { _receiverId: receiverId },
+          //     fromBlock: fundsForwarderFactoryDeployBlock,
+          //     toBlock: 'latest',
+          //   })
+          //   .then(events =>
+          //     events.map(({ blockNumber, returnValues }) => ({
+          //       blockNumber,
+          //       giverId: parseInt(returnValues._giver, 16),
+          //       receiverId: returnValues._receiverId,
+          //       donationAddress: returnValues.fundsForwarder,
+          //     })),
+          //   );
+          // if (donationAddresses.length > 0) {
+          //   const { blockNumber, donationAddress } = donationAddresses[0];
+          //   console.log('Found donation address', { blockNumber, donationAddress });
+          //   this.setAddressAndFetch(donationAddress);
+          // } else {
+          //   //
+          // }
+          this.stopLoadingDonationAddress();
+        }
+      });
     } catch (e) {
       console.error(`Error checking for existing donation address: ${e.stack}`);
-    } finally {
-      this.setState({ fetchingExistingAddress: false });
+      this.stopLoadingDonationAddress();
     }
   }
 
@@ -261,7 +300,7 @@ class CreateDonationAddressButton extends React.Component {
     })
       .then(receipt => {
         const newDonationAddress = getNewFundForwarderAddressFromTx(receipt);
-        CampaignService.fundForwarder(campaignId, newDonationAddress);
+        CampaignService.addFundsForwarderAddress(campaignId, newDonationAddress);
         React.toast.success(
           <p>
             Donation address successfully created
