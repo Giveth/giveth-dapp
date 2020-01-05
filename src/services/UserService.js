@@ -4,6 +4,7 @@ import { feathersClient } from '../lib/feathersClient';
 import ErrorPopup from '../components/ErrorPopup';
 import IPFSService from './IPFSService';
 import extraGas from '../lib/blockchain/extraGas';
+import { ZERO_ADDRESS } from '../lib/helpers';
 
 const users = feathersClient.service('users');
 
@@ -59,8 +60,8 @@ class UserService {
             user.commitTime,
             { from, $extraGas: extraGas() },
           )
-        : liquidPledging.addGiver(user.name || '', profileHash || '', 259200, 0, {
-            from,
+        : liquidPledging.addGiver(user.name || '', profileHash || '', 259200, ZERO_ADDRESS, {
+            from: user.address,
             $extraGas: extraGas(),
           }); // 3 days commitTime. TODO allow user to set commitTime
 

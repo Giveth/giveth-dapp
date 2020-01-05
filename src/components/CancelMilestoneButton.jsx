@@ -8,7 +8,7 @@ import User from 'models/User';
 import ErrorPopup from 'components/ErrorPopup';
 import ConversationModal from 'components/ConversationModal';
 import GA from 'lib/GoogleAnalytics';
-import { checkBalance } from 'lib/middleware';
+import { checkBalance, actionWithLoggedIn } from 'lib/middleware';
 import { Consumer as Web3Consumer } from '../contextProviders/Web3Provider';
 
 class CancelMilestoneButton extends Component {
@@ -20,71 +20,73 @@ class CancelMilestoneButton extends Component {
   cancelMilestone() {
     const { milestone, balance, currentUser } = this.props;
 
-    checkBalance(balance)
-      .then(() => {
-        this.conversationModal.current
-          .openModal({
-            title: 'Cancel Milestone',
-            description:
-              'Explain why you cancel this Milestone. Compliments are appreciated! This information will be publicly visible and emailed to the Milestone owner.',
-            textPlaceholder: 'Explain why you cancel this Milestone...',
-            required: true,
-            cta: 'Cancel Milestone',
-            enableAttachProof: false,
-          })
-          .then(proof => {
-            MilestoneService.cancelMilestone({
-              milestone,
-              from: currentUser.address,
-              proof,
-              onTxHash: txUrl => {
-                GA.trackEvent({
-                  category: 'Milestone',
-                  action: 'canceled',
-                  label: milestone._id,
-                });
+    actionWithLoggedIn(currentUser).then(() =>
+      checkBalance(balance)
+        .then(() =>
+          this.conversationModal.current
+            .openModal({
+              title: 'Cancel Milestone',
+              description:
+                'Explain why you cancel this Milestone. Compliments are appreciated! This information will be publicly visible and emailed to the Milestone owner.',
+              textPlaceholder: 'Explain why you cancel this Milestone...',
+              required: true,
+              cta: 'Cancel Milestone',
+              enableAttachProof: false,
+            })
+            .then(proof =>
+              MilestoneService.cancelMilestone({
+                milestone,
+                from: currentUser.address,
+                proof,
+                onTxHash: txUrl => {
+                  GA.trackEvent({
+                    category: 'Milestone',
+                    action: 'canceled',
+                    label: milestone._id,
+                  });
 
-                React.toast.info(
-                  <p>
-                    Canceling this Milestone is pending...
-                    <br />
-                    <a href={txUrl} target="_blank" rel="noopener noreferrer">
-                      View transaction
-                    </a>
-                  </p>,
-                );
-              },
-              onConfirmation: txUrl => {
-                React.toast.success(
-                  <p>
-                    The Milestone has been cancelled!
-                    <br />
-                    <a href={txUrl} target="_blank" rel="noopener noreferrer">
-                      View transaction
-                    </a>
-                  </p>,
-                );
-              },
-              onError: (err, txUrl) => {
-                if (err === 'patch-error') {
-                  ErrorPopup('Something went wrong with canceling your Milestone', err);
-                } else {
-                  ErrorPopup(
-                    'Something went wrong with the transaction.',
-                    `${txUrl} => ${JSON.stringify(err, null, 2)}`,
+                  React.toast.info(
+                    <p>
+                      Canceling this Milestone is pending...
+                      <br />
+                      <a href={txUrl} target="_blank" rel="noopener noreferrer">
+                        View transaction
+                      </a>
+                    </p>,
                   );
-                }
-              },
-            });
-          });
-      })
-      .catch(err => {
-        if (err === 'noBalance') {
-          ErrorPopup('There is no balance left on the account.', err);
-        } else if (err !== undefined) {
-          ErrorPopup('Something went wrong.', err);
-        }
-      });
+                },
+                onConfirmation: txUrl => {
+                  React.toast.success(
+                    <p>
+                      The Milestone has been cancelled!
+                      <br />
+                      <a href={txUrl} target="_blank" rel="noopener noreferrer">
+                        View transaction
+                      </a>
+                    </p>,
+                  );
+                },
+                onError: (err, txUrl) => {
+                  if (err === 'patch-error') {
+                    ErrorPopup('Something went wrong with canceling your Milestone', err);
+                  } else {
+                    ErrorPopup(
+                      'Something went wrong with the transaction.',
+                      `${txUrl} => ${JSON.stringify(err, null, 2)}`,
+                    );
+                  }
+                },
+              }),
+            ),
+        )
+        .catch(err => {
+          if (err === 'noBalance') {
+            ErrorPopup('There is no balance left on the account.', err);
+          } else if (err !== undefined) {
+            ErrorPopup('Something went wrong.', err);
+          }
+        }),
+    );
   }
 
   render() {

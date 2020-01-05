@@ -2,7 +2,7 @@ import BigNumber from 'bignumber.js';
 import { utils } from 'web3';
 
 import Model from './Model';
-import { getTruncatedText } from '../lib/helpers';
+import { getTruncatedText, ZERO_ADDRESS } from '../lib/helpers';
 
 /**
  * The DAC, Milestone and Campaign base model containing basic common interface
@@ -31,7 +31,7 @@ class BasicModel extends Model {
     image = '',
     txHash,
     owner,
-    ownerAddress = '0x0',
+    ownerAddress = ZERO_ADDRESS,
     reviewer,
     url,
     donationCount = 0,

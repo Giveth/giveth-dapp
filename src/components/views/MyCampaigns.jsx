@@ -9,7 +9,7 @@ import { Consumer as Web3Consumer } from 'contextProviders/Web3Provider';
 import config from 'configuration';
 
 import GA from 'lib/GoogleAnalytics';
-import { isLoggedIn, checkBalance } from '../../lib/middleware';
+import { checkBalance, actionWithLoggedIn } from '../../lib/middleware';
 import confirmationDialog from '../../lib/confirmationDialog';
 import Loader from '../Loader';
 import User from '../../models/User';
@@ -17,7 +17,6 @@ import { getTruncatedText, convertEthHelper, history } from '../../lib/helpers';
 import CampaignService from '../../services/CampaignService';
 import Campaign from '../../models/Campaign';
 import AuthenticationWarning from '../AuthenticationWarning';
-import ErrorPopup from '../ErrorPopup';
 
 /**
  * The my campaings view
@@ -40,15 +39,7 @@ class MyCampaigns extends Component {
   }
 
   componentDidMount() {
-    isLoggedIn(this.props.currentUser, true)
-      .then(() => this.loadCampaigns())
-      .catch(err => {
-        if (err === 'notLoggedIn') {
-          ErrorPopup('You are not logged in.', err);
-        } else if (err !== undefined) {
-          ErrorPopup('Something went wrong.', err);
-        }
-      });
+    this.loadCampaigns();
   }
 
   componentDidUpdate(prevProps) {
@@ -75,54 +66,58 @@ class MyCampaigns extends Component {
   }
 
   editCampaign(id) {
-    checkBalance(this.props.balance)
-      .then(() => {
-        history.push(`/campaigns/${id}/edit`);
-      })
-      .catch(err => {
-        if (err === 'noBalance') {
-          // handle no balance error
-        }
-      });
+    actionWithLoggedIn(this.props.currentUser).then(() => {
+      checkBalance(this.props.balance)
+        .then(() => {
+          history.push(`/campaigns/${id}/edit`);
+        })
+        .catch(err => {
+          if (err === 'noBalance') {
+            // handle no balance error
+          }
+        });
+    });
   }
 
   cancelCampaign(campaign) {
-    checkBalance(this.props.balance).then(() => {
-      const confirmCancelCampaign = () => {
-        const afterCreate = url => {
-          const msg = (
-            <p>
-              Campaign cancelation pending...
-              <br />
-              <a href={url} target="_blank" rel="noopener noreferrer">
-                View transaction
-              </a>
-            </p>
-          );
-          React.toast.info(msg);
-          GA.trackEvent({
-            category: 'Campaign',
-            action: 'canceled',
-            label: campaign.id,
-          });
-        };
+    actionWithLoggedIn(this.props.currentUser).then(() =>
+      checkBalance(this.props.balance).then(() => {
+        const confirmCancelCampaign = () => {
+          const afterCreate = url => {
+            const msg = (
+              <p>
+                Campaign cancelation pending...
+                <br />
+                <a href={url} target="_blank" rel="noopener noreferrer">
+                  View transaction
+                </a>
+              </p>
+            );
+            React.toast.info(msg);
+            GA.trackEvent({
+              category: 'Campaign',
+              action: 'canceled',
+              label: campaign.id,
+            });
+          };
 
-        const afterMined = url => {
-          const msg = (
-            <p>
-              The Campaign has been cancelled!
-              <br />
-              <a href={url} target="_blank" rel="noopener noreferrer">
-                View transaction
-              </a>
-            </p>
-          );
-          React.toast.success(msg);
+          const afterMined = url => {
+            const msg = (
+              <p>
+                The Campaign has been cancelled!
+                <br />
+                <a href={url} target="_blank" rel="noopener noreferrer">
+                  View transaction
+                </a>
+              </p>
+            );
+            React.toast.success(msg);
+          };
+          campaign.cancel(this.props.currentUser.address, afterCreate, afterMined);
         };
-        campaign.cancel(this.props.currentUser.address, afterCreate, afterMined);
-      };
-      confirmationDialog('campaign', campaign.title, confirmCancelCampaign);
-    });
+        confirmationDialog('campaign', campaign.title, confirmCancelCampaign);
+      }),
+    );
   }
 
   handlePageChanged(newPage) {
@@ -163,7 +158,8 @@ class MyCampaigns extends Component {
                           <table className="table table-responsive table-striped table-hover">
                             <thead>
                               <tr>
-                                {currentUser.authenticated && <th className="td-actions" />}
+                                {/* eslint-disable-next-line jsx-a11y/control-has-associated-label */}
+                                <th className="td-actions" />
                                 <th className="td-name">Name</th>
                                 <th className="td-donations-number">Donations</th>
                                 <th className="td-donations-amount">Amount</th>
@@ -179,34 +175,32 @@ class MyCampaigns extends Component {
                                   key={c.id}
                                   className={c.status === Campaign.PENDING ? 'pending' : ''}
                                 >
-                                  {currentUser.authenticated && (
-                                    <td className="td-actions">
-                                      {c.owner.address === currentUser.address && c.isActive && (
+                                  <td className="td-actions">
+                                    {c.owner.address === currentUser.address && c.isActive && (
+                                      <button
+                                        type="button"
+                                        className="btn btn-link"
+                                        onClick={() => this.editCampaign(c.id)}
+                                      >
+                                        <i className="fa fa-edit" />
+                                        &nbsp;Edit
+                                      </button>
+                                    )}
+
+                                    {(c.reviewerAddress === currentUser.address ||
+                                      c.owner.address === currentUser.address) &&
+                                      isForeignNetwork &&
+                                      c.isActive && (
                                         <button
                                           type="button"
-                                          className="btn btn-link"
-                                          onClick={() => this.editCampaign(c.id)}
+                                          className="btn btn-danger btn-sm"
+                                          onClick={() => this.cancelCampaign(c)}
                                         >
-                                          <i className="fa fa-edit" />
-                                          &nbsp;Edit
+                                          <i className="fa fa-ban" />
+                                          &nbsp;Cancel
                                         </button>
                                       )}
-
-                                      {(c.reviewerAddress === currentUser.address ||
-                                        c.owner.address === currentUser.address) &&
-                                        isForeignNetwork &&
-                                        c.isActive && (
-                                          <button
-                                            type="button"
-                                            className="btn btn-danger btn-sm"
-                                            onClick={() => this.cancelCampaign(c)}
-                                          >
-                                            <i className="fa fa-ban" />
-                                            &nbsp;Cancel
-                                          </button>
-                                        )}
-                                    </td>
-                                  )}
+                                  </td>
                                   <td className="td-name">
                                     <Link to={`/campaigns/${c.id}`}>
                                       {getTruncatedText(c.title, 45)}
@@ -257,7 +251,7 @@ class MyCampaigns extends Component {
                           </table>
 
                           {campaigns.total > this.state.itemsPerPage && (
-                            <center>
+                            <div className="text-center">
                               <Pagination
                                 activePage={campaigns.skip / campaigns.limit + 1}
                                 itemsCountPerPage={campaigns.limit}
@@ -265,14 +259,14 @@ class MyCampaigns extends Component {
                                 pageRangeDisplayed={visiblePages}
                                 onChange={this.handlePageChanged}
                               />
-                            </center>
+                            </div>
                           )}
                         </div>
                       )}
 
                       {campaigns && campaigns.data.length === 0 && (
                         <div>
-                          <center>
+                          <div className="text-center">
                             <h3>You didn&apos;t create any Campaigns yet!</h3>
                             <img
                               className="empty-state-img"
@@ -281,7 +275,7 @@ class MyCampaigns extends Component {
                               height="200px"
                               alt="no-campaigns-icon"
                             />
-                          </center>
+                          </div>
                         </div>
                       )}
                     </div>

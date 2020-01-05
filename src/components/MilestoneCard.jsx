@@ -4,6 +4,7 @@ import PropTypes from 'prop-types';
 import Avatar from 'react-avatar';
 import BigNumber from 'bignumber.js';
 
+import Milestone from 'models/Milestone';
 import { getTruncatedText, getUserAvatar, getUserName, history } from '../lib/helpers';
 import { checkBalance } from '../lib/middleware';
 import User from '../models/User';
@@ -45,9 +46,7 @@ class MilestoneCard extends Component {
     checkBalance(this.props.balance)
       .then(() => {
         history.push(
-          `/campaigns/${this.props.milestone.campaign._id}/milestones/${
-            this.props.milestone._id
-          }/edit`,
+          `/campaigns/${this.props.milestone.campaign._id}/milestones/${this.props.milestone._id}/edit`,
         );
       })
       .catch(err => {
@@ -128,14 +127,7 @@ class MilestoneCard extends Component {
 }
 
 MilestoneCard.propTypes = {
-  milestone: PropTypes.shape({
-    _id: PropTypes.string.isRequired,
-    campaign: PropTypes.shape().isRequired,
-    ownerAddress: PropTypes.string.isRequired,
-    owner: PropTypes.shape({
-      address: PropTypes.string.isRequired,
-    }).isRequired,
-  }).isRequired,
+  milestone: PropTypes.instanceOf(Milestone).isRequired,
   currentUser: PropTypes.instanceOf(User),
   balance: PropTypes.instanceOf(BigNumber),
 };

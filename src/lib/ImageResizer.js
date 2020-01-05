@@ -1,4 +1,3 @@
-/* global FileReader, URL, Blob, HTMLCanvasElement, document, atob, Image */
 /* Resizes an image
  *
  *  @params

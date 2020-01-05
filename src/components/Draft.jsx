@@ -171,20 +171,35 @@ function set(name, value, itemNames) {
 
 function saveMilestoneDraft(that, itemNames) {
   const { milestone } = that.state;
+  const {
+    hasReviewer,
+    isCapped,
+    dacId,
+    acceptsSingleToken,
+    token,
+    selectedFiatType,
+    itemizeState,
+    maxAmount,
+    fiatAmount,
+  } = milestone;
   set('milestone.campaignId', that.state.campaignId, itemNames);
-  set('milestone.hasReviewer', milestone.hasReviewer, itemNames);
+  set('milestone.hasReviewer', hasReviewer, itemNames);
   set('milestone.isLPMilestone', milestone instanceof LPMilestone, itemNames);
-  set('milestone.acceptsSingleToken', milestone.acceptsSingleToken, itemNames);
-  set('milestone.isCapped', milestone.isCapped, itemNames);
-  if (milestone.maxAmount) {
-    set('milestone.maxAmount', milestone.maxAmount.toNumber(), itemNames);
+  set('milestone.acceptsSingleToken', acceptsSingleToken, itemNames);
+  set('milestone.isCapped', isCapped, itemNames);
+  if (maxAmount) {
+    set('milestone.maxAmount', maxAmount.toNumber(), itemNames);
   }
-  set('milestone.fiatAmount', milestone.fiatAmount.toNumber(), itemNames);
-  set('milestone.itemizeState', milestone.itemizeState, itemNames);
-  set('milestone.tokenAddress', milestone.token.address, itemNames);
-  set('milestone.selectedFiatType', milestone.selectedFiatType, itemNames);
-  set('milestone.dacId', milestone.dacId, itemNames);
-  if (milestone.itemizeState) {
+  if (fiatAmount) {
+    set('milestone.fiatAmount', fiatAmount.toNumber(), itemNames);
+  }
+  set('milestone.itemizeState', itemizeState, itemNames);
+  if (token) {
+    set('milestone.tokenAddress', token.address, itemNames);
+  }
+  set('milestone.selectedFiatType', selectedFiatType, itemNames);
+  set('milestone.dacId', dacId, itemNames);
+  if (itemizeState) {
     const items = that.form.current.formsyForm.inputs.filter(input =>
       input.props.name.startsWith('milestoneItem'),
     );

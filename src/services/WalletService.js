@@ -23,11 +23,12 @@ class WalletService {
 
     Promise.all([getWeb3(), getNetwork()])
       .then(([web3, network]) => {
-        const dt = Object.assign({}, data, {
+        const dt = {
+          ...data,
           from: data.from,
           value: web3.utils.toWei(data.value),
           gas: '21000',
-        });
+        };
         etherScanUrl = network.etherscan;
 
         return web3.eth.sendTransaction(dt).once('transactionHash', hash => {
@@ -65,7 +66,9 @@ class WalletService {
         etherScanUrl = network.etherscan;
 
         return foreignGivethBridge
-          .withdraw(data.token, web3.utils.toWei(data.value), { from: data.addr })
+          .withdraw(data.token, web3.utils.toWei(data.value), {
+            from: data.addr,
+          })
           .once('transactionHash', hash => {
             txHash = hash;
             afterCreate(etherScanUrl, txHash);

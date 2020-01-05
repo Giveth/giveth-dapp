@@ -10,6 +10,7 @@ import { getGasPrice } from '../lib/helpers';
 import config from '../configuration';
 
 import ErrorPopup from './ErrorPopup';
+import { actionWithLoggedIn } from '../lib/middleware';
 
 const modalStyles = {
   content: {
@@ -44,11 +45,13 @@ class WithdrawButton extends Component {
   }
 
   openDialog() {
-    getGasPrice().then(gasPrice =>
-      this.setState({
-        gasPrice,
-        modalVisible: true,
-      }),
+    actionWithLoggedIn(this.props.currentUser).then(() =>
+      getGasPrice().then(gasPrice =>
+        this.setState({
+          gasPrice,
+          modalVisible: true,
+        }),
+      ),
     );
   }
 

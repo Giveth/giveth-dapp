@@ -55,7 +55,9 @@ const configurations = {
     milestoneFactoryAddress: '0xd7b6f0bc3795e99307Ff5EA423743B732d3F297A',
     givethBridgeAddress: '0x279277482F13aeF92914317a0417DD591145aDc9',
     foreignGivethBridgeAddress: '0x74f2b28994e9bd00A3B6CD1826Fd29AB76f840F9',
-    tokenAddresses: { 'Ropsten ETH': '0x387871cf72c8CC81E3a945402b0E3A2A6C0Ed38a' },
+    tokenAddresses: {
+      'Ropsten ETH': '0x387871cf72c8CC81E3a945402b0E3A2A6C0Ed38a',
+    },
     etherscan: 'https://rinkeby.etherscan.io/',
     homeEtherscan: 'https://ropsten.etherscan.io/',
     feathersConnection: 'https://feathers.develop.giveth.io',
@@ -81,7 +83,9 @@ const configurations = {
     milestoneFactoryAddress: '0x69003e042d24cad2f0424ea926f6ef1e30933f2e',
     givethBridgeAddress: '0xC59dCE5CCC065A4b51A2321F857466A25ca49B40',
     foreignGivethBridgeAddress: '0x9423F77f919f90Ce02a063315A0F604b5D0b7aF6',
-    tokenAddresses: { 'Ropsten ETH': '0x693128E9f785a380823fF00B0b21Dc80707096f5' },
+    tokenAddresses: {
+      'Ropsten ETH': '0x693128E9f785a380823fF00B0b21Dc80707096f5',
+    },
     etherscan: 'https://rinkeby.etherscan.io/',
     homeEtherscan: 'https://ropsten.etherscan.io/',
     feathersConnection: 'https://feathers.release.giveth.io',
@@ -135,7 +139,7 @@ if (configurations[REACT_APP_ENVIRONMENT] === undefined)
   );
 
 // Create config object based on environment setup
-const config = Object.assign({}, configurations[REACT_APP_ENVIRONMENT]);
+const config = { ...configurations[REACT_APP_ENVIRONMENT] };
 
 // Overwrite the environment values with parameters
 config.fundsForwarderFactoryAddress = '0xA04D4F31c2aAcEAe21279f4C1143741625D79eFb';

@@ -5,7 +5,6 @@ import { File } from 'formsy-react-components';
 import Cropper from 'react-cropper';
 import ImageTools from '../lib/ImageResizer';
 
-/* global FileReader */
 /**
  * Image uploader with preview. Returns base64 image
  *

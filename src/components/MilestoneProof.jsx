@@ -74,6 +74,7 @@ class MilestoneProof extends Component {
                     <table className="table table-responsive table-striped table-hover">
                       <thead>
                         <tr>
+                          {/* eslint-disable-next-line jsx-a11y/control-has-associated-label */}
                           {canEdit && <th className="td-item-action" />}
                           <th className="td-item-date">Date</th>
                           <th className="td-item-description">Description</th>
