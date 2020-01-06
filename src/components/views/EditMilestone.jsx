@@ -121,7 +121,6 @@ class EditMilestone extends Component {
       delegatePercent: true,
       isLPMilestone: false,
       acceptsSingleToken: true,
-      isCapped: true,
       itemizeState: false,
       selectedFiatType: 'EUR',
       fiatAmount: BigNumber('0'),
@@ -214,7 +213,6 @@ class EditMilestone extends Component {
               delegatePercent: milestone.dacId !== 0,
               isLPMilestone: milestone instanceof LPMilestone,
               acceptsSingleToken: milestone.token !== ANY_TOKEN,
-              isCapped: milestone.maxAmount !== undefined,
               itemizeState: milestone.itemizeState,
               selectedFiatType: milestone.selectedFiatType,
               fiatAmount: milestone.fiatAmount,
@@ -632,7 +630,7 @@ class EditMilestone extends Component {
     }
 
     const { fiatAmount, maxAmount } = milestone;
-    this.setState({ fiatAmount, maxAmount, isCapped: value, milestone });
+    this.setState({ fiatAmount, maxAmount, milestone });
   }
 
   setMyAddressAsRecipient() {
@@ -867,7 +865,6 @@ class EditMilestone extends Component {
       campaignTitle,
       tokenWhitelistOptions,
       milestone,
-      isCapped,
       hasReviewer,
       delegatePercent,
       isLPMilestone,
@@ -1121,12 +1118,12 @@ class EditMilestone extends Component {
                     <div className="react-toggle-container">
                       <Toggle
                         id="itemize-state"
-                        checked={!isCapped}
+                        checked={!milestone.isCapped}
                         onChange={e => this.isCapped(!e.target.checked)}
                         disabled={(!isNew && !isProposed) || !acceptsSingleToken}
                       />
                       <span className="label">Disable Milestone fundraising cap</span>
-                      {!isCapped && (
+                      {!milestone.isCapped && (
                         <span className="help-block">
                           {acceptsSingleToken
                             ? 'It is recommended that you set a fundraising cap for your Milestone.'
@@ -1134,7 +1131,7 @@ class EditMilestone extends Component {
                         </span>
                       )}
                     </div>
-                    {isCapped && (
+                    {milestone.isCapped && (
                       <Fragment>
                         <div className="react-toggle-container">
                           <Toggle
