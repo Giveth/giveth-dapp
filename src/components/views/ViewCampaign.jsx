@@ -28,7 +28,7 @@ import ErrorPopup from '../ErrorPopup';
 import ErrorBoundary from '../ErrorBoundary';
 import ShareOptions from '../ShareOptions';
 import config from '../../configuration';
-import CreateDonationAddressButton from '../CreateDonationAddressButton';
+// import CreateDonationAddressButton from '../CreateDonationAddressButton';
 
 /**
  * The Campaign detail view mapped to /campaing/id
@@ -272,13 +272,13 @@ class ViewCampaign extends Component {
                     currentUser={currentUser}
                     history={history}
                   />
-                  <CreateDonationAddressButton
-                    campaignTitle={campaign.title}
-                    campaignId={campaign.id}
-                    receiverId={campaign.projectId}
-                    giverId={(campaign._owner || {}).giverId}
-                    currentUser={currentUser}
-                  />
+                  {/* <CreateDonationAddressButton */}
+                  {/*  campaignTitle={campaign.title} */}
+                  {/*  campaignId={campaign.id} */}
+                  {/*  receiverId={campaign.projectId} */}
+                  {/*  giverId={(campaign._owner || {}).giverId} */}
+                  {/*  currentUser={currentUser} */}
+                  {/* /> */}
                   {currentUser && (
                     <DelegateMultipleButton
                       style={{ padding: '10px 10px' }}
