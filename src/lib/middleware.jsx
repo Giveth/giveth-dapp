@@ -176,7 +176,9 @@ export const checkForeignNetwork = async isForeignNetwork => {
   // we block the user b/c MetaMask will reload the page on a network change
   await React.swal({
     title: 'Network Change Required!',
-    text: `Please connect to the ${config.foreignNetworkName} network before proceeding. Depending on your provider, the page will be reloaded upon changing the network which may result in loosing data`,
+    text: `Please connect to the ${
+      config.foreignNetworkName
+    } network before proceeding. Depending on your provider, the page will be reloaded upon changing the network which may result in loosing data`,
     icon: 'warning',
   });
   historyBackWFallback();
@@ -210,8 +212,8 @@ export const checkBalance = balance =>
     }
   });
 
-export const actionWithLoggedIn = currentUser => {
-  return new Promise(resolve => {
+export const actionWithLoggedIn = currentUser =>
+  new Promise(resolve => {
     isLoggedIn(currentUser, false)
       .then(resolve)
       .catch(err => {
@@ -222,4 +224,3 @@ export const actionWithLoggedIn = currentUser => {
         }
       });
   });
-};

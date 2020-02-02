@@ -173,7 +173,9 @@ class RateConverter extends Component {
                     !conversionRateLoading &&
                     conversionRate &&
                     conversionRate.rates &&
-                    `1 ${token.symbol} = ${conversionRate.rates[selectedFiatType]} ${selectedFiatType}`
+                    `1 ${token.symbol} = ${
+                      conversionRate.rates[selectedFiatType]
+                    } ${selectedFiatType}`
                   }
                   required
                   disabled={this.props.disabled}

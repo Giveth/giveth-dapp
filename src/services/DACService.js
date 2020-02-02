@@ -56,12 +56,7 @@ class DACService {
           $sort: { campaignsCount: -1 },
         },
       })
-      .then(resp =>
-        onSuccess(
-          resp.data.map(d => new DAC(d)),
-          resp.total,
-        ),
-      )
+      .then(resp => onSuccess(resp.data.map(d => new DAC(d)), resp.total))
       .catch(onError);
   }
 
@@ -131,12 +126,7 @@ class DACService {
           schema: 'includeTypeAndGiverDetails',
         }),
       )
-      .then(resp =>
-        onSuccess(
-          resp.data.map(d => new Donation(d)),
-          resp.total,
-        ),
-      )
+      .then(resp => onSuccess(resp.data.map(d => new Donation(d)), resp.total))
       .catch(onError);
   }
 

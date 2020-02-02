@@ -46,7 +46,9 @@ class MilestoneCard extends Component {
     checkBalance(this.props.balance)
       .then(() => {
         history.push(
-          `/campaigns/${this.props.milestone.campaign._id}/milestones/${this.props.milestone._id}/edit`,
+          `/campaigns/${this.props.milestone.campaign._id}/milestones/${
+            this.props.milestone._id
+          }/edit`,
         );
       })
       .catch(err => {

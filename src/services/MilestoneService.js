@@ -261,12 +261,7 @@ class MilestoneService {
           $skip,
         },
       })
-      .then(resp =>
-        onSuccess(
-          resp.data.map(m => MilestoneFactory.create(m)),
-          resp.total,
-        ),
-      )
+      .then(resp => onSuccess(resp.data.map(m => MilestoneFactory.create(m)), resp.total))
       .catch(onError);
   }
 
@@ -303,12 +298,7 @@ class MilestoneService {
           schema: 'includeTypeAndGiverDetails',
         }),
       )
-      .then(resp =>
-        onSuccess(
-          resp.data.map(d => new Donation(d)),
-          resp.total,
-        ),
-      )
+      .then(resp => onSuccess(resp.data.map(d => new Donation(d)), resp.total))
       .catch(onError);
   }
 
