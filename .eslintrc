@@ -9,7 +9,7 @@
   ],
   "rules": {
     "react/jsx-props-no-spreading": "off",
-    "react/jsx-fragments": "enabled",
+    "react/jsx-fragments": 0,
     "jsx-a11y/anchor-is-valid": [
       "error",
       {

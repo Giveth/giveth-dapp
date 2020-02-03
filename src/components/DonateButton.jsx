@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
 import Modal from 'react-modal';
 import BigNumber from 'bignumber.js';
@@ -556,7 +556,7 @@ class DonateButton extends React.Component {
               </div>
             )}
             {isCorrectNetwork && validProvider && currentUser && (
-              <React.Fragment>
+              <Fragment>
                 <span className="label">
                   How much {selectedToken.symbol} do you want to donate?
                 </span>
@@ -670,7 +670,7 @@ class DonateButton extends React.Component {
                     Donate
                   </LoaderButton>
                 )}
-              </React.Fragment>
+              </Fragment>
             )}
 
             <button

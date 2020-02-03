@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
 import Modal from 'react-modal';
 import { Form } from 'formsy-react-components';
@@ -69,15 +69,6 @@ class CreateDonationAddressButton extends React.Component {
   }
 
   componentDidMount() {
-    this.checkUser()
-      .then(() => {})
-      .catch(err => {
-        if (err === 'noBalance') {
-          ErrorPopup('There is no balance left on the account.', err);
-        } else if (err !== undefined) {
-          ErrorPopup('Something went wrong.', err);
-        }
-      });
     this.findExistingDonationAddress();
   }
 
@@ -110,35 +101,6 @@ class CreateDonationAddressButton extends React.Component {
           this.setAddressAndFetch(campaign.fundsForwarder);
         } else {
           this.setState({ fetchingExistingAddress: true });
-          // const { fundsForwarderFactoryAddress, fundsForwarderFactoryDeployBlock } = config;
-          // const { receiverId } = this.props;
-          // const web3 = await getWeb3();
-
-          // const fundsForwarderFactory = new web3.eth.Contract(
-          //   fundForwarder.factoryAbi,
-          //   fundsForwarderFactoryAddress,
-          // );
-          // const donationAddresses = await fundsForwarderFactory
-          //   .getPastEvents(newFundForwarderEventName, {
-          //     filter: { _receiverId: receiverId },
-          //     fromBlock: fundsForwarderFactoryDeployBlock,
-          //     toBlock: 'latest',
-          //   })
-          //   .then(events =>
-          //     events.map(({ blockNumber, returnValues }) => ({
-          //       blockNumber,
-          //       giverId: parseInt(returnValues._giver, 16),
-          //       receiverId: returnValues._receiverId,
-          //       donationAddress: returnValues.fundsForwarder,
-          //     })),
-          //   );
-          // if (donationAddresses.length > 0) {
-          //   const { blockNumber, donationAddress } = donationAddresses[0];
-          //   console.log('Found donation address', { blockNumber, donationAddress });
-          //   this.setAddressAndFetch(donationAddress);
-          // } else {
-          //   //
-          // }
           this.stopLoadingDonationAddress();
         }
       });
@@ -260,7 +222,20 @@ class CreateDonationAddressButton extends React.Component {
   }
 
   openDialog() {
+    const { donationAddress } = this.state;
     this.setState({ modalVisible: true });
+    if (donationAddress !== '') {
+      return;
+    }
+    this.checkUser()
+      .then(() => {})
+      .catch(err => {
+        if (err === 'noBalance') {
+          ErrorPopup('There is no balance left on the account.', err);
+        } else if (err !== undefined) {
+          ErrorPopup('Something went wrong.', err);
+        }
+      });
   }
 
   async deployFundsForwarder() {
@@ -444,7 +419,7 @@ class CreateDonationAddressButton extends React.Component {
               </table>
 
               {balancesPretty.length > 0 && (
-                <React.Fragment>
+                <Fragment>
                   {!validProvider && (
                     <div className="alert alert-warning">
                       <i className="fa fa-exclamation-triangle" />
@@ -468,7 +443,7 @@ class CreateDonationAddressButton extends React.Component {
 
                   {/* Buttons show up above when metamask and network is correct */}
                   {/* {isCorrectNetwork && validProvider && currentUser && ()} */}
-                </React.Fragment>
+                </Fragment>
               )}
 
               <button

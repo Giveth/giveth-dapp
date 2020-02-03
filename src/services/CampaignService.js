@@ -340,7 +340,7 @@ class CampaignService {
    * @param address        Address of the funds forwarder
    */
   static addFundsForwarderAddress(
-    campaign,
+    campaignId,
     address,
     afterCreate = () => {},
     afterMined = () => {},
@@ -348,7 +348,7 @@ class CampaignService {
     Promise.all([getNetwork(), getWeb3()])
       .then(([_]) => {
         campaigns
-          .patch(campaign.id, {
+          .patch(campaignId, {
             fundsForwarder: address,
           })
           .then(() => {
