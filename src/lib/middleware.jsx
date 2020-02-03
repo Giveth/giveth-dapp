@@ -210,8 +210,8 @@ export const checkBalance = balance =>
     }
   });
 
-export const actionWithLoggedIn = currentUser => {
-  return new Promise(resolve => {
+export const actionWithLoggedIn = currentUser =>
+  new Promise(resolve => {
     isLoggedIn(currentUser, false)
       .then(resolve)
       .catch(err => {
@@ -222,4 +222,3 @@ export const actionWithLoggedIn = currentUser => {
         }
       });
   });
-};
