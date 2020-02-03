@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { Component, Fragment } from 'react';
 import PropTypes from 'prop-types';
 import moment from 'moment';
 import config from 'configuration';
@@ -112,17 +112,17 @@ class DonationHistory extends Component {
     );
     if (hasParents) {
       message = (
-        <>
+        <Fragment>
           <span> delegated to </span>
           {link}
-        </>
+        </Fragment>
       );
     } else {
       message = (
-        <>
+        <Fragment>
           <span> donated to </span>
           {link}
-        </>
+        </Fragment>
       );
     }
 

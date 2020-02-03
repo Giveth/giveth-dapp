@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { Component, Fragment } from 'react';
 import PropTypes from 'prop-types';
 import BigNumber from 'bignumber.js';
 
@@ -42,14 +42,14 @@ class EditMilestoneButton extends Component {
     return (
       <Web3Consumer>
         {({ state: { isForeignNetwork } }) => (
-          <>
+          <Fragment>
             {milestone.canUserEdit(currentUser) && isForeignNetwork && (
               <button type="button" className="btn btn-link" onClick={() => this.editMilestone()}>
                 <i className="fa fa-edit" />
                 &nbsp;Edit
               </button>
             )}
-          </>
+          </Fragment>
         )}
       </Web3Consumer>
     );

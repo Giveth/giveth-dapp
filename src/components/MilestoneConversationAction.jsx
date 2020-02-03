@@ -1,6 +1,6 @@
 /* eslint-disable react/prefer-stateless-function */
 // @dev: not prefering stateless here because functionality will be extended
-import React, { Component } from 'react';
+import React, { Component, Fragment } from 'react';
 import PropTypes from 'prop-types';
 
 import Milestone from 'models/Milestone';
@@ -57,7 +57,7 @@ class MilestoneConversationAction extends Component {
 
       case 'proposedRejected':
         return (
-          <>
+          <Fragment>
             <ReproposeRejectedMilestoneButton
               milestone={milestone}
               balance={balance}
@@ -68,7 +68,7 @@ class MilestoneConversationAction extends Component {
               balance={balance}
               currentUser={currentUser}
             />
-          </>
+          </Fragment>
         );
 
       case 'proposedAccepted':
@@ -80,7 +80,7 @@ class MilestoneConversationAction extends Component {
           />
         );
       default:
-        return <></>;
+        return <Fragment />;
     }
   }
 }

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
 
 import Campaign from 'models/Campaign';
@@ -10,7 +10,7 @@ import DAC from 'models/DAC';
 const Balances = ({ entity }) => (
   <div className="dashboard-table-view">
     {entity.donationCounters && entity.donationCounters.length > 0 && (
-      <>
+      <Fragment>
         <h4>Current balance</h4>
         <div className="table-container">
           <table
@@ -43,7 +43,7 @@ const Balances = ({ entity }) => (
             </tbody>
           </table>
         </div>
-      </>
+      </Fragment>
     )}
   </div>
 );

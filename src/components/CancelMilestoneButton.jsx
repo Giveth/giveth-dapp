@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { Component, Fragment } from 'react';
 import PropTypes from 'prop-types';
 import BigNumber from 'bignumber.js';
 
@@ -95,7 +95,7 @@ class CancelMilestoneButton extends Component {
     return (
       <Web3Consumer>
         {({ state: { isForeignNetwork } }) => (
-          <>
+          <Fragment>
             {milestone.canUserCancel(currentUser) && (
               <button
                 type="button"
@@ -109,7 +109,7 @@ class CancelMilestoneButton extends Component {
             )}
 
             <ConversationModal ref={this.conversationModal} milestone={milestone} />
-          </>
+          </Fragment>
         )}
       </Web3Consumer>
     );

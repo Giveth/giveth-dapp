@@ -1,6 +1,6 @@
 /* eslint-disable react/prefer-stateless-function */
 // @dev: not preferring stateless here because functionality will be extended
-import React, { Component } from 'react';
+import React, { Component, Fragment } from 'react';
 import PropTypes from 'prop-types';
 
 import Milestone from 'models/Milestone';
@@ -23,7 +23,7 @@ class MilestoneActions extends Component {
     const { milestone, balance, currentUser } = this.props;
 
     return (
-      <>
+      <Fragment>
         <AcceptRejectProposedMilestoneButtons
           milestone={milestone}
           balance={balance}
@@ -69,7 +69,7 @@ class MilestoneActions extends Component {
         />
 
         <EditMilestoneButton milestone={milestone} balance={balance} currentUser={currentUser} />
-      </>
+      </Fragment>
     );
   }
 }

@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { Component, Fragment } from 'react';
 import Avatar from 'react-avatar';
 import PropTypes from 'prop-types';
 import moment from 'moment';
@@ -76,7 +76,7 @@ class ListDonationItem extends Component {
         typeLabel = null;
     }
     return (
-      <>
+      <Fragment>
         <tr key={d._id}>
           <td>
             {this.state.hasHistory ? (
@@ -146,7 +146,7 @@ class ListDonationItem extends Component {
             />
           </td>
         </tr>
-      </>
+      </Fragment>
     );
   }
 }

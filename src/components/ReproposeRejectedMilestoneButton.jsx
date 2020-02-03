@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { Component, Fragment } from 'react';
 import PropTypes from 'prop-types';
 
 import MilestoneService from 'services/MilestoneService';
@@ -53,7 +53,7 @@ class ReproposeRejectedMilestoneButton extends Component {
     return (
       <Web3Consumer>
         {({ state: { isForeignNetwork } }) => (
-          <>
+          <Fragment>
             {milestone.canUserRepropose(currentUser) && (
               <button
                 type="button"
@@ -65,7 +65,7 @@ class ReproposeRejectedMilestoneButton extends Component {
                 &nbsp;Re-propose
               </button>
             )}
-          </>
+          </Fragment>
         )}
       </Web3Consumer>
     );

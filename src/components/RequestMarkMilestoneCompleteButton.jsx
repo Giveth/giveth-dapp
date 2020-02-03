@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { Component, Fragment } from 'react';
 import PropTypes from 'prop-types';
 import BigNumber from 'bignumber.js';
 
@@ -103,7 +103,7 @@ class RequestMarkMilestoneCompleteButton extends Component {
     return (
       <Web3Consumer>
         {({ state: { isForeignNetwork } }) => (
-          <>
+          <Fragment>
             {milestone.canUserMarkComplete(currentUser) && (
               <button
                 type="button"
@@ -116,7 +116,7 @@ class RequestMarkMilestoneCompleteButton extends Component {
             )}
 
             <ConversationModal ref={this.conversationModal} milestone={milestone} />
-          </>
+          </Fragment>
         )}
       </Web3Consumer>
     );

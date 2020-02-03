@@ -1,5 +1,5 @@
 /* eslint-disable no-restricted-globals */
-import React, { Component } from 'react';
+import React, { Component, Fragment } from 'react';
 import Modal from 'react-modal';
 import BigNumber from 'bignumber.js';
 import { utils } from 'web3';
@@ -336,7 +336,7 @@ class DelegateMultipleButton extends Component {
             />
           )}
           {validProvider && isCorrectNetwork && (
-            <>
+            <Fragment>
               <p>
                 You are delegating donations to
                 {!milestone && <strong> {campaign.title}</strong>}
@@ -477,7 +477,7 @@ class DelegateMultipleButton extends Component {
                   )}
                 </Form>
               )}
-            </>
+            </Fragment>
           )}
         </Modal>
       </span>

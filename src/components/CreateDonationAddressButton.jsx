@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
 import Modal from 'react-modal';
 import { Form } from 'formsy-react-components';
@@ -419,7 +419,7 @@ class CreateDonationAddressButton extends React.Component {
               </table>
 
               {balancesPretty.length > 0 && (
-                <>
+                <Fragment>
                   {!validProvider && (
                     <div className="alert alert-warning">
                       <i className="fa fa-exclamation-triangle" />
@@ -443,7 +443,7 @@ class CreateDonationAddressButton extends React.Component {
 
                   {/* Buttons show up above when metamask and network is correct */}
                   {/* {isCorrectNetwork && validProvider && currentUser && ()} */}
-                </>
+                </Fragment>
               )}
 
               <button
