@@ -556,7 +556,7 @@ class DonateButton extends React.Component {
               </div>
             )}
             {isCorrectNetwork && validProvider && currentUser && (
-              <React.Fragment>
+              <>
                 <span className="label">
                   How much {selectedToken.symbol} do you want to donate?
                 </span>
@@ -670,7 +670,7 @@ class DonateButton extends React.Component {
                     Donate
                   </LoaderButton>
                 )}
-              </React.Fragment>
+              </>
             )}
 
             <button

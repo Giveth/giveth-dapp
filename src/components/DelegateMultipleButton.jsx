@@ -140,7 +140,10 @@ class DelegateMultipleButton extends Component {
   }
 
   selectedObject({ target }, selectedAmount) {
-    this.setState({ objectToDelegateFrom: target.value, isLoadingDonations: true });
+    this.setState({
+      objectToDelegateFrom: target.value,
+      isLoadingDonations: true,
+    });
 
     this.loadDonations(target.value, selectedAmount);
   }
@@ -233,7 +236,11 @@ class DelegateMultipleButton extends Component {
     const delegateType = delegate.type;
 
     const onCreated = txLink => {
-      this.setState({ isSaving: false, modalVisible: false, objectToDelegateFrom: [] });
+      this.setState({
+        isSaving: false,
+        modalVisible: false,
+        objectToDelegateFrom: [],
+      });
       React.swal({
         title: 'Delegated!',
         content: React.swal.msg(
@@ -329,7 +336,7 @@ class DelegateMultipleButton extends Component {
             />
           )}
           {validProvider && isCorrectNetwork && (
-            <React.Fragment>
+            <>
               <p>
                 You are delegating donations to
                 {!milestone && <strong> {campaign.title}</strong>}
@@ -470,7 +477,7 @@ class DelegateMultipleButton extends Component {
                   )}
                 </Form>
               )}
-            </React.Fragment>
+            </>
           )}
         </Modal>
       </span>

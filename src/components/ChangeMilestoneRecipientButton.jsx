@@ -1,4 +1,4 @@
-import React, { Component, Fragment } from 'react';
+import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import BigNumber from 'bignumber.js';
 import { utils } from 'web3';
@@ -114,7 +114,7 @@ class ChangeMilestoneRecipientButton extends Component {
     return (
       <Web3Consumer>
         {({ state: { isForeignNetwork } }) => (
-          <Fragment>
+          <>
             {milestone.canUserChangeRecipient(currentUser) && (
               <button
                 type="button"
@@ -125,7 +125,7 @@ class ChangeMilestoneRecipientButton extends Component {
                 {milestone.hasRecipient ? 'Change Recipient' : 'Set Recipient'}
               </button>
             )}
-          </Fragment>
+          </>
         )}
       </Web3Consumer>
     );

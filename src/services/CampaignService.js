@@ -53,7 +53,10 @@ class CampaignService {
         },
       })
       .then(resp => {
-        onSuccess(resp.data.map(c => new Campaign(c)), resp.total);
+        onSuccess(
+          resp.data.map(c => new Campaign(c)),
+          resp.total,
+        );
       })
       .catch(onError);
   }
@@ -88,7 +91,12 @@ class CampaignService {
             !(milestone.donationCounters.length <= 0 && milestone.status === Milestone.COMPLETED),
         ),
       }))
-      .then(resp => onSuccess(resp.data.map(m => new Milestone(m)), resp.total))
+      .then(resp =>
+        onSuccess(
+          resp.data.map(m => new Milestone(m)),
+          resp.total,
+        ),
+      )
       .catch(onError);
   }
 
@@ -118,7 +126,12 @@ class CampaignService {
           schema: 'includeTypeAndGiverDetails',
         }),
       )
-      .then(resp => onSuccess(resp.data.map(d => new Donation(d)), resp.total))
+      .then(resp =>
+        onSuccess(
+          resp.data.map(d => new Donation(d)),
+          resp.total,
+        ),
+      )
       .catch(onError);
   }
 

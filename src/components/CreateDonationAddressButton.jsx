@@ -419,7 +419,7 @@ class CreateDonationAddressButton extends React.Component {
               </table>
 
               {balancesPretty.length > 0 && (
-                <React.Fragment>
+                <>
                   {!validProvider && (
                     <div className="alert alert-warning">
                       <i className="fa fa-exclamation-triangle" />
@@ -443,7 +443,7 @@ class CreateDonationAddressButton extends React.Component {
 
                   {/* Buttons show up above when metamask and network is correct */}
                   {/* {isCorrectNetwork && validProvider && currentUser && ()} */}
-                </React.Fragment>
+                </>
               )}
 
               <button

@@ -1,4 +1,4 @@
-import React, { Component, Fragment } from 'react';
+import React, { Component } from 'react';
 import BigNumber from 'bignumber.js';
 import PropTypes from 'prop-types';
 import moment from 'moment';
@@ -119,7 +119,7 @@ class RateConverter extends Component {
         {isLoading && <Loader className="small" />}
 
         {!isLoading && (
-          <Fragment>
+          <>
             <div className="form-group row">
               {conversionRateLoading && <Loader />}
 
@@ -173,9 +173,7 @@ class RateConverter extends Component {
                     !conversionRateLoading &&
                     conversionRate &&
                     conversionRate.rates &&
-                    `1 ${token.symbol} = ${
-                      conversionRate.rates[selectedFiatType]
-                    } ${selectedFiatType}`
+                    `1 ${token.symbol} = ${conversionRate.rates[selectedFiatType]} ${selectedFiatType}`
                   }
                   required
                   disabled={this.props.disabled}
@@ -215,7 +213,7 @@ class RateConverter extends Component {
                 }
               />
             </div>
-          </Fragment>
+          </>
         )}
       </div>
     );

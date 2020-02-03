@@ -1,5 +1,5 @@
 /* eslint-disable react/no-unescaped-entities */
-import React, { Component, Fragment } from 'react';
+import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import BigNumber from 'bignumber.js';
 
@@ -100,7 +100,7 @@ class ArchiveMilestoneButton extends Component {
     return (
       <Web3Consumer>
         {({ state: { isForeignNetwork } }) => (
-          <Fragment>
+          <>
             {milestone.canUserArchive(currentUser) && (
               <button
                 type="button"
@@ -111,7 +111,7 @@ class ArchiveMilestoneButton extends Component {
                 Archive
               </button>
             )}
-          </Fragment>
+          </>
         )}
       </Web3Consumer>
     );

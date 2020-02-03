@@ -1,4 +1,4 @@
-import React, { Component, Fragment } from 'react';
+import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import BigNumber from 'bignumber.js';
 
@@ -135,7 +135,7 @@ class WithdrawMilestoneFundsButton extends Component {
     return (
       <Web3Consumer>
         {({ state: { isForeignNetwork } }) => (
-          <Fragment>
+          <>
             {milestone.canUserWithdraw(currentUser) && (
               <button
                 type="button"
@@ -147,7 +147,7 @@ class WithdrawMilestoneFundsButton extends Component {
                 {milestone.recipientAddress === currentUser.address ? 'Collect' : 'Disburse'}
               </button>
             )}
-          </Fragment>
+          </>
         )}
       </Web3Consumer>
     );

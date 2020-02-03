@@ -1,4 +1,4 @@
-import React, { Fragment } from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
 
 import MilestoneService from 'services/MilestoneService';
@@ -27,7 +27,7 @@ const DeleteProposedMilestoneButton = ({ milestone, currentUser }) => {
   return (
     <Web3Consumer>
       {({ state: { isForeignNetwork } }) => (
-        <Fragment>
+        <>
           {milestone.canUserDelete(currentUser) && (
             <span>
               <button
@@ -41,7 +41,7 @@ const DeleteProposedMilestoneButton = ({ milestone, currentUser }) => {
               </button>
             </span>
           )}
-        </Fragment>
+        </>
       )}
     </Web3Consumer>
   );

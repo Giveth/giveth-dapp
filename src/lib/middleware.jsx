@@ -176,9 +176,7 @@ export const checkForeignNetwork = async isForeignNetwork => {
   // we block the user b/c MetaMask will reload the page on a network change
   await React.swal({
     title: 'Network Change Required!',
-    text: `Please connect to the ${
-      config.foreignNetworkName
-    } network before proceeding. Depending on your provider, the page will be reloaded upon changing the network which may result in loosing data`,
+    text: `Please connect to the ${config.foreignNetworkName} network before proceeding. Depending on your provider, the page will be reloaded upon changing the network which may result in loosing data`,
     icon: 'warning',
   });
   historyBackWFallback();
