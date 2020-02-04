@@ -17,7 +17,7 @@ import DonateButton from '../DonateButton';
 import CommunityButton from '../CommunityButton';
 import DelegateMultipleButton from '../DelegateMultipleButton';
 import ChangeOwnershipButton from '../ChangeOwnershipButton';
-import DownloadCsvButton from '../DownloadCsvButton';
+// import DownloadCsvButton from '../DownloadCsvButton';
 import ListDonations from '../ListDonations';
 
 import User from '../../models/User';
@@ -272,15 +272,17 @@ class ViewCampaign extends Component {
                     currentUser={currentUser}
                     history={history}
                   />
-                  {currentUser && (
-                    <CreateDonationAddressButton
-                      campaignTitle={campaign.title}
-                      campaignId={campaign.id}
-                      receiverId={campaign.projectId}
-                      giverId={(campaign._owner || {}).giverId}
-                      currentUser={currentUser}
-                    />
-                  )}
+                  {campaign.owner &&
+                    currentUser &&
+                    campaign.owner.address === currentUser.address && (
+                      <CreateDonationAddressButton
+                        campaignTitle={campaign.title}
+                        campaignId={campaign.id}
+                        receiverId={campaign.projectId}
+                        giverId={(campaign._owner || {}).giverId}
+                        currentUser={currentUser}
+                      />
+                    )}
                   {currentUser && (
                     <DelegateMultipleButton
                       style={{ padding: '10px 10px' }}
@@ -300,14 +302,14 @@ class ViewCampaign extends Component {
                         {...this.props}
                       />
                     )}
-                  {currentUser && (
+                  {/* {currentUser && (
                     <DownloadCsvButton
                       campaign={campaign}
                       balance={balance}
                       currentUser={currentUser}
                       {...this.props}
                     />
-                  )}
+                  )} */}
                   {campaign.communityUrl && (
                     <CommunityButton className="btn btn-secondary" url={campaign.communityUrl}>
                       Join our Community
