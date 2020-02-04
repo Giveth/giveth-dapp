@@ -17,7 +17,8 @@ import { history } from '../lib/helpers';
 const newFundForwarderEventName = 'NewFundForwarder';
 const zeroAddress = '0x0000000000000000000000000000000000000000';
 const erc20TokensBridgeAllowed = {
-  '0x89d24A6b4CcB1B6fAA2625fE562bDD9a23260359': 'DAI',
+  '0x89d24A6b4CcB1B6fAA2625fE562bDD9a23260359': 'SAI',
+  '0x6b175474e89094c44da98b954eedeac495271d0f': 'DAI',
 };
 const tokenSymbols = {
   [zeroAddress]: 'ETH',
