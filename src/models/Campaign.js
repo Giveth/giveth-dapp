@@ -4,7 +4,7 @@ import BasicModel from './BasicModel';
 import CampaignService from '../services/CampaignService';
 import IPFSService from '../services/IPFSService';
 import ErrorPopup from '../components/ErrorPopup';
-import { cleanIpfsPath, ZERO_ADDRESS } from '../lib/helpers';
+import { cleanIpfsPath, ZERO_ADDRESS, ZERO_SMALL_ADDRESS } from '../lib/helpers';
 
 /**
  * The DApp Campaign model
@@ -43,7 +43,7 @@ class Campaign extends BasicModel {
     this.reviewerAddress = data.reviewerAddress;
     this.ownerAddress = data.ownerAddress;
     this.coownerAddress = data.coownerAddress;
-    this.fundsForwarder = data.fundsForwarder;
+    this.fundsForwarder = data.fundsForwarder || ZERO_SMALL_ADDRESS;
     this.mined = data.mined;
     this._id = data._id;
     this.commitTime = data.commitTime || 0;
@@ -73,6 +73,7 @@ class Campaign extends BasicModel {
       donationCount: this.donationCount,
       peopleCount: this.peopleCount,
       reviewerAddress: this.reviewerAddress,
+      fundsForwarder: ZERO_SMALL_ADDRESS,
       status: this.status,
       archivedMilestones: Array.from(this.archivedMilestones),
     };
@@ -181,7 +182,10 @@ class Campaign extends BasicModel {
   get totalDonated() {
     return (
       (Array.isArray(this._donationCounters) &&
-        this._donationCounters.map(dc => ({ symbol: dc.symbol, amount: dc.totalDonated }))) ||
+        this._donationCounters.map(dc => ({
+          symbol: dc.symbol,
+          amount: dc.totalDonated,
+        }))) ||
       []
     );
   }
