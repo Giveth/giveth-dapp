@@ -450,12 +450,15 @@ export default class Milestone extends BasicModel {
   get totalDonated() {
     return (
       (Array.isArray(this._donationCounters) &&
-        this._donationCounters.map(dc => ({ symbol: dc.symbol, amount: dc.totalDonated }))) ||
+        this._donationCounters.map(dc => ({
+          symbol: dc.symbol,
+          amount: dc.totalDonated,
+        }))) ||
       []
     );
   }
 
-  get totalDonations() {
+  totalDonations() {
     return (
       (Array.isArray(this._donationCounters) &&
         this._donationCounters.reduce((count, dc) => count + dc.donationCount, 0)) ||

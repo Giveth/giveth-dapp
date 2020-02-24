@@ -115,7 +115,7 @@ class ChangeMilestoneRecipientButton extends Component {
       <Web3Consumer>
         {({ state: { isForeignNetwork } }) => (
           <Fragment>
-            {milestone.canUserChangeRecipient(currentUser) && (
+            {milestone.canUserChangeRecipient(currentUser) && milestone.totalDonations() <= 0 && (
               <button
                 type="button"
                 className="btn btn-success btn-sm"
