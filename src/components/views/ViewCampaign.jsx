@@ -272,17 +272,14 @@ class ViewCampaign extends Component {
                     currentUser={currentUser}
                     history={history}
                   />
-                  {campaign.owner &&
-                    currentUser &&
-                    campaign.owner.address === currentUser.address && (
-                      <CreateDonationAddressButton
-                        campaignTitle={campaign.title}
-                        campaignId={campaign.id}
-                        receiverId={campaign.projectId}
-                        giverId={(campaign._owner || {}).giverId}
-                        currentUser={currentUser}
-                      />
-                    )}
+                  <CreateDonationAddressButton
+                    campaignTitle={campaign.title}
+                    campaignOwner={campaign.owner}
+                    campaignId={campaign.id}
+                    receiverId={campaign.projectId}
+                    giverId={(campaign._owner || {}).giverId}
+                    currentUser={currentUser}
+                  />
                   {currentUser && (
                     <DelegateMultipleButton
                       style={{ padding: '10px 10px' }}
