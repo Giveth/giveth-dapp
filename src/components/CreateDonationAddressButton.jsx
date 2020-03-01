@@ -317,6 +317,7 @@ class CreateDonationAddressButton extends React.Component {
     const { homeEtherscan: etherscanUrl } = config;
     const {
       campaignTitle,
+      campaignOwner,
       currentUser,
       isEnabled,
       validProvider,
@@ -348,18 +349,34 @@ class CreateDonationAddressButton extends React.Component {
           display: 'inline-block',
         }}
       >
-        <LoaderButton
-          className="btn btn-warning"
-          isLoading={fetchingExistingAddress}
-          disabled={fetchingExistingAddress}
-          loadingText={loadingText}
-          onClick={() => {
-            if (!isEnabled) enableProvider();
-            else this.openDialog();
-          }}
-        >
-          {buttonText}
-        </LoaderButton>
+        {!donationAddress && campaignOwner && currentUser && campaignOwner === currentUser.address && (
+          <LoaderButton
+            className="btn btn-warning"
+            isLoading={fetchingExistingAddress}
+            disabled={fetchingExistingAddress}
+            loadingText={loadingText}
+            onClick={() => {
+              if (!isEnabled) enableProvider();
+              else this.openDialog();
+            }}
+          >
+            Create donation address
+          </LoaderButton>
+        )}
+        {donationAddress && (
+          <LoaderButton
+            className="btn btn-warning"
+            isLoading={fetchingExistingAddress}
+            disabled={fetchingExistingAddress}
+            loadingText={loadingText}
+            onClick={() => {
+              if (!isEnabled) enableProvider();
+              else this.openDialog();
+            }}
+          >
+            View donation address
+          </LoaderButton>
+        )}
 
         {donationAddress ? (
           // Modal for viewing the donation address
@@ -536,6 +553,7 @@ class CreateDonationAddressButton extends React.Component {
 
 CreateDonationAddressButton.propTypes = {
   campaignTitle: PropTypes.string.isRequired,
+  campaignOwner: PropTypes.string.isRequired,
   campaignId: PropTypes.string.isRequired,
   receiverId: PropTypes.number.isRequired,
   giverId: PropTypes.number.isRequired,
