@@ -218,6 +218,7 @@ class EditMilestone extends Component {
               fiatAmount: milestone.fiatAmount,
               maxAmount: milestone.maxAmount,
               recipientAddress: milestone.recipientAddress,
+              image: milestone.image,
             });
 
             await this.props.getConversionRates(milestone.date, milestone.token.symbol);
@@ -397,6 +398,7 @@ class EditMilestone extends Component {
       milestoneObject = milestone;
     }
     milestoneObject.image = image;
+    this.setState({ image });
   }
 
   setDate(date) {
@@ -874,6 +876,7 @@ class EditMilestone extends Component {
       fiatAmount,
       maxAmount,
       recipientAddress,
+      image,
     } = this.state;
 
     return (
@@ -977,7 +980,7 @@ class EditMilestone extends Component {
                     <div className="form-group">
                       <FormsyImageUploader
                         setImage={this.setImage}
-                        previewImage={milestone.image}
+                        previewImage={image}
                         required={isNew}
                       />
                     </div>
