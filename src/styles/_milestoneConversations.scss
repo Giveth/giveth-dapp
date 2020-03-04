@@ -56,6 +56,12 @@
     margin-bottom: 0;
   }
 
+  .c-message img {
+    margin: auto;
+    width: 90% !important;
+    height: auto;
+  }
+
   .c-action-footer:not(:empty) {
     border-top: 1px solid #efefef;
     padding: 3px 0;
