@@ -376,7 +376,6 @@ class DelegateMultipleButton extends Component {
                           label={`Select token or ${config.nativeTokenName} to delegate`}
                           helpText=""
                           value={selectedToken && selectedToken.address}
-                          // cta="--- Select ---"
                           options={tokenWhitelistOptions}
                           onChange={address => this.setToken(address)}
                         />
