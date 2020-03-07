@@ -208,7 +208,7 @@ class DelegateMultipleButton extends Component {
             );
 
             if (maxDonationAmount.lt(amount)) amount = maxDonationAmount;
-            localMax = maxDonationAmount;
+            if (maxDonationAmount.lt(localMax)) localMax = maxDonationAmount;
           }
 
           this.setState({
