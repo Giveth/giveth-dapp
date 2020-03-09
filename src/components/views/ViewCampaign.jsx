@@ -274,7 +274,7 @@ class ViewCampaign extends Component {
                   />
                   <CreateDonationAddressButton
                     campaignTitle={campaign.title}
-                    campaignOwner={campaign.owner}
+                    campaignOwner={campaign.owner.address}
                     campaignId={campaign.id}
                     receiverId={campaign.projectId}
                     giverId={(campaign._owner || {}).giverId}
