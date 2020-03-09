@@ -198,7 +198,7 @@ class DelegateMultipleButton extends Component {
 
           let localMax = amount;
 
-          if (selectedAmount.toNumber() !== 0) {
+          if (selectedAmount && selectedAmount.toNumber() !== 0) {
             amount = selectedAmount;
           }
 
@@ -208,7 +208,7 @@ class DelegateMultipleButton extends Component {
             );
 
             if (maxDonationAmount.lt(amount)) amount = maxDonationAmount;
-            localMax = maxDonationAmount;
+            if (maxDonationAmount.lt(localMax)) localMax = maxDonationAmount;
           }
 
           this.setState({
@@ -376,7 +376,6 @@ class DelegateMultipleButton extends Component {
                           label={`Select token or ${config.nativeTokenName} to delegate`}
                           helpText=""
                           value={selectedToken && selectedToken.address}
-                          cta="--- Select ---"
                           options={tokenWhitelistOptions}
                           onChange={address => this.setToken(address)}
                         />
@@ -384,9 +383,13 @@ class DelegateMultipleButton extends Component {
 
                       {delegations.length === 0 && (
                         <p>
-                          The amount available to delegate is {maxAmount.toFixed()}{' '}
-                          {selectedToken.symbol}. Please select a different currency or different
-                          source DAC/Campaign.
+                          The amount available to delegate is 0 {selectedToken.symbol}
+                          <br />
+                          Please select{' '}
+                          {!this.props.milestone || !this.props.milestone.acceptsSingleToken
+                            ? 'a different currency or '
+                            : ''}
+                          different source {milestone ? 'DAC/Campaign' : 'DAC'}
                         </p>
                       )}
                       {delegations.length > 0 && (
