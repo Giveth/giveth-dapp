@@ -1,14 +1,14 @@
 /* eslint-disable no-restricted-globals */
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-
 import 'react-rangeslider/lib/index.css';
-
 import Campaign from 'models/Campaign';
-
 import CampaignCsvService from '../services/CampaignCsvService';
 import { Consumer as Web3Consumer } from '../contextProviders/Web3Provider';
 import { Consumer as WhiteListConsumer } from '../contextProviders/WhiteListProvider';
+import User from '../models/User';
+import { actionWithLoggedIn } from '../lib/middleware';
+import ErrorPopup from './ErrorPopup';
 /**
  * Retrieves the oldest 100 donations that the user can delegate
  *
@@ -34,9 +34,11 @@ class DownloadCsvButton extends Component {
   componentDidMount() {}
 
   generateCsv() {
-    CampaignCsvService.get(this.props.campaign.id).then(res => {
-      buildURI(res, `${this.props.campaign.id}.csv`);
-    });
+    CampaignCsvService.get(this.props.campaign.id)
+      .then(res => {
+        buildURI(res, `${this.props.campaign.id}.csv`);
+      })
+      .catch(err => ErrorPopup('Something went wrong with generating CSV.', err));
   }
 
   render() {
@@ -45,7 +47,11 @@ class DownloadCsvButton extends Component {
     return (
       <span style={style}>
         <div id="container" style={{ display: 'none' }} />
-        <button type="button" className="btn btn-warning" onClick={() => this.generateCsv()}>
+        <button
+          type="button"
+          className="btn btn-warning"
+          onClick={() => actionWithLoggedIn(this.props.currentUser).then(() => this.generateCsv())}
+        >
           Download CSV
         </button>
       </span>
@@ -55,6 +61,7 @@ class DownloadCsvButton extends Component {
 
 DownloadCsvButton.propTypes = {
   campaign: PropTypes.instanceOf(Campaign),
+  currentUser: PropTypes.instanceOf(User).isRequired,
   style: PropTypes.shape(),
 };
 
