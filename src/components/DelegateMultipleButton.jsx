@@ -204,7 +204,7 @@ class DelegateMultipleButton extends Component {
 
           if (this.props.milestone && this.props.milestone.isCapped) {
             const maxDonationAmount = this.props.milestone.maxAmount.minus(
-              this.props.milestone.currentBalance,
+              this.props.milestone.totalDonatedSingleToken,
             );
 
             if (maxDonationAmount.lt(amount)) amount = maxDonationAmount;
