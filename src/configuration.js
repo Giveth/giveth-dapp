@@ -39,7 +39,7 @@ const configurations = {
     homeNetworkId: 66,
     ipfsGateway: 'http://localhost:8080/ipfs/',
     campaignUrl: 'http://localhost:3010/campaigns/',
-    sendErrors: false,
+    // sendErrors: false,
     analytics: {
       ga_UA: 'UA-103956937-3',
       useGoogleAnalytics: true,
@@ -162,6 +162,6 @@ config.defaultGasPrice = REACT_APP_DEFAULT_GASPRICE;
 config.networkName = REACT_APP_NETWORK_NAME || config.networkName;
 config.nativeTokenName = REACT_APP_NATIVE_TOKEN_NAME || config.nativeTokenName;
 config.donationCollectCountLimit = REACT_APP_DONATION_COLLECT_COUNT_LIMIT || 15;
-config.sendErrors = ['develop', 'release', 'beta'].includes(REACT_APP_ENVIRONMENT);
+config.sendErrors = ['localhost', 'develop', 'release', 'beta'].includes(REACT_APP_ENVIRONMENT);
 
 export default config;
