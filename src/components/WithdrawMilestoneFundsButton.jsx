@@ -90,7 +90,7 @@ class WithdrawMilestoneFundsButton extends Component {
                   let msg;
 
                   if (err === 'patch-error') {
-                    ErrorPopup('Something went wrong with witdrawing your funds', err);
+                    ErrorPopup('Something went wrong with withdrawing your funds', err);
                   } else if (err.message === 'no-donations') {
                     msg = <p>Nothing to withdraw. There are no donations to this Milestone.</p>;
                   } else if (txUrl) {
