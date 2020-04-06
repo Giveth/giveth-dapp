@@ -167,18 +167,46 @@ class DonateButton extends React.Component {
     });
   }
 
+  canDonateToProject() {
+    const { model, tokenWhitelist } = this.props;
+    const { acceptsSingleToken, token } = model;
+    return (
+      !acceptsSingleToken ||
+      tokenWhitelist.find(
+        t => t.foreignAddress.toLocaleLowerCase() === token.foreignAddress.toLocaleLowerCase(),
+      )
+    );
+  }
+
   openDialog() {
-    const { model } = this.props;
-    this.setState(prevState => {
-      const { isCapped } = model;
-      const amount = isCapped ? this.getMaxAmount().toFixed() : prevState.amount;
-      return {
-        modalVisible: true,
-        amount,
-        defaultAmount: isCapped ? false : prevState.defaultAmount,
-        formIsValid: false,
-      };
-    });
+    if (!this.canDonateToProject()) {
+      React.swal({
+        title: 'Token is not Active to Donate',
+        content: React.swal.msg(
+          <div>
+            <p>
+              Token <strong>{this.props.model.token.symbol}</strong> cannot be directly donated
+              anymore.
+              <br />
+              <strong>Delegate</strong> and <strong>Withdraw</strong> actions are still available
+              for this token.
+            </p>
+          </div>,
+        ),
+      });
+    } else {
+      this.setState(prevState => {
+        const { model } = this.props;
+        const { isCapped } = model;
+        const amount = isCapped ? this.getMaxAmount().toFixed() : prevState.amount;
+        return {
+          modalVisible: true,
+          amount,
+          defaultAmount: isCapped ? false : prevState.defaultAmount,
+          formIsValid: false,
+        };
+      });
+    }
   }
 
   submit(model) {
@@ -223,7 +251,7 @@ class DonateButton extends React.Component {
           }
         },
         onResult: balance => {
-          if (!selectedToken.balance.eq(balance)) {
+          if (!selectedToken.balance || !selectedToken.balance.eq(balance)) {
             selectedToken.balance = balance;
             this.setState({ selectedToken });
           }
@@ -425,7 +453,7 @@ class DonateButton extends React.Component {
               'Something went wrong with your donation. Could not approve token allowance.',
               err,
             );
-          } else if (err !== undefined) {
+          } else {
             ErrorPopup('Something went wrong.', err);
           }
         });
@@ -721,7 +749,7 @@ DonateButton.defaultProps = {
 
 export default props => (
   <WhiteListConsumer>
-    {({ state: { tokenWhitelist } }) => (
+    {({ state: { activeTokenWhitelist } }) => (
       <Web3Consumer>
         {({
           state: { isHomeNetwork, isEnabled, validProvider, balance },
@@ -731,7 +759,7 @@ export default props => (
             NativeTokenBalance={balance}
             validProvider={validProvider}
             isCorrectNetwork={isHomeNetwork}
-            tokenWhitelist={tokenWhitelist}
+            tokenWhitelist={activeTokenWhitelist}
             isEnabled={isEnabled}
             enableProvider={enableProvider}
             {...props}

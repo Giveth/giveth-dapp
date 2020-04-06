@@ -1315,12 +1315,15 @@ EditMilestone.defaultProps = {
 
 export default getConversionRatesContext(props => (
   <WhiteListConsumer>
-    {({ state: { tokenWhitelist, reviewers, isLoading }, actions: { isCampaignManager } }) => (
+    {({
+      state: { activeTokenWhitelist, reviewers, isLoading },
+      actions: { isCampaignManager },
+    }) => (
       <div>
         {isLoading && <Loader className="fixed" />}
         {!isLoading && (
           <EditMilestone
-            tokenWhitelist={tokenWhitelist}
+            tokenWhitelist={activeTokenWhitelist}
             reviewers={reviewers}
             isCampaignManager={isCampaignManager}
             {...props}

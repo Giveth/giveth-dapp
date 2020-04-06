@@ -227,7 +227,7 @@ export default props => (
           <ChangeOwnershipButton
             validProvider={validProvider}
             isCorrectNetwork={isForeignNetwork}
-            tokenWhitelist={tokenWhitelist}
+            tokenWhitelist={tokenWhitelist} // FIXME: tokenWhiteList is not used in ChangeOwnershipButtons node
             campaignManagers={campaignManagers}
             {...props}
           />
