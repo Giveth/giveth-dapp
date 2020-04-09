@@ -627,13 +627,17 @@ export default class Milestone extends BasicModel {
   canUserEdit(user) {
     return (
       user &&
-      [this.ownerAddress, this.campaign.ownerAddress].includes(user.address) &&
+      user.address &&
+      [this.ownerAddress, this.campaign.ownerAddress, this.campaign.coownerAddress].includes(
+        user.address,
+      ) &&
       [
         Milestone.PROPOSED,
         Milestone.REJECTED,
         Milestone.IN_PROGRESS,
         Milestone.NEEDS_REVIEW,
-      ].includes(this.status)
+      ].includes(this.status) &&
+      this.totalDonations <= 0
     );
   }
 
