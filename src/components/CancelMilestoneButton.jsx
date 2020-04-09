@@ -96,7 +96,7 @@ class CancelMilestoneButton extends Component {
       <Web3Consumer>
         {({ state: { isForeignNetwork } }) => (
           <Fragment>
-            {milestone.canUserCancel(currentUser) && milestone.totalDonations() <= 0 && (
+            {milestone.canUserCancel(currentUser) && (
               <button
                 type="button"
                 className="btn btn-danger btn-sm"
