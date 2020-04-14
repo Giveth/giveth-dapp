@@ -19,7 +19,7 @@ import { feathersClient } from '../lib/feathersClient';
 import Loader from './Loader';
 import config from '../configuration';
 import SelectFormsy from './SelectFormsy';
-import NetworkWarning from './NetworkWarning';
+import ActionNetworkWarning from './ActionNetworkWarning';
 
 import DonationService from '../services/DonationService';
 import { Consumer as Web3Consumer } from '../contextProviders/Web3Provider';
@@ -330,7 +330,7 @@ class DelegateMultipleButton extends Component {
             </div>
           )}
           {validProvider && (
-            <NetworkWarning
+            <ActionNetworkWarning
               incorrectNetwork={!isCorrectNetwork}
               networkName={config.foreignNetworkName}
             />
