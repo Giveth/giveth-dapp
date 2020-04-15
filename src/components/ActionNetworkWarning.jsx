@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import NetworkChangeGuide from './NetworkChangeGuide';
 
 /**
- * Show a warning if the user is not connected to the correct network
+ * It is used to show in modals when user wants to take an action while connected to wrong network.
  */
 
 function ActionNetworkWarning(props) {
@@ -13,7 +13,8 @@ function ActionNetworkWarning(props) {
       <div>
         <div className="alert alert-warning">
           <i className="fa fa-exclamation-triangle" />
-          You need to connect metamask to <strong>{networkName}</strong> network. Then try again.
+          To take this action you need to connect metamask to <strong>{networkName}</strong>{' '}
+          network. Then try again.
         </div>
         {NetworkChangeGuide}
       </div>

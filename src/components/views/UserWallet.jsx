@@ -23,8 +23,8 @@ import ErrorPopup from '../ErrorPopup';
  */
 
 class UserWallet extends Component {
-  constructor() {
-    super();
+  constructor(props) {
+    super(props);
 
     this.state = {
       isLoadingWallet: true,
