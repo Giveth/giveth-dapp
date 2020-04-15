@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import moment from 'moment';
 import Pagination from 'react-js-pagination';
 
-import NetworkWarning from 'components/NetworkWarning';
+import ViewNetworkWarning from 'components/ViewNetworkWarning';
 import { Consumer as Web3Consumer } from 'contextProviders/Web3Provider';
 import config from 'configuration';
 
@@ -45,7 +45,7 @@ const Donations = () => (
                           <h1>Your donations</h1>
                         )}
 
-                        <NetworkWarning
+                        <ViewNetworkWarning
                           incorrectNetwork={!isForeignNetwork}
                           networkName={config.foreignNetworkName}
                         />

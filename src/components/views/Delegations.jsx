@@ -8,7 +8,7 @@ import BigNumber from 'bignumber.js';
 
 import User from 'models/User';
 
-import NetworkWarning from 'components/NetworkWarning';
+import ViewNetworkWarning from 'components/ViewNetworkWarning';
 import { Consumer as Web3Consumer } from 'contextProviders/Web3Provider';
 import config from 'configuration';
 
@@ -51,7 +51,7 @@ const Delegations = ({ balance, currentUser }) => (
                       <h1>Your delegations</h1>
                     )}
 
-                    <NetworkWarning
+                    <ViewNetworkWarning
                       incorrectNetwork={!isForeignNetwork}
                       networkName={config.foreignNetworkName}
                     />

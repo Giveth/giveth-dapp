@@ -19,7 +19,7 @@ import DonationService from '../services/DonationService';
 import DACService from '../services/DACService';
 import { feathersClient } from '../lib/feathersClient';
 import { Consumer as Web3Consumer } from '../contextProviders/Web3Provider';
-import NetworkWarning from './NetworkWarning';
+import ActionNetworkWarning from './ActionNetworkWarning';
 import SelectFormsy from './SelectFormsy';
 import { Consumer as WhiteListConsumer } from '../contextProviders/WhiteListProvider';
 import DAC from '../models/DAC';
@@ -535,7 +535,7 @@ class DonateButton extends React.Component {
             )}
 
             {validProvider && (
-              <NetworkWarning
+              <ActionNetworkWarning
                 incorrectNetwork={!isCorrectNetwork}
                 networkName={config.homeNetworkName}
               />

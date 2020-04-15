@@ -12,8 +12,8 @@ import { checkBalance, actionWithLoggedIn } from 'lib/middleware';
 import { Consumer as Web3Consumer } from '../contextProviders/Web3Provider';
 
 class CancelMilestoneButton extends Component {
-  constructor() {
-    super();
+  constructor(props) {
+    super(props);
     this.conversationModal = React.createRef();
   }
 
@@ -94,14 +94,15 @@ class CancelMilestoneButton extends Component {
 
     return (
       <Web3Consumer>
-        {({ state: { isForeignNetwork } }) => (
+        {({ state: { isForeignNetwork }, actions: { displayForeignNetworkRequiredWarning } }) => (
           <Fragment>
             {milestone.canUserCancel(currentUser) && (
               <button
                 type="button"
                 className="btn btn-danger btn-sm"
-                onClick={() => this.cancelMilestone()}
-                disabled={!isForeignNetwork}
+                onClick={() =>
+                  isForeignNetwork ? this.cancelMilestone() : displayForeignNetworkRequiredWarning()
+                }
               >
                 <i className="fa fa-times" />
                 &nbsp;Cancel

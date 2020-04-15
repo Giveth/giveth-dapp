@@ -10,7 +10,8 @@ import CampaignService from '../services/CampaignService';
 import ErrorPopup from './ErrorPopup';
 import config from '../configuration';
 import { Consumer as Web3Consumer } from '../contextProviders/Web3Provider';
-import NetworkWarning from './NetworkWarning';
+import ViewNetworkWarning from './ViewNetworkWarning';
+import ActionNetworkWarning from './ActionNetworkWarning';
 import { authenticateIfPossible, checkProfile, sleep } from '../lib/middleware';
 import { history } from '../lib/helpers';
 
@@ -446,7 +447,7 @@ class CreateDonationAddressButton extends React.Component {
                   )}
 
                   {validProvider && (
-                    <NetworkWarning
+                    <ViewNetworkWarning
                       incorrectNetwork={!isCorrectNetwork}
                       networkName={config.homeNetworkName}
                     />
@@ -496,7 +497,7 @@ class CreateDonationAddressButton extends React.Component {
               )}
 
               {validProvider && (
-                <NetworkWarning
+                <ActionNetworkWarning
                   incorrectNetwork={!isCorrectNetwork}
                   networkName={config.homeNetworkName}
                 />

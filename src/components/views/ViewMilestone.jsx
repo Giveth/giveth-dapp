@@ -131,7 +131,8 @@ class ViewMilestone extends Component {
   }
 
   isActiveMilestone() {
-    return this.state.milestone.status === 'InProgress' && !this.state.milestone.fullyFunded;
+    const { fullyFunded, status } = this.state.milestone;
+    return status === 'InProgress' && !fullyFunded;
   }
 
   renderDescription() {
@@ -185,8 +186,8 @@ class ViewMilestone extends Component {
 
     return (
       <WhiteListConsumer>
-        {({ state: { tokenWhitelist } }) => {
-          const symbols = tokenWhitelist.map(t => t.symbol);
+        {({ state: { activeTokenWhitelist } }) => {
+          const symbols = activeTokenWhitelist.map(t => t.symbol);
           switch (symbols.length) {
             case 0:
               return <p>No token is defined to contribute.</p>;

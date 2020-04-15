@@ -5,7 +5,7 @@ import moment from 'moment';
 import Pagination from 'react-js-pagination';
 import BigNumber from 'bignumber.js';
 
-import NetworkWarning from 'components/NetworkWarning';
+import ViewNetworkWarning from 'components/ViewNetworkWarning';
 import { Consumer as Web3Consumer } from 'contextProviders/Web3Provider';
 import { Consumer as WhiteListConsumer } from 'contextProviders/WhiteListProvider';
 
@@ -141,8 +141,7 @@ class MyMilestones extends Component {
               <div className="row">
                 <div className="col-md-10 m-auto">
                   <h1>Your Milestones</h1>
-
-                  <NetworkWarning
+                  <ViewNetworkWarning
                     incorrectNetwork={!isForeignNetwork}
                     networkName={config.foreignNetworkName}
                   />

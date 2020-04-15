@@ -1,10 +1,11 @@
-import React, { Component, createContext } from 'react';
+import React, { Component, createContext, Fragment } from 'react';
 import PropTypes from 'prop-types';
 import BigNumber from 'bignumber.js';
 
 import getWeb3 from '../lib/blockchain/getWeb3';
 import pollEvery from '../lib/pollEvery';
 import config from '../configuration';
+import { ForeignRequiredModal } from '../components/NetworkWarningModal';
 
 const POLL_DELAY_ACCOUNT = 1000;
 const POLL_DELAY_NETWORK = 2000;
@@ -93,11 +94,17 @@ class Web3Provider extends Component {
       isForeignNetwork: false,
       isEnabled: false,
       setupTimeout: false,
+      showForeignNetworkRequiredWarning: false,
+      showHomeNetworkRequiredWarning: false,
     };
 
     this.enableTimedout = false;
 
     this.enableProvider = this.enableProvider.bind(this);
+    this.displayForeignNetworkRequiredWarning = this.displayForeignNetworkRequiredWarning.bind(
+      this,
+    );
+    this.displayHomeNetworkRequiredWarning = this.displayHomeNetworkRequiredWarning.bind(this);
   }
 
   componentWillMount() {
@@ -227,6 +234,14 @@ class Web3Provider extends Component {
     this.setState({ isEnabled, account, balance }, () => this.props.onLoaded());
   }
 
+  displayForeignNetworkRequiredWarning() {
+    this.setState({ showForeignNetworkRequiredWarning: true });
+  }
+
+  displayHomeNetworkRequiredWarning() {
+    this.setState({ showHomeNetworkRequiredWarning: true });
+  }
+
   render() {
     const {
       account,
@@ -237,28 +252,46 @@ class Web3Provider extends Component {
       isForeignNetwork,
       isEnabled,
       setupTimeout,
+      showForeignNetworkRequiredWarning,
+      showHomeNetworkRequiredWarning,
     } = this.state;
 
     return (
-      <Provider
-        value={{
-          state: {
-            failedToLoad: setupTimeout,
-            account,
-            balance,
-            currentNetwork,
-            validProvider,
-            isHomeNetwork,
-            isForeignNetwork,
-            isEnabled,
-          },
-          actions: {
-            enableProvider: this.enableProvider,
-          },
-        }}
-      >
-        {this.props.children}
-      </Provider>
+      <Fragment>
+        <ForeignRequiredModal
+          show={showForeignNetworkRequiredWarning}
+          closeModal={() => {
+            this.setState({ showForeignNetworkRequiredWarning: false });
+          }}
+        />
+        <ForeignRequiredModal
+          show={showHomeNetworkRequiredWarning}
+          closeModal={() => {
+            this.setState({ showHomeNetworkRequiredWarning: false });
+          }}
+        />
+        <Provider
+          value={{
+            state: {
+              failedToLoad: setupTimeout,
+              account,
+              balance,
+              currentNetwork,
+              validProvider,
+              isHomeNetwork,
+              isForeignNetwork,
+              isEnabled,
+            },
+            actions: {
+              enableProvider: this.enableProvider,
+              displayForeignNetworkRequiredWarning: this.displayForeignNetworkRequiredWarning,
+              displayHomeNetworkRequiredWarning: this.displayHomeNetworkRequiredWarning,
+            },
+          }}
+        >
+          {this.props.children}
+        </Provider>
+      </Fragment>
     );
   }
 }
