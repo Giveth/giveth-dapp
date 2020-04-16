@@ -24,13 +24,13 @@ import User from '../../models/User';
 import ErrorPopup from '../ErrorPopup';
 import { Consumer as WhiteListConsumer } from '../../contextProviders/WhiteListProvider';
 import {
+  deleteDraft,
+  DraftButton,
   draftStates,
   loadDraft,
   onDraftChange,
   onImageChange,
   saveDraft,
-  deleteDraft,
-  DraftButton,
 } from '../Draft';
 
 /**
@@ -69,11 +69,12 @@ class EditDAC extends Component {
   }
 
   componentDidMount() {
-    checkForeignNetwork(this.props.isForeignNetwork)
+    const { isForeignNetwork, displayForeignNetRequiredWarning, match } = this.props;
+    checkForeignNetwork(isForeignNetwork, displayForeignNetRequiredWarning)
       .then(() => this.checkUser())
       .then(() => {
         if (!this.props.isNew) {
-          DACservice.get(this.props.match.params.id)
+          DACservice.get(match.params.id)
             .then(dac => {
               // The user is not an owner, hence can not change the DAC
               if (!isOwner(dac.ownerAddress, this.props.currentUser)) {
@@ -94,10 +95,12 @@ class EditDAC extends Component {
         }
       })
       .catch(err => {
-        ErrorPopup(
-          'There has been a problem loading the DAC. Please refresh the page and try again.',
-          err,
-        );
+        if (err.message !== 'wrongNetwork') {
+          ErrorPopup(
+            'There has been a problem loading the DAC. Please refresh the page and try again.',
+            err,
+          );
+        }
       });
     this.mounted = true;
   }
@@ -213,7 +216,9 @@ class EditDAC extends Component {
   triggerRouteBlocking() {
     const form = this.form.current.formsyForm;
     // we only block routing if the form state is not submitted
-    this.setState({ isBlocking: form && (!form.state.formSubmitted || form.state.isSubmitting) });
+    this.setState({
+      isBlocking: form && (!form.state.formSubmitted || form.state.isSubmitting),
+    });
     this.onDraftChange();
   }
 
@@ -368,6 +373,7 @@ EditDAC.propTypes = {
   isNew: PropTypes.bool,
   balance: PropTypes.instanceOf(BigNumber).isRequired,
   isForeignNetwork: PropTypes.bool.isRequired,
+  displayForeignNetRequiredWarning: PropTypes.func.isRequired,
   match: PropTypes.shape({
     params: PropTypes.shape({
       id: PropTypes.string,

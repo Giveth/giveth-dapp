@@ -33,7 +33,7 @@ class UserWallet extends Component {
     };
   }
 
-  componentWillMount() {
+  componentDidMount() {
     isLoggedIn(this.props.currentUser)
       .then(() => {
         const bal = this.props.wallet.getBalance();

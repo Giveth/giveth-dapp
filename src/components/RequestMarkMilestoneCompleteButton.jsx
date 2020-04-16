@@ -102,16 +102,14 @@ class RequestMarkMilestoneCompleteButton extends Component {
 
     return (
       <Web3Consumer>
-        {({ state: { isForeignNetwork }, actions: { displayForeignNetworkRequiredWarning } }) => (
+        {({ state: { isForeignNetwork }, actions: { displayForeignNetRequiredWarning } }) => (
           <Fragment>
             {milestone.canUserMarkComplete(currentUser) && (
               <button
                 type="button"
                 className="btn btn-success btn-sm"
                 onClick={() =>
-                  isForeignNetwork
-                    ? this.requestMarkComplete()
-                    : displayForeignNetworkRequiredWarning()
+                  isForeignNetwork ? this.requestMarkComplete() : displayForeignNetRequiredWarning()
                 }
               >
                 Mark complete

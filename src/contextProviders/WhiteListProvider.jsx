@@ -74,7 +74,7 @@ class WhiteListProvider extends Component {
     };
   }
 
-  async componentWillMount() {
+  async componentDidMount() {
     try {
       const whitelist = await feathersClient.service('/whitelist').find();
 

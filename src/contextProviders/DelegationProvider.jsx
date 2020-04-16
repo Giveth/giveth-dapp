@@ -44,7 +44,7 @@ class DelegationProvider extends Component {
     this.cleanUp = this.cleanUp.bind(this);
   }
 
-  componentWillMount() {
+  componentDidMount() {
     if (this.props.currentUser) {
       this.load();
     }

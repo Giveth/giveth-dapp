@@ -15,6 +15,7 @@ const modalStyles = {
     boxShadow: '0 0 40px #ccc',
     overflowY: 'scroll',
   },
+  overlay: { zIndex: 1000 },
 };
 
 Modal.setAppElement('#root');
@@ -31,7 +32,7 @@ const NetworkWarningModal = props => {
       <div>
         <ActionNetworkWarning incorrectNetwork networkName={networkName} />
       </div>
-      <button type="button" className="btn btn-light float-right" onClick={() => closeModal()}>
+      <button type="button" className="btn btn-light float-right" onClick={closeModal}>
         Close
       </button>
     </Modal>

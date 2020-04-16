@@ -119,7 +119,7 @@ class AcceptRejectProposedMilestoneButtons extends Component {
 
     return (
       <Web3Consumer>
-        {({ state: { isForeignNetwork }, actions: { displayForeignNetworkRequiredWarning } }) => (
+        {({ state: { isForeignNetwork }, actions: { displayForeignNetRequiredWarning } }) => (
           <Fragment>
             {milestone.canUserAcceptRejectProposal(currentUser) && (
               <span>
@@ -129,7 +129,7 @@ class AcceptRejectProposedMilestoneButtons extends Component {
                   onClick={() =>
                     isForeignNetwork
                       ? this.acceptProposedMilestone()
-                      : displayForeignNetworkRequiredWarning()
+                      : displayForeignNetRequiredWarning()
                   }
                 >
                   <i className="fa fa-check-square-o" />
@@ -141,7 +141,7 @@ class AcceptRejectProposedMilestoneButtons extends Component {
                   onClick={() =>
                     isForeignNetwork
                       ? this.rejectProposedMilestone()
-                      : displayForeignNetworkRequiredWarning()
+                      : displayForeignNetRequiredWarning()
                   }
                 >
                   <i className="fa fa-times-circle-o" />
