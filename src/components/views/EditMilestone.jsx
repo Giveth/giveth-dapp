@@ -151,11 +151,12 @@ class EditMilestone extends Component {
   }
 
   initComponent() {
-    checkForeignNetwork(this.props.isForeignNetwork)
+    const { isForeignNetwork, match, displayForeignNetRequiredWarning } = this.props;
+    checkForeignNetwork(isForeignNetwork, displayForeignNetRequiredWarning)
       .then(() => this.checkUser())
       .then(async () => {
         this.setState({
-          campaignId: this.props.match.params.id,
+          campaignId: match.params.id,
         });
 
         await DACService.getDACs(
@@ -343,7 +344,7 @@ class EditMilestone extends Component {
         if (err === 'noBalance') {
           ErrorPopup('Something went wrong.', err);
           this.props.history.goBack();
-        } else if (err !== undefined) {
+        } else if (err !== undefined && err.message !== 'wrongNetwork') {
           ErrorPopup('Something went wrong. Please try again.', err);
         }
       });
@@ -1288,6 +1289,7 @@ EditMilestone.propTypes = {
   isNew: PropTypes.bool,
   balance: PropTypes.instanceOf(BigNumber).isRequired,
   isForeignNetwork: PropTypes.bool.isRequired,
+  displayForeignNetRequiredWarning: PropTypes.func.isRequired,
   match: PropTypes.shape({
     params: PropTypes.shape({
       id: PropTypes.string,

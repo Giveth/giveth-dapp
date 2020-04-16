@@ -33,7 +33,7 @@ class RateConverter extends Component {
     this.changeSelectedFiat = this.changeSelectedFiat.bind(this);
   }
 
-  componentWillMount() {
+  componentDidMount() {
     this.setDate(this.props.date);
   }
 

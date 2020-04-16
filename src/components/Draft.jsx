@@ -282,15 +282,13 @@ class DraftButton extends Component {
     this.updateWidth = this.updateWidth.bind(this);
   }
 
-  componentWillMount() {
-    this.updateWidth();
-  }
-
   componentDidMount() {
+    this.updateWidth();
     window.addEventListener('resize', this.updateWidth);
   }
 
-  componentWillReceiveProps(nextProps) {
+  // eslint-disable-next-line camelcase
+  UNSAFE_componentWillReceiveProps(nextProps) {
     switch (nextProps.draftState) {
       case draftStates.hidden: {
         this.setState({ hidden: true });

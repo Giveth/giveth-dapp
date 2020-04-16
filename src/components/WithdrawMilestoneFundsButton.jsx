@@ -134,14 +134,14 @@ class WithdrawMilestoneFundsButton extends Component {
 
     return (
       <Web3Consumer>
-        {({ state: { isForeignNetwork }, actions: { displayForeignNetworkRequiredWarning } }) => (
+        {({ state: { isForeignNetwork }, actions: { displayForeignNetRequiredWarning } }) => (
           <Fragment>
             {milestone.canUserWithdraw(currentUser) && (
               <button
                 type="button"
                 className="btn btn-success btn-sm"
                 onClick={() =>
-                  isForeignNetwork ? this.withdraw() : displayForeignNetworkRequiredWarning()
+                  isForeignNetwork ? this.withdraw() : displayForeignNetRequiredWarning()
                 }
               >
                 <i className="fa fa-usd" />{' '}

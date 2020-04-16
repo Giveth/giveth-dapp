@@ -131,7 +131,10 @@ class Application extends Component {
                   {!isLoading && (
                     <Web3Provider onLoaded={this.web3Loaded}>
                       <Web3Consumer>
-                        {({ state: { account, balance, isForeignNetwork } }) => (
+                        {({
+                          state: { account, balance, isForeignNetwork },
+                          actions: { displayForeignNetRequiredWarning },
+                        }) => (
                           <div>
                             {web3Loading && <Loader className="fixed" />}
                             {!web3Loading && (
@@ -163,6 +166,9 @@ class Application extends Component {
                                                     currentUser={currentUser}
                                                     balance={balance}
                                                     isForeignNetwork={isForeignNetwork}
+                                                    displayForeignNetRequiredWarning={
+                                                      displayForeignNetRequiredWarning
+                                                    }
                                                     {...props}
                                                   />
                                                 )}
@@ -187,6 +193,9 @@ class Application extends Component {
                                                     currentUser={currentUser}
                                                     balance={balance}
                                                     isForeignNetwork={isForeignNetwork}
+                                                    displayForeignNetRequiredWarning={
+                                                      displayForeignNetRequiredWarning
+                                                    }
                                                     {...props}
                                                   />
                                                 )}
@@ -202,6 +211,9 @@ class Application extends Component {
                                                     currentUser={currentUser}
                                                     balance={balance}
                                                     isForeignNetwork={isForeignNetwork}
+                                                    displayForeignNetRequiredWarning={
+                                                      displayForeignNetRequiredWarning
+                                                    }
                                                     {...props}
                                                   />
                                                 )}
@@ -226,6 +238,9 @@ class Application extends Component {
                                                     currentUser={currentUser}
                                                     balance={balance}
                                                     isForeignNetwork={isForeignNetwork}
+                                                    displayForeignNetRequiredWarning={
+                                                      displayForeignNetRequiredWarning
+                                                    }
                                                     {...props}
                                                   />
                                                 )}
@@ -241,6 +256,9 @@ class Application extends Component {
                                                     currentUser={currentUser}
                                                     balance={balance}
                                                     isForeignNetwork={isForeignNetwork}
+                                                    displayForeignNetRequiredWarning={
+                                                      displayForeignNetRequiredWarning
+                                                    }
                                                     {...props}
                                                   />
                                                 )}
@@ -255,6 +273,9 @@ class Application extends Component {
                                                     key={currentUser ? currentUser.id : 0}
                                                     currentUser={currentUser}
                                                     isForeignNetwork={isForeignNetwork}
+                                                    displayForeignNetRequiredWarning={
+                                                      displayForeignNetRequiredWarning
+                                                    }
                                                     balance={balance}
                                                     {...props}
                                                   />
@@ -280,6 +301,9 @@ class Application extends Component {
                                                     currentUser={currentUser}
                                                     balance={balance}
                                                     isForeignNetwork={isForeignNetwork}
+                                                    displayForeignNetRequiredWarning={
+                                                      displayForeignNetRequiredWarning
+                                                    }
                                                     {...props}
                                                   />
                                                 )}
@@ -293,6 +317,9 @@ class Application extends Component {
                                                     currentUser={currentUser}
                                                     balance={balance}
                                                     isForeignNetwork={isForeignNetwork}
+                                                    displayForeignNetRequiredWarning={
+                                                      displayForeignNetRequiredWarning
+                                                    }
                                                     isProposed
                                                     {...props}
                                                   />
@@ -386,6 +413,9 @@ class Application extends Component {
                                                     currentUser={currentUser}
                                                     balance={balance}
                                                     isForeignNetwork={isForeignNetwork}
+                                                    displayForeignNetRequiredWarning={
+                                                      displayForeignNetRequiredWarning
+                                                    }
                                                     {...props}
                                                   />
                                                 )}

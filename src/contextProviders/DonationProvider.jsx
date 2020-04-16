@@ -46,7 +46,7 @@ class DonationProvider extends Component {
     this.loadDonations = this.loadDonations.bind(this);
   }
 
-  componentWillMount() {
+  componentDidMount() {
     getNetwork().then(network => this.setState({ etherScanUrl: network.etherscan }));
 
     // Get the donations for current user

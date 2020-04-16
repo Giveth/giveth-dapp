@@ -41,14 +41,14 @@ class EditMilestoneButton extends Component {
 
     return (
       <Web3Consumer>
-        {({ state: { isForeignNetwork }, actions: { displayForeignNetworkRequiredWarning } }) => (
+        {({ state: { isForeignNetwork }, actions: { displayForeignNetRequiredWarning } }) => (
           <Fragment>
             {milestone.canUserEdit(currentUser) && (
               <button
                 type="button"
                 className="btn btn-link"
                 onClick={() =>
-                  isForeignNetwork ? this.editMilestone() : displayForeignNetworkRequiredWarning()
+                  isForeignNetwork ? this.editMilestone() : displayForeignNetRequiredWarning()
                 }
               >
                 <i className="fa fa-edit" />

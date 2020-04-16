@@ -4,22 +4,19 @@ import PropTypes from 'prop-types';
 class CommunityButton extends Component {
   constructor(props) {
     super(props);
-    this.state = {
-      icon: 'external-link',
-    };
-  }
-
-  componentWillMount() {
-    // parse community icon from url
-
+    let icon = 'external-link';
     const u = this.props.url;
 
-    if (u.indexOf('slack') > -1) this.setState({ icon: 'fa-slack' });
-    if (u.indexOf('reddit') > -1) this.setState({ icon: 'fa-reddit' });
-    if (u.indexOf('facebook') > -1) this.setState({ icon: 'fa-facebook-square' });
-    if (u.indexOf('github') > -1) this.setState({ icon: 'fa-github' });
-    if (u.indexOf('twitter') > -1) this.setState({ icon: 'fa-twitter' });
-    if (u.indexOf('linkedin') > -1) this.setState({ icon: 'fa-linkedin' });
+    if (u.indexOf('slack') > -1) icon = 'fa-slack';
+    if (u.indexOf('reddit') > -1) icon = 'fa-reddit';
+    if (u.indexOf('facebook') > -1) icon = 'fa-facebook-square';
+    if (u.indexOf('github') > -1) icon = 'fa-github';
+    if (u.indexOf('twitter') > -1) icon = 'fa-twitter';
+    if (u.indexOf('linkedin') > -1) icon = 'fa-linkedin';
+
+    this.state = {
+      icon,
+    };
   }
 
   render() {

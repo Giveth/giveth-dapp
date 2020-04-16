@@ -52,14 +52,14 @@ class ReproposeRejectedMilestoneButton extends Component {
 
     return (
       <Web3Consumer>
-        {({ state: { isForeignNetwork }, actions: { displayForeignNetworkRequiredWarning } }) => (
+        {({ state: { isForeignNetwork }, actions: { displayForeignNetRequiredWarning } }) => (
           <Fragment>
             {milestone.canUserRepropose(currentUser) && (
               <button
                 type="button"
                 className="btn btn-success btn-sm"
                 onClick={() =>
-                  isForeignNetwork ? this.repropose() : displayForeignNetworkRequiredWarning()
+                  isForeignNetwork ? this.repropose() : displayForeignNetRequiredWarning()
                 }
               >
                 <i className="fa fa-times-square-o" />

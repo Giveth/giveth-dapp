@@ -174,7 +174,7 @@ class ApproveRejectMilestoneCompletionButtons extends Component {
 
     return (
       <Web3Consumer>
-        {({ state: { isForeignNetwork }, actions: { displayForeignNetworkRequiredWarning } }) => (
+        {({ state: { isForeignNetwork }, actions: { displayForeignNetRequiredWarning } }) => (
           <Fragment>
             {milestone.canUserApproveRejectCompletion(currentUser) && (
               <span>
@@ -184,7 +184,7 @@ class ApproveRejectMilestoneCompletionButtons extends Component {
                   onClick={() =>
                     isForeignNetwork
                       ? this.approveMilestoneCompleted()
-                      : displayForeignNetworkRequiredWarning()
+                      : displayForeignNetRequiredWarning()
                   }
                 >
                   <i className="fa fa-thumbs-up" />
@@ -197,7 +197,7 @@ class ApproveRejectMilestoneCompletionButtons extends Component {
                   onClick={() =>
                     isForeignNetwork
                       ? this.rejectMilestoneCompleted()
-                      : displayForeignNetworkRequiredWarning()
+                      : displayForeignNetRequiredWarning()
                   }
                 >
                   <i className="fa fa-thumbs-down" />

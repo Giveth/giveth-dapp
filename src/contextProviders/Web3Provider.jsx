@@ -5,7 +5,7 @@ import BigNumber from 'bignumber.js';
 import getWeb3 from '../lib/blockchain/getWeb3';
 import pollEvery from '../lib/pollEvery';
 import config from '../configuration';
-import { ForeignRequiredModal } from '../components/NetworkWarningModal';
+import { ForeignRequiredModal, HomeRequiredModal } from '../components/NetworkWarningModal';
 
 const POLL_DELAY_ACCOUNT = 1000;
 const POLL_DELAY_NETWORK = 2000;
@@ -82,8 +82,8 @@ const pollNetwork = pollEvery((web3, { onNetwork = () => {} } = {}) => {
 }, POLL_DELAY_NETWORK);
 
 class Web3Provider extends Component {
-  constructor() {
-    super();
+  constructor(props) {
+    super(props);
 
     this.state = {
       account: undefined,
@@ -94,20 +94,17 @@ class Web3Provider extends Component {
       isForeignNetwork: false,
       isEnabled: false,
       setupTimeout: false,
-      showForeignNetworkRequiredWarning: false,
-      showHomeNetworkRequiredWarning: false,
+      showForeignNetRequiredWarning: false,
+      showHomeNetRequiredWarning: false,
+      onForeignNetWarningClose: undefined,
+      onHomeNetWarningClose: undefined,
     };
 
     this.enableTimedout = false;
 
     this.enableProvider = this.enableProvider.bind(this);
-    this.displayForeignNetworkRequiredWarning = this.displayForeignNetworkRequiredWarning.bind(
-      this,
-    );
-    this.displayHomeNetworkRequiredWarning = this.displayHomeNetworkRequiredWarning.bind(this);
-  }
-
-  componentWillMount() {
+    this.displayForeignNetRequiredWarning = this.displayForeignNetRequiredWarning.bind(this);
+    this.displayHomeNetRequiredWarning = this.displayHomeNetRequiredWarning.bind(this);
     this.initWeb3Provider();
   }
 
@@ -234,12 +231,18 @@ class Web3Provider extends Component {
     this.setState({ isEnabled, account, balance }, () => this.props.onLoaded());
   }
 
-  displayForeignNetworkRequiredWarning() {
-    this.setState({ showForeignNetworkRequiredWarning: true });
+  displayForeignNetRequiredWarning(onClose) {
+    this.setState({
+      showForeignNetRequiredWarning: true,
+      onForeignNetWarningClose: onClose,
+    });
   }
 
-  displayHomeNetworkRequiredWarning() {
-    this.setState({ showHomeNetworkRequiredWarning: true });
+  displayHomeNetRequiredWarning(onClose) {
+    this.setState({
+      showHomeNetRequiredWarning: true,
+      onHomeNetWarningClose: onClose,
+    });
   }
 
   render() {
@@ -252,22 +255,36 @@ class Web3Provider extends Component {
       isForeignNetwork,
       isEnabled,
       setupTimeout,
-      showForeignNetworkRequiredWarning,
-      showHomeNetworkRequiredWarning,
+      showForeignNetRequiredWarning,
+      showHomeNetRequiredWarning,
     } = this.state;
 
     return (
       <Fragment>
         <ForeignRequiredModal
-          show={showForeignNetworkRequiredWarning}
+          show={showForeignNetRequiredWarning}
           closeModal={() => {
-            this.setState({ showForeignNetworkRequiredWarning: false });
+            const onClose = this.state.onForeignNetWarningClose || (() => {});
+            this.setState(
+              {
+                showForeignNetRequiredWarning: false,
+                onForeignNetWarningClose: undefined,
+              },
+              onClose,
+            );
           }}
         />
-        <ForeignRequiredModal
-          show={showHomeNetworkRequiredWarning}
+        <HomeRequiredModal
+          show={showHomeNetRequiredWarning}
           closeModal={() => {
-            this.setState({ showHomeNetworkRequiredWarning: false });
+            const onClose = this.state.onHomeNetWarningClose || (() => {});
+            this.setState(
+              {
+                showHomeNetRequiredWarning: false,
+                onHomeNetWarningClose: undefined,
+              },
+              onClose,
+            );
           }}
         />
         <Provider
@@ -284,8 +301,8 @@ class Web3Provider extends Component {
             },
             actions: {
               enableProvider: this.enableProvider,
-              displayForeignNetworkRequiredWarning: this.displayForeignNetworkRequiredWarning,
-              displayHomeNetworkRequiredWarning: this.displayHomeNetworkRequiredWarning,
+              displayForeignNetRequiredWarning: this.displayForeignNetRequiredWarning,
+              displayHomeNetRequiredWarning: this.displayHomeNetRequiredWarning,
             },
           }}
         >
