@@ -284,6 +284,7 @@ class DelegateButton extends Component {
               objectsToDelegateToMilestone: [],
             });
           }}
+          shouldCloseOnOverlayClick={false}
           contentLabel="Delegate Donation"
           style={modalStyles}
         >

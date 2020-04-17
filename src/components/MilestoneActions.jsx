@@ -40,7 +40,7 @@ class MilestoneActions extends Component {
           />
         ) : null}
 
-        <ArchiveMilestoneButton milestone={milestone} currentUser={currentUser} />
+        <ArchiveMilestoneButton milestone={milestone} balance={balance} currentUser={currentUser} />
 
         <ChangeMilestoneRecipientButton
           milestone={milestone}

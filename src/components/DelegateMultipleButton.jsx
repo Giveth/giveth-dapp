@@ -307,17 +307,34 @@ class DelegateMultipleButton extends Component {
       maxAmount,
       amount,
     } = this.state;
-    const { campaign, milestone, validProvider, isCorrectNetwork } = this.props;
+    const {
+      campaign,
+      milestone,
+      validProvider,
+      isCorrectNetwork,
+      displayForeignNetRequiredWarning,
+    } = this.props;
 
     return (
       <span style={style}>
-        <button type="button" className="btn btn-info" onClick={() => this.openDialog()}>
+        <button
+          type="button"
+          className="btn btn-info"
+          onClick={() => {
+            if (validProvider && !isCorrectNetwork) {
+              displayForeignNetRequiredWarning();
+            } else {
+              this.openDialog();
+            }
+          }}
+        >
           Delegate funds here
         </button>
 
         <Modal
           isOpen={this.state.modalVisible}
           style={modalStyles}
+          shouldCloseOnOverlayClick={false}
           onRequestClose={() => {
             this.setState({ modalVisible: false });
           }}
@@ -496,6 +513,7 @@ DelegateMultipleButton.propTypes = {
   style: PropTypes.shape(),
   validProvider: PropTypes.bool.isRequired,
   isCorrectNetwork: PropTypes.bool.isRequired,
+  displayForeignNetRequiredWarning: PropTypes.func.isRequired,
   tokenWhitelist: PropTypes.arrayOf(PropTypes.shape()).isRequired,
 };
 
@@ -509,10 +527,14 @@ export default props => (
   <WhiteListConsumer>
     {({ state: { tokenWhitelist } }) => (
       <Web3Consumer>
-        {({ state: { isForeignNetwork, validProvider } }) => (
+        {({
+          state: { isForeignNetwork, validProvider },
+          actions: { displayForeignNetRequiredWarning },
+        }) => (
           <DelegateMultipleButton
             validProvider={validProvider}
             isCorrectNetwork={isForeignNetwork}
+            displayForeignNetRequiredWarning={displayForeignNetRequiredWarning}
             tokenWhitelist={tokenWhitelist}
             {...props}
           />

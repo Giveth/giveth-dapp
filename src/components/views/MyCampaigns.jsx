@@ -152,7 +152,7 @@ class MyCampaigns extends Component {
                   {isLoading && <Loader className="fixed" />}
 
                   {!isLoading && (
-                    <div className="table-container">
+                    <div className="table-container dashboard-table-view">
                       {campaigns && campaigns.data.length > 0 && (
                         <div>
                           <table className="table table-responsive table-striped table-hover">
