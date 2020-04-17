@@ -178,6 +178,7 @@ class DelegateMultipleButton extends Component {
         amountRemaining: { $ne: 0 },
         ...options,
         $sort: { createdAt: 1 },
+        $limit: config.donationDelegateLimit, // TODO create a better way to calculate this
         'token.symbol': this.state.selectedToken.symbol,
       },
       schema: 'includeTypeAndGiverDetails',
@@ -207,8 +208,12 @@ class DelegateMultipleButton extends Component {
               this.props.milestone.totalDonatedSingleToken,
             );
 
-            if (maxDonationAmount.lt(amount)) amount = maxDonationAmount;
-            if (maxDonationAmount.lt(localMax)) localMax = maxDonationAmount;
+            if (maxDonationAmount.lt(amount)) {
+              amount = maxDonationAmount;
+              localMax = maxDonationAmount;
+            } else if (maxDonationAmount.lt(localMax)) {
+              localMax = maxDonationAmount;
+            }
           }
 
           this.setState({
