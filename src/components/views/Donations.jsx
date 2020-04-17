@@ -38,7 +38,7 @@ const Donations = () => (
                 actions: { refund, commit, reject, handlePageChanged },
               }) => (
                 <div id="donations-view">
-                  <div className="container-fluid page-layout dashboard-table-view">
+                  <div className="container-fluid page-layout">
                     <div className="row">
                       <div className="col-md-10 m-auto">
                         {(isLoading || (donations && donations.length > 0)) && (
@@ -55,7 +55,7 @@ const Donations = () => (
                         {isLoading && <Loader className="fixed" />}
 
                         {!isLoading && (
-                          <div className="table-container">
+                          <div className="table-container dashboard-table-view">
                             {donations && donations.length > 0 && (
                               <table className="table table-responsive table-striped table-hover">
                                 <thead>

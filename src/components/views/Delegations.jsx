@@ -44,7 +44,7 @@ const Delegations = ({ balance, currentUser }) => (
             actions: { handlePageChanged },
           }) => (
             <div id="delegations-view">
-              <div className="container-fluid page-layout dashboard-table-view">
+              <div className="container-fluid page-layout">
                 <div className="row">
                   <div className="col-md-10 m-auto">
                     {(isLoading || (delegations && delegations.length > 0)) && (
@@ -61,7 +61,7 @@ const Delegations = ({ balance, currentUser }) => (
                     {isLoading && <Loader className="fixed" />}
 
                     {!isLoading && (
-                      <div>
+                      <div className="dashboard-table-view">
                         {delegations && delegations.length > 0 && (
                           <div className="table-container">
                             <table className="table table-responsive table-striped table-hover">

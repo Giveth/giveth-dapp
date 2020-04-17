@@ -18,7 +18,7 @@ function ViewNetworkWarning(props) {
             type="button"
             data-toggle="modal"
             data-target="#networkChangeModal"
-            className="btn btn-outline-info ml-1"
+            className="btn btn-outline-info btn-sm ml-1"
           >
             <em>show guide</em>
           </button>
@@ -31,7 +31,7 @@ function ViewNetworkWarning(props) {
           aria-labelledby="networkChangeModalLabel"
           aria-hidden="true"
         >
-          <div className="modal-dialog" role="document">
+          <div className="modal-dialog modal-dialog-centered" role="document">
             <div className="modal-content">
               <div className="modal-header">
                 <h5 className="modal-title" id="networkChangeModalLabel">
