@@ -140,20 +140,19 @@ class DelegateMultipleButton extends Component {
   }
 
   selectedObject({ target }, selectedAmount) {
-    this.setState({
-      objectToDelegateFrom: target.value,
-      isLoadingDonations: true,
-    });
-
-    this.loadDonations(target.value, selectedAmount);
+    this.setState(
+      {
+        objectToDelegateFrom: target.value,
+        isLoadingDonations: true,
+      },
+      () => this.loadDonations(target.value, selectedAmount),
+    );
   }
 
-  loadDonations(ids, selectedAmount) {
+  async loadDonations(ids, selectedAmount) {
     if (ids.length !== 1) return;
 
     const entity = this.state.delegationOptions.find(c => c.id === ids[0]);
-
-    if (this.donationsObserver) this.donationsObserver.unsubscribe();
 
     const options = {};
 
@@ -173,58 +172,73 @@ class DelegateMultipleButton extends Component {
         break;
     }
 
-    const query = paramsForServer({
-      query: {
-        amountRemaining: { $ne: 0 },
-        ...options,
-        $sort: { createdAt: 1 },
-        $limit: config.donationDelegateLimit, // TODO create a better way to calculate this
-        'token.symbol': this.state.selectedToken.symbol,
-      },
-      schema: 'includeTypeAndGiverDetails',
-    });
+    const service = feathersClient.service('donations');
+    let donations = [];
+    let total;
+    let spare = config.donationDelegateCountLimit;
+    const pledgeSet = new Set();
+    // After having #donationDelegateCountLimit distinct pledges, check for next donations and add it if its pledgeId overlaps
+    do {
+      const query = paramsForServer({
+        query: {
+          amountRemaining: { $ne: 0 },
+          ...options,
+          $sort: { createdAt: 1 },
+          $limit: spare || 1,
+          'token.symbol': this.state.selectedToken.symbol,
+          $skip: donations.length,
+        },
+        schema: 'includeTypeAndGiverDetails',
+      });
+      // eslint-disable-next-line no-await-in-loop
+      const resp = await service.find(query);
+
+      if (spare === 0) {
+        if (!pledgeSet.has(resp.data[0].pledgeId)) {
+          break;
+        }
+      } else {
+        resp.data.map(d => d.pledgeId).forEach(pledgeId => pledgeSet.add(pledgeId));
+        spare = config.donationDelegateCountLimit - pledgeSet.size;
+      }
+
+      donations = donations.concat(resp.data);
+      total = resp.total;
+      // We can collect donations from #donationCollectionCountLimit distinct pledges
+    } while (donations.length < total);
 
     // start watching donations, this will re-run when donations change or are added
-    this.donationsObserver = feathersClient
-      .service('donations')
-      .watch({ listStrategy: 'always' })
-      .find(query)
-      .subscribe(
-        donations => {
-          const delegations = donations.data.map(d => new Donation(d));
-          let amount = delegations.reduce(
-            (sum, d) => sum.plus(d.amountRemaining),
-            new BigNumber('0'),
-          );
 
-          let localMax = amount;
+    const delegations = donations.map(d => new Donation(d));
+    let amount = delegations.reduce((sum, d) => sum.plus(d.amountRemaining), new BigNumber('0'));
 
-          if (selectedAmount && selectedAmount.toNumber() !== 0) {
-            amount = selectedAmount;
-          }
+    let localMax = amount;
 
-          if (this.props.milestone && this.props.milestone.isCapped) {
-            const maxDonationAmount = this.props.milestone.maxAmount.minus(
-              this.props.milestone.totalDonatedSingleToken,
-            );
+    if (selectedAmount && selectedAmount.toNumber() !== 0) {
+      amount = selectedAmount;
+    }
 
-            if (maxDonationAmount.lt(amount)) {
-              amount = maxDonationAmount;
-              localMax = maxDonationAmount;
-            } else if (maxDonationAmount.lt(localMax)) {
-              localMax = maxDonationAmount;
-            }
-          }
-
-          this.setState({
-            delegations,
-            maxAmount: localMax,
-            isLoadingDonations: false,
-            amount: amount.toString(),
-          });
-        },
-        () => this.setState({ isLoadingDonations: false }),
+    if (this.props.milestone && this.props.milestone.isCapped) {
+      const maxDonationAmount = this.props.milestone.maxAmount.minus(
+        this.props.milestone.totalDonatedSingleToken,
       );
+
+      if (maxDonationAmount.lt(amount)) {
+        amount = maxDonationAmount;
+        localMax = maxDonationAmount;
+      } else if (maxDonationAmount.lt(localMax)) {
+        localMax = maxDonationAmount;
+      }
+    }
+
+    this.setState({
+      delegations,
+      maxAmount: localMax,
+      isLoadingDonations: false,
+      amount: amount.toString(),
+    });
+
+    this.setState({ isLoadingDonations: false });
   }
 
   openDialog() {
