@@ -23,8 +23,8 @@ import ErrorPopup from '../ErrorPopup';
  */
 
 class UserWallet extends Component {
-  constructor() {
-    super();
+  constructor(props) {
+    super(props);
 
     this.state = {
       isLoadingWallet: true,
@@ -33,7 +33,7 @@ class UserWallet extends Component {
     };
   }
 
-  componentWillMount() {
+  componentDidMount() {
     isLoggedIn(this.props.currentUser)
       .then(() => {
         const bal = this.props.wallet.getBalance();

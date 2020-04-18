@@ -1,10 +1,11 @@
-import React, { Component, createContext } from 'react';
+import React, { Component, createContext, Fragment } from 'react';
 import PropTypes from 'prop-types';
 import BigNumber from 'bignumber.js';
 
 import getWeb3 from '../lib/blockchain/getWeb3';
 import pollEvery from '../lib/pollEvery';
 import config from '../configuration';
+import { ForeignRequiredModal, HomeRequiredModal } from '../components/NetworkWarningModal';
 
 const POLL_DELAY_ACCOUNT = 1000;
 const POLL_DELAY_NETWORK = 2000;
@@ -81,8 +82,8 @@ const pollNetwork = pollEvery((web3, { onNetwork = () => {} } = {}) => {
 }, POLL_DELAY_NETWORK);
 
 class Web3Provider extends Component {
-  constructor() {
-    super();
+  constructor(props) {
+    super(props);
 
     this.state = {
       account: undefined,
@@ -93,14 +94,17 @@ class Web3Provider extends Component {
       isForeignNetwork: false,
       isEnabled: false,
       setupTimeout: false,
+      showForeignNetRequiredWarning: false,
+      showHomeNetRequiredWarning: false,
+      onForeignNetWarningClose: undefined,
+      onHomeNetWarningClose: undefined,
     };
 
     this.enableTimedout = false;
 
     this.enableProvider = this.enableProvider.bind(this);
-  }
-
-  componentWillMount() {
+    this.displayForeignNetRequiredWarning = this.displayForeignNetRequiredWarning.bind(this);
+    this.displayHomeNetRequiredWarning = this.displayHomeNetRequiredWarning.bind(this);
     this.initWeb3Provider();
   }
 
@@ -227,6 +231,20 @@ class Web3Provider extends Component {
     this.setState({ isEnabled, account, balance }, () => this.props.onLoaded());
   }
 
+  displayForeignNetRequiredWarning(onClose) {
+    this.setState({
+      showForeignNetRequiredWarning: true,
+      onForeignNetWarningClose: onClose,
+    });
+  }
+
+  displayHomeNetRequiredWarning(onClose) {
+    this.setState({
+      showHomeNetRequiredWarning: true,
+      onHomeNetWarningClose: onClose,
+    });
+  }
+
   render() {
     const {
       account,
@@ -237,28 +255,60 @@ class Web3Provider extends Component {
       isForeignNetwork,
       isEnabled,
       setupTimeout,
+      showForeignNetRequiredWarning,
+      showHomeNetRequiredWarning,
     } = this.state;
 
     return (
-      <Provider
-        value={{
-          state: {
-            failedToLoad: setupTimeout,
-            account,
-            balance,
-            currentNetwork,
-            validProvider,
-            isHomeNetwork,
-            isForeignNetwork,
-            isEnabled,
-          },
-          actions: {
-            enableProvider: this.enableProvider,
-          },
-        }}
-      >
-        {this.props.children}
-      </Provider>
+      <Fragment>
+        <ForeignRequiredModal
+          show={showForeignNetRequiredWarning}
+          closeModal={() => {
+            const onClose = this.state.onForeignNetWarningClose || (() => {});
+            this.setState(
+              {
+                showForeignNetRequiredWarning: false,
+                onForeignNetWarningClose: undefined,
+              },
+              onClose,
+            );
+          }}
+        />
+        <HomeRequiredModal
+          show={showHomeNetRequiredWarning}
+          closeModal={() => {
+            const onClose = this.state.onHomeNetWarningClose || (() => {});
+            this.setState(
+              {
+                showHomeNetRequiredWarning: false,
+                onHomeNetWarningClose: undefined,
+              },
+              onClose,
+            );
+          }}
+        />
+        <Provider
+          value={{
+            state: {
+              failedToLoad: setupTimeout,
+              account,
+              balance,
+              currentNetwork,
+              validProvider,
+              isHomeNetwork,
+              isForeignNetwork,
+              isEnabled,
+            },
+            actions: {
+              enableProvider: this.enableProvider,
+              displayForeignNetRequiredWarning: this.displayForeignNetRequiredWarning,
+              displayHomeNetRequiredWarning: this.displayHomeNetRequiredWarning,
+            },
+          }}
+        >
+          {this.props.children}
+        </Provider>
+      </Fragment>
     );
   }
 }

@@ -99,14 +99,15 @@ class ArchiveMilestoneButton extends Component {
 
     return (
       <Web3Consumer>
-        {({ state: { isForeignNetwork } }) => (
+        {({ state: { isForeignNetwork }, actions: { displayForeignNetRequiredWarning } }) => (
           <Fragment>
             {milestone.canUserArchive(currentUser) && (
               <button
                 type="button"
                 className="btn btn-success btn-sm"
-                onClick={() => this.archiveMilestone()}
-                disabled={!isForeignNetwork}
+                onClick={() =>
+                  isForeignNetwork ? this.archiveMilestone() : displayForeignNetRequiredWarning()
+                }
               >
                 Archive
               </button>

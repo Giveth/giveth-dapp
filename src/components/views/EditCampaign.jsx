@@ -25,13 +25,13 @@ import CampaignService from '../../services/CampaignService';
 import ErrorPopup from '../ErrorPopup';
 import { Consumer as WhiteListConsumer } from '../../contextProviders/WhiteListProvider';
 import {
+  deleteDraft,
+  DraftButton,
   draftStates,
   loadDraft,
   onDraftChange,
   onImageChange,
   saveDraft,
-  deleteDraft,
-  DraftButton,
 } from '../Draft';
 
 /**
@@ -69,7 +69,8 @@ class EditCampaign extends Component {
 
   componentDidMount() {
     this.mounted = true;
-    checkForeignNetwork(this.props.isForeignNetwork)
+    const { isForeignNetwork, displayForeignNetRequiredWarning } = this.props;
+    checkForeignNetwork(isForeignNetwork, displayForeignNetRequiredWarning)
       .then(() => this.checkUser())
       .then(() => {
         // Load this Campaign
@@ -94,7 +95,7 @@ class EditCampaign extends Component {
       .catch(err => {
         if (err === 'noBalance') {
           ErrorPopup('There is no balance left on the account.', err);
-        } else if (err !== undefined) {
+        } else if (err !== undefined && err.message !== 'wrongNetwork') {
           ErrorPopup('Something went wrong.', err);
         }
       });
@@ -373,6 +374,7 @@ EditCampaign.propTypes = {
   isNew: PropTypes.bool,
   balance: PropTypes.instanceOf(BigNumber).isRequired,
   isForeignNetwork: PropTypes.bool.isRequired,
+  displayForeignNetRequiredWarning: PropTypes.func.isRequired,
   match: PropTypes.shape({
     params: PropTypes.shape({
       id: PropTypes.string,

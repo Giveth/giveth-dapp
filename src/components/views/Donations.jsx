@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import moment from 'moment';
 import Pagination from 'react-js-pagination';
 
-import NetworkWarning from 'components/NetworkWarning';
+import ViewNetworkWarning from 'components/ViewNetworkWarning';
 import { Consumer as Web3Consumer } from 'contextProviders/Web3Provider';
 import config from 'configuration';
 
@@ -38,14 +38,14 @@ const Donations = () => (
                 actions: { refund, commit, reject, handlePageChanged },
               }) => (
                 <div id="donations-view">
-                  <div className="container-fluid page-layout dashboard-table-view">
+                  <div className="container-fluid page-layout">
                     <div className="row">
                       <div className="col-md-10 m-auto">
                         {(isLoading || (donations && donations.length > 0)) && (
                           <h1>Your donations</h1>
                         )}
 
-                        <NetworkWarning
+                        <ViewNetworkWarning
                           incorrectNetwork={!isForeignNetwork}
                           networkName={config.foreignNetworkName}
                         />
@@ -55,7 +55,7 @@ const Donations = () => (
                         {isLoading && <Loader className="fixed" />}
 
                         {!isLoading && (
-                          <div className="table-container">
+                          <div className="table-container dashboard-table-view">
                             {donations && donations.length > 0 && (
                               <table className="table table-responsive table-striped table-hover">
                                 <thead>

@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import Pagination from 'react-js-pagination';
 import { utils } from 'web3';
 
-import NetworkWarning from 'components/NetworkWarning';
+import ViewNetworkWarning from 'components/ViewNetworkWarning';
 import { Consumer as Web3Consumer } from 'contextProviders/Web3Provider';
 import config from 'configuration';
 
@@ -144,7 +144,7 @@ class MyCampaigns extends Component {
 
                   <AuthenticationWarning currentUser={currentUser} />
 
-                  <NetworkWarning
+                  <ViewNetworkWarning
                     incorrectNetwork={!isForeignNetwork}
                     networkName={config.foreignNetworkName}
                   />
@@ -152,7 +152,7 @@ class MyCampaigns extends Component {
                   {isLoading && <Loader className="fixed" />}
 
                   {!isLoading && (
-                    <div className="table-container">
+                    <div className="table-container dashboard-table-view">
                       {campaigns && campaigns.data.length > 0 && (
                         <div>
                           <table className="table table-responsive table-striped table-hover">

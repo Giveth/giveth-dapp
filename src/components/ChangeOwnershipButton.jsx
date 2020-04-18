@@ -1,5 +1,5 @@
 /* eslint-disable no-restricted-globals */
-import React, { Component } from 'react';
+import React, { Component, Fragment } from 'react';
 import Modal from 'react-modal';
 import BigNumber from 'bignumber.js';
 import { Form } from 'formsy-react-components';
@@ -14,7 +14,7 @@ import { isLoggedIn, checkBalance, sleep } from '../lib/middleware';
 import Loader from './Loader';
 import config from '../configuration';
 import SelectFormsy from './SelectFormsy';
-import NetworkWarning from './NetworkWarning';
+import ActionNetworkWarning from './ActionNetworkWarning';
 
 import CampaignService from '../services/CampaignService';
 import { Consumer as Web3Consumer } from '../contextProviders/Web3Provider';
@@ -121,80 +121,83 @@ class ChangeOwnershipButton extends Component {
           {!validProvider && (
             <div className="alert alert-warning">
               <i className="fa fa-exclamation-triangle" />
-              It is recommended that you install <a href="https://metamask.io/">MetaMask</a> to
-              donate
+              You should install <a href="https://metamask.io/">MetaMask</a> to take action.
             </div>
           )}
           {validProvider && (
-            <NetworkWarning
+            <ActionNetworkWarning
               incorrectNetwork={!isCorrectNetwork}
               networkName={config.foreignNetworkName}
             />
           )}
-          <p>
-            Changing ownership for
-            {!milestone && <strong> {campaign.title}</strong>}
-            {milestone && <strong> {milestone.title}</strong>}
-          </p>
-          {isLoading && <Loader className="small btn-loader" />}
-          {!isLoading && (
-            <Form
-              onSubmit={this.submit}
-              layout="vertical"
-              ref={this.form}
-              mapping={inputs => {
-                campaign.ownerAddress = inputs.ownerAddress || ZERO_ADDRESS;
-                campaign.coownerAddress = inputs.coownerAddress || ZERO_ADDRESS;
-              }}
-            >
-              <div>
-                <SelectFormsy
-                  name="ownerAddress"
-                  id="owner-select"
-                  label="Select a new owner"
-                  helpText="This person or smart contract will be owning your Campaign from now on."
-                  value={campaign.ownerAddress}
-                  options={campaignManagers}
-                  validations="isEtherAddress"
-                  validationErrors={{
-                    isEtherAddress: 'Please select an owner.',
+          {isCorrectNetwork && (
+            <Fragment>
+              <p>
+                Changing ownership for
+                {!milestone && <strong> {campaign.title}</strong>}
+                {milestone && <strong> {milestone.title}</strong>}
+              </p>
+              {isLoading && <Loader className="small btn-loader" />}
+              {!isLoading && (
+                <Form
+                  onSubmit={this.submit}
+                  layout="vertical"
+                  ref={this.form}
+                  mapping={inputs => {
+                    campaign.ownerAddress = inputs.ownerAddress || ZERO_ADDRESS;
+                    campaign.coownerAddress = inputs.coownerAddress || ZERO_ADDRESS;
                   }}
-                  required
-                />
+                >
+                  <div>
+                    <SelectFormsy
+                      name="ownerAddress"
+                      id="owner-select"
+                      label="Select a new owner"
+                      helpText="This person or smart contract will be owning your Campaign from now on."
+                      value={campaign.ownerAddress}
+                      options={campaignManagers}
+                      validations="isEtherAddress"
+                      validationErrors={{
+                        isEtherAddress: 'Please select an owner.',
+                      }}
+                      required
+                    />
 
-                <SelectFormsy
-                  name="coownerAddress"
-                  id="co-owner-select"
-                  label="Select a new co-owner"
-                  helpText="This person or smart contract will be co-owning your Campaign from now on."
-                  value={campaign.coownerAddress}
-                  cta="------ Select a co-owner ------"
-                  options={campaignManagers}
-                  validations="isEtherAddress"
-                  validationErrors={{
-                    isEtherAddress: 'Please select a co-owner.',
-                  }}
-                  required
-                />
-                <button
-                  className="btn btn-success"
-                  formNoValidate
-                  type="submit"
-                  disabled={isSaving || !isCorrectNetwork}
-                >
-                  {isSaving ? 'Changing...' : 'Change ownership'}
-                </button>
-                <button
-                  className="btn btn-light float-right"
-                  type="button"
-                  onClick={() => {
-                    this.setState({ modalVisible: false });
-                  }}
-                >
-                  Close
-                </button>
-              </div>
-            </Form>
+                    <SelectFormsy
+                      name="coownerAddress"
+                      id="co-owner-select"
+                      label="Select a new co-owner"
+                      helpText="This person or smart contract will be co-owning your Campaign from now on."
+                      value={campaign.coownerAddress}
+                      cta="------ Select a co-owner ------"
+                      options={campaignManagers}
+                      validations="isEtherAddress"
+                      validationErrors={{
+                        isEtherAddress: 'Please select a co-owner.',
+                      }}
+                      required
+                    />
+                    <button
+                      className="btn btn-success"
+                      formNoValidate
+                      type="submit"
+                      disabled={isSaving || !isCorrectNetwork}
+                    >
+                      {isSaving ? 'Changing...' : 'Change ownership'}
+                    </button>
+                    <button
+                      className="btn btn-light float-right"
+                      type="button"
+                      onClick={() => {
+                        this.setState({ modalVisible: false });
+                      }}
+                    >
+                      Close
+                    </button>
+                  </div>
+                </Form>
+              )}
+            </Fragment>
           )}
         </Modal>
       </span>

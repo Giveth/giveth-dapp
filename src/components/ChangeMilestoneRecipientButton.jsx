@@ -113,14 +113,15 @@ class ChangeMilestoneRecipientButton extends Component {
 
     return (
       <Web3Consumer>
-        {({ state: { isForeignNetwork } }) => (
+        {({ state: { isForeignNetwork }, actions: { displayForeignNetRequiredWarning } }) => (
           <Fragment>
             {milestone.canUserChangeRecipient(currentUser) && (
               <button
                 type="button"
                 className="btn btn-success btn-sm"
-                onClick={() => this.changeRecipient()}
-                disabled={!isForeignNetwork}
+                onClick={() =>
+                  isForeignNetwork ? this.changeRecipient() : displayForeignNetRequiredWarning()
+                }
               >
                 {milestone.hasRecipient ? 'Change Recipient' : 'Set Recipient'}
               </button>

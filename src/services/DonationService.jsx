@@ -96,7 +96,7 @@ class DonationService {
    * Delegate multiple donations to some entity (either Campaign or Milestone)
    *
    * @param {Array}    donations   Array of donations that can be delegated
-   * @param {string}   amount      Total ammount in wei to be delegated - needs to be between 0 and total donation amount
+   * @param {string}   amount      Total amount in wei to be delegated - needs to be between 0 and total donation amount
    * @param {Object}   delegateTo  Entity to which the donation should be delegated
    * @param {function} onCreated   Callback function after the transaction has been broadcasted to chain and stored in feathers
    * @param {function} onSuccess   Callback function after the transaction has been mined
@@ -788,56 +788,73 @@ class DonationService {
       .then(({ total }) => total);
   }
 
-  static getMilestoneDonations(milestoneId) {
-    return feathersClient
-      .service('/donations')
-      .find({
-        query: {
-          ownerType: 'milestone',
-          ownerTypeId: milestoneId,
-          amountRemaining: { $ne: 0 },
-          pendingAmountRemaining: { $ne: 0 },
-          status: Donation.COMMITTED,
-          $limit: config.donationCollectCountLimit, // TODO create a better way to calculate this
-          $sort: { 'token.symbol': 1 }, // group by token
-        },
-      })
-      .then(resp => {
-        const { data } = resp;
-        if (data.length === 0) throw new Error('no-donations');
+  static async getMilestoneDonations(milestoneId) {
+    const service = feathersClient.service('/donations');
+    let data = [];
+    let total;
+    let spare = config.donationCollectCountLimit;
+    const pledgeSet = new Set();
+    do {
+      const query = {
+        ownerType: 'milestone',
+        ownerTypeId: milestoneId,
+        amountRemaining: { $ne: 0 },
+        pendingAmountRemaining: { $ne: 0 },
+        status: Donation.COMMITTED,
+        $skip: data.length,
+        // After having #donationCollectionCountLimit distinct pledges, check for next donations and add it if its pledgeId overlaps
+        $limit: spare || 1,
+        $sort: { 'token.symbol': 1, pledgeId: 1 }, // group by token
+      };
+      // eslint-disable-next-line no-await-in-loop
+      const resp = await service.find({ query });
 
-        const pledges = [];
-        const tokens = new Set();
-        data.forEach(donation => {
-          const pledge = pledges.find(n => n.id === donation.pledgeId);
-          tokens.add(donation.token.foreignAddress);
+      if (spare === 0) {
+        if (!pledgeSet.has(resp.data[0].pledgeId)) {
+          break;
+        }
+      } else {
+        resp.data.map(d => d.pledgeId).forEach(pledgeId => pledgeSet.add(pledgeId));
+        spare = config.donationCollectCountLimit - pledgeSet.size;
+      }
 
-          if (pledge) {
-            pledge.amount = pledge.amount.plus(donation.amountRemaining);
-          } else {
-            pledges.push({
-              id: donation.pledgeId,
-              amount: new BigNumber(donation.amountRemaining),
-            });
-          }
+      data = data.concat(resp.data);
+      total = resp.total;
+      // We can collect donations from #donationCollectionCountLimit distinct pledges
+    } while (data.length < total);
+
+    if (data.length === 0) throw new Error('no-donations');
+
+    const pledges = [];
+    const tokens = new Set();
+    data.forEach(donation => {
+      const pledge = pledges.find(n => n.id === donation.pledgeId);
+      tokens.add(donation.token.foreignAddress);
+
+      if (pledge) {
+        pledge.amount = pledge.amount.plus(donation.amountRemaining);
+      } else {
+        pledges.push({
+          id: donation.pledgeId,
+          amount: new BigNumber(donation.amountRemaining),
         });
+      }
+    });
 
-        return {
-          donations: data,
-          tokens: Array.from(tokens),
-          hasMoreDonations: resp.data.length !== resp.total,
-          pledges: pledges.map(
-            pledge =>
-              // due to some issue in web3, utils.toHex(pledge.amount) breaks during minification.
-              // BN.toString(16) will return a hex string as well
-              `0x${utils.padLeft(pledge.amount.toString(16), 48)}${utils.padLeft(
-                utils.toHex(pledge.id).substring(2),
-                16,
-              )}`,
-          ),
-        };
-      })
-      .catch(err => err);
+    return {
+      donations: data,
+      tokens: Array.from(tokens),
+      hasMoreDonations: data.length !== total,
+      pledges: pledges.map(
+        pledge =>
+          // due to some issue in web3, utils.toHex(pledge.amount) breaks during minification.
+          // BN.toString(16) will return a hex string as well
+          `0x${utils.padLeft(pledge.amount.toString(16), 48)}${utils.padLeft(
+            utils.toHex(pledge.id).substring(2),
+            16,
+          )}`,
+      ),
+    };
   }
 
   /**

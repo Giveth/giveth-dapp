@@ -37,9 +37,10 @@ class EditProfile extends Component {
 
   componentDidMount() {
     this.mounted = true;
-    checkForeignNetwork(this.props.isForeignNetwork).then(() =>
-      isLoggedIn(this.props.currentUser, true)
-        .then(() => checkBalance(this.props.balance))
+    const { currentUser, balance, isForeignNetwork, displayForeignNetRequiredWarning } = this.props;
+    checkForeignNetwork(isForeignNetwork, displayForeignNetRequiredWarning).then(() =>
+      isLoggedIn(currentUser, true)
+        .then(() => checkBalance(balance))
         .then(() => this.setState({ isLoading: false }))
         .catch(err => {
           if (err === 'noBalance') {
@@ -243,6 +244,7 @@ EditProfile.propTypes = {
   currentUser: PropTypes.instanceOf(User),
   balance: PropTypes.instanceOf(BigNumber).isRequired,
   isForeignNetwork: PropTypes.bool.isRequired,
+  displayForeignNetRequiredWarning: PropTypes.func.isRequired,
 };
 
 EditProfile.defaultProps = {

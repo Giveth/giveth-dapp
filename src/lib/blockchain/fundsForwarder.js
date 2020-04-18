@@ -11,7 +11,10 @@ export const factoryAbi = [
   },
   {
     constant: false,
-    inputs: [{ name: '_giverId', type: 'uint64' }, { name: '_receiverId', type: 'uint64' }],
+    inputs: [
+      { name: '_giverId', type: 'uint64' },
+      { name: '_receiverId', type: 'uint64' },
+    ],
     name: 'newFundsForwarder',
     outputs: [],
     payable: false,
@@ -41,7 +44,10 @@ export const abi = [
   },
   {
     constant: false,
-    inputs: [{ name: '_molochDao', type: 'address' }, { name: '_convertWeth', type: 'bool' }],
+    inputs: [
+      { name: '_molochDao', type: 'address' },
+      { name: '_convertWeth', type: 'bool' },
+    ],
     name: 'forwardMoloch',
     outputs: [],
     payable: false,

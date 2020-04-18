@@ -66,7 +66,11 @@ class MainMenu extends Component {
                 </button>
 
                 <Link className="navbar-brand" to="/">
-                  <img src="/img/Giveth-typelogo.svg" width="70px" alt="Giveth logo" />
+                  <img
+                    src={`${process.env.PUBLIC_URL}/img/Giveth-typelogo.svg`}
+                    width="70px"
+                    alt="Giveth logo"
+                  />
                 </Link>
 
                 <div
@@ -119,14 +123,16 @@ class MainMenu extends Component {
             </form>
           */}
 
-                  <a
-                    className="dropdown-item support"
-                    rel="noopener noreferrer"
-                    href="https://www.github.com/Giveth/giveth-dapp/issues/new"
+                  <form
+                    action="https://www.github.com/Giveth/giveth-dapp/issues/new"
+                    method="get"
                     target="_blank"
                   >
-                    Tech Support
-                  </a>
+                    <button type="submit" className="btn btn-dark btn-sm btn-report-issue">
+                      <i className="fa fa-github" />
+                      Report Issue
+                    </button>
+                  </form>
 
                   <ul className="navbar-nav">
                     {validProvider && !failedToLoad && !isEnabled && (

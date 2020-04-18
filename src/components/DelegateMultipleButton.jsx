@@ -14,12 +14,12 @@ import Donation from 'models/Donation';
 import Campaign from 'models/Campaign';
 import Milestone from 'models/Milestone';
 import User from 'models/User';
-import { isLoggedIn, checkBalance } from '../lib/middleware';
+import { checkBalance, isLoggedIn } from '../lib/middleware';
 import { feathersClient } from '../lib/feathersClient';
 import Loader from './Loader';
 import config from '../configuration';
 import SelectFormsy from './SelectFormsy';
-import NetworkWarning from './NetworkWarning';
+import ActionNetworkWarning from './ActionNetworkWarning';
 
 import DonationService from '../services/DonationService';
 import { Consumer as Web3Consumer } from '../contextProviders/Web3Provider';
@@ -32,6 +32,7 @@ const modalStyles = {
   content: {
     top: '50%',
     left: '50%',
+    width: '40%',
     right: 'auto',
     bottom: 'auto',
     marginRight: '-20%',
@@ -59,6 +60,7 @@ class DelegateMultipleButton extends Component {
       isLoadingDonations: true,
       modalVisible: false,
       delegations: [],
+      totalDonations: 0,
       maxAmount: new BigNumber('0'),
       selectedAmount: new BigNumber('0'),
       delegationOptions: [],
@@ -140,20 +142,19 @@ class DelegateMultipleButton extends Component {
   }
 
   selectedObject({ target }, selectedAmount) {
-    this.setState({
-      objectToDelegateFrom: target.value,
-      isLoadingDonations: true,
-    });
-
-    this.loadDonations(target.value, selectedAmount);
+    this.setState(
+      {
+        objectToDelegateFrom: target.value,
+        isLoadingDonations: true,
+      },
+      () => this.loadDonations(target.value, selectedAmount),
+    );
   }
 
-  loadDonations(ids, selectedAmount) {
+  async loadDonations(ids, selectedAmount) {
     if (ids.length !== 1) return;
 
     const entity = this.state.delegationOptions.find(c => c.id === ids[0]);
-
-    if (this.donationsObserver) this.donationsObserver.unsubscribe();
 
     const options = {};
 
@@ -173,53 +174,74 @@ class DelegateMultipleButton extends Component {
         break;
     }
 
-    const query = paramsForServer({
-      query: {
-        amountRemaining: { $ne: 0 },
-        ...options,
-        $sort: { createdAt: 1 },
-        'token.symbol': this.state.selectedToken.symbol,
-      },
-      schema: 'includeTypeAndGiverDetails',
-    });
+    const service = feathersClient.service('donations');
+    let donations = [];
+    let total;
+    let spare = config.donationDelegateCountLimit;
+    const pledgeSet = new Set();
+    // After having #donationDelegateCountLimit distinct pledges, check for next donations and add it if its pledgeId overlaps
+    do {
+      const query = paramsForServer({
+        query: {
+          amountRemaining: { $ne: 0 },
+          ...options,
+          $sort: { createdAt: 1 },
+          $limit: spare || 1,
+          'token.symbol': this.state.selectedToken.symbol,
+          $skip: donations.length,
+        },
+        schema: 'includeTypeAndGiverDetails',
+      });
+      // eslint-disable-next-line no-await-in-loop
+      const resp = await service.find(query);
+
+      if (spare === 0) {
+        if (!pledgeSet.has(resp.data[0].pledgeId)) {
+          break;
+        }
+      } else {
+        resp.data.map(d => d.pledgeId).forEach(pledgeId => pledgeSet.add(pledgeId));
+        spare = config.donationDelegateCountLimit - pledgeSet.size;
+      }
+
+      donations = donations.concat(resp.data);
+      total = resp.total;
+      // We can collect donations from #donationDelegateCountLimit distinct pledges
+    } while (donations.length < total);
 
     // start watching donations, this will re-run when donations change or are added
-    this.donationsObserver = feathersClient
-      .service('donations')
-      .watch({ listStrategy: 'always' })
-      .find(query)
-      .subscribe(
-        donations => {
-          const delegations = donations.data.map(d => new Donation(d));
-          let amount = delegations.reduce(
-            (sum, d) => sum.plus(d.amountRemaining),
-            new BigNumber('0'),
-          );
 
-          let localMax = amount;
+    const delegations = donations.map(d => new Donation(d));
+    let amount = delegations.reduce((sum, d) => sum.plus(d.amountRemaining), new BigNumber('0'));
 
-          if (selectedAmount && selectedAmount.toNumber() !== 0) {
-            amount = selectedAmount;
-          }
+    let localMax = amount;
 
-          if (this.props.milestone && this.props.milestone.isCapped) {
-            const maxDonationAmount = this.props.milestone.maxAmount.minus(
-              this.props.milestone.totalDonatedSingleToken,
-            );
+    if (selectedAmount && selectedAmount.toNumber() !== 0) {
+      amount = selectedAmount;
+    }
 
-            if (maxDonationAmount.lt(amount)) amount = maxDonationAmount;
-            if (maxDonationAmount.lt(localMax)) localMax = maxDonationAmount;
-          }
-
-          this.setState({
-            delegations,
-            maxAmount: localMax,
-            isLoadingDonations: false,
-            amount: amount.toString(),
-          });
-        },
-        () => this.setState({ isLoadingDonations: false }),
+    if (this.props.milestone && this.props.milestone.isCapped) {
+      const maxDonationAmount = this.props.milestone.maxAmount.minus(
+        this.props.milestone.totalDonatedSingleToken,
       );
+
+      if (maxDonationAmount.lt(amount)) {
+        amount = maxDonationAmount;
+        localMax = maxDonationAmount;
+      } else if (maxDonationAmount.lt(localMax)) {
+        localMax = maxDonationAmount;
+      }
+    }
+
+    this.setState({
+      delegations,
+      totalDonations: total,
+      maxAmount: localMax,
+      isLoadingDonations: false,
+      amount: amount.toString(),
+    });
+
+    this.setState({ isLoadingDonations: false });
   }
 
   openDialog() {
@@ -301,23 +323,49 @@ class DelegateMultipleButton extends Component {
       isLoading,
       delegationOptions,
       delegations,
+      totalDonations,
       isLoadingDonations,
       tokenWhitelistOptions,
       selectedToken,
       maxAmount,
       amount,
+      objectToDelegateFrom,
+      selectedAmount,
     } = this.state;
-    const { campaign, milestone, validProvider, isCorrectNetwork } = this.props;
+    const {
+      campaign,
+      milestone,
+      validProvider,
+      isCorrectNetwork,
+      displayForeignNetRequiredWarning,
+    } = this.props;
+
+    let delegateFromType;
+    if (objectToDelegateFrom.length > 0) {
+      delegateFromType = this.state.delegationOptions.find(c => c.id === objectToDelegateFrom[0])
+        .type;
+    }
 
     return (
       <span style={style}>
-        <button type="button" className="btn btn-info" onClick={() => this.openDialog()}>
+        <button
+          type="button"
+          className="btn btn-info"
+          onClick={() => {
+            if (validProvider && !isCorrectNetwork) {
+              displayForeignNetRequiredWarning();
+            } else {
+              this.openDialog();
+            }
+          }}
+        >
           Delegate funds here
         </button>
 
         <Modal
           isOpen={this.state.modalVisible}
           style={modalStyles}
+          shouldCloseOnOverlayClick={false}
           onRequestClose={() => {
             this.setState({ modalVisible: false });
           }}
@@ -330,7 +378,7 @@ class DelegateMultipleButton extends Component {
             </div>
           )}
           {validProvider && (
-            <NetworkWarning
+            <ActionNetworkWarning
               incorrectNetwork={!isCorrectNetwork}
               networkName={config.foreignNetworkName}
             />
@@ -344,141 +392,158 @@ class DelegateMultipleButton extends Component {
               </p>
               {isLoading && <Loader className="small btn-loader" />}
               {!isLoading && (
-                <Form onSubmit={this.submit} layout="vertical">
-                  <div className="form-group">
-                    <span className="label">Delegate from:</span>
-                    <InputToken
-                      name="delegateFrom"
-                      label="Delegate from:"
-                      placeholder={milestone ? 'Select a DAC or Campaign' : 'Select a DAC'}
-                      value={this.state.objectToDelegateFrom}
-                      options={delegationOptions}
-                      onSelect={v => this.selectedObject(v, this.state.selectedAmount)}
-                      maxLength={1}
-                    />
-                  </div>
-
-                  {this.state.objectToDelegateFrom.length !== 1 && (
-                    <p>
-                      Please select entity from which you want to delegate money to the{' '}
-                      {milestone ? milestone.title : campaign.title}{' '}
-                    </p>
-                  )}
-                  {this.state.objectToDelegateFrom.length === 1 && isLoadingDonations && (
-                    <Loader className="small btn-loader" />
-                  )}
-                  {this.state.objectToDelegateFrom.length === 1 && !isLoadingDonations && (
-                    <div>
-                      {(!this.props.milestone || !this.props.milestone.acceptsSingleToken) && (
-                        <SelectFormsy
-                          name="token"
-                          id="token-select"
-                          label={`Select token or ${config.nativeTokenName} to delegate`}
-                          helpText=""
-                          value={selectedToken && selectedToken.address}
-                          options={tokenWhitelistOptions}
-                          onChange={address => this.setToken(address)}
-                        />
-                      )}
-
-                      {delegations.length === 0 && (
-                        <p>
-                          The amount available to delegate is 0 {selectedToken.symbol}
-                          <br />
-                          Please select{' '}
-                          {!this.props.milestone || !this.props.milestone.acceptsSingleToken
-                            ? 'a different currency or '
-                            : ''}
-                          different source {milestone ? 'DAC/Campaign' : 'DAC'}
-                        </p>
-                      )}
-                      {delegations.length > 0 && (
-                        <div>
-                          <span className="label">Amount {selectedToken.symbol} to delegate:</span>
-
-                          <div className="form-group">
-                            <Slider
-                              type="range"
-                              name="amount2"
-                              min={0}
-                              max={maxAmount.toNumber()}
-                              step={maxAmount.dividedBy(20).toNumber()}
-                              value={Number(amount)}
-                              labels={{
-                                0: '0',
-                                [maxAmount.toNumber()]: maxAmount.precision(6).toString(),
-                              }}
-                              tooltip={false}
-                              onChange={newAmount =>
-                                this.setState(prevState => {
-                                  const { maxAmount: prevMaxAmount } = prevState;
-                                  let result;
-                                  const number = prevMaxAmount.gte(newAmount)
-                                    ? newAmount
-                                    : prevMaxAmount;
-
-                                  const roundedNumber = BigNumber(number).toFixed(
-                                    4,
-                                    BigNumber.ROUND_DOWN,
-                                  );
-
-                                  if (prevMaxAmount.gt(number) && Number(roundedNumber) > 0) {
-                                    result = roundedNumber;
-                                  } else {
-                                    result = number.toString();
-                                  }
-
-                                  return {
-                                    amount: result,
-                                    selectedAmount: new BigNumber(newAmount),
-                                  };
-                                })
-                              }
-                            />
-                          </div>
-
-                          <div className="form-group">
-                            <Input
-                              type="number"
-                              validations={`greaterThan:0,isNumeric,lessOrEqualTo:${maxAmount.toNumber()}`}
-                              validationErrors={{
-                                greaterThan: 'Enter value greater than 0',
-                                lessOrEqualTo: `The donations you are delegating have combined value of ${maxAmount.toNumber()}. Do not input higher amount than that.`,
-                                isNumeric: 'Provide correct number',
-                              }}
-                              name="amount"
-                              value={amount}
-                              onChange={(name, newAmount) =>
-                                this.setState({
-                                  amount: newAmount,
-                                  selectedAmount: new BigNumber(newAmount),
-                                })
-                              }
-                            />
-                          </div>
-
-                          <button
-                            className="btn btn-success"
-                            formNoValidate
-                            type="submit"
-                            disabled={isSaving || !isCorrectNetwork}
-                          >
-                            {isSaving ? 'Delegating...' : 'Delegate here'}
-                          </button>
-                          <button
-                            className="btn btn-light float-right"
-                            type="button"
-                            onClick={() => {
-                              this.setState({ modalVisible: false });
-                            }}
-                          >
-                            Close
-                          </button>
-                        </div>
-                      )}
+                <Fragment>
+                  {totalDonations > delegations.length && (
+                    <div className="alert alert-warning">
+                      <p>
+                        <strong>Note:</strong> Due to the current gas limitations you may be
+                        required to delegate multiple times. You cannot delegate from more than{' '}
+                        <strong>{config.donationDelegateCountLimit}</strong> sources on each
+                        transaction. In this try, you are allowed to delegate money of{' '}
+                        <strong>{delegations.length}</strong> donations of total{' '}
+                        <strong>{totalDonations}</strong> available in{' '}
+                        {delegateFromType === 'dac' ? 'DAC' : 'Campaign'}.
+                      </p>
                     </div>
                   )}
-                </Form>
+                  <Form onSubmit={this.submit} layout="vertical">
+                    <div className="form-group">
+                      <span className="label">Delegate from:</span>
+                      <InputToken
+                        name="delegateFrom"
+                        label="Delegate from:"
+                        placeholder={milestone ? 'Select a DAC or Campaign' : 'Select a DAC'}
+                        value={objectToDelegateFrom}
+                        options={delegationOptions}
+                        onSelect={v => this.selectedObject(v, selectedAmount)}
+                        maxLength={1}
+                      />
+                    </div>
+
+                    {objectToDelegateFrom.length !== 1 && (
+                      <p>
+                        Please select entity from which you want to delegate money to the{' '}
+                        {milestone ? milestone.title : campaign.title}{' '}
+                      </p>
+                    )}
+                    {objectToDelegateFrom.length === 1 && isLoadingDonations && (
+                      <Loader className="small btn-loader" />
+                    )}
+                    {objectToDelegateFrom.length === 1 && !isLoadingDonations && (
+                      <div>
+                        {(!this.props.milestone || !this.props.milestone.acceptsSingleToken) && (
+                          <SelectFormsy
+                            name="token"
+                            id="token-select"
+                            label={`Select token or ${config.nativeTokenName} to delegate`}
+                            helpText=""
+                            value={selectedToken && selectedToken.address}
+                            options={tokenWhitelistOptions}
+                            onChange={address => this.setToken(address)}
+                          />
+                        )}
+
+                        {delegations.length === 0 && (
+                          <p>
+                            The amount available to delegate is 0 {selectedToken.symbol}
+                            <br />
+                            Please select{' '}
+                            {!this.props.milestone || !this.props.milestone.acceptsSingleToken
+                              ? 'a different currency or '
+                              : ''}
+                            different source {milestone ? 'DAC/Campaign' : 'DAC'}
+                          </p>
+                        )}
+                        {delegations.length > 0 && (
+                          <div>
+                            <span className="label">
+                              Amount {selectedToken.symbol} to delegate:
+                            </span>
+
+                            <div className="form-group">
+                              <Slider
+                                type="range"
+                                name="amount2"
+                                min={0}
+                                max={maxAmount.toNumber()}
+                                step={maxAmount.dividedBy(20).toNumber()}
+                                value={Number(amount)}
+                                labels={{
+                                  0: '0',
+                                  [maxAmount.toNumber()]: maxAmount.precision(6).toString(),
+                                }}
+                                tooltip={false}
+                                onChange={newAmount =>
+                                  this.setState(prevState => {
+                                    const { maxAmount: prevMaxAmount } = prevState;
+                                    let result;
+                                    const number = prevMaxAmount.gte(newAmount)
+                                      ? newAmount
+                                      : prevMaxAmount;
+
+                                    const roundedNumber = BigNumber(number).toFixed(
+                                      4,
+                                      BigNumber.ROUND_DOWN,
+                                    );
+
+                                    if (prevMaxAmount.gt(number) && Number(roundedNumber) > 0) {
+                                      result = roundedNumber;
+                                    } else {
+                                      result = number.toString();
+                                    }
+
+                                    return {
+                                      amount: result,
+                                      selectedAmount: new BigNumber(newAmount),
+                                    };
+                                  })
+                                }
+                              />
+                            </div>
+
+                            <div className="form-group">
+                              <Input
+                                type="number"
+                                validations={`greaterThan:0,isNumeric,lessOrEqualTo:${maxAmount.toNumber()}`}
+                                validationErrors={{
+                                  greaterThan: 'Enter value greater than 0',
+                                  lessOrEqualTo: `The donations you are delegating have combined value of ${maxAmount.toNumber()}. Do not input higher amount than that.`,
+                                  isNumeric: 'Provide correct number',
+                                }}
+                                name="amount"
+                                value={amount}
+                                onChange={(name, newAmount) =>
+                                  this.setState({
+                                    amount: newAmount,
+                                    selectedAmount: new BigNumber(newAmount),
+                                  })
+                                }
+                              />
+                            </div>
+
+                            <button
+                              className="btn btn-success"
+                              formNoValidate
+                              type="submit"
+                              disabled={isSaving || !isCorrectNetwork}
+                            >
+                              {isSaving ? 'Delegating...' : 'Delegate here'}
+                            </button>
+                            <button
+                              className="btn btn-light float-right"
+                              type="button"
+                              onClick={() => {
+                                this.setState({ modalVisible: false });
+                              }}
+                            >
+                              Close
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </Form>
+                </Fragment>
               )}
             </Fragment>
           )}
@@ -496,6 +561,7 @@ DelegateMultipleButton.propTypes = {
   style: PropTypes.shape(),
   validProvider: PropTypes.bool.isRequired,
   isCorrectNetwork: PropTypes.bool.isRequired,
+  displayForeignNetRequiredWarning: PropTypes.func.isRequired,
   tokenWhitelist: PropTypes.arrayOf(PropTypes.shape()).isRequired,
 };
 
@@ -509,10 +575,14 @@ export default props => (
   <WhiteListConsumer>
     {({ state: { tokenWhitelist } }) => (
       <Web3Consumer>
-        {({ state: { isForeignNetwork, validProvider } }) => (
+        {({
+          state: { isForeignNetwork, validProvider },
+          actions: { displayForeignNetRequiredWarning },
+        }) => (
           <DelegateMultipleButton
             validProvider={validProvider}
             isCorrectNetwork={isForeignNetwork}
+            displayForeignNetRequiredWarning={displayForeignNetRequiredWarning}
             tokenWhitelist={tokenWhitelist}
             {...props}
           />

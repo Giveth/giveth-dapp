@@ -20,17 +20,6 @@ class MilestoneProof extends Component {
     };
   }
 
-  componentDidMount() {
-    this.setState({ items: this.props.refreshList });
-  }
-
-  componentWillReceiveProps(props) {
-    const { refreshList } = props;
-    if (refreshList !== 'undefined' && refreshList.length > 0) {
-      this.setState({ items: refreshList });
-    }
-  }
-
   onAddItem(item) {
     this.addItem(item);
     this.setState({ addMilestoneItemModalVisible: false });

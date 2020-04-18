@@ -22,7 +22,7 @@ class FormsyImageUploader extends Component {
     this.loadAndPreviewImage = this.loadAndPreviewImage.bind(this);
   }
 
-  componentWillMount() {
+  componentDidMount() {
     this.setState({ image: this.props.previewImage || this.props.avatar });
   }
 

@@ -19,7 +19,7 @@ import DonationService from '../services/DonationService';
 import DACService from '../services/DACService';
 import { feathersClient } from '../lib/feathersClient';
 import { Consumer as Web3Consumer } from '../contextProviders/Web3Provider';
-import NetworkWarning from './NetworkWarning';
+import ActionNetworkWarning from './ActionNetworkWarning';
 import SelectFormsy from './SelectFormsy';
 import { Consumer as WhiteListConsumer } from '../contextProviders/WhiteListProvider';
 import DAC from '../models/DAC';
@@ -121,7 +121,7 @@ class DonateButton extends React.Component {
 
     if (balance === undefined) return new BigNumber(0);
     const maxFromWei = utils.fromWei(balance.toFixed());
-    let maxAmount = new BigNumber(0);
+    let maxAmount;
     if (maxFromWei.isNaN || maxFromWei === 'NaN') {
       maxAmount = new BigNumber(0);
     } else {
@@ -534,8 +534,14 @@ class DonateButton extends React.Component {
               </div>
             )}
 
-            {validProvider && (
-              <NetworkWarning
+            {validProvider && !currentUser && (
+              <div className="alert alert-warning">
+                <i className="fa fa-exclamation-triangle" />
+                It looks like your Ethereum Provider is locked or you need to enable it.
+              </div>
+            )}
+            {validProvider && currentUser && (
+              <ActionNetworkWarning
                 incorrectNetwork={!isCorrectNetwork}
                 networkName={config.homeNetworkName}
               />
@@ -556,13 +562,6 @@ class DonateButton extends React.Component {
                   </span>
                 )}
               </p>
-            )}
-
-            {validProvider && !currentUser && (
-              <div className="alert alert-warning">
-                <i className="fa fa-exclamation-triangle" />
-                It looks like your Ethereum Provider is locked or you need to enable it.
-              </div>
             )}
 
             {validProvider && isCorrectNetwork && currentUser && (
