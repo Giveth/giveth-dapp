@@ -13,8 +13,8 @@ const {
   REACT_APP_DEFAULT_GASPRICE = 10,
   REACT_APP_NETWORK_NAME,
   REACT_APP_NATIVE_TOKEN_NAME,
-  REACT_APP_DONATION_COLLECT_COUNT_LIMIT = 12,
-  REACT_APP_DONATION_DELEGATE_COUNT_LIMIT = 12,
+  REACT_APP_DONATION_COLLECT_COUNT_LIMIT = 10,
+  REACT_APP_DONATION_DELEGATE_COUNT_LIMIT = 10,
 } = process.env;
 
 const configurations = {
@@ -163,7 +163,7 @@ config.defaultGasPrice = REACT_APP_DEFAULT_GASPRICE;
 config.networkName = REACT_APP_NETWORK_NAME || config.networkName;
 config.nativeTokenName = REACT_APP_NATIVE_TOKEN_NAME || config.nativeTokenName;
 config.donationCollectCountLimit = REACT_APP_DONATION_COLLECT_COUNT_LIMIT || 15;
-config.donationDelegateLimit = REACT_APP_DONATION_DELEGATE_COUNT_LIMIT || 15;
+config.donationDelegateCountLimit = REACT_APP_DONATION_DELEGATE_COUNT_LIMIT || 15;
 config.sendErrors = ['localhost', 'develop', 'release', 'beta'].includes(REACT_APP_ENVIRONMENT);
 
 export default config;

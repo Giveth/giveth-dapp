@@ -446,7 +446,7 @@ class CreateDonationAddressButton extends React.Component {
                     </div>
                   )}
 
-                  {validProvider && (
+                  {validProvider && currentUser && (
                     <ViewNetworkWarning
                       incorrectNetwork={!isCorrectNetwork}
                       networkName={config.homeNetworkName}
@@ -496,7 +496,7 @@ class CreateDonationAddressButton extends React.Component {
                 </div>
               )}
 
-              {validProvider && (
+              {validProvider && currentUser && (
                 <ActionNetworkWarning
                   incorrectNetwork={!isCorrectNetwork}
                   networkName={config.homeNetworkName}

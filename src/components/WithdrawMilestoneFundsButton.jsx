@@ -28,20 +28,21 @@ class WithdrawMilestoneFundsButton extends Component {
             title: isRecipient ? 'Withdrawal Funds to Wallet' : 'Disburse Funds to Recipient',
             content: React.swal.msg(
               <div>
-                {donationsCount > config.donationCollectCountLimit && (
-                  <p>
-                    <strong>Note:</strong> Due to the current gas limitations you will be required
-                    to withdrawal multiple times. You have <strong>{donationsCount}</strong>{' '}
-                    donations to {isRecipient ? 'withdraw' : 'disburse'} and the current max is{' '}
-                    <strong>{config.donationCollectCountLimit}</strong>.
-                  </p>
-                )}
                 <p>
                   We will initiate the transfer of the funds to{' '}
                   {milestone instanceof LPMilestone && 'the Campaign.'}
                   {!(milestone instanceof LPMilestone) &&
                     (isRecipient ? 'your wallet.' : "the recipient's wallet.")}
                 </p>
+                {donationsCount > config.donationCollectCountLimit && (
+                  <div className="alert alert-warning">
+                    <strong>Note:</strong> Due to the current gas limitations you may be required to
+                    withdrawal multiple times. You have <strong>{donationsCount}</strong> donations
+                    to {isRecipient ? 'withdraw' : 'disburse'}. At each try donations from{' '}
+                    <strong>{config.donationCollectCountLimit}</strong> different sources can be
+                    paid.
+                  </div>
+                )}
                 {!(milestone instanceof LPMilestone) && (
                   <div className="alert alert-warning">
                     Note: For security reasons, there is a delay of approximately 72 hrs before the
