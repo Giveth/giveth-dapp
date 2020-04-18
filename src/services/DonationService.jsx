@@ -802,7 +802,7 @@ class DonationService {
         pendingAmountRemaining: { $ne: 0 },
         status: Donation.COMMITTED,
         $skip: data.length,
-        // After having #donationDelegateCountLimit distinct pledges, check for next donations and add it if its pledgeId overlaps
+        // After having #donationCollectionCountLimit distinct pledges, check for next donations and add it if its pledgeId overlaps
         $limit: spare || 1,
         $sort: { 'token.symbol': 1, pledgeId: 1 }, // group by token
       };
@@ -815,7 +815,7 @@ class DonationService {
         }
       } else {
         resp.data.map(d => d.pledgeId).forEach(pledgeId => pledgeSet.add(pledgeId));
-        spare = config.donationDelegateCountLimit - pledgeSet.size;
+        spare = config.donationCollectCountLimit - pledgeSet.size;
       }
 
       data = data.concat(resp.data);

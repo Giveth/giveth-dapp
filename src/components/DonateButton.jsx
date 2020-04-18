@@ -121,7 +121,7 @@ class DonateButton extends React.Component {
 
     if (balance === undefined) return new BigNumber(0);
     const maxFromWei = utils.fromWei(balance.toFixed());
-    let maxAmount = new BigNumber(0);
+    let maxAmount;
     if (maxFromWei.isNaN || maxFromWei === 'NaN') {
       maxAmount = new BigNumber(0);
     } else {
@@ -534,7 +534,13 @@ class DonateButton extends React.Component {
               </div>
             )}
 
-            {validProvider && (
+            {validProvider && !currentUser && (
+              <div className="alert alert-warning">
+                <i className="fa fa-exclamation-triangle" />
+                It looks like your Ethereum Provider is locked or you need to enable it.
+              </div>
+            )}
+            {validProvider && currentUser && (
               <ActionNetworkWarning
                 incorrectNetwork={!isCorrectNetwork}
                 networkName={config.homeNetworkName}
@@ -556,13 +562,6 @@ class DonateButton extends React.Component {
                   </span>
                 )}
               </p>
-            )}
-
-            {validProvider && !currentUser && (
-              <div className="alert alert-warning">
-                <i className="fa fa-exclamation-triangle" />
-                It looks like your Ethereum Provider is locked or you need to enable it.
-              </div>
             )}
 
             {validProvider && isCorrectNetwork && currentUser && (
