@@ -54,7 +54,9 @@ class DonateButton extends React.Component {
     const modelToken = props.model.token;
     if (modelToken) modelToken.balance = new BigNumber(0);
 
-    const defaultToken = this.props.tokenWhitelist.find(t => t.symbol === config.nativeTokenName);
+    const { tokenWhitelist } = this.props;
+    const defaultToken =
+      tokenWhitelist.find(t => t.symbol === config.nativeTokenName) || tokenWhitelist[0];
 
     this.state = {
       isSaving: false,
@@ -605,7 +607,7 @@ class DonateButton extends React.Component {
                       }}
                       tooltip={false}
                       onChange={newAmount => {
-                        let result = newAmount.toString();
+                        let result;
 
                         const roundedNumber = BigNumber(newAmount).toFixed(4, BigNumber.ROUND_DOWN);
                         if (maxAmount.gt(newAmount) && Number(roundedNumber) > 0) {
