@@ -46,7 +46,7 @@ const configurations = {
       useGoogleAnalytics: true,
       useHotjar: false,
     },
-    nativeTokenName: 'ETH',
+    nativeTokenName: 'ANT',
   },
   develop: {
     title: 'develop',
@@ -74,7 +74,7 @@ const configurations = {
       useGoogleAnalytics: true,
       useHotjar: false,
     },
-    nativeTokenName: 'ETH',
+    nativeTokenName: 'ANT',
   },
   release: {
     title: 'release',
@@ -102,7 +102,7 @@ const configurations = {
       useGoogleAnalytics: true,
       useHotjar: false,
     },
-    nativeTokenName: 'ETH',
+    nativeTokenName: 'ANT',
   },
   beta: {
     title: 'beta',
@@ -127,7 +127,7 @@ const configurations = {
       useGoogleAnalytics: true,
       useHotjar: true,
     },
-    nativeTokenName: 'ETH',
+    nativeTokenName: 'DAI',
   },
 };
 
