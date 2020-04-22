@@ -346,11 +346,23 @@ class DonateButton extends React.Component {
             method = givethBridge.donate(user.giverId, adminId, tokenAddress, value, opts);
             donationUser = user;
           } else {
-            givethBridge.donateAndCreateGiver(customAddress, adminId, tokenAddress, value, opts);
+            method = givethBridge.donateAndCreateGiver(
+              customAddress,
+              adminId,
+              tokenAddress,
+              value,
+              opts,
+            );
             donationUser = { address: customAddress };
           }
         } catch (e) {
-          givethBridge.donateAndCreateGiver(customAddress, adminId, tokenAddress, value, opts);
+          method = givethBridge.donateAndCreateGiver(
+            customAddress,
+            adminId,
+            tokenAddress,
+            value,
+            opts,
+          );
           donationUser = { address: customAddress };
         }
       } else {
