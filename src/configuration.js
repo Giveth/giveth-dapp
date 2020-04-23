@@ -47,6 +47,7 @@ const configurations = {
       useHotjar: false,
     },
     nativeTokenName: 'ETH',
+    defaultDonateToken: 'ANT',
   },
   develop: {
     title: 'develop',
@@ -75,6 +76,7 @@ const configurations = {
       useHotjar: false,
     },
     nativeTokenName: 'ETH',
+    defaultDonateToken: 'XDAI',
   },
   release: {
     title: 'release',
@@ -103,6 +105,7 @@ const configurations = {
       useHotjar: false,
     },
     nativeTokenName: 'ETH',
+    defaultDonateToken: 'ANT',
   },
   beta: {
     title: 'beta',
@@ -128,6 +131,7 @@ const configurations = {
       useHotjar: true,
     },
     nativeTokenName: 'ETH',
+    defaultDonateToken: 'DAI',
   },
 };
 
