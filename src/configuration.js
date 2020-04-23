@@ -46,7 +46,8 @@ const configurations = {
       useGoogleAnalytics: true,
       useHotjar: false,
     },
-    nativeTokenName: 'ANT',
+    nativeTokenName: 'ETH',
+    defaultDonateToken: 'ANT',
   },
   develop: {
     title: 'develop',
@@ -74,7 +75,8 @@ const configurations = {
       useGoogleAnalytics: true,
       useHotjar: false,
     },
-    nativeTokenName: 'ANT',
+    nativeTokenName: 'ETH',
+    defaultDonateToken: 'XDAI',
   },
   release: {
     title: 'release',
@@ -102,7 +104,8 @@ const configurations = {
       useGoogleAnalytics: true,
       useHotjar: false,
     },
-    nativeTokenName: 'ANT',
+    nativeTokenName: 'ETH',
+    defaultDonateToken: 'ANT',
   },
   beta: {
     title: 'beta',
@@ -127,7 +130,8 @@ const configurations = {
       useGoogleAnalytics: true,
       useHotjar: true,
     },
-    nativeTokenName: 'DAI',
+    nativeTokenName: 'ETH',
+    defaultDonateToken: 'DAI',
   },
 };
 
