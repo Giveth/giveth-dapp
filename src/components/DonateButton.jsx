@@ -54,15 +54,17 @@ class DonateButton extends React.Component {
     const modelToken = props.model.token;
     if (modelToken) modelToken.balance = new BigNumber(0);
 
-    const { tokenWhitelist } = this.props;
+    const { tokenWhitelist, model } = this.props;
     const defaultToken =
-      tokenWhitelist.find(t => t.symbol === config.nativeTokenName) || tokenWhitelist[0];
+      tokenWhitelist.find(t => t.symbol === config.defaultDonateToken) || tokenWhitelist[0];
+
+    const selectedToken = model.acceptsSingleToken ? modelToken : defaultToken;
 
     this.state = {
       isSaving: false,
       formIsValid: false,
       defaultAmount: true,
-      amount: '1',
+      amount: selectedToken === config.nativeTokenName ? '1' : '100',
       givethBridge: undefined,
       etherscanUrl: '',
       modalVisible: false,
@@ -73,7 +75,7 @@ class DonateButton extends React.Component {
         value: t.address,
         title: t.name,
       })),
-      selectedToken: props.model.acceptsSingleToken ? modelToken : defaultToken,
+      selectedToken,
     };
 
     this.submit = this.submit.bind(this);
@@ -163,11 +165,17 @@ class DonateButton extends React.Component {
   }
 
   closeDialog() {
+    const { tokenWhitelist, model } = this.props;
+    const defaultToken =
+      tokenWhitelist.find(t => t.symbol === config.defaultDonateToken) || tokenWhitelist[0];
+    const selectedToken = model.acceptsSingleToken ? model.token : defaultToken;
+
     this.setState({
       modalVisible: false,
-      amount: '1',
+      amount: selectedToken === config.nativeTokenName ? '1' : '100',
       defaultAmount: true,
       formIsValid: false,
+      selectedToken,
     });
   }
 
@@ -708,7 +716,7 @@ class DonateButton extends React.Component {
               className="btn btn-light float-right"
               type="button"
               onClick={() => {
-                this.setState({ modalVisible: false });
+                this.closeDialog();
               }}
             >
               Close
