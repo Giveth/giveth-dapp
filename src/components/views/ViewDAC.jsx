@@ -15,11 +15,12 @@ import ListDonations from '../ListDonations';
 import CommunityButton from '../CommunityButton';
 import User from '../../models/User';
 import DAC from '../../models/DAC';
-import { getUserName, getUserAvatar } from '../../lib/helpers';
+import { getUserName, getUserAvatar, history } from '../../lib/helpers';
 import DACService from '../../services/DACService';
 import CampaignCard from '../CampaignCard';
 import ShareOptions from '../ShareOptions';
 import config from '../../configuration';
+import NotFound from './NotFound';
 
 /**
  * The DAC detail view mapped to /dac/id
@@ -28,8 +29,8 @@ import config from '../../configuration';
  * @param history      Browser history object
  */
 class ViewDAC extends Component {
-  constructor() {
-    super();
+  constructor(props) {
+    super(props);
 
     this.state = {
       isLoading: true,
@@ -40,6 +41,7 @@ class ViewDAC extends Component {
       donationsTotal: 0,
       donationsPerBatch: 50,
       newDonations: 0,
+      notFound: false,
     };
 
     this.loadMoreDonations = this.loadMoreDonations.bind(this);
@@ -60,8 +62,10 @@ class ViewDAC extends Component {
         );
       })
       .catch(() => {
-        this.setState({ isLoading: false });
-      }); // TODO: inform user of error
+        this.setState({
+          notFound: true,
+        });
+      });
 
     this.loadMoreDonations();
     // subscribe to donation count
@@ -98,7 +102,7 @@ class ViewDAC extends Component {
   }
 
   render() {
-    const { balance, history, currentUser } = this.props;
+    const { balance, currentUser } = this.props;
     const {
       isLoading,
       donations,
@@ -108,7 +112,13 @@ class ViewDAC extends Component {
       isLoadingCampaigns,
       donationsTotal,
       newDonations,
+      notFound,
     } = this.state;
+
+    if (notFound) {
+      return <NotFound projectType="DAC" />;
+    }
+
     return (
       <div id="view-cause-view">
         {isLoading && <Loader className="fixed" />}
