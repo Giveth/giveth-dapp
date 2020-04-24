@@ -17,18 +17,18 @@ import MilestoneActions from 'components/MilestoneActions';
 
 import BackgroundImageHeader from 'components/BackgroundImageHeader';
 import DonateButton from 'components/DonateButton';
-import ErrorPopup from 'components/ErrorPopup';
 import GoBackButton from 'components/GoBackButton';
 import Loader from 'components/Loader';
 import MilestoneItem from 'components/MilestoneItem';
 import ListDonations from 'components/ListDonations';
 import MilestoneConversations from 'components/MilestoneConversations';
 import DelegateMultipleButton from 'components/DelegateMultipleButton';
-import { convertEthHelper, getUserAvatar, getUserName } from '../../lib/helpers';
+import { convertEthHelper, getUserAvatar, getUserName, history } from '../../lib/helpers';
 import MilestoneService from '../../services/MilestoneService';
 import DACService from '../../services/DACService';
 import ShareOptions from '../ShareOptions';
 import { Consumer as WhiteListConsumer } from '../../contextProviders/WhiteListProvider';
+import NotFound from './NotFound';
 
 /**
   Loads and shows a single milestone
@@ -38,8 +38,8 @@ import { Consumer as WhiteListConsumer } from '../../contextProviders/WhiteListP
 * */
 
 class ViewMilestone extends Component {
-  constructor() {
-    super();
+  constructor(props) {
+    super(props);
 
     this.state = {
       isLoading: true,
@@ -52,6 +52,7 @@ class ViewMilestone extends Component {
       donationsTotal: 0,
       donationsPerBatch: 50,
       newDonations: 0,
+      notFound: false,
     };
 
     this.loadMoreDonations = this.loadMoreDonations.bind(this);
@@ -64,6 +65,10 @@ class ViewMilestone extends Component {
     MilestoneService.subscribeOne(
       milestoneId,
       milestone => {
+        if (!milestone) {
+          this.setState({ notFound: true });
+          return;
+        }
         this.setState({
           milestone,
           isLoading: false,
@@ -74,9 +79,8 @@ class ViewMilestone extends Component {
         });
         this.getDacTitle(milestone.dacId);
       },
-      err => {
-        ErrorPopup('Something went wrong with viewing the Milestone. Please try a refresh.', err);
-        this.setState({ isLoading: false });
+      () => {
+        this.setState({ notFound: true });
       },
     );
 
@@ -207,7 +211,7 @@ class ViewMilestone extends Component {
   }
 
   render() {
-    const { history, currentUser, balance } = this.props;
+    const { currentUser, balance } = this.props;
     const {
       isLoading,
       donations,
@@ -217,7 +221,12 @@ class ViewMilestone extends Component {
       recipient,
       donationsTotal,
       newDonations,
+      notFound,
     } = this.state;
+
+    if (notFound) {
+      return <NotFound projectType="Milestone" />;
+    }
 
     const DetailLabel = ({ id, title, explanation }) => (
       <div>
