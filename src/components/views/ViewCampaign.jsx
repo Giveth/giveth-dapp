@@ -29,6 +29,7 @@ import ErrorBoundary from '../ErrorBoundary';
 import ShareOptions from '../ShareOptions';
 import config from '../../configuration';
 import CreateDonationAddressButton from '../CreateDonationAddressButton';
+import NotFound from './NotFound';
 
 /**
  * The Campaign detail view mapped to /campaing/id
@@ -56,6 +57,7 @@ class ViewCampaign extends Component {
       donationsTotal: 0,
       donationsPerBatch: 5,
       newDonations: 0,
+      notFound: false,
     };
 
     this.loadMoreMilestones = this.loadMoreMilestones.bind(this);
@@ -69,10 +71,9 @@ class ViewCampaign extends Component {
       .then(campaign => {
         this.setState({ campaign, isLoading: false });
       })
-      .catch(err => {
-        ErrorPopup('Something went wrong loading Campaign. Please try refresh the page.', err);
-        this.setState({ isLoading: false });
-      }); // TODO: inform user of error
+      .catch(() => {
+        this.setState({ notFound: true });
+      });
 
     this.loadMoreMilestones(campaignId);
 
@@ -209,7 +210,12 @@ class ViewCampaign extends Component {
       milestonesTotal,
       donationsTotal,
       newDonations,
+      notFound,
     } = this.state;
+
+    if (notFound) {
+      return <NotFound projectType="Campaign" />;
+    }
 
     if (!isLoading && !campaign) return <p>Unable to find a campaign</p>;
     return (

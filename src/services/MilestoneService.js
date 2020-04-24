@@ -56,7 +56,12 @@ class MilestoneService {
       .watch({ listStrategy: 'always' })
       .find({ query: { _id: id } })
       .subscribe(resp => {
-        onResult(MilestoneFactory.create(resp.data[0]));
+        const { total, data } = resp;
+        if (total === 0) {
+          onError(404);
+          return;
+        }
+        onResult(MilestoneFactory.create(data[0]));
       }, onError);
     return this.milestoneSubscription;
   }
