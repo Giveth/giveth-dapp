@@ -68,6 +68,7 @@ class MilestoneConversations extends Component {
     if (messageContext === 'proposedRejected') return 'rejected proposed Milestone';
     if (messageContext === 'proposedAccepted') return 'accepted proposed Milestone';
     if (messageContext === 'archived') return 'archived Milestone';
+    if (messageContext === 'rePropose') return 're-proposed Milestone';
     if (messageContext === 'payment') {
       const { owner, recipient, payments } = conversation;
       if (payments) {
