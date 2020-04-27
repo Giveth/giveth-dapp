@@ -96,77 +96,79 @@ class ApproveRejectMilestoneCompletionButtons extends Component {
   }
 
   async rejectMilestoneCompleted() {
-    const { milestone, currentUser } = this.props;
+    const { milestone, currentUser, balance } = this.props;
 
-    checkBalance(this.props.balance)
-      .then(() => {
-        this.conversationModal.current
-          .openModal({
-            title: 'Reject Milestone completion',
-            description:
-              'Explain why you rejected the completion of this Milestone. This information will be publicly visible and emailed to the Milestone owner.',
-            textPlaceholder: 'Explain why you rejected the completion of this Milestone...',
-            required: true,
-            cta: 'Reject completion',
-            enableAttachProof: false,
-          })
-          .then(proof => {
-            MilestoneService.rejectMilestoneCompletion({
-              milestone,
-              from: currentUser.address,
-              proof,
-              onTxHash: txUrl => {
-                GA.trackEvent({
-                  category: 'Milestone',
-                  action: 'rejected completion',
-                  label: milestone._id,
-                });
+    actionWithLoggedIn(currentUser).then(() =>
+      checkBalance(balance)
+        .then(() => {
+          this.conversationModal.current
+            .openModal({
+              title: 'Reject Milestone completion',
+              description:
+                'Explain why you rejected the completion of this Milestone. This information will be publicly visible and emailed to the Milestone owner.',
+              textPlaceholder: 'Explain why you rejected the completion of this Milestone...',
+              required: true,
+              cta: 'Reject completion',
+              enableAttachProof: false,
+            })
+            .then(proof => {
+              MilestoneService.rejectMilestoneCompletion({
+                milestone,
+                from: currentUser.address,
+                proof,
+                onTxHash: txUrl => {
+                  GA.trackEvent({
+                    category: 'Milestone',
+                    action: 'rejected completion',
+                    label: milestone._id,
+                  });
 
-                React.toast.info(
-                  <p>
-                    Rejecting this Milestone's completion is pending...
-                    <br />
-                    <a href={txUrl} target="_blank" rel="noopener noreferrer">
-                      View transaction
-                    </a>
-                  </p>,
-                );
-              },
-              onConfirmation: txUrl => {
-                React.toast.success(
-                  <p>
-                    The Milestone's completion has been rejected.
-                    <br />
-                    <a href={txUrl} target="_blank" rel="noopener noreferrer">
-                      View transaction
-                    </a>
-                  </p>,
-                );
-              },
-              onError: (err, txUrl) => {
-                if (err === 'patch-error') {
-                  ErrorPopup(
-                    "Something went wrong with rejecting this Milestone's completion",
-                    err,
+                  React.toast.info(
+                    <p>
+                      Rejecting this Milestone's completion is pending...
+                      <br />
+                      <a href={txUrl} target="_blank" rel="noopener noreferrer">
+                        View transaction
+                      </a>
+                    </p>,
                   );
-                } else {
-                  ErrorPopup(
-                    'Something went wrong with the transaction.',
-                    `${txUrl} => ${JSON.stringify(err, null, 2)}`,
+                },
+                onConfirmation: txUrl => {
+                  React.toast.success(
+                    <p>
+                      The Milestone's completion has been rejected.
+                      <br />
+                      <a href={txUrl} target="_blank" rel="noopener noreferrer">
+                        View transaction
+                      </a>
+                    </p>,
                   );
-                }
-              },
-            });
-          })
-          .catch(_ => {});
-      })
-      .catch(err => {
-        if (err === 'noBalance') {
-          ErrorPopup('There is no balance left on the account.', err);
-        } else if (err !== undefined) {
-          ErrorPopup('Something went wrong.', err);
-        }
-      });
+                },
+                onError: (err, txUrl) => {
+                  if (err === 'patch-error') {
+                    ErrorPopup(
+                      "Something went wrong with rejecting this Milestone's completion",
+                      err,
+                    );
+                  } else {
+                    ErrorPopup(
+                      'Something went wrong with the transaction.',
+                      `${txUrl} => ${JSON.stringify(err, null, 2)}`,
+                    );
+                  }
+                },
+              });
+            })
+            .catch(_ => {});
+        })
+        .catch(err => {
+          if (err === 'noBalance') {
+            ErrorPopup('There is no balance left on the account.', err);
+          } else if (err !== undefined) {
+            ErrorPopup('Something went wrong.', err);
+          }
+        }),
+    );
   }
 
   render() {
