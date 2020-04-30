@@ -642,12 +642,15 @@ class DonationService {
       .allowance(tokenHolderAddress, config.givethBridgeAddress)
       .call();
 
+    const amountNumber = new BigNumber(amount);
+    const allowanceNumber = new BigNumber(allowance);
+
     // if no allowance, we set the allowance
     // if there's an existing allowance, but it's lower than the amount, we reset it and create a new allowance
     // in any other case, just continue
 
     /* eslint-disable eqeqeq */
-    if (allowance == 0) {
+    if (allowanceNumber.isZero()) {
       const isConfirmed = await React.swal({
         title: 'Here we go...',
         content: React.swal.msg(
@@ -672,7 +675,7 @@ class DonationService {
         return;
       }
       throw new Error('cancelled');
-    } else if (amount > allowance) {
+    } else if (amountNumber.gt(allowanceNumber)) {
       const isConfirmed = await React.swal({
         title: 'Here we go...',
         content: React.swal.msg(
