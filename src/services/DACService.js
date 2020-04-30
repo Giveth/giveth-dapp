@@ -38,6 +38,27 @@ class DACService {
   }
 
   /**
+   * Get a DAC defined by Delegate ID
+   *
+   *  @param delegateId Delegate Id of the DAC to be retrieved
+   */
+  static getByDelegateId(delegateId) {
+    return new Promise((resolve, reject) => {
+      dacs
+        .find({
+          query: {
+            delegateId,
+          },
+        })
+        .then(resp => {
+          if (resp.total === 0) resolve(undefined);
+          else resolve(new DAC(resp.data[0]));
+        })
+        .catch(err => reject(err));
+    });
+  }
+
+  /**
    * Get DACs
    *
    * @param $limit    Amount of records to be loaded

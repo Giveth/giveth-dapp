@@ -464,7 +464,15 @@ class DonateButton extends React.Component {
 
     // if donating in token, first approve transfer of token by bridge
     if (isDonationInToken) {
-      DonationService.approveERC20tokenTransfer(tokenAddress, currentUser.address, value)
+      const allowanceRequired = BigNumber.sum(
+        value,
+        amountTwo ? utils.toWei(Number(amountTwo).toFixed(18)) : '0',
+      );
+      DonationService.approveERC20tokenTransfer(
+        tokenAddress,
+        currentUser.address,
+        allowanceRequired.toString(),
+      )
         .then(async () => {
           await _makeDonationTx();
         })
