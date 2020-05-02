@@ -145,21 +145,6 @@ class DonateButton extends React.Component {
     return maxAmount;
   }
 
-  async getDacTitle(model, adminId, dacId) {
-    DACService.getDACs(
-      1, // Limit
-      0, // Skip
-      (dacs, _) => {
-        let dacTitle = '';
-        dacs.forEach(d => {
-          if (d.myDelegateId === dacId) dacTitle = d._title;
-        });
-        this.donateToDac(model, adminId, dacId, dacTitle, model.amount);
-      },
-      () => {},
-    );
-  }
-
   toggleFormValid(state) {
     this.setState({ formIsValid: state });
   }
@@ -221,13 +206,16 @@ class DonateButton extends React.Component {
     }
   }
 
-  submit(model) {
-    const { adminId, dacId } = this.props.model;
+  submit({ amount, customAddress }) {
+    const { model, currentUser } = this.props;
+    const { adminId, dacId } = model;
+
+    const donationOwnerAddress = customAddress || currentUser.address;
 
     if (dacId !== undefined && dacId !== 0) {
-      this.getDacTitle(model, adminId, dacId, model.amount);
+      this.donateToDac(adminId, dacId, amount, donationOwnerAddress).then(() => {});
     } else {
-      this.donateWithBridge(model, adminId, model.amount);
+      this.donateWithBridge(adminId, amount, donationOwnerAddress).then(() => {});
     }
 
     this.setState({ isSaving: true });
@@ -273,16 +261,23 @@ class DonateButton extends React.Component {
     )();
   }
 
-  async donateToDac(model, adminId, dacId, dacTitle, amount) {
+  async donateToDac(adminId, dacId, amount, donationOwnerAddress) {
+    const dac = await DACService.getByDelegateId(dacId);
+
+    if (!dac) {
+      ErrorPopup(`Dac not found!`);
+      return;
+    }
+    const { title: dacTitle } = dac;
+
     const amountDAC = parseFloat(amount - amount / 1.03)
       .toFixed(6)
       .toString();
-    const amountMilestoneOwner = parseFloat(amount / 1.03)
+    const amountMilestone = parseFloat(amount / 1.03)
       .toFixed(6)
       .toString();
     const { selectedToken } = this.state;
     const tokenSymbol = selectedToken.symbol;
-    const { ownerAddress } = this.props.model;
     const isConfirmed = await React.swal({
       title: 'Twice as good!',
       content: React.swal.msg(
@@ -299,7 +294,7 @@ class DonateButton extends React.Component {
             <li>
               The rest (
               <b>
-                {amountMilestoneOwner} {tokenSymbol}
+                {amountMilestone} {tokenSymbol}
               </b>
               ) will go to the milestone owner.
             </li>
@@ -311,184 +306,167 @@ class DonateButton extends React.Component {
     });
 
     if (isConfirmed) {
-      await this.donateWithBridge(
-        model,
-        dacId,
-        amountDAC,
-        adminId,
-        amountMilestoneOwner,
-        ownerAddress,
-      );
+      try {
+        await this.donateWithBridge(dacId, amountDAC, donationOwnerAddress, amount);
+        await this.donateWithBridge(adminId, amountMilestone, donationOwnerAddress);
+        // eslint-disable-next-line no-empty
+      } catch (e) {}
     }
     this.setState({ isSaving: false });
   }
 
-  async donateWithBridge(model, adminId, amount, adminIdTwo, amountTwo, ownerAddress) {
+  async donateWithBridge(adminId, amount, donationOwnerAddress, allowanceAmount = 0) {
     const { currentUser } = this.props;
-    const { givethBridge, etherscanUrl, showCustomAddress, selectedToken } = this.state;
+    const { givethBridge, etherscanUrl, selectedToken } = this.state;
 
-    const value = utils.toWei(Number(amount).toFixed(18));
+    const amountWei = utils.toWei(new BigNumber(amount).toFixed(18));
     const isDonationInToken = selectedToken.symbol !== config.nativeTokenName;
     const tokenAddress = isDonationInToken ? selectedToken.address : ZERO_ADDRESS;
 
     const _makeDonationTx = async () => {
       let method;
-      let donationUser;
       const opts = { from: currentUser.address, $extraGas: extraGas() };
-      let customAddress = '';
-      const { customAddress: modelAddress } = model;
-      if (!ownerAddress) {
-        customAddress = modelAddress;
-      } else {
-        customAddress = ownerAddress;
-      }
 
       // actually uses 84766, but runs out of gas if exact
-      if (!isDonationInToken) Object.assign(opts, { value, gas: DONATION_GAS });
+      if (!isDonationInToken) Object.assign(opts, { value: amountWei, gas: DONATION_GAS });
 
-      if (showCustomAddress || ownerAddress !== undefined) {
+      let donationOwner;
+      if (currentUser.address !== donationOwnerAddress) {
         // Donating on behalf of another user or address
         try {
-          const user = await feathersClient.service('users').get(customAddress);
+          const user = await feathersClient.service('users').get(donationOwnerAddress);
           if (user && user.giverId > 0) {
-            method = givethBridge.donate(user.giverId, adminId, tokenAddress, value, opts);
-            donationUser = user;
+            donationOwner = user;
+            method = givethBridge.donate(user.giverId, adminId, tokenAddress, amountWei, opts);
           } else {
             method = givethBridge.donateAndCreateGiver(
-              customAddress,
+              donationOwnerAddress,
               adminId,
               tokenAddress,
-              value,
+              amountWei,
               opts,
             );
-            donationUser = { address: customAddress };
+            donationOwner = { address: donationOwnerAddress };
           }
         } catch (e) {
           method = givethBridge.donateAndCreateGiver(
-            customAddress,
+            donationOwnerAddress,
             adminId,
             tokenAddress,
-            value,
+            amountWei,
             opts,
           );
-          donationUser = { address: customAddress };
+          donationOwner = { address: donationOwnerAddress };
         }
       } else {
         // Donating on behalf of logged in DApp user
         method =
           currentUser.giverId > 0
-            ? givethBridge.donate(currentUser.giverId, adminId, tokenAddress, value, opts)
+            ? givethBridge.donate(currentUser.giverId, adminId, tokenAddress, amountWei, opts)
             : givethBridge.donateAndCreateGiver(
                 currentUser.address,
                 adminId,
                 tokenAddress,
-                value,
+                amountWei,
                 opts,
               );
-        donationUser = currentUser;
+        donationOwner = currentUser;
       }
 
-      let txHash;
-      method
-        .on('transactionHash', async transactionHash => {
-          txHash = transactionHash;
-          const closeDialog = adminIdTwo === undefined && amountTwo === undefined;
-          if (!closeDialog) {
-            if (showCustomAddress) {
-              this.donateWithBridge(model, customAddress, amountTwo);
-            } else {
-              await this.setState({ showCustomAddress: false });
-              this.donateWithBridge(model, adminIdTwo, amountTwo);
-            }
-          } else {
+      await new Promise((resolve, reject) => {
+        let txHash;
+        method
+          .on('transactionHash', async transactionHash => {
+            txHash = transactionHash;
+
             await DonationService.newFeathersDonation(
-              donationUser,
+              donationOwner,
               this.props.model,
-              value,
+              amountWei,
               selectedToken,
               txHash,
             );
-          }
 
-          this.setState({
-            modalVisible: !closeDialog,
-            isSaving: false,
-          });
+            resolve();
+            this.setState({
+              isSaving: false,
+            });
+            this.closeDialog();
 
-          GA.trackEvent({
-            category: 'Donation',
-            action: 'donated',
-            label: `${etherscanUrl}tx/${txHash}`,
-          });
+            GA.trackEvent({
+              category: 'Donation',
+              action: 'donated',
+              label: `${etherscanUrl}tx/${txHash}`,
+            });
 
-          React.toast.info(
-            <p>
-              Awesome! Your donation is pending...
-              <br />
-              <a href={`${etherscanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">
-                View transaction
-              </a>
-            </p>,
-          );
-          if (closeDialog) this.closeDialog();
-        })
-        .then(() => {
-          React.toast.success(
-            <p>
-              Woot! Woot! Donation received. You are awesome!
-              <br />
-              Note: because we are bridging networks, there will be a delay before your donation
-              appears.
-              <br />
-              <a href={`${etherscanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">
-                View transaction
-              </a>
-            </p>,
-          );
-        })
-        .catch(e => {
-          if (!e.message.includes('User denied transaction signature')) {
-            const err = !(e instanceof Error) ? JSON.stringify(e, null, 2) : e;
-            ErrorPopup(
-              'Something went wrong with your donation.',
-              `${etherscanUrl}tx/${txHash} => ${err}`,
+            React.toast.info(
+              <p>
+                Awesome! Your donation is pending...
+                <br />
+                <a href={`${etherscanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">
+                  View transaction
+                </a>
+              </p>,
             );
-          } else {
-            React.toast.info('The transaction was cancelled. No donation has been made :-(');
-          }
-          this.setState({
-            isSaving: false,
+          })
+          .then(() => {
+            React.toast.success(
+              <p>
+                Woot! Woot! Donation received. You are awesome!
+                <br />
+                Note: because we are bridging networks, there will be a delay before your donation
+                appears.
+                <br />
+                <a href={`${etherscanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">
+                  View transaction
+                </a>
+              </p>,
+            );
+          })
+          .catch(e => {
+            reject();
+            if (!e.message.includes('User denied transaction signature')) {
+              const err = !(e instanceof Error) ? JSON.stringify(e, null, 2) : e;
+              ErrorPopup(
+                'Something went wrong with your donation.',
+                `${etherscanUrl}tx/${txHash} => ${err}`,
+              );
+            } else {
+              React.toast.info('The transaction was cancelled. No donation has been made :-(');
+            }
+            this.setState({
+              isSaving: false,
+            });
+            this.closeDialog();
           });
-        });
+      });
     };
 
     // if donating in token, first approve transfer of token by bridge
     if (isDonationInToken) {
-      const allowanceRequired = BigNumber.sum(
-        value,
-        amountTwo ? utils.toWei(Number(amountTwo).toFixed(18)) : '0',
-      );
-      DonationService.approveERC20tokenTransfer(
-        tokenAddress,
-        currentUser.address,
-        allowanceRequired.toString(),
-      )
-        .then(async () => {
-          await _makeDonationTx();
-        })
-        .catch(err => {
-          this.setState({
-            isSaving: false,
-          });
-          if (err.message !== 'cancelled') {
-            ErrorPopup(
-              'Something went wrong with your donation. Could not approve token allowance.',
-              err,
-            );
-          } else {
-            ErrorPopup('Something went wrong.', err);
-          }
+      try {
+        const allowanceRequired = allowanceAmount
+          ? utils.toWei(new BigNumber(allowanceAmount).toFixed(18))
+          : amountWei;
+        await DonationService.approveERC20tokenTransfer(
+          tokenAddress,
+          currentUser.address,
+          allowanceRequired.toString(),
+        );
+        await _makeDonationTx();
+      } catch (err) {
+        this.setState({
+          isSaving: false,
         });
+        if (err.message !== 'cancelled') {
+          ErrorPopup(
+            'Something went wrong with your donation. Could not approve token allowance.',
+            err,
+          );
+        } else {
+          ErrorPopup('Something went wrong.', err);
+        }
+      }
     } else {
       await _makeDonationTx();
     }
