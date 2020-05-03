@@ -627,23 +627,16 @@ class DonationService {
   }
 
   /**
-   * Resolve status of allowance
+   * get token allowance
    *
    * @param {string} tokenContractAddress Address of the ERC20 token
    * @param {string} tokenHolderAddress Address of the token holder, by default the current logged in user
-   * @param {string|number} amount Amount in wei for the allowance. If none given defaults to unlimited (-1)
    */
-  static async isERC20tokenTransferApproved(tokenContractAddress, tokenHolderAddress, amount) {
+  static async getERC20tokenAllowance(tokenContractAddress, tokenHolderAddress) {
     const network = await getNetwork();
     const ERC20 = network.tokens[tokenContractAddress];
 
-    const getAllowance = () =>
-      ERC20.methods.allowance(tokenHolderAddress, config.givethBridgeAddress).call();
-
-    // read existing allowance for the givethBridge
-    const amountNumber = new BigNumber(amount);
-
-    return amountNumber.lte(await getAllowance());
+    return ERC20.methods.allowance(tokenHolderAddress, config.givethBridgeAddress).call();
   }
 
   /**

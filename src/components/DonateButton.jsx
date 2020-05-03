@@ -27,6 +27,11 @@ import { ZERO_ADDRESS } from '../lib/helpers';
 
 const POLL_DELAY_TOKENS = 2000;
 
+const INFINITE_ALLOWANCE = new BigNumber(2)
+  .pow(256)
+  .minus(1)
+  .toFixed();
+
 const modalStyles = {
   content: {
     top: '50%',
@@ -45,6 +50,17 @@ Modal.setAppElement('#root');
 // tx only requires 25400 gas, but for some reason we get an out of gas
 // error in web3 with that amount (even though the tx succeeds)
 const DONATION_GAS = 30400;
+
+const AllowanceStatus = {
+  NotNeeded: 1, // Token doesn't need allowance approval
+  Enough: 2, // Allowance amount is enough
+  Needed: 3, // Allowance approval is needed
+};
+
+const AllowanceApprovalType = {
+  Default: 1,
+  Infinite: 2,
+};
 
 class DonateButton extends React.Component {
   constructor(props) {
@@ -76,10 +92,16 @@ class DonateButton extends React.Component {
         title: t.name,
       })),
       selectedToken,
+      allowance: new BigNumber(0),
+      allowanceStatus: AllowanceStatus.NotNeeded,
+      allowanceApprovalType: undefined,
     };
 
+    this.form = React.createRef();
     this.submit = this.submit.bind(this);
     this.openDialog = this.openDialog.bind(this);
+    this.updateAllowance = this.updateAllowance.bind(this);
+    this.updateAllowanceStatus = this.updateAllowanceStatus.bind(this);
   }
 
   componentDidMount() {
@@ -90,6 +112,7 @@ class DonateButton extends React.Component {
       });
     });
     this.pollToken();
+    this.updateAllowance();
   }
 
   componentWillUnmount() {
@@ -110,7 +133,10 @@ class DonateButton extends React.Component {
         selectedToken: token,
         amount: amt,
       },
-      () => this.pollToken(),
+      () => {
+        this.pollToken();
+        this.updateAllowance();
+      },
     );
   }
 
@@ -145,22 +171,60 @@ class DonateButton extends React.Component {
     return maxAmount;
   }
 
+  updateAllowanceStatus() {
+    const { selectedToken } = this.state;
+    const isDonationInToken = selectedToken.symbol !== config.nativeTokenName;
+    if (isDonationInToken) {
+      const { allowance, amount } = this.state;
+      this.setState({
+        allowanceStatus: allowance.lt(amount) ? AllowanceStatus.Needed : AllowanceStatus.Enough,
+      });
+    } else {
+      this.setState({ allowanceStatus: AllowanceStatus.NotNeeded });
+    }
+  }
+
+  updateAllowance() {
+    const { selectedToken } = this.state;
+
+    const isDonationInToken = selectedToken.symbol !== config.nativeTokenName;
+    if (!isDonationInToken) {
+      this.setState({
+        allowance: new BigNumber(0),
+        allowanceStatus: AllowanceStatus.NotNeeded,
+      });
+    } else {
+      const { currentUser } = this.props;
+      DonationService.getERC20tokenAllowance(selectedToken.address, currentUser.address).then(
+        allowance => {
+          this.setState(
+            {
+              allowance: new BigNumber(utils.fromWei(allowance)),
+            },
+            this.updateAllowanceStatus,
+          );
+        },
+      );
+    }
+  }
+
   toggleFormValid(state) {
     this.setState({ formIsValid: state });
   }
 
   closeDialog() {
-    const { tokenWhitelist, model } = this.props;
-    const defaultToken =
-      tokenWhitelist.find(t => t.symbol === config.defaultDonateToken) || tokenWhitelist[0];
-    const selectedToken = model.acceptsSingleToken ? model.token : defaultToken;
+    const { selectedToken } = this.state;
 
+    const defaultAmount = selectedToken.symbol === config.nativeTokenName ? '1' : '100';
+    const amount = BigNumber.min(
+      utils.fromWei(selectedToken.balance.toFixed()),
+      defaultAmount,
+    ).toFixed();
     this.setState({
       modalVisible: false,
-      amount: selectedToken === config.nativeTokenName ? '1' : '100',
+      amount,
       defaultAmount: true,
       formIsValid: false,
-      selectedToken,
     });
   }
 
@@ -176,6 +240,8 @@ class DonateButton extends React.Component {
   }
 
   openDialog() {
+    this.updateAllowance();
+
     if (!this.canDonateToProject()) {
       React.swal({
         title: 'Token is not Active to Donate',
@@ -209,13 +275,18 @@ class DonateButton extends React.Component {
   submit({ amount, customAddress }) {
     const { model, currentUser } = this.props;
     const { adminId, dacId } = model;
+    const { allowanceApprovalType } = this.state;
 
     const donationOwnerAddress = customAddress || currentUser.address;
 
     if (dacId !== undefined && dacId !== 0) {
-      this.donateToDac(adminId, dacId, amount, donationOwnerAddress).then(() => {});
+      this.donateToDac(adminId, dacId, amount, donationOwnerAddress, allowanceApprovalType).then(
+        this.updateAllowance,
+      );
     } else {
-      this.donateWithBridge(adminId, amount, donationOwnerAddress).then(() => {});
+      this.donateWithBridge(adminId, amount, donationOwnerAddress, amount, allowanceApprovalType)
+        .then(this.updateAllowance)
+        .catch(this.updateAllowance);
     }
 
     this.setState({ isSaving: true });
@@ -254,13 +325,14 @@ class DonateButton extends React.Component {
           if (!selectedToken.balance || !selectedToken.balance.eq(balance)) {
             selectedToken.balance = balance;
             this.setState({ selectedToken }, () => {
-              this.setState(prevState => {
-                const { amount } = prevState;
-                const maxAmount = this.getMaxAmount();
-                return {
+              const { amount } = this.state;
+              const maxAmount = this.getMaxAmount();
+              this.setState(
+                {
                   amount: maxAmount.lt(amount) ? maxAmount.toFixed() : amount,
-                };
-              });
+                },
+                this.updateAllowanceStatus,
+              );
             });
           }
         },
@@ -269,7 +341,7 @@ class DonateButton extends React.Component {
     )();
   }
 
-  async donateToDac(adminId, dacId, amount, donationOwnerAddress) {
+  async donateToDac(adminId, dacId, amount, donationOwnerAddress, allowanceApprovalType) {
     const dac = await DACService.getByDelegateId(dacId);
 
     if (!dac) {
@@ -315,15 +387,29 @@ class DonateButton extends React.Component {
 
     if (isConfirmed) {
       try {
-        await this.donateWithBridge(dacId, amountDAC, donationOwnerAddress, amount);
-        await this.donateWithBridge(adminId, amountMilestone, donationOwnerAddress);
+        if (
+          await this.donateWithBridge(
+            dacId,
+            amountDAC,
+            donationOwnerAddress,
+            amount,
+            allowanceApprovalType,
+          )
+        )
+          await this.donateWithBridge(adminId, amountMilestone, donationOwnerAddress);
         // eslint-disable-next-line no-empty
       } catch (e) {}
     }
     this.setState({ isSaving: false });
   }
 
-  async donateWithBridge(adminId, amount, donationOwnerAddress, allowanceAmount = 0) {
+  async donateWithBridge(
+    adminId,
+    amount,
+    donationOwnerAddress,
+    allowanceAmount = 0,
+    allowanceApprovalType = AllowanceApprovalType.Default,
+  ) {
     const { currentUser } = this.props;
     const { givethBridge, etherscanUrl, selectedToken } = this.state;
 
@@ -381,7 +467,7 @@ class DonateButton extends React.Component {
         donationOwner = currentUser;
       }
 
-      await new Promise((resolve, reject) => {
+      return new Promise((resolve, reject) => {
         let txHash;
         method
           .on('transactionHash', async transactionHash => {
@@ -395,7 +481,7 @@ class DonateButton extends React.Component {
               txHash,
             );
 
-            resolve();
+            resolve(true);
             this.setState({
               isSaving: false,
             });
@@ -453,9 +539,14 @@ class DonateButton extends React.Component {
     // if donating in token, first approve transfer of token by bridge
     if (isDonationInToken) {
       try {
-        const allowanceRequired = allowanceAmount
-          ? utils.toWei(new BigNumber(allowanceAmount).toFixed(18))
-          : amountWei;
+        let allowanceRequired;
+        if (allowanceApprovalType === AllowanceApprovalType.Infinite) {
+          allowanceRequired = INFINITE_ALLOWANCE;
+        } else {
+          allowanceRequired = allowanceAmount
+            ? utils.toWei(new BigNumber(allowanceAmount).toFixed(18))
+            : amountWei;
+        }
         const allowed = await DonationService.approveERC20tokenTransfer(
           tokenAddress,
           currentUser.address,
@@ -463,7 +554,10 @@ class DonateButton extends React.Component {
         );
 
         // Maybe user has canceled the allowance approval transaction
-        if (allowed) await _makeDonationTx();
+        if (allowed) {
+          return _makeDonationTx();
+        }
+        return false;
       } catch (err) {
         this.setState({
           isSaving: false,
@@ -475,9 +569,10 @@ class DonateButton extends React.Component {
             err,
           );
         }
+        return false;
       }
     } else {
-      await _makeDonationTx();
+      return _makeDonationTx();
     }
   }
 
@@ -500,6 +595,7 @@ class DonateButton extends React.Component {
       showCustomAddress,
       tokenWhitelistOptions,
       selectedToken,
+      allowanceStatus,
     } = this.state;
 
     const style = {
@@ -509,6 +605,24 @@ class DonateButton extends React.Component {
     const balance =
       selectedToken.symbol === config.nativeTokenName ? NativeTokenBalance : selectedToken.balance;
     const maxAmount = this.getMaxAmount();
+
+    const submitDefault = () => {
+      this.setState(
+        {
+          allowanceApprovalType: AllowanceApprovalType.Default,
+        },
+        () => this.form.current.formsyForm.submit(),
+      );
+    };
+
+    const submitInfiniteAllowance = () => {
+      this.setState(
+        {
+          allowanceApprovalType: AllowanceApprovalType.Infinite,
+        },
+        () => this.form.current.formsyForm.submit(),
+      );
+    };
 
     return (
       <span style={style}>
@@ -534,6 +648,7 @@ class DonateButton extends React.Component {
         >
           <Form
             onSubmit={this.submit}
+            ref={this.form}
             mapping={inputs => ({
               amount: inputs.amount,
               customAddress: inputs.customAddress,
@@ -631,7 +746,7 @@ class DonateButton extends React.Component {
                           result = newAmount.toString();
                         }
 
-                        return this.setState({ amount: result });
+                        return this.setState({ amount: result }, this.updateAllowanceStatus);
                       }}
                     />
                   </div>
@@ -644,10 +759,13 @@ class DonateButton extends React.Component {
                     type="number"
                     value={amount}
                     onChange={(name, newAmount) => {
-                      this.setState({
-                        amount: newAmount,
-                        defaultAmount: false,
-                      });
+                      this.setState(
+                        {
+                          amount: newAmount,
+                          defaultAmount: false,
+                        },
+                        this.updateAllowanceStatus,
+                      );
                     }}
                     validations={{
                       lessOrEqualTo: maxAmount.toNumber(),
@@ -705,16 +823,28 @@ class DonateButton extends React.Component {
                   </div>
                 )}
                 {maxAmount.toNumber() !== 0 && balance !== '0' && (
-                  <LoaderButton
-                    className="btn btn-success"
-                    formNoValidate
-                    type="submit"
-                    disabled={isSaving || !formIsValid || !isCorrectNetwork}
-                    isLoading={isSaving}
-                    loadingText="Donating..."
-                  >
-                    Donate
-                  </LoaderButton>
+                  <Fragment>
+                    <LoaderButton
+                      className="btn btn-success"
+                      formNoValidate
+                      disabled={isSaving || !formIsValid || !isCorrectNetwork}
+                      isLoading={false}
+                      onClick={submitDefault}
+                    >
+                      {allowanceStatus !== AllowanceStatus.Needed ? 'Donate' : 'Approve & Donate'}
+                    </LoaderButton>
+                    {allowanceStatus === AllowanceStatus.Needed && (
+                      <LoaderButton
+                        className="btn btn-primary ml-2"
+                        formNoValidate
+                        disabled={isSaving || !formIsValid || !isCorrectNetwork}
+                        isLoading={false}
+                        onClick={submitInfiniteAllowance}
+                      >
+                        Infinite Approve & Donate
+                      </LoaderButton>
+                    )}
+                  </Fragment>
                 )}
               </Fragment>
             )}
