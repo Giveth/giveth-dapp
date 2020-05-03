@@ -253,7 +253,15 @@ class DonateButton extends React.Component {
         onResult: balance => {
           if (!selectedToken.balance || !selectedToken.balance.eq(balance)) {
             selectedToken.balance = balance;
-            this.setState({ selectedToken });
+            this.setState({ selectedToken }, () => {
+              this.setState(prevState => {
+                const { amount } = prevState;
+                const maxAmount = this.getMaxAmount();
+                return {
+                  amount: maxAmount.lt(amount) ? maxAmount.toFixed() : amount,
+                };
+              });
+            });
           }
         },
       }),
@@ -448,23 +456,24 @@ class DonateButton extends React.Component {
         const allowanceRequired = allowanceAmount
           ? utils.toWei(new BigNumber(allowanceAmount).toFixed(18))
           : amountWei;
-        await DonationService.approveERC20tokenTransfer(
+        const allowed = await DonationService.approveERC20tokenTransfer(
           tokenAddress,
           currentUser.address,
           allowanceRequired.toString(),
         );
-        await _makeDonationTx();
+
+        // Maybe user has canceled the allowance approval transaction
+        if (allowed) await _makeDonationTx();
       } catch (err) {
         this.setState({
           isSaving: false,
         });
-        if (err.message !== 'cancelled') {
+        // error code 4001 means user has canceled the transaction
+        if (err.code !== 4001) {
           ErrorPopup(
             'Something went wrong with your donation. Could not approve token allowance.',
             err,
           );
-        } else {
-          ErrorPopup('Something went wrong.', err);
         }
       }
     } else {
