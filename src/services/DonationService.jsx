@@ -627,19 +627,6 @@ class DonationService {
   }
 
   /**
-   * get token allowance
-   *
-   * @param {string} tokenContractAddress Address of the ERC20 token
-   * @param {string} tokenHolderAddress Address of the token holder, by default the current logged in user
-   */
-  static async getERC20tokenAllowance(tokenContractAddress, tokenHolderAddress) {
-    const network = await getNetwork();
-    const ERC20 = network.tokens[tokenContractAddress];
-
-    return ERC20.methods.allowance(tokenHolderAddress, config.givethBridgeAddress).call();
-  }
-
-  /**
    * Creates an allowance approval for an ERC20 token
    *
    * @param {string} tokenContractAddress Address of the ERC20 token
@@ -650,11 +637,10 @@ class DonationService {
     const network = await getNetwork();
     const ERC20 = network.tokens[tokenContractAddress];
 
-    const getAllowance = () =>
-      ERC20.methods.allowance(tokenHolderAddress, config.givethBridgeAddress).call();
-
     // read existing allowance for the givethBridge
-    const allowance = await getAllowance();
+    const allowance = await ERC20.methods
+      .allowance(tokenHolderAddress, config.givethBridgeAddress)
+      .call();
 
     const amountNumber = new BigNumber(amount);
     const allowanceNumber = new BigNumber(allowance);
@@ -665,13 +651,57 @@ class DonationService {
 
     /* eslint-disable eqeqeq */
     if (allowanceNumber.isZero()) {
-      await createAllowance(tokenContractAddress, tokenHolderAddress, amount);
+      const isConfirmed = await React.swal({
+        title: 'Here we go...',
+        content: React.swal.msg(
+          <div>
+            <p>For your donation you need to make 2 transactions:</p>
+            <ol style={{ textAlign: 'left' }}>
+              <li>
+                A transaction to approve our contracts to transfer {utils.fromWei(amount)} tokens on
+                your behalf.
+              </li>
+              <li>A transaction of 0 {config.nativeTokenName} to donate the tokens.</li>
+            </ol>
+          </div>,
+        ),
+        icon: 'info',
+        buttons: ['Cancel', 'Lets do it!'],
+      });
+
+      if (isConfirmed) {
+        // return _createAllowance(web3, etherScanUrl, ERC20, tokenHolderAddress, amount);
+        await createAllowance(tokenContractAddress, tokenHolderAddress, amount);
+        return;
+      }
+      throw new Error('cancelled');
     } else if (amountNumber.gt(allowanceNumber)) {
-      // return _createAllowance(web3, etherScanUrl, ERC20, tokenHolderAddress, 0);
-      await createAllowance(tokenContractAddress, tokenHolderAddress, 0);
-      await createAllowance(tokenContractAddress, tokenHolderAddress, amount);
+      const isConfirmed = await React.swal({
+        title: 'Here we go...',
+        content: React.swal.msg(
+          <div>
+            <p>For your donation you need to make 3 transactions:</p>
+            <ol style={{ textAlign: 'left' }}>
+              <li>A transaction to reset your token allowance</li>
+              <li>
+                A transaction to approve our contracts to transfer {utils.fromWei(amount)} tokens on
+                your behalf.
+              </li>
+              <li>A transaction of 0 ${config.nativeTokenName} to donate the tokens</li>
+            </ol>
+          </div>,
+        ),
+        icon: 'info',
+        buttons: ['Cancel', 'Lets do it!'],
+      });
+      if (isConfirmed) {
+        // return _createAllowance(web3, etherScanUrl, ERC20, tokenHolderAddress, 0);
+        await createAllowance(tokenContractAddress, tokenHolderAddress, 0);
+        await createAllowance(tokenContractAddress, tokenHolderAddress, amount);
+        return;
+      }
+      throw new Error('cancelled');
     }
-    return amountNumber.lte(await getAllowance());
   }
 
   /**
