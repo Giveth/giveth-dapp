@@ -471,7 +471,7 @@ class DonateButton extends React.Component {
       DonationService.approveERC20tokenTransfer(
         tokenAddress,
         currentUser.address,
-        allowanceRequired.toString(),
+        allowanceRequired.toFixed(),
       )
         .then(async () => {
           await _makeDonationTx();
