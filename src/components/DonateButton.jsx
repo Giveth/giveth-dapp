@@ -194,17 +194,19 @@ class DonateButton extends React.Component {
         allowanceStatus: AllowanceStatus.NotNeeded,
       });
     } else {
-      const { currentUser } = this.props;
-      DonationService.getERC20tokenAllowance(selectedToken.address, currentUser.address).then(
-        allowance => {
-          this.setState(
-            {
-              allowance: new BigNumber(utils.fromWei(allowance)),
-            },
-            this.updateAllowanceStatus,
-          );
-        },
-      );
+      const { currentUser, validProvider } = this.props;
+      if (validProvider && currentUser) {
+        DonationService.getERC20tokenAllowance(selectedToken.address, currentUser.address).then(
+          allowance => {
+            this.setState(
+              {
+                allowance: new BigNumber(utils.fromWei(allowance)),
+              },
+              this.updateAllowanceStatus,
+            );
+          },
+        );
+      }
     }
   }
 
@@ -841,7 +843,7 @@ class DonateButton extends React.Component {
                         isLoading={false}
                         onClick={submitInfiniteAllowance}
                       >
-                        Infinite Approve & Donate
+                        <i className="fa fa-unlock-alt" /> Infinite Approve & Donate
                       </LoaderButton>
                     )}
                   </Fragment>

@@ -152,3 +152,18 @@ export const ANY_TOKEN = {
   symbol: 'ANY_TOKEN',
   decimals: 18,
 };
+
+export const signUpSwal = () => {
+  React.swal({
+    title: 'Sign Up!',
+    content: React.swal.msg(
+      <p>
+        In order to use the Dapp, you need to use a Web3 wallet.
+        <br />
+        It is recommended that you install <a href="https://metamask.io/">MetaMask</a>.
+      </p>,
+    ),
+    icon: 'info',
+    buttons: ['Ok'],
+  });
+};

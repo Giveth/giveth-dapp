@@ -4,22 +4,8 @@ import { Link, NavLink, withRouter } from 'react-router-dom';
 
 import { Consumer as UserConsumer } from '../contextProviders/UserProvider';
 import { Consumer as Web3Consumer } from '../contextProviders/Web3Provider';
-import { history } from '../lib/helpers';
+import { history, signUpSwal } from '../lib/helpers';
 
-const signUpSwal = () => {
-  React.swal({
-    title: 'Sign Up!',
-    content: React.swal.msg(
-      <p>
-        In order to use the Dapp, you need to use a Web3 wallet.
-        <br />
-        It is recommended that you install <a href="https://metamask.io/">MetaMask</a>.
-      </p>,
-    ),
-    icon: 'info',
-    buttons: ['Ok'],
-  });
-};
 // Broken rule that can not find the correct id tag
 /* eslint jsx-a11y/aria-proptypes: 0 */
 /**

@@ -636,7 +636,11 @@ class DonationService {
     const network = await getNetwork();
     const ERC20 = network.tokens[tokenContractAddress];
 
-    return ERC20.methods.allowance(tokenHolderAddress, config.givethBridgeAddress).call();
+    // if web3 is not loaded correctly ERC20 will be undefined
+    if (ERC20)
+      return ERC20.methods.allowance(tokenHolderAddress, config.givethBridgeAddress).call();
+
+    return '0';
   }
 
   /**
