@@ -5,6 +5,7 @@ import BigNumber from 'bignumber.js';
 import getWeb3 from '../lib/blockchain/getWeb3';
 import pollEvery from '../lib/pollEvery';
 import config from '../configuration';
+import { signUpSwal } from '../lib/helpers';
 import { ForeignRequiredModal, HomeRequiredModal } from '../components/NetworkWarningModal';
 
 const POLL_DELAY_ACCOUNT = 1000;
@@ -156,6 +157,10 @@ class Web3Provider extends Component {
   }
 
   async enableProvider() {
+    const { validProvider } = this.state;
+    if (!validProvider) {
+      signUpSwal();
+    }
     // we set this timeout b/c if the provider is connected to an invalid network,
     // any rpc calls will hang
     const timeout = setTimeout(async () => {

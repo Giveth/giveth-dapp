@@ -636,7 +636,51 @@ class DonationService {
     const network = await getNetwork();
     const ERC20 = network.tokens[tokenContractAddress];
 
-    return ERC20.methods.allowance(tokenHolderAddress, config.givethBridgeAddress).call();
+    // if web3 is not loaded correctly ERC20 will be undefined
+    if (ERC20)
+      return ERC20.methods.allowance(tokenHolderAddress, config.givethBridgeAddress).call();
+
+    return '0';
+  }
+
+  /**
+   * Clear an allowance approval for an ERC20 token
+   *
+   * @param {string} tokenContractAddress Address of the ERC20 token
+   * @param {string} tokenHolderAddress Address of the token holder, by default the current logged in user
+   */
+  static async clearERC20TokenApproval(tokenContractAddress, tokenHolderAddress) {
+    const network = await getNetwork();
+    const ERC20 = network.tokens[tokenContractAddress];
+
+    // read existing allowance for the givethBridge
+    const allowance = await ERC20.methods
+      .allowance(tokenHolderAddress, config.givethBridgeAddress)
+      .call();
+    const allowanceNumber = new BigNumber(allowance);
+
+    if (!allowanceNumber.isZero()) {
+      let txHash;
+      await ERC20.methods
+        .approve(config.givethBridgeAddress, '0')
+        .send({ from: tokenHolderAddress })
+        .on('transactionHash', transactionHash => {
+          txHash = transactionHash;
+          React.toast.info(
+            <p>
+              Please wait until your transaction is mined...
+              <br />
+              <a
+                href={`${config.homeEtherscan}tx/${txHash}`}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                View transaction
+              </a>
+            </p>,
+          );
+        });
+    }
   }
 
   /**
