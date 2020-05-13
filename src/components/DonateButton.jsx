@@ -26,6 +26,7 @@ import DAC from '../models/DAC';
 import { ZERO_ADDRESS } from '../lib/helpers';
 
 const POLL_DELAY_TOKENS = 2000;
+const UPDATE_ALLOWANCE_DELAY = 1000; // Delay allowance update inorder to network respond new value
 
 const INFINITE_ALLOWANCE = new BigNumber(2)
   .pow(256)
@@ -183,8 +184,8 @@ class DonateButton extends React.Component {
 
     const amountNumber = new BigNumber(amount);
     let newAllowanceStatus;
-    if (isDonationInToken && !amountNumber.isZero()) {
-      if (allowance.lt(amountNumber)) {
+    if (isDonationInToken) {
+      if (allowance.isZero() || allowance.lt(amountNumber)) {
         newAllowanceStatus = Needed;
       } else {
         newAllowanceStatus = Enough;
@@ -198,7 +199,7 @@ class DonateButton extends React.Component {
     });
   }
 
-  updateAllowance() {
+  updateAllowance(delay = 0) {
     const { selectedToken } = this.state;
 
     const isDonationInToken = selectedToken.symbol !== config.nativeTokenName;
@@ -210,15 +211,20 @@ class DonateButton extends React.Component {
     } else {
       const { currentUser, validProvider } = this.props;
       if (validProvider && currentUser) {
-        DonationService.getERC20tokenAllowance(selectedToken.address, currentUser.address).then(
-          allowance => {
-            this.setState(
-              {
-                allowance: new BigNumber(utils.fromWei(allowance)),
-              },
-              this.updateAllowanceStatus,
-            );
-          },
+        // Fetch from network after 1 sec inorder to new allowance value be returned in response
+        setTimeout(
+          () =>
+            DonationService.getERC20tokenAllowance(selectedToken.address, currentUser.address)
+              .then(allowance => {
+                this.setState(
+                  {
+                    allowance: new BigNumber(utils.fromWei(allowance)),
+                  },
+                  this.updateAllowanceStatus,
+                );
+              })
+              .catch(() => {}),
+          delay,
         );
       }
     }
@@ -303,7 +309,7 @@ class DonateButton extends React.Component {
               allowance: new BigNumber(0),
               allowanceStatus: AllowanceStatus.Needed,
             },
-            this.updateAllowance,
+            () => this.updateAllowance(UPDATE_ALLOWANCE_DELAY),
           );
         })
         .catch(e => {
@@ -318,13 +324,13 @@ class DonateButton extends React.Component {
           this.closeDialog();
         });
     } else if (dacId !== undefined && dacId !== 0) {
-      this.donateToDac(adminId, dacId, amount, donationOwnerAddress, allowanceApprovalType).then(
-        this.updateAllowance,
-      );
+      this.donateToDac(adminId, dacId, amount, donationOwnerAddress, allowanceApprovalType)
+        .then(() => this.updateAllowance(UPDATE_ALLOWANCE_DELAY))
+        .catch(() => this.updateAllowance(UPDATE_ALLOWANCE_DELAY));
     } else {
       this.donateWithBridge(adminId, amount, donationOwnerAddress, amount, allowanceApprovalType)
-        .then(this.updateAllowance)
-        .catch(this.updateAllowance);
+        .then(() => this.updateAllowance(UPDATE_ALLOWANCE_DELAY))
+        .catch(() => this.updateAllowance(UPDATE_ALLOWANCE_DELAY));
     }
 
     this.setState({ isSaving: true });
@@ -524,10 +530,16 @@ class DonateButton extends React.Component {
             );
 
             resolve(true);
-            this.setState({
-              isSaving: false,
-            });
             this.closeDialog();
+
+            if (isDonationInToken) {
+              setTimeout(() => {
+                this.setState(prevState => {
+                  const { allowance } = prevState;
+                  return { allowance: allowance.minus(amount) };
+                });
+              }, UPDATE_ALLOWANCE_DELAY);
+            }
 
             GA.trackEvent({
               category: 'Donation',
@@ -546,6 +558,12 @@ class DonateButton extends React.Component {
             );
           })
           .then(() => {
+            this.updateAllowance(UPDATE_ALLOWANCE_DELAY);
+
+            this.setState({
+              isSaving: false,
+            });
+
             React.toast.success(
               <p>
                 Woot! Woot! Donation received. You are awesome!
@@ -595,8 +613,12 @@ class DonateButton extends React.Component {
           allowanceRequired.toString(),
         );
 
+        // Allowance value may have changed
+        this.updateAllowance(UPDATE_ALLOWANCE_DELAY);
+
         // Maybe user has canceled the allowance approval transaction
         if (allowed) {
+          this.setState({ allowanceStatus: AllowanceStatus.Enough });
           return _makeDonationTx();
         }
         return false;
@@ -605,6 +627,7 @@ class DonateButton extends React.Component {
           isSaving: false,
         });
         // error code 4001 means user has canceled the transaction
+        console.log(JSON.stringify(err, null, 2));
         if (err.code !== 4001) {
           ErrorPopup(
             'Something went wrong with your donation. Could not approve token allowance.',
@@ -677,8 +700,8 @@ class DonateButton extends React.Component {
 
     const submitClearAllowance = () => {
       React.swal({
-        title: 'Infinite Allowance',
-        text: `Do you want to set DApp allowance of ${selectedToken.symbol} token to zero!`,
+        title: `Take away ${selectedToken.symbol} Allowance`,
+        text: `Do you want to set DApp allowance of ${selectedToken.symbol} token to zero?`,
         icon: 'info',
         buttons: ['Cancel', 'Yes'],
       }).then(result => {
@@ -919,7 +942,7 @@ class DonateButton extends React.Component {
                       <LoaderButton
                         className="btn btn-danger ml-2"
                         formNoValidate
-                        disabled={isSaving || !formIsValid || !isCorrectNetwork}
+                        disabled={isSaving || !isCorrectNetwork}
                         isLoading={false}
                         onClick={submitClearAllowance}
                       >

@@ -707,15 +707,19 @@ class DonationService {
     // if there's an existing allowance, but it's lower than the amount, we reset it and create a new allowance
     // in any other case, just continue
 
+    let result = true;
+    // TODO: find a better way to know that transaction is successful than the status field on response
     /* eslint-disable eqeqeq */
     if (allowanceNumber.isZero()) {
-      await createAllowance(tokenContractAddress, tokenHolderAddress, amount);
+      result = (await createAllowance(tokenContractAddress, tokenHolderAddress, amount)).status;
     } else if (amountNumber.gt(allowanceNumber)) {
       // return _createAllowance(web3, etherScanUrl, ERC20, tokenHolderAddress, 0);
-      await createAllowance(tokenContractAddress, tokenHolderAddress, 0);
-      await createAllowance(tokenContractAddress, tokenHolderAddress, amount);
+      result = (await createAllowance(tokenContractAddress, tokenHolderAddress, 0)).status;
+      if (result) {
+        result = (await createAllowance(tokenContractAddress, tokenHolderAddress, amount)).status;
+      }
     }
-    return amountNumber.lte(await getAllowance());
+    return result;
   }
 
   /**
