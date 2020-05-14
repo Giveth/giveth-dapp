@@ -627,6 +627,63 @@ class DonationService {
   }
 
   /**
+   * get token allowance
+   *
+   * @param {string} tokenContractAddress Address of the ERC20 token
+   * @param {string} tokenHolderAddress Address of the token holder, by default the current logged in user
+   */
+  static async getERC20tokenAllowance(tokenContractAddress, tokenHolderAddress) {
+    const network = await getNetwork();
+    const ERC20 = network.tokens[tokenContractAddress];
+
+    // if web3 is not loaded correctly ERC20 will be undefined
+    if (ERC20)
+      return ERC20.methods.allowance(tokenHolderAddress, config.givethBridgeAddress).call();
+
+    return '0';
+  }
+
+  /**
+   * Clear an allowance approval for an ERC20 token
+   *
+   * @param {string} tokenContractAddress Address of the ERC20 token
+   * @param {string} tokenHolderAddress Address of the token holder, by default the current logged in user
+   */
+  static async clearERC20TokenApproval(tokenContractAddress, tokenHolderAddress) {
+    const network = await getNetwork();
+    const ERC20 = network.tokens[tokenContractAddress];
+
+    // read existing allowance for the givethBridge
+    const allowance = await ERC20.methods
+      .allowance(tokenHolderAddress, config.givethBridgeAddress)
+      .call();
+    const allowanceNumber = new BigNumber(allowance);
+
+    if (!allowanceNumber.isZero()) {
+      let txHash;
+      await ERC20.methods
+        .approve(config.givethBridgeAddress, '0')
+        .send({ from: tokenHolderAddress })
+        .on('transactionHash', transactionHash => {
+          txHash = transactionHash;
+          React.toast.info(
+            <p>
+              Please wait until your transaction is mined...
+              <br />
+              <a
+                href={`${config.homeEtherscan}tx/${txHash}`}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                View transaction
+              </a>
+            </p>,
+          );
+        });
+    }
+  }
+
+  /**
    * Creates an allowance approval for an ERC20 token
    *
    * @param {string} tokenContractAddress Address of the ERC20 token
@@ -649,59 +706,19 @@ class DonationService {
     // if there's an existing allowance, but it's lower than the amount, we reset it and create a new allowance
     // in any other case, just continue
 
+    let result = true;
+    // TODO: find a better way to know that transaction is successful than the status field on response
     /* eslint-disable eqeqeq */
     if (allowanceNumber.isZero()) {
-      const isConfirmed = await React.swal({
-        title: 'Here we go...',
-        content: React.swal.msg(
-          <div>
-            <p>For your donation you need to make 2 transactions:</p>
-            <ol style={{ textAlign: 'left' }}>
-              <li>
-                A transaction to approve our contracts to transfer {utils.fromWei(amount)} tokens on
-                your behalf.
-              </li>
-              <li>A transaction of 0 {config.nativeTokenName} to donate the tokens.</li>
-            </ol>
-          </div>,
-        ),
-        icon: 'info',
-        buttons: ['Cancel', 'Lets do it!'],
-      });
-
-      if (isConfirmed) {
-        // return _createAllowance(web3, etherScanUrl, ERC20, tokenHolderAddress, amount);
-        await createAllowance(tokenContractAddress, tokenHolderAddress, amount);
-        return;
-      }
-      throw new Error('cancelled');
+      result = (await createAllowance(tokenContractAddress, tokenHolderAddress, amount)).status;
     } else if (amountNumber.gt(allowanceNumber)) {
-      const isConfirmed = await React.swal({
-        title: 'Here we go...',
-        content: React.swal.msg(
-          <div>
-            <p>For your donation you need to make 3 transactions:</p>
-            <ol style={{ textAlign: 'left' }}>
-              <li>A transaction to reset your token allowance</li>
-              <li>
-                A transaction to approve our contracts to transfer {utils.fromWei(amount)} tokens on
-                your behalf.
-              </li>
-              <li>A transaction of 0 ${config.nativeTokenName} to donate the tokens</li>
-            </ol>
-          </div>,
-        ),
-        icon: 'info',
-        buttons: ['Cancel', 'Lets do it!'],
-      });
-      if (isConfirmed) {
-        // return _createAllowance(web3, etherScanUrl, ERC20, tokenHolderAddress, 0);
-        await createAllowance(tokenContractAddress, tokenHolderAddress, 0);
-        await createAllowance(tokenContractAddress, tokenHolderAddress, amount);
-        return;
+      // return _createAllowance(web3, etherScanUrl, ERC20, tokenHolderAddress, 0);
+      result = (await createAllowance(tokenContractAddress, tokenHolderAddress, 0)).status;
+      if (result) {
+        result = (await createAllowance(tokenContractAddress, tokenHolderAddress, amount)).status;
       }
-      throw new Error('cancelled');
     }
+    return result;
   }
 
   /**
