@@ -219,6 +219,7 @@ class Donation extends Model {
       isForeignNetwork &&
       this._ownerTypeId === user.address &&
       this._status === Donation.TO_APPROVE &&
+      this._mined === true &&
       (new Date() < new Date(this._commitTime) || !this._commitTime)
     );
   }
