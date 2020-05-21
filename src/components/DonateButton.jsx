@@ -5,7 +5,6 @@ import BigNumber from 'bignumber.js';
 import { utils } from 'web3';
 import { Form, Input } from 'formsy-react-components';
 import Toggle from 'react-toggle';
-import Slider from 'react-rangeslider';
 import GA from 'lib/GoogleAnalytics';
 import { Link } from 'react-router-dom';
 import getNetwork from '../lib/blockchain/getNetwork';
@@ -24,6 +23,8 @@ import SelectFormsy from './SelectFormsy';
 import { Consumer as WhiteListConsumer } from '../contextProviders/WhiteListProvider';
 import DAC from '../models/DAC';
 import { ZERO_ADDRESS } from '../lib/helpers';
+import RangeSlider from './RangeSlider';
+import NumericInput from './NumericInput';
 
 const POLL_DELAY_TOKENS = 2000;
 const UPDATE_ALLOWANCE_DELAY = 1000; // Delay allowance update inorder to network respond new value
@@ -816,39 +817,22 @@ class DonateButton extends React.Component {
 
                 {validProvider && maxAmount.toNumber() !== 0 && balance.gt(0) && (
                   <div className="form-group">
-                    <Slider
-                      type="range"
-                      name="amount2"
-                      min={0}
-                      max={maxAmount.toNumber()}
-                      step={maxAmount.dividedBy(20).toNumber()}
-                      value={Number(amount)}
-                      labels={{
-                        0: '0',
-                        [maxAmount.toNumber()]: maxAmount.precision(6).toString(),
-                      }}
-                      tooltip={false}
+                    <RangeSlider
                       onChange={newAmount => {
-                        let result;
-
-                        const roundedNumber = BigNumber(newAmount).toFixed(4, BigNumber.ROUND_DOWN);
-                        if (maxAmount.gt(newAmount) && Number(roundedNumber) > 0) {
-                          result = roundedNumber;
-                        } else {
-                          result = newAmount.toString();
-                        }
-
-                        return this.setState({ amount: result }, this.updateAllowanceStatus);
+                        this.setState({ amount: newAmount }, this.updateAllowanceStatus);
                       }}
+                      token={selectedToken}
+                      value={amount}
+                      maxAmount={maxAmount}
                     />
                   </div>
                 )}
 
                 <div className="form-group">
-                  <Input
-                    name="amount"
+                  <NumericInput
+                    token={selectedToken}
+                    maxAmount={maxAmount}
                     id="amount-input"
-                    type="number"
                     value={amount}
                     onChange={(name, newAmount) => {
                       this.setState(
@@ -857,16 +841,6 @@ class DonateButton extends React.Component {
                         },
                         this.updateAllowanceStatus,
                       );
-                    }}
-                    validations={{
-                      lessOrEqualTo: maxAmount.toNumber(),
-                      greaterThan: 0,
-                    }}
-                    validationErrors={{
-                      greaterThan: `Please enter value greater than 0 ${selectedToken.symbol}`,
-                      lessOrEqualTo: `This donation exceeds your wallet balance or the Milestone max amount: ${maxAmount.toFixed()} ${
-                        selectedToken.symbol
-                      }.`,
                     }}
                     autoFocus
                   />

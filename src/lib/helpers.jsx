@@ -111,11 +111,10 @@ export const convertEthHelper = (amount, decimals) => {
   if (!amount) return 0;
   let amt = amount;
   if (!(amount instanceof BigNumber)) {
-    if (amount) amt = new BigNumber(amount);
-    else return 0;
+    amt = new BigNumber(amount);
   }
   if (amt.eq(0)) return 0;
-  return amt.toFixed(decimals || config.decimals);
+  return amt.decimalPlaces(Number(decimals) || config.decimals, BigNumber.ROUND_DOWN).toFixed();
 };
 
 // the back button will go one lower nested route inside of the DApp
@@ -166,4 +165,14 @@ export const signUpSwal = () => {
     icon: 'info',
     buttons: ['Ok'],
   });
+};
+
+export const getCutOffAmount = token => {
+  const { decimals } = token;
+  return new BigNumber(10).pow(-1 * Number(decimals)).toFixed();
+};
+
+export const getCutOffAmountWei = token => {
+  const cutOff = getCutOffAmount(token);
+  return utils.toWei(cutOff);
 };
