@@ -694,11 +694,10 @@ class DonationService {
     const network = await getNetwork();
     const ERC20 = network.tokens[tokenContractAddress];
 
-    const getAllowance = () =>
-      ERC20.methods.allowance(tokenHolderAddress, config.givethBridgeAddress).call();
-
     // read existing allowance for the givethBridge
-    const allowance = await getAllowance();
+    const allowance = await ERC20.methods
+      .allowance(tokenHolderAddress, config.givethBridgeAddress)
+      .call();
 
     const amountNumber = new BigNumber(amount);
     const allowanceNumber = new BigNumber(allowance);
