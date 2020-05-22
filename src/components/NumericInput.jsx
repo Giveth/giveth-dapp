@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import BigNumber from 'bignumber.js';
 import { Input } from 'formsy-react-components';
 
-function NumericInput(props) {
+const NumericInput = props => {
   const { maxAmount, token, id, value, autoFocus, onChange } = props;
   const { symbol, decimals } = token;
   return (
@@ -30,9 +30,10 @@ function NumericInput(props) {
         lessOrEqualTo: `This donation exceeds your wallet balance or the Milestone max amount: ${maxAmount.toFixed()} ${symbol}.`,
         precision: `This precision is not acceptable for ${symbol} token`,
       }}
+      validatePristine
     />
   );
-}
+};
 
 NumericInput.propTypes = {
   onChange: PropTypes.func.isRequired,
