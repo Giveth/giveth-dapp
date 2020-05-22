@@ -28,6 +28,11 @@ import { ZERO_ADDRESS } from '../lib/helpers';
 const POLL_DELAY_TOKENS = 2000;
 const UPDATE_ALLOWANCE_DELAY = 1000; // Delay allowance update inorder to network respond new value
 
+const INFINITE_ALLOWANCE = new BigNumber(2)
+  .pow(256)
+  .minus(1)
+  .toFixed();
+
 const modalStyles = {
   content: {
     top: '50%',
@@ -88,10 +93,16 @@ class DonateButton extends React.Component {
         title: t.name,
       })),
       selectedToken,
+      allowance: new BigNumber(0),
+      allowanceStatus: AllowanceStatus.NotNeeded,
+      allowanceApprovalType: undefined,
     };
 
+    this.form = React.createRef();
     this.submit = this.submit.bind(this);
     this.openDialog = this.openDialog.bind(this);
+    this.updateAllowance = this.updateAllowance.bind(this);
+    this.updateAllowanceStatus = this.updateAllowanceStatus.bind(this);
   }
 
   componentDidMount() {
@@ -102,6 +113,7 @@ class DonateButton extends React.Component {
       });
     });
     this.pollToken();
+    this.updateAllowance();
   }
 
   componentWillUnmount() {
@@ -126,7 +138,10 @@ class DonateButton extends React.Component {
         selectedToken: token,
         amount: newAmount,
       },
-      () => this.pollToken(),
+      () => {
+        this.pollToken();
+        this.updateAllowance();
+      },
     );
   }
 
@@ -232,7 +247,6 @@ class DonateButton extends React.Component {
       modalVisible: false,
       amount,
       formIsValid: false,
-      selectedToken,
     });
   }
 
@@ -248,6 +262,8 @@ class DonateButton extends React.Component {
   }
 
   openDialog() {
+    this.updateAllowance();
+
     if (!this.canDonateToProject()) {
       React.swal({
         title: 'Token is not Active to Donate',
@@ -356,7 +372,16 @@ class DonateButton extends React.Component {
             !selectedToken.balance.eq(balance)
           ) {
             selectedToken.balance = balance;
-            this.setState({ selectedToken });
+            this.setState({ selectedToken }, () => {
+              const { amount } = this.state;
+              const maxAmount = this.getMaxAmount();
+              this.setState(
+                {
+                  amount: maxAmount.lt(amount) ? maxAmount.toFixed() : amount,
+                },
+                this.updateAllowanceStatus,
+              );
+            });
           }
         },
       }),
@@ -364,16 +389,23 @@ class DonateButton extends React.Component {
     )();
   }
 
-  async donateToDac(model, adminId, dacId, dacTitle, amount) {
+  async donateToDac(adminId, dacId, amount, donationOwnerAddress, allowanceApprovalType) {
+    const dac = await DACService.getByDelegateId(dacId);
+
+    if (!dac) {
+      ErrorPopup(`Dac not found!`);
+      return;
+    }
+    const { title: dacTitle } = dac;
+
     const amountDAC = parseFloat(amount - amount / 1.03)
       .toFixed(6)
       .toString();
-    const amountMilestoneOwner = parseFloat(amount / 1.03)
+    const amountMilestone = parseFloat(amount / 1.03)
       .toFixed(6)
       .toString();
     const { selectedToken } = this.state;
     const tokenSymbol = selectedToken.symbol;
-    const { ownerAddress } = this.props.model;
     const isConfirmed = await React.swal({
       title: 'Twice as good!',
       content: React.swal.msg(
@@ -390,7 +422,7 @@ class DonateButton extends React.Component {
             <li>
               The rest (
               <b>
-                {amountMilestoneOwner} {tokenSymbol}
+                {amountMilestone} {tokenSymbol}
               </b>
               ) will go to the milestone owner.
             </li>
@@ -402,104 +434,100 @@ class DonateButton extends React.Component {
     });
 
     if (isConfirmed) {
-      await this.donateWithBridge(
-        model,
-        dacId,
-        amountDAC,
-        adminId,
-        amountMilestoneOwner,
-        ownerAddress,
-      );
+      try {
+        if (
+          await this.donateWithBridge(
+            dacId,
+            amountDAC,
+            donationOwnerAddress,
+            amount,
+            allowanceApprovalType,
+          )
+        )
+          await this.donateWithBridge(adminId, amountMilestone, donationOwnerAddress);
+        // eslint-disable-next-line no-empty
+      } catch (e) {}
     }
     this.setState({ isSaving: false });
   }
 
-  async donateWithBridge(model, adminId, amount, adminIdTwo, amountTwo, ownerAddress) {
+  async donateWithBridge(
+    adminId,
+    amount,
+    donationOwnerAddress,
+    allowanceAmount = 0,
+    allowanceApprovalType = AllowanceApprovalType.Default,
+  ) {
     const { currentUser } = this.props;
-    const { givethBridge, etherscanUrl, showCustomAddress, selectedToken } = this.state;
+    const { givethBridge, etherscanUrl, selectedToken } = this.state;
 
-    const value = utils.toWei(Number(amount).toFixed(18));
+    const amountWei = utils.toWei(new BigNumber(amount).toFixed(18));
     const isDonationInToken = selectedToken.symbol !== config.nativeTokenName;
     const tokenAddress = isDonationInToken ? selectedToken.address : ZERO_ADDRESS;
 
     const _makeDonationTx = async () => {
       let method;
-      let donationUser;
       const opts = { from: currentUser.address, $extraGas: extraGas() };
-      let customAddress = '';
-      const { customAddress: modelAddress } = model;
-      if (!ownerAddress) {
-        customAddress = modelAddress;
-      } else {
-        customAddress = ownerAddress;
-      }
 
       // actually uses 84766, but runs out of gas if exact
-      if (!isDonationInToken) Object.assign(opts, { value, gas: DONATION_GAS });
+      if (!isDonationInToken) Object.assign(opts, { value: amountWei, gas: DONATION_GAS });
 
-      if (showCustomAddress || ownerAddress !== undefined) {
+      let donationOwner;
+      if (currentUser.address !== donationOwnerAddress) {
         // Donating on behalf of another user or address
         try {
-          const user = await feathersClient.service('users').get(customAddress);
+          const user = await feathersClient.service('users').get(donationOwnerAddress);
           if (user && user.giverId > 0) {
-            method = givethBridge.donate(user.giverId, adminId, tokenAddress, value, opts);
-            donationUser = user;
+            donationOwner = user;
+            method = givethBridge.donate(user.giverId, adminId, tokenAddress, amountWei, opts);
           } else {
             method = givethBridge.donateAndCreateGiver(
-              customAddress,
+              donationOwnerAddress,
               adminId,
               tokenAddress,
-              value,
+              amountWei,
               opts,
             );
-            donationUser = { address: customAddress };
+            donationOwner = { address: donationOwnerAddress };
           }
         } catch (e) {
           method = givethBridge.donateAndCreateGiver(
-            customAddress,
+            donationOwnerAddress,
             adminId,
             tokenAddress,
-            value,
+            amountWei,
             opts,
           );
-          donationUser = { address: customAddress };
+          donationOwner = { address: donationOwnerAddress };
         }
       } else {
         // Donating on behalf of logged in DApp user
         method =
           currentUser.giverId > 0
-            ? givethBridge.donate(currentUser.giverId, adminId, tokenAddress, value, opts)
+            ? givethBridge.donate(currentUser.giverId, adminId, tokenAddress, amountWei, opts)
             : givethBridge.donateAndCreateGiver(
                 currentUser.address,
                 adminId,
                 tokenAddress,
-                value,
+                amountWei,
                 opts,
               );
-        donationUser = currentUser;
+        donationOwner = currentUser;
       }
 
-      let txHash;
-      method
-        .on('transactionHash', async transactionHash => {
-          txHash = transactionHash;
-          const closeDialog = adminIdTwo === undefined && amountTwo === undefined;
-          if (!closeDialog) {
-            if (showCustomAddress) {
-              this.donateWithBridge(model, customAddress, amountTwo);
-            } else {
-              await this.setState({ showCustomAddress: false });
-              this.donateWithBridge(model, adminIdTwo, amountTwo);
-            }
-          } else {
+      return new Promise((resolve, reject) => {
+        let txHash;
+        method
+          .on('transactionHash', async transactionHash => {
+            txHash = transactionHash;
+
             await DonationService.newFeathersDonation(
-              donationUser,
+              donationOwner,
               this.props.model,
-              value,
+              amountWei,
               selectedToken,
               txHash,
             );
-          }
 
             resolve(true);
             this.closeDialog();
@@ -548,13 +576,24 @@ class DonateButton extends React.Component {
                 </a>
               </p>,
             );
-          } else {
-            React.toast.info('The transaction was cancelled. No donation has been made :-(');
-          }
-          this.setState({
-            isSaving: false,
+          })
+          .catch(e => {
+            reject();
+            if (!e.message.includes('User denied transaction signature')) {
+              const err = !(e instanceof Error) ? JSON.stringify(e, null, 2) : e;
+              ErrorPopup(
+                'Something went wrong with your donation.',
+                `${etherscanUrl}tx/${txHash} => ${err}`,
+              );
+            } else {
+              React.toast.info('The transaction was cancelled. No donation has been made :-(');
+            }
+            this.setState({
+              isSaving: false,
+            });
+            this.closeDialog();
           });
-        });
+      });
     };
 
     // if donating in token, first approve transfer of token by bridge
@@ -598,7 +637,7 @@ class DonateButton extends React.Component {
         return false;
       }
     } else {
-      await _makeDonationTx();
+      return _makeDonationTx();
     }
   }
 
@@ -621,6 +660,7 @@ class DonateButton extends React.Component {
       showCustomAddress,
       tokenWhitelistOptions,
       selectedToken,
+      allowanceStatus,
     } = this.state;
 
     const style = {
@@ -700,6 +740,7 @@ class DonateButton extends React.Component {
         >
           <Form
             onSubmit={this.submit}
+            ref={this.form}
             mapping={inputs => ({
               amount: inputs.amount,
               customAddress: inputs.customAddress,
@@ -797,7 +838,7 @@ class DonateButton extends React.Component {
                           result = newAmount.toString();
                         }
 
-                        return this.setState({ amount: result });
+                        return this.setState({ amount: result }, this.updateAllowanceStatus);
                       }}
                     />
                   </div>

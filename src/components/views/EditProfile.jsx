@@ -38,21 +38,23 @@ class EditProfile extends Component {
   componentDidMount() {
     this.mounted = true;
     const { currentUser, balance, isForeignNetwork, displayForeignNetRequiredWarning } = this.props;
-    checkForeignNetwork(isForeignNetwork, displayForeignNetRequiredWarning).then(() =>
-      isLoggedIn(currentUser, true)
-        .then(() => checkBalance(balance))
-        .then(() => this.setState({ isLoading: false }))
-        .catch(err => {
-          if (err === 'noBalance') {
-            ErrorPopup('Something went wrong.', err);
-            history.goBack();
-          } else {
-            this.setState({
-              isLoading: false,
-            });
-          }
-        }),
-    );
+    checkForeignNetwork(isForeignNetwork, displayForeignNetRequiredWarning)
+      .then(() =>
+        isLoggedIn(currentUser, true)
+          .then(() => checkBalance(balance))
+          .then(() => this.setState({ isLoading: false }))
+          .catch(err => {
+            if (err === 'noBalance') {
+              ErrorPopup('Something went wrong.', err);
+              history.goBack();
+            } else {
+              this.setState({
+                isLoading: false,
+              });
+            }
+          }),
+      )
+      .catch(() => {});
   }
 
   componentWillUnmount() {
