@@ -38,6 +38,10 @@ class RangeSlider extends React.PureComponent {
     this.timer = null;
   }
 
+  componentWillUnmount() {
+    clearTimeout(this.timer);
+  }
+
   static getDerivedStateFromProps(nextProps, prevState) {
     const { internalAmount, storedMaxAmount } = prevState;
     const { value, maxAmount, steps, token } = nextProps;

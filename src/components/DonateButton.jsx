@@ -22,7 +22,7 @@ import ActionNetworkWarning from './ActionNetworkWarning';
 import SelectFormsy from './SelectFormsy';
 import { Consumer as WhiteListConsumer } from '../contextProviders/WhiteListProvider';
 import DAC from '../models/DAC';
-import { ZERO_ADDRESS } from '../lib/helpers';
+import { convertEthHelper, ZERO_ADDRESS } from '../lib/helpers';
 import RangeSlider from './RangeSlider';
 import NumericInput from './NumericInput';
 
@@ -668,8 +668,8 @@ class DonateButton extends React.Component {
       display: 'inline-block',
     };
 
-    const balance =
-      selectedToken.symbol === config.nativeTokenName ? NativeTokenBalance : selectedToken.balance;
+    const { decimals, symbol } = selectedToken;
+    const balance = symbol === config.nativeTokenName ? NativeTokenBalance : selectedToken.balance;
     const maxAmount = this.getMaxAmount();
 
     const submitDefault = () => {
@@ -684,7 +684,7 @@ class DonateButton extends React.Component {
     const submitInfiniteAllowance = () => {
       React.swal({
         title: 'Infinite Allowance',
-        text: `By this action you will allow DApp to transfer infinite amount of ${selectedToken.symbol} token`,
+        text: `By this action you will allow DApp to transfer infinite amount of ${symbol} token`,
         icon: 'success',
         buttons: ['Cancel', 'OK'],
       }).then(result => {
@@ -701,8 +701,8 @@ class DonateButton extends React.Component {
 
     const submitClearAllowance = () => {
       React.swal({
-        title: `Take away ${selectedToken.symbol} Allowance`,
-        text: `Do you want to set DApp allowance of ${selectedToken.symbol} token to zero?`,
+        title: `Take away ${symbol} Allowance`,
+        text: `Do you want to set DApp allowance of ${symbol} token to zero?`,
         icon: 'info',
         buttons: ['Cancel', 'Yes'],
       }).then(result => {
@@ -805,15 +805,13 @@ class DonateButton extends React.Component {
                   />
                 )}
                 {/* TODO: remove this b/c the wallet provider will contain this info */}
-                {config.homeNetworkName} {selectedToken.symbol} balance:&nbsp;
+                {config.homeNetworkName} {symbol} balance:&nbsp;
                 <em>{utils.fromWei(balance ? balance.toFixed() : '')}</em>
               </div>
             )}
             {isCorrectNetwork && validProvider && currentUser && (
               <Fragment>
-                <span className="label">
-                  How much {selectedToken.symbol} do you want to donate?
-                </span>
+                <span className="label">How much {symbol} do you want to donate?</span>
 
                 {validProvider && maxAmount.toNumber() !== 0 && balance.gt(0) && (
                   <div className="form-group">
@@ -843,6 +841,10 @@ class DonateButton extends React.Component {
                       );
                     }}
                     autoFocus
+                    lteMessage={`This donation exceeds your wallet balance or the Milestone max amount: ${convertEthHelper(
+                      maxAmount,
+                      decimals,
+                    )} ${symbol}.`}
                   />
                 </div>
 

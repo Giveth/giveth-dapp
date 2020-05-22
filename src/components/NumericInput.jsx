@@ -4,7 +4,7 @@ import BigNumber from 'bignumber.js';
 import { Input } from 'formsy-react-components';
 
 const NumericInput = props => {
-  const { maxAmount, token, id, value, autoFocus, onChange } = props;
+  const { maxAmount, token, id, value, autoFocus, onChange, lteMessage } = props;
   const { symbol, decimals } = token;
   return (
     <Input
@@ -27,7 +27,7 @@ const NumericInput = props => {
       }}
       validationErrors={{
         greaterThan: `Please enter value greater than 0 ${symbol}`,
-        lessOrEqualTo: `This donation exceeds your wallet balance or the Milestone max amount: ${maxAmount.toFixed()} ${symbol}.`,
+        lessOrEqualTo: lteMessage,
         precision: `This precision is not acceptable for ${symbol} token`,
       }}
       validatePristine
@@ -42,6 +42,7 @@ NumericInput.propTypes = {
   id: PropTypes.string.isRequired,
   value: PropTypes.string.isRequired,
   autoFocus: PropTypes.bool,
+  lteMessage: PropTypes.string.isRequired,
 };
 
 NumericInput.defaultProps = {

@@ -167,12 +167,15 @@ export const signUpSwal = () => {
   });
 };
 
-export const getCutOffAmount = token => {
-  const { decimals } = token;
-  return new BigNumber(10).pow(-1 * Number(decimals)).toFixed();
-};
+/** *
+ * @param amount    BigNumber|Number|String
+ * @param decimals  Number
+ *
+ * @return {BigNumber} amount equivalent rounded down to decimal places
+ * */
+export const roundBigNumber = (amount, decimals) => {
+  if (!amount) return new BigNumber(0);
+  const result = !(amount instanceof BigNumber) ? new BigNumber(amount) : amount;
 
-export const getCutOffAmountWei = token => {
-  const cutOff = getCutOffAmount(token);
-  return utils.toWei(cutOff);
+  return result.decimalPlaces(Number(decimals || config.decimals), BigNumber.ROUND_DOWN);
 };
