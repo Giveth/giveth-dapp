@@ -405,11 +405,7 @@ class DelegateButton extends Component {
                 maxAmount={maxAmount}
                 id="amount-input"
                 value={amount}
-                onChange={(name, newAmount) => {
-                  this.setState({
-                    amount: newAmount,
-                  });
-                }}
+                onChange={newAmount => this.setState({ amount: newAmount })}
                 lteMessage={`The donation maximum amount you can delegate is ${convertEthHelper(
                   maxAmount,
                   token.decimals,

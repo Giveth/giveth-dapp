@@ -628,7 +628,6 @@ class DonateButton extends React.Component {
           isSaving: false,
         });
         // error code 4001 means user has canceled the transaction
-        console.log(JSON.stringify(err, null, 2));
         if (err.code !== 4001) {
           ErrorPopup(
             'Something went wrong with your donation. Could not approve token allowance.',
@@ -832,14 +831,14 @@ class DonateButton extends React.Component {
                     maxAmount={maxAmount}
                     id="amount-input"
                     value={amount}
-                    onChange={(name, newAmount) => {
+                    onChange={newAmount =>
                       this.setState(
                         {
                           amount: newAmount,
                         },
                         this.updateAllowanceStatus,
-                      );
-                    }}
+                      )
+                    }
                     autoFocus
                     lteMessage={`This donation exceeds your wallet balance or the Milestone max amount: ${convertEthHelper(
                       maxAmount,

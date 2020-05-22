@@ -19,7 +19,7 @@ const NumericInput = props => {
         .div(10)
         .decimalPlaces(Number(decimals), BigNumber.ROUND_DOWN)
         .toNumber()}
-      onChange={onChange}
+      onChange={(name, amount) => onChange(amount)}
       validations={{
         lessOrEqualTo: maxAmount.toNumber(),
         greaterThan: 0,
