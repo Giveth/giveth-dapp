@@ -86,27 +86,42 @@ class DelegateButton extends Component {
     this.submit = this.submit.bind(this);
     this.selectedObject = this.selectedObject.bind(this);
     this.toggleFormValid = this.toggleFormValid.bind(this);
+    this.closeDialog = this.closeDialog.bind(this);
   }
 
   openDialog() {
     actionWithLoggedIn(this.props.currentUser).then(() =>
       checkBalance(this.props.balance)
-        .then(() =>
+        .then(() => {
+          const { donation } = this.props;
+          const { amountRemaining, token } = donation;
           this.setState({
             modalVisible: true,
-            amount: this.props.donation.amountRemaining.toFixed(),
-            maxAmount: this.props.donation.amountRemaining,
-          }),
-        )
+            amount: convertEthHelper(amountRemaining, token.decimals),
+            maxAmount: roundBigNumber(amountRemaining, 18),
+          });
+        })
         .catch(err => {
-          if (err === 'noBalance') {
-            ErrorPopup('There is no balance left on the account.', err);
-          } else if (err !== undefined) {
-            ErrorPopup('Something went wrong.', err);
+          // error code 4001 means user has canceled the transaction
+          if (err.code !== 4001) {
+            if (err === 'noBalance') {
+              ErrorPopup('There is no balance left on the account.', err);
+            } else if (err !== undefined) {
+              ErrorPopup('Something went wrong.', err);
+            }
+            this.setState({ isSaving: false });
           }
-          this.setState({ isSaving: false });
         }),
     );
+  }
+
+  closeDialog() {
+    this.setState({
+      modalVisible: false,
+      amount: '0',
+      objectsToDelegateToCampaign: [],
+      objectsToDelegateToMilestone: [],
+    });
   }
 
   selectedObject(type, { target }) {
@@ -233,6 +248,11 @@ class DelegateButton extends Component {
         </p>,
       );
     };
+
+    const onError = () => {
+      this.setState({ isSaving: false });
+    };
+
     // FIXME: This is super ugly, there is a short flash period when the submit button is pressed before the unlock/success appears
     this.setState({ modalVisible: false });
 
@@ -242,6 +262,7 @@ class DelegateButton extends Component {
       admin,
       onCreated,
       onSuccess,
+      onError,
     );
   }
 
@@ -266,7 +287,7 @@ class DelegateButton extends Component {
       const totalSelected =
         objectsToDelegateToMilestone.length + objectsToDelegateToCampaign.length;
       return {
-        formIsValid: totalSelected === 1,
+        formIsValid: totalSelected !== 0,
       };
     });
   }
@@ -319,14 +340,7 @@ class DelegateButton extends Component {
 
         <Modal
           isOpen={this.state.modalVisible}
-          onRequestClose={() => {
-            this.setState({
-              modalVisible: false,
-              amount: '0',
-              objectsToDelegateToCampaign: [],
-              objectsToDelegateToMilestone: [],
-            });
-          }}
+          onRequestClose={this.closeDialog}
           shouldCloseOnOverlayClick={false}
           contentLabel="Delegate Donation"
           style={modalStyles}
@@ -421,6 +435,9 @@ class DelegateButton extends Component {
               disabled={isSaving || !formIsValid}
             >
               {isSaving ? 'Delegating...' : 'Delegate here'}
+            </button>
+            <button className="btn btn-light float-right" type="button" onClick={this.closeDialog}>
+              Close
             </button>
           </Form>
         </Modal>
