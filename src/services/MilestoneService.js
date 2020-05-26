@@ -293,7 +293,7 @@ class MilestoneService {
           query: {
             $or: [
               {
-                amountRemaining: { $ne: 0 },
+                lessThanCutoff: { $ne: true },
                 status: { $ne: Donation.FAILED },
                 $or: [{ intendedProjectTypeId: id }, { ownerTypeId: id }],
               },
@@ -335,7 +335,7 @@ class MilestoneService {
       .find(
         paramsForServer({
           query: {
-            amountRemaining: { $ne: 0 },
+            lessThanCutoff: { $ne: true },
             status: { $ne: Donation.FAILED },
             $or: [{ intendedProjectTypeId: id }, { ownerTypeId: id }],
             $sort: { createdAt: -1 },

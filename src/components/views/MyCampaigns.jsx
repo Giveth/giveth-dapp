@@ -225,7 +225,8 @@ class MyCampaigns extends Component {
                                     {c.donationCounters.length > 0 &&
                                       c.donationCounters.map(counter => (
                                         <p key={`total_donated-${c.key}-${counter.symbol}`}>
-                                          {convertEthHelper(counter.totalDonated)} {counter.symbol}
+                                          {convertEthHelper(counter.totalDonated, counter.decimals)}{' '}
+                                          {counter.symbol}
                                         </p>
                                       ))}
                                     {c.donationCounters.length === 0 && <span>-</span>}

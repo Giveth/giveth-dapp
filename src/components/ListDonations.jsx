@@ -104,6 +104,7 @@ class ListDonationItem extends Component {
                 d.status !== Donation.PAID && this.props.useAmountRemaining
                   ? d.amountRemaining
                   : d.amount,
+                d.token && d.token.decimals,
               )}{' '}
               {(d.token && d.token.symbol) || config.nativeTokenName}
             </span>

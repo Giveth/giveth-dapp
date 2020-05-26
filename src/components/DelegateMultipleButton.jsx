@@ -187,7 +187,7 @@ class DelegateMultipleButton extends Component {
     do {
       const query = paramsForServer({
         query: {
-          amountRemaining: { $ne: 0 },
+          lessThanCutoff: { $ne: true },
           ...options,
           $sort: { createdAt: 1 },
           $limit: spare || 1,

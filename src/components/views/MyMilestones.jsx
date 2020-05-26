@@ -238,14 +238,18 @@ class MyMilestones extends Component {
                                       {getReadableStatus(m.status)}
                                     </td>
                                     <td className="td-donations-number">
-                                      {m.isCapped && convertEthHelper(m.maxAmount)}{' '}
+                                      {m.isCapped &&
+                                        convertEthHelper(
+                                          m.maxAmount,
+                                          m.token && m.token.decimals,
+                                        )}{' '}
                                       {this.getTokenSymbol(m.token)}
                                     </td>
                                     <td className="td-donations-number">{m.totalDonations}</td>
                                     <td className="td-donations-">
                                       {m.totalDonated.map(td => (
                                         <div>
-                                          {convertEthHelper(td.amount)} {td.symbol}
+                                          {convertEthHelper(td.amount, td.decimals)} {td.symbol}
                                         </div>
                                       ))}
                                     </td>

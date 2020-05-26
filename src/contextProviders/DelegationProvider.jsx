@@ -69,7 +69,7 @@ class DelegationProvider extends Component {
 
     const query = paramsForServer({
       query: {
-        amountRemaining: { $ne: 0 },
+        lessThanCutoff: { $ne: true },
         $or: [
           { ownerTypeId: { $in: campaignIds }, status: Donation.COMMITTED },
           {

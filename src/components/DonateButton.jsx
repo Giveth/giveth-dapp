@@ -132,7 +132,10 @@ class DonateButton extends React.Component {
     const balance = token.symbol === nativeTokenName ? NativeTokenBalance : token.balance;
     const defaultAmount = token.symbol === nativeTokenName ? '1' : '100';
     const newAmount = balance
-      ? BigNumber.min(utils.fromWei(balance.toFixed()), defaultAmount).toFixed()
+      ? convertEthHelper(
+          BigNumber.min(utils.fromWei(balance.toFixed()), defaultAmount),
+          token.decimals,
+        )
       : defaultAmount;
     this.setState(
       {
@@ -368,9 +371,10 @@ class DonateButton extends React.Component {
         },
         onResult: balance => {
           if (
-            selectedToken.symbol === config.nativeTokenName ||
-            !selectedToken.balance ||
-            !selectedToken.balance.eq(balance)
+            balance &&
+            (selectedToken.symbol === config.nativeTokenName ||
+              !selectedToken.balance ||
+              !selectedToken.balance.eq(balance))
           ) {
             selectedToken.balance = balance;
             this.setState({ selectedToken }, () => {
@@ -378,7 +382,9 @@ class DonateButton extends React.Component {
               const maxAmount = this.getMaxAmount();
               this.setState(
                 {
-                  amount: maxAmount.lt(amount) ? maxAmount.toFixed() : amount,
+                  amount: maxAmount.lt(amount)
+                    ? convertEthHelper(maxAmount, selectedToken.decimals)
+                    : amount,
                 },
                 this.updateAllowanceStatus,
               );
@@ -805,7 +811,9 @@ class DonateButton extends React.Component {
                 )}
                 {/* TODO: remove this b/c the wallet provider will contain this info */}
                 {config.homeNetworkName} {symbol} balance:&nbsp;
-                <em>{utils.fromWei(balance ? balance.toFixed() : '')}</em>
+                <em>
+                  {convertEthHelper(utils.fromWei(balance ? balance.toFixed() : ''), decimals)}
+                </em>
               </div>
             )}
             {isCorrectNetwork && validProvider && currentUser && (

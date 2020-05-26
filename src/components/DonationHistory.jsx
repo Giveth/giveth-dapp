@@ -129,7 +129,8 @@ class DonationHistory extends Component {
     return (
       <li key={item.id}>
         <span>
-          {moment(item.createdAt).format('MM/DD/YYYY')} {convertEthHelper(item.amount)}{' '}
+          {moment(item.createdAt).format('MM/DD/YYYY')}{' '}
+          {convertEthHelper(item.amount, item.decimals)}{' '}
           {(donation.token && donation.token.symbol) || config.nativeTokenName}{' '}
         </span>
         {message}

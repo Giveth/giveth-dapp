@@ -142,7 +142,8 @@ class MyDACs extends Component {
                                 {d.donationCounters.length > 0 &&
                                   d.donationCounters.map(counter => (
                                     <p key={`total_donated-${d.key}-${counter.symbol}`}>
-                                      {convertEthHelper(counter.totalDonated)} {counter.symbol}
+                                      {convertEthHelper(counter.totalDonated, counter.decimals)}{' '}
+                                      {counter.symbol}
                                     </p>
                                   ))}
 

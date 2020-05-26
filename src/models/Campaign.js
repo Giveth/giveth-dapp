@@ -184,6 +184,7 @@ class Campaign extends BasicModel {
       (Array.isArray(this._donationCounters) &&
         this._donationCounters.map(dc => ({
           symbol: dc.symbol,
+          decimals: dc.decimals,
           amount: dc.totalDonated,
         }))) ||
       []

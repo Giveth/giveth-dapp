@@ -4,7 +4,7 @@ import BigNumber from 'bignumber.js';
 import Slider from 'react-rangeslider';
 import { convertEthHelper } from '../lib/helpers';
 
-const WAIT_INTERVAL = 100;
+const WAIT_INTERVAL = 10;
 
 const getStepValue = (value, maxAmount, steps) => {
   const stepValue = new BigNumber(value)
@@ -18,7 +18,7 @@ const getStepValue = (value, maxAmount, steps) => {
 const getMaxAmountLabel = (maxAmount, token) => {
   return maxAmount
     .decimalPlaces(Number(token.decimals), BigNumber.ROUND_DOWN)
-    .precision(6)
+    .precision(6, BigNumber.ROUND_DOWN)
     .toString();
 };
 
@@ -87,14 +87,10 @@ class RangeSlider extends React.PureComponent {
               maxAmount.times(newValue).div(steps),
               token.decimals,
             );
-            this.setState(
-              {
-                internalAmount: newAmount,
-              },
-              () => {
-                onChange(newAmount);
-              },
-            );
+            onChange(newAmount);
+            this.setState({
+              internalAmount: newAmount,
+            });
           }, WAIT_INTERVAL);
         }}
       />
