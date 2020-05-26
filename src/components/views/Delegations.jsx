@@ -82,7 +82,7 @@ const Delegations = ({ balance, currentUser }) => (
                                   <tr key={d._id}>
                                     <td className="td-actions">
                                       {/* When donated to a dac, allow delegation
-                                    to campaigns and milestones */}
+                                  to campaigns and milestones */}
                                       {(d.delegateId > 0 ||
                                         d.ownerTypeId === currentUser.address) &&
                                         isForeignNetwork &&
@@ -100,7 +100,7 @@ const Delegations = ({ balance, currentUser }) => (
                                         )}
 
                                       {/* When donated to a campaign, only allow delegation
-                                    to milestones of that campaign */}
+                                  to milestones of that campaign */}
                                       {d.ownerType === 'campaign' &&
                                         isForeignNetwork &&
                                         d.status === Donation.COMMITTED &&
@@ -136,7 +136,10 @@ const Delegations = ({ balance, currentUser }) => (
                                           &nbsp;
                                         </span>
                                       )}
-                                      {convertEthHelper(d.amountRemaining)}{' '}
+                                      {convertEthHelper(
+                                        d.amountRemaining,
+                                        d.token && d.token.decimals,
+                                      )}{' '}
                                       {(d.token && d.token.symbol) || config.nativeTokenName}
                                     </td>
                                     <td className="td-user">

@@ -71,7 +71,7 @@ class DonationProvider extends Component {
           schema: 'includeTypeDetails',
           query: {
             giverAddress: this.props.currentUser.address,
-            amountRemaining: { $ne: 0 },
+            lessThanCutoff: { $ne: true },
             $limit: this.state.itemsPerPage,
             $skip: this.state.skipPages * this.state.itemsPerPage,
             $sort: { createdAt: -1 },

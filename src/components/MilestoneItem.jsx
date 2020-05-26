@@ -55,7 +55,9 @@ class MilestoneItem extends React.Component {
           </span>
         </td>
 
-        <td className="td-item-amount-ether">{convertEthHelper(utils.fromWei(item.wei))}</td>
+        <td className="td-item-amount-ether">
+          {convertEthHelper(utils.fromWei(item.wei), token.decimals)}
+        </td>
 
         <td className="td-item-file-upload">
           {item.image && isEditMode && (

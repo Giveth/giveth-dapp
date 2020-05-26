@@ -177,6 +177,7 @@ class Profile extends Component {
             // we want to exclude those
             parentDonations: { $ne: [] },
             canceledPledgeId: null,
+            lessThanCutoff: { $ne: true },
             $limit: this.state.itemsPerPage,
             $skip: this.state.skipDonationsPages * this.state.itemsPerPage,
           },
@@ -352,14 +353,16 @@ class Profile extends Component {
                             </td>
                             <td className="td-donations-number">
                               {m.isCapped
-                                ? `${convertEthHelper(m.maxAmount)} ${m.token.symbol}`
+                                ? `${convertEthHelper(m.maxAmount, m.token && m.token.decimals)} ${
+                                    m.token.symbol
+                                  }`
                                 : 'Uncapped'}
                             </td>
                             <td className="td-donations-number">{m.totalDonations}</td>
                             <td className="td-donations-amount">
                               {m.totalDonated.map(td => (
                                 <div>
-                                  {convertEthHelper(td.amount)} {td.symbol}
+                                  {convertEthHelper(td.amount, td.decimals)} {td.symbol}
                                 </div>
                               ))}
                             </td>
@@ -435,7 +438,7 @@ class Profile extends Component {
                             <td className="td-donations-amount">
                               {c.totalDonated.map(td => (
                                 <div>
-                                  {convertEthHelper(td.amount)} {td.symbol}
+                                  {convertEthHelper(td.amount, td.decimals)} {td.symbol}
                                 </div>
                               ))}
                             </td>
@@ -501,7 +504,7 @@ class Profile extends Component {
                             <td className="td-donations-amount">
                               {d.totalDonated.map(td => (
                                 <div>
-                                  {convertEthHelper(td.amount)} {td.symbol}
+                                  {convertEthHelper(td.amount, td.decimals)} {td.symbol}
                                 </div>
                               ))}
                             </td>
@@ -572,7 +575,7 @@ class Profile extends Component {
                                   </Link>
                                 </td>
                                 <td className="td-donations-amount">
-                                  {convertEthHelper(d.amount)} {d.token.symbol}
+                                  {convertEthHelper(d.amount, d.token.decimals)} {d.token.symbol}
                                 </td>
 
                                 <td className="td-transaction-status">

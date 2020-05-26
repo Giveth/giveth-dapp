@@ -108,12 +108,12 @@ export const getStartOfDayUTC = date => moment.utc(date || moment()).startOf('da
  * @param decimals  Number
  * */
 export const convertEthHelper = (amount, decimals) => {
-  if (!amount) return 0;
+  if (!amount) return '0';
   let amt = amount;
   if (!(amount instanceof BigNumber)) {
     amt = new BigNumber(amount);
   }
-  if (amt.eq(0)) return 0;
+  if (amt.eq(0)) return '0';
   return amt.decimalPlaces(Number(decimals) || config.decimals, BigNumber.ROUND_DOWN).toFixed();
 };
 

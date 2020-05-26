@@ -73,7 +73,7 @@ class MilestoneConversations extends Component {
       const { owner, recipient, payments } = conversation;
       if (payments) {
         const paymentsStr = payments.map(p => {
-          const amountStr = convertEthHelper(new BigNumber(utils.fromWei(p.amount)));
+          const amountStr = convertEthHelper(utils.fromWei(p.amount), p.tokenDecimals);
           return `${amountStr} ${p.symbol}`;
         });
         const phrase =

@@ -176,7 +176,8 @@ class ViewMilestone extends Component {
       if (!milestone.fullyFunded) {
         return (
           <p>
-            Amount requested: {convertEthHelper(milestone.maxAmount)} {milestone.token.symbol}
+            Amount requested: {convertEthHelper(milestone.maxAmount, milestone.token.symbol)}{' '}
+            {milestone.token.symbol}
           </p>
         );
       }
@@ -512,7 +513,8 @@ class ViewMilestone extends Component {
                               title="Max amount to raise"
                               explanation={`The maximum amount of ${milestone.token.symbol} that can be donated to this Milestone. Based on the requested amount in fiat.`}
                             />
-                            {convertEthHelper(milestone.maxAmount)} {milestone.token.symbol}
+                            {convertEthHelper(milestone.maxAmount, milestone.token.decimals)}{' '}
+                            {milestone.token.symbol}
                             {milestone.items.length === 0 &&
                               milestone.selectedFiatType &&
                               milestone.selectedFiatType !== milestone.token.symbol &&
@@ -540,7 +542,7 @@ class ViewMilestone extends Component {
                           {milestone.donationCounters.length &&
                             milestone.donationCounters.map(dc => (
                               <p className="donation-counter" key={dc.symbol}>
-                                {convertEthHelper(dc.totalDonated)} {dc.symbol}
+                                {convertEthHelper(dc.totalDonated, dc.decimals)} {dc.symbol}
                               </p>
                             ))}
                         </div>
@@ -554,7 +556,7 @@ class ViewMilestone extends Component {
                             />
                             {milestone.donationCounters.map(dc => (
                               <p className="donation-counter" key={dc.symbol}>
-                                {convertEthHelper(dc.currentBalance)} {dc.symbol}
+                                {convertEthHelper(dc.currentBalance, dc.decimals)} {dc.symbol}
                               </p>
                             ))}
                           </div>

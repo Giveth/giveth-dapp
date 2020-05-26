@@ -46,7 +46,7 @@ const CardStats = ({ peopleCount, maxAmount, totalDonated, type, status, token }
           <span>
             <p>Requested</p>
             <p>
-              {convertEthHelper(maxAmount)} {token.symbol}
+              {convertEthHelper(maxAmount, token.decimals)} {token.symbol}
             </p>
           </span>
         )}

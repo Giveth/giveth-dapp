@@ -800,7 +800,7 @@ class DonationService {
         query: {
           ownerType: 'milestone',
           ownerTypeId: milestoneId,
-          amountRemaining: { $ne: 0 },
+          lessThanCutoff: { $ne: true },
           pendingAmountRemaining: { $ne: 0 },
           status: Donation.COMMITTED,
           $limit: 0,
@@ -819,7 +819,7 @@ class DonationService {
       const query = {
         ownerType: 'milestone',
         ownerTypeId: milestoneId,
-        amountRemaining: { $ne: 0 },
+        lessThanCutoff: { $ne: true },
         pendingAmountRemaining: { $ne: 0 },
         status: Donation.COMMITTED,
         $skip: data.length,

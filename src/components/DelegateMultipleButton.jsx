@@ -187,7 +187,7 @@ class DelegateMultipleButton extends Component {
     do {
       const query = paramsForServer({
         query: {
-          amountRemaining: { $ne: 0 },
+          lessThanCutoff: { $ne: true },
           ...options,
           $sort: { createdAt: 1 },
           $limit: spare || 1,
@@ -307,7 +307,7 @@ class DelegateMultipleButton extends Component {
 
     DonationService.delegateMultiple(
       this.state.delegations,
-      utils.toWei(Number(this.state.amount).toFixed(18)),
+      utils.toWei(this.state.amount),
       this.props.milestone || this.props.campaign,
       onCreated,
       onSuccess,

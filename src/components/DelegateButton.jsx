@@ -258,7 +258,7 @@ class DelegateButton extends Component {
 
     DonationService.delegate(
       this.props.donation,
-      utils.toWei(new BigNumber(model.amount).toFixed(18)),
+      utils.toWei(model.amount),
       admin,
       onCreated,
       onSuccess,
