@@ -307,7 +307,7 @@ class DelegateMultipleButton extends Component {
 
     DonationService.delegateMultiple(
       this.state.delegations,
-      utils.toWei(Number(this.state.amount).toFixed(18)),
+      utils.toWei(this.state.amount),
       this.props.milestone || this.props.campaign,
       onCreated,
       onSuccess,
