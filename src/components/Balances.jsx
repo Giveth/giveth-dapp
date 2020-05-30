@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 
 import Campaign from 'models/Campaign';
 import DAC from 'models/DAC';
+import { convertEthHelper } from '../lib/helpers';
 
 /**
  * Shows a table of balances for a given entity (dac, campaign)
@@ -28,15 +29,11 @@ const Balances = ({ entity }) => (
               {entity.donationCounters.map(dc => (
                 <tr key={dc._id}>
                   <td className="td-donations-amount">
-                    {dc.currentBalance && dc.currentBalance !== 'null'
-                      ? dc.currentBalance.toNumber()
-                      : 0}{' '}
-                    {dc.symbol}
+                    {convertEthHelper(dc.currentBalance, dc.decimals)} {dc.symbol}
                   </td>
                   <td className="td-donations-number">{dc.donationCount || 0}</td>
                   <td className="td-donations-amount">
-                    {dc.totalDonated && dc.totalDonated !== 'null' ? dc.totalDonated.toNumber() : 0}{' '}
-                    {dc.symbol}
+                    {convertEthHelper(dc.totalDonated, dc.decimals)} {dc.symbol}
                   </td>
                 </tr>
               ))}
