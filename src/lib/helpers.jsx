@@ -108,14 +108,13 @@ export const getStartOfDayUTC = date => moment.utc(date || moment()).startOf('da
  * @param decimals  Number
  * */
 export const convertEthHelper = (amount, decimals) => {
-  if (!amount) return 0;
+  if (!amount) return '0';
   let amt = amount;
   if (!(amount instanceof BigNumber)) {
-    if (amount) amt = new BigNumber(amount);
-    else return 0;
+    amt = new BigNumber(amount);
   }
-  if (amt.eq(0)) return 0;
-  return amt.toFixed(decimals || config.decimals);
+  if (amt.eq(0)) return '0';
+  return amt.decimalPlaces(Number(decimals) || config.decimals, BigNumber.ROUND_DOWN).toFixed();
 };
 
 // the back button will go one lower nested route inside of the DApp
@@ -166,4 +165,17 @@ export const signUpSwal = () => {
     icon: 'info',
     buttons: ['Ok'],
   });
+};
+
+/** *
+ * @param amount    BigNumber|Number|String
+ * @param decimals  Number
+ *
+ * @return {BigNumber} amount equivalent rounded down to decimal places
+ * */
+export const roundBigNumber = (amount, decimals) => {
+  if (!amount) return new BigNumber(0);
+  const result = !(amount instanceof BigNumber) ? new BigNumber(amount) : amount;
+
+  return result.decimalPlaces(Number(decimals || config.decimals), BigNumber.ROUND_DOWN);
 };

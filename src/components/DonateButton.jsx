@@ -5,7 +5,6 @@ import BigNumber from 'bignumber.js';
 import { utils } from 'web3';
 import { Form, Input } from 'formsy-react-components';
 import Toggle from 'react-toggle';
-import Slider from 'react-rangeslider';
 import GA from 'lib/GoogleAnalytics';
 import { Link } from 'react-router-dom';
 import getNetwork from '../lib/blockchain/getNetwork';
@@ -23,7 +22,9 @@ import ActionNetworkWarning from './ActionNetworkWarning';
 import SelectFormsy from './SelectFormsy';
 import { Consumer as WhiteListConsumer } from '../contextProviders/WhiteListProvider';
 import DAC from '../models/DAC';
-import { ZERO_ADDRESS } from '../lib/helpers';
+import { convertEthHelper, ZERO_ADDRESS } from '../lib/helpers';
+import RangeSlider from './RangeSlider';
+import NumericInput from './NumericInput';
 
 const POLL_DELAY_TOKENS = 2000;
 const UPDATE_ALLOWANCE_DELAY = 1000; // Delay allowance update inorder to network respond new value
@@ -131,7 +132,10 @@ class DonateButton extends React.Component {
     const balance = token.symbol === nativeTokenName ? NativeTokenBalance : token.balance;
     const defaultAmount = token.symbol === nativeTokenName ? '1' : '100';
     const newAmount = balance
-      ? BigNumber.min(utils.fromWei(balance.toFixed()), defaultAmount).toFixed()
+      ? convertEthHelper(
+          BigNumber.min(utils.fromWei(balance.toFixed()), defaultAmount),
+          token.decimals,
+        )
       : defaultAmount;
     this.setState(
       {
@@ -367,9 +371,10 @@ class DonateButton extends React.Component {
         },
         onResult: balance => {
           if (
-            selectedToken.symbol === config.nativeTokenName ||
-            !selectedToken.balance ||
-            !selectedToken.balance.eq(balance)
+            balance &&
+            (selectedToken.symbol === config.nativeTokenName ||
+              !selectedToken.balance ||
+              !selectedToken.balance.eq(balance))
           ) {
             selectedToken.balance = balance;
             this.setState({ selectedToken }, () => {
@@ -377,7 +382,9 @@ class DonateButton extends React.Component {
               const maxAmount = this.getMaxAmount();
               this.setState(
                 {
-                  amount: maxAmount.lt(amount) ? maxAmount.toFixed() : amount,
+                  amount: maxAmount.lt(amount)
+                    ? convertEthHelper(maxAmount, selectedToken.decimals)
+                    : amount,
                 },
                 this.updateAllowanceStatus,
               );
@@ -627,7 +634,6 @@ class DonateButton extends React.Component {
           isSaving: false,
         });
         // error code 4001 means user has canceled the transaction
-        console.log(JSON.stringify(err, null, 2));
         if (err.code !== 4001) {
           ErrorPopup(
             'Something went wrong with your donation. Could not approve token allowance.',
@@ -667,8 +673,8 @@ class DonateButton extends React.Component {
       display: 'inline-block',
     };
 
-    const balance =
-      selectedToken.symbol === config.nativeTokenName ? NativeTokenBalance : selectedToken.balance;
+    const { decimals, symbol } = selectedToken;
+    const balance = symbol === config.nativeTokenName ? NativeTokenBalance : selectedToken.balance;
     const maxAmount = this.getMaxAmount();
 
     const submitDefault = () => {
@@ -683,7 +689,7 @@ class DonateButton extends React.Component {
     const submitInfiniteAllowance = () => {
       React.swal({
         title: 'Infinite Allowance',
-        text: `By this action you will allow DApp to transfer infinite amount of ${selectedToken.symbol} token`,
+        text: `By this action you will allow DApp to transfer infinite amount of ${symbol} token`,
         icon: 'success',
         buttons: ['Cancel', 'OK'],
       }).then(result => {
@@ -700,8 +706,8 @@ class DonateButton extends React.Component {
 
     const submitClearAllowance = () => {
       React.swal({
-        title: `Take away ${selectedToken.symbol} Allowance`,
-        text: `Do you want to set DApp allowance of ${selectedToken.symbol} token to zero?`,
+        title: `Take away ${symbol} Allowance`,
+        text: `Do you want to set DApp allowance of ${symbol} token to zero?`,
         icon: 'info',
         buttons: ['Cancel', 'Yes'],
       }).then(result => {
@@ -804,71 +810,48 @@ class DonateButton extends React.Component {
                   />
                 )}
                 {/* TODO: remove this b/c the wallet provider will contain this info */}
-                {config.homeNetworkName} {selectedToken.symbol} balance:&nbsp;
-                <em>{utils.fromWei(balance ? balance.toFixed() : '')}</em>
+                {config.homeNetworkName} {symbol} balance:&nbsp;
+                <em>
+                  {convertEthHelper(utils.fromWei(balance ? balance.toFixed() : ''), decimals)}
+                </em>
               </div>
             )}
             {isCorrectNetwork && validProvider && currentUser && (
               <Fragment>
-                <span className="label">
-                  How much {selectedToken.symbol} do you want to donate?
-                </span>
+                <span className="label">How much {symbol} do you want to donate?</span>
 
                 {validProvider && maxAmount.toNumber() !== 0 && balance.gt(0) && (
                   <div className="form-group">
-                    <Slider
-                      type="range"
-                      name="amount2"
-                      min={0}
-                      max={maxAmount.toNumber()}
-                      step={maxAmount.dividedBy(20).toNumber()}
-                      value={Number(amount)}
-                      labels={{
-                        0: '0',
-                        [maxAmount.toNumber()]: maxAmount.precision(6).toString(),
-                      }}
-                      tooltip={false}
+                    <RangeSlider
                       onChange={newAmount => {
-                        let result;
-
-                        const roundedNumber = BigNumber(newAmount).toFixed(4, BigNumber.ROUND_DOWN);
-                        if (maxAmount.gt(newAmount) && Number(roundedNumber) > 0) {
-                          result = roundedNumber;
-                        } else {
-                          result = newAmount.toString();
-                        }
-
-                        return this.setState({ amount: result }, this.updateAllowanceStatus);
+                        this.setState({ amount: newAmount }, this.updateAllowanceStatus);
                       }}
+                      token={selectedToken}
+                      value={amount}
+                      maxAmount={maxAmount}
                     />
                   </div>
                 )}
 
                 <div className="form-group">
-                  <Input
-                    name="amount"
+                  <NumericInput
+                    token={selectedToken}
+                    maxAmount={maxAmount}
                     id="amount-input"
-                    type="number"
                     value={amount}
-                    onChange={(name, newAmount) => {
+                    onChange={newAmount =>
                       this.setState(
                         {
                           amount: newAmount,
                         },
                         this.updateAllowanceStatus,
-                      );
-                    }}
-                    validations={{
-                      lessOrEqualTo: maxAmount.toNumber(),
-                      greaterThan: 0,
-                    }}
-                    validationErrors={{
-                      greaterThan: `Please enter value greater than 0 ${selectedToken.symbol}`,
-                      lessOrEqualTo: `This donation exceeds your wallet balance or the Milestone max amount: ${maxAmount.toFixed()} ${
-                        selectedToken.symbol
-                      }.`,
-                    }}
+                      )
+                    }
                     autoFocus
+                    lteMessage={`This donation exceeds your wallet balance or the Milestone max amount: ${convertEthHelper(
+                      maxAmount,
+                      decimals,
+                    )} ${symbol}.`}
                   />
                 </div>
 

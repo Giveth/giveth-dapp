@@ -23,15 +23,6 @@ import DAC from '../../models/DAC';
 import User from '../../models/User';
 import ErrorPopup from '../ErrorPopup';
 import { Consumer as WhiteListConsumer } from '../../contextProviders/WhiteListProvider';
-import {
-  deleteDraft,
-  DraftButton,
-  draftStates,
-  loadDraft,
-  onDraftChange,
-  onImageChange,
-  saveDraft,
-} from '../Draft';
 
 /**
  * View to create or edit a DAC
@@ -49,7 +40,6 @@ class EditDAC extends Component {
       isLoading: true,
       isSaving: false,
       formIsValid: false,
-      draftState: draftStates.hidden,
 
       // DAC model
       dac: new DAC({
@@ -62,10 +52,6 @@ class EditDAC extends Component {
 
     this.submit = this.submit.bind(this);
     this.setImage = this.setImage.bind(this);
-    this.loadDraft = loadDraft.bind(this);
-    this.onDraftChange = onDraftChange.bind(this);
-    this.onImageChange = onImageChange.bind(this);
-    this.saveDraft = saveDraft.bind(this);
   }
 
   componentDidMount() {
@@ -124,7 +110,6 @@ class EditDAC extends Component {
     const { dac } = this.state;
     dac.image = image;
     this.setState({ dac });
-    this.onImageChange();
   }
 
   checkUser() {
@@ -144,7 +129,6 @@ class EditDAC extends Component {
   }
 
   submit() {
-    const itemNames = this.saveDraft(true);
     // Save dac
     const showToast = (msg, url, isSuccess = false) => {
       const toast = url ? (
@@ -184,7 +168,6 @@ class EditDAC extends Component {
       }
     };
     const afterSave = (err, created, url) => {
-      deleteDraft(itemNames);
       if (this.mounted) this.setState({ isSaving: false });
       if (err) return;
       const msg = created ? 'Your DAC is pending...' : 'Your DAC is being updated...';
@@ -207,10 +190,6 @@ class EditDAC extends Component {
 
   toggleFormValid(state) {
     this.setState({ formIsValid: state });
-    if (!this.state.draftLoaded) {
-      this.loadDraft();
-      this.setState({ draftLoaded: true });
-    }
   }
 
   triggerRouteBlocking() {
@@ -219,7 +198,6 @@ class EditDAC extends Component {
     this.setState({
       isBlocking: form && (!form.state.formSubmitted || form.state.isSubmitting),
     });
-    this.onDraftChange();
   }
 
   render() {
@@ -272,7 +250,7 @@ class EditDAC extends Component {
                     layout="vertical"
                   >
                     <Prompt
-                      when={isBlocking && this.state.draftState >= draftStates.changed}
+                      when={isBlocking}
                       message={() =>
                         `You have unsaved changes. Are you sure you want to navigate from this page?`
                       }
@@ -340,10 +318,7 @@ class EditDAC extends Component {
                       <div className="col-4">
                         <GoBackButton history={history} />
                       </div>
-                      <div className="col-4">
-                        <DraftButton draftState={this.state.draftState} onClick={this.saveDraft} />
-                      </div>
-                      <div className="col-4">
+                      <div className="col-4 offset-4">
                         <LoaderButton
                           className="btn btn-success pull-right"
                           formNoValidate

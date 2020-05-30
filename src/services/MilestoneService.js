@@ -20,6 +20,7 @@ import Donation from '../models/Donation';
 import BridgedMilestone from '../models/BridgedMilestone';
 import LPPCappedMilestone from '../models/LPPCappedMilestone';
 import LPMilestone from '../models/LPMilestone';
+// import { getCutOffAmountWei } from '../lib/helpers';
 
 const milestones = feathersClient.service('milestones');
 
@@ -279,8 +280,8 @@ class MilestoneService {
    * Get Milestone donations
    *
    * @param id        ID of the Milestone which donations should be retrieved
-   * @param $limit    Amount of records to be loaded
-   * @param $skip     Amounds of records to be skipped
+   * @param $limit    Number of records to be loaded
+   * @param $skip     Number of records to be skipped
    * @param onSuccess Callback function once response is obtained successfully
    * @param onError   Callback function if error is encountered
    */
@@ -292,7 +293,7 @@ class MilestoneService {
           query: {
             $or: [
               {
-                amountRemaining: { $ne: 0 },
+                lessThanCutoff: { $ne: true },
                 status: { $ne: Donation.FAILED },
                 $or: [{ intendedProjectTypeId: id }, { ownerTypeId: id }],
               },
@@ -334,7 +335,7 @@ class MilestoneService {
       .find(
         paramsForServer({
           query: {
-            amountRemaining: { $ne: 0 },
+            lessThanCutoff: { $ne: true },
             status: { $ne: Donation.FAILED },
             $or: [{ intendedProjectTypeId: id }, { ownerTypeId: id }],
             $sort: { createdAt: -1 },

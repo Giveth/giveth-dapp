@@ -36,3 +36,9 @@ addValidationRule(
   'isNumber',
   (formValues, inputValue, _value) => !inputValue || /^\d+$/.test(inputValue),
 );
+
+addValidationRule('precision', (formValue, inputValue, precision) => {
+  if (!inputValue) return true;
+  const regex = new RegExp(`^\\d*(\\.\\d{1,${precision}})?$`);
+  return regex.test(inputValue);
+});
