@@ -108,6 +108,15 @@ input[type='file'] {
   display: block;
 }
 
+input[type='number'] {
+  -moz-appearance: textfield;/*For FireFox*/
+
+  &::-webkit-inner-spin-button { /*For Webkits like Chrome and Safari*/
+    -webkit-appearance: none;
+    margin: 0;
+  }
+}
+
 i {
   margin-right: 5px;
 
