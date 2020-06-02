@@ -25,6 +25,7 @@ import DAC from '../models/DAC';
 import { convertEthHelper, ZERO_ADDRESS } from '../lib/helpers';
 import RangeSlider from './RangeSlider';
 import NumericInput from './NumericInput';
+import getWeb3 from '../lib/blockchain/getWeb3';
 
 const POLL_DELAY_TOKENS = 2000;
 const UPDATE_ALLOWANCE_DELAY = 1000; // Delay allowance update inorder to network respond new value
@@ -526,6 +527,8 @@ class DonateButton extends React.Component {
         let txHash;
         method
           .on('transactionHash', async transactionHash => {
+            const web3 = await getWeb3();
+            const txNonce = await web3.eth.getTransactionCount(currentUser.address, 'pending');
             txHash = transactionHash;
 
             await DonationService.newFeathersDonation(
@@ -534,6 +537,7 @@ class DonateButton extends React.Component {
               amountWei,
               selectedToken,
               txHash,
+              txNonce,
             );
 
             resolve(true);

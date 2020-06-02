@@ -728,9 +728,11 @@ class DonationService {
    * @param {User} giver the giver of this donation
    * @param {object} toAdmin entity receiving the donation
    * @param {string} amount donation amount in wei
+   * @param {object} token donation token
    * @param {string} txHash transactionHash of the donation tx
+   * @param {Number} txNonce nonce of the donation tx
    */
-  static newFeathersDonation(giver, toAdmin, amount, token, txHash) {
+  static newFeathersDonation(giver, toAdmin, amount, token, txHash, txNonce) {
     const newDonation = {
       giverAddress: giver.address,
       amount,
@@ -738,6 +740,7 @@ class DonationService {
       pledgeId: 0,
       status: Donation.PENDING,
       homeTxHash: txHash,
+      txNonce,
       mined: false,
       token,
     };
