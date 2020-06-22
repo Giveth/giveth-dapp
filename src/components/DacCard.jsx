@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom';
 import { getTruncatedText, history } from '../lib/helpers';
 import CardStats from './CardStats';
 import DAC from '../models/DAC';
+import GivethLogo from '../assets/logo.svg';
 
 /**
  * DAC Card visible in the DACs view.
@@ -29,6 +30,8 @@ class DacCard extends Component {
 
   render() {
     const { dac } = this.props;
+    const colors = ['#76318f', '#50b0cf', '#1a1588', '#2A6813', '#95d114', '#155388', '#604a7d'];
+    const color = colors[Math.floor(Math.random() * colors.length)];
 
     return (
       <div
@@ -39,7 +42,13 @@ class DacCard extends Component {
         tabIndex="0"
       >
         <Link className="card-body" to={this.createDACLink()}>
-          <div className="card-img" style={{ backgroundImage: `url(${dac.image})` }} />
+          <div
+            className="card-img"
+            style={{
+              backgroundColor: dac.image ? 'white' : color,
+              backgroundImage: `url(${dac.image || GivethLogo})`,
+            }}
+          />
 
           <div className="card-content">
             <h4 className="card-title">{getTruncatedText(dac.title, 30)}</h4>
