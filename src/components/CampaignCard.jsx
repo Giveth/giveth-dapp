@@ -6,6 +6,7 @@ import { getTruncatedText, history } from '../lib/helpers';
 import CardStats from './CardStats';
 import Campaign from '../models/Campaign';
 import config from '../configuration';
+import GivethLogo from '../assets/logo.svg';
 
 /**
  * Campaign Card visible in the DACs view.
@@ -31,6 +32,8 @@ class CampaignCard extends Component {
 
   render() {
     const { campaign } = this.props;
+    const colors = ['#76318f', '#50b0cf', '#1a1588', '#2A6813', '#95d114', '#155388', '#604a7d'];
+    const color = colors[Math.floor(Math.random() * colors.length)];
 
     return (
       <div
@@ -41,7 +44,13 @@ class CampaignCard extends Component {
         tabIndex="0"
       >
         <Link className="card-body" to={this.createCampaignLink()}>
-          <div className="card-img" style={{ backgroundImage: `url(${campaign.image})` }} />
+          <div
+            className="card-img"
+            style={{
+              backgroundColor: campaign.image ? 'white' : color,
+              backgroundImage: `url(${campaign.image || GivethLogo})`,
+            }}
+          />
 
           <div className="card-content">
             <h4 className="card-title">{getTruncatedText(campaign.title, 40)}</h4>
