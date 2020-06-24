@@ -167,7 +167,7 @@ class DonateButton extends React.Component {
     if (maxFromWei.isNaN || maxFromWei === 'NaN') {
       maxAmount = new BigNumber(0);
     } else {
-      maxAmount = new BigNumber(maxFromWei);
+      maxAmount = new BigNumber(convertEthHelper(maxFromWei, selectedToken.decimals));
     }
 
     let { maxDonationAmount } = this.props;
@@ -247,7 +247,10 @@ class DonateButton extends React.Component {
     const defaultAmount = selectedToken.symbol === config.nativeTokenName ? '1' : '100';
     const balance =
       selectedToken.symbol === nativeTokenName ? NativeTokenBalance : selectedToken.balance;
-    const amount = BigNumber.min(utils.fromWei(balance.toFixed()), defaultAmount).toFixed();
+    const amount = BigNumber.min(
+      convertEthHelper(utils.fromWei(balance.toFixed()), selectedToken.decimals),
+      defaultAmount,
+    ).toFixed();
     this.setState({
       modalVisible: false,
       amount,
