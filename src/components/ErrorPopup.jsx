@@ -47,10 +47,14 @@ export default (shortDescription, error) => {
       ${shortDescription}
 
       Transaction link:
-      ${error}
+      ${JSON.stringify(error, null, 2)}
       `;
     } else {
-      body = `Issue type: **Error**\n${shortDescription}\n\n**TransactionLink:**\n${error}`;
+      body = `Issue type: **Error**\n${shortDescription}\n\n**TransactionLink:**\n${JSON.stringify(
+        error,
+        null,
+        2,
+      )}`;
     }
 
     if (value === 'email') {
