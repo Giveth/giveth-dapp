@@ -79,7 +79,7 @@ class CampaignService {
           status: {
             $nin: [Milestone.CANCELED, Milestone.PROPOSED, Milestone.REJECTED, Milestone.PENDING],
           },
-          $sort: { updatedAt: -1 },
+          $sort: { projectAddedAt: -1 },
           $limit,
           $skip,
         },
