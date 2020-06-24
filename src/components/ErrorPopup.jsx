@@ -18,13 +18,13 @@ export default (shortDescription, error) => {
 
         Error name:
         ${error.message}
-      
+
         Error lineNumber:
         ${error.lineNumber}
-      
+
         Error fileName:
         ${error.fileName}
-      
+
         Error stack:
         ${error.stack}
        `;
@@ -35,7 +35,11 @@ export default (shortDescription, error) => {
           `**Name:**\n${error.message}\n\n` +
           `**LineNumber:**\n${error.lineNumber}\n\n` +
           `**FileName:**\n${error.fileName}\n` +
-          `<details><summary>Stack</summary>\n\n${error.stack}\n</details>`;
+          `<details><summary>Stack</summary>\n\n${JSON.stringify(
+            error.stack,
+            null,
+            2,
+          )}\n</details>`;
       }
     } else if (value !== 'github') {
       body = `
@@ -43,10 +47,14 @@ export default (shortDescription, error) => {
       ${shortDescription}
 
       Transaction link:
-      ${error}
+      ${JSON.stringify(error, null, 2)}
       `;
     } else {
-      body = `Issue type: **Error**\n${shortDescription}\n\n**TransactionLink:**\n${error}`;
+      body = `Issue type: **Error**\n${shortDescription}\n\n**TransactionLink:**\n${JSON.stringify(
+        error,
+        null,
+        2,
+      )}`;
     }
 
     if (value === 'email') {
