@@ -175,7 +175,9 @@ class DonateButton extends React.Component {
       if (dacId !== undefined && dacId !== 0) {
         maxDonationAmount *= 1.03;
       }
-      maxAmount = maxAmount.gt(maxDonationAmount) ? BigNumber(maxDonationAmount) : maxAmount;
+      maxAmount = maxAmount.gt(maxDonationAmount)
+        ? new BigNumber(convertEthHelper(maxDonationAmount, selectedToken.decimals))
+        : maxAmount;
     }
 
     return maxAmount;
