@@ -176,7 +176,7 @@ class ViewMilestone extends Component {
       if (!milestone.fullyFunded) {
         return (
           <p>
-            Amount requested: {convertEthHelper(milestone.maxAmount, milestone.token.symbol)}{' '}
+            Amount requested: {convertEthHelper(milestone.maxAmount, milestone.token.decimals)}{' '}
             {milestone.token.symbol}
           </p>
         );
