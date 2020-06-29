@@ -48,6 +48,7 @@ const configurations = {
     },
     nativeTokenName: 'ETH',
     defaultDonateToken: 'ANT',
+    defaultDacId: 25,
   },
   develop: {
     title: 'develop',
@@ -77,6 +78,7 @@ const configurations = {
     },
     nativeTokenName: 'ETH',
     defaultDonateToken: 'XDAI',
+    defaultDacId: 156,
   },
   release: {
     title: 'release',
