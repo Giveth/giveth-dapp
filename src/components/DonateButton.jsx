@@ -1019,7 +1019,7 @@ export default class Root extends React.PureComponent {
     const { defaultDacId } = config;
     if (defaultDacId) {
       const { model } = this.props;
-      if (!model.type !== DAC.type || Number(model.adminId) !== defaultDacId) {
+      if (model.type !== DAC.type || Number(model.adminId) !== defaultDacId) {
         DACService.getByDelegateId(defaultDacId).then(defaultDac => {
           if (defaultDac) {
             const defaultDacModel = {
