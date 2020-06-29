@@ -48,7 +48,7 @@ const configurations = {
     },
     nativeTokenName: 'ETH',
     defaultDonateToken: 'ANT',
-    defaultDacId: 25,
+    defaultDacId: 0,
   },
   develop: {
     title: 'develop',
