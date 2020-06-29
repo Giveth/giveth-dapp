@@ -1,5 +1,5 @@
 const {
-  REACT_APP_ENVIRONMENT = 'beta', // optional
+  REACT_APP_ENVIRONMENT = 'localhost', // optional
   REACT_APP_DECIMALS = 8, // optional
   REACT_APP_FEATHERJS_CONNECTION_URL,
   REACT_APP_NODE_CONNECTION_URL,
@@ -38,7 +38,7 @@ const configurations = {
     foreignNetworkId: 67,
     homeNetworkName: 'Home Ganache',
     homeNetworkId: 66,
-    ipfsGateway: 'https://ipfs.giveth.io/ipfs',
+    ipfsGateway: 'http://localhost:8080/ipfs/',
     campaignUrl: 'http://localhost:3010/campaigns/',
     // sendErrors: false,
     analytics: {
