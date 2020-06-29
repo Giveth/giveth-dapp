@@ -132,6 +132,7 @@ const configurations = {
     },
     nativeTokenName: 'ETH',
     defaultDonateToken: 'DAI',
+    defaultDacId: 5, // Giveth DAC
   },
 };
 

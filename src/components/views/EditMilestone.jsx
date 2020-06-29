@@ -35,6 +35,7 @@ import {
 import LoaderButton from '../LoaderButton';
 import User from '../../models/User';
 import templates from '../../lib/milestoneTemplates';
+import config from '../../configuration';
 
 import ErrorPopup from '../ErrorPopup';
 import MilestoneProof from '../MilestoneProof';
@@ -581,8 +582,12 @@ class EditMilestone extends Component {
   setDelegatePercent(value) {
     const { dacs } = this.state;
     const milestone = returnMilestone(this);
-    const dacIdMilestone = value && dacs.length > 0 ? parseInt(dacs[0].value, 10) : 0;
-    milestone.dacId = parseInt(dacIdMilestone, 10);
+    const { defaultDacId } = config;
+    const defaultValue =
+      defaultDacId && dacs.some(d => d.value === String(defaultDacId)) ? defaultDacId : 0;
+    const milestoneDacId =
+      value && dacs.length > 0 ? defaultValue || parseInt(dacs[0].value, 10) : 0;
+    milestone.dacId = milestoneDacId;
     this.setState({ delegatePercent: value, milestone });
   }
 
