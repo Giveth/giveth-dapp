@@ -1,3 +1,4 @@
+// eslint-disable-next-line max-classes-per-file
 import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
 import Modal from 'react-modal';
@@ -304,11 +305,16 @@ class DonateButton extends React.Component {
   }
 
   submit({ amount, customAddress }) {
-    const { model, currentUser } = this.props;
+    const { model, currentUser, afterSuccessfulDonate } = this.props;
     const { adminId, dacId } = model;
     const { allowanceApprovalType, selectedToken } = this.state;
 
     const donationOwnerAddress = customAddress || currentUser.address;
+
+    const afterDonate = success => {
+      this.updateAllowance(UPDATE_ALLOWANCE_DELAY);
+      if (success) afterSuccessfulDonate();
+    };
 
     if (allowanceApprovalType === AllowanceApprovalType.Clear) {
       DonationService.clearERC20TokenApproval(selectedToken.address, currentUser.address)
@@ -333,14 +339,14 @@ class DonateButton extends React.Component {
           });
           this.closeDialog();
         });
-    } else if (dacId !== undefined && dacId !== 0) {
+    } else if (dacId) {
       this.donateToDac(adminId, dacId, amount, donationOwnerAddress, allowanceApprovalType)
-        .then(() => this.updateAllowance(UPDATE_ALLOWANCE_DELAY))
-        .catch(() => this.updateAllowance(UPDATE_ALLOWANCE_DELAY));
+        .then(afterDonate)
+        .catch(() => afterDonate(false));
     } else {
       this.donateWithBridge(adminId, amount, donationOwnerAddress, amount, allowanceApprovalType)
-        .then(() => this.updateAllowance(UPDATE_ALLOWANCE_DELAY))
-        .catch(() => this.updateAllowance(UPDATE_ALLOWANCE_DELAY));
+        .then(afterDonate)
+        .catch(() => afterDonate(false));
     }
 
     this.setState({ isSaving: true });
@@ -407,7 +413,7 @@ class DonateButton extends React.Component {
 
     if (!dac) {
       ErrorPopup(`Dac not found!`);
-      return;
+      return false;
     }
     const { title: dacTitle } = dac;
 
@@ -446,6 +452,7 @@ class DonateButton extends React.Component {
       buttons: ['Cancel', 'Lets do it!'],
     });
 
+    let result = false;
     if (isConfirmed) {
       try {
         if (
@@ -457,11 +464,12 @@ class DonateButton extends React.Component {
             allowanceApprovalType,
           )
         )
-          await this.donateWithBridge(adminId, amountMilestone, donationOwnerAddress);
+          result = await this.donateWithBridge(adminId, amountMilestone, donationOwnerAddress);
         // eslint-disable-next-line no-empty
       } catch (e) {}
     }
     this.setState({ isSaving: false });
+    return result;
   }
 
   async donateWithBridge(
@@ -984,33 +992,120 @@ DonateButton.propTypes = {
   enableProvider: PropTypes.func.isRequired,
   isCorrectNetwork: PropTypes.bool.isRequired,
   tokenWhitelist: PropTypes.arrayOf(PropTypes.shape()).isRequired,
+  afterSuccessfulDonate: PropTypes.func,
 };
 
 DonateButton.defaultProps = {
   currentUser: undefined,
   NativeTokenBalance: new BigNumber(0),
   maxDonationAmount: undefined, // new BigNumber(10000000000000000),
+  afterSuccessfulDonate: () => {},
 };
 
-export default props => (
-  <WhiteListConsumer>
-    {({ state: { activeTokenWhitelist } }) => (
-      <Web3Consumer>
-        {({
-          state: { isHomeNetwork, isEnabled, validProvider, balance },
-          actions: { enableProvider },
-        }) => (
-          <DonateButton
-            NativeTokenBalance={balance}
-            validProvider={validProvider}
-            isCorrectNetwork={isHomeNetwork}
-            tokenWhitelist={activeTokenWhitelist}
-            isEnabled={isEnabled}
-            enableProvider={enableProvider}
-            {...props}
-          />
+export default class Root extends React.PureComponent {
+  constructor(props) {
+    super(props);
+
+    this.defaultDacDonateButton = React.createRef();
+    this.state = {
+      donateToDefaultDac: false,
+      defaultDacModel: undefined,
+    };
+
+    this.afterSuccessfulDonate = this.afterSuccessfulDonate.bind(this);
+  }
+
+  componentDidMount() {
+    const { defaultDacId } = config;
+    if (defaultDacId) {
+      const { model } = this.props;
+      if (model.type !== DAC.type || Number(model.adminId) !== defaultDacId) {
+        DACService.getByDelegateId(defaultDacId).then(defaultDac => {
+          if (defaultDac) {
+            const defaultDacModel = {
+              type: DAC.type,
+              title: defaultDac.title,
+              id: defaultDac.id,
+              token: { symbol: config.nativeTokenName },
+              adminId: defaultDac.delegateId,
+            };
+
+            this.setState({
+              donateToDefaultDac: true,
+              defaultDacModel,
+            });
+          }
+        });
+      }
+    }
+  }
+
+  afterSuccessfulDonate() {
+    const { donateToDefaultDac } = this.state;
+    if (donateToDefaultDac) {
+      React.swal({
+        title: 'Thank you!',
+        text: 'Would you like to support Giveth as well?',
+        icon: 'success',
+        buttons: ['Cancel', 'OK'],
+      }).then(result => {
+        if (result) {
+          this.defaultDacDonateButton.current.openDialog();
+        }
+      });
+    }
+  }
+
+  render() {
+    const { donateToDefaultDac, defaultDacModel } = this.state;
+    return (
+      <WhiteListConsumer>
+        {({ state: { activeTokenWhitelist } }) => (
+          <Web3Consumer>
+            {({
+              state: { isHomeNetwork, isEnabled, validProvider, balance },
+              actions: { enableProvider },
+            }) => (
+              <Fragment>
+                <DonateButton
+                  NativeTokenBalance={balance}
+                  validProvider={validProvider}
+                  isCorrectNetwork={isHomeNetwork}
+                  tokenWhitelist={activeTokenWhitelist}
+                  isEnabled={isEnabled}
+                  enableProvider={enableProvider}
+                  afterSuccessfulDonate={this.afterSuccessfulDonate}
+                  {...this.props}
+                />
+                {donateToDefaultDac && (
+                  <div style={{ display: 'none' }}>
+                    <DonateButton
+                      NativeTokenBalance={balance}
+                      validProvider={validProvider}
+                      isCorrectNetwork={isHomeNetwork}
+                      tokenWhitelist={activeTokenWhitelist}
+                      isEnabled={isEnabled}
+                      enableProvider={enableProvider}
+                      model={defaultDacModel}
+                      currentUser={this.props.currentUser}
+                      ref={this.defaultDacDonateButton}
+                    />
+                  </div>
+                )}
+              </Fragment>
+            )}
+          </Web3Consumer>
         )}
-      </Web3Consumer>
-    )}
-  </WhiteListConsumer>
-);
+      </WhiteListConsumer>
+    );
+  }
+}
+
+Root.propTypes = {
+  model: modelTypes.isRequired,
+  currentUser: PropTypes.instanceOf(User),
+};
+
+Root.defaultProps = {
+  currentUser: undefined,
+};
