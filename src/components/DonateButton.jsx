@@ -1067,7 +1067,7 @@ export default class Root extends React.PureComponent {
         title: 'Thank you!',
         text: 'Would you like to support Giveth as well?',
         icon: 'success',
-        buttons: ['Cancel', 'OK'],
+        buttons: ['No Thanks', 'Support Giveth'],
       }).then(result => {
         if (result) {
           this.defaultDacDonateButton.current.openDialog();
