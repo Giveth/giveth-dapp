@@ -27,6 +27,7 @@ import { convertEthHelper, ZERO_ADDRESS } from '../lib/helpers';
 import RangeSlider from './RangeSlider';
 import NumericInput from './NumericInput';
 import getWeb3 from '../lib/blockchain/getWeb3';
+import ExchangeButton from './ExchangeButton';
 
 const POLL_DELAY_TOKENS = 2000;
 const UPDATE_ALLOWANCE_DELAY = 1000; // Delay allowance update inorder to network respond new value
@@ -693,6 +694,7 @@ class DonateButton extends React.Component {
     const { decimals, symbol } = selectedToken;
     const balance = symbol === config.nativeTokenName ? NativeTokenBalance : selectedToken.balance;
     const maxAmount = this.getMaxAmount();
+    const zeroBalance = balance && balance.eq(0);
 
     const submitDefault = () => {
       this.setState(
@@ -827,93 +829,109 @@ class DonateButton extends React.Component {
                   />
                 )}
                 {/* TODO: remove this b/c the wallet provider will contain this info */}
-                {config.homeNetworkName} {symbol} balance:&nbsp;
-                <em>
-                  {convertEthHelper(utils.fromWei(balance ? balance.toFixed() : ''), decimals)}
-                </em>
+                {zeroBalance ? (
+                  <Fragment>
+                    You don&apos;t have any {symbol} token!
+                    <br />
+                    <br />
+                    <br />
+                    <br />
+                  </Fragment>
+                ) : (
+                  <Fragment>
+                    {config.homeNetworkName} {symbol} balance:&nbsp;
+                    <em>
+                      {convertEthHelper(utils.fromWei(balance ? balance.toFixed() : ''), decimals)}
+                    </em>
+                  </Fragment>
+                )}
               </div>
             )}
             {isCorrectNetwork && validProvider && currentUser && (
               <Fragment>
-                <span className="label">How much {symbol} do you want to donate?</span>
+                {!zeroBalance ? (
+                  <Fragment>
+                    <span className="label">How much {symbol} do you want to donate?</span>
 
-                {validProvider && maxAmount.toNumber() !== 0 && balance.gt(0) && (
-                  <div className="form-group">
-                    <RangeSlider
-                      onChange={newAmount => {
-                        this.setState({ amount: newAmount }, this.updateAllowanceStatus);
-                      }}
-                      token={selectedToken}
-                      value={amount}
-                      maxAmount={maxAmount}
-                    />
-                  </div>
-                )}
+                    {validProvider && maxAmount.toNumber() !== 0 && balance.gt(0) && (
+                      <div className="form-group">
+                        <RangeSlider
+                          onChange={newAmount => {
+                            this.setState({ amount: newAmount }, this.updateAllowanceStatus);
+                          }}
+                          token={selectedToken}
+                          value={amount}
+                          maxAmount={maxAmount}
+                        />
+                      </div>
+                    )}
 
-                <div className="form-group">
-                  <NumericInput
-                    token={selectedToken}
-                    maxAmount={maxAmount}
-                    id="amount-input"
-                    value={amount}
-                    onChange={newAmount =>
-                      this.setState(
-                        {
-                          amount: newAmount,
-                        },
-                        this.updateAllowanceStatus,
-                      )
-                    }
-                    autoFocus
-                    lteMessage={`This donation exceeds your wallet balance or the Milestone max amount: ${convertEthHelper(
-                      maxAmount,
-                      decimals,
-                    )} ${symbol}.`}
-                  />
-                </div>
+                    <div className="form-group">
+                      <NumericInput
+                        token={selectedToken}
+                        maxAmount={maxAmount}
+                        id="amount-input"
+                        value={amount}
+                        onChange={newAmount =>
+                          this.setState(
+                            {
+                              amount: newAmount,
+                            },
+                            this.updateAllowanceStatus,
+                          )
+                        }
+                        autoFocus
+                        lteMessage={`This donation exceeds your wallet balance or the Milestone max amount: ${convertEthHelper(
+                          maxAmount,
+                          decimals,
+                        )} ${symbol}.`}
+                      />
+                    </div>
 
-                {showCustomAddress && (
-                  <div className="alert alert-success">
-                    <i className="fa fa-exclamation-triangle" />
-                    The donation will be donated on behalf of address:
-                  </div>
-                )}
+                    {showCustomAddress && (
+                      <div className="alert alert-success">
+                        <i className="fa fa-exclamation-triangle" />
+                        The donation will be donated on behalf of address:
+                      </div>
+                    )}
 
-                <div className="react-toggle-container">
-                  <Toggle
-                    id="show-recipient-address"
-                    defaultChecked={showCustomAddress}
-                    onChange={() =>
-                      this.setState(prevState => ({
-                        showCustomAddress: !prevState.showCustomAddress,
-                      }))
-                    }
-                  />
-                  <div className="label">I want to donate on behalf of another address</div>
-                </div>
-                {showCustomAddress && (
-                  <div className="form-group recipient-address-container">
-                    <Input
-                      name="customAddress"
-                      id="title-input"
-                      type="text"
-                      value={customAddress}
-                      placeholder={ZERO_ADDRESS}
-                      validations="isEtherAddress"
-                      validationErrors={{
-                        isEtherAddress: 'Please insert a valid Ethereum address.',
-                      }}
-                      required={this.state.showRecipientAddress}
-                    />
-                  </div>
-                )}
-                {!showCustomAddress && (
-                  <div>
-                    <br />
-                    <br />
-                  </div>
-                )}
-                {maxAmount.toNumber() !== 0 && balance !== '0' && (
+                    <div className="react-toggle-container">
+                      <Toggle
+                        id="show-recipient-address"
+                        defaultChecked={showCustomAddress}
+                        onChange={() =>
+                          this.setState(prevState => ({
+                            showCustomAddress: !prevState.showCustomAddress,
+                          }))
+                        }
+                      />
+                      <div className="label">I want to donate on behalf of another address</div>
+                    </div>
+                    {showCustomAddress && (
+                      <div className="form-group recipient-address-container">
+                        <Input
+                          name="customAddress"
+                          id="title-input"
+                          type="text"
+                          value={customAddress}
+                          placeholder={ZERO_ADDRESS}
+                          validations="isEtherAddress"
+                          validationErrors={{
+                            isEtherAddress: 'Please insert a valid Ethereum address.',
+                          }}
+                          required={this.state.showRecipientAddress}
+                        />
+                      </div>
+                    )}
+                    {!showCustomAddress && (
+                      <div>
+                        <br />
+                        <br />
+                      </div>
+                    )}
+                  </Fragment>
+                ) : null}
+                {maxAmount.toNumber() !== 0 && (
                   <Fragment>
                     <LoaderButton
                       className="btn btn-success"
@@ -953,7 +971,9 @@ class DonateButton extends React.Component {
                 )}
               </Fragment>
             )}
-
+            <span className={zeroBalance ? '' : 'ml-2'}>
+              <ExchangeButton />
+            </span>
             <button
               className="btn btn-light float-right"
               type="button"
