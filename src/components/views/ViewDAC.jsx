@@ -21,6 +21,8 @@ import CampaignCard from '../CampaignCard';
 import ShareOptions from '../ShareOptions';
 import config from '../../configuration';
 import NotFound from './NotFound';
+import { checkBalance } from '../../lib/middleware';
+import ErrorPopup from '../ErrorPopup';
 
 /**
  * The DAC detail view mapped to /dac/id
@@ -45,6 +47,7 @@ class ViewDAC extends Component {
     };
 
     this.loadMoreDonations = this.loadMoreDonations.bind(this);
+    this.editDAC = this.editDAC.bind(this);
   }
 
   componentDidMount() {
@@ -101,6 +104,20 @@ class ViewDAC extends Component {
     );
   }
 
+  editDAC(id) {
+    checkBalance(this.props.balance)
+      .then(() => {
+        history.push(`/dacs/${id}/edit`);
+      })
+      .catch(err => {
+        if (err === 'noBalance') {
+          ErrorPopup('There is no balance left on the account.', err);
+        } else if (err !== undefined) {
+          ErrorPopup('Something went wrong.', err);
+        }
+      });
+  }
+
   render() {
     const { balance, currentUser } = this.props;
     const {
@@ -129,6 +146,20 @@ class ViewDAC extends Component {
               <h6>Decentralized Altruistic Community</h6>
               <h1>{dac.title}</h1>
 
+              {dac.owner &&
+                currentUser &&
+                dac.owner.address === currentUser.address &&
+                dac.isActive && (
+                  <button
+                    type="button"
+                    className="btn btn-success"
+                    style={{ marginRight: 10 }}
+                    onClick={() => this.editDAC(dac.id)}
+                  >
+                    <i className="fa fa-edit" />
+                    &nbsp;Edit
+                  </button>
+                )}
               <DonateButton
                 model={{
                   type: DAC.type,

@@ -122,6 +122,10 @@ class DAC extends BasicModel {
     else this.myOrder = 4;
   }
 
+  get isActive() {
+    return this.status === DAC.ACTIVE;
+  }
+
   get totalDonated() {
     return (
       (Array.isArray(this._donationCounters) &&
