@@ -696,7 +696,7 @@ class DonateButton extends React.Component {
     const submitInfiniteAllowance = () => {
       React.swal({
         title: 'Infinite Allowance',
-        text: `By this action you will allow DApp to transfer infinite amount of ${symbol} token`,
+        text: `This will give the Giveth DApp permission to withdraw ${symbol} from your account and automate transactions for you.`,
         icon: 'success',
         buttons: ['Cancel', 'OK'],
       }).then(result => {
