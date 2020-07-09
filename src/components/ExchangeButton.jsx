@@ -12,7 +12,7 @@ const ExchangeButton = () => {
     <span style={style}>
       <button type="button" onClick={onClicked} className="btn btn-info">
         <i className="fa fa-exchange" />
-        Buy/Change Crypto
+        Buy/Exchange Crypto
       </button>
     </span>
   );

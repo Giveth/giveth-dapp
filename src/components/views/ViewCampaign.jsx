@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { Component, Fragment } from 'react';
 import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 import Avatar from 'react-avatar';
@@ -254,57 +254,59 @@ class ViewCampaign extends Component {
                 >
                   <h6>Campaign</h6>
                   <h1>{campaign.title}</h1>
-                  {campaign.owner &&
-                    currentUser &&
-                    campaign.owner.address === currentUser.address &&
-                    campaign.isActive && (
-                      <button
-                        type="button"
-                        className="btn btn-success"
-                        style={{ marginRight: 10 }}
-                        onClick={() => this.editCampaign(campaign.id)}
-                      >
-                        <i className="fa fa-edit" />
-                        &nbsp;Edit
-                      </button>
-                    )}
-                  <DonateButton
-                    model={{
-                      type: Campaign.type,
-                      title: campaign.title,
-                      id: campaign.id,
-                      adminId: campaign.projectId,
-                    }}
-                    currentUser={currentUser}
-                    history={history}
-                  />
-                  <CreateDonationAddressButton
-                    campaignTitle={campaign.title}
-                    campaignOwner={campaign.owner.address}
-                    campaignId={campaign.id}
-                    receiverId={campaign.projectId}
-                    giverId={(campaign._owner || {}).giverId}
-                    currentUser={currentUser}
-                  />
-                  {currentUser && (
-                    <DelegateMultipleButton
-                      style={{ padding: '10px 10px' }}
-                      campaign={campaign}
-                      balance={balance}
-                      currentUser={currentUser}
-                    />
-                  )}
-                  {campaign.owner &&
-                    currentUser &&
-                    campaign.owner.address === currentUser.address &&
-                    campaign.isActive && (
-                      <ChangeOwnershipButton
-                        campaign={campaign}
-                        balance={balance}
+                  {campaign.isActive && (
+                    <Fragment>
+                      {campaign.owner &&
+                        currentUser &&
+                        campaign.owner.address === currentUser.address && (
+                          <button
+                            type="button"
+                            className="btn btn-success"
+                            style={{ marginRight: 10 }}
+                            onClick={() => this.editCampaign(campaign.id)}
+                          >
+                            <i className="fa fa-edit" />
+                            &nbsp;Edit
+                          </button>
+                        )}
+                      <DonateButton
+                        model={{
+                          type: Campaign.type,
+                          title: campaign.title,
+                          id: campaign.id,
+                          adminId: campaign.projectId,
+                        }}
                         currentUser={currentUser}
-                        {...this.props}
+                        history={history}
                       />
-                    )}
+                      <CreateDonationAddressButton
+                        campaignTitle={campaign.title}
+                        campaignOwner={campaign.owner.address}
+                        campaignId={campaign.id}
+                        receiverId={campaign.projectId}
+                        giverId={(campaign._owner || {}).giverId}
+                        currentUser={currentUser}
+                      />
+                      {currentUser && (
+                        <DelegateMultipleButton
+                          style={{ padding: '10px 10px' }}
+                          campaign={campaign}
+                          balance={balance}
+                          currentUser={currentUser}
+                        />
+                      )}
+                      {campaign.owner &&
+                        currentUser &&
+                        campaign.owner.address === currentUser.address && (
+                          <ChangeOwnershipButton
+                            campaign={campaign}
+                            balance={balance}
+                            currentUser={currentUser}
+                            {...this.props}
+                          />
+                        )}
+                    </Fragment>
+                  )}
                   {currentUser && (
                     <DownloadCsvButton
                       campaign={campaign}
