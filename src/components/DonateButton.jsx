@@ -924,7 +924,7 @@ class DonateButton extends React.Component {
                         isLoading={false}
                         onClick={submitInfiniteAllowance}
                       >
-                        <i className="fa fa-unlock-alt" /> Unlock Approval & Donate
+                        <i className="fa fa-unlock-alt" /> Infinite Unlock & Donate
                       </LoaderButton>
                     )}
 
