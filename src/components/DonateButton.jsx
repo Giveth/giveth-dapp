@@ -912,7 +912,7 @@ class DonateButton extends React.Component {
                       isLoading={false}
                       onClick={submitDefault}
                     >
-                      {allowanceStatus !== AllowanceStatus.Needed ? 'Donate' : 'Approve & Donate'}
+                      {allowanceStatus !== AllowanceStatus.Needed ? 'Donate' : 'Unlock & Donate'}
                     </LoaderButton>
 
                     {allowanceStatus === AllowanceStatus.Needed && (
