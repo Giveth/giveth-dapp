@@ -708,7 +708,7 @@ class DonateButton extends React.Component {
     const submitInfiniteAllowance = () => {
       React.swal({
         title: 'Infinite Allowance',
-        text: `By this action you will allow DApp to transfer infinite amount of ${symbol} token`,
+        text: `This will give the Giveth DApp permission to withdraw ${symbol} from your account and automate transactions for you.`,
         icon: 'success',
         buttons: ['Cancel', 'OK'],
       }).then(result => {
@@ -940,7 +940,7 @@ class DonateButton extends React.Component {
                       isLoading={false}
                       onClick={submitDefault}
                     >
-                      {allowanceStatus !== AllowanceStatus.Needed ? 'Donate' : 'Approve & Donate'}
+                      {allowanceStatus !== AllowanceStatus.Needed ? 'Donate' : 'Unlock & Donate'}
                     </LoaderButton>
 
                     {allowanceStatus === AllowanceStatus.Needed && (
@@ -952,7 +952,7 @@ class DonateButton extends React.Component {
                         isLoading={false}
                         onClick={submitInfiniteAllowance}
                       >
-                        <i className="fa fa-unlock-alt" /> Unlock Approval & Donate
+                        <i className="fa fa-unlock-alt" /> Infinite Unlock & Donate
                       </LoaderButton>
                     )}
 
