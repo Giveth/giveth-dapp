@@ -94,7 +94,7 @@ class FormsyImageUploader extends Component {
             </div>
           </div>
         )}
-        {this.props.avatar && this.props.resize && (
+        {(this.props.avatar || this.state.image) && this.props.resize && (
           <div>
             <div style={{ width: '100%' }}>
               <Cropper
