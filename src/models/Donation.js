@@ -200,8 +200,8 @@ class Donation extends Model {
   canRefund(user, isForeignNetwork) {
     return (
       isForeignNetwork &&
-      this._ownerTypeId === user.address &&
-      this._status === Donation.WAITING &&
+      ((this._ownerTypeId === user.address && this._status === Donation.WAITING) ||
+        this._status === Donation.CANCELED) &&
       this._amountRemaining.toNumber() > 0
     );
   }
