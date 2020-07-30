@@ -28,6 +28,7 @@ import RangeSlider from './RangeSlider';
 import NumericInput from './NumericInput';
 import getWeb3 from '../lib/blockchain/getWeb3';
 import ExchangeButton from './ExchangeButton';
+import { authenticateIfPossible, checkProfileAfterDonation } from '../lib/middleware';
 
 const POLL_DELAY_TOKENS = 2000;
 const UPDATE_ALLOWANCE_DELAY = 1000; // Delay allowance update inorder to network respond new value
@@ -1061,6 +1062,7 @@ export default class Root extends React.PureComponent {
   }
 
   afterSuccessfulDonate() {
+    // known user (with profile)
     const { donateToDefaultDac } = this.state;
     if (donateToDefaultDac) {
       React.swal({
@@ -1074,6 +1076,11 @@ export default class Root extends React.PureComponent {
         }
       });
     }
+
+    // anon user (without profile)
+    return authenticateIfPossible(this.props.currentUser, true).then(() =>
+      checkProfileAfterDonation(this.props.currentUser),
+    );
   }
 
   render() {
