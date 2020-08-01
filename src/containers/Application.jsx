@@ -70,6 +70,11 @@ React.swal.msg = reactNode => {
 // make toast globally available
 React.toast = toast;
 
+// Path and it's donate sub path
+const getViewEntityPathsList = originPath => {
+  return [originPath, `${originPath}/donate`];
+};
+
 /**
  * This container holds the application and its routes.
  * It is also responsible for loading application persistent data.
@@ -78,8 +83,8 @@ React.toast = toast;
  * -> moved to data to UserProvider
  */
 class Application extends Component {
-  constructor() {
-    super();
+  constructor(props) {
+    super(props);
 
     localforage.config({
       name: 'giveth',
@@ -175,7 +180,7 @@ class Application extends Component {
                                               />
                                               <Route
                                                 exact
-                                                path="/dacs/:id"
+                                                path={getViewEntityPathsList('/dacs/:id')}
                                                 render={props => (
                                                   <ViewDAC
                                                     currentUser={currentUser}
@@ -220,7 +225,7 @@ class Application extends Component {
                                               />
                                               <Route
                                                 exact
-                                                path="/campaigns/:id"
+                                                path={getViewEntityPathsList('/campaigns/:id')}
                                                 render={props => (
                                                   <ViewCampaign
                                                     currentUser={currentUser}
@@ -283,7 +288,9 @@ class Application extends Component {
                                               />
                                               <Route
                                                 exact
-                                                path="/campaigns/:id/milestones/:milestoneId"
+                                                path={getViewEntityPathsList(
+                                                  '/campaigns/:id/milestones/:milestoneId',
+                                                )}
                                                 render={props => (
                                                   <ViewMilestone
                                                     currentUser={currentUser}
