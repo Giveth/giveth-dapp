@@ -61,6 +61,7 @@ class ViewMilestone extends Component {
 
   componentDidMount() {
     const { milestoneId } = this.props.match.params;
+    console.log('Milestone ID:', milestoneId);
 
     MilestoneService.subscribeOne(
       milestoneId,
@@ -317,6 +318,7 @@ class ViewMilestone extends Component {
                 <div className="col-md-8 m-auto">
                   <div className="go-back-section">
                     <GoBackButton
+                      to={`/campaigns/${campaign._id}`}
                       history={history}
                       styleName="inline"
                       title={`Campaign: ${campaign.title}`}

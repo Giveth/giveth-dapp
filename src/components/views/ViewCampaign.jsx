@@ -420,6 +420,7 @@ class ViewCampaign extends Component {
                         }}
                         currentUser={currentUser}
                         history={history}
+                        disableAutoPopup
                       />
                     </div>
                   </div>
