@@ -143,7 +143,7 @@ const Delegations = ({ balance, currentUser }) => (
                                       {(d.token && d.token.symbol) || config.nativeTokenName}
                                     </td>
                                     <td className="td-user">
-                                      <Link to={`profile/${d.giver.address}`}>
+                                      <Link to={`profile/${d.giverAddress}`}>
                                         <Avatar size={30} src={getUserAvatar(d.giver)} round />
                                         {getUserName(d.giver)}
                                       </Link>
