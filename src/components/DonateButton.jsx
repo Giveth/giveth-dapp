@@ -120,15 +120,18 @@ class DonateButton extends React.Component {
     });
     this.pollToken();
     this.updateAllowance();
-    const { match, disableAutoPopup } = this.props;
-    if (
-      !disableAutoPopup &&
-      match &&
-      typeof match.url === 'string' &&
-      match.url.endsWith('/donate')
-    ) {
-      this.doDonate();
-    }
+
+    setTimeout(() => {
+      const { match, disableAutoPopup } = this.props;
+      if (
+        !disableAutoPopup &&
+        match &&
+        typeof match.url === 'string' &&
+        match.url.endsWith('/donate')
+      ) {
+        this.doDonate();
+      }
+    }, 1000);
   }
 
   componentWillUnmount() {
