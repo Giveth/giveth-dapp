@@ -157,9 +157,8 @@ export const signUpSwal = () => {
     title: 'Sign Up!',
     content: React.swal.msg(
       <p>
-        In order to use the Dapp, you need to use a Web3 wallet.
-        <br />
-        It is recommended that you install <a href="https://metamask.io/">MetaMask</a>.
+        To take this action, please enable Web3 in your browser, we recommend installing{' '}
+        <a href="https://metamask.io/">MetaMask</a>.
       </p>,
     ),
     icon: 'info',
