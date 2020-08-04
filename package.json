@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@metamask/detect-provider": "^1.1.0",
     "bignumber.js": "^8.1.1",
     "ethereumjs-abi": "^0.6.8",
     "feathers": "^2.2.3",

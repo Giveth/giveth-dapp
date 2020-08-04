@@ -1,6 +1,7 @@
 import React, { Component, createContext, Fragment } from 'react';
 import PropTypes from 'prop-types';
 import BigNumber from 'bignumber.js';
+import detectEthereumProvider from '@metamask/detect-provider';
 
 import getWeb3 from '../lib/blockchain/getWeb3';
 import pollEvery from '../lib/pollEvery';
@@ -110,24 +111,55 @@ class Web3Provider extends Component {
   }
 
   initWeb3Provider() {
-    getWeb3().then(web3 => {
+    getWeb3().then(async web3 => {
       this.setState({
         validProvider: !web3.defaultNode,
       });
 
-      pollNetwork(web3, {
-        onNetwork: (networkId, networkType) => {
-          this.setState(getNetworkState(networkId, networkType));
-        },
-      });
+      const isMetamask = window.ethereum && window.ethereum.isMatamask;
+
+      if (isMetamask) {
+        const updateNetwork = () => {
+          fetchNetwork(web3).then(({ networkId, networkType }) => {
+            this.setState(getNetworkState(networkId, networkType));
+          });
+        };
+
+        updateNetwork();
+
+        window.ethereum.on('chainChanged', () => updateNetwork);
+      } else {
+        pollNetwork(web3, {
+          onNetwork: (networkId, networkType) => {
+            this.setState(getNetworkState(networkId, networkType));
+          },
+        });
+      }
 
       if (!web3.defaultNode) {
+        if (isMetamask) {
+          window.ethereum.on('accountsChanged', accounts => {
+            console.log('accountsChanged');
+            this.setState({
+              account: accounts.length > 0 ? accounts[0] : '',
+            });
+
+            // Fetch new balance
+            if (accounts.length > 0) {
+              web3.eth.getBalance(accounts[0]).then(balance => {
+                this.setState({
+                  balance: new BigNumber(balance),
+                });
+              });
+            }
+          });
+        }
         pollAccount(web3, {
           onAccount: async account => {
+            const provider = await detectEthereumProvider();
             this.setState({
               account,
-              // TODO: find a way for non metamask providers
-              isEnabled: await web3.currentProvider._metamask.isApproved(),
+              isEnabled: !!provider,
             });
           },
           onBalance: balance => {
@@ -144,13 +176,11 @@ class Web3Provider extends Component {
   async finishLoading(web3) {
     const { networkId, networkType } = await fetchNetwork(web3);
     this.setState(getNetworkState(networkId, networkType));
+    const provider = await detectEthereumProvider();
     this.setState(
       {
         setupTimeout: false,
-        isEnabled:
-          web3.currentProvider._metamask && web3.currentProvider._metamask
-            ? await web3.currentProvider._metamask.isApproved()
-            : false,
+        isEnabled: !!provider,
       },
       () => this.props.onLoaded(),
     );
@@ -210,15 +240,8 @@ class Web3Provider extends Component {
     let balance;
 
     const timeoutId = setTimeout(async () => {
-      this.setState(
-        {
-          isEnabled:
-            web3.currentProvider._metamask && web3.currentProvider._metamask
-              ? await web3.currentProvider._metamask.isApproved()
-              : false,
-        },
-        () => this.props.onLoaded(),
-      );
+      const provider = await detectEthereumProvider();
+      this.setState({ isEnabled: !!provider }, () => this.props.onLoaded());
       this.enableTimedout = true;
     }, 5000);
 
