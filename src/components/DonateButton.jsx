@@ -379,7 +379,6 @@ class DonateButton extends React.Component {
 
   pollToken() {
     const { selectedToken } = this.state;
-    const { isCorrectNetwork, currentUser } = this.props;
 
     // stop existing poll
     if (this.stopPolling) {
@@ -393,6 +392,7 @@ class DonateButton extends React.Component {
       () => ({
         request: async () => {
           try {
+            const { isCorrectNetwork, currentUser } = this.props;
             const { tokens } = await getNetwork();
             const contract = tokens[selectedToken.address];
 
@@ -1123,6 +1123,7 @@ export default class Root extends React.PureComponent {
                       model={defaultDacModel}
                       currentUser={this.props.currentUser}
                       ref={this.defaultDacDonateButton}
+                      disableAutoPopup={this.props.disableAutoPopup}
                     />
                   </div>
                 )}

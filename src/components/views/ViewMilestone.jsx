@@ -61,7 +61,6 @@ class ViewMilestone extends Component {
 
   componentDidMount() {
     const { milestoneId } = this.props.match.params;
-    console.log('Milestone ID:', milestoneId);
 
     MilestoneService.subscribeOne(
       milestoneId,
