@@ -78,7 +78,8 @@ class MyMilestones extends Component {
   }
 
   loadMileStones() {
-    const myAddress = this.props.currentUser.address;
+    const { currentUser } = this.props;
+    const myAddress = currentUser && currentUser.address;
     const { milestoneStatus, skipPages, itemsPerPage } = this.state;
 
     MilestoneService.subscribeMyMilestones({
@@ -248,7 +249,7 @@ class MyMilestones extends Component {
                                     <td className="td-donations-number">{m.totalDonations}</td>
                                     <td className="td-donations-">
                                       {m.totalDonated.map(td => (
-                                        <div>
+                                        <div key={td.symbol}>
                                           {convertEthHelper(td.amount, td.decimals)} {td.symbol}
                                         </div>
                                       ))}
