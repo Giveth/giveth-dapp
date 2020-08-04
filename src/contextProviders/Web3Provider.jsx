@@ -61,23 +61,21 @@ const pollAccount = pollEvery((web3, { onAccount = () => {}, onBalance = () => {
 
 const fetchNetwork = async web3 => ({
   networkId: await web3.eth.net.getId(),
-  networkType: await web3.eth.net.getNetworkType(),
 });
 
-const getNetworkState = (networkId, networkType) => ({
+const getNetworkState = networkId => ({
   isHomeNetwork: networkId === config.homeNetworkId,
   isForeignNetwork: networkId === config.foreignNetworkId,
-  currentNetwork: networkType,
 });
 
 const pollNetwork = pollEvery((web3, { onNetwork = () => {} } = {}) => {
   let lastNetworkId;
   return {
     request: () => fetchNetwork(web3),
-    onResult: ({ networkId, networkType }) => {
+    onResult: ({ networkId }) => {
       if (networkId !== lastNetworkId) {
         lastNetworkId = networkId;
-        onNetwork(networkId, networkType);
+        onNetwork(networkId);
       }
     },
   };
@@ -90,7 +88,6 @@ class Web3Provider extends Component {
     this.state = {
       account: undefined,
       balance: new BigNumber(0),
-      currentNetwork: undefined,
       validProvider: false,
       isHomeNetwork: false,
       isForeignNetwork: false,
@@ -116,30 +113,28 @@ class Web3Provider extends Component {
         validProvider: !web3.defaultNode,
       });
 
-      const isMetamask = window.ethereum && window.ethereum.isMatamask;
+      const { ethereum } = web3;
+      const isMetamask = ethereum && ethereum.isMetaMask;
 
       if (isMetamask) {
-        const updateNetwork = () => {
-          fetchNetwork(web3).then(({ networkId, networkType }) => {
-            this.setState(getNetworkState(networkId, networkType));
-          });
-        };
+        fetchNetwork(web3).then(({ networkId }) => {
+          this.setState(getNetworkState(networkId));
+        });
 
-        updateNetwork();
-
-        window.ethereum.on('chainChanged', () => updateNetwork);
+        ethereum.on('chainChanged', networkId => {
+          this.setState(getNetworkState(parseInt(networkId, 16)));
+        });
       } else {
         pollNetwork(web3, {
-          onNetwork: (networkId, networkType) => {
-            this.setState(getNetworkState(networkId, networkType));
+          onNetwork: networkId => {
+            this.setState(getNetworkState(networkId));
           },
         });
       }
 
       if (!web3.defaultNode) {
         if (isMetamask) {
-          window.ethereum.on('accountsChanged', accounts => {
-            console.log('accountsChanged');
+          ethereum.on('accountsChanged', accounts => {
             this.setState({
               account: accounts.length > 0 ? accounts[0] : '',
             });
@@ -174,8 +169,8 @@ class Web3Provider extends Component {
   }
 
   async finishLoading(web3) {
-    const { networkId, networkType } = await fetchNetwork(web3);
-    this.setState(getNetworkState(networkId, networkType));
+    const { networkId } = await fetchNetwork(web3);
+    this.setState(getNetworkState(networkId));
     const provider = await detectEthereumProvider();
     this.setState(
       {
@@ -217,8 +212,8 @@ class Web3Provider extends Component {
       return;
     }
 
-    const { networkId, networkType } = await fetchNetwork(web3);
-    this.setState(getNetworkState(networkId, networkType));
+    const { networkId } = await fetchNetwork(web3);
+    this.setState(getNetworkState(networkId));
 
     // clear timeout here b/c we have successfully made an rpc call thus we are
     // successfully connected to a network
@@ -277,7 +272,6 @@ class Web3Provider extends Component {
     const {
       account,
       balance,
-      currentNetwork,
       validProvider,
       isHomeNetwork,
       isForeignNetwork,
@@ -321,7 +315,6 @@ class Web3Provider extends Component {
               failedToLoad: setupTimeout,
               account,
               balance,
-              currentNetwork,
               validProvider,
               isHomeNetwork,
               isForeignNetwork,
