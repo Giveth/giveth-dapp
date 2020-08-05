@@ -1,7 +1,6 @@
 import React, { Component, createContext, Fragment } from 'react';
 import PropTypes from 'prop-types';
 import BigNumber from 'bignumber.js';
-import detectEthereumProvider from '@metamask/detect-provider';
 
 import getWeb3 from '../lib/blockchain/getWeb3';
 import pollEvery from '../lib/pollEvery';
@@ -114,9 +113,9 @@ class Web3Provider extends Component {
       });
 
       const { ethereum } = web3;
-      const isMetamask = ethereum && ethereum.isMetaMask;
+      const isMetaMask = !!web3.isMetaMask;
 
-      if (isMetamask) {
+      if (isMetaMask) {
         fetchNetwork(web3).then(({ networkId }) => {
           this.setState(getNetworkState(networkId));
         });
@@ -133,28 +132,30 @@ class Web3Provider extends Component {
       }
 
       if (!web3.defaultNode) {
-        if (isMetamask) {
+        if (isMetaMask) {
           ethereum.on('accountsChanged', accounts => {
             this.setState({
               account: accounts.length > 0 ? accounts[0] : '',
             });
 
-            // Fetch new balance
             if (accounts.length > 0) {
+              web3.isEnabled = true;
+              // Fetch new balance
               web3.eth.getBalance(accounts[0]).then(balance => {
                 this.setState({
                   balance: new BigNumber(balance),
                 });
               });
+            } else {
+              web3.isEnabled = false;
             }
           });
         }
         pollAccount(web3, {
           onAccount: async account => {
-            const provider = await detectEthereumProvider();
             this.setState({
               account,
-              isEnabled: !!provider,
+              isEnabled: web3.isEnabled,
             });
           },
           onBalance: balance => {
@@ -171,11 +172,10 @@ class Web3Provider extends Component {
   async finishLoading(web3) {
     const { networkId } = await fetchNetwork(web3);
     this.setState(getNetworkState(networkId));
-    const provider = await detectEthereumProvider();
     this.setState(
       {
         setupTimeout: false,
-        isEnabled: !!provider,
+        isEnabled: web3.isEnabled,
       },
       () => this.props.onLoaded(),
     );
@@ -235,8 +235,7 @@ class Web3Provider extends Component {
     let balance;
 
     const timeoutId = setTimeout(async () => {
-      const provider = await detectEthereumProvider();
-      this.setState({ isEnabled: !!provider }, () => this.props.onLoaded());
+      this.setState({ isEnabled: web3.isEnabled }, () => this.props.onLoaded());
       this.enableTimedout = true;
     }, 5000);
 

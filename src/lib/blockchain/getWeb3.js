@@ -36,8 +36,11 @@ export default () =>
         if (provider) {
           newWeb3 = new Web3(provider);
           newWeb3.enable = enable.bind(newWeb3);
-          window.ethereum.autoRefreshOnNetworkChange = false;
           newWeb3.ethereum = window.ethereum;
+          if (newWeb3.ethereum && newWeb3.ethereum.isMetaMask) {
+            newWeb3.isMetaMask = true;
+            newWeb3.ethereum.autoRefreshOnNetworkChange = false;
+          }
         } else {
           // we provide a fallback so we can generate/read data
           newWeb3 = new Web3(config.foreignNodeConnection);
