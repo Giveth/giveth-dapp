@@ -157,7 +157,7 @@ export const signUpSwal = () => {
     title: 'Sign Up!',
     content: React.swal.msg(
       <p>
-        To take this action, please enable Web3 in your browser, we recommend installing{' '}
+        To take this action, please enable Web3 in your browser. We recommend installing{' '}
         <a href="https://metamask.io/">MetaMask</a>.
       </p>,
     ),
