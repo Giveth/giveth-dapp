@@ -110,8 +110,8 @@ class ListDonationItem extends Component {
             </span>
           </td>
           <td className="td-user">
-            {d.giver && (
-              <Link to={`/profile/${d.giver.address}`}>
+            {d.giverAddress && (
+              <Link to={`/profile/${d.giverAddress}`}>
                 <Avatar size={30} src={getUserAvatar(d.giver)} round />
                 <span> {getUserName(d.giver)}</span>
               </Link>
