@@ -1062,8 +1062,14 @@ export default class Root extends React.PureComponent {
   }
 
   afterSuccessfulDonate() {
+    // anon user (without profile)
+    authenticateIfPossible(this.props.currentUser, true).then(() =>
+      checkProfileAfterDonation(this.props.currentUser),
+    );
+
     // known user (with profile)
     const { donateToDefaultDac } = this.state;
+
     if (donateToDefaultDac) {
       React.swal({
         title: 'Thank you!',
@@ -1076,11 +1082,6 @@ export default class Root extends React.PureComponent {
         }
       });
     }
-
-    // anon user (without profile)
-    return authenticateIfPossible(this.props.currentUser, true).then(() =>
-      checkProfileAfterDonation(this.props.currentUser),
-    );
   }
 
   render() {
