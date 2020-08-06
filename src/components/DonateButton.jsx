@@ -1061,6 +1061,7 @@ export default class Root extends React.PureComponent {
     }
   }
 
+  // this is just a test for pull request
   afterSuccessfulDonate() {
     // anon user (without profile)
     authenticateIfPossible(this.props.currentUser, true).then(() =>
