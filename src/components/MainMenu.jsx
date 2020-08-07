@@ -121,7 +121,7 @@ class MainMenu extends Component {
                   </form>
 
                   <ul className="navbar-nav">
-                    {validProvider && !failedToLoad && !isEnabled && (
+                    {validProvider && !failedToLoad && !isEnabled && !state.currentUser && (
                       <button
                         type="button"
                         className="btn btn-outline-success btn-sm"
