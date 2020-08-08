@@ -323,12 +323,9 @@ class DonateButton extends React.Component {
     const { isEnabled, enableProvider } = this.props;
 
     if (!isEnabled) {
-      enableProvider().then(() => {
-        this.openDialog();
-      });
-    } else {
-      this.openDialog();
+      enableProvider();
     }
+    this.openDialog();
   }
 
   submit({ amount, customAddress }) {
