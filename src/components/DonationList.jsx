@@ -14,7 +14,7 @@ import DonationHistory from './DonationHistory';
  * Shows a table of donations for a given type (dac, campaign, milestone)
  */
 
-class ListDonationItem extends Component {
+class DonationListItem extends Component {
   constructor(props) {
     super(props);
 
@@ -53,6 +53,8 @@ class ListDonationItem extends Component {
     const totalColumns = 6 + (hasProposedDelegation ? 1 : 0);
     let typeLabel;
     let historyClassName = '';
+    let etherScanLink = '';
+    const { etherscan, homeEtherscan } = config;
     switch (this.state.itemType) {
       case 'delegated':
         typeLabel = (
@@ -75,6 +77,13 @@ class ListDonationItem extends Component {
       default:
         typeLabel = null;
     }
+
+    if (d.status === Donation.PAID || this.state.itemType === 'delegated') {
+      etherScanLink = etherscan && d.txHash ? `${etherscan}tx/${d.txHash}` : '';
+    } else if (this.state.itemType === 'direct') {
+      etherScanLink = homeEtherscan && d.homeTxHash ? `${homeEtherscan}tx/${d.homeTxHash}` : '';
+    }
+
     return (
       <Fragment>
         <tr key={d._id}>
@@ -89,7 +98,13 @@ class ListDonationItem extends Component {
             <span>{moment(d.createdAt).format('MM/DD/YYYY')}</span>
           </td>
           <td>
-            <span>{d.statusDescription}</span>
+            {etherScanLink ? (
+              <a href={etherScanLink} target="_blank" rel="noopener noreferrer">
+                {d.statusDescription}
+              </a>
+            ) : (
+              <span>{d.statusDescription}</span>
+            )}
             {typeLabel}
           </td>
           <td className="td-donations-amount">
@@ -152,13 +167,13 @@ class ListDonationItem extends Component {
   }
 }
 
-ListDonationItem.propTypes = {
+DonationListItem.propTypes = {
   d: PropTypes.instanceOf(Donation).isRequired,
   hasProposedDelegation: PropTypes.bool.isRequired,
   useAmountRemaining: PropTypes.bool.isRequired,
 };
 
-const ListDonations = props => {
+const DonationList = props => {
   const { isLoading, donations, loadMore, total, newDonations, useAmountRemaining } = props;
   const hasProposedDelegation = props.donations.some(d => d.intendedProjectId);
   return (
@@ -191,7 +206,7 @@ const ListDonations = props => {
               </thead>
               <tbody>
                 {donations.map(d => (
-                  <ListDonationItem
+                  <DonationListItem
                     d={d}
                     key={d._id}
                     hasProposedDelegation={hasProposedDelegation}
@@ -228,9 +243,9 @@ const ListDonations = props => {
   );
 };
 
-export default ListDonations;
+export default DonationList;
 
-ListDonations.propTypes = {
+DonationList.propTypes = {
   donations: PropTypes.arrayOf(PropTypes.instanceOf(Donation)).isRequired,
   isLoading: PropTypes.bool.isRequired,
   total: PropTypes.number.isRequired,
@@ -239,7 +254,7 @@ ListDonations.propTypes = {
   useAmountRemaining: PropTypes.bool,
 };
 
-ListDonations.defaultProps = {
+DonationList.defaultProps = {
   newDonations: 0,
   useAmountRemaining: false,
 };
