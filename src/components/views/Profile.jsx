@@ -45,7 +45,7 @@ class Profile extends Component {
     this.state = {
       isLoading: true,
       hasError: false,
-      etherScanUrl: '',
+      homeEtherScanUrl: '',
       userAddress: '',
       isLoadingDacs: true,
       dacs: null,
@@ -65,7 +65,7 @@ class Profile extends Component {
 
     getNetwork().then(network => {
       this.setState({
-        etherScanUrl: network.etherscan,
+        homeEtherScanUrl: network.homeEtherscan,
       });
     });
 
@@ -227,7 +227,7 @@ class Profile extends Component {
       name,
       email,
       linkedin,
-      etherScanUrl,
+      homeEtherScanUrl,
       isLoadingDacs,
       isLoadingCampaigns,
       isLoadingMilestones,
@@ -258,18 +258,19 @@ class Profile extends Component {
                   <div className="text-center">
                     <Avatar size={100} src={getUserAvatar(user)} round />
                     <h1>{getUserName(user)}</h1>
-                    {etherScanUrl && (
+                    {homeEtherScanUrl ? (
                       <p>
                         <a
-                          href={`${etherScanUrl}address/${userAddress}`}
+                          href={`${homeEtherScanUrl}address/${userAddress}`}
                           target="_blank"
                           rel="noopener noreferrer"
                         >
                           {userAddress}
                         </a>
                       </p>
+                    ) : (
+                      <p>{userAddress}</p>
                     )}
-                    {!etherScanUrl && <p>{userAddress}</p>}
                     <p>{email}</p>
                     <p>{linkedin}</p>
                   </div>
@@ -591,18 +592,17 @@ class Profile extends Component {
                                     (d.delegateId ? 'Delegated' : Donation.COMMITTED)}
                                 </td>
 
-                                {etherScanUrl && (
+                                {homeEtherScanUrl ? (
                                   <td className="td-tx-address">
                                     <a
-                                      href={`${etherScanUrl}address/${d.giverAddress}`}
+                                      href={`${homeEtherScanUrl}address/${d.giverAddress}`}
                                       target="_blank"
                                       rel="noopener noreferrer"
                                     >
                                       {d.giverAddress}
                                     </a>
                                   </td>
-                                )}
-                                {!etherScanUrl && (
+                                ) : (
                                   <td className="td-tx-address">{d.giverAddress}</td>
                                 )}
                               </tr>

@@ -885,8 +885,9 @@ class DonationService {
    * traverse donation parents up to reach a level at which donations have COMMITTED status
    *
    * @param {string[]} parentIds Id of donation
+   * @param {donation} donation
    */
-  static async getDonationNextCommittedParents(parentIds) {
+  static async getDonationNextCommittedParents(parentIds, donation) {
     const res = await feathersClient.service('/donations').find(
       paramsForServer({
         query: {
@@ -896,13 +897,18 @@ class DonationService {
       }),
     );
     if (res.data.length > 0) {
+      const parent = res.data[0];
       // Reached to committed level
-      if (res.data[0].status === Donation.COMMITTED) {
+      if (parent.status === Donation.COMMITTED) {
         return Promise.resolve(res.data.map(d => new Donation(d)));
+      }
+      // Fill donation homeTxHash value by parent
+      if (parent.status === Donation.WAITING && parent.homeTxHash) {
+        donation.homeTxHash = parent.homeTxHash;
       }
       const parents = res.data.map(d => d.parentDonations).flat();
       if (parents.length > 0) {
-        return DonationService.getDonationNextCommittedParents(parents);
+        return DonationService.getDonationNextCommittedParents(parents, donation);
       }
     }
     return Promise.resolve([]);

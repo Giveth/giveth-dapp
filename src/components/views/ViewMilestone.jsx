@@ -20,7 +20,7 @@ import DonateButton from 'components/DonateButton';
 import GoBackButton from 'components/GoBackButton';
 import Loader from 'components/Loader';
 import MilestoneItem from 'components/MilestoneItem';
-import ListDonations from 'components/ListDonations';
+import DonationList from 'components/DonationList';
 import MilestoneConversations from 'components/MilestoneConversations';
 import DelegateMultipleButton from 'components/DelegateMultipleButton';
 import { convertEthHelper, getUserAvatar, getUserName, history } from '../../lib/helpers';
@@ -595,7 +595,7 @@ class ViewMilestone extends Component {
 
               <div className="row spacer-top-50 spacer-bottom-50">
                 <div className="col-md-8 m-auto">
-                  <ListDonations
+                  <DonationList
                     donations={donations}
                     isLoading={isLoadingDonations}
                     total={donationsTotal}

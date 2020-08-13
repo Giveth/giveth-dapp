@@ -18,7 +18,7 @@ import CommunityButton from '../CommunityButton';
 import DelegateMultipleButton from '../DelegateMultipleButton';
 import ChangeOwnershipButton from '../ChangeOwnershipButton';
 import DownloadCsvButton from '../DownloadCsvButton';
-import ListDonations from '../ListDonations';
+import DonationList from '../DonationList';
 
 import User from '../../models/User';
 import Campaign from '../../models/Campaign';
@@ -403,7 +403,7 @@ class ViewCampaign extends Component {
                     <div className="col-md-8 m-auto">
                       <Balances entity={campaign} />
 
-                      <ListDonations
+                      <DonationList
                         donations={donations}
                         isLoading={isLoadingDonations}
                         total={donationsTotal}
