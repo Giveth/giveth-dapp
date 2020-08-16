@@ -281,7 +281,7 @@ class Profile extends Component {
                 <h4>Milestones</h4>
               )}
               <div>
-                {isLoadingMilestones && <Loader className="small" />}
+                {isLoadingMilestones && <Loader className="small relative" />}
                 {!isLoadingMilestones && milestones && milestones.data.length > 0 && (
                   <div className="table-container">
                     <table className="table table-responsive table-striped table-hover">
@@ -398,7 +398,7 @@ class Profile extends Component {
                 <h4>Campaigns</h4>
               )}
               <div>
-                {isLoadingCampaigns && <Loader className="small" />}
+                {isLoadingCampaigns && <Loader className="small relative" />}
                 {!isLoadingCampaigns && campaigns && campaigns.data.length > 0 && (
                   <div className="table-container">
                     <table className="table table-responsive table-striped table-hover">
@@ -475,7 +475,7 @@ class Profile extends Component {
 
               {(isLoadingDacs || (dacs && dacs.data.length > 0)) && <h4>Communities</h4>}
               <div>
-                {isLoadingDacs && <Loader className="small" />}
+                {isLoadingDacs && <Loader className="small relative" />}
                 {!isLoadingDacs && dacs && dacs.data.length > 0 && (
                   <div className="table-container">
                     <table className="table table-responsive table-striped table-hover">
@@ -542,7 +542,7 @@ class Profile extends Component {
                 <h4>Donations</h4>
               )}
               <div>
-                {isLoadingDonations && <Loader className="small" />}
+                {isLoadingDonations && <Loader className="small relative" />}
                 {!isLoadingDonations && (
                   <div className="table-container">
                     {donations && donations.data.length > 0 && (
