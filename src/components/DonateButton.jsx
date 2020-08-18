@@ -756,6 +756,8 @@ class DonateButton extends React.Component {
       });
     };
 
+    const capitalizeAdminType = type => type.charAt(0).toUpperCase() + type.slice(1);
+
     return (
       <span style={style}>
         <button type="button" className="btn btn-success" onClick={this.doDonate}>
@@ -812,9 +814,10 @@ class DonateButton extends React.Component {
                 )}
                 {model.type.toLowerCase() !== DAC.type && (
                   <span>
-                    You&apos;re committing your funds to this {model.type}, if you have filled out
-                    contact information in your <Link to="/profile">Profile</Link> you will be
-                    notified about how your funds are spent
+                    You&apos;re committing your funds to this {capitalizeAdminType(model.type)}, if
+                    you have filled out contact information in your{' '}
+                    <Link to="/profile">Profile</Link> you will be notified about how your funds are
+                    spent
                   </span>
                 )}
               </p>
