@@ -33,10 +33,36 @@ class EditProfile extends Component {
     this.submit = this.submit.bind(this);
     this.setImage = this.setImage.bind(this);
     this.togglePristine = this.togglePristine.bind(this);
+    this.checkNetwork = this.checkNetwork.bind(this);
   }
 
   componentDidMount() {
     this.mounted = true;
+    this.checkNetwork();
+  }
+
+  componentDidUpdate(prevProps) {
+    const { currentUser, balance, isForeignNetwork } = this.props;
+    if (
+      currentUser !== prevProps.currentUser ||
+      isForeignNetwork !== prevProps.isForeignNetwork ||
+      balance !== prevProps.balance
+    ) {
+      this.checkNetwork();
+    }
+  }
+
+  componentWillUnmount() {
+    this.mounted = false;
+  }
+
+  setImage(image) {
+    const { user } = this.state;
+    user.newAvatar = image;
+    this.setState({ user, isPristine: false });
+  }
+
+  checkNetwork() {
     const { currentUser, balance, isForeignNetwork, displayForeignNetRequiredWarning } = this.props;
     checkForeignNetwork(isForeignNetwork, displayForeignNetRequiredWarning)
       .then(() =>
@@ -55,16 +81,6 @@ class EditProfile extends Component {
           }),
       )
       .catch(() => {});
-  }
-
-  componentWillUnmount() {
-    this.mounted = false;
-  }
-
-  setImage(image) {
-    const { user } = this.state;
-    user.newAvatar = image;
-    this.setState({ user, isPristine: false });
   }
 
   submit() {

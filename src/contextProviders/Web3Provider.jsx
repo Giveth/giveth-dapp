@@ -95,7 +95,9 @@ class Web3Provider extends Component {
       showForeignNetRequiredWarning: false,
       showHomeNetRequiredWarning: false,
       onForeignNetWarningClose: undefined,
+      foreignNetWarningButtonLabel: 'Close',
       onHomeNetWarningClose: undefined,
+      homeNetWarningButtonLabel: 'Close',
     };
 
     this.enableTimedout = false;
@@ -253,17 +255,19 @@ class Web3Provider extends Component {
     this.setState({ isEnabled, account, balance }, () => this.props.onLoaded());
   }
 
-  displayForeignNetRequiredWarning(onClose) {
+  displayForeignNetRequiredWarning(onClose, buttonLabel = 'Close') {
     this.setState({
       showForeignNetRequiredWarning: true,
       onForeignNetWarningClose: onClose,
+      foreignNetWarningButtonLabel: buttonLabel,
     });
   }
 
-  displayHomeNetRequiredWarning(onClose) {
+  displayHomeNetRequiredWarning(onClose, buttonLabel = 'Close') {
     this.setState({
       showHomeNetRequiredWarning: true,
       onHomeNetWarningClose: onClose,
+      homeNetWarningButtonLabel: buttonLabel,
     });
   }
 
@@ -283,30 +287,34 @@ class Web3Provider extends Component {
     return (
       <Fragment>
         <ForeignRequiredModal
-          show={showForeignNetRequiredWarning}
+          show={showForeignNetRequiredWarning && !isForeignNetwork}
           closeModal={() => {
             const onClose = this.state.onForeignNetWarningClose || (() => {});
             this.setState(
               {
                 showForeignNetRequiredWarning: false,
                 onForeignNetWarningClose: undefined,
+                foreignNetWarningButtonLabel: undefined,
               },
               onClose,
             );
           }}
+          buttonLabel={this.state.foreignNetWarningButtonLabel}
         />
         <HomeRequiredModal
-          show={showHomeNetRequiredWarning}
+          show={showHomeNetRequiredWarning && !isHomeNetwork}
           closeModal={() => {
             const onClose = this.state.onHomeNetWarningClose || (() => {});
             this.setState(
               {
                 showHomeNetRequiredWarning: false,
                 onHomeNetWarningClose: undefined,
+                homeNetWarningButtonLabel: undefined,
               },
               onClose,
             );
           }}
+          buttonLabel={this.state.homeNetWarningButtonLabel}
         />
         <Provider
           value={{
