@@ -1065,20 +1065,22 @@ export default class Root extends React.PureComponent {
     // known user (with profile)
     const { donateToDefaultDac } = this.state;
 
-    if (donateToDefaultDac) {
-      React.swal({
-        title: 'Thank you!',
-        text: 'Would you like to support Giveth as well?',
-        icon: 'success',
-        buttons: ['No Thanks', 'Support Giveth'],
-      }).then(result => {
-        if (result) {
-          this.defaultDacDonateButton.current.openDialog();
-        }
-      });
+    if (!this.props.currentUser || this.props.currentUser.name) {
+      // known user
+      if (donateToDefaultDac) {
+        React.swal({
+          title: 'Thank you!',
+          text: 'Would you like to support Giveth as well?',
+          icon: 'success',
+          buttons: ['No Thanks', 'Support Giveth'],
+        }).then(result => {
+          if (result) {
+            this.defaultDacDonateButton.current.openDialog();
+          }
+        });
+      }
     }
-
-    // anon user (without profile)
+    //  anon user (without profile)
     checkProfileAfterDonation(this.props.currentUser);
   }
 
