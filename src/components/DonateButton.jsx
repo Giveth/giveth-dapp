@@ -1095,9 +1095,10 @@ export default class Root extends React.PureComponent {
           }
         });
       }
+    } else {
+      //  anon user (without profile)
+      checkProfileAfterDonation(this.props.currentUser);
     }
-    //  anon user (without profile)
-    checkProfileAfterDonation(this.props.currentUser);
   }
 
   render() {
