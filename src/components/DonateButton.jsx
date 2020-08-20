@@ -8,6 +8,7 @@ import { Form, Input } from 'formsy-react-components';
 import Toggle from 'react-toggle';
 import GA from 'lib/GoogleAnalytics';
 import { Link } from 'react-router-dom';
+import { withRouter } from 'react-router';
 import getNetwork from '../lib/blockchain/getNetwork';
 import User from '../models/User';
 import extraGas from '../lib/blockchain/extraGas';
@@ -106,6 +107,7 @@ class DonateButton extends React.Component {
     this.form = React.createRef();
     this.submit = this.submit.bind(this);
     this.openDialog = this.openDialog.bind(this);
+    this.doDonate = this.doDonate.bind(this);
     this.updateAllowance = this.updateAllowance.bind(this);
     this.updateAllowanceStatus = this.updateAllowanceStatus.bind(this);
   }
@@ -119,6 +121,18 @@ class DonateButton extends React.Component {
     });
     this.pollToken();
     this.updateAllowance();
+
+    setTimeout(() => {
+      const { match, disableAutoPopup } = this.props;
+      if (
+        !disableAutoPopup &&
+        match &&
+        typeof match.url === 'string' &&
+        match.url.endsWith('/donate')
+      ) {
+        this.doDonate();
+      }
+    }, 1000);
   }
 
   componentWillUnmount() {
@@ -306,6 +320,15 @@ class DonateButton extends React.Component {
     }
   }
 
+  doDonate() {
+    const { isEnabled, enableProvider } = this.props;
+
+    if (!isEnabled) {
+      enableProvider();
+    }
+    this.openDialog();
+  }
+
   submit({ amount, customAddress }) {
     const { model, currentUser, afterSuccessfulDonate } = this.props;
     const { adminId, dacId } = model;
@@ -356,7 +379,6 @@ class DonateButton extends React.Component {
 
   pollToken() {
     const { selectedToken } = this.state;
-    const { isCorrectNetwork, currentUser } = this.props;
 
     // stop existing poll
     if (this.stopPolling) {
@@ -370,6 +392,7 @@ class DonateButton extends React.Component {
       () => ({
         request: async () => {
           try {
+            const { isCorrectNetwork, currentUser } = this.props;
             const { tokens } = await getNetwork();
             const contract = tokens[selectedToken.address];
 
@@ -667,15 +690,7 @@ class DonateButton extends React.Component {
   }
 
   render() {
-    const {
-      model,
-      currentUser,
-      NativeTokenBalance,
-      isEnabled,
-      validProvider,
-      isCorrectNetwork,
-      enableProvider,
-    } = this.props;
+    const { model, currentUser, NativeTokenBalance, validProvider, isCorrectNetwork } = this.props;
     const {
       amount,
       formIsValid,
@@ -742,19 +757,11 @@ class DonateButton extends React.Component {
       });
     };
 
+    const capitalizeAdminType = type => type.charAt(0).toUpperCase() + type.slice(1);
+
     return (
       <span style={style}>
-        <button
-          type="button"
-          className="btn btn-success"
-          onClick={() => {
-            if (!isEnabled) {
-              enableProvider();
-            } else {
-              this.openDialog();
-            }
-          }}
-        >
+        <button type="button" className="btn btn-success" onClick={this.doDonate}>
           Donate
         </button>
         <Modal
@@ -808,9 +815,10 @@ class DonateButton extends React.Component {
                 )}
                 {model.type.toLowerCase() !== DAC.type && (
                   <span>
-                    You&apos;re committing your funds to this {model.type}, if you have filled out
-                    contact information in your <Link to="/profile">Profile</Link> you will be
-                    notified about how your funds are spent
+                    You&apos;re committing your funds to this {capitalizeAdminType(model.type)}, if
+                    you have filled out contact information in your{' '}
+                    <Link to="/profile">Profile</Link> you will be notified about how your funds are
+                    spent
                   </span>
                 )}
               </p>
@@ -1014,6 +1022,11 @@ DonateButton.propTypes = {
   isCorrectNetwork: PropTypes.bool.isRequired,
   tokenWhitelist: PropTypes.arrayOf(PropTypes.shape()).isRequired,
   afterSuccessfulDonate: PropTypes.func,
+  match: PropTypes.shape({
+    path: PropTypes.string.isRequired,
+    url: PropTypes.string.isRequired,
+  }),
+  disableAutoPopup: PropTypes.bool.isRequired,
 };
 
 DonateButton.defaultProps = {
@@ -1021,7 +1034,10 @@ DonateButton.defaultProps = {
   NativeTokenBalance: new BigNumber(0),
   maxDonationAmount: undefined, // new BigNumber(10000000000000000),
   afterSuccessfulDonate: () => {},
+  match: undefined,
 };
+
+const DonateButtonWithRouter = withRouter(DonateButton);
 
 export default class Root extends React.PureComponent {
   constructor(props) {
@@ -1095,7 +1111,7 @@ export default class Root extends React.PureComponent {
               actions: { enableProvider },
             }) => (
               <Fragment>
-                <DonateButton
+                <DonateButtonWithRouter
                   NativeTokenBalance={balance}
                   validProvider={validProvider}
                   isCorrectNetwork={isHomeNetwork}
@@ -1117,6 +1133,7 @@ export default class Root extends React.PureComponent {
                       model={defaultDacModel}
                       currentUser={this.props.currentUser}
                       ref={this.defaultDacDonateButton}
+                      disableAutoPopup={this.props.disableAutoPopup}
                     />
                   </div>
                 )}
@@ -1132,8 +1149,10 @@ export default class Root extends React.PureComponent {
 Root.propTypes = {
   model: modelTypes.isRequired,
   currentUser: PropTypes.instanceOf(User),
+  disableAutoPopup: PropTypes.bool,
 };
 
 Root.defaultProps = {
   currentUser: undefined,
+  disableAutoPopup: false,
 };

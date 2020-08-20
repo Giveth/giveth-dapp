@@ -13,7 +13,7 @@ function ViewNetworkWarning(props) {
       <div>
         <div className="alert alert-warning">
           <i className="fa fa-exclamation-triangle" />
-          To enable all actions, please connect Metamask to <strong>{networkName}</strong> network.
+          To enable all actions, please connect MetaMask to <strong>{networkName}</strong> network.
           <button
             type="button"
             data-toggle="modal"
@@ -35,7 +35,7 @@ function ViewNetworkWarning(props) {
             <div className="modal-content">
               <div className="modal-header">
                 <h5 className="modal-title" id="networkChangeModalLabel">
-                  Change Metamask Network
+                  Change MetaMask Network
                 </h5>
               </div>
               <div className="modal-body">{NetworkChangeGuide}</div>

@@ -71,9 +71,10 @@ class FormsyImageUploader extends Component {
   }
 
   render() {
+    const isPreview = this.props.previewImage || this.previewImage;
     return (
       <div>
-        {(this.props.previewImage || this.previewImage) && this.props.resize && (
+        {isPreview && this.props.resize && (
           <div>
             <div style={{ width: '100%' }}>
               <Cropper
@@ -94,7 +95,7 @@ class FormsyImageUploader extends Component {
             </div>
           </div>
         )}
-        {(this.props.avatar || this.state.image) && this.props.resize && (
+        {!isPreview && (this.props.avatar || this.state.image) && this.props.resize && (
           <div>
             <div style={{ width: '100%' }}>
               <Cropper
