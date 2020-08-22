@@ -2,7 +2,6 @@ import React, { Component, Fragment } from 'react';
 import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 import Avatar from 'react-avatar';
-import ReactHtmlParser, { convertNodeToElement } from 'react-html-parser';
 import BigNumber from 'bignumber.js';
 import { Helmet, HelmetProvider } from 'react-helmet-async';
 import Balances from 'components/Balances';
@@ -19,6 +18,7 @@ import DelegateMultipleButton from '../DelegateMultipleButton';
 import ChangeOwnershipButton from '../ChangeOwnershipButton';
 import DownloadCsvButton from '../DownloadCsvButton';
 import DonationList from '../DonationList';
+import DescriptionRender from '../DescriptionRender';
 
 import User from '../../models/User';
 import Campaign from '../../models/Campaign';
@@ -165,35 +165,7 @@ class ViewCampaign extends Component {
   }
 
   renderDescription() {
-    return ReactHtmlParser(this.state.campaign.description, {
-      transform(node, index) {
-        if (node.attribs && node.attribs.class === 'ql-video') {
-          const url = node.attribs.src;
-          const match =
-            url.match(/^(https?):\/\/(?:(?:www|m)\.)?youtube\.com\/([a-zA-Z0-9_-]+)/) ||
-            url.match(/^(https?):\/\/(?:(?:www|m)\.)?youtu\.be\/([a-zA-Z0-9_-]+)/) ||
-            url.match(/^(https?):\/\/(?:(?:fame)\.)?giveth\.io\/([a-zA-Z0-9_-]+)/);
-          if (match) {
-            return (
-              <div className="video-wrapper" key={index}>
-                {convertNodeToElement(node, index)}
-              </div>
-            );
-          }
-          return (
-            <video width="100%" height="auto" controls name="media">
-              <source src={node.attribs.src} type="video/webm" />
-            </video>
-          );
-        }
-        if (node.name === 'img') {
-          return (
-            <img key="" style={{ height: 'auto', width: '100%' }} alt="" src={node.attribs.src} />
-          );
-        }
-        return undefined;
-      },
-    });
+    return DescriptionRender(this.state.campaign.description);
   }
 
   render() {

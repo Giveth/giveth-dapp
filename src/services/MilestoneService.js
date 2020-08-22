@@ -20,7 +20,6 @@ import Donation from '../models/Donation';
 import BridgedMilestone from '../models/BridgedMilestone';
 import LPPCappedMilestone from '../models/LPPCappedMilestone';
 import LPMilestone from '../models/LPMilestone';
-// import { getCutOffAmountWei } from '../lib/helpers';
 
 const milestones = feathersClient.service('milestones');
 
@@ -400,6 +399,16 @@ class MilestoneService {
       }
 
       const profileHash = await this.uploadToIPFS(milestone);
+
+      // nothing to update or failed ipfs upload
+      if (milestone.projectId && (milestone.url === profileHash || !profileHash)) {
+        // ipfs upload may have failed, but we still want to update feathers
+        if (!profileHash) {
+          await milestones.patch(milestone._id, milestone.toFeathers());
+        }
+        afterSave(null, false);
+        return true;
+      }
 
       const network = await getNetwork();
       etherScanUrl = network.etherScanUrl;
