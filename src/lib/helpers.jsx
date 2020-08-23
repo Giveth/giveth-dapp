@@ -12,11 +12,15 @@ import config from '../configuration';
 export const isOwner = (address, currentUser) =>
   address !== undefined && currentUser !== undefined && currentUser.address === address;
 
-export const getTruncatedText = (text = '', maxLength = 45) => {
-  const txt = text
+export const getHtmlText = text => {
+  return text
     .replace(/<\/(?:.|\n)*?>/gm, ' ') // replace closing tags w/ a space
     .replace(/<(?:.|\n)*?>/gm, '') // strip opening tags
     .trim();
+};
+
+export const getTruncatedText = (text = '', maxLength = 45) => {
+  const txt = getHtmlText(text);
   if (txt.length > maxLength) {
     return `${txt.substr(0, maxLength).trim()}...`;
   }
