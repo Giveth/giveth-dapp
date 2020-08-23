@@ -339,7 +339,20 @@ class ViewCampaign extends Component {
                       <div className="card content-card ">
                         <div className="card-body content">{this.renderDescription()}</div>
                       </div>
-
+                      <div className="text-center">
+                        <div style={{ transform: 'translateY(-50%)' }}>
+                          <DonateButton
+                            model={{
+                              type: Campaign.type,
+                              title: campaign.title,
+                              id: campaign.id,
+                              adminId: campaign.projectId,
+                            }}
+                            currentUser={currentUser}
+                            history={history}
+                          />
+                        </div>
+                      </div>
                       <div className="milestone-header spacer-top-50 card-view">
                         <h3>Milestones</h3>
                         {campaign.projectId > 0 && isOwner(campaign.owner.address, currentUser) && (
