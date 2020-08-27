@@ -1078,7 +1078,6 @@ export default class Root extends React.PureComponent {
   }
 
   afterSuccessfulDonate() {
-    // known user (with profile)
     const { donateToDefaultDac } = this.state;
 
     if (!this.props.currentUser || this.props.currentUser.name) {
