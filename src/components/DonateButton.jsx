@@ -29,6 +29,7 @@ import RangeSlider from './RangeSlider';
 import NumericInput from './NumericInput';
 import getWeb3 from '../lib/blockchain/getWeb3';
 import ExchangeButton from './ExchangeButton';
+import { checkProfileAfterDonation } from '../lib/middleware';
 
 const POLL_DELAY_TOKENS = 2000;
 const UPDATE_ALLOWANCE_DELAY = 1000; // Delay allowance update inorder to network respond new value
@@ -1078,17 +1079,24 @@ export default class Root extends React.PureComponent {
 
   afterSuccessfulDonate() {
     const { donateToDefaultDac } = this.state;
-    if (donateToDefaultDac) {
-      React.swal({
-        title: 'Thank you!',
-        text: 'Would you like to support Giveth as well?',
-        icon: 'success',
-        buttons: ['No Thanks', 'Support Giveth'],
-      }).then(result => {
-        if (result) {
-          this.defaultDacDonateButton.current.openDialog();
-        }
-      });
+
+    if (!this.props.currentUser || this.props.currentUser.name) {
+      // known user
+      if (donateToDefaultDac) {
+        React.swal({
+          title: 'Thank you!',
+          text: 'Would you like to support Giveth as well?',
+          icon: 'success',
+          buttons: ['No Thanks', 'Support Giveth'],
+        }).then(result => {
+          if (result) {
+            this.defaultDacDonateButton.current.openDialog();
+          }
+        });
+      }
+    } else {
+      //  anon user (without profile)
+      checkProfileAfterDonation(this.props.currentUser);
     }
   }
 
