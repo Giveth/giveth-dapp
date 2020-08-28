@@ -194,8 +194,25 @@ class ViewDAC extends Component {
                     </Link>
                   </center>
 
-                  <div className="card content-card">
+                  <div className="card content-card" style={{ 'margin-bottom': '0' }}>
                     <div className="card-body content">{ReactHtmlParser(dac.description)}</div>
+                  </div>
+                  <div className="text-center">
+                    <div style={{ transform: 'translateY(-50%)' }}>
+                      <DonateButton
+                        model={{
+                          type: DAC.type,
+                          title: dac.title,
+                          id: dac.id,
+                          token: { symbol: config.nativeTokenName },
+                          adminId: dac.delegateId,
+                        }}
+                        currentUser={currentUser}
+                        commmunityUrl={dac.communityUrl}
+                        history={history}
+                        disableAutoPopup
+                      />
+                    </div>
                   </div>
                 </div>
               </div>
@@ -245,6 +262,7 @@ class ViewDAC extends Component {
                       adminId: dac.delegateId,
                     }}
                     currentUser={currentUser}
+                    commmunityUrl={dac.communityUrl}
                     history={history}
                     disableAutoPopup
                   />
