@@ -155,6 +155,19 @@ class Web3Provider extends Component {
         }
         pollAccount(web3, {
           onAccount: async account => {
+            if (!web3.isEnabled) {
+              ethereum
+                .request({ method: 'eth_accounts' })
+                .then(accounts => {
+                  web3.isEnabled = accounts.length !== 0;
+                })
+                .catch(() => {
+                  web3.isEnabled = false;
+                })
+                .finally(() => {
+                  this.setState({ isEnabled: web3.isEnabled });
+                });
+            }
             this.setState({
               account,
               isEnabled: web3.isEnabled,
