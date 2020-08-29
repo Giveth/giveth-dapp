@@ -117,7 +117,8 @@ class Web3Provider extends Component {
       const { ethereum } = web3;
       const isMetaMask = !!web3.isMetaMask;
 
-      if (isMetaMask) {
+      // chainChanged event doesn not called in localhost network
+      if (isMetaMask && config.title !== 'Ganache') {
         fetchNetwork(web3).then(({ networkId }) => {
           this.setState(getNetworkState(networkId));
         });
