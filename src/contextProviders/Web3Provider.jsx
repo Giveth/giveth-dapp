@@ -156,7 +156,7 @@ class Web3Provider extends Component {
         }
         pollAccount(web3, {
           onAccount: async account => {
-            if (!web3.isEnabled) {
+            if (!web3.isEnabled && isMetaMask) {
               ethereum
                 .request({ method: 'eth_accounts' })
                 .then(accounts => {
