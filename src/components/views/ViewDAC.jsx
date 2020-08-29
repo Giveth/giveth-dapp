@@ -169,7 +169,6 @@ class ViewDAC extends Component {
                   adminId: dac.delegateId,
                 }}
                 currentUser={currentUser}
-                commmunityUrl={dac.communityUrl}
                 history={history}
               />
               {dac.communityUrl && (
@@ -208,7 +207,6 @@ class ViewDAC extends Component {
                           adminId: dac.delegateId,
                         }}
                         currentUser={currentUser}
-                        commmunityUrl={dac.communityUrl}
                         history={history}
                         disableAutoPopup
                       />
@@ -262,7 +260,6 @@ class ViewDAC extends Component {
                       adminId: dac.delegateId,
                     }}
                     currentUser={currentUser}
-                    commmunityUrl={dac.communityUrl}
                     history={history}
                     disableAutoPopup
                   />
