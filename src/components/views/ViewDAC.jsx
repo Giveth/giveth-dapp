@@ -4,7 +4,6 @@ import PropTypes from 'prop-types';
 
 import { Link } from 'react-router-dom';
 import Avatar from 'react-avatar';
-import ReactHtmlParser from 'react-html-parser';
 
 import Balances from 'components/Balances';
 import Loader from '../Loader';
@@ -23,6 +22,7 @@ import config from '../../configuration';
 import NotFound from './NotFound';
 import { checkBalance } from '../../lib/middleware';
 import ErrorPopup from '../ErrorPopup';
+import DescriptionRender from '../DescriptionRender';
 
 /**
  * The DAC detail view mapped to /dac/id
@@ -118,6 +118,10 @@ class ViewDAC extends Component {
       });
   }
 
+  renderDescription() {
+    return DescriptionRender(this.state.dac.description);
+  }
+
   render() {
     const { balance, currentUser } = this.props;
     const {
@@ -195,7 +199,7 @@ class ViewDAC extends Component {
                   </center>
 
                   <div className="card content-card" style={{ 'margin-bottom': '0' }}>
-                    <div className="card-body content">{ReactHtmlParser(dac.description)}</div>
+                    <div className="card-body content">{this.renderDescription()}</div>
                   </div>
                   <div className="text-center">
                     <div style={{ transform: 'translateY(-50%)' }}>

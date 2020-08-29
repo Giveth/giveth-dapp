@@ -29,6 +29,7 @@ import RangeSlider from './RangeSlider';
 import NumericInput from './NumericInput';
 import getWeb3 from '../lib/blockchain/getWeb3';
 import ExchangeButton from './ExchangeButton';
+import { checkProfileAfterDonation } from '../lib/middleware';
 
 const POLL_DELAY_TOKENS = 2000;
 const UPDATE_ALLOWANCE_DELAY = 1000; // Delay allowance update inorder to network respond new value
@@ -756,6 +757,8 @@ class DonateButton extends React.Component {
       });
     };
 
+    const capitalizeAdminType = type => type.charAt(0).toUpperCase() + type.slice(1);
+
     return (
       <span style={style}>
         <button type="button" className="btn btn-success" onClick={this.doDonate}>
@@ -812,9 +815,10 @@ class DonateButton extends React.Component {
                 )}
                 {model.type.toLowerCase() !== DAC.type && (
                   <span>
-                    You&apos;re committing your funds to this {model.type}, if you have filled out
-                    contact information in your <Link to="/profile">Profile</Link> you will be
-                    notified about how your funds are spent
+                    You&apos;re committing your funds to this {capitalizeAdminType(model.type)}, if
+                    you have filled out contact information in your{' '}
+                    <Link to="/profile">Profile</Link> you will be notified about how your funds are
+                    spent
                   </span>
                 )}
               </p>
@@ -1075,17 +1079,24 @@ export default class Root extends React.PureComponent {
 
   afterSuccessfulDonate() {
     const { donateToDefaultDac } = this.state;
-    if (donateToDefaultDac) {
-      React.swal({
-        title: 'Thank you!',
-        text: 'Would you like to support Giveth as well?',
-        icon: 'success',
-        buttons: ['No Thanks', 'Support Giveth'],
-      }).then(result => {
-        if (result) {
-          this.defaultDacDonateButton.current.openDialog();
-        }
-      });
+
+    if (!this.props.currentUser || this.props.currentUser.name) {
+      // known user
+      if (donateToDefaultDac) {
+        React.swal({
+          title: 'Thank you!',
+          text: 'Would you like to support Giveth as well?',
+          icon: 'success',
+          buttons: ['No Thanks', 'Support Giveth'],
+        }).then(result => {
+          if (result) {
+            this.defaultDacDonateButton.current.openDialog();
+          }
+        });
+      }
+    } else {
+      //  anon user (without profile)
+      checkProfileAfterDonation(this.props.currentUser);
     }
   }
 

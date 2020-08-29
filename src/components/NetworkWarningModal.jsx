@@ -21,7 +21,7 @@ const modalStyles = {
 Modal.setAppElement('#root');
 
 const NetworkWarningModal = props => {
-  const { show, closeModal, networkName } = props;
+  const { show, closeModal, networkName, buttonLabel } = props;
   return (
     <Modal
       isOpen={show}
@@ -33,7 +33,7 @@ const NetworkWarningModal = props => {
         <ActionNetworkWarning incorrectNetwork networkName={networkName} />
       </div>
       <button type="button" className="btn btn-light float-right" onClick={closeModal}>
-        Close
+        {buttonLabel}
       </button>
     </Modal>
   );
@@ -43,6 +43,7 @@ NetworkWarningModal.propTypes = {
   show: PropTypes.bool.isRequired,
   closeModal: PropTypes.func.isRequired,
   networkName: PropTypes.string.isRequired,
+  buttonLabel: PropTypes.string.isRequired,
 };
 
 const ForeignRequiredModal = props => {
@@ -55,10 +56,12 @@ const HomeRequiredModal = props => {
 ForeignRequiredModal.propTypes = {
   show: PropTypes.bool.isRequired,
   closeModal: PropTypes.func.isRequired,
+  buttonLabel: PropTypes.string.isRequired,
 };
 HomeRequiredModal.propTypes = {
   show: PropTypes.bool.isRequired,
   closeModal: PropTypes.func.isRequired,
+  buttonLabel: PropTypes.string.isRequired,
 };
 
 export { ForeignRequiredModal, HomeRequiredModal };

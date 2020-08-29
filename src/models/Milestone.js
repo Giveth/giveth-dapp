@@ -124,6 +124,10 @@ export default class Milestone extends BasicModel {
         fiatAmount: this._fiatAmount.toString(),
         conversionRate: this._conversionRate,
       });
+    } else {
+      Object.assign(milestone, {
+        maxAmount: null,
+      });
     }
     if (!this.id) milestone.txHash = txHash;
 
@@ -632,9 +636,7 @@ export default class Milestone extends BasicModel {
     return (
       user &&
       user.address &&
-      [this.ownerAddress, this.campaign.ownerAddress, this.campaign.coownerAddress].includes(
-        user.address,
-      ) &&
+      this.ownerAddress === user.address &&
       [
         Milestone.PROPOSED,
         Milestone.REJECTED,
