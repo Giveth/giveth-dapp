@@ -62,9 +62,7 @@ export default class LPMilestone extends Milestone {
     return (
       user &&
       user.address &&
-      [this.ownerAddress, this.campaign.ownerAddress, this.campaign.coownerAddress].includes(
-        user.address,
-      ) &&
+      this.ownerAddress === user.address &&
       [
         Milestone.PROPOSED,
         Milestone.REJECTED,
