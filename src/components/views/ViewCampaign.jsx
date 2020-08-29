@@ -310,6 +310,21 @@ class ViewCampaign extends Component {
 
                       <div className="card content-card ">
                         <div className="card-body content">{this.renderDescription()}</div>
+                        {campaign.isActive && (
+                          <div className="bottom-donate-button text-center">
+                            <DonateButton
+                              model={{
+                                type: Campaign.type,
+                                title: campaign.title,
+                                id: campaign.id,
+                                adminId: campaign.projectId,
+                              }}
+                              currentUser={currentUser}
+                              history={history}
+                              disableAutoPopup
+                            />
+                          </div>
+                        )}
                       </div>
 
                       <div className="milestone-header spacer-top-50 card-view">
@@ -382,18 +397,20 @@ class ViewCampaign extends Component {
                         loadMore={this.loadMoreDonations}
                         newDonations={newDonations}
                       />
-                      <DonateButton
-                        model={{
-                          type: Campaign.type,
-                          title: campaign.title,
-                          id: campaign.id,
-                          adminId: campaign.projectId,
-                          token: { symbol: config.nativeTokenName },
-                        }}
-                        currentUser={currentUser}
-                        history={history}
-                        disableAutoPopup
-                      />
+                      {campaign.isActive && (
+                        <DonateButton
+                          model={{
+                            type: Campaign.type,
+                            title: campaign.title,
+                            id: campaign.id,
+                            adminId: campaign.projectId,
+                            token: { symbol: config.nativeTokenName },
+                          }}
+                          currentUser={currentUser}
+                          history={history}
+                          disableAutoPopup
+                        />
+                      )}
                     </div>
                   </div>
                   <div className="row spacer-top-50 spacer-bottom-50">

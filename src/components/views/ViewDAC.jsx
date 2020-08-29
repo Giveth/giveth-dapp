@@ -173,7 +173,6 @@ class ViewDAC extends Component {
                   adminId: dac.delegateId,
                 }}
                 currentUser={currentUser}
-                commmunityUrl={dac.communityUrl}
                 history={history}
               />
               {dac.communityUrl && (
@@ -200,6 +199,20 @@ class ViewDAC extends Component {
 
                   <div className="card content-card">
                     <div className="card-body content">{this.renderDescription()}</div>
+                    <div className="bottom-donate-button text-center">
+                      <DonateButton
+                        model={{
+                          type: DAC.type,
+                          title: dac.title,
+                          id: dac.id,
+                          token: { symbol: config.nativeTokenName },
+                          adminId: dac.delegateId,
+                        }}
+                        currentUser={currentUser}
+                        history={history}
+                        disableAutoPopup
+                      />
+                    </div>
                   </div>
                 </div>
               </div>

@@ -93,6 +93,20 @@ $aspect-ratio: percentage(9/16); //16:9 ratio
     border: none;
   }
 
+  .bottom-donate-button{
+    position: absolute;
+    transform: translateY(70%);
+    margin: auto;
+    left: 0;
+    right: 0;
+    bottom: 0;
+
+    button{
+      padding-right: 3em;
+      padding-left: 3em;
+    }
+  }
+
   &:after {
     position: absolute;
     content: "";

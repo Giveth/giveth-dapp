@@ -313,6 +313,33 @@ class ViewMilestone extends Component {
 
                   <div className="card content-card">
                     <div className="card-body content">{this.renderDescription()}</div>
+                    {this.isActiveMilestone() && (
+                      <div className="bottom-donate-button text-center">
+                        <DonateButton
+                          model={{
+                            type: Milestone.type,
+                            acceptsSingleToken: milestone.acceptsSingleToken,
+                            title: milestone.title,
+                            id: milestone.id,
+                            adminId: milestone.projectId,
+                            dacId: milestone.dacId,
+                            campaignId: campaign._id,
+                            token: milestone.acceptsSingleToken ? milestone.token : undefined,
+                            isCapped: milestone.isCapped,
+                            ownerAddress: milestone.ownerAddress,
+                          }}
+                          currentUser={currentUser}
+                          history={history}
+                          disableAutoPopup
+                          type={Milestone.type}
+                          maxDonationAmount={
+                            milestone.isCapped
+                              ? milestone.maxAmount.minus(milestone.totalDonatedSingleToken)
+                              : undefined
+                          }
+                        />
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -593,6 +620,7 @@ class ViewMilestone extends Component {
                       }}
                       currentUser={currentUser}
                       history={history}
+                      disableAutoPopup
                       type={Milestone.type}
                       maxDonationAmount={
                         milestone.isCapped
