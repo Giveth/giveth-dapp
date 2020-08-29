@@ -193,11 +193,9 @@ class ViewDAC extends Component {
                     </Link>
                   </center>
 
-                  <div className="card content-card" style={{ 'margin-bottom': '0' }}>
+                  <div className="card content-card">
                     <div className="card-body content">{ReactHtmlParser(dac.description)}</div>
-                  </div>
-                  <div className="text-center">
-                    <div style={{ transform: 'translateY(-50%)' }}>
+                    <div className="bottom-donate-button text-center">
                       <DonateButton
                         model={{
                           type: DAC.type,

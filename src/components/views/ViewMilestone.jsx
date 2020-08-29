@@ -339,10 +339,8 @@ class ViewMilestone extends Component {
 
                   <div className="card content-card">
                     <div className="card-body content">{this.renderDescription()}</div>
-                  </div>
-                  {this.isActiveMilestone() && (
-                    <div className="text-center">
-                      <div style={{ transform: 'translateY(-50%)' }}>
+                    {this.isActiveMilestone() && (
+                      <div className="bottom-donate-button text-center">
                         <DonateButton
                           model={{
                             type: Milestone.type,
@@ -367,8 +365,8 @@ class ViewMilestone extends Component {
                           }
                         />
                       </div>
-                    </div>
-                  )}
+                    )}
+                  </div>
                 </div>
               </div>
 

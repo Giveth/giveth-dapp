@@ -338,10 +338,8 @@ class ViewCampaign extends Component {
 
                       <div className="card content-card ">
                         <div className="card-body content">{this.renderDescription()}</div>
-                      </div>
-                      {campaign.isActive && (
-                        <div className="text-center">
-                          <div style={{ transform: 'translateY(-50%)' }}>
+                        {campaign.isActive && (
+                          <div className="bottom-donate-button text-center">
                             <DonateButton
                               model={{
                                 type: Campaign.type,
@@ -354,8 +352,9 @@ class ViewCampaign extends Component {
                               disableAutoPopup
                             />
                           </div>
-                        </div>
-                      )}
+                        )}
+                      </div>
+
                       <div className="milestone-header spacer-top-50 card-view">
                         <h3>Milestones</h3>
                         {campaign.projectId > 0 && isOwner(campaign.owner.address, currentUser) && (
