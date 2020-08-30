@@ -117,7 +117,8 @@ class Web3Provider extends Component {
       const { ethereum } = web3;
       const isMetaMask = !!web3.isMetaMask;
 
-      if (isMetaMask) {
+      // chainChanged event doesn not called in localhost network
+      if (isMetaMask && config.title !== 'Ganache') {
         fetchNetwork(web3).then(({ networkId }) => {
           this.setState(getNetworkState(networkId));
         });
@@ -155,6 +156,19 @@ class Web3Provider extends Component {
         }
         pollAccount(web3, {
           onAccount: async account => {
+            if (!web3.isEnabled && isMetaMask) {
+              ethereum
+                .request({ method: 'eth_accounts' })
+                .then(accounts => {
+                  web3.isEnabled = accounts.length !== 0;
+                })
+                .catch(() => {
+                  web3.isEnabled = false;
+                })
+                .finally(() => {
+                  this.setState({ isEnabled: web3.isEnabled });
+                });
+            }
             this.setState({
               account,
               isEnabled: web3.isEnabled,
