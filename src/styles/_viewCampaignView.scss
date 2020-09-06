@@ -67,6 +67,10 @@
       list-style-type: none;
     }
 
+    ul > li::before {
+      content: '\2022';
+    }
+
     li:before  {
       display: inline-block;
       white-space: nowrap;
