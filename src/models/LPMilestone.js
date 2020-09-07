@@ -58,21 +58,6 @@ export default class LPMilestone extends Milestone {
     );
   }
 
-  canUserEdit(user) {
-    return (
-      user &&
-      user.address &&
-      this.ownerAddress === user.address &&
-      [
-        Milestone.PROPOSED,
-        Milestone.REJECTED,
-        Milestone.IN_PROGRESS,
-        Milestone.NEEDS_REVIEW,
-      ].includes(this.status) &&
-      this.totalDonations <= 0
-    );
-  }
-
   canUserChangeRecipient() {
     return false;
   }
