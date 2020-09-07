@@ -636,14 +636,16 @@ export default class Milestone extends BasicModel {
     return (
       user &&
       user.address &&
-      this.ownerAddress === user.address &&
-      [
-        Milestone.PROPOSED,
-        Milestone.REJECTED,
-        Milestone.IN_PROGRESS,
-        Milestone.NEEDS_REVIEW,
-      ].includes(this.status) &&
-      this.totalDonations <= 0
+      this.totalDonations <= 0 &&
+      ((this.ownerAddress === user.address &&
+        [
+          Milestone.PROPOSED,
+          Milestone.REJECTED,
+          Milestone.IN_PROGRESS,
+          Milestone.NEEDS_REVIEW,
+        ].includes(this.status)) ||
+        ([this.campaign.ownerAddress, this.campaign.coownerAddress].includes(user.address) &&
+          this.status === Milestone.PROPOSED))
     );
   }
 
