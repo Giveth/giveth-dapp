@@ -47,69 +47,8 @@
   }
 
   .card-body.content {
-    @include bullet-styling(8);
-    ol {
-      li{
-        &.ql-indent-1 {
-          counter-reset: list-2 list-3 list-4 list-5 list-6 list-7;
-        }
-        &.ql-indent-2 {
-          counter-reset: list-3 list-4 list-5 list-6 list-7;
-        }
-        &.ql-indent-3 {
-          counter-reset: list-4 list-5 list-6 list-7;
-        }
-        &.ql-indent-4 {
-          counter-reset: list-5 list-6 list-7;
-        }
-        &.ql-indent-5 {
-          counter-reset: list-6 list-7;
-        }
-        &.ql-indent-6 {
-          counter-reset: list-7;
-        }
-        &.ql-indent-1:before {
-          content: counter(list-1, lower-alpha) '. ';
-        }
-        &.ql-indent-2:before {
-          content: counter(list-2, lower-roman) '. ';
-        }
-        &.ql-indent-3:before {
-          content: counter(list-3, decimal) '. ';
-        }
-        &.ql-indent-4:before {
-          content: counter(list-4, lower-alpha) '. ';
-        }
-        &.ql-indent-5:before {
-          content: counter(list-5, lower-roman) '. ';
-        }
-        &.ql-indent-6:before {
-          content: counter(list-6, decimal) '. ';
-        }
-        &.ql-indent-7:before {
-          content: counter(list-7, lower-alpha) '. ';
-        }
-        &:before  {
-          content: counter(list-num, decimal) '. ';
-        }
-        counter-reset: list-1 list-2 list-3 list-4 list-5 list-6 list-7;
-        counter-increment: list-num;
-      }
-      counter-reset: list-1 list-2 list-3 list-4 list-5 list-6 list-7;
-    }
+    @include quill-theme;
 
-    ol > li, ul > li{
-      list-style-type: none;
-    }
-
-    li:before  {
-      display: inline-block;
-      white-space: nowrap;
-      width: 1.2em;
-      text-align: right;
-      margin-right: 0.3em;
-      margin-left: -1.5em;
-    }
     .video-wrapper {
       position: relative;
       min-height: 400px;
