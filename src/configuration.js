@@ -15,6 +15,8 @@ const {
   REACT_APP_NATIVE_TOKEN_NAME,
   REACT_APP_DONATION_COLLECT_COUNT_LIMIT = 10,
   REACT_APP_DONATION_DELEGATE_COUNT_LIMIT = 10,
+  CONVERSATION_MESSAGE_SIZE_MIN_LIMIT = 0,
+  CONVERSATION_MESSAGE_SIZE_MAX_LIMIT = 150,
 } = process.env;
 
 const configurations = {
@@ -171,6 +173,8 @@ config.networkName = REACT_APP_NETWORK_NAME || config.networkName;
 config.nativeTokenName = REACT_APP_NATIVE_TOKEN_NAME || config.nativeTokenName;
 config.donationCollectCountLimit = REACT_APP_DONATION_COLLECT_COUNT_LIMIT || 15;
 config.donationDelegateCountLimit = REACT_APP_DONATION_DELEGATE_COUNT_LIMIT || 15;
+config.conversationMessageSizeMinLimit = CONVERSATION_MESSAGE_SIZE_MIN_LIMIT || 0;
+config.conversationMessageSizeMaxLimit = CONVERSATION_MESSAGE_SIZE_MAX_LIMIT || 150;
 config.sendErrors = ['localhost', 'develop', 'release', 'beta'].includes(REACT_APP_ENVIRONMENT);
 
 export default config;
