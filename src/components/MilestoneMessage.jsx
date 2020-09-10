@@ -1,26 +1,26 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-
 import Milestone from 'models/Milestone';
 import User from 'models/User';
+import config from '../configuration';
 import { feathersClient } from '../lib/feathersClient';
 import ErrorPopup from './ErrorPopup';
 import { authenticateIfPossible, checkProfile } from '../lib/middleware';
 
-/* eslint no-underscore-dangle: 0 */
 class MilestoneMessage extends Component {
   constructor() {
     super();
-
     this.state = {
       editMode: false,
       content: '',
+      charLeft: config.conversationMessageSizeMaxLimit,
+      maxChar: config.conversationMessageSizeMaxLimit,
+      minChar: config.conversationMessageSizeMinLimit,
     };
   }
 
   checkUser() {
     if (!this.props.currentUser) {
-      // history.push('/');
       return Promise.reject();
     }
 
@@ -30,7 +30,10 @@ class MilestoneMessage extends Component {
   }
 
   handleChange(e) {
-    this.setState({ content: e.target.value });
+    const { maxChar } = this.state;
+    const charCount = e.target.value.length;
+    const charLeft = maxChar - charCount;
+    this.setState({ content: e.target.value, charLeft });
   }
 
   editMessage() {
@@ -64,7 +67,10 @@ class MilestoneMessage extends Component {
         message: this.state.content,
         messageContext: 'comment',
       })
-      .then(() => this.setState({ editMode: false }))
+      .then(() => {
+        const { maxChar } = this.state;
+        this.setState({ editMode: false, content: '', charLeft: maxChar });
+      })
       .catch(err => {
         if (err.name === 'NotAuthenticated') {
           console.log('NotAuthenticated');
@@ -75,7 +81,7 @@ class MilestoneMessage extends Component {
   }
 
   render() {
-    const { content, editMode } = this.state;
+    const { content, editMode, maxChar, charLeft, minChar } = this.state;
 
     return (
       <div id="milestone-comment">
@@ -91,24 +97,40 @@ class MilestoneMessage extends Component {
         {this.canUserEdit() && editMode && (
           <div>
             <textarea
-              className="w-100 "
-              name=""
-              id=""
-              cols="30"
-              rows="6"
+              className="w-100"
+              name="comment"
+              id="comment-input"
+              /* eslint-disable-next-line jsx-a11y/no-autofocus */
+              autoFocus
+              rows={6}
+              cols={30}
+              required
               value={content}
+              maxLength={maxChar}
               onChange={e => this.handleChange(e)}
             />
-            <button type="button" className="btn btn-link" onClick={() => this.createMessage()}>
+            <button
+              className="btn btn-link"
+              type="button"
+              disabled={content.length < minChar || content.length > maxChar}
+              onClick={() => this.createMessage()}
+            >
               Add
             </button>
             <button
               type="button"
               className="btn btn-link"
-              onClick={() => this.setState({ editMode: false })}
+              onClick={() =>
+                this.setState({
+                  editMode: false,
+                  content: '',
+                  charLeft: maxChar,
+                })
+              }
             >
               Cancel
             </button>
+            <span className="char-left pull-right text-muted ">{charLeft}</span>
           </div>
         )}
       </div>

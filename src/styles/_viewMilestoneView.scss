@@ -93,4 +93,12 @@
   .form-group > .donation-counter:last-child {
     margin-bottom: 0;
   }
+  #milestone-comment{
+    textarea{
+      padding: .5em 1em;
+    }
+    .char-left{
+      user-select: none;
+    }
+  }
 }
