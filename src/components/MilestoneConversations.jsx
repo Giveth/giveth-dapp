@@ -16,6 +16,7 @@ import MilestoneItemModel from 'models/MilestoneItem';
 import { utils } from 'web3';
 import Loader from './Loader';
 import { feathersClient } from '../lib/feathersClient';
+import MilestoneMessage from './MilestoneMessage';
 
 /* eslint no-underscore-dangle: 0 */
 class MilestoneConversations extends Component {
@@ -69,6 +70,7 @@ class MilestoneConversations extends Component {
     if (messageContext === 'proposedAccepted') return 'accepted proposed Milestone';
     if (messageContext === 'archived') return 'archived Milestone';
     if (messageContext === 'rePropose') return 're-proposed Milestone';
+    if (messageContext === 'comment') return 'wrote:';
     if (messageContext === 'payment') {
       const { owner, recipient, payments } = conversation;
       if (payments) {
@@ -154,6 +156,7 @@ class MilestoneConversations extends Component {
                 </div>
               ))}
             </div>
+            <MilestoneMessage milestone={milestone} currentUser={currentUser} />
           </div>
         )}
       </div>
