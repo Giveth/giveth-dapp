@@ -27,7 +27,7 @@
     "lpp-milestones": "^1.0.0-beta.1",
     "minimetoken": "^0.2.0",
     "moment": "^2.24.0",
-    "node-fetch": "^2.3.0",
+    "node-fetch": "^2.6.1",
     "node-sass-chokidar": "^0.0.3",
     "prop-types": "^15.7.2",
     "query-string": "^6.4.2",
