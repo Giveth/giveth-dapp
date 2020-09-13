@@ -15,7 +15,6 @@ class MilestoneMessage extends Component {
       content: '',
       charLeft: config.conversationMessageSizeMaxLimit,
       maxChar: config.conversationMessageSizeMaxLimit,
-      minChar: config.conversationMessageSizeMinLimit,
     };
   }
 
@@ -81,7 +80,7 @@ class MilestoneMessage extends Component {
   }
 
   render() {
-    const { content, editMode, maxChar, charLeft, minChar } = this.state;
+    const { content, editMode, maxChar, charLeft } = this.state;
 
     return (
       <div id="milestone-comment">
@@ -112,7 +111,7 @@ class MilestoneMessage extends Component {
             <button
               className="btn btn-link"
               type="button"
-              disabled={content.length < minChar || content.length > maxChar}
+              disabled={content.length > maxChar}
               onClick={() => this.createMessage()}
             >
               Add
