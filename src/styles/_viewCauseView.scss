@@ -11,4 +11,8 @@
     min-width: 200px;
     margin-bottom: 1rem;
   }
+
+  .card-body.content {
+    @include quill-theme;
+  }
 }

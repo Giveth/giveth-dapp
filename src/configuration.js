@@ -15,6 +15,7 @@ const {
   REACT_APP_NATIVE_TOKEN_NAME,
   REACT_APP_DONATION_COLLECT_COUNT_LIMIT = 10,
   REACT_APP_DONATION_DELEGATE_COUNT_LIMIT = 10,
+  CONVERSATION_MESSAGE_SIZE_MAX_LIMIT = 150,
 } = process.env;
 
 const configurations = {
@@ -48,6 +49,7 @@ const configurations = {
     },
     nativeTokenName: 'ETH',
     defaultDonateToken: 'ANT',
+    defaultDacId: 0,
   },
   develop: {
     title: 'develop',
@@ -63,7 +65,7 @@ const configurations = {
     etherscan: 'https://rinkeby.etherscan.io/',
     homeEtherscan: 'https://ropsten.etherscan.io/',
     feathersConnection: 'https://feathers.develop.giveth.io',
-    foreignNodeConnection: 'https://rinkeby.giveth.io',
+    foreignNodeConnection: 'https://rinkeby2.giveth.io',
     foreignNetworkName: 'Rinkeby',
     foreignNetworkId: 4,
     homeNetworkName: 'Ropsten',
@@ -77,6 +79,7 @@ const configurations = {
     },
     nativeTokenName: 'ETH',
     defaultDonateToken: 'XDAI',
+    defaultDacId: 156,
   },
   release: {
     title: 'release',
@@ -92,7 +95,7 @@ const configurations = {
     etherscan: 'https://rinkeby.etherscan.io/',
     homeEtherscan: 'https://ropsten.etherscan.io/',
     feathersConnection: 'https://feathers.release.giveth.io',
-    foreignNodeConnection: 'https://rinkeby.giveth.io',
+    foreignNodeConnection: 'https://rinkeby2.giveth.io',
     foreignNetworkName: 'Rinkeby',
     foreignNetworkId: 4,
     homeNetworkName: 'Ropsten',
@@ -119,7 +122,7 @@ const configurations = {
     etherscan: 'https://rinkeby.etherscan.io/',
     homeEtherscan: 'https://etherscan.io/',
     feathersConnection: 'https://feathers.beta.giveth.io',
-    foreignNodeConnection: 'https://rinkeby.giveth.io',
+    foreignNodeConnection: 'https://rinkeby2.giveth.io',
     foreignNetworkName: 'Rinkeby',
     foreignNetworkId: 4,
     homeNetworkName: 'Mainnet',
@@ -132,6 +135,7 @@ const configurations = {
     },
     nativeTokenName: 'ETH',
     defaultDonateToken: 'DAI',
+    defaultDacId: 5, // Giveth DAC
   },
 };
 
@@ -168,6 +172,7 @@ config.networkName = REACT_APP_NETWORK_NAME || config.networkName;
 config.nativeTokenName = REACT_APP_NATIVE_TOKEN_NAME || config.nativeTokenName;
 config.donationCollectCountLimit = REACT_APP_DONATION_COLLECT_COUNT_LIMIT || 15;
 config.donationDelegateCountLimit = REACT_APP_DONATION_DELEGATE_COUNT_LIMIT || 15;
+config.conversationMessageSizeMaxLimit = CONVERSATION_MESSAGE_SIZE_MAX_LIMIT;
 config.sendErrors = ['localhost', 'develop', 'release', 'beta'].includes(REACT_APP_ENVIRONMENT);
 
 export default config;

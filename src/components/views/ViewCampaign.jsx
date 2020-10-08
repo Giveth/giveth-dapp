@@ -1,8 +1,7 @@
-import React, { Component } from 'react';
+import React, { Component, Fragment } from 'react';
 import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 import Avatar from 'react-avatar';
-import ReactHtmlParser, { convertNodeToElement } from 'react-html-parser';
 import BigNumber from 'bignumber.js';
 import { Helmet, HelmetProvider } from 'react-helmet-async';
 import Balances from 'components/Balances';
@@ -18,7 +17,8 @@ import CommunityButton from '../CommunityButton';
 import DelegateMultipleButton from '../DelegateMultipleButton';
 import ChangeOwnershipButton from '../ChangeOwnershipButton';
 import DownloadCsvButton from '../DownloadCsvButton';
-import ListDonations from '../ListDonations';
+import DonationList from '../DonationList';
+import DescriptionRender from '../DescriptionRender';
 
 import User from '../../models/User';
 import Campaign from '../../models/Campaign';
@@ -165,35 +165,7 @@ class ViewCampaign extends Component {
   }
 
   renderDescription() {
-    return ReactHtmlParser(this.state.campaign.description, {
-      transform(node, index) {
-        if (node.attribs && node.attribs.class === 'ql-video') {
-          const url = node.attribs.src;
-          const match =
-            url.match(/^(https?):\/\/(?:(?:www|m)\.)?youtube\.com\/([a-zA-Z0-9_-]+)/) ||
-            url.match(/^(https?):\/\/(?:(?:www|m)\.)?youtu\.be\/([a-zA-Z0-9_-]+)/) ||
-            url.match(/^(https?):\/\/(?:(?:fame)\.)?giveth\.io\/([a-zA-Z0-9_-]+)/);
-          if (match) {
-            return (
-              <div className="video-wrapper" key={index}>
-                {convertNodeToElement(node, index)}
-              </div>
-            );
-          }
-          return (
-            <video width="100%" height="auto" controls name="media">
-              <source src={node.attribs.src} type="video/webm" />
-            </video>
-          );
-        }
-        if (node.name === 'img') {
-          return (
-            <img key="" style={{ height: 'auto', width: '100%' }} alt="" src={node.attribs.src} />
-          );
-        }
-        return undefined;
-      },
-    });
+    return DescriptionRender(this.state.campaign.description);
   }
 
   render() {
@@ -254,57 +226,59 @@ class ViewCampaign extends Component {
                 >
                   <h6>Campaign</h6>
                   <h1>{campaign.title}</h1>
-                  {campaign.owner &&
-                    currentUser &&
-                    campaign.owner.address === currentUser.address &&
-                    campaign.isActive && (
-                      <button
-                        type="button"
-                        className="btn btn-success"
-                        style={{ marginRight: 10 }}
-                        onClick={() => this.editCampaign(campaign.id)}
-                      >
-                        <i className="fa fa-edit" />
-                        &nbsp;Edit
-                      </button>
-                    )}
-                  <DonateButton
-                    model={{
-                      type: Campaign.type,
-                      title: campaign.title,
-                      id: campaign.id,
-                      adminId: campaign.projectId,
-                    }}
-                    currentUser={currentUser}
-                    history={history}
-                  />
-                  <CreateDonationAddressButton
-                    campaignTitle={campaign.title}
-                    campaignOwner={campaign.owner.address}
-                    campaignId={campaign.id}
-                    receiverId={campaign.projectId}
-                    giverId={(campaign._owner || {}).giverId}
-                    currentUser={currentUser}
-                  />
-                  {currentUser && (
-                    <DelegateMultipleButton
-                      style={{ padding: '10px 10px' }}
-                      campaign={campaign}
-                      balance={balance}
-                      currentUser={currentUser}
-                    />
-                  )}
-                  {campaign.owner &&
-                    currentUser &&
-                    campaign.owner.address === currentUser.address &&
-                    campaign.isActive && (
-                      <ChangeOwnershipButton
-                        campaign={campaign}
-                        balance={balance}
+                  {campaign.isActive && (
+                    <Fragment>
+                      {campaign.owner &&
+                        currentUser &&
+                        campaign.owner.address === currentUser.address && (
+                          <button
+                            type="button"
+                            className="btn btn-success"
+                            style={{ marginRight: 10 }}
+                            onClick={() => this.editCampaign(campaign.id)}
+                          >
+                            <i className="fa fa-edit" />
+                            &nbsp;Edit
+                          </button>
+                        )}
+                      <DonateButton
+                        model={{
+                          type: Campaign.type,
+                          title: campaign.title,
+                          id: campaign.id,
+                          adminId: campaign.projectId,
+                        }}
                         currentUser={currentUser}
-                        {...this.props}
+                        history={history}
                       />
-                    )}
+                      <CreateDonationAddressButton
+                        campaignTitle={campaign.title}
+                        campaignOwner={campaign.owner.address}
+                        campaignId={campaign.id}
+                        receiverId={campaign.projectId}
+                        giverId={(campaign._owner || {}).giverId}
+                        currentUser={currentUser}
+                      />
+                      {currentUser && (
+                        <DelegateMultipleButton
+                          style={{ padding: '10px 10px' }}
+                          campaign={campaign}
+                          balance={balance}
+                          currentUser={currentUser}
+                        />
+                      )}
+                      {campaign.owner &&
+                        currentUser &&
+                        campaign.owner.address === currentUser.address && (
+                          <ChangeOwnershipButton
+                            campaign={campaign}
+                            balance={balance}
+                            currentUser={currentUser}
+                            {...this.props}
+                          />
+                        )}
+                    </Fragment>
+                  )}
                   {currentUser && (
                     <DownloadCsvButton
                       campaign={campaign}
@@ -336,6 +310,21 @@ class ViewCampaign extends Component {
 
                       <div className="card content-card ">
                         <div className="card-body content">{this.renderDescription()}</div>
+                        {campaign.isActive && (
+                          <div className="bottom-donate-button text-center">
+                            <DonateButton
+                              model={{
+                                type: Campaign.type,
+                                title: campaign.title,
+                                id: campaign.id,
+                                adminId: campaign.projectId,
+                              }}
+                              currentUser={currentUser}
+                              history={history}
+                              disableAutoPopup
+                            />
+                          </div>
+                        )}
                       </div>
 
                       <div className="milestone-header spacer-top-50 card-view">
@@ -401,24 +390,27 @@ class ViewCampaign extends Component {
                     <div className="col-md-8 m-auto">
                       <Balances entity={campaign} />
 
-                      <ListDonations
+                      <DonationList
                         donations={donations}
                         isLoading={isLoadingDonations}
                         total={donationsTotal}
                         loadMore={this.loadMoreDonations}
                         newDonations={newDonations}
                       />
-                      <DonateButton
-                        model={{
-                          type: Campaign.type,
-                          title: campaign.title,
-                          id: campaign.id,
-                          adminId: campaign.projectId,
-                          token: { symbol: config.nativeTokenName },
-                        }}
-                        currentUser={currentUser}
-                        history={history}
-                      />
+                      {campaign.isActive && (
+                        <DonateButton
+                          model={{
+                            type: Campaign.type,
+                            title: campaign.title,
+                            id: campaign.id,
+                            adminId: campaign.projectId,
+                            token: { symbol: config.nativeTokenName },
+                          }}
+                          currentUser={currentUser}
+                          history={history}
+                          disableAutoPopup
+                        />
+                      )}
                     </div>
                   </div>
                   <div className="row spacer-top-50 spacer-bottom-50">

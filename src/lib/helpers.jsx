@@ -12,11 +12,15 @@ import config from '../configuration';
 export const isOwner = (address, currentUser) =>
   address !== undefined && currentUser !== undefined && currentUser.address === address;
 
-export const getTruncatedText = (text = '', maxLength = 45) => {
-  const txt = text
+export const getHtmlText = text => {
+  return text
     .replace(/<\/(?:.|\n)*?>/gm, ' ') // replace closing tags w/ a space
     .replace(/<(?:.|\n)*?>/gm, '') // strip opening tags
     .trim();
+};
+
+export const getTruncatedText = (text = '', maxLength = 45) => {
+  const txt = getHtmlText(text);
   if (txt.length > maxLength) {
     return `${txt.substr(0, maxLength).trim()}...`;
   }
@@ -157,9 +161,8 @@ export const signUpSwal = () => {
     title: 'Sign Up!',
     content: React.swal.msg(
       <p>
-        In order to use the Dapp, you need to use a Web3 wallet.
-        <br />
-        It is recommended that you install <a href="https://metamask.io/">MetaMask</a>.
+        To take this action, please enable Web3 in your browser. We recommend installing{' '}
+        <a href="https://metamask.io/">MetaMask</a>.
       </p>,
     ),
     icon: 'info',

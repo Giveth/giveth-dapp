@@ -11,8 +11,12 @@
     display: inline-block;
   }
 
+  .card.content-card {
+    margin-bottom: 4em;
+  }
+
   .card-body.content {
-    @include bullet-styling(8);
+   @include quill-theme;
 
     iframe.ql-video {
       width: 100%;

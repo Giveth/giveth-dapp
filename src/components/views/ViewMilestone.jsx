@@ -4,7 +4,6 @@ import PropTypes from 'prop-types';
 import { Form } from 'formsy-react-components';
 import moment from 'moment';
 import Avatar from 'react-avatar';
-import ReactHtmlParser, { convertNodeToElement } from 'react-html-parser';
 import { Link } from 'react-router-dom';
 import BigNumber from 'bignumber.js';
 import ReactTooltip from 'react-tooltip';
@@ -20,7 +19,7 @@ import DonateButton from 'components/DonateButton';
 import GoBackButton from 'components/GoBackButton';
 import Loader from 'components/Loader';
 import MilestoneItem from 'components/MilestoneItem';
-import ListDonations from 'components/ListDonations';
+import DonationList from 'components/DonationList';
 import MilestoneConversations from 'components/MilestoneConversations';
 import DelegateMultipleButton from 'components/DelegateMultipleButton';
 import { convertEthHelper, getUserAvatar, getUserName, history } from '../../lib/helpers';
@@ -29,6 +28,7 @@ import DACService from '../../services/DACService';
 import ShareOptions from '../ShareOptions';
 import { Consumer as WhiteListConsumer } from '../../contextProviders/WhiteListProvider';
 import NotFound from './NotFound';
+import DescriptionRender from '../DescriptionRender';
 
 /**
   Loads and shows a single milestone
@@ -140,33 +140,7 @@ class ViewMilestone extends Component {
   }
 
   renderDescription() {
-    return ReactHtmlParser(this.state.milestone.description, {
-      transform(node, index) {
-        if (node.attribs && node.attribs.class === 'ql-video') {
-          const url = node.attribs.src;
-          const match =
-            url.match(/^(https?):\/\/(?:(?:www|m)\.)?youtube\.com\/([a-zA-Z0-9_-]+)/) ||
-            url.match(/^(https?):\/\/(?:(?:www|m)\.)?youtu\.be\/([a-zA-Z0-9_-]+)/) ||
-            url.match(/^(https?):\/\/(?:(?:fame)\.)?giveth\.io\/([a-zA-Z0-9_-]+)/);
-          if (match) {
-            return (
-              <div className="video-wrapper" key={index}>
-                {convertNodeToElement(node, index)}
-              </div>
-            );
-          }
-          return (
-            <video width="100%" height="auto" controls name="media">
-              <source src={node.attribs.src} type="video/webm" />
-            </video>
-          );
-        }
-        if (node.name === 'img') {
-          return <img style={{ height: 'auto', width: '100%' }} alt="" src={node.attribs.src} />;
-        }
-        return undefined;
-      },
-    });
+    return DescriptionRender(this.state.milestone.description);
   }
 
   renderTitleHelper() {
@@ -176,7 +150,7 @@ class ViewMilestone extends Component {
       if (!milestone.fullyFunded) {
         return (
           <p>
-            Amount requested: {convertEthHelper(milestone.maxAmount, milestone.token.symbol)}{' '}
+            Amount requested: {convertEthHelper(milestone.maxAmount, milestone.token.decimals)}{' '}
             {milestone.token.symbol}
           </p>
         );
@@ -317,6 +291,7 @@ class ViewMilestone extends Component {
                 <div className="col-md-8 m-auto">
                   <div className="go-back-section">
                     <GoBackButton
+                      to={`/campaigns/${campaign._id}`}
                       history={history}
                       styleName="inline"
                       title={`Campaign: ${campaign.title}`}
@@ -338,6 +313,33 @@ class ViewMilestone extends Component {
 
                   <div className="card content-card">
                     <div className="card-body content">{this.renderDescription()}</div>
+                    {this.isActiveMilestone() && (
+                      <div className="bottom-donate-button text-center">
+                        <DonateButton
+                          model={{
+                            type: Milestone.type,
+                            acceptsSingleToken: milestone.acceptsSingleToken,
+                            title: milestone.title,
+                            id: milestone.id,
+                            adminId: milestone.projectId,
+                            dacId: milestone.dacId,
+                            campaignId: campaign._id,
+                            token: milestone.acceptsSingleToken ? milestone.token : undefined,
+                            isCapped: milestone.isCapped,
+                            ownerAddress: milestone.ownerAddress,
+                          }}
+                          currentUser={currentUser}
+                          history={history}
+                          disableAutoPopup
+                          type={Milestone.type}
+                          maxDonationAmount={
+                            milestone.isCapped
+                              ? milestone.maxAmount.minus(milestone.totalDonatedSingleToken)
+                              : undefined
+                          }
+                        />
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -594,7 +596,7 @@ class ViewMilestone extends Component {
 
               <div className="row spacer-top-50 spacer-bottom-50">
                 <div className="col-md-8 m-auto">
-                  <ListDonations
+                  <DonationList
                     donations={donations}
                     isLoading={isLoadingDonations}
                     total={donationsTotal}
@@ -618,6 +620,7 @@ class ViewMilestone extends Component {
                       }}
                       currentUser={currentUser}
                       history={history}
+                      disableAutoPopup
                       type={Milestone.type}
                       maxDonationAmount={
                         milestone.isCapped

@@ -20,6 +20,8 @@ class DonationHistory extends Component {
       createdAt: donation._createdAt,
       parentIds: donation._parentDonations,
       donatedTo: donation.donatedTo,
+      txHash: donation._txHash,
+      homeTxHash: donation._homeTxHash,
       parents: [],
     };
   }
@@ -55,7 +57,10 @@ class DonationHistory extends Component {
   }
 
   async loadCommittedParents(historyItem) {
-    const parents = await DonationService.getDonationNextCommittedParents(historyItem.parentIds);
+    const parents = await DonationService.getDonationNextCommittedParents(
+      historyItem.parentIds,
+      historyItem,
+    );
     if (parents.length > 0) {
       historyItem.parents = parents.map(d => DonationHistory.createHistoryItem(d));
       await Promise.all(historyItem.parents.map(item => this.loadCommittedParents(item)));
@@ -110,17 +115,44 @@ class DonationHistory extends Component {
     ) : (
       <Link to={item.donatedTo.url}>{item.donatedTo.name}</Link>
     );
+
+    const { etherscan, homeEtherscan } = config;
     if (hasParents) {
+      const etherScanLink = etherscan && item.txHash ? `${etherscan}tx/${item.txHash}` : '';
       message = (
         <Fragment>
-          <span> delegated to </span>
+          {etherScanLink ? (
+            <Fragment>
+              <span> </span>
+              <a href={etherScanLink} target="_blank" rel="noopener noreferrer">
+                delegated
+              </a>
+              <span> to </span>
+            </Fragment>
+          ) : (
+            <span> delegated to </span>
+          )}
           {link}
         </Fragment>
       );
     } else {
+      const etherScanLink =
+        homeEtherscan && item.homeTxHash ? `${homeEtherscan}tx/${item.homeTxHash}` : '';
       message = (
         <Fragment>
-          <span> donated to </span>
+          <span>
+            {etherScanLink ? (
+              <Fragment>
+                <span> </span>
+                <a href={etherScanLink} target="_blank" rel="noopener noreferrer">
+                  donated
+                </a>
+                <span> to </span>
+              </Fragment>
+            ) : (
+              <span> donated to </span>
+            )}
+          </span>
           {link}
         </Fragment>
       );

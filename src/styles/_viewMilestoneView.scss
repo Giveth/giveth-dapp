@@ -47,7 +47,7 @@
   }
 
   .card-body.content {
-    @include bullet-styling(8);
+    @include quill-theme;
 
     .video-wrapper {
       position: relative;
@@ -76,7 +76,9 @@
       padding: 0;
     }
   }
-
+  .card.content-card{
+    margin-bottom: 2em;
+  }
   .details-card {
     padding: 20px;
   }
@@ -92,5 +94,13 @@
 
   .form-group > .donation-counter:last-child {
     margin-bottom: 0;
+  }
+  #milestone-comment{
+    textarea{
+      padding: .5em 1em;
+    }
+    .char-left{
+      user-select: none;
+    }
   }
 }

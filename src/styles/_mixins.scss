@@ -5,6 +5,10 @@
     li.ql-indent-#{$i} {
       margin-left: $i * 1.5em;
     }
+
+    ol li.ql-indent-#{$i} {
+      counter-increment: list-#{$i};
+    }
     $i: $i + 1;
   }
 }

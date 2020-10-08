@@ -4,14 +4,13 @@ import PropTypes from 'prop-types';
 
 import { Link } from 'react-router-dom';
 import Avatar from 'react-avatar';
-import ReactHtmlParser from 'react-html-parser';
 
 import Balances from 'components/Balances';
 import Loader from '../Loader';
 import GoBackButton from '../GoBackButton';
 import BackgroundImageHeader from '../BackgroundImageHeader';
 import DonateButton from '../DonateButton';
-import ListDonations from '../ListDonations';
+import DonationList from '../DonationList';
 import CommunityButton from '../CommunityButton';
 import User from '../../models/User';
 import DAC from '../../models/DAC';
@@ -21,6 +20,9 @@ import CampaignCard from '../CampaignCard';
 import ShareOptions from '../ShareOptions';
 import config from '../../configuration';
 import NotFound from './NotFound';
+import { checkBalance } from '../../lib/middleware';
+import ErrorPopup from '../ErrorPopup';
+import DescriptionRender from '../DescriptionRender';
 
 /**
  * The DAC detail view mapped to /dac/id
@@ -45,6 +47,7 @@ class ViewDAC extends Component {
     };
 
     this.loadMoreDonations = this.loadMoreDonations.bind(this);
+    this.editDAC = this.editDAC.bind(this);
   }
 
   componentDidMount() {
@@ -101,6 +104,24 @@ class ViewDAC extends Component {
     );
   }
 
+  editDAC(id) {
+    checkBalance(this.props.balance)
+      .then(() => {
+        history.push(`/dacs/${id}/edit`);
+      })
+      .catch(err => {
+        if (err === 'noBalance') {
+          ErrorPopup('There is no balance left on the account.', err);
+        } else if (err !== undefined) {
+          ErrorPopup('Something went wrong.', err);
+        }
+      });
+  }
+
+  renderDescription() {
+    return DescriptionRender(this.state.dac.description);
+  }
+
   render() {
     const { balance, currentUser } = this.props;
     const {
@@ -129,6 +150,20 @@ class ViewDAC extends Component {
               <h6>Decentralized Altruistic Community</h6>
               <h1>{dac.title}</h1>
 
+              {dac.owner &&
+                currentUser &&
+                dac.owner.address === currentUser.address &&
+                dac.isActive && (
+                  <button
+                    type="button"
+                    className="btn btn-success"
+                    style={{ marginRight: 10 }}
+                    onClick={() => this.editDAC(dac.id)}
+                  >
+                    <i className="fa fa-edit" />
+                    &nbsp;Edit
+                  </button>
+                )}
               <DonateButton
                 model={{
                   type: DAC.type,
@@ -138,7 +173,6 @@ class ViewDAC extends Component {
                   adminId: dac.delegateId,
                 }}
                 currentUser={currentUser}
-                commmunityUrl={dac.communityUrl}
                 history={history}
               />
               {dac.communityUrl && (
@@ -164,7 +198,21 @@ class ViewDAC extends Component {
                   </center>
 
                   <div className="card content-card">
-                    <div className="card-body content">{ReactHtmlParser(dac.description)}</div>
+                    <div className="card-body content">{this.renderDescription()}</div>
+                    <div className="bottom-donate-button text-center">
+                      <DonateButton
+                        model={{
+                          type: DAC.type,
+                          title: dac.title,
+                          id: dac.id,
+                          token: { symbol: config.nativeTokenName },
+                          adminId: dac.delegateId,
+                        }}
+                        currentUser={currentUser}
+                        history={history}
+                        disableAutoPopup
+                      />
+                    </div>
                   </div>
                 </div>
               </div>
@@ -198,7 +246,7 @@ class ViewDAC extends Component {
                 <div className="col-md-8 m-auto">
                   <Balances entity={dac} />
 
-                  <ListDonations
+                  <DonationList
                     donations={donations}
                     isLoading={isLoadingDonations}
                     total={donationsTotal}
@@ -215,6 +263,7 @@ class ViewDAC extends Component {
                     }}
                     currentUser={currentUser}
                     history={history}
+                    disableAutoPopup
                   />
                 </div>
               </div>

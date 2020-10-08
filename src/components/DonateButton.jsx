@@ -1,3 +1,4 @@
+// eslint-disable-next-line max-classes-per-file
 import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
 import Modal from 'react-modal';
@@ -7,6 +8,7 @@ import { Form, Input } from 'formsy-react-components';
 import Toggle from 'react-toggle';
 import GA from 'lib/GoogleAnalytics';
 import { Link } from 'react-router-dom';
+import { withRouter } from 'react-router';
 import getNetwork from '../lib/blockchain/getNetwork';
 import User from '../models/User';
 import extraGas from '../lib/blockchain/extraGas';
@@ -26,6 +28,8 @@ import { convertEthHelper, ZERO_ADDRESS } from '../lib/helpers';
 import RangeSlider from './RangeSlider';
 import NumericInput from './NumericInput';
 import getWeb3 from '../lib/blockchain/getWeb3';
+import ExchangeButton from './ExchangeButton';
+import { checkProfileAfterDonation } from '../lib/middleware';
 
 const POLL_DELAY_TOKENS = 2000;
 const UPDATE_ALLOWANCE_DELAY = 1000; // Delay allowance update inorder to network respond new value
@@ -103,6 +107,7 @@ class DonateButton extends React.Component {
     this.form = React.createRef();
     this.submit = this.submit.bind(this);
     this.openDialog = this.openDialog.bind(this);
+    this.doDonate = this.doDonate.bind(this);
     this.updateAllowance = this.updateAllowance.bind(this);
     this.updateAllowanceStatus = this.updateAllowanceStatus.bind(this);
   }
@@ -116,6 +121,18 @@ class DonateButton extends React.Component {
     });
     this.pollToken();
     this.updateAllowance();
+
+    setTimeout(() => {
+      const { match, disableAutoPopup } = this.props;
+      if (
+        !disableAutoPopup &&
+        match &&
+        typeof match.url === 'string' &&
+        match.url.endsWith('/donate')
+      ) {
+        this.doDonate();
+      }
+    }, 1000);
   }
 
   componentWillUnmount() {
@@ -175,7 +192,9 @@ class DonateButton extends React.Component {
       if (dacId !== undefined && dacId !== 0) {
         maxDonationAmount *= 1.03;
       }
-      maxAmount = maxAmount.gt(maxDonationAmount) ? BigNumber(maxDonationAmount) : maxAmount;
+      maxAmount = maxAmount.gt(maxDonationAmount)
+        ? new BigNumber(convertEthHelper(maxDonationAmount, selectedToken.decimals))
+        : maxAmount;
     }
 
     return maxAmount;
@@ -301,12 +320,26 @@ class DonateButton extends React.Component {
     }
   }
 
+  doDonate() {
+    const { isEnabled, enableProvider } = this.props;
+
+    if (!isEnabled) {
+      enableProvider();
+    }
+    this.openDialog();
+  }
+
   submit({ amount, customAddress }) {
-    const { model, currentUser } = this.props;
+    const { model, currentUser, afterSuccessfulDonate } = this.props;
     const { adminId, dacId } = model;
     const { allowanceApprovalType, selectedToken } = this.state;
 
     const donationOwnerAddress = customAddress || currentUser.address;
+
+    const afterDonate = success => {
+      this.updateAllowance(UPDATE_ALLOWANCE_DELAY);
+      if (success) afterSuccessfulDonate();
+    };
 
     if (allowanceApprovalType === AllowanceApprovalType.Clear) {
       DonationService.clearERC20TokenApproval(selectedToken.address, currentUser.address)
@@ -331,14 +364,14 @@ class DonateButton extends React.Component {
           });
           this.closeDialog();
         });
-    } else if (dacId !== undefined && dacId !== 0) {
+    } else if (dacId) {
       this.donateToDac(adminId, dacId, amount, donationOwnerAddress, allowanceApprovalType)
-        .then(() => this.updateAllowance(UPDATE_ALLOWANCE_DELAY))
-        .catch(() => this.updateAllowance(UPDATE_ALLOWANCE_DELAY));
+        .then(afterDonate)
+        .catch(() => afterDonate(false));
     } else {
       this.donateWithBridge(adminId, amount, donationOwnerAddress, amount, allowanceApprovalType)
-        .then(() => this.updateAllowance(UPDATE_ALLOWANCE_DELAY))
-        .catch(() => this.updateAllowance(UPDATE_ALLOWANCE_DELAY));
+        .then(afterDonate)
+        .catch(() => afterDonate(false));
     }
 
     this.setState({ isSaving: true });
@@ -346,7 +379,6 @@ class DonateButton extends React.Component {
 
   pollToken() {
     const { selectedToken } = this.state;
-    const { isCorrectNetwork, currentUser } = this.props;
 
     // stop existing poll
     if (this.stopPolling) {
@@ -360,6 +392,7 @@ class DonateButton extends React.Component {
       () => ({
         request: async () => {
           try {
+            const { isCorrectNetwork, currentUser } = this.props;
             const { tokens } = await getNetwork();
             const contract = tokens[selectedToken.address];
 
@@ -405,7 +438,7 @@ class DonateButton extends React.Component {
 
     if (!dac) {
       ErrorPopup(`Dac not found!`);
-      return;
+      return false;
     }
     const { title: dacTitle } = dac;
 
@@ -444,6 +477,7 @@ class DonateButton extends React.Component {
       buttons: ['Cancel', 'Lets do it!'],
     });
 
+    let result = false;
     if (isConfirmed) {
       try {
         if (
@@ -455,11 +489,12 @@ class DonateButton extends React.Component {
             allowanceApprovalType,
           )
         )
-          await this.donateWithBridge(adminId, amountMilestone, donationOwnerAddress);
+          result = await this.donateWithBridge(adminId, amountMilestone, donationOwnerAddress);
         // eslint-disable-next-line no-empty
       } catch (e) {}
     }
     this.setState({ isSaving: false });
+    return result;
   }
 
   async donateWithBridge(
@@ -655,15 +690,7 @@ class DonateButton extends React.Component {
   }
 
   render() {
-    const {
-      model,
-      currentUser,
-      NativeTokenBalance,
-      isEnabled,
-      validProvider,
-      isCorrectNetwork,
-      enableProvider,
-    } = this.props;
+    const { model, currentUser, NativeTokenBalance, validProvider, isCorrectNetwork } = this.props;
     const {
       amount,
       formIsValid,
@@ -683,6 +710,7 @@ class DonateButton extends React.Component {
     const { decimals, symbol } = selectedToken;
     const balance = symbol === config.nativeTokenName ? NativeTokenBalance : selectedToken.balance;
     const maxAmount = this.getMaxAmount();
+    const zeroBalance = balance && balance.eq(0);
 
     const submitDefault = () => {
       this.setState(
@@ -696,7 +724,7 @@ class DonateButton extends React.Component {
     const submitInfiniteAllowance = () => {
       React.swal({
         title: 'Infinite Allowance',
-        text: `By this action you will allow DApp to transfer infinite amount of ${symbol} token`,
+        text: `This will give the Giveth DApp permission to withdraw ${symbol} from your account and automate transactions for you.`,
         icon: 'success',
         buttons: ['Cancel', 'OK'],
       }).then(result => {
@@ -729,19 +757,11 @@ class DonateButton extends React.Component {
       });
     };
 
+    const capitalizeAdminType = type => type.charAt(0).toUpperCase() + type.slice(1);
+
     return (
       <span style={style}>
-        <button
-          type="button"
-          className="btn btn-success"
-          onClick={() => {
-            if (!isEnabled) {
-              enableProvider();
-            } else {
-              this.openDialog();
-            }
-          }}
-        >
+        <button type="button" className="btn btn-success" onClick={this.doDonate}>
           Donate
         </button>
         <Modal
@@ -795,9 +815,10 @@ class DonateButton extends React.Component {
                 )}
                 {model.type.toLowerCase() !== DAC.type && (
                   <span>
-                    You&apos;re committing your funds to this {model.type}, if you have filled out
-                    contact information in your <Link to="/profile">Profile</Link> you will be
-                    notified about how your funds are spent
+                    You&apos;re committing your funds to this {capitalizeAdminType(model.type)}, if
+                    you have filled out contact information in your{' '}
+                    <Link to="/profile">Profile</Link> you will be notified about how your funds are
+                    spent
                   </span>
                 )}
               </p>
@@ -817,93 +838,109 @@ class DonateButton extends React.Component {
                   />
                 )}
                 {/* TODO: remove this b/c the wallet provider will contain this info */}
-                {config.homeNetworkName} {symbol} balance:&nbsp;
-                <em>
-                  {convertEthHelper(utils.fromWei(balance ? balance.toFixed() : ''), decimals)}
-                </em>
+                {zeroBalance ? (
+                  <Fragment>
+                    You don&apos;t have any {symbol} token!
+                    <br />
+                    <br />
+                    <br />
+                    <br />
+                  </Fragment>
+                ) : (
+                  <Fragment>
+                    {config.homeNetworkName} {symbol} balance:&nbsp;
+                    <em>
+                      {convertEthHelper(utils.fromWei(balance ? balance.toFixed() : ''), decimals)}
+                    </em>
+                  </Fragment>
+                )}
               </div>
             )}
             {isCorrectNetwork && validProvider && currentUser && (
               <Fragment>
-                <span className="label">How much {symbol} do you want to donate?</span>
+                {!zeroBalance ? (
+                  <Fragment>
+                    <span className="label">How much {symbol} do you want to donate?</span>
 
-                {validProvider && maxAmount.toNumber() !== 0 && balance.gt(0) && (
-                  <div className="form-group">
-                    <RangeSlider
-                      onChange={newAmount => {
-                        this.setState({ amount: newAmount }, this.updateAllowanceStatus);
-                      }}
-                      token={selectedToken}
-                      value={amount}
-                      maxAmount={maxAmount}
-                    />
-                  </div>
-                )}
+                    {validProvider && maxAmount.toNumber() !== 0 && balance.gt(0) && (
+                      <div className="form-group">
+                        <RangeSlider
+                          onChange={newAmount => {
+                            this.setState({ amount: newAmount }, this.updateAllowanceStatus);
+                          }}
+                          token={selectedToken}
+                          value={amount}
+                          maxAmount={maxAmount}
+                        />
+                      </div>
+                    )}
 
-                <div className="form-group">
-                  <NumericInput
-                    token={selectedToken}
-                    maxAmount={maxAmount}
-                    id="amount-input"
-                    value={amount}
-                    onChange={newAmount =>
-                      this.setState(
-                        {
-                          amount: newAmount,
-                        },
-                        this.updateAllowanceStatus,
-                      )
-                    }
-                    autoFocus
-                    lteMessage={`This donation exceeds your wallet balance or the Milestone max amount: ${convertEthHelper(
-                      maxAmount,
-                      decimals,
-                    )} ${symbol}.`}
-                  />
-                </div>
+                    <div className="form-group">
+                      <NumericInput
+                        token={selectedToken}
+                        maxAmount={maxAmount}
+                        id="amount-input"
+                        value={amount}
+                        onChange={newAmount =>
+                          this.setState(
+                            {
+                              amount: newAmount,
+                            },
+                            this.updateAllowanceStatus,
+                          )
+                        }
+                        autoFocus
+                        lteMessage={`This donation exceeds your wallet balance or the Milestone max amount: ${convertEthHelper(
+                          maxAmount,
+                          decimals,
+                        )} ${symbol}.`}
+                      />
+                    </div>
 
-                {showCustomAddress && (
-                  <div className="alert alert-success">
-                    <i className="fa fa-exclamation-triangle" />
-                    The donation will be donated on behalf of address:
-                  </div>
-                )}
+                    {showCustomAddress && (
+                      <div className="alert alert-success">
+                        <i className="fa fa-exclamation-triangle" />
+                        The donation will be donated on behalf of address:
+                      </div>
+                    )}
 
-                <div className="react-toggle-container">
-                  <Toggle
-                    id="show-recipient-address"
-                    defaultChecked={showCustomAddress}
-                    onChange={() =>
-                      this.setState(prevState => ({
-                        showCustomAddress: !prevState.showCustomAddress,
-                      }))
-                    }
-                  />
-                  <div className="label">I want to donate on behalf of another address</div>
-                </div>
-                {showCustomAddress && (
-                  <div className="form-group recipient-address-container">
-                    <Input
-                      name="customAddress"
-                      id="title-input"
-                      type="text"
-                      value={customAddress}
-                      placeholder={ZERO_ADDRESS}
-                      validations="isEtherAddress"
-                      validationErrors={{
-                        isEtherAddress: 'Please insert a valid Ethereum address.',
-                      }}
-                      required={this.state.showRecipientAddress}
-                    />
-                  </div>
-                )}
-                {!showCustomAddress && (
-                  <div>
-                    <br />
-                    <br />
-                  </div>
-                )}
-                {maxAmount.toNumber() !== 0 && balance !== '0' && (
+                    <div className="react-toggle-container">
+                      <Toggle
+                        id="show-recipient-address"
+                        defaultChecked={showCustomAddress}
+                        onChange={() =>
+                          this.setState(prevState => ({
+                            showCustomAddress: !prevState.showCustomAddress,
+                          }))
+                        }
+                      />
+                      <div className="label">I want to donate on behalf of another address</div>
+                    </div>
+                    {showCustomAddress && (
+                      <div className="form-group recipient-address-container">
+                        <Input
+                          name="customAddress"
+                          id="title-input"
+                          type="text"
+                          value={customAddress}
+                          placeholder={ZERO_ADDRESS}
+                          validations="isEtherAddress"
+                          validationErrors={{
+                            isEtherAddress: 'Please insert a valid Ethereum address.',
+                          }}
+                          required={this.state.showRecipientAddress}
+                        />
+                      </div>
+                    )}
+                    {!showCustomAddress && (
+                      <div>
+                        <br />
+                        <br />
+                      </div>
+                    )}
+                  </Fragment>
+                ) : null}
+                {maxAmount.toNumber() !== 0 && (
                   <Fragment>
                     <LoaderButton
                       className="btn btn-success"
@@ -912,7 +949,7 @@ class DonateButton extends React.Component {
                       isLoading={false}
                       onClick={submitDefault}
                     >
-                      {allowanceStatus !== AllowanceStatus.Needed ? 'Donate' : 'Approve & Donate'}
+                      {allowanceStatus !== AllowanceStatus.Needed ? 'Donate' : 'Unlock & Donate'}
                     </LoaderButton>
 
                     {allowanceStatus === AllowanceStatus.Needed && (
@@ -924,7 +961,7 @@ class DonateButton extends React.Component {
                         isLoading={false}
                         onClick={submitInfiniteAllowance}
                       >
-                        <i className="fa fa-unlock-alt" /> Unlock Approval & Donate
+                        <i className="fa fa-unlock-alt" /> Infinite Unlock & Donate
                       </LoaderButton>
                     )}
 
@@ -943,7 +980,9 @@ class DonateButton extends React.Component {
                 )}
               </Fragment>
             )}
-
+            <span className={zeroBalance ? '' : 'ml-2'}>
+              <ExchangeButton />
+            </span>
             <button
               className="btn btn-light float-right"
               type="button"
@@ -982,33 +1021,138 @@ DonateButton.propTypes = {
   enableProvider: PropTypes.func.isRequired,
   isCorrectNetwork: PropTypes.bool.isRequired,
   tokenWhitelist: PropTypes.arrayOf(PropTypes.shape()).isRequired,
+  afterSuccessfulDonate: PropTypes.func,
+  match: PropTypes.shape({
+    path: PropTypes.string.isRequired,
+    url: PropTypes.string.isRequired,
+  }),
+  disableAutoPopup: PropTypes.bool.isRequired,
 };
 
 DonateButton.defaultProps = {
   currentUser: undefined,
   NativeTokenBalance: new BigNumber(0),
   maxDonationAmount: undefined, // new BigNumber(10000000000000000),
+  afterSuccessfulDonate: () => {},
+  match: undefined,
 };
 
-export default props => (
-  <WhiteListConsumer>
-    {({ state: { activeTokenWhitelist } }) => (
-      <Web3Consumer>
-        {({
-          state: { isHomeNetwork, isEnabled, validProvider, balance },
-          actions: { enableProvider },
-        }) => (
-          <DonateButton
-            NativeTokenBalance={balance}
-            validProvider={validProvider}
-            isCorrectNetwork={isHomeNetwork}
-            tokenWhitelist={activeTokenWhitelist}
-            isEnabled={isEnabled}
-            enableProvider={enableProvider}
-            {...props}
-          />
+const DonateButtonWithRouter = withRouter(DonateButton);
+
+export default class Root extends React.PureComponent {
+  constructor(props) {
+    super(props);
+
+    this.defaultDacDonateButton = React.createRef();
+    this.state = {
+      donateToDefaultDac: false,
+      defaultDacModel: undefined,
+    };
+
+    this.afterSuccessfulDonate = this.afterSuccessfulDonate.bind(this);
+  }
+
+  componentDidMount() {
+    const { defaultDacId } = config;
+    if (defaultDacId) {
+      const { model } = this.props;
+      if (model.type !== DAC.type || Number(model.adminId) !== defaultDacId) {
+        DACService.getByDelegateId(defaultDacId).then(defaultDac => {
+          if (defaultDac) {
+            const defaultDacModel = {
+              type: DAC.type,
+              title: defaultDac.title,
+              id: defaultDac.id,
+              token: { symbol: config.nativeTokenName },
+              adminId: defaultDac.delegateId,
+            };
+
+            this.setState({
+              donateToDefaultDac: true,
+              defaultDacModel,
+            });
+          }
+        });
+      }
+    }
+  }
+
+  afterSuccessfulDonate() {
+    const { donateToDefaultDac } = this.state;
+
+    if (!this.props.currentUser || this.props.currentUser.name) {
+      // known user
+      if (donateToDefaultDac) {
+        React.swal({
+          title: 'Thank you!',
+          text: 'Would you like to support Giveth as well?',
+          icon: 'success',
+          buttons: ['No Thanks', 'Support Giveth'],
+        }).then(result => {
+          if (result) {
+            this.defaultDacDonateButton.current.openDialog();
+          }
+        });
+      }
+    } else {
+      //  anon user (without profile)
+      checkProfileAfterDonation(this.props.currentUser);
+    }
+  }
+
+  render() {
+    const { donateToDefaultDac, defaultDacModel } = this.state;
+    return (
+      <WhiteListConsumer>
+        {({ state: { activeTokenWhitelist } }) => (
+          <Web3Consumer>
+            {({
+              state: { isHomeNetwork, isEnabled, validProvider, balance },
+              actions: { enableProvider },
+            }) => (
+              <Fragment>
+                <DonateButtonWithRouter
+                  NativeTokenBalance={balance}
+                  validProvider={validProvider}
+                  isCorrectNetwork={isHomeNetwork}
+                  tokenWhitelist={activeTokenWhitelist}
+                  isEnabled={isEnabled}
+                  enableProvider={enableProvider}
+                  afterSuccessfulDonate={this.afterSuccessfulDonate}
+                  {...this.props}
+                />
+                {donateToDefaultDac && (
+                  <div style={{ display: 'none' }}>
+                    <DonateButton
+                      NativeTokenBalance={balance}
+                      validProvider={validProvider}
+                      isCorrectNetwork={isHomeNetwork}
+                      tokenWhitelist={activeTokenWhitelist}
+                      isEnabled={isEnabled}
+                      enableProvider={enableProvider}
+                      model={defaultDacModel}
+                      currentUser={this.props.currentUser}
+                      ref={this.defaultDacDonateButton}
+                      disableAutoPopup={this.props.disableAutoPopup}
+                    />
+                  </div>
+                )}
+              </Fragment>
+            )}
+          </Web3Consumer>
         )}
-      </Web3Consumer>
-    )}
-  </WhiteListConsumer>
-);
+      </WhiteListConsumer>
+    );
+  }
+}
+
+Root.propTypes = {
+  model: modelTypes.isRequired,
+  currentUser: PropTypes.instanceOf(User),
+  disableAutoPopup: PropTypes.bool,
+};
+
+Root.defaultProps = {
+  currentUser: undefined,
+  disableAutoPopup: false,
+};

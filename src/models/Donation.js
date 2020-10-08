@@ -97,6 +97,7 @@ class Donation extends Model {
     this._status = data.status;
     this._mined = data.mined;
     this._txHash = data.txHash;
+    this._homeTxHash = data.homeTxHash;
     this._updatedAt = data.updatedAt;
     this._isReturn = data.isReturn;
     this._token = data.token;
@@ -200,8 +201,8 @@ class Donation extends Model {
   canRefund(user, isForeignNetwork) {
     return (
       isForeignNetwork &&
-      this._ownerTypeId === user.address &&
-      this._status === Donation.WAITING &&
+      ((this._ownerTypeId === user.address && this._status === Donation.WAITING) ||
+        this._status === Donation.CANCELED) &&
       this._amountRemaining.toNumber() > 0
     );
   }
@@ -468,6 +469,15 @@ class Donation extends Model {
   set txHash(value) {
     this.checkType(value, ['string', 'undefined'], 'txHash');
     this._txHash = value;
+  }
+
+  get homeTxHash() {
+    return this._homeTxHash;
+  }
+
+  set homeTxHash(value) {
+    this.checkType(value, ['string', 'undefined'], 'homeTxHash');
+    this._homeTxHash = value;
   }
 
   get updatedAt() {

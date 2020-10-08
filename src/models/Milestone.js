@@ -124,6 +124,10 @@ export default class Milestone extends BasicModel {
         fiatAmount: this._fiatAmount.toString(),
         conversionRate: this._conversionRate,
       });
+    } else {
+      Object.assign(milestone, {
+        maxAmount: null,
+      });
     }
     if (!this.id) milestone.txHash = txHash;
 
@@ -632,16 +636,16 @@ export default class Milestone extends BasicModel {
     return (
       user &&
       user.address &&
-      [this.ownerAddress, this.campaign.ownerAddress, this.campaign.coownerAddress].includes(
-        user.address,
-      ) &&
-      [
-        Milestone.PROPOSED,
-        Milestone.REJECTED,
-        Milestone.IN_PROGRESS,
-        Milestone.NEEDS_REVIEW,
-      ].includes(this.status) &&
-      this.totalDonations <= 0
+      this.totalDonations <= 0 &&
+      ((this.ownerAddress === user.address &&
+        [
+          Milestone.PROPOSED,
+          Milestone.REJECTED,
+          Milestone.IN_PROGRESS,
+          Milestone.NEEDS_REVIEW,
+        ].includes(this.status)) ||
+        ([this.campaign.ownerAddress, this.campaign.coownerAddress].includes(user.address) &&
+          this.status === Milestone.PROPOSED))
     );
   }
 
