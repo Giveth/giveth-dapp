@@ -84,13 +84,15 @@ class DelegateMultipleButton extends Component {
   }
 
   componentDidMount() {
+    const { currentUser, milestone, campaign } = this.props;
+    const userAddress = currentUser ? currentUser.address : '';
     this.dacsObserver = feathersClient
       .service('dacs')
       .watch({ listStrategy: 'always' })
       .find({
         query: {
           delegateId: { $gt: '0' },
-          ownerAddress: this.props.currentUser.address,
+          ownerAddress: userAddress,
           $select: ['ownerAddress', 'title', '_id', 'delegateId', 'delegateEntity', 'delegate'],
         },
       })
@@ -107,15 +109,13 @@ class DelegateMultipleButton extends Component {
           }));
 
           const delegationOptions =
-            this.props.milestone &&
-            this.props.campaign.ownerAddress.toLowerCase() ===
-              this.props.currentUser.address.toLowerCase()
+            milestone && campaign.ownerAddress.toLowerCase() === userAddress.toLowerCase()
               ? dacs.concat([
                   {
-                    id: this.props.campaign._id,
-                    name: this.props.campaign.title,
-                    projectId: this.props.campaign.projectId,
-                    ownerEntity: this.props.milestone.ownerEntity,
+                    id: campaign._id,
+                    name: campaign.title,
+                    projectId: campaign.projectId,
+                    ownerEntity: milestone.ownerEntity,
                     type: 'campaign',
                   },
                 ])

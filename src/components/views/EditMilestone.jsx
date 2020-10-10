@@ -640,7 +640,8 @@ class EditMilestone extends Component {
   setMyAddressAsRecipient() {
     this.setState(prevState => {
       const { milestone } = prevState;
-      milestone.recipientAddress = this.props.currentUser.address;
+      const { currentUser } = this.props;
+      milestone.recipientAddress = currentUser && currentUser.address;
 
       return { recipientAddress: milestone.recipientAddress, milestone };
     });
@@ -668,24 +669,23 @@ class EditMilestone extends Component {
   submit() {
     const { milestone } = this.state;
 
-    milestone.ownerAddress = this.props.currentUser.address;
+    const { currentUser, currentRate, isProposed, isNew } = this.props;
+    milestone.ownerAddress = currentUser && currentUser.address;
     milestone.campaignId = this.state.campaignId;
     milestone.status =
-      this.props.isProposed || milestone.status === Milestone.REJECTED
-        ? Milestone.PROPOSED
-        : milestone.status; // make sure not to change status!
+      isProposed || milestone.status === Milestone.REJECTED ? Milestone.PROPOSED : milestone.status; // make sure not to change status!
     if (milestone.isCapped) {
-      milestone.conversionRate = this.props.currentRate.rates[milestone.selectedFiatType];
+      milestone.conversionRate = currentRate.rates[milestone.selectedFiatType];
     }
     milestone.parentProjectId = this.state.campaignProjectId;
 
     const _saveMilestone = () =>
       MilestoneService.save({
         milestone,
-        from: this.props.currentUser.address,
+        from: currentUser && currentUser.address,
         afterSave: (created, txUrl, res) => {
           if (created) {
-            if (this.props.isProposed) {
+            if (isProposed) {
               const url = res ? `/campaigns/${res.campaign._id}/milestones/${res._id}` : undefined;
               React.toast.info(
                 <Fragment>
@@ -746,7 +746,7 @@ class EditMilestone extends Component {
         isSaving: true,
       },
       () => {
-        if (this.props.isProposed && this.props.isNew) {
+        if (isProposed && isNew) {
           React.swal({
             title: 'Propose Milestone?',
             text:

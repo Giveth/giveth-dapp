@@ -658,7 +658,7 @@ class DonateButton extends React.Component {
         }
         const allowed = await DonationService.approveERC20tokenTransfer(
           tokenAddress,
-          currentUser.address,
+          currentUser && currentUser.address,
           allowanceRequired.toString(),
         );
 
@@ -1102,7 +1102,7 @@ export default class Root extends React.PureComponent {
 
   render() {
     const { donateToDefaultDac, defaultDacModel } = this.state;
-    return (
+    return this.props.currentUser ? (
       <WhiteListConsumer>
         {({ state: { activeTokenWhitelist } }) => (
           <Web3Consumer>
@@ -1142,7 +1142,7 @@ export default class Root extends React.PureComponent {
           </Web3Consumer>
         )}
       </WhiteListConsumer>
-    );
+    ) : null;
   }
 }
 
