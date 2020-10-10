@@ -52,7 +52,7 @@ class ChangeMilestoneRecipientButton extends Component {
 
             await MilestoneService.changeRecipient({
               milestone,
-              from: currentUser.address,
+              from: currentUser && currentUser.address,
               newRecipient,
               onTxHash: txUrl => {
                 React.toast.info(
