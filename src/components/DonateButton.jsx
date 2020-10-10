@@ -506,6 +506,7 @@ class DonateButton extends React.Component {
   ) {
     const { currentUser } = this.props;
     const { givethBridge, etherscanUrl, selectedToken } = this.state;
+    const userAddress = currentUser && currentUser.address;
 
     const amountWei = utils.toWei(new BigNumber(amount).toFixed(18));
     const isDonationInToken = selectedToken.symbol !== config.nativeTokenName;
@@ -513,13 +514,13 @@ class DonateButton extends React.Component {
 
     const _makeDonationTx = async () => {
       let method;
-      const opts = { from: currentUser.address, $extraGas: extraGas() };
+      const opts = { from: userAddress, $extraGas: extraGas() };
 
       // actually uses 84766, but runs out of gas if exact
       if (!isDonationInToken) Object.assign(opts, { value: amountWei, gas: DONATION_GAS });
 
       let donationOwner;
-      if (currentUser.address !== donationOwnerAddress) {
+      if (userAddress !== donationOwnerAddress) {
         // Donating on behalf of another user or address
         try {
           const user = await feathersClient.service('users').get(donationOwnerAddress);
@@ -566,7 +567,7 @@ class DonateButton extends React.Component {
         method
           .on('transactionHash', async transactionHash => {
             const web3 = await getWeb3();
-            const txNonce = await web3.eth.getTransactionCount(currentUser.address, 'pending');
+            const txNonce = await web3.eth.getTransactionCount(userAddress, 'pending');
             txHash = transactionHash;
 
             await DonationService.newFeathersDonation(
@@ -1102,7 +1103,7 @@ export default class Root extends React.PureComponent {
 
   render() {
     const { donateToDefaultDac, defaultDacModel } = this.state;
-    return this.props.currentUser ? (
+    return (
       <WhiteListConsumer>
         {({ state: { activeTokenWhitelist } }) => (
           <Web3Consumer>
@@ -1142,7 +1143,7 @@ export default class Root extends React.PureComponent {
           </Web3Consumer>
         )}
       </WhiteListConsumer>
-    ) : null;
+    );
   }
 }
 
