@@ -164,7 +164,7 @@ class CreateDonationAddressButton extends React.Component {
       const { currentUser } = this.props;
       const { donationAddress, balances } = this.state;
       const { homeEtherscan: etherscanUrl } = config;
-      const from = currentUser.address;
+      const from = currentUser && currentUser.address;
       if (!balances[addressToForward]) throw Error('No balance to forward');
 
       const fundsForwarder = new web3.eth.Contract(fundForwarder.abi, donationAddress);
@@ -244,7 +244,7 @@ class CreateDonationAddressButton extends React.Component {
     const { currentUser, receiverId, giverId, campaignId } = this.props;
     const { fundsForwarderFactoryAddress, homeEtherscan: etherscanUrl } = config;
     const web3 = await getWeb3();
-    const from = currentUser.address;
+    const from = currentUser && currentUser.address;
 
     /* eslint-disable-next-line no-console */
     // console.log('Deploying funds forwarder', { giverId, receiverId, from });
@@ -333,6 +333,8 @@ class CreateDonationAddressButton extends React.Component {
       balances,
     } = this.state;
 
+    const userAddress = currentUser && currentUser.address;
+
     const buttonText = donationAddress ? 'View donation address' : 'Create donation address';
     const loadingText = 'Loading donation addrs';
 
@@ -350,7 +352,7 @@ class CreateDonationAddressButton extends React.Component {
           display: 'inline-block',
         }}
       >
-        {!donationAddress && campaignOwner && currentUser && campaignOwner === currentUser.address && (
+        {!donationAddress && campaignOwner && currentUser && campaignOwner === userAddress && (
           <LoaderButton
             className="btn btn-warning"
             isLoading={fetchingExistingAddress}

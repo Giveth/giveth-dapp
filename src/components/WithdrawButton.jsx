@@ -87,9 +87,10 @@ class WithdrawButton extends Component {
   submit(model) {
     this.setState({ isSaving: true });
 
+    const { currentUser } = this.props;
     WalletService.withdraw(
       {
-        from: this.props.currentUser.address,
+        from: currentUser && currentUser.address,
         to: model.to,
         value: `${model.amount}`,
       },

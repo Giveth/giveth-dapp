@@ -62,7 +62,8 @@ class DonationProvider extends Component {
 
   // Function to fetch donations of the current user.
   loadDonations() {
-    if (this.props.currentUser === undefined) return;
+    const { currentUser } = this.props;
+    if (currentUser === undefined) return;
     this.donationsObserver = feathersClient
       .service('donations')
       .watch({ listStrategy: 'always' })
@@ -70,7 +71,7 @@ class DonationProvider extends Component {
         paramsForServer({
           schema: 'includeTypeDetails',
           query: {
-            giverAddress: this.props.currentUser.address,
+            giverAddress: currentUser.address,
             lessThanCutoff: { $ne: true },
             $limit: this.state.itemsPerPage,
             $skip: this.state.skipPages * this.state.itemsPerPage,
@@ -142,12 +143,7 @@ class DonationProvider extends Component {
               };
 
               // Reject the delegation of the donation
-              DonationService.reject(
-                donation,
-                this.props.currentUser.address,
-                afterCreate,
-                afterMined,
-              );
+              DonationService.reject(donation, currentUser.address, afterCreate, afterMined);
             }
           }),
         )
@@ -206,12 +202,8 @@ class DonationProvider extends Component {
               };
 
               // Commit the donation's delegation
-              DonationService.commit(
-                donation,
-                this.props.currentUser.address,
-                afterCreate,
-                afterMined,
-                err => ErrorPopup('Something went wrong.', err),
+              DonationService.commit(donation, currentUser.address, afterCreate, afterMined, err =>
+                ErrorPopup('Something went wrong.', err),
               );
             }
           }),
@@ -262,7 +254,7 @@ class DonationProvider extends Component {
           };
 
           // Refund the donation
-          DonationService.refund(donation, this.props.currentUser.address, afterCreate, afterMined);
+          DonationService.refund(donation, currentUser.address, afterCreate, afterMined);
         };
         confirmationDialog('refund', donation.donatedTo.name, confirmRefund);
       }),

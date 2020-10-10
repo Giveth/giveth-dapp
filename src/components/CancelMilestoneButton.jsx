@@ -36,7 +36,7 @@ class CancelMilestoneButton extends Component {
             .then(proof =>
               MilestoneService.cancelMilestone({
                 milestone,
-                from: currentUser.address,
+                from: currentUser && currentUser.address,
                 proof,
                 onTxHash: txUrl => {
                   GA.trackEvent({

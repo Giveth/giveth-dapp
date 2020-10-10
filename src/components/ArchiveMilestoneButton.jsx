@@ -68,12 +68,13 @@ class ArchiveMilestoneButton extends Component {
             }
           };
 
-          if (milestone.ownerAddress === currentUser.address) {
+          const userAddress = currentUser && currentUser.address;
+          if (milestone.ownerAddress === userAddress) {
             milestone.status = Milestone.ARCHIVED;
             milestone.parentProjectId = milestone.campaign.projectId;
             MilestoneService.save({
               milestone,
-              from: currentUser.address,
+              from: userAddress,
               afterSave,
               afterMined,
               onError,

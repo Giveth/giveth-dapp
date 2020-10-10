@@ -84,7 +84,7 @@ const Delegations = ({ balance, currentUser }) => (
                                       {/* When donated to a dac, allow delegation
                                   to campaigns and milestones */}
                                       {(d.delegateId > 0 ||
-                                        d.ownerTypeId === currentUser.address) &&
+                                        (d.ownerTypeId === currentUser && currentUser.address)) &&
                                         isForeignNetwork &&
                                         d.status === Donation.WAITING &&
                                         d.amountRemaining > 0 && (

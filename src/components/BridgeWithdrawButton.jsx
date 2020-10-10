@@ -89,10 +89,11 @@ class BridgeWithdrawButton extends Component {
 
   submit(model) {
     this.setState({ isSaving: true });
+    const { currentUser } = this.props;
 
     WalletService.bridgeWithdraw(
       {
-        addr: this.props.currentUser.address,
+        addr: currentUser && currentUser.address,
         value: `${model.amount}`,
         token: `${model.token}`,
       },

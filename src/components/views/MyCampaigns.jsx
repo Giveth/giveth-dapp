@@ -9,11 +9,11 @@ import { Consumer as Web3Consumer } from 'contextProviders/Web3Provider';
 import config from 'configuration';
 
 import GA from 'lib/GoogleAnalytics';
-import { checkBalance, actionWithLoggedIn } from '../../lib/middleware';
+import { actionWithLoggedIn, checkBalance } from '../../lib/middleware';
 import confirmationDialog from '../../lib/confirmationDialog';
 import Loader from '../Loader';
 import User from '../../models/User';
-import { getTruncatedText, convertEthHelper, history } from '../../lib/helpers';
+import { convertEthHelper, getTruncatedText, history } from '../../lib/helpers';
 import CampaignService from '../../services/CampaignService';
 import Campaign from '../../models/Campaign';
 import AuthenticationWarning from '../AuthenticationWarning';
@@ -56,8 +56,9 @@ class MyCampaigns extends Component {
   }
 
   loadCampaigns() {
+    const { currentUser } = this.props;
     this.campaignsObserver = CampaignService.getUserCampaigns(
-      this.props.currentUser.address,
+      currentUser && currentUser.address,
       this.state.skipPages,
       this.state.itemsPerPage,
       campaigns => this.setState({ campaigns, isLoading: false }),
@@ -127,6 +128,7 @@ class MyCampaigns extends Component {
   render() {
     const { campaigns, isLoading, visiblePages } = this.state;
     const { currentUser } = this.props;
+    const userAddress = currentUser && currentUser.address;
     const isPendingCampaign =
       (campaigns.data && campaigns.data.some(d => d.confirmations !== d.requiredConfirmations)) ||
       false;
@@ -176,7 +178,7 @@ class MyCampaigns extends Component {
                                   className={c.status === Campaign.PENDING ? 'pending' : ''}
                                 >
                                   <td className="td-actions">
-                                    {c.owner.address === currentUser.address && c.isActive && (
+                                    {c.owner.address === userAddress && c.isActive && (
                                       <button
                                         type="button"
                                         className="btn btn-link"
@@ -187,8 +189,8 @@ class MyCampaigns extends Component {
                                       </button>
                                     )}
 
-                                    {(c.reviewerAddress === currentUser.address ||
-                                      c.owner.address === currentUser.address) &&
+                                    {(c.reviewerAddress === userAddress ||
+                                      c.owner.address === userAddress) &&
                                       isForeignNetwork &&
                                       c.isActive && (
                                         <button
@@ -205,7 +207,7 @@ class MyCampaigns extends Component {
                                     <Link to={`/campaigns/${c.id}`}>
                                       {getTruncatedText(c.title, 45)}
                                     </Link>
-                                    {c.reviewerAddress === currentUser.address && (
+                                    {c.reviewerAddress === userAddress && (
                                       <span className="badge badge-info">
                                         <i className="fa fa-eye" />
                                         &nbsp;I&apos;m reviewer
