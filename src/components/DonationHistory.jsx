@@ -74,15 +74,6 @@ class DonationHistory extends Component {
     await this.loadCommittedParents(root);
     const { parents } = root;
 
-    if (parents.length > 0) {
-      this.props.setItemHasHistory(true);
-      if (parents[0].parents.length > 0) {
-        this.props.setItemType('delegated');
-      } else {
-        this.props.setItemType('direct');
-      }
-    }
-
     if (donation.status === Donation.COMMITTED) {
       if (parents.length > 0) {
         this.props.setItemHasHistory(true);
