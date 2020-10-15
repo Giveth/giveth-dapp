@@ -247,6 +247,7 @@ class ViewCampaign extends Component {
                           title: campaign.title,
                           id: campaign.id,
                           adminId: campaign.projectId,
+                          customThanksMessage: campaign.customThanksMessage,
                         }}
                         currentUser={currentUser}
                         history={history}
@@ -318,6 +319,7 @@ class ViewCampaign extends Component {
                                 title: campaign.title,
                                 id: campaign.id,
                                 adminId: campaign.projectId,
+                                customThanksMessage: campaign.customThanksMessage,
                               }}
                               currentUser={currentUser}
                               history={history}
@@ -405,6 +407,7 @@ class ViewCampaign extends Component {
                             id: campaign.id,
                             adminId: campaign.projectId,
                             token: { symbol: config.nativeTokenName },
+                            customThanksMessage: campaign.customThanksMessage,
                           }}
                           currentUser={currentUser}
                           history={history}

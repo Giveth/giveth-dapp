@@ -1079,23 +1079,44 @@ export default class Root extends React.PureComponent {
 
   afterSuccessfulDonate() {
     const { donateToDefaultDac } = this.state;
+    const { customThanksMessage } = this.props.model;
+    // const  customThanksMessage  = 'yes_CS';
 
+    const el = document.createElement('div');
+    el.innerHTML =
+      "Thank you for your donation to the Commons Stack! If you would like to receive <a href='https://medium.com/commonsstack/cstk-the-token-of-the-commons-stack-trusted-seed-931978625c61'>CSTK</a> tokens, please <a href= 'mailto:info@commonsstack.org?subject=I just donated to Commons Stack!' > contact us</a> and we'll send you all the details!";
     if (!this.props.currentUser || this.props.currentUser.name) {
       // known user
       if (donateToDefaultDac) {
-        React.swal({
-          title: 'Thank you!',
-          text: 'Would you like to support Giveth as well?',
-          icon: 'success',
-          buttons: ['No Thanks', 'Support Giveth'],
-        }).then(result => {
-          if (result) {
-            this.defaultDacDonateButton.current.openDialog();
-          }
-        });
+        if (customThanksMessage === 'yes_CS') {
+          // Custom Thanks for Commons Stack
+          // FIXME: For other custom thanks message, I need to revise this code
+          React.swal({
+            title: 'Thank you!',
+            content: el,
+            icon: 'success',
+            buttons: ['No Thanks', 'Support Giveth'],
+          }).then(result => {
+            if (result) {
+              this.defaultDacDonateButton.current.openDialog();
+            }
+          });
+        } else {
+          // normal Thanks
+          React.swal({
+            title: 'Thank you!',
+            text: 'Would you like to support Giveth as well?',
+            icon: 'success',
+            buttons: ['No Thanks', 'Support Giveth'],
+          }).then(result => {
+            if (result) {
+              this.defaultDacDonateButton.current.openDialog();
+            }
+          });
+        }
       }
     } else {
-      //  anon user (without profile)
+      //  normal thanks for anon use1r (without profile)
       checkProfileAfterDonation(this.props.currentUser);
     }
   }
