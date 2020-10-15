@@ -6,7 +6,7 @@ import { Link } from 'react-router-dom';
 
 import config from 'configuration';
 import Loader from './Loader';
-import { getUserName, getUserAvatar, convertEthHelper } from '../lib/helpers';
+import { getUserName, getUserAvatar, convertEthHelper, roundBigNumber } from '../lib/helpers';
 import Donation from '../models/Donation';
 
 /**
@@ -50,6 +50,8 @@ class LeaderBoardItem extends Component {
   render() {
     const { d, rank, useAmountRemaining } = this.props;
     const { donations, totalAmount, giver } = d;
+    const roundTotalAmount = roundBigNumber(totalAmount, 2).toFixed();
+    // debugger;
     return (
       <Fragment>
         <tr key={d._id}>
@@ -67,7 +69,7 @@ class LeaderBoardItem extends Component {
               </Link>
             )}
           </td>
-          <td className="td-donations-amount font-weight-bold">${totalAmount}</td>
+          <td className="td-donations-amount font-weight-bold">${roundTotalAmount}</td>
           <td />
           <td className="" />
         </tr>
