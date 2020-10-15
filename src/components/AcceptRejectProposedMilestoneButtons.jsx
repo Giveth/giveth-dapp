@@ -61,7 +61,7 @@ class AcceptRejectProposedMilestoneButtons extends Component {
             .then(proof => {
               MilestoneService.acceptProposedMilestone({
                 milestone,
-                from: currentUser.address,
+                from: currentUser && currentUser.address,
                 proof,
                 onTxHash: txUrl => {
                   GA.trackEvent({

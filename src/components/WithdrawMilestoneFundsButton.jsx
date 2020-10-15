@@ -16,7 +16,8 @@ import config from '../configuration';
 class WithdrawMilestoneFundsButton extends Component {
   async withdraw() {
     const { milestone, currentUser, balance } = this.props;
-    const isRecipient = milestone.recipientAddress === currentUser.address;
+    const userAddress = currentUser && currentUser.address;
+    const isRecipient = milestone.recipientAddress === userAddress;
 
     actionWithLoggedIn(currentUser).then(() =>
       Promise.all([
@@ -58,7 +59,7 @@ class WithdrawMilestoneFundsButton extends Component {
             if (isConfirmed) {
               MilestoneService.withdraw({
                 milestone,
-                from: currentUser.address,
+                from: userAddress,
                 onTxHash: txUrl => {
                   GA.trackEvent({
                     category: 'Milestone',
@@ -132,6 +133,7 @@ class WithdrawMilestoneFundsButton extends Component {
 
   render() {
     const { milestone, currentUser } = this.props;
+    const userAddress = currentUser && currentUser.address;
 
     return (
       <Web3Consumer>
@@ -146,7 +148,7 @@ class WithdrawMilestoneFundsButton extends Component {
                 }
               >
                 <i className="fa fa-usd" />{' '}
-                {milestone.recipientAddress === currentUser.address ? 'Collect' : 'Disburse'}
+                {milestone.recipientAddress === userAddress ? 'Collect' : 'Disburse'}
               </button>
             )}
           </Fragment>

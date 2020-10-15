@@ -5,7 +5,6 @@ import { paramsForServer } from 'feathers-hooks-common';
 import Milestone from 'models/Milestone';
 import { feathersClient } from '../lib/feathersClient';
 import ErrorPopup from '../components/ErrorPopup';
-
 // Models
 import Donation from '../models/Donation';
 import User from '../models/User';
@@ -59,57 +58,60 @@ class DelegationProvider extends Component {
     // TODO: less overhead here if we move it all to a single service.
     // NOTE: This will not rerun, meaning after any dac/campaign/milestone is added
 
-    const dacsIds = this.state.dacs
-      .filter(c => c.ownerAddress === this.props.currentUser.address)
-      .map(c => c._id);
+    const { currentUser } = this.props;
+    if (currentUser) {
+      const dacsIds = this.state.dacs
+        .filter(c => c.ownerAddress === currentUser.address)
+        .map(c => c._id);
 
-    const campaignIds = this.state.campaigns
-      .filter(c => c.ownerAddress === this.props.currentUser.address)
-      .map(c => c._id);
+      const campaignIds = this.state.campaigns
+        .filter(c => c.ownerAddress === currentUser.address)
+        .map(c => c._id);
 
-    const query = paramsForServer({
-      query: {
-        lessThanCutoff: { $ne: true },
-        $or: [
-          { ownerTypeId: { $in: campaignIds }, status: Donation.COMMITTED },
-          {
-            delegateTypeId: { $in: dacsIds },
-            status: { $in: [Donation.WAITING, Donation.TO_APPROVE] },
-          },
-          {
-            ownerTypeId: this.props.currentUser.address,
-            delegateId: { $exists: false },
-            status: Donation.WAITING,
-          },
-          // {
-          // ownerTypeId: this.props.currentUser.address,
-          // delegateTypeId: { $gt: 0 },
-          // },
-        ],
-        $sort: { createdAt: 1 },
-        $limit: this.state.itemsPerPage,
-        $skip: this.state.skipPages * this.state.itemsPerPage,
-      },
-      schema: 'includeTypeAndGiverDetails',
-    });
-
-    // start watching donations, this will re-run when donations change or are added
-    if (this.donationsObserver) this.donationsObserver.unsubscribe();
-    this.donationsObserver = feathersClient
-      .service('donations')
-      .watch({ listStrategy: 'always' })
-      .find(query)
-      .subscribe(
-        resp => {
-          this.setState(prevState => ({
-            delegations: resp.data.map(d => new Donation(d)),
-            skipPages: resp.skip / prevState.itemsPerPage,
-            totalResults: resp.total,
-            isLoading: false,
-          }));
+      const query = paramsForServer({
+        query: {
+          lessThanCutoff: { $ne: true },
+          $or: [
+            { ownerTypeId: { $in: campaignIds }, status: Donation.COMMITTED },
+            {
+              delegateTypeId: { $in: dacsIds },
+              status: { $in: [Donation.WAITING, Donation.TO_APPROVE] },
+            },
+            {
+              ownerTypeId: currentUser.address,
+              delegateId: { $exists: false },
+              status: Donation.WAITING,
+            },
+            // {
+            // ownerTypeId: this.props.currentUser.address,
+            // delegateTypeId: { $gt: 0 },
+            // },
+          ],
+          $sort: { createdAt: 1 },
+          $limit: this.state.itemsPerPage,
+          $skip: this.state.skipPages * this.state.itemsPerPage,
         },
-        () => this.setState({ isLoading: false }),
-      );
+        schema: 'includeTypeAndGiverDetails',
+      });
+
+      // start watching donations, this will re-run when donations change or are added
+      if (this.donationsObserver) this.donationsObserver.unsubscribe();
+      this.donationsObserver = feathersClient
+        .service('donations')
+        .watch({ listStrategy: 'always' })
+        .find(query)
+        .subscribe(
+          resp => {
+            this.setState(prevState => ({
+              delegations: resp.data.map(d => new Donation(d)),
+              skipPages: resp.skip / prevState.itemsPerPage,
+              totalResults: resp.total,
+              isLoading: false,
+            }));
+          },
+          () => this.setState({ isLoading: false }),
+        );
+    }
   }
 
   handlePageChanged(newPage) {

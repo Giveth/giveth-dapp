@@ -88,7 +88,7 @@ class ChangeOwnershipButton extends Component {
 
     CampaignService.changeOwnership(
       campaign,
-      currentUser.address,
+      currentUser && currentUser.address,
       campaign.ownerAddress,
       campaign.coownerAddress,
       afterCreate,

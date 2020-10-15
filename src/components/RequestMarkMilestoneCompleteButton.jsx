@@ -19,6 +19,7 @@ class RequestMarkMilestoneCompleteButton extends Component {
 
   requestMarkComplete() {
     const { milestone, balance, currentUser } = this.props;
+    const userAddress = currentUser && currentUser.address;
 
     actionWithLoggedIn(currentUser).then(() =>
       checkBalance(balance)
@@ -50,7 +51,7 @@ class RequestMarkMilestoneCompleteButton extends Component {
             .then(proof => {
               MilestoneService.requestMarkComplete({
                 milestone,
-                from: currentUser.address,
+                from: userAddress,
                 proof,
                 onTxHash: txUrl => {
                   GA.trackEvent({
