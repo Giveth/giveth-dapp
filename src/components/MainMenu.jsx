@@ -117,17 +117,16 @@ class MainMenu extends Component {
                           )}
                         </ul>
 
-                        {/*
-              <form id="search-form" className="form-inline my-2 my-lg-0">
-                <input className="form-control mr-sm-2" type="text" placeholder="E.g. save the whales"/>
-                <button className="btn btn-outline-success my-2 my-sm-0" type="submit">Find</button>
-              </form>
-            */}
-
                         <form
                           action="https://www.github.com/Giveth/giveth-dapp/issues/new"
                           method="get"
                           target="_blank"
+                          style={{
+                            position: 'absolute',
+                            left: '50%',
+                            top: '50%',
+                            transform: 'translate(-50%, -50%)',
+                          }}
                         >
                           <button type="submit" className="btn btn-dark btn-sm btn-report-issue">
                             <i className="fa fa-github" />
