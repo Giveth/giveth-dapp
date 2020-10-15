@@ -20,7 +20,6 @@ class LeaderBoardItem extends Component {
     this.state = {
       showDetails: false,
       itemType: null, // Delegated ro Directly donated
-      hasHistory: this.props.d.status === Donation.PAID, // PAID donations always has history
     };
 
     this.toggleDetail = this.toggleDetail.bind(this);
@@ -34,15 +33,8 @@ class LeaderBoardItem extends Component {
     });
   }
 
-  setItemHasHistory(hasHistory) {
-    this.setState({
-      hasHistory,
-    });
-  }
-
   toggleDetail() {
     this.setState(prevState => ({
-      ...prevState,
       showDetails: !prevState.showDetails,
     }));
   }
@@ -50,6 +42,7 @@ class LeaderBoardItem extends Component {
   render() {
     const { d, rank, useAmountRemaining } = this.props;
     const { donations, totalAmount, giver } = d;
+    const { showDetails } = this.state;
     const roundTotalAmount = roundBigNumber(totalAmount, 2).toFixed();
     // debugger;
     return (
@@ -99,48 +92,50 @@ class LeaderBoardItem extends Component {
               typeLabel = null;
           }
 
-          if (d.status === Donation.PAID || this.state.itemType === 'delegated') {
+          if (this.state.itemType === 'delegated') {
             etherScanLink = etherscan && d.txHash ? `${etherscan}tx/${d.txHash}` : '';
           } else if (this.state.itemType === 'direct') {
             etherScanLink =
               homeEtherscan && d.homeTxHash ? `${homeEtherscan}tx/${d.homeTxHash}` : '';
           }
           return (
-            <tr key={donation._id} style={this.state.showDetails ? {} : { display: 'none' }}>
-              <td>&nbsp;</td>
-              <td className="td-date">
-                <span>{moment(donation.createdAt).format('MM/DD/YYYY')}</span>
-              </td>
-              <td className="td-donations-amount">
-                <span>
-                  {donation.isPending && (
+            <Fragment>
+              {showDetails && (
+                <tr key={donation._id}>
+                  <td>&nbsp;</td>
+                  <td className="td-date">
+                    <span>{moment(donation.createdAt).format('MM/DD/YYYY')}</span>
+                  </td>
+                  <td className="td-donations-amount">
                     <span>
-                      <i className="fa fa-circle-o-notch fa-spin" />
-                      &nbsp;
+                      {donation.isPending && (
+                        <span>
+                          <i className="fa fa-circle-o-notch fa-spin" />
+                          &nbsp;
+                        </span>
+                      )}
+                      {convertEthHelper(
+                        useAmountRemaining ? donation.amountRemaining : donation.amount,
+                        donation.token && donation.token.decimals,
+                      )}{' '}
+                      {(donation.token && donation.token.symbol) || config.nativeTokenName}
                     </span>
-                  )}
-                  {convertEthHelper(
-                    donation.status !== Donation.PAID && useAmountRemaining
-                      ? donation.amountRemaining
-                      : donation.amount,
-                    donation.token && donation.token.decimals,
-                  )}{' '}
-                  {(donation.token && donation.token.symbol) || config.nativeTokenName}
-                </span>
-              </td>
-              <td>${donation.usdValue}</td>
-              <td>
-                {etherScanLink ? (
-                  <a href={etherScanLink} target="_blank" rel="noopener noreferrer">
-                    {donation.statusDescription}
-                  </a>
-                ) : (
-                  <span>{donation.statusDescription}</span>
-                )}
-                {typeLabel}
-              </td>
-              <td />
-            </tr>
+                  </td>
+                  <td>${donation.usdValue}</td>
+                  <td>
+                    {etherScanLink ? (
+                      <a href={etherScanLink} target="_blank" rel="noopener noreferrer">
+                        {donation.statusDescription}
+                      </a>
+                    ) : (
+                      <span>{donation.statusDescription}</span>
+                    )}
+                    {typeLabel}
+                  </td>
+                  <td />
+                </tr>
+              )}
+            </Fragment>
           );
         })}
       </Fragment>
