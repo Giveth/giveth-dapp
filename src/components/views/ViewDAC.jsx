@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import BigNumber from 'bignumber.js';
 import PropTypes from 'prop-types';
 
-import { Link } from 'react-router-dom';
+import { Link, NavLink } from 'react-router-dom';
 import Avatar from 'react-avatar';
 
 import Balances from 'components/Balances';
@@ -14,7 +14,7 @@ import DonationList from '../DonationList';
 import CommunityButton from '../CommunityButton';
 import User from '../../models/User';
 import DAC from '../../models/DAC';
-import { getUserName, getUserAvatar, history } from '../../lib/helpers';
+import { getUserName, getUserAvatar, history, scrollToById } from '../../lib/helpers';
 import DACService from '../../services/DACService';
 import CampaignCard from '../CampaignCard';
 import ShareOptions from '../ShareOptions';
@@ -146,7 +146,12 @@ class ViewDAC extends Component {
 
         {!isLoading && (
           <div>
-            <BackgroundImageHeader image={dac.image} height={300} adminId={dac.delegateId}>
+            <BackgroundImageHeader
+              image={dac.image}
+              height={300}
+              adminId={dac.delegateId}
+              projectType="DAC"
+            >
               <h6>Decentralized Altruistic Community</h6>
               <h1>{dac.title}</h1>
 
@@ -174,6 +179,7 @@ class ViewDAC extends Component {
                 }}
                 currentUser={currentUser}
                 history={history}
+                autoPopup
               />
               {dac.communityUrl && (
                 <CommunityButton className="btn btn-secondary" url={dac.communityUrl}>
@@ -182,22 +188,51 @@ class ViewDAC extends Component {
               )}
             </BackgroundImageHeader>
 
-            <div className="container-fluid">
+            <div className="go-back-section container-fluid vertical-align">
+              <GoBackButton to="/" title="Communities" />
+              <nav className="nav nav-center">
+                <li className="nav-item">
+                  <NavLink
+                    className="nav-link mr-auto"
+                    to="#"
+                    onClick={() => scrollToById('description')}
+                  >
+                    About
+                  </NavLink>
+                </li>
+                <li className="nav-item">
+                  <NavLink
+                    className="nav-link mr-auto"
+                    to="#"
+                    onClick={() => scrollToById('campaigns')}
+                  >
+                    Campaigns
+                  </NavLink>
+                </li>
+                <li className="nav-item">
+                  <NavLink
+                    className="nav-link mr-auto"
+                    to="#"
+                    onClick={() => scrollToById('donations')}
+                  >
+                    Donations
+                  </NavLink>
+                </li>
+              </nav>
+              <ShareOptions pageUrl={window.location.href} pageTitle={dac.title} />
+            </div>
+
+            <div className="container-fluid mt-4">
               <div className="row">
                 <div className="col-md-8 m-auto">
-                  <div className="go-back-section">
-                    <GoBackButton to="/" title="Communities" />
-                    <ShareOptions pageUrl={window.location.href} pageTitle={dac.title} />
-                  </div>
-
-                  <center>
+                  <div className="text-center">
                     <Link to={`/profile/${dac.owner.address}`}>
                       <Avatar size={50} src={getUserAvatar(dac.owner)} round />
                       <p className="small">{getUserName(dac.owner)}</p>
                     </Link>
-                  </center>
+                  </div>
 
-                  <div className="card content-card">
+                  <div id="description" className="card content-card">
                     <div className="card-body content">{this.renderDescription()}</div>
                     <div className="bottom-donate-button text-center">
                       <DonateButton
@@ -210,7 +245,6 @@ class ViewDAC extends Component {
                         }}
                         currentUser={currentUser}
                         history={history}
-                        disableAutoPopup
                       />
                     </div>
                   </div>
@@ -218,7 +252,7 @@ class ViewDAC extends Component {
               </div>
 
               {(isLoadingCampaigns || campaigns.length > 0) && (
-                <div className="row spacer-top-50 spacer-bottom-50">
+                <div id="campaigns" className="row spacer-top-50 spacer-bottom-50">
                   <div className="col-md-8 m-auto card-view">
                     <h4>{campaigns.length} Campaign(s)</h4>
                     <p>
@@ -246,25 +280,26 @@ class ViewDAC extends Component {
                 <div className="col-md-8 m-auto">
                   <Balances entity={dac} />
 
-                  <DonationList
-                    donations={donations}
-                    isLoading={isLoadingDonations}
-                    total={donationsTotal}
-                    loadMore={this.loadMoreDonations}
-                    newDonations={newDonations}
-                  />
-                  <DonateButton
-                    model={{
-                      type: DAC.type,
-                      title: dac.title,
-                      id: dac.id,
-                      token: { symbol: config.nativeTokenName },
-                      adminId: dac.delegateId,
-                    }}
-                    currentUser={currentUser}
-                    history={history}
-                    disableAutoPopup
-                  />
+                  <div id="donations">
+                    <DonationList
+                      donations={donations}
+                      isLoading={isLoadingDonations}
+                      total={donationsTotal}
+                      loadMore={this.loadMoreDonations}
+                      newDonations={newDonations}
+                    />
+                    <DonateButton
+                      model={{
+                        type: DAC.type,
+                        title: dac.title,
+                        id: dac.id,
+                        token: { symbol: config.nativeTokenName },
+                        adminId: dac.delegateId,
+                      }}
+                      currentUser={currentUser}
+                      history={history}
+                    />
+                  </div>
                 </div>
               </div>
             </div>

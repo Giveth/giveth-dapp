@@ -182,3 +182,13 @@ export const roundBigNumber = (amount, decimals) => {
 
   return result.decimalPlaces(Number(decimals || config.decimals), BigNumber.ROUND_DOWN);
 };
+
+export const scrollToById = id => {
+  if (id) {
+    const element = document.getElementById(id);
+    const [navbar] = document.getElementsByClassName('navbar');
+    const top =
+      element.getBoundingClientRect().top - (navbar ? navbar.getBoundingClientRect().height : 0);
+    window.scrollTo({ top, behavior: 'smooth' });
+  }
+};

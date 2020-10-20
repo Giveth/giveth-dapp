@@ -1,14 +1,9 @@
 #view-campaign-view {
   @include content-styling;
-
-  padding-top: 50px;
+  @include view-project;
 
   .cause-title {
     margin-bottom: 20px;
-  }
-
-  .milestone-header h3 {
-    display: inline-block;
   }
 
   .card.content-card {

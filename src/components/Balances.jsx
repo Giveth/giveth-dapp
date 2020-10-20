@@ -1,4 +1,4 @@
-import React, { Fragment } from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
 
 import Campaign from 'models/Campaign';
@@ -11,36 +11,33 @@ import { convertEthHelper } from '../lib/helpers';
 const Balances = ({ entity }) => (
   <div className="dashboard-table-view">
     {entity.donationCounters && entity.donationCounters.length > 0 && (
-      <Fragment>
-        <h4>Current balance</h4>
-        <div className="table-container">
-          <table
-            className="table table-responsive table-hover"
-            style={{ marginTop: 0, marginBottom: '50px' }}
-          >
-            <thead>
-              <tr>
-                <th className="td-donations-amount">Current balance</th>
-                <th className="td-donations-number">Number of donations</th>
-                <th className="td-donations-amount">Total donated</th>
+      <div className="table-container">
+        <table
+          className="table table-responsive table-hover"
+          style={{ marginTop: 0, marginBottom: '50px' }}
+        >
+          <thead>
+            <tr>
+              <th className="td-donations-amount">Current balance</th>
+              <th className="td-donations-number">Number of donations</th>
+              <th className="td-donations-amount">Total donated</th>
+            </tr>
+          </thead>
+          <tbody>
+            {entity.donationCounters.map(dc => (
+              <tr key={dc._id}>
+                <td className="td-donations-amount">
+                  {convertEthHelper(dc.currentBalance, dc.decimals)} {dc.symbol}
+                </td>
+                <td className="td-donations-number">{dc.donationCount || 0}</td>
+                <td className="td-donations-amount">
+                  {convertEthHelper(dc.totalDonated, dc.decimals)} {dc.symbol}
+                </td>
               </tr>
-            </thead>
-            <tbody>
-              {entity.donationCounters.map(dc => (
-                <tr key={dc._id}>
-                  <td className="td-donations-amount">
-                    {convertEthHelper(dc.currentBalance, dc.decimals)} {dc.symbol}
-                  </td>
-                  <td className="td-donations-number">{dc.donationCount || 0}</td>
-                  <td className="td-donations-amount">
-                    {convertEthHelper(dc.totalDonated, dc.decimals)} {dc.symbol}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </Fragment>
+            ))}
+          </tbody>
+        </table>
+      </div>
     )}
   </div>
 );

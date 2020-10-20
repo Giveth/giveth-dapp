@@ -69,17 +69,17 @@ class MainMenu extends Component {
                       <div className="navbar-collapse collapse order-3 order-lg-1 menu-navbar">
                         <ul className="navbar-nav mr-auto">
                           <li className="nav-item">
-                            <Link className="nav-link" to="/">
+                            <Link className="nav-link" to="/dacs">
                               Communities
                             </Link>
                           </li>
                           <li className="nav-item">
-                            <Link className="nav-link" to="/">
+                            <Link className="nav-link" to="/campaigns">
                               Campaigns
                             </Link>
                           </li>
                           <li className="nav-item">
-                            <Link className="nav-link" to="/">
+                            <Link className="nav-link" to="/milestones">
                               Milestones
                             </Link>
                           </li>

@@ -1,0 +1,14 @@
+$alert-background: #F6F7FF;
+
+.project-alert {
+  background-color: $alert-background;
+  box-shadow: 0 0 0 1px #D4DAEE;
+
+  button {
+    // Copied from bootstrap btn-sm
+    padding: .35rem .6rem;
+    font-size: .875rem;
+    line-height: 1.7;
+    border-radius: .2rem;
+  }
+}

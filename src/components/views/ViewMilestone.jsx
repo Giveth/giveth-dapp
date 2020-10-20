@@ -229,6 +229,7 @@ class ViewMilestone extends Component {
               image={milestone.image}
               height={300}
               adminId={milestone.projectId}
+              projectType="Milestone"
             >
               <h6>Milestone</h6>
               <h1>{milestone.title}</h1>
@@ -263,6 +264,7 @@ class ViewMilestone extends Component {
                           ? milestone.maxAmount.minus(milestone.totalDonatedSingleToken)
                           : undefined
                       }
+                      autoPopup
                     />
                     {currentUser && (
                       <DelegateMultipleButton
@@ -330,7 +332,6 @@ class ViewMilestone extends Component {
                           }}
                           currentUser={currentUser}
                           history={history}
-                          disableAutoPopup
                           type={Milestone.type}
                           maxDonationAmount={
                             milestone.isCapped
@@ -620,7 +621,6 @@ class ViewMilestone extends Component {
                       }}
                       currentUser={currentUser}
                       history={history}
-                      disableAutoPopup
                       type={Milestone.type}
                       maxDonationAmount={
                         milestone.isCapped
