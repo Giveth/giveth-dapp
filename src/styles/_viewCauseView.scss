@@ -1,5 +1,6 @@
 #view-cause-view {
   @include content-styling;
+  @include view-project;
 
   .cause-title {
     margin-bottom: 20px;

@@ -146,12 +146,19 @@
     justify-content: space-between;
     padding-bottom: 10px;
 
-    button, a {
-      // Copied from bootstrap btn-sm
-      padding: .35rem .6rem;
+    button {
       font-size: .875rem;
       line-height: 1.7;
       border-radius: .2rem;
+      margin-left: 1rem;
+      padding-right: 1.5rem;
+      padding-left: 1.5rem;
+    }
+    a {
+      font-size: .875rem;
+      line-height: 1.7;
+      padding-right: 1.5rem;
+      padding-left: 1.5rem;
     }
   }
 }

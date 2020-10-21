@@ -40,8 +40,8 @@ BackgroundImageHeader.propTypes = {
   children: PropTypes.node,
   adminId: PropTypes.number,
   projectType: PropTypes.string.isRequired,
-  editProject: PropTypes.func,
-  cancelProject: PropTypes.func,
+  editProject: PropTypes.oneOfType([PropTypes.func, PropTypes.bool]),
+  cancelProject: PropTypes.oneOfType([PropTypes.func, PropTypes.bool]),
 };
 
 BackgroundImageHeader.defaultProps = {

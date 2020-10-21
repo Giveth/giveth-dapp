@@ -169,7 +169,7 @@ class ViewCampaign extends Component {
 
   render() {
     const { currentUser, balance } = this.props;
-    const { campaignUrl } = config;
+    const { homeUrl } = config;
     const {
       isLoading,
       campaign,
@@ -197,15 +197,18 @@ class ViewCampaign extends Component {
 
     const showDonateAddress = donationAddress || userIsOwner;
 
+    const leaderBoardTitle = `Leaderboard${donationsTotal ? ` (${donationsTotal})` : ''}`;
+    const milestonesTitle = `Milestones${milestonesTotal ? ` (${milestonesTotal})` : ''}`;
+
     const goBackSectionLinks = [
       { title: 'About', inPageId: 'description' },
       {
-        title: `Leaderboard${donationsTotal && ` (${donationsTotal})`}`,
+        title: leaderBoardTitle,
         inPageId: 'donations',
       },
       { title: 'Funding', inPageId: 'funding' },
       {
-        title: `Milestones${milestonesTotal && ` (${milestonesTotal})`}`,
+        title: milestonesTitle,
         inPageId: 'milestones',
       },
     ];
@@ -227,7 +230,7 @@ class ViewCampaign extends Component {
                   <meta itemProp="image" content={campaign.image} />
 
                   {/* Facebook Meta Tags */}
-                  <meta property="og:url" content={campaignUrl + campaign.id} />
+                  <meta property="og:url" content={`${homeUrl}/campaigns/${campaign.id}`} />
                   <meta property="og:type" content="website" />
                   <meta property="og:title" content={campaign.title} />
                   <meta property="og:description" content={campaign.description} />
@@ -239,6 +242,7 @@ class ViewCampaign extends Component {
                   <meta name="twitter:description" content={campaign.description} />
                   <meta name="twitter:image" content={campaign.image} />
                 </Helmet>
+
                 <BackgroundImageHeader
                   image={campaign.image}
                   height={300}
@@ -277,68 +281,72 @@ class ViewCampaign extends Component {
                 <div className="container-fluid mt-4">
                   <div className="row">
                     <div className="col-md-8 m-auto">
-                      {showDonateAddress && (
-                        <ProjectViewActionAlert message="Send money to an address to contribute">
-                          <CreateDonationAddressButton
-                            campaignTitle={campaign.title}
-                            campaignOwner={ownerAddress}
-                            campaignId={campaign.id}
-                            receiverId={campaign.projectId}
-                            giverId={(campaign._owner || {}).giverId}
-                            currentUser={currentUser}
-                          />
-                        </ProjectViewActionAlert>
-                      )}
+                      <div>
+                        {showDonateAddress && (
+                          <ProjectViewActionAlert message="Send money to an address to contribute">
+                            <CreateDonationAddressButton
+                              campaignTitle={campaign.title}
+                              campaignOwner={ownerAddress}
+                              campaignId={campaign.id}
+                              receiverId={campaign.projectId}
+                              giverId={(campaign._owner || {}).giverId}
+                              currentUser={currentUser}
+                            />
+                          </ProjectViewActionAlert>
+                        )}
 
-                      {currentUser && (
-                        <ProjectViewActionAlert message="Delegate some donation to this project">
-                          <DelegateMultipleButton
-                            campaign={campaign}
-                            balance={balance}
-                            currentUser={currentUser}
-                          />
-                        </ProjectViewActionAlert>
-                      )}
+                        {currentUser && (
+                          <ProjectViewActionAlert message="Delegate some donation to this project">
+                            <DelegateMultipleButton
+                              campaign={campaign}
+                              balance={balance}
+                              currentUser={currentUser}
+                            />
+                          </ProjectViewActionAlert>
+                        )}
 
-                      {userIsOwner && (
-                        <ProjectViewActionAlert message="Change ownership of Campaign">
-                          <ChangeOwnershipButton
-                            campaign={campaign}
-                            balance={balance}
-                            currentUser={currentUser}
-                            {...this.props}
-                          />
-                        </ProjectViewActionAlert>
-                      )}
-
-                      <div id="description" className="pt-4 about-section-header">
-                        <h5 className="title">About</h5>
-                        <div className="text-center">
-                          <Link to={`/profile/${ownerAddress}`}>
-                            <Avatar size={50} src={getUserAvatar(campaign.owner)} round />
-                            <p className="small">{getUserName(campaign.owner)}</p>
-                          </Link>
-                        </div>
-                      </div>
-
-                      <div className="card content-card ">
-                        <div className="card-body content">{this.renderDescription()}</div>
-
-                        {campaign.communityUrl && (
-                          <div className="pl-3 pb-4">
-                            <CommunityButton
-                              className="btn btn-secondary"
-                              url={campaign.communityUrl}
-                            >
-                              Join our Community
-                            </CommunityButton>
-                          </div>
+                        {userIsOwner && (
+                          <ProjectViewActionAlert message="Change ownership of Campaign">
+                            <ChangeOwnershipButton
+                              campaign={campaign}
+                              balance={balance}
+                              currentUser={currentUser}
+                              {...this.props}
+                            />
+                          </ProjectViewActionAlert>
                         )}
                       </div>
 
-                      <div className="spacer-top-50 card-view">
+                      <div id="description">
+                        <div className="about-section-header">
+                          <h5 className="title">About</h5>
+                          <div className="text-center">
+                            <Link to={`/profile/${ownerAddress}`}>
+                              <Avatar size={50} src={getUserAvatar(campaign.owner)} round />
+                              <p className="small">{getUserName(campaign.owner)}</p>
+                            </Link>
+                          </div>
+                        </div>
+
+                        <div className="card content-card ">
+                          <div className="card-body content">{this.renderDescription()}</div>
+
+                          {campaign.communityUrl && (
+                            <div className="pl-3 pb-4">
+                              <CommunityButton
+                                className="btn btn-secondary"
+                                url={campaign.communityUrl}
+                              >
+                                Join our Community
+                              </CommunityButton>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      <div id="donations" className="spacer-top-50">
                         <div id="donations" className="section-header">
-                          <h5>Donations{donationsTotal && ` (${donationsTotal})`}</h5>
+                          <h5>{leaderBoardTitle}</h5>
                           {campaign.isActive && (
                             <DonateButton
                               model={{
@@ -360,65 +368,60 @@ class ViewCampaign extends Component {
                           loadMore={this.loadMoreDonations}
                           newDonations={newDonations}
                         />
+                      </div>
 
-                        <div id="funding">
-                          <div className="section-header">
-                            <h5>Funding</h5>
-                            <span>
-                              <a
-                                className="btn btn-link"
-                                href={`${config.feathersConnection}/campaigncsv/${campaign.id}`}
-                                type="button"
-                                download={`${campaign.id}.csv`}
-                              >
-                                Download this Campaign&apos;s Financial History
-                              </a>
-                              {campaign.isActive && (
-                                <Fragment>
-                                  <DelegateMultipleButton
-                                    className="ml-2"
-                                    campaign={campaign}
-                                    balance={balance}
-                                    currentUser={currentUser}
-                                  />
-                                  <span className="ml-2">
-                                    <DonateButton
-                                      model={{
-                                        type: Campaign.type,
-                                        title: campaign.title,
-                                        id: campaign.id,
-                                        adminId: campaign.projectId,
-                                        token: {
-                                          symbol: config.nativeTokenName,
-                                        },
-                                      }}
-                                      currentUser={currentUser}
-                                      history={history}
-                                    />
-                                  </span>
-                                </Fragment>
-                              )}
-                            </span>
-                          </div>
-                          <Balances entity={campaign} />
+                      <div id="funding" className="spacer-top-50">
+                        <div className="section-header">
+                          <h5>Funding</h5>
+                          <span>
+                            <a
+                              className="btn btn-link"
+                              href={`${config.feathersConnection}/campaigncsv/${campaign.id}`}
+                              type="button"
+                              download={`${campaign.id}.csv`}
+                            >
+                              Download this Campaign&apos;s Financial History
+                            </a>
+                            {campaign.isActive && (
+                              <Fragment>
+                                <DelegateMultipleButton
+                                  campaign={campaign}
+                                  balance={balance}
+                                  currentUser={currentUser}
+                                />
+                                <DonateButton
+                                  model={{
+                                    type: Campaign.type,
+                                    title: campaign.title,
+                                    id: campaign.id,
+                                    adminId: campaign.projectId,
+                                    token: {
+                                      symbol: config.nativeTokenName,
+                                    },
+                                  }}
+                                  currentUser={currentUser}
+                                  history={history}
+                                />
+                              </Fragment>
+                            )}
+                          </span>
                         </div>
+                        <Balances entity={campaign} />
+                      </div>
 
-                        <div className="mb-5">
-                          <h5>Campaign Reviewer</h5>
-                          {campaign && campaign.reviewer && (
-                            <Link to={`/profile/${campaign.reviewerAddress}`}>
-                              {getUserName(campaign.reviewer)}
-                            </Link>
-                          )}
-                          {(!campaign || !campaign.reviewer) && <span>Unknown user</span>}
-                        </div>
+                      <div>
+                        <h5>Campaign Reviewer</h5>
+                        {campaign && campaign.reviewer && (
+                          <Link to={`/profile/${campaign.reviewerAddress}`}>
+                            {getUserName(campaign.reviewer)}
+                          </Link>
+                        )}
+                        {(!campaign || !campaign.reviewer) && <span>Unknown user</span>}
+                      </div>
 
-                        <div id="milestones" className="section-header">
-                          <h5>
-                            Milestones
-                            {milestonesTotal && ` (${milestonesTotal})`}
-                          </h5>
-
+                      <div id="milestones" className="spacer-bottom-50 spacer-top-50">
+                        <div className="section-header">
+                          <h5>{milestonesTitle}</h5>
                           <span>
                             {campaign.projectId > 0 &&
                               campaign.isActive &&
@@ -434,7 +437,7 @@ class ViewCampaign extends Component {
                               )}
 
                             {campaign.isActive && (
-                              <span className="ml-2">
+                              <span>
                                 <DonateButton
                                   model={{
                                     type: Campaign.type,
