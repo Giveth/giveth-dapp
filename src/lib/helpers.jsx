@@ -186,6 +186,10 @@ export const roundBigNumber = (amount, decimals) => {
 export const scrollToById = id => {
   if (id) {
     const element = document.getElementById(id);
+    if (!element) {
+      console.error(`No element found with id ${id}`);
+      return;
+    }
     const [navbar] = document.getElementsByClassName('navbar');
     const top =
       element.getBoundingClientRect().top - (navbar ? navbar.getBoundingClientRect().height : 0);

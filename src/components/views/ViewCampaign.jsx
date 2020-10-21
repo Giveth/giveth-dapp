@@ -1,6 +1,6 @@
 import React, { Component, Fragment } from 'react';
 import PropTypes from 'prop-types';
-import { Link, NavLink } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import Avatar from 'react-avatar';
 import BigNumber from 'bignumber.js';
 import { Helmet, HelmetProvider } from 'react-helmet-async';
@@ -8,8 +8,7 @@ import Balances from 'components/Balances';
 import { feathersClient } from '../../lib/feathersClient';
 import Loader from '../Loader';
 import MilestoneCard from '../MilestoneCard';
-import GoBackButton from '../GoBackButton';
-import { getUserName, getUserAvatar, history, scrollToById } from '../../lib/helpers';
+import { getUserName, getUserAvatar, history } from '../../lib/helpers';
 import { checkBalance } from '../../lib/middleware';
 import BackgroundImageHeader from '../BackgroundImageHeader';
 import DonateButton from '../DonateButton';
@@ -25,11 +24,11 @@ import CampaignService from '../../services/CampaignService';
 
 import ErrorPopup from '../ErrorPopup';
 import ErrorBoundary from '../ErrorBoundary';
-import ShareOptions from '../ShareOptions';
 import config from '../../configuration';
 import CreateDonationAddressButton from '../CreateDonationAddressButton';
 import NotFound from './NotFound';
 import ProjectViewActionAlert from '../projectViewActionAlert';
+import GoBackSection from '../GoBackSection';
 
 /**
  * The Campaign detail view mapped to /campaing/id
@@ -198,6 +197,19 @@ class ViewCampaign extends Component {
 
     const showDonateAddress = donationAddress || userIsOwner;
 
+    const goBackSectionLinks = [
+      { title: 'About', inPageId: 'description' },
+      {
+        title: `Leaderboard${donationsTotal && ` (${donationsTotal})`}`,
+        inPageId: 'donations',
+      },
+      { title: 'Funding', inPageId: 'funding' },
+      {
+        title: `Milestones${milestonesTotal && ` (${milestonesTotal})`}`,
+        inPageId: 'milestones',
+      },
+    ];
+
     return (
       <HelmetProvider context={helmetContext}>
         <ErrorBoundary>
@@ -233,7 +245,7 @@ class ViewCampaign extends Component {
                   adminId={campaign.projectId}
                   projectType="Campaign"
                   editProject={userIsOwner && (() => this.editCampaign(campaign.id))}
-                  cancelProject={() => {}}
+                  cancelProject={userIsOwner && (() => {})}
                 >
                   <h6>Campaign</h6>
                   <h1>{campaign.title}</h1>
@@ -253,55 +265,14 @@ class ViewCampaign extends Component {
                       />
                     </div>
                   )}
-                  {campaign.communityUrl && (
-                    <CommunityButton className="btn btn-secondary" url={campaign.communityUrl}>
-                      Join our Community
-                    </CommunityButton>
-                  )}
                 </BackgroundImageHeader>
 
-                <div className="go-back-section container-fluid vertical-align mb-4">
-                  <GoBackButton to="/campaigns" title="Campaigns" />
-                  <nav className="nav nav-center">
-                    <li className="nav-item">
-                      <NavLink
-                        className="nav-link mr-auto"
-                        to="#"
-                        onClick={() => scrollToById('description')}
-                      >
-                        About
-                      </NavLink>
-                    </li>
-                    <li className="nav-item">
-                      <NavLink
-                        className="nav-link mr-auto"
-                        to="#"
-                        onClick={() => scrollToById('donations')}
-                      >
-                        Leaderboard{donationsTotal && ` (${donationsTotal})`}
-                      </NavLink>
-                    </li>
-                    <li className="nav-item">
-                      <NavLink
-                        className="nav-link mr-auto"
-                        to="#"
-                        onClick={() => scrollToById('funding')}
-                      >
-                        Funding
-                      </NavLink>
-                    </li>
-                    <li className="nav-item">
-                      <NavLink
-                        className="nav-link mr-auto"
-                        to="#"
-                        onClick={() => scrollToById('milestones')}
-                      >
-                        Milestones{milestonesTotal && ` (${milestonesTotal})`}
-                      </NavLink>
-                    </li>
-                  </nav>
-                  <ShareOptions pageUrl={window.location.href} pageTitle={campaign.title} />
-                </div>
+                <GoBackSection
+                  backUrl="/campaigns"
+                  backButtonTitle="Campaigns"
+                  projectTitle={campaign.title}
+                  inPageLinks={goBackSectionLinks}
+                />
 
                 <div className="container-fluid mt-4">
                   <div className="row">
@@ -352,6 +323,17 @@ class ViewCampaign extends Component {
 
                       <div className="card content-card ">
                         <div className="card-body content">{this.renderDescription()}</div>
+
+                        {campaign.communityUrl && (
+                          <div className="pl-3 pb-4">
+                            <CommunityButton
+                              className="btn btn-secondary"
+                              url={campaign.communityUrl}
+                            >
+                              Join our Community
+                            </CommunityButton>
+                          </div>
+                        )}
                       </div>
 
                       <div className="spacer-top-50 card-view">
@@ -419,6 +401,16 @@ class ViewCampaign extends Component {
                             </span>
                           </div>
                           <Balances entity={campaign} />
+                        </div>
+
+                        <div className="mb-5">
+                          <h5>Campaign Reviewer</h5>
+                          {campaign && campaign.reviewer && (
+                            <Link to={`/profile/${campaign.reviewerAddress}`}>
+                              {getUserName(campaign.reviewer)}
+                            </Link>
+                          )}
+                          {(!campaign || !campaign.reviewer) && <span>Unknown user</span>}
                         </div>
 
                         <div id="milestones" className="section-header">
@@ -493,21 +485,6 @@ class ViewCampaign extends Component {
                           </div>
                         )}
                       </div>
-                    </div>
-                  </div>
-
-                  <div className="row spacer-top-50 spacer-bottom-50">
-                    <div className="col-md-8 m-auto" />
-                  </div>
-                  <div className="row spacer-top-50 spacer-bottom-50">
-                    <div className="col-md-8 m-auto">
-                      <h4>Campaign Reviewer</h4>
-                      {campaign && campaign.reviewer && (
-                        <Link to={`/profile/${campaign.reviewerAddress}`}>
-                          {getUserName(campaign.reviewer)}
-                        </Link>
-                      )}
-                      {(!campaign || !campaign.reviewer) && <span>Unknown user</span>}
                     </div>
                   </div>
                 </div>
