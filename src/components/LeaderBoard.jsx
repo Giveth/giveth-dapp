@@ -79,14 +79,9 @@ LeaderBoardItem.propTypes = {
 };
 
 const LeaderBoard = props => {
-  const { isLoading, aggregateDonations, loadMore, total, useAmountRemaining, children } = props;
+  const { isLoading, aggregateDonations, loadMore, total, useAmountRemaining } = props;
   return (
     <div className="leader-board">
-      <div className="leader-board-header">
-        <h2>Leader Board</h2>
-        <div className="donation-button">{children}</div>
-      </div>
-
       <div className="dashboard-table-view">
         {isLoading && total === 0 && <Loader className="relative" />}
         {aggregateDonations.length > 0 && (
@@ -151,10 +146,8 @@ LeaderBoard.propTypes = {
   total: PropTypes.number.isRequired,
   loadMore: PropTypes.func.isRequired,
   useAmountRemaining: PropTypes.bool,
-  children: PropTypes.node,
 };
 
 LeaderBoard.defaultProps = {
   useAmountRemaining: false,
-  children: null,
 };

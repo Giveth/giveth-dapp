@@ -10,7 +10,8 @@ import { Helmet, HelmetProvider } from 'react-helmet-async';
 import Loader from '../Loader';
 import BackgroundImageHeader from '../BackgroundImageHeader';
 import DonateButton from '../DonateButton';
-import DonationList from '../DonationList';
+import AggregateDonationService from '../../services/AggregateDonationService';
+import LeaderBoard from '../LeaderBoard';
 import CommunityButton from '../CommunityButton';
 import User from '../../models/User';
 import DAC from '../../models/DAC';
@@ -45,14 +46,14 @@ class ViewDAC extends Component {
       isLoadingDonations: true,
       isLoadingCampaigns: true,
       campaigns: [],
-      donations: [],
+      aggregateDonations: [],
       donationsTotal: 0,
       donationsPerBatch: 50,
       newDonations: 0,
       notFound: false,
     };
 
-    this.loadMoreDonations = this.loadMoreDonations.bind(this);
+    this.loadMoreAggregateDonations = this.loadMoreAggregateDonations.bind(this);
     this.editDAC = this.editDAC.bind(this);
   }
 
@@ -76,7 +77,7 @@ class ViewDAC extends Component {
         });
       });
 
-    this.loadMoreDonations();
+    this.loadMoreAggregateDonations();
     // subscribe to donation count
     this.donationsObserver = DACService.subscribeNewDonations(
       dacId,
@@ -93,18 +94,19 @@ class ViewDAC extends Component {
     if (this.campaignObserver) this.campaignObserver.unsubscribe();
   }
 
-  loadMoreDonations() {
+  loadMoreAggregateDonations() {
     this.setState({ isLoadingDonations: true }, () =>
-      DACService.getDonations(
+      AggregateDonationService.get(
         this.props.match.params.id,
         this.state.donationsPerBatch,
-        this.state.donations.length,
-        (donations, donationsTotal) =>
+        this.state.aggregateDonations.length,
+        (donations, donationsTotal) => {
           this.setState(prevState => ({
-            donations: prevState.donations.concat(donations),
+            aggregateDonations: prevState.aggregateDonations.concat(donations),
             isLoadingDonations: false,
             donationsTotal,
-          })),
+          }));
+        },
         () => this.setState({ isLoadingDonations: false }),
       ),
     );
@@ -132,7 +134,7 @@ class ViewDAC extends Component {
     const { balance, currentUser } = this.props;
     const {
       isLoading,
-      donations,
+      aggregateDonations,
       dac,
       isLoadingDonations,
       campaigns,
@@ -274,11 +276,11 @@ class ViewDAC extends Component {
                           )}
                         </div>
 
-                        <DonationList
-                          donations={donations}
+                        <LeaderBoard
+                          aggregateDonations={aggregateDonations}
                           isLoading={isLoadingDonations}
                           total={donationsTotal}
-                          loadMore={this.loadMoreDonations}
+                          loadMore={this.loadMoreAggregateDonations}
                           newDonations={newDonations}
                         />
                       </div>
