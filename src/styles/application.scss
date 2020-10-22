@@ -8,6 +8,7 @@
 @import 'causesView.scss';
 @import 'editCausesView.scss';
 @import 'viewCauseView.scss';
+@import 'viewAlertView.scss';
 @import 'viewCampaignView.scss';
 @import 'viewMilestoneView.scss';
 @import 'campaignsView';
@@ -262,6 +263,7 @@ span.nav-link:focus {
 
 .share-options {
   display: flex;
+  align-items: center;
 }
 
 .share-options > * {
@@ -272,6 +274,15 @@ span.nav-link:focus {
 .go-back-section {
   display: flex;
   justify-content: space-between;
+  background-color: white;
+
+  a {
+    color: $menu-item-color;
+
+    &:hover {
+      color: darken($green, 10%);
+    }
+  }
 }
 
 .label > .btn-explain {

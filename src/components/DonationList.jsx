@@ -178,7 +178,6 @@ const DonationList = props => {
   return (
     <div>
       <div>
-        <h2 style={{ display: 'inline-block' }}>Donations</h2>
         {newDonations > 0 && (
           <span className="badge badge-primary ml-2 mb-2" style={{ verticalAlign: 'middle' }}>
             {newDonations} new
@@ -189,7 +188,7 @@ const DonationList = props => {
       <div className="dashboard-table-view">
         {isLoading && total === 0 && <Loader className="relative" />}
         {donations.length > 0 && (
-          <div className="table-container">
+          <div className="table-container" style={{ marginTop: 0, marginBottom: '50px' }}>
             <table className="table table-responsive table-hover" style={{ marginTop: 0 }}>
               <thead>
                 <tr>
@@ -215,7 +214,7 @@ const DonationList = props => {
               </tbody>
             </table>
             {donations.length < total && (
-              <center>
+              <div className="text-center">
                 <button
                   type="button"
                   className="btn btn-info"
@@ -229,7 +228,7 @@ const DonationList = props => {
                   )}
                   {!isLoading && <span>Load More</span>}
                 </button>
-              </center>
+              </div>
             )}
           </div>
         )}

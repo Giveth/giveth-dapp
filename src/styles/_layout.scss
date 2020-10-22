@@ -122,3 +122,43 @@
     margin-left: -1.5em;
   }
 }
+
+.nav-center {
+  position: absolute;
+  left: 50%;
+  //top: 50%;
+  transform: translate(-50%, -0%);
+}
+
+@mixin view-project() {
+  .about-section-header {
+    position: relative;
+
+    .title {
+      position: absolute;
+      top: 50%;
+      transform: translate(0, -50%);
+    }
+  }
+
+  .section-header {
+    @extend .vertical-align;
+    justify-content: space-between;
+    padding-bottom: 10px;
+
+    button {
+      font-size: .875rem;
+      line-height: 1.7;
+      border-radius: .2rem;
+      margin-left: 1rem;
+      padding-right: 1.5rem;
+      padding-left: 1.5rem;
+    }
+    a {
+      font-size: .875rem;
+      line-height: 1.7;
+      padding-right: 1.5rem;
+      padding-left: 1.5rem;
+    }
+  }
+}

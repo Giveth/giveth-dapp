@@ -45,21 +45,18 @@ class MainMenu extends Component {
                   const userIsReviewer = isReviewer(currentUser);
                   return (
                     <nav
-                      id="main-menu"
-                      className={`navbar navbar-expand-lg sticky-top ${
+                      className={`navbar navbar-expand-lg sticky-top main-menu ${
                         showMobileMenu ? 'show' : ''
                       } `}
                     >
                       <button
-                        className="navbar-toggler navbar-toggler-right"
+                        className="navbar-toggler"
                         type="button"
                         onClick={() => this.toggleMobileMenu()}
+                        data-toggle="collapse"
+                        data-target=".menu-navbar"
                       >
-                        <i
-                          className={`navbar-toggler-icon fa ${
-                            showMobileMenu ? 'fa-close' : 'fa-bars'
-                          }`}
-                        />
+                        <i className="navbar-toggler-icon fa fa-bars" />
                       </button>
 
                       <Link className="navbar-brand" to="/">
@@ -69,12 +66,40 @@ class MainMenu extends Component {
                           alt="Giveth logo"
                         />
                       </Link>
-
-                      <div
-                        className={`collapse navbar-collapse ${showMobileMenu ? 'show' : ''} `}
-                        id="navbarSupportedContent"
-                      >
-                        <ul className="navbar-nav">
+                      <div className="navbar-collapse collapse order-3 order-lg-1 menu-navbar">
+                        <ul className="navbar-nav mr-auto">
+                          <li className="nav-item">
+                            <Link className="nav-link" to="/dacs">
+                              Communities
+                            </Link>
+                          </li>
+                          <li className="nav-item">
+                            <Link className="nav-link" to="/campaigns">
+                              Campaigns
+                            </Link>
+                          </li>
+                          <li className="nav-item">
+                            <Link className="nav-link" to="/milestones">
+                              Milestones
+                            </Link>
+                          </li>
+                        </ul>
+                      </div>
+                      <div className="navbar-collapse collapse mx-auto order-3 order-lg-2 menu-navbar">
+                        <form
+                          action="https://www.github.com/Giveth/giveth-dapp/issues/new"
+                          method="get"
+                          target="_blank"
+                          className="form-report-issue"
+                        >
+                          <button type="submit" className="btn btn-dark btn-sm btn-report-issue">
+                            <i className="fa fa-github" />
+                            Report Issue
+                          </button>
+                        </form>
+                      </div>
+                      <div className="navbar-collapse collapse order-1 order-lg-3 menu-navbar">
+                        <ul className="navbar-nav ml-auto">
                           {validProvider && currentUser && (
                             <li className="nav-item dropdown">
                               <NavLink
@@ -115,26 +140,7 @@ class MainMenu extends Component {
                               </div>
                             </li>
                           )}
-                        </ul>
 
-                        <form
-                          action="https://www.github.com/Giveth/giveth-dapp/issues/new"
-                          method="get"
-                          target="_blank"
-                          style={{
-                            position: 'absolute',
-                            left: '50%',
-                            top: '50%',
-                            transform: 'translate(-50%, -50%)',
-                          }}
-                        >
-                          <button type="submit" className="btn btn-dark btn-sm btn-report-issue">
-                            <i className="fa fa-github" />
-                            Report Issue
-                          </button>
-                        </form>
-
-                        <ul className="navbar-nav">
                           {validProvider && !failedToLoad && !isEnabled && !currentUser && (
                             <button
                               type="button"
