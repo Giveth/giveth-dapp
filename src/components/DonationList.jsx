@@ -43,7 +43,6 @@ class DonationListItem extends Component {
 
   toggleDetail() {
     this.setState(prevState => ({
-      ...prevState,
       showDetails: !prevState.showDetails,
     }));
   }
