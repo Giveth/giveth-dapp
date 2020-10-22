@@ -10,12 +10,12 @@ import Loader from '../Loader';
 import GoBackButton from '../GoBackButton';
 import BackgroundImageHeader from '../BackgroundImageHeader';
 import DonateButton from '../DonateButton';
-import DonationList from '../DonationList';
 import CommunityButton from '../CommunityButton';
 import User from '../../models/User';
 import DAC from '../../models/DAC';
 import { getUserName, getUserAvatar, history } from '../../lib/helpers';
 import DACService from '../../services/DACService';
+import AggregateDonationService from '../../services/AggregateDonationService';
 import CampaignCard from '../CampaignCard';
 import ShareOptions from '../ShareOptions';
 import config from '../../configuration';
@@ -23,6 +23,7 @@ import NotFound from './NotFound';
 import { checkBalance } from '../../lib/middleware';
 import ErrorPopup from '../ErrorPopup';
 import DescriptionRender from '../DescriptionRender';
+import LeaderBoard from '../LeaderBoard';
 
 /**
  * The DAC detail view mapped to /dac/id
@@ -39,14 +40,14 @@ class ViewDAC extends Component {
       isLoadingDonations: true,
       isLoadingCampaigns: true,
       campaigns: [],
-      donations: [],
+      aggregateDonations: [],
       donationsTotal: 0,
       donationsPerBatch: 50,
       newDonations: 0,
       notFound: false,
     };
 
-    this.loadMoreDonations = this.loadMoreDonations.bind(this);
+    this.loadMoreAggregateDonations = this.loadMoreAggregateDonations.bind(this);
     this.editDAC = this.editDAC.bind(this);
   }
 
@@ -70,7 +71,7 @@ class ViewDAC extends Component {
         });
       });
 
-    this.loadMoreDonations();
+    this.loadMoreAggregateDonations();
     // subscribe to donation count
     this.donationsObserver = DACService.subscribeNewDonations(
       dacId,
@@ -87,18 +88,20 @@ class ViewDAC extends Component {
     if (this.campaignObserver) this.campaignObserver.unsubscribe();
   }
 
-  loadMoreDonations() {
+  loadMoreAggregateDonations() {
     this.setState({ isLoadingDonations: true }, () =>
-      DACService.getDonations(
+      AggregateDonationService.get(
         this.props.match.params.id,
         this.state.donationsPerBatch,
-        this.state.donations.length,
-        (donations, donationsTotal) =>
+        this.state.aggregateDonations.length,
+        (donations, donationsTotal) => {
+          // console.log('aggregated:', donations, donationsTotal);
           this.setState(prevState => ({
-            donations: prevState.donations.concat(donations),
+            aggregateDonations: prevState.aggregateDonations.concat(donations),
             isLoadingDonations: false,
             donationsTotal,
-          })),
+          }));
+        },
         () => this.setState({ isLoadingDonations: false }),
       ),
     );
@@ -126,7 +129,7 @@ class ViewDAC extends Component {
     const { balance, currentUser } = this.props;
     const {
       isLoading,
-      donations,
+      aggregateDonations,
       dac,
       isLoadingDonations,
       campaigns,
@@ -245,26 +248,26 @@ class ViewDAC extends Component {
               <div className="row spacer-top-50 spacer-bottom-50">
                 <div className="col-md-8 m-auto">
                   <Balances entity={dac} />
-
-                  <DonationList
-                    donations={donations}
+                  <LeaderBoard
+                    aggregateDonations={aggregateDonations}
                     isLoading={isLoadingDonations}
                     total={donationsTotal}
-                    loadMore={this.loadMoreDonations}
+                    loadMore={this.loadMoreAggregateDonations}
                     newDonations={newDonations}
-                  />
-                  <DonateButton
-                    model={{
-                      type: DAC.type,
-                      title: dac.title,
-                      id: dac.id,
-                      token: { symbol: config.nativeTokenName },
-                      adminId: dac.delegateId,
-                    }}
-                    currentUser={currentUser}
-                    history={history}
-                    disableAutoPopup
-                  />
+                  >
+                    <DonateButton
+                      model={{
+                        type: DAC.type,
+                        title: dac.title,
+                        id: dac.id,
+                        token: { symbol: config.nativeTokenName },
+                        adminId: dac.delegateId,
+                      }}
+                      currentUser={currentUser}
+                      history={history}
+                      disableAutoPopup
+                    />
+                  </LeaderBoard>
                 </div>
               </div>
             </div>

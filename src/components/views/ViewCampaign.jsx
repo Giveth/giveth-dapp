@@ -17,7 +17,6 @@ import CommunityButton from '../CommunityButton';
 import DelegateMultipleButton from '../DelegateMultipleButton';
 import ChangeOwnershipButton from '../ChangeOwnershipButton';
 import DownloadCsvButton from '../DownloadCsvButton';
-import DonationList from '../DonationList';
 import DescriptionRender from '../DescriptionRender';
 
 import User from '../../models/User';
@@ -30,6 +29,8 @@ import ShareOptions from '../ShareOptions';
 import config from '../../configuration';
 import CreateDonationAddressButton from '../CreateDonationAddressButton';
 import NotFound from './NotFound';
+import LeaderBoard from '../LeaderBoard';
+import AggregateDonationService from '../../services/AggregateDonationService';
 
 /**
  * The Campaign detail view mapped to /campaing/id
@@ -49,7 +50,7 @@ class ViewCampaign extends Component {
       isLoading: true,
       isLoadingMilestones: true,
       isLoadingDonations: true,
-      donations: [],
+      aggregateDonations: [],
       milestones: [],
       milestonesLoaded: 0,
       milestonesTotal: 0,
@@ -61,7 +62,7 @@ class ViewCampaign extends Component {
     };
 
     this.loadMoreMilestones = this.loadMoreMilestones.bind(this);
-    this.loadMoreDonations = this.loadMoreDonations.bind(this);
+    this.loadMoreAggregateDonations = this.loadMoreAggregateDonations.bind(this);
   }
 
   componentDidMount() {
@@ -77,7 +78,7 @@ class ViewCampaign extends Component {
 
     this.loadMoreMilestones(campaignId);
 
-    this.loadMoreDonations();
+    this.loadMoreAggregateDonations();
     // subscribe to donation count
     this.donationsObserver = CampaignService.subscribeNewDonations(
       campaignId,
@@ -93,15 +94,15 @@ class ViewCampaign extends Component {
     if (this.donationsObserver) this.donationsObserver.unsubscribe();
   }
 
-  loadMoreDonations() {
+  loadMoreAggregateDonations() {
     this.setState({ isLoadingDonations: true }, () =>
-      CampaignService.getDonations(
+      AggregateDonationService.get(
         this.props.match.params.id,
         this.state.donationsPerBatch,
-        this.state.donations.length,
+        this.state.aggregateDonations.length,
         (donations, donationsTotal) =>
           this.setState(prevState => ({
-            donations: prevState.donations.concat(donations),
+            aggregateDonations: prevState.aggregateDonations.concat(donations),
             isLoadingDonations: false,
             donationsTotal,
           })),
@@ -175,7 +176,7 @@ class ViewCampaign extends Component {
       isLoading,
       campaign,
       milestones,
-      donations,
+      aggregateDonations,
       isLoadingDonations,
       isLoadingMilestones,
       milestonesLoaded,
@@ -390,27 +391,28 @@ class ViewCampaign extends Component {
                     <div className="col-md-8 m-auto">
                       <Balances entity={campaign} />
 
-                      <DonationList
-                        donations={donations}
+                      <LeaderBoard
+                        aggregateDonations={aggregateDonations}
                         isLoading={isLoadingDonations}
                         total={donationsTotal}
-                        loadMore={this.loadMoreDonations}
+                        loadMore={this.loadMoreAggregateDonations}
                         newDonations={newDonations}
-                      />
-                      {campaign.isActive && (
-                        <DonateButton
-                          model={{
-                            type: Campaign.type,
-                            title: campaign.title,
-                            id: campaign.id,
-                            adminId: campaign.projectId,
-                            token: { symbol: config.nativeTokenName },
-                          }}
-                          currentUser={currentUser}
-                          history={history}
-                          disableAutoPopup
-                        />
-                      )}
+                      >
+                        {campaign.isActive && (
+                          <DonateButton
+                            model={{
+                              type: Campaign.type,
+                              title: campaign.title,
+                              id: campaign.id,
+                              adminId: campaign.projectId,
+                              token: { symbol: config.nativeTokenName },
+                            }}
+                            currentUser={currentUser}
+                            history={history}
+                            disableAutoPopup
+                          />
+                        )}
+                      </LeaderBoard>
                     </div>
                   </div>
                   <div className="row spacer-top-50 spacer-bottom-50">
