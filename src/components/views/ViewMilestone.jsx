@@ -19,6 +19,7 @@ import DonateButton from 'components/DonateButton';
 import GoBackButton from 'components/GoBackButton';
 import Loader from 'components/Loader';
 import MilestoneItem from 'components/MilestoneItem';
+import DonationList from 'components/DonationList';
 import MilestoneConversations from 'components/MilestoneConversations';
 import DelegateMultipleButton from 'components/DelegateMultipleButton';
 import { convertEthHelper, getUserAvatar, getUserName, history } from '../../lib/helpers';
@@ -28,8 +29,6 @@ import ShareOptions from '../ShareOptions';
 import { Consumer as WhiteListConsumer } from '../../contextProviders/WhiteListProvider';
 import NotFound from './NotFound';
 import DescriptionRender from '../DescriptionRender';
-import AggregateDonationService from '../../services/AggregateDonationService';
-import LeaderBoard from '../LeaderBoard';
 
 /**
   Loads and shows a single milestone
@@ -45,7 +44,7 @@ class ViewMilestone extends Component {
     this.state = {
       isLoading: true,
       isLoadingDonations: true,
-      aggregateDonations: [],
+      donations: [],
       recipient: {},
       campaign: {},
       milestone: {},
@@ -56,7 +55,7 @@ class ViewMilestone extends Component {
       notFound: false,
     };
 
-    this.loadMoreAggregateDonations = this.loadMoreAggregateDonations.bind(this);
+    this.loadMoreDonations = this.loadMoreDonations.bind(this);
     this.getDacTitle = this.getDacTitle.bind(this);
   }
 
@@ -85,7 +84,7 @@ class ViewMilestone extends Component {
       },
     );
 
-    this.loadMoreAggregateDonations();
+    this.loadMoreDonations();
 
     // subscribe to donation count
     this.donationsObserver = MilestoneService.subscribeNewDonations(
@@ -118,15 +117,15 @@ class ViewMilestone extends Component {
     );
   }
 
-  loadMoreAggregateDonations() {
+  loadMoreDonations() {
     this.setState({ isLoadingDonations: true }, () =>
-      AggregateDonationService.get(
+      MilestoneService.getDonations(
         this.props.match.params.milestoneId,
         this.state.donationsPerBatch,
-        this.state.aggregateDonations.length,
+        this.state.donations.length,
         (donations, donationsTotal) =>
           this.setState(prevState => ({
-            aggregateDonations: prevState.aggregateDonations.concat(donations),
+            donations: prevState.donations.concat(donations),
             isLoadingDonations: false,
             donationsTotal,
           })),
@@ -190,7 +189,7 @@ class ViewMilestone extends Component {
     const { currentUser, balance } = this.props;
     const {
       isLoading,
-      aggregateDonations,
+      donations,
       isLoadingDonations,
       campaign,
       milestone,
@@ -597,39 +596,39 @@ class ViewMilestone extends Component {
 
               <div className="row spacer-top-50 spacer-bottom-50">
                 <div className="col-md-8 m-auto">
-                  <LeaderBoard
-                    aggregateDonations={aggregateDonations}
+                  <DonationList
+                    donations={donations}
                     isLoading={isLoadingDonations}
                     total={donationsTotal}
-                    loadMore={this.loadMoreAggregateDonations}
+                    loadMore={this.loadMoreDonations}
                     newDonations={newDonations}
-                  >
-                    {this.isActiveMilestone() && (
-                      <DonateButton
-                        model={{
-                          type: Milestone.type,
-                          acceptsSingleToken: milestone.acceptsSingleToken,
-                          title: milestone.title,
-                          id: milestone.id,
-                          adminId: milestone.projectId,
-                          dacId: milestone.dacId,
-                          campaignId: campaign._id,
-                          token: milestone.acceptsSingleToken ? milestone.token : undefined,
-                          isCapped: milestone.isCapped,
-                          ownerAddress: milestone.ownerAddress,
-                        }}
-                        currentUser={currentUser}
-                        history={history}
-                        disableAutoPopup
-                        type={Milestone.type}
-                        maxDonationAmount={
-                          milestone.isCapped
-                            ? milestone.maxAmount.minus(milestone.totalDonatedSingleToken)
-                            : undefined
-                        }
-                      />
-                    )}
-                  </LeaderBoard>
+                    useAmountRemaining
+                  />
+                  {this.isActiveMilestone() && (
+                    <DonateButton
+                      model={{
+                        type: Milestone.type,
+                        acceptsSingleToken: milestone.acceptsSingleToken,
+                        title: milestone.title,
+                        id: milestone.id,
+                        adminId: milestone.projectId,
+                        dacId: milestone.dacId,
+                        campaignId: campaign._id,
+                        token: milestone.acceptsSingleToken ? milestone.token : undefined,
+                        isCapped: milestone.isCapped,
+                        ownerAddress: milestone.ownerAddress,
+                      }}
+                      currentUser={currentUser}
+                      history={history}
+                      disableAutoPopup
+                      type={Milestone.type}
+                      maxDonationAmount={
+                        milestone.isCapped
+                          ? milestone.maxAmount.minus(milestone.totalDonatedSingleToken)
+                          : undefined
+                      }
+                    />
+                  )}
                 </div>
               </div>
             </div>
