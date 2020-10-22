@@ -39,3 +39,88 @@ ul.donation-history {
     }
   }
 }
+
+div.leader-board {
+  div.leader-board-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 1.5em;
+
+    .donation-button {
+      button {
+        padding-right: 2em;
+        padding-left: 2em;
+      }
+    }
+  }
+
+  table {
+    background-color: white;
+    border-radius: .5em;
+    table-layout: fixed;
+
+    th.td-toggle {
+      width: 5em
+    }
+
+    th.td-rank {
+      width: 8em;
+    }
+
+    th.td-person {
+      width: 25em;
+    }
+
+    th.td-donations-amount{
+      width: 10em;
+    }
+
+    th.td-donation-status{
+      width: 10em;
+    }
+
+    tr {
+      &.donation-item {
+        background-color: #f0f8ff;
+      }
+
+      td {
+        &.td-donation-status {
+          color: #1391ea;
+          font-size: 1.2em;
+
+          .badge {
+            background-color: white;
+            padding: .5em;
+          }
+        }
+
+        &.toggle-details {
+          button {
+            border: solid 1px #00a5bb;
+            color: #00a5bb;
+            padding: .05rem .3rem;
+
+            &:focus {
+              box-shadow: none;
+            }
+          }
+        }
+      }
+    }
+
+  }
+
+  div.load-more {
+    text-align: center;
+
+    button {
+      color: #00a5bb;
+      font-size: 1.4em;
+
+      &:focus {
+        box-shadow: none;
+      }
+    }
+  }
+}

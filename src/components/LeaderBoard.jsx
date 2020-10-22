@@ -1,13 +1,11 @@
 import React, { Component, Fragment } from 'react';
 import Avatar from 'react-avatar';
 import PropTypes from 'prop-types';
-import moment from 'moment';
 import { Link } from 'react-router-dom';
-
-import config from 'configuration';
 import Loader from './Loader';
-import { getUserName, getUserAvatar, convertEthHelper, roundBigNumber } from '../lib/helpers';
+import { getUserName, getUserAvatar, roundBigNumber } from '../lib/helpers';
 import Donation from '../models/Donation';
+import DonationItem from './DonationItem';
 
 /**
  * Shows a table of aggregateDonations for a given type (dac, campaign, milestone)
@@ -19,18 +17,9 @@ class LeaderBoardItem extends Component {
 
     this.state = {
       showDetails: false,
-      itemType: null, // Delegated ro Directly donated
     };
 
     this.toggleDetail = this.toggleDetail.bind(this);
-    this.setItemType = this.setItemType.bind(this);
-    this.setItemHasHistory = this.setItemHasHistory.bind(this);
-  }
-
-  setItemType(type) {
-    this.setState({
-      itemType: type,
-    });
   }
 
   toggleDetail() {
@@ -44,13 +33,13 @@ class LeaderBoardItem extends Component {
     const { donations, totalAmount, giver } = d;
     const { showDetails } = this.state;
     const roundTotalAmount = roundBigNumber(totalAmount, 2).toFixed();
-    // debugger;
+
     return (
       <Fragment>
-        <tr key={d._id}>
-          <td>
-            <button type="button" className="btn btn-info btn-sm" onClick={this.toggleDetail}>
-              <i className={this.state.showDetails ? 'fa fa-minus' : 'fa fa-plus'} />
+        <tr key={d._id} className={showDetails ? 'donation-item' : ''}>
+          <td className="toggle-details">
+            <button type="button" className="btn btn-sm" onClick={this.toggleDetail}>
+              <i className={showDetails ? 'fa fa-minus' : 'fa fa-plus'} />
             </button>
           </td>
           <td className="font-weight-bold">{rank}</td>
@@ -68,74 +57,14 @@ class LeaderBoardItem extends Component {
         </tr>
         {donations.map(dd => {
           const donation = new Donation(dd);
-          let typeLabel;
-          let etherScanLink = '';
-          const { etherscan, homeEtherscan } = config;
-          switch (this.state.itemType) {
-            case 'delegated':
-              typeLabel = (
-                <span className="badge badge-info">
-                  <i className="fa fa-random " />
-                  Delegated
-                </span>
-              );
-              break;
-            case 'direct':
-              typeLabel = (
-                <span className="badge badge-warning">
-                  <i className="fa fa-plug" />
-                  Direct
-                </span>
-              );
-              break;
-            default:
-              typeLabel = null;
-          }
-
-          if (this.state.itemType === 'delegated') {
-            etherScanLink = etherscan && d.txHash ? `${etherscan}tx/${d.txHash}` : '';
-          } else if (this.state.itemType === 'direct') {
-            etherScanLink =
-              homeEtherscan && d.homeTxHash ? `${homeEtherscan}tx/${d.homeTxHash}` : '';
-          }
           return (
-            <Fragment>
-              {showDetails && (
-                <tr key={donation._id}>
-                  <td>&nbsp;</td>
-                  <td className="td-date">
-                    <span>{moment(donation.createdAt).format('MM/DD/YYYY')}</span>
-                  </td>
-                  <td className="td-donations-amount">
-                    <span>
-                      {donation.isPending && (
-                        <span>
-                          <i className="fa fa-circle-o-notch fa-spin" />
-                          &nbsp;
-                        </span>
-                      )}
-                      {convertEthHelper(
-                        useAmountRemaining ? donation.amountRemaining : donation.amount,
-                        donation.token && donation.token.decimals,
-                      )}{' '}
-                      {(donation.token && donation.token.symbol) || config.nativeTokenName}
-                    </span>
-                  </td>
-                  <td>${donation.usdValue}</td>
-                  <td>
-                    {etherScanLink ? (
-                      <a href={etherScanLink} target="_blank" rel="noopener noreferrer">
-                        {donation.statusDescription}
-                      </a>
-                    ) : (
-                      <span>{donation.statusDescription}</span>
-                    )}
-                    {typeLabel}
-                  </td>
-                  <td />
-                </tr>
-              )}
-            </Fragment>
+            <DonationItem
+              key={donation._id}
+              donation={donation}
+              useAmountRemaining={useAmountRemaining}
+              aggregatedDonation={d}
+              showDetails={showDetails}
+            />
           );
         })}
       </Fragment>
@@ -150,25 +79,12 @@ LeaderBoardItem.propTypes = {
 };
 
 const LeaderBoard = props => {
-  const {
-    isLoading,
-    aggregateDonations,
-    loadMore,
-    total,
-    newDonations,
-    useAmountRemaining,
-    children,
-  } = props;
+  const { isLoading, aggregateDonations, loadMore, total, useAmountRemaining, children } = props;
   return (
-    <div>
-      <div>
-        <h2 style={{ display: 'inline-block' }}>Leader Board</h2>
-        <div className="pull-right">{children}</div>
-        {newDonations > 0 && (
-          <span className="badge badge-primary ml-2 mb-2" style={{ verticalAlign: 'middle' }}>
-            {newDonations} new
-          </span>
-        )}
+    <div className="leader-board">
+      <div className="leader-board-header">
+        <h2>Leader Board</h2>
+        <div className="donation-button">{children}</div>
       </div>
 
       <div className="dashboard-table-view">
@@ -179,12 +95,12 @@ const LeaderBoard = props => {
               <thead>
                 <tr>
                   {/* eslint-disable-next-line jsx-a11y/control-has-associated-label */}
-                  <th />
-                  <th className="td-date">Rank</th>
-                  <th>Person</th>
-                  <th colSpan="2" className="td-donations-amount">
-                    Total Donated
-                  </th>
+                  <th className="td-toggle" />
+                  <th className="td-rank">Rank</th>
+                  <th className="td-person">Person</th>
+                  <th className="td-donations-amount">Total Donated</th>
+                  {/* eslint-disable-next-line jsx-a11y/control-has-associated-label */}
+                  <th className="td-donation-status" />
                   <th className="">Comment</th>
                 </tr>
               </thead>
@@ -200,10 +116,10 @@ const LeaderBoard = props => {
               </tbody>
             </table>
             {aggregateDonations.length < total && (
-              <center>
+              <div className="load-more">
                 <button
                   type="button"
-                  className="btn btn-info"
+                  className="btn"
                   onClick={() => loadMore()}
                   disabled={isLoading}
                 >
@@ -212,9 +128,9 @@ const LeaderBoard = props => {
                       <i className="fa fa-circle-o-notch fa-spin" /> Loading
                     </span>
                   )}
-                  {!isLoading && <span>Load More</span>}
+                  {!isLoading && <span>Load more</span>}
                 </button>
-              </center>
+              </div>
             )}
           </div>
         )}
@@ -234,13 +150,11 @@ LeaderBoard.propTypes = {
   isLoading: PropTypes.bool.isRequired,
   total: PropTypes.number.isRequired,
   loadMore: PropTypes.func.isRequired,
-  newDonations: PropTypes.number,
   useAmountRemaining: PropTypes.bool,
   children: PropTypes.node,
 };
 
 LeaderBoard.defaultProps = {
-  newDonations: 0,
   useAmountRemaining: false,
   children: null,
 };
