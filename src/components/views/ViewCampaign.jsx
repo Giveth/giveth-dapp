@@ -345,7 +345,7 @@ class ViewCampaign extends Component {
                       </div>
 
                       <div id="donations" className="spacer-top-50">
-                        <div id="donations" className="section-header">
+                        <div className="section-header">
                           <h5>{leaderBoardTitle}</h5>
                           {campaign.isActive && (
                             <DonateButton

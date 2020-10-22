@@ -6,9 +6,10 @@ $alert-background: #F6F7FF;
 
   button {
     // Copied from bootstrap btn-sm
-    padding: .35rem .6rem;
+    padding: .35rem 1.6rem;
     font-size: .875rem;
     line-height: 1.7;
     border-radius: .2rem;
+    margin-left: 1rem;
   }
 }
