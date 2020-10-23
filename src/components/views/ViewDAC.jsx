@@ -48,7 +48,7 @@ class ViewDAC extends Component {
       campaigns: [],
       aggregateDonations: [],
       donationsTotal: 0,
-      donationsPerBatch: 50,
+      donationsPerBatch: 5,
       newDonations: 0,
       notFound: false,
     };
