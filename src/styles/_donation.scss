@@ -68,7 +68,7 @@ div.leader-board {
     }
 
     th.td-person {
-      width: 25em;
+      width: 20em;
     }
 
     th.td-donations-amount{
@@ -85,6 +85,9 @@ div.leader-board {
       }
 
       td {
+        overflow: hidden;
+        text-overflow: ellipsis;
+
         &.td-donation-status {
           color: #1391ea;
           font-size: 1.2em;
@@ -115,8 +118,9 @@ div.leader-board {
     text-align: center;
 
     button {
-      color: #00a5bb;
-      font-size: 1.4em;
+      color: #6a7089;
+      font-size: 1em;
+      background-color: #ebebeb;
 
       &:focus {
         box-shadow: none;
