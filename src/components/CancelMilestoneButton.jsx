@@ -15,9 +15,12 @@ class CancelMilestoneButton extends Component {
   constructor(props) {
     super(props);
     this.conversationModal = React.createRef();
+    this.buttonReference = React.createRef();
+
+    this.cancelMilestone = this.cancelMilestone.bind(this);
   }
 
-  cancelMilestone() {
+  openDialog() {
     const { milestone, balance, currentUser } = this.props;
 
     actionWithLoggedIn(currentUser).then(() =>
@@ -89,6 +92,10 @@ class CancelMilestoneButton extends Component {
     );
   }
 
+  cancelMilestone() {
+    this.buttonReference.current.click();
+  }
+
   render() {
     const { milestone, currentUser } = this.props;
 
@@ -98,10 +105,11 @@ class CancelMilestoneButton extends Component {
           <Fragment>
             {milestone.canUserCancel(currentUser) && (
               <button
+                ref={this.buttonReference}
                 type="button"
                 className="btn btn-danger btn-sm"
                 onClick={() =>
-                  isForeignNetwork ? this.cancelMilestone() : displayForeignNetRequiredWarning()
+                  isForeignNetwork ? this.openDialog() : displayForeignNetRequiredWarning()
                 }
               >
                 <i className="fa fa-times" />

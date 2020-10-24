@@ -10,7 +10,14 @@ import ErrorPopup from './ErrorPopup';
 import { Consumer as Web3Consumer } from '../contextProviders/Web3Provider';
 
 class EditMilestoneButton extends Component {
-  editMilestone() {
+  constructor() {
+    super();
+
+    this.buttonReference = React.createRef();
+    this.editMilestone = this.editMilestone.bind(this);
+  }
+
+  goMilestoneEditPage() {
     const { balance, milestone } = this.props;
 
     checkBalance(balance)
@@ -36,6 +43,10 @@ class EditMilestoneButton extends Component {
       });
   }
 
+  editMilestone() {
+    this.buttonReference.current.click();
+  }
+
   render() {
     const { milestone, currentUser } = this.props;
 
@@ -45,10 +56,11 @@ class EditMilestoneButton extends Component {
           <Fragment>
             {milestone.canUserEdit(currentUser) && (
               <button
+                ref={this.buttonReference}
                 type="button"
                 className="btn btn-link"
                 onClick={() =>
-                  isForeignNetwork ? this.editMilestone() : displayForeignNetRequiredWarning()
+                  isForeignNetwork ? this.goMilestoneEditPage() : displayForeignNetRequiredWarning()
                 }
               >
                 <i className="fa fa-edit" />

@@ -118,8 +118,10 @@ class Donation extends Model {
     };
     if (this._delegateId > 0 && !this._intendedProjectId) {
       // DAC
-      donatedTo.url = `/dacs/${this._delegateEntity._id}`;
-      donatedTo.name = getTruncatedText(this._delegateEntity.title, 45);
+      if (this._delegateEntity) {
+        donatedTo.url = `/dacs/${this._delegateEntity._id}`;
+        donatedTo.name = getTruncatedText(this._delegateEntity.title, 45);
+      }
       donatedTo.type = 'DAC';
     } else if (
       (!this._delegateId && this._ownerType === Campaign.type) ||
