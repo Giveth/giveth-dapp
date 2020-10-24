@@ -1,11 +1,13 @@
 import React, { Component } from 'react';
 import Avatar from 'react-avatar';
-import { Link, NavLink, withRouter } from 'react-router-dom';
+import { Link, NavLink } from 'react-router-dom';
+import { withRouter } from 'react-router';
 
 import { Consumer as UserConsumer } from '../contextProviders/UserProvider';
 import { Consumer as Web3Consumer } from '../contextProviders/Web3Provider';
 import { history, signUpSwal } from '../lib/helpers';
 import { Consumer as WhiteListConsumer } from '../contextProviders/WhiteListProvider';
+import MenuBarCreateButton from './MenuBarCreateButton';
 
 // Broken rule that can not find the correct id tag
 /* eslint jsx-a11y/aria-proptypes: 0 */
@@ -32,6 +34,8 @@ class MainMenu extends Component {
 
   render() {
     const { showMobileMenu } = this.state;
+
+    const MenuBarCreateButtonWithRouter = withRouter(MenuBarCreateButton);
 
     return (
       <Web3Consumer>
@@ -100,6 +104,7 @@ class MainMenu extends Component {
                       </div>
                       <div className="navbar-collapse collapse order-1 order-lg-3 menu-navbar">
                         <ul className="navbar-nav ml-auto">
+                          <MenuBarCreateButtonWithRouter currentUser={currentUser} />
                           {validProvider && currentUser && (
                             <li className="nav-item dropdown">
                               <NavLink
