@@ -331,7 +331,7 @@ class ViewMilestone extends Component {
 
                   <div className="milestone-actions">
                     {this.isActiveMilestone() && (
-                      <DonateButton {...donateButtonProps} autoPopup className="btn-lg px-5" />
+                      <DonateButton {...donateButtonProps} autoPopup className="header-donate" />
                     )}
                   </div>
                 </BackgroundImageHeader>

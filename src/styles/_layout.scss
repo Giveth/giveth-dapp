@@ -141,6 +141,11 @@
     }
   }
 
+  button.header-donate {
+    font-size: 1.45rem;
+    padding: 7px 90px;
+  }
+
   .section-header {
     @extend .vertical-align;
     justify-content: space-between;
