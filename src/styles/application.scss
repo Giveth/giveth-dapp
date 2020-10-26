@@ -276,8 +276,8 @@ span.nav-link:focus {
   justify-content: space-between;
   background-color: white;
 
-  a {
-    color: $menu-item-color;
+  button {
+    color: $in-page-link-color;
 
     &:hover {
       color: darken($green, 10%);

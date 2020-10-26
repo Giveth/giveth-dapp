@@ -218,7 +218,7 @@ class ViewDAC extends Component {
                         currentUser={currentUser}
                         history={history}
                         autoPopup
-                        className="btn-lg px-5"
+                        className="header-donate"
                       />
                     </div>
                   )}
