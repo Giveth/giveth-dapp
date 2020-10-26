@@ -15,9 +15,12 @@ import DelegateMultipleButton from './DelegateMultipleButton';
 
 export default function ViewMilestoneAlerts(props) {
   const { currentUser, balance, milestone, campaign } = props;
+  const { fullyFunded, status } = milestone;
+  const milestoneIsActive = status === 'InProgress' && !fullyFunded;
+
   return (
     <div>
-      {currentUser && (
+      {currentUser && milestoneIsActive && (
         <ProjectViewActionAlert message="Delegate some donation to this project">
           <DelegateMultipleButton
             milestone={milestone}
