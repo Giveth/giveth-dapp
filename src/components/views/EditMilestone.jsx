@@ -349,12 +349,13 @@ class EditMilestone extends Component {
   }
 
   componentDidUpdate(prevProps) {
-    const milestoneOwner = this.state.milestone.owner;
     const { currentUser } = this.props;
     if (prevProps.currentUser !== currentUser) {
-      const milestoneOwnerAddress = this.state.milestone.owner.address;
-      const campaignOwner = this.state.milestone.campaign.ownerAddress;
-      if (!milestoneOwner || !campaignOwner || !currentUser) {
+      const { milestone } = this.state;
+      const { owner, campaign } = milestone;
+      const milestoneOwnerAddress = owner && owner.address;
+      const campaignOwner = campaign && campaign.ownerAddress;
+      if (!owner || !campaignOwner || !currentUser) {
         history.goBack();
         return;
       }
