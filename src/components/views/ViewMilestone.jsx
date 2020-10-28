@@ -329,11 +329,11 @@ class ViewMilestone extends Component {
 
                   <p>Campaign: {campaign.title} </p>
 
-                  <div className="milestone-actions">
-                    {this.isActiveMilestone() && (
+                  {this.isActiveMilestone() && (
+                    <div className="mt-4">
                       <DonateButton {...donateButtonProps} autoPopup className="header-donate" />
-                    )}
-                  </div>
+                    </div>
+                  )}
                 </BackgroundImageHeader>
 
                 <GoBackSection
