@@ -1,13 +1,12 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import BigNumber from 'bignumber.js';
 
 import CommunityButton from './CommunityButton';
-import User from '../models/User';
 import { checkBalance } from '../lib/middleware';
 import { Consumer as Web3Consumer } from '../contextProviders/Web3Provider';
 import ErrorPopup from './ErrorPopup';
 import { Consumer as WhiteListConsumer } from '../contextProviders/WhiteListProvider';
+import { Consumer as UserConsumer } from '../contextProviders/UserProvider';
 
 /**
  * The join Giveth community top-bar
@@ -20,8 +19,8 @@ class JoinGivethCommunity extends Component {
     this.createCampaign = this.createCampaign.bind(this);
   }
 
-  createDAC() {
-    if (!this.props.isDelegate(this.props.currentUser)) {
+  createDAC(currentUser, balance) {
+    if (!this.props.isDelegate(currentUser)) {
       React.swal({
         title: 'Sorry, Giveth is in beta...',
         content: React.swal.msg(
@@ -38,8 +37,8 @@ class JoinGivethCommunity extends Component {
       });
       return;
     }
-    if (this.props.currentUser) {
-      checkBalance(this.props.balance)
+    if (currentUser) {
+      checkBalance(balance)
         .then(() => {
           this.props.history.push('/dacs/new');
         })
@@ -69,8 +68,8 @@ class JoinGivethCommunity extends Component {
     }
   }
 
-  createCampaign() {
-    if (!this.props.isCampaignManager(this.props.currentUser)) {
+  createCampaign(currentUser, balance) {
+    if (!this.props.isCampaignManager(currentUser)) {
       React.swal({
         title: 'Sorry, Giveth is in beta...',
         content: React.swal.msg(
@@ -86,8 +85,8 @@ class JoinGivethCommunity extends Component {
       });
       return;
     }
-    if (this.props.currentUser) {
-      checkBalance(this.props.balance)
+    if (currentUser) {
+      checkBalance(balance)
         .then(() => {
           this.props.history.push('/campaigns/new');
         })
@@ -118,52 +117,56 @@ class JoinGivethCommunity extends Component {
   }
 
   render() {
-    const { currentUser, isDelegate, isCampaignManager } = this.props;
+    const { isDelegate, isCampaignManager } = this.props;
 
     return (
       <Web3Consumer>
-        {({ state: { isEnabled }, actions: { enableProvider } }) => (
-          <div id="join-giveth-community">
-            <div className="vertical-align">
-              <center>
-                <h3>Building the Future of Giving, with You.</h3>
-                <CommunityButton className="btn btn-success" url="https://giveth.io/join">
-                  &nbsp;Join Giveth
-                </CommunityButton>
-                &nbsp;
-                {isDelegate(currentUser) && (
-                  <button
-                    type="button"
-                    className="btn btn-info"
-                    onClick={() => {
-                      if (!isEnabled) {
-                        enableProvider();
-                      } else {
-                        this.createDAC();
-                      }
-                    }}
-                  >
-                    Create a Community
-                  </button>
-                )}
-                {isCampaignManager(currentUser) && (
-                  <button
-                    type="button"
-                    className="btn btn-info"
-                    onClick={() => {
-                      if (!isEnabled) {
-                        enableProvider();
-                      } else {
-                        this.createCampaign();
-                      }
-                    }}
-                  >
-                    Start a Campaign
-                  </button>
-                )}
-              </center>
-            </div>
-          </div>
+        {({ state: { balance, isEnabled }, actions: { enableProvider } }) => (
+          <UserConsumer>
+            {({ state: { currentUser } }) => (
+              <div id="join-giveth-community">
+                <div className="vertical-align">
+                  <center>
+                    <h3>Building the Future of Giving, with You.</h3>
+                    <CommunityButton className="btn btn-success" url="https://giveth.io/join">
+                      &nbsp;Join Giveth
+                    </CommunityButton>
+                    &nbsp;
+                    {isDelegate(currentUser) && (
+                      <button
+                        type="button"
+                        className="btn btn-info"
+                        onClick={() => {
+                          if (!isEnabled) {
+                            enableProvider();
+                          } else {
+                            this.createDAC(currentUser, balance);
+                          }
+                        }}
+                      >
+                        Create a Community
+                      </button>
+                    )}
+                    {isCampaignManager(currentUser) && (
+                      <button
+                        type="button"
+                        className="btn btn-info"
+                        onClick={() => {
+                          if (!isEnabled) {
+                            enableProvider();
+                          } else {
+                            this.createCampaign(currentUser, balance);
+                          }
+                        }}
+                      >
+                        Start a Campaign
+                      </button>
+                    )}
+                  </center>
+                </div>
+              </div>
+            )}
+          </UserConsumer>
         )}
       </Web3Consumer>
     );
@@ -175,15 +178,8 @@ JoinGivethCommunity.propTypes = {
     goBack: PropTypes.func.isRequired,
     push: PropTypes.func.isRequired,
   }).isRequired,
-  balance: PropTypes.instanceOf(BigNumber),
-  currentUser: PropTypes.instanceOf(User),
   isDelegate: PropTypes.func.isRequired,
   isCampaignManager: PropTypes.func.isRequired,
-};
-
-JoinGivethCommunity.defaultProps = {
-  currentUser: undefined,
-  balance: new BigNumber(0),
 };
 
 export default props => (

@@ -142,7 +142,7 @@ class WithdrawMilestoneFundsButton extends Component {
             {milestone.canUserWithdraw(currentUser) && (
               <button
                 type="button"
-                className="btn btn-success btn-sm"
+                className="btn btn-success btn-sm withdraw"
                 onClick={() =>
                   isForeignNetwork ? this.withdraw() : displayForeignNetRequiredWarning()
                 }

@@ -32,6 +32,7 @@ import MyCampaigns from '../components/views/MyCampaigns';
 import MyMilestones from '../components/views/MyMilestones';
 import NotFound from '../components/views/NotFound';
 import Explore from '../components/views/Explore';
+import Milestones from '../components/views/Milestones';
 import Campaigns from '../components/views/Campaigns';
 import DACs from '../components/views/DACs';
 
@@ -440,6 +441,11 @@ class Application extends Component {
                                               />
                                               <Route
                                                 exact
+                                                path="/milestones"
+                                                render={props => <Milestones {...props} />}
+                                              />
+                                              <Route
+                                                exact
                                                 path="/campaigns"
                                                 render={props => <Campaigns {...props} />}
                                               />
@@ -455,13 +461,13 @@ class Application extends Component {
                                         )}
 
                                         {!userLoading && hasError && (
-                                          <center>
+                                          <div className="text-center">
                                             <h2>Oops, something went wrong...</h2>
                                             <p>
                                               The Giveth dapp could not load for some reason. Please
                                               try again...
                                             </p>
-                                          </center>
+                                          </div>
                                         )}
 
                                         <ToastContainer

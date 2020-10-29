@@ -526,7 +526,7 @@ class DelegateMultipleButton extends Component {
 
 DelegateMultipleButton.propTypes = {
   balance: PropTypes.instanceOf(BigNumber).isRequired,
-  currentUser: PropTypes.instanceOf(User).isRequired,
+  currentUser: PropTypes.instanceOf(User),
   campaign: PropTypes.instanceOf(Campaign),
   milestone: PropTypes.instanceOf(Milestone),
   style: PropTypes.shape(),
@@ -540,6 +540,7 @@ DelegateMultipleButton.defaultProps = {
   campaign: undefined,
   milestone: undefined,
   style: {},
+  currentUser: undefined,
 };
 
 export default props => (
