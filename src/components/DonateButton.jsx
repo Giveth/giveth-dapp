@@ -123,13 +123,8 @@ class DonateButton extends React.Component {
     this.updateAllowance();
 
     setTimeout(() => {
-      const { match, disableAutoPopup } = this.props;
-      if (
-        !disableAutoPopup &&
-        match &&
-        typeof match.url === 'string' &&
-        match.url.endsWith('/donate')
-      ) {
+      const { match, autoPopup } = this.props;
+      if (autoPopup && match && typeof match.url === 'string' && match.url.endsWith('/donate')) {
         this.doDonate();
       }
     }, 1000);
@@ -762,7 +757,11 @@ class DonateButton extends React.Component {
 
     return (
       <span style={style}>
-        <button type="button" className="btn btn-success" onClick={this.doDonate}>
+        <button
+          type="button"
+          className={`btn btn-success ${this.props.className}`}
+          onClick={this.doDonate}
+        >
           Donate
         </button>
         <Modal
@@ -1027,7 +1026,8 @@ DonateButton.propTypes = {
     path: PropTypes.string.isRequired,
     url: PropTypes.string.isRequired,
   }),
-  disableAutoPopup: PropTypes.bool.isRequired,
+  autoPopup: PropTypes.bool,
+  className: PropTypes.string,
 };
 
 DonateButton.defaultProps = {
@@ -1036,6 +1036,8 @@ DonateButton.defaultProps = {
   maxDonationAmount: undefined, // new BigNumber(10000000000000000),
   afterSuccessfulDonate: () => {},
   match: undefined,
+  autoPopup: false,
+  className: '',
 };
 
 const DonateButtonWithRouter = withRouter(DonateButton);
@@ -1083,21 +1085,36 @@ export default class Root extends React.PureComponent {
     const { customThanksMessage } = this.props.model;
 
     const el = document.createElement('div');
-    el.innerHTML = customThanksMessage || 'Would you like to support Giveth as well?';
+    el.innerHTML = customThanksMessage;
 
     if (!this.props.currentUser || this.props.currentUser.name) {
       // known user
       if (donateToDefaultDac) {
-        React.swal({
-          title: 'Thank you!',
-          content: el,
-          icon: 'success',
-          buttons: ['No Thanks', 'Support Giveth'],
-        }).then(result => {
-          if (result) {
-            this.defaultDacDonateButton.current.openDialog();
-          }
-        });
+        if (customThanksMessage !== '') {
+          // Custom Thanks for Commons Stack
+          React.swal({
+            title: 'Thank you!',
+            content: el,
+            icon: 'success',
+            buttons: ['Ok!'],
+          }).then(result => {
+            if (result) {
+              this.defaultDacDonateButton.current.openDialog();
+            }
+          });
+        } else {
+          // normal Thanks
+          React.swal({
+            title: 'Thank you!',
+            text: 'Would you like to support Giveth as well?',
+            icon: 'success',
+            buttons: ['No Thanks', 'Support Giveth'],
+          }).then(result => {
+            if (result) {
+              this.defaultDacDonateButton.current.openDialog();
+            }
+          });
+        }
       }
     } else {
       //  normal thanks for anon use1r (without profile)
@@ -1138,7 +1155,8 @@ export default class Root extends React.PureComponent {
                       model={defaultDacModel}
                       currentUser={this.props.currentUser}
                       ref={this.defaultDacDonateButton}
-                      disableAutoPopup={this.props.disableAutoPopup}
+                      autoPopup={false}
+                      className={this.props.className}
                     />
                   </div>
                 )}
@@ -1154,10 +1172,12 @@ export default class Root extends React.PureComponent {
 Root.propTypes = {
   model: modelTypes.isRequired,
   currentUser: PropTypes.instanceOf(User),
-  disableAutoPopup: PropTypes.bool,
+  autoPopup: PropTypes.bool,
+  className: PropTypes.string,
 };
 
 Root.defaultProps = {
   currentUser: undefined,
-  disableAutoPopup: false,
+  autoPopup: false,
+  className: '',
 };
