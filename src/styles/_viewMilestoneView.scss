@@ -1,7 +1,6 @@
 #view-milestone-view {
   @include content-styling;
-
-  padding-top: 50px;
+  @include view-project;
 
   .milestone-title {
     margin-bottom: 20px;
@@ -101,6 +100,16 @@
     }
     .char-left{
       user-select: none;
+    }
+  }
+
+  button.withdraw {
+    background-color: #310741;
+    border-color: #310741;
+
+    &:hover {
+      background-color: #23052f;
+      border-color: #23052f;
     }
   }
 }

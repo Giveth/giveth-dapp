@@ -40,7 +40,7 @@ const configurations = {
     homeNetworkName: 'Home Ganache',
     homeNetworkId: 66,
     ipfsGateway: 'http://localhost:8080/ipfs/',
-    campaignUrl: 'http://localhost:3010/campaigns/',
+    homeUrl: 'http://localhost:3010',
     // sendErrors: false,
     analytics: {
       ga_UA: 'UA-103956937-3',
@@ -71,7 +71,7 @@ const configurations = {
     homeNetworkName: 'Ropsten',
     homeNetworkId: 3,
     ipfsGateway: 'https://ipfs.giveth.io/ipfs/',
-    campaignUrl: 'https://develop.giveth.io/campaigns/',
+    homeUrl: 'https://develop.giveth.io',
     analytics: {
       ga_UA: 'UA-103956937-5',
       useGoogleAnalytics: true,
@@ -101,7 +101,7 @@ const configurations = {
     homeNetworkName: 'Ropsten',
     homeNetworkId: 3,
     ipfsGateway: 'https://ipfs.giveth.io/ipfs/',
-    campaignUrl: 'https://beta.giveth.io/campaigns/',
+    homeUrl: 'https://release.giveth.io',
     analytics: {
       ga_UA: 'UA-103956937-4',
       useGoogleAnalytics: true,
@@ -128,6 +128,7 @@ const configurations = {
     homeNetworkName: 'Mainnet',
     homeNetworkId: 1,
     ipfsGateway: 'https://ipfs.giveth.io/ipfs/',
+    homeUrl: 'https://beta.giveth.io',
     analytics: {
       ga_UA: 'UA-103956937-2',
       useGoogleAnalytics: true,

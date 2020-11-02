@@ -1,13 +1,15 @@
 .background-image-header {
   @include make-flex();
 
+  position: relative;
+  justify-content: center;
+
   width: 100%;
   height: 500px;
   background-repeat: no-repeat !important;
   background-size: cover !important;
   background-position: center center !important;
 
-  margin-bottom: 50px;
   color: white;
 
   padding: 20px;
@@ -18,5 +20,24 @@
 
   a.btn:not(:first-child) {
     margin-left: 10px;
+  }
+
+  .header-action {
+    position: absolute;
+    top: 0;
+    right: 0;
+    padding: 1em;
+
+    button {
+      font-size: small;
+    }
+  }
+
+  .project-id {
+    font-size: 7px;
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    padding: 1em;
   }
 }

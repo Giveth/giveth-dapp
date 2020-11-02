@@ -90,4 +90,10 @@
   .no-results {
     margin-top: 50px;
   }
+
+  .balances-table {
+    th:last-child {
+      width: 100%;
+    }
+  }
 }

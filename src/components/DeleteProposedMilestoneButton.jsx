@@ -1,4 +1,4 @@
-import React, { Fragment } from 'react';
+import React, { Component, Fragment } from 'react';
 import PropTypes from 'prop-types';
 
 import MilestoneService from 'services/MilestoneService';
@@ -9,37 +9,50 @@ import confirmationDialog from 'lib/confirmationDialog';
 
 import { actionWithLoggedIn } from '../lib/middleware';
 
-const DeleteProposedMilestoneButton = ({ milestone, currentUser }) => {
-  const _confirmDeleteMilestone = () => {
+class DeleteProposedMilestoneButton extends Component {
+  constructor(props) {
+    super(props);
+
+    this._confirmDeleteMilestone = this._confirmDeleteMilestone.bind(this);
+    this.deleteProposedMilestone = this.deleteProposedMilestone.bind(this);
+  }
+
+  _confirmDeleteMilestone() {
+    const { milestone } = this.props;
     MilestoneService.deleteProposedMilestone({
       milestone,
       onSuccess: () => React.toast.info(<p>The Milestone has been deleted.</p>),
       onError: e => ErrorPopup('Something went wrong with deleting your Milestone', e),
     });
-  };
+  }
 
-  const _deleteProposedMilestone = () =>
+  deleteProposedMilestone() {
+    const { currentUser, milestone } = this.props;
     actionWithLoggedIn(currentUser).then(() =>
-      confirmationDialog('milestone', milestone.title, _confirmDeleteMilestone),
+      confirmationDialog('milestone', milestone.title, this._confirmDeleteMilestone),
     );
+  }
 
-  return (
-    <Fragment>
-      {milestone.canUserDelete(currentUser) && (
-        <span>
-          <button
-            type="button"
-            className="btn btn-danger btn-sm"
-            onClick={_deleteProposedMilestone}
-          >
-            <i className="fa fa-times-circle-o" />
-            &nbsp;Delete
-          </button>
-        </span>
-      )}
-    </Fragment>
-  );
-};
+  render() {
+    const { currentUser, milestone } = this.props;
+    return (
+      <Fragment>
+        {milestone.canUserDelete(currentUser) && (
+          <span>
+            <button
+              type="button"
+              className="btn btn-danger btn-sm"
+              onClick={this.deleteProposedMilestone}
+            >
+              <i className="fa fa-times-circle-o" />
+              &nbsp;Delete
+            </button>
+          </span>
+        )}
+      </Fragment>
+    );
+  }
+}
 
 DeleteProposedMilestoneButton.propTypes = {
   currentUser: PropTypes.instanceOf(User),

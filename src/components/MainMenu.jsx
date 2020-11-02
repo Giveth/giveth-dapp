@@ -1,11 +1,13 @@
 import React, { Component } from 'react';
 import Avatar from 'react-avatar';
-import { Link, NavLink, withRouter } from 'react-router-dom';
+import { Link, NavLink } from 'react-router-dom';
+import { withRouter } from 'react-router';
 
 import { Consumer as UserConsumer } from '../contextProviders/UserProvider';
 import { Consumer as Web3Consumer } from '../contextProviders/Web3Provider';
 import { history, signUpSwal } from '../lib/helpers';
 import { Consumer as WhiteListConsumer } from '../contextProviders/WhiteListProvider';
+import MenuBarCreateButton from './MenuBarCreateButton';
 
 // Broken rule that can not find the correct id tag
 /* eslint jsx-a11y/aria-proptypes: 0 */
@@ -33,6 +35,8 @@ class MainMenu extends Component {
   render() {
     const { showMobileMenu } = this.state;
 
+    const MenuBarCreateButtonWithRouter = withRouter(MenuBarCreateButton);
+
     return (
       <Web3Consumer>
         {({ state: { validProvider, isEnabled, failedToLoad }, actions: { enableProvider } }) => (
@@ -45,21 +49,18 @@ class MainMenu extends Component {
                   const userIsReviewer = isReviewer(currentUser);
                   return (
                     <nav
-                      id="main-menu"
-                      className={`navbar navbar-expand-lg sticky-top ${
+                      className={`navbar navbar-expand-lg sticky-top main-menu ${
                         showMobileMenu ? 'show' : ''
                       } `}
                     >
                       <button
-                        className="navbar-toggler navbar-toggler-right"
+                        className="navbar-toggler"
                         type="button"
                         onClick={() => this.toggleMobileMenu()}
+                        data-toggle="collapse"
+                        data-target=".menu-navbar"
                       >
-                        <i
-                          className={`navbar-toggler-icon fa ${
-                            showMobileMenu ? 'fa-close' : 'fa-bars'
-                          }`}
-                        />
+                        <i className="navbar-toggler-icon fa fa-bars" />
                       </button>
 
                       <Link className="navbar-brand" to="/">
@@ -69,12 +70,41 @@ class MainMenu extends Component {
                           alt="Giveth logo"
                         />
                       </Link>
-
-                      <div
-                        className={`collapse navbar-collapse ${showMobileMenu ? 'show' : ''} `}
-                        id="navbarSupportedContent"
-                      >
-                        <ul className="navbar-nav">
+                      <div className="navbar-collapse collapse order-3 order-lg-1 menu-navbar">
+                        <ul className="navbar-nav mr-auto">
+                          <li className="nav-item">
+                            <Link className="nav-link" to="/dacs">
+                              Communities
+                            </Link>
+                          </li>
+                          <li className="nav-item">
+                            <Link className="nav-link" to="/campaigns">
+                              Campaigns
+                            </Link>
+                          </li>
+                          <li className="nav-item">
+                            <Link className="nav-link" to="/milestones">
+                              Milestones
+                            </Link>
+                          </li>
+                        </ul>
+                      </div>
+                      <div className="navbar-collapse collapse mx-auto order-3 order-lg-2 menu-navbar">
+                        <form
+                          action="https://www.github.com/Giveth/giveth-dapp/issues/new"
+                          method="get"
+                          target="_blank"
+                          className="form-report-issue"
+                        >
+                          <button type="submit" className="btn btn-dark btn-sm btn-report-issue">
+                            <i className="fa fa-github" />
+                            Report Issue
+                          </button>
+                        </form>
+                      </div>
+                      <div className="navbar-collapse collapse order-1 order-lg-3 menu-navbar">
+                        <ul className="navbar-nav ml-auto">
+                          <MenuBarCreateButtonWithRouter currentUser={currentUser} />
                           {validProvider && currentUser && (
                             <li className="nav-item dropdown">
                               <NavLink
@@ -115,27 +145,7 @@ class MainMenu extends Component {
                               </div>
                             </li>
                           )}
-                        </ul>
 
-                        {/*
-              <form id="search-form" className="form-inline my-2 my-lg-0">
-                <input className="form-control mr-sm-2" type="text" placeholder="E.g. save the whales"/>
-                <button className="btn btn-outline-success my-2 my-sm-0" type="submit">Find</button>
-              </form>
-            */}
-
-                        <form
-                          action="https://www.github.com/Giveth/giveth-dapp/issues/new"
-                          method="get"
-                          target="_blank"
-                        >
-                          <button type="submit" className="btn btn-dark btn-sm btn-report-issue">
-                            <i className="fa fa-github" />
-                            Report Issue
-                          </button>
-                        </form>
-
-                        <ul className="navbar-nav">
                           {validProvider && !failedToLoad && !isEnabled && !currentUser && (
                             <button
                               type="button"
