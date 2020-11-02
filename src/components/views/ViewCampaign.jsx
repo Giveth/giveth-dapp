@@ -402,6 +402,7 @@ class ViewCampaign extends Component {
                                     token: {
                                       symbol: config.nativeTokenName,
                                     },
+                                    customThanksMessage: campaign.customThanksMessage,
                                   }}
                                   currentUser={currentUser}
                                   history={history}
