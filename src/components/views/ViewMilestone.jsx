@@ -34,6 +34,7 @@ import ViewMilestoneAlerts from '../ViewMilestoneAlerts';
 import CancelMilestoneButton from '../CancelMilestoneButton';
 import DeleteProposedMilestoneButton from '../DeleteProposedMilestoneButton';
 import CommunityButton from '../CommunityButton';
+import getConversionRatesContext from '../../containers/getConversionRatesContext';
 
 /**
   Loads and shows a single milestone
@@ -60,6 +61,9 @@ class ViewMilestone extends Component {
       donationsPerBatch: 50,
       newDonations: 0,
       notFound: false,
+      currency: 'USD',
+      totalDonatedValue: 0,
+      currentBalanceValue: 0,
     };
 
     this.loadMoreDonations = this.loadMoreDonations.bind(this);
@@ -106,6 +110,40 @@ class ViewMilestone extends Component {
         }),
       () => this.setState({ newDonations: 0 }),
     );
+  }
+
+  componentDidUpdate(prevProps, prevState) {
+    if (this.state.milestone.donationCounters !== prevState.milestone.donationCounters) {
+      this.props
+        .convertMultipleRates(
+          null,
+          this.state.currency,
+          this.state.milestone.donationCounters.map(dc => {
+            return {
+              value: dc.totalDonated,
+              currency: dc.symbol,
+            };
+          }),
+        )
+        .then(total => {
+          this.setState({ totalDonatedValue: total });
+        });
+
+      this.props
+        .convertMultipleRates(
+          null,
+          this.state.currency,
+          this.state.milestone.donationCounters.map(dc => {
+            return {
+              value: dc.currentBalance,
+              currency: dc.symbol,
+            };
+          }),
+        )
+        .then(total => {
+          this.setState({ currentBalanceValue: total });
+        });
+    }
   }
 
   componentWillUnmount() {
@@ -577,6 +615,15 @@ class ViewMilestone extends Component {
                                 ))}
                             </div>
 
+                            <div className="form-group">
+                              <DetailLabel
+                                id="amount-donated-value"
+                                title="Amount donated value"
+                                explanation="The total amount(s) donated to this Milestone in your native currency"
+                              />
+                              {this.state.totalDonatedValue} {this.state.currency}
+                            </div>
+
                             {!milestone.isCapped && milestone.donationCounters.length > 0 && (
                               <div className="form-group">
                                 <DetailLabel
@@ -589,6 +636,17 @@ class ViewMilestone extends Component {
                                     {convertEthHelper(dc.currentBalance, dc.decimals)} {dc.symbol}
                                   </p>
                                 ))}
+                              </div>
+                            )}
+
+                            {!milestone.isCapped && milestone.donationCounters.length > 0 && (
+                              <div className="form-group">
+                                <DetailLabel
+                                  id="current-balance-value"
+                                  title="Current balance value"
+                                  explanation="The current balance(s) of this Milestone in your native currency"
+                                />
+                                {this.state.currentBalanceValue} {this.state.currency}
                               </div>
                             )}
 
@@ -698,6 +756,7 @@ ViewMilestone.propTypes = {
       milestoneId: PropTypes.string.isRequired,
     }),
   }).isRequired,
+  convertMultipleRates: PropTypes.func.isRequired,
 };
 
 ViewMilestone.defaultProps = {
@@ -705,4 +764,4 @@ ViewMilestone.defaultProps = {
   balance: new BigNumber(0),
 };
 
-export default ViewMilestone;
+export default getConversionRatesContext(props => <ViewMilestone {...props} />);

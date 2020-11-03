@@ -114,6 +114,14 @@ class ConversionRateProvider extends Component {
       });
   }
 
+  // rateArray: [{value: 123, currency: 'ETH'}]
+  convertMultipleRates(date, symbol, rateArray) {
+    return this.getConversionRates(date, symbol).then(currentRate => {
+      const { rates } = currentRate;
+      return rateArray.reduce((sum, item) => sum + item.value * (rates[item.currency] || 1), 0);
+    });
+  }
+
   render() {
     const { currentRate, isLoading } = this.state;
     const { fiatWhitelist } = this.props;
@@ -129,6 +137,7 @@ class ConversionRateProvider extends Component {
           },
           actions: {
             getConversionRates,
+            convertMultipleRates: this.convertMultipleRates,
           },
         }}
       >
