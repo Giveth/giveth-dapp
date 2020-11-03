@@ -67,14 +67,20 @@ class DACService {
    * @param onError   Callback function if error is encountered
    */
   static getDACs($limit = 100, $skip = 0, onSuccess = () => {}, onError = () => {}) {
+    const sixMonths = new Date();
+    sixMonths.setMonth(sixMonths.getMonth() - 6);
     return feathersClient
       .service('dacs')
       .find({
         query: {
+          updatedAt: {
+            $lt: new Date(),
+            $gte: sixMonths,
+          },
           status: DAC.ACTIVE,
           $limit,
           $skip,
-          $sort: { campaignsCount: -1 },
+          $sort: { updatedAt: -1 },
         },
       })
       .then(resp =>

@@ -38,10 +38,16 @@ class CampaignService {
    * @param onError   Callback function if error is encountered
    */
   static getCampaigns($limit = 100, $skip = 0, onSuccess = () => {}, onError = () => {}) {
+    const sixMonths = new Date();
+    sixMonths.setMonth(sixMonths.getMonth() - 6);
     return feathersClient
       .service('campaigns')
       .find({
         query: {
+          updatedAt: {
+            $lt: new Date(),
+            $gte: sixMonths,
+          },
           projectId: { $gt: 0 }, // 0 is a pending campaign
           status: Campaign.ACTIVE,
           $limit,
