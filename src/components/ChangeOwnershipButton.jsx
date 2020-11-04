@@ -150,20 +150,6 @@ class ChangeOwnershipButton extends Component {
                 >
                   <div>
                     <SelectFormsy
-                      name="ownerAddress"
-                      id="owner-select"
-                      label="Select a new owner"
-                      helpText="This person or smart contract will be owning your Campaign from now on."
-                      value={campaign.ownerAddress}
-                      options={campaignManagers}
-                      validations="isEtherAddress"
-                      validationErrors={{
-                        isEtherAddress: 'Please select an owner.',
-                      }}
-                      required
-                    />
-
-                    <SelectFormsy
                       name="coownerAddress"
                       id="co-owner-select"
                       label="Select a new co-owner"
