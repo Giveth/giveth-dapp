@@ -201,10 +201,11 @@ class Donation extends Model {
    * @return {boolean} True if given user can refund the donation
    */
   canRefund(user, isForeignNetwork) {
+    const { WAITING, CANCELED, COMMITTED } = Donation;
     return (
       isForeignNetwork &&
-      ((this._ownerTypeId === user.address && this._status === Donation.WAITING) ||
-        this._status === Donation.CANCELED) &&
+      ((this._ownerTypeId === user.address && [WAITING, COMMITTED].includes(this._status)) ||
+        this._status === CANCELED) &&
       this._amountRemaining.toNumber() > 0
     );
   }
@@ -231,7 +232,6 @@ class Donation extends Model {
    * Check if a user can delegate this donation
    *
    * @param {User}    user User for whom the action should be checked
-   * @param {boolean} isForeignNetwork Are we connected to the foreign network
    *
    * @return {boolean} True if given user can delegate the donation
    */
