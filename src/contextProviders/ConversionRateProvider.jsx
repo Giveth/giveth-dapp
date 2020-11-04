@@ -118,7 +118,7 @@ class ConversionRateProvider extends Component {
   convertMultipleRates(date, symbol, rateArray) {
     return this.getConversionRates(date, symbol).then(currentRate => {
       const { rates } = currentRate;
-      return rateArray.reduce((sum, item) => sum + item.value * (rates[item.currency] || 1), 0);
+      return rateArray.reduce((sum, item) => sum + item.value / (rates[item.currency] || 1), 0);
     });
   }
 
