@@ -79,12 +79,12 @@ const Delegations = ({ balance, currentUser }) => (
                               </thead>
                               <tbody>
                                 {delegations.map(d => (
-                                  <tr key={d._id}>
+                                  <tr key={d.id} name={d.id}>
                                     <td className="td-actions">
                                       {/* When donated to a dac, allow delegation
                                   to campaigns and milestones */}
                                       {(d.delegateId > 0 ||
-                                        (d.ownerTypeId === currentUser && currentUser.address)) &&
+                                        (currentUser && d.ownerTypeId === currentUser.address)) &&
                                         isForeignNetwork &&
                                         d.status === Donation.WAITING &&
                                         d.amountRemaining > 0 && (
@@ -100,7 +100,7 @@ const Delegations = ({ balance, currentUser }) => (
                                         )}
 
                                       {/* When donated to a campaign, only allow delegation
-                                  to milestones of that campaign */}
+                                    to milestones of that campaign */}
                                       {d.ownerType === 'campaign' &&
                                         isForeignNetwork &&
                                         d.status === Donation.COMMITTED &&

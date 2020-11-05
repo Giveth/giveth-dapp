@@ -74,7 +74,11 @@ const Donations = () => (
                                 </thead>
                                 <tbody>
                                   {donations.map(d => (
-                                    <tr key={d.id} className={d.isPending ? 'pending' : ''}>
+                                    <tr
+                                      key={d.id}
+                                      name={d.id}
+                                      className={d.isPending ? 'pending' : ''}
+                                    >
                                       <td className="td-actions">
                                         {d.canRefund(currentUser, isForeignNetwork) && (
                                           <button
@@ -111,11 +115,7 @@ const Donations = () => (
                                             &nbsp;
                                           </span>
                                         )}
-                                        {d.canDelegate(currentUser) ? (
-                                          <Link to="/delegations">{d.statusDescription}</Link>
-                                        ) : (
-                                          d.statusDescription
-                                        )}
+                                        {d.statusDescription}
                                       </td>
 
                                       <td className="td-date">
