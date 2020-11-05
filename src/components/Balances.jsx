@@ -49,7 +49,7 @@ class Balances extends Component {
                       <th className="td-donations-amount">Current balance</th>
                       <th className="td-donations-number">Number of donations</th>
                       <th className="td-donations-amount">Total donated</th>
-                      {this.state.currency && (
+                      {this.state.currency && this.state.conversionRates[this.state.currency] && (
                         <th className="td-donations-amount">Current Balance value</th>
                       )}
                     </tr>
@@ -64,7 +64,7 @@ class Balances extends Component {
                         <td className="td-donations-amount">
                           {convertEthHelper(dc.totalDonated, dc.decimals)} {dc.symbol}
                         </td>
-                        {this.state.currency && (
+                        {this.state.currency && this.state.conversionRates[this.state.currency] && (
                           <td className="td-donations-amount">
                             {roundBigNumber(
                               dc.currentBalance / (this.state.conversionRates[dc.symbol] || 1),
