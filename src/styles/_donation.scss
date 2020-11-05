@@ -95,6 +95,7 @@ div.leader-board {
         &.td-donation-status {
           color: #1391ea;
           font-size: 1.2em;
+          overflow: visible;
 
           .badge {
             background-color: white;
