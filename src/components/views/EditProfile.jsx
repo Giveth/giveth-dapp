@@ -11,6 +11,8 @@ import LoaderButton from '../LoaderButton';
 import User from '../../models/User';
 import { history } from '../../lib/helpers';
 import ErrorPopup from '../ErrorPopup';
+import { Consumer as WhiteListConsumer } from '../../contextProviders/WhiteListProvider';
+import SelectFormsy from '../SelectFormsy';
 
 /**
  * The edit user profile view mapped to /profile/
@@ -179,6 +181,7 @@ class EditProfile extends Component {
                     user.name = inputs.name;
                     user.email = inputs.email;
                     user.linkedin = inputs.linkedin;
+                    user.currency = inputs.currency;
                   }}
                   onChange={this.togglePristine}
                   layout="vertical"
@@ -214,6 +217,26 @@ class EditProfile extends Component {
                         isEmail: "Oops, that's not a valid email address.",
                       }}
                     />
+                  </div>
+
+                  <div className="form-group">
+                    <WhiteListConsumer>
+                      {({ state: { fiatWhitelist } }) => (
+                        <SelectFormsy
+                          name="currency"
+                          id="currency-select"
+                          label="Native Currency"
+                          helpText="Please enter your native currency."
+                          value={user.currency}
+                          options={fiatWhitelist.map(f => {
+                            return {
+                              title: f,
+                              value: f,
+                            };
+                          })}
+                        />
+                      )}
+                    </WhiteListConsumer>
                   </div>
 
                   <FormsyImageUploader
