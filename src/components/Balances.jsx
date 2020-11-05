@@ -68,11 +68,9 @@ class Balances extends Component {
                           <td className="td-donations-amount">
                             {roundBigNumber(
                               dc.currentBalance / (this.state.conversionRates[dc.symbol] || 1),
-                              2,
-                            ).toFixed(
                               (tokenWhitelist.find(t => t.symbol === this.state.currency) || {})
                                 .decimals || 2,
-                            )}{' '}
+                            ).toFixed()}{' '}
                             {this.state.currency}
                           </td>
                         )}
@@ -92,11 +90,9 @@ class Balances extends Component {
                                   +dc.currentBalance / (this.state.conversionRates[dc.symbol] || 1),
                                 0,
                               ),
-                              2,
-                            ).toFixed(
                               (tokenWhitelist.find(t => t.symbol === this.state.currency) || {})
                                 .decimals || 2,
-                            )}{' '}
+                            ).toFixed()}{' '}
                             {this.state.currency}
                           </span>
                         </td>
