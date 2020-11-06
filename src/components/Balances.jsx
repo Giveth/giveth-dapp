@@ -36,7 +36,7 @@ class Balances extends Component {
     const { entity } = this.props;
     return (
       <WhiteListConsumer>
-        {({ state: { tokenWhitelist } }) => (
+        {({ state: { nativeCurrencyWhitelist } }) => (
           <div className="dashboard-table-view">
             {entity.donationCounters && entity.donationCounters.length > 0 && (
               <div className="table-container">
@@ -68,8 +68,11 @@ class Balances extends Component {
                           <td className="td-donations-amount">
                             {roundBigNumber(
                               dc.currentBalance / (this.state.conversionRates[dc.symbol] || 1),
-                              (tokenWhitelist.find(t => t.symbol === this.state.currency) || {})
-                                .decimals || 2,
+                              (
+                                nativeCurrencyWhitelist.find(
+                                  t => t.symbol === this.state.currency,
+                                ) || {}
+                              ).decimals || 2,
                             ).toFixed()}{' '}
                             {this.state.currency}
                           </td>
@@ -90,8 +93,11 @@ class Balances extends Component {
                                   +dc.currentBalance / (this.state.conversionRates[dc.symbol] || 1),
                                 0,
                               ),
-                              (tokenWhitelist.find(t => t.symbol === this.state.currency) || {})
-                                .decimals || 2,
+                              (
+                                nativeCurrencyWhitelist.find(
+                                  t => t.symbol === this.state.currency,
+                                ) || {}
+                              ).decimals || 2,
                             ).toFixed()}{' '}
                             {this.state.currency}
                           </span>
