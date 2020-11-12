@@ -1096,7 +1096,7 @@ export default class Root extends React.PureComponent {
             title: 'Thank you!',
             content: el,
             icon: 'success',
-            buttons: 'No Thanks',
+            buttons: 'OK',
           });
         } else {
           // normal Thanks
