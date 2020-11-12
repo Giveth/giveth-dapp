@@ -57,6 +57,7 @@ Modal.setAppElement('#root');
 // tx only requires 25400 gas, but for some reason we get an out of gas
 // error in web3 with that amount (even though the tx succeeds)
 const DONATION_GAS = 30400;
+const TOKEN_DONATION_GAS = 30400;
 
 const AllowanceStatus = {
   NotNeeded: 1, // Token doesn't need allowance approval
@@ -512,7 +513,11 @@ class DonateButton extends React.Component {
       const opts = { from: userAddress, $extraGas: extraGas() };
 
       // actually uses 84766, but runs out of gas if exact
-      if (!isDonationInToken) Object.assign(opts, { value: amountWei, gas: DONATION_GAS });
+      if (!isDonationInToken) {
+        Object.assign(opts, { value: amountWei, gas: DONATION_GAS });
+      } else {
+        Object.assign(opts, { gas: TOKEN_DONATION_GAS });
+      }
 
       let donationOwner;
       if (userAddress !== donationOwnerAddress) {
@@ -652,6 +657,10 @@ class DonateButton extends React.Component {
             ? utils.toWei(new BigNumber(allowanceAmount).toFixed(18))
             : amountWei;
         }
+
+        setTimeout(() => {
+          _makeDonationTx();
+        }, 500);
         const allowed = await DonationService.approveERC20tokenTransfer(
           tokenAddress,
           currentUser && currentUser.address,
@@ -664,7 +673,7 @@ class DonateButton extends React.Component {
         // Maybe user has canceled the allowance approval transaction
         if (allowed) {
           this.setState({ allowanceStatus: AllowanceStatus.Enough });
-          return _makeDonationTx();
+          return false;
         }
         return false;
       } catch (err) {
@@ -681,7 +690,7 @@ class DonateButton extends React.Component {
         return false;
       }
     } else {
-      return _makeDonationTx();
+      return false;
     }
   }
 
