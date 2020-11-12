@@ -74,13 +74,12 @@ class DACService {
       .find({
         query: {
           updatedAt: {
-            $lt: new Date(),
             $gte: sixMonths,
           },
           status: DAC.ACTIVE,
           $limit,
           $skip,
-          $sort: { updatedAt: -1 },
+          $sort: { campaignsCount: -1, updatedAt: -1 },
         },
       })
       .then(resp =>

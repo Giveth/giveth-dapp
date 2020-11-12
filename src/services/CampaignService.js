@@ -45,7 +45,6 @@ class CampaignService {
       .find({
         query: {
           updatedAt: {
-            $lt: new Date(),
             $gte: sixMonths,
           },
           projectId: { $gt: 0 }, // 0 is a pending campaign
