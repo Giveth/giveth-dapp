@@ -302,7 +302,7 @@ class ViewDAC extends Component {
                             />
                           )}
                         </div>
-                        <Balances entity={dac} />
+                        <Balances entity={dac} currentUser={currentUser} />
                       </div>
 
                       <div id="campaigns" className="spacer-top-50 spacer-bottom-50">

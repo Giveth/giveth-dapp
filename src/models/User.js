@@ -16,6 +16,7 @@ import { cleanIpfsPath } from '../lib/helpers';
  * @attribute name          Name of the user
  * @attribute url           Url attached to LiquidPledging admin
  * @attribute authenticated If the user is authenticated w/ feathers
+ * @attribute currency The user's native currency
  */
 class User extends Model {
   constructor(data) {
@@ -34,6 +35,7 @@ class User extends Model {
       this._updatedAt = data.updatedAt;
       this._url = data.url;
       this._authenticated = data.authenticated || false;
+      this._currency = data.currency || 'USD';
     }
   }
 
@@ -43,6 +45,7 @@ class User extends Model {
       email: this._email,
       linkedin: this._linkedin,
       avatar: cleanIpfsPath(this._avatar),
+      currency: this._currency,
       version: 1,
     };
   }
@@ -53,6 +56,7 @@ class User extends Model {
       email: this._email,
       linkedIn: this._linkedin,
       avatar: cleanIpfsPath(this._avatar),
+      currency: this._currency,
     };
     if (this._giverId === undefined && txHash) {
       // set to 0 so we don't attempt to create multiple givers in lp for the same user
@@ -179,6 +183,15 @@ class User extends Model {
   set authenticated(value) {
     this.checkType(value, ['boolean'], 'authenticated');
     this._authenticated = value;
+  }
+
+  get currency() {
+    return this._currency;
+  }
+
+  set currency(value) {
+    this.checkType(value, ['string'], 'currency');
+    this._currency = value;
   }
 }
 
