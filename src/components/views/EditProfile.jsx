@@ -221,17 +221,17 @@ class EditProfile extends Component {
 
                   <div className="form-group">
                     <WhiteListConsumer>
-                      {({ state: { fiatWhitelist } }) => (
+                      {({ state: { nativeCurrencyWhitelist } }) => (
                         <SelectFormsy
                           name="currency"
                           id="currency-select"
                           label="Native Currency"
                           helpText="Please enter your native currency."
                           value={user.currency}
-                          options={fiatWhitelist.map(f => {
+                          options={nativeCurrencyWhitelist.map(f => {
                             return {
-                              title: f,
-                              value: f,
+                              title: f.symbol,
+                              value: f.symbol,
                             };
                           })}
                         />
