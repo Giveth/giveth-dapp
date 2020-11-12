@@ -85,7 +85,7 @@ class Balances extends Component {
                       <tr>
                         <td colSpan="4">
                           <span className="font-weight-bold">
-                            Total Crrent Balance Value :{' '}
+                            Total Current Balance Value :{' '}
                             {roundBigNumber(
                               entity.donationCounters.reduce(
                                 (sum, dc) =>
