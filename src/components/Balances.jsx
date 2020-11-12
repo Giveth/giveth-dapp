@@ -36,81 +36,79 @@ class Balances extends Component {
     const { entity } = this.props;
     return (
       <WhiteListConsumer>
-        {({ state: { nativeCurrencyWhitelist } }) => (
-          <div className="dashboard-table-view">
-            {entity.donationCounters && entity.donationCounters.length > 0 && (
-              <div className="table-container">
-                <table
-                  className="table table-responsive table-hover"
-                  style={{ marginTop: 0, marginBottom: '50px' }}
-                >
-                  <thead>
-                    <tr>
-                      <th className="td-donations-amount">Current balance</th>
-                      <th className="td-donations-number">Number of donations</th>
-                      <th className="td-donations-amount">Total donated</th>
-                      {this.state.currency && this.state.conversionRates[this.state.currency] && (
-                        <th className="td-donations-amount">Current Balance value</th>
-                      )}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {entity.donationCounters.map(dc => (
-                      <tr key={dc._id}>
-                        <td className="td-donations-amount">
-                          {convertEthHelper(dc.currentBalance, dc.decimals)} {dc.symbol}
-                        </td>
-                        <td className="td-donations-number">{dc.donationCount || 0}</td>
-                        <td className="td-donations-amount">
-                          {convertEthHelper(dc.totalDonated, dc.decimals)} {dc.symbol}
-                        </td>
+        {({ state: { nativeCurrencyWhitelist } }) => {
+          const precision =
+            (nativeCurrencyWhitelist.find(t => t.symbol === this.state.currency) || {}).decimals ||
+            2;
+          return (
+            <div className="dashboard-table-view">
+              {entity.donationCounters && entity.donationCounters.length > 0 && (
+                <div className="table-container">
+                  <table
+                    className="table table-responsive table-hover"
+                    style={{ marginTop: 0, marginBottom: '50px' }}
+                  >
+                    <thead>
+                      <tr>
+                        <th className="td-donations-amount">Current balance</th>
+                        <th className="td-donations-number">Number of donations</th>
+                        <th className="td-donations-amount">Total donated</th>
                         {this.state.currency && this.state.conversionRates[this.state.currency] && (
-                          <td className="td-donations-amount">
-                            {roundBigNumber(
-                              dc.currentBalance / (this.state.conversionRates[dc.symbol] || 1),
-                              (
-                                nativeCurrencyWhitelist.find(
-                                  t => t.symbol === this.state.currency,
-                                ) || {}
-                              ).decimals || 2,
-                            ).toFixed()}{' '}
-                            {this.state.currency}
-                          </td>
+                          <th className="td-donations-amount">Current Balance value</th>
                         )}
                       </tr>
-                    ))}
-                  </tbody>
-                  {this.state.currency && this.state.conversionRates && (
-                    <tfoot>
-                      <tr>
-                        <td colSpan="4">
-                          <span className="font-weight-bold">
-                            Total Current Balance Value :{' '}
-                            {roundBigNumber(
-                              entity.donationCounters.reduce(
-                                (sum, dc) =>
-                                  sum +
-                                  +dc.currentBalance / (this.state.conversionRates[dc.symbol] || 1),
-                                0,
-                              ),
-                              (
-                                nativeCurrencyWhitelist.find(
-                                  t => t.symbol === this.state.currency,
-                                ) || {}
-                              ).decimals || 2,
-                            ).toFixed()}{' '}
-                            {this.state.currency}
-                          </span>
-                        </td>
-                      </tr>
-                    </tfoot>
-                  )}
-                </table>
-                <div />
-              </div>
-            )}
-          </div>
-        )}
+                    </thead>
+                    <tbody>
+                      {entity.donationCounters.map(dc => (
+                        <tr key={dc._id}>
+                          <td className="td-donations-amount">
+                            {convertEthHelper(dc.currentBalance, dc.decimals)} {dc.symbol}
+                          </td>
+                          <td className="td-donations-number">{dc.donationCount || 0}</td>
+                          <td className="td-donations-amount">
+                            {convertEthHelper(dc.totalDonated, dc.decimals)} {dc.symbol}
+                          </td>
+                          {this.state.currency && this.state.conversionRates[this.state.currency] && (
+                            <td className="td-donations-amount">
+                              {roundBigNumber(
+                                dc.currentBalance / (this.state.conversionRates[dc.symbol] || 1),
+                                precision,
+                              ).toFixed()}{' '}
+                              {this.state.currency}
+                            </td>
+                          )}
+                        </tr>
+                      ))}
+                    </tbody>
+                    {this.state.currency && this.state.conversionRates[this.state.currency] && (
+                      <tfoot>
+                        <tr>
+                          <td colSpan="4">
+                            <span className="font-weight-bold">
+                              Total Current Balance Value :{' '}
+                              {roundBigNumber(
+                                entity.donationCounters.reduce(
+                                  (sum, dc) =>
+                                    sum +
+                                    +dc.currentBalance /
+                                      (this.state.conversionRates[dc.symbol] || 1),
+                                  0,
+                                ),
+                                precision,
+                              ).toFixed()}{' '}
+                              {this.state.currency}
+                            </span>
+                          </td>
+                        </tr>
+                      </tfoot>
+                    )}
+                  </table>
+                  <div />
+                </div>
+              )}
+            </div>
+          );
+        }}
       </WhiteListConsumer>
     );
   }
