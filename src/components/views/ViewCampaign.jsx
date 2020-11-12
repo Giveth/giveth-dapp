@@ -408,7 +408,7 @@ class ViewCampaign extends Component {
                             )}
                           </span>
                         </div>
-                        <Balances entity={campaign} />
+                        <Balances entity={campaign} currentUser={currentUser} />
                       </div>
 
                       <div>

@@ -36,9 +36,9 @@ class LeaderBoardItem extends Component {
 
     return (
       <Fragment>
-        <tr key={d._id} className={showDetails ? 'donation-item' : ''}>
+        <tr key={d._id} className={showDetails ? 'donation-item' : ''} onClick={this.toggleDetail}>
           <td className="toggle-details">
-            <button type="button" className="btn btn-sm" onClick={this.toggleDetail}>
+            <button type="button" className="btn btn-sm">
               <i className={showDetails ? 'fa fa-minus' : 'fa fa-plus'} />
             </button>
           </td>
@@ -96,7 +96,7 @@ const LeaderBoard = props => {
                   <th className="td-donations-amount">Total Donated</th>
                   {/* eslint-disable-next-line jsx-a11y/control-has-associated-label */}
                   <th className="td-donation-status" />
-                  <th className="">Comment</th>
+                  <th className="td-comment">Comment</th>
                 </tr>
               </thead>
               <tbody>
