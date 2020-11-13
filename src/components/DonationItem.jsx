@@ -110,7 +110,7 @@ class DonationItem extends Component {
             </td>
             <td>${donation.usdValue}</td>
             <td className="td-donation-status">{typeLabel}</td>
-            <td />
+            <td>{donation.comment}</td>
           </tr>
         )}
       </Fragment>
