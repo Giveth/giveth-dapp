@@ -1089,31 +1089,36 @@ export default class Root extends React.PureComponent {
 
     if (!this.props.currentUser || this.props.currentUser.name) {
       // known user
-      if (donateToDefaultDac) {
-        if (typeof customThanksMessage !== 'undefined') {
-          // Custom Thanks for Commons Stack
-          React.swal({
-            title: 'Thank you!',
-            content: el,
-            icon: 'success',
-            buttons: 'OK',
-          });
-        } else {
-          // normal Thanks
-          React.swal({
-            title: 'Thank you!',
-            text: 'Would you like to support Giveth as well?',
-            icon: 'success',
-            buttons: ['No Thanks', 'Support Giveth'],
-          }).then(result => {
-            if (result) {
-              this.defaultDacDonateButton.current.openDialog();
-            }
-          });
-        }
+      if (typeof customThanksMessage !== 'undefined') {
+        // Custom Thanks
+        React.swal({
+          title: 'Thank you!',
+          content: el,
+          icon: 'success',
+          buttons: 'OK',
+        });
+      } else if (donateToDefaultDac) {
+        // Thanks and Donate to Defualt DAC suggestion
+        React.swal({
+          title: 'Thank you!',
+          text: 'Would you like to support Giveth as well?',
+          icon: 'success',
+          buttons: ['No Thanks', 'Support Giveth'],
+        }).then(result => {
+          if (result) {
+            this.defaultDacDonateButton.current.openDialog();
+          }
+        });
+      } else {
+        // Simple Thanks
+        React.swal({
+          title: 'Thank you!',
+          icon: 'success',
+          buttons: 'OK',
+        });
       }
     } else {
-      //  normal thanks for anon user (without profile)
+      //  Thanks for anon user (without profile) Register Suggestion
       checkProfileAfterDonation(this.props.currentUser);
     }
   }
