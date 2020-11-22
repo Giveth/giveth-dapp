@@ -103,6 +103,7 @@ class Donation extends Model {
     this._token = data.token;
     this._usdValue = data.usdValue;
     this._parentDonations = data.parentDonations;
+    this._comment = data.comment;
 
     /**
      * Get the URL, name and type of the entity to which this donation has been donated to
@@ -505,6 +506,14 @@ class Donation extends Model {
 
   get parentDonations() {
     return this._parentDonations;
+  }
+
+  get comment() {
+    return this._comment;
+  }
+
+  set comment(value) {
+    this._comment = value;
   }
 }
 

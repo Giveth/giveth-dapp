@@ -731,8 +731,9 @@ class DonationService {
    * @param {object} token donation token
    * @param {string} txHash transactionHash of the donation tx
    * @param {Number} txNonce nonce of the donation tx
+   * @param {string} comment comment for donation
    */
-  static newFeathersDonation(giver, toAdmin, amount, token, txHash, txNonce) {
+  static newFeathersDonation(giver, toAdmin, amount, token, txHash, txNonce, comment) {
     const newDonation = {
       giverAddress: giver.address,
       amount,
@@ -743,6 +744,7 @@ class DonationService {
       txNonce,
       mined: false,
       token,
+      comment,
     };
 
     // donation to a delegate
