@@ -108,7 +108,7 @@ class ChangeOwnershipButton extends Component {
     return (
       <span style={style}>
         <button type="button" className="btn btn-danger" onClick={() => this.openDialog()}>
-          Change ownership
+          Change co-owner
         </button>
 
         <Modal
