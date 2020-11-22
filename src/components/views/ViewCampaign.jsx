@@ -309,7 +309,7 @@ class ViewCampaign extends Component {
                         )}
 
                         {userIsOwner && (
-                          <ProjectViewActionAlert message="Change ownership of Campaign">
+                          <ProjectViewActionAlert message="Change Co-Owner of Campaign">
                             <ChangeOwnershipButton
                               campaign={campaign}
                               balance={balance}
