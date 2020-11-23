@@ -184,7 +184,10 @@ class DonateButton extends React.Component {
 
     let { maxDonationAmount } = this.props;
     if (maxDonationAmount) {
-      if (dacId !== undefined && dacId !== 0) {
+      const amountDAC = parseFloat(maxDonationAmount - maxDonationAmount / 1.03)
+        .toFixed(6)
+        .toString();
+      if (dacId !== undefined && dacId !== 0 && amountDAC > 0.0001) {
         maxDonationAmount *= 1.03;
       }
       maxAmount = maxAmount.gt(maxDonationAmount)
@@ -440,6 +443,15 @@ class DonateButton extends React.Component {
     const amountDAC = parseFloat(amount - amount / 1.03)
       .toFixed(6)
       .toString();
+    if (amountDAC < 0.0001) {
+      let result = false;
+      try {
+        result = await this.donateWithBridge(adminId, amount, donationOwnerAddress);
+        // eslint-disable-next-line no-empty
+      } catch (e) {}
+      this.setState({ isSaving: false });
+      return result;
+    }
     const amountMilestone = parseFloat(amount / 1.03)
       .toFixed(6)
       .toString();
