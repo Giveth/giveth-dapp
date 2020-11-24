@@ -48,6 +48,7 @@ class Campaign extends BasicModel {
     this._id = data._id;
     this.commitTime = data.commitTime || 0;
     this.archivedMilestones = new Set(data.archivedMilestones || []);
+    this.customThanksMessage = data.customThanksMessage;
   }
 
   toIpfs() {

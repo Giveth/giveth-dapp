@@ -4,7 +4,7 @@ import PropTypes from 'prop-types';
 import Modal from 'react-modal';
 import BigNumber from 'bignumber.js';
 import { utils } from 'web3';
-import { Form, Input } from 'formsy-react-components';
+import { Form, Input, Textarea } from 'formsy-react-components';
 import Toggle from 'react-toggle';
 import GA from 'lib/GoogleAnalytics';
 import { Link } from 'react-router-dom';
@@ -103,6 +103,7 @@ class DonateButton extends React.Component {
       allowance: new BigNumber(0),
       allowanceStatus: AllowanceStatus.NotNeeded,
       allowanceApprovalType: undefined,
+      comment: '',
     };
 
     this.form = React.createRef();
@@ -325,10 +326,12 @@ class DonateButton extends React.Component {
     this.openDialog();
   }
 
-  submit({ amount, customAddress }) {
+  submit({ amount, customAddress, comment }) {
     const { model, currentUser, afterSuccessfulDonate } = this.props;
     const { adminId, dacId } = model;
     const { allowanceApprovalType, selectedToken } = this.state;
+
+    console.log('cccc', comment);
 
     const donationOwnerAddress = customAddress || currentUser.address;
 
@@ -361,11 +364,18 @@ class DonateButton extends React.Component {
           this.closeDialog();
         });
     } else if (dacId) {
-      this.donateToDac(adminId, dacId, amount, donationOwnerAddress, allowanceApprovalType)
+      this.donateToDac(adminId, dacId, amount, donationOwnerAddress, allowanceApprovalType, comment)
         .then(afterDonate)
         .catch(() => afterDonate(false));
     } else {
-      this.donateWithBridge(adminId, amount, donationOwnerAddress, amount, allowanceApprovalType)
+      this.donateWithBridge(
+        adminId,
+        amount,
+        donationOwnerAddress,
+        amount,
+        comment,
+        allowanceApprovalType,
+      )
         .then(afterDonate)
         .catch(() => afterDonate(false));
     }
@@ -429,7 +439,7 @@ class DonateButton extends React.Component {
     )();
   }
 
-  async donateToDac(adminId, dacId, amount, donationOwnerAddress, allowanceApprovalType) {
+  async donateToDac(adminId, dacId, amount, donationOwnerAddress, allowanceApprovalType, comment) {
     const dac = await DACService.getByDelegateId(dacId);
 
     if (!dac) {
@@ -482,10 +492,17 @@ class DonateButton extends React.Component {
             amountDAC,
             donationOwnerAddress,
             amount,
+            comment,
             allowanceApprovalType,
           )
         )
-          result = await this.donateWithBridge(adminId, amountMilestone, donationOwnerAddress);
+          result = await this.donateWithBridge(
+            adminId,
+            amountMilestone,
+            donationOwnerAddress,
+            0,
+            comment,
+          );
         // eslint-disable-next-line no-empty
       } catch (e) {}
     }
@@ -498,6 +515,7 @@ class DonateButton extends React.Component {
     amount,
     donationOwnerAddress,
     allowanceAmount = 0,
+    comment = '',
     allowanceApprovalType = AllowanceApprovalType.Default,
   ) {
     const { currentUser } = this.props;
@@ -577,6 +595,7 @@ class DonateButton extends React.Component {
               selectedToken,
               txHash,
               txNonce,
+              comment,
             );
 
             resolve(true);
@@ -706,6 +725,7 @@ class DonateButton extends React.Component {
       tokenWhitelistOptions,
       selectedToken,
       allowanceStatus,
+      comment,
     } = this.state;
 
     const style = {
@@ -786,6 +806,7 @@ class DonateButton extends React.Component {
             mapping={inputs => ({
               amount: inputs.amount,
               customAddress: inputs.customAddress,
+              comment: inputs.comment,
             })}
             onValid={() => this.toggleFormValid(true)}
             onInvalid={() => this.toggleFormValid(false)}
@@ -941,12 +962,18 @@ class DonateButton extends React.Component {
                         />
                       </div>
                     )}
-                    {!showCustomAddress && (
-                      <div>
-                        <br />
-                        <br />
-                      </div>
-                    )}
+                    <div className="form-group">
+                      <Textarea
+                        name="comment"
+                        id="comment-input"
+                        value={comment}
+                        placeholder="Comment"
+                      />
+                    </div>
+                    <div>
+                      <br />
+                      <br />
+                    </div>
                   </Fragment>
                 ) : null}
                 {maxAmount.toNumber() !== 0 && (
@@ -1091,10 +1118,23 @@ export default class Root extends React.PureComponent {
 
   afterSuccessfulDonate() {
     const { donateToDefaultDac } = this.state;
+    const { customThanksMessage } = this.props.model;
+
+    const el = document.createElement('div');
+    el.innerHTML = customThanksMessage;
 
     if (!this.props.currentUser || this.props.currentUser.name) {
       // known user
-      if (donateToDefaultDac) {
+      if (typeof customThanksMessage !== 'undefined') {
+        // Custom Thanks
+        React.swal({
+          title: 'Thank you!',
+          content: el,
+          icon: 'success',
+          buttons: 'OK',
+        });
+      } else if (donateToDefaultDac) {
+        // Thanks and Donate to Defualt DAC suggestion
         React.swal({
           title: 'Thank you!',
           text: 'Would you like to support Giveth as well?',
@@ -1105,9 +1145,16 @@ export default class Root extends React.PureComponent {
             this.defaultDacDonateButton.current.openDialog();
           }
         });
+      } else {
+        // Simple Thanks
+        React.swal({
+          title: 'Thank you!',
+          icon: 'success',
+          buttons: 'OK',
+        });
       }
     } else {
-      //  anon user (without profile)
+      //  Thanks for anon user (without profile) Register Suggestion
       checkProfileAfterDonation(this.props.currentUser);
     }
   }

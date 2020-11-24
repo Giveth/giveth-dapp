@@ -144,6 +144,7 @@ class DonationListItem extends Component {
           ) : (
             <td className="td-tx-address">{d.giverAddress}</td>
           )}
+          <td className="td-user">{d.comment}</td>
           {this.props.hasProposedDelegation && (
             <td className="td-commit">
               {d.commitTime ? moment(d.commitTime).format('lll') : 'Committed'}
@@ -199,6 +200,7 @@ const DonationList = props => {
                   <th className="td-donations-amount">Amount</th>
                   <th className="td-user">Name</th>
                   <th className="td-tx-address">Address</th>
+                  <th className="">Comment</th>
                   {hasProposedDelegation && <th className="td-commit">Commit Time</th>}
                 </tr>
               </thead>

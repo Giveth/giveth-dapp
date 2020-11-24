@@ -301,7 +301,7 @@ class ViewMilestone extends Component {
 
     return (
       <WhiteListConsumer>
-        {({ state: { tokenWhitelist } }) => (
+        {({ state: { nativeCurrencyWhitelist } }) => (
           <HelmetProvider context={helmetContext}>
             <ErrorBoundary>
               <div id="view-milestone-view">
@@ -645,7 +645,7 @@ class ViewMilestone extends Component {
                                       />
                                       {this.state.currentBalanceValue.toFixed(
                                         (
-                                          tokenWhitelist.find(
+                                          nativeCurrencyWhitelist.find(
                                             t => t.symbol === this.state.currency,
                                           ) || {}
                                         ).decimals || 2,
