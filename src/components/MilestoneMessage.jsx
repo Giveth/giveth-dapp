@@ -1,21 +1,16 @@
-import React, { Component } from 'react';
+import React, { Component, Fragment } from 'react';
 import PropTypes from 'prop-types';
 import Milestone from 'models/Milestone';
 import User from 'models/User';
-import config from '../configuration';
 import { feathersClient } from '../lib/feathersClient';
 import ErrorPopup from './ErrorPopup';
-import { authenticateIfPossible, checkProfile } from '../lib/middleware';
+import { actionWithLoggedIn, authenticateIfPossible, checkProfile } from '../lib/middleware';
+import ConversationModal from './ConversationModal';
 
 class MilestoneMessage extends Component {
   constructor() {
     super();
-    this.state = {
-      editMode: false,
-      content: '',
-      charLeft: config.conversationMessageSizeMaxLimit,
-      maxChar: config.conversationMessageSizeMaxLimit,
-    };
+    this.conversationModal = React.createRef();
   }
 
   checkUser() {
@@ -28,17 +23,35 @@ class MilestoneMessage extends Component {
     );
   }
 
-  handleChange(e) {
-    const { maxChar } = this.state;
-    const charCount = e.target.value.length;
-    const charLeft = maxChar - charCount;
-    this.setState({ content: e.target.value, charLeft });
+  async writeMessage() {
+    const { currentUser } = this.props;
+
+    actionWithLoggedIn(currentUser).then(() =>
+      this.conversationModal.current
+        .openModal({
+          title: 'Comment on Milestone',
+          description:
+            'You can add comment to milestone status. Your message will be displayed in the updates of milestone status. ',
+          textPlaceholder: '',
+          required: false,
+          cta: 'Add',
+          enableAttachProof: false,
+        })
+        .then(({ message }) => {
+          const msg = message.trim();
+          if (msg) {
+            this.createMessage(msg);
+            this.conversationModal.current.setState({ message: '' });
+          }
+        })
+        .catch(_ => {}),
+    );
   }
 
   editMessage() {
     this.checkUser().then(() => {
       if (this.props.currentUser.authenticated) {
-        this.setState({ editMode: true });
+        this.writeMessage();
       }
     });
   }
@@ -57,18 +70,14 @@ class MilestoneMessage extends Component {
     );
   }
 
-  createMessage() {
+  createMessage(message) {
     const { milestone } = this.props;
     feathersClient
       .service('conversations')
       .create({
         milestoneId: milestone.id,
-        message: this.state.content,
+        message,
         messageContext: 'comment',
-      })
-      .then(() => {
-        const { maxChar } = this.state;
-        this.setState({ editMode: false, content: '', charLeft: maxChar });
       })
       .catch(err => {
         if (err.name === 'NotAuthenticated') {
@@ -80,57 +89,21 @@ class MilestoneMessage extends Component {
   }
 
   render() {
-    const { content, editMode, maxChar, charLeft } = this.state;
+    const { milestone } = this.props;
 
     return (
       <div id="milestone-comment">
-        {this.canUserEdit() && !editMode && (
-          <button
-            type="button"
-            className="btn btn-success btn-sm w-100"
-            onClick={() => this.editMessage()}
-          >
-            Write Comment
-          </button>
-        )}
-        {this.canUserEdit() && editMode && (
-          <div>
-            <textarea
-              className="w-100"
-              name="comment"
-              id="comment-input"
-              /* eslint-disable-next-line jsx-a11y/no-autofocus */
-              autoFocus
-              rows={6}
-              cols={30}
-              required
-              value={content}
-              maxLength={maxChar}
-              onChange={e => this.handleChange(e)}
-            />
-            <button
-              className="btn btn-link"
-              type="button"
-              disabled={content.length > maxChar}
-              onClick={() => this.createMessage()}
-            >
-              Add
-            </button>
+        {this.canUserEdit() && (
+          <Fragment>
             <button
               type="button"
-              className="btn btn-link"
-              onClick={() =>
-                this.setState({
-                  editMode: false,
-                  content: '',
-                  charLeft: maxChar,
-                })
-              }
+              className="btn btn-success btn-sm w-100"
+              onClick={() => this.editMessage()}
             >
-              Cancel
+              Write Comment
             </button>
-            <span className="char-left pull-right text-muted ">{charLeft}</span>
-          </div>
+            <ConversationModal ref={this.conversationModal} milestone={milestone} />
+          </Fragment>
         )}
       </div>
     );

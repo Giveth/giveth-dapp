@@ -69,6 +69,7 @@ class WhiteListProvider extends Component {
       tokenWhitelist: [],
       activeTokenWhitelist: [],
       fiatWhitelist: [],
+      nativeCurrencyWhitelist: [],
       isLoading: true,
       hasError: false,
     };
@@ -106,6 +107,7 @@ class WhiteListProvider extends Component {
       tokenWhitelist,
       activeTokenWhitelist,
       fiatWhitelist,
+      nativeCurrencyWhitelist,
       isLoading,
       hasError,
     } = this.state;
@@ -120,6 +122,7 @@ class WhiteListProvider extends Component {
             tokenWhitelist,
             activeTokenWhitelist,
             fiatWhitelist,
+            nativeCurrencyWhitelist,
             isLoading,
             hasError,
           },
