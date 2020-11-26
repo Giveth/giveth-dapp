@@ -481,11 +481,20 @@ class EditMilestone extends Component {
     this.getNewRates(address);
   }
 
+  setFiatTypeBasedOnToken() {
+    if (this.token === 'WBTC') {
+      this.state.milestone.selectedFiatType = 'BTC';
+    } else {
+      this.state.milestone.selectedFiatType = this.token;
+    }
+  }
+
   async getNewRates(address) {
     if (!address) return;
     const { milestone } = this.state;
     const token = this.props.tokenWhitelist.find(t => t.address === address);
     milestone.token = token;
+    this.setFiatTypeBasedOnToken();
     if (!milestone.items || milestone.items.length === 0) {
       this.updateMilestoneState(milestone);
       return;
