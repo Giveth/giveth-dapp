@@ -19,7 +19,7 @@ app.use(
       if (!cachedValue) {
         return done();
       }
-      return done(cachedValue);
+      return done(null, cachedValue);
     })
     .set('afterRender', function(err, req, prerenderResponse) {
       if (err || !prerenderResponse.body) {
