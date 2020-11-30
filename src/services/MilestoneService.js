@@ -999,6 +999,7 @@ class MilestoneService {
           .catch(err => onError(err));
       })
       .catch(err => {
+        console.log('withdraw error', err);
         // TODO: remove or change below commented line - relates to gh-1177
         // if (txHash && err.message && err.message.includes('unknown transaction')) onError(); // bug in web3 seems to constantly fail due to this error, but the tx is correct        if (txHash && err.message && err.message.includes('unknown transaction')) onError(); // bug in web3 seems to constantly fail due to this error, but the tx is correct
         onError(err, `${etherScanUrl}tx/${txHash}`);
