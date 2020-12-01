@@ -52,7 +52,6 @@
     "jest": true,
     "browser": true
   },
-  "parser": "babel-eslint",
   "globals": {
     "FileReader": true,
     "window": true
