@@ -56,8 +56,6 @@ class WithdrawMilestoneFundsButton extends Component {
             dangerMode: true,
             buttons: ['Cancel', 'Yes, withdrawal'],
           }).then(isConfirmed => {
-            console.log('delegate before withdraw', { token: milestone.token });
-
             if (isConfirmed) {
               MilestoneService.withdraw({
                 milestone,
@@ -92,7 +90,6 @@ class WithdrawMilestoneFundsButton extends Component {
                 },
                 onError: (err, txUrl) => {
                   let msg;
-                  console.log('delegate error', { err, txUrl });
                   if (err === 'patch-error') {
                     ErrorPopup('Something went wrong with withdrawing your funds', err);
                   } else if (err.message === 'no-donations') {
