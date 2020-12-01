@@ -830,7 +830,7 @@ class DonationService {
         $skip: data.length,
         // After having #donationCollectionCountLimit distinct pledges, check for next donations and add it if its pledgeId overlaps
         $limit: spare || 1,
-        $sort: { tokenSymbol: 1, pledgeId: 1 }, // group by token
+        $sort: { tokenAddress: 1, pledgeId: 1 }, // group by token
       };
       // eslint-disable-next-line no-await-in-loop
       const resp = await service.find({ query });

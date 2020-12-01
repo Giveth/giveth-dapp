@@ -191,7 +191,7 @@ class DelegateMultipleButton extends Component {
           ...options,
           $sort: { createdAt: 1 },
           $limit: spare || 1,
-          tokenSymbol: selectedToken.symbol,
+          tokenAddress: selectedToken.address,
           $skip: donations.length,
         },
         schema: 'includeTypeAndGiverDetails',
