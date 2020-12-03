@@ -481,12 +481,11 @@ class EditMilestone extends Component {
     this.getNewRates(address);
   }
 
-  setFiatTypeBasedOnToken() {
-    if (this.token === 'WBTC') {
-      this.state.milestone.selectedFiatType = 'BTC';
-    } else {
-      this.state.milestone.selectedFiatType = this.token;
+  getFiatTypeBasedOnToken() {
+    if (this.state.milestone.token.rateEqSymbol !== undefined) {
+      return this.state.milestone.token.rateEqSymbol;
     }
+    return this.state.milestone.token.symbol;
   }
 
   async getNewRates(address) {
@@ -494,7 +493,7 @@ class EditMilestone extends Component {
     const { milestone } = this.state;
     const token = this.props.tokenWhitelist.find(t => t.address === address);
     milestone.token = token;
-    this.setFiatTypeBasedOnToken();
+    milestone.selectedFiatType = this.getFiatTypeBasedOnToken();
     if (!milestone.items || milestone.items.length === 0) {
       this.updateMilestoneState(milestone);
       return;
