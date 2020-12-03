@@ -115,11 +115,32 @@ class ConversionRateProvider extends Component {
   }
 
   // rateArray: [{value: 123, currency: 'ETH'}]
+  // eslint-disable-next-line
   convertMultipleRates(date, symbol, rateArray) {
-    return this.getConversionRates(date, symbol).then(currentRate => {
-      const { rates } = currentRate;
-      return rateArray.reduce((sum, item) => sum + item.value / (rates[item.currency] || 1), 0);
-    });
+    return feathersClient
+      .service('conversionRates')
+      .find({
+        query: {
+          ts: date,
+          from: symbol,
+          to: rateArray.map(r => r.currency),
+          interval: 'hourly',
+        },
+      })
+      .then(resp => {
+        const { rates } = resp;
+        const total = rateArray.reduce(
+          (sum, item) => sum + item.value / (+rates[item.currency] || 1),
+          0,
+        );
+        return { total, rates };
+      })
+      .catch(err => {
+        ErrorPopup(
+          'Sadly we were unable to get the exchange rate! Please try again after refresh.',
+          err,
+        );
+      });
   }
 
   render() {
