@@ -35,13 +35,14 @@ import CancelMilestoneButton from '../CancelMilestoneButton';
 import DeleteProposedMilestoneButton from '../DeleteProposedMilestoneButton';
 import CommunityButton from '../CommunityButton';
 import getConversionRatesContext from '../../containers/getConversionRatesContext';
+import { WhitelistService } from '../../services';
 
 /**
-  Loads and shows a single milestone
+ Loads and shows a single milestone
 
-  @route params:
-    milestoneId (string): id of a milestone
-* */
+ @route params:
+ milestoneId (string): id of a milestone
+ * */
 
 const helmetContext = {};
 
@@ -63,6 +64,8 @@ class ViewMilestone extends Component {
       notFound: false,
       currency: null,
       currentBalanceValue: 0,
+      showDelegateButton: false,
+      checkShowDelegation: false,
     };
 
     this.loadMoreDonations = this.loadMoreDonations.bind(this);
@@ -160,6 +163,40 @@ class ViewMilestone extends Component {
     );
   }
 
+  async shouldShowDelegateButton() {
+    const { currentUser } = this.props;
+    const { campaign } = this.state;
+    if (!campaign || !currentUser) {
+      return;
+    }
+    // the first page loaded maybe user or campaign be undefined, so we check if there
+    // aren't undefined proceed checking
+    this.setState({ checkShowDelegation: true });
+    const userAddress = currentUser && currentUser._address;
+    if (campaign.ownerAddress === userAddress) {
+      this.setState({ showDelegateButton: true });
+      return;
+    }
+
+    // should check if user has any dac
+    const userDacs = (await DACService.getDACsOwnedByUser(userAddress)).data;
+    if (userDacs.length > 0) {
+      this.setState({ showDelegateButton: true });
+      return;
+    }
+
+    // should check if user is in delegateWhitelist
+    const whitelists = await WhitelistService.getWhitelists();
+    const isUserInDelegateWhitelist = whitelists.delegateWhitelist.find(
+      item => item.address.toLowerCase() === userAddress.toLowerCase(),
+    );
+    if (isUserInDelegateWhitelist) {
+      this.setState({ showDelegateButton: true });
+      return;
+    }
+    this.setState({ showDelegateButton: false });
+  }
+
   loadMoreDonations() {
     this.setState({ isLoadingDonations: true }, () =>
       MilestoneService.getDonations(
@@ -246,7 +283,9 @@ class ViewMilestone extends Component {
     if (notFound) {
       return <NotFound projectType="Milestone" />;
     }
-
+    if (!this.state.checkShowDelegation) {
+      this.shouldShowDelegateButton();
+    }
     const donationsTitle = `Donations${donationsTotal ? ` (${donationsTotal})` : ''}`;
 
     const goBackSectionLinks = [
@@ -411,6 +450,7 @@ class ViewMilestone extends Component {
                             currentUser={currentUser}
                             balance={balance}
                             campaign={campaign}
+                            showDelegateButton={this.state.showDelegateButton}
                           />
 
                           <div id="description">

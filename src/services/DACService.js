@@ -38,6 +38,19 @@ class DACService {
   }
 
   /**
+   * Get dacs that owned by a specific user
+   * @param userAddress
+   * @returns {*}
+   */
+  static getDACsOwnedByUser(userAddress) {
+    return dacs.find({
+      query: {
+        ownerAddress: userAddress,
+      },
+    });
+  }
+
+  /**
    * Get a DAC defined by Delegate ID
    *
    *  @param delegateId Delegate Id of the DAC to be retrieved

@@ -14,13 +14,13 @@ import WithdrawMilestoneFundsButton from './WithdrawMilestoneFundsButton';
 import DelegateMultipleButton from './DelegateMultipleButton';
 
 export default function ViewMilestoneAlerts(props) {
-  const { currentUser, balance, milestone, campaign } = props;
+  const { currentUser, balance, milestone, campaign, showDelegateButton } = props;
   const { fullyFunded, status } = milestone;
   const milestoneIsActive = status === 'InProgress' && !fullyFunded;
 
   return (
     <div>
-      {currentUser && milestoneIsActive && (
+      {currentUser && milestoneIsActive && showDelegateButton && (
         <ProjectViewActionAlert message="Delegate some donation to this project">
           <DelegateMultipleButton
             milestone={milestone}
@@ -95,6 +95,7 @@ ViewMilestoneAlerts.propTypes = {
   currentUser: PropTypes.instanceOf(User),
   campaign: PropTypes.instanceOf(Campaign).isRequired,
   balance: PropTypes.instanceOf(BigNumber).isRequired,
+  showDelegateButton: PropTypes.instanceOf(Boolean).isRequired,
 };
 
 ViewMilestoneAlerts.defaultProps = {

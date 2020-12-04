@@ -31,6 +31,7 @@ import CreateDonationAddressButton from '../CreateDonationAddressButton';
 import NotFound from './NotFound';
 import ProjectViewActionAlert from '../projectViewActionAlert';
 import GoBackSection from '../GoBackSection';
+import { DACService, WhitelistService } from '../../services';
 
 /**
  * The Campaign detail view mapped to /campaing/id
@@ -59,6 +60,8 @@ class ViewCampaign extends Component {
       donationsPerBatch: 5,
       newDonations: 0,
       notFound: false,
+      showDelegateButton: false,
+      checkShowDelegation: false,
     };
 
     this.loadMoreMilestones = this.loadMoreMilestones.bind(this);
@@ -79,6 +82,7 @@ class ViewCampaign extends Component {
     this.loadMoreMilestones(campaignId);
 
     this.loadMoreAggregateDonations();
+
     // subscribe to donation count
     this.donationsObserver = CampaignService.subscribeNewDonations(
       campaignId,
@@ -109,6 +113,35 @@ class ViewCampaign extends Component {
         () => this.setState({ isLoadingDonations: false }),
       ),
     );
+  }
+
+  async shouldShowDelegateButton() {
+    const { currentUser } = this.props;
+    if (!currentUser) {
+      return;
+    }
+    // the first page loaded maybe user  be undefined, so we check if it
+    // isn't undefined proceed checking
+    this.setState({ checkShowDelegation: true });
+    const userAddress = currentUser.address;
+
+    // should check if user has any dac
+    const userDacs = (await DACService.getDACsOwnedByUser(userAddress)).data;
+    if (userDacs.length > 0) {
+      this.setState({ showDelegateButton: true });
+      return;
+    }
+
+    // should check if user is in delegateWhitelist
+    const whitelists = await WhitelistService.getWhitelists();
+    const isUserInDelegateWhitelist = whitelists.delegateWhitelist.find(
+      item => item.address.toLowerCase() === userAddress.toLowerCase(),
+    );
+    if (isUserInDelegateWhitelist) {
+      this.setState({ showDelegateButton: true });
+      return;
+    }
+    this.setState({ showDelegateButton: false });
   }
 
   loadMoreMilestones(campaignId = this.props.match.params.id) {
@@ -185,13 +218,14 @@ class ViewCampaign extends Component {
       newDonations,
       notFound,
     } = this.state;
-
     if (notFound) {
       return <NotFound projectType="Campaign" />;
     }
 
     if (!isLoading && !campaign) return <p>Unable to find a campaign</p>;
-
+    if (!this.state.checkShowDelegation) {
+      this.shouldShowDelegateButton();
+    }
     const userAddress = currentUser && currentUser.address;
     const ownerAddress = campaign && campaign.ownerAddress;
     const userIsOwner = userAddress && userAddress === ownerAddress;
@@ -298,7 +332,7 @@ class ViewCampaign extends Component {
                           </ProjectViewActionAlert>
                         )}
 
-                        {currentUser && (
+                        {currentUser && this.state.showDelegateButton && (
                           <ProjectViewActionAlert message="Delegate some donation to this project">
                             <DelegateMultipleButton
                               campaign={campaign}
@@ -388,11 +422,13 @@ class ViewCampaign extends Component {
                             </a>
                             {campaign.isActive && (
                               <Fragment>
-                                <DelegateMultipleButton
-                                  campaign={campaign}
-                                  balance={balance}
-                                  currentUser={currentUser}
-                                />
+                                {this.state.showDelegateButton && (
+                                  <DelegateMultipleButton
+                                    campaign={campaign}
+                                    balance={balance}
+                                    currentUser={currentUser}
+                                  />
+                                )}
                                 <DonateButton
                                   model={{
                                     type: Campaign.type,
