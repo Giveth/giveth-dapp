@@ -35,7 +35,6 @@ import CancelMilestoneButton from '../CancelMilestoneButton';
 import DeleteProposedMilestoneButton from '../DeleteProposedMilestoneButton';
 import CommunityButton from '../CommunityButton';
 import getConversionRatesContext from '../../containers/getConversionRatesContext';
-import { WhitelistService } from '../../services';
 
 /**
  Loads and shows a single milestone
@@ -164,7 +163,7 @@ class ViewMilestone extends Component {
   }
 
   async shouldShowDelegateButton() {
-    const { currentUser } = this.props;
+    const { currentUser, isDelegate } = this.props;
     const { campaign } = this.state;
     if (!campaign || !currentUser) {
       return;
@@ -184,13 +183,7 @@ class ViewMilestone extends Component {
       this.setState({ showDelegateButton: true });
       return;
     }
-
-    // should check if user is in delegateWhitelist
-    const whitelists = await WhitelistService.getWhitelists();
-    const isUserInDelegateWhitelist = whitelists.delegateWhitelist.find(
-      item => item.address.toLowerCase() === userAddress.toLowerCase(),
-    );
-    if (isUserInDelegateWhitelist) {
+    if (isDelegate(currentUser)) {
       this.setState({ showDelegateButton: true });
       return;
     }
@@ -805,6 +798,7 @@ ViewMilestone.propTypes = {
     }),
   }).isRequired,
   convertMultipleRates: PropTypes.func.isRequired,
+  isDelegate: PropTypes.func.isRequired,
 };
 
 ViewMilestone.defaultProps = {

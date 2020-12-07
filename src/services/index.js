@@ -5,7 +5,6 @@ import IPFSService from './IPFSService';
 import MilestoneService from './MilestoneService';
 import UserService from './UserService';
 import WalletService from './WalletService';
-import WhitelistService from './WhitelistService';
 
 export {
   CampaignService,
@@ -15,5 +14,4 @@ export {
   MilestoneService,
   UserService,
   WalletService,
-  WhitelistService,
 };

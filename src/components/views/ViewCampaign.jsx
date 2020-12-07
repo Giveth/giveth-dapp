@@ -31,7 +31,7 @@ import CreateDonationAddressButton from '../CreateDonationAddressButton';
 import NotFound from './NotFound';
 import ProjectViewActionAlert from '../projectViewActionAlert';
 import GoBackSection from '../GoBackSection';
-import { DACService, WhitelistService } from '../../services';
+import { DACService } from '../../services';
 
 /**
  * The Campaign detail view mapped to /campaing/id
@@ -116,7 +116,7 @@ class ViewCampaign extends Component {
   }
 
   async shouldShowDelegateButton() {
-    const { currentUser } = this.props;
+    const { currentUser, isDelegate } = this.props;
     if (!currentUser) {
       return;
     }
@@ -127,17 +127,11 @@ class ViewCampaign extends Component {
 
     // should check if user has any dac
     const userDacs = (await DACService.getDACsOwnedByUser(userAddress)).data;
-    if (userDacs.length > 0) {
+    if (userDacs.length > 10) {
       this.setState({ showDelegateButton: true });
       return;
     }
-
-    // should check if user is in delegateWhitelist
-    const whitelists = await WhitelistService.getWhitelists();
-    const isUserInDelegateWhitelist = whitelists.delegateWhitelist.find(
-      item => item.address.toLowerCase() === userAddress.toLowerCase(),
-    );
-    if (isUserInDelegateWhitelist) {
+    if (isDelegate(currentUser)) {
       this.setState({ showDelegateButton: true });
       return;
     }
@@ -554,6 +548,7 @@ ViewCampaign.propTypes = {
     }).isRequired,
   }).isRequired,
   balance: PropTypes.instanceOf(BigNumber),
+  isDelegate: PropTypes.func.isRequired,
 };
 
 ViewCampaign.defaultProps = {
