@@ -262,7 +262,7 @@ class EditDAC extends Component {
                       label="Name your Community"
                       type="text"
                       value={dac.title}
-                      placeholder="Describe your altruistic community (DAC) in 1 sentence"
+                      placeholder="e.g. Hurricane relief."
                       help="Describe your Decentralized Altruistic Community (DAC) in 1 sentence."
                       validations="minLength:3"
                       validationErrors={{
