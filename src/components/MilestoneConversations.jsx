@@ -80,7 +80,7 @@ class MilestoneConversations extends Component {
           paymentsStr.length === 1
             ? paymentsStr[0]
             : `${paymentsStr.slice(0, -1).join(', ')} and ${paymentsStr[paymentsStr.length - 1]}`;
-        if (owner.address === recipient.address) {
+        if (owner && recipient && owner.address === recipient.address) {
           return `collected ${phrase}`;
         }
         // else
