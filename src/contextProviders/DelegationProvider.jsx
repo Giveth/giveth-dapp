@@ -205,7 +205,7 @@ class DelegationProvider extends Component {
                 'campaignId',
                 'maxAmount',
                 'status',
-                'token',
+                'tokenAddress',
                 'donationCounters',
               ],
               $limit: 100,

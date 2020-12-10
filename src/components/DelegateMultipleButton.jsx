@@ -44,6 +44,12 @@ const modalStyles = {
   },
 };
 
+const closeButtonStyle = {
+  position: 'absolute',
+  top: '0px',
+  right: '0px',
+};
+
 /**
  * Retrieves the oldest 100 donations that the user can delegate
  *
@@ -191,7 +197,7 @@ class DelegateMultipleButton extends Component {
           ...options,
           $sort: { createdAt: 1 },
           $limit: spare || 1,
-          'token.symbol': selectedToken.symbol,
+          tokenAddress: selectedToken.address,
           $skip: donations.length,
         },
         schema: 'includeTypeAndGiverDetails',
@@ -374,6 +380,16 @@ class DelegateMultipleButton extends Component {
             this.setState({ modalVisible: false });
           }}
         >
+          <button
+            type="button"
+            className="btn btn-sm"
+            style={closeButtonStyle}
+            onClick={() => {
+              this.setState({ modalVisible: false });
+            }}
+          >
+            <i className="fa fa-close" />
+          </button>
           {!validProvider && (
             <div className="alert alert-warning">
               <i className="fa fa-exclamation-triangle" />

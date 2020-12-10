@@ -221,9 +221,9 @@ class EditDAC extends Component {
                     {!isNew && <h3>Edit DAC</h3>}
 
                     <p>
-                      <i className="fa fa-question-circle" />A DAC aims to solve a cause by building
-                      a Community, raising funds and delegating those funds to Campaigns that solve
-                      its cause. Should you create a Campaign or Community? Read more{' '}
+                      <i className="fa fa-question-circle" />A DAC unites Givers and Makers in
+                      building a community around their common vision to raise then delegate funds
+                      to Campaigns that deliver a positive impact to shared goals. Read more{' '}
                       <a
                         target="_blank"
                         rel="noopener noreferrer"
@@ -259,7 +259,7 @@ class EditDAC extends Component {
                     <Input
                       name="title"
                       id="title-input"
-                      label="Community cause"
+                      label="Name your Community"
                       type="text"
                       value={dac.title}
                       placeholder="e.g. Hurricane relief."
@@ -275,9 +275,10 @@ class EditDAC extends Component {
                     <div className="form-group">
                       <QuillFormsy
                         name="description"
-                        label="Explain your cause"
-                        helpText="Make it as extensive as necessary. Your goal is to build trust,
-                        so that people join your Community and/or donate Ether."
+                        label="Explain the cause of your community"
+                        helpText="Describe the shared vision and goals of your Community and the cause 
+                        that you are collaborating to solve. Share links, insert media to convey your 
+                        message and build trust so that people will join your Community and/or donate to the cause."
                         value={dac.description}
                         placeholder="Describe how you're going to solve your cause..."
                         validations="minLength:20"

@@ -481,11 +481,19 @@ class EditMilestone extends Component {
     this.getNewRates(address);
   }
 
+  getFiatTypeBasedOnToken() {
+    if (this.state.milestone.token.rateEqSymbol !== undefined) {
+      return this.state.milestone.token.rateEqSymbol;
+    }
+    return this.state.milestone.token.symbol;
+  }
+
   async getNewRates(address) {
     if (!address) return;
     const { milestone } = this.state;
     const token = this.props.tokenWhitelist.find(t => t.address === address);
     milestone.token = token;
+    milestone.selectedFiatType = this.getFiatTypeBasedOnToken();
     if (!milestone.items || milestone.items.length === 0) {
       this.updateMilestoneState(milestone);
       return;
