@@ -223,13 +223,13 @@ class EditDAC extends Component {
                     <p>
                       <i className="fa fa-question-circle" />A DAC unites Givers and Makers in
                       building a community around their common vision to raise then delegate funds
-                      to Campaigns that deliver a positive impact to shared goals.
+                      to Campaigns that deliver a positive impact to shared goals. Read more{' '}
                       <a
                         target="_blank"
                         rel="noopener noreferrer"
                         href="https://wiki.giveth.io/documentation/glossary/"
                       >
-                        more..
+                        here
                       </a>
                       .
                     </p>
