@@ -156,6 +156,7 @@ class Application extends Component {
                                         {!userLoading && !hasError && (
                                           <div>
                                             <MainMenu />
+
                                             <Switch>
                                               {/* Routes are defined here. Persistent data is set as props on components
                                 NOTE order matters, wrong order breaks routes!
