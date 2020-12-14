@@ -57,7 +57,7 @@ Modal.setAppElement('#root');
 // tx only requires 25400 gas, but for some reason we get an out of gas
 // error in web3 with that amount (even though the tx succeeds)
 const DONATION_GAS = 30400;
-const TOKEN_DONATION_GAS = 30400;
+const TOKEN_DONATION_GAS = 904000;
 
 const AllowanceStatus = {
   NotNeeded: 1, // Token doesn't need allowance approval
@@ -483,31 +483,24 @@ class DonateButton extends React.Component {
       buttons: ['Cancel', 'Lets do it!'],
     });
 
-    let result = false;
     if (isConfirmed) {
       try {
-        if (
-          await this.donateWithBridge(
-            dacId,
-            amountDAC,
-            donationOwnerAddress,
-            amount,
-            comment,
-            allowanceApprovalType,
-          )
-        )
-          result = await this.donateWithBridge(
-            adminId,
-            amountMilestone,
-            donationOwnerAddress,
-            0,
-            comment,
-          );
+        this.donateWithBridge(
+          dacId,
+          amountDAC,
+          donationOwnerAddress,
+          amount,
+          comment,
+          allowanceApprovalType,
+        );
+        setTimeout(() => {
+          this.donateWithBridge(adminId, amountMilestone, donationOwnerAddress, 0, comment);
+        }, 1000);
         // eslint-disable-next-line no-empty
       } catch (e) {}
     }
     this.setState({ isSaving: false });
-    return result;
+    return true;
   }
 
   async donateWithBridge(
@@ -536,6 +529,12 @@ class DonateButton extends React.Component {
       } else {
         Object.assign(opts, { gas: TOKEN_DONATION_GAS });
       }
+
+      console.log(donationOwnerAddress);
+      console.log(adminId);
+      console.log(tokenAddress);
+      console.log(amountWei);
+      console.log(opts);
 
       let donationOwner;
       if (userAddress !== donationOwnerAddress) {
@@ -677,14 +676,15 @@ class DonateButton extends React.Component {
             : amountWei;
         }
 
-        setTimeout(() => {
-          _makeDonationTx();
-        }, 500);
-        const allowed = await DonationService.approveERC20tokenTransfer(
+        const allowed = DonationService.approveERC20tokenTransfer(
           tokenAddress,
           currentUser && currentUser.address,
           allowanceRequired.toString(),
         );
+
+        setTimeout(() => {
+          _makeDonationTx();
+        }, 1000);
 
         // Allowance value may have changed
         this.updateAllowance(UPDATE_ALLOWANCE_DELAY);
