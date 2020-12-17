@@ -4,6 +4,7 @@
   "private": true,
   "dependencies": {
     "@metamask/detect-provider": "^1.1.0",
+    "axios": "^0.21.0",
     "bignumber.js": "^8.1.1",
     "ethereumjs-abi": "^0.6.8",
     "feathers": "^2.2.3",
@@ -15,6 +16,7 @@
     "feathers-reactive": "^0.5.2",
     "feathers-rest": "^1.8.1",
     "feathers-socketio": "^2.0.1",
+    "file-saver": "^2.0.5",
     "formsy-react": "^1.1.5",
     "formsy-react-components": "^1.1.0",
     "giveth-bridge": "1.0.4",
