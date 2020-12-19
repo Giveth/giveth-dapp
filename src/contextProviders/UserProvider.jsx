@@ -26,6 +26,20 @@ React.minimumWalletBalanceInWei = new BigNumber(utils.toWei('0.01'));
  * As long as this component is mounted, the data will be persistent,
  * if passed as props to children.
  */
+
+function isInWhitelist(currentUser, whitelist) {
+  if (
+    (Array.isArray(whitelist) && whitelist.length === 0) ||
+    (Array.isArray(whitelist) &&
+      currentUser &&
+      currentUser.address &&
+      whitelist.find(u => u.address.toLowerCase() === currentUser.address.toLowerCase()))
+  ) {
+    return true;
+  }
+  return false;
+}
+
 class UserProvider extends Component {
   constructor() {
     super();
@@ -33,6 +47,7 @@ class UserProvider extends Component {
     this.state = {
       currentUser: undefined,
       hasError: false,
+      delegateWhitelist: [],
     };
 
     this.getUserData = this.getUserData.bind(this);
@@ -43,8 +58,10 @@ class UserProvider extends Component {
     React.signIn = this.signIn;
   }
 
-  componentDidMount() {
+  async componentDidMount() {
     this.getUserData(this.props.account);
+    const { delegateWhitelist } = await feathersClient.service('/whitelist').find();
+    this.setState({ delegateWhitelist });
   }
 
   componentDidUpdate(prevProps) {
@@ -184,7 +201,7 @@ class UserProvider extends Component {
   }
 
   render() {
-    const { currentUser, hasError } = this.state;
+    const { currentUser, hasError, delegateWhitelist } = this.state;
 
     return (
       <Provider
@@ -193,6 +210,9 @@ class UserProvider extends Component {
             currentUser,
             hasError,
             signIn: this.signIn,
+          },
+          actions: {
+            isDelegate: user => isInWhitelist(user, delegateWhitelist),
           },
         }}
       >

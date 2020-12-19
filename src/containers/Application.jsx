@@ -147,7 +147,10 @@ class Application extends Component {
                               <ConversionRateProvider fiatWhitelist={fiatWhitelist}>
                                 <UserProvider account={account} onLoaded={this.userLoaded}>
                                   <UserConsumer>
-                                    {({ state: { currentUser, hasError } }) => (
+                                    {({
+                                      state: { currentUser, hasError },
+                                      actions: { isDelegate },
+                                    }) => (
                                       <div>
                                         {GA.init() && <GA.RouteTracker />}
 
@@ -231,6 +234,7 @@ class Application extends Component {
                                                   <ViewCampaign
                                                     currentUser={currentUser}
                                                     balance={balance}
+                                                    isDelegate={isDelegate}
                                                     {...props}
                                                   />
                                                 )}
@@ -296,6 +300,7 @@ class Application extends Component {
                                                   <ViewMilestone
                                                     currentUser={currentUser}
                                                     balance={balance}
+                                                    isDelegate={isDelegate}
                                                     {...props}
                                                   />
                                                 )}
