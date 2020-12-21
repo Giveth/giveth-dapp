@@ -17,18 +17,32 @@ class Balances extends Component {
     super(props);
     this.state = {
       currency: null,
-      conversionRates: {},
+      conversionRates: null,
+      currentBalanceValue: null,
     };
   }
 
   componentDidUpdate() {
-    if (this.props.currentUser && !this.state.currency) {
+    if (this.props.currentUser && !this.state.currency && this.props.entity.donationCounters) {
       // eslint-disable-next-line
       this.setState({ currency: this.props.currentUser.currency });
-      this.props.getConversionRates(null, this.props.currentUser.currency).then(currentRate => {
-        // eslint-disable-next-line
-          this.setState({ conversionRates: currentRate.rates });
-      });
+      this.props
+        .convertMultipleRates(
+          null,
+          this.props.currentUser.currency,
+          this.props.entity.donationCounters.map(dc => {
+            return {
+              value: dc.currentBalance,
+              currency: dc.symbol,
+            };
+          }),
+        )
+        .then(result => {
+          this.setState({
+            currentBalanceValue: result.total,
+            conversionRates: result.rates,
+          });
+        });
     }
   }
 
@@ -53,7 +67,7 @@ class Balances extends Component {
                         <th className="td-donations-amount">Current balance</th>
                         <th className="td-donations-number">Number of donations</th>
                         <th className="td-donations-amount">Total donated</th>
-                        {this.state.currency && this.state.conversionRates[this.state.currency] && (
+                        {this.state.currency && this.state.conversionRates && (
                           <th className="td-donations-amount">Current Balance value</th>
                         )}
                       </tr>
@@ -68,7 +82,7 @@ class Balances extends Component {
                           <td className="td-donations-amount">
                             {convertEthHelper(dc.totalDonated, dc.decimals)} {dc.symbol}
                           </td>
-                          {this.state.currency && this.state.conversionRates[this.state.currency] && (
+                          {this.state.currency && this.state.conversionRates && (
                             <td className="td-donations-amount">
                               {roundBigNumber(
                                 dc.currentBalance / (this.state.conversionRates[dc.symbol] || 1),
@@ -80,22 +94,13 @@ class Balances extends Component {
                         </tr>
                       ))}
                     </tbody>
-                    {this.state.currency && this.state.conversionRates[this.state.currency] && (
+                    {this.state.currency && this.state.currentBalanceValue && (
                       <tfoot>
                         <tr>
                           <td colSpan="4">
                             <span className="font-weight-bold">
                               Total Current Balance Value :{' '}
-                              {roundBigNumber(
-                                entity.donationCounters.reduce(
-                                  (sum, dc) =>
-                                    sum +
-                                    +dc.currentBalance /
-                                      (this.state.conversionRates[dc.symbol] || 1),
-                                  0,
-                                ),
-                                precision,
-                              ).toFixed()}{' '}
+                              {roundBigNumber(this.state.currentBalanceValue, precision).toFixed()}{' '}
                               {this.state.currency}
                             </span>
                           </td>
@@ -119,7 +124,7 @@ export default getConversionRatesContext(props => <Balances {...props} />);
 Balances.propTypes = {
   entity: PropTypes.oneOfType([PropTypes.instanceOf(Campaign), PropTypes.instanceOf(DAC)])
     .isRequired,
-  getConversionRates: PropTypes.func.isRequired,
+  convertMultipleRates: PropTypes.func.isRequired,
   currentUser: PropTypes.instanceOf(User),
 };
 Balances.defaultProps = {
