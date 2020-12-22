@@ -3,6 +3,5 @@ export default class Prerender {
     setTimeout(() => {
       window.prerenderReady = true;
     }, 100);
-    console.log('Prerender is ready');
   }
 }
