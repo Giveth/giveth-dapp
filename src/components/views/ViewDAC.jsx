@@ -25,6 +25,7 @@ import ErrorPopup from '../ErrorPopup';
 import DescriptionRender from '../DescriptionRender';
 import ErrorBoundary from '../ErrorBoundary';
 import GoBackSection from '../GoBackSection';
+import Prerender from '../../lib/prerender';
 
 /**
  * The DAC detail view mapped to /dacs/id
@@ -64,7 +65,7 @@ class ViewDAC extends Component {
     DACService.get(dacId)
       .then(dac => {
         this.setState({ dac, isLoading: false });
-
+        Prerender.ready();
         this.campaignObserver = DACService.subscribeCampaigns(
           dac.delegateId,
           campaigns => this.setState({ campaigns, isLoadingCampaigns: false }),
