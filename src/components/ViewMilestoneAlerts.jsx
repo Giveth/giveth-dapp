@@ -78,7 +78,7 @@ export default function ViewMilestoneAlerts(props) {
       )}
 
       {milestone.canUserWithdraw(currentUser) && (
-        <ProjectViewActionAlert message="Get the money inside milestone">
+        <ProjectViewActionAlert message="Collect the funds held in this Milestone">
           <WithdrawMilestoneFundsButton
             milestone={milestone}
             currentUser={currentUser}
