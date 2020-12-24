@@ -407,7 +407,7 @@ class ViewCampaign extends Component {
                                 className="btn btn-info disabled"
                                 onClick={() => {}}
                               >
-                                Calculating...
+                                Please wait...
                               </button>
                             )}
                             {!this.state.downloadingCsv && (
