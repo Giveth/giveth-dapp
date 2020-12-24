@@ -35,6 +35,7 @@ import CancelMilestoneButton from '../CancelMilestoneButton';
 import DeleteProposedMilestoneButton from '../DeleteProposedMilestoneButton';
 import CommunityButton from '../CommunityButton';
 import getConversionRatesContext from '../../containers/getConversionRatesContext';
+import Prerender from '../../lib/prerender';
 
 /**
   Loads and shows a single milestone
@@ -92,6 +93,7 @@ class ViewMilestone extends Component {
             : milestone.recipient,
         });
         this.getDacTitle(milestone.dacId);
+        Prerender.ready();
       },
       () => {
         this.setState({ notFound: true });

@@ -33,6 +33,8 @@ import CreateDonationAddressButton from '../CreateDonationAddressButton';
 import NotFound from './NotFound';
 import ProjectViewActionAlert from '../projectViewActionAlert';
 import GoBackSection from '../GoBackSection';
+import Prerender from '../../lib/prerender';
+
 /**
  * The Campaign detail view mapped to /campaing/id
  *
@@ -74,6 +76,7 @@ class ViewCampaign extends Component {
     CampaignService.get(campaignId)
       .then(campaign => {
         this.setState({ campaign, isLoading: false });
+        Prerender.ready();
       })
       .catch(() => {
         this.setState({ notFound: true });
