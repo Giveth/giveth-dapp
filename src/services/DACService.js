@@ -44,6 +44,7 @@ class DACService {
    */
   static getDACsOwnedByUser(userAddress) {
     return dacs.find({
+      paginate: false,
       query: {
         ownerAddress: userAddress,
       },

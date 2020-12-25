@@ -63,8 +63,6 @@ class ViewMilestone extends Component {
       notFound: false,
       currency: null,
       currentBalanceValue: 0,
-      showDelegateButton: false,
-      checkShowDelegation: false,
     };
 
     this.loadMoreDonations = this.loadMoreDonations.bind(this);
@@ -162,34 +160,6 @@ class ViewMilestone extends Component {
     );
   }
 
-  async shouldShowDelegateButton(isDelegate) {
-    const { currentUser } = this.props;
-    const { campaign } = this.state;
-    if (!campaign || !currentUser) {
-      return;
-    }
-    // the first page loaded maybe user or campaign be undefined, so we check if there
-    // aren't undefined proceed checking
-    this.setState({ checkShowDelegation: true });
-    const userAddress = currentUser && currentUser._address;
-    if (campaign.ownerAddress === userAddress) {
-      this.setState({ showDelegateButton: true });
-      return;
-    }
-
-    // should check if user has any dac
-    const userDacs = (await DACService.getDACsOwnedByUser(userAddress)).data;
-    if (userDacs.length > 0) {
-      this.setState({ showDelegateButton: true });
-      return;
-    }
-    if (isDelegate(currentUser)) {
-      this.setState({ showDelegateButton: true });
-      return;
-    }
-    this.setState({ showDelegateButton: false });
-  }
-
   loadMoreDonations() {
     this.setState({ isLoadingDonations: true }, () =>
       MilestoneService.getDonations(
@@ -259,7 +229,7 @@ class ViewMilestone extends Component {
   }
 
   render() {
-    const { currentUser, balance, isDelegate } = this.props;
+    const { currentUser, balance } = this.props;
     const { homeUrl } = config;
     const {
       isLoading,
@@ -271,7 +241,6 @@ class ViewMilestone extends Component {
       donationsTotal,
       newDonations,
       notFound,
-      showDelegateButton,
     } = this.state;
 
     if (notFound) {
@@ -329,9 +298,7 @@ class ViewMilestone extends Component {
         ? milestone.maxAmount.minus(milestone.totalDonatedSingleToken)
         : undefined,
     };
-    if (!this.state.checkShowDelegation) {
-      this.shouldShowDelegateButton(isDelegate);
-    }
+
     return (
       <WhiteListConsumer>
         {({ state: { nativeCurrencyWhitelist } }) => (
@@ -442,7 +409,6 @@ class ViewMilestone extends Component {
                           <ViewMilestoneAlerts
                             milestone={milestone}
                             currentUser={currentUser}
-                            showDelegateButton={showDelegateButton}
                             balance={balance}
                             campaign={campaign}
                           />
@@ -793,7 +759,6 @@ ViewMilestone.propTypes = {
   }).isRequired,
   currentUser: PropTypes.instanceOf(User),
   balance: PropTypes.instanceOf(BigNumber),
-  isDelegate: PropTypes.func.isRequired,
   match: PropTypes.shape({
     params: PropTypes.shape({
       milestoneId: PropTypes.string.isRequired,

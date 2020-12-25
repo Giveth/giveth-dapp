@@ -5,7 +5,7 @@ import { utils } from 'web3';
 import { authenticateIfPossible } from 'lib/middleware';
 import { feathersClient } from '../lib/feathersClient';
 import GivethWallet from '../lib/blockchain/GivethWallet';
-
+import { DACService } from '../services';
 import ErrorPopup from '../components/ErrorPopup';
 
 // models
@@ -48,6 +48,7 @@ class UserProvider extends Component {
       currentUser: undefined,
       hasError: false,
       delegateWhitelist: [],
+      userDacs: [],
     };
 
     this.getUserData = this.getUserData.bind(this);
@@ -62,6 +63,7 @@ class UserProvider extends Component {
     this.getUserData(this.props.account);
     const { delegateWhitelist } = await feathersClient.service('/whitelist').find();
     this.setState({ delegateWhitelist });
+    await this.updateDacsOwnedByUser(this.props.account);
   }
 
   componentDidUpdate(prevProps) {
@@ -71,6 +73,7 @@ class UserProvider extends Component {
     if ((account && !currentUser) || (currentUser && account !== prevProps.account)) {
       this.getUserData(account);
       this.checkGivethWallet();
+      this.updateDacsOwnedByUser(account);
     }
   }
 
@@ -117,6 +120,11 @@ class UserProvider extends Component {
           );
       }
     });
+  }
+
+  async updateDacsOwnedByUser(userAddress) {
+    const userDacs = await DACService.getDACsOwnedByUser(userAddress);
+    this.setState({ userDacs });
   }
 
   // TODO: this can be removed after a sufficient time has passed w/ new Web3 support
@@ -200,8 +208,30 @@ class UserProvider extends Component {
     this.props.onLoaded();
   }
 
+  isDelegateEnableForCampaign() {
+    const { currentUser, userDacs, delegateWhitelist } = this.state;
+    if (!currentUser) {
+      return false;
+    }
+    if (userDacs.length >= 1) {
+      return true;
+    }
+    if (isInWhitelist(currentUser, delegateWhitelist)) {
+      return true;
+    }
+    return false;
+  }
+
+  isDelegateEnableForMilestone(campaign) {
+    const { currentUser } = this.state;
+    if (!campaign || !currentUser) {
+      return false;
+    }
+    return this.isDelegateEnableForCampaign() || campaign.ownerAddress === currentUser.address;
+  }
+
   render() {
-    const { currentUser, hasError, delegateWhitelist } = this.state;
+    const { currentUser, hasError } = this.state;
 
     return (
       <Provider
@@ -212,7 +242,8 @@ class UserProvider extends Component {
             signIn: this.signIn,
           },
           actions: {
-            isDelegate: user => isInWhitelist(user, delegateWhitelist),
+            isDelegateEnableForMilestone: campaign => this.isDelegateEnableForMilestone(campaign),
+            isDelegateEnableForCampaign: () => this.isDelegateEnableForCampaign(),
           },
         }}
       >
