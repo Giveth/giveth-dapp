@@ -50,7 +50,7 @@ class MainMenu extends Component {
                   const userIsReviewer = isReviewer(currentUser);
                   return (
                     <nav
-                      className={`navbar navbar-expand-lg main-menu ${
+                      className={`navbar sticky-top navbar-expand-lg main-menu ${
                         showMobileMenu ? 'show' : ''
                       } `}
                     >
