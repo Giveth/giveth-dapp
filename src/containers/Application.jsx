@@ -41,7 +41,7 @@ import ViewCampaign from '../components/views/ViewCampaign';
 import EditMilestone from '../components/views/EditMilestone';
 
 // components
-import MainMenu from '../components/MainMenu';
+import MainMenu from '../components/layout/MainMenu';
 import Loader from '../components/Loader';
 import ErrorBoundary from '../components/ErrorBoundary';
 
@@ -159,7 +159,7 @@ class Application extends Component {
                                           {userLoading && <Loader className="fixed" />}
 
                                           {!userLoading && !hasError && (
-                                            <div>
+                                            <div className="page-wrapper">
                                               <MainMenu />
 
                                               <Switch>
