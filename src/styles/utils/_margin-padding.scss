@@ -1,0 +1,67 @@
+$sizes: 100;
+
+@mixin margin-classes {
+  @for $i from 0 through $sizes {
+    $margin: $i * 1px;
+
+    /* margin #{$margin} */
+    .m-#{$i} {
+      margin: $margin;
+    }
+    .ml-#{$i} {
+      margin-left: $margin;
+    }
+    .mr-#{$i} {
+      margin-right: $margin;
+    }
+    .mt-#{$i} {
+      margin-top: $margin;
+    }
+    .mb-#{$i} {
+      margin-bottom: $margin;
+    }
+    .mx-#{$i} {
+      margin-right: $margin;
+      margin-left: $margin;
+    }
+    .my-#{$i} {
+      margin-top: $margin;
+      margin-bottom: $margin;
+    }
+  }
+}
+
+@include margin-classes;
+
+@mixin padding-classes {
+  @for $i from 0 through $sizes {
+    $padding: $i * 1px;
+
+    /* padding #{$padding} */
+    .p-#{$i} {
+      padding: $padding;
+    }
+    .pl-#{$i} {
+      padding-left: $padding;
+    }
+    .pr-#{$i} {
+      padding-right: $padding;
+    }
+    .pt-#{$i} {
+      padding-top: $padding;
+    }
+    .pb-#{$i} {
+      padding-bottom: $padding;
+    }
+    .px-#{$i} {
+      padding-right: $padding;
+      padding-left: $padding;
+    }
+    .py-#{$i} {
+      padding-top: $padding;
+      padding-bottom: $padding;
+    }
+  }
+}
+
+@include padding-classes;
