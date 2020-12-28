@@ -1,8 +1,9 @@
 // Global classes are defined here
 @import '~react-input-token/lib/style.css';
+@import 'variables/variables.scss';
+@import 'utils/utils.scss';
 @import 'mixins';
 @import 'layout.scss';
-@import 'colors.scss';
 @import 'typography.scss';
 // views
 @import 'causesView.scss';
@@ -110,9 +111,10 @@ input[type='file'] {
 }
 
 input[type='number'] {
-  -moz-appearance: textfield;/*For FireFox*/
+  -moz-appearance: textfield; /*For FireFox*/
 
-  &::-webkit-inner-spin-button { /*For Webkits like Chrome and Safari*/
+  &::-webkit-inner-spin-button {
+    /*For Webkits like Chrome and Safari*/
     -webkit-appearance: none;
     margin: 0;
   }
@@ -264,6 +266,13 @@ span.nav-link:focus {
 .share-options {
   display: flex;
   align-items: center;
+  justify-content: flex-end;
+  margin-top: 20px;
+  margin-bottom: 20px;
+  flex: 1;
+  @include media_tablet() {
+    margin-top: 10px;
+  }
 }
 
 .share-options > * {
@@ -282,6 +291,10 @@ span.nav-link:focus {
     &:hover {
       color: darken($green, 10%);
     }
+  }
+
+  @include media_tablet() {
+    flex-direction: column;
   }
 }
 
