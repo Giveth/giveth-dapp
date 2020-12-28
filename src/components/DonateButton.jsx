@@ -330,8 +330,6 @@ class DonateButton extends React.Component {
     const { adminId, dacId } = model;
     const { allowanceApprovalType, selectedToken } = this.state;
 
-    console.log('cccc', comment);
-
     const donationOwnerAddress = customAddress || currentUser.address;
 
     const afterDonate = success => {

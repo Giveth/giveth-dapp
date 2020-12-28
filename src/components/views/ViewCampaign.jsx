@@ -5,6 +5,8 @@ import Avatar from 'react-avatar';
 import BigNumber from 'bignumber.js';
 import { Helmet, HelmetProvider } from 'react-helmet-async';
 import Balances from 'components/Balances';
+import { saveAs } from 'file-saver';
+import axios from 'axios';
 import { feathersClient } from '../../lib/feathersClient';
 import Loader from '../Loader';
 import MilestoneCard from '../MilestoneCard';
@@ -31,6 +33,7 @@ import CreateDonationAddressButton from '../CreateDonationAddressButton';
 import NotFound from './NotFound';
 import ProjectViewActionAlert from '../projectViewActionAlert';
 import GoBackSection from '../GoBackSection';
+import Prerender from '../../lib/prerender';
 
 /**
  * The Campaign detail view mapped to /campaing/id
@@ -59,10 +62,12 @@ class ViewCampaign extends Component {
       donationsPerBatch: 5,
       newDonations: 0,
       notFound: false,
+      downloadingCsv: false,
     };
 
     this.loadMoreMilestones = this.loadMoreMilestones.bind(this);
     this.loadMoreAggregateDonations = this.loadMoreAggregateDonations.bind(this);
+    this.downloadForm = React.createRef();
   }
 
   componentDidMount() {
@@ -71,6 +76,7 @@ class ViewCampaign extends Component {
     CampaignService.get(campaignId)
       .then(campaign => {
         this.setState({ campaign, isLoading: false });
+        Prerender.ready();
       })
       .catch(() => {
         this.setState({ notFound: true });
@@ -127,6 +133,26 @@ class ViewCampaign extends Component {
         () => this.setState({ isLoadingMilestones: false }),
       ),
     );
+  }
+
+  downloadCsv(campaignId) {
+    const url = `${config.feathersConnection}/campaigncsv/${campaignId}`;
+    const fileName = `${campaignId}.csv`;
+    this.setState({ downloadingCsv: true });
+    const getDownloadFile = async address => {
+      return axios.get(address, {
+        responseType: 'blob',
+      });
+      // .then(response => response.blob())
+    };
+    getDownloadFile(url)
+      .then(response => {
+        this.setState({ downloadingCsv: false });
+        saveAs(response.data, fileName);
+      })
+      .catch(() => {
+        this.setState({ downloadingCsv: false });
+      });
   }
 
   removeMilestone(id) {
@@ -378,14 +404,24 @@ class ViewCampaign extends Component {
                         <div className="section-header">
                           <h5>Funding</h5>
                           <span>
-                            <a
-                              className="btn btn-link"
-                              href={`${config.feathersConnection}/campaigncsv/${campaign.id}`}
-                              type="button"
-                              download={`${campaign.id}.csv`}
-                            >
-                              Download this Campaign&apos;s Financial History
-                            </a>
+                            {this.state.downloadingCsv && (
+                              <button
+                                type="button"
+                                className="btn btn-info disabled"
+                                onClick={() => {}}
+                              >
+                                Please wait...
+                              </button>
+                            )}
+                            {!this.state.downloadingCsv && (
+                              <button
+                                type="button"
+                                className="btn btn-info"
+                                onClick={() => this.downloadCsv(campaign.id)}
+                              >
+                                Download this Campaign&apos;s Financial History
+                              </button>
+                            )}
                             {campaign.isActive && (
                               <Fragment>
                                 <DelegateMultipleButton
