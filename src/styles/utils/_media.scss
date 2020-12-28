@@ -1,6 +1,6 @@
 $desktop-width: 4096px;
-$tablet-width: 1024px;
-$mobile-width: 640px;
+$tablet-width: $md;
+$mobile-width: $sm;
 
 @mixin media_desktop {
   @media only screen

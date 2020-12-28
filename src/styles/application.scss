@@ -267,6 +267,12 @@ span.nav-link:focus {
   display: flex;
   align-items: center;
   justify-content: flex-end;
+  margin-top: 20px;
+  margin-bottom: 20px;
+  flex: 1;
+  @include media_tablet() {
+    margin-top: 10px;
+  }
 }
 
 .share-options > * {
@@ -287,9 +293,8 @@ span.nav-link:focus {
     }
   }
 
-  .share-options,
-  .go-back-button {
-    flex: 1;
+  @include media_tablet() {
+    flex-direction: column;
   }
 }
 
