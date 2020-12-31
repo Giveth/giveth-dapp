@@ -2,27 +2,25 @@
   background-color: $header-background;
 
   .navbar-brand {
-    padding-bottom: .5225rem;
+    padding-bottom: 0.5225rem;
     padding-top: 0;
   }
 
   .btn-report-issue {
     border-radius: 56px;
     font-size: 12px;
-    background-color: #2C0B3F;
+    background-color: #2c0b3f;
     color: white;
   }
 
   &.show {
-
-    .navbar-collapse {
-      animation: pop 0.1s ease-out 1;
-    }
+    // .navbar-collapse {
+    //   animation: pop 0.1s ease-out 1;
+    // }
 
     .navbar-toggler {
       border-radius: 50%;
       border: 1px solid #efefef;
-
       .navbar-toggler-icon {
         color: $red;
       }
@@ -79,7 +77,7 @@
   }
 
   .dropdown-item {
-    padding: .25rem 0.8rem;
+    padding: 0.25rem 0.8rem;
 
     i {
       margin-right: 10px;
@@ -92,28 +90,32 @@
     @media (max-width: 991px) {
       font-size: 1.2rem;
       font-weight: 300;
-      padding: .05rem 1.5rem;
+      padding: 0.05rem 1.5rem;
     }
   }
 }
 
 @media (max-width: 991px) {
+  .navbar {
+  }
   .navbar-toggler {
     width: 40px;
     height: 40px;
   }
 
+  .navbar-expand-lg {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 99;
+    border-bottom: 1px solid rgb(238, 238, 238);
+  }
   .navbar-collapse {
     opacity: 0.99;
-    //position: fixed;
+    margin: 10px 0;
+
     background-color: white;
-    bottom: 0;
-    top: 54px;
-    right: 0;
-    left: 0;
-    padding: .5rem 1rem;
-    overflow-y: scroll;
-    -webkit-overflow-scrolling: touch;
 
     text-align: center;
 
