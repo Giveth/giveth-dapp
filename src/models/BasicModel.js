@@ -40,7 +40,6 @@ class BasicModel extends Model {
     donationCounters = [],
     token,
     createdAt,
-    updatedAt,
   }) {
     super();
 
@@ -66,7 +65,6 @@ class BasicModel extends Model {
     this._Order = -1;
     this._token = token;
     this._createdAt = createdAt;
-    this._updatedAt = updatedAt;
   }
 
   get id() {
@@ -204,10 +202,6 @@ class BasicModel extends Model {
 
   get createdAt() {
     return this._createdAt;
-  }
-
-  get updatedAt() {
-    return this._updatedAt;
   }
 }
 
