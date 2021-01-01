@@ -188,7 +188,6 @@ class EditMilestone extends Component {
         if (!this.props.isNew) {
           try {
             const milestone = await MilestoneService.get(this.props.match.params.milestoneId);
-
             if (
               !(
                 isOwner(milestone.owner.address, this.props.currentUser) ||
@@ -196,7 +195,7 @@ class EditMilestone extends Component {
                 milestone.donationCounters.length > 0
               )
             ) {
-              history.goBack();
+              return history.goBack();
             }
 
             this.setState({
@@ -238,8 +237,7 @@ class EditMilestone extends Component {
             const campaign = await CampaignService.get(this.props.match.params.id);
 
             if (campaign.projectId < 0) {
-              this.props.history.goBack();
-              return;
+              return this.props.history.goBack();
             }
 
             const milestone = MilestoneFactory.create({
@@ -325,6 +323,9 @@ class EditMilestone extends Component {
 
             this.setDate(this.state.milestone.date);
           } catch (e) {
+            if (e.status === 404) {
+              return this.props.history.push('/#login');
+            }
             ErrorPopup(
               'Sadly we were unable to load the Campaign in which this Milestone was created. Please try again.',
               e,
@@ -335,6 +336,8 @@ class EditMilestone extends Component {
             });
           }
         }
+
+        return null;
       })
 
       .catch(err => {
