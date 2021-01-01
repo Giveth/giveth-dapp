@@ -116,8 +116,8 @@ class ConversionRateProvider extends Component {
 
   // rateArray: [{value: 123, currency: 'ETH'}]
   // eslint-disable-next-line
-  convertMultipleRates(date, symbol, rateArray) {
-    return feathersClient
+  convertMultipleRates(date, symbol, rateArray, showPopupOnError = false) {
+    const result = feathersClient
       .service('conversionRates')
       .find({
         query: {
@@ -134,13 +134,16 @@ class ConversionRateProvider extends Component {
           0,
         );
         return { total, rates };
-      })
-      .catch(err => {
+      });
+    if (showPopupOnError) {
+      result.catch(err => {
         ErrorPopup(
           'Sadly we were unable to get the exchange rate! Please try again after refresh.',
           err,
         );
       });
+    }
+    return result;
   }
 
   render() {
