@@ -15,7 +15,7 @@ const {
   REACT_APP_NATIVE_TOKEN_NAME,
   REACT_APP_DONATION_COLLECT_COUNT_LIMIT = 10,
   REACT_APP_DONATION_DELEGATE_COUNT_LIMIT = 10,
-  REACT_APP_LAST_MONTHS__COUNT_FILTER = 6,
+  HOME_PROJECTS_UPDATED_AT_LIMIT_MONTH = 6,
 } = process.env;
 
 const configurations = {
@@ -173,7 +173,7 @@ config.networkName = REACT_APP_NETWORK_NAME || config.networkName;
 config.nativeTokenName = REACT_APP_NATIVE_TOKEN_NAME || config.nativeTokenName;
 config.donationCollectCountLimit = REACT_APP_DONATION_COLLECT_COUNT_LIMIT || 15;
 config.donationDelegateCountLimit = REACT_APP_DONATION_DELEGATE_COUNT_LIMIT || 15;
-config.lastMonthsCountFilter = REACT_APP_LAST_MONTHS__COUNT_FILTER || 6;
+config.projectsUpdatedAtLimitMonth = HOME_PROJECTS_UPDATED_AT_LIMIT_MONTH || 6;
 config.sendErrors = ['localhost', 'develop', 'release', 'beta'].includes(REACT_APP_ENVIRONMENT);
 
 export default config;

@@ -40,7 +40,7 @@ class CampaignService {
    */
   static getCampaigns($limit = 100, $skip = 0, onSuccess = () => {}, onError = () => {}) {
     const lastDate = new Date();
-    lastDate.setMonth(lastDate.getMonth() - config.lastMonthsCountFilter);
+    lastDate.setMonth(lastDate.getMonth() - config.projectsUpdatedAtLimitMonth);
 
     return feathersClient
       .service('campaigns')
