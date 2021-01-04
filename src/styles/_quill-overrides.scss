@@ -1,5 +1,11 @@
 $height: 400px;
 
+.quill-wrapper {
+  height: 250px;
+  width: 100%;
+  overflow: auto;
+}
+
 .quill {
   .ql-toolbar {
     border-top-left-radius: 3px;

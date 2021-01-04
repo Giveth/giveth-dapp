@@ -168,10 +168,9 @@ class QuillFormsy extends Component {
     let modules = {
       toolbar: [
         [{ header: [1, 2, false] }],
-        ['bold', 'italic', 'underline', 'strike', 'blockquote'],
-        [{ list: 'ordered' }, { list: 'bullet' }, { indent: '-1' }, { indent: '+1' }],
+        ['bold', 'italic', 'underline', 'blockquote'],
+        [{ list: 'ordered' }, { list: 'bullet' }],
         ['link', 'image', 'video'],
-        ['clean'],
       ],
     };
 
@@ -180,10 +179,9 @@ class QuillFormsy extends Component {
         toolbar: {
           container: [
             [{ header: [1, 2, false] }],
-            ['bold', 'italic', 'underline', 'strike', 'blockquote'],
-            [{ list: 'ordered' }, { list: 'bullet' }, { indent: '-1' }, { indent: '+1' }],
+            ['bold', 'italic', 'underline', 'blockquote'],
+            [{ list: 'ordered' }, { list: 'bullet' }],
             ['link', 'image', 'video'],
-            ['clean'],
             [
               {
                 template: ['None', 'Reward DAO', 'Regular Reward', 'Expenses', 'Bounties'],
@@ -199,11 +197,9 @@ class QuillFormsy extends Component {
       'bold',
       'italic',
       'underline',
-      'strike',
       'blockquote',
       'list',
       'bullet',
-      'indent',
       'link',
       'image',
       'video',
@@ -231,20 +227,22 @@ class QuillFormsy extends Component {
         </div>
         <small className="form-text">{helpText}</small>
         <div className="progress-bar" style={{ visibility: uploading ? '' : 'hidden' }} />
-        <ReactQuill
-          height="200px"
-          ref={el => {
-            this.reactQuillRef = el;
-          }}
-          modules={modules}
-          formats={formats}
-          value={getValue()}
-          name="description"
-          placeholder={placeholder}
-          onChange={setValue}
-          id="quill-formsy"
-          scrollingContainer={document.documentElement}
-        />
+        <div className="quill-wrapper">
+          <ReactQuill
+            height="200px"
+            ref={el => {
+              this.reactQuillRef = el;
+            }}
+            modules={modules}
+            formats={formats}
+            value={getValue()}
+            name="description"
+            placeholder={placeholder}
+            onChange={setValue}
+            id="quill-formsy"
+            scrollingContainer={document.documentElement}
+          />
+        </div>
         <span className="help-block validation-message">{errorMessage}</span>
       </div>
     );
