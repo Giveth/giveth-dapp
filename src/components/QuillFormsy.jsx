@@ -2,10 +2,26 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { withFormsy } from 'formsy-react';
 import ReactQuill from 'react-quill';
+import Resizer from 'react-image-file-resizer';
 import { feathersRest } from '../lib/feathersClient';
 
 import VideoPopup from './VideoPopup';
 
+const resizeFile = file =>
+  new Promise(resolve => {
+    Resizer.imageFileResizer(
+      file,
+      600,
+      600,
+      'JPEG',
+      90,
+      0,
+      uri => {
+        resolve(uri);
+      },
+      'blob',
+    );
+  });
 class QuillFormsy extends Component {
   constructor(props) {
     super(props);
@@ -63,12 +79,15 @@ class QuillFormsy extends Component {
     this.imageUploader.click();
   }
 
-  handleImageUpload() {
+  async handleImageUpload() {
     const file = this.imageUploader.files[0];
+    if (!file) return;
+
     const reader = new FileReader();
 
     // file type is only image.
     if (/^image\//.test(file.type)) {
+      const compressFile = await resizeFile(file);
       reader.onload = e => {
         const quill = this.reactQuillRef.getEditor();
         const range = quill.getSelection();
@@ -78,7 +97,7 @@ class QuillFormsy extends Component {
 
         this.saveToServer(e.target.result, range);
       };
-      reader.readAsDataURL(file);
+      reader.readAsDataURL(compressFile);
     }
     // else {
     //   console.warn('You could only upload images.');
