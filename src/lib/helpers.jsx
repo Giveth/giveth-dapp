@@ -4,6 +4,7 @@ import { utils } from 'web3';
 import { createBrowserHistory } from 'history';
 import moment from 'moment';
 import BigNumber from 'bignumber.js';
+import Resizer from 'react-image-file-resizer';
 
 import { feathersClient } from './feathersClient';
 import DefaultAvatar from '../assets/avatar-100.svg';
@@ -196,3 +197,19 @@ export const scrollToById = id => {
     window.scrollTo({ top, behavior: 'smooth' });
   }
 };
+
+export const resizeFile = (file, maxWidth = 600, maxHeight = 600) =>
+  new Promise(resolve => {
+    Resizer.imageFileResizer(
+      file,
+      maxWidth,
+      maxHeight,
+      'JPEG',
+      90,
+      0,
+      uri => {
+        resolve(uri);
+      },
+      'blob',
+    );
+  });

@@ -2,26 +2,11 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { withFormsy } from 'formsy-react';
 import ReactQuill from 'react-quill';
-import Resizer from 'react-image-file-resizer';
 import { feathersRest } from '../lib/feathersClient';
+import { resizeFile } from '../lib/helpers';
 
 import VideoPopup from './VideoPopup';
 
-const resizeFile = file =>
-  new Promise(resolve => {
-    Resizer.imageFileResizer(
-      file,
-      600,
-      600,
-      'JPEG',
-      90,
-      0,
-      uri => {
-        resolve(uri);
-      },
-      'blob',
-    );
-  });
 class QuillFormsy extends Component {
   constructor(props) {
     super(props);
