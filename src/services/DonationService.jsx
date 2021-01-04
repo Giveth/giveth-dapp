@@ -280,7 +280,7 @@ class DonationService {
           });
       })
       .catch(err => {
-        ErrorPopup('Unable to initiate the delegation transaction.', err);
+        console.log('Unable to initiate the delegation transaction.', err);
         onError(err);
       });
   }
@@ -405,7 +405,7 @@ class DonationService {
           });
       })
       .catch(err => {
-        ErrorPopup('Unable to initiate the delegation transaction.', err);
+        console.log('Unable to initiate the delegation transaction.', err);
         onError(err);
       });
   }

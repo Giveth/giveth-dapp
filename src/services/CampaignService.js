@@ -365,7 +365,7 @@ class CampaignService {
           });
       })
       .catch(err => {
-        ErrorPopup('Something went wrong with cancelling your campaign', err);
+        console.log(err);
       });
   }
 
@@ -411,10 +411,7 @@ class CampaignService {
           });
       })
       .catch(err => {
-        ErrorPopup(
-          'Something went wrong with cancelling your campaign',
-          `${etherScanUrl}tx/${txHash} => ${JSON.stringify(err, null, 2)}`,
-        );
+        console.log(`${etherScanUrl}tx/${txHash} => ${JSON.stringify(err, null, 2)}`);
       });
   }
 }

@@ -109,80 +109,82 @@ class Web3Provider extends Component {
   }
 
   initWeb3Provider() {
-    getWeb3().then(async web3 => {
-      this.setState({
-        validProvider: !web3.defaultNode,
-      });
-
-      const { ethereum } = web3;
-      const isMetaMask = !!web3.isMetaMask;
-
-      // chainChanged event doesn not called in localhost network
-      if (isMetaMask && config.title !== 'Ganache') {
-        fetchNetwork(web3).then(({ networkId }) => {
-          this.setState(getNetworkState(networkId));
+    getWeb3()
+      .then(async web3 => {
+        this.setState({
+          validProvider: !web3.defaultNode,
         });
 
-        ethereum.on('chainChanged', networkId => {
-          this.setState(getNetworkState(parseInt(networkId, 16)));
-        });
-      } else {
-        pollNetwork(web3, {
-          onNetwork: networkId => {
+        const { ethereum } = web3;
+        const isMetaMask = !!web3.isMetaMask;
+
+        // chainChanged event doesn not called in localhost network
+        if (isMetaMask && config.title !== 'Ganache') {
+          fetchNetwork(web3).then(({ networkId }) => {
             this.setState(getNetworkState(networkId));
-          },
-        });
-      }
+          });
 
-      if (!web3.defaultNode) {
-        if (isMetaMask) {
-          ethereum.on('accountsChanged', accounts => {
-            this.setState({
-              account: accounts.length > 0 ? accounts[0] : '',
-            });
-
-            if (accounts.length > 0) {
-              web3.isEnabled = true;
-              // Fetch new balance
-              web3.eth.getBalance(accounts[0]).then(balance => {
-                this.setState({
-                  balance: new BigNumber(balance),
-                });
-              });
-            } else {
-              web3.isEnabled = false;
-            }
+          ethereum.on('chainChanged', networkId => {
+            this.setState(getNetworkState(parseInt(networkId, 16)));
+          });
+        } else {
+          pollNetwork(web3, {
+            onNetwork: networkId => {
+              this.setState(getNetworkState(networkId));
+            },
           });
         }
-        pollAccount(web3, {
-          onAccount: async account => {
-            if (!web3.isEnabled && isMetaMask) {
-              ethereum
-                .request({ method: 'eth_accounts' })
-                .then(accounts => {
-                  web3.isEnabled = accounts.length !== 0;
-                })
-                .catch(() => {
-                  web3.isEnabled = false;
-                })
-                .finally(() => {
-                  this.setState({ isEnabled: web3.isEnabled });
+
+        if (!web3.defaultNode) {
+          if (isMetaMask) {
+            ethereum.on('accountsChanged', accounts => {
+              this.setState({
+                account: accounts.length > 0 ? accounts[0] : '',
+              });
+
+              if (accounts.length > 0) {
+                web3.isEnabled = true;
+                // Fetch new balance
+                web3.eth.getBalance(accounts[0]).then(balance => {
+                  this.setState({
+                    balance: new BigNumber(balance),
+                  });
                 });
-            }
-            this.setState({
-              account,
-              isEnabled: web3.isEnabled,
+              } else {
+                web3.isEnabled = false;
+              }
             });
-          },
-          onBalance: balance => {
-            this.setState({
-              balance,
-            });
-          },
-        });
-      }
-      this.finishLoading(web3);
-    });
+          }
+          pollAccount(web3, {
+            onAccount: async account => {
+              if (!web3.isEnabled && isMetaMask) {
+                ethereum
+                  .request({ method: 'eth_accounts' })
+                  .then(accounts => {
+                    web3.isEnabled = accounts.length !== 0;
+                  })
+                  .catch(() => {
+                    web3.isEnabled = false;
+                  })
+                  .finally(() => {
+                    this.setState({ isEnabled: web3.isEnabled });
+                  });
+              }
+              this.setState({
+                account,
+                isEnabled: web3.isEnabled,
+              });
+            },
+            onBalance: balance => {
+              this.setState({
+                balance,
+              });
+            },
+          });
+        }
+        this.finishLoading(web3);
+      })
+      .catch(e => console.log(e));
   }
 
   async finishLoading(web3) {
