@@ -324,7 +324,7 @@ class EditMilestone extends Component {
             this.setDate(this.state.milestone.date);
           } catch (e) {
             if (e.status === 404) {
-              return this.props.history.push('/#login');
+              return this.props.history.push('/notfound');
             }
             ErrorPopup(
               'Sadly we were unable to load the Campaign in which this Milestone was created. Please try again.',
