@@ -325,10 +325,10 @@ class EditMilestone extends Component {
 
             this.setDate(this.state.milestone.date);
           } catch (e) {
-            ErrorPopup(
-              'Sadly we were unable to load the Campaign in which this Milestone was created. Please try again.',
-              e,
-            );
+            // ErrorPopup(
+            //   'Sadly we were unable to load the Campaign in which this Milestone was created. Please try again.',
+            //   e,
+            // );
 
             this.setState({
               isLoading: false,
