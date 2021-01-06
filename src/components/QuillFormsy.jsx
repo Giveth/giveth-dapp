@@ -79,6 +79,7 @@ class QuillFormsy extends Component {
 
         quill.insertEmbed(range.index, 'image', e.target.result);
         quill.setSelection(range.index + 1);
+        quill.disable();
 
         this.saveToServer(e.target.result, range);
       };
@@ -101,6 +102,7 @@ class QuillFormsy extends Component {
         const quill = this.reactQuillRef.getEditor();
         quill.deleteText(range.index, 1);
         this.setState({ uploading: false });
+        quill.enable();
       });
   }
 
@@ -117,6 +119,7 @@ class QuillFormsy extends Component {
       quill.setSelection(range.index + 1);
 
       this.setState({ uploading: false });
+      quill.enable();
     };
   }
 
