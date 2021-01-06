@@ -352,7 +352,10 @@ class EditMilestone extends Component {
   }
 
   componentDidUpdate(prevProps) {
-    const { currentUser } = this.props;
+    const { currentUser, isForeignNetwork } = this.props;
+    if (!prevProps.isForeignNetwork && isForeignNetwork) {
+      this.initComponent();
+    }
     if (prevProps.currentUser !== currentUser) {
       const { milestone } = this.state;
       const { owner, campaign } = milestone;
