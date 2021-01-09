@@ -330,7 +330,6 @@ class EditMilestone extends Component {
               'Sadly we were unable to load the Campaign in which this Milestone was created. Please try again.',
               e,
             );
-
             this.setState({
               isLoading: false,
             });

@@ -8,6 +8,7 @@ import DAC from '../models/DAC';
 import Campaign from '../models/Campaign';
 import Donation from '../models/Donation';
 import IPFSService from './IPFSService';
+import config from '../configuration';
 
 import ErrorPopup from '../components/ErrorPopup';
 import { ZERO_ADDRESS } from '../lib/helpers';
@@ -67,6 +68,9 @@ class DACService {
    * @param onError   Callback function if error is encountered
    */
   static getDACs($limit = 100, $skip = 0, onSuccess = () => {}, onError = () => {}) {
+    const lastDate = new Date();
+    lastDate.setMonth(lastDate.getMonth() - config.projectsUpdatedAtLimitMonth);
+
     return feathersClient
       .service('dacs')
       .find({
@@ -75,6 +79,7 @@ class DACService {
           $limit,
           $skip,
           $sort: { campaignsCount: -1 },
+          updatedAt: { $gt: lastDate },
         },
       })
       .then(resp =>
