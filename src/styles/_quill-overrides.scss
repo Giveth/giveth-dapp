@@ -1,9 +1,9 @@
 $height: 400px;
 
 .quill-wrapper {
-  height: 250px;
   width: 100%;
   overflow: auto;
+  position: relative;
 }
 
 .quill {
@@ -14,9 +14,10 @@ $height: 400px;
   }
 
   .ql-container {
-    min-height: $height;
+    height: 250px;
     border-bottom-left-radius: 3px;
     border-bottom-right-radius: 3px;
+    overflow: auto;
 
     .ql-editor {
       font-size: 1rem;

@@ -6,6 +6,7 @@ import { feathersRest } from '../lib/feathersClient';
 import { resizeFile } from '../lib/helpers';
 
 import VideoPopup from './VideoPopup';
+import Loader from './Loader';
 
 class QuillFormsy extends Component {
   constructor(props) {
@@ -214,8 +215,12 @@ class QuillFormsy extends Component {
           {label} {isRequired() ? '*' : null}
         </div>
         <small className="form-text">{helpText}</small>
-        <div className="progress-bar" style={{ visibility: uploading ? '' : 'hidden' }} />
         <div className="quill-wrapper">
+          {uploading && (
+            <div className="loading-overlay">
+              <Loader />
+            </div>
+          )}
           <ReactQuill
             height="200px"
             ref={el => {
