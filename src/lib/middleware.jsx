@@ -2,7 +2,7 @@
 import React from 'react';
 import { history } from './helpers';
 import { feathersClient } from './feathersClient';
-import getWeb3 from './blockchain/getWeb3';
+import getWeb3, { web3Wrapper } from './blockchain/getWeb3';
 import config from '../configuration';
 import ErrorPopup from '../components/ErrorPopup';
 
@@ -107,7 +107,7 @@ const authenticate = async (address, redirectOnFail) => {
           }, 30000);
 
           try {
-            const signature = await web3.eth.personal.sign(msg, address);
+            const signature = await web3Wrapper(() => web3.eth.personal.sign(msg, address));
             authData.signature = signature;
             await feathersClient.authenticate(authData);
             React.swal.close();

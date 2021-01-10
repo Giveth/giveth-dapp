@@ -27,7 +27,7 @@ import DAC from '../models/DAC';
 import { convertEthHelper, ZERO_ADDRESS } from '../lib/helpers';
 import RangeSlider from './RangeSlider';
 import NumericInput from './NumericInput';
-import getWeb3 from '../lib/blockchain/getWeb3';
+import getWeb3, { web3Wrapper } from '../lib/blockchain/getWeb3';
 import ExchangeButton from './ExchangeButton';
 import { checkProfileAfterDonation } from '../lib/middleware';
 
@@ -578,7 +578,9 @@ class DonateButton extends React.Component {
         method
           .on('transactionHash', async transactionHash => {
             const web3 = await getWeb3();
-            const txNonce = await web3.eth.getTransactionCount(userAddress, 'pending');
+            const txNonce = await web3Wrapper(() =>
+              web3.eth.getTransactionCount(userAddress, 'pending'),
+            );
             txHash = transactionHash;
 
             await DonationService.newFeathersDonation(

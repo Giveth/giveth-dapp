@@ -2,7 +2,7 @@ import React, { Component, createContext, Fragment } from 'react';
 import PropTypes from 'prop-types';
 import BigNumber from 'bignumber.js';
 
-import getWeb3 from '../lib/blockchain/getWeb3';
+import getWeb3, { web3Wrapper } from '../lib/blockchain/getWeb3';
 import pollEvery from '../lib/pollEvery';
 import config from '../configuration';
 import { signUpSwal } from '../lib/helpers';
@@ -258,12 +258,12 @@ class Web3Provider extends Component {
     }, 5000);
 
     try {
-      const accounts = await web3.enable(this.enableTimedout);
+      const accounts = await web3Wrapper(() => web3.enable(this.enableTimedout));
       clearTimeout(timeoutId);
       isEnabled = true;
       account = accounts.length ? accounts[0] : undefined;
       if (account) {
-        balance = new BigNumber(await web3.eth.getBalance(account));
+        balance = new BigNumber(await web3Wrapper(() => web3.eth.getBalance(account)));
       }
     } catch (e) {
       // ignore

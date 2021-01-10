@@ -25,6 +25,14 @@ function enable(force = false) {
   return enablePromise;
 }
 
+export const web3Wrapper = cb => {
+  return new Promise(res => {
+    cb()
+      .then(wb => res(wb))
+      .catch(err => console.log('Web3 error :', err));
+  });
+};
+
 export default () =>
   new Promise(resolve => {
     if (document.readyState !== 'complete') {

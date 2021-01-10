@@ -2,7 +2,7 @@ import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
 import Modal from 'react-modal';
 import { Form } from 'formsy-react-components';
-import getWeb3 from '../lib/blockchain/getWeb3';
+import getWeb3, { web3Wrapper } from '../lib/blockchain/getWeb3';
 import * as fundForwarder from '../lib/blockchain/fundsForwarder';
 import User from '../models/User';
 import LoaderButton from './LoaderButton';
@@ -125,11 +125,11 @@ class CreateDonationAddressButton extends React.Component {
             let balanceWei;
             if (tokenAddress === zeroAddress) {
               // ETH Balance
-              balanceWei = await web3.eth.getBalance(donationAddress);
+              balanceWei = await web3Wrapper(() => web3.eth.getBalance(donationAddress));
             } else {
               // ERC20 Token
               const erc20 = new web3.eth.Contract(fundForwarder.erc20Abi, tokenAddress);
-              balanceWei = await erc20.methods.balanceOf(donationAddress).call();
+              balanceWei = await web3Wrapper(() => erc20.methods.balanceOf(donationAddress).call());
             }
             // Balance to forward MUST be > 0, otherwise
             // VM Exception while processing transaction: revert ERROR_BRIDGE_CALL -- Reason given: ERROR_BRIDGE_CALL
