@@ -36,12 +36,15 @@ class Balances extends Component {
               currency: dc.symbol,
             };
           }),
+          false,
         )
         .then(result => {
-          this.setState({
-            currentBalanceValue: result.total,
-            conversionRates: result.rates,
-          });
+          if (result) {
+            this.setState({
+              currentBalanceValue: result.total,
+              conversionRates: result.rates,
+            });
+          }
         });
     }
   }

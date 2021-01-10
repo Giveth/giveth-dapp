@@ -3,11 +3,12 @@ import Avatar from 'react-avatar';
 import { Link, NavLink } from 'react-router-dom';
 import { withRouter } from 'react-router';
 
-import { Consumer as UserConsumer } from '../contextProviders/UserProvider';
-import { Consumer as Web3Consumer } from '../contextProviders/Web3Provider';
-import { history, signUpSwal } from '../lib/helpers';
-import { Consumer as WhiteListConsumer } from '../contextProviders/WhiteListProvider';
-import MenuBarCreateButton from './MenuBarCreateButton';
+import { Consumer as UserConsumer } from '../../../contextProviders/UserProvider';
+import { Consumer as Web3Consumer } from '../../../contextProviders/Web3Provider';
+import { history, signUpSwal } from '../../../lib/helpers';
+import { Consumer as WhiteListConsumer } from '../../../contextProviders/WhiteListProvider';
+import MenuBarCreateButton from '../../MenuBarCreateButton';
+import Navlinks from './Navlinks';
 
 // Broken rule that can not find the correct id tag
 /* eslint jsx-a11y/aria-proptypes: 0 */
@@ -49,7 +50,7 @@ class MainMenu extends Component {
                   const userIsReviewer = isReviewer(currentUser);
                   return (
                     <nav
-                      className={`navbar navbar-expand-lg sticky-top main-menu ${
+                      className={`navbar sticky-top navbar-expand-lg main-menu ${
                         showMobileMenu ? 'show' : ''
                       } `}
                     >
@@ -71,23 +72,7 @@ class MainMenu extends Component {
                         />
                       </Link>
                       <div className="navbar-collapse collapse order-3 order-lg-1 menu-navbar">
-                        <ul className="navbar-nav mr-auto">
-                          <li className="nav-item">
-                            <Link className="nav-link" to="/dacs">
-                              Communities
-                            </Link>
-                          </li>
-                          <li className="nav-item">
-                            <Link className="nav-link" to="/campaigns">
-                              Campaigns
-                            </Link>
-                          </li>
-                          <li className="nav-item">
-                            <Link className="nav-link" to="/milestones">
-                              Milestones
-                            </Link>
-                          </li>
-                        </ul>
+                        <Navlinks />
                       </div>
                       <div className="navbar-collapse collapse mx-auto order-3 order-lg-2 menu-navbar">
                         <form

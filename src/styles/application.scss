@@ -332,3 +332,9 @@ span.nav-link:focus {
   padding: 0 5px;
   color: lighten($link-color, 40%);
 }
+
+@include media_tablet() {
+  .page-wrapper {
+    padding-top: 55px;
+  }
+}
