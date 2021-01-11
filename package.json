@@ -43,6 +43,7 @@
     "react-helmet": "^5.2.1",
     "react-helmet-async": "^1.0.2",
     "react-html-parser": "^2.0.2",
+    "react-image-file-resizer": "^0.3.10",
     "react-input-token": "^1.1.2",
     "react-js-pagination": "^3.0.1",
     "react-modal": "^3.8.1",
