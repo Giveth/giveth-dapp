@@ -188,7 +188,6 @@ class EditMilestone extends Component {
         if (!this.props.isNew) {
           try {
             const milestone = await MilestoneService.get(this.props.match.params.milestoneId);
-
             if (
               !(
                 isOwner(milestone.owner.address, this.props.currentUser) ||
@@ -196,7 +195,7 @@ class EditMilestone extends Component {
                 milestone.donationCounters.length > 0
               )
             ) {
-              history.goBack();
+              return history.goBack();
             }
 
             this.setState({
@@ -238,8 +237,7 @@ class EditMilestone extends Component {
             const campaign = await CampaignService.get(this.props.match.params.id);
 
             if (campaign.projectId < 0) {
-              this.props.history.goBack();
-              return;
+              return this.props.history.goBack();
             }
 
             const milestone = MilestoneFactory.create({
@@ -325,15 +323,11 @@ class EditMilestone extends Component {
 
             this.setDate(this.state.milestone.date);
           } catch (e) {
-            console.error(
-              'Sadly we were unable to load the Campaign in which this Milestone was created. Please try again.',
-              e,
-            );
-            this.setState({
-              isLoading: false,
-            });
+            this.props.history.push('/notfound');
           }
         }
+
+        return null;
       })
 
       .catch(err => {
@@ -348,7 +342,10 @@ class EditMilestone extends Component {
   }
 
   componentDidUpdate(prevProps) {
-    const { currentUser } = this.props;
+    const { currentUser, isForeignNetwork } = this.props;
+    if (!prevProps.isForeignNetwork && isForeignNetwork) {
+      this.initComponent();
+    }
     if (prevProps.currentUser !== currentUser) {
       const { milestone } = this.state;
       const { owner, campaign } = milestone;

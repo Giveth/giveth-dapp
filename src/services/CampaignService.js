@@ -10,6 +10,7 @@ import Donation from '../models/Donation';
 import config from '../configuration';
 import IPFSService from './IPFSService';
 import ErrorPopup from '../components/ErrorPopup';
+import ErrorModel from '../models/ErrorModel';
 
 const campaigns = feathersClient.service('campaigns');
 
@@ -24,7 +25,8 @@ class CampaignService {
       campaigns
         .find({ query: { _id: id } })
         .then(resp => {
-          resolve(new Campaign(resp.data[0]));
+          if (resp.data.length) resolve(new Campaign(resp.data[0]));
+          else reject(new ErrorModel({ message: 'Not found', status: 404 }));
         })
         .catch(reject);
     });
