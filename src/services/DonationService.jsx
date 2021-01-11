@@ -180,7 +180,7 @@ class DonationService {
           )}${utils.padLeft(utils.toHex(note.id).substring(2), 16)}`,
       );
     };
-
+    // is it needed to check web3 error
     Promise.all([getNetwork(), getWeb3(), getPledges()])
       .then(([network, web3, encodedPledges]) => {
         etherScanUrl = network.etherscan;
@@ -271,11 +271,11 @@ class DonationService {
               ErrorPopup('User denied transaction signature.', err);
               onCancel(err);
             } else {
-              ErrorPopup(
-                'There was a problem with catching the transaction hash, but your transaction probably went through.',
-                `${etherScanUrl}tx/${txHash}`,
-              );
-              onError(err);
+              // ErrorPopup(
+              //   'There was a problem with catching the transaction hash, but your transaction probably went through.',
+              //   `${etherScanUrl}tx/${txHash}`,
+              // );
+              // onError(err);
             }
           });
       })

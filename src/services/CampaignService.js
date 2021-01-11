@@ -2,7 +2,7 @@ import { LPPCampaign } from 'lpp-campaign';
 import { paramsForServer } from 'feathers-hooks-common';
 import Milestone from '../models/Milestone';
 import getNetwork from '../lib/blockchain/getNetwork';
-import getWeb3 from '../lib/blockchain/getWeb3';
+import getWeb3, { web3Wrapper } from '../lib/blockchain/getWeb3';
 import extraGas from '../lib/blockchain/extraGas';
 import { feathersClient } from '../lib/feathersClient';
 import Campaign from '../models/Campaign';
@@ -279,12 +279,14 @@ class CampaignService {
       }
 
       let { id } = campaign;
-      await promise.once('transactionHash', async hash => {
-        txHash = hash;
-        if (campaign.id) await campaigns.patch(campaign.id, campaign.toFeathers(txHash));
-        else id = (await campaigns.create(campaign.toFeathers(txHash)))._id;
-        afterSave(null, !campaign.projectId, `${etherScanUrl}tx/${txHash}`);
-      });
+      await web3Wrapper(() =>
+        promise.once('transactionHash', async hash => {
+          txHash = hash;
+          if (campaign.id) await campaigns.patch(campaign.id, campaign.toFeathers(txHash));
+          else id = (await campaigns.create(campaign.toFeathers(txHash)))._id;
+          afterSave(null, !campaign.projectId, `${etherScanUrl}tx/${txHash}`);
+        }),
+      );
 
       afterMined(!campaign.projectId, `${etherScanUrl}tx/${txHash}`, id);
     } catch (err) {
@@ -318,6 +320,7 @@ class CampaignService {
     afterCreate = () => {},
     afterMined = () => {},
   ) {
+    // is it needed to check web3 error
     Promise.all([getNetwork(), getWeb3()])
       .then(([_]) => {
         campaigns

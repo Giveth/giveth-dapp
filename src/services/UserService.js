@@ -5,6 +5,7 @@ import ErrorPopup from '../components/ErrorPopup';
 import IPFSService from './IPFSService';
 import extraGas from '../lib/blockchain/extraGas';
 import { ZERO_ADDRESS } from '../lib/helpers';
+import { web3Wrapper } from '../lib/blockchain/getWeb3';
 
 const users = feathersClient.service('users');
 
@@ -65,11 +66,13 @@ class UserService {
             $extraGas: extraGas(),
           }); // 3 days commitTime. TODO allow user to set commitTime
 
-      await promise.once('transactionHash', async hash => {
-        txHash = hash;
-        await users.patch(user.address, user.toFeathers(txHash));
-        afterSave(!user.giverId, `${etherScanUrl}tx/${txHash}`);
-      });
+      await web3Wrapper(() =>
+        promise.once('transactionHash', async hash => {
+          txHash = hash;
+          await users.patch(user.address, user.toFeathers(txHash));
+          afterSave(!user.giverId, `${etherScanUrl}tx/${txHash}`);
+        }),
+      );
 
       afterMined(!user.giverId, `${etherScanUrl}tx/${txHash}`);
     } catch (err) {

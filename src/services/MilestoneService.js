@@ -10,7 +10,7 @@ import Milestone from 'models/Milestone';
 import MilestoneFactory from 'models/MilestoneFactory';
 import { feathersClient } from 'lib/feathersClient';
 import getNetwork from 'lib/blockchain/getNetwork';
-import getWeb3 from 'lib/blockchain/getWeb3';
+import getWeb3, { web3Wrapper } from 'lib/blockchain/getWeb3';
 import extraGas from 'lib/blockchain/extraGas';
 import DonationService from 'services/DonationService';
 import IPFSService from './IPFSService';
@@ -440,19 +440,21 @@ class MilestoneService {
       }
 
       let milestoneId;
-      await tx.once('transactionHash', async hash => {
-        txHash = hash;
+      await web3Wrapper(() =>
+        tx.once('transactionHash', async hash => {
+          txHash = hash;
 
-        // update milestone in feathers
-        if (milestone.id) {
-          await milestones.patch(milestone.id, milestone.toFeathers(txHash));
-          milestoneId = milestone.id;
-        } else {
-          // create milestone in feathers
-          milestoneId = (await milestones.create(milestone.toFeathers(txHash)))._id;
-        }
-        afterSave(false, !milestone.projectId, `${etherScanUrl}tx/${txHash}`);
-      });
+          // update milestone in feathers
+          if (milestone.id) {
+            await milestones.patch(milestone.id, milestone.toFeathers(txHash));
+            milestoneId = milestone.id;
+          } else {
+            // create milestone in feathers
+            milestoneId = (await milestones.create(milestone.toFeathers(txHash)))._id;
+          }
+          afterSave(false, !milestone.projectId, `${etherScanUrl}tx/${txHash}`);
+        }),
+      );
 
       afterMined(!milestone.projectId, `${etherScanUrl}tx/${txHash}`, milestoneId);
     } catch (err) {

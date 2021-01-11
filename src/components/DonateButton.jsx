@@ -583,14 +583,16 @@ class DonateButton extends React.Component {
             );
             txHash = transactionHash;
 
-            await DonationService.newFeathersDonation(
-              donationOwner,
-              this.props.model,
-              amountWei,
-              selectedToken,
-              txHash,
-              txNonce,
-              comment,
+            await web3Wrapper(() =>
+              DonationService.newFeathersDonation(
+                donationOwner,
+                this.props.model,
+                amountWei,
+                selectedToken,
+                txHash,
+                txNonce,
+                comment,
+              ),
             );
 
             resolve(true);
