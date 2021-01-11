@@ -83,6 +83,7 @@ class QuillFormsy extends Component {
         quill.disable();
 
         this.saveToServer(e.target.result, range);
+        this.imageUploader.value = '';
       };
       reader.readAsDataURL(compressFile);
     }
