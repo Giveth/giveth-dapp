@@ -9,6 +9,7 @@ import Campaign from '../models/Campaign';
 import Donation from '../models/Donation';
 import IPFSService from './IPFSService';
 import config from '../configuration';
+import ErrorModel from '../models/ErrorModel';
 
 import ErrorPopup from '../components/ErrorPopup';
 import { ZERO_ADDRESS } from '../lib/helpers';
@@ -32,7 +33,8 @@ class DACService {
           },
         })
         .then(resp => {
-          resolve(new DAC(resp.data[0]));
+          if (resp.data.length) resolve(new DAC(resp.data[0]));
+          else reject(new ErrorModel({ message: 'Not found', status: 404 }));
         })
         .catch(err => reject(err));
     });
