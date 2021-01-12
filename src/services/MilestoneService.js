@@ -1011,16 +1011,9 @@ class MilestoneService {
           });
       })
       .catch(err => {
-        if (err && err.message.includes('User denied transaction signature')) {
-          React.toast.warning('User denied transaction signature');
-          return;
-        }
-        if (err) {
-          React.toast.warning(
-            'Something went wrong with withdrawal. Please try again after refresh.' +
-              `${etherScanUrl}tx/${txHash} => ${JSON.stringify(err, null, 2)}`,
-          );
-        }
+        // TODO: remove or change below commented line - relates to gh-1177
+        // if (txHash && err.message && err.message.includes('unknown transaction')) onError(); // bug in web3 seems to constantly fail due to this error, but the tx is correct        if (txHash && err.message && err.message.includes('unknown transaction')) onError(); // bug in web3 seems to constantly fail due to this error, but the tx is correct
+        if (err) onError(err, `${etherScanUrl}tx/${txHash}`);
       });
   }
 }
