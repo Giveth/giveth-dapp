@@ -268,7 +268,7 @@ class DonationService {
             if (txHash && err.message && err.message.includes('unknown transaction')) return;
 
             if (err && err.message.includes('User denied transaction signature')) {
-              React.toast.info(<p>User denied transaction signature.</p>);
+              React.toast.warning(<p>User denied transaction signature.</p>);
               onCancel(err);
             } else if (err) {
               React.toast.warning(
@@ -392,7 +392,7 @@ class DonationService {
             if (txHash && err.message && err.message.includes('unknown transaction')) return; // bug in web3 seems to constantly fail due to this error, but the tx is correct
 
             if (err && err.message.includes('User denied transaction signature')) {
-              React.toast.info(<p>User denied transaction signature.</p>);
+              React.toast.warning(<p>User denied transaction signature.</p>);
               onCancel(err);
             } else if (err) {
               React.toast.warning(
@@ -664,7 +664,9 @@ class DonationService {
         .send({ from: tokenHolderAddress })
         .on('transactionHash', transactionHash => {
           txHash = transactionHash;
-          React.toast.info(
+          React.
+          
+          (
             <p>
               Please wait until your transaction is mined...
               <br />
