@@ -75,7 +75,7 @@ class UserService {
       afterMined(!user.giverId, `${etherScanUrl}tx/${txHash}`);
     } catch (err) {
       if (err && err.message.includes('User denied transaction signature')) {
-        React.toast.info('User denied transaction signature');
+        React.toast.warning('User denied transaction signature');
         reset();
         return;
       }
