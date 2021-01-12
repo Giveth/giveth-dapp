@@ -264,17 +264,15 @@ class DonationService {
           })
           .then(() => onSuccess(`${etherScanUrl}tx/${txHash}`))
           .catch(err => {
-            console.log('Donation Error:', err);
             // bug in web3 seems to constantly fail due to this error, but the tx is correct
             if (txHash && err.message && err.message.includes('unknown transaction')) return;
 
-            if (err.message.includes('User denied transaction signature')) {
-              ErrorPopup('User denied transaction signature.', err);
+            if (err && err.message.includes('User denied transaction signature')) {
+              React.toast.info(<p>User denied transaction signature.</p>);
               onCancel(err);
-            } else {
-              ErrorPopup(
-                'There was a problem with catching the transaction hash, but your transaction probably went through.',
-                `${etherScanUrl}tx/${txHash}`,
+            } else if (err) {
+              React.toast.warning(
+                <p>{`There was a problem with the delegation transaction.${etherScanUrl}tx/${txHash}`}</p>,
               );
               onError(err);
             }
