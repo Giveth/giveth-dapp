@@ -264,7 +264,6 @@ class DonationService {
           })
           .then(() => onSuccess(`${etherScanUrl}tx/${txHash}`))
           .catch(err => {
-            console.log('Donation Error:', err);
             // bug in web3 seems to constantly fail due to this error, but the tx is correct
             if (txHash && err.message && err.message.includes('unknown transaction')) return;
 
