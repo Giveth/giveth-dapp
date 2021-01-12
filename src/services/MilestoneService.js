@@ -3,6 +3,7 @@
 
 /* eslint-disable no-await-in-loop */
 
+import React from 'react';
 import BigNumber from 'bignumber.js';
 import { utils } from 'web3';
 import { paramsForServer } from 'feathers-hooks-common';
@@ -996,12 +997,23 @@ class MilestoneService {
               });
           })
           .on('receipt', () => onConfirmation(`${etherScanUrl}tx/${txHash}`))
-          .catch(err => onError(err));
+          .catch(err => {
+            if (err && err.message.includes('User denied transaction signature')) {
+              React.toast.warning('User denied transaction signature');
+              return;
+            }
+            if (err) {
+              React.toast.warning(
+                'Something went wrong with withdrawal. Please try again after refresh.' +
+                  `${JSON.stringify(err, null, 2)}`,
+              );
+            }
+          });
       })
       .catch(err => {
         // TODO: remove or change below commented line - relates to gh-1177
         // if (txHash && err.message && err.message.includes('unknown transaction')) onError(); // bug in web3 seems to constantly fail due to this error, but the tx is correct        if (txHash && err.message && err.message.includes('unknown transaction')) onError(); // bug in web3 seems to constantly fail due to this error, but the tx is correct
-        onError(err, `${etherScanUrl}tx/${txHash}`);
+        if (err) onError(err, `${etherScanUrl}tx/${txHash}`);
       });
   }
 }
