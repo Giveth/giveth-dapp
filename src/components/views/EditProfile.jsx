@@ -103,7 +103,7 @@ class EditProfile extends Component {
       if (isSuccess) React.toast.success(toast);
       else React.toast.info(toast);
     };
-
+    const reset = () => this.setState({ isSaving: false, isPristine: false });
     const afterMined = (created, url) => {
       const msg = created ? 'You are now a registered user' : 'Your profile has been updated';
       showToast(msg, url, true);
@@ -138,7 +138,7 @@ class EditProfile extends Component {
       },
       () => {
         // Save the User
-        this.state.user.save(afterSave, afterMined);
+        this.state.user.save(afterSave, afterMined, reset);
       },
     );
   }
