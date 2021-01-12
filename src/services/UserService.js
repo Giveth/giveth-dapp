@@ -1,3 +1,4 @@
+import React from 'react';
 import getNetwork from '../lib/blockchain/getNetwork';
 import { feathersClient } from '../lib/feathersClient';
 
@@ -16,7 +17,7 @@ class UserService {
    * @param afterSave   Callback to be triggered after the user is saved in feathers
    * @param afterMined  Callback to be triggered after the transaction is mined
    */
-  static async save(user, afterSave = () => {}, afterMined = () => {}) {
+  static async save(user, afterSave = () => {}, afterMined = () => {}, reset = () => {}) {
     if (user.giverId === 0) {
       throw new Error(
         'You must wait for your registration to complete before you can update your profile',
@@ -73,10 +74,17 @@ class UserService {
 
       afterMined(!user.giverId, `${etherScanUrl}tx/${txHash}`);
     } catch (err) {
-      ErrorPopup(
-        'There has been a problem creating your user profile. Please refresh the page and try again.',
-        `${etherScanUrl}tx/${txHash} => ${JSON.stringify(err, null, 2)}`,
-      );
+      if (err && err.message.includes('User denied transaction signature')) {
+        React.toast.warning('User denied transaction signature');
+        reset();
+        return;
+      }
+      if (err) {
+        React.toast.warning(
+          'There has been a problem creating your user profile. Please refresh the page and try again.' +
+            `${etherScanUrl}tx/${txHash} => ${JSON.stringify(err, null, 2)}`,
+        );
+      }
     }
   }
 }
