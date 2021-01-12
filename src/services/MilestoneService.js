@@ -3,6 +3,7 @@
 
 /* eslint-disable no-await-in-loop */
 
+import React from 'react';
 import BigNumber from 'bignumber.js';
 import { utils } from 'web3';
 import { paramsForServer } from 'feathers-hooks-common';
@@ -1001,7 +1002,10 @@ class MilestoneService {
       .catch(err => {
         // TODO: remove or change below commented line - relates to gh-1177
         // if (txHash && err.message && err.message.includes('unknown transaction')) onError(); // bug in web3 seems to constantly fail due to this error, but the tx is correct        if (txHash && err.message && err.message.includes('unknown transaction')) onError(); // bug in web3 seems to constantly fail due to this error, but the tx is correct
-        onError(err, `${etherScanUrl}tx/${txHash}`);
+        if (!err) React.toast.warning('There was a problem.');
+        else {
+          onError(err, `${etherScanUrl}tx/${txHash}`);
+        }
       });
   }
 }
