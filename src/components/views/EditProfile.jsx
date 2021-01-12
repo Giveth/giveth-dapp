@@ -144,7 +144,7 @@ class EditProfile extends Component {
   }
 
   togglePristine(currentValues, isChanged) {
-    this.setState({ isPristine: !isChanged });
+    this.setState({ isPristine: !isChanged && !currentValues.name });
   }
 
   render() {
