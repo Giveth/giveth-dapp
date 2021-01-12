@@ -86,6 +86,7 @@ class EditProfile extends Component {
   }
 
   submit() {
+    if (!this.state.user.name) return;
     // Save user profile
     const showToast = (msg, url, isSuccess = false) => {
       const toast = url ? (
@@ -144,7 +145,7 @@ class EditProfile extends Component {
   }
 
   togglePristine(currentValues, isChanged) {
-    this.setState({ isPristine: !isChanged && !currentValues.name });
+    this.setState({ isPristine: !isChanged });
   }
 
   render() {
