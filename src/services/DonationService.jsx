@@ -664,9 +664,7 @@ class DonationService {
         .send({ from: tokenHolderAddress })
         .on('transactionHash', transactionHash => {
           txHash = transactionHash;
-          React.
-          
-          (
+          React.toast.info(
             <p>
               Please wait until your transaction is mined...
               <br />
