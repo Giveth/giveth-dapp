@@ -15,6 +15,8 @@ import extraGas from '../lib/blockchain/extraGas';
 import pollEvery from '../lib/pollEvery';
 import LoaderButton from './LoaderButton';
 import ErrorPopup from './ErrorPopup';
+import ErrorHandler from '../lib/ErrorHandler';
+
 import config from '../configuration';
 import DonationService from '../services/DonationService';
 import DACService from '../services/DACService';
@@ -349,12 +351,10 @@ class DonateButton extends React.Component {
             () => this.updateAllowance(UPDATE_ALLOWANCE_DELAY),
           );
         })
-        .catch(e => {
-          if (!e.message.includes('User denied transaction signature')) {
-            ErrorPopup('Something went wrong with your transaction.');
-          } else {
-            React.toast.info('The transaction was cancelled. :-(');
-          }
+        .catch(err => {
+          const message = `Something went wrong with the transaction`;
+          ErrorHandler(err, message);
+
           this.setState({
             isSaving: false,
           });
@@ -639,17 +639,12 @@ class DonateButton extends React.Component {
               </p>,
             );
           })
-          .catch(e => {
+          .catch(err => {
             reject();
-            if (!e.message.includes('User denied transaction signature')) {
-              const err = !(e instanceof Error) ? JSON.stringify(e, null, 2) : e;
-              ErrorPopup(
-                'Something went wrong with your donation.',
-                `${etherscanUrl}tx/${txHash} => ${err}`,
-              );
-            } else {
-              React.toast.info('The transaction was cancelled. No donation has been made :-(');
-            }
+
+            const message = `Something went wrong with the transaction ${etherscanUrl}tx/${txHash} => ${err}`;
+            ErrorHandler(err, message);
+
             this.setState({
               isSaving: false,
             });
@@ -690,10 +685,9 @@ class DonateButton extends React.Component {
         });
         // error code 4001 means user has canceled the transaction
         if (err.code !== 4001) {
-          ErrorPopup(
-            'Something went wrong with your donation. Could not approve token allowance.',
-            err,
-          );
+          const message =
+            'Something went wrong with your donation. Could not approve token allowance.';
+          ErrorHandler(err, message);
         }
         return false;
       }

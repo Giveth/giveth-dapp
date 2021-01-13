@@ -7,7 +7,8 @@ import * as fundForwarder from '../lib/blockchain/fundsForwarder';
 import User from '../models/User';
 import LoaderButton from './LoaderButton';
 import CampaignService from '../services/CampaignService';
-import ErrorPopup from './ErrorPopup';
+import ErrorHandler from '../lib/ErrorHandler';
+
 import config from '../configuration';
 import { Consumer as Web3Consumer } from '../contextProviders/Web3Provider';
 import ViewNetworkWarning from './ViewNetworkWarning';
@@ -199,18 +200,9 @@ class CreateDonationAddressButton extends React.Component {
           await sleep(3000);
           window.location.reload();
         })
-        .catch(e => {
-          /* eslint-disable-next-line no-console */
-          console.error(e); // Why not? console.error is great for web debugging
-          if (!e.message.includes('User denied transaction signature')) {
-            const err = !(e instanceof Error) ? JSON.stringify(e, null, 2) : e;
-            ErrorPopup(
-              'Something went wrong with the transaction',
-              `${etherscanUrl}tx/${txHash} => ${err}`,
-            );
-          } else {
-            React.toast.info('The transaction was cancelled');
-          }
+        .catch(err => {
+          const message = `Something went wrong with the transaction ${etherscanUrl}tx/${txHash} => ${err}`;
+          ErrorHandler(err, message);
         });
     } catch (e) {
       console.error(`Error forwarding balances: ${e.stack}`);
@@ -233,9 +225,9 @@ class CreateDonationAddressButton extends React.Component {
       .then(() => {})
       .catch(err => {
         if (err === 'noBalance') {
-          ErrorPopup('There is no balance left on the account.', err);
+          ErrorHandler(err, 'There is no balance left on the account.');
         } else if (err !== undefined) {
-          ErrorPopup('Something went wrong.', err);
+          ErrorHandler(err, 'Something went wrong.', true);
         }
       });
   }
@@ -299,18 +291,9 @@ class CreateDonationAddressButton extends React.Component {
           </p>,
         );
       })
-      .catch(e => {
-        /* eslint-disable-next-line no-console */
-        console.error(e); // Why not? console.error is great for web debugging
-        if (!e.message.includes('User denied transaction signature')) {
-          const err = !(e instanceof Error) ? JSON.stringify(e, null, 2) : e;
-          ErrorPopup(
-            'Something went wrong with the transaction',
-            `${etherscanUrl}tx/${txHash} => ${err}`,
-          );
-        } else {
-          React.toast.info('The transaction was cancelled');
-        }
+      .catch(err => {
+        const message = `Something went wrong with the transaction ${etherscanUrl}tx/${txHash} => ${err}`;
+        ErrorHandler(err, message);
       });
   }
 

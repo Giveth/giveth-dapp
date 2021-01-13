@@ -11,6 +11,7 @@ import config from '../configuration';
 import IPFSService from './IPFSService';
 import ErrorPopup from '../components/ErrorPopup';
 import ErrorModel from '../models/ErrorModel';
+import ErrorHandler from '../lib/ErrorHandler';
 
 const campaigns = feathersClient.service('campaigns');
 
@@ -288,12 +289,10 @@ class CampaignService {
 
       afterMined(!campaign.projectId, `${etherScanUrl}tx/${txHash}`, id);
     } catch (err) {
-      ErrorPopup(
-        `Something went wrong with the Campaign ${
-          campaign.projectId > 0 ? 'update' : 'creation'
-        }. Is your wallet unlocked?`,
-        `${etherScanUrl}tx/${txHash} => ${JSON.stringify(err, null, 2)}`,
-      );
+      const message = `Something went wrong with the Campaign ${
+        campaign.projectId > 0 ? 'update' : 'creation'
+      }. Is your wallet unlocked? ${etherScanUrl}tx/${txHash} => ${JSON.stringify(err, null, 2)}`;
+      ErrorHandler(err, message);
       afterSave(err);
     }
   }
