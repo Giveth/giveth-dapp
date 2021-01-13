@@ -1,8 +1,8 @@
-import React from 'react';
 import getNetwork from '../lib/blockchain/getNetwork';
 import { feathersClient } from '../lib/feathersClient';
 
 import ErrorPopup from '../components/ErrorPopup';
+import ErrorHandler from '../lib/ErrorHandler';
 import IPFSService from './IPFSService';
 import extraGas from '../lib/blockchain/extraGas';
 import { ZERO_ADDRESS } from '../lib/helpers';
@@ -74,17 +74,12 @@ class UserService {
 
       afterMined(!user.giverId, `${etherScanUrl}tx/${txHash}`);
     } catch (err) {
-      if (err && err.message.includes('User denied transaction signature')) {
-        React.toast.warning('User denied transaction signature');
-        reset();
-        return;
-      }
-      if (err) {
-        React.toast.warning(
-          'There has been a problem creating your user profile. Please refresh the page and try again.' +
-            `${etherScanUrl}tx/${txHash} => ${JSON.stringify(err, null, 2)}`,
-        );
-      }
+      const message =
+        'There has been a problem creating your user profile. Please refresh the page and try again.' +
+        `${etherScanUrl}tx/${txHash} => ${JSON.stringify(err, null, 2)}`;
+      ErrorHandler(err, message);
+
+      reset();
     }
   }
 }
