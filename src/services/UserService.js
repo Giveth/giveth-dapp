@@ -2,6 +2,7 @@ import getNetwork from '../lib/blockchain/getNetwork';
 import { feathersClient } from '../lib/feathersClient';
 
 import ErrorPopup from '../components/ErrorPopup';
+import ErrorHandler from '../lib/ErrorHandler';
 import IPFSService from './IPFSService';
 import extraGas from '../lib/blockchain/extraGas';
 import { ZERO_ADDRESS } from '../lib/helpers';
@@ -16,7 +17,7 @@ class UserService {
    * @param afterSave   Callback to be triggered after the user is saved in feathers
    * @param afterMined  Callback to be triggered after the transaction is mined
    */
-  static async save(user, afterSave = () => {}, afterMined = () => {}) {
+  static async save(user, afterSave = () => {}, afterMined = () => {}, reset = () => {}) {
     if (user.giverId === 0) {
       throw new Error(
         'You must wait for your registration to complete before you can update your profile',
@@ -73,10 +74,12 @@ class UserService {
 
       afterMined(!user.giverId, `${etherScanUrl}tx/${txHash}`);
     } catch (err) {
-      ErrorPopup(
-        'There has been a problem creating your user profile. Please refresh the page and try again.',
-        `${etherScanUrl}tx/${txHash} => ${JSON.stringify(err, null, 2)}`,
-      );
+      const message =
+        'There has been a problem creating your user profile. Please refresh the page and try again.' +
+        `${etherScanUrl}tx/${txHash} => ${JSON.stringify(err, null, 2)}`;
+      ErrorHandler(err, message);
+
+      reset();
     }
   }
 }

@@ -740,7 +740,7 @@ class EditMilestone extends Component {
           );
         },
         onError: errorMessage => {
-          React.toast.error(errorMessage);
+          if (errorMessage) React.toast.error(errorMessage);
 
           this.setState({ isSaving: false });
         },

@@ -14,6 +14,7 @@ import { feathersClient } from '../lib/feathersClient';
 import getWeb3 from '../lib/blockchain/getWeb3';
 import config from '../configuration';
 
+import ErrorHandler from '../lib/ErrorHandler';
 import ErrorPopup from '../components/ErrorPopup';
 
 function updateExistingDonation(donation, amount, status) {
@@ -267,13 +268,12 @@ class DonationService {
             // bug in web3 seems to constantly fail due to this error, but the tx is correct
             if (txHash && err.message && err.message.includes('unknown transaction')) return;
 
-            if (err.message.includes('User denied transaction signature')) {
-              ErrorPopup('User denied transaction signature.', err);
+            if (err && err.message.includes('User denied transaction signature')) {
+              React.toast.warning(<p>User denied transaction signature.</p>);
               onCancel(err);
-            } else {
-              ErrorPopup(
-                'There was a problem with catching the transaction hash, but your transaction probably went through.',
-                `${etherScanUrl}tx/${txHash}`,
+            } else if (err) {
+              React.toast.warning(
+                <p>{`There was a problem with the delegation transaction.${etherScanUrl}tx/${txHash}`}</p>,
               );
               onError(err);
             }
@@ -392,13 +392,12 @@ class DonationService {
           .catch(err => {
             if (txHash && err.message && err.message.includes('unknown transaction')) return; // bug in web3 seems to constantly fail due to this error, but the tx is correct
 
-            if (err.message.includes('User denied transaction signature')) {
-              ErrorPopup('User denied transaction signature.', err);
+            if (err && err.message.includes('User denied transaction signature')) {
+              React.toast.warning(<p>User denied transaction signature.</p>);
               onCancel(err);
-            } else {
-              ErrorPopup(
-                'There was a problem with the delegation transaction.',
-                `${etherScanUrl}tx/${txHash}`,
+            } else if (err) {
+              React.toast.warning(
+                <p>{`There was a problem with the delegation transaction.${etherScanUrl}tx/${txHash}`}</p>,
               );
               onError(err);
             }
@@ -468,7 +467,11 @@ class DonationService {
                 onCreated(`${etherScanUrl}tx/${txHash}`);
               })
               .catch(err => {
-                ErrorPopup('Something went wrong while committing your donation.', err);
+                const message =
+                  'Something went wrong while committing your donation.' +
+                  `${etherScanUrl}tx/${txHash} => ${JSON.stringify(err, null, 2)}`;
+                ErrorHandler(err, message);
+
                 onError(err);
               });
           });
@@ -781,10 +784,9 @@ class DonationService {
       .service('donations')
       .create(newDonation)
       .catch(err => {
-        ErrorPopup(
-          'Your donation has been initiated, however an error occurred when attempting to save. You should see your donation appear within ~30 mins.',
-          err,
-        );
+        const message =
+          'Your donation has been initiated, however an error occurred when attempting to save. You should see your donation appear within ~30 mins.';
+        ErrorHandler(err, message);
       });
   }
 

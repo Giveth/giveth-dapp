@@ -15,6 +15,7 @@ import extraGas from 'lib/blockchain/extraGas';
 import DonationService from 'services/DonationService';
 import IPFSService from './IPFSService';
 import ErrorPopup from '../components/ErrorPopup';
+import ErrorHandler from '../lib/ErrorHandler';
 
 import Donation from '../models/Donation';
 import BridgedMilestone from '../models/BridgedMilestone';
@@ -456,13 +457,11 @@ class MilestoneService {
 
       afterMined(!milestone.projectId, `${etherScanUrl}tx/${txHash}`, milestoneId);
     } catch (err) {
-      ErrorPopup(
-        `Something went wrong with the Milestone ${
-          milestone.projectId > 0 ? 'update' : 'creation'
-        }. Is your wallet unlocked?`,
-        `${etherScanUrl}tx/${txHash} => ${JSON.stringify(err, null, 2)}`,
-      );
-      onError(err.message);
+      const message = `Something went wrong with the Milestone ${
+        milestone.projectId > 0 ? 'update' : 'creation'
+      }. Is your wallet unlocked? ${etherScanUrl}tx/${txHash} => ${JSON.stringify(err, null, 2)}`;
+      ErrorHandler(err, message);
+      onError();
     }
 
     return true;
@@ -731,8 +730,9 @@ class MilestoneService {
         })
         .on('receipt', () => onConfirmation(`${etherScanUrl}tx/${txHash}`));
     } catch (err) {
-      if (txHash && err.message && err.message.includes('unknown transaction')) onError(); // bug in web3 seems to constantly fail due to this error, but the tx is correct
-      onError(err, `${etherScanUrl}tx/${txHash}`);
+      if (txHash && err.message && err.message.includes('unknown transaction')) onError();
+      // bug in web3 seems to constantly fail due to this error, but the tx is correct
+      else ErrorHandler(err, `${etherScanUrl}tx/${txHash}`);
     }
   }
 
@@ -781,8 +781,9 @@ class MilestoneService {
           .on('receipt', () => onConfirmation(`${etherScanUrl}tx/${txHash}`));
       })
       .catch(err => {
-        if (txHash && err.message && err.message.includes('unknown transaction')) onError(); // bug in web3 seems to constantly fail due to this error, but the tx is correct
-        onError(err, `${etherScanUrl}tx/${txHash}`);
+        if (txHash && err.message && err.message.includes('unknown transaction')) onError();
+        // bug in web3 seems to constantly fail due to this error, but the tx is correct
+        else ErrorHandler(err, `${etherScanUrl}tx/${txHash}`);
       });
   }
 
@@ -835,8 +836,9 @@ class MilestoneService {
           .on('receipt', () => onConfirmation(`${etherScanUrl}tx/${txHash}`));
       })
       .catch(err => {
-        if (txHash && err.message && err.message.includes('unknown transaction')) onError(); // bug in web3 seems to constantly fail due to this error, but the tx is correct
-        onError(err, `${etherScanUrl}tx/${txHash}`);
+        if (txHash && err.message && err.message.includes('unknown transaction')) onError();
+        // bug in web3 seems to constantly fail due to this error, but the tx is correct
+        else ErrorHandler(err, `${etherScanUrl}tx/${txHash}`);
       });
   }
 
@@ -887,8 +889,9 @@ class MilestoneService {
           .on('receipt', () => onConfirmation(`${etherScanUrl}tx/${txHash}`));
       })
       .catch(err => {
-        if (txHash && err.message && err.message.includes('unknown transaction')) onError(); // bug in web3 seems to constantly fail due to this error, but the tx is correct
-        onError(err, `${etherScanUrl}tx/${txHash}`);
+        if (txHash && err.message && err.message.includes('unknown transaction')) onError();
+        // bug in web3 seems to constantly fail due to this error, but the tx is correct
+        else ErrorHandler(err, `${etherScanUrl}tx/${txHash}`);
       });
   }
 
@@ -931,7 +934,7 @@ class MilestoneService {
           .on('receipt', () => onConfirmation(`${etherScanUrl}tx/${txHash}`));
       })
       .catch(err => {
-        onError(err, `${etherScanUrl}tx/${txHash}`);
+        ErrorHandler(err, `${etherScanUrl}tx/${txHash}`);
       });
   }
 
@@ -996,12 +999,18 @@ class MilestoneService {
               });
           })
           .on('receipt', () => onConfirmation(`${etherScanUrl}tx/${txHash}`))
-          .catch(err => onError(err));
+          .catch(err => {
+            ErrorHandler(
+              err,
+              'Something went wrong with withdrawal. Please try again after refresh.' +
+                `${JSON.stringify(err, null, 2)}`,
+            );
+          });
       })
       .catch(err => {
         // TODO: remove or change below commented line - relates to gh-1177
         // if (txHash && err.message && err.message.includes('unknown transaction')) onError(); // bug in web3 seems to constantly fail due to this error, but the tx is correct        if (txHash && err.message && err.message.includes('unknown transaction')) onError(); // bug in web3 seems to constantly fail due to this error, but the tx is correct
-        onError(err, `${etherScanUrl}tx/${txHash}`);
+        if (err) onError(err, `${etherScanUrl}tx/${txHash}`);
       });
   }
 }

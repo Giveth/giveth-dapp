@@ -10,6 +10,7 @@ import Donation from '../models/Donation';
 import IPFSService from './IPFSService';
 import config from '../configuration';
 import ErrorModel from '../models/ErrorModel';
+import ErrorHandler from '../lib/ErrorHandler';
 
 import ErrorPopup from '../components/ErrorPopup';
 import { ZERO_ADDRESS } from '../lib/helpers';
@@ -300,12 +301,11 @@ class DACService {
 
       afterMined(!dac.delegateId, `${etherScanUrl}tx/${txHash}`, id);
     } catch (err) {
-      ErrorPopup(
-        `Something went wrong with the DAC ${
-          dac.delegateId > 0 ? 'update' : 'creation'
-        }. Is your wallet unlocked?`,
-        `${etherScanUrl}tx/${txHash} => ${JSON.stringify(err, null, 2)}`,
-      );
+      const message = `Something went wrong with the DAC ${
+        dac.delegateId > 0 ? 'update' : 'creation'
+      }. Is your wallet unlocked? ${etherScanUrl}tx/${txHash} => ${JSON.stringify(err, null, 2)}`;
+      ErrorHandler(err, message);
+
       afterSave(err);
     }
   }
