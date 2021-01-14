@@ -88,7 +88,16 @@ class EditProfile extends Component {
   }
 
   submit() {
+    const { user } = this.state;
+    const { currentUser } = this.props;
+
     if (!this.state.user.name) return;
+    const pushToNetwork =
+      user.name !== currentUser.name ||
+      !!user.newAvatar ||
+      user.linkedin !== currentUser.linkedin ||
+      user.email !== currentUser.email;
+
     // Save user profile
     const showToast = (msg, url, isSuccess = false) => {
       const toast = url ? (
@@ -141,7 +150,7 @@ class EditProfile extends Component {
       },
       () => {
         // Save the User
-        this.state.user.save(afterSave, afterMined, reset);
+        this.state.user.save(afterSave, afterMined, reset, pushToNetwork);
       },
     );
   }

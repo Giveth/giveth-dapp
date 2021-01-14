@@ -17,7 +17,13 @@ class UserService {
    * @param afterSave   Callback to be triggered after the user is saved in feathers
    * @param afterMined  Callback to be triggered after the transaction is mined
    */
-  static async save(user, afterSave = () => {}, afterMined = () => {}, reset = () => {}) {
+  static async save(
+    user,
+    afterSave = () => {},
+    afterMined = () => {},
+    reset = () => {},
+    pushToNetwork = true,
+  ) {
     if (user.giverId === 0) {
       throw new Error(
         'You must wait for your registration to complete before you can update your profile',
@@ -26,6 +32,7 @@ class UserService {
 
     let txHash;
     let etherScanUrl;
+
     try {
       let profileHash;
       try {
@@ -49,30 +56,32 @@ class UserService {
         afterMined(false);
         return;
       }
-
-      // lp function updateGiver(uint64 idGiver,address newAddr,string newName,string newUrl,uint64 newCommitTime)
-      // lp function addGiver(string name,string url,uint64 commitTime,address plugin)
-      const promise = user.giverId
-        ? liquidPledging.updateGiver(
-            user.giverId,
-            user.address,
-            user.name,
-            profileHash || '',
-            user.commitTime,
-            { from, $extraGas: extraGas() },
-          )
-        : liquidPledging.addGiver(user.name || '', profileHash || '', 259200, ZERO_ADDRESS, {
-            from: user.address,
-            $extraGas: extraGas(),
-          }); // 3 days commitTime. TODO allow user to set commitTime
-
-      await promise.once('transactionHash', async hash => {
-        txHash = hash;
-        await users.patch(user.address, user.toFeathers(txHash));
-        afterSave(!user.giverId, `${etherScanUrl}tx/${txHash}`);
-      });
-
-      afterMined(!user.giverId, `${etherScanUrl}tx/${txHash}`);
+      if (pushToNetwork) {
+        // lp function updateGiver(uint64 idGiver,address newAddr,string newName,string newUrl,uint64 newCommitTime)
+        // lp function addGiver(string name,string url,uint64 commitTime,address plugin)
+        const promise = user.giverId
+          ? liquidPledging.updateGiver(
+              user.giverId,
+              user.address,
+              user.name,
+              profileHash || '',
+              user.commitTime,
+              { from, $extraGas: extraGas() },
+            )
+          : liquidPledging.addGiver(user.name || '', profileHash || '', 259200, ZERO_ADDRESS, {
+              from: user.address,
+              $extraGas: extraGas(),
+            }); // 3 days commitTime. TODO allow user to set commitTime
+        await promise.once('transactionHash', async hash => {
+          txHash = hash;
+          await users.patch(user.address, user.toFeathers(txHash));
+          afterSave(!user.giverId, `${etherScanUrl}tx/${txHash}`);
+        });
+        afterMined(!user.giverId, `${etherScanUrl}tx/${txHash}`);
+      } else {
+        await users.patch(user.address, user.toFeathers(''));
+        afterMined(!user.giverId);
+      }
     } catch (err) {
       const message =
         'There has been a problem creating your user profile. Please refresh the page and try again.' +
