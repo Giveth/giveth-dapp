@@ -14,6 +14,7 @@ import { feathersClient } from '../lib/feathersClient';
 import getWeb3 from '../lib/blockchain/getWeb3';
 import config from '../configuration';
 
+import ErrorHandler from '../lib/ErrorHandler';
 import ErrorPopup from '../components/ErrorPopup';
 
 function updateExistingDonation(donation, amount, status) {
@@ -466,7 +467,11 @@ class DonationService {
                 onCreated(`${etherScanUrl}tx/${txHash}`);
               })
               .catch(err => {
-                ErrorPopup('Something went wrong while committing your donation.', err);
+                const message =
+                  'Something went wrong while committing your donation.' +
+                  `${etherScanUrl}tx/${txHash} => ${JSON.stringify(err, null, 2)}`;
+                ErrorHandler(err, message);
+
                 onError(err);
               });
           });
@@ -779,10 +784,9 @@ class DonationService {
       .service('donations')
       .create(newDonation)
       .catch(err => {
-        ErrorPopup(
-          'Your donation has been initiated, however an error occurred when attempting to save. You should see your donation appear within ~30 mins.',
-          err,
-        );
+        const message =
+          'Your donation has been initiated, however an error occurred when attempting to save. You should see your donation appear within ~30 mins.';
+        ErrorHandler(err, message);
       });
   }
 
