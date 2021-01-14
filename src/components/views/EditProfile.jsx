@@ -30,6 +30,8 @@ class EditProfile extends Component {
       // user model
       user: props.currentUser ? new User(props.currentUser) : new User(),
       isPristine: true,
+
+      isValid: true,
     };
 
     this.submit = this.submit.bind(this);
@@ -125,7 +127,7 @@ class EditProfile extends Component {
       }
     };
     const afterSave = (created, url) => {
-      if (this.mounted) this.setState({ isSaving: false });
+      if (this.mounted) this.setState({ isSaving: false, isPristine: true });
 
       const msg = created ? 'We are registering you as a user' : 'Your profile is being updated';
       showToast(msg, url);
@@ -145,11 +147,14 @@ class EditProfile extends Component {
   }
 
   togglePristine(currentValues, isChanged) {
-    this.setState({ isPristine: !isChanged });
+    this.setState({
+      isPristine: !isChanged,
+      isValid: currentValues.name.length > 2,
+    });
   }
 
   render() {
-    const { isLoading, isSaving, user, isPristine } = this.state;
+    const { isLoading, isSaving, user, isPristine, isValid } = this.state;
     const { currentUser } = this.props;
 
     return (
@@ -266,7 +271,12 @@ class EditProfile extends Component {
                     formNoValidate
                     type="submit"
                     network="Foreign"
-                    disabled={isSaving || isPristine || (currentUser && currentUser.giverId === 0)}
+                    disabled={
+                      !isValid ||
+                      isSaving ||
+                      isPristine ||
+                      (currentUser && currentUser.giverId === 0)
+                    }
                     isLoading={isSaving}
                     loadingText="Saving..."
                   >
