@@ -37,6 +37,8 @@ class EditProfile extends Component {
     this.submit = this.submit.bind(this);
     this.setImage = this.setImage.bind(this);
     this.togglePristine = this.togglePristine.bind(this);
+    this.enableFormSubmit = this.enableFormSubmit.bind(this);
+    this.disableFormSubmit = this.disableFormSubmit.bind(this);
     this.checkNetwork = this.checkNetwork.bind(this);
   }
 
@@ -158,7 +160,18 @@ class EditProfile extends Component {
   togglePristine(currentValues, isChanged) {
     this.setState({
       isPristine: !isChanged,
-      isValid: currentValues.name.length > 2,
+    });
+  }
+
+  enableFormSubmit() {
+    this.setState({
+      isValid: true,
+    });
+  }
+
+  disableFormSubmit() {
+    this.setState({
+      isValid: false,
     });
   }
 
@@ -198,6 +211,8 @@ class EditProfile extends Component {
                     user.linkedin = inputs.linkedin;
                     user.currency = inputs.currency;
                   }}
+                  onValid={this.enableFormSubmit}
+                  onInvalid={this.disableFormSubmit}
                   onChange={this.togglePristine}
                   layout="vertical"
                 >
