@@ -40,13 +40,7 @@ class ConversionStorage {
    * @return {object|boolean} If found return the pair {timestamp, rates}, else return false
    */
   get(symbol, date, to = null) {
-    if (to === null) {
-      // when 'to' is not defined, return true if the symbol exists in total
-      if (this[symbol] && this[symbol][date]) return { timestamp: date, rates: this[symbol][date] };
-      return false;
-    }
-    // else
-    // when 'to' is defined, we consider that the user wants to know if there is a conversion rate for tuple of <symbol,date,to> and return true if exists
+    // the user wants to know if there is a conversion rate for tuple of <symbol,date,to> and return true if exists
     if (this[symbol] && this[symbol][date] && this[symbol][date][to]) {
       return { timestamp: date, rates: this[symbol][date] };
     }

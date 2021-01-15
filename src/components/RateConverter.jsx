@@ -99,7 +99,7 @@ class RateConverter extends Component {
     this.setDate(this.props.date, fiatType);
     const conversionRate = this.state.conversionRate.rates[fiatType];
     this.setState(prevState => ({
-      etherAmountForm: prevState.fiatAmount.div(conversionRate).toFixed(),
+      etherAmountForm: conversionRate ? prevState.fiatAmount.div(conversionRate).toFixed() : '',
       selectedFiatType: fiatType,
     }));
   }
