@@ -303,12 +303,10 @@ class DelegateMultipleButton extends Component {
 
     const onError = () => {
       this.setState({ isSaving: false });
-      React.toast.error(<p>There has been an error with the delegation</p>);
     };
 
     const onCancel = () => {
       this.setState({ isSaving: false });
-      React.toast.error(<p>The delegation transaction has been cancelled</p>);
     };
 
     DonationService.delegateMultiple(
