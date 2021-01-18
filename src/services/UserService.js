@@ -33,6 +33,9 @@ class UserService {
     let txHash;
     let etherScanUrl;
 
+    const { currency } = user;
+    delete user._currency;
+
     try {
       let profileHash;
       try {
@@ -74,11 +77,13 @@ class UserService {
             }); // 3 days commitTime. TODO allow user to set commitTime
         await promise.once('transactionHash', async hash => {
           txHash = hash;
+          user.currency = currency;
           await users.patch(user.address, user.toFeathers(txHash));
           afterSave(!user.giverId, `${etherScanUrl}tx/${txHash}`);
         });
         afterMined(!user.giverId, `${etherScanUrl}tx/${txHash}`);
       } else {
+        user.currency = currency;
         await users.patch(user.address, user.toFeathers(''));
         afterMined(!user.giverId);
       }
