@@ -265,18 +265,8 @@ class DonationService {
           })
           .then(() => onSuccess(`${etherScanUrl}tx/${txHash}`))
           .catch(err => {
-            // bug in web3 seems to constantly fail due to this error, but the tx is correct
-            if (txHash && err.message && err.message.includes('unknown transaction')) return;
-
-            if (err && err.message.includes('User denied transaction signature')) {
-              React.toast.warning(<p>User denied transaction signature.</p>);
-              onCancel(err);
-            } else if (err) {
-              React.toast.warning(
-                <p>{`There was a problem with the delegation transaction.${etherScanUrl}tx/${txHash}`}</p>,
-              );
-              onError(err);
-            }
+            const message = `There was a problem with the delegation transaction.${etherScanUrl}tx/${txHash}`;
+            ErrorHandler(err, message, false, onError, onCancel);
           });
       })
       .catch(err => {
@@ -390,17 +380,8 @@ class DonationService {
           })
           .then(() => onSuccess(`${etherScanUrl}tx/${txHash}`))
           .catch(err => {
-            if (txHash && err.message && err.message.includes('unknown transaction')) return; // bug in web3 seems to constantly fail due to this error, but the tx is correct
-
-            if (err && err.message.includes('User denied transaction signature')) {
-              React.toast.warning(<p>User denied transaction signature.</p>);
-              onCancel(err);
-            } else if (err) {
-              React.toast.warning(
-                <p>{`There was a problem with the delegation transaction.${etherScanUrl}tx/${txHash}`}</p>,
-              );
-              onError(err);
-            }
+            const message = `There was a problem with the delegation transaction.${etherScanUrl}tx/${txHash}`;
+            ErrorHandler(err, message, false, onError, onCancel);
           });
       })
       .catch(err => {
