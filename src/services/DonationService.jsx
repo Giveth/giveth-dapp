@@ -42,15 +42,18 @@ function updateExistingDonation(donation, amount, status) {
  * @param {string} tokenContractAddress Address of the token to create an allowance on
  * @param {string} tokenHolderAddress  Address of the holder to create allowance for
  * @param {string|number} amount Amount to create an allowance for
+ * @param {string|number} nonce Override nonce value
  */
-const createAllowance = async (tokenContractAddress, tokenHolderAddress, amount) => {
-  const network = await getNetwork();
+const createAllowance = (network, tokenContractAddress, tokenHolderAddress, amount, nonce) => {
   const ERC20 = network.tokens[tokenContractAddress];
+
+  const opts = { from: tokenHolderAddress };
+  if (nonce) opts.nonce = nonce;
 
   let txHash;
   return ERC20.methods
     .approve(config.givethBridgeAddress, amount)
-    .send({ from: tokenHolderAddress })
+    .send(opts)
     .on('transactionHash', transactionHash => {
       txHash = transactionHash;
 
@@ -673,8 +676,14 @@ class DonationService {
    * @param {string} tokenContractAddress Address of the ERC20 token
    * @param {string} tokenHolderAddress Address of the token holder, by default the current logged in user
    * @param {string|number} amount Amount in wei for the allowance. If none given defaults to unlimited (-1)
+   * @param {function} onAllowanceChange callback to update allowance amount
    */
-  static async approveERC20tokenTransfer(tokenContractAddress, tokenHolderAddress, amount = -1) {
+  static async approveERC20tokenTransfer(
+    tokenContractAddress,
+    tokenHolderAddress,
+    amount = -1,
+    onAllowanceChange = () => {},
+  ) {
     const network = await getNetwork();
     const ERC20 = network.tokens[tokenContractAddress];
 
@@ -695,13 +704,42 @@ class DonationService {
     // TODO: find a better way to know that transaction is successful than the status field on response
     /* eslint-disable eqeqeq */
     if (allowanceNumber.isZero()) {
-      result = (await createAllowance(tokenContractAddress, tokenHolderAddress, amount)).status;
+      result = (await createAllowance(network, tokenContractAddress, tokenHolderAddress, amount))
+        .status;
+      onAllowanceChange();
     } else if (amountNumber.gt(allowanceNumber)) {
       // return _createAllowance(web3, etherScanUrl, ERC20, tokenHolderAddress, 0);
-      result = (await createAllowance(tokenContractAddress, tokenHolderAddress, 0)).status;
-      if (result) {
-        result = (await createAllowance(tokenContractAddress, tokenHolderAddress, amount)).status;
-      }
+      const firstTxPromievent = createAllowance(
+        network,
+        tokenContractAddress,
+        tokenHolderAddress,
+        0,
+      );
+
+      firstTxPromievent.on('receipt', onAllowanceChange);
+
+      result = new Promise((resolve, reject) => {
+        firstTxPromievent.catch(reject);
+
+        firstTxPromievent.on('transactionHash', async transactionHash => {
+          const web3 = await getWeb3();
+          const tx = await web3.eth.getTransaction(transactionHash);
+          try {
+            const secondTxPromivent = await createAllowance(
+              network,
+              tokenContractAddress,
+              tokenHolderAddress,
+              amount,
+              String(Number(tx.nonce) + 1),
+            );
+            onAllowanceChange();
+            const { status } = secondTxPromivent;
+            resolve(status);
+          } catch (e) {
+            reject(e);
+          }
+        });
+      });
     }
     return result;
   }
