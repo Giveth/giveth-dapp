@@ -76,22 +76,22 @@ class UserService {
             }); // 3 days commitTime. TODO allow user to set commitTime
         await promise.once('transactionHash', async hash => {
           txHash = hash;
-          user.currency = currency;
+          user._currency = currency;
           await users.patch(user.address, user.toFeathers(txHash));
           afterSave(!user.giverId, `${etherScanUrl}tx/${txHash}`);
         });
         afterMined(!user.giverId, `${etherScanUrl}tx/${txHash}`);
       } else {
-        user.currency = currency;
+        user._currency = currency;
         await users.patch(user.address, user.toFeathers(''));
         afterMined(!user.giverId);
       }
     } catch (err) {
+      user._currency = currency;
       const message =
         'There has been a problem creating your user profile. Please refresh the page and try again.' +
         `${etherScanUrl}tx/${txHash} => ${JSON.stringify(err, null, 2)}`;
       ErrorHandler(err, message);
-
       reset();
     }
   }
