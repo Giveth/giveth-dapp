@@ -50,12 +50,11 @@ class UserService {
       const from = user.address;
 
       // nothing to update or failed ipfs upload
-      if (user.giverId && (user.url === profileHash || !profileHash)) {
+      if (user.giverId && !profileHash) {
         // ipfs upload may have failed, but we still want to update feathers
         if (!profileHash) {
           await users.patch(user.address, user.toFeathers(txHash));
         }
-        afterSave(false);
         afterMined(false);
         return;
       }
