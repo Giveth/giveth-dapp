@@ -3,7 +3,7 @@ import Modal from 'react-modal';
 import BigNumber from 'bignumber.js';
 
 import { utils } from 'web3';
-import { Form } from 'formsy-react-components';
+import { Form, Textarea } from 'formsy-react-components';
 import InputToken from 'react-input-token';
 import PropTypes from 'prop-types';
 import 'react-rangeslider/lib/index.css';
@@ -76,6 +76,7 @@ class DelegateButton extends Component {
       objectsToDelegateToMilestone: [],
       modalVisible: false,
       amount: '0',
+      comment: '',
       maxAmount: new BigNumber('0'),
       curProjectId: null,
       formIsValid: false,
@@ -259,6 +260,7 @@ class DelegateButton extends Component {
     DonationService.delegate(
       this.props.donation,
       utils.toWei(model.amount),
+      model.comment,
       admin,
       onCreated,
       onSuccess,
@@ -302,6 +304,7 @@ class DelegateButton extends Component {
       maxAmount,
       curProjectId,
       amount,
+      comment,
       formIsValid,
     } = this.state;
     const style = { display: 'inline-block' };
@@ -427,7 +430,9 @@ class DelegateButton extends Component {
                 autoFocus
               />
             </div>
-
+            <div className="form-group">
+              <Textarea name="comment" id="comment-input" value={comment} placeholder="Comment" />
+            </div>
             <button
               className="btn btn-success"
               formNoValidate
