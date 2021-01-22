@@ -2,8 +2,9 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { withFormsy } from 'formsy-react';
 import ReactQuill from 'react-quill';
-import { feathersRest } from '../lib/feathersClient';
 import { resizeFile } from '../lib/helpers';
+import IPFSService from '../services/IPFSService';
+import config from '../configuration';
 
 import VideoPopup from './VideoPopup';
 import Loader from './Loader';
@@ -94,12 +95,8 @@ class QuillFormsy extends Component {
 
   saveToServer(image, range) {
     this.setState({ uploading: true });
-    feathersRest
-      .service('uploads')
-      .create({
-        uri: image,
-      })
-      .then(file => this.insertToEditor(file, range))
+    IPFSService.upload(image)
+      .then(hash => this.insertToEditor({ url: config.ipfsGateway + hash.slice(6) }, range))
       .catch(() => {
         const quill = this.reactQuillRef.getEditor();
         quill.deleteText(range.index, 1);
@@ -120,6 +117,13 @@ class QuillFormsy extends Component {
       quill.insertEmbed(range.index, 'image', file.url);
       quill.setSelection(range.index + 1);
 
+      this.setState({ uploading: false });
+      quill.enable();
+    };
+
+    image.onerror = () => {
+      const quill = this.reactQuillRef.getEditor();
+      quill.deleteText(range.index, 1);
       this.setState({ uploading: false });
       quill.enable();
     };
