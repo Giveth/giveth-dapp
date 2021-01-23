@@ -61,16 +61,17 @@ class MilestoneConversations extends Component {
 
   static getReadableMessageContext(conversation) {
     const { messageContext } = conversation;
-    if (messageContext === 'proposed') return 'proposed Milestone';
-    if (messageContext === 'rejected') return 'rejected completion';
-    if (messageContext === 'NeedsReview') return 'requested review';
-    if (messageContext === 'Completed') return 'accepted completion';
-    if (messageContext === 'Canceled') return 'canceled Milestone';
-    if (messageContext === 'proposedRejected') return 'rejected proposed Milestone';
-    if (messageContext === 'proposedAccepted') return 'accepted proposed Milestone';
-    if (messageContext === 'archived') return 'archived Milestone';
-    if (messageContext === 'rePropose') return 're-proposed Milestone';
-    if (messageContext === 'comment') return 'wrote:';
+    const userName = getUserName(conversation.owner);
+    if (messageContext === 'proposed') return `${userName} proposed Milestone`;
+    if (messageContext === 'rejected') return `${userName} rejected completion`;
+    if (messageContext === 'NeedsReview') return `${userName} requested review`;
+    if (messageContext === 'Completed') return `${userName} accepted completion`;
+    if (messageContext === 'Canceled') return `${userName} canceled Milestone`;
+    if (messageContext === 'proposedRejected') return `${userName} rejected proposed Milestone`;
+    if (messageContext === 'proposedAccepted') return `${userName} accepted proposed Milestone`;
+    if (messageContext === 'archived') return `${userName} archived Milestone`;
+    if (messageContext === 'rePropose') return `${userName} re-proposed Milestone`;
+    if (messageContext === 'comment') return `${userName} wrote:`;
     if (messageContext === 'payment') {
       const { owner, recipient, payments } = conversation;
       if (payments) {
@@ -83,10 +84,19 @@ class MilestoneConversations extends Component {
             ? paymentsStr[0]
             : `${paymentsStr.slice(0, -1).join(', ')} and ${paymentsStr[paymentsStr.length - 1]}`;
         if (owner && recipient && owner.address === recipient.address) {
-          return `collected ${phrase}`;
+          return `${userName} collected ${phrase}`;
         }
         // else
-        return `disbursed ${phrase} to ${getUserName(recipient)}`;
+        return `${userName} disbursed ${phrase} to ${getUserName(recipient)}`;
+      }
+    }
+    if (messageContext === 'donated') {
+      const { recipient, payments } = conversation;
+      if (payments && payments.length > 0) {
+        const payment = payments[0];
+        const amountStr = convertEthHelper(utils.fromWei(payment.amount), payment.tokenDecimals);
+        const paymentStr = `${amountStr} ${payment.symbol}`;
+        return `${getUserName(recipient)} donated ${paymentStr}`;
       }
     }
     return 'unknown';
@@ -125,7 +135,7 @@ class MilestoneConversations extends Component {
                     <p className="badge badge-secondary">{c.performedByRole}</p>
 
                     <p className={`owner-name ${c.messageContext.toLowerCase()}`}>
-                      {getUserName(c.owner)} {MilestoneConversations.getReadableMessageContext(c)}
+                      {MilestoneConversations.getReadableMessageContext(c)}
                       {/* <span className={`badge ${c.messageContext.toLowerCase()}`}>{c.messageContext}</span> */}
                     </p>
                     <div className="c-message">{ReactHtmlParser(c.message)}</div>
