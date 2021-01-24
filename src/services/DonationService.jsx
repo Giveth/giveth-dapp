@@ -102,6 +102,7 @@ class DonationService {
    * @param {Array}    donations   Array of donations that can be delegated
    * @param {string}   amount      Total amount in wei to be delegated - needs to be between 0 and total donation amount
    * @param {Object}   delegateTo  Entity to which the donation should be delegated
+   * @param {String}   comment     Delegation comment
    * @param {function} onCreated   Callback function after the transaction has been broadcasted to chain and stored in feathers
    * @param {function} onSuccess   Callback function after the transaction has been mined
    * @param {function} onError     Callback function after error happened
@@ -111,6 +112,7 @@ class DonationService {
     donations,
     amount,
     delegateTo,
+    comment,
     onCreated = () => {},
     onSuccess = () => {},
     onError = () => {},
@@ -229,6 +231,7 @@ class DonationService {
                 pledgeId: 0,
                 parentDonations: donation.parents,
                 token: donation.token,
+                comment,
                 mined: false,
               };
               // delegate is making the transfer
@@ -283,6 +286,7 @@ class DonationService {
    *
    * @param {Donation} donation    Donation to be delegated
    * @param {string}   amount      Amount of the donation that is to be delegated - needs to be between 0 and donation amount
+   * @param {string}   comment     comment
    * @param {object}   delegateTo  Entity to which the donation should be delegated
    * @param {function} onCreated   Callback function after the transaction has been broadcasted to chain and stored in feathers
    * @param {function} onSuccess   Callback function after the transaction has been mined
@@ -292,6 +296,7 @@ class DonationService {
   static delegate(
     donation,
     amount,
+    comment,
     delegateTo,
     onCreated = () => {},
     onSuccess = () => {},
@@ -340,6 +345,7 @@ class DonationService {
             const newDonation = {
               txHash,
               amount,
+              comment,
               amountRemaining: amount,
               giverAddress: donation.giverAddress,
               pledgeId: 0,

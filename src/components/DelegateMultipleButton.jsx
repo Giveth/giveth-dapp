@@ -3,7 +3,7 @@ import React, { Component, Fragment } from 'react';
 import Modal from 'react-modal';
 import BigNumber from 'bignumber.js';
 import { utils } from 'web3';
-import { Form } from 'formsy-react-components';
+import { Form, Textarea } from 'formsy-react-components';
 import PropTypes from 'prop-types';
 import { paramsForServer } from 'feathers-hooks-common';
 import 'react-rangeslider/lib/index.css';
@@ -71,6 +71,7 @@ class DelegateMultipleButton extends Component {
       delegations: [],
       totalDonations: 0,
       maxAmount: new BigNumber('0'),
+      comment: '',
       delegationOptions: [],
       objectToDelegateFrom: [],
       tokenWhitelistOptions: props.tokenWhitelist.map(t => ({
@@ -256,7 +257,7 @@ class DelegateMultipleButton extends Component {
       .then(() => this.setState({ modalVisible: true }));
   }
 
-  submit() {
+  submit({ comment }) {
     const { objectToDelegateFrom, delegationOptions } = this.state;
     this.setState({ isSaving: true });
 
@@ -313,6 +314,7 @@ class DelegateMultipleButton extends Component {
       this.state.delegations,
       utils.toWei(this.state.amount),
       this.props.milestone || this.props.campaign,
+      comment,
       onCreated,
       onSuccess,
       onError,
@@ -337,6 +339,7 @@ class DelegateMultipleButton extends Component {
       tokenWhitelistOptions,
       selectedToken,
       maxAmount,
+      comment,
       amount,
       objectToDelegateFrom,
     } = this.state;
@@ -505,7 +508,14 @@ class DelegateMultipleButton extends Component {
                                 maxAmount={maxAmount}
                               />
                             </div>
-
+                            <div className="form-group">
+                              <Textarea
+                                name="comment"
+                                id="comment-input"
+                                value={comment}
+                                placeholder="Comment"
+                              />
+                            </div>
                             <button
                               className="btn btn-success"
                               formNoValidate
