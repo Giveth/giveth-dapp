@@ -145,18 +145,11 @@ class ViewMilestone extends Component {
 
   async getDacTitle(dacId) {
     if (dacId === 0) return;
-    DACService.getDACs(
-      1, // Limit
-      0, // Skip
-      (dacs, _) => {
-        let dacTitle = '';
-        dacs.forEach(d => {
-          if (d.myDelegateId === dacId) dacTitle = d._title;
-        });
-        this.setState({ dacTitle });
-      },
-      () => {},
-    );
+    DACService.getByDelegateId(dacId)
+      .then(dac => {
+        this.setState({ dacTitle: dac.title });
+      })
+      .catch(() => {});
   }
 
   loadMoreDonations() {
@@ -385,7 +378,6 @@ class ViewMilestone extends Component {
                         <div className="col-md-8 m-auto">
                           <ViewMilestoneAlerts
                             milestone={milestone}
-                            currentUser={currentUser}
                             balance={balance}
                             campaign={campaign}
                           />
