@@ -1,0 +1,86 @@
+.full-width {
+  width: 100% !important;
+}
+
+.rtl {
+  direction: rtl;
+  text-align: right;
+}
+
+.ltr {
+  direction: ltr;
+  text-align: left;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.text-left {
+  text-align: left;
+}
+
+.text-right {
+  text-align: right;
+}
+
+.nowrap {
+  white-space: nowrap;
+}
+
+.rad {
+  border-radius: 4px;
+}
+
+.hidden {
+  overflow: hidden;
+}
+.hidden-y {
+  overflow-y: hidden;
+}
+.hidden-x {
+  overflow-x: hidden;
+}
+
+.overflow-auto {
+  overflow: auto;
+}
+
+.hide-scroll::-webkit-scrollbar {
+  display: none;
+}
+.hide-scroll {
+  -ms-overflow-style: none;
+}
+
+.width-10 {
+  width: 10%;
+}
+.width-25 {
+  width: 25%;
+}
+.width-33 {
+  width: 33%;
+}
+.width-50 {
+  width: 50%;
+}
+.width-100 {
+  width: 100%;
+}
+
+.pointer {
+  cursor: pointer;
+}
+
+.m-auto {
+  margin: auto;
+}
+
+.p-relative {
+  position: relative;
+}
+
+.no-select {
+  user-select: none;
+}

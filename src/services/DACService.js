@@ -8,6 +8,9 @@ import DAC from '../models/DAC';
 import Campaign from '../models/Campaign';
 import Donation from '../models/Donation';
 import IPFSService from './IPFSService';
+import config from '../configuration';
+import ErrorModel from '../models/ErrorModel';
+import ErrorHandler from '../lib/ErrorHandler';
 
 import ErrorPopup from '../components/ErrorPopup';
 import { ZERO_ADDRESS } from '../lib/helpers';
@@ -31,7 +34,8 @@ class DACService {
           },
         })
         .then(resp => {
-          resolve(new DAC(resp.data[0]));
+          if (resp.data.length) resolve(new DAC(resp.data[0]));
+          else reject(new ErrorModel({ message: 'Not found', status: 404 }));
         })
         .catch(err => reject(err));
     });
@@ -81,6 +85,9 @@ class DACService {
    * @param onError   Callback function if error is encountered
    */
   static getDACs($limit = 100, $skip = 0, onSuccess = () => {}, onError = () => {}) {
+    const lastDate = new Date();
+    lastDate.setMonth(lastDate.getMonth() - config.projectsUpdatedAtLimitMonth);
+
     return feathersClient
       .service('dacs')
       .find({
@@ -89,6 +96,7 @@ class DACService {
           $limit,
           $skip,
           $sort: { campaignsCount: -1 },
+          updatedAt: { $gt: lastDate },
         },
       })
       .then(resp =>
@@ -307,12 +315,11 @@ class DACService {
 
       afterMined(!dac.delegateId, `${etherScanUrl}tx/${txHash}`, id);
     } catch (err) {
-      ErrorPopup(
-        `Something went wrong with the DAC ${
-          dac.delegateId > 0 ? 'update' : 'creation'
-        }. Is your wallet unlocked?`,
-        `${etherScanUrl}tx/${txHash} => ${JSON.stringify(err, null, 2)}`,
-      );
+      const message = `Something went wrong with the DAC ${
+        dac.delegateId > 0 ? 'update' : 'creation'
+      }. Is your wallet unlocked? ${etherScanUrl}tx/${txHash} => ${JSON.stringify(err, null, 2)}`;
+      ErrorHandler(err, message);
+
       afterSave(err);
     }
   }

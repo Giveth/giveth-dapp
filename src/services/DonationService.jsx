@@ -14,6 +14,7 @@ import { feathersClient } from '../lib/feathersClient';
 import getWeb3 from '../lib/blockchain/getWeb3';
 import config from '../configuration';
 
+import ErrorHandler from '../lib/ErrorHandler';
 import ErrorPopup from '../components/ErrorPopup';
 
 function updateExistingDonation(donation, amount, status) {
@@ -41,15 +42,18 @@ function updateExistingDonation(donation, amount, status) {
  * @param {string} tokenContractAddress Address of the token to create an allowance on
  * @param {string} tokenHolderAddress  Address of the holder to create allowance for
  * @param {string|number} amount Amount to create an allowance for
+ * @param {string|number} nonce Override nonce value
  */
-const createAllowance = async (tokenContractAddress, tokenHolderAddress, amount) => {
-  const network = await getNetwork();
+const createAllowance = (network, tokenContractAddress, tokenHolderAddress, amount, nonce) => {
   const ERC20 = network.tokens[tokenContractAddress];
+
+  const opts = { from: tokenHolderAddress };
+  if (nonce) opts.nonce = nonce;
 
   let txHash;
   return ERC20.methods
     .approve(config.givethBridgeAddress, amount)
-    .send({ from: tokenHolderAddress })
+    .send(opts)
     .on('transactionHash', transactionHash => {
       txHash = transactionHash;
 
@@ -98,6 +102,7 @@ class DonationService {
    * @param {Array}    donations   Array of donations that can be delegated
    * @param {string}   amount      Total amount in wei to be delegated - needs to be between 0 and total donation amount
    * @param {Object}   delegateTo  Entity to which the donation should be delegated
+   * @param {String}   comment     Delegation comment
    * @param {function} onCreated   Callback function after the transaction has been broadcasted to chain and stored in feathers
    * @param {function} onSuccess   Callback function after the transaction has been mined
    * @param {function} onError     Callback function after error happened
@@ -107,6 +112,7 @@ class DonationService {
     donations,
     amount,
     delegateTo,
+    comment,
     onCreated = () => {},
     onSuccess = () => {},
     onError = () => {},
@@ -225,6 +231,7 @@ class DonationService {
                 pledgeId: 0,
                 parentDonations: donation.parents,
                 token: donation.token,
+                comment,
                 mined: false,
               };
               // delegate is making the transfer
@@ -264,19 +271,8 @@ class DonationService {
           })
           .then(() => onSuccess(`${etherScanUrl}tx/${txHash}`))
           .catch(err => {
-            // bug in web3 seems to constantly fail due to this error, but the tx is correct
-            if (txHash && err.message && err.message.includes('unknown transaction')) return;
-
-            if (err.message.includes('User denied transaction signature')) {
-              ErrorPopup('User denied transaction signature.', err);
-              onCancel(err);
-            } else {
-              ErrorPopup(
-                'There was a problem with catching the transaction hash, but your transaction probably went through.',
-                `${etherScanUrl}tx/${txHash}`,
-              );
-              onError(err);
-            }
+            const message = `There was a problem with the delegation transaction.${etherScanUrl}tx/${txHash}`;
+            ErrorHandler(err, message, false, onError, onCancel);
           });
       })
       .catch(err => {
@@ -290,6 +286,7 @@ class DonationService {
    *
    * @param {Donation} donation    Donation to be delegated
    * @param {string}   amount      Amount of the donation that is to be delegated - needs to be between 0 and donation amount
+   * @param {string}   comment     comment
    * @param {object}   delegateTo  Entity to which the donation should be delegated
    * @param {function} onCreated   Callback function after the transaction has been broadcasted to chain and stored in feathers
    * @param {function} onSuccess   Callback function after the transaction has been mined
@@ -299,6 +296,7 @@ class DonationService {
   static delegate(
     donation,
     amount,
+    comment,
     delegateTo,
     onCreated = () => {},
     onSuccess = () => {},
@@ -347,6 +345,7 @@ class DonationService {
             const newDonation = {
               txHash,
               amount,
+              comment,
               amountRemaining: amount,
               giverAddress: donation.giverAddress,
               pledgeId: 0,
@@ -390,18 +389,8 @@ class DonationService {
           })
           .then(() => onSuccess(`${etherScanUrl}tx/${txHash}`))
           .catch(err => {
-            if (txHash && err.message && err.message.includes('unknown transaction')) return; // bug in web3 seems to constantly fail due to this error, but the tx is correct
-
-            if (err.message.includes('User denied transaction signature')) {
-              ErrorPopup('User denied transaction signature.', err);
-              onCancel(err);
-            } else {
-              ErrorPopup(
-                'There was a problem with the delegation transaction.',
-                `${etherScanUrl}tx/${txHash}`,
-              );
-              onError(err);
-            }
+            const message = `There was a problem with the delegation transaction.${etherScanUrl}tx/${txHash}`;
+            ErrorHandler(err, message, false, onError, onCancel);
           });
       })
       .catch(err => {
@@ -468,7 +457,11 @@ class DonationService {
                 onCreated(`${etherScanUrl}tx/${txHash}`);
               })
               .catch(err => {
-                ErrorPopup('Something went wrong while committing your donation.', err);
+                const message =
+                  'Something went wrong while committing your donation.' +
+                  `${etherScanUrl}tx/${txHash} => ${JSON.stringify(err, null, 2)}`;
+                ErrorHandler(err, message);
+
                 onError(err);
               });
           });
@@ -689,8 +682,14 @@ class DonationService {
    * @param {string} tokenContractAddress Address of the ERC20 token
    * @param {string} tokenHolderAddress Address of the token holder, by default the current logged in user
    * @param {string|number} amount Amount in wei for the allowance. If none given defaults to unlimited (-1)
+   * @param {function} onAllowanceChange callback to update allowance amount
    */
-  static async approveERC20tokenTransfer(tokenContractAddress, tokenHolderAddress, amount = -1) {
+  static async approveERC20tokenTransfer(
+    tokenContractAddress,
+    tokenHolderAddress,
+    amount = -1,
+    onAllowanceChange = () => {},
+  ) {
     const network = await getNetwork();
     const ERC20 = network.tokens[tokenContractAddress];
 
@@ -711,13 +710,42 @@ class DonationService {
     // TODO: find a better way to know that transaction is successful than the status field on response
     /* eslint-disable eqeqeq */
     if (allowanceNumber.isZero()) {
-      result = (await createAllowance(tokenContractAddress, tokenHolderAddress, amount)).status;
+      result = (await createAllowance(network, tokenContractAddress, tokenHolderAddress, amount))
+        .status;
+      onAllowanceChange();
     } else if (amountNumber.gt(allowanceNumber)) {
       // return _createAllowance(web3, etherScanUrl, ERC20, tokenHolderAddress, 0);
-      result = (await createAllowance(tokenContractAddress, tokenHolderAddress, 0)).status;
-      if (result) {
-        result = (await createAllowance(tokenContractAddress, tokenHolderAddress, amount)).status;
-      }
+      const firstTxPromievent = createAllowance(
+        network,
+        tokenContractAddress,
+        tokenHolderAddress,
+        0,
+      );
+
+      firstTxPromievent.on('receipt', onAllowanceChange);
+
+      result = new Promise((resolve, reject) => {
+        firstTxPromievent.catch(reject);
+
+        firstTxPromievent.on('transactionHash', async transactionHash => {
+          const web3 = await getWeb3();
+          const tx = await web3.eth.getTransaction(transactionHash);
+          try {
+            const secondTxPromivent = await createAllowance(
+              network,
+              tokenContractAddress,
+              tokenHolderAddress,
+              amount,
+              String(Number(tx.nonce) + 1),
+            );
+            onAllowanceChange();
+            const { status } = secondTxPromivent;
+            resolve(status);
+          } catch (e) {
+            reject(e);
+          }
+        });
+      });
     }
     return result;
   }
@@ -781,10 +809,9 @@ class DonationService {
       .service('donations')
       .create(newDonation)
       .catch(err => {
-        ErrorPopup(
-          'Your donation has been initiated, however an error occurred when attempting to save. You should see your donation appear within ~30 mins.',
-          err,
-        );
+        const message =
+          'Your donation has been initiated, however an error occurred when attempting to save. You should see your donation appear within ~30 mins.';
+        ErrorHandler(err, message);
       });
   }
 

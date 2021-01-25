@@ -66,7 +66,7 @@ class User extends Model {
     return user;
   }
 
-  save(onSave, afterEmit) {
+  save(onSave, afterEmit, reset, pushToNetwork) {
     if (this._newAvatar) {
       IPFSService.upload(this._newAvatar)
         .then(hash => {
@@ -75,9 +75,9 @@ class User extends Model {
           delete this._newAvatar;
         })
         .catch(err => ErrorPopup('Failed to upload avatar', err))
-        .finally(() => UserService.save(this, onSave, afterEmit));
+        .finally(() => UserService.save(this, onSave, afterEmit, reset));
     } else {
-      UserService.save(this, onSave, afterEmit);
+      UserService.save(this, onSave, afterEmit, reset, pushToNetwork);
     }
   }
 

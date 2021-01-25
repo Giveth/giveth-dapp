@@ -133,9 +133,9 @@ class ViewMilestone extends Component {
             };
           }),
         )
-        .then(total => {
+        .then(result => {
           // eslint-disable-next-line
-          this.setState({ currentBalanceValue: total });
+          this.setState({ currentBalanceValue: result.total });
         });
     }
   }

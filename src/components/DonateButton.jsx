@@ -15,6 +15,8 @@ import extraGas from '../lib/blockchain/extraGas';
 import pollEvery from '../lib/pollEvery';
 import LoaderButton from './LoaderButton';
 import ErrorPopup from './ErrorPopup';
+import ErrorHandler from '../lib/ErrorHandler';
+
 import config from '../configuration';
 import DonationService from '../services/DonationService';
 import DACService from '../services/DACService';
@@ -236,6 +238,7 @@ class DonateButton extends React.Component {
           () =>
             DonationService.getERC20tokenAllowance(selectedToken.address, currentUser.address)
               .then(allowance => {
+                console.log('Allowance:', allowance);
                 this.setState(
                   {
                     allowance: new BigNumber(utils.fromWei(allowance)),
@@ -330,13 +333,12 @@ class DonateButton extends React.Component {
     const { adminId, dacId } = model;
     const { allowanceApprovalType, selectedToken } = this.state;
 
-    console.log('cccc', comment);
-
     const donationOwnerAddress = customAddress || currentUser.address;
 
     const afterDonate = success => {
-      this.updateAllowance(UPDATE_ALLOWANCE_DELAY);
-      if (success) afterSuccessfulDonate();
+      if (success) {
+        afterSuccessfulDonate();
+      }
     };
 
     if (allowanceApprovalType === AllowanceApprovalType.Clear) {
@@ -351,12 +353,10 @@ class DonateButton extends React.Component {
             () => this.updateAllowance(UPDATE_ALLOWANCE_DELAY),
           );
         })
-        .catch(e => {
-          if (!e.message.includes('User denied transaction signature')) {
-            ErrorPopup('Something went wrong with your transaction.');
-          } else {
-            React.toast.info('The transaction was cancelled. :-(');
-          }
+        .catch(err => {
+          const message = `Something went wrong with the transaction`;
+          ErrorHandler(err, message);
+
           this.setState({
             isSaving: false,
           });
@@ -365,7 +365,7 @@ class DonateButton extends React.Component {
     } else if (dacId) {
       this.donateToDac(adminId, dacId, amount, donationOwnerAddress, allowanceApprovalType, comment)
         .then(afterDonate)
-        .catch(() => afterDonate(false));
+        .catch(() => {});
     } else {
       this.donateWithBridge(
         adminId,
@@ -376,7 +376,7 @@ class DonateButton extends React.Component {
         allowanceApprovalType,
       )
         .then(afterDonate)
-        .catch(() => afterDonate(false));
+        .catch(() => {});
     }
 
     this.setState({ isSaving: true });
@@ -580,7 +580,7 @@ class DonateButton extends React.Component {
         method
           .on('transactionHash', async transactionHash => {
             const web3 = await getWeb3();
-            const txNonce = await web3.eth.getTransactionCount(userAddress, 'pending');
+            const { nonce } = await web3.eth.getTransaction(transactionHash);
             txHash = transactionHash;
 
             await DonationService.newFeathersDonation(
@@ -589,7 +589,7 @@ class DonateButton extends React.Component {
               amountWei,
               selectedToken,
               txHash,
-              txNonce,
+              nonce,
               comment,
             );
 
@@ -622,8 +622,6 @@ class DonateButton extends React.Component {
             );
           })
           .then(() => {
-            this.updateAllowance(UPDATE_ALLOWANCE_DELAY);
-
             this.setState({
               isSaving: false,
             });
@@ -641,22 +639,18 @@ class DonateButton extends React.Component {
               </p>,
             );
           })
-          .catch(e => {
+          .catch(err => {
             reject();
-            if (!e.message.includes('User denied transaction signature')) {
-              const err = !(e instanceof Error) ? JSON.stringify(e, null, 2) : e;
-              ErrorPopup(
-                'Something went wrong with your donation.',
-                `${etherscanUrl}tx/${txHash} => ${err}`,
-              );
-            } else {
-              React.toast.info('The transaction was cancelled. No donation has been made :-(');
-            }
+
+            const message = `Something went wrong with the transaction ${etherscanUrl}tx/${txHash} => ${err}`;
+            ErrorHandler(err, message);
+
             this.setState({
               isSaving: false,
             });
             this.closeDialog();
-          });
+          })
+          .finally(() => this.updateAllowance(UPDATE_ALLOWANCE_DELAY));
       });
     };
 
@@ -675,10 +669,8 @@ class DonateButton extends React.Component {
           tokenAddress,
           currentUser && currentUser.address,
           allowanceRequired.toString(),
+          () => this.updateAllowance(UPDATE_ALLOWANCE_DELAY),
         );
-
-        // Allowance value may have changed
-        this.updateAllowance(UPDATE_ALLOWANCE_DELAY);
 
         // Maybe user has canceled the allowance approval transaction
         if (allowed) {
@@ -691,12 +683,12 @@ class DonateButton extends React.Component {
           isSaving: false,
         });
         // error code 4001 means user has canceled the transaction
+        let message;
         if (err.code !== 4001) {
-          ErrorPopup(
-            'Something went wrong with your donation. Could not approve token allowance.',
-            err,
-          );
+          message = 'Something went wrong with your donation. Could not approve token allowance.';
         }
+
+        ErrorHandler(err, message);
         return false;
       }
     } else {

@@ -37,11 +37,11 @@ class RateConverter extends Component {
     this.setDate(this.props.date);
   }
 
-  setDate(date) {
+  setDate(date, toRate = null) {
     this.setState({ date });
-    const { getConversionRates, token } = this.props;
+    const { getConversionRates, token, selectedFiatType } = this.props;
 
-    getConversionRates(date, token.symbol).then(resp => {
+    getConversionRates(date, token.symbol, toRate || selectedFiatType).then(resp => {
       // Set rate, or if rate is undefined, use the first defined rate
       let rate = resp.rates[this.state.selectedFiatType];
 
@@ -96,9 +96,10 @@ class RateConverter extends Component {
   }
 
   changeSelectedFiat(fiatType) {
+    this.setDate(this.props.date, fiatType);
     const conversionRate = this.state.conversionRate.rates[fiatType];
     this.setState(prevState => ({
-      etherAmountForm: prevState.fiatAmount.div(conversionRate).toFixed(),
+      etherAmountForm: conversionRate ? prevState.fiatAmount.div(conversionRate).toFixed() : '',
       selectedFiatType: fiatType,
     }));
   }
@@ -167,7 +168,6 @@ class RateConverter extends Component {
                   label="Currency"
                   value={selectedFiatType}
                   options={fiatTypes}
-                  allowedOptions={conversionRate && conversionRate.rates}
                   onChange={this.changeSelectedFiat}
                   helpText={
                     !conversionRateLoading &&
@@ -200,7 +200,7 @@ class RateConverter extends Component {
                 type="hidden"
                 name="conversionRate"
                 value={
-                  conversionRate && conversionRate.rates
+                  conversionRate && conversionRate.rates && conversionRate.rates[selectedFiatType]
                     ? conversionRate.rates[selectedFiatType].toString()
                     : '0'
                 }

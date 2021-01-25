@@ -7,8 +7,11 @@ import extraGas from '../lib/blockchain/extraGas';
 import { feathersClient } from '../lib/feathersClient';
 import Campaign from '../models/Campaign';
 import Donation from '../models/Donation';
+import config from '../configuration';
 import IPFSService from './IPFSService';
 import ErrorPopup from '../components/ErrorPopup';
+import ErrorModel from '../models/ErrorModel';
+import ErrorHandler from '../lib/ErrorHandler';
 
 const campaigns = feathersClient.service('campaigns');
 
@@ -23,7 +26,8 @@ class CampaignService {
       campaigns
         .find({ query: { _id: id } })
         .then(resp => {
-          resolve(new Campaign(resp.data[0]));
+          if (resp.data.length) resolve(new Campaign(resp.data[0]));
+          else reject(new ErrorModel({ message: 'Not found', status: 404 }));
         })
         .catch(reject);
     });
@@ -38,6 +42,9 @@ class CampaignService {
    * @param onError   Callback function if error is encountered
    */
   static getCampaigns($limit = 100, $skip = 0, onSuccess = () => {}, onError = () => {}) {
+    const lastDate = new Date();
+    lastDate.setMonth(lastDate.getMonth() - config.projectsUpdatedAtLimitMonth);
+
     return feathersClient
       .service('campaigns')
       .find({
@@ -46,6 +53,7 @@ class CampaignService {
           status: Campaign.ACTIVE,
           $limit,
           $skip,
+          updatedAt: { $gt: lastDate },
           // Should set a specific prop for "qualified" updates
           // Current impl will allow a campaign manager to be first
           // in the list by just editing the campaign
@@ -281,12 +289,10 @@ class CampaignService {
 
       afterMined(!campaign.projectId, `${etherScanUrl}tx/${txHash}`, id);
     } catch (err) {
-      ErrorPopup(
-        `Something went wrong with the Campaign ${
-          campaign.projectId > 0 ? 'update' : 'creation'
-        }. Is your wallet unlocked?`,
-        `${etherScanUrl}tx/${txHash} => ${JSON.stringify(err, null, 2)}`,
-      );
+      const message = `Something went wrong with the Campaign ${
+        campaign.projectId > 0 ? 'update' : 'creation'
+      }. Is your wallet unlocked? ${etherScanUrl}tx/${txHash} => ${JSON.stringify(err, null, 2)}`;
+      ErrorHandler(err, message);
       afterSave(err);
     }
   }

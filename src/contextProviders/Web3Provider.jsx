@@ -192,6 +192,7 @@ class Web3Provider extends Component {
       {
         setupTimeout: false,
         isEnabled: web3.isEnabled,
+        account: await getAccount(web3),
       },
       () => this.props.onLoaded(),
     );

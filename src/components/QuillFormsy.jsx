@@ -2,18 +2,28 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { withFormsy } from 'formsy-react';
 import ReactQuill from 'react-quill';
-import { feathersRest } from '../lib/feathersClient';
+import { resizeFile } from '../lib/helpers';
+import IPFSService from '../services/IPFSService';
+import config from '../configuration';
 
 import VideoPopup from './VideoPopup';
+import Loader from './Loader';
 
 class QuillFormsy extends Component {
   constructor(props) {
     super(props);
     this.reactQuillRef = null; // ReactQuill component
     this.imageUploader = null; // Hidden Input component
+    this.imageContainer = null; // Hidden Image container
+    this.insertToEditor = this.insertToEditor.bind(this);
+    this.saveToServer = this.saveToServer.bind(this);
     this.imageHandler = this.imageHandler.bind(this);
     this.templateHandler = this.templateHandler.bind(this);
     this.handleImageUpload = this.handleImageUpload.bind(this);
+
+    this.state = {
+      uploading: false,
+    };
   }
 
   componentDidMount() {
@@ -56,35 +66,67 @@ class QuillFormsy extends Component {
     this.imageUploader.click();
   }
 
-  handleImageUpload() {
+  async handleImageUpload() {
     const file = this.imageUploader.files[0];
+    if (!file) return;
+
     const reader = new FileReader();
 
     // file type is only image.
     if (/^image\//.test(file.type)) {
+      const compressFile = await resizeFile(file);
       reader.onload = e => {
-        this.saveToServer(e.target.result);
+        const quill = this.reactQuillRef.getEditor();
+        const range = quill.getSelection();
+
+        quill.insertEmbed(range.index, 'image', e.target.result);
+        quill.setSelection(range.index + 1);
+        quill.disable();
+
+        this.saveToServer(e.target.result, range);
+        this.imageUploader.value = '';
       };
-      reader.readAsDataURL(file);
+      reader.readAsDataURL(compressFile);
     }
     // else {
     //   console.warn('You could only upload images.');
     // }
   }
 
-  saveToServer(image) {
-    feathersRest
-      .service('uploads')
-      .create({
-        uri: image,
-      })
-      .then(file => this.insertToEditor(file));
+  saveToServer(image, range) {
+    this.setState({ uploading: true });
+    IPFSService.upload(image)
+      .then(hash => this.insertToEditor({ url: config.ipfsGateway + hash.slice(6) }, range))
+      .catch(() => {
+        const quill = this.reactQuillRef.getEditor();
+        quill.deleteText(range.index, 1);
+        this.setState({ uploading: false });
+        quill.enable();
+      });
   }
 
-  insertToEditor(file) {
-    const quill = this.reactQuillRef.getEditor();
-    const range = quill.getSelection();
-    quill.insertEmbed(range.index, 'image', file.url);
+  insertToEditor(file, range) {
+    const image = document.createElement('img');
+    image.src = file.url;
+    this.imageContainer.appendChild(image);
+
+    image.onload = () => {
+      const quill = this.reactQuillRef.getEditor();
+      quill.deleteText(range.index, 1);
+      // const range = quill.getSelection();
+      quill.insertEmbed(range.index, 'image', file.url);
+      quill.setSelection(range.index + 1);
+
+      this.setState({ uploading: false });
+      quill.enable();
+    };
+
+    image.onerror = () => {
+      const quill = this.reactQuillRef.getEditor();
+      quill.deleteText(range.index, 1);
+      this.setState({ uploading: false });
+      quill.enable();
+    };
   }
 
   render() {
@@ -99,6 +141,8 @@ class QuillFormsy extends Component {
       isValid,
       getErrorMessage,
     } = this.props;
+
+    const { uploading } = this.state;
 
     // Set a specific className based on the validation
     // state of this component. showRequired() is true
@@ -118,10 +162,9 @@ class QuillFormsy extends Component {
     let modules = {
       toolbar: [
         [{ header: [1, 2, false] }],
-        ['bold', 'italic', 'underline', 'strike', 'blockquote'],
-        [{ list: 'ordered' }, { list: 'bullet' }, { indent: '-1' }, { indent: '+1' }],
+        ['bold', 'italic', 'underline', 'blockquote'],
+        [{ list: 'ordered' }, { list: 'bullet' }],
         ['link', 'image', 'video'],
-        ['clean'],
       ],
     };
 
@@ -130,11 +173,14 @@ class QuillFormsy extends Component {
         toolbar: {
           container: [
             [{ header: [1, 2, false] }],
-            ['bold', 'italic', 'underline', 'strike', 'blockquote'],
-            [{ list: 'ordered' }, { list: 'bullet' }, { indent: '-1' }, { indent: '+1' }],
+            ['bold', 'italic', 'underline', 'blockquote'],
+            [{ list: 'ordered' }, { list: 'bullet' }],
             ['link', 'image', 'video'],
-            ['clean'],
-            [{ template: ['None', 'Reward DAO', 'Regular Reward', 'Expenses', 'Bounties'] }],
+            [
+              {
+                template: ['None', 'Reward DAO', 'Regular Reward', 'Expenses', 'Bounties'],
+              },
+            ],
           ],
         },
       };
@@ -145,11 +191,9 @@ class QuillFormsy extends Component {
       'bold',
       'italic',
       'underline',
-      'strike',
       'blockquote',
       'list',
       'bullet',
-      'indent',
       'link',
       'image',
       'video',
@@ -158,6 +202,12 @@ class QuillFormsy extends Component {
 
     return (
       <div className={`form-group ${errorClass}`}>
+        <div
+          style={{ display: 'none' }}
+          ref={el => {
+            this.imageContainer = el;
+          }}
+        />
         <input
           style={{ display: 'none' }}
           type="file"
@@ -170,20 +220,27 @@ class QuillFormsy extends Component {
           {label} {isRequired() ? '*' : null}
         </div>
         <small className="form-text">{helpText}</small>
-        <ReactQuill
-          height="200px"
-          ref={el => {
-            this.reactQuillRef = el;
-          }}
-          modules={modules}
-          formats={formats}
-          value={getValue()}
-          name="description"
-          placeholder={placeholder}
-          onChange={setValue}
-          id="quill-formsy"
-          scrollingContainer={document.documentElement}
-        />
+        <div className="quill-wrapper">
+          {uploading && (
+            <div className="loading-overlay">
+              <Loader />
+            </div>
+          )}
+          <ReactQuill
+            height="200px"
+            ref={el => {
+              this.reactQuillRef = el;
+            }}
+            modules={modules}
+            formats={formats}
+            value={getValue()}
+            name="description"
+            placeholder={placeholder}
+            onChange={setValue}
+            id="quill-formsy"
+            scrollingContainer={document.documentElement}
+          />
+        </div>
         <span className="help-block validation-message">{errorMessage}</span>
       </div>
     );

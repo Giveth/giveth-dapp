@@ -30,11 +30,15 @@ class EditProfile extends Component {
       // user model
       user: props.currentUser ? new User(props.currentUser) : new User(),
       isPristine: true,
+
+      isValid: true,
     };
 
     this.submit = this.submit.bind(this);
     this.setImage = this.setImage.bind(this);
     this.togglePristine = this.togglePristine.bind(this);
+    this.enableFormSubmit = this.enableFormSubmit.bind(this);
+    this.disableFormSubmit = this.disableFormSubmit.bind(this);
     this.checkNetwork = this.checkNetwork.bind(this);
   }
 
@@ -86,6 +90,16 @@ class EditProfile extends Component {
   }
 
   submit() {
+    const { user } = this.state;
+    const { currentUser } = this.props;
+
+    if (!this.state.user.name) return;
+    const pushToNetwork =
+      user.name !== currentUser.name ||
+      !!user.newAvatar ||
+      user.linkedin !== currentUser.linkedin ||
+      user.email !== currentUser.email;
+
     // Save user profile
     const showToast = (msg, url, isSuccess = false) => {
       const toast = url ? (
@@ -103,7 +117,7 @@ class EditProfile extends Component {
       if (isSuccess) React.toast.success(toast);
       else React.toast.info(toast);
     };
-
+    const reset = () => this.setState({ isSaving: false, isPristine: false });
     const afterMined = (created, url) => {
       const msg = created ? 'You are now a registered user' : 'Your profile has been updated';
       showToast(msg, url, true);
@@ -124,7 +138,7 @@ class EditProfile extends Component {
       }
     };
     const afterSave = (created, url) => {
-      if (this.mounted) this.setState({ isSaving: false });
+      if (this.mounted) this.setState({ isSaving: false, isPristine: true });
 
       const msg = created ? 'We are registering you as a user' : 'Your profile is being updated';
       showToast(msg, url);
@@ -138,17 +152,31 @@ class EditProfile extends Component {
       },
       () => {
         // Save the User
-        this.state.user.save(afterSave, afterMined);
+        this.state.user.save(afterSave, afterMined, reset, pushToNetwork);
       },
     );
   }
 
   togglePristine(currentValues, isChanged) {
-    this.setState({ isPristine: !isChanged });
+    this.setState({
+      isPristine: !isChanged,
+    });
+  }
+
+  enableFormSubmit() {
+    this.setState({
+      isValid: true,
+    });
+  }
+
+  disableFormSubmit() {
+    this.setState({
+      isValid: false,
+    });
   }
 
   render() {
-    const { isLoading, isSaving, user, isPristine } = this.state;
+    const { isLoading, isSaving, user, isPristine, isValid } = this.state;
     const { currentUser } = this.props;
 
     return (
@@ -183,6 +211,8 @@ class EditProfile extends Component {
                     user.linkedin = inputs.linkedin;
                     user.currency = inputs.currency;
                   }}
+                  onValid={this.enableFormSubmit}
+                  onInvalid={this.disableFormSubmit}
                   onChange={this.togglePristine}
                   layout="vertical"
                 >
@@ -265,7 +295,12 @@ class EditProfile extends Component {
                     formNoValidate
                     type="submit"
                     network="Foreign"
-                    disabled={isSaving || isPristine || (currentUser && currentUser.giverId === 0)}
+                    disabled={
+                      !isValid ||
+                      isSaving ||
+                      isPristine ||
+                      (currentUser && currentUser.giverId === 0)
+                    }
                     isLoading={isSaving}
                     loadingText="Saving..."
                   >

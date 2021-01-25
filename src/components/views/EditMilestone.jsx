@@ -188,7 +188,6 @@ class EditMilestone extends Component {
         if (!this.props.isNew) {
           try {
             const milestone = await MilestoneService.get(this.props.match.params.milestoneId);
-
             if (
               !(
                 isOwner(milestone.owner.address, this.props.currentUser) ||
@@ -196,7 +195,7 @@ class EditMilestone extends Component {
                 milestone.donationCounters.length > 0
               )
             ) {
-              history.goBack();
+              return history.goBack();
             }
 
             this.setState({
@@ -219,8 +218,11 @@ class EditMilestone extends Component {
               image: milestone.image,
               formIsValid: true,
             });
-
-            await this.props.getConversionRates(milestone.date, milestone.token.symbol);
+            await this.props.getConversionRates(
+              milestone.date,
+              milestone.token.symbol,
+              milestone.token.symbol,
+            );
 
             this.setState({
               isLoading: false,
@@ -238,8 +240,7 @@ class EditMilestone extends Component {
             const campaign = await CampaignService.get(this.props.match.params.id);
 
             if (campaign.projectId < 0) {
-              this.props.history.goBack();
-              return;
+              return this.props.history.goBack();
             }
 
             const milestone = MilestoneFactory.create({
@@ -289,9 +290,9 @@ class EditMilestone extends Component {
 
             // milestone.recipientAddress = this.props.currentUser.address;
             milestone.selectedFiatType = milestone.token.symbol;
-
             const { rates } = await this.props.getConversionRates(
               milestone.date,
+              milestone.token.symbol,
               milestone.token.symbol,
             );
 
@@ -325,16 +326,11 @@ class EditMilestone extends Component {
 
             this.setDate(this.state.milestone.date);
           } catch (e) {
-            ErrorPopup(
-              'Sadly we were unable to load the Campaign in which this Milestone was created. Please try again.',
-              e,
-            );
-
-            this.setState({
-              isLoading: false,
-            });
+            this.props.history.push('/notfound');
           }
         }
+
+        return null;
       })
 
       .catch(err => {
@@ -349,7 +345,10 @@ class EditMilestone extends Component {
   }
 
   componentDidUpdate(prevProps) {
-    const { currentUser } = this.props;
+    const { currentUser, isForeignNetwork } = this.props;
+    if (!prevProps.isForeignNetwork && isForeignNetwork) {
+      this.initComponent();
+    }
     if (prevProps.currentUser !== currentUser) {
       const { milestone } = this.state;
       const { owner, campaign } = milestone;
@@ -392,30 +391,32 @@ class EditMilestone extends Component {
     const { isCapped, token } = milestone;
 
     if (token.symbol !== ANY_TOKEN.symbol && isCapped) {
-      this.props.getConversionRates(date, milestone.token.symbol).then(resp => {
-        let rate =
-          resp &&
-          resp.rates &&
-          (resp.rates[milestone.selectedFiatType] ||
-            Object.values(resp.rates).find(v => v !== undefined));
+      this.props
+        .getConversionRates(date, milestone.token.symbol, milestone.selectedFiatType)
+        .then(resp => {
+          let rate =
+            resp &&
+            resp.rates &&
+            (resp.rates[milestone.selectedFiatType] ||
+              Object.values(resp.rates).find(v => v !== undefined));
 
-        // This rate is undefined, use the milestone rate
+          // This rate is undefined, use the milestone rate
 
-        if (rate === undefined && milestone.token.symbol) {
-          milestone.selectedFiatType = milestone.token.symbol;
-          rate = 1;
-        }
-
-        if (milestone.isCapped) {
-          milestone.maxAmount = milestone.fiatAmount.div(rate);
-          if (resp) {
-            milestone.conversionRateTimestamp = resp.timestamp;
+          if (rate === undefined && milestone.token.symbol) {
+            milestone.selectedFiatType = milestone.token.symbol;
+            rate = 1;
           }
-        }
 
-        const { selectedFiatType, maxAmount } = milestone;
-        this.setState({ selectedFiatType, maxAmount, milestone });
-      });
+          if (milestone.isCapped) {
+            milestone.maxAmount = milestone.fiatAmount.div(rate);
+            if (resp) {
+              milestone.conversionRateTimestamp = resp.timestamp;
+            }
+          }
+
+          const { selectedFiatType, maxAmount } = milestone;
+          this.setState({ selectedFiatType, maxAmount, milestone });
+        });
     }
   }
 
@@ -450,7 +451,8 @@ class EditMilestone extends Component {
     }
   }
 
-  changeSelectedFiat(fiatType) {
+  async changeSelectedFiat(fiatType) {
+    await this.getDateRate(this.state.milestone.date, this.state.milestone.token, fiatType);
     this.setState(prevState => {
       const { milestone } = prevState;
       const conversionRate = this.props.currentRate.rates[fiatType];
@@ -502,7 +504,7 @@ class EditMilestone extends Component {
     const ratesCollection = {};
     milestone.items.forEach(item => {
       results.push(
-        this.getDateRate(item.date, token).then(rate => {
+        this.getDateRate(item.date, token, item.selectedFiatType).then(rate => {
           ratesCollection[item.date] = rate;
         }),
       );
@@ -534,8 +536,8 @@ class EditMilestone extends Component {
     });
   }
 
-  async getDateRate(date, token) {
-    const { rates } = await this.props.getConversionRates(date, token.symbol);
+  async getDateRate(date, token, toRate) {
+    const { rates } = await this.props.getConversionRates(date, token.symbol, toRate);
     return rates;
   }
 
@@ -744,7 +746,7 @@ class EditMilestone extends Component {
           );
         },
         onError: errorMessage => {
-          React.toast.error(errorMessage);
+          if (errorMessage) React.toast.error(errorMessage);
 
           this.setState({ isSaving: false });
         },
@@ -792,7 +794,7 @@ class EditMilestone extends Component {
   addItem(item) {
     const { milestone } = this.state;
     const tokenSymbol = milestone.token.symbol || 'ETH';
-    this.getDateRate(item.date, tokenSymbol).then(rate => {
+    this.getDateRate(item.date, tokenSymbol, item.selectedFiatType).then(rate => {
       if (!rate) return;
       if (rate[item.selectedFiatType] === undefined) {
         item.conversionRate = rate.EUR;
@@ -1219,7 +1221,6 @@ class EditMilestone extends Component {
                                     label="Currency"
                                     value={selectedFiatType}
                                     options={fiatTypes}
-                                    allowedOptions={currentRate.rates}
                                     onChange={this.changeSelectedFiat}
                                     helpText={returnHelpText(
                                       conversionRateLoading,

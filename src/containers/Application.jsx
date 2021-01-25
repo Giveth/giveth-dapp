@@ -41,7 +41,7 @@ import ViewCampaign from '../components/views/ViewCampaign';
 import EditMilestone from '../components/views/EditMilestone';
 
 // components
-import MainMenu from '../components/MainMenu';
+import MainMenu from '../components/layout/MainMenu';
 import Loader from '../components/Loader';
 import ErrorBoundary from '../components/ErrorBoundary';
 
@@ -116,15 +116,15 @@ class Application extends Component {
         {config.analytics.useHotjar && window.location.origin.includes('beta') && (
           <Helmet>
             <script>{`
-              (function(h,o,t,j,a,r){
-                h.hj=h.hj||function(){(h.hj.q=h.hj.q||[]).push(arguments)};
-                h._hjSettings={hjid:944408,hjsv:6};
-                a=o.getElementsByTagName('head')[0];
-                r=o.createElement('script');r.async=1;
-                r.src=t+h._hjSettings.hjid+j+h._hjSettings.hjsv;
-                a.appendChild(r);
-              })(window,document,'https://static.hotjar.com/c/hotjar-','.js?sv=');
-            `}</script>
+            (function(h,o,t,j,a,r){
+              h.hj=h.hj||function(){(h.hj.q=h.hj.q||[]).push(arguments)};
+              h._hjSettings={hjid:944408,hjsv:6};
+              a=o.getElementsByTagName('head')[0];
+              r=o.createElement('script');r.async=1;
+              r.src=t+h._hjSettings.hjid+j+h._hjSettings.hjsv;
+              a.appendChild(r);
+            })(window,document,'https://static.hotjar.com/c/hotjar-','.js?sv=');
+          `}</script>
           </Helmet>
         )}
 
@@ -154,13 +154,13 @@ class Application extends Component {
                                         {userLoading && <Loader className="fixed" />}
 
                                         {!userLoading && !hasError && (
-                                          <div>
+                                          <div className="page-wrapper">
                                             <MainMenu />
 
                                             <Switch>
                                               {/* Routes are defined here. Persistent data is set as props on components
-                                NOTE order matters, wrong order breaks routes!
-                            */}
+                              NOTE order matters, wrong order breaks routes!
+                          */}
 
                                               <Route
                                                 exact
@@ -402,16 +402,16 @@ class Application extends Component {
                                               />
 
                                               {/* <Route
-                                        exact
-                                        path="/wallet"
-                                        render={props => (
-                                          <UserWallet
-                                            currentUser={currentUser}
-                                            // wallet={wallet}
-                                            {...props}
-                                          />
-                                        )}
-                                      /> */}
+                                      exact
+                                      path="/wallet"
+                                      render={props => (
+                                        <UserWallet
+                                          currentUser={currentUser}
+                                          // wallet={wallet}
+                                          {...props}
+                                        />
+                                      )}
+                                    /> */}
                                               <Route
                                                 exact
                                                 path="/profile"

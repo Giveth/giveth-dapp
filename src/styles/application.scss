@@ -1,8 +1,9 @@
 // Global classes are defined here
 @import '~react-input-token/lib/style.css';
+@import 'variables/variables.scss';
+@import 'utils/utils.scss';
 @import 'mixins';
 @import 'layout.scss';
-@import 'colors.scss';
 @import 'typography.scss';
 // views
 @import 'causesView.scss';
@@ -105,14 +106,26 @@ table {
   font-weight: 300;
 }
 
+.loading-overlay {
+  top:0;
+  left:0;
+  background-color: hsla(0,0%,100%,.8);
+  opacity: .6;
+  position: absolute;
+  height: 100%;
+  width: 100%;
+  z-index: 1;
+}
+
 input[type='file'] {
   display: block;
 }
 
 input[type='number'] {
-  -moz-appearance: textfield;/*For FireFox*/
+  -moz-appearance: textfield; /*For FireFox*/
 
-  &::-webkit-inner-spin-button { /*For Webkits like Chrome and Safari*/
+  &::-webkit-inner-spin-button {
+    /*For Webkits like Chrome and Safari*/
     -webkit-appearance: none;
     margin: 0;
   }
@@ -264,6 +277,13 @@ span.nav-link:focus {
 .share-options {
   display: flex;
   align-items: center;
+  justify-content: flex-end;
+  margin-top: 20px;
+  margin-bottom: 20px;
+  flex: 1;
+  @include media_tablet() {
+    margin-top: 10px;
+  }
 }
 
 .share-options > * {
@@ -283,9 +303,19 @@ span.nav-link:focus {
       color: darken($green, 10%);
     }
   }
+
+  @include media_tablet() {
+    flex-direction: column;
+  }
 }
 
 .label > .btn-explain {
   padding: 0 5px;
   color: lighten($link-color, 40%);
+}
+
+@include media_tablet() {
+  .page-wrapper {
+    padding-top: 55px;
+  }
 }

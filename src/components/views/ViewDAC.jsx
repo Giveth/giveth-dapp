@@ -64,7 +64,6 @@ class ViewDAC extends Component {
     DACService.get(dacId)
       .then(dac => {
         this.setState({ dac, isLoading: false });
-
         this.campaignObserver = DACService.subscribeCampaigns(
           dac.delegateId,
           campaigns => this.setState({ campaigns, isLoadingCampaigns: false }),
