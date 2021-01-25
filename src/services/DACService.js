@@ -235,6 +235,28 @@ class DACService {
   }
 
   /**
+   * Get user is owner of some dac
+   *
+   * @param userAddress Address of user which his ownership status should be returned
+   * @param onSuccess     Callback function once response is obtained successfully
+   * @param onError       Callback function if error is encountered
+   */
+  static getUserIsDacOwner(userAddress, onSuccess, onError) {
+    return dacs
+      .find({
+        query: {
+          $limit: 0,
+          ownerAddress: userAddress,
+        },
+      })
+      .then(resp => {
+        if (resp) onSuccess(resp.total > 0);
+        else onSuccess(false);
+      })
+      .catch(onError);
+  }
+
+  /**
    * Save new DAC to the blockchain or update existing one in feathers
    *
    * @param dac         DAC object to be saved
