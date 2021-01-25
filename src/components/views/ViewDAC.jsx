@@ -35,8 +35,6 @@ import GoBackSection from '../GoBackSection';
 
 const helmetContext = {};
 
-const { homeUrl } = config;
-
 class ViewDAC extends Component {
   constructor(props) {
     super(props);
@@ -175,24 +173,6 @@ class ViewDAC extends Component {
               <div>
                 <Helmet>
                   <title>{dac.title}</title>
-
-                  {/* Google / Search Engine Tags */}
-                  <meta itemProp="name" content={dac.title} />
-                  <meta itemProp="description" content={dac.description} />
-                  <meta itemProp="image" content={dac.image} />
-
-                  {/* Facebook Meta Tags */}
-                  <meta property="og:url" content={`${homeUrl}/dacs/${dac.id}`} />
-                  <meta property="og:type" content="website" />
-                  <meta property="og:title" content={dac.title} />
-                  <meta property="og:description" content={dac.description} />
-                  <meta property="og:image" content={dac.image} />
-
-                  {/* Twitter Meta Tags */}
-                  <meta name="twitter:card" content="summary_large_image" />
-                  <meta name="twitter:title" content={dac.title} />
-                  <meta name="twitter:description" content={dac.description} />
-                  <meta name="twitter:image" content={dac.image} />
                 </Helmet>
                 <BackgroundImageHeader
                   image={dac.image}

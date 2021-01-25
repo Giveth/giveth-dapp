@@ -195,7 +195,6 @@ class ViewCampaign extends Component {
 
   render() {
     const { currentUser, balance } = this.props;
-    const { homeUrl } = config;
     const {
       isLoading,
       campaign,
@@ -249,24 +248,6 @@ class ViewCampaign extends Component {
               <div>
                 <Helmet>
                   <title>{campaign.title}</title>
-
-                  {/* Google / Search Engine Tags */}
-                  <meta itemProp="name" content={campaign.title} />
-                  <meta itemProp="description" content={campaign.description} />
-                  <meta itemProp="image" content={campaign.image} />
-
-                  {/* Facebook Meta Tags */}
-                  <meta property="og:url" content={`${homeUrl}/campaigns/${campaign.id}`} />
-                  <meta property="og:type" content="website" />
-                  <meta property="og:title" content={campaign.title} />
-                  <meta property="og:description" content={campaign.description} />
-                  <meta property="og:image" content={campaign.image} />
-
-                  {/* Twitter Meta Tags */}
-                  <meta name="twitter:card" content="summary_large_image" />
-                  <meta name="twitter:title" content={campaign.title} />
-                  <meta name="twitter:description" content={campaign.description} />
-                  <meta name="twitter:image" content={campaign.image} />
                 </Helmet>
 
                 <BackgroundImageHeader
