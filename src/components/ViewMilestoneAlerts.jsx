@@ -12,6 +12,7 @@ import ApproveRejectMilestoneCompletionButtons from './ApproveRejectMilestoneCom
 import WithdrawMilestoneFundsButton from './WithdrawMilestoneFundsButton';
 import DelegateMultipleButton from './DelegateMultipleButton';
 import { Consumer as UserConsumer } from '../contextProviders/UserProvider';
+import RequestMarkMilestoneCompleteButton from './RequestMarkMilestoneCompleteButton';
 
 export default function ViewMilestoneAlerts(props) {
   const { balance, milestone, campaign } = props;
@@ -35,6 +36,16 @@ export default function ViewMilestoneAlerts(props) {
                   milestone={milestone}
                   campaign={campaign}
                   balance={balance}
+                  currentUser={currentUser}
+                />
+              </ProjectViewActionAlert>
+            )}
+
+            {milestone.canUserMarkComplete(currentUser) && (
+              <ProjectViewActionAlert message="Request mark complete">
+                <RequestMarkMilestoneCompleteButton
+                  balance={balance}
+                  milestone={milestone}
                   currentUser={currentUser}
                 />
               </ProjectViewActionAlert>
