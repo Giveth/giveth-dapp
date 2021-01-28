@@ -1,3 +1,4 @@
+/* eslint-disable class-methods-use-this */
 /* eslint-disable react/sort-comp */
 import React, { Component, Fragment } from 'react';
 import { Link } from 'react-router-dom';
@@ -129,6 +130,7 @@ class EditMilestone extends Component {
 
     this.submit = this.submit.bind(this);
     this.setImage = this.setImage.bind(this);
+    this.saveFormInStorage = this.saveFormInStorage.bind(this);
     this.setMaxAmount = this.setMaxAmount.bind(this);
     this.setFiatAmount = this.setFiatAmount.bind(this);
     this.setRecipientAddress = this.setRecipientAddress.bind(this);
@@ -248,6 +250,19 @@ class EditMilestone extends Component {
               token: this.props.tokenWhitelist[0],
             });
 
+            const milestoneForm = sessionStorage.getItem('milestone-form');
+            if (milestoneForm) {
+              const { title, description, recipientAddress, reviewerAddress, dacId } = JSON.parse(
+                milestoneForm,
+              );
+              milestone.title = title;
+              milestone.description = description;
+              milestone.recipientAddress = recipientAddress;
+              milestone.reviewerAddress = reviewerAddress;
+              // eslint-disable-next-line radix
+              milestone.dacId = parseInt(dacId);
+            }
+
             validQueryStringVariables.forEach(variable => {
               if (!qs[variable]) return;
               switch (variable) {
@@ -325,6 +340,8 @@ class EditMilestone extends Component {
 
             this.setDate(this.state.milestone.date);
           } catch (e) {
+            console.log('e:', e);
+
             this.props.history.push('/notfound');
           }
         }
@@ -728,6 +745,7 @@ class EditMilestone extends Component {
             });
           }
 
+          sessionStorage.removeItem('milestone-form');
           this.setState({
             isSaving: false,
           });
@@ -852,6 +870,22 @@ class EditMilestone extends Component {
     return getHtmlText(value).length > 10;
   }
 
+  saveFormInStorage(form) {
+    if (!this.props.isNew) return;
+
+    const { title, description, reviewerAddress, dacId, recipientAddress } = form;
+    sessionStorage.setItem(
+      'milestone-form',
+      JSON.stringify({
+        title,
+        description,
+        reviewerAddress,
+        dacId,
+        recipientAddress,
+      }),
+    );
+  }
+
   render() {
     const {
       isNew,
@@ -942,6 +976,7 @@ class EditMilestone extends Component {
                       milestone.dacId = parseInt(inputs.dacId, 10) || 0;
                       milestone.recipientAddress = inputs.recipientAddress || ZERO_ADDRESS;
                     }}
+                    onChange={val => this.saveFormInStorage(val)}
                     onValid={() => {
                       this.toggleFormValid(true);
                     }}
