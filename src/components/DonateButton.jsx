@@ -9,6 +9,7 @@ import Toggle from 'react-toggle';
 import GA from 'lib/GoogleAnalytics';
 import { Link } from 'react-router-dom';
 import { withRouter } from 'react-router';
+import ReactTooltip from 'react-tooltip';
 import getNetwork from '../lib/blockchain/getNetwork';
 import User from '../models/User';
 import extraGas from '../lib/blockchain/extraGas';
@@ -979,10 +980,20 @@ class DonateButton extends React.Component {
                         disabled={isSaving || !formIsValid || !isCorrectNetwork}
                         isLoading={false}
                         onClick={submitInfiniteAllowance}
+                        data-tip="React-tooltip"
                       >
                         <i className="fa fa-unlock-alt" /> Infinite Unlock & Donate
                       </LoaderButton>
                     )}
+
+                    <ReactTooltip place="top" type="dark" effect="solid">
+                      <p style={{ maxWidth: 250 }}>
+                        Infinite unlock will allow the Giveth Bridge smart contract to interact
+                        freely with the {selectedToken.name} in your wallet, this can be changed
+                        later by clicking Donate and choosing to Revoke unlike your bank irl..
+                        hehehehe
+                      </p>
+                    </ReactTooltip>
 
                     {allowanceStatus === AllowanceStatus.Enough && (
                       <LoaderButton
