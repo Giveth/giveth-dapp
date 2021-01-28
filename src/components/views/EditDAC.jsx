@@ -23,6 +23,7 @@ import DAC from '../../models/DAC';
 import User from '../../models/User';
 import ErrorPopup from '../ErrorPopup';
 import { Consumer as WhiteListConsumer } from '../../contextProviders/WhiteListProvider';
+import ErrorHandler from '../../lib/ErrorHandler';
 
 /**
  * View to create or edit a DAC
@@ -71,10 +72,8 @@ class EditDAC extends Component {
               }
             })
             .catch(err => {
-              ErrorPopup(
-                'Sadly we were unable to load the DAC. Please refresh the page and try again.',
-                err,
-              );
+              const message = `Sadly we were unable to load the DAC. Please refresh the page and try again.`;
+              ErrorHandler(err, message);
             });
         } else {
           this.setState({ isLoading: false });

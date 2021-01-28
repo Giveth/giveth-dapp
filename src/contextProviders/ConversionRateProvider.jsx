@@ -6,6 +6,7 @@ import BigNumber from 'bignumber.js';
 import { feathersClient } from '../lib/feathersClient';
 import { getStartOfDayUTC } from '../lib/helpers';
 import ErrorPopup from '../components/ErrorPopup';
+import ErrorHandler from '../lib/ErrorHandler';
 
 const Context = createContext();
 const { Provider, Consumer } = Context;
@@ -108,10 +109,9 @@ class ConversionRateProvider extends Component {
         return rt;
       })
       .catch(err => {
-        ErrorPopup(
-          'Sadly we were unable to get the exchange rate. Please try again after refresh.',
-          err,
-        );
+        const message = `Sadly we were unable to get the exchange rate. Please try again after refresh.`;
+        ErrorHandler(err, message);
+
         this.setState({ isLoading: false });
       });
   }

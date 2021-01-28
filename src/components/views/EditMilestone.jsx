@@ -49,6 +49,7 @@ import DACService from '../../services/DACService';
 import LPMilestone from '../../models/LPMilestone';
 import BridgedMilestone from '../../models/BridgedMilestone';
 import DescriptionRender from '../DescriptionRender';
+import ErrorHandler from '../../lib/ErrorHandler';
 
 BigNumber.config({ DECIMAL_PLACES: 18 });
 
@@ -228,10 +229,8 @@ class EditMilestone extends Component {
               isLoading: false,
             });
           } catch (err) {
-            ErrorPopup(
-              'Sadly we were unable to load the requested Milestone details. Please try again.',
-              err,
-            );
+            const message = `Sadly we were unable to load the requested Milestone details. Please try again.`;
+            ErrorHandler(err, message);
           }
         } else {
           // isNew

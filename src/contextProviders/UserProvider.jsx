@@ -5,8 +5,7 @@ import { utils } from 'web3';
 import { authenticateIfPossible } from 'lib/middleware';
 import { feathersClient } from '../lib/feathersClient';
 import GivethWallet from '../lib/blockchain/GivethWallet';
-
-import ErrorPopup from '../components/ErrorPopup';
+import ErrorHandler from '../lib/ErrorHandler';
 
 // models
 import User from '../models/User';
@@ -93,10 +92,9 @@ class UserProvider extends Component {
             });
           },
           error => {
-            ErrorPopup(
-              'Something went wrong with getting user profile. Please try again after refresh.',
-              error,
-            );
+            const message = `Something went wrong with getting user profile. Please try again after refresh.`;
+            ErrorHandler(error, message);
+
             this.setState({ currentUser: new User({ address }) }, () => {
               this.authenticateFeathers();
             });
