@@ -989,8 +989,9 @@ class DonateButton extends React.Component {
                     <ReactTooltip place="top" type="dark" effect="solid">
                       <p style={{ maxWidth: 250 }}>
                         Infinite unlock will allow the Giveth Bridge smart contract to interact
-                        freely with the DAI in your wallet, this can be changed later by clicking
-                        Donate and choosing to Revoke unlike your bank irl.. hehehehe
+                        freely with the {selectedToken.name} in your wallet, this can be changed
+                        later by clicking Donate and choosing to Revoke unlike your bank irl..
+                        hehehehe
                       </p>
                     </ReactTooltip>
 
