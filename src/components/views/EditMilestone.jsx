@@ -257,7 +257,8 @@ class EditMilestone extends Component {
               milestone.description = description;
               milestone.recipientAddress = recipientAddress;
               milestone.reviewerAddress = reviewerAddress;
-              milestone.dacId = dacId;
+              // eslint-disable-next-line radix
+              milestone.dacId = parseInt(dacId);
             }
 
             validQueryStringVariables.forEach(variable => {
@@ -337,6 +338,8 @@ class EditMilestone extends Component {
 
             this.setDate(this.state.milestone.date);
           } catch (e) {
+            console.log('e:', e);
+
             this.props.history.push('/notfound');
           }
         }
