@@ -4,12 +4,12 @@ import { paramsForServer } from 'feathers-hooks-common';
 
 import Milestone from 'models/Milestone';
 import { feathersClient } from '../lib/feathersClient';
-import ErrorPopup from '../components/ErrorPopup';
 // Models
 import Donation from '../models/Donation';
 import User from '../models/User';
 import DAC from '../models/DAC';
 import Campaign from '../models/Campaign';
+import ErrorHandler from '../lib/ErrorHandler';
 
 const Context = createContext();
 const { Provider, Consumer } = Context;
@@ -229,7 +229,8 @@ class DelegationProvider extends Component {
     ])
       .then(() => this.getAndWatchDonations())
       .catch(err => {
-        ErrorPopup('Unable to load dacs, Campaigns or Milestones.', err);
+        const message = `Unable to load dacs, Campaigns or Milestones. ${err}`;
+        ErrorHandler(err, message);
         this.setState({ isLoading: false });
       });
   }
