@@ -223,7 +223,7 @@ You can change the environment to which the DApp connects through the node envir
 
 ### Release Process
 The development uses the Gitflow process with 2 weeks long sprints. This means there is new release to be tested every fortnight. We invite contributors to help us test the DApp in the release 
-environment before we merge it to the master branch and deploy to production environments. If you are interested, write to the DApp Development channel on [
+environment before we merge it to the master branch and deploy to production environments. If you are interested, write to the DApp Development channel on [Element
 ](https://join.giveth.io). You can read more about the release planning on [our wiki](https://wiki.giveth.io/documentation/DApp/product-development-testing/).
 
 ## Help
