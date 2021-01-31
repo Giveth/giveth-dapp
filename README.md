@@ -33,7 +33,7 @@ In the following sections you will learn all you need to know to run the DApp lo
 
 ### Install
 1. Click **Star** on this repo near the top-right corner of this web page (if you want to).
-2. Join us on [Riot](http://join.giveth.io) if you haven't already.
+2. Join us on [Element](http://join.giveth.io) if you haven't already.
 3. Fork this repo by clicking **Fork** button in top-right corner of this web page. Continue to follow instruction steps from your own giveth-dapp repo.
 4. Clone your own "giveth-dapp" repo. Copy the link from the "Clone or download" button near the top right of this repo's home page.
 5. The rest of these steps must be done from your machine's command line. See the [OSX and Linux](#for-osx-and-linux) or [Windows](#for-windows) section to continue.
@@ -223,7 +223,8 @@ You can change the environment to which the DApp connects through the node envir
 
 ### Release Process
 The development uses the Gitflow process with 2 weeks long sprints. This means there is new release to be tested every fortnight. We invite contributors to help us test the DApp in the release 
-environment before we merge it to the master branch and deploy to production environments. If you are interested, write to the DApp Development channel on [Riot](https://join.giveth.io). You can read more about the release planning on [our wiki](https://wiki.giveth.io/documentation/DApp/product-development-testing/).
+environment before we merge it to the master branch and deploy to production environments. If you are interested, write to the DApp Development channel on [Element
+](https://join.giveth.io). You can read more about the release planning on [our wiki](https://wiki.giveth.io/documentation/DApp/product-development-testing/).
 
 ## Help
-Reach out to us on [Riot](https://join.giveth.io) for any help or to share ideas.
+Reach out to us on [Element](https://join.giveth.io) for any help or to share ideas.

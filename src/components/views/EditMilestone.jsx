@@ -1,3 +1,4 @@
+/* eslint-disable class-methods-use-this */
 /* eslint-disable react/sort-comp */
 import React, { Component, Fragment } from 'react';
 import { Link } from 'react-router-dom';
@@ -49,6 +50,7 @@ import DACService from '../../services/DACService';
 import LPMilestone from '../../models/LPMilestone';
 import BridgedMilestone from '../../models/BridgedMilestone';
 import DescriptionRender from '../DescriptionRender';
+import ErrorHandler from '../../lib/ErrorHandler';
 
 BigNumber.config({ DECIMAL_PLACES: 18 });
 
@@ -128,6 +130,7 @@ class EditMilestone extends Component {
 
     this.submit = this.submit.bind(this);
     this.setImage = this.setImage.bind(this);
+    this.saveFormInStorage = this.saveFormInStorage.bind(this);
     this.setMaxAmount = this.setMaxAmount.bind(this);
     this.setFiatAmount = this.setFiatAmount.bind(this);
     this.setRecipientAddress = this.setRecipientAddress.bind(this);
@@ -218,17 +221,18 @@ class EditMilestone extends Component {
               image: milestone.image,
               formIsValid: true,
             });
-
-            await this.props.getConversionRates(milestone.date, milestone.token.symbol);
+            await this.props.getConversionRates(
+              milestone.date,
+              milestone.token.symbol,
+              milestone.token.symbol,
+            );
 
             this.setState({
               isLoading: false,
             });
           } catch (err) {
-            ErrorPopup(
-              'Sadly we were unable to load the requested Milestone details. Please try again.',
-              err,
-            );
+            const message = `Sadly we were unable to load the requested Milestone details. Please try again.`;
+            ErrorHandler(err, message);
           }
         } else {
           // isNew
@@ -245,6 +249,19 @@ class EditMilestone extends Component {
               fiatAmount: '0',
               token: this.props.tokenWhitelist[0],
             });
+
+            const milestoneForm = sessionStorage.getItem('milestone-form');
+            if (milestoneForm) {
+              const { title, description, recipientAddress, reviewerAddress, dacId } = JSON.parse(
+                milestoneForm,
+              );
+              milestone.title = title;
+              milestone.description = description;
+              milestone.recipientAddress = recipientAddress;
+              milestone.reviewerAddress = reviewerAddress;
+              // eslint-disable-next-line radix
+              milestone.dacId = parseInt(dacId);
+            }
 
             validQueryStringVariables.forEach(variable => {
               if (!qs[variable]) return;
@@ -287,9 +304,9 @@ class EditMilestone extends Component {
 
             // milestone.recipientAddress = this.props.currentUser.address;
             milestone.selectedFiatType = milestone.token.symbol;
-
             const { rates } = await this.props.getConversionRates(
               milestone.date,
+              milestone.token.symbol,
               milestone.token.symbol,
             );
 
@@ -323,6 +340,8 @@ class EditMilestone extends Component {
 
             this.setDate(this.state.milestone.date);
           } catch (e) {
+            console.log('e:', e);
+
             this.props.history.push('/notfound');
           }
         }
@@ -388,30 +407,32 @@ class EditMilestone extends Component {
     const { isCapped, token } = milestone;
 
     if (token.symbol !== ANY_TOKEN.symbol && isCapped) {
-      this.props.getConversionRates(date, milestone.token.symbol).then(resp => {
-        let rate =
-          resp &&
-          resp.rates &&
-          (resp.rates[milestone.selectedFiatType] ||
-            Object.values(resp.rates).find(v => v !== undefined));
+      this.props
+        .getConversionRates(date, milestone.token.symbol, milestone.selectedFiatType)
+        .then(resp => {
+          let rate =
+            resp &&
+            resp.rates &&
+            (resp.rates[milestone.selectedFiatType] ||
+              Object.values(resp.rates).find(v => v !== undefined));
 
-        // This rate is undefined, use the milestone rate
+          // This rate is undefined, use the milestone rate
 
-        if (rate === undefined && milestone.token.symbol) {
-          milestone.selectedFiatType = milestone.token.symbol;
-          rate = 1;
-        }
-
-        if (milestone.isCapped) {
-          milestone.maxAmount = milestone.fiatAmount.div(rate);
-          if (resp) {
-            milestone.conversionRateTimestamp = resp.timestamp;
+          if (rate === undefined && milestone.token.symbol) {
+            milestone.selectedFiatType = milestone.token.symbol;
+            rate = 1;
           }
-        }
 
-        const { selectedFiatType, maxAmount } = milestone;
-        this.setState({ selectedFiatType, maxAmount, milestone });
-      });
+          if (milestone.isCapped) {
+            milestone.maxAmount = milestone.fiatAmount.div(rate);
+            if (resp) {
+              milestone.conversionRateTimestamp = resp.timestamp;
+            }
+          }
+
+          const { selectedFiatType, maxAmount } = milestone;
+          this.setState({ selectedFiatType, maxAmount, milestone });
+        });
     }
   }
 
@@ -446,7 +467,8 @@ class EditMilestone extends Component {
     }
   }
 
-  changeSelectedFiat(fiatType) {
+  async changeSelectedFiat(fiatType) {
+    await this.getDateRate(this.state.milestone.date, this.state.milestone.token, fiatType);
     this.setState(prevState => {
       const { milestone } = prevState;
       const conversionRate = this.props.currentRate.rates[fiatType];
@@ -498,7 +520,7 @@ class EditMilestone extends Component {
     const ratesCollection = {};
     milestone.items.forEach(item => {
       results.push(
-        this.getDateRate(item.date, token).then(rate => {
+        this.getDateRate(item.date, token, item.selectedFiatType).then(rate => {
           ratesCollection[item.date] = rate;
         }),
       );
@@ -530,8 +552,8 @@ class EditMilestone extends Component {
     });
   }
 
-  async getDateRate(date, token) {
-    const { rates } = await this.props.getConversionRates(date, token.symbol);
+  async getDateRate(date, token, toRate) {
+    const { rates } = await this.props.getConversionRates(date, token.symbol, toRate);
     return rates;
   }
 
@@ -723,6 +745,7 @@ class EditMilestone extends Component {
             });
           }
 
+          sessionStorage.removeItem('milestone-form');
           this.setState({
             isSaving: false,
           });
@@ -788,7 +811,7 @@ class EditMilestone extends Component {
   addItem(item) {
     const { milestone } = this.state;
     const tokenSymbol = milestone.token.symbol || 'ETH';
-    this.getDateRate(item.date, tokenSymbol).then(rate => {
+    this.getDateRate(item.date, tokenSymbol, item.selectedFiatType).then(rate => {
       if (!rate) return;
       if (rate[item.selectedFiatType] === undefined) {
         item.conversionRate = rate.EUR;
@@ -845,6 +868,22 @@ class EditMilestone extends Component {
       );
     }
     return getHtmlText(value).length > 10;
+  }
+
+  saveFormInStorage(form) {
+    if (!this.props.isNew) return;
+
+    const { title, description, reviewerAddress, dacId, recipientAddress } = form;
+    sessionStorage.setItem(
+      'milestone-form',
+      JSON.stringify({
+        title,
+        description,
+        reviewerAddress,
+        dacId,
+        recipientAddress,
+      }),
+    );
   }
 
   render() {
@@ -937,6 +976,7 @@ class EditMilestone extends Component {
                       milestone.dacId = parseInt(inputs.dacId, 10) || 0;
                       milestone.recipientAddress = inputs.recipientAddress || ZERO_ADDRESS;
                     }}
+                    onChange={val => this.saveFormInStorage(val)}
                     onValid={() => {
                       this.toggleFormValid(true);
                     }}
@@ -1215,7 +1255,6 @@ class EditMilestone extends Component {
                                     label="Currency"
                                     value={selectedFiatType}
                                     options={fiatTypes}
-                                    allowedOptions={currentRate.rates}
                                     onChange={this.changeSelectedFiat}
                                     helpText={returnHelpText(
                                       conversionRateLoading,

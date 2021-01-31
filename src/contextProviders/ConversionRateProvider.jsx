@@ -6,6 +6,7 @@ import BigNumber from 'bignumber.js';
 import { feathersClient } from '../lib/feathersClient';
 import { getStartOfDayUTC } from '../lib/helpers';
 import ErrorPopup from '../components/ErrorPopup';
+import ErrorHandler from '../lib/ErrorHandler';
 
 const Context = createContext();
 const { Provider, Consumer } = Context;
@@ -35,11 +36,15 @@ class ConversionStorage {
    * Get rates for given symbol and date
    * @param {string} symbol Token symbol
    * @param {string} date   ISO date string
+   * @param {string} to   Destination token (optional)
    *
    * @return {object|boolean} If found return the pair {timestamp, rates}, else return false
    */
-  get(symbol, date) {
-    if (this[symbol] && this[symbol][date]) return { timestamp: date, rates: this[symbol][date] };
+  get(symbol, date, to = null) {
+    // the user wants to know if there is a conversion rate for tuple of <symbol,date,to> and return true if exists
+    if (this[symbol] && this[symbol][date] && this[symbol][date][to]) {
+      return { timestamp: date, rates: this[symbol][date] };
+    }
     return false;
   }
 
@@ -54,8 +59,7 @@ class ConversionStorage {
    */
   add(symbol, date, rates) {
     if (!this[symbol]) this[symbol] = {};
-
-    this[symbol][date] = rates;
+    this[symbol][date] = { ...this[symbol][date], ...rates };
 
     return { timestamp: date, rates: this[symbol][date] };
   }
@@ -80,11 +84,10 @@ class ConversionRateProvider extends Component {
     this.getConversionRates = this.getConversionRates.bind(this);
   }
 
-  getConversionRates(date, symbol) {
+  getConversionRates(date, symbol, to = null) {
     const dtUTC = getStartOfDayUTC(date); // Should not be necessary as the datepicker should provide UTC, but just to be sure
 
-    const rate = this.rates.get(symbol, dtUTC.toISOString());
-
+    const rate = this.rates.get(symbol, dtUTC.toISOString(), to);
     // We have the rate cached
     if (rate) {
       return new Promise(resolve => {
@@ -97,7 +100,7 @@ class ConversionRateProvider extends Component {
     // We don't have the conversion rate in cache, fetch from feathers
     return feathersClient
       .service('conversionRates')
-      .find({ query: { date: dtUTC, symbol } })
+      .find({ query: { date: dtUTC, symbol, to } })
       .then(resp => {
         const rt = this.rates.add(symbol, dtUTC.toISOString(), resp.rates);
 
@@ -106,10 +109,9 @@ class ConversionRateProvider extends Component {
         return rt;
       })
       .catch(err => {
-        ErrorPopup(
-          'Sadly we were unable to get the exchange rate. Please try again after refresh.',
-          err,
-        );
+        const message = `Sadly we were unable to get the exchange rate. Please try again after refresh.`;
+        ErrorHandler(err, message);
+
         this.setState({ isLoading: false });
       });
   }

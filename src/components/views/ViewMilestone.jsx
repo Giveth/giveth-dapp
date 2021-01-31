@@ -27,7 +27,6 @@ import { Consumer as WhiteListConsumer } from '../../contextProviders/WhiteListP
 import NotFound from './NotFound';
 import DescriptionRender from '../DescriptionRender';
 import ErrorBoundary from '../ErrorBoundary';
-import config from '../../configuration';
 import EditMilestoneButton from '../EditMilestoneButton';
 import GoBackSection from '../GoBackSection';
 import ViewMilestoneAlerts from '../ViewMilestoneAlerts';
@@ -146,18 +145,11 @@ class ViewMilestone extends Component {
 
   async getDacTitle(dacId) {
     if (dacId === 0) return;
-    DACService.getDACs(
-      1, // Limit
-      0, // Skip
-      (dacs, _) => {
-        let dacTitle = '';
-        dacs.forEach(d => {
-          if (d.myDelegateId === dacId) dacTitle = d._title;
-        });
-        this.setState({ dacTitle });
-      },
-      () => {},
-    );
+    DACService.getByDelegateId(dacId)
+      .then(dac => {
+        this.setState({ dacTitle: dac.title });
+      })
+      .catch(() => {});
   }
 
   loadMoreDonations() {
@@ -230,7 +222,6 @@ class ViewMilestone extends Component {
 
   render() {
     const { currentUser, balance } = this.props;
-    const { homeUrl } = config;
     const {
       isLoading,
       donations,
@@ -311,27 +302,6 @@ class ViewMilestone extends Component {
                   <div>
                     <Helmet>
                       <title>{milestone.title}</title>
-
-                      {/* Google / Search Engine Tags */}
-                      <meta itemProp="name" content={milestone.title} />
-                      <meta itemProp="description" content={milestone.description} />
-                      <meta itemProp="image" content={milestone.image} />
-
-                      {/* Facebook Meta Tags */}
-                      <meta
-                        property="og:url"
-                        content={`${homeUrl}/campaigns/${campaign.id}/milestones/${milestone.id}`}
-                      />
-                      <meta property="og:type" content="website" />
-                      <meta property="og:title" content={milestone.title} />
-                      <meta property="og:description" content={milestone.description} />
-                      <meta property="og:image" content={milestone.image} />
-
-                      {/* Twitter Meta Tags */}
-                      <meta name="twitter:card" content="summary_large_image" />
-                      <meta name="twitter:title" content={milestone.title} />
-                      <meta name="twitter:description" content={milestone.description} />
-                      <meta name="twitter:image" content={milestone.image} />
                     </Helmet>
 
                     <BackgroundImageHeader
@@ -408,7 +378,6 @@ class ViewMilestone extends Component {
                         <div className="col-md-8 m-auto">
                           <ViewMilestoneAlerts
                             milestone={milestone}
-                            currentUser={currentUser}
                             balance={balance}
                             campaign={campaign}
                           />

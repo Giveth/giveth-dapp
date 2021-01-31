@@ -75,6 +75,9 @@ $aspect-ratio: percentage(9/16); //16:9 ratio
       left: 0;
       right: 0;
       border: none;
+      p {
+        word-break: break-word;
+      }
     }
   }
 

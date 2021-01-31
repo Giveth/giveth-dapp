@@ -5,11 +5,11 @@ import { utils } from 'web3';
 import { authenticateIfPossible } from 'lib/middleware';
 import { feathersClient } from '../lib/feathersClient';
 import GivethWallet from '../lib/blockchain/GivethWallet';
-
-import ErrorPopup from '../components/ErrorPopup';
+import ErrorHandler from '../lib/ErrorHandler';
 
 // models
 import User from '../models/User';
+import { DACService } from '../services';
 
 const Context = createContext();
 const { Provider, Consumer } = Context;
@@ -33,6 +33,7 @@ class UserProvider extends Component {
     this.state = {
       currentUser: undefined,
       hasError: false,
+      isDelegator: false,
     };
 
     this.getUserData = this.getUserData.bind(this);
@@ -64,42 +65,42 @@ class UserProvider extends Component {
   async getUserData(address) {
     if (this.userSubscriber) this.userSubscriber.unsubscribe();
 
-    return new Promise((resolve, reject) => {
-      if (!address) {
-        this.setState({ currentUser: undefined }, () => {
-          resolve();
-          this.props.onLoaded();
-        });
-      } else {
-        this.userSubscriber = feathersClient
-          .service('/users')
-          .watch({ listStrategy: 'always' })
-          .find({
-            query: {
-              address,
-            },
-          })
-          .subscribe(
-            resp => {
-              const currentUser = resp.total === 1 ? new User(resp.data[0]) : new User({ address });
-              this.setState({ currentUser }, () => {
-                this.authenticateFeathers();
-                resolve();
-              });
-            },
-            error => {
-              ErrorPopup(
-                'Something went wrong with getting user profile. Please try again after refresh.',
-                error,
+    if (!address) {
+      this.setState({ currentUser: undefined, isDelegator: false }, () => {
+        this.props.onLoaded();
+      });
+    } else {
+      this.userSubscriber = feathersClient
+        .service('/users')
+        .watch({ listStrategy: 'always' })
+        .find({
+          query: {
+            address,
+          },
+        })
+        .subscribe(
+          resp => {
+            const currentUser = resp.total === 1 ? new User(resp.data[0]) : new User({ address });
+            this.setState({ currentUser }, () => {
+              this.authenticateFeathers();
+
+              DACService.getUserIsDacOwner(
+                address,
+                isDelegator => this.setState({ isDelegator }),
+                () => this.setState({ isDelegator: false }),
               );
-              this.setState({ currentUser: new User({ address }) }, () => {
-                this.authenticateFeathers();
-                reject();
-              });
-            },
-          );
-      }
-    });
+            });
+          },
+          error => {
+            const message = `Something went wrong with getting user profile. Please try again after refresh.`;
+            ErrorHandler(error, message);
+
+            this.setState({ currentUser: new User({ address }) }, () => {
+              this.authenticateFeathers();
+            });
+          },
+        );
+    }
   }
 
   // TODO: this can be removed after a sufficient time has passed w/ new Web3 support
@@ -184,7 +185,7 @@ class UserProvider extends Component {
   }
 
   render() {
-    const { currentUser, hasError } = this.state;
+    const { currentUser, hasError, isDelegator } = this.state;
 
     return (
       <Provider
@@ -193,6 +194,7 @@ class UserProvider extends Component {
             currentUser,
             hasError,
             signIn: this.signIn,
+            isDelegator,
           },
         }}
       >
