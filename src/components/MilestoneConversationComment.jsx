@@ -7,7 +7,7 @@ import ErrorPopup from './ErrorPopup';
 import { actionWithLoggedIn, authenticateIfPossible, checkProfile } from '../lib/middleware';
 import ConversationModal from './ConversationModal';
 
-class MilestoneMessage extends Component {
+class MilestoneConversationComment extends Component {
   constructor() {
     super();
     this.conversationModal = React.createRef();
@@ -110,13 +110,13 @@ class MilestoneMessage extends Component {
   }
 }
 
-MilestoneMessage.propTypes = {
+MilestoneConversationComment.propTypes = {
   milestone: PropTypes.instanceOf(Milestone).isRequired,
   currentUser: PropTypes.instanceOf(User),
 };
 
-MilestoneMessage.defaultProps = {
+MilestoneConversationComment.defaultProps = {
   currentUser: undefined,
 };
 
-export default MilestoneMessage;
+export default MilestoneConversationComment;
