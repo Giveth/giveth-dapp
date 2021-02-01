@@ -68,25 +68,30 @@ class DonationHistory extends Component {
   }
 
   async loadHistory() {
-    const { donation } = this.props;
+    const { donation, setItemType, setItemHasHistory } = this.props;
     const root = DonationHistory.createHistoryItem(donation);
 
-    await this.loadCommittedParents(root);
-    const { parents } = root;
+    let parents = [];
+    if (donation.homeTxHash) {
+      setItemType('direct');
+    } else {
+      await this.loadCommittedParents(root);
+      parents = root.parents;
 
-    if (donation.status === Donation.COMMITTED) {
-      if (parents.length > 0) {
-        this.props.setItemHasHistory(true);
-        this.props.setItemType('delegated');
-      } else {
-        this.props.setItemType('direct');
-      }
-    } else if (parents.length > 0) {
-      this.props.setItemHasHistory(true);
-      if (parents[0].parents.length > 0) {
-        this.props.setItemType('delegated');
-      } else {
-        this.props.setItemType('direct');
+      if (donation.status === Donation.COMMITTED) {
+        if (parents.length > 0) {
+          setItemHasHistory(true);
+          setItemType('delegated');
+        } else {
+          setItemType('direct');
+        }
+      } else if (parents.length > 0) {
+        setItemHasHistory(true);
+        if (parents[0].parents.length > 0) {
+          setItemType('delegated');
+        } else {
+          setItemType('direct');
+        }
       }
     }
 
