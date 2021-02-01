@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
 import Loader from './Loader';
 import { getUserName, getUserAvatar, roundBigNumber } from '../lib/helpers';
 import Donation from '../models/Donation';
-import DonationItem from './DonationItem';
+import LeaderBoardDonationItem from './LeaderBoardDonationItem';
 
 /**
  * Shows a table of aggregateDonations for a given type (dac, campaign, milestone)
@@ -58,7 +58,7 @@ class LeaderBoardItem extends Component {
         {donations.map(dd => {
           const donation = new Donation(dd);
           return (
-            <DonationItem
+            <LeaderBoardDonationItem
               key={donation._id}
               donation={donation}
               useAmountRemaining={useAmountRemaining}
