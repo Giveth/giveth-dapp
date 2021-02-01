@@ -1,203 +1,231 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import Avatar from 'react-avatar';
-import PropTypes from 'prop-types';
-import moment from 'moment';
-import Pagination from 'react-js-pagination';
-import BigNumber from 'bignumber.js';
-
-import User from 'models/User';
+import React, { useCallback, useContext, useEffect, useState } from 'react';
 
 import ViewNetworkWarning from 'components/ViewNetworkWarning';
-import { Consumer as Web3Consumer } from 'contextProviders/Web3Provider';
+import { Context as Web3Context } from 'contextProviders/Web3Provider';
 import config from 'configuration';
 
+import { paramsForServer } from 'feathers-hooks-common';
 import Loader from '../Loader';
-import DelegateButton from '../DelegateButton';
-import { getUserName, getUserAvatar, convertEthHelper } from '../../lib/helpers';
 
-import DelegationProvider, {
-  Consumer as DelegationConsumer,
-} from '../../contextProviders/DelegationProvider';
-import Donation from '../../models/Donation';
+import { Context as UserContext } from '../../contextProviders/UserProvider';
 import AuthenticationWarning from '../AuthenticationWarning';
+import DelegationsTable from '../DelegationsTable';
+import { feathersClient } from '../../lib/feathersClient';
+import DAC from '../../models/DAC';
+import Campaign from '../../models/Campaign';
+import Milestone from '../../models/Milestone';
+import ErrorHandler from '../../lib/ErrorHandler';
+import Donation from '../../models/Donation';
 
 /**
  * The my delegations view
  */
-const Delegations = ({ balance, currentUser }) => (
-  <Web3Consumer>
-    {({ state: { isForeignNetwork } }) => (
-      <DelegationProvider currentUser={currentUser}>
-        <DelegationConsumer>
-          {({
-            state: {
-              isLoading,
-              delegations,
-              campaigns,
-              milestones,
-              totalResults,
-              visiblePages,
-              skipPages,
-              itemsPerPage,
+const Delegations = () => {
+  const {
+    state: { isForeignNetwork },
+  } = useContext(Web3Context);
+  const {
+    state: { currentUser },
+  } = useContext(UserContext);
+
+  const visiblePages = 10;
+  const itemsPerPage = 50;
+
+  const [isLoading, setLoading] = useState(true);
+  const [delegations, setDelegations] = useState([]);
+  const [campaigns, setCampaigns] = useState(undefined);
+  const [milestones, setMilestones] = useState(undefined);
+  const [dacs, setDACs] = useState(undefined);
+  const [skipPages, setSkipPages] = useState(0);
+  const [totalResults, setTotalResults] = useState(0);
+
+  const loadProjectsInfo = () => {
+    return Promise.all([
+      // Fetch Dacs
+      feathersClient
+        .service('dacs')
+        .find({
+          query: {
+            status: DAC.ACTIVE,
+            ownerAddress: currentUser.address,
+            $select: ['ownerAddress', 'title', '_id', 'delegateId'],
+            $limit: 100,
+            $sort: {
+              createdAt: -1,
             },
-            actions: { handlePageChanged },
-          }) => (
-            <div id="delegations-view">
-              <div className="container-fluid page-layout">
-                <div className="row">
-                  <div className="col-md-10 m-auto">
-                    {(isLoading || (delegations && delegations.length > 0)) && (
-                      <h1>Your delegations</h1>
-                    )}
+          },
+        })
+        .then(resp =>
+          setDACs(
+            resp.data.map(d => {
+              d.type = DAC.type;
+              d.name = d.title;
+              d.id = d._id;
+              d.element = (
+                <span>
+                  {d.title} <em>DAC</em>
+                </span>
+              );
+              return d;
+            }),
+          ),
+        ),
 
-                    <ViewNetworkWarning
-                      incorrectNetwork={!isForeignNetwork}
-                      networkName={config.foreignNetworkName}
-                    />
+      // Fetch Campaigns
+      feathersClient
+        .service('campaigns')
+        .find({
+          query: {
+            status: Campaign.ACTIVE,
+            ownerAddress: currentUser.address,
+            $select: ['ownerAddress', 'title', '_id', 'projectId'],
+            $limit: 100,
+            $sort: {
+              createdAt: -1,
+            },
+          },
+        })
+        .then(resp => {
+          setCampaigns(resp.data.map(c => new Campaign(c)));
+        }),
 
-                    <AuthenticationWarning currentUser={currentUser} />
+      // Fetch Milestones
+      feathersClient
+        .service('milestones')
+        .find({
+          query: {
+            status: Milestone.IN_PROGRESS,
+            fullyFunded: { $ne: true },
+            $select: [
+              'title',
+              '_id',
+              'projectId',
+              'campaignId',
+              'maxAmount',
+              'status',
+              'tokenAddress',
+              'donationCounters',
+            ],
+            $limit: 100,
+            $sort: {
+              createdAt: -1,
+            },
+          },
+        })
+        .then(resp => setMilestones(resp.data.map(m => new Milestone(m)))),
+    ]);
+  };
 
-                    {isLoading && <Loader className="fixed" />}
+  useEffect(() => {
+    if (currentUser) {
+      loadProjectsInfo()
+        .then(() => {})
+        .catch(err => {
+          const message = `Unable to load dacs, Campaigns or Milestones. ${err}`;
+          ErrorHandler(err, message);
+          setLoading(false);
+        });
+    }
+  }, [currentUser]);
 
-                    {!isLoading && (
-                      <div className="dashboard-table-view">
-                        {delegations && delegations.length > 0 && (
-                          <div className="table-container">
-                            <table className="table table-responsive table-striped table-hover">
-                              <thead>
-                                <tr>
-                                  {/* eslint-disable-next-line jsx-a11y/control-has-associated-label */}
-                                  <th className="td-actions" />
-                                  <th className="td-date">Date</th>
-                                  <th className="td-donated-to">Donated to</th>
-                                  <th className="td-donations-amount">Amount</th>
-                                  <th className="td-user">Received from</th>
-                                  <th className="td-tx-address">Address</th>
-                                  <th className="td-status">Status</th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                {delegations.map(d => (
-                                  <tr key={d.id} name={d.id}>
-                                    <td className="td-actions">
-                                      {/* When donated to a dac, allow delegation
-                                  to campaigns and milestones */}
-                                      {(d.delegateId > 0 ||
-                                        (currentUser && d.ownerTypeId === currentUser.address)) &&
-                                        isForeignNetwork &&
-                                        d.status === Donation.WAITING &&
-                                        d.amountRemaining > 0 && (
-                                          <DelegateButton
-                                            types={campaigns.concat(milestones)}
-                                            donation={d}
-                                            balance={balance}
-                                            currentUser={currentUser}
-                                            symbol={
-                                              (d.token && d.token.symbol) || config.nativeTokenName
-                                            }
-                                          />
-                                        )}
+  const getAndWatchDonations = () => {
+    // here we get all the ids.
+    // TODO: less overhead here if we move it all to a single service.
+    // NOTE: This will not rerun, meaning after any dac/campaign/milestone is added
 
-                                      {/* When donated to a campaign, only allow delegation
-                                    to milestones of that campaign */}
-                                      {d.ownerType === 'campaign' &&
-                                        isForeignNetwork &&
-                                        d.status === Donation.COMMITTED &&
-                                        d.amountRemaining > 0 && (
-                                          <DelegateButton
-                                            types={milestones.filter(
-                                              m =>
-                                                m.campaignId === d.ownerTypeId &&
-                                                (!m.acceptsSingleToken ||
-                                                  m.token.symbol === d.token.symbol),
-                                            )}
-                                            donation={d}
-                                            balance={balance}
-                                            currentUser={currentUser}
-                                            milestoneOnly
-                                          />
-                                        )}
-                                    </td>
+    if (currentUser) {
+      const dacsIds = dacs.filter(c => c.ownerAddress === currentUser.address).map(c => c._id);
 
-                                    <td className="td-date">
-                                      {moment(d.createdAt).format('MM/DD/YYYY')}
-                                    </td>
+      const campaignIds = campaigns
+        .filter(c => c.ownerAddress === currentUser.address)
+        .map(c => c._id);
 
-                                    <td className="td-donated-to">
-                                      <Link to={d.donatedTo.url}>
-                                        {d.donatedTo.type} <em>{d.donatedTo.name}</em>
-                                      </Link>
-                                    </td>
-                                    <td className="td-donations-amount">
-                                      {d.isPending && (
-                                        <span>
-                                          <i className="fa fa-circle-o-notch fa-spin" />
-                                          &nbsp;
-                                        </span>
-                                      )}
-                                      {convertEthHelper(
-                                        d.amountRemaining,
-                                        d.token && d.token.decimals,
-                                      )}{' '}
-                                      {(d.token && d.token.symbol) || config.nativeTokenName}
-                                    </td>
-                                    <td className="td-user">
-                                      <Link to={`profile/${d.giverAddress}`}>
-                                        <Avatar size={30} src={getUserAvatar(d.giver)} round />
-                                        {getUserName(d.giver)}
-                                      </Link>
-                                    </td>
-                                    <td className="td-tx-address">{d.giverAddress}</td>
-                                    <td className="td-status">{d.statusDescription}</td>
-                                  </tr>
-                                ))}
-                              </tbody>
-                            </table>
-                          </div>
-                        )}
+      const query = paramsForServer({
+        query: {
+          lessThanCutoff: { $ne: true },
+          $or: [
+            { ownerTypeId: { $in: campaignIds }, status: Donation.COMMITTED },
+            {
+              delegateTypeId: { $in: dacsIds },
+              status: { $in: [Donation.WAITING, Donation.TO_APPROVE] },
+            },
+            {
+              ownerTypeId: currentUser.address,
+              delegateId: { $exists: false },
+              status: Donation.WAITING,
+            },
+            // {
+            // ownerTypeId: this.props.currentUser.address,
+            // delegateTypeId: { $gt: 0 },
+            // },
+          ],
+          $sort: { createdAt: 1 },
+          $limit: itemsPerPage,
+          $skip: skipPages * itemsPerPage,
+        },
+        schema: 'includeTypeAndGiverDetails',
+      });
 
-                        {delegations && totalResults > itemsPerPage && (
-                          <div className="text-center">
-                            <Pagination
-                              activePage={skipPages + 1}
-                              itemsCountPerPage={itemsPerPage}
-                              totalItemsCount={totalResults}
-                              pageRangeDisplayed={visiblePages}
-                              onChange={handlePageChanged}
-                            />
-                          </div>
-                        )}
-                        {delegations && delegations.length === 0 && (
-                          <div>
-                            <div className="text-center">
-                              <h3>There&apos;s nothing to delegate (yet)!</h3>
-                              <img
-                                className="empty-state-img"
-                                src={`${process.env.PUBLIC_URL}/img/delegation.svg`}
-                                width="200px"
-                                height="200px"
-                                alt="no-delegations-icon"
-                              />
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-        </DelegationConsumer>
-      </DelegationProvider>
-    )}
-  </Web3Consumer>
-);
+      feathersClient
+        .service('donations')
+        .find(query)
+        .then(resp => {
+          setDelegations(resp.data.map(d => new Donation(d)));
+          setSkipPages(resp.skip / itemsPerPage);
+          setTotalResults(resp.total);
+          setLoading(false);
+        })
+        .catch(err => {
+          const message = `Error in fetching donations info. ${err}`;
+          ErrorHandler(err, message);
+          setLoading(false);
+        });
+    }
+  };
 
-Delegations.propTypes = {
-  balance: PropTypes.instanceOf(BigNumber).isRequired,
-  currentUser: PropTypes.instanceOf(User).isRequired,
+  useEffect(() => {
+    if (!!dacs && !!milestones && !!campaigns) {
+      getAndWatchDonations();
+    }
+  }, [skipPages, dacs, milestones, campaigns]);
+
+  const handlePageChanged = useCallback(newPage => {
+    setSkipPages(newPage - 1);
+  });
+
+  return (
+    <div id="delegations-view">
+      <div className="container-fluid page-layout">
+        <div className="row">
+          <div className="col-md-10 m-auto">
+            {(isLoading || (delegations && delegations.length > 0)) && <h1>Your delegations</h1>}
+
+            <ViewNetworkWarning
+              incorrectNetwork={!isForeignNetwork}
+              networkName={config.foreignNetworkName}
+            />
+
+            <AuthenticationWarning />
+
+            {isLoading && <Loader className="fixed" />}
+
+            {!isLoading && (
+              <DelegationsTable
+                delegations={delegations}
+                campaigns={campaigns}
+                milestones={milestones}
+                totalResults={totalResults}
+                itemsPerPage={itemsPerPage}
+                skipPages={skipPages}
+                pageRangeDisplayed={visiblePages}
+                handlePageChanged={handlePageChanged}
+              />
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 };
 
 export default Delegations;

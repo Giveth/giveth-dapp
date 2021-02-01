@@ -13,7 +13,7 @@ import { DACService } from '../services';
 
 const Context = createContext();
 const { Provider, Consumer } = Context;
-export { Consumer };
+export { Context, Consumer };
 
 // TO DO: This is the minimum transaction view required to:
 // create a DAC / Campaign / Milestone / Profile
