@@ -17,6 +17,9 @@ function MenuBarCreateButton({ currentUser }) {
 
   const getCampaign = async id => {
     try {
+      if (id === 'new') {
+        throw new Error('new is not a valid campaignId');
+      }
       const campaign = await CampaignService.get(id);
       if (campaign) {
         setCampaignIsActive(campaign.isActive);
