@@ -152,7 +152,9 @@ class EditProfile extends Component {
       },
       () => {
         // Save the User
-        this.state.user.save(afterSave, afterMined, reset, pushToNetwork);
+        this.state.user.save(afterSave, afterMined, reset, pushToNetwork).finally(() => {
+          this.setState({ isSaving: false });
+        });
       },
     );
   }
