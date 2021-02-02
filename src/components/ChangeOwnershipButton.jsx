@@ -1,5 +1,4 @@
-/* eslint-disable no-restricted-globals */
-import React, { Component, Fragment } from 'react';
+import React, { Fragment, useContext, useState } from 'react';
 import Modal from 'react-modal';
 import BigNumber from 'bignumber.js';
 import { Form } from 'formsy-react-components';
@@ -8,17 +7,16 @@ import 'react-rangeslider/lib/index.css';
 
 import Campaign from 'models/Campaign';
 import Milestone from 'models/Milestone';
-import User from 'models/User';
 import { ZERO_ADDRESS } from '../lib/helpers';
 import { isLoggedIn, checkBalance, sleep } from '../lib/middleware';
-import Loader from './Loader';
 import config from '../configuration';
 import SelectFormsy from './SelectFormsy';
 import ActionNetworkWarning from './ActionNetworkWarning';
 
 import CampaignService from '../services/CampaignService';
-import { Consumer as Web3Consumer } from '../contextProviders/Web3Provider';
-import { Consumer as WhiteListConsumer } from '../contextProviders/WhiteListProvider';
+import { Context as Web3Context } from '../contextProviders/Web3Provider';
+import { Context as WhiteListContext } from '../contextProviders/WhiteListProvider';
+import { Context as UserContext } from '../contextProviders/UserProvider';
 
 BigNumber.config({ DECIMAL_PLACES: 18 });
 Modal.setAppElement('#root');
@@ -39,44 +37,41 @@ const modalStyles = {
 /**
  * Retrieves the oldest 100 donations that the user can delegate
  *
- * @prop {BN}           balance     Current user's balance
- * @prop {User}         currentUser Current user of the Dapp
  * @prop {Campaign}     campaign    If the delegation is towards campaign, this contains the campaign
- * @prop {Object}       milestone   It the delegation is towards campaign, this contains the milestone
+ * @prop {Milestone}    milestone   It the delegation is towards campaign, this contains the milestone
  * @prop {Object}       style       Styles added to the button
  */
-class ChangeOwnershipButton extends Component {
-  constructor(props) {
-    super(props);
+const ChangeOwnershipButton = props => {
+  const {
+    state: { balance, isForeignNetwork, validProvider },
+  } = useContext(Web3Context);
+  const {
+    state: { currentUser },
+  } = useContext(UserContext);
+  const {
+    state: { campaignManagers },
+  } = useContext(WhiteListContext);
 
-    this.state = {
-      isSaving: false,
-      modalVisible: false,
-      campaign: this.props.campaign,
-    };
+  const [isSaving, setSaving] = useState(false);
+  const [modalVisible, setModalVisible] = useState(false);
+  const { campaign, milestone } = props;
 
-    this.form = React.createRef();
-    this.submit = this.submit.bind(this);
-  }
+  const form = React.createRef();
 
-  componentDidMount() {}
+  const openDialog = () => {
+    isLoggedIn(currentUser)
+      .then(() => checkBalance(balance))
+      .then(() => setModalVisible(true));
+  };
 
-  openDialog() {
-    isLoggedIn(this.props.currentUser)
-      .then(() => checkBalance(this.props.balance))
-      .then(() => this.setState({ modalVisible: true }));
-  }
-
-  submit() {
-    const { currentUser } = this.props;
-    const { campaign } = this.state;
-
-    this.setState({ isSaving: true });
+  const submit = () => {
+    setSaving(true);
 
     const afterCreate = async () => {
       const msg = <p>The owner has been updated!</p>;
       React.toast.success(msg);
-      this.setState({ isSaving: false, modalVisible: false });
+      setSaving(false);
+      setModalVisible(false);
       await sleep(2000);
       window.location.reload();
     };
@@ -94,112 +89,100 @@ class ChangeOwnershipButton extends Component {
       afterCreate,
       afterMined,
     );
-  }
+  };
 
-  render() {
-    const style = {
-      display: 'inline-block',
-      paddingRight: '10px',
-      ...this.props.style,
-    };
-    const { isSaving, isLoading, campaign } = this.state;
-    const { milestone, validProvider, isCorrectNetwork, campaignManagers } = this.props;
+  const style = {
+    display: 'inline-block',
+    paddingRight: '10px',
+    ...props.style,
+  };
 
-    return (
-      <span style={style}>
-        <button type="button" className="btn btn-danger" onClick={() => this.openDialog()}>
-          Change co-owner
-        </button>
+  return (
+    <span style={style}>
+      <button type="button" className="btn btn-danger" onClick={() => openDialog()}>
+        Change co-owner
+      </button>
 
-        <Modal
-          isOpen={this.state.modalVisible}
-          style={modalStyles}
-          onRequestClose={() => {
-            this.setState({ modalVisible: false });
-          }}
-        >
-          {!validProvider && (
-            <div className="alert alert-warning">
-              <i className="fa fa-exclamation-triangle" />
-              You should install <a href="https://metamask.io/">MetaMask</a> to take action.
-            </div>
-          )}
-          {validProvider && (
-            <ActionNetworkWarning
-              incorrectNetwork={!isCorrectNetwork}
-              networkName={config.foreignNetworkName}
-            />
-          )}
-          {isCorrectNetwork && (
-            <Fragment>
-              <p>
-                Changing ownership for
-                {!milestone && <strong> {campaign.title}</strong>}
-                {milestone && <strong> {milestone.title}</strong>}
-              </p>
-              {isLoading && <Loader className="small btn-loader" />}
-              {!isLoading && (
-                <Form
-                  onSubmit={this.submit}
-                  layout="vertical"
-                  ref={this.form}
-                  mapping={inputs => {
-                    campaign.ownerAddress = inputs.ownerAddress || ZERO_ADDRESS;
-                    campaign.coownerAddress = inputs.coownerAddress || ZERO_ADDRESS;
+      <Modal
+        isOpen={modalVisible}
+        style={modalStyles}
+        onRequestClose={() => {
+          setModalVisible(false);
+        }}
+      >
+        {!validProvider && (
+          <div className="alert alert-warning">
+            <i className="fa fa-exclamation-triangle" />
+            You should install <a href="https://metamask.io/">MetaMask</a> to take action.
+          </div>
+        )}
+        {validProvider && (
+          <ActionNetworkWarning
+            incorrectNetwork={!isForeignNetwork}
+            networkName={config.foreignNetworkName}
+          />
+        )}
+        {isForeignNetwork && (
+          <Fragment>
+            <p>
+              Changing ownership for
+              {!milestone && <strong> {campaign.title}</strong>}
+              {milestone && <strong> {milestone.title}</strong>}
+            </p>
+            <Form
+              onSubmit={submit}
+              layout="vertical"
+              ref={form}
+              mapping={inputs => {
+                campaign.ownerAddress = inputs.ownerAddress || ZERO_ADDRESS;
+                campaign.coownerAddress = inputs.coownerAddress || ZERO_ADDRESS;
+              }}
+            >
+              <div>
+                <SelectFormsy
+                  name="coownerAddress"
+                  id="co-owner-select"
+                  label="Select a new co-owner"
+                  helpText="This person or smart contract will be co-owning your Campaign from now on."
+                  value={campaign.coownerAddress}
+                  cta="------ Select a co-owner ------"
+                  options={campaignManagers}
+                  validations="isEtherAddress"
+                  validationErrors={{
+                    isEtherAddress: 'Please select a co-owner.',
+                  }}
+                  required
+                />
+                <button
+                  className="btn btn-success"
+                  formNoValidate
+                  type="submit"
+                  disabled={isSaving || !isForeignNetwork}
+                >
+                  {isSaving ? 'Changing...' : 'Change ownership'}
+                </button>
+                <button
+                  className="btn btn-light float-right"
+                  type="button"
+                  onClick={() => {
+                    setModalVisible(false);
                   }}
                 >
-                  <div>
-                    <SelectFormsy
-                      name="coownerAddress"
-                      id="co-owner-select"
-                      label="Select a new co-owner"
-                      helpText="This person or smart contract will be co-owning your Campaign from now on."
-                      value={campaign.coownerAddress}
-                      cta="------ Select a co-owner ------"
-                      options={campaignManagers}
-                      validations="isEtherAddress"
-                      validationErrors={{
-                        isEtherAddress: 'Please select a co-owner.',
-                      }}
-                      required
-                    />
-                    <button
-                      className="btn btn-success"
-                      formNoValidate
-                      type="submit"
-                      disabled={isSaving || !isCorrectNetwork}
-                    >
-                      {isSaving ? 'Changing...' : 'Change ownership'}
-                    </button>
-                    <button
-                      className="btn btn-light float-right"
-                      type="button"
-                      onClick={() => {
-                        this.setState({ modalVisible: false });
-                      }}
-                    >
-                      Close
-                    </button>
-                  </div>
-                </Form>
-              )}
-            </Fragment>
-          )}
-        </Modal>
-      </span>
-    );
-  }
-}
+                  Close
+                </button>
+              </div>
+            </Form>
+          </Fragment>
+        )}
+      </Modal>
+    </span>
+  );
+};
 
 ChangeOwnershipButton.propTypes = {
-  balance: PropTypes.instanceOf(BigNumber).isRequired,
-  currentUser: PropTypes.instanceOf(User).isRequired,
   campaign: PropTypes.instanceOf(Campaign),
   milestone: PropTypes.instanceOf(Milestone),
   style: PropTypes.shape(),
-  validProvider: PropTypes.bool.isRequired,
-  isCorrectNetwork: PropTypes.bool.isRequired,
-  campaignManagers: PropTypes.arrayOf(PropTypes.shape()).isRequired,
 };
 
 ChangeOwnershipButton.defaultProps = {
@@ -208,20 +191,4 @@ ChangeOwnershipButton.defaultProps = {
   style: {},
 };
 
-export default props => (
-  <WhiteListConsumer>
-    {({ state: { tokenWhitelist, campaignManagers } }) => (
-      <Web3Consumer>
-        {({ state: { isForeignNetwork, validProvider } }) => (
-          <ChangeOwnershipButton
-            validProvider={validProvider}
-            isCorrectNetwork={isForeignNetwork}
-            tokenWhitelist={tokenWhitelist} // FIXME: tokenWhiteList is not used in ChangeOwnershipButtons node
-            campaignManagers={campaignManagers}
-            {...props}
-          />
-        )}
-      </Web3Consumer>
-    )}
-  </WhiteListConsumer>
-);
+export default ChangeOwnershipButton;
