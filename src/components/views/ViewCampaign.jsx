@@ -7,7 +7,6 @@ import { Helmet, HelmetProvider } from 'react-helmet-async';
 import Balances from 'components/Balances';
 import { saveAs } from 'file-saver';
 import axios from 'axios';
-import { feathersClient } from '../../lib/feathersClient';
 import Loader from '../Loader';
 import MilestoneCard from '../MilestoneCard';
 import { getUserName, getUserAvatar, history } from '../../lib/helpers';
@@ -151,28 +150,6 @@ class ViewCampaign extends Component {
       })
       .catch(() => {
         this.setState({ downloadingCsv: false });
-      });
-  }
-
-  removeMilestone(id) {
-    checkBalance(this.props.balance)
-      .then(() => {
-        React.swal({
-          title: 'Delete Milestone?',
-          text: 'You will not be able to recover this Milestone!',
-          icon: 'warning',
-          dangerMode: true,
-        }).then(() => {
-          const milestones = feathersClient.service('/milestones');
-          milestones.remove(id);
-        });
-      })
-      .catch(err => {
-        if (err === 'noBalance') {
-          ErrorPopup('There is no balance .', err);
-        } else if (err !== undefined) {
-          ErrorPopup('Something went wrong.', err);
-        }
       });
   }
 
@@ -487,14 +464,7 @@ class ViewCampaign extends Component {
                             )}
                             <div className="milestone-cards-grid-container">
                               {milestones.map(m => (
-                                <MilestoneCard
-                                  milestone={m}
-                                  currentUser={currentUser}
-                                  key={m._id}
-                                  history={history}
-                                  balance={balance}
-                                  removeMilestone={() => this.removeMilestone(m._id)}
-                                />
+                                <MilestoneCard milestone={m} key={m._id} history={history} />
                               ))}
                             </div>
 

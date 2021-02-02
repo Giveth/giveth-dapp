@@ -6,11 +6,11 @@ import Avatar from 'react-avatar';
 import Milestone from 'models/Milestone';
 import { getTruncatedText, getUserAvatar, getUserName, history } from '../lib/helpers';
 import { checkBalance } from '../lib/middleware';
-import User from '../models/User';
 import CardStats from './CardStats';
 import GivethLogo from '../assets/logo.svg';
 import ErrorPopup from './ErrorPopup';
 import { Context as Web3Context } from '../contextProviders/Web3Provider';
+import { Context as UserContext } from '../contextProviders/UserProvider';
 
 /**
  * A single milestone
@@ -19,6 +19,10 @@ const MilestoneCard = props => {
   const {
     state: { balance },
   } = useContext(Web3Context);
+  const {
+    state: { currentUser },
+  } = useContext(UserContext);
+
   const viewMilestone = () => {
     history.push(`/campaigns/${props.milestone.campaign._id}/milestones/${props.milestone._id}`);
   };
@@ -50,7 +54,7 @@ const MilestoneCard = props => {
       });
   };
 
-  const { milestone, currentUser } = props;
+  const { milestone } = props;
   const colors = ['#76318f', '#50b0cf', '#1a1588', '#2A6813', '#95d114', '#155388', '#604a7d'];
   const color = colors[Math.floor(Math.random() * colors.length)];
 
@@ -118,11 +122,6 @@ const MilestoneCard = props => {
 
 MilestoneCard.propTypes = {
   milestone: PropTypes.instanceOf(Milestone).isRequired,
-  currentUser: PropTypes.instanceOf(User),
-};
-
-MilestoneCard.defaultProps = {
-  currentUser: undefined,
 };
 
 export default React.memo(MilestoneCard);

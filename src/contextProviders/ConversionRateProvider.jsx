@@ -9,8 +9,8 @@ import ErrorPopup from '../components/ErrorPopup';
 import ErrorHandler from '../lib/ErrorHandler';
 
 const Context = createContext();
-const { Provider, Consumer } = Context;
-export { Consumer };
+const { Consumer, Provider } = Context;
+export { Consumer, Context };
 
 BigNumber.config({ DECIMAL_PLACES: 18 });
 

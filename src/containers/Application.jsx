@@ -182,13 +182,7 @@ class Application extends Component {
                                               <Route
                                                 exact
                                                 path={getViewEntityPathsList('/dacs/:id')}
-                                                render={props => (
-                                                  <ViewDAC
-                                                    currentUser={currentUser}
-                                                    balance={balance}
-                                                    {...props}
-                                                  />
-                                                )}
+                                                render={props => <ViewDAC {...props} />}
                                               />
                                               <Route
                                                 exact
