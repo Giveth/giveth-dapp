@@ -78,9 +78,9 @@ const ViewCampaign = ({ match }) => {
       donationsPerBatch,
       aggregateDonations.length,
       (_donations, _donationsTotal) => {
-        setLoadingDonations(false);
         setAggregateDonations(aggregateDonations.concat(_donations));
-        setDonationsTotal(_donationsTotal);
+        setDonationsTotal(_donationsTotal || 0);
+        setLoadingDonations(false);
       },
       err => {
         setLoadingDonations(false);

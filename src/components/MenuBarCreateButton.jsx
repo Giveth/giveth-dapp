@@ -9,6 +9,13 @@ function MenuBarCreateButton() {
     state: { currentUser },
   } = useContext(UserContext);
 
+  const isMounted = React.useRef(true);
+  useEffect(() => {
+    return () => {
+      isMounted.current = false;
+    };
+  }, []);
+
   const match = useRouteMatch({
     path: '/campaigns/:id',
     exact: true,
@@ -25,16 +32,17 @@ function MenuBarCreateButton() {
         throw new Error('new is not a valid campaignId');
       }
       const campaign = await CampaignService.get(id);
-      if (campaign) {
+      if (campaign && isMounted.current) {
         setCampaignIsActive(campaign.isActive);
         setOwnerAddress(campaign.ownerAddress);
       }
     } catch (e) {
-      setCampaignIsActive(false);
-      setOwnerAddress(null);
+      if (isMounted.current) {
+        setCampaignIsActive(false);
+        setOwnerAddress(null);
+      }
     }
   };
-
   if (!match) return null;
   const { id } = match.params;
   useEffect(() => {
@@ -61,7 +69,6 @@ function MenuBarCreateButton() {
 MenuBarCreateButton.propTypes = {
   match: PropTypes.shape({
     path: PropTypes.string.isRequired,
-    url: PropTypes.string.isRequired,
   }),
 };
 
@@ -69,4 +76,8 @@ MenuBarCreateButton.defaultProps = {
   match: undefined,
 };
 
-export default MenuBarCreateButton;
+const areEqual = (prevProps, nextProps) => {
+  if (prevProps.match === undefined) return nextProps.match === undefined;
+  return prevProps.match === nextProps.match && prevProps.match.path === nextProps.match.path;
+};
+export default React.memo(MenuBarCreateButton, areEqual);
