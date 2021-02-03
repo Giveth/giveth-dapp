@@ -60,7 +60,6 @@ const ViewCampaign = ({ match }) => {
   const [isLoadingDonations, setLoadingDonations] = useState(true);
   const [aggregateDonations, setAggregateDonations] = useState([]);
   const [milestones, setMilestones] = useState([]);
-  const [milestonesLoaded, setMilestonesLoaded] = useState(0);
   const [milestonesTotal, setMilestonesTotal] = useState(0);
   const [donationsTotal, setDonationsTotal] = useState(0);
   const [newDonations, setNewDonations] = useState(0);
@@ -101,7 +100,6 @@ const ViewCampaign = ({ match }) => {
         setMilestones(newMilestones);
         setLoadingMilestones(false);
         setMilestonesTotal(_milestonesTotal);
-        setMilestonesLoaded(newMilestones.length);
       },
       err => {
         setLoadingMilestones(false);
@@ -283,11 +281,7 @@ const ViewCampaign = ({ match }) => {
 
                           {userIsOwner && (
                             <ProjectViewActionAlert message="Change Co-Owner of Campaign">
-                              <ChangeOwnershipButton
-                                campaign={campaign}
-                                balance={balance}
-                                currentUser={currentUser}
-                              />
+                              <ChangeOwnershipButton campaign={campaign} />
                             </ProjectViewActionAlert>
                           )}
                         </div>
@@ -455,7 +449,7 @@ const ViewCampaign = ({ match }) => {
                             ))}
                           </div>
 
-                          {milestonesLoaded < milestonesTotal && (
+                          {milestones.length < milestonesTotal && (
                             <div className="text-center">
                               <button
                                 type="button"

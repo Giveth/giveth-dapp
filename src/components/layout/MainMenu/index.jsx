@@ -89,7 +89,7 @@ class MainMenu extends Component {
                       </div>
                       <div className="navbar-collapse collapse order-1 order-lg-3 menu-navbar">
                         <ul className="navbar-nav ml-auto">
-                          <MenuBarCreateButtonWithRouter currentUser={currentUser} />
+                          <MenuBarCreateButtonWithRouter />
                           {validProvider && currentUser && (
                             <li className="nav-item dropdown">
                               <NavLink

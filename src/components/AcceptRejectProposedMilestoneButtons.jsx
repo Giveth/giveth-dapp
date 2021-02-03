@@ -1,4 +1,4 @@
-import React, { Fragment, useContext } from 'react';
+import React, { Fragment, useContext, useRef } from 'react';
 import PropTypes from 'prop-types';
 
 import MilestoneService from 'services/MilestoneService';
@@ -11,7 +11,7 @@ import { Context as Web3Context } from '../contextProviders/Web3Provider';
 import { Context as UserContext } from '../contextProviders/UserProvider';
 
 const AcceptRejectProposedMilestoneButtons = ({ milestone }) => {
-  const conversationModal = React.createRef();
+  const conversationModal = useRef();
   const {
     state: { currentUser },
   } = useContext(UserContext);

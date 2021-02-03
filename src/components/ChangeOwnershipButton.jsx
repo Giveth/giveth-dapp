@@ -1,4 +1,4 @@
-import React, { Fragment, useContext, useState } from 'react';
+import React, { Fragment, useContext, useState, useRef } from 'react';
 import Modal from 'react-modal';
 import BigNumber from 'bignumber.js';
 import { Form } from 'formsy-react-components';
@@ -8,7 +8,7 @@ import 'react-rangeslider/lib/index.css';
 import Campaign from 'models/Campaign';
 import Milestone from 'models/Milestone';
 import { ZERO_ADDRESS } from '../lib/helpers';
-import { isLoggedIn, checkBalance, sleep } from '../lib/middleware';
+import { isLoggedIn, checkBalance } from '../lib/middleware';
 import config from '../configuration';
 import SelectFormsy from './SelectFormsy';
 import ActionNetworkWarning from './ActionNetworkWarning';
@@ -56,7 +56,7 @@ const ChangeOwnershipButton = props => {
   const [modalVisible, setModalVisible] = useState(false);
   const { campaign, milestone } = props;
 
-  const form = React.createRef();
+  const form = useRef();
 
   const openDialog = () => {
     isLoggedIn(currentUser)
@@ -72,8 +72,6 @@ const ChangeOwnershipButton = props => {
       React.toast.success(msg);
       setSaving(false);
       setModalVisible(false);
-      await sleep(2000);
-      window.location.reload();
     };
 
     const afterMined = () => {
@@ -134,7 +132,6 @@ const ChangeOwnershipButton = props => {
               layout="vertical"
               ref={form}
               mapping={inputs => {
-                campaign.ownerAddress = inputs.ownerAddress || ZERO_ADDRESS;
                 campaign.coownerAddress = inputs.coownerAddress || ZERO_ADDRESS;
               }}
             >
@@ -191,4 +188,4 @@ ChangeOwnershipButton.defaultProps = {
   style: {},
 };
 
-export default ChangeOwnershipButton;
+export default React.memo(ChangeOwnershipButton);

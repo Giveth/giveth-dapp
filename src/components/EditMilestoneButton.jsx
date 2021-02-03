@@ -1,4 +1,4 @@
-import React, { Fragment, useContext } from 'react';
+import React, { forwardRef, Fragment, useContext } from 'react';
 import PropTypes from 'prop-types';
 
 import Milestone from 'models/Milestone';
@@ -8,8 +8,7 @@ import ErrorPopup from './ErrorPopup';
 import { Context as Web3Context } from '../contextProviders/Web3Provider';
 import { Context as UserContext } from '../contextProviders/UserProvider';
 
-const EditMilestoneButton = ({ milestone }) => {
-  const buttonReference = React.createRef();
+const EditMilestoneButton = forwardRef(({ milestone }, ref) => {
   const {
     state: { balance, isForeignNetwork },
     actions: { displayForeignNetRequiredWarning },
@@ -46,7 +45,7 @@ const EditMilestoneButton = ({ milestone }) => {
     <Fragment>
       {milestone.canUserEdit(currentUser) && (
         <button
-          ref={buttonReference}
+          ref={ref}
           type="button"
           className="btn btn-link"
           onClick={() =>
@@ -59,7 +58,7 @@ const EditMilestoneButton = ({ milestone }) => {
       )}
     </Fragment>
   );
-};
+});
 
 EditMilestoneButton.propTypes = {
   milestone: PropTypes.instanceOf(Milestone).isRequired,
