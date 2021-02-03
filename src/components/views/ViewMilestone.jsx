@@ -340,11 +340,7 @@ const ViewMilestone = props => {
               <div className="container-fluid mt-4">
                 <div className="row">
                   <div className="col-md-8 m-auto">
-                    <ViewMilestoneAlerts
-                      milestone={milestone}
-                      balance={balance}
-                      campaign={campaign}
-                    />
+                    <ViewMilestoneAlerts milestone={milestone} campaign={campaign} />
 
                     <div id="description">
                       <div className="about-section-header">
