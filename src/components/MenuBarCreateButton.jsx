@@ -1,10 +1,14 @@
-import React, { useMemo, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { Link, useRouteMatch } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import CampaignService from '../services/CampaignService';
-import User from '../models/User';
+import { Context as UserContext } from '../contextProviders/UserProvider';
 
-function MenuBarCreateButton({ currentUser }) {
+function MenuBarCreateButton() {
+  const {
+    state: { currentUser },
+  } = useContext(UserContext);
+
   const match = useRouteMatch({
     path: '/campaigns/:id',
     exact: true,
@@ -32,9 +36,12 @@ function MenuBarCreateButton({ currentUser }) {
   };
 
   if (!match) return null;
-
   const { id } = match.params;
-  useMemo(() => getCampaign(id), [id]);
+  useEffect(() => {
+    if (id) {
+      getCampaign(id);
+    }
+  }, [id]);
 
   if (campaignIsActive && currentUser) {
     const userIsOwner = currentUser.address && currentUser.address === ownerAddress;
@@ -56,12 +63,10 @@ MenuBarCreateButton.propTypes = {
     path: PropTypes.string.isRequired,
     url: PropTypes.string.isRequired,
   }),
-  currentUser: PropTypes.instanceOf(User),
 };
 
 MenuBarCreateButton.defaultProps = {
   match: undefined,
-  currentUser: undefined,
 };
 
 export default MenuBarCreateButton;
