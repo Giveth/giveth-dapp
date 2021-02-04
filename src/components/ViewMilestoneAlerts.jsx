@@ -11,19 +11,14 @@ import ApproveRejectMilestoneCompletionButtons from './ApproveRejectMilestoneCom
 import WithdrawMilestoneFundsButton from './WithdrawMilestoneFundsButton';
 import DelegateMultipleButton from './DelegateMultipleButton';
 import { Context as UserContext } from '../contextProviders/UserProvider';
-import { Context as Web3Context } from '../contextProviders/Web3Provider';
 import RequestMarkMilestoneCompleteButton from './RequestMarkMilestoneCompleteButton';
 
-const ViewMilestoneAlerts = props => {
-  const { milestone, campaign } = props;
-  const { fullyFunded, status } = milestone;
+const ViewMilestoneAlerts = ({ milestone, campaign }) => {
   const {
     state: { currentUser, isDelegator },
   } = useContext(UserContext);
-  const {
-    state: { balance },
-  } = useContext(Web3Context);
 
+  const { fullyFunded, status } = milestone;
   const milestoneIsActive = status === 'InProgress' && !fullyFunded;
 
   const userAddress = currentUser && currentUser.address;
@@ -35,78 +30,49 @@ const ViewMilestoneAlerts = props => {
     <div>
       {milestoneIsActive && userCanDelegate && (
         <ProjectViewActionAlert message="Delegate some donation to this project">
-          <DelegateMultipleButton
-            milestone={milestone}
-            campaign={campaign}
-            balance={balance}
-            currentUser={currentUser}
-          />
+          <DelegateMultipleButton milestone={milestone} campaign={campaign} />
         </ProjectViewActionAlert>
       )}
 
       {milestone.canUserMarkComplete(currentUser) && (
         <ProjectViewActionAlert message="Request mark complete">
-          <RequestMarkMilestoneCompleteButton
-            balance={balance}
-            milestone={milestone}
-            currentUser={currentUser}
-          />
+          <RequestMarkMilestoneCompleteButton milestone={milestone} />
         </ProjectViewActionAlert>
       )}
 
       {milestone.canUserAcceptRejectProposal(currentUser) && (
         <ProjectViewActionAlert message="Accept proposed milestone?">
-          <AcceptRejectProposedMilestoneButtons
-            balance={balance}
-            milestone={milestone}
-            currentUser={currentUser}
-          />
+          <AcceptRejectProposedMilestoneButtons milestone={milestone} />
         </ProjectViewActionAlert>
       )}
 
       {milestone.canUserRepropose(currentUser) && (
         <ProjectViewActionAlert message="Propose milestone again?">
-          <ReproposeRejectedMilestoneButton milestone={milestone} currentUser={currentUser} />
+          <ReproposeRejectedMilestoneButton milestone={milestone} />
         </ProjectViewActionAlert>
       )}
 
       {milestone.canUserArchive(currentUser) && (
         <ProjectViewActionAlert message="Archive milestone">
-          <ArchiveMilestoneButton
-            milestone={milestone}
-            currentUser={currentUser}
-            balance={balance}
-          />
+          <ArchiveMilestoneButton milestone={milestone} />
         </ProjectViewActionAlert>
       )}
 
       {milestone.canUserChangeRecipient(currentUser) && (
         <ProjectViewActionAlert message="Change recipient">
-          <ChangeMilestoneRecipientButton
-            milestone={milestone}
-            currentUser={currentUser}
-            balance={balance}
-          />
+          <ChangeMilestoneRecipientButton milestone={milestone} />
         </ProjectViewActionAlert>
       )}
 
       {milestone.canUserApproveRejectCompletion(currentUser) && (
         <ProjectViewActionAlert message="Do you think milestone goals are achieved?">
-          <ApproveRejectMilestoneCompletionButtons
-            milestone={milestone}
-            currentUser={currentUser}
-            balance={balance}
-          />
+          <ApproveRejectMilestoneCompletionButtons milestone={milestone} />
         </ProjectViewActionAlert>
       )}
 
       {milestone.canUserWithdraw(currentUser) && (
         <ProjectViewActionAlert message="Collect the funds held in this Milestone">
-          <WithdrawMilestoneFundsButton
-            milestone={milestone}
-            currentUser={currentUser}
-            balance={balance}
-          />
+          <WithdrawMilestoneFundsButton milestone={milestone} />
         </ProjectViewActionAlert>
       )}
     </div>
@@ -118,4 +84,4 @@ ViewMilestoneAlerts.propTypes = {
   campaign: PropTypes.instanceOf(Campaign).isRequired,
 };
 
-export default ViewMilestoneAlerts;
+export default React.memo(ViewMilestoneAlerts);

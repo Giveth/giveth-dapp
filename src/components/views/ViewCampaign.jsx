@@ -271,11 +271,7 @@ const ViewCampaign = ({ match }) => {
 
                           {isDelegator && (
                             <ProjectViewActionAlert message="Delegate some donation to this project">
-                              <DelegateMultipleButton
-                                campaign={campaign}
-                                balance={balance}
-                                currentUser={currentUser}
-                              />
+                              <DelegateMultipleButton campaign={campaign} />
                             </ProjectViewActionAlert>
                           )}
 

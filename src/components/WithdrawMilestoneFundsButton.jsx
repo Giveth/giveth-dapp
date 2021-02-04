@@ -1,21 +1,27 @@
-import React, { Component, Fragment } from 'react';
+import React, { Fragment, useContext } from 'react';
 import PropTypes from 'prop-types';
-import BigNumber from 'bignumber.js';
 
 import MilestoneService from 'services/MilestoneService';
 import Milestone from 'models/Milestone';
-import User from 'models/User';
 import ErrorPopup from 'components/ErrorPopup';
 import GA from 'lib/GoogleAnalytics';
 import { checkBalance, actionWithLoggedIn } from 'lib/middleware';
-import { Consumer as Web3Consumer } from '../contextProviders/Web3Provider';
+import { Context as Web3Context } from '../contextProviders/Web3Provider';
 import DonationService from '../services/DonationService';
 import LPMilestone from '../models/LPMilestone';
 import config from '../configuration';
+import { Context as UserContext } from '../contextProviders/UserProvider';
 
-class WithdrawMilestoneFundsButton extends Component {
-  async withdraw() {
-    const { milestone, currentUser, balance } = this.props;
+const WithdrawMilestoneFundsButton = ({ milestone }) => {
+  const {
+    state: { currentUser },
+  } = useContext(UserContext);
+  const {
+    state: { isForeignNetwork, balance },
+    actions: { displayForeignNetRequiredWarning },
+  } = useContext(Web3Context);
+
+  async function withdraw() {
     const userAddress = currentUser && currentUser.address;
     const isRecipient = milestone.recipientAddress === userAddress;
 
@@ -130,41 +136,26 @@ class WithdrawMilestoneFundsButton extends Component {
     );
   }
 
-  render() {
-    const { milestone, currentUser } = this.props;
-    const userAddress = currentUser && currentUser.address;
+  const userAddress = currentUser && currentUser.address;
 
-    return (
-      <Web3Consumer>
-        {({ state: { isForeignNetwork }, actions: { displayForeignNetRequiredWarning } }) => (
-          <Fragment>
-            {milestone.canUserWithdraw(currentUser) && (
-              <button
-                type="button"
-                className="btn btn-success btn-sm withdraw"
-                onClick={() =>
-                  isForeignNetwork ? this.withdraw() : displayForeignNetRequiredWarning()
-                }
-              >
-                <i className="fa fa-usd" />{' '}
-                {milestone.recipientAddress === userAddress ? 'Collect' : 'Disburse'}
-              </button>
-            )}
-          </Fragment>
-        )}
-      </Web3Consumer>
-    );
-  }
-}
+  return (
+    <Fragment>
+      {milestone.canUserWithdraw(currentUser) && (
+        <button
+          type="button"
+          className="btn btn-success btn-sm withdraw"
+          onClick={() => (isForeignNetwork ? withdraw() : displayForeignNetRequiredWarning())}
+        >
+          <i className="fa fa-usd" />{' '}
+          {milestone.recipientAddress === userAddress ? 'Collect' : 'Disburse'}
+        </button>
+      )}
+    </Fragment>
+  );
+};
 
 WithdrawMilestoneFundsButton.propTypes = {
-  currentUser: PropTypes.instanceOf(User),
-  balance: PropTypes.instanceOf(BigNumber).isRequired,
   milestone: PropTypes.instanceOf(Milestone).isRequired,
 };
 
-WithdrawMilestoneFundsButton.defaultProps = {
-  currentUser: undefined,
-};
-
-export default WithdrawMilestoneFundsButton;
+export default React.memo(WithdrawMilestoneFundsButton);

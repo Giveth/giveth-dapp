@@ -1,19 +1,24 @@
-import React, { Component, Fragment } from 'react';
+import React, { Fragment, useContext } from 'react';
 import PropTypes from 'prop-types';
-import BigNumber from 'bignumber.js';
 import { utils } from 'web3';
 
 import MilestoneService from 'services/MilestoneService';
 import Milestone from 'models/Milestone';
-import User from 'models/User';
 import ErrorPopup from 'components/ErrorPopup';
-import { checkBalance, actionWithLoggedIn } from 'lib/middleware';
-import { Consumer as Web3Consumer } from '../contextProviders/Web3Provider';
+import { actionWithLoggedIn, checkBalance } from 'lib/middleware';
+import { Context as Web3Context } from '../contextProviders/Web3Provider';
+import { Context as UserContext } from '../contextProviders/UserProvider';
 
-class ChangeMilestoneRecipientButton extends Component {
-  changeRecipient() {
-    const { milestone, balance, currentUser } = this.props;
+function ChangeMilestoneRecipientButton({ milestone }) {
+  const {
+    state: { currentUser },
+  } = useContext(UserContext);
+  const {
+    state: { isForeignNetwork, balance },
+    actions: { displayForeignNetRequiredWarning },
+  } = useContext(Web3Context);
 
+  const changeRecipient = () => {
     actionWithLoggedIn(currentUser).then(() => {
       checkBalance(balance)
         .then(async () => {
@@ -106,41 +111,27 @@ class ChangeMilestoneRecipientButton extends Component {
           }
         });
     });
-  }
+  };
 
-  render() {
-    const { milestone, currentUser } = this.props;
-
-    return (
-      <Web3Consumer>
-        {({ state: { isForeignNetwork }, actions: { displayForeignNetRequiredWarning } }) => (
-          <Fragment>
-            {milestone.canUserChangeRecipient(currentUser) && (
-              <button
-                type="button"
-                className="btn btn-success btn-sm"
-                onClick={() =>
-                  isForeignNetwork ? this.changeRecipient() : displayForeignNetRequiredWarning()
-                }
-              >
-                {milestone.hasRecipient ? 'Change Recipient' : 'Set Recipient'}
-              </button>
-            )}
-          </Fragment>
-        )}
-      </Web3Consumer>
-    );
-  }
+  return (
+    <Fragment>
+      {milestone.canUserChangeRecipient(currentUser) && (
+        <button
+          type="button"
+          className="btn btn-success btn-sm"
+          onClick={() =>
+            isForeignNetwork ? changeRecipient() : displayForeignNetRequiredWarning()
+          }
+        >
+          {milestone.hasRecipient ? 'Change Recipient' : 'Set Recipient'}
+        </button>
+      )}
+    </Fragment>
+  );
 }
 
 ChangeMilestoneRecipientButton.propTypes = {
-  currentUser: PropTypes.instanceOf(User),
-  balance: PropTypes.instanceOf(BigNumber).isRequired,
   milestone: PropTypes.instanceOf(Milestone).isRequired,
 };
 
-ChangeMilestoneRecipientButton.defaultProps = {
-  currentUser: undefined,
-};
-
-export default ChangeMilestoneRecipientButton;
+export default React.memo(ChangeMilestoneRecipientButton);

@@ -201,7 +201,6 @@ const DelegateMultipleButton = props => {
 
   useEffect(() => {
     if (modalVisible && !dacsObserver.current) {
-      console.log('dacObserver:', dacsObserver.current);
       const { milestone, campaign } = props;
       const userAddress = currentUser ? currentUser.address : '';
       dacsObserver.current = feathersClient
@@ -535,4 +534,4 @@ DelegateMultipleButton.defaultProps = {
   style: {},
 };
 
-export default DelegateMultipleButton;
+export default React.memo(DelegateMultipleButton);

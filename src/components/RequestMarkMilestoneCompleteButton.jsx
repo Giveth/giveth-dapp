@@ -1,24 +1,27 @@
-import React, { Component, Fragment } from 'react';
+import React, { Fragment, useContext, useRef } from 'react';
 import PropTypes from 'prop-types';
-import BigNumber from 'bignumber.js';
 
 import MilestoneService from 'services/MilestoneService';
 import Milestone from 'models/Milestone';
-import User from 'models/User';
 import ErrorPopup from 'components/ErrorPopup';
 import ConversationModal from 'components/ConversationModal';
 import GA from 'lib/GoogleAnalytics';
 import { checkBalance, actionWithLoggedIn } from 'lib/middleware';
-import { Consumer as Web3Consumer } from '../contextProviders/Web3Provider';
+import { Context as Web3Context } from '../contextProviders/Web3Provider';
+import { Context as UserContext } from '../contextProviders/UserProvider';
 
-class RequestMarkMilestoneCompleteButton extends Component {
-  constructor() {
-    super();
-    this.conversationModal = React.createRef();
-  }
+const RequestMarkMilestoneCompleteButton = ({ milestone }) => {
+  const {
+    state: { currentUser },
+  } = useContext(UserContext);
+  const {
+    state: { isForeignNetwork, balance },
+    actions: { displayForeignNetRequiredWarning },
+  } = useContext(Web3Context);
 
-  requestMarkComplete() {
-    const { milestone, balance, currentUser } = this.props;
+  const conversationModal = useRef();
+
+  const requestMarkComplete = () => {
     const userAddress = currentUser && currentUser.address;
 
     actionWithLoggedIn(currentUser).then(() =>
@@ -38,7 +41,7 @@ class RequestMarkMilestoneCompleteButton extends Component {
             if (proceed === null) return;
           }
 
-          this.conversationModal.current
+          conversationModal.current
             .openModal({
               title: 'Mark Milestone complete',
               description:
@@ -96,43 +99,29 @@ class RequestMarkMilestoneCompleteButton extends Component {
         })
         .catch(console.error),
     );
-  }
+  };
 
-  render() {
-    const { milestone, currentUser } = this.props;
+  return (
+    <Fragment>
+      {milestone.canUserMarkComplete(currentUser) && (
+        <button
+          type="button"
+          className="btn btn-success btn-sm"
+          onClick={() =>
+            isForeignNetwork ? requestMarkComplete() : displayForeignNetRequiredWarning()
+          }
+        >
+          Mark complete
+        </button>
+      )}
 
-    return (
-      <Web3Consumer>
-        {({ state: { isForeignNetwork }, actions: { displayForeignNetRequiredWarning } }) => (
-          <Fragment>
-            {milestone.canUserMarkComplete(currentUser) && (
-              <button
-                type="button"
-                className="btn btn-success btn-sm"
-                onClick={() =>
-                  isForeignNetwork ? this.requestMarkComplete() : displayForeignNetRequiredWarning()
-                }
-              >
-                Mark complete
-              </button>
-            )}
-
-            <ConversationModal ref={this.conversationModal} milestone={milestone} />
-          </Fragment>
-        )}
-      </Web3Consumer>
-    );
-  }
-}
+      <ConversationModal ref={conversationModal} milestone={milestone} />
+    </Fragment>
+  );
+};
 
 RequestMarkMilestoneCompleteButton.propTypes = {
-  currentUser: PropTypes.instanceOf(User),
-  balance: PropTypes.instanceOf(BigNumber).isRequired,
   milestone: PropTypes.instanceOf(Milestone).isRequired,
 };
 
-RequestMarkMilestoneCompleteButton.defaultProps = {
-  currentUser: undefined,
-};
-
-export default RequestMarkMilestoneCompleteButton;
+export default React.memo(RequestMarkMilestoneCompleteButton);

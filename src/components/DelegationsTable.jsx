@@ -1,7 +1,6 @@
-import React, { useContext } from 'react';
+import React from 'react';
 import Pagination from 'react-js-pagination';
 import PropTypes from 'prop-types';
-import { Context as Web3Context } from '../contextProviders/Web3Provider';
 import DelegationsItem from './DelegationsItem';
 import { Donation, Milestone } from '../models';
 import Campaign from '../models/Campaign';
@@ -16,10 +15,6 @@ function DelegationsTable({
   pageRangeDisplayed,
   handlePageChanged,
 }) {
-  const {
-    state: { balance },
-  } = useContext(Web3Context);
-
   return (
     <div className="dashboard-table-view">
       {delegations && delegations.length > 0 && (
@@ -44,7 +39,6 @@ function DelegationsTable({
                   donation={d}
                   campaigns={campaigns}
                   milestones={milestones}
-                  balance={balance}
                 />
               ))}
             </tbody>
