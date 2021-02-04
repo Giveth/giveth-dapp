@@ -64,4 +64,4 @@ EditMilestoneButton.propTypes = {
   milestone: PropTypes.instanceOf(Milestone).isRequired,
 };
 
-export default EditMilestoneButton;
+export default React.memo(EditMilestoneButton);

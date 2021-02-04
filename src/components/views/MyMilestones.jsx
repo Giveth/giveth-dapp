@@ -46,7 +46,7 @@ function MyMilestones() {
     state: { currentUser },
   } = useContext(UserContext);
   const {
-    state: { balance, isForeignNetwork },
+    state: { isForeignNetwork },
   } = useContext(Web3Context);
   const {
     state: { tokenWhitelist },
@@ -162,11 +162,7 @@ function MyMilestones() {
                           {milestones.map(m => (
                             <tr key={m._id} className={m.status === 'Pending' ? 'pending' : ''}>
                               <td className="td-actions">
-                                <MilestoneActions
-                                  milestone={m}
-                                  balance={balance}
-                                  currentUser={currentUser}
-                                />
+                                <MilestoneActions milestone={m} />
                               </td>
                               <td className="td-created-at">
                                 {m.createdAt && (

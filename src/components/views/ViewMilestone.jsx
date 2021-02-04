@@ -285,11 +285,11 @@ const ViewMilestone = props => {
                 }
                 cancelProject={
                   milestone.canUserCancel(currentUser) &&
-                  (() => cancelMilestoneButtonRef.current.cancelMilestone())
+                  (() => cancelMilestoneButtonRef.current.click())
                 }
                 deleteProject={
                   milestone.canUserDelete(currentUser) &&
-                  (() => deleteMilestoneButtonRef.current.deleteProposedMilestone())
+                  (() => deleteMilestoneButtonRef.current.click())
                 }
               >
                 <h6>Milestone</h6>
