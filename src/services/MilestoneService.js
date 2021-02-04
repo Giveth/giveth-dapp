@@ -457,10 +457,16 @@ class MilestoneService {
 
       afterMined(!milestone.projectId, `${etherScanUrl}tx/${txHash}`, milestoneId);
     } catch (err) {
-      const message = `Something went wrong with the Milestone ${
-        milestone.projectId > 0 ? 'update' : 'creation'
-      }. Is your wallet unlocked? ${etherScanUrl}tx/${txHash} => ${JSON.stringify(err, null, 2)}`;
-      ErrorHandler(err, message);
+      const showMessageInPopup = err.data && err.data.showMessageInPopup;
+      let message;
+      if (showMessageInPopup) {
+        message = err.message;
+      } else {
+        message = `Something went wrong with the Milestone ${
+          milestone.projectId > 0 ? 'update' : 'creation'
+        }. Is your wallet unlocked? ${etherScanUrl}tx/${txHash} => ${JSON.stringify(err, null, 2)}`;
+      }
+      ErrorHandler(err, message, showMessageInPopup);
       onError();
     }
 
