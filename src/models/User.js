@@ -1,7 +1,7 @@
+import { toast } from 'react-toastify';
 import Model from './Model';
 import IPFSService from '../services/IPFSService';
 import UserService from '../services/UserService';
-import ErrorPopup from '../components/ErrorPopup';
 import { cleanIpfsPath } from '../lib/helpers';
 
 /**
@@ -68,17 +68,16 @@ class User extends Model {
 
   save(onSave, afterEmit, reset, pushToNetwork) {
     if (this._newAvatar) {
-      IPFSService.upload(this._newAvatar)
+      return IPFSService.upload(this._newAvatar)
         .then(hash => {
           // Save the new avatar
           this._avatar = hash;
           delete this._newAvatar;
         })
-        .catch(err => ErrorPopup('Failed to upload avatar', err))
-        .finally(() => UserService.save(this, onSave, afterEmit, reset));
-    } else {
-      UserService.save(this, onSave, afterEmit, reset, pushToNetwork);
+        .then(_ => UserService.save(this, onSave, afterEmit, reset))
+        .catch(_ => toast.error('Cannot connect to IPFS server. Please try again'));
     }
+    return UserService.save(this, onSave, afterEmit, reset, pushToNetwork);
   }
 
   // eslint-disable-next-line class-methods-use-this

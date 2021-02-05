@@ -173,7 +173,9 @@ class EditCampaign extends Component {
       },
       () => {
         // Save the campaign
-        this.state.campaign.save(afterCreate, afterMined);
+        this.state.campaign.save(afterCreate, afterMined).finally(() => {
+          this.setState({ isSaving: false });
+        });
       },
     );
   }

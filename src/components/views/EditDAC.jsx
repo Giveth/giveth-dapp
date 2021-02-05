@@ -182,7 +182,9 @@ class EditDAC extends Component {
       },
       () => {
         // Save the DAC
-        this.state.dac.save(afterSave, afterMined);
+        this.state.dac.save(afterSave, afterMined).finally(() => {
+          this.setState({ isSaving: false });
+        });
       },
     );
   }

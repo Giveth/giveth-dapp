@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { withFormsy } from 'formsy-react';
 import ReactQuill from 'react-quill';
+import { toast } from 'react-toastify';
 import { resizeFile } from '../lib/helpers';
 import IPFSService from '../services/IPFSService';
 import config from '../configuration';
@@ -98,6 +99,7 @@ class QuillFormsy extends Component {
     IPFSService.upload(image)
       .then(hash => this.insertToEditor({ url: config.ipfsGateway + hash.slice(6) }, range))
       .catch(() => {
+        toast.error('Cannot connect to IPFS server. Please try again');
         const quill = this.reactQuillRef.getEditor();
         quill.deleteText(range.index, 1);
         this.setState({ uploading: false });
