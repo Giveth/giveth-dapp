@@ -673,4 +673,4 @@ ViewMilestone.propTypes = {
   }).isRequired,
 };
 
-export default ViewMilestone;
+export default React.memo(ViewMilestone);
