@@ -95,7 +95,7 @@ class MainMenu extends Component {
                               <NavLink
                                 className="nav-link dropdown-toggle"
                                 id="navbarDropdownDashboard"
-                                to="/dashboard"
+                                to="#"
                                 disabled={!currentUser}
                                 activeClassName="active"
                                 data-toggle="dropdown"
