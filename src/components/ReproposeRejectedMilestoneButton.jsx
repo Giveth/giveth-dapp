@@ -1,18 +1,24 @@
-import React, { Component, Fragment } from 'react';
+import React, { Fragment, useContext } from 'react';
 import PropTypes from 'prop-types';
 
 import MilestoneService from 'services/MilestoneService';
 import Milestone from 'models/Milestone';
-import User from 'models/User';
 import ErrorPopup from 'components/ErrorPopup';
 import GA from 'lib/GoogleAnalytics';
-import { Consumer as Web3Consumer } from '../contextProviders/Web3Provider';
+import { Context as Web3Context } from '../contextProviders/Web3Provider';
 import { actionWithLoggedIn } from '../lib/middleware';
+import { Context as UserContext } from '../contextProviders/UserProvider';
 
-class ReproposeRejectedMilestoneButton extends Component {
-  repropose() {
-    const { milestone, currentUser } = this.props;
+function ReproposeRejectedMilestoneButton({ milestone }) {
+  const {
+    state: { currentUser },
+  } = useContext(UserContext);
+  const {
+    state: { isForeignNetwork },
+    actions: { displayForeignNetRequiredWarning },
+  } = useContext(Web3Context);
 
+  const repropose = () => {
     actionWithLoggedIn(currentUser).then(() =>
       React.swal({
         title: 'Re-propose Milestone?',
@@ -45,41 +51,26 @@ class ReproposeRejectedMilestoneButton extends Component {
         });
       }),
     );
-  }
+  };
 
-  render() {
-    const { milestone, currentUser } = this.props;
-
-    return (
-      <Web3Consumer>
-        {({ state: { isForeignNetwork }, actions: { displayForeignNetRequiredWarning } }) => (
-          <Fragment>
-            {milestone.canUserRepropose(currentUser) && (
-              <button
-                type="button"
-                className="btn btn-success btn-sm"
-                onClick={() =>
-                  isForeignNetwork ? this.repropose() : displayForeignNetRequiredWarning()
-                }
-              >
-                <i className="fa fa-times-square-o" />
-                &nbsp;Re-propose
-              </button>
-            )}
-          </Fragment>
-        )}
-      </Web3Consumer>
-    );
-  }
+  return (
+    <Fragment>
+      {milestone.canUserRepropose(currentUser) && (
+        <button
+          type="button"
+          className="btn btn-success btn-sm"
+          onClick={() => (isForeignNetwork ? repropose() : displayForeignNetRequiredWarning())}
+        >
+          <i className="fa fa-times-square-o" />
+          &nbsp;Re-propose
+        </button>
+      )}
+    </Fragment>
+  );
 }
 
 ReproposeRejectedMilestoneButton.propTypes = {
-  currentUser: PropTypes.instanceOf(User),
   milestone: PropTypes.instanceOf(Milestone).isRequired,
 };
 
-ReproposeRejectedMilestoneButton.defaultProps = {
-  currentUser: undefined,
-};
-
-export default ReproposeRejectedMilestoneButton;
+export default React.memo(ReproposeRejectedMilestoneButton);

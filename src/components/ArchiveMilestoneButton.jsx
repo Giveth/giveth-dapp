@@ -1,20 +1,25 @@
 /* eslint-disable react/no-unescaped-entities */
-import React, { Component, Fragment } from 'react';
+import React, { Fragment, useContext } from 'react';
 import PropTypes from 'prop-types';
-import BigNumber from 'bignumber.js';
 
 import Milestone from 'models/Milestone';
 import Campaign from 'models/Campaign';
-import User from 'models/User';
 import MilestoneService from 'services/MilestoneService';
 import ErrorPopup from 'components/ErrorPopup';
-import { checkBalance, actionWithLoggedIn } from 'lib/middleware';
-import { Consumer as Web3Consumer } from '../contextProviders/Web3Provider';
+import { actionWithLoggedIn, checkBalance } from 'lib/middleware';
+import { Context as Web3Context } from '../contextProviders/Web3Provider';
+import { Context as UserContext } from '../contextProviders/UserProvider';
 
-class ArchiveMilestoneButton extends Component {
-  archiveMilestone() {
-    const { milestone, balance, currentUser } = this.props;
+const ArchiveMilestoneButton = ({ milestone }) => {
+  const {
+    state: { currentUser },
+  } = useContext(UserContext);
+  const {
+    state: { isForeignNetwork, balance },
+    actions: { displayForeignNetRequiredWarning },
+  } = useContext(Web3Context);
 
+  const archiveMilestone = () => {
     const status = milestone.donationCounters.some(dc => dc.currentBalance.gt(0))
       ? Milestone.COMPLETED
       : Milestone.PAID;
@@ -93,41 +98,27 @@ class ArchiveMilestoneButton extends Component {
           }
         }),
     );
-  }
+  };
 
-  render() {
-    const { milestone, currentUser } = this.props;
-
-    return (
-      <Web3Consumer>
-        {({ state: { isForeignNetwork }, actions: { displayForeignNetRequiredWarning } }) => (
-          <Fragment>
-            {milestone.canUserArchive(currentUser) && (
-              <button
-                type="button"
-                className="btn btn-success btn-sm"
-                onClick={() =>
-                  isForeignNetwork ? this.archiveMilestone() : displayForeignNetRequiredWarning()
-                }
-              >
-                Archive
-              </button>
-            )}
-          </Fragment>
-        )}
-      </Web3Consumer>
-    );
-  }
-}
+  return (
+    <Fragment>
+      {milestone.canUserArchive(currentUser) && (
+        <button
+          type="button"
+          className="btn btn-success btn-sm"
+          onClick={() =>
+            isForeignNetwork ? archiveMilestone() : displayForeignNetRequiredWarning()
+          }
+        >
+          Archive
+        </button>
+      )}
+    </Fragment>
+  );
+};
 
 ArchiveMilestoneButton.propTypes = {
-  currentUser: PropTypes.instanceOf(User),
-  balance: PropTypes.instanceOf(BigNumber).isRequired,
   milestone: PropTypes.instanceOf(Milestone).isRequired,
 };
 
-ArchiveMilestoneButton.defaultProps = {
-  currentUser: undefined,
-};
-
-export default ArchiveMilestoneButton;
+export default React.memo(ArchiveMilestoneButton);

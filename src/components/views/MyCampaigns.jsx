@@ -144,7 +144,7 @@ class MyCampaigns extends Component {
                     <h1>Your Campaigns</h1>
                   )}
 
-                  <AuthenticationWarning currentUser={currentUser} />
+                  <AuthenticationWarning />
 
                   <ViewNetworkWarning
                     incorrectNetwork={!isForeignNetwork}

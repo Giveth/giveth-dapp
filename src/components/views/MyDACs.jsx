@@ -83,7 +83,6 @@ class MyDACs extends Component {
 
   render() {
     const { dacs, isLoading, visiblePages } = this.state;
-    const { currentUser } = this.props;
     const isPendingDac =
       (dacs.data && dacs.data.some(d => d.confirmations !== d.requiredConfirmations)) || false;
 
@@ -94,7 +93,7 @@ class MyDACs extends Component {
             <div className="col-md-10 m-auto">
               {(isLoading || (dacs && dacs.data.length > 0)) && <h1>Your Communities (DACs)</h1>}
 
-              <AuthenticationWarning currentUser={currentUser} />
+              <AuthenticationWarning />
 
               {isLoading && <Loader className="fixed" />}
 

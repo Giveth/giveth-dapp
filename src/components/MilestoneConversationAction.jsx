@@ -4,8 +4,6 @@ import React, { Component, Fragment } from 'react';
 import PropTypes from 'prop-types';
 
 import Milestone from 'models/Milestone';
-import User from 'models/User';
-import BigNumber from 'bignumber.js';
 
 import DeleteProposedMilestoneButton from 'components/DeleteProposedMilestoneButton';
 import AcceptRejectProposedMilestoneButtons from 'components/AcceptRejectProposedMilestoneButtons';
@@ -16,69 +14,31 @@ import WithdrawMilestoneFundsButton from 'components/WithdrawMilestoneFundsButto
 
 class MilestoneConversationAction extends Component {
   render() {
-    const { messageContext, milestone, balance, currentUser } = this.props;
+    const { messageContext, milestone } = this.props;
 
     switch (messageContext) {
       case 'proposed':
-        return (
-          <AcceptRejectProposedMilestoneButtons
-            milestone={milestone}
-            balance={balance}
-            currentUser={currentUser}
-          />
-        );
+        return <AcceptRejectProposedMilestoneButtons milestone={milestone} />;
 
       case 'rejected':
-        return (
-          <RequestMarkMilestoneCompleteButton
-            milestone={milestone}
-            balance={balance}
-            currentUser={currentUser}
-          />
-        );
+        return <RequestMarkMilestoneCompleteButton milestone={milestone} />;
 
       case 'NeedsReview':
-        return (
-          <ApproveRejectMilestoneCompletionButtons
-            milestone={milestone}
-            balance={balance}
-            currentUser={currentUser}
-          />
-        );
+        return <ApproveRejectMilestoneCompletionButtons milestone={milestone} />;
 
       case 'Completed':
-        return (
-          <WithdrawMilestoneFundsButton
-            milestone={milestone}
-            balance={balance}
-            currentUser={currentUser}
-          />
-        );
+        return <WithdrawMilestoneFundsButton milestone={milestone} />;
 
       case 'proposedRejected':
         return (
           <Fragment>
-            <ReproposeRejectedMilestoneButton
-              milestone={milestone}
-              balance={balance}
-              currentUser={currentUser}
-            />
-            <DeleteProposedMilestoneButton
-              milestone={milestone}
-              balance={balance}
-              currentUser={currentUser}
-            />
+            <ReproposeRejectedMilestoneButton milestone={milestone} />
+            <DeleteProposedMilestoneButton milestone={milestone} />
           </Fragment>
         );
 
       case 'proposedAccepted':
-        return (
-          <RequestMarkMilestoneCompleteButton
-            milestone={milestone}
-            balance={balance}
-            currentUser={currentUser}
-          />
-        );
+        return <RequestMarkMilestoneCompleteButton milestone={milestone} />;
       default:
         return <Fragment />;
     }
@@ -87,13 +47,7 @@ class MilestoneConversationAction extends Component {
 
 MilestoneConversationAction.propTypes = {
   milestone: PropTypes.instanceOf(Milestone).isRequired,
-  currentUser: PropTypes.instanceOf(User),
-  balance: PropTypes.instanceOf(BigNumber).isRequired,
   messageContext: PropTypes.string.isRequired,
 };
 
-MilestoneConversationAction.defaultProps = {
-  currentUser: undefined,
-};
-
-export default MilestoneConversationAction;
+export default React.memo(MilestoneConversationAction);

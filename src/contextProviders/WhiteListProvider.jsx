@@ -5,7 +5,7 @@ import { feathersClient } from '../lib/feathersClient';
 
 const Context = createContext();
 const { Provider, Consumer } = Context;
-export { Consumer };
+export { Consumer, Context };
 
 /**
  * check if the currentUser is in a particular whitelist.

@@ -57,4 +57,4 @@ ViewNetworkWarning.propTypes = {
   networkName: PropTypes.string.isRequired,
 };
 
-export default ViewNetworkWarning;
+export default React.memo(ViewNetworkWarning);

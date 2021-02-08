@@ -1,30 +1,31 @@
-/* eslint-disable react/no-unescaped-entities */
-import React, { Component, Fragment } from 'react';
+import React, { Fragment, useContext, useRef } from 'react';
 import PropTypes from 'prop-types';
-import BigNumber from 'bignumber.js';
 
 import Milestone from 'models/Milestone';
-import User from 'models/User';
 import MilestoneService from 'services/MilestoneService';
 import ErrorPopup from 'components/ErrorPopup';
 import ConversationModal from 'components/ConversationModal';
 import GA from 'lib/GoogleAnalytics';
 import { checkBalance, actionWithLoggedIn } from 'lib/middleware';
-import { Consumer as Web3Consumer } from '../contextProviders/Web3Provider';
+import { Context as Web3Context } from '../contextProviders/Web3Provider';
+import { Context as UserContext } from '../contextProviders/UserProvider';
 
-class ApproveRejectMilestoneCompletionButtons extends Component {
-  constructor() {
-    super();
-    this.conversationModal = React.createRef();
-  }
+const ApproveRejectMilestoneCompletionButtons = ({ milestone }) => {
+  const {
+    state: { currentUser },
+  } = useContext(UserContext);
+  const {
+    state: { isForeignNetwork, balance },
+    actions: { displayForeignNetRequiredWarning },
+  } = useContext(Web3Context);
 
-  async approveMilestoneCompleted() {
-    const { milestone, currentUser, balance } = this.props;
+  const conversationModal = useRef();
 
+  const approveMilestoneCompleted = async () => {
     actionWithLoggedIn(currentUser).then(() =>
       checkBalance(balance)
         .then(() => {
-          this.conversationModal.current
+          conversationModal.current
             .openModal({
               title: 'Approve Milestone completion',
               description:
@@ -93,15 +94,13 @@ class ApproveRejectMilestoneCompletionButtons extends Component {
           }
         }),
     );
-  }
+  };
 
-  async rejectMilestoneCompleted() {
-    const { milestone, currentUser, balance } = this.props;
-
+  const rejectMilestoneCompleted = async () => {
     actionWithLoggedIn(currentUser).then(() =>
       checkBalance(balance)
         .then(() => {
-          this.conversationModal.current
+          conversationModal.current
             .openModal({
               title: 'Reject Milestone completion',
               description:
@@ -125,7 +124,7 @@ class ApproveRejectMilestoneCompletionButtons extends Component {
 
                   React.toast.info(
                     <p>
-                      Rejecting this Milestone's completion is pending...
+                      Rejecting this Milestone&apos;s completion is pending...
                       <br />
                       <a href={txUrl} target="_blank" rel="noopener noreferrer">
                         View transaction
@@ -136,7 +135,7 @@ class ApproveRejectMilestoneCompletionButtons extends Component {
                 onConfirmation: txUrl => {
                   React.toast.success(
                     <p>
-                      The Milestone's completion has been rejected.
+                      The Milestone&apos;s completion has been rejected.
                       <br />
                       <a href={txUrl} target="_blank" rel="noopener noreferrer">
                         View transaction
@@ -169,61 +168,43 @@ class ApproveRejectMilestoneCompletionButtons extends Component {
           }
         }),
     );
-  }
+  };
 
-  render() {
-    const { milestone, currentUser } = this.props;
+  return (
+    <Fragment>
+      {milestone.canUserApproveRejectCompletion(currentUser) && (
+        <span>
+          <button
+            type="button"
+            className="btn btn-success btn-sm"
+            onClick={() =>
+              isForeignNetwork ? approveMilestoneCompleted() : displayForeignNetRequiredWarning()
+            }
+          >
+            <i className="fa fa-thumbs-up" />
+            &nbsp;Approve
+          </button>
 
-    return (
-      <Web3Consumer>
-        {({ state: { isForeignNetwork }, actions: { displayForeignNetRequiredWarning } }) => (
-          <Fragment>
-            {milestone.canUserApproveRejectCompletion(currentUser) && (
-              <span>
-                <button
-                  type="button"
-                  className="btn btn-success btn-sm"
-                  onClick={() =>
-                    isForeignNetwork
-                      ? this.approveMilestoneCompleted()
-                      : displayForeignNetRequiredWarning()
-                  }
-                >
-                  <i className="fa fa-thumbs-up" />
-                  &nbsp;Approve
-                </button>
+          <button
+            type="button"
+            className="btn btn-danger btn-sm"
+            onClick={() =>
+              isForeignNetwork ? rejectMilestoneCompleted() : displayForeignNetRequiredWarning()
+            }
+          >
+            <i className="fa fa-thumbs-down" />
+            &nbsp;Reject Completion
+          </button>
+        </span>
+      )}
 
-                <button
-                  type="button"
-                  className="btn btn-danger btn-sm"
-                  onClick={() =>
-                    isForeignNetwork
-                      ? this.rejectMilestoneCompleted()
-                      : displayForeignNetRequiredWarning()
-                  }
-                >
-                  <i className="fa fa-thumbs-down" />
-                  &nbsp;Reject Completion
-                </button>
-              </span>
-            )}
-
-            <ConversationModal ref={this.conversationModal} milestone={milestone} />
-          </Fragment>
-        )}
-      </Web3Consumer>
-    );
-  }
-}
+      <ConversationModal ref={conversationModal} milestone={milestone} />
+    </Fragment>
+  );
+};
 
 ApproveRejectMilestoneCompletionButtons.propTypes = {
-  currentUser: PropTypes.instanceOf(User),
-  balance: PropTypes.instanceOf(BigNumber).isRequired,
   milestone: PropTypes.instanceOf(Milestone).isRequired,
 };
 
-ApproveRejectMilestoneCompletionButtons.defaultProps = {
-  currentUser: undefined,
-};
-
-export default ApproveRejectMilestoneCompletionButtons;
+export default React.memo(ApproveRejectMilestoneCompletionButtons);

@@ -99,6 +99,8 @@ class EditMilestone extends Component {
   constructor(props) {
     super(props);
 
+    const { defaultDacId } = config;
+
     this.state = {
       isLoading: true,
       refreshList: [],
@@ -109,6 +111,7 @@ class EditMilestone extends Component {
       milestone: MilestoneFactory.create({
         maxAmount: '0',
         fiatAmount: '0',
+        dacId: defaultDacId,
       }),
       tokenWhitelistOptions: props.tokenWhitelist.map(t => ({
         value: t.address,

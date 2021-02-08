@@ -1,26 +1,28 @@
-import React, { Component, Fragment } from 'react';
+import React, { Fragment, useContext, useRef } from 'react';
 import PropTypes from 'prop-types';
-import BigNumber from 'bignumber.js';
 
 import MilestoneService from 'services/MilestoneService';
 import Milestone from 'models/Milestone';
-import User from 'models/User';
 import ErrorPopup from 'components/ErrorPopup';
 import { checkBalance, actionWithLoggedIn } from 'lib/middleware';
 import ConversationModal from 'components/ConversationModal';
 import GA from 'lib/GoogleAnalytics';
-import { Consumer as Web3Consumer } from '../contextProviders/Web3Provider';
+import { Context as Web3Context } from '../contextProviders/Web3Provider';
+import { Context as UserContext } from '../contextProviders/UserProvider';
 
-class AcceptRejectProposedMilestoneButtons extends Component {
-  constructor() {
-    super();
-    this._isLoaded = false;
-    this.conversationModal = React.createRef();
-  }
+const AcceptRejectProposedMilestoneButtons = ({ milestone }) => {
+  const conversationModal = useRef();
+  const {
+    state: { currentUser },
+  } = useContext(UserContext);
+  const {
+    state: { balance, isForeignNetwork },
+    actions: { displayForeignNetRequiredWarning },
+  } = useContext(Web3Context);
 
-  async rejectProposedMilestone() {
-    actionWithLoggedIn(this.props.currentUser).then(() =>
-      this.conversationModal.current
+  const rejectProposedMilestone = async () => {
+    actionWithLoggedIn(currentUser).then(() =>
+      conversationModal.current
         .openModal({
           title: 'Reject proposed Milestone',
           description:
@@ -32,7 +34,7 @@ class AcceptRejectProposedMilestoneButtons extends Component {
         })
         .then(proof => {
           MilestoneService.rejectProposedMilestone({
-            milestone: this.props.milestone,
+            milestone,
             message: proof.message,
             onSuccess: () => React.toast.info(<p>The proposed Milestone has been rejected.</p>),
             onError: e =>
@@ -40,15 +42,13 @@ class AcceptRejectProposedMilestoneButtons extends Component {
           });
         }),
     );
-  }
+  };
 
-  async acceptProposedMilestone() {
-    const { milestone, currentUser } = this.props;
-
+  const acceptProposedMilestone = async () => {
     actionWithLoggedIn(currentUser).then(() =>
-      checkBalance(this.props.balance)
+      checkBalance(balance)
         .then(() =>
-          this.conversationModal.current
+          conversationModal.current
             .openModal({
               title: 'Accept proposed Milestone',
               description:
@@ -112,60 +112,42 @@ class AcceptRejectProposedMilestoneButtons extends Component {
           }
         }),
     );
-  }
+  };
 
-  render() {
-    const { milestone, currentUser } = this.props;
+  return (
+    <Fragment>
+      {milestone.canUserAcceptRejectProposal(currentUser) && (
+        <span>
+          <button
+            type="button"
+            className="btn btn-success btn-sm"
+            onClick={() =>
+              isForeignNetwork ? acceptProposedMilestone() : displayForeignNetRequiredWarning()
+            }
+          >
+            <i className="fa fa-check-square-o" />
+            &nbsp;Accept
+          </button>
+          <button
+            type="button"
+            className="btn btn-danger btn-sm"
+            onClick={() =>
+              isForeignNetwork ? rejectProposedMilestone() : displayForeignNetRequiredWarning()
+            }
+          >
+            <i className="fa fa-times-circle-o" />
+            &nbsp;Reject
+          </button>
+        </span>
+      )}
 
-    return (
-      <Web3Consumer>
-        {({ state: { isForeignNetwork }, actions: { displayForeignNetRequiredWarning } }) => (
-          <Fragment>
-            {milestone.canUserAcceptRejectProposal(currentUser) && (
-              <span>
-                <button
-                  type="button"
-                  className="btn btn-success btn-sm"
-                  onClick={() =>
-                    isForeignNetwork
-                      ? this.acceptProposedMilestone()
-                      : displayForeignNetRequiredWarning()
-                  }
-                >
-                  <i className="fa fa-check-square-o" />
-                  &nbsp;Accept
-                </button>
-                <button
-                  type="button"
-                  className="btn btn-danger btn-sm"
-                  onClick={() =>
-                    isForeignNetwork
-                      ? this.rejectProposedMilestone()
-                      : displayForeignNetRequiredWarning()
-                  }
-                >
-                  <i className="fa fa-times-circle-o" />
-                  &nbsp;Reject
-                </button>
-              </span>
-            )}
-
-            <ConversationModal ref={this.conversationModal} milestone={milestone} />
-          </Fragment>
-        )}
-      </Web3Consumer>
-    );
-  }
-}
+      <ConversationModal ref={conversationModal} milestone={milestone} />
+    </Fragment>
+  );
+};
 
 AcceptRejectProposedMilestoneButtons.propTypes = {
-  currentUser: PropTypes.instanceOf(User),
-  balance: PropTypes.instanceOf(BigNumber).isRequired,
   milestone: PropTypes.instanceOf(Milestone).isRequired,
 };
 
-AcceptRejectProposedMilestoneButtons.defaultProps = {
-  currentUser: undefined,
-};
-
-export default AcceptRejectProposedMilestoneButtons;
+export default React.memo(AcceptRejectProposedMilestoneButtons);
