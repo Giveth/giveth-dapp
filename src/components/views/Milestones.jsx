@@ -5,6 +5,7 @@ import MilestoneProvider, {
   Consumer as MilestoneConsumer,
 } from '../../contextProviders/MilestoneProvider';
 import Loader from '../Loader';
+import LoadMore from '../LoadMore';
 
 /**
  * The Milestones view mapped to /milestones
@@ -27,23 +28,7 @@ const Milestones = () => (
                     <MilestoneCard key={milestone.id} milestone={milestone} />
                   ))}
                 </div>
-                {milestones.length < total && (
-                  <div className="text-center">
-                    <button
-                      type="button"
-                      className="btn btn-info mt-2"
-                      onClick={loadMore}
-                      disabled={isLoading}
-                    >
-                      {isLoading && (
-                        <span>
-                          <i className="fa fa-circle-o-notch fa-spin" /> Loading
-                        </span>
-                      )}
-                      {!isLoading && <span>Load More</span>}
-                    </button>
-                  </div>
-                )}
+                {milestones.length < total && <LoadMore onClick={loadMore} disabled={isLoading} />}
               </div>
             )}
 

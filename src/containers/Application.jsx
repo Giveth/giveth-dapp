@@ -441,13 +441,9 @@ class Application extends Component {
                                               <Route
                                                 exact
                                                 path="/campaigns"
-                                                render={props => <Campaigns {...props} />}
+                                                render={() => <Campaigns />}
                                               />
-                                              <Route
-                                                exact
-                                                path="/dacs"
-                                                render={props => <DACs {...props} />}
-                                              />
+                                              <Route exact path="/dacs" render={() => <DACs />} />
 
                                               <Route component={NotFound} />
                                             </Switch>

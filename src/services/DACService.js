@@ -65,25 +65,36 @@ class DACService {
   /**
    * Get DACs
    *
-   * @param $limit    Amount of records to be loaded
-   * @param $skip     Amounds of record to be skipped
-   * @param onSuccess Callback function once response is obtained successfylly
-   * @param onError   Callback function if error is encountered
+   * @param $limit      Amount of records to be loaded
+   * @param $skip       Amounds of record to be skipped
+   * @param onlyRecent  Bool flag only fetch campaigns updated recently (projectsUpdatedAtLimitMonth)
+   * @param onSuccess   Callback function once response is obtained successfylly
+   * @param onError     Callback function if error is encountered
    */
-  static getDACs($limit = 100, $skip = 0, onSuccess = () => {}, onError = () => {}) {
-    const lastDate = new Date();
-    lastDate.setMonth(lastDate.getMonth() - config.projectsUpdatedAtLimitMonth);
+  static getDACs(
+    $limit = 100,
+    $skip = 0,
+    onlyRecent = false,
+    onSuccess = () => {},
+    onError = () => {},
+  ) {
+    const query = {
+      status: DAC.ACTIVE,
+      $limit,
+      $skip,
+      $sort: { campaignsCount: -1, updatedAt: -1 },
+    };
 
+    if (onlyRecent) {
+      const lastDate = new Date();
+      lastDate.setMonth(lastDate.getMonth() - config.projectsUpdatedAtLimitMonth);
+
+      query.updatedAt = { $gt: lastDate };
+    }
     return feathersClient
       .service('dacs')
       .find({
-        query: {
-          status: DAC.ACTIVE,
-          $limit,
-          $skip,
-          $sort: { campaignsCount: -1 },
-          updatedAt: { $gt: lastDate },
-        },
+        query,
       })
       .then(resp =>
         onSuccess(
