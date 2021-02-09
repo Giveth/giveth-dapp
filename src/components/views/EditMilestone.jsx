@@ -163,6 +163,7 @@ class EditMilestone extends Component {
         await DACService.getDACs(
           undefined, // Limit
           0, // Skip
+          false,
           (dacs, _) => {
             const formatDACS = dacs.map(r => ({
               value: r.myDelegateId.toString(),

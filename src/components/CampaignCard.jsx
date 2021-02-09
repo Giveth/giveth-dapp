@@ -5,7 +5,6 @@ import { Link } from 'react-router-dom';
 import { getTruncatedText, history } from '../lib/helpers';
 import CardStats from './CardStats';
 import Campaign from '../models/Campaign';
-import config from '../configuration';
 import GivethLogo from '../assets/logo.svg';
 
 /**
@@ -52,7 +51,6 @@ const CampaignCard = props => {
             peopleCount={campaign.peopleCount}
             totalDonated={campaign.totalDonationCount}
             currentBalance={campaign.currentBalance}
-            token={{ symbol: config.nativeTokenName, decimals: 18 }}
           />
         </div>
       </Link>
