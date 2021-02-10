@@ -205,7 +205,7 @@ const ViewCampaign = ({ match }) => {
   return (
     <HelmetProvider context={helmetContext}>
       <UserConsumer>
-        {({ state: { isDelegator } }) => (
+        {({ state: { userIsDacOwner } }) => (
           <ErrorBoundary>
             <div id="view-campaign-view">
               {isLoading && <Loader className="fixed" />}
@@ -269,7 +269,7 @@ const ViewCampaign = ({ match }) => {
                             </ProjectViewActionAlert>
                           )}
 
-                          {isDelegator && (
+                          {userIsDacOwner && (
                             <ProjectViewActionAlert message="Delegate some donation to this project">
                               <DelegateMultipleButton campaign={campaign} />
                             </ProjectViewActionAlert>
@@ -360,7 +360,7 @@ const ViewCampaign = ({ match }) => {
                               )}
                               {campaign.isActive && (
                                 <Fragment>
-                                  {isDelegator && (
+                                  {userIsDacOwner && (
                                     <DelegateMultipleButton
                                       campaign={campaign}
                                       balance={balance}

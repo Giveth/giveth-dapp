@@ -15,7 +15,7 @@ import RequestMarkMilestoneCompleteButton from './RequestMarkMilestoneCompleteBu
 
 const ViewMilestoneAlerts = ({ milestone, campaign }) => {
   const {
-    state: { currentUser, isDelegator },
+    state: { currentUser, userIsDacOwner },
   } = useContext(UserContext);
 
   const { fullyFunded, status } = milestone;
@@ -24,7 +24,7 @@ const ViewMilestoneAlerts = ({ milestone, campaign }) => {
   const userAddress = currentUser && currentUser.address;
   const campaignOwnerAddress = campaign && campaign.ownerAddress;
 
-  const userCanDelegate = isDelegator || (userAddress && userAddress === campaignOwnerAddress);
+  const userCanDelegate = userIsDacOwner || (userAddress && userAddress === campaignOwnerAddress);
 
   return (
     <div>

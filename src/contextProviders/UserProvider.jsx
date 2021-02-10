@@ -33,7 +33,7 @@ class UserProvider extends Component {
     this.state = {
       currentUser: undefined,
       hasError: false,
-      isDelegator: false,
+      userIsDacOwner: false,
     };
 
     this.getUserData = this.getUserData.bind(this);
@@ -66,7 +66,7 @@ class UserProvider extends Component {
     if (this.userSubscriber) this.userSubscriber.unsubscribe();
 
     if (!address) {
-      this.setState({ currentUser: undefined, isDelegator: false }, () => {
+      this.setState({ currentUser: undefined, userIsDacOwner: false }, () => {
         this.props.onLoaded();
       });
     } else {
@@ -86,8 +86,8 @@ class UserProvider extends Component {
 
               DACService.getUserIsDacOwner(
                 address,
-                isDelegator => this.setState({ isDelegator }),
-                () => this.setState({ isDelegator: false }),
+                userIsDacOwner => this.setState({ userIsDacOwner }),
+                () => this.setState({ userIsDacOwner: false }),
               );
             });
           },
@@ -185,7 +185,7 @@ class UserProvider extends Component {
   }
 
   render() {
-    const { currentUser, hasError, isDelegator } = this.state;
+    const { currentUser, hasError, userIsDacOwner } = this.state;
 
     return (
       <Provider
@@ -194,7 +194,7 @@ class UserProvider extends Component {
             currentUser,
             hasError,
             signIn: this.signIn,
-            isDelegator,
+            userIsDacOwner,
           },
         }}
       >
