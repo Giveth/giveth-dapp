@@ -42,6 +42,60 @@ class DACService {
   }
 
   /**
+   * Get a DAC defined by slug
+   *
+   * @param slug   Slug of the DAC to be retrieved
+   */
+  static getBySlug(slug) {
+    return new Promise((resolve, reject) => {
+      dacs
+        .find({
+          query: {
+            slug,
+          },
+        })
+        .then(resp => {
+          if (resp.data.length) resolve(new DAC(resp.data[0]));
+          else reject(new ErrorModel({ message: 'Not found', status: 404 }));
+        })
+        .catch(err => reject(err));
+    });
+  }
+
+  /**
+   * Get a DAC defined by slug or by id
+   *
+   * @param slugOrId   Slug or ID of the DAC to be retrieved
+   */
+  static getBySlugOrId(slugOrId) {
+    return new Promise((resolve, reject) => {
+      dacs
+        .find({
+          query: {
+            slug: slugOrId,
+          },
+        })
+        .then(resp => {
+          if (resp.data.length) resolve(new DAC(resp.data[0]));
+          else {
+            dacs
+              .find({
+                query: {
+                  _id: slugOrId,
+                },
+              })
+              .then(_resp => {
+                if (_resp.data.length) resolve(new DAC(_resp.data[0]));
+                reject(new ErrorModel({ message: 'Not found', status: 404 }));
+              })
+              .catch(err => reject(err));
+          }
+        })
+        .catch(err => reject(err));
+    });
+  }
+
+  /**
    * Get a DAC defined by Delegate ID
    *
    *  @param delegateId Delegate Id of the DAC to be retrieved
@@ -275,7 +329,7 @@ class DACService {
    * @param afterSave   Callback to be triggered after the DAC is saved in feathers
    * @param afterMined  Callback to be triggered after the transaction is mined
    */
-  static async save(dac, from, afterSave = () => {}, afterMined = () => {}) {
+  static async save(dac, from, afterSave = () => {}, afterMined = () => {}, onError = () => {}) {
     if (dac.id && dac.delegateId === 0) {
       throw new Error(
         'You must wait for your DAC to be creation to finish before you can update it',
@@ -284,6 +338,20 @@ class DACService {
 
     let txHash;
     let etherScanUrl;
+
+    const sendError = err => {
+      const showMessageInPopup = err.data && err.data.showMessageInPopup;
+      let message;
+      if (showMessageInPopup) {
+        message = err.message;
+      } else {
+        message = `Something went wrong with the DAC ${
+          dac.delegateId > 0 ? 'update' : 'creation'
+        }. Is your wallet unlocked? ${etherScanUrl}tx/${txHash} => ${JSON.stringify(err, null, 2)}`;
+      }
+      ErrorHandler(err, message, showMessageInPopup);
+      onError();
+    };
     try {
       // upload DAC info to IPFS
       let ipfsHash;
@@ -325,21 +393,22 @@ class DACService {
           });
 
       let { id } = dac;
-      await promise.once('transactionHash', async hash => {
-        txHash = hash;
-        if (dac.id) await dacs.patch(dac.id, dac.toFeathers(txHash));
-        else id = (await dacs.create(dac.toFeathers(txHash)))._id;
-        afterSave(null, !dac.delegateId, `${etherScanUrl}tx/${txHash}`);
+      await new Promise((resolve, reject) => {
+        promise.once('transactionHash', async hash => {
+          txHash = hash;
+          try {
+            if (dac.id) await dacs.patch(dac.id, dac.toFeathers(txHash));
+            else id = (await dacs.create(dac.toFeathers(txHash)))._id;
+            afterSave(null, !dac.delegateId, `${etherScanUrl}tx/${txHash}`);
+            afterMined(!dac.delegateId, `${etherScanUrl}tx/${txHash}`, id);
+            resolve();
+          } catch (err) {
+            reject(err);
+          }
+        });
       });
-
-      afterMined(!dac.delegateId, `${etherScanUrl}tx/${txHash}`, id);
     } catch (err) {
-      const message = `Something went wrong with the DAC ${
-        dac.delegateId > 0 ? 'update' : 'creation'
-      }. Is your wallet unlocked? ${etherScanUrl}tx/${txHash} => ${JSON.stringify(err, null, 2)}`;
-      ErrorHandler(err, message);
-
-      afterSave(err);
+      sendError(err);
     }
   }
 }

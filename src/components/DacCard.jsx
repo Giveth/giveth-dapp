@@ -12,11 +12,11 @@ import GivethLogo from '../assets/logo.svg';
  */
 const DacCard = props => {
   const viewDAC = () => {
-    history.push(`/dacs/${props.dac.id}`);
+    history.push(`/dacs/${props.dac.slug}`);
   };
 
   const createDACLink = () => {
-    return `/dacs/${props.dac.id}`;
+    return `/dacs/${props.dac.slug}`;
   };
 
   const { dac } = props;

@@ -66,29 +66,16 @@ const ViewDAC = ({ match }) => {
 
   const loadMoreAggregateDonations = () => {
     setLoadingDonatinos(true);
-
-    AggregateDonationService.get(
-      match.params.id,
-      donationsPerBatch,
-      aggregateDonations.length,
-      (_donations, _donationsTotal) => {
-        setAggregateDonations(aggregateDonations.concat(_donations));
-        setDonationsTotal(_donationsTotal);
-        setLoadingDonatinos(false);
-      },
-      err => {
-        setLoadingDonatinos(false);
-        ErrorHandler(err, 'Some error on fetching loading donations, please try again later');
-      },
-    );
   };
 
   useEffect(() => {
-    const dacId = match.params.id;
-
-    // Get the Campaign
-    DACService.get(dacId)
+    const slugOrId = match.params.id;
+    // Get the DAC
+    DACService.getBySlugOrId(slugOrId)
       .then(_dac => {
+        if (_dac.id === slugOrId) {
+          history.push(`/dacs/${_dac.slug}`);
+        }
         setDac(_dac);
         setLoading(false);
         campaignObserver = DACService.subscribeCampaigns(
@@ -102,6 +89,29 @@ const ViewDAC = ({ match }) => {
             ErrorHandler(err, 'Some error on fetching dac campaigns, please try again later');
           },
         );
+        // subscribe to donation count
+        donationsObserver = DACService.subscribeNewDonations(
+          _dac.id,
+          _newDonations => setNewDonations(_newDonations),
+          err => {
+            ErrorHandler(err, 'Some error on fetching dac donations, please try again later');
+            setNewDonations(0);
+          },
+        );
+        AggregateDonationService.get(
+          _dac.id,
+          donationsPerBatch,
+          aggregateDonations.length,
+          (_donations, _donationsTotal) => {
+            setAggregateDonations(aggregateDonations.concat(_donations));
+            setDonationsTotal(_donationsTotal);
+            setLoadingDonatinos(false);
+          },
+          err => {
+            setLoadingDonatinos(false);
+            ErrorHandler(err, 'Some error on fetching loading donations, please try again later');
+          },
+        );
       })
       .catch(err => {
         setNotFound(true);
@@ -109,15 +119,6 @@ const ViewDAC = ({ match }) => {
       });
 
     loadMoreAggregateDonations();
-    // subscribe to donation count
-    donationsObserver = DACService.subscribeNewDonations(
-      dacId,
-      _newDonations => setNewDonations(_newDonations),
-      err => {
-        ErrorHandler(err, 'Some error on fetching dac donations, please try again later');
-        setNewDonations(0);
-      },
-    );
     return cleanUp;
   }, []);
 
