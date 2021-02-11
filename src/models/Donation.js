@@ -38,7 +38,7 @@ class Donation extends Model {
   }
 
   static get CANCELED() {
-    return 'Canceled';
+    return 'Cancelled';
   }
 
   static get REJECTED() {
