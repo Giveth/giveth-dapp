@@ -48,6 +48,7 @@ import ErrorHandler from '../../lib/ErrorHandler';
 const helmetContext = {};
 
 const ViewCampaign = ({ match }) => {
+  let currentCampaign = null;
   const {
     state: { balance },
   } = useContext(Web3Context);
@@ -74,7 +75,7 @@ const ViewCampaign = ({ match }) => {
   const loadMoreAggregateDonations = () => {
     setLoadingDonations(true);
     AggregateDonationService.get(
-      match.params.id,
+      currentCampaign.id,
       donationsPerBatch,
       aggregateDonations.length,
       (_donations, _donationsTotal) => {
@@ -109,26 +110,25 @@ const ViewCampaign = ({ match }) => {
   };
 
   useEffect(() => {
-    const campaignId = match.params.id;
+    const slugOrId = match.params.id;
 
-    CampaignService.get(campaignId)
+    CampaignService.getBySlugOrId(slugOrId)
       .then(_campaign => {
+        currentCampaign = _campaign;
         setCampaign(_campaign);
         setLoading(false);
+        loadMoreMilestones(_campaign.id);
+        // subscribe to donation count
+        donationsObserver = CampaignService.subscribeNewDonations(
+          _campaign.id,
+          _newDonations => setNewDonations(_newDonations),
+          () => setNewDonations(0),
+        );
+        loadMoreAggregateDonations();
       })
       .catch(() => {
         setNotFound(true);
       });
-
-    loadMoreMilestones(campaignId);
-
-    loadMoreAggregateDonations();
-    // subscribe to donation count
-    donationsObserver = CampaignService.subscribeNewDonations(
-      campaignId,
-      _newDonations => setNewDonations(_newDonations),
-      () => setNewDonations(0),
-    );
     return () => {
       if (donationsObserver) donationsObserver.unsubscribe();
     };

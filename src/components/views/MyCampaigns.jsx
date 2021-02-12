@@ -204,7 +204,7 @@ class MyCampaigns extends Component {
                                       )}
                                   </td>
                                   <td className="td-name">
-                                    <Link to={`/campaigns/${c.id}`}>
+                                    <Link to={`/campaigns/${c.slug}`}>
                                       {getTruncatedText(c.title, 45)}
                                     </Link>
                                     {c.reviewerAddress === userAddress && (
