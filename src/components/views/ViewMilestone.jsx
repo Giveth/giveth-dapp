@@ -105,23 +105,19 @@ const ViewMilestone = props => {
   useEffect(() => {
     const { milestoneId } = props.match.params;
 
-    MilestoneService.subscribeOne(
-      milestoneId,
-      _milestone => {
-        if (!_milestone) {
-          setNotFound(true);
-          return;
-        }
-        setMilestone(_milestone);
-        setCampaign(new Campaign(_milestone.campaign));
-        setRecipient(
-          _milestone.pendingRecipientAddress ? _milestone.pendingRecipient : _milestone.recipient,
-        );
-        getDacTitle(_milestone.dacId);
-        setLoading(false);
-      },
-      () => setNotFound(true),
-    );
+    MilestoneService.getBySlugOrId(milestoneId).then(_milestone => {
+      if (!_milestone) {
+        setNotFound(true);
+        return;
+      }
+      setMilestone(_milestone);
+      setCampaign(new Campaign(_milestone.campaign));
+      setRecipient(
+        _milestone.pendingRecipientAddress ? _milestone.pendingRecipient : _milestone.recipient,
+      );
+      getDacTitle(_milestone.dacId);
+      setLoading(false);
+    });
 
     loadMoreDonations();
 

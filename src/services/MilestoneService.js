@@ -49,6 +49,42 @@ class MilestoneService {
   }
 
   /**
+   * Get a milestone defined by slug or by id
+   *
+   * @param slugOrId   Slug or ID of the milestone to be retrieved
+   */
+  static getBySlugOrId(slugOrId) {
+    return new Promise((resolve, reject) => {
+      milestones
+        .find({
+          query: {
+            slug: slugOrId,
+          },
+        })
+        .then(resp => {
+          if (resp.data.length) resolve(new Milestone(resp.data[0]));
+          else {
+            milestones
+              .find({
+                query: {
+                  _id: slugOrId,
+                },
+              })
+              .then(_resp => {
+                if (_resp.data.length) {
+                  resolve(new Milestone(_resp.data[0]));
+                } else {
+                  reject();
+                }
+              })
+              .catch(err => reject(err));
+          }
+        })
+        .catch(err => reject(err));
+    });
+  }
+
+  /**
    * Subscribe to a Milestone defined by ID
    *
    * @param id   ID of the Milestone to be retrieved

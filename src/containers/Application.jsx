@@ -296,6 +296,19 @@ class Application extends Component {
                                               />
                                               <Route
                                                 exact
+                                                path={getViewEntityPathsList(
+                                                  '/milestones/:milestoneId',
+                                                )}
+                                                render={props => (
+                                                  <ViewMilestone
+                                                    currentUser={currentUser}
+                                                    balance={balance}
+                                                    {...props}
+                                                  />
+                                                )}
+                                              />
+                                              <Route
+                                                exact
                                                 path="/campaigns/:id/milestones/:milestoneId/edit"
                                                 render={props => (
                                                   <EditMilestone
