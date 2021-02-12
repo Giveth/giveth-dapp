@@ -47,7 +47,6 @@ class EditDAC extends Component {
         owner: props.currentUser,
       }),
       isBlocking: false,
-      slugChanged: false,
     };
 
     this.form = React.createRef();
@@ -205,34 +204,6 @@ class EditDAC extends Component {
     });
   }
 
-  titleChanged(name, value) {
-    function slugify(title) {
-      return title
-        .replace(/[^a-zA-Z\d\s_()-./\\]/g, '')
-        .replace(/(\s|_|\(|\)|\/|\\|\.)+/g, '-')
-        .toLowerCase();
-    }
-    if (this.state.slugChanged) {
-      return;
-    }
-    const { dac } = this.state;
-    dac.slug = slugify(value);
-    dac.title = value;
-    this.setState({
-      dac,
-    });
-  }
-
-  slugChanged(name, value) {
-    if (this.state.slugChanged) {
-      return;
-    }
-    this.state.dac.slug = value;
-    this.setState({
-      slugChanged: true,
-    });
-  }
-
   render() {
     const { isNew } = this.props;
     const { isLoading, isSaving, dac, formIsValid, isBlocking } = this.state;
@@ -276,7 +247,6 @@ class EditDAC extends Component {
                       dac.description = inputs.description;
                       dac.communityUrl = inputs.communityUrl;
                       dac.summary = getTruncatedText(inputs.description, 100);
-                      dac.slug = inputs.slug;
                     }}
                     onValid={() => this.toggleFormValid(true)}
                     onInvalid={() => this.toggleFormValid(false)}
@@ -304,24 +274,6 @@ class EditDAC extends Component {
                       }}
                       required
                       autoFocus
-                      onChange={(name, value) => this.titleChanged(name, value)}
-                    />
-
-                    <Input
-                      name="slug"
-                      id="slug-input"
-                      label="Community Slug"
-                      type="text"
-                      value={dac.slug}
-                      placeholder="e.g. hurricane-relief"
-                      help="A unique text containing alphanumeric characters and '-'"
-                      validations="minLength:3"
-                      validationErrors={{
-                        minLength: 'Please provide at least 3 characters.',
-                      }}
-                      required
-                      autoFocus
-                      onChange={(name, value) => this.slugChanged(name, value)}
                     />
 
                     <div className="form-group">
