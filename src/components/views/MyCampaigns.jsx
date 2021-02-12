@@ -66,11 +66,11 @@ class MyCampaigns extends Component {
     );
   }
 
-  editCampaign(id) {
+  editCampaign(slug) {
     actionWithLoggedIn(this.props.currentUser).then(() => {
       checkBalance(this.props.balance)
         .then(() => {
-          history.push(`/campaigns/${id}/edit`);
+          history.push(`/campaigns/${slug}/edit`);
         })
         .catch(err => {
           if (err === 'noBalance') {
@@ -182,7 +182,7 @@ class MyCampaigns extends Component {
                                       <button
                                         type="button"
                                         className="btn btn-link"
-                                        onClick={() => this.editCampaign(c.id)}
+                                        onClick={() => this.editCampaign(c.slug)}
                                       >
                                         <i className="fa fa-edit" />
                                         &nbsp;Edit

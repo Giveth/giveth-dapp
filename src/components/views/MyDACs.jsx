@@ -63,10 +63,10 @@ class MyDACs extends Component {
     );
   }
 
-  editDAC(id) {
+  editDAC(slug) {
     checkBalance(this.props.balance)
       .then(() => {
-        history.push(`/dacs/${id}/edit`);
+        history.push(`/dacs/${slug}/edit`);
       })
       .catch(err => {
         if (err === 'noBalance') {
@@ -120,7 +120,7 @@ class MyDACs extends Component {
                                 <button
                                   type="button"
                                   className="btn btn-link"
-                                  onClick={() => this.editDAC(d.id)}
+                                  onClick={() => this.editDAC(d.slug)}
                                 >
                                   <i className="fa fa-edit" />
                                 </button>

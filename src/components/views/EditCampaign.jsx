@@ -61,7 +61,7 @@ class EditCampaign extends Component {
       .then(() => {
         // Load this Campaign
         if (!this.props.isNew) {
-          CampaignService.get(this.props.match.params.id)
+          CampaignService.getBySlugOrId(this.props.match.params.id)
             .then(campaign => {
               if (isOwner(campaign.ownerAddress, this.props.currentUser)) {
                 this.setState({ campaign, isLoading: false });

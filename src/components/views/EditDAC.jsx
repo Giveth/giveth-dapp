@@ -61,7 +61,7 @@ class EditDAC extends Component {
       .then(() => this.checkUser())
       .then(() => {
         if (!this.props.isNew) {
-          DACservice.get(match.params.id)
+          DACservice.getBySlugOrId(match.params.id)
             .then(dac => {
               // The user is not an owner, hence can not change the DAC
               if (!isOwner(dac.ownerAddress, this.props.currentUser)) {
