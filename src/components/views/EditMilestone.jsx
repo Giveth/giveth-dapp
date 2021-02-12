@@ -194,7 +194,9 @@ class EditMilestone extends Component {
         // load a single milestones (when editing)
         if (!this.props.isNew) {
           try {
-            const milestone = await MilestoneService.get(this.props.match.params.milestoneId);
+            const milestone = await MilestoneService.getBySlugOrId(
+              this.props.match.params.milestoneId,
+            );
             if (
               !(
                 isOwner(milestone.owner.address, this.props.currentUser) ||

@@ -309,7 +309,7 @@ class Application extends Component {
                                               />
                                               <Route
                                                 exact
-                                                path="/campaigns/:id/milestones/:milestoneId/edit"
+                                                path="/milestones/:milestoneId/edit"
                                                 render={props => (
                                                   <EditMilestone
                                                     key={currentUser ? currentUser.id : 0}
@@ -325,7 +325,7 @@ class Application extends Component {
                                               />
                                               <Route
                                                 exact
-                                                path="/campaigns/:id/milestones/:milestoneId/edit/proposed"
+                                                path="/milestones/:milestoneId/edit/proposed"
                                                 render={props => (
                                                   <EditMilestone
                                                     key={currentUser ? currentUser.id : 0}
