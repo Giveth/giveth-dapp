@@ -36,7 +36,7 @@ export const historyBackWFallback = fallbackUrl => {
 
 export const isLoggedIn = (currentUser, redirectOnFail) =>
   new Promise((resolve, reject) => {
-    if (currentUser && currentUser.address && currentUser.authenticated) resolve();
+    if (currentUser.address && currentUser.authenticated) resolve();
     else {
       // this refers to UserProvider
       React.signIn(redirectOnFail);

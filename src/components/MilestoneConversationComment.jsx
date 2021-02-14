@@ -59,7 +59,7 @@ class MilestoneConversationComment extends Component {
   canUserEdit() {
     const { milestone, currentUser } = this.props;
     return (
-      currentUser &&
+      currentUser.address &&
       currentUser.address &&
       [
         milestone.campaign.ownerAddress,

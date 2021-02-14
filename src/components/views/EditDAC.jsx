@@ -9,12 +9,12 @@ import Loader from '../Loader';
 import QuillFormsy from '../QuillFormsy';
 import FormsyImageUploader from '../FormsyImageUploader';
 import GoBackButton from '../GoBackButton';
-import { isOwner, getTruncatedText, history } from '../../lib/helpers';
+import { getTruncatedText, history, isOwner } from '../../lib/helpers';
 import {
-  checkForeignNetwork,
-  checkProfile,
   authenticateIfPossible,
   checkBalance,
+  checkForeignNetwork,
+  checkProfile,
 } from '../../lib/middleware';
 import LoaderButton from '../LoaderButton';
 
@@ -22,7 +22,6 @@ import DACservice from '../../services/DACService';
 import DAC from '../../models/DAC';
 import User from '../../models/User';
 import ErrorPopup from '../ErrorPopup';
-import { Consumer as WhiteListConsumer } from '../../contextProviders/WhiteListProvider';
 import ErrorHandler from '../../lib/ErrorHandler';
 
 /**
@@ -96,7 +95,7 @@ class EditDAC extends Component {
         if (!this.props.isNew && !isOwner(this.state.dac.ownerAddress, this.props.currentUser))
           history.goBack();
       });
-    } else if (this.props.currentUser && !prevProps.balance.eq(this.props.balance)) {
+    } else if (this.props.currentUser.address && !prevProps.balance.eq(this.props.balance)) {
       checkBalance(this.props.balance);
     }
   }
@@ -119,8 +118,8 @@ class EditDAC extends Component {
 
     return authenticateIfPossible(this.props.currentUser, true)
       .then(() => {
-        if (!this.props.isDelegate(this.props.currentUser)) {
-          throw new Error('not whitelisted');
+        if (!this.props.currentUser) {
+          throw new Error('not authorized');
         }
       })
       .then(() => checkProfile(this.props.currentUser))
@@ -277,8 +276,8 @@ class EditDAC extends Component {
                       <QuillFormsy
                         name="description"
                         label="Explain the cause of your community"
-                        helpText="Describe the shared vision and goals of your Community and the cause 
-                        that you are collaborating to solve. Share links, insert media to convey your 
+                        helpText="Describe the shared vision and goals of your Community and the cause
+                        that you are collaborating to solve. Share links, insert media to convey your
                         message and build trust so that people will join your Community and/or donate to the cause."
                         value={dac.description}
                         placeholder="Describe how you're going to solve your cause..."
@@ -356,7 +355,6 @@ EditDAC.propTypes = {
       id: PropTypes.string,
     }).isRequired,
   }).isRequired,
-  isDelegate: PropTypes.func.isRequired,
 };
 
 EditDAC.defaultProps = {
@@ -364,8 +362,4 @@ EditDAC.defaultProps = {
   isNew: false,
 };
 
-export default props => (
-  <WhiteListConsumer>
-    {({ actions: { isDelegate } }) => <EditDAC {...props} isDelegate={isDelegate} />}
-  </WhiteListConsumer>
-);
+export default EditDAC;

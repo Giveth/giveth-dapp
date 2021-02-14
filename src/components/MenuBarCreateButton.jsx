@@ -51,7 +51,7 @@ function MenuBarCreateButton() {
     }
   }, [id]);
 
-  if (campaignIsActive && currentUser) {
+  if (campaignIsActive && currentUser.address) {
     const userIsOwner = currentUser.address && currentUser.address === ownerAddress;
     return (
       <Link

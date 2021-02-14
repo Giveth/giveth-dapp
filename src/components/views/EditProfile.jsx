@@ -301,7 +301,7 @@ class EditProfile extends Component {
                       !isValid ||
                       isSaving ||
                       isPristine ||
-                      (currentUser && currentUser.giverId === 0)
+                      (currentUser.address && currentUser.giverId === 0)
                     }
                     isLoading={isSaving}
                     loadingText="Saving..."

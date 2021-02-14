@@ -81,7 +81,7 @@ const ChangeOwnershipButton = props => {
 
     CampaignService.changeOwnership(
       campaign,
-      currentUser && currentUser.address,
+      currentUser.address,
       campaign.ownerAddress,
       campaign.coownerAddress,
       afterCreate,

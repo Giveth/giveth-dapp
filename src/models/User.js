@@ -34,6 +34,9 @@ class User extends Model {
       this._name = data.name;
       this._updatedAt = data.updatedAt;
       this._url = data.url;
+      this._isReviewer = data.isReviewer;
+      this._isDelegator = data.isDelegator;
+      this._isProjectOwner = data.isProjectOwner;
       this._authenticated = data.authenticated || false;
       this._currency = data.currency || 'USD';
     }
@@ -191,6 +194,18 @@ class User extends Model {
   set currency(value) {
     this.checkType(value, ['string'], 'currency');
     this._currency = value;
+  }
+
+  get isReviewer() {
+    return this._isReviewer;
+  }
+
+  get isDelegator() {
+    return this._isDelegator;
+  }
+
+  get isProjectOwner() {
+    return this._isProjectOwner;
   }
 }
 

@@ -93,7 +93,7 @@ class EditCampaign extends Component {
         if (!this.props.isNew && !isOwner(this.state.campaign.ownerAddress, this.props.currentUser))
           history.goBack();
       });
-    } else if (this.props.currentUser && !prevProps.balance.eq(this.props.balance)) {
+    } else if (this.props.currentUser.address && !prevProps.balance.eq(this.props.balance)) {
       checkBalance(this.props.balance);
     }
   }
@@ -116,7 +116,7 @@ class EditCampaign extends Component {
 
     return authenticateIfPossible(this.props.currentUser, true)
       .then(() => {
-        if (!this.props.isCampaignManager(this.props.currentUser)) {
+        if (!this.props.currentUser.isProjectOwner && !this.props.projectOwnersWhitelistEnabled) {
           throw new Error('not whitelisted');
         }
       })
@@ -357,8 +357,8 @@ EditCampaign.propTypes = {
       id: PropTypes.string,
     }).isRequired,
   }).isRequired,
-  isCampaignManager: PropTypes.func.isRequired,
   reviewers: PropTypes.arrayOf(PropTypes.shape()).isRequired,
+  projectOwnersWhitelistEnabled: PropTypes.bool.isRequired,
 };
 
 EditCampaign.defaultProps = {
@@ -368,8 +368,12 @@ EditCampaign.defaultProps = {
 
 export default props => (
   <WhiteListConsumer>
-    {({ state: { reviewers }, actions: { isCampaignManager } }) => (
-      <EditCampaign reviewers={reviewers} isCampaignManager={isCampaignManager} {...props} />
+    {({ state: { reviewers, projectOwnersWhitelistEnabled } }) => (
+      <EditCampaign
+        reviewers={reviewers}
+        projectOwnersWhitelistEnabled={projectOwnersWhitelistEnabled}
+        {...props}
+      />
     )}
   </WhiteListConsumer>
 );

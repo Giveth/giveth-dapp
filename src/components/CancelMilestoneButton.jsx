@@ -38,7 +38,7 @@ const CancelMilestoneButton = forwardRef(({ milestone }, ref) => {
             .then(proof =>
               MilestoneService.cancelMilestone({
                 milestone,
-                from: currentUser && currentUser.address,
+                from: currentUser.address,
                 proof,
                 onTxHash: txUrl => {
                   GA.trackEvent({

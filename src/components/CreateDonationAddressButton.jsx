@@ -165,7 +165,7 @@ class CreateDonationAddressButton extends React.Component {
       const { currentUser } = this.props;
       const { donationAddress, balances } = this.state;
       const { homeEtherscan: etherscanUrl } = config;
-      const from = currentUser && currentUser.address;
+      const from = currentUser.address;
       if (!balances[addressToForward]) throw Error('No balance to forward');
 
       const fundsForwarder = new web3.eth.Contract(fundForwarder.abi, donationAddress);
@@ -236,7 +236,7 @@ class CreateDonationAddressButton extends React.Component {
     const { currentUser, receiverId, giverId, campaignId } = this.props;
     const { fundsForwarderFactoryAddress, homeEtherscan: etherscanUrl } = config;
     const web3 = await getWeb3();
-    const from = currentUser && currentUser.address;
+    const from = currentUser.address;
 
     /* eslint-disable-next-line no-console */
     // console.log('Deploying funds forwarder', { giverId, receiverId, from });
@@ -316,7 +316,7 @@ class CreateDonationAddressButton extends React.Component {
       balances,
     } = this.state;
 
-    const userAddress = currentUser && currentUser.address;
+    const userAddress = currentUser.address;
 
     const buttonText = donationAddress ? 'View donation address' : 'Create donation address';
     const loadingText = 'Loading donation addrs';
@@ -335,7 +335,7 @@ class CreateDonationAddressButton extends React.Component {
           display: 'inline-block',
         }}
       >
-        {!donationAddress && campaignOwner && currentUser && campaignOwner === userAddress && (
+        {!donationAddress && campaignOwner && currentUser.address && campaignOwner === userAddress && (
           <LoaderButton
             className="btn btn-warning"
             isLoading={fetchingExistingAddress}
@@ -405,7 +405,7 @@ class CreateDonationAddressButton extends React.Component {
                     <td style={{ textAlign: 'right' }}>{balance}</td>
                     <td style={{ padding: '0 16px 0 8px' }}>{symbol}</td>
                     <td style={{ padding: '8px 0' }}>
-                      {isCorrectNetwork && validProvider && currentUser && (
+                      {isCorrectNetwork && validProvider && currentUser.address && (
                         <LoaderButton
                           className="btn btn-success"
                           disabled={!isCorrectNetwork}
@@ -431,14 +431,14 @@ class CreateDonationAddressButton extends React.Component {
                     </div>
                   )}
 
-                  {validProvider && currentUser && (
+                  {validProvider && currentUser.address && (
                     <ViewNetworkWarning
                       incorrectNetwork={!isCorrectNetwork}
                       networkName={config.homeNetworkName}
                     />
                   )}
 
-                  {validProvider && !currentUser && (
+                  {validProvider && !currentUser.address && (
                     <div className="alert alert-warning">
                       <i className="fa fa-exclamation-triangle" />
                       It looks like your Ethereum Provider is locked or you need to enable it.
@@ -446,7 +446,7 @@ class CreateDonationAddressButton extends React.Component {
                   )}
 
                   {/* Buttons show up above when metamask and network is correct */}
-                  {/* {isCorrectNetwork && validProvider && currentUser && ()} */}
+                  {/* {isCorrectNetwork && validProvider && currentUser.address && ()} */}
                 </Fragment>
               )}
 
@@ -481,13 +481,13 @@ class CreateDonationAddressButton extends React.Component {
                 </div>
               )}
 
-              {validProvider && currentUser && (
+              {validProvider && currentUser.address && (
                 <ActionNetworkWarning
                   incorrectNetwork={!isCorrectNetwork}
                   networkName={config.homeNetworkName}
                 />
               )}
-              {isCorrectNetwork && currentUser && (
+              {isCorrectNetwork && currentUser.address && (
                 <p>
                   <span>
                     You will create a donation address for this campaing by deploying a funds
@@ -499,7 +499,7 @@ class CreateDonationAddressButton extends React.Component {
                 </p>
               )}
 
-              {validProvider && !currentUser && (
+              {validProvider && !currentUser.address && (
                 <div className="alert alert-warning">
                   <i className="fa fa-exclamation-triangle" />
                   It looks like your Ethereum Provider is locked or you need to enable it.
@@ -508,7 +508,7 @@ class CreateDonationAddressButton extends React.Component {
 
               <br />
 
-              {isCorrectNetwork && validProvider && currentUser && (
+              {isCorrectNetwork && validProvider && currentUser.address && (
                 <LoaderButton
                   className="btn btn-success"
                   type="submit"
@@ -551,7 +551,7 @@ CreateDonationAddressButton.propTypes = {
 };
 
 CreateDonationAddressButton.defaultProps = {
-  currentUser: undefined,
+  currentUser: {},
 };
 
 export default props => (

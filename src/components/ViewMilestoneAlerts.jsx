@@ -21,7 +21,7 @@ const ViewMilestoneAlerts = ({ milestone, campaign }) => {
   const { fullyFunded, status } = milestone;
   const milestoneIsActive = status === 'InProgress' && !fullyFunded;
 
-  const userAddress = currentUser && currentUser.address;
+  const userAddress = currentUser.address;
   const campaignOwnerAddress = campaign && campaign.ownerAddress;
 
   const userCanDelegate = userIsDacOwner || (userAddress && userAddress === campaignOwnerAddress);

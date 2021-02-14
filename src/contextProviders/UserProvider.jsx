@@ -31,7 +31,7 @@ class UserProvider extends Component {
     super();
 
     this.state = {
-      currentUser: undefined,
+      currentUser: {},
       hasError: false,
       userIsDacOwner: false,
     };
@@ -52,7 +52,10 @@ class UserProvider extends Component {
     const { currentUser } = this.state;
 
     const { account } = this.props;
-    if ((account && !currentUser) || (currentUser && account !== prevProps.account)) {
+    if (
+      (account && !currentUser.address) ||
+      (currentUser.address && account !== prevProps.account)
+    ) {
       this.getUserData(account);
       this.checkGivethWallet();
     }
@@ -66,7 +69,7 @@ class UserProvider extends Component {
     if (this.userSubscriber) this.userSubscriber.unsubscribe();
 
     if (!address) {
-      this.setState({ currentUser: undefined, userIsDacOwner: false }, () => {
+      this.setState({ currentUser: {}, userIsDacOwner: false }, () => {
         this.props.onLoaded();
       });
     } else {
@@ -144,7 +147,7 @@ class UserProvider extends Component {
   signIn(redirectOnFail) {
     const { currentUser } = this.state;
 
-    if (currentUser) {
+    if (currentUser.address) {
       authenticateIfPossible(currentUser, redirectOnFail).then(isAuthenticated => {
         if (isAuthenticated) {
           currentUser.authenticated = true;
@@ -158,7 +161,7 @@ class UserProvider extends Component {
   async authenticateFeathers() {
     const { currentUser } = this.state;
 
-    if (currentUser) {
+    if (currentUser.address) {
       try {
         const token = await feathersClient.passport.getJWT();
 

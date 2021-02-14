@@ -9,7 +9,7 @@ const AuthenticationWarning = () => {
     state: { currentUser },
   } = useContext(UserContext);
   return (
-    (!currentUser || !currentUser.authenticated) && (
+    !currentUser.authenticated && (
       <div className="alert alert-warning">
         <i className="fa fa-exclamation-triangle" />
         You are not yet authenticated. Please{' '}

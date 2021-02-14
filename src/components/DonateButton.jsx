@@ -168,7 +168,7 @@ const DonateButton = forwardRef((props, ref) => {
     if (!isDonationInToken) {
       setAllowance(new BigNumber(0));
       setAllowanceStatus(AllowanceStatus.NotNeeded);
-    } else if (validProvider && currentUser) {
+    } else if (validProvider && currentUser.address) {
       // Fetch from network after 1 sec inorder to new allowance value be returned in response
       setTimeout(
         () =>
@@ -200,7 +200,7 @@ const DonateButton = forwardRef((props, ref) => {
             const contract = tokens[selectedToken.address];
 
             // we are only interested in homeNetwork token balances
-            if (!isCorrectNetwork || !currentUser || !currentUser.address || !contract) {
+            if (!isCorrectNetwork || !currentUser.address || !contract) {
               return new BigNumber(0);
             }
 
@@ -363,7 +363,7 @@ const DonateButton = forwardRef((props, ref) => {
     _allowanceApprovalType = AllowanceApprovalType.Default,
   ) => {
     const { homeEtherscan: etherscanUrl } = config;
-    const userAddress = currentUser && currentUser.address;
+    const userAddress = currentUser.address;
 
     const amountWei = utils.toWei(new BigNumber(_amount).toFixed(18));
     const isDonationInToken = selectedToken.symbol !== config.nativeTokenName;
@@ -516,7 +516,7 @@ const DonateButton = forwardRef((props, ref) => {
         }
         const allowed = await DonationService.approveERC20tokenTransfer(
           tokenAddress,
-          currentUser && currentUser.address,
+          currentUser.address,
           allowanceRequired.toString(),
           () => updateAllowance(UPDATE_ALLOWANCE_DELAY),
         );
@@ -751,19 +751,19 @@ const DonateButton = forwardRef((props, ref) => {
             </div>
           )}
 
-          {validProvider && !currentUser && (
+          {validProvider && !currentUser.address && (
             <div className="alert alert-warning">
               <i className="fa fa-exclamation-triangle" />
               It looks like your Ethereum Provider is locked or you need to enable it.
             </div>
           )}
-          {validProvider && currentUser && (
+          {validProvider && currentUser.address && (
             <ActionNetworkWarning
               incorrectNetwork={!isCorrectNetwork}
               networkName={config.homeNetworkName}
             />
           )}
-          {isCorrectNetwork && currentUser && (
+          {isCorrectNetwork && currentUser.address && (
             <p>
               {model.type.toLowerCase() === DAC.type && (
                 <span>
@@ -781,7 +781,7 @@ const DonateButton = forwardRef((props, ref) => {
             </p>
           )}
 
-          {validProvider && isCorrectNetwork && currentUser && (
+          {validProvider && isCorrectNetwork && currentUser.address && (
             <div>
               {!model.acceptsSingleToken && (
                 <SelectFormsy
@@ -813,7 +813,7 @@ const DonateButton = forwardRef((props, ref) => {
               )}
             </div>
           )}
-          {isCorrectNetwork && validProvider && currentUser && (
+          {isCorrectNetwork && validProvider && currentUser.address && (
             <Fragment>
               {!zeroBalance ? (
                 <Fragment>
@@ -866,7 +866,7 @@ const DonateButton = forwardRef((props, ref) => {
                         name="customAddress"
                         id="title-input"
                         type="text"
-                        value={currentUser && currentUser.address ? currentUser.address : undefined}
+                        value={currentUser.address}
                         placeholder={ZERO_ADDRESS}
                         validations="isEtherAddress"
                         validationErrors={{

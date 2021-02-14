@@ -12,25 +12,14 @@ import { feathersClient } from '../../lib/feathersClient';
 import getNetwork from '../../lib/blockchain/getNetwork';
 import GoBackButton from '../GoBackButton';
 import Loader from '../Loader';
-import {
-  getUserName,
-  getUserAvatar,
-  getTruncatedText,
-  getReadableStatus,
-  convertEthHelper,
-} from '../../lib/helpers';
+import { getUserName, getUserAvatar, getTruncatedText, convertEthHelper } from '../../lib/helpers';
 
 import DACservice from '../../services/DACService';
 import CampaignService from '../../services/CampaignService';
 import Campaign from '../../models/Campaign';
 import DAC from '../../models/DAC';
 import Donation from '../../models/Donation';
-import Milestone from '../../models/Milestone';
-
-const reviewDue = updatedAt =>
-  moment()
-    .subtract(3, 'd')
-    .isAfter(moment(updatedAt));
+import ProfileMilestonesTable from '../ProfileMilestonesTable';
 
 /**
  * The user profile view mapped to /profile/{userAddress}
@@ -51,11 +40,8 @@ class Profile extends Component {
       dacs: null,
       isLoadingCampaigns: true,
       campaigns: null,
-      isLoadingMilestones: true,
-      milestones: null,
       visiblePages: 10,
       itemsPerPage: 25,
-      skipMilestonePages: 0,
       skipCampaignPages: 0,
       skipDacPages: 0,
       skipDonationsPages: 0,
@@ -69,10 +55,8 @@ class Profile extends Component {
       });
     });
 
-    this.loadUserMilestones = this.loadUserMilestones.bind(this);
     this.loadUserCampaigns = this.loadUserCampaigns.bind(this);
     this.loadUserDacs = this.loadUserDacs.bind(this);
-    this.handleMilestonePageChanged = this.handleMilestonePageChanged.bind(this);
     this.handleCampaignsPageChanged = this.handleCampaignsPageChanged.bind(this);
     this.handleDacPageChanged = this.handleDacPageChanged.bind(this);
     this.handleDonationsPageChanged = this.handleDonationsPageChanged.bind(this);
@@ -94,7 +78,6 @@ class Profile extends Component {
           },
           () => {
             this.loadUserCampaigns();
-            this.loadUserMilestones();
             this.loadUserDacs();
             this.loadUserDonations();
           },
@@ -112,35 +95,7 @@ class Profile extends Component {
   componentWillUnmount() {
     if (this.dacsObserver) this.dacsObserver.unsubscribe();
     if (this.campaignsObserver) this.campaignsObserver.unsubscribe();
-    if (this.milestonesObserver) this.milestonesObserver.unsubscribe();
     if (this.donationsObserver) this.donationsObserver.unsubscribe();
-  }
-
-  loadUserMilestones() {
-    this.milestonesObserver = feathersClient
-      .service('milestones')
-      .watch({ listStrategy: 'always' })
-      .find({
-        query: {
-          $sort: {
-            createdAt: -1,
-          },
-          $limit: this.state.itemsPerPage,
-          $skip: this.state.skipMilestonePages * this.state.itemsPerPage,
-          $or: [
-            { ownerAddress: this.state.userAddress },
-            { reviewerAddress: this.state.userAddress },
-            { recipientAddress: this.state.userAddress },
-          ],
-        },
-      })
-      .subscribe(resp =>
-        this.setState(prevState => ({
-          userAddress: prevState.userAddress,
-          milestones: { ...resp, data: resp.data.map(m => new Milestone(m)) },
-          isLoadingMilestones: false,
-        })),
-      );
   }
 
   loadUserCampaigns() {
@@ -196,12 +151,6 @@ class Profile extends Component {
       );
   }
 
-  handleMilestonePageChanged(newPage) {
-    this.setState({ skipMilestonePages: newPage - 1, isLoadingMilestones: true }, () =>
-      this.loadUserMilestones(),
-    );
-  }
-
   handleCampaignsPageChanged(newPage) {
     this.setState({ skipCampaignPages: newPage - 1, isLoadingCampaigns: true }, () =>
       this.loadUserCampaigns(),
@@ -230,11 +179,9 @@ class Profile extends Component {
       homeEtherScanUrl,
       isLoadingDacs,
       isLoadingCampaigns,
-      isLoadingMilestones,
       isLoadingDonations,
       dacs,
       campaigns,
-      milestones,
       donations,
       visiblePages,
       userAddress,
@@ -277,122 +224,7 @@ class Profile extends Component {
                 </div>
               )}
 
-              {(isLoadingMilestones || (milestones && milestones.data.length > 0)) && (
-                <h4>Milestones</h4>
-              )}
-              <div>
-                {isLoadingMilestones && <Loader className="small relative" />}
-                {!isLoadingMilestones && milestones && milestones.data.length > 0 && (
-                  <div className="table-container">
-                    <table className="table table-responsive table-striped table-hover">
-                      <thead>
-                        <tr>
-                          <th className="td-created-at">Created</th>
-                          <th className="td-name">Name</th>
-                          <th className="td-status">Status</th>
-                          <th className="td-donations-number">Requested</th>
-                          <th className="td-donations-number">Donations</th>
-                          <th className="td-donations-amount">Amount</th>
-                          <th className="td-reviewer">Reviewer</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {milestones.data.map(m => (
-                          <tr key={m._id} className={m.status === 'Pending' ? 'pending' : ''}>
-                            <td className="td-created-at">
-                              {m.createdAt && (
-                                <span>{moment.utc(m.createdAt).format('Do MMM YYYY')}</span>
-                              )}
-                            </td>
-                            <td className="td-name">
-                              <strong>
-                                <Link to={`/campaigns/${m.campaign._id}/milestones/${m._id}`}>
-                                  MILESTONE <em>{getTruncatedText(m.title, 35)}</em>
-                                </Link>
-                              </strong>
-                              <br />
-                              <i className="fa fa-arrow-right" />
-                              <Link className="secondary-link" to={`/campaigns/${m.campaign._id}`}>
-                                CAMPAIGN <em>{getTruncatedText(m.campaign.title, 40)}</em>
-                              </Link>
-                              <div>
-                                {m.ownerAddress === userAddress && (
-                                  <span className="badge badge-success">
-                                    <i className="fa fa-flag-o" />
-                                    Owner
-                                  </span>
-                                )}
-                                {m.reviewerAddress === userAddress && (
-                                  <span className="badge badge-info">
-                                    <i className="fa fa-eye" />
-                                    Reviewer
-                                  </span>
-                                )}
-                                {m.recipientAddress === userAddress && (
-                                  <span className="badge badge-warning">
-                                    <i className="fa fa-diamond" />
-                                    Recipient
-                                  </span>
-                                )}
-                              </div>
-                            </td>
-                            <td className="td-status">
-                              {(m.status === 'Pending' ||
-                                (Object.keys(m).includes('mined') && !m.mined)) && (
-                                <span>
-                                  <i className="fa fa-circle-o-notch fa-spin" />
-                                  &nbsp;
-                                </span>
-                              )}
-                              {m.status === 'NeedsReview' && reviewDue(m.updatedAt) && (
-                                <span>
-                                  <i className="fa fa-exclamation-triangle" />
-                                  &nbsp;
-                                </span>
-                              )}
-                              {getReadableStatus(m.status)}
-                            </td>
-                            <td className="td-donations-number">
-                              {m.isCapped
-                                ? `${convertEthHelper(m.maxAmount, m.token && m.token.decimals)} ${
-                                    m.token.symbol
-                                  }`
-                                : 'Uncapped'}
-                            </td>
-                            <td className="td-donations-number">{m.totalDonations}</td>
-                            <td className="td-donations-amount">
-                              {m.totalDonated.map(td => (
-                                <div>
-                                  {convertEthHelper(td.amount, td.decimals)} {td.symbol}
-                                </div>
-                              ))}
-                            </td>
-                            <td className="td-reviewer">
-                              {m.reviewer && m.reviewerAddress && (
-                                <Link to={`/profile/${m.reviewerAddress}`}>
-                                  {m.reviewer.name || 'Anomynous user'}
-                                </Link>
-                              )}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-
-                    {milestones.total > milestones.limit && (
-                      <div className="text-center">
-                        <Pagination
-                          activePage={milestones.skipPages + 1}
-                          itemsCountPerPage={milestones.limit}
-                          totalItemsCount={milestones.total}
-                          pageRangeDisplayed={visiblePages}
-                          onChange={this.handleMilestonePageChanged}
-                        />
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
+              <ProfileMilestonesTable userAddress={userAddress} />
 
               {(isLoadingCampaigns || (campaigns && campaigns.data.length > 0)) && (
                 <h4>Campaigns</h4>

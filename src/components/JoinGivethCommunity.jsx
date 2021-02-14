@@ -1,26 +1,31 @@
-import React, { Component } from 'react';
-import PropTypes from 'prop-types';
+import React, { useContext } from 'react';
 
 import CommunityButton from './CommunityButton';
 import { checkBalance } from '../lib/middleware';
-import { Consumer as Web3Consumer } from '../contextProviders/Web3Provider';
+import { Context as Web3Context } from '../contextProviders/Web3Provider';
 import ErrorPopup from './ErrorPopup';
-import { Consumer as WhiteListConsumer } from '../contextProviders/WhiteListProvider';
-import { Consumer as UserConsumer } from '../contextProviders/UserProvider';
+import { Context as UserContext } from '../contextProviders/UserProvider';
+import { history } from '../lib/helpers';
+import { Context as WhiteListContext } from '../contextProviders/WhiteListProvider';
 
 /**
  * The join Giveth community top-bar
  */
-class JoinGivethCommunity extends Component {
-  constructor(props) {
-    super(props);
+const JoinGivethCommunity = () => {
+  const {
+    state: { currentUser },
+  } = useContext(UserContext);
+  const {
+    state: { isEnabled, balance },
+    actions: { enableProvider },
+  } = useContext(Web3Context);
+  const { delegateWhitelistEnabled, projectOwnersWhitelistEnabled } = useContext(WhiteListContext);
 
-    this.createDAC = this.createDAC.bind(this);
-    this.createCampaign = this.createCampaign.bind(this);
-  }
+  const userIsDelegator = currentUser.isDelegator || !delegateWhitelistEnabled;
+  const userIsProjectOwner = currentUser.isProjectOwner || !projectOwnersWhitelistEnabled;
 
-  createDAC(currentUser, balance) {
-    if (!this.props.isDelegate(currentUser)) {
+  const createDAC = () => {
+    if (!userIsDelegator) {
       React.swal({
         title: 'Sorry, Giveth is in beta...',
         content: React.swal.msg(
@@ -37,10 +42,10 @@ class JoinGivethCommunity extends Component {
       });
       return;
     }
-    if (currentUser) {
+    if (currentUser.address) {
       checkBalance(balance)
         .then(() => {
-          this.props.history.push('/dacs/new');
+          history.push('/dacs/new');
         })
         .catch(err => {
           if (err === 'noBalance') {
@@ -62,14 +67,14 @@ class JoinGivethCommunity extends Component {
         buttons: ['Cancel', 'Sign up now!'],
       }).then(isConfirmed => {
         if (isConfirmed) {
-          this.props.history.push('/signup');
+          history.push('/signup');
         }
       });
     }
-  }
+  };
 
-  createCampaign(currentUser, balance) {
-    if (!this.props.isCampaignManager(currentUser)) {
+  const createCampaign = () => {
+    if (!userIsProjectOwner) {
       React.swal({
         title: 'Sorry, Giveth is in beta...',
         content: React.swal.msg(
@@ -85,10 +90,10 @@ class JoinGivethCommunity extends Component {
       });
       return;
     }
-    if (currentUser) {
+    if (currentUser.address) {
       checkBalance(balance)
         .then(() => {
-          this.props.history.push('/campaigns/new');
+          history.push('/campaigns/new');
         })
         .catch(err => {
           if (err === 'noBalance') {
@@ -110,86 +115,55 @@ class JoinGivethCommunity extends Component {
         buttons: ['Cancel', 'Sign up now!'],
       }).then(isConfirmed => {
         if (isConfirmed) {
-          this.props.history.push('/signup');
+          history.push('/signup');
         }
       });
     }
-  }
+  };
 
-  render() {
-    const { isDelegate, isCampaignManager } = this.props;
-
-    return (
-      <Web3Consumer>
-        {({ state: { balance, isEnabled }, actions: { enableProvider } }) => (
-          <UserConsumer>
-            {({ state: { currentUser } }) => (
-              <div id="join-giveth-community">
-                <div className="vertical-align">
-                  <center>
-                    <h3>Building the Future of Giving, with You.</h3>
-                    <CommunityButton className="btn btn-success" url="https://giveth.io/join">
-                      &nbsp;Join Giveth
-                    </CommunityButton>
-                    &nbsp;
-                    {isDelegate(currentUser) && (
-                      <button
-                        type="button"
-                        className="btn btn-info"
-                        onClick={() => {
-                          if (!isEnabled) {
-                            enableProvider();
-                          } else {
-                            this.createDAC(currentUser, balance);
-                          }
-                        }}
-                      >
-                        Create a Community
-                      </button>
-                    )}
-                    {isCampaignManager(currentUser) && (
-                      <button
-                        type="button"
-                        className="btn btn-info"
-                        onClick={() => {
-                          if (!isEnabled) {
-                            enableProvider();
-                          } else {
-                            this.createCampaign(currentUser, balance);
-                          }
-                        }}
-                      >
-                        Start a Campaign
-                      </button>
-                    )}
-                  </center>
-                </div>
-              </div>
-            )}
-          </UserConsumer>
-        )}
-      </Web3Consumer>
-    );
-  }
-}
-
-JoinGivethCommunity.propTypes = {
-  history: PropTypes.shape({
-    goBack: PropTypes.func.isRequired,
-    push: PropTypes.func.isRequired,
-  }).isRequired,
-  isDelegate: PropTypes.func.isRequired,
-  isCampaignManager: PropTypes.func.isRequired,
+  return (
+    <div id="join-giveth-community">
+      <div className="vertical-align">
+        <div className="text-center">
+          <h3>Building the Future of Giving, with You.</h3>
+          <CommunityButton className="btn btn-success" url="https://giveth.io/join">
+            &nbsp;Join Giveth
+          </CommunityButton>
+          &nbsp;
+          {userIsDelegator && (
+            <button
+              type="button"
+              className="btn btn-info"
+              onClick={() => {
+                if (!isEnabled) {
+                  enableProvider();
+                } else {
+                  createDAC(currentUser, balance);
+                }
+              }}
+            >
+              Create a Community
+            </button>
+          )}
+          {userIsProjectOwner && (
+            <button
+              type="button"
+              className="btn btn-info"
+              onClick={() => {
+                if (!isEnabled) {
+                  enableProvider();
+                } else {
+                  createCampaign(currentUser, balance);
+                }
+              }}
+            >
+              Start a Campaign
+            </button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
 };
 
-export default props => (
-  <WhiteListConsumer>
-    {({ actions: { isDelegate, isCampaignManager } }) => (
-      <JoinGivethCommunity
-        {...props}
-        isDelegate={isDelegate}
-        isCampaignManager={isCampaignManager}
-      />
-    )}
-  </WhiteListConsumer>
-);
+export default JoinGivethCommunity;

@@ -179,7 +179,7 @@ const ViewCampaign = ({ match }) => {
 
   if (!isLoading && !campaign) return <p>Unable to find a campaign</p>;
 
-  const userAddress = currentUser && currentUser.address;
+  const userAddress = currentUser.address;
   const ownerAddress = campaign && campaign.ownerAddress;
   const userIsOwner = userAddress && userAddress === ownerAddress;
   const donationAddress = campaign && campaign.donationAddress;

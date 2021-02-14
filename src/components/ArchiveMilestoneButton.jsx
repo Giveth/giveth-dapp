@@ -73,7 +73,7 @@ const ArchiveMilestoneButton = ({ milestone }) => {
             }
           };
 
-          const userAddress = currentUser && currentUser.address;
+          const userAddress = currentUser.address;
           if (milestone.ownerAddress === userAddress) {
             milestone.status = Milestone.ARCHIVED;
             milestone.parentProjectId = milestone.campaign.projectId;

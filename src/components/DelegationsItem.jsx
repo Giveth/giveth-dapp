@@ -26,7 +26,7 @@ function DelegationsItem({ campaigns, donation, milestones }) {
         {/* When donated to a dac, allow delegation
                                     to campaigns and milestones */}
         {(donation.delegateId > 0 ||
-          (currentUser && donation.ownerTypeId === currentUser.address)) &&
+          (currentUser.address && donation.ownerTypeId === currentUser.address)) &&
           isForeignNetwork &&
           donation.status === Donation.WAITING &&
           donation.amountRemaining > 0 && (
