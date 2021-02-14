@@ -37,6 +37,7 @@ class User extends Model {
       this._isReviewer = data.isReviewer;
       this._isDelegator = data.isDelegator;
       this._isProjectOwner = data.isProjectOwner;
+      this._isAdmin = data.isAdmin;
       this._authenticated = data.authenticated || false;
       this._currency = data.currency || 'USD';
     }
@@ -206,6 +207,10 @@ class User extends Model {
 
   get isProjectOwner() {
     return this._isProjectOwner;
+  }
+
+  get isAdmin() {
+    return this._isAdmin;
   }
 }
 
