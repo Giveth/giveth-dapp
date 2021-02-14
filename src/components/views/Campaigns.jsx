@@ -45,7 +45,7 @@ const Campaigns = ({ onlyRecent, step }) => {
     return () => {
       isMounted.current = false;
     };
-  }, []);
+  }, [onlyRecent]);
 
   return (
     <div id="campaigns-view" className="card-view">

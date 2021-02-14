@@ -1,77 +1,23 @@
-import React, { Component, Fragment } from 'react';
+import React, { Fragment, useContext, useRef } from 'react';
 import PropTypes from 'prop-types';
 import Milestone from 'models/Milestone';
-import User from 'models/User';
 import { feathersClient } from '../lib/feathersClient';
 import ErrorPopup from './ErrorPopup';
 import { actionWithLoggedIn, authenticateIfPossible, checkProfile } from '../lib/middleware';
 import ConversationModal from './ConversationModal';
+import { Context as UserContext } from '../contextProviders/UserProvider';
 
-class MilestoneConversationComment extends Component {
-  constructor() {
-    super();
-    this.conversationModal = React.createRef();
+const MilestoneConversationComment = ({ milestone }) => {
+  const conversationModal = useRef(null);
+  const {
+    state: { currentUser },
+  } = useContext(UserContext);
+
+  function checkUser() {
+    return authenticateIfPossible(currentUser, false).then(() => checkProfile(currentUser));
   }
 
-  checkUser() {
-    if (!this.props.currentUser) {
-      return Promise.reject();
-    }
-
-    return authenticateIfPossible(this.props.currentUser, false).then(() =>
-      checkProfile(this.props.currentUser),
-    );
-  }
-
-  async writeMessage() {
-    const { currentUser } = this.props;
-
-    actionWithLoggedIn(currentUser).then(() =>
-      this.conversationModal.current
-        .openModal({
-          title: 'Comment on Milestone',
-          description:
-            'You can add comment to milestone status. Your message will be displayed in the updates of milestone status. ',
-          textPlaceholder: '',
-          required: false,
-          cta: 'Add',
-          enableAttachProof: false,
-        })
-        .then(({ message }) => {
-          const msg = message.trim();
-          if (msg) {
-            this.createMessage(msg);
-            this.conversationModal.current.setState({ message: '' });
-          }
-        })
-        .catch(_ => {}),
-    );
-  }
-
-  editMessage() {
-    this.checkUser().then(() => {
-      if (this.props.currentUser.authenticated) {
-        this.writeMessage();
-      }
-    });
-  }
-
-  canUserEdit() {
-    const { milestone, currentUser } = this.props;
-    return (
-      currentUser.address &&
-      currentUser.address &&
-      [
-        milestone.campaign.ownerAddress,
-        milestone.recipientAddress,
-        milestone.reviewerAddress,
-        milestone.ownerAddress,
-      ].includes(currentUser.address)
-    );
-  }
-
-  createMessage(message) {
-    const { milestone } = this.props;
+  function createMessage(message) {
     feathersClient
       .service('conversations')
       .create({
@@ -88,35 +34,69 @@ class MilestoneConversationComment extends Component {
       });
   }
 
-  render() {
-    const { milestone } = this.props;
-
-    return (
-      <div id="milestone-comment">
-        {this.canUserEdit() && (
-          <Fragment>
-            <button
-              type="button"
-              className="btn btn-success btn-sm w-100"
-              onClick={() => this.editMessage()}
-            >
-              Write Comment
-            </button>
-            <ConversationModal ref={this.conversationModal} milestone={milestone} />
-          </Fragment>
-        )}
-      </div>
+  const writeMessage = async () => {
+    actionWithLoggedIn(currentUser).then(() =>
+      conversationModal.current
+        .openModal({
+          title: 'Comment on Milestone',
+          description:
+            'You can add comment to milestone status. Your message will be displayed in the updates of milestone status. ',
+          textPlaceholder: '',
+          required: false,
+          cta: 'Add',
+          enableAttachProof: false,
+        })
+        .then(({ message }) => {
+          const msg = message.trim();
+          if (msg) {
+            createMessage(msg);
+            conversationModal.current.setState({ message: '' });
+          }
+        })
+        .catch(_ => {}),
     );
-  }
-}
+  };
+
+  const editMessage = () => {
+    checkUser().then(() => {
+      if (currentUser.authenticated) {
+        writeMessage();
+      }
+    });
+  };
+
+  const canUserEdit = () => {
+    return (
+      currentUser.address &&
+      [
+        milestone.campaign.ownerAddress,
+        milestone.recipientAddress,
+        milestone.reviewerAddress,
+        milestone.ownerAddress,
+      ].includes(currentUser.address)
+    );
+  };
+
+  return (
+    <div id="milestone-comment">
+      {canUserEdit() && (
+        <Fragment>
+          <button
+            type="button"
+            className="btn btn-success btn-sm w-100"
+            onClick={() => editMessage()}
+          >
+            Write Comment
+          </button>
+          <ConversationModal ref={conversationModal} milestone={milestone} />
+        </Fragment>
+      )}
+    </div>
+  );
+};
 
 MilestoneConversationComment.propTypes = {
   milestone: PropTypes.instanceOf(Milestone).isRequired,
-  currentUser: PropTypes.instanceOf(User),
-};
-
-MilestoneConversationComment.defaultProps = {
-  currentUser: undefined,
 };
 
 export default MilestoneConversationComment;

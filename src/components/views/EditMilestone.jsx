@@ -42,6 +42,7 @@ import config from '../../configuration';
 import ErrorPopup from '../ErrorPopup';
 import MilestoneProof from '../MilestoneProof';
 
+import { Consumer as UserConsumer } from '../../contextProviders/UserProvider';
 import { Consumer as WhiteListConsumer } from '../../contextProviders/WhiteListProvider';
 import getConversionRatesContext from '../../containers/getConversionRatesContext';
 import MilestoneService from '../../services/MilestoneService';
@@ -1380,13 +1381,22 @@ EditMilestone.defaultProps = {
 
 export default getConversionRatesContext(props => (
   <WhiteListConsumer>
-    {({ state: { activeTokenWhitelist, reviewers, isLoading } }) => (
-      <div>
-        {isLoading && <Loader className="fixed" />}
-        {!isLoading && (
-          <EditMilestone tokenWhitelist={activeTokenWhitelist} reviewers={reviewers} {...props} />
+    {({ state: { activeTokenWhitelist, reviewers, isLoading: whitelistIsLoading } }) => (
+      <UserConsumer>
+        {({ state: { currentUser, isLoading: userIsLoading } }) => (
+          <Fragment>
+            {(whitelistIsLoading || userIsLoading) && <Loader className="fixed" />}
+            {!(whitelistIsLoading || userIsLoading) && (
+              <EditMilestone
+                tokenWhitelist={activeTokenWhitelist}
+                reviewers={reviewers}
+                currentUser={currentUser}
+                {...props}
+              />
+            )}
+          </Fragment>
         )}
-      </div>
+      </UserConsumer>
     )}
   </WhiteListConsumer>
 ));

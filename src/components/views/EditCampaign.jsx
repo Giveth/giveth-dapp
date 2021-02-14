@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { Component, Fragment } from 'react';
 import { Prompt } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import BigNumber from 'bignumber.js';
@@ -24,6 +24,8 @@ import Campaign from '../../models/Campaign';
 import CampaignService from '../../services/CampaignService';
 import ErrorPopup from '../ErrorPopup';
 import { Consumer as WhiteListConsumer } from '../../contextProviders/WhiteListProvider';
+import { Consumer as UserConsumer } from '../../contextProviders/UserProvider';
+import ErrorHandler from '../../lib/ErrorHandler';
 
 /**
  * View to create or edit a Campaign
@@ -67,12 +69,16 @@ class EditCampaign extends Component {
                 this.setState({ campaign, isLoading: false });
               } else history.goBack();
             })
-            .catch(() => err => {
-              this.setState({ isLoading: false });
-              ErrorPopup(
-                'There has been a problem loading the Campaign. Please refresh the page and try again.',
-                err,
-              );
+            .catch(err => {
+              if (err.status === 404) {
+                history.push('/notfound');
+              } else {
+                this.setState({ isLoading: false });
+                ErrorHandler(
+                  err,
+                  'There has been a problem loading the Campaign. Please refresh the page and try again.',
+                );
+              }
             });
         } else {
           this.setState({ isLoading: false });
@@ -368,12 +374,22 @@ EditCampaign.defaultProps = {
 
 export default props => (
   <WhiteListConsumer>
-    {({ state: { reviewers, projectOwnersWhitelistEnabled } }) => (
-      <EditCampaign
-        reviewers={reviewers}
-        projectOwnersWhitelistEnabled={projectOwnersWhitelistEnabled}
-        {...props}
-      />
+    {({ state: { isLoading: whitelistIsLoading, reviewers, projectOwnersWhitelistEnabled } }) => (
+      <UserConsumer>
+        {({ state: { currentUser, isLoading: userIsLoading } }) => (
+          <Fragment>
+            {(whitelistIsLoading || userIsLoading) && <Loader className="fixed" />}
+            {!(whitelistIsLoading || userIsLoading) && (
+              <EditCampaign
+                reviewers={reviewers}
+                projectOwnersWhitelistEnabled={projectOwnersWhitelistEnabled}
+                currentUser={currentUser}
+                {...props}
+              />
+            )}
+          </Fragment>
+        )}
+      </UserConsumer>
     )}
   </WhiteListConsumer>
 );

@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { Component, Fragment } from 'react';
 import { Prompt } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import { Form, Input } from 'formsy-react-components';
@@ -23,6 +23,7 @@ import DAC from '../../models/DAC';
 import User from '../../models/User';
 import ErrorPopup from '../ErrorPopup';
 import ErrorHandler from '../../lib/ErrorHandler';
+import { Consumer as UserConsumer } from '../../contextProviders/UserProvider';
 
 /**
  * View to create or edit a DAC
@@ -71,8 +72,11 @@ class EditDAC extends Component {
               }
             })
             .catch(err => {
-              const message = `Sadly we were unable to load the DAC. Please refresh the page and try again.`;
-              ErrorHandler(err, message);
+              if (err.status === 404) history.push('/notfound');
+              else {
+                const message = `Sadly we were unable to load the DAC. Please refresh the page and try again.`;
+                ErrorHandler(err, message);
+              }
             });
         } else {
           this.setState({ isLoading: false });
@@ -362,4 +366,13 @@ EditDAC.defaultProps = {
   isNew: false,
 };
 
-export default EditDAC;
+export default props => (
+  <UserConsumer>
+    {({ state: { currentUser, isLoading: userIsLoading } }) => (
+      <Fragment>
+        {userIsLoading && <Loader className="fixed" />}
+        {!userIsLoading && <EditDAC currentUser={currentUser} {...props} />}
+      </Fragment>
+    )}
+  </UserConsumer>
+);

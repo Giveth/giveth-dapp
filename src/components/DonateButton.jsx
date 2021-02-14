@@ -190,12 +190,16 @@ const DonateButton = forwardRef((props, ref) => {
       stopPolling.current = undefined;
     }
     // Native token balance is provided by the Web3Provider
-    if (selectedToken.symbol === config.nativeTokenName) return;
 
     stopPolling.current = pollEvery(
       () => ({
         request: async () => {
           try {
+            if (selectedToken.symbol === config.nativeTokenName) {
+              selectedToken.balance = new BigNumber(NativeTokenBalance);
+              return selectedToken.balance;
+            }
+
             const { tokens } = await getNetwork();
             const contract = tokens[selectedToken.address];
 
@@ -210,12 +214,7 @@ const DonateButton = forwardRef((props, ref) => {
           }
         },
         onResult: balance => {
-          if (
-            balance &&
-            (selectedToken.symbol === config.nativeTokenName ||
-              !selectedToken.balance ||
-              !selectedToken.balance.eq(balance))
-          ) {
+          if (balance && (!selectedToken.balance || !selectedToken.balance.eq(balance))) {
             selectedToken.balance = balance;
             setSelectedToken(selectedToken);
             const maxAmount = getMaxAmount();

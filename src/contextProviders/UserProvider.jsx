@@ -34,6 +34,7 @@ class UserProvider extends Component {
       currentUser: {},
       hasError: false,
       userIsDacOwner: false,
+      isLoading: true,
     };
 
     this.getUserData = this.getUserData.bind(this);
@@ -69,7 +70,7 @@ class UserProvider extends Component {
     if (this.userSubscriber) this.userSubscriber.unsubscribe();
 
     if (!address) {
-      this.setState({ currentUser: {}, userIsDacOwner: false }, () => {
+      this.setState({ currentUser: {}, userIsDacOwner: false, isLoading: false }, () => {
         this.props.onLoaded();
       });
     } else {
@@ -151,7 +152,10 @@ class UserProvider extends Component {
       authenticateIfPossible(currentUser, redirectOnFail).then(isAuthenticated => {
         if (isAuthenticated) {
           currentUser.authenticated = true;
-          this.setState({ currentUser: new User(currentUser) });
+          this.setState({
+            currentUser: new User(currentUser),
+            isLoading: false,
+          });
           this.props.onLoaded();
         }
       });
@@ -184,11 +188,12 @@ class UserProvider extends Component {
       }
     }
 
+    this.setState({ isLoading: false });
     this.props.onLoaded();
   }
 
   render() {
-    const { currentUser, hasError, userIsDacOwner } = this.state;
+    const { currentUser, hasError, userIsDacOwner, isLoading } = this.state;
 
     return (
       <Provider
@@ -198,6 +203,7 @@ class UserProvider extends Component {
             hasError,
             signIn: this.signIn,
             userIsDacOwner,
+            isLoading,
           },
         }}
       >
