@@ -39,14 +39,15 @@ const MainMenu = () => {
   } = useContext(Web3Context);
 
   const {
-    reviewerWhiteListEnabled,
-    delegateWhitelistEnabled,
-    projectOwnersWhitelistEnabled,
+    state: { reviewerWhitelistEnabled, delegateWhitelistEnabled, projectOwnersWhitelistEnabled },
   } = useContext(WhiteListContext);
 
-  const userIsDelegate = currentUser.isDelegator || !delegateWhitelistEnabled;
+  const userIsDelegator = currentUser.isDelegator || !delegateWhitelistEnabled;
   const userIsCampaignManager = currentUser.isProjectOwner || !projectOwnersWhitelistEnabled;
-  const userIsReviewer = currentUser.isReviewer || !reviewerWhiteListEnabled;
+  const userIsReviewer = currentUser.isReviewer || !reviewerWhitelistEnabled;
+  console.log('userIsDelegator:', userIsDelegator);
+  console.log('userIsCampaignManager:', userIsCampaignManager);
+  console.log('userIsReviewer:', userIsReviewer);
 
   return (
     <nav
@@ -115,7 +116,7 @@ const MainMenu = () => {
                 <NavLink className="dropdown-item" to="/delegations">
                   My Delegations
                 </NavLink>
-                {(userIsDelegate || userIsReviewer) && (
+                {(userIsDelegator || userIsReviewer) && (
                   <NavLink className="dropdown-item" to="/my-dacs">
                     My Communities
                   </NavLink>

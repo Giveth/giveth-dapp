@@ -46,7 +46,7 @@ class WhiteListProvider extends Component {
       nativeCurrencyWhitelist: [],
       isLoading: true,
       hasError: false,
-      reviewerWhiteListEnabled: false,
+      reviewerWhitelistEnabled: false,
       delegateWhitelistEnabled: false,
       projectOwnersWhitelistEnabled: false,
     };
@@ -58,12 +58,12 @@ class WhiteListProvider extends Component {
       let notFilteredUsers = Promise.resolve([]);
 
       const {
-        reviewerWhiteListEnabled,
+        reviewerWhitelistEnabled,
         projectOwnersWhitelistEnabled,
         delegateWhitelistEnabled,
       } = whitelist;
       if (
-        !reviewerWhiteListEnabled ||
+        !reviewerWhitelistEnabled ||
         !projectOwnersWhitelistEnabled ||
         !delegateWhitelistEnabled
       ) {
@@ -73,7 +73,7 @@ class WhiteListProvider extends Component {
       const [delegates, campaignManagers, reviewers] = await Promise.all([
         delegateWhitelistEnabled ? getUsers('isDelegator') : notFilteredUsers,
         projectOwnersWhitelistEnabled ? getUsers('isProjectOwner') : notFilteredUsers,
-        reviewerWhiteListEnabled ? getUsers('isReviewer') : notFilteredUsers,
+        reviewerWhitelistEnabled ? getUsers('isReviewer') : notFilteredUsers,
       ]);
 
       this.setState({
@@ -100,7 +100,7 @@ class WhiteListProvider extends Component {
       nativeCurrencyWhitelist,
       isLoading,
       hasError,
-      reviewerWhiteListEnabled,
+      reviewerWhitelistEnabled,
       delegateWhitelistEnabled,
       projectOwnersWhitelistEnabled,
     } = this.state;
@@ -118,7 +118,7 @@ class WhiteListProvider extends Component {
             nativeCurrencyWhitelist,
             isLoading,
             hasError,
-            reviewerWhiteListEnabled,
+            reviewerWhitelistEnabled,
             delegateWhitelistEnabled,
             projectOwnersWhitelistEnabled,
           },

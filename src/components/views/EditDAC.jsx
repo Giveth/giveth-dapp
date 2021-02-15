@@ -79,6 +79,10 @@ class EditDAC extends Component {
               }
             });
         } else {
+          if (!this.props.currentUser.isDelegator) {
+            history.goBack();
+          }
+
           this.setState({ isLoading: false });
         }
       })
@@ -99,6 +103,8 @@ class EditDAC extends Component {
         if (!this.props.isNew && !isOwner(this.state.dac.ownerAddress, this.props.currentUser))
           history.goBack();
       });
+    } else if (this.props.isNew && !this.props.currentUser.isDelegator) {
+      history.goBack();
     } else if (this.props.currentUser.address && !prevProps.balance.eq(this.props.balance)) {
       checkBalance(this.props.balance);
     }

@@ -19,7 +19,9 @@ const JoinGivethCommunity = () => {
     state: { isEnabled, balance },
     actions: { enableProvider },
   } = useContext(Web3Context);
-  const { delegateWhitelistEnabled, projectOwnersWhitelistEnabled } = useContext(WhiteListContext);
+  const {
+    state: { delegateWhitelistEnabled, projectOwnersWhitelistEnabled },
+  } = useContext(WhiteListContext);
 
   const userIsDelegator = currentUser.isDelegator || !delegateWhitelistEnabled;
   const userIsProjectOwner = currentUser.isProjectOwner || !projectOwnersWhitelistEnabled;

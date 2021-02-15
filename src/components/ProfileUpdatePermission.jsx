@@ -50,11 +50,13 @@ function ProfileUpdatePermission({ user }) {
         .service('users')
         .patch(user.address, mutation)
         .then(() => {
-          React.toast.success('User permission updated');
+          React.toast.success('User permission is updated');
         })
         .catch(err => {
           ErrorHandler(err, 'Something wrong in updating user roles, please try later');
-          updateRolesInitValue();
+        })
+        .finally(() => {
+          setLoading(false);
         });
     });
   };
@@ -72,7 +74,7 @@ function ProfileUpdatePermission({ user }) {
               <h4>User Role</h4>
               <button
                 type="submit"
-                disabled={loading || !changed}
+                disabled={loading || (authenticated && !changed)}
                 className="btn btn-primary btn-lg mx-2 btn-update-role"
               >
                 {authenticated ? 'Update' : 'Sign In to Update'}
