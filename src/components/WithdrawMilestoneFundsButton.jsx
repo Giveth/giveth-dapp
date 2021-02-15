@@ -22,7 +22,7 @@ const WithdrawMilestoneFundsButton = ({ milestone }) => {
   } = useContext(Web3Context);
 
   async function withdraw() {
-    const userAddress = currentUser && currentUser.address;
+    const userAddress = currentUser.address;
     const isRecipient = milestone.recipientAddress === userAddress;
 
     actionWithLoggedIn(currentUser).then(() =>
@@ -136,7 +136,7 @@ const WithdrawMilestoneFundsButton = ({ milestone }) => {
     );
   }
 
-  const userAddress = currentUser && currentUser.address;
+  const userAddress = currentUser.address;
 
   return (
     <Fragment>

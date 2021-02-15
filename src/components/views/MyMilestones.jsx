@@ -58,7 +58,7 @@ function MyMilestones() {
   }
 
   function loadMileStones() {
-    const myAddress = currentUser && currentUser.address;
+    const myAddress = currentUser.address;
 
     MilestoneService.subscribeMyMilestones({
       milestoneStatus,

@@ -58,7 +58,7 @@ class MyCampaigns extends Component {
   loadCampaigns() {
     const { currentUser } = this.props;
     this.campaignsObserver = CampaignService.getUserCampaigns(
-      currentUser && currentUser.address,
+      currentUser.address,
       this.state.skipPages,
       this.state.itemsPerPage,
       campaigns => this.setState({ campaigns, isLoading: false }),
@@ -128,7 +128,7 @@ class MyCampaigns extends Component {
   render() {
     const { campaigns, isLoading, visiblePages } = this.state;
     const { currentUser } = this.props;
-    const userAddress = currentUser && currentUser.address;
+    const userAddress = currentUser.address;
     const isPendingCampaign =
       (campaigns.data && campaigns.data.some(d => d.confirmations !== d.requiredConfirmations)) ||
       false;

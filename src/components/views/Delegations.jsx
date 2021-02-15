@@ -117,7 +117,7 @@ const Delegations = () => {
   };
 
   useEffect(() => {
-    if (currentUser) {
+    if (currentUser.address) {
       loadProjectsInfo()
         .then(() => {})
         .catch(err => {
@@ -128,12 +128,12 @@ const Delegations = () => {
     }
   }, [currentUser]);
 
-  const getAndWatchDonations = () => {
+  const getDonations = () => {
     // here we get all the ids.
     // TODO: less overhead here if we move it all to a single service.
     // NOTE: This will not rerun, meaning after any dac/campaign/milestone is added
 
-    if (currentUser) {
+    if (currentUser.address) {
       const dacsIds = dacs.filter(c => c.ownerAddress === currentUser.address).map(c => c._id);
 
       const campaignIds = campaigns
@@ -185,7 +185,7 @@ const Delegations = () => {
 
   useEffect(() => {
     if (!!dacs && !!milestones && !!campaigns) {
-      getAndWatchDonations();
+      getDonations();
     }
   }, [skipPages, dacs, milestones, campaigns]);
 

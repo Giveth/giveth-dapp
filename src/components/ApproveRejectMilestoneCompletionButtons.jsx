@@ -39,7 +39,7 @@ const ApproveRejectMilestoneCompletionButtons = ({ milestone }) => {
             .then(proof => {
               MilestoneService.approveMilestoneCompletion({
                 milestone,
-                from: currentUser && currentUser.address,
+                from: currentUser.address,
                 proof,
                 onTxHash: txUrl => {
                   GA.trackEvent({
@@ -113,7 +113,7 @@ const ApproveRejectMilestoneCompletionButtons = ({ milestone }) => {
             .then(proof => {
               MilestoneService.rejectMilestoneCompletion({
                 milestone,
-                from: currentUser && currentUser.address,
+                from: currentUser.address,
                 proof,
                 onTxHash: txUrl => {
                   GA.trackEvent({

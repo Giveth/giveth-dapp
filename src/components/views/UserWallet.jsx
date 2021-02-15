@@ -64,7 +64,7 @@ class UserWallet extends Component {
   render() {
     const { isLoadingWallet, insufficientBalance, hasError } = this.state;
     const { etherscan, tokenAddresses } = config;
-    const userAddress = this.props.currentUser && this.props.currentUser.address;
+    const userAddress = this.props.currentUser.address && this.props.currentUser.address;
 
     return (
       <div id="profile-view" className="container-fluid page-layout dashboard-table-view">

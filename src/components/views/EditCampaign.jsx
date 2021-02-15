@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { Component, Fragment } from 'react';
 import { Prompt } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import BigNumber from 'bignumber.js';
@@ -24,6 +24,8 @@ import Campaign from '../../models/Campaign';
 import CampaignService from '../../services/CampaignService';
 import ErrorPopup from '../ErrorPopup';
 import { Consumer as WhiteListConsumer } from '../../contextProviders/WhiteListProvider';
+import { Consumer as UserConsumer } from '../../contextProviders/UserProvider';
+import ErrorHandler from '../../lib/ErrorHandler';
 
 /**
  * View to create or edit a Campaign
@@ -67,14 +69,21 @@ class EditCampaign extends Component {
                 this.setState({ campaign, isLoading: false });
               } else history.goBack();
             })
-            .catch(() => err => {
-              this.setState({ isLoading: false });
-              ErrorPopup(
-                'There has been a problem loading the Campaign. Please refresh the page and try again.',
-                err,
-              );
+            .catch(err => {
+              if (err.status === 404) {
+                history.push('/notfound');
+              } else {
+                this.setState({ isLoading: false });
+                ErrorHandler(
+                  err,
+                  'There has been a problem loading the Campaign. Please refresh the page and try again.',
+                );
+              }
             });
         } else {
+          if (!this.props.currentUser.isProjectOwner) {
+            history.goBack();
+          }
           this.setState({ isLoading: false });
         }
       })
@@ -93,7 +102,9 @@ class EditCampaign extends Component {
         if (!this.props.isNew && !isOwner(this.state.campaign.ownerAddress, this.props.currentUser))
           history.goBack();
       });
-    } else if (this.props.currentUser && !prevProps.balance.eq(this.props.balance)) {
+    } else if (this.props.isNew && !this.props.currentUser.isProjectOwner) {
+      history.goBack();
+    } else if (this.props.currentUser.address && !prevProps.balance.eq(this.props.balance)) {
       checkBalance(this.props.balance);
     }
   }
@@ -116,7 +127,7 @@ class EditCampaign extends Component {
 
     return authenticateIfPossible(this.props.currentUser, true)
       .then(() => {
-        if (!this.props.isCampaignManager(this.props.currentUser)) {
+        if (!this.props.currentUser.isProjectOwner && !this.props.projectOwnersWhitelistEnabled) {
           throw new Error('not whitelisted');
         }
       })
@@ -357,8 +368,8 @@ EditCampaign.propTypes = {
       id: PropTypes.string,
     }).isRequired,
   }).isRequired,
-  isCampaignManager: PropTypes.func.isRequired,
   reviewers: PropTypes.arrayOf(PropTypes.shape()).isRequired,
+  projectOwnersWhitelistEnabled: PropTypes.bool.isRequired,
 };
 
 EditCampaign.defaultProps = {
@@ -368,8 +379,22 @@ EditCampaign.defaultProps = {
 
 export default props => (
   <WhiteListConsumer>
-    {({ state: { reviewers }, actions: { isCampaignManager } }) => (
-      <EditCampaign reviewers={reviewers} isCampaignManager={isCampaignManager} {...props} />
+    {({ state: { isLoading: whitelistIsLoading, reviewers, projectOwnersWhitelistEnabled } }) => (
+      <UserConsumer>
+        {({ state: { currentUser, isLoading: userIsLoading } }) => (
+          <Fragment>
+            {(whitelistIsLoading || userIsLoading) && <Loader className="fixed" />}
+            {!(whitelistIsLoading || userIsLoading) && (
+              <EditCampaign
+                reviewers={reviewers}
+                projectOwnersWhitelistEnabled={projectOwnersWhitelistEnabled}
+                currentUser={currentUser}
+                {...props}
+              />
+            )}
+          </Fragment>
+        )}
+      </UserConsumer>
     )}
   </WhiteListConsumer>
 );

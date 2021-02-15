@@ -143,7 +143,7 @@ const ViewDAC = ({ match }) => {
     return <NotFound projectType="DAC" />;
   }
 
-  const userIsOwner = dac && dac.owner && currentUser && dac.owner.address === currentUser.address;
+  const userIsOwner = dac && dac.owner && dac.owner.address === currentUser.address;
 
   const campaignsTitle = `Campaigns${campaigns.length ? ` (${campaigns.length})` : ''}`;
   const leaderBoardTitle = `Leaderboard${donationsTotal ? ` (${donationsTotal})` : ''}`;

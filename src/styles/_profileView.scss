@@ -12,4 +12,15 @@
     position: relative;
     min-height: 200px;
   }
+
+  .update-role-header {
+   display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: center;
+  }
+
+  button.btn-update-role {
+    margin-top: 50px;
+  }
 }

@@ -44,7 +44,7 @@ const DACs = ({ onlyRecent, step }) => {
     return () => {
       isMounted.current = false;
     };
-  }, []);
+  }, [onlyRecent]);
 
   return (
     <div id="dacs-view" className="card-view">

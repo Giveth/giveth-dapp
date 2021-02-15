@@ -61,7 +61,7 @@ const AcceptRejectProposedMilestoneButtons = ({ milestone }) => {
             .then(proof => {
               MilestoneService.acceptProposedMilestone({
                 milestone,
-                from: currentUser && currentUser.address,
+                from: currentUser.address,
                 proof,
                 onTxHash: txUrl => {
                   GA.trackEvent({

@@ -11,7 +11,7 @@ import DefaultAvatar from '../assets/avatar-100.svg';
 import config from '../configuration';
 
 export const isOwner = (address, currentUser) =>
-  address !== undefined && currentUser !== undefined && currentUser.address === address;
+  address !== undefined && currentUser.address === address;
 
 export const getHtmlText = text => {
   return text

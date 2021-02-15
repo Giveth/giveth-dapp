@@ -141,7 +141,7 @@ const ViewMilestone = props => {
 
   useEffect(() => {
     if (
-      currentUser &&
+      currentUser.address &&
       !currency &&
       milestone.donationCounters &&
       milestone.donationCounters.length
