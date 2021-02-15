@@ -1,131 +1,76 @@
 /* eslint-disable prefer-destructuring */
 
-import React, { Component } from 'react';
+import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
-import Avatar from 'react-avatar';
 
 import { feathersClient } from '../../lib/feathersClient';
-import getNetwork from '../../lib/blockchain/getNetwork';
 import GoBackButton from '../GoBackButton';
 import Loader from '../Loader';
-import { getUserAvatar, getUserName } from '../../lib/helpers';
+import { history } from '../../lib/helpers';
 
 import ProfileMilestonesTable from '../ProfileMilestonesTable';
 import ProfileCampaignsTable from '../ProfileCampaignsTable';
 import ProfileDacsTable from '../ProfileDacsTable';
 import ProfileDonationsTable from '../ProfileDonationsTable';
+import ProfileUserInfo from '../ProfileUserInfo';
+import ProfileUpdatePermission from '../ProfileUpdatePermission';
+import { User } from '../../models';
 
 /**
  * The user profile view mapped to /profile/{userAddress}
- *
- * @param history      Browser history object
- * @param wallet       Wallet object with the balance and all keystores
  */
-class Profile extends Component {
-  constructor(props) {
-    super(props);
+const Profile = props => {
+  const { userAddress } = props.match.params;
+  const [isLoading, setLoading] = useState(true);
+  const [hasError, setHasError] = useState(true);
+  const [user, setUser] = useState({});
 
-    this.state = {
-      isLoading: true,
-      hasError: false,
-      homeEtherScanUrl: '',
-      userAddress: '',
-    };
-
-    getNetwork().then(network => {
-      this.setState({
-        homeEtherScanUrl: network.homeEtherscan,
-      });
-    });
-  }
-
-  componentDidMount() {
-    const { userAddress } = this.props.match.params;
-
+  useEffect(() => {
     feathersClient
       .service('users')
-      .find({ query: { address: userAddress } })
+      .find({ query: { address: userAddress, $limit: 1 } })
       .then(resp => {
-        this.setState({
-          userAddress,
-          ...resp.data[0],
-          isLoading: false,
-          hasError: false,
-        });
+        const _user = resp.data[0];
+        setUser(new User(_user));
+        setLoading(false);
+        setHasError(false);
       })
-      .catch(() =>
-        this.setState({
-          userAddress,
-          isLoading: false,
-          hasError: true,
-        }),
-      );
-  }
+      .catch(() => {
+        setLoading(false);
+        setHasError(true);
+      });
+  }, []);
 
-  render() {
-    const { history } = this.props;
-    const {
-      isLoading,
-      hasError,
-      avatar,
-      name,
-      email,
-      linkedin,
-      homeEtherScanUrl,
-      userAddress,
-    } = this.state;
-    const user = {
-      name,
-      avatar,
-    };
+  return (
+    <div id="profile-view">
+      <div className="container-fluid page-layout dashboard-table-view">
+        <div className="row">
+          <div className="col-md-8 m-auto">
+            {isLoading && <Loader className="fixed" />}
 
-    return (
-      <div id="profile-view">
-        <div className="container-fluid page-layout dashboard-table-view">
-          <div className="row">
-            <div className="col-md-8 m-auto">
-              {isLoading && <Loader className="fixed" />}
+            {!isLoading && !hasError && (
+              <div>
+                <GoBackButton history={history} goPreviousPage />
 
-              {!isLoading && !hasError && (
-                <div>
-                  <GoBackButton history={history} goPreviousPage />
+                <ProfileUserInfo user={user} />
 
-                  <div className="text-center">
-                    <Avatar size={100} src={getUserAvatar(user)} round />
-                    <h1>{getUserName(user)}</h1>
-                    {homeEtherScanUrl ? (
-                      <p>
-                        <a
-                          href={`${homeEtherScanUrl}address/${userAddress}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          {userAddress}
-                        </a>
-                      </p>
-                    ) : (
-                      <p>{userAddress}</p>
-                    )}
-                    <p>{email}</p>
-                    <p>{linkedin}</p>
-                  </div>
-                </div>
-              )}
+                <ProfileUpdatePermission user={user} />
+              </div>
+            )}
 
-              <ProfileMilestonesTable userAddress={userAddress} />
+            <ProfileMilestonesTable userAddress={userAddress} />
 
-              <ProfileCampaignsTable userAddress={userAddress} />
+            <ProfileCampaignsTable userAddress={userAddress} />
 
-              <ProfileDacsTable userAddress={userAddress} />
+            <ProfileDacsTable userAddress={userAddress} />
 
-              <ProfileDonationsTable userAddress={userAddress} />
-            </div>
+            <ProfileDonationsTable userAddress={userAddress} />
           </div>
         </div>
       </div>
-    );
-  }
-}
+    </div>
+  );
+};
 
 Profile.propTypes = {
   history: PropTypes.shape({

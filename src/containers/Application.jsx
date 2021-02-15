@@ -387,8 +387,6 @@ class Application extends Component {
                                               path="/profile"
                                               render={props => (
                                                 <EditProfile
-                                                  key={currentUser ? currentUser.id : 0}
-                                                  currentUser={currentUser}
                                                   balance={balance}
                                                   isForeignNetwork={isForeignNetwork}
                                                   displayForeignNetRequiredWarning={

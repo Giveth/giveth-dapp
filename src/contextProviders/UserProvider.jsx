@@ -40,6 +40,7 @@ class UserProvider extends Component {
     this.getUserData = this.getUserData.bind(this);
     this.authenticateFeathers = this.authenticateFeathers.bind(this);
     this.signIn = this.signIn.bind(this);
+    this.updateUserData = this.updateUserData.bind(this);
 
     // hack to make signIn globally available
     React.signIn = this.signIn;
@@ -62,38 +63,33 @@ class UserProvider extends Component {
     }
   }
 
-  componentWillUnmount() {
-    if (this.userSubscriber) this.userSubscriber.unsubscribe();
-  }
-
   async getUserData(address) {
-    if (this.userSubscriber) this.userSubscriber.unsubscribe();
-
     if (!address) {
       this.setState({ currentUser: {}, userIsDacOwner: false, isLoading: false }, () => {
         this.props.onLoaded();
       });
     } else {
-      this.userSubscriber = feathersClient
+      feathersClient
         .service('/users')
-        .watch({ listStrategy: 'always' })
         .find({
           query: {
             address,
           },
         })
-        .subscribe(
+        .then(
           resp => {
             const currentUser = resp.total === 1 ? new User(resp.data[0]) : new User({ address });
-            this.setState({ currentUser }, () => {
-              this.authenticateFeathers();
+            if (currentUser.address === address) {
+              this.setState({ currentUser }, () => {
+                this.authenticateFeathers();
 
-              DACService.getUserIsDacOwner(
-                address,
-                userIsDacOwner => this.setState({ userIsDacOwner }),
-                () => this.setState({ userIsDacOwner: false }),
-              );
-            });
+                DACService.getUserIsDacOwner(
+                  address,
+                  userIsDacOwner => this.setState({ userIsDacOwner }),
+                  () => this.setState({ userIsDacOwner: false }),
+                );
+              });
+            }
           },
           error => {
             const message = `Something went wrong with getting user profile. Please try again after refresh.`;
@@ -192,6 +188,14 @@ class UserProvider extends Component {
     this.props.onLoaded();
   }
 
+  async updateUserData() {
+    const { currentUser } = this.state;
+
+    if (currentUser.address) {
+      await this.getUserData(currentUser.address);
+    }
+  }
+
   render() {
     const { currentUser, hasError, userIsDacOwner, isLoading } = this.state;
 
@@ -204,6 +208,9 @@ class UserProvider extends Component {
             signIn: this.signIn,
             userIsDacOwner,
             isLoading,
+          },
+          actions: {
+            updateUserData: this.updateUserData,
           },
         }}
       >
