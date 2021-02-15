@@ -495,7 +495,7 @@ const ViewMilestone = props => {
                                     : 'The date this Milestone was created'
                                 }
                               />
-                              {moment.utc(milestone.date).format('Do MMM YYYY')}
+                              {moment.utc(milestone.createdAt).format('Do MMM YYYY')}
                             </div>
                           )}
 
