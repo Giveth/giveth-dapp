@@ -54,6 +54,8 @@ import WhiteListProvider, {
 } from '../contextProviders/WhiteListProvider';
 
 import '../lib/validators';
+import EditMilestoneV2 from '../components/views/EditMileStoneV2';
+import CampaginCreateNew from '../components/views/CampaginCreateNew';
 
 /**
  * Here we hack to make stuff globally available
@@ -251,10 +253,14 @@ class Application extends Component {
                                                   />
                                                 )}
                                               />
-
                                               <Route
                                                 exact
-                                                path="/campaigns/:id/milestones/new"
+                                                path="/campaigns/:id/new"
+                                                render={props => <CampaginCreateNew {...props} />}
+                                              />
+                                              <Route
+                                                exact
+                                                path="/campaigns/:id/milestones/newold"
                                                 render={props => (
                                                   <EditMilestone
                                                     isNew
@@ -268,6 +274,11 @@ class Application extends Component {
                                                     {...props}
                                                   />
                                                 )}
+                                              />
+                                              <Route
+                                                exact
+                                                path="/campaigns/:id/milestones/new"
+                                                render={props => <EditMilestoneV2 {...props} />}
                                               />
                                               <Route
                                                 exact

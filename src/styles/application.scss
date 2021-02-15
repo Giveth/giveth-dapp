@@ -1,51 +1,52 @@
 // Global classes are defined here
-@import '~react-input-token/lib/style.css';
-@import 'variables/variables.scss';
-@import 'utils/utils.scss';
-@import 'mixins';
-@import 'layout.scss';
-@import 'typography.scss';
+@import "~react-input-token/lib/style.css";
+@import "variables/variables.scss";
+@import "utils/utils.scss";
+@import "mixins";
+@import "layout.scss";
+@import "typography.scss";
 // views
-@import 'causesView.scss';
-@import 'editCausesView.scss';
-@import 'viewCauseView.scss';
-@import 'viewAlertView.scss';
-@import 'viewCampaignView.scss';
-@import 'viewMilestoneView.scss';
-@import 'campaignsView';
-@import 'accountView.scss';
-@import 'dashboard.scss';
-@import 'edit-view.scss';
-@import 'editMilestoneView.scss';
-@import 'myMilestones.scss';
-@import 'profileView.scss';
-@import 'donation.scss';
+@import "causesView.scss";
+@import "editCausesView.scss";
+@import "viewCauseView.scss";
+@import "viewAlertView.scss";
+@import "viewCampaignView.scss";
+@import "viewMilestoneView.scss";
+@import "campaignsView";
+@import "accountView.scss";
+@import "dashboard.scss";
+@import "edit-view.scss";
+@import "editMilestoneView.scss";
+@import "editMilestoneViewV2.scss";
+@import "myMilestones.scss";
+@import "profileView.scss";
+@import "donation.scss";
 // components
-@import 'loader.scss';
-@import 'mainMenu.scss';
-@import 'goBackButton.scss';
-@import 'loaderButton.scss';
-@import 'joinGivethCommunity.scss';
-@import 'backgroundImageHeader.scss';
-@import 'dac-card.scss';
-@import 'milestoneConversations.scss';
-@import 'conversationModal.scss';
+@import "loader.scss";
+@import "mainMenu.scss";
+@import "goBackButton.scss";
+@import "loaderButton.scss";
+@import "joinGivethCommunity.scss";
+@import "backgroundImageHeader.scss";
+@import "dac-card.scss";
+@import "milestoneConversations.scss";
+@import "conversationModal.scss";
 // misc
-@import 'quill-overrides.scss';
-@import 'toastify-overrides.scss';
-@import 'react-token-input-overrides.scss';
-@import 'sweet-alert-overrides.scss';
-@import 'react-toggle.scss';
-@import 'react-datepicker.scss';
-@import 'pagination.scss';
-@import 'cropper.scss';
+@import "quill-overrides.scss";
+@import "toastify-overrides.scss";
+@import "react-token-input-overrides.scss";
+@import "sweet-alert-overrides.scss";
+@import "react-toggle.scss";
+@import "react-datepicker.scss";
+@import "pagination.scss";
+@import "cropper.scss";
 // overrides
-@import 'card.scss';
-@import 'formsyOverrides.scss';
+@import "card.scss";
+@import "formsyOverrides.scss";
 
 html,
 body {
-  font-family: 'Quicksand', sans-serif;
+  font-family: "Quicksand", sans-serif;
 }
 
 body {
@@ -107,21 +108,21 @@ table {
 }
 
 .loading-overlay {
-  top:0;
-  left:0;
-  background-color: hsla(0,0%,100%,.8);
-  opacity: .6;
+  top: 0;
+  left: 0;
+  background-color: hsla(0, 0%, 100%, 0.8);
+  opacity: 0.6;
   position: absolute;
   height: 100%;
   width: 100%;
   z-index: 1;
 }
 
-input[type='file'] {
+input[type="file"] {
   display: block;
 }
 
-input[type='number'] {
+input[type="number"] {
   -moz-appearance: textfield; /*For FireFox*/
 
   &::-webkit-inner-spin-button {
@@ -161,7 +162,7 @@ i {
 
   input {
     // border-color: $valid-green;
-    &[type='file'] {
+    &[type="file"] {
       margin-top: 2px;
     }
   }
@@ -317,5 +318,189 @@ span.nav-link:focus {
 @include media_tablet() {
   .page-wrapper {
     padding-top: 55px;
+  }
+}
+
+// new card design
+.card-form-container {
+  width: 100%;
+  max-width: 700px;
+  padding: 10px;
+  margin: auto;
+  & > .card-form {
+    display: block;
+    width: 100%;
+    min-height: 164px;
+    background: #ffffff;
+    box-shadow: 0px 4px 20px #d1d1d1;
+    border-radius: 8px;
+    padding: 34px;
+    color: #2c0b3f;
+
+    & > .card-form-header {
+      & > img {
+        display: block;
+        width: 110px;
+        height: 110px;
+        margin: auto;
+      }
+      & > .title {
+        font-family: Quicksand;
+        font-style: normal;
+        font-weight: normal;
+        font-size: 26px;
+        line-height: 32px;
+        /* identical to box height */
+
+        text-align: center;
+
+        /* Deep Purple - GG */
+      }
+    }
+    & > .campaign-info {
+      & > .label {
+        font-family: Quicksand;
+        font-style: normal;
+        font-weight: normal;
+        font-size: 16px;
+        line-height: 20px;
+      }
+      & > .content {
+        font-family: Lato;
+        font-style: normal;
+        font-weight: normal;
+        font-size: 22px;
+        line-height: 22px;
+        padding: 12px 0;
+      }
+    }
+    & > .section {
+      padding-top: 80px;
+      & > .title {
+        font-family: Quicksand;
+        font-style: normal;
+        font-weight: bold;
+        font-size: 22px;
+        line-height: 27px;
+        padding-bottom: 18px;
+      }
+    }
+  }
+}
+
+//Custom styles for Ant Design
+.custom-form-item {
+  & > .ant-form-item-label {
+    display: block;
+    width: 100%;
+    text-align: left;
+    padding: 32px 0 15px;
+    & > label {
+      font-family: Quicksand;
+      font-style: normal;
+      font-weight: normal;
+      font-size: 16px;
+      line-height: 20px;
+      &::after {
+        content: "";
+      }
+    }
+  }
+  & > .ant-form-item-control {
+    input,
+    textarea {
+      background: #ffffff;
+      border: 2px solid #dfdae8;
+      box-sizing: border-box;
+      border-radius: 8px;
+
+      padding: 16px 18px;
+
+      font-family: Lato;
+      font-style: normal;
+      font-weight: normal;
+      font-size: 18px;
+      line-height: 22px;
+    }
+    .ant-upload-drag {
+      background: #ffffff;
+      border: 2px dashed #dfdae8;
+      box-sizing: border-box;
+      border-radius: 8px;
+
+      padding: 16px 18px;
+
+      font-family: Lato;
+      font-style: normal;
+      font-weight: normal;
+      font-size: 18px;
+      line-height: 22px;
+      p {
+        span {
+          color: #3f51b5;
+        }
+      }
+    }
+  }
+}
+.form-item-desc {
+  font-family: Lato;
+  font-style: normal;
+  font-weight: normal;
+  font-size: 14px;
+  line-height: 22px;
+  color: #aaafca;
+  margin-top: -18px;
+}
+
+//custom Switch
+.ant-switch {
+  min-width: 36px;
+}
+
+.ant-switch-checked {
+  background-color: #5ca43f;
+}
+
+//custom select
+.ant-select {
+  .ant-select-selector {
+    height: 52px !important;
+    background: #ffffff;
+    border: 2px solid #dfdae8 !important;
+    box-sizing: border-box !important;
+    border-radius: 8px !important;
+    .ant-select-selection-search {
+      .ant-select-selection-search-input {
+        height: 50px;
+      }
+    }
+    .ant-select-selection-placeholder,
+    .ant-select-selection-item {
+      line-height: 50px;
+    }
+  }
+}
+
+.ant-btn {
+  &.ant-btn-primary[type="submit"] {
+    width: 100%;
+    height: 52px;
+    background: #5066cf;
+    border-radius: 8px;
+    border: none;
+
+    font-family: Quicksand;
+    font-style: normal;
+    font-weight: bold;
+    font-size: 16px;
+    line-height: 20px;
+    /* identical to box height */
+
+    text-align: center;
+
+    /* White */
+
+    color: #ffffff;
   }
 }

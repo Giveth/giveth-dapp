@@ -1,0 +1,29 @@
+#edit-milestone-view-v2 {
+	.donate-giveth {
+		padding-top: 32px;
+		label {
+			font-family: Quicksand;
+			font-style: normal;
+			font-weight: normal;
+			font-size: 16px;
+			line-height: 20px;
+		}
+	}
+	.milestone-reviewer {
+		font-family: Quicksand;
+		font-style: normal;
+		font-weight: normal;
+		font-size: 16px;
+		line-height: 20px;
+		margin-top: 32px;
+		.milestone-reviewer-label {
+			padding: 0 16px;
+		}
+	}
+	.milestone-desc {
+		margin: 32px 0;
+		padding: 16px;
+		background: #edf0fa;
+		border-radius: 8px;
+	}
+}
