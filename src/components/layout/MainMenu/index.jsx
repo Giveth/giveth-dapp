@@ -45,9 +45,6 @@ const MainMenu = () => {
   const userIsDelegator = currentUser.isDelegator || !delegateWhitelistEnabled;
   const userIsCampaignManager = currentUser.isProjectOwner || !projectOwnersWhitelistEnabled;
   const userIsReviewer = currentUser.isReviewer || !reviewerWhitelistEnabled;
-  console.log('userIsDelegator:', userIsDelegator);
-  console.log('userIsCampaignManager:', userIsCampaignManager);
-  console.log('userIsReviewer:', userIsReviewer);
 
   return (
     <nav
