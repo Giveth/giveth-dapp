@@ -139,7 +139,9 @@ class CreateExpense extends Component {
                   updateStateOfexpenses={this.updateStateOfexpenses}
                 />
               ))}
-              <Button onClick={this.addExpense}>Add new Expense</Button>
+              <Button onClick={this.addExpense} className="add-expense-button">
+                Add new Expense
+              </Button>
 
               <div className="section">
                 <div className="title">Reimbursement options</div>
