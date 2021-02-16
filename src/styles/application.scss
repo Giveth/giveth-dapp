@@ -21,6 +21,7 @@
 @import "myMilestones.scss";
 @import "profileView.scss";
 @import "donation.scss";
+@import "createPayment.scss";
 // components
 @import "loader.scss";
 @import "mainMenu.scss";
@@ -338,6 +339,7 @@ span.nav-link:focus {
     color: #2c0b3f;
 
     & > .card-form-header {
+      padding-bottom: 52px;
       & > img {
         display: block;
         width: 110px;
@@ -407,20 +409,22 @@ span.nav-link:focus {
     }
   }
   & > .ant-form-item-control {
-    input,
-    textarea {
-      background: #ffffff;
-      border: 2px solid #dfdae8;
-      box-sizing: border-box;
-      border-radius: 8px;
-
-      padding: 16px 18px;
-
-      font-family: Lato;
-      font-style: normal;
-      font-weight: normal;
-      font-size: 18px;
-      line-height: 22px;
+    .ant-form-item-control-input-content{
+      &>input,
+      &>textarea {
+        background: #ffffff;
+        border: 2px solid #dfdae8;
+        box-sizing: border-box;
+        border-radius: 8px;
+  
+        padding: 16px 18px;
+  
+        font-family: Lato;
+        font-style: normal;
+        font-weight: normal;
+        font-size: 18px;
+        line-height: 22px;
+      }
     }
     .ant-upload-drag {
       background: #ffffff;
@@ -503,4 +507,12 @@ span.nav-link:focus {
 
     color: #ffffff;
   }
+}
+
+.ant-picker {
+  width: 100%;
+  border: 2px solid #DFDAE8;
+  box-sizing: border-box;
+  border-radius: 8px;
+  height: 52px;
 }

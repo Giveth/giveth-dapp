@@ -5,24 +5,6 @@ import PropTypes from 'prop-types';
 import ImgCrop from 'antd-img-crop';
 import CampaignService from '../../services/CampaignService';
 
-// function getBase64(img, callback) {
-//   const reader = new FileReader();
-//   reader.addEventListener('load', () => callback(reader.result));
-//   reader.readAsDataURL(img);
-// }
-
-// function beforeUpload(file) {
-//   const isJpgOrPng = file.type === 'image/jpeg' || file.type === 'image/png';
-//   if (!isJpgOrPng) {
-//     console.log('You can only upload JPG/PNG file!');
-//   }
-//   const isLt2M = file.size / 1024 / 1024 < 2;
-//   if (!isLt2M) {
-//     console.log('Image must smaller than 2MB!');
-//   }
-//   return isJpgOrPng && isLt2M;
-// }
-
 class EditMilestoneV2 extends Component {
   constructor(props) {
     super(props);
@@ -44,7 +26,6 @@ class EditMilestoneV2 extends Component {
   async componentDidMount() {
     const campaignId = this.props.match.params.id;
     const campaign = await CampaignService.get(campaignId);
-    console.log(campaign);
     this.setState({
       campaign,
     });
@@ -232,7 +213,6 @@ class EditMilestoneV2 extends Component {
                         placeholder="Select a reviewer"
                         optionFilterProp="children"
                         name="reviewer"
-                        onChange={this.handleSelectReviewer}
                         onSelect={this.handleSelectReviewer}
                         filterOption={(input, option) =>
                           option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
