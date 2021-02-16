@@ -60,6 +60,7 @@
     "request": "^2.88.0",
     "socket.io-client": "^2.2.0",
     "sweetalert": "^2.1.2",
+    "uuid": "^8.3.2",
     "web3": "^1.2.2",
     "web3-eth-accounts": "^1.2.2",
     "web3-provider-engine": "^14.2.1",
