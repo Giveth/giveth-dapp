@@ -78,7 +78,7 @@ class CreateBounty extends Component {
   }
 
   goBack() {
-    this.props.history.push(`/campaigns/${this.props.match.params.id}`);
+    this.props.history.push(`/campaigns/${this.props.match.params.id}/new`);
   }
 
   render() {
