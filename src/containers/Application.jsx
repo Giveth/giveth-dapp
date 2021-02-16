@@ -59,6 +59,7 @@ import CampaginCreateNew from '../components/views/CampaginCreateNew';
 import CreatePayment from '../components/views/CreatePayment';
 import CreateBounty from '../components/views/CreateBounty';
 import CreateMilestone from '../components/views/CreateMilestone';
+import CreateExpense from '../components/views/CreateExpense';
 
 /**
  * Here we hack to make stuff globally available
@@ -292,6 +293,11 @@ class Application extends Component {
                                                 exact
                                                 path="/campaigns/:id/new/bounty"
                                                 render={props => <CreateBounty {...props} />}
+                                              />
+                                              <Route
+                                                exact
+                                                path="/campaigns/:id/new/expense"
+                                                render={props => <CreateExpense {...props} />}
                                               />
                                               <Route
                                                 exact
