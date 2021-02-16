@@ -144,7 +144,7 @@ class CreateExpense extends Component {
             <Form className="card-form">
               <div className="card-form-header">
                 <img src={`${process.env.PUBLIC_URL}/img/expense.png`} alt="expense-logo" />
-                <div className="title">Payment</div>
+                <div className="title">Expense</div>
               </div>
               <div className="campaign-info">
                 <div className="lable">Campaign</div>
