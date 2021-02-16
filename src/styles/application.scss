@@ -22,6 +22,7 @@
 @import "profileView.scss";
 @import "donation.scss";
 @import "createPayment.scss";
+@import "createBounty.scss";
 // components
 @import "loader.scss";
 @import "mainMenu.scss";
@@ -440,6 +441,7 @@ span.nav-link:focus {
       font-size: 18px;
       line-height: 22px;
       p {
+        color: #AAAFCA;
         span {
           color: #3f51b5;
         }

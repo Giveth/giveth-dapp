@@ -57,6 +57,7 @@ import '../lib/validators';
 import EditMilestoneV2 from '../components/views/EditMileStoneV2';
 import CampaginCreateNew from '../components/views/CampaginCreateNew';
 import CreatePayment from '../components/views/CreatePayment';
+import CreateBounty from '../components/views/CreateBounty';
 
 /**
  * Here we hack to make stuff globally available
@@ -285,6 +286,11 @@ class Application extends Component {
                                                 exact
                                                 path="/campaigns/:id/new/payment"
                                                 render={props => <CreatePayment {...props} />}
+                                              />
+                                              <Route
+                                                exact
+                                                path="/campaigns/:id/new/bounty"
+                                                render={props => <CreateBounty {...props} />}
                                               />
                                               <Route
                                                 exact
