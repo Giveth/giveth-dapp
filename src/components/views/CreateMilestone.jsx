@@ -5,14 +5,14 @@ import PropTypes from 'prop-types';
 import ImgCrop from 'antd-img-crop';
 import CampaignService from '../../services/CampaignService';
 
-class EditMilestoneV2 extends Component {
+class CreateMilestone extends Component {
   constructor(props) {
     super(props);
     this.state = {
       campaign: {},
-      milestoneTitle: '',
-      milestoneDescription: '',
-      milestonePicture: '',
+      title: '',
+      description: '',
+      picture: '',
       donate: true,
       hasReviewer: true,
       reviewer: undefined,
@@ -58,25 +58,12 @@ class EditMilestoneV2 extends Component {
   }
 
   render() {
-    const {
-      campaign,
-      milestoneTitle,
-      milestoneDescription,
-      donate,
-      hasReviewer,
-      reviewer,
-    } = this.state;
+    const { campaign, title, description, donate, hasReviewer, reviewer } = this.state;
     const self = this;
     const uploadProps = {
       multiple: false,
       accept: 'image/png, image/jpeg',
       fileList: [],
-      // action: file => {
-      //   console.log('yesssssssssssssss');
-      //   getBase64(file, res => {
-      //     return res;
-      //   });
-      // },
       customRequest: options => {
         const { onSuccess, onError, file, onProgress } = options;
         console.log(file);
@@ -97,7 +84,7 @@ class EditMilestoneV2 extends Component {
         }
         if (status === 'done') {
           console.log(`${info.file.name} file uploaded successfully.`);
-          self.setState({ milestonePicture: info.file.response });
+          self.setState({ picture: info.file.response });
         } else if (status === 'error') {
           console.log(`${info.file.name} file upload failed.`);
         }
@@ -105,7 +92,7 @@ class EditMilestoneV2 extends Component {
     };
 
     return (
-      <div className="edit-milestone-view" id="edit-milestone-view-v2">
+      <div id="create-milestone-view">
         <Row>
           <Col span={24}>
             <PageHeader
@@ -128,10 +115,10 @@ class EditMilestoneV2 extends Component {
               </div>
               <div className="section">
                 <div className="title">Milestone details</div>
-                <Form.Item name="milestoneTitle" label="Title" className="custom-form-item">
+                <Form.Item name="title" label="Title" className="custom-form-item">
                   <Input
-                    value={milestoneTitle}
-                    name="milestoneTitle"
+                    value={title}
+                    name="title"
                     placeholder="e.g. Support continued Development"
                     onChange={this.handleInputChange}
                     required
@@ -140,25 +127,10 @@ class EditMilestoneV2 extends Component {
                 <div className="form-item-desc">
                   What are you going to accomplish in this Milestone?
                 </div>
-                {/* <div className="custom-form-item">
-                  <label htmlFor="milestone-title">
-                    Title
-                    <input
-                      value={milestoneTitle}
-                      id="milestone-title"
-                      name="milestoneTitle"
-                      placeholder="e.g. Support continued Development"
-                      onChange={this.handleInputChange}
-                    />
-                  </label>
-                  <div className="form-item-desc">
-                    What are you going to accomplish in this Milestone?
-                  </div>
-                </div> */}
                 <Form.Item name="milestoneDesc" label="Description" className="custom-form-item">
                   <Input.TextArea
-                    value={milestoneDescription}
-                    name="milestoneDescription"
+                    value={description}
+                    name="description"
                     placeholder="Describe how you are going to execute this milestone successfully..."
                     onChange={this.handleInputChange}
                     required
@@ -168,7 +140,7 @@ class EditMilestoneV2 extends Component {
                   Explain how you are going to do this successfully.
                 </div>
                 <Form.Item
-                  name="milestonePicture"
+                  name="picture"
                   label="Add a picture (optional)"
                   className="custom-form-item"
                 >
@@ -249,34 +221,17 @@ class EditMilestoneV2 extends Component {
   }
 }
 
-EditMilestoneV2.propTypes = {
-  // currentUser: PropTypes.instanceOf(User),
-  // location: PropTypes.shape().isRequired,
+CreateMilestone.propTypes = {
   history: PropTypes.shape({
     goBack: PropTypes.func.isRequired,
     push: PropTypes.func.isRequired,
   }).isRequired,
-  // isProposed: PropTypes.bool,
-  // isNew: PropTypes.bool,
-  // balance: PropTypes.instanceOf(BigNumber).isRequired,
-  // isForeignNetwork: PropTypes.bool.isRequired,
-  // displayForeignNetRequiredWarning: PropTypes.func.isRequired,
   match: PropTypes.shape({
     params: PropTypes.shape({
       id: PropTypes.string,
       milestoneId: PropTypes.string,
     }).isRequired,
   }).isRequired,
-  // getConversionRates: PropTypes.func.isRequired,
-  // currentRate: PropTypes.shape({
-  //   rates: PropTypes.shape().isRequired,
-  //   timestamp: PropTypes.string.isRequired,
-  // }),
-  // conversionRateLoading: PropTypes.bool.isRequired,
-  // fiatTypes: PropTypes.arrayOf(PropTypes.object).isRequired,
-  // isCampaignManager: PropTypes.func.isRequired,
-  // reviewers: PropTypes.arrayOf(PropTypes.shape()).isRequired,
-  // tokenWhitelist: PropTypes.arrayOf(PropTypes.shape()).isRequired,
 };
 
-export default EditMilestoneV2;
+export default CreateMilestone;

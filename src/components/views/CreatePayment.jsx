@@ -307,33 +307,16 @@ class CreatePayment extends Component {
 }
 
 CreatePayment.propTypes = {
-  // currentUser: PropTypes.instanceOf(User),
-  // location: PropTypes.shape().isRequired,
   history: PropTypes.shape({
     goBack: PropTypes.func.isRequired,
     push: PropTypes.func.isRequired,
   }).isRequired,
-  // isProposed: PropTypes.bool,
-  // isNew: PropTypes.bool,
-  // balance: PropTypes.instanceOf(BigNumber).isRequired,
-  // isForeignNetwork: PropTypes.bool.isRequired,
-  // displayForeignNetRequiredWarning: PropTypes.func.isRequired,
   match: PropTypes.shape({
     params: PropTypes.shape({
       id: PropTypes.string,
       milestoneId: PropTypes.string,
     }).isRequired,
   }).isRequired,
-  // getConversionRates: PropTypes.func.isRequired,
-  // currentRate: PropTypes.shape({
-  //   rates: PropTypes.shape().isRequired,
-  //   timestamp: PropTypes.string.isRequired,
-  // }),
-  // conversionRateLoading: PropTypes.bool.isRequired,
-  // fiatTypes: PropTypes.arrayOf(PropTypes.object).isRequired,
-  // isCampaignManager: PropTypes.func.isRequired,
-  // reviewers: PropTypes.arrayOf(PropTypes.shape()).isRequired,
-  // tokenWhitelist: PropTypes.arrayOf(PropTypes.shape()).isRequired,
 };
 
 export default CreatePayment;
