@@ -5,7 +5,6 @@ import React, {
   useCallback,
   useContext,
   useEffect,
-  useMemo,
   useRef,
   useState,
 } from 'react';
@@ -97,19 +96,17 @@ const DonateButton = forwardRef((props, ref) => {
 
   const isCorrectNetwork = isHomeNetwork;
 
-  const tokenWhitelistOptions = useMemo(() => {
-    return tokenWhitelist.map(t => ({
-      value: t.address,
-      title: t.name,
-    }));
-  }, tokenWhitelist);
+  const tokenWhitelistOptions = tokenWhitelist.map(t => ({
+    value: t.address,
+    title: t.name,
+  }));
 
   // set initial balance
-  const modelToken = model.token;
+  const modelToken = model.token || {};
   if (modelToken) modelToken.balance = new BigNumber(0);
 
   const defaultToken =
-    tokenWhitelist.find(t => t.symbol === config.defaultDonateToken) || tokenWhitelist[0];
+    tokenWhitelist.find(t => t.symbol === config.defaultDonateToken) || tokenWhitelist[0] || {};
 
   const [selectedToken, setSelectedToken] = useState(
     model.acceptsSingleToken ? modelToken : defaultToken,

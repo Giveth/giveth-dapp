@@ -98,18 +98,15 @@ class CampaignService {
           status: {
             $nin: [Milestone.CANCELED, Milestone.PROPOSED, Milestone.REJECTED, Milestone.PENDING],
           },
-          $sort: { projectAddedAt: -1 },
+          $or: [
+            { donationCounters: { $not: { $size: 0 } } },
+            { status: { $ne: Milestone.COMPLETED } },
+          ],
+          $sort: { projectAddedAt: -1, projectId: -1 },
           $limit,
           $skip,
         },
       })
-      .then(resp => ({
-        ...resp,
-        data: resp.data.filter(
-          milestone =>
-            !(milestone.donationCounters.length <= 0 && milestone.status === Milestone.COMPLETED),
-        ),
-      }))
       .then(resp =>
         onSuccess(
           resp.data.map(m => new Milestone(m)),
