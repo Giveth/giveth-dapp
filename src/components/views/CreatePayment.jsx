@@ -154,7 +154,12 @@ class CreatePayment extends Component {
         </Row>
         <Row>
           <div className="card-form-container">
-            <Form className="card-form">
+            <Form
+              className="card-form"
+              initialValues={{
+                currency: this.currencies[0],
+              }}
+            >
               <div className="card-form-header">
                 <img src={`${process.env.PUBLIC_URL}/img/payment.png`} alt="payment-logo" />
                 <div className="title">Payment</div>
