@@ -1,7 +1,7 @@
 import React, { PureComponent } from 'react';
 import { Link } from 'react-router-dom';
 
-class CampaginCreateNew extends PureComponent {
+class CampaginCreateOptionsMenu extends PureComponent {
   render() {
     return (
       <div id="campaign-create-new-view">
@@ -74,4 +74,4 @@ class CampaginCreateNew extends PureComponent {
   }
 }
 
-export default CampaginCreateNew;
+export default CampaginCreateOptionsMenu;

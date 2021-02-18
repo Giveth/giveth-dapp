@@ -55,7 +55,7 @@ import WhiteListProvider, {
 
 import '../lib/validators';
 
-import CampaginCreateNew from '../components/views/CampaginCreateNew';
+import CampaginCreateOptionsMenu from '../components/views/CampaginCreateOptionsMenu';
 import CreatePayment from '../components/views/CreatePayment';
 import CreateBounty from '../components/views/CreateBounty';
 import CreateMilestone from '../components/views/CreateMilestone';
@@ -238,7 +238,9 @@ class Application extends Component {
                                             <Route
                                               exact
                                               path="/campaigns/:id/new"
-                                              render={props => <CampaginCreateNew {...props} />}
+                                              render={props => (
+                                                <CampaginCreateOptionsMenu {...props} />
+                                              )}
                                             />
                                             <Route
                                               exact
