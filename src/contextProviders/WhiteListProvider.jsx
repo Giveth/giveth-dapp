@@ -5,41 +5,18 @@ import { feathersClient } from '../lib/feathersClient';
 
 const Context = createContext();
 const { Provider, Consumer } = Context;
-export { Consumer };
-
-/**
- * check if the currentUser is in a particular whitelist.
- *
- * @param currentUser {object} Current User object
- * @param whitelist   {array}  Array of whitelisted addresses
- *
- * @return boolean
- *
- */
-function isInWhitelist(currentUser, whitelist) {
-  if (
-    (Array.isArray(whitelist) && whitelist.length === 0) ||
-    (Array.isArray(whitelist) &&
-      currentUser &&
-      currentUser.address &&
-      whitelist.find(u => u.address.toLowerCase() === currentUser.address.toLowerCase()))
-  ) {
-    return true;
-  }
-  return false;
-}
+export { Consumer, Context };
 
 /**
  * Given list of addresses return users as pair of {address, title}. If no list is provided, return all users
  *
- * @param  {array} addresses List of addresses for which the users should be retrieved or undefined
- * @return {array}           List of users as pairs {address, title}
+ * @param  String   field List of addresses for which the users has true value in the field
+ * @return {array}  List of users as pairs {address, title}
  */
-async function getUsers(addresses) {
+async function getUsers(field) {
   const query = { $select: ['_id', 'name', 'address'], $limit: 100 };
 
-  if (Array.isArray(addresses) && addresses.length > 0)
-    query.address = { $in: addresses.map(a => a.address) };
+  if (field) query[field] = true;
   else query.email = { $exists: true };
 
   const resp = await feathersClient.service('/users').find({ query });
@@ -63,25 +40,41 @@ class WhiteListProvider extends Component {
       delegates: [],
       campaignManagers: [],
       reviewers: [],
-      reviewerWhitelist: [],
-      delegateWhitelist: [],
-      projectOwnerWhitelist: [],
       tokenWhitelist: [],
       activeTokenWhitelist: [],
       fiatWhitelist: [],
       nativeCurrencyWhitelist: [],
       isLoading: true,
       hasError: false,
+      reviewerWhitelistEnabled: false,
+      delegateWhitelistEnabled: false,
+      projectOwnersWhitelistEnabled: false,
     };
   }
 
   async componentDidMount() {
     try {
       const whitelist = await feathersClient.service('/whitelist').find();
+      let notFilteredUsers = Promise.resolve([]);
 
-      const delegates = await getUsers(whitelist.delegateWhitelist);
-      const campaignManagers = await getUsers(whitelist.projectOwnerWhitelist);
-      const reviewers = await getUsers(whitelist.reviewerWhitelist);
+      const {
+        reviewerWhitelistEnabled,
+        projectOwnersWhitelistEnabled,
+        delegateWhitelistEnabled,
+      } = whitelist;
+      if (
+        !reviewerWhitelistEnabled ||
+        !projectOwnersWhitelistEnabled ||
+        !delegateWhitelistEnabled
+      ) {
+        notFilteredUsers = getUsers();
+      }
+
+      const [delegates, campaignManagers, reviewers] = await Promise.all([
+        delegateWhitelistEnabled ? getUsers('isDelegator') : notFilteredUsers,
+        projectOwnersWhitelistEnabled ? getUsers('isProjectOwner') : notFilteredUsers,
+        reviewerWhitelistEnabled ? getUsers('isReviewer') : notFilteredUsers,
+      ]);
 
       this.setState({
         ...whitelist,
@@ -101,15 +94,15 @@ class WhiteListProvider extends Component {
       delegates,
       campaignManagers,
       reviewers,
-      reviewerWhitelist,
-      delegateWhitelist,
-      projectOwnerWhitelist,
       tokenWhitelist,
       activeTokenWhitelist,
       fiatWhitelist,
       nativeCurrencyWhitelist,
       isLoading,
       hasError,
+      reviewerWhitelistEnabled,
+      delegateWhitelistEnabled,
+      projectOwnersWhitelistEnabled,
     } = this.state;
 
     return (
@@ -125,11 +118,9 @@ class WhiteListProvider extends Component {
             nativeCurrencyWhitelist,
             isLoading,
             hasError,
-          },
-          actions: {
-            isDelegate: user => isInWhitelist(user, delegateWhitelist),
-            isCampaignManager: user => isInWhitelist(user, projectOwnerWhitelist),
-            isReviewer: user => isInWhitelist(user, reviewerWhitelist),
+            reviewerWhitelistEnabled,
+            delegateWhitelistEnabled,
+            projectOwnersWhitelistEnabled,
           },
         }}
       >

@@ -1,7 +1,7 @@
+import { toast } from 'react-toastify';
 import Model from './Model';
 import IPFSService from '../services/IPFSService';
 import UserService from '../services/UserService';
-import ErrorPopup from '../components/ErrorPopup';
 import { cleanIpfsPath } from '../lib/helpers';
 
 /**
@@ -34,6 +34,10 @@ class User extends Model {
       this._name = data.name;
       this._updatedAt = data.updatedAt;
       this._url = data.url;
+      this._isReviewer = data.isReviewer;
+      this._isDelegator = data.isDelegator;
+      this._isProjectOwner = data.isProjectOwner;
+      this._isAdmin = data.isAdmin;
       this._authenticated = data.authenticated || false;
       this._currency = data.currency || 'USD';
     }
@@ -68,17 +72,16 @@ class User extends Model {
 
   save(onSave, afterEmit, reset, pushToNetwork) {
     if (this._newAvatar) {
-      IPFSService.upload(this._newAvatar)
+      return IPFSService.upload(this._newAvatar)
         .then(hash => {
           // Save the new avatar
           this._avatar = hash;
           delete this._newAvatar;
         })
-        .catch(err => ErrorPopup('Failed to upload avatar', err))
-        .finally(() => UserService.save(this, onSave, afterEmit, reset));
-    } else {
-      UserService.save(this, onSave, afterEmit, reset, pushToNetwork);
+        .then(_ => UserService.save(this, onSave, afterEmit, reset))
+        .catch(_ => toast.error('Cannot connect to IPFS server. Please try again'));
     }
+    return UserService.save(this, onSave, afterEmit, reset, pushToNetwork);
   }
 
   // eslint-disable-next-line class-methods-use-this
@@ -192,6 +195,22 @@ class User extends Model {
   set currency(value) {
     this.checkType(value, ['string'], 'currency');
     this._currency = value;
+  }
+
+  get isReviewer() {
+    return this._isAdmin || this._isReviewer;
+  }
+
+  get isDelegator() {
+    return this._isAdmin || this._isDelegator;
+  }
+
+  get isProjectOwner() {
+    return this._isAdmin || this._isProjectOwner;
+  }
+
+  get isAdmin() {
+    return this._isAdmin;
   }
 }
 

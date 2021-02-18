@@ -13,6 +13,7 @@ import getNetwork from 'lib/blockchain/getNetwork';
 import getWeb3 from 'lib/blockchain/getWeb3';
 import extraGas from 'lib/blockchain/extraGas';
 import DonationService from 'services/DonationService';
+import { toast } from 'react-toastify';
 import IPFSService from './IPFSService';
 import ErrorPopup from '../components/ErrorPopup';
 import ErrorHandler from '../lib/ErrorHandler';
@@ -386,6 +387,9 @@ class MilestoneService {
     let etherScanUrl;
 
     try {
+      const profileHash = await this.uploadToIPFS(milestone);
+      if (!profileHash) return onError();
+
       // if a proposed or rejected milestone, create/update it only in feathers
       if ([Milestone.PROPOSED, Milestone.REJECTED].includes(milestone.status)) {
         let res;
@@ -398,8 +402,6 @@ class MilestoneService {
         afterSave(true, null, MilestoneFactory.create(res));
         return true;
       }
-
-      const profileHash = await this.uploadToIPFS(milestone);
 
       // nothing to update or failed ipfs upload
       if (milestone.projectId && (milestone.url === profileHash || !profileHash)) {
@@ -547,7 +549,8 @@ class MilestoneService {
           milestone.image = await IPFSService.upload(milestone.image);
           milestone.newImage = false;
         } catch (err) {
-          ErrorPopup('Failed to upload milestone image to ipfs');
+          toast.error('Failed to upload milestone image to ipfs');
+          return undefined;
         }
       }
 
@@ -559,7 +562,8 @@ class MilestoneService {
               milestoneItem.image = await IPFSService.upload(milestoneItem.image);
               milestoneItem.newImage = false;
             } catch (err) {
-              ErrorPopup('Failed to upload milestone item image to ipfs');
+              toast.error('Failed to upload milestone item image to ipfs');
+              return undefined;
             }
           }
         }

@@ -4,14 +4,12 @@ import ReactHtmlParser from 'react-html-parser';
 import { Form } from 'formsy-react-components';
 import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
-import BigNumber from 'bignumber.js';
 import { utils } from 'web3';
 import { Link } from 'react-router-dom';
 import MilestoneProof from './MilestoneProof';
 import MilestoneConversationAction from './MilestoneConversationAction';
 import { convertEthHelper, getUserAvatar, getUserName } from '../lib/helpers';
 import Milestone from '../models/Milestone';
-import User from '../models/User';
 import config from '../configuration';
 
 const getReadableMessageContext = conversation => {
@@ -103,7 +101,7 @@ const getReadableMessageContext = conversation => {
 const getEtherScanUrl = ({ messageContext }) =>
   messageContext === 'donated' ? config.homeEtherscan : config.etherscan;
 
-function MilestoneConversationItem({ balance, conversation, currentUser, milestone }) {
+function MilestoneConversationItem({ conversation, milestone }) {
   if (!conversation) return null;
   const {
     txHash,
@@ -145,18 +143,18 @@ function MilestoneConversationItem({ balance, conversation, currentUser, milesto
         {items && items.length > 0 && (
           <Form className="items-form">
             <strong>Attachments</strong>
-            <MilestoneProof refreshList={items} token={milestone.token} isEditMode={false} />
+            <MilestoneProof
+              refreshList={items}
+              token={milestone.token}
+              isEditMode={false}
+              milestoneStatus={milestone.status}
+            />
           </Form>
         )}
 
         {/* ---- action buttons ---- */}
         <div className="c-action-footer">
-          <MilestoneConversationAction
-            messageContext={messageContext}
-            milestone={milestone}
-            currentUser={currentUser}
-            balance={balance}
-          />
+          <MilestoneConversationAction messageContext={messageContext} milestone={milestone} />
         </div>
 
         <div className="c-divider" />
@@ -168,12 +166,6 @@ function MilestoneConversationItem({ balance, conversation, currentUser, milesto
 MilestoneConversationItem.propTypes = {
   milestone: PropTypes.instanceOf(Milestone).isRequired,
   conversation: PropTypes.instanceOf(Object).isRequired,
-  currentUser: PropTypes.instanceOf(User),
-  balance: PropTypes.instanceOf(BigNumber).isRequired,
 };
 
-MilestoneConversationItem.defaultProps = {
-  currentUser: undefined,
-};
-
-export default MilestoneConversationItem;
+export default React.memo(MilestoneConversationItem);

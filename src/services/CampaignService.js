@@ -36,29 +36,40 @@ class CampaignService {
   /**
    * Get Campaigns
    *
-   * @param $limit    Amount of records to be loaded
-   * @param $skip     Amounds of record to be skipped
-   * @param onSuccess Callback function once response is obtained successfylly
-   * @param onError   Callback function if error is encountered
+   * @param $limit      Amount of records to be loaded
+   * @param $skip       Amounds of record to be skipped
+   * @param onlyRecent  Bool flag only fetch campaigns updated recently (projectsUpdatedAtLimitMonth)
+   * @param onSuccess   Callback function once response is obtained successfylly
+   * @param onError     Callback function if error is encountered
    */
-  static getCampaigns($limit = 100, $skip = 0, onSuccess = () => {}, onError = () => {}) {
-    const lastDate = new Date();
-    lastDate.setMonth(lastDate.getMonth() - config.projectsUpdatedAtLimitMonth);
+  static getCampaigns(
+    $limit = 100,
+    $skip = 0,
+    onlyRecent = false,
+    onSuccess = () => {},
+    onError = () => {},
+  ) {
+    const query = {
+      projectId: { $gt: 0 }, // 0 is a pending campaign
+      status: Campaign.ACTIVE,
+      $limit,
+      $skip,
+      // Should set a specific prop for "qualified" updates
+      // Current impl will allow a campaign manager to be first
+      // in the list by just editing the campaign
+      $sort: { updatedAt: -1 },
+    };
 
+    if (onlyRecent) {
+      const lastDate = new Date();
+      lastDate.setMonth(lastDate.getMonth() - config.projectsUpdatedAtLimitMonth);
+
+      query.updatedAt = { $gt: lastDate };
+    }
     return feathersClient
       .service('campaigns')
       .find({
-        query: {
-          projectId: { $gt: 0 }, // 0 is a pending campaign
-          status: Campaign.ACTIVE,
-          $limit,
-          $skip,
-          updatedAt: { $gt: lastDate },
-          // Should set a specific prop for "qualified" updates
-          // Current impl will allow a campaign manager to be first
-          // in the list by just editing the campaign
-          $sort: { updatedAt: -1 },
-        },
+        query,
       })
       .then(resp => {
         onSuccess(
@@ -87,18 +98,15 @@ class CampaignService {
           status: {
             $nin: [Milestone.CANCELED, Milestone.PROPOSED, Milestone.REJECTED, Milestone.PENDING],
           },
-          $sort: { projectAddedAt: -1 },
+          $or: [
+            { donationCounters: { $not: { $size: 0 } } },
+            { status: { $ne: Milestone.COMPLETED } },
+          ],
+          $sort: { projectAddedAt: -1, projectId: -1 },
           $limit,
           $skip,
         },
       })
-      .then(resp => ({
-        ...resp,
-        data: resp.data.filter(
-          milestone =>
-            !(milestone.donationCounters.length <= 0 && milestone.status === Milestone.COMPLETED),
-        ),
-      }))
       .then(resp =>
         onSuccess(
           resp.data.map(m => new Milestone(m)),
