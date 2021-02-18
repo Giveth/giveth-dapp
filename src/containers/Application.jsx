@@ -177,8 +177,6 @@ class Application extends Component {
                                               path="/dacs/:id/edit"
                                               render={props => (
                                                 <EditDAC
-                                                  key={currentUser ? currentUser.id : 0}
-                                                  currentUser={currentUser}
                                                   balance={balance}
                                                   isForeignNetwork={isForeignNetwork}
                                                   displayForeignNetRequiredWarning={
