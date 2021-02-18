@@ -1,56 +1,56 @@
 // Global classes are defined here
-@import "~react-input-token/lib/style.css";
-@import "variables/variables.scss";
-@import "utils/utils.scss";
-@import "mixins";
-@import "layout.scss";
-@import "typography.scss";
+@import '~react-input-token/lib/style.css';
+@import 'variables/variables.scss';
+@import 'utils/utils.scss';
+@import 'mixins';
+@import 'layout.scss';
+@import 'typography.scss';
 // views
-@import "causesView.scss";
-@import "editCausesView.scss";
-@import "viewCauseView.scss";
-@import "viewAlertView.scss";
-@import "viewCampaignView.scss";
-@import "viewMilestoneView.scss";
-@import "campaignsView";
-@import "accountView.scss";
-@import "dashboard.scss";
-@import "edit-view.scss";
-@import "editMilestoneView.scss";
-@import "myMilestones.scss";
-@import "profileView.scss";
-@import "donation.scss";
-@import "campaignCreateNewView.scss";
-@import "createMilestone.scss";
-@import "createPayment.scss";
-@import "createBounty.scss";
-@import "createExpense.scss";
+@import 'causesView.scss';
+@import 'editCausesView.scss';
+@import 'viewCauseView.scss';
+@import 'viewAlertView.scss';
+@import 'viewCampaignView.scss';
+@import 'viewMilestoneView.scss';
+@import 'campaignsView';
+@import 'accountView.scss';
+@import 'dashboard.scss';
+@import 'edit-view.scss';
+@import 'editMilestoneView.scss';
+@import 'myMilestones.scss';
+@import 'profileView.scss';
+@import 'donation.scss';
+@import 'campaignCreateNewView.scss';
+@import 'createMilestone.scss';
+@import 'createPayment.scss';
+@import 'createBounty.scss';
+@import 'createExpense.scss';
 // components
-@import "loader.scss";
-@import "mainMenu.scss";
-@import "goBackButton.scss";
-@import "loaderButton.scss";
-@import "joinGivethCommunity.scss";
-@import "backgroundImageHeader.scss";
-@import "dac-card.scss";
-@import "milestoneConversations.scss";
-@import "conversationModal.scss";
+@import 'loader.scss';
+@import 'mainMenu.scss';
+@import 'goBackButton.scss';
+@import 'loaderButton.scss';
+@import 'joinGivethCommunity.scss';
+@import 'backgroundImageHeader.scss';
+@import 'dac-card.scss';
+@import 'milestoneConversations.scss';
+@import 'conversationModal.scss';
 // misc
-@import "quill-overrides.scss";
-@import "toastify-overrides.scss";
-@import "react-token-input-overrides.scss";
-@import "sweet-alert-overrides.scss";
-@import "react-toggle.scss";
-@import "react-datepicker.scss";
-@import "pagination.scss";
-@import "cropper.scss";
+@import 'quill-overrides.scss';
+@import 'toastify-overrides.scss';
+@import 'react-token-input-overrides.scss';
+@import 'sweet-alert-overrides.scss';
+@import 'react-toggle.scss';
+@import 'react-datepicker.scss';
+@import 'pagination.scss';
+@import 'cropper.scss';
 // overrides
-@import "card.scss";
-@import "formsyOverrides.scss";
+@import 'card.scss';
+@import 'formsyOverrides.scss';
 
 html,
 body {
-  font-family: "Quicksand", sans-serif;
+  font-family: 'Quicksand', sans-serif;
 }
 
 body {
@@ -122,11 +122,11 @@ table {
   z-index: 1;
 }
 
-input[type="file"] {
+input[type='file'] {
   display: block;
 }
 
-input[type="number"] {
+input[type='number'] {
   -moz-appearance: textfield; /*For FireFox*/
 
   &::-webkit-inner-spin-button {
@@ -166,7 +166,7 @@ i {
 
   input {
     // border-color: $valid-green;
-    &[type="file"] {
+    &[type='file'] {
       margin-top: 2px;
     }
   }
@@ -407,21 +407,21 @@ span.nav-link:focus {
       font-size: 16px;
       line-height: 20px;
       &::after {
-        content: "";
+        content: '';
       }
     }
   }
   & > .ant-form-item-control {
-    .ant-form-item-control-input-content{
-      &>input,
-      &>textarea {
+    .ant-form-item-control-input-content {
+      & > input,
+      & > textarea {
         background: #ffffff;
         border: 2px solid #dfdae8;
         box-sizing: border-box;
         border-radius: 8px;
-  
+
         padding: 13px 18px;
-  
+
         font-family: Lato;
         font-style: normal;
         font-weight: normal;
@@ -443,7 +443,7 @@ span.nav-link:focus {
       font-size: 18px;
       line-height: 22px;
       p {
-        color: #AAAFCA;
+        color: #aaafca;
         span {
           color: #3f51b5;
         }
@@ -491,7 +491,7 @@ span.nav-link:focus {
 }
 
 .ant-btn {
-  &.ant-btn-primary[type="submit"] {
+  &.ant-btn-primary[type='submit'] {
     width: 100%;
     height: 52px;
     background: #5066cf;
@@ -515,7 +515,7 @@ span.nav-link:focus {
 
 .ant-picker {
   width: 100%;
-  border: 2px solid #DFDAE8;
+  border: 2px solid #dfdae8;
   box-sizing: border-box;
   border-radius: 8px;
   height: 52px;
