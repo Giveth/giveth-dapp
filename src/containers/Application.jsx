@@ -99,23 +99,17 @@ class Application extends Component {
 
     this.state = {
       web3Loading: true,
-      userLoading: true,
     };
 
     this.web3Loaded = this.web3Loaded.bind(this);
-    this.userLoaded = this.userLoaded.bind(this);
   }
 
   web3Loaded() {
     this.setState({ web3Loading: false });
   }
 
-  userLoaded() {
-    this.setState({ userLoading: false });
-  }
-
   render() {
-    const { web3Loading, userLoading } = this.state;
+    const { web3Loading } = this.state;
     return (
       <ErrorBoundary>
         {/* Header stuff goes here */}
@@ -137,301 +131,277 @@ class Application extends Component {
         <Router history={history}>
           <WhiteListProvider>
             <WhiteListConsumer>
-              {({ state: { fiatWhitelist, isLoading } }) => (
+              {({ state: { fiatWhitelist } }) => (
                 <div>
-                  {isLoading && <Loader className="fixed" />}
-                  {!isLoading && (
-                    <Web3Provider onLoaded={this.web3Loaded}>
-                      <Web3Consumer>
-                        {({
-                          state: { account, balance, isForeignNetwork },
-                          actions: { displayForeignNetRequiredWarning },
-                        }) => (
-                          <div>
-                            {web3Loading && <Loader className="fixed" />}
-                            {!web3Loading && (
-                              <ConversionRateProvider fiatWhitelist={fiatWhitelist}>
-                                <UserProvider account={account} onLoaded={this.userLoaded}>
-                                  <UserConsumer>
-                                    {({ state: { currentUser, hasError } }) => (
-                                      <div>
-                                        {GA.init() && <GA.RouteTracker />}
+                  <Web3Provider onLoaded={this.web3Loaded}>
+                    <Web3Consumer>
+                      {({
+                        state: { account, balance, isForeignNetwork },
+                        actions: { displayForeignNetRequiredWarning },
+                      }) => (
+                        <div>
+                          {web3Loading && <Loader className="fixed" />}
+                          {!web3Loading && (
+                            <ConversionRateProvider fiatWhitelist={fiatWhitelist}>
+                              <UserProvider account={account}>
+                                <UserConsumer>
+                                  {({ state: { currentUser, hasError } }) => (
+                                    <div>
+                                      {GA.init() && <GA.RouteTracker />}
 
-                                        {userLoading && <Loader className="fixed" />}
+                                      {!hasError && (
+                                        <div className="page-wrapper">
+                                          <MainMenu />
 
-                                        {!userLoading && !hasError && (
-                                          <div className="page-wrapper">
-                                            <MainMenu />
-
-                                            <Switch>
-                                              {/* Routes are defined here. Persistent data is set as props on components
+                                          <Switch>
+                                            {/* Routes are defined here. Persistent data is set as props on components
                               NOTE order matters, wrong order breaks routes!
                           */}
 
-                                              <Route
-                                                exact
-                                                path="/dacs/new"
-                                                render={props => (
-                                                  <EditDAC
-                                                    isNew
-                                                    key={currentUser ? currentUser.id : 0}
-                                                    currentUser={currentUser}
-                                                    balance={balance}
-                                                    isForeignNetwork={isForeignNetwork}
-                                                    displayForeignNetRequiredWarning={
-                                                      displayForeignNetRequiredWarning
-                                                    }
-                                                    {...props}
-                                                  />
-                                                )}
-                                              />
-                                              <Route
-                                                exact
-                                                path={getViewEntityPathsList('/dacs/:id')}
-                                                render={props => (
-                                                  <ViewDAC
-                                                    currentUser={currentUser}
-                                                    balance={balance}
-                                                    {...props}
-                                                  />
-                                                )}
-                                              />
-                                              <Route
-                                                exact
-                                                path="/dacs/:id/edit"
-                                                render={props => (
-                                                  <EditDAC
-                                                    key={currentUser ? currentUser.id : 0}
-                                                    currentUser={currentUser}
-                                                    balance={balance}
-                                                    isForeignNetwork={isForeignNetwork}
-                                                    displayForeignNetRequiredWarning={
-                                                      displayForeignNetRequiredWarning
-                                                    }
-                                                    {...props}
-                                                  />
-                                                )}
-                                              />
+                                            <Route
+                                              exact
+                                              path="/dacs/new"
+                                              render={props => (
+                                                <EditDAC
+                                                  isNew
+                                                  balance={balance}
+                                                  isForeignNetwork={isForeignNetwork}
+                                                  displayForeignNetRequiredWarning={
+                                                    displayForeignNetRequiredWarning
+                                                  }
+                                                  {...props}
+                                                />
+                                              )}
+                                            />
+                                            <Route
+                                              exact
+                                              path={getViewEntityPathsList('/dacs/:id')}
+                                              render={props => <ViewDAC {...props} />}
+                                            />
+                                            <Route
+                                              exact
+                                              path="/dacs/:id/edit"
+                                              render={props => (
+                                                <EditDAC
+                                                  key={currentUser ? currentUser.id : 0}
+                                                  currentUser={currentUser}
+                                                  balance={balance}
+                                                  isForeignNetwork={isForeignNetwork}
+                                                  displayForeignNetRequiredWarning={
+                                                    displayForeignNetRequiredWarning
+                                                  }
+                                                  {...props}
+                                                />
+                                              )}
+                                            />
 
-                                              <Route
-                                                exact
-                                                path="/campaigns/new"
-                                                render={props => (
-                                                  <EditCampaign
-                                                    isNew
-                                                    key={currentUser ? currentUser.id : 0}
-                                                    currentUser={currentUser}
-                                                    balance={balance}
-                                                    isForeignNetwork={isForeignNetwork}
-                                                    displayForeignNetRequiredWarning={
-                                                      displayForeignNetRequiredWarning
-                                                    }
-                                                    {...props}
-                                                  />
-                                                )}
-                                              />
-                                              <Route
-                                                exact
-                                                path={getViewEntityPathsList('/campaigns/:id')}
-                                                render={props => (
-                                                  <ViewCampaign
-                                                    currentUser={currentUser}
-                                                    balance={balance}
-                                                    {...props}
-                                                  />
-                                                )}
-                                              />
-                                              <Route
-                                                exact
-                                                path="/campaigns/:id/edit"
-                                                render={props => (
-                                                  <EditCampaign
-                                                    key={currentUser ? currentUser.id : 0}
-                                                    currentUser={currentUser}
-                                                    balance={balance}
-                                                    isForeignNetwork={isForeignNetwork}
-                                                    displayForeignNetRequiredWarning={
-                                                      displayForeignNetRequiredWarning
-                                                    }
-                                                    {...props}
-                                                  />
-                                                )}
-                                              />
-                                              <Route
-                                                exact
-                                                path="/campaigns/:id/milestones/new"
-                                                render={props => (
-                                                  <EditMilestone
-                                                    isNew
-                                                    key={currentUser ? currentUser.id : 0}
-                                                    currentUser={currentUser}
-                                                    balance={balance}
-                                                    isForeignNetwork={isForeignNetwork}
-                                                    displayForeignNetRequiredWarning={
-                                                      displayForeignNetRequiredWarning
-                                                    }
-                                                    {...props}
-                                                  />
-                                                )}
-                                              />
-                                              <Route
-                                                exact
-                                                path="/campaigns/:id/new"
-                                                render={props => <CampaginCreateNew {...props} />}
-                                              />
-                                              <Route
-                                                exact
-                                                path="/campaigns/:id/new/milestone"
-                                                render={props => <CreateMilestone {...props} />}
-                                              />
-                                              <Route
-                                                exact
-                                                path="/campaigns/:id/new/payment"
-                                                render={props => <CreatePayment {...props} />}
-                                              />
-                                              <Route
-                                                exact
-                                                path="/campaigns/:id/new/bounty"
-                                                render={props => <CreateBounty {...props} />}
-                                              />
-                                              <Route
-                                                exact
-                                                path="/campaigns/:id/new/expense"
-                                                render={props => <CreateExpense {...props} />}
-                                              />
-                                              <Route
-                                                exact
-                                                path="/campaigns/:id/milestones/propose"
-                                                render={props => (
-                                                  <EditMilestone
-                                                    isNew
-                                                    isProposed
-                                                    key={currentUser ? currentUser.id : 0}
-                                                    currentUser={currentUser}
-                                                    isForeignNetwork={isForeignNetwork}
-                                                    displayForeignNetRequiredWarning={
-                                                      displayForeignNetRequiredWarning
-                                                    }
-                                                    balance={balance}
-                                                    {...props}
-                                                  />
-                                                )}
-                                              />
-                                              <Route
-                                                exact
-                                                path={getViewEntityPathsList(
-                                                  '/campaigns/:id/milestones/:milestoneId',
-                                                )}
-                                                render={props => (
-                                                  <ViewMilestone
-                                                    currentUser={currentUser}
-                                                    balance={balance}
-                                                    {...props}
-                                                  />
-                                                )}
-                                              />
-                                              <Route
-                                                exact
-                                                path="/campaigns/:id/milestones/:milestoneId/edit"
-                                                render={props => (
-                                                  <EditMilestone
-                                                    key={currentUser ? currentUser.id : 0}
-                                                    currentUser={currentUser}
-                                                    balance={balance}
-                                                    isForeignNetwork={isForeignNetwork}
-                                                    displayForeignNetRequiredWarning={
-                                                      displayForeignNetRequiredWarning
-                                                    }
-                                                    {...props}
-                                                  />
-                                                )}
-                                              />
-                                              <Route
-                                                exact
-                                                path="/campaigns/:id/milestones/:milestoneId/edit/proposed"
-                                                render={props => (
-                                                  <EditMilestone
-                                                    key={currentUser ? currentUser.id : 0}
-                                                    currentUser={currentUser}
-                                                    balance={balance}
-                                                    isForeignNetwork={isForeignNetwork}
-                                                    displayForeignNetRequiredWarning={
-                                                      displayForeignNetRequiredWarning
-                                                    }
-                                                    isProposed
-                                                    {...props}
-                                                  />
-                                                )}
-                                              />
-                                              <Route
-                                                exact
-                                                path="/campaigns/:id/milestones"
-                                                render={({ match }) => (
-                                                  <Redirect to={`/campaigns/${match.params.id}`} />
-                                                )}
-                                              />
-                                              <Route
-                                                exact
-                                                path="/donations"
-                                                render={props => (
-                                                  <Donations
-                                                    key={currentUser ? currentUser.id : 0}
-                                                    currentUser={currentUser}
-                                                    balance={balance}
-                                                    {...props}
-                                                  />
-                                                )}
-                                              />
-                                              <Route
-                                                exact
-                                                path="/delegations"
-                                                render={props => (
-                                                  <Delegations
-                                                    key={currentUser ? currentUser.id : 0}
-                                                    currentUser={currentUser}
-                                                    balance={balance}
-                                                    {...props}
-                                                  />
-                                                )}
-                                              />
-                                              <Route
-                                                exact
-                                                path="/my-dacs"
-                                                render={props => (
-                                                  <MyDACs
-                                                    key={currentUser ? currentUser.id : 0}
-                                                    currentUser={currentUser}
-                                                    balance={balance}
-                                                    {...props}
-                                                  />
-                                                )}
-                                              />
-                                              <Route
-                                                exact
-                                                path="/my-campaigns"
-                                                render={props => (
-                                                  <MyCampaigns
-                                                    key={currentUser ? currentUser.id : 0}
-                                                    currentUser={currentUser}
-                                                    balance={balance}
-                                                    {...props}
-                                                  />
-                                                )}
-                                              />
-                                              <Route
-                                                exact
-                                                path="/my-milestones"
-                                                render={props => (
-                                                  <MyMilestones
-                                                    key={currentUser ? currentUser.id : 0}
-                                                    currentUser={currentUser}
-                                                    balance={balance}
-                                                    {...props}
-                                                  />
-                                                )}
-                                              />
+                                            <Route
+                                              exact
+                                              path="/campaigns/new"
+                                              render={props => (
+                                                <EditCampaign
+                                                  isNew
+                                                  balance={balance}
+                                                  isForeignNetwork={isForeignNetwork}
+                                                  displayForeignNetRequiredWarning={
+                                                    displayForeignNetRequiredWarning
+                                                  }
+                                                  {...props}
+                                                />
+                                              )}
+                                            />
+                                            <Route
+                                              exact
+                                              path={getViewEntityPathsList('/campaigns/:id')}
+                                              render={props => (
+                                                <ViewCampaign
+                                                  currentUser={currentUser}
+                                                  balance={balance}
+                                                  {...props}
+                                                />
+                                              )}
+                                            />
+                                            <Route
+                                              exact
+                                              path="/campaigns/:id/edit"
+                                              render={props => (
+                                                <EditCampaign
+                                                  balance={balance}
+                                                  isForeignNetwork={isForeignNetwork}
+                                                  displayForeignNetRequiredWarning={
+                                                    displayForeignNetRequiredWarning
+                                                  }
+                                                  {...props}
+                                                />
+                                              )}
+                                            />
+                                            <Route
+                                              exact
+                                              path="/campaigns/:id/new"
+                                              render={props => <CampaginCreateNew {...props} />}
+                                            />
+                                            <Route
+                                              exact
+                                              path="/campaigns/:id/new/milestone"
+                                              render={props => <CreateMilestone {...props} />}
+                                            />
+                                            <Route
+                                              exact
+                                              path="/campaigns/:id/new/payment"
+                                              render={props => <CreatePayment {...props} />}
+                                            />
+                                            <Route
+                                              exact
+                                              path="/campaigns/:id/new/bounty"
+                                              render={props => <CreateBounty {...props} />}
+                                            />
+                                            <Route
+                                              exact
+                                              path="/campaigns/:id/new/expense"
+                                              render={props => <CreateExpense {...props} />}
+                                            />
+                                            <Route
+                                              exact
+                                              path="/campaigns/:id/milestones/new"
+                                              render={props => (
+                                                <EditMilestone
+                                                  isNew
+                                                  balance={balance}
+                                                  isForeignNetwork={isForeignNetwork}
+                                                  displayForeignNetRequiredWarning={
+                                                    displayForeignNetRequiredWarning
+                                                  }
+                                                  {...props}
+                                                />
+                                              )}
+                                            />
+                                            <Route
+                                              exact
+                                              path="/campaigns/:id/milestones/propose"
+                                              render={props => (
+                                                <EditMilestone
+                                                  isNew
+                                                  isProposed
+                                                  isForeignNetwork={isForeignNetwork}
+                                                  displayForeignNetRequiredWarning={
+                                                    displayForeignNetRequiredWarning
+                                                  }
+                                                  balance={balance}
+                                                  {...props}
+                                                />
+                                              )}
+                                            />
+                                            <Route
+                                              exact
+                                              path={getViewEntityPathsList(
+                                                '/campaigns/:id/milestones/:milestoneId',
+                                              )}
+                                              render={props => (
+                                                <ViewMilestone
+                                                  currentUser={currentUser}
+                                                  balance={balance}
+                                                  {...props}
+                                                />
+                                              )}
+                                            />
+                                            <Route
+                                              exact
+                                              path="/campaigns/:id/milestones/:milestoneId/edit"
+                                              render={props => (
+                                                <EditMilestone
+                                                  balance={balance}
+                                                  isForeignNetwork={isForeignNetwork}
+                                                  displayForeignNetRequiredWarning={
+                                                    displayForeignNetRequiredWarning
+                                                  }
+                                                  {...props}
+                                                />
+                                              )}
+                                            />
+                                            <Route
+                                              exact
+                                              path="/campaigns/:id/milestones/:milestoneId/edit/proposed"
+                                              render={props => (
+                                                <EditMilestone
+                                                  balance={balance}
+                                                  isForeignNetwork={isForeignNetwork}
+                                                  displayForeignNetRequiredWarning={
+                                                    displayForeignNetRequiredWarning
+                                                  }
+                                                  isProposed
+                                                  {...props}
+                                                />
+                                              )}
+                                            />
+                                            <Route
+                                              exact
+                                              path="/campaigns/:id/milestones"
+                                              render={({ match }) => (
+                                                <Redirect to={`/campaigns/${match.params.id}`} />
+                                              )}
+                                            />
+                                            <Route
+                                              exact
+                                              path="/donations"
+                                              render={props => (
+                                                <Donations
+                                                  key={currentUser ? currentUser.id : 0}
+                                                  currentUser={currentUser}
+                                                  balance={balance}
+                                                  {...props}
+                                                />
+                                              )}
+                                            />
+                                            <Route
+                                              exact
+                                              path="/delegations"
+                                              render={props => (
+                                                <Delegations
+                                                  key={currentUser ? currentUser.id : 0}
+                                                  currentUser={currentUser}
+                                                  balance={balance}
+                                                  {...props}
+                                                />
+                                              )}
+                                            />
+                                            <Route
+                                              exact
+                                              path="/my-dacs"
+                                              render={props => (
+                                                <MyDACs
+                                                  key={currentUser ? currentUser.id : 0}
+                                                  currentUser={currentUser}
+                                                  balance={balance}
+                                                  {...props}
+                                                />
+                                              )}
+                                            />
+                                            <Route
+                                              exact
+                                              path="/my-campaigns"
+                                              render={props => (
+                                                <MyCampaigns
+                                                  key={currentUser ? currentUser.id : 0}
+                                                  currentUser={currentUser}
+                                                  balance={balance}
+                                                  {...props}
+                                                />
+                                              )}
+                                            />
+                                            <Route
+                                              exact
+                                              path="/my-milestones"
+                                              render={props => (
+                                                <MyMilestones
+                                                  key={currentUser ? currentUser.id : 0}
+                                                  currentUser={currentUser}
+                                                  balance={balance}
+                                                  {...props}
+                                                />
+                                              )}
+                                            />
 
-                                              {/* <Route
+                                            {/* <Route
                                       exact
                                       path="/wallet"
                                       render={props => (
@@ -442,84 +412,77 @@ class Application extends Component {
                                         />
                                       )}
                                     /> */}
-                                              <Route
-                                                exact
-                                                path="/profile"
-                                                render={props => (
-                                                  <EditProfile
-                                                    key={currentUser ? currentUser.id : 0}
-                                                    currentUser={currentUser}
-                                                    balance={balance}
-                                                    isForeignNetwork={isForeignNetwork}
-                                                    displayForeignNetRequiredWarning={
-                                                      displayForeignNetRequiredWarning
-                                                    }
-                                                    {...props}
-                                                  />
-                                                )}
-                                              />
-                                              <Route
-                                                exact
-                                                path="/profile/:userAddress"
-                                                render={props => <Profile {...props} />}
-                                              />
+                                            <Route
+                                              exact
+                                              path="/profile"
+                                              render={props => (
+                                                <EditProfile
+                                                  balance={balance}
+                                                  isForeignNetwork={isForeignNetwork}
+                                                  displayForeignNetRequiredWarning={
+                                                    displayForeignNetRequiredWarning
+                                                  }
+                                                  {...props}
+                                                />
+                                              )}
+                                            />
+                                            <Route
+                                              exact
+                                              path="/profile/:userAddress"
+                                              render={props => <Profile {...props} />}
+                                            />
 
-                                              <Route
-                                                exact
-                                                path="/"
-                                                render={props => <Explore {...props} />}
-                                              />
-                                              <Route
-                                                exact
-                                                path="/milestones"
-                                                render={props => <Milestones {...props} />}
-                                              />
-                                              <Route
-                                                exact
-                                                path="/campaigns"
-                                                render={props => <Campaigns {...props} />}
-                                              />
-                                              <Route
-                                                exact
-                                                path="/dacs"
-                                                render={props => <DACs {...props} />}
-                                              />
+                                            <Route
+                                              exact
+                                              path="/"
+                                              render={props => <Explore {...props} />}
+                                            />
+                                            <Route
+                                              exact
+                                              path="/milestones"
+                                              render={props => <Milestones {...props} />}
+                                            />
+                                            <Route
+                                              exact
+                                              path="/campaigns"
+                                              render={() => <Campaigns />}
+                                            />
+                                            <Route exact path="/dacs" render={() => <DACs />} />
 
-                                              <Route component={NotFound} />
-                                            </Switch>
-                                          </div>
-                                        )}
+                                            <Route component={NotFound} />
+                                          </Switch>
+                                        </div>
+                                      )}
 
-                                        {!userLoading && hasError && (
-                                          <div className="text-center">
-                                            <h2>Oops, something went wrong...</h2>
-                                            <p>
-                                              The Giveth dapp could not load for some reason. Please
-                                              try again...
-                                            </p>
-                                          </div>
-                                        )}
+                                      {hasError && (
+                                        <div className="text-center">
+                                          <h2>Oops, something went wrong...</h2>
+                                          <p>
+                                            The Giveth dapp could not load for some reason. Please
+                                            try again...
+                                          </p>
+                                        </div>
+                                      )}
 
-                                        <ToastContainer
-                                          position="top-right"
-                                          type="default"
-                                          autoClose={5000}
-                                          hideProgressBar
-                                          newestOnTop={false}
-                                          closeOnClick
-                                          pauseOnHover
-                                        />
-                                      </div>
-                                    )}
-                                  </UserConsumer>
-                                </UserProvider>
-                              </ConversionRateProvider>
-                            )}
-                          </div>
-                        )}
-                      </Web3Consumer>
-                    </Web3Provider>
-                  )}
+                                      <ToastContainer
+                                        position="top-right"
+                                        type="default"
+                                        autoClose={5000}
+                                        hideProgressBar
+                                        newestOnTop={false}
+                                        closeOnClick
+                                        pauseOnHover
+                                      />
+                                    </div>
+                                  )}
+                                </UserConsumer>
+                              </UserProvider>
+                            </ConversionRateProvider>
+                          )}
+                        </div>
+                      )}
+                    </Web3Consumer>
+                  </Web3Provider>
                 </div>
               )}
             </WhiteListConsumer>

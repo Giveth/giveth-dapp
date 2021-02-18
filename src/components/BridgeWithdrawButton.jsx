@@ -93,7 +93,7 @@ class BridgeWithdrawButton extends Component {
 
     WalletService.bridgeWithdraw(
       {
-        addr: currentUser && currentUser.address,
+        addr: currentUser.address,
         value: `${model.amount}`,
         token: `${model.token}`,
       },

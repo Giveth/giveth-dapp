@@ -11,8 +11,8 @@ const Explore = () => (
   <div>
     <JoinGivethCommunity history={history} />
 
-    <DACs />
-    <Campaigns />
+    <DACs onlyRecent />
+    <Campaigns onlyRecent />
     <Milestones />
   </div>
 );

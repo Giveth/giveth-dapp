@@ -309,7 +309,7 @@ class Web3Provider extends Component {
               {
                 showForeignNetRequiredWarning: false,
                 onForeignNetWarningClose: undefined,
-                foreignNetWarningButtonLabel: undefined,
+                foreignNetWarningButtonLabel: 'Close',
               },
               onClose,
             );
@@ -363,5 +363,5 @@ Web3Provider.propTypes = {
 
 Web3Provider.defaultProps = {};
 
-export { Consumer };
+export { Consumer, Context };
 export default Web3Provider;

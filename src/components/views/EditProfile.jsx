@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { Component, Fragment } from 'react';
 import PropTypes from 'prop-types';
 import BigNumber from 'bignumber.js';
 
@@ -13,6 +13,7 @@ import { history } from '../../lib/helpers';
 import ErrorPopup from '../ErrorPopup';
 import { Consumer as WhiteListConsumer } from '../../contextProviders/WhiteListProvider';
 import SelectFormsy from '../SelectFormsy';
+import { Consumer as UserConsumer } from '../../contextProviders/UserProvider';
 
 /**
  * The edit user profile view mapped to /profile/
@@ -139,6 +140,7 @@ class EditProfile extends Component {
     };
     const afterSave = (created, url) => {
       if (this.mounted) this.setState({ isSaving: false, isPristine: true });
+      this.props.updateUserData();
 
       const msg = created ? 'We are registering you as a user' : 'Your profile is being updated';
       showToast(msg, url);
@@ -152,7 +154,9 @@ class EditProfile extends Component {
       },
       () => {
         // Save the User
-        this.state.user.save(afterSave, afterMined, reset, pushToNetwork);
+        this.state.user.save(afterSave, afterMined, reset, pushToNetwork).finally(() => {
+          this.setState({ isSaving: false });
+        });
       },
     );
   }
@@ -299,7 +303,7 @@ class EditProfile extends Component {
                       !isValid ||
                       isSaving ||
                       isPristine ||
-                      (currentUser && currentUser.giverId === 0)
+                      (currentUser.address && currentUser.giverId === 0)
                     }
                     isLoading={isSaving}
                     loadingText="Saving..."
@@ -321,10 +325,23 @@ EditProfile.propTypes = {
   balance: PropTypes.instanceOf(BigNumber).isRequired,
   isForeignNetwork: PropTypes.bool.isRequired,
   displayForeignNetRequiredWarning: PropTypes.func.isRequired,
+  updateUserData: PropTypes.func,
 };
 
 EditProfile.defaultProps = {
   currentUser: undefined,
+  updateUserData: () => {},
 };
 
-export default EditProfile;
+export default props => (
+  <UserConsumer>
+    {({ state: { currentUser, isLoading: userIsLoading }, actions: { updateUserData } }) => (
+      <Fragment>
+        {userIsLoading && <Loader className="fixed" />}
+        {!userIsLoading && (
+          <EditProfile currentUser={currentUser} updateUserData={updateUserData} {...props} />
+        )}
+      </Fragment>
+    )}
+  </UserConsumer>
+);
