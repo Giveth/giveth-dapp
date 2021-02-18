@@ -265,7 +265,7 @@ class EditMilestone extends Component {
               if (recipientAddress) milestone.recipientAddress = recipientAddress;
               if (reviewerAddress) milestone.reviewerAddress = reviewerAddress;
               // eslint-disable-next-line radix
-              milestone.dacId = parseInt(dacId);
+              if (dacId) milestone.dacId = parseInt(dacId);
             }
 
             validQueryStringVariables.forEach(variable => {
