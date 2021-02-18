@@ -387,6 +387,19 @@ class MilestoneService {
     let etherScanUrl;
 
     try {
+      const response = await milestones.find({
+        query: {
+          campaignId: milestone.campaignId,
+          title: milestone.title,
+          $limit: 1,
+        },
+      });
+      if (response.total && response.total > 0) {
+        const message =
+          'A milestone with this title already exists. Please select a different title.';
+        ErrorHandler({ message }, message, true);
+        return onError();
+      }
       const profileHash = await this.uploadToIPFS(milestone);
       if (!profileHash) return onError();
 
@@ -459,16 +472,10 @@ class MilestoneService {
 
       afterMined(!milestone.projectId, `${etherScanUrl}tx/${txHash}`, milestoneId);
     } catch (err) {
-      const showMessageInPopup = err.data && err.data.showMessageInPopup;
-      let message;
-      if (showMessageInPopup) {
-        message = err.message;
-      } else {
-        message = `Something went wrong with the Milestone ${
-          milestone.projectId > 0 ? 'update' : 'creation'
-        }. Is your wallet unlocked? ${etherScanUrl}tx/${txHash} => ${JSON.stringify(err, null, 2)}`;
-      }
-      ErrorHandler(err, message, showMessageInPopup);
+      const message = `Something went wrong with the Milestone ${
+        milestone.projectId > 0 ? 'update' : 'creation'
+      }. Is your wallet unlocked? ${etherScanUrl}tx/${txHash} => ${JSON.stringify(err, null, 2)}`;
+      ErrorHandler(err, message);
       onError();
     }
 
