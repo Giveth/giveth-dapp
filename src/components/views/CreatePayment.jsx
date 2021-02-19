@@ -49,7 +49,6 @@ class CreatePayment extends Component {
     };
     this.goBack = this.goBack.bind(this);
     this.handleInputChange = this.handleInputChange.bind(this);
-    this.toggleHasReviewer = this.toggleHasReviewer.bind(this);
     this.handleSelectCurrency = this.handleSelectCurrency.bind(this);
     this.handleSelectPaymentCurrency = this.handleSelectPaymentCurrency.bind(this);
     this.handleDatePicker = this.handleDatePicker.bind(this);
@@ -77,10 +76,6 @@ class CreatePayment extends Component {
     });
   }
 
-  toggleHasReviewer(checked) {
-    this.setState({ hasReviewer: checked });
-  }
-
   handleSelectCurrency(_, option) {
     this.setState({ currency: option.value });
   }
@@ -94,7 +89,7 @@ class CreatePayment extends Component {
   }
 
   goBack() {
-    this.props.history.push(`/campaigns/${this.props.match.params.id}/new`);
+    this.props.history.goBack();
   }
 
   render() {

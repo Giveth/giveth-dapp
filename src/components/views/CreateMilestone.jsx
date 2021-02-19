@@ -54,7 +54,7 @@ class CreateMilestone extends Component {
   }
 
   goBack() {
-    this.props.history.push(`/campaigns/${this.props.match.params.id}/new`);
+    this.props.history.goBack();
   }
 
   render() {
