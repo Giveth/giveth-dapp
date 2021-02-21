@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, Fragment } from 'react';
 import { PageHeader, Row, Col, Form, Input, Upload, Checkbox, Switch, Select, Button } from 'antd';
 import 'antd/dist/antd.css';
 import PropTypes from 'prop-types';
@@ -125,7 +125,7 @@ function CreateBounty(props) {
             </div>
             <div className="campaign-info">
               <div className="lable">Campaign</div>
-              <div className="content">{campaign.title}</div>
+              <div className="content">{campaign && campaign.title}</div>
             </div>
             <div className="section">
               <div className="title">Bounty details</div>
@@ -190,7 +190,7 @@ function CreateBounty(props) {
                 <span className="bounty-reviewer-label">Bounty reviewer</span>
               </Form.Item>
               {bounty.hasReviewer && (
-                <>
+                <Fragment>
                   <Form.Item>
                     <Select
                       showSearch
@@ -211,7 +211,7 @@ function CreateBounty(props) {
                   <div className="form-item-desc">
                     The reviewer verifies that the Bounty is completed successfully.
                   </div>
-                </>
+                </Fragment>
               )}
             </div>
             <div className="section">
