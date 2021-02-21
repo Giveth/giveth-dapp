@@ -1,9 +1,9 @@
-import React, { useEffect, useState, Fragment } from 'react';
+import React, { useState, Fragment } from 'react';
 import { PageHeader, Row, Col, Form, Input, Upload, Checkbox, Switch, Select, Button } from 'antd';
 import 'antd/dist/antd.css';
 import PropTypes from 'prop-types';
 import ImgCrop from 'antd-img-crop';
-import CampaignService from '../../services/CampaignService';
+import useCampaign from '../../hooks/useCampaign';
 
 function CreateBounty(props) {
   const currencies = [
@@ -23,8 +23,7 @@ function CreateBounty(props) {
     'MXN',
     'THB',
   ];
-
-  const [campaign, setCampaign] = useState();
+  const campaign = useCampaign(props.match.params.id);
   const [bounty, setBounty] = useState({
     title: '',
     description: '',
@@ -35,15 +34,6 @@ function CreateBounty(props) {
     amount: '',
     currency: '',
   });
-
-  useEffect(async () => {
-    async function getCampaign() {
-      const campaignId = props.match.params.id;
-      const camp = await CampaignService.get(campaignId);
-      setCampaign(camp);
-    }
-    getCampaign();
-  }, []);
 
   const handleInputChange = event => {
     const { name, value, type, checked } = event.target;

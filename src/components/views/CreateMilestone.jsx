@@ -1,12 +1,12 @@
-import React, { Fragment, useEffect, useState } from 'react';
+import React, { Fragment, useState } from 'react';
 import { PageHeader, Row, Col, Form, Input, Upload, Checkbox, Switch, Select, Button } from 'antd';
 import 'antd/dist/antd.css';
 import PropTypes from 'prop-types';
 import ImgCrop from 'antd-img-crop';
-import CampaignService from '../../services/CampaignService';
+import useCampaign from '../../hooks/useCampaign';
 
 function CreateMilestone(props) {
-  const [campaign, setCampaign] = useState();
+  const campaign = useCampaign(props.match.params.id);
   const [milestone, setMilstone] = useState({
     title: '',
     description: '',
@@ -15,15 +15,6 @@ function CreateMilestone(props) {
     hasReviewer: true,
     reviewer: '',
   });
-
-  useEffect(async () => {
-    async function getCampaign() {
-      const campaignId = props.match.params.id;
-      const camp = await CampaignService.get(campaignId);
-      setCampaign(camp);
-    }
-    getCampaign();
-  }, []);
 
   const handleInputChange = event => {
     const { name, value, type, checked } = event.target;

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import {
   PageHeader,
   Row,
@@ -14,7 +14,7 @@ import {
 import 'antd/dist/antd.css';
 import PropTypes from 'prop-types';
 import ImgCrop from 'antd-img-crop';
-import CampaignService from '../../services/CampaignService';
+import useCampaign from '../../hooks/useCampaign';
 
 function CreatePayment(props) {
   const currencies = [
@@ -35,7 +35,7 @@ function CreatePayment(props) {
     'THB',
   ];
 
-  const [campaign, setCampaign] = useState();
+  const campaign = useCampaign(props.match.params.id);
   const [payment, setPayment] = useState({
     amount: '',
     currency: '',
@@ -46,15 +46,6 @@ function CreatePayment(props) {
     donate: true,
     wallet: '',
   });
-
-  useEffect(async () => {
-    async function getCampaign() {
-      const campaignId = props.match.params.id;
-      const camp = await CampaignService.get(campaignId);
-      setCampaign(camp);
-    }
-    getCampaign();
-  }, []);
 
   const handleInputChange = event => {
     const { name, value, type, checked } = event.target;
