@@ -1,8 +1,8 @@
 /* eslint-disable import/no-cycle */
+import { toast } from 'react-toastify';
 import BasicModel from './BasicModel';
 import DACService from '../services/DACService';
 import IPFSService from '../services/IPFSService';
-import ErrorPopup from '../components/ErrorPopup';
 import { cleanIpfsPath } from '../lib/helpers';
 
 /**
@@ -69,17 +69,16 @@ class DAC extends BasicModel {
 
   save(afterSave, afterMined) {
     if (this.newImage) {
-      IPFSService.upload(this.image)
+      return IPFSService.upload(this.image)
         .then(hash => {
           // Save the new image address and mark it as old
           this.image = hash;
           this.newImage = false;
         })
-        .catch(err => ErrorPopup('Failed to upload image', err))
-        .finally(() => DACService.save(this, this.owner.address, afterSave, afterMined));
-    } else {
-      DACService.save(this, this.owner.address, afterSave, afterMined);
+        .then(() => DACService.save(this, this.owner.address, afterSave, afterMined))
+        .catch(_ => toast.error('Cannot connect to IPFS server. Please try again'));
     }
+    return DACService.save(this, this.owner.address, afterSave, afterMined);
   }
 
   get communityUrl() {

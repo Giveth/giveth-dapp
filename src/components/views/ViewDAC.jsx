@@ -1,5 +1,4 @@
-import React, { Component } from 'react';
-import BigNumber from 'bignumber.js';
+import React, { useContext, useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 
 import { Link } from 'react-router-dom';
@@ -13,7 +12,6 @@ import DonateButton from '../DonateButton';
 import AggregateDonationService from '../../services/AggregateDonationService';
 import LeaderBoard from '../LeaderBoard';
 import CommunityButton from '../CommunityButton';
-import User from '../../models/User';
 import DAC from '../../models/DAC';
 import { getUserName, getUserAvatar, history } from '../../lib/helpers';
 import DACService from '../../services/DACService';
@@ -25,6 +23,9 @@ import ErrorPopup from '../ErrorPopup';
 import DescriptionRender from '../DescriptionRender';
 import ErrorBoundary from '../ErrorBoundary';
 import GoBackSection from '../GoBackSection';
+import ErrorHandler from '../../lib/ErrorHandler';
+import { Context as Web3Context } from '../../contextProviders/Web3Provider';
+import { Context as UserContext } from '../../contextProviders/UserProvider';
 
 /**
  * The DAC detail view mapped to /dacs/id
@@ -35,82 +36,93 @@ import GoBackSection from '../GoBackSection';
 
 const helmetContext = {};
 
-class ViewDAC extends Component {
-  constructor(props) {
-    super(props);
+const ViewDAC = ({ match }) => {
+  const {
+    state: { balance },
+  } = useContext(Web3Context);
+  const {
+    state: { currentUser },
+  } = useContext(UserContext);
 
-    this.state = {
-      isLoading: true,
-      isLoadingDonations: true,
-      isLoadingCampaigns: true,
-      campaigns: [],
-      aggregateDonations: [],
-      donationsTotal: 0,
-      donationsPerBatch: 5,
-      newDonations: 0,
-      notFound: false,
-    };
+  const [dac, setDac] = useState();
+  const [isLoading, setLoading] = useState(true);
+  const [isLoadingDonations, setLoadingDonatinos] = useState(true);
+  const [isLoadingCampaigns, setLoadingCampaigns] = useState(true);
+  const [campaigns, setCampaigns] = useState([]);
+  const [aggregateDonations, setAggregateDonations] = useState([]);
+  const [donationsTotal, setDonationsTotal] = useState(0);
+  const [newDonations, setNewDonations] = useState(0);
+  const [notFound, setNotFound] = useState(false);
 
-    this.loadMoreAggregateDonations = this.loadMoreAggregateDonations.bind(this);
-    this.editDAC = this.editDAC.bind(this);
-  }
+  let donationsObserver;
+  let campaignObserver;
 
-  componentDidMount() {
-    const dacId = this.props.match.params.id;
+  const donationsPerBatch = 5;
+
+  const cleanUp = () => {
+    if (donationsObserver) donationsObserver.unsubscribe();
+    if (campaignObserver) campaignObserver.unsubscribe();
+  };
+
+  const loadMoreAggregateDonations = () => {
+    setLoadingDonatinos(true);
+
+    AggregateDonationService.get(
+      match.params.id,
+      donationsPerBatch,
+      aggregateDonations.length,
+      (_donations, _donationsTotal) => {
+        setAggregateDonations(aggregateDonations.concat(_donations));
+        setDonationsTotal(_donationsTotal);
+        setLoadingDonatinos(false);
+      },
+      err => {
+        setLoadingDonatinos(false);
+        ErrorHandler(err, 'Some error on fetching loading donations, please try again later');
+      },
+    );
+  };
+
+  useEffect(() => {
+    const dacId = match.params.id;
 
     // Get the Campaign
     DACService.get(dacId)
-      .then(dac => {
-        this.setState({ dac, isLoading: false });
-        this.campaignObserver = DACService.subscribeCampaigns(
-          dac.delegateId,
-          campaigns => this.setState({ campaigns, isLoadingCampaigns: false }),
-          () => this.setState({ isLoadingCampaigns: false }), // TODO: inform user of error
+      .then(_dac => {
+        setDac(_dac);
+        setLoading(false);
+        campaignObserver = DACService.subscribeCampaigns(
+          _dac.delegateId,
+          _campaigns => {
+            setCampaigns(_campaigns);
+            setLoadingCampaigns(false);
+          },
+          err => {
+            setLoadingCampaigns(false);
+            ErrorHandler(err, 'Some error on fetching dac campaigns, please try again later');
+          },
         );
       })
-      .catch(() => {
-        this.setState({
-          notFound: true,
-        });
+      .catch(err => {
+        setNotFound(true);
+        ErrorHandler(err, 'Some error on fetching dac info, please try again later');
       });
 
-    this.loadMoreAggregateDonations();
+    loadMoreAggregateDonations();
     // subscribe to donation count
-    this.donationsObserver = DACService.subscribeNewDonations(
+    donationsObserver = DACService.subscribeNewDonations(
       dacId,
-      newDonations =>
-        this.setState({
-          newDonations,
-        }),
-      () => this.setState({ newDonations: 0 }),
+      _newDonations => setNewDonations(_newDonations),
+      err => {
+        ErrorHandler(err, 'Some error on fetching dac donations, please try again later');
+        setNewDonations(0);
+      },
     );
-  }
+    return cleanUp;
+  }, []);
 
-  componentWillUnmount() {
-    if (this.donationsObserver) this.donationsObserver.unsubscribe();
-    if (this.campaignObserver) this.campaignObserver.unsubscribe();
-  }
-
-  loadMoreAggregateDonations() {
-    this.setState({ isLoadingDonations: true }, () =>
-      AggregateDonationService.get(
-        this.props.match.params.id,
-        this.state.donationsPerBatch,
-        this.state.aggregateDonations.length,
-        (donations, donationsTotal) => {
-          this.setState(prevState => ({
-            aggregateDonations: prevState.aggregateDonations.concat(donations),
-            isLoadingDonations: false,
-            donationsTotal,
-          }));
-        },
-        () => this.setState({ isLoadingDonations: false }),
-      ),
-    );
-  }
-
-  editDAC(id) {
-    checkBalance(this.props.balance)
+  const editDAC = id => {
+    checkBalance(balance)
       .then(() => {
         history.push(`/dacs/${id}/edit`);
       })
@@ -121,234 +133,201 @@ class ViewDAC extends Component {
           ErrorPopup('Something went wrong.', err);
         }
       });
+  };
+
+  const renderDescription = () => {
+    return DescriptionRender(dac.description);
+  };
+
+  if (notFound) {
+    return <NotFound projectType="DAC" />;
   }
 
-  renderDescription() {
-    return DescriptionRender(this.state.dac.description);
-  }
+  const userIsOwner = dac && dac.owner && dac.owner.address === currentUser.address;
 
-  render() {
-    const { balance, currentUser } = this.props;
-    const {
-      isLoading,
-      aggregateDonations,
-      dac,
-      isLoadingDonations,
-      campaigns,
-      isLoadingCampaigns,
-      donationsTotal,
-      newDonations,
-      notFound,
-    } = this.state;
+  const campaignsTitle = `Campaigns${campaigns.length ? ` (${campaigns.length})` : ''}`;
+  const leaderBoardTitle = `Leaderboard${donationsTotal ? ` (${donationsTotal})` : ''}`;
 
-    if (notFound) {
-      return <NotFound projectType="DAC" />;
-    }
+  const goBackSectionLinks = [
+    { title: 'About', inPageId: 'description' },
+    {
+      title: leaderBoardTitle,
+      inPageId: 'donations',
+    },
+    { title: 'Funding', inPageId: 'funding' },
+    {
+      title: campaignsTitle,
+      inPageId: 'campaigns',
+    },
+  ];
+  return (
+    <HelmetProvider context={helmetContext}>
+      <ErrorBoundary>
+        <div id="view-cause-view">
+          {isLoading && <Loader className="fixed" />}
 
-    const userIsOwner =
-      dac && dac.owner && currentUser && dac.owner.address === currentUser.address;
+          {!isLoading && (
+            <div>
+              <Helmet>
+                <title>{dac.title}</title>
+              </Helmet>
+              <BackgroundImageHeader
+                image={dac.image}
+                height={300}
+                adminId={dac.delegateId}
+                projectType="DAC"
+                editProject={userIsOwner && dac.isActive && (() => editDAC(dac.id))}
+              >
+                <h6>Decentralized Altruistic Community</h6>
+                <h1>{dac.title}</h1>
 
-    const campaignsTitle = `Campaigns${campaigns.length ? ` (${campaigns.length})` : ''}`;
-    const leaderBoardTitle = `Leaderboard${donationsTotal ? ` (${donationsTotal})` : ''}`;
+                {dac.isActive && (
+                  <div className="mt-4">
+                    <DonateButton
+                      model={{
+                        type: DAC.type,
+                        title: dac.title,
+                        id: dac.id,
+                        token: { symbol: config.nativeTokenName },
+                        adminId: dac.delegateId,
+                      }}
+                      currentUser={currentUser}
+                      history={history}
+                      autoPopup
+                      className="header-donate"
+                    />
+                  </div>
+                )}
+              </BackgroundImageHeader>
 
-    const goBackSectionLinks = [
-      { title: 'About', inPageId: 'description' },
-      {
-        title: leaderBoardTitle,
-        inPageId: 'donations',
-      },
-      { title: 'Funding', inPageId: 'funding' },
-      {
-        title: campaignsTitle,
-        inPageId: 'campaigns',
-      },
-    ];
-    return (
-      <HelmetProvider context={helmetContext}>
-        <ErrorBoundary>
-          <div id="view-cause-view">
-            {isLoading && <Loader className="fixed" />}
+              <GoBackSection
+                backUrl="/dacs"
+                backButtonTitle="Communities"
+                projectTitle={dac.title}
+                inPageLinks={goBackSectionLinks}
+              />
 
-            {!isLoading && (
-              <div>
-                <Helmet>
-                  <title>{dac.title}</title>
-                </Helmet>
-                <BackgroundImageHeader
-                  image={dac.image}
-                  height={300}
-                  adminId={dac.delegateId}
-                  projectType="DAC"
-                  editProject={userIsOwner && dac.isActive && (() => this.editDAC(dac.id))}
-                >
-                  <h6>Decentralized Altruistic Community</h6>
-                  <h1>{dac.title}</h1>
-
-                  {dac.isActive && (
-                    <div className="mt-4">
-                      <DonateButton
-                        model={{
-                          type: DAC.type,
-                          title: dac.title,
-                          id: dac.id,
-                          token: { symbol: config.nativeTokenName },
-                          adminId: dac.delegateId,
-                        }}
-                        currentUser={currentUser}
-                        history={history}
-                        autoPopup
-                        className="header-donate"
-                      />
-                    </div>
-                  )}
-                </BackgroundImageHeader>
-
-                <GoBackSection
-                  backUrl="/dacs"
-                  backButtonTitle="Communities"
-                  projectTitle={dac.title}
-                  inPageLinks={goBackSectionLinks}
-                />
-
-                <div className="container-fluid mt-4">
-                  <div className="row">
-                    <div className="col-md-8 m-auto">
-                      <div id="description">
-                        <div className="about-section-header">
-                          <h5 className="title">About</h5>
-                          <div className="text-center">
-                            <Link to={`/profile/${dac.owner.address}`}>
-                              <Avatar size={50} src={getUserAvatar(dac.owner)} round />
-                              <p className="small">{getUserName(dac.owner)}</p>
-                            </Link>
-                          </div>
-                        </div>
-
-                        <div className="card content-card">
-                          <div className="card-body content">{this.renderDescription()}</div>
-
-                          {dac.communityUrl && (
-                            <div className="pl-3 pb-4">
-                              <CommunityButton className="btn btn-secondary" url={dac.communityUrl}>
-                                Join our Community
-                              </CommunityButton>
-                            </div>
-                          )}
+              <div className="container-fluid mt-4">
+                <div className="row">
+                  <div className="col-md-8 m-auto">
+                    <div id="description">
+                      <div className="about-section-header">
+                        <h5 className="title">About</h5>
+                        <div className="text-center">
+                          <Link to={`/profile/${dac.owner.address}`}>
+                            <Avatar size={50} src={getUserAvatar(dac.owner)} round />
+                            <p className="small">{getUserName(dac.owner)}</p>
+                          </Link>
                         </div>
                       </div>
 
-                      <div id="donations" className="spacer-top-50">
-                        <div className="section-header">
-                          <h5>{leaderBoardTitle}</h5>
-                          {dac.isActive && (
-                            <DonateButton
-                              model={{
-                                type: DAC.type,
-                                title: dac.title,
-                                id: dac.id,
-                                token: { symbol: config.nativeTokenName },
-                                adminId: dac.delegateId,
-                              }}
-                              currentUser={currentUser}
-                              history={history}
-                            />
-                          )}
-                        </div>
+                      <div className="card content-card">
+                        <div className="card-body content">{renderDescription()}</div>
 
-                        <LeaderBoard
-                          aggregateDonations={aggregateDonations}
-                          isLoading={isLoadingDonations}
-                          total={donationsTotal}
-                          loadMore={this.loadMoreAggregateDonations}
-                          newDonations={newDonations}
-                        />
-                      </div>
-
-                      <div id="funding" className="spacer-top-50">
-                        <div className="section-header">
-                          <h5>Funding</h5>
-                          {dac.isActive && (
-                            <DonateButton
-                              model={{
-                                type: DAC.type,
-                                title: dac.title,
-                                id: dac.id,
-                                token: { symbol: config.nativeTokenName },
-                                adminId: dac.delegateId,
-                              }}
-                              currentUser={currentUser}
-                              history={history}
-                            />
-                          )}
-                        </div>
-                        <Balances entity={dac} currentUser={currentUser} />
-                      </div>
-
-                      <div id="campaigns" className="spacer-top-50 spacer-bottom-50">
-                        <div className="section-header">
-                          <h5>{campaignsTitle}</h5>
-                          {dac.isActive && (
-                            <DonateButton
-                              model={{
-                                type: DAC.type,
-                                title: dac.title,
-                                id: dac.id,
-                                token: { symbol: config.nativeTokenName },
-                                adminId: dac.delegateId,
-                              }}
-                              currentUser={currentUser}
-                              history={history}
-                            />
-                          )}
-                        </div>
-                        <p>
-                          These Campaigns are working hard to solve the cause of this Community
-                          (DAC)
-                        </p>
-                        {isLoadingCampaigns && <Loader className="small" />}
-
-                        {campaigns.length > 0 && !isLoadingCampaigns && (
-                          <div className="cards-grid-container">
-                            {campaigns.map(c => (
-                              <CampaignCard
-                                key={c.id}
-                                campaign={c}
-                                history={history}
-                                balance={balance}
-                              />
-                            ))}
+                        {dac.communityUrl && (
+                          <div className="pl-3 pb-4">
+                            <CommunityButton className="btn btn-secondary" url={dac.communityUrl}>
+                              Join our Community
+                            </CommunityButton>
                           </div>
                         )}
                       </div>
                     </div>
+
+                    <div id="donations" className="spacer-top-50">
+                      <div className="section-header">
+                        <h5>{leaderBoardTitle}</h5>
+                        {dac.isActive && (
+                          <DonateButton
+                            model={{
+                              type: DAC.type,
+                              title: dac.title,
+                              id: dac.id,
+                              token: { symbol: config.nativeTokenName },
+                              adminId: dac.delegateId,
+                            }}
+                            currentUser={currentUser}
+                            history={history}
+                          />
+                        )}
+                      </div>
+
+                      <LeaderBoard
+                        aggregateDonations={aggregateDonations}
+                        isLoading={isLoadingDonations}
+                        total={donationsTotal}
+                        loadMore={loadMoreAggregateDonations}
+                        newDonations={newDonations}
+                      />
+                    </div>
+
+                    <div id="funding" className="spacer-top-50">
+                      <div className="section-header">
+                        <h5>Funding</h5>
+                        {dac.isActive && (
+                          <DonateButton
+                            model={{
+                              type: DAC.type,
+                              title: dac.title,
+                              id: dac.id,
+                              token: { symbol: config.nativeTokenName },
+                              adminId: dac.delegateId,
+                            }}
+                            currentUser={currentUser}
+                            history={history}
+                          />
+                        )}
+                      </div>
+                      <Balances entity={dac} currentUser={currentUser} />
+                    </div>
+
+                    <div id="campaigns" className="spacer-top-50 spacer-bottom-50">
+                      <div className="section-header">
+                        <h5>{campaignsTitle}</h5>
+                        {dac.isActive && (
+                          <DonateButton
+                            model={{
+                              type: DAC.type,
+                              title: dac.title,
+                              id: dac.id,
+                              token: { symbol: config.nativeTokenName },
+                              adminId: dac.delegateId,
+                            }}
+                            currentUser={currentUser}
+                            history={history}
+                          />
+                        )}
+                      </div>
+                      <p>
+                        These Campaigns are working hard to solve the cause of this Community (DAC)
+                      </p>
+                      {isLoadingCampaigns && <Loader className="small" />}
+
+                      {campaigns.length > 0 && !isLoadingCampaigns && (
+                        <div className="cards-grid-container">
+                          {campaigns.map(c => (
+                            <CampaignCard key={c.id} campaign={c} />
+                          ))}
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
-            )}
-          </div>
-        </ErrorBoundary>
-      </HelmetProvider>
-    );
-  }
-}
+            </div>
+          )}
+        </div>
+      </ErrorBoundary>
+    </HelmetProvider>
+  );
+};
 
 ViewDAC.propTypes = {
-  history: PropTypes.shape({
-    goBack: PropTypes.func.isRequired,
-    push: PropTypes.func.isRequired,
-  }).isRequired,
-  currentUser: PropTypes.instanceOf(User),
   match: PropTypes.shape({
     params: PropTypes.shape({
       id: PropTypes.string,
     }).isRequired,
   }).isRequired,
-  balance: PropTypes.instanceOf(BigNumber),
-};
-
-ViewDAC.defaultProps = {
-  currentUser: undefined,
-  balance: new BigNumber(0),
 };
 
 export default ViewDAC;

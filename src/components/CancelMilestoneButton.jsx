@@ -1,32 +1,31 @@
-import React, { Component, Fragment } from 'react';
+import React, { forwardRef, Fragment, useContext, useRef } from 'react';
 import PropTypes from 'prop-types';
-import BigNumber from 'bignumber.js';
 
 import MilestoneService from 'services/MilestoneService';
 import Milestone from 'models/Milestone';
-import User from 'models/User';
 import ErrorPopup from 'components/ErrorPopup';
 import ConversationModal from 'components/ConversationModal';
 import GA from 'lib/GoogleAnalytics';
-import { checkBalance, actionWithLoggedIn } from 'lib/middleware';
-import { Consumer as Web3Consumer } from '../contextProviders/Web3Provider';
+import { actionWithLoggedIn, checkBalance } from 'lib/middleware';
+import { Context as Web3Context } from '../contextProviders/Web3Provider';
+import { Context as UserContext } from '../contextProviders/UserProvider';
 
-class CancelMilestoneButton extends Component {
-  constructor(props) {
-    super(props);
-    this.conversationModal = React.createRef();
-    this.buttonReference = React.createRef();
+const CancelMilestoneButton = forwardRef(({ milestone }, ref) => {
+  const {
+    state: { currentUser },
+  } = useContext(UserContext);
+  const {
+    state: { isForeignNetwork, balance },
+    actions: { displayForeignNetRequiredWarning },
+  } = useContext(Web3Context);
 
-    this.cancelMilestone = this.cancelMilestone.bind(this);
-  }
+  const conversationModal = useRef();
 
-  openDialog() {
-    const { milestone, balance, currentUser } = this.props;
-
+  const openDialog = () => {
     actionWithLoggedIn(currentUser).then(() =>
       checkBalance(balance)
         .then(() =>
-          this.conversationModal.current
+          conversationModal.current
             .openModal({
               title: 'Cancel Milestone',
               description:
@@ -39,7 +38,7 @@ class CancelMilestoneButton extends Component {
             .then(proof =>
               MilestoneService.cancelMilestone({
                 milestone,
-                from: currentUser && currentUser.address,
+                from: currentUser.address,
                 proof,
                 onTxHash: txUrl => {
                   GA.trackEvent({
@@ -90,49 +89,29 @@ class CancelMilestoneButton extends Component {
           }
         }),
     );
-  }
+  };
 
-  cancelMilestone() {
-    this.buttonReference.current.click();
-  }
+  return (
+    <Fragment>
+      {milestone.canUserCancel(currentUser) && (
+        <button
+          ref={ref}
+          type="button"
+          className="btn btn-danger btn-sm"
+          onClick={() => (isForeignNetwork ? openDialog() : displayForeignNetRequiredWarning())}
+        >
+          <i className="fa fa-times" />
+          &nbsp;Cancel
+        </button>
+      )}
 
-  render() {
-    const { milestone, currentUser } = this.props;
-
-    return (
-      <Web3Consumer>
-        {({ state: { isForeignNetwork }, actions: { displayForeignNetRequiredWarning } }) => (
-          <Fragment>
-            {milestone.canUserCancel(currentUser) && (
-              <button
-                ref={this.buttonReference}
-                type="button"
-                className="btn btn-danger btn-sm"
-                onClick={() =>
-                  isForeignNetwork ? this.openDialog() : displayForeignNetRequiredWarning()
-                }
-              >
-                <i className="fa fa-times" />
-                &nbsp;Cancel
-              </button>
-            )}
-
-            <ConversationModal ref={this.conversationModal} milestone={milestone} />
-          </Fragment>
-        )}
-      </Web3Consumer>
-    );
-  }
-}
+      <ConversationModal ref={conversationModal} milestone={milestone} />
+    </Fragment>
+  );
+});
 
 CancelMilestoneButton.propTypes = {
-  currentUser: PropTypes.instanceOf(User),
-  balance: PropTypes.instanceOf(BigNumber).isRequired,
   milestone: PropTypes.instanceOf(Milestone).isRequired,
 };
 
-CancelMilestoneButton.defaultProps = {
-  currentUser: undefined,
-};
-
-export default CancelMilestoneButton;
+export default React.memo(CancelMilestoneButton);

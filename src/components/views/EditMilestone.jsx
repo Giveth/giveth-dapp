@@ -42,6 +42,7 @@ import config from '../../configuration';
 import ErrorPopup from '../ErrorPopup';
 import MilestoneProof from '../MilestoneProof';
 
+import { Consumer as UserConsumer } from '../../contextProviders/UserProvider';
 import { Consumer as WhiteListConsumer } from '../../contextProviders/WhiteListProvider';
 import getConversionRatesContext from '../../containers/getConversionRatesContext';
 import MilestoneService from '../../services/MilestoneService';
@@ -99,6 +100,8 @@ class EditMilestone extends Component {
   constructor(props) {
     super(props);
 
+    const { defaultDacId } = config;
+
     this.state = {
       isLoading: true,
       refreshList: [],
@@ -109,6 +112,7 @@ class EditMilestone extends Component {
       milestone: MilestoneFactory.create({
         maxAmount: '0',
         fiatAmount: '0',
+        dacId: defaultDacId,
       }),
       tokenWhitelistOptions: props.tokenWhitelist.map(t => ({
         value: t.address,
@@ -160,6 +164,7 @@ class EditMilestone extends Component {
         await DACService.getDACs(
           undefined, // Limit
           0, // Skip
+          false,
           (dacs, _) => {
             const formatDACS = dacs.map(r => ({
               value: r.myDelegateId.toString(),
@@ -255,12 +260,12 @@ class EditMilestone extends Component {
               const { title, description, recipientAddress, reviewerAddress, dacId } = JSON.parse(
                 milestoneForm,
               );
-              milestone.title = title;
-              milestone.description = description;
-              milestone.recipientAddress = recipientAddress;
-              milestone.reviewerAddress = reviewerAddress;
+              if (title) milestone.title = title;
+              if (description) milestone.description = description;
+              if (recipientAddress) milestone.recipientAddress = recipientAddress;
+              if (reviewerAddress) milestone.reviewerAddress = reviewerAddress;
               // eslint-disable-next-line radix
-              milestone.dacId = parseInt(dacId);
+              if (dacId) milestone.dacId = parseInt(dacId);
             }
 
             validQueryStringVariables.forEach(variable => {
@@ -378,7 +383,7 @@ class EditMilestone extends Component {
         if (!isOwner(milestoneOwnerAddress, currentUser) || !isOwner(campaignOwner, currentUser))
           this.props.history.goBack();
       });
-    } else if (currentUser && !prevProps.balance.eq(this.props.balance)) {
+    } else if (currentUser.address && !prevProps.balance.eq(this.props.balance)) {
       checkBalance(this.props.balance);
     }
   }
@@ -565,7 +570,7 @@ class EditMilestone extends Component {
 
     return authenticateIfPossible(this.props.currentUser, true)
       .then(async () => {
-        if (!this.props.isProposed && !this.props.isCampaignManager(this.props.currentUser)) {
+        if (!this.props.isProposed && !this.props.currentUser) {
           historyBackWFallback();
           await sleep(2000);
           ErrorPopup('You are not whitelisted', null);
@@ -668,7 +673,7 @@ class EditMilestone extends Component {
     this.setState(prevState => {
       const { milestone } = prevState;
       const { currentUser } = this.props;
-      milestone.recipientAddress = currentUser && currentUser.address;
+      milestone.recipientAddress = currentUser.address;
 
       return { recipientAddress: milestone.recipientAddress, milestone };
     });
@@ -697,7 +702,7 @@ class EditMilestone extends Component {
     const { milestone } = this.state;
 
     const { currentUser, currentRate, isProposed, isNew } = this.props;
-    milestone.ownerAddress = currentUser && currentUser.address;
+    milestone.ownerAddress = currentUser.address;
     milestone.campaignId = this.state.campaignId;
     milestone.status =
       isProposed || milestone.status === Milestone.REJECTED ? Milestone.PROPOSED : milestone.status; // make sure not to change status!
@@ -709,7 +714,7 @@ class EditMilestone extends Component {
     const _saveMilestone = () =>
       MilestoneService.save({
         milestone,
-        from: currentUser && currentUser.address,
+        from: currentUser.address,
         afterSave: (created, txUrl, res) => {
           if (created) {
             if (isProposed) {
@@ -1363,7 +1368,6 @@ EditMilestone.propTypes = {
   }),
   conversionRateLoading: PropTypes.bool.isRequired,
   fiatTypes: PropTypes.arrayOf(PropTypes.object).isRequired,
-  isCampaignManager: PropTypes.func.isRequired,
   reviewers: PropTypes.arrayOf(PropTypes.shape()).isRequired,
   tokenWhitelist: PropTypes.arrayOf(PropTypes.shape()).isRequired,
 };
@@ -1377,21 +1381,22 @@ EditMilestone.defaultProps = {
 
 export default getConversionRatesContext(props => (
   <WhiteListConsumer>
-    {({
-      state: { activeTokenWhitelist, reviewers, isLoading },
-      actions: { isCampaignManager },
-    }) => (
-      <div>
-        {isLoading && <Loader className="fixed" />}
-        {!isLoading && (
-          <EditMilestone
-            tokenWhitelist={activeTokenWhitelist}
-            reviewers={reviewers}
-            isCampaignManager={isCampaignManager}
-            {...props}
-          />
+    {({ state: { activeTokenWhitelist, reviewers, isLoading: whitelistIsLoading } }) => (
+      <UserConsumer>
+        {({ state: { currentUser, isLoading: userIsLoading } }) => (
+          <Fragment>
+            {(whitelistIsLoading || userIsLoading) && <Loader className="fixed" />}
+            {!(whitelistIsLoading || userIsLoading) && (
+              <EditMilestone
+                tokenWhitelist={activeTokenWhitelist}
+                reviewers={reviewers}
+                currentUser={currentUser}
+                {...props}
+              />
+            )}
+          </Fragment>
         )}
-      </div>
+      </UserConsumer>
     )}
   </WhiteListConsumer>
 ));
