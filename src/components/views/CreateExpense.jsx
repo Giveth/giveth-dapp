@@ -91,6 +91,7 @@ function CreateExpense(props) {
             className="site-page-header my-test"
             onBack={goBack}
             title="Create New Expense"
+            ghost={false}
           />
         </Col>
       </Row>

@@ -116,6 +116,7 @@ function CreatePayment(props) {
             className="site-page-header my-test"
             onBack={goBack}
             title="Create New Payment"
+            ghost={false}
           />
         </Col>
       </Row>

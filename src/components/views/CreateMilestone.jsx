@@ -79,6 +79,7 @@ function CreateMilestone(props) {
             className="site-page-header my-test"
             onBack={goBack}
             title="Create New Milestone"
+            ghost={false}
           />
         </Col>
       </Row>

@@ -103,6 +103,7 @@ function CreateBounty(props) {
             className="site-page-header my-test"
             onBack={goBack}
             title="Create New Bounty"
+            ghost={false}
           />
         </Col>
       </Row>

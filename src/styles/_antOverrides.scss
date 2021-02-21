@@ -126,3 +126,22 @@
 	height: 52px;
   }
   
+
+
+  //page header center
+  .ant-page-header {
+	  .ant-page-header-heading{
+		  display: block;
+		  .ant-page-header-heading-left {
+			  display: block;
+			  text-align: center;
+			  position: relative;
+			  .ant-page-header-back {
+				  position: absolute;
+				  left: 0;
+				  top: 50%;
+				  transform: translateY(-50%);
+			  }
+		  }
+	  }
+  }
