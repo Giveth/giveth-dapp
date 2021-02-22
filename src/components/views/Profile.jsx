@@ -1,6 +1,6 @@
 /* eslint-disable prefer-destructuring */
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 
 import { feathersClient } from '../../lib/feathersClient';
@@ -25,21 +25,37 @@ const Profile = props => {
   const [hasError, setHasError] = useState(true);
   const [user, setUser] = useState({});
 
+  const isMounted = useRef(true);
+
   useEffect(() => {
     feathersClient
       .service('users')
       .find({ query: { address: userAddress, $limit: 1 } })
       .then(resp => {
         const _user = resp.data[0];
-        setUser(new User(_user));
-        setLoading(false);
-        setHasError(false);
+        if (isMounted.current) {
+          setUser(new User(_user));
+          setLoading(false);
+          setHasError(false);
+        }
       })
       .catch(() => {
-        setLoading(false);
-        setHasError(true);
+        if (isMounted.current) {
+          setLoading(false);
+          setHasError(true);
+        }
       });
+
+    return () => {
+      isMounted.current = false;
+    };
   }, []);
+
+  const updateUser = newUser => {
+    if (isMounted.current) {
+      setUser(newUser);
+    }
+  };
 
   return (
     <div id="profile-view">
@@ -54,7 +70,7 @@ const Profile = props => {
 
                 <ProfileUserInfo user={user} />
 
-                <ProfileUpdatePermission user={user} />
+                <ProfileUpdatePermission user={user} updateUser={updateUser} />
               </div>
             )}
 

@@ -260,12 +260,12 @@ class EditMilestone extends Component {
               const { title, description, recipientAddress, reviewerAddress, dacId } = JSON.parse(
                 milestoneForm,
               );
-              milestone.title = title;
-              milestone.description = description;
-              milestone.recipientAddress = recipientAddress;
-              milestone.reviewerAddress = reviewerAddress;
+              if (title) milestone.title = title;
+              if (description) milestone.description = description;
+              if (recipientAddress) milestone.recipientAddress = recipientAddress;
+              if (reviewerAddress) milestone.reviewerAddress = reviewerAddress;
               // eslint-disable-next-line radix
-              milestone.dacId = parseInt(dacId);
+              if (dacId) milestone.dacId = parseInt(dacId);
             }
 
             validQueryStringVariables.forEach(variable => {

@@ -7,7 +7,7 @@ import { feathersClient } from '../lib/feathersClient';
 import { actionWithLoggedIn } from '../lib/middleware';
 import ErrorHandler from '../lib/ErrorHandler';
 
-function ProfileUpdatePermission({ user }) {
+function ProfileUpdatePermission({ user, updateUser }) {
   const {
     state: { currentUser },
   } = useContext(UserContext);
@@ -49,8 +49,9 @@ function ProfileUpdatePermission({ user }) {
       feathersClient
         .service('users')
         .patch(user.address, mutation)
-        .then(() => {
+        .then(newUser => {
           React.toast.success('User permission is updated');
+          updateUser(newUser);
         })
         .catch(err => {
           ErrorHandler(err, 'Something wrong in updating user roles, please try later');
@@ -76,12 +77,13 @@ function ProfileUpdatePermission({ user }) {
                 type="submit"
                 disabled={loading || (authenticated && !changed)}
                 className="btn btn-primary btn-lg mx-2 btn-update-role"
+                hidden={user.isAdmin}
               >
                 {authenticated ? 'Update' : 'Sign In to Update'}
               </button>
             </div>
             <CheckboxGroup
-              disabled={!authenticated || loading}
+              disabled={!authenticated || loading || user.isAdmin}
               name="roles"
               labelClassName={[{ 'col-sm-3': false }]}
               onChange={() => setChanged(true)}
@@ -99,11 +101,13 @@ function ProfileUpdatePermission({ user }) {
 }
 
 ProfileUpdatePermission.propTypes = {
-  user: PropTypes.instanceOf(User).isRequired,
+  user: PropTypes.instanceOf(User),
+  updateUser: PropTypes.func,
 };
 
-ProfileUpdatePermission.defaultProp = {
+ProfileUpdatePermission.defaultProps = {
   user: {},
+  updateUser: () => {},
 };
 
 const isEqual = (prevProps, nextProps) => {
