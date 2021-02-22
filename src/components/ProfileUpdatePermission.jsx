@@ -77,13 +77,12 @@ function ProfileUpdatePermission({ user, updateUser }) {
                 type="submit"
                 disabled={loading || (authenticated && !changed)}
                 className="btn btn-primary btn-lg mx-2 btn-update-role"
-                hidden={user.isAdmin}
               >
                 {authenticated ? 'Update' : 'Sign In to Update'}
               </button>
             </div>
             <CheckboxGroup
-              disabled={!authenticated || loading || user.isAdmin}
+              disabled={!authenticated || loading}
               name="roles"
               labelClassName={[{ 'col-sm-3': false }]}
               onChange={() => setChanged(true)}
