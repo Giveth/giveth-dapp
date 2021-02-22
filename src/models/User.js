@@ -198,15 +198,15 @@ class User extends Model {
   }
 
   get isReviewer() {
-    return this._isAdmin || this._isReviewer;
+    return this._isReviewer;
   }
 
   get isDelegator() {
-    return this._isAdmin || this._isDelegator;
+    return this._isDelegator;
   }
 
   get isProjectOwner() {
-    return this._isAdmin || this._isProjectOwner;
+    return this._isProjectOwner;
   }
 
   get isAdmin() {
