@@ -71,7 +71,7 @@ const ViewMilestoneAlerts = ({ milestone, campaign }) => {
       )}
 
       {milestone.canUserWithdraw(currentUser) && (
-        <ProjectViewActionAlert message="Collect the funds held in this Milestone">
+        <ProjectViewActionAlert message="You use Rinkeby to collect funds and we pay the fees to send it to you on Ethereum Mainnet">
           <WithdrawMilestoneFundsButton milestone={milestone} />
         </ProjectViewActionAlert>
       )}
