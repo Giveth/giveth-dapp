@@ -41,7 +41,8 @@ const modalStyles = {
     marginRight: '-20%',
     transform: 'translate(-50%, -50%)',
     boxShadow: '0 0 40px #ccc',
-    overflowY: 'scroll',
+    overflowY: 'auto',
+    maxHeight: '64%',
   },
 };
 
