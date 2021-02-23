@@ -284,12 +284,14 @@ const DonateButton = forwardRef((props, ref) => {
     const defaultAmount = selectedToken.symbol === config.nativeTokenName ? '1' : '100';
     const balance =
       selectedToken.symbol === config.nativeTokenName ? NativeTokenBalance : selectedToken.balance;
-    const newAmount = BigNumber.min(
-      convertEthHelper(utils.fromWei(balance.toFixed()), selectedToken.decimals),
-      defaultAmount,
-    ).toFixed();
+    if (balance) {
+      const newAmount = BigNumber.min(
+        convertEthHelper(utils.fromWei(balance.toFixed()), selectedToken.decimals),
+        defaultAmount,
+      ).toFixed();
+      setAmount(newAmount);
+    }
     setModalVisible(false);
-    setAmount(newAmount);
     setFormIsValid(false);
   };
 
