@@ -95,6 +95,15 @@ class UserService {
       reset();
     }
   }
+
+  static async getReviewers() {
+    return users.find({
+      query: {
+        isReviewer: true,
+        $select: ['address', 'name'],
+      },
+    });
+  }
 }
 
 export default UserService;

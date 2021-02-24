@@ -212,7 +212,7 @@ function CreatePayment(props) {
                 A picture says more than a thousand words. Select a png or jpg file in a 1:1 aspect
                 ratio.
               </div>
-              <Form.Item name="donate" className="custom-form-item donate-giveth">
+              <Form.Item name="donate" className="custom-form-item milestone-donate-dac">
                 <Checkbox onChange={handleInputChange} name="donate" checked={payment.donate}>
                   Donate 3% to Giveth
                 </Checkbox>

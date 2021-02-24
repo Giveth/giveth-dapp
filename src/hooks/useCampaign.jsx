@@ -1,16 +1,22 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import CampaignService from '../services/CampaignService';
 
-export default function useCampaign(campaignId) {
+const useCampaign = campaignId => {
   const [campaign, setCampaign] = useState();
+  const isMounted = useRef();
 
   useEffect(async () => {
-    async function getCampaign() {
-      const camp = await CampaignService.get(campaignId);
-      setCampaign(camp);
-    }
-    getCampaign();
-  }, []);
+    isMounted.current = true;
+
+    const camp = await CampaignService.get(campaignId);
+    if (isMounted.current) setCampaign(camp);
+
+    return () => {
+      isMounted.current = false;
+    };
+  }, [campaignId]);
 
   return campaign;
-}
+};
+
+export default useCampaign;

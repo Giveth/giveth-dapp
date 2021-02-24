@@ -24,9 +24,9 @@
 		  border: 2px solid #dfdae8;
 		  box-sizing: border-box;
 		  border-radius: 8px;
-  
+
 		  padding: 13px 18px;
-  
+
 		  font-family: Lato;
 		  font-style: normal;
 		  font-weight: normal;
@@ -39,9 +39,9 @@
 		border: 2px dashed #dfdae8;
 		box-sizing: border-box;
 		border-radius: 8px;
-  
+
 		padding: 16px 18px;
-  
+
 		font-family: Lato;
 		font-style: normal;
 		font-weight: normal;
@@ -65,16 +65,16 @@
 	color: #aaafca;
 	margin-top: -18px;
   }
-  
+
   //custom Switch
   .ant-switch {
 	min-width: 36px;
   }
-  
+
   .ant-switch-checked {
 	background-color: #5ca43f;
   }
-  
+
   //custom select
   .ant-select {
 	.ant-select-selector {
@@ -94,7 +94,7 @@
 	  }
 	}
   }
-  
+
   .ant-btn {
 	&.ant-btn-primary[type='submit'] {
 	  width: 100%;
@@ -102,22 +102,22 @@
 	  background: #5066cf;
 	  border-radius: 8px;
 	  border: none;
-  
+
 	  font-family: Quicksand;
 	  font-style: normal;
 	  font-weight: bold;
 	  font-size: 16px;
 	  line-height: 20px;
 	  /* identical to box height */
-  
+
 	  text-align: center;
-  
+
 	  /* White */
-  
+
 	  color: #ffffff;
 	}
   }
-  
+
   .ant-picker {
 	width: 100%;
 	border: 2px solid #dfdae8;
@@ -125,7 +125,7 @@
 	border-radius: 8px;
 	height: 52px;
   }
-  
+
 
 
   //page header center
