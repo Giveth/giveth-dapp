@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@ant-design/icons": "^4.5.0",
     "@metamask/detect-provider": "^1.1.0",
     "antd": "^4.12.2",
     "antd-img-crop": "^3.13.2",
