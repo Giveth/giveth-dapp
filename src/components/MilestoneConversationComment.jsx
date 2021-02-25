@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import Milestone from 'models/Milestone';
 import { feathersClient } from '../lib/feathersClient';
 import ErrorPopup from './ErrorPopup';
-import { actionWithLoggedIn, authenticateIfPossible, checkProfile } from '../lib/middleware';
+import { actionWithLoggedIn, authenticateUser, checkProfile } from '../lib/middleware';
 import ConversationModal from './ConversationModal';
 import { Context as UserContext } from '../contextProviders/UserProvider';
 
@@ -14,7 +14,7 @@ const MilestoneConversationComment = ({ milestone }) => {
   } = useContext(UserContext);
 
   function checkUser() {
-    return authenticateIfPossible(currentUser, false).then(() => checkProfile(currentUser));
+    return authenticateUser(currentUser, false).then(() => checkProfile(currentUser));
   }
 
   function createMessage(message) {

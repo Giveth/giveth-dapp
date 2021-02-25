@@ -15,7 +15,7 @@ import { isOwner, getTruncatedText, history } from '../../lib/helpers';
 import {
   checkForeignNetwork,
   checkBalance,
-  authenticateIfPossible,
+  authenticateUser,
   checkProfile,
 } from '../../lib/middleware';
 import LoaderButton from '../LoaderButton';
@@ -125,7 +125,7 @@ class EditCampaign extends Component {
       return Promise.reject();
     }
 
-    return authenticateIfPossible(this.props.currentUser, true)
+    return authenticateUser(this.props.currentUser, true)
       .then(() => {
         if (!this.props.currentUser.isProjectOwner && !this.props.projectOwnersWhitelistEnabled) {
           throw new Error('not whitelisted');

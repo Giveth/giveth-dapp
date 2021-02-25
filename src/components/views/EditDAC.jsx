@@ -11,7 +11,7 @@ import FormsyImageUploader from '../FormsyImageUploader';
 import GoBackButton from '../GoBackButton';
 import { getTruncatedText, history, isOwner } from '../../lib/helpers';
 import {
-  authenticateIfPossible,
+  authenticateUser,
   checkBalance,
   checkForeignNetwork,
   checkProfile,
@@ -126,7 +126,7 @@ class EditDAC extends Component {
       return Promise.reject();
     }
 
-    return authenticateIfPossible(this.props.currentUser, true)
+    return authenticateUser(this.props.currentUser, true)
       .then(() => {
         if (!this.props.currentUser) {
           throw new Error('not authorized');

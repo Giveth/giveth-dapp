@@ -13,6 +13,7 @@ import ErrorPopup from '../components/ErrorPopup';
 import ErrorModel from '../models/ErrorModel';
 import ErrorHandler from '../lib/ErrorHandler';
 
+const etherScanUrl = config.etherscan;
 const campaigns = feathersClient.service('campaigns');
 
 class CampaignService {
@@ -237,7 +238,6 @@ class CampaignService {
     }
 
     let txHash;
-    let etherScanUrl;
     try {
       let profileHash;
       try {
@@ -247,7 +247,6 @@ class CampaignService {
       }
 
       const network = await getNetwork();
-      etherScanUrl = network.etherscan;
 
       // nothing to update or failed ipfs upload
       if (campaign.projectId && (campaign.url === profileHash || !profileHash)) {
@@ -389,11 +388,9 @@ class CampaignService {
    */
   static cancel(campaign, from, afterCreate = () => {}, afterMined = () => {}) {
     let txHash;
-    let etherScanUrl;
-    Promise.all([getNetwork(), getWeb3()])
-      .then(([network, web3]) => {
+    getWeb3()
+      .then(web3 => {
         const lppCampaign = new LPPCampaign(web3, campaign.pluginAddress);
-        etherScanUrl = network.etherscan;
 
         lppCampaign
           .cancelCampaign({ from, $extraGas: extraGas() })

@@ -1,14 +1,32 @@
-import React, { Fragment, useState, memo, useContext, useEffect } from 'react';
-import { PageHeader, Row, Col, Form, Input, Upload, Checkbox, Switch, Select, Button } from 'antd';
+import React, { Fragment, memo, useContext, useEffect, useState } from 'react';
+import {
+  Button,
+  Checkbox,
+  Col,
+  Form,
+  Input,
+  PageHeader,
+  Row,
+  Select,
+  Switch,
+  Upload,
+  notification,
+} from 'antd';
 import 'antd/dist/antd.css';
 import PropTypes from 'prop-types';
 import ImgCrop from 'antd-img-crop';
 import useCampaign from '../../hooks/useCampaign';
-import { history } from '../../lib/helpers';
+import { ANY_TOKEN, history, ZERO_ADDRESS } from '../../lib/helpers';
 import useReviewers from '../../hooks/useReviewers';
 import { Context as UserContext } from '../../contextProviders/UserProvider';
 import { Context as Web3Context } from '../../contextProviders/Web3Provider';
 import Web3ConnectWarning from '../Web3ConnectWarning';
+import LPMilestone from '../../models/LPMilestone';
+import { Milestone } from '../../models';
+import { MilestoneService } from '../../services';
+import config from '../../configuration';
+import { authenticateUser } from '../../lib/middleware';
+import ErrorHandler from '../../lib/ErrorHandler';
 
 function CreateMilestone(props) {
   const {
@@ -19,7 +37,9 @@ function CreateMilestone(props) {
     actions: { displayForeignNetRequiredWarning },
   } = useContext(Web3Context);
 
-  const campaign = useCampaign(props.match.params.id);
+  const campaignId = props.match.params.id;
+
+  const campaign = useCampaign(campaignId);
   const reviewers = useReviewers();
 
   const [milestone, setMilestone] = useState({
@@ -28,9 +48,10 @@ function CreateMilestone(props) {
     picture: '',
     donateToDac: true,
     hasReviewer: true,
-    reviewer: '',
+    reviewerAddress: '',
   });
 
+  const [loading, setLoading] = useState(false);
   const [userIsCampaignOwner, setUserIsOwner] = useState(false);
 
   useEffect(() => {
@@ -55,7 +76,9 @@ function CreateMilestone(props) {
   }
 
   function setReviewer(_, option) {
-    handleInputChange({ target: { name: 'reviewer', value: option.value } });
+    handleInputChange({
+      target: { name: 'reviewerAddress', value: option.value },
+    });
   }
 
   function setPicture(address) {
@@ -96,11 +119,85 @@ function CreateMilestone(props) {
     },
   };
 
-  const submit = values => {
-    console.log('values:', values);
-    console.log('milestone:', milestone);
-    if (userIsCampaignOwner && !isForeignNetwork) {
-      displayForeignNetRequiredWarning();
+  const submit = async () => {
+    const authenticated = await authenticateUser(currentUser, false);
+
+    if (authenticated) {
+      if (userIsCampaignOwner && !isForeignNetwork) {
+        displayForeignNetRequiredWarning();
+        return;
+      }
+
+      const { title, description, reviewerAddress, hasReviewer } = milestone;
+      const ms = new LPMilestone({
+        title,
+        description,
+        reviewerAddress: hasReviewer ? reviewerAddress : ZERO_ADDRESS,
+        recipientId: campaign.projectId,
+        token: ANY_TOKEN,
+      });
+
+      ms.ownerAddress = currentUser.address;
+      ms.campaignId = campaignId;
+      ms.parentProjectId = campaign.projectId;
+
+      if (milestone.donateToDac) {
+        ms.dacId = config.defaultDacId;
+      }
+
+      if (!userIsCampaignOwner) {
+        ms.status = Milestone.PROPOSED;
+      }
+
+      setLoading(true);
+
+      await MilestoneService.save({
+        milestone: ms,
+        from: currentUser.address,
+        afterSave: (created, txUrl, res) => {
+          let notificationDescription;
+          if (created) {
+            if (!userIsCampaignOwner) {
+              notificationDescription = 'Milestone proposed to the Campaign Owner';
+            }
+          } else if (txUrl) {
+            notificationDescription = (
+              <p>
+                Your Milestone is pending....
+                <br />
+                <a href={txUrl} target="_blank" rel="noopener noreferrer">
+                  View transaction
+                </a>
+              </p>
+            );
+          } else {
+            notificationDescription = 'Your Milestone has been updated!';
+          }
+
+          if (description) {
+            notification.info({ description: notificationDescription });
+          }
+          setLoading(false);
+          history.push(`/campaigns/${campaignId}/milestones/${res._id}`);
+        },
+        afterMined: (created, txUrl) => {
+          notification.success({
+            description: (
+              <p>
+                Your Milestone has been created!
+                <br />
+                <a href={txUrl} target="_blank" rel="noopener noreferrer">
+                  View transaction
+                </a>
+              </p>
+            ),
+          });
+        },
+        onError(message, err) {
+          setLoading(false);
+          return ErrorHandler(err, message);
+        },
+      });
     }
   };
 
@@ -225,17 +322,17 @@ function CreateMilestone(props) {
                 </Form.Item>
                 {milestone.hasReviewer && (
                   <Fragment>
-                    <Form.Item name="reviewer" rules={[{ required: true }]}>
+                    <Form.Item name="reviewerAddress" rules={[{ required: true }]}>
                       <Select
                         showSearch
                         placeholder="Select a reviewer"
                         optionFilterProp="children"
-                        name="reviewer"
+                        name="reviewerAddress"
                         onSelect={setReviewer}
                         filterOption={(input, option) =>
                           option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
                         }
-                        value={milestone.reviewer}
+                        value={milestone.reviewerAddress}
                       >
                         {reviewers.map(({ name, address }) => (
                           <Select.Option
@@ -258,7 +355,7 @@ function CreateMilestone(props) {
                 </div>
               </div>
               <Form.Item>
-                <Button type="primary" htmlType="submit">
+                <Button type="primary" htmlType="submit" loading={loading}>
                   {userIsCampaignOwner ? 'Create' : 'Propose'}
                 </Button>
               </Form.Item>

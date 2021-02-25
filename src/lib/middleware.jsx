@@ -135,7 +135,7 @@ let authPromise;
  *
  * @returns {boolean} true if authenticate, otherwise false
  */
-export const authenticateIfPossible = async (currentUser, redirectOnFail) => {
+export const authenticateUser = async (currentUser, redirectOnFail) => {
   if (authPromise) return !!(await authPromise);
   if (!currentUser || !currentUser.address) return false;
 
