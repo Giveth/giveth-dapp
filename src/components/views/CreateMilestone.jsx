@@ -15,6 +15,7 @@ import {
 import 'antd/dist/antd.css';
 import PropTypes from 'prop-types';
 import ImgCrop from 'antd-img-crop';
+import { DeleteTwoTone } from '@ant-design/icons';
 import useCampaign from '../../hooks/useCampaign';
 import { ANY_TOKEN, history, ZERO_ADDRESS } from '../../lib/helpers';
 import useReviewers from '../../hooks/useReviewers';
@@ -23,7 +24,7 @@ import { Context as Web3Context } from '../../contextProviders/Web3Provider';
 import Web3ConnectWarning from '../Web3ConnectWarning';
 import LPMilestone from '../../models/LPMilestone';
 import { Milestone } from '../../models';
-import { MilestoneService } from '../../services';
+import { IPFSService, MilestoneService } from '../../services';
 import config from '../../configuration';
 import { authenticateUser } from '../../lib/middleware';
 import ErrorHandler from '../../lib/ErrorHandler';
@@ -95,15 +96,15 @@ function CreateMilestone(props) {
     fileList: [],
     customRequest: options => {
       const { onSuccess, onError, file, onProgress } = options;
-      console.log(file);
       onProgress(0);
-      if (true) {
-        // upload to ipfs
-        onSuccess('ipfs Address');
-        onProgress(100);
-      } else {
-        onError('Failed!');
-      }
+      IPFSService.upload(file)
+        .then(address => {
+          onSuccess(address.slice(6));
+          onProgress(100);
+        })
+        .catch(err => {
+          onError('Failed!', err);
+        });
     },
     onChange(info) {
       const { status } = info.file;
@@ -111,13 +112,22 @@ function CreateMilestone(props) {
         console.log(info.file, info.fileList);
       }
       if (status === 'done') {
-        console.log(`${info.file.name} file uploaded successfully.`);
+        console.log('file uploaded successfully.', info.file.response);
         setPicture(info.file.response);
       } else if (status === 'error') {
         console.log(`${info.file.name} file upload failed.`);
+        const args = {
+          message: 'Error',
+          description: 'Cannot upload picture to IPFS',
+        };
+        notification.error(args);
       }
     },
   };
+
+  function removePicture() {
+    setPicture('');
+  }
 
   const submit = async () => {
     const authenticated = await authenticateUser(currentUser, false);
@@ -280,13 +290,25 @@ function CreateMilestone(props) {
                   label="Add a picture (optional)"
                   className="custom-form-item"
                 >
-                  <ImgCrop>
-                    <Upload.Dragger {...uploadProps}>
-                      <p className="ant-upload-text">
-                        Drag and Drop JPEG, PNG here or <span>Attach a file.</span>
-                      </p>
-                    </Upload.Dragger>
-                  </ImgCrop>
+                  <Fragment>
+                    {milestone.picture ? (
+                      <div className="picture-upload-preview">
+                        <img
+                          src={`${config.ipfsGateway}${milestone.picture}`}
+                          alt={milestone.title}
+                        />
+                        <DeleteTwoTone onClick={removePicture} />
+                      </div>
+                    ) : (
+                      <ImgCrop>
+                        <Upload.Dragger {...uploadProps}>
+                          <p className="ant-upload-text">
+                            Drag and Drop JPEG, PNG here or <span>Attach a file.</span>
+                          </p>
+                        </Upload.Dragger>
+                      </ImgCrop>
+                    )}
+                  </Fragment>
                 </Form.Item>
                 <div className="form-item-desc">
                   A picture says more than a thousand words. Select a png or jpg file in a 1:1
