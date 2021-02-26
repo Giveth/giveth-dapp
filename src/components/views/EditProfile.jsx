@@ -1,4 +1,4 @@
-import React, { Component, Fragment } from 'react';
+import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import BigNumber from 'bignumber.js';
 
@@ -13,7 +13,7 @@ import { history } from '../../lib/helpers';
 import ErrorPopup from '../ErrorPopup';
 import { Consumer as WhiteListConsumer } from '../../contextProviders/WhiteListProvider';
 import SelectFormsy from '../SelectFormsy';
-import { Consumer as UserConsumer } from '../../contextProviders/UserProvider';
+import IsUserSignIn from '../isUserSignin';
 
 /**
  * The edit user profile view mapped to /profile/
@@ -333,15 +333,4 @@ EditProfile.defaultProps = {
   updateUserData: () => {},
 };
 
-export default props => (
-  <UserConsumer>
-    {({ state: { currentUser, isLoading: userIsLoading }, actions: { updateUserData } }) => (
-      <Fragment>
-        {userIsLoading && <Loader className="fixed" />}
-        {!userIsLoading && (
-          <EditProfile currentUser={currentUser} updateUserData={updateUserData} {...props} />
-        )}
-      </Fragment>
-    )}
-  </UserConsumer>
-);
+export default IsUserSignIn(EditProfile);
