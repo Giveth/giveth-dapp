@@ -44,7 +44,11 @@ function ExpenseCreateForm({ expense, idx, updateStateOfexpenses }) {
       <div className="title">Expense details {idx}</div>
       <Row gutter={16}>
         <Col className="gutter-row" span={10}>
-          <Form.Item label="Amount" className="custom-form-item">
+          <Form.Item
+            label="Amount"
+            className="custom-form-item"
+            extra="The amount should be the same as on the receipt."
+          >
             <Input
               name="amount"
               value={expense.amount}
@@ -54,10 +58,13 @@ function ExpenseCreateForm({ expense, idx, updateStateOfexpenses }) {
               required
             />
           </Form.Item>
-          <div className="form-item-desc">The amount should be the same as on the receipt.</div>
         </Col>
         <Col className="gutter-row" span={10}>
-          <Form.Item label="Currency" className="custom-form-item">
+          <Form.Item
+            label="Currency"
+            className="custom-form-item"
+            extra="Select the currency of this expense."
+          >
             <Select
               showSearch
               placeholder="Select a Currency"
@@ -77,7 +84,6 @@ function ExpenseCreateForm({ expense, idx, updateStateOfexpenses }) {
               ))}
             </Select>
           </Form.Item>
-          <div className="form-item-desc">Select the currency of this expense.</div>
         </Col>
       </Row>
       <Row gutter={16}>
@@ -98,7 +104,12 @@ function ExpenseCreateForm({ expense, idx, updateStateOfexpenses }) {
           required
         />
       </Form.Item>
-      <Form.Item name="picture" label="Add a picture (optional)" className="custom-form-item">
+      <Form.Item
+        name="picture"
+        label="Add a picture (optional)"
+        className="custom-form-item"
+        extra="A picture says more than a thousand words. Select a png or jpg file in a 1:1 aspect ratio."
+      >
         <ImgCrop>
           <Upload.Dragger
             multiple={false}
@@ -137,9 +148,6 @@ function ExpenseCreateForm({ expense, idx, updateStateOfexpenses }) {
           </Upload.Dragger>
         </ImgCrop>
       </Form.Item>
-      <div className="form-item-desc">
-        A picture says more than a thousand words. Select a png or jpg file in a 1:1 aspect ratio.
-      </div>
       <hr />
     </div>
   );

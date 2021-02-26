@@ -152,7 +152,12 @@ function CreatePayment(props) {
                   </Form.Item>
                 </Col>
                 <Col className="gutter-row" span={10}>
-                  <Form.Item name="currency" label="Currency" className="custom-form-item">
+                  <Form.Item
+                    name="currency"
+                    label="Currency"
+                    className="custom-form-item"
+                    extra="Select the currency of this expense."
+                  >
                     <Select
                       showSearch
                       placeholder="Select a Currency"
@@ -172,7 +177,6 @@ function CreatePayment(props) {
                       ))}
                     </Select>
                   </Form.Item>
-                  <div className="form-item-desc">Select the currency of this expense.</div>
                 </Col>
               </Row>
               <Row gutter={16}>
@@ -199,6 +203,8 @@ function CreatePayment(props) {
                 name="picture"
                 label="Add a picture (optional)"
                 className="custom-form-item"
+                extra="A picture says more than a thousand words. Select a png or jpg file in a 1:1 aspect
+                ratio."
               >
                 <ImgCrop>
                   <Upload.Dragger {...uploadProps}>
@@ -208,22 +214,23 @@ function CreatePayment(props) {
                   </Upload.Dragger>
                 </ImgCrop>
               </Form.Item>
-              <div className="form-item-desc">
-                A picture says more than a thousand words. Select a png or jpg file in a 1:1 aspect
-                ratio.
-              </div>
-              <Form.Item name="donate" className="custom-form-item milestone-donate-dac">
+              <Form.Item
+                name="donate"
+                className="custom-form-item milestone-donate-dac"
+                extra={
+                  <div>
+                    Your help keeps Giveth alive.
+                    <span role="img" aria-label="heart">
+                      {' '}
+                      ❤️
+                    </span>
+                  </div>
+                }
+              >
                 <Checkbox onChange={handleInputChange} name="donate" checked={payment.donate}>
                   Donate 3% to Giveth
                 </Checkbox>
               </Form.Item>
-              <div className="form-item-desc">
-                Your help keeps Giveth alive.
-                <span role="img" aria-label="heart">
-                  {' '}
-                  ❤️
-                </span>
-              </div>
             </div>
             <div className="section">
               <div className="title">Payment options</div>
@@ -231,6 +238,7 @@ function CreatePayment(props) {
                 name="paymentCurrency"
                 label="Payment currency"
                 className="custom-form-item"
+                extra="Select the token you want to be reimbursed in."
               >
                 <Select
                   showSearch
@@ -251,8 +259,13 @@ function CreatePayment(props) {
                   ))}
                 </Select>
               </Form.Item>
-              <div className="form-item-desc">Select the token you want to be reimbursed in.</div>
-              <Form.Item name="wallet" label="Pay to wallet address" className="custom-form-item">
+              <Form.Item
+                name="wallet"
+                label="Pay to wallet address"
+                className="custom-form-item"
+                extra="If you don’t change this field the address associated with your account will be
+                used."
+              >
                 <Input
                   value={payment.wallet}
                   name="wallet"
@@ -261,10 +274,6 @@ function CreatePayment(props) {
                   required
                 />
               </Form.Item>
-              <div className="form-item-desc">
-                If you don’t change this field the address associated with your account will be
-                used.
-              </div>
             </div>
             <Form.Item>
               <Button type="primary" htmlType="submit" className="submit-button">

@@ -124,6 +124,7 @@ function CreateExpense(props) {
                 name="reimbursementCurrency"
                 label="Reimburse in Currency"
                 className="custom-form-item"
+                extra="Select the token you want to be reimbursed in."
               >
                 <Select
                   showSearch
@@ -144,11 +145,12 @@ function CreateExpense(props) {
                   ))}
                 </Select>
               </Form.Item>
-              <div className="form-item-desc">Select the token you want to be reimbursed in.</div>
               <Form.Item
                 name="wallet"
                 label="Reimburse to wallet address"
                 className="custom-form-item"
+                extra="If you don’t change this field the address associated with your account will be
+                used."
               >
                 <Input
                   value={expenseForm.wallet}
@@ -158,10 +160,6 @@ function CreateExpense(props) {
                   required
                 />
               </Form.Item>
-              <div className="form-item-desc">
-                If you don’t change this field the address associated with your account will be
-                used.
-              </div>
             </div>
             <Form.Item>
               <Button type="primary" htmlType="submit" className="submit-button">

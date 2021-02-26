@@ -120,7 +120,12 @@ function CreateBounty(props) {
             </div>
             <div className="section">
               <div className="title">Bounty details</div>
-              <Form.Item name="title" label="Title" className="custom-form-item">
+              <Form.Item
+                name="title"
+                label="Title"
+                className="custom-form-item"
+                extra="What is this Bopunty about?"
+              >
                 <Input
                   value={bounty.title}
                   name="title"
@@ -129,8 +134,12 @@ function CreateBounty(props) {
                   required
                 />
               </Form.Item>
-              <div className="form-item-desc">What is this Bopunty about?</div>
-              <Form.Item name="description" label="Description" className="custom-form-item">
+              <Form.Item
+                name="description"
+                label="Description"
+                className="custom-form-item"
+                extra="Explain the requirements and what success looks like."
+              >
                 <Input.TextArea
                   value={bounty.description}
                   name="description"
@@ -139,13 +148,12 @@ function CreateBounty(props) {
                   required
                 />
               </Form.Item>
-              <div className="form-item-desc">
-                Explain the requirements and what success looks like.
-              </div>
               <Form.Item
                 name="picture"
                 label="Add a picture (optional)"
                 className="custom-form-item"
+                extra="A picture says more than a thousand words. Select a png or jpg file in a 1:1 aspect
+                ratio."
               >
                 <ImgCrop>
                   <Upload.Dragger {...uploadProps}>
@@ -155,22 +163,24 @@ function CreateBounty(props) {
                   </Upload.Dragger>
                 </ImgCrop>
               </Form.Item>
-              <div className="form-item-desc">
-                A picture says more than a thousand words. Select a png or jpg file in a 1:1 aspect
-                ratio.
-              </div>
-              <Form.Item name="donate" className="custom-form-item milestone-donate-dac">
+              <Form.Item
+                name="donate"
+                className="custom-form-item milestone-donate-dac"
+                extra={
+                  <div>
+                    Your help keeps Giveth alive.
+                    <span role="img" aria-label="heart">
+                      {' '}
+                      ❤️
+                    </span>
+                  </div>
+                }
+              >
                 <Checkbox onChange={handleInputChange} name="donate" checked={bounty.donate}>
                   Donate 3% to Giveth
                 </Checkbox>
               </Form.Item>
-              <div className="form-item-desc">
-                Your help keeps Giveth alive.
-                <span role="img" aria-label="heart">
-                  {' '}
-                  ❤️
-                </span>
-              </div>
+
               <Form.Item className="custom-form-item bounty-reviewer">
                 <Switch
                   defaultChecked
@@ -182,7 +192,7 @@ function CreateBounty(props) {
               </Form.Item>
               {bounty.hasReviewer && (
                 <Fragment>
-                  <Form.Item>
+                  <Form.Item extra="The reviewer verifies that the Bounty is completed successfully.">
                     <Select
                       showSearch
                       placeholder="Select a reviewer"
@@ -199,9 +209,6 @@ function CreateBounty(props) {
                       <Select.Option value="tom">Tom</Select.Option>
                     </Select>
                   </Form.Item>
-                  <div className="form-item-desc">
-                    The reviewer verifies that the Bounty is completed successfully.
-                  </div>
                 </Fragment>
               )}
             </div>
@@ -221,7 +228,12 @@ function CreateBounty(props) {
                   </Form.Item>
                 </Col>
                 <Col className="gutter-row" span={10}>
-                  <Form.Item name="currency" label="Currency" className="custom-form-item">
+                  <Form.Item
+                    name="currency"
+                    label="Currency"
+                    className="custom-form-item"
+                    extra="Select the currency of this bounty."
+                  >
                     <Select
                       showSearch
                       placeholder="Select a Currency"
@@ -241,7 +253,6 @@ function CreateBounty(props) {
                       ))}
                     </Select>
                   </Form.Item>
-                  <div className="form-item-desc">Select the currency of this bounty.</div>
                 </Col>
               </Row>
             </div>
