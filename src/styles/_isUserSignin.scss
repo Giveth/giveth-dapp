@@ -1,0 +1,10 @@
+.is-user-signin {
+	padding-top: 60px;
+	&>.signin-warning{
+		padding: 20px;
+		background-color: #fff3cd;
+		border-color: #ffeeba;
+		border-radius: 8px;
+		text-align: center;
+	}
+}
