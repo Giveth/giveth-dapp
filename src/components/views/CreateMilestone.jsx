@@ -242,6 +242,7 @@ function CreateMilestone(props) {
                   name="title"
                   label="Title"
                   className="custom-form-item"
+                  extra="What are you going to accomplish in this Milestone?"
                   rules={[
                     {
                       required: true,
@@ -258,13 +259,11 @@ function CreateMilestone(props) {
                     onChange={handleInputChange}
                   />
                 </Form.Item>
-                <div className="form-item-desc">
-                  What are you going to accomplish in this Milestone?
-                </div>
                 <Form.Item
                   name="milestoneDesc"
                   label="Description"
                   className="custom-form-item"
+                  extra="Explain how you are going to do this successfully."
                   rules={[
                     {
                       required: true,
@@ -282,13 +281,12 @@ function CreateMilestone(props) {
                     onChange={handleInputChange}
                   />
                 </Form.Item>
-                <div className="form-item-desc">
-                  Explain how you are going to do this successfully.
-                </div>
                 <Form.Item
                   name="picture"
                   label="Add a picture (optional)"
                   className="custom-form-item"
+                  extra="A picture says more than a thousand words. Select a png or jpg file in a 1:1
+                  aspect ratio."
                 >
                   <Fragment>
                     {milestone.picture ? (
@@ -310,13 +308,18 @@ function CreateMilestone(props) {
                     )}
                   </Fragment>
                 </Form.Item>
-                <div className="form-item-desc">
-                  A picture says more than a thousand words. Select a png or jpg file in a 1:1
-                  aspect ratio.
-                </div>
                 <Form.Item
                   className="custom-form-item milestone-donate-dac"
                   valuePropName="checked"
+                  extra={
+                    <div>
+                      Your help keeps Giveth alive.
+                      <span role="img" aria-label="heart">
+                        {' '}
+                        ❤️
+                      </span>
+                    </div>
+                  }
                 >
                   <Checkbox
                     onChange={handleInputChange}
@@ -326,13 +329,6 @@ function CreateMilestone(props) {
                     Donate 3% to Giveth
                   </Checkbox>
                 </Form.Item>
-                <div className="form-item-desc">
-                  Your help keeps Giveth alive.
-                  <span role="img" aria-label="heart">
-                    {' '}
-                    ❤️
-                  </span>
-                </div>
                 <Form.Item className="custom-form-item milestone-reviewer" valuePropName="checked">
                   <Switch
                     defaultChecked
@@ -344,7 +340,11 @@ function CreateMilestone(props) {
                 </Form.Item>
                 {milestone.hasReviewer && (
                   <Fragment>
-                    <Form.Item name="reviewerAddress" rules={[{ required: true }]}>
+                    <Form.Item
+                      name="reviewerAddress"
+                      rules={[{ required: true }]}
+                      extra="The reviewer verifies that the Milestone is completed successfully."
+                    >
                       <Select
                         showSearch
                         placeholder="Select a reviewer"
@@ -364,9 +364,6 @@ function CreateMilestone(props) {
                         ))}
                       </Select>
                     </Form.Item>
-                    <div className="form-item-desc">
-                      The reviewer verifies that the Milestone is completed successfully.
-                    </div>
                   </Fragment>
                 )}
                 <div className="milestone-desc">
