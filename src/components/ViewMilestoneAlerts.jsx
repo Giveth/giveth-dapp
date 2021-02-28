@@ -73,7 +73,7 @@ const ViewMilestoneAlerts = ({ milestone, campaign }) => {
 
       {milestone.canUserWithdraw(currentUser) && (
         <ProjectViewActionAlert
-          message={`You use ${config.foreignNetworkName} to collect funds and we pay the fees to send it to you on Ethereum ${config.homeNetworkName}`}
+          message={`You use ${config.foreignNetworkName} to collect funds and we pay the fees to send it to you on ${config.homeNetworkName}`}
         >
           <WithdrawMilestoneFundsButton milestone={milestone} />
         </ProjectViewActionAlert>
