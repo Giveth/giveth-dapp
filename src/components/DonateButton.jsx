@@ -212,8 +212,7 @@ const DonateButton = forwardRef((props, ref) => {
         },
         onResult: balance => {
           if (balance && (!selectedToken.balance || !selectedToken.balance.eq(balance))) {
-            selectedToken.balance = balance;
-            setSelectedToken(selectedToken);
+            setSelectedToken({ ...selectedToken, balance });
             const maxAmount = getMaxAmount();
             setAmount(
               maxAmount.lt(amount) ? convertEthHelper(maxAmount, selectedToken.decimals) : amount,
