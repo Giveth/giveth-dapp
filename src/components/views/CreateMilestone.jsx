@@ -99,7 +99,7 @@ function CreateMilestone(props) {
       onProgress(0);
       IPFSService.upload(file)
         .then(address => {
-          onSuccess(address.slice(6));
+          onSuccess(address);
           onProgress(100);
         })
         .catch(err => {
@@ -138,13 +138,14 @@ function CreateMilestone(props) {
         return;
       }
 
-      const { title, description, reviewerAddress, hasReviewer } = milestone;
+      const { title, description, reviewerAddress, hasReviewer, picture } = milestone;
       const ms = new LPMilestone({
         title,
         description,
         reviewerAddress: hasReviewer ? reviewerAddress : ZERO_ADDRESS,
         recipientId: campaign.projectId,
         token: ANY_TOKEN,
+        image: picture,
       });
 
       ms.ownerAddress = currentUser.address;
@@ -292,7 +293,7 @@ function CreateMilestone(props) {
                     {milestone.picture ? (
                       <div className="picture-upload-preview">
                         <img
-                          src={`${config.ipfsGateway}${milestone.picture}`}
+                          src={`${config.ipfsGateway}${milestone.picture.slice(6)}`}
                           alt={milestone.title}
                         />
                         <DeleteTwoTone onClick={removePicture} />
