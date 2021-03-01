@@ -1,33 +1,25 @@
 import React, { Fragment, memo, useContext, useEffect, useState } from 'react';
-import {
-  Button,
-  Checkbox,
-  Col,
-  Form,
-  Input,
-  PageHeader,
-  Row,
-  Select,
-  Switch,
-  Upload,
-  notification,
-} from 'antd';
+import { Button, Col, Form, notification, PageHeader, Row } from 'antd';
 import 'antd/dist/antd.css';
 import PropTypes from 'prop-types';
-import ImgCrop from 'antd-img-crop';
-import { DeleteTwoTone } from '@ant-design/icons';
 import useCampaign from '../../hooks/useCampaign';
 import { ANY_TOKEN, history, ZERO_ADDRESS } from '../../lib/helpers';
-import useReviewers from '../../hooks/useReviewers';
 import { Context as UserContext } from '../../contextProviders/UserProvider';
 import { Context as Web3Context } from '../../contextProviders/Web3Provider';
 import Web3ConnectWarning from '../Web3ConnectWarning';
 import LPMilestone from '../../models/LPMilestone';
 import { Milestone } from '../../models';
-import { IPFSService, MilestoneService } from '../../services';
+import { MilestoneService } from '../../services';
 import config from '../../configuration';
 import { authenticateUser } from '../../lib/middleware';
 import ErrorHandler from '../../lib/ErrorHandler';
+import {
+  MilestoneDescription,
+  MilestoneDonateToDac,
+  MilestonePicture,
+  MilestoneReviewer,
+  MilestoneTitle,
+} from '../EditMilestoneCommons';
 
 function CreateMilestone(props) {
   const {
@@ -41,7 +33,6 @@ function CreateMilestone(props) {
   const campaignId = props.match.params.id;
 
   const campaign = useCampaign(campaignId);
-  const reviewers = useReviewers();
 
   const [milestone, setMilestone] = useState({
     title: '',
@@ -88,45 +79,6 @@ function CreateMilestone(props) {
 
   function goBack() {
     history.goBack();
-  }
-
-  const uploadProps = {
-    multiple: false,
-    accept: 'image/png, image/jpeg',
-    fileList: [],
-    customRequest: options => {
-      const { onSuccess, onError, file, onProgress } = options;
-      onProgress(0);
-      IPFSService.upload(file)
-        .then(address => {
-          onSuccess(address);
-          onProgress(100);
-        })
-        .catch(err => {
-          onError('Failed!', err);
-        });
-    },
-    onChange(info) {
-      const { status } = info.file;
-      if (status !== 'uploading') {
-        console.log(info.file, info.fileList);
-      }
-      if (status === 'done') {
-        console.log('file uploaded successfully.', info.file.response);
-        setPicture(info.file.response);
-      } else if (status === 'error') {
-        console.log(`${info.file.name} file upload failed.`);
-        const args = {
-          message: 'Error',
-          description: 'Cannot upload picture to IPFS',
-        };
-        notification.error(args);
-      }
-    },
-  };
-
-  function removePicture() {
-    setPicture('');
   }
 
   const submit = async () => {
@@ -239,134 +191,35 @@ function CreateMilestone(props) {
               </div>
               <div className="section">
                 <div className="title">Milestone details</div>
-                <Form.Item
-                  name="title"
-                  label="Title"
-                  className="custom-form-item"
+
+                <MilestoneTitle
+                  value={milestone.title}
+                  onChange={handleInputChange}
                   extra="What are you going to accomplish in this Milestone?"
-                  rules={[
-                    {
-                      required: true,
-                      type: 'string',
-                      min: 3,
-                      message: 'Please provide at least 3 characters',
-                    },
-                  ]}
-                >
-                  <Input
-                    value={milestone.title}
-                    name="title"
-                    placeholder="e.g. Support continued Development"
-                    onChange={handleInputChange}
-                  />
-                </Form.Item>
-                <Form.Item
-                  name="milestoneDesc"
-                  label="Description"
-                  className="custom-form-item"
+                />
+
+                <MilestoneDescription
+                  value={milestone.description}
+                  onChange={handleInputChange}
                   extra="Explain how you are going to do this successfully."
-                  rules={[
-                    {
-                      required: true,
-                      type: 'string',
-                      min: 10,
-                      message:
-                        'Please provide at least 10 characters and do not edit the template keywords.',
-                    },
-                  ]}
-                >
-                  <Input.TextArea
-                    value={milestone.description}
-                    name="description"
-                    placeholder="Describe how you are going to execute this milestone successfully..."
-                    onChange={handleInputChange}
-                  />
-                </Form.Item>
-                <Form.Item
-                  name="picture"
-                  label="Add a picture (optional)"
-                  className="custom-form-item"
-                  extra="A picture says more than a thousand words. Select a png or jpg file in a 1:1
-                  aspect ratio."
-                >
-                  <Fragment>
-                    {milestone.picture ? (
-                      <div className="picture-upload-preview">
-                        <img
-                          src={`${config.ipfsGateway}${milestone.picture.slice(6)}`}
-                          alt={milestone.title}
-                        />
-                        <DeleteTwoTone onClick={removePicture} />
-                      </div>
-                    ) : (
-                      <ImgCrop>
-                        <Upload.Dragger {...uploadProps}>
-                          <p className="ant-upload-text">
-                            Drag and Drop JPEG, PNG here or <span>Attach a file.</span>
-                          </p>
-                        </Upload.Dragger>
-                      </ImgCrop>
-                    )}
-                  </Fragment>
-                </Form.Item>
-                <Form.Item
-                  className="custom-form-item milestone-donate-dac"
-                  valuePropName="checked"
-                  extra={
-                    <div>
-                      Your help keeps Giveth alive.
-                      <span role="img" aria-label="heart">
-                        {' '}
-                        ❤️
-                      </span>
-                    </div>
-                  }
-                >
-                  <Checkbox
-                    onChange={handleInputChange}
-                    name="donateToDac"
-                    checked={milestone.donateToDac}
-                  >
-                    Donate 3% to Giveth
-                  </Checkbox>
-                </Form.Item>
-                <Form.Item className="custom-form-item milestone-reviewer" valuePropName="checked">
-                  <Switch
-                    defaultChecked
-                    name="hasReviewer"
-                    checked={milestone.hasReviewer}
-                    onChange={toggleHasReviewer}
-                  />
-                  <span className="milestone-reviewer-label">Milestone reviewer</span>
-                </Form.Item>
-                {milestone.hasReviewer && (
-                  <Fragment>
-                    <Form.Item
-                      name="reviewerAddress"
-                      rules={[{ required: true }]}
-                      extra="The reviewer verifies that the Milestone is completed successfully."
-                    >
-                      <Select
-                        showSearch
-                        placeholder="Select a reviewer"
-                        optionFilterProp="children"
-                        name="reviewerAddress"
-                        onSelect={setReviewer}
-                        filterOption={(input, option) =>
-                          option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                        }
-                        value={milestone.reviewerAddress}
-                      >
-                        {reviewers.map(({ name, address }) => (
-                          <Select.Option
-                            key={address}
-                            value={address}
-                          >{`${name} - ${address}`}</Select.Option>
-                        ))}
-                      </Select>
-                    </Form.Item>
-                  </Fragment>
-                )}
+                  placeholder="Describe how you are going to execute this milestone successfully..."
+                />
+
+                <MilestonePicture
+                  setPicture={setPicture}
+                  picture={milestone.picture}
+                  milestoneTitle={milestone.title}
+                />
+
+                <MilestoneDonateToDac value={milestone.donateToDac} onChange={handleInputChange} />
+
+                <MilestoneReviewer
+                  toggleHasReviewer={toggleHasReviewer}
+                  setReviewer={setReviewer}
+                  hasReviewer={milestone.hasReviewer}
+                  milestoneReviewerAddress={milestone.reviewerAddress}
+                />
+
                 <div className="milestone-desc">
                   Contributions to this milestone will be sent directly to the
                   <strong>{` ${campaign && campaign.title} `}</strong>
