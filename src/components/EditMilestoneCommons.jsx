@@ -1,5 +1,5 @@
 import React, { Fragment } from 'react';
-import { Checkbox, Form, Input, notification, Select, Switch, Upload } from 'antd';
+import { Checkbox, Form, Input, notification, Select, Upload } from 'antd';
 import 'antd/dist/antd.css';
 import PropTypes from 'prop-types';
 import { DeleteTwoTone } from '@ant-design/icons';
@@ -8,12 +8,12 @@ import config from '../configuration';
 import { IPFSService } from '../services';
 import useReviewers from '../hooks/useReviewers';
 
-const MilestoneTitle = props => (
+const MilestoneTitle = ({ extra, onChange, value }) => (
   <Form.Item
     name="title"
     label="Title"
     className="custom-form-item"
-    extra={props.extra}
+    extra={extra}
     rules={[
       {
         required: true,
@@ -24,10 +24,10 @@ const MilestoneTitle = props => (
     ]}
   >
     <Input
-      value={props.value}
+      value={value}
       name="title"
       placeholder="e.g. Support continued Development"
-      onChange={props.onChange}
+      onChange={onChange}
     />
   </Form.Item>
 );
@@ -43,12 +43,12 @@ MilestoneTitle.defaultProps = {
   extra: '',
 };
 
-const MilestoneDescription = props => (
+const MilestoneDescription = ({ extra, onChange, placeholder, value }) => (
   <Form.Item
     name="milestoneDesc"
     label="Description"
     className="custom-form-item"
-    extra={props.extra}
+    extra={extra}
     rules={[
       {
         required: true,
@@ -59,10 +59,12 @@ const MilestoneDescription = props => (
     ]}
   >
     <Input.TextArea
-      value={props.value}
+      style={{ resize: 'none' }}
+      value={value}
       name="description"
-      placeholder={props.placeholder}
-      onChange={props.onChange}
+      placeholder={placeholder}
+      onChange={onChange}
+      rows={9}
     />
   </Form.Item>
 );
@@ -152,7 +154,7 @@ MilestonePicture.propTypes = {
   setPicture: PropTypes.func.isRequired,
 };
 
-const MilestoneDonateToDac = props => (
+const MilestoneDonateToDac = ({ onChange, value }) => (
   <Form.Item
     className="custom-form-item milestone-donate-dac"
     valuePropName="checked"
@@ -166,7 +168,7 @@ const MilestoneDonateToDac = props => (
       </div>
     }
   >
-    <Checkbox onChange={props.onChange} name="donateToDac" checked={props.value}>
+    <Checkbox onChange={onChange} name="donateToDac" checked={value}>
       Donate 3% to Giveth
     </Checkbox>
   </Form.Item>
@@ -177,36 +179,44 @@ MilestoneDonateToDac.propTypes = {
   onChange: PropTypes.func.isRequired,
 };
 
-const MilestoneReviewer = props => {
+const MilestoneReviewer = ({
+  milestoneType,
+  hasReviewer,
+  milestoneReviewerAddress,
+  setReviewer,
+  toggleHasReviewer,
+}) => {
   const reviewers = useReviewers();
   return (
     <Fragment>
       <Form.Item className="custom-form-item milestone-reviewer" valuePropName="checked">
-        <Switch
-          defaultChecked
-          name="hasReviewer"
-          checked={props.hasReviewer}
-          onChange={props.toggleHasReviewer}
-        />
-        <span className="milestone-reviewer-label">Milestone reviewer</span>
+        {toggleHasReviewer && (
+          <Checkbox
+            className="milestone-reviewer-checkbox"
+            name="hasReviewer"
+            checked={hasReviewer}
+            onChange={toggleHasReviewer}
+          />
+        )}
+        <span>{`${milestoneType} reviewer`}</span>
       </Form.Item>
-      {props.hasReviewer && (
+      {hasReviewer && (
         <Fragment>
           <Form.Item
             name="reviewerAddress"
             rules={[{ required: true }]}
-            extra="The reviewer verifies that the Milestone is completed successfully."
+            extra={`The reviewer verifies that the ${milestoneType} is completed successfully.`}
           >
             <Select
               showSearch
               placeholder="Select a reviewer"
               optionFilterProp="children"
               name="reviewerAddress"
-              onSelect={props.setReviewer}
+              onSelect={setReviewer}
               filterOption={(input, option) =>
                 option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
               }
-              value={props.milestoneReviewerAddress}
+              value={milestoneReviewerAddress}
             >
               {reviewers.map(({ name, address }) => (
                 <Select.Option
@@ -223,14 +233,17 @@ const MilestoneReviewer = props => {
 };
 
 MilestoneReviewer.propTypes = {
+  milestoneType: PropTypes.string,
   hasReviewer: PropTypes.bool.isRequired,
-  toggleHasReviewer: PropTypes.func.isRequired,
+  toggleHasReviewer: PropTypes.func,
   setReviewer: PropTypes.func.isRequired,
   milestoneReviewerAddress: PropTypes.string,
 };
 
 MilestoneReviewer.defaultProps = {
+  milestoneType: 'Milestone',
   milestoneReviewerAddress: '',
+  toggleHasReviewer: null,
 };
 
 // eslint-disable-next-line import/prefer-default-export

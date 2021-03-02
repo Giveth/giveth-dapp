@@ -63,10 +63,6 @@ function CreateMilestone(props) {
     }
   };
 
-  function toggleHasReviewer(checked) {
-    handleInputChange({ target: { name: 'hasReviewer', value: checked } });
-  }
-
   function setReviewer(_, option) {
     handleInputChange({
       target: { name: 'reviewerAddress', value: option.value },
@@ -216,10 +212,11 @@ function CreateMilestone(props) {
                 <MilestoneDonateToDac value={milestone.donateToDac} onChange={handleInputChange} />
 
                 <MilestoneReviewer
-                  toggleHasReviewer={toggleHasReviewer}
+                  toggleHasReviewer={handleInputChange}
                   setReviewer={setReviewer}
                   hasReviewer={milestone.hasReviewer}
                   milestoneReviewerAddress={milestone.reviewerAddress}
+                  milestoneType="Milestone"
                 />
 
                 <div className="milestone-desc">

@@ -8,6 +8,10 @@
 			font-size: 16px;
 			line-height: 20px;
 		}
+
+    [role='img'] {
+      color: black;
+    }
 	}
 	.milestone-reviewer {
 		font-family: Quicksand;
@@ -16,8 +20,8 @@
 		font-size: 16px;
 		line-height: 20px;
 		margin-top: 32px;
-		.milestone-reviewer-label {
-			padding: 0 16px;
+		.milestone-reviewer-checkbox {
+			padding-right: 8px;
 		}
 	}
 	.milestone-desc {
