@@ -185,10 +185,12 @@ function CreateMilestone(props) {
                 <img src={`${process.env.PUBLIC_URL}/img/milestone.png`} alt="milestone-logo" />
                 <div className="title">Milestone</div>
               </div>
+
               <div className="campaign-info">
                 <div className="lable">Campaign</div>
                 <div className="content">{campaign && campaign.title}</div>
               </div>
+
               <div className="section">
                 <div className="title">Milestone details</div>
 
