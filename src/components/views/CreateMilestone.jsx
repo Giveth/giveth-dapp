@@ -64,6 +64,10 @@ function CreateMilestone(props) {
     }
   };
 
+  function handleDescriptionChange(html) {
+    handleInputChange({ target: { name: 'description', value: html } });
+  }
+
   function setReviewer(_, option) {
     handleInputChange({
       target: { name: 'reviewerAddress', value: option.value },
@@ -197,7 +201,7 @@ function CreateMilestone(props) {
 
                 <MilestoneDescription
                   value={milestone.description}
-                  onChange={handleInputChange}
+                  onChange={handleDescriptionChange}
                   extra="Explain how you are going to do this successfully."
                   placeholder="Describe how you are going to execute this milestone successfully..."
                 />

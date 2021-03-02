@@ -9,6 +9,7 @@ import config from '../configuration';
 import { IPFSService } from '../services';
 import useReviewers from '../hooks/useReviewers';
 import { getStartOfDayUTC } from '../lib/helpers';
+import Editor from './Editor';
 
 const MilestoneTitle = ({ extra, onChange, value }) => (
   <Form.Item
@@ -47,7 +48,7 @@ MilestoneTitle.defaultProps = {
 
 const MilestoneDescription = ({ extra, onChange, placeholder, value }) => (
   <Form.Item
-    name="milestoneDesc"
+    name="description"
     label="Description"
     className="custom-form-item"
     extra={extra}
@@ -60,14 +61,7 @@ const MilestoneDescription = ({ extra, onChange, placeholder, value }) => (
       },
     ]}
   >
-    <Input.TextArea
-      style={{ resize: 'none' }}
-      value={value}
-      name="description"
-      placeholder={placeholder}
-      onChange={onChange}
-      rows={9}
-    />
+    <Editor name="description" onChange={onChange} value={value} placeholder={placeholder} />
   </Form.Item>
 );
 MilestoneDescription.propTypes = {
