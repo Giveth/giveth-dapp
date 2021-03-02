@@ -14,6 +14,7 @@ import config from '../../configuration';
 import { authenticateUser } from '../../lib/middleware';
 import ErrorHandler from '../../lib/ErrorHandler';
 import {
+  MilestoneCampaignInfo,
   MilestoneDescription,
   MilestoneDonateToDac,
   MilestonePicture,
@@ -163,6 +164,7 @@ function CreateMilestone(props) {
   return (
     <Fragment>
       <Web3ConnectWarning />
+
       <div id="create-milestone-view">
         <Row>
           <Col span={24}>
@@ -182,10 +184,7 @@ function CreateMilestone(props) {
                 <div className="title">Milestone</div>
               </div>
 
-              <div className="campaign-info">
-                <div className="lable">Campaign</div>
-                <div className="content">{campaign && campaign.title}</div>
-              </div>
+              <MilestoneCampaignInfo campaign={campaign} />
 
               <div className="section">
                 <div className="title">Milestone details</div>

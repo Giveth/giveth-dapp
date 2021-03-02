@@ -4,6 +4,7 @@ import 'antd/dist/antd.css';
 import PropTypes from 'prop-types';
 import useCampaign from '../../hooks/useCampaign';
 import {
+  MilestoneCampaignInfo,
   MilestoneDescription,
   MilestoneDonateToDac,
   MilestonePicture,
@@ -180,10 +181,7 @@ function CreateBounty(props) {
                 <div className="title">Bounty</div>
               </div>
 
-              <div className="campaign-info">
-                <div className="lable">Campaign</div>
-                <div className="content">{campaign && campaign.title}</div>
-              </div>
+              <MilestoneCampaignInfo campaign={campaign} />
 
               <div className="section">
                 <div className="title">Bounty details</div>

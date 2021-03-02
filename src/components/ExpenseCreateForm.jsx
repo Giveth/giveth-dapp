@@ -1,26 +1,14 @@
 /* eslint-disable react/prop-types */
-import React from 'react';
+import React, { useContext } from 'react';
 import ImgCrop from 'antd-img-crop';
-import { Row, Col, Form, Input, Upload, Select, DatePicker } from 'antd';
+import { Col, Form, Input, Row, Select, Upload } from 'antd';
+import { Context as WhiteListContext } from '../contextProviders/WhiteListProvider';
+import { MilestoneDatePicker } from './EditMilestoneCommons';
 
-function ExpenseCreateForm({ expense, idx, updateStateOfexpenses }) {
-  const currencies = [
-    'ETH',
-    'DAI',
-    'PAN',
-    'BTC',
-    'USDC',
-    'USD',
-    'AUD',
-    'BRL',
-    'CAD',
-    'CHF',
-    'CZK',
-    'EUR',
-    'GBP',
-    'MXN',
-    'THB',
-  ];
+function ExpenseCreateForm({ expense, updateStateOfexpenses }) {
+  const {
+    state: { fiatWhitelist },
+  } = useContext(WhiteListContext);
 
   function handleInputChange(event, expKey) {
     const { target } = event;
@@ -34,14 +22,13 @@ function ExpenseCreateForm({ expense, idx, updateStateOfexpenses }) {
     updateStateOfexpenses('currency', option.value, expKey);
   }
 
-  function handleDatePicker(_, dateString, expKey) {
+  function handleDatePicker(dateString, expKey) {
     console.log(dateString, expKey);
     updateStateOfexpenses('date', dateString, expKey);
   }
 
   return (
-    <div className="section" key={expense.key}>
-      <div className="title">Expense details {idx}</div>
+    <div key={expense.key}>
       <Row gutter={16}>
         <Col className="gutter-row" span={10}>
           <Form.Item
@@ -77,7 +64,7 @@ function ExpenseCreateForm({ expense, idx, updateStateOfexpenses }) {
               value={expense.currency}
               required
             >
-              {currencies.map(cur => (
+              {fiatWhitelist.map(cur => (
                 <Select.Option key={cur} value={cur}>
                   {cur}
                 </Select.Option>
@@ -86,15 +73,7 @@ function ExpenseCreateForm({ expense, idx, updateStateOfexpenses }) {
           </Form.Item>
         </Col>
       </Row>
-      <Row gutter={16}>
-        <Col className="gutter-row" span={10}>
-          <Form.Item label="Date" className="custom-form-item">
-            <DatePicker
-              onChange={(_, dateString) => handleDatePicker(_, dateString, expense.key)}
-            />
-          </Form.Item>
-        </Col>
-      </Row>
+      <MilestoneDatePicker onChange={dateString => handleDatePicker(dateString, expense.key)} />
       <Form.Item label="Description of the expense" className="custom-form-item">
         <Input.TextArea
           value={expense.description}

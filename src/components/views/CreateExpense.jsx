@@ -1,29 +1,18 @@
-import React, { useState } from 'react';
-import { PageHeader, Row, Col, Form, Input, Select, Button } from 'antd';
+import React, { useContext, useState, Fragment } from 'react';
+import { PageHeader, Row, Col, Form, Input, Select, Button, Typography } from 'antd';
 import 'antd/dist/antd.css';
 import PropTypes from 'prop-types';
 import { v4 as uuidv4 } from 'uuid';
 import ExpenseCreateForm from '../ExpenseCreateForm';
 import useCampaign from '../../hooks/useCampaign';
+import { Context as WhiteListContext } from '../../contextProviders/WhiteListProvider';
+import Web3ConnectWarning from '../Web3ConnectWarning';
+import { MilestoneCampaignInfo, MilestoneTitle } from '../EditMilestoneCommons';
 
 function CreateExpense(props) {
-  const currencies = [
-    'ETH',
-    'DAI',
-    'PAN',
-    'BTC',
-    'USDC',
-    'USD',
-    'AUD',
-    'BRL',
-    'CAD',
-    'CHF',
-    'CZK',
-    'EUR',
-    'GBP',
-    'MXN',
-    'THB',
-  ];
+  const {
+    state: { activeTokenWhitelist },
+  } = useContext(WhiteListContext);
   const campaign = useCampaign(props.match.params.id);
   const [expenseForm, setExpenseForm] = useState({
     expenses: [
@@ -36,6 +25,7 @@ function CreateExpense(props) {
         key: uuidv4(),
       },
     ],
+    title: '',
     reimbursementCurrency: undefined,
     wallet: undefined,
   });
@@ -83,93 +73,115 @@ function CreateExpense(props) {
     props.history.goBack();
   }
 
-  return (
-    <div id="create-expense-view">
-      <Row>
-        <Col span={24}>
-          <PageHeader
-            className="site-page-header my-test"
-            onBack={goBack}
-            title="Create New Expense"
-            ghost={false}
-          />
-        </Col>
-      </Row>
-      <Row>
-        <div className="card-form-container">
-          <Form className="card-form">
-            <div className="card-form-header">
-              <img src={`${process.env.PUBLIC_URL}/img/expense.png`} alt="expense-logo" />
-              <div className="title">Expense</div>
-            </div>
-            <div className="campaign-info">
-              <div className="lable">Campaign</div>
-              <div className="content">{campaign && campaign.title}</div>
-            </div>
-            {expenseForm.expenses.map((expense, idx) => (
-              <ExpenseCreateForm
-                key={expense.key}
-                expense={expense}
-                id={idx}
-                updateStateOfexpenses={updateStateOfexpenses}
-              />
-            ))}
-            <Button onClick={addExpense} className="add-expense-button">
-              Add new Expense
-            </Button>
+  const submit = async () => {};
 
-            <div className="section">
-              <div className="title">Reimbursement options</div>
-              <Form.Item
-                name="reimbursementCurrency"
-                label="Reimburse in Currency"
-                className="custom-form-item"
-                extra="Select the token you want to be reimbursed in."
-              >
-                <Select
-                  showSearch
-                  placeholder="Select a Currency"
-                  optionFilterProp="children"
-                  name="reimbursementCurrency"
-                  onSelect={handleSelectReimbursementCurrency}
-                  filterOption={(input, option) =>
-                    option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                  }
-                  value={expenseForm.reimbursementCurrency}
-                  required
-                >
-                  {currencies.map(cur => (
-                    <Select.Option key={cur} value={cur}>
-                      {cur}
-                    </Select.Option>
-                  ))}
-                </Select>
-              </Form.Item>
-              <Form.Item
-                name="wallet"
-                label="Reimburse to wallet address"
-                className="custom-form-item"
-                extra="If you don’t change this field the address associated with your account will be
-                used."
-              >
-                <Input
-                  value={expenseForm.wallet}
-                  name="wallet"
-                  placeholder="0x"
-                  onChange={handleInputChange}
-                  required
+  return (
+    <Fragment>
+      <Web3ConnectWarning />
+
+      <div id="create-milestone-view">
+        <Row>
+          <Col span={24}>
+            <PageHeader
+              className="site-page-header my-test"
+              onBack={goBack}
+              title="Create New Expense"
+              ghost={false}
+            />
+          </Col>
+        </Row>
+        <Row>
+          <div className="card-form-container">
+            <Form className="card-form" requiredMark onFinish={submit}>
+              <div className="card-form-header">
+                <img src={`${process.env.PUBLIC_URL}/img/expense.png`} alt="expense-logo" />
+                <div className="title">Expense</div>
+              </div>
+
+              <MilestoneCampaignInfo campaign={campaign} />
+
+              <MilestoneTitle
+                onChange={handleInputChange}
+                value={expenseForm.title}
+                extra="What is the purpose of these expenses?"
+              />
+
+              <div className="title">Expense details</div>
+              {expenseForm.expenses.map((expense, idx) => (
+                <ExpenseCreateForm
+                  key={expense.key}
+                  expense={expense}
+                  id={idx}
+                  updateStateOfexpenses={updateStateOfexpenses}
                 />
-              </Form.Item>
-            </div>
-            <Form.Item>
-              <Button type="primary" htmlType="submit" className="submit-button">
-                Submit
+              ))}
+              <Button onClick={addExpense} className="add-expense-button">
+                Add new Expense
               </Button>
-            </Form.Item>
-          </Form>
-        </div>
-      </Row>
-    </div>
+
+              <div className="section">
+                <div className="title">Reimbursement options</div>
+                <Form.Item
+                  name="reimbursementCurrency"
+                  label="Reimburse in Currency"
+                  className="custom-form-item"
+                  extra="Select the token you want to be reimbursed in."
+                >
+                  <Row gutter={16} align="middle">
+                    <Col className="gutter-row" span={12}>
+                      <Select
+                        showSearch
+                        placeholder="Select a Currency"
+                        optionFilterProp="children"
+                        name="reimbursementCurrency"
+                        onSelect={handleSelectReimbursementCurrency}
+                        filterOption={(input, option) =>
+                          option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                        }
+                        value={expenseForm.reimbursementCurrency}
+                        required
+                      >
+                        {activeTokenWhitelist.map(token => (
+                          <Select.Option key={token.name} value={token.name}>
+                            {token.name}
+                          </Select.Option>
+                        ))}
+                      </Select>
+                    </Col>
+                    <Col className="gutter-row" span={12}>
+                      <Typography.Text className="ant-form-text" type="secondary">
+                        ≈ 0.006544 ETH
+                      </Typography.Text>
+                    </Col>
+                  </Row>
+                </Form.Item>
+
+                <Form.Item
+                  name="wallet"
+                  label="Reimburse to wallet address"
+                  className="custom-form-item"
+                  extra="If you don’t change this field the address associated with your account will be
+                used."
+                >
+                  <Input
+                    value={expenseForm.wallet}
+                    name="wallet"
+                    placeholder="0x"
+                    onChange={handleInputChange}
+                    required
+                  />
+                </Form.Item>
+              </div>
+              <Form.Item>
+                <Button type="primary" htmlType="submit" className="submit-button">
+                  Submit
+                </Button>
+              </Form.Item>
+            </Form>
+          </div>
+        </Row>
+      </div>
+    </Fragment>
   );
 }
 

@@ -1,12 +1,14 @@
-import React, { Fragment } from 'react';
-import { Checkbox, Form, Input, notification, Select, Upload } from 'antd';
+import React, { Fragment, useEffect } from 'react';
+import { Checkbox, Col, DatePicker, Form, Input, notification, Row, Select, Upload } from 'antd';
 import 'antd/dist/antd.css';
 import PropTypes from 'prop-types';
 import { DeleteTwoTone } from '@ant-design/icons';
 import ImgCrop from 'antd-img-crop';
+import moment from 'moment';
 import config from '../configuration';
 import { IPFSService } from '../services';
 import useReviewers from '../hooks/useReviewers';
+import { getStartOfDayUTC } from '../lib/helpers';
 
 const MilestoneTitle = ({ extra, onChange, value }) => (
   <Form.Item
@@ -246,6 +248,53 @@ MilestoneReviewer.defaultProps = {
   toggleHasReviewer: null,
 };
 
+const MilestoneDatePicker = ({ onChange }) => {
+  const maxValue = getStartOfDayUTC().subtract(1, 'd');
+
+  useEffect(() => {
+    onChange(maxValue);
+  }, []);
+  return (
+    <Row gutter={16}>
+      <Col className="gutter-row" span={10}>
+        <Form.Item label="Date" className="custom-form-item">
+          <DatePicker
+            disabledDate={current => {
+              return current && current > moment().startOf('day');
+            }}
+            rules={[
+              {
+                required: true,
+              },
+            ]}
+            defaultValue={maxValue}
+            onChange={(_, dateString) => onChange(dateString)}
+          />
+        </Form.Item>
+      </Col>
+    </Row>
+  );
+};
+
+MilestoneDatePicker.propTypes = {
+  onChange: PropTypes.func.isRequired,
+};
+
+const MilestoneCampaignInfo = ({ campaign }) => (
+  <div className="campaign-info">
+    <div className="lable">Campaign</div>
+    <div className="content">{campaign && campaign.title}</div>
+  </div>
+);
+MilestoneCampaignInfo.propTypes = {
+  campaign: PropTypes.shape({
+    title: PropTypes.string,
+  }),
+};
+MilestoneCampaignInfo.defaultProps = {
+  campaign: {},
+};
+
 // eslint-disable-next-line import/prefer-default-export
 export {
   MilestoneTitle,
@@ -253,4 +302,6 @@ export {
   MilestonePicture,
   MilestoneDonateToDac,
   MilestoneReviewer,
+  MilestoneDatePicker,
+  MilestoneCampaignInfo,
 };

@@ -30,4 +30,23 @@
 		background: #edf0fa;
 		border-radius: 8px;
 	}
+
+  .add-expense-button {
+    width: 100%;
+    height: 52px;
+
+    border: 2px solid $new-purple;
+    box-sizing: border-box;
+    border-radius: 8px;
+
+    font-family: Quicksand;
+    font-style: normal;
+    font-weight: bold;
+    font-size: 16px;
+    line-height: 20px;
+
+    text-align: center;
+
+    color: $new-purple;
+  }
 }
