@@ -8,7 +8,7 @@ import moment from 'moment';
 import config from '../configuration';
 import { IPFSService } from '../services';
 import useReviewers from '../hooks/useReviewers';
-import { getStartOfDayUTC } from '../lib/helpers';
+import { getStartOfDayUTC, getHtmlText } from '../lib/helpers';
 import Editor from './Editor';
 
 const MilestoneTitle = ({ extra, onChange, value }) => (
@@ -64,9 +64,19 @@ const MilestoneDescription = ({ extra, onChange, placeholder, value, label }) =>
         {
           required: true,
           type: 'string',
-          min: 10,
-          message: 'Please provide at least 10 characters and do not edit the template keywords.',
         },
+        () => ({
+          validator(_, val) {
+            if (!val || getHtmlText(value).length > 10) {
+              return Promise.resolve();
+            }
+            return Promise.reject(
+              new Error(
+                'Please provide at least 10 characters and do not edit the template keywords.',
+              ),
+            );
+          },
+        }),
       ]}
     >
       <Editor
