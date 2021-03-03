@@ -1,14 +1,17 @@
 /* eslint-disable react/prop-types */
-import React, { useContext } from 'react';
+import React, { useContext, useState } from 'react';
 import ImgCrop from 'antd-img-crop';
-import { Col, Form, Input, Row, Select, Upload } from 'antd';
+import { Button, Col, Form, Input, Row, Select, Upload } from 'antd';
+import Modal from 'antd/lib/modal/Modal';
 import { Context as WhiteListContext } from '../contextProviders/WhiteListProvider';
 import { MilestoneDatePicker } from './EditMilestoneCommons';
 
-function ExpenseCreateForm({ expense, updateStateOfexpenses }) {
+const ExpenseCreateForm = ({ expense, updateStateOfexpenses, removeExpense, removeAble }) => {
   const {
     state: { fiatWhitelist },
   } = useContext(WhiteListContext);
+
+  const [visibleRemoveModal, setVisibleRemoveModal] = useState(false);
 
   function handleInputChange(event, expKey) {
     const { target } = event;
@@ -23,8 +26,19 @@ function ExpenseCreateForm({ expense, updateStateOfexpenses }) {
   }
 
   function handleDatePicker(dateString, expKey) {
-    console.log(dateString, expKey);
     updateStateOfexpenses('date', dateString, expKey);
+  }
+
+  function hideRemoveModal() {
+    setVisibleRemoveModal(false);
+  }
+
+  function showRemoveModal() {
+    setVisibleRemoveModal(true);
+  }
+
+  function removeExpenseHandler() {
+    removeExpense(expense.key);
   }
 
   return (
@@ -127,9 +141,24 @@ function ExpenseCreateForm({ expense, updateStateOfexpenses }) {
           </Upload.Dragger>
         </ImgCrop>
       </Form.Item>
+      {removeAble && (
+        <Button onClick={showRemoveModal} className="remove-expense-button">
+          Remove Expense
+        </Button>
+      )}
+      <Modal
+        title="Warning"
+        visible={visibleRemoveModal}
+        onOk={removeExpenseHandler}
+        onCancel={hideRemoveModal}
+        okText="Yes"
+        cancelText="cancel"
+      >
+        <p>Are you sure you want to delete this expense?</p>
+      </Modal>
       <hr />
     </div>
   );
-}
+};
 
 export default ExpenseCreateForm;

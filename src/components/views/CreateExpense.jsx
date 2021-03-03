@@ -69,6 +69,14 @@ function CreateExpense(props) {
     });
   }
 
+  function removeExpense(key) {
+    const filteredExpenses = expenseForm.expenses.filter(expense => expense.key !== key);
+    setExpenseForm({
+      ...expenseForm,
+      expenses: filteredExpenses,
+    });
+  }
+
   function goBack() {
     props.history.goBack();
   }
@@ -113,6 +121,8 @@ function CreateExpense(props) {
                   expense={expense}
                   id={idx}
                   updateStateOfexpenses={updateStateOfexpenses}
+                  removeExpense={removeExpense}
+                  removeAble={expenseForm.expenses.length > 1}
                 />
               ))}
               <Button onClick={addExpense} className="add-expense-button">
