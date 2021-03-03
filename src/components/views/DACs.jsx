@@ -44,54 +44,56 @@ const DACs = ({ onlyRecent, step }) => {
     return () => {
       isMounted.current = false;
     };
-  }, []);
+  }, [onlyRecent]);
 
   return (
-    <div id="dacs-view" className="card-view">
-      <div className="container-fluid page-layout reduced-padding">
-        <h4>
-          Decentralized Altruistic Communities{' '}
-          {total > 0 && <span className="badge badge-success">{total}</span>}
-        </h4>
+    <div className="container">
+      <div id="dacs-view" className="card-view">
+        <div className="container-fluid page-layout reduced-padding">
+          <h4>
+            Decentralized Altruistic Communities{' '}
+            {total > 0 && <span className="badge badge-success">{total}</span>}
+          </h4>
 
-        {// There are some DACs in the system, show them
-        !hasError && dacs.length > 0 && (
-          <div>
+          {// There are some DACs in the system, show them
+          !hasError && dacs.length > 0 && (
+            <div>
+              <p>
+                These Communities are solving causes. Help them realise their goals by joining them
+                and giving Ether or tokens!
+              </p>
+              <div className="cards-grid-container">
+                {dacs.map(dac => (
+                  <DACCard key={dac.id} dac={dac} />
+                ))}
+              </div>
+              {dacs.length < total && <LoadMore onClick={loadMore} disabled={isLoading} />}
+            </div>
+          )}
+          {!hasError && isLoading && <Loader />}
+
+          {// There are no DACs, show empty state
+          !hasError && !isLoading && dacs.length === 0 && (
+            <div>
+              <div className="text-center">
+                <p>There are no Decentralized Altruistic Communities (DACs) yet!</p>
+                <img
+                  className="empty-state-img"
+                  src={`${process.env.PUBLIC_URL}/img/community.svg`}
+                  width="200px"
+                  height="200px"
+                  alt="no-dacs-icon"
+                />
+              </div>
+            </div>
+          )}
+          {hasError && (
             <p>
-              These Communities are solving causes. Help them realise their goals by joining them
-              and giving Ether or tokens!
+              <strong>Oops, something went wrong...</strong> The Giveth dapp could not load any DACs
+              for some reason. Please try refreshing the page...
             </p>
-            <div className="cards-grid-container">
-              {dacs.map(dac => (
-                <DACCard key={dac.id} dac={dac} />
-              ))}
-            </div>
-            {dacs.length < total && <LoadMore onClick={loadMore} disabled={isLoading} />}
-          </div>
-        )}
-        {!hasError && isLoading && <Loader />}
-
-        {// There are no DACs, show empty state
-        !hasError && !isLoading && dacs.length === 0 && (
-          <div>
-            <div className="text-center">
-              <p>There are no Decentralized Altruistic Communities (DACs) yet!</p>
-              <img
-                className="empty-state-img"
-                src={`${process.env.PUBLIC_URL}/img/community.svg`}
-                width="200px"
-                height="200px"
-                alt="no-dacs-icon"
-              />
-            </div>
-          </div>
-        )}
-        {hasError && (
-          <p>
-            <strong>Oops, something went wrong...</strong> The Giveth dapp could not load any DACs
-            for some reason. Please try refreshing the page...
-          </p>
-        )}
+          )}
+        </div>
       </div>
     </div>
   );

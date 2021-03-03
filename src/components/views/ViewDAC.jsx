@@ -69,12 +69,15 @@ const ViewDAC = ({ match }) => {
   };
 
   useEffect(() => {
-    const slugOrId = match.params.id;
+    const { id, slug } = match.params;
+    const getFunction = slug
+      ? DACService.getBySlug.bind(DACService, slug)
+      : DACService.get.bind(DACService, id);
     // Get the DAC
-    DACService.getBySlugOrId(slugOrId)
+    getFunction()
       .then(_dac => {
-        if (_dac.id === slugOrId) {
-          history.push(`/dacs/${_dac.slug}`);
+        if (id) {
+          history.push(`/dac/${_dac.slug}`);
         }
         setDac(_dac);
         setLoading(false);
@@ -144,7 +147,7 @@ const ViewDAC = ({ match }) => {
     return <NotFound projectType="DAC" />;
   }
 
-  const userIsOwner = dac && dac.owner && currentUser && dac.owner.address === currentUser.address;
+  const userIsOwner = dac && dac.owner && dac.owner.address === currentUser.address;
 
   const campaignsTitle = `Campaigns${campaigns.length ? ` (${campaigns.length})` : ''}`;
   const leaderBoardTitle = `Leaderboard${donationsTotal ? ` (${donationsTotal})` : ''}`;
@@ -327,6 +330,7 @@ ViewDAC.propTypes = {
   match: PropTypes.shape({
     params: PropTypes.shape({
       id: PropTypes.string,
+      slug: PropTypes.string,
     }).isRequired,
   }).isRequired,
 };

@@ -41,7 +41,8 @@ const modalStyles = {
     marginRight: '-20%',
     transform: 'translate(-50%, -50%)',
     boxShadow: '0 0 40px #ccc',
-    overflowY: 'scroll',
+    overflowY: 'auto',
+    maxHeight: '64%',
   },
 };
 
@@ -190,7 +191,6 @@ const DelegateMultipleButton = props => {
   const setToken = address => {
     setSelectedToken(tokenWhitelist.find(t => t.address === address));
     setLoadingDonations(true);
-    loadDonations(objectToDelegateFrom).then();
   };
 
   function selectedObject({ target }) {
@@ -259,6 +259,10 @@ const DelegateMultipleButton = props => {
       selectedObject({ target: { value: [delegationOptions[0].id] } }, new BigNumber(0));
     }
   }, [delegationOptions]);
+
+  useEffect(() => {
+    loadDonations(objectToDelegateFrom).then();
+  }, [selectedToken]);
 
   function openDialog() {
     isLoggedIn(currentUser)

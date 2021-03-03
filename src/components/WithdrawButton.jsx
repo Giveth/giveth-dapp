@@ -90,7 +90,7 @@ class WithdrawButton extends Component {
     const { currentUser } = this.props;
     WalletService.withdraw(
       {
-        from: currentUser && currentUser.address,
+        from: currentUser.address,
         to: model.to,
         value: `${model.amount}`,
       },

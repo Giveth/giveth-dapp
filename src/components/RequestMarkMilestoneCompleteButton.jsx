@@ -22,7 +22,7 @@ const RequestMarkMilestoneCompleteButton = ({ milestone }) => {
   const conversationModal = useRef();
 
   const requestMarkComplete = () => {
-    const userAddress = currentUser && currentUser.address;
+    const userAddress = currentUser.address;
 
     actionWithLoggedIn(currentUser).then(() =>
       checkBalance(balance)

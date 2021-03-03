@@ -103,12 +103,18 @@ const ViewMilestone = props => {
   }
 
   useEffect(() => {
-    const { milestoneId } = props.match.params;
+    const { milestoneId, milestoneSlug } = props.match.params;
+    const getFunction = milestoneSlug
+      ? MilestoneService.getBySlug.bind(MilestoneService, milestoneSlug)
+      : MilestoneService.get.bind(MilestoneService, milestoneId);
 
-    MilestoneService.getBySlugOrId(milestoneId).then(_milestone => {
+    getFunction().then(_milestone => {
       if (!_milestone) {
         setNotFound(true);
         return;
+      }
+      if (milestoneId) {
+        history.push(`/milestone/${_milestone.slug}`);
       }
       setMilestone(_milestone);
       setCampaign(new Campaign(_milestone.campaign));
@@ -137,7 +143,7 @@ const ViewMilestone = props => {
 
   useEffect(() => {
     if (
-      currentUser &&
+      currentUser.address &&
       !currency &&
       milestone.donationCounters &&
       milestone.donationCounters.length
@@ -491,7 +497,7 @@ const ViewMilestone = props => {
                                     : 'The date this Milestone was created'
                                 }
                               />
-                              {moment.utc(milestone.date).format('Do MMM YYYY')}
+                              {moment.utc(milestone.createdAt).format('Do MMM YYYY')}
                             </div>
                           )}
 
@@ -664,7 +670,8 @@ const ViewMilestone = props => {
 ViewMilestone.propTypes = {
   match: PropTypes.shape({
     params: PropTypes.shape({
-      milestoneId: PropTypes.string.isRequired,
+      milestoneId: PropTypes.string,
+      milestoneSlug: PropTypes.string,
     }),
   }).isRequired,
 };

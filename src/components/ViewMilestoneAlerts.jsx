@@ -12,19 +12,20 @@ import WithdrawMilestoneFundsButton from './WithdrawMilestoneFundsButton';
 import DelegateMultipleButton from './DelegateMultipleButton';
 import { Context as UserContext } from '../contextProviders/UserProvider';
 import RequestMarkMilestoneCompleteButton from './RequestMarkMilestoneCompleteButton';
+import config from '../configuration';
 
 const ViewMilestoneAlerts = ({ milestone, campaign }) => {
   const {
-    state: { currentUser, isDelegator },
+    state: { currentUser, userIsDacOwner },
   } = useContext(UserContext);
 
   const { fullyFunded, status } = milestone;
   const milestoneIsActive = status === 'InProgress' && !fullyFunded;
 
-  const userAddress = currentUser && currentUser.address;
+  const userAddress = currentUser.address;
   const campaignOwnerAddress = campaign && campaign.ownerAddress;
 
-  const userCanDelegate = isDelegator || (userAddress && userAddress === campaignOwnerAddress);
+  const userCanDelegate = userIsDacOwner || (userAddress && userAddress === campaignOwnerAddress);
 
   return (
     <div>
@@ -71,7 +72,9 @@ const ViewMilestoneAlerts = ({ milestone, campaign }) => {
       )}
 
       {milestone.canUserWithdraw(currentUser) && (
-        <ProjectViewActionAlert message="Collect the funds held in this Milestone">
+        <ProjectViewActionAlert
+          message={`You use ${config.foreignNetworkName} to collect funds and we pay the fees to send it to you on ${config.homeNetworkName}`}
+        >
           <WithdrawMilestoneFundsButton milestone={milestone} />
         </ProjectViewActionAlert>
       )}

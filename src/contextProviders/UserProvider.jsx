@@ -31,14 +31,16 @@ class UserProvider extends Component {
     super();
 
     this.state = {
-      currentUser: undefined,
+      currentUser: {},
       hasError: false,
-      isDelegator: false,
+      userIsDacOwner: false,
+      isLoading: true,
     };
 
     this.getUserData = this.getUserData.bind(this);
     this.authenticateFeathers = this.authenticateFeathers.bind(this);
     this.signIn = this.signIn.bind(this);
+    this.updateUserData = this.updateUserData.bind(this);
 
     // hack to make signIn globally available
     React.signIn = this.signIn;
@@ -52,44 +54,42 @@ class UserProvider extends Component {
     const { currentUser } = this.state;
 
     const { account } = this.props;
-    if ((account && !currentUser) || (currentUser && account !== prevProps.account)) {
+    if (
+      (account && !currentUser.address) ||
+      (currentUser.address && account !== prevProps.account)
+    ) {
       this.getUserData(account);
       this.checkGivethWallet();
     }
   }
 
-  componentWillUnmount() {
-    if (this.userSubscriber) this.userSubscriber.unsubscribe();
-  }
-
   async getUserData(address) {
-    if (this.userSubscriber) this.userSubscriber.unsubscribe();
-
     if (!address) {
-      this.setState({ currentUser: undefined, isDelegator: false }, () => {
+      this.setState({ currentUser: {}, userIsDacOwner: false, isLoading: false }, () => {
         this.props.onLoaded();
       });
     } else {
-      this.userSubscriber = feathersClient
+      feathersClient
         .service('/users')
-        .watch({ listStrategy: 'always' })
         .find({
           query: {
             address,
           },
         })
-        .subscribe(
+        .then(
           resp => {
             const currentUser = resp.total === 1 ? new User(resp.data[0]) : new User({ address });
-            this.setState({ currentUser }, () => {
-              this.authenticateFeathers();
+            if (currentUser.address === address) {
+              this.setState({ currentUser }, () => {
+                this.authenticateFeathers();
 
-              DACService.getUserIsDacOwner(
-                address,
-                isDelegator => this.setState({ isDelegator }),
-                () => this.setState({ isDelegator: false }),
-              );
-            });
+                DACService.getUserIsDacOwner(
+                  address,
+                  userIsDacOwner => this.setState({ userIsDacOwner }),
+                  () => this.setState({ userIsDacOwner: false }),
+                );
+              });
+            }
           },
           error => {
             const message = `Something went wrong with getting user profile. Please try again after refresh.`;
@@ -144,11 +144,14 @@ class UserProvider extends Component {
   signIn(redirectOnFail) {
     const { currentUser } = this.state;
 
-    if (currentUser) {
+    if (currentUser.address) {
       authenticateIfPossible(currentUser, redirectOnFail).then(isAuthenticated => {
         if (isAuthenticated) {
           currentUser.authenticated = true;
-          this.setState({ currentUser: new User(currentUser) });
+          this.setState({
+            currentUser: new User(currentUser),
+            isLoading: false,
+          });
           this.props.onLoaded();
         }
       });
@@ -158,7 +161,7 @@ class UserProvider extends Component {
   async authenticateFeathers() {
     const { currentUser } = this.state;
 
-    if (currentUser) {
+    if (currentUser.address) {
       try {
         const token = await feathersClient.passport.getJWT();
 
@@ -181,11 +184,20 @@ class UserProvider extends Component {
       }
     }
 
+    this.setState({ isLoading: false });
     this.props.onLoaded();
   }
 
+  async updateUserData() {
+    const { currentUser } = this.state;
+
+    if (currentUser.address) {
+      await this.getUserData(currentUser.address);
+    }
+  }
+
   render() {
-    const { currentUser, hasError, isDelegator } = this.state;
+    const { currentUser, hasError, userIsDacOwner, isLoading } = this.state;
 
     return (
       <Provider
@@ -194,7 +206,11 @@ class UserProvider extends Component {
             currentUser,
             hasError,
             signIn: this.signIn,
-            isDelegator,
+            userIsDacOwner,
+            isLoading,
+          },
+          actions: {
+            updateUserData: this.updateUserData,
           },
         }}
       >

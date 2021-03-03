@@ -28,7 +28,7 @@ const Balances = ({ entity }) => {
   const [currentBalanceValue, setCurrentBalanceValue] = useState(null);
 
   useEffect(() => {
-    if (currentUser && !currency && entity.donationCounters) {
+    if (currentUser.address && !currency && entity.donationCounters) {
       // eslint-disable-next-line
       setCurrency(currentUser.currency);
       convertMultipleRates(

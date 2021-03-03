@@ -110,10 +110,16 @@ const ViewCampaign = ({ match }) => {
   };
 
   useEffect(() => {
-    const slugOrId = match.params.id;
+    const { id, slug } = match.params;
+    const getFunction = slug
+      ? CampaignService.getBySlug.bind(CampaignService, slug)
+      : CampaignService.get.bind(CampaignService, id);
 
-    CampaignService.getBySlugOrId(slugOrId)
+    getFunction()
       .then(_campaign => {
+        if (_campaign && id) {
+          history.push(`/campaign/${_campaign.slug}`);
+        }
         currentCampaign = _campaign;
         setCampaign(_campaign);
         setLoading(false);
@@ -179,7 +185,7 @@ const ViewCampaign = ({ match }) => {
 
   if (!isLoading && !campaign) return <p>Unable to find a campaign</p>;
 
-  const userAddress = currentUser && currentUser.address;
+  const userAddress = currentUser.address;
   const ownerAddress = campaign && campaign.ownerAddress;
   const userIsOwner = userAddress && userAddress === ownerAddress;
   const donationAddress = campaign && campaign.donationAddress;
@@ -205,7 +211,7 @@ const ViewCampaign = ({ match }) => {
   return (
     <HelmetProvider context={helmetContext}>
       <UserConsumer>
-        {({ state: { isDelegator } }) => (
+        {({ state: { userIsDacOwner } }) => (
           <ErrorBoundary>
             <div id="view-campaign-view">
               {isLoading && <Loader className="fixed" />}
@@ -269,7 +275,7 @@ const ViewCampaign = ({ match }) => {
                             </ProjectViewActionAlert>
                           )}
 
-                          {isDelegator && (
+                          {userIsDacOwner && (
                             <ProjectViewActionAlert message="Delegate some donation to this project">
                               <DelegateMultipleButton campaign={campaign} />
                             </ProjectViewActionAlert>
@@ -360,7 +366,7 @@ const ViewCampaign = ({ match }) => {
                               )}
                               {campaign.isActive && (
                                 <Fragment>
-                                  {isDelegator && (
+                                  {userIsDacOwner && (
                                     <DelegateMultipleButton
                                       campaign={campaign}
                                       balance={balance}
@@ -480,6 +486,7 @@ ViewCampaign.propTypes = {
   match: PropTypes.shape({
     params: PropTypes.shape({
       id: PropTypes.string,
+      slug: PropTypes.string,
     }).isRequired,
   }).isRequired,
 };

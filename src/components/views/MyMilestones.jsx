@@ -58,7 +58,7 @@ function MyMilestones() {
   }
 
   function loadMileStones() {
-    const myAddress = currentUser && currentUser.address;
+    const myAddress = currentUser.address;
 
     MilestoneService.subscribeMyMilestones({
       milestoneStatus,
@@ -171,7 +171,7 @@ function MyMilestones() {
                               </td>
                               <td className="td-name">
                                 <strong>
-                                  <Link to={`/milestones/${m.slug}`}>
+                                  <Link to={`/milestone/${m.slug}`}>
                                     MILESTONE <em>{getTruncatedText(m.title, 35)}</em>
                                   </Link>
                                 </strong>

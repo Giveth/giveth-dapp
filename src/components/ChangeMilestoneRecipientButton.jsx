@@ -57,7 +57,7 @@ function ChangeMilestoneRecipientButton({ milestone }) {
 
             await MilestoneService.changeRecipient({
               milestone,
-              from: currentUser && currentUser.address,
+              from: currentUser.address,
               newRecipient,
               onTxHash: txUrl => {
                 React.toast.info(

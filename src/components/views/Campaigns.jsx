@@ -45,51 +45,53 @@ const Campaigns = ({ onlyRecent, step }) => {
     return () => {
       isMounted.current = false;
     };
-  }, []);
+  }, [onlyRecent]);
 
   return (
-    <div id="campaigns-view" className="card-view">
-      <div className="container-fluid page-layout reduced-padding">
-        <h4>Campaigns {total > 0 && <span className="badge badge-success">{total}</span>}</h4>
+    <div className="container">
+      <div id="campaigns-view" className="card-view">
+        <div className="container-fluid page-layout reduced-padding">
+          <h4>Campaigns {total > 0 && <span className="badge badge-success">{total}</span>}</h4>
 
-        {// There are some Campaigns in the system, show them
-        !hasError && campaigns.length > 0 && (
-          <div>
+          {// There are some Campaigns in the system, show them
+          !hasError && campaigns.length > 0 && (
+            <div>
+              <p>
+                These Campaigns work hard to solve causes. Help them realise their goals by giving
+                Ether or tokens!
+              </p>
+              <div className="cards-grid-container">
+                {campaigns.map(campaign => (
+                  <CampaignCard key={campaign.id} campaign={campaign} />
+                ))}
+              </div>
+              {campaigns.length < total && <LoadMore onClick={loadMore} disabled={isLoading} />}
+            </div>
+          )}
+          {!hasError && isLoading && <Loader />}
+
+          {// There are no Campaigns, show empty state
+          !hasError && !isLoading && campaigns.length === 0 && (
+            <div>
+              <div className="text-center">
+                <p>There are no Campaigns yet!</p>
+                <img
+                  className="empty-state-img"
+                  src={`${process.env.PUBLIC_URL}/img/campaign.svg`}
+                  width="200px"
+                  height="200px"
+                  alt="no-campaigns-icon"
+                />
+              </div>
+            </div>
+          )}
+          {hasError && (
             <p>
-              These Campaigns work hard to solve causes. Help them realise their goals by giving
-              Ether or tokens!
+              <strong>Oops, something went wrong...</strong> The Giveth dapp could not load
+              Campaigns for some reason. Please try refreshing the page...
             </p>
-            <div className="cards-grid-container">
-              {campaigns.map(campaign => (
-                <CampaignCard key={campaign.id} campaign={campaign} />
-              ))}
-            </div>
-            {campaigns.length < total && <LoadMore onClick={loadMore} disabled={isLoading} />}
-          </div>
-        )}
-        {!hasError && isLoading && <Loader />}
-
-        {// There are no Campaigns, show empty state
-        !hasError && !isLoading && campaigns.length === 0 && (
-          <div>
-            <div className="text-center">
-              <p>There are no Campaigns yet!</p>
-              <img
-                className="empty-state-img"
-                src={`${process.env.PUBLIC_URL}/img/campaign.svg`}
-                width="200px"
-                height="200px"
-                alt="no-campaigns-icon"
-              />
-            </div>
-          </div>
-        )}
-        {hasError && (
-          <p>
-            <strong>Oops, something went wrong...</strong> The Giveth dapp could not load Campaigns
-            for some reason. Please try refreshing the page...
-          </p>
-        )}
+          )}
+        </div>
       </div>
     </div>
   );

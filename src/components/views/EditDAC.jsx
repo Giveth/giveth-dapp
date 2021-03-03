@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { Component, Fragment } from 'react';
 import { Prompt } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import { Form, Input } from 'formsy-react-components';
@@ -9,12 +9,12 @@ import Loader from '../Loader';
 import QuillFormsy from '../QuillFormsy';
 import FormsyImageUploader from '../FormsyImageUploader';
 import GoBackButton from '../GoBackButton';
-import { isOwner, getTruncatedText, history } from '../../lib/helpers';
+import { getTruncatedText, history, isOwner } from '../../lib/helpers';
 import {
-  checkForeignNetwork,
-  checkProfile,
   authenticateIfPossible,
   checkBalance,
+  checkForeignNetwork,
+  checkProfile,
 } from '../../lib/middleware';
 import LoaderButton from '../LoaderButton';
 
@@ -22,8 +22,8 @@ import DACservice from '../../services/DACService';
 import DAC from '../../models/DAC';
 import User from '../../models/User';
 import ErrorPopup from '../ErrorPopup';
-import { Consumer as WhiteListConsumer } from '../../contextProviders/WhiteListProvider';
 import ErrorHandler from '../../lib/ErrorHandler';
+import { Consumer as UserConsumer } from '../../contextProviders/UserProvider';
 
 /**
  * View to create or edit a DAC
@@ -61,7 +61,7 @@ class EditDAC extends Component {
       .then(() => this.checkUser())
       .then(() => {
         if (!this.props.isNew) {
-          DACservice.getBySlugOrId(match.params.id)
+          DACservice.get(match.params.id)
             .then(dac => {
               // The user is not an owner, hence can not change the DAC
               if (!isOwner(dac.ownerAddress, this.props.currentUser)) {
@@ -72,10 +72,17 @@ class EditDAC extends Component {
               }
             })
             .catch(err => {
-              const message = `Sadly we were unable to load the DAC. Please refresh the page and try again.`;
-              ErrorHandler(err, message);
+              if (err.status === 404) history.push('/notfound');
+              else {
+                const message = `Sadly we were unable to load the DAC. Please refresh the page and try again.`;
+                ErrorHandler(err, message);
+              }
             });
         } else {
+          if (!this.props.currentUser.isDelegator) {
+            history.goBack();
+          }
+
           this.setState({ isLoading: false });
         }
       })
@@ -96,7 +103,9 @@ class EditDAC extends Component {
         if (!this.props.isNew && !isOwner(this.state.dac.ownerAddress, this.props.currentUser))
           history.goBack();
       });
-    } else if (this.props.currentUser && !prevProps.balance.eq(this.props.balance)) {
+    } else if (this.props.isNew && !this.props.currentUser.isDelegator) {
+      history.goBack();
+    } else if (this.props.currentUser.address && !prevProps.balance.eq(this.props.balance)) {
       checkBalance(this.props.balance);
     }
   }
@@ -119,8 +128,8 @@ class EditDAC extends Component {
 
     return authenticateIfPossible(this.props.currentUser, true)
       .then(() => {
-        if (!this.props.isDelegate(this.props.currentUser)) {
-          throw new Error('not whitelisted');
+        if (!this.props.currentUser) {
+          throw new Error('not authorized');
         }
       })
       .then(() => checkProfile(this.props.currentUser))
@@ -227,15 +236,7 @@ class EditDAC extends Component {
                     <p>
                       <i className="fa fa-question-circle" />A DAC unites Givers and Makers in
                       building a community around their common vision to raise then delegate funds
-                      to Campaigns that deliver a positive impact to shared goals. Read more{' '}
-                      <a
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        href="https://wiki.giveth.io/documentation/glossary/"
-                      >
-                        here
-                      </a>
-                      .
+                      to Campaigns that deliver a positive impact to shared goals.
                     </p>
                   </div>
 
@@ -280,8 +281,8 @@ class EditDAC extends Component {
                       <QuillFormsy
                         name="description"
                         label="Explain the cause of your community"
-                        helpText="Describe the shared vision and goals of your Community and the cause 
-                        that you are collaborating to solve. Share links, insert media to convey your 
+                        helpText="Describe the shared vision and goals of your Community and the cause
+                        that you are collaborating to solve. Share links, insert media to convey your
                         message and build trust so that people will join your Community and/or donate to the cause."
                         value={dac.description}
                         placeholder="Describe how you're going to solve your cause..."
@@ -359,7 +360,6 @@ EditDAC.propTypes = {
       id: PropTypes.string,
     }).isRequired,
   }).isRequired,
-  isDelegate: PropTypes.func.isRequired,
 };
 
 EditDAC.defaultProps = {
@@ -368,7 +368,12 @@ EditDAC.defaultProps = {
 };
 
 export default props => (
-  <WhiteListConsumer>
-    {({ actions: { isDelegate } }) => <EditDAC {...props} isDelegate={isDelegate} />}
-  </WhiteListConsumer>
+  <UserConsumer>
+    {({ state: { currentUser, isLoading: userIsLoading } }) => (
+      <Fragment>
+        {userIsLoading && <Loader className="fixed" />}
+        {!userIsLoading && <EditDAC currentUser={currentUser} {...props} />}
+      </Fragment>
+    )}
+  </UserConsumer>
 );

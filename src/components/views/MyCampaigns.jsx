@@ -58,7 +58,7 @@ class MyCampaigns extends Component {
   loadCampaigns() {
     const { currentUser } = this.props;
     this.campaignsObserver = CampaignService.getUserCampaigns(
-      currentUser && currentUser.address,
+      currentUser.address,
       this.state.skipPages,
       this.state.itemsPerPage,
       campaigns => this.setState({ campaigns, isLoading: false }),
@@ -66,11 +66,11 @@ class MyCampaigns extends Component {
     );
   }
 
-  editCampaign(slug) {
+  editCampaign(id) {
     actionWithLoggedIn(this.props.currentUser).then(() => {
       checkBalance(this.props.balance)
         .then(() => {
-          history.push(`/campaigns/${slug}/edit`);
+          history.push(`/campaigns/${id}/edit`);
         })
         .catch(err => {
           if (err === 'noBalance') {
@@ -128,7 +128,7 @@ class MyCampaigns extends Component {
   render() {
     const { campaigns, isLoading, visiblePages } = this.state;
     const { currentUser } = this.props;
-    const userAddress = currentUser && currentUser.address;
+    const userAddress = currentUser.address;
     const isPendingCampaign =
       (campaigns.data && campaigns.data.some(d => d.confirmations !== d.requiredConfirmations)) ||
       false;
@@ -182,7 +182,7 @@ class MyCampaigns extends Component {
                                       <button
                                         type="button"
                                         className="btn btn-link"
-                                        onClick={() => this.editCampaign(c.slug)}
+                                        onClick={() => this.editCampaign(c.id)}
                                       >
                                         <i className="fa fa-edit" />
                                         &nbsp;Edit
@@ -204,7 +204,7 @@ class MyCampaigns extends Component {
                                       )}
                                   </td>
                                   <td className="td-name">
-                                    <Link to={`/campaigns/${c.slug}`}>
+                                    <Link to={`/campaign/${c.slug}`}>
                                       {getTruncatedText(c.title, 45)}
                                     </Link>
                                     {c.reviewerAddress === userAddress && (

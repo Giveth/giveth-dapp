@@ -34,32 +34,22 @@ class CampaignService {
   }
 
   /**
-   * Get a campaign defined by slug or by id
+   * Get a campaign defined by slug
    *
-   * @param slugOrId   Slug or ID of the campaign to be retrieved
+   * @param slug   Slug of the campaign to be retrieved
    */
-  static getBySlugOrId(slugOrId) {
+  static getBySlug(slug) {
     return new Promise((resolve, reject) => {
       campaigns
         .find({
           query: {
-            slug: slugOrId,
+            slug,
           },
         })
         .then(resp => {
           if (resp.data.length) resolve(new Campaign(resp.data[0]));
           else {
-            campaigns
-              .find({
-                query: {
-                  _id: slugOrId,
-                },
-              })
-              .then(_resp => {
-                if (_resp.data.length) resolve(new Campaign(_resp.data[0]));
-                reject(new ErrorModel({ message: 'Not found', status: 404 }));
-              })
-              .catch(err => reject(err));
+            reject(new ErrorModel({ message: 'Not found', status: 404 }));
           }
         })
         .catch(err => reject(err));
@@ -131,18 +121,15 @@ class CampaignService {
           status: {
             $nin: [Milestone.CANCELED, Milestone.PROPOSED, Milestone.REJECTED, Milestone.PENDING],
           },
-          $sort: { projectAddedAt: -1 },
+          $or: [
+            { donationCounters: { $not: { $size: 0 } } },
+            { status: { $ne: Milestone.COMPLETED } },
+          ],
+          $sort: { projectAddedAt: -1, projectId: -1 },
           $limit,
           $skip,
         },
       })
-      .then(resp => ({
-        ...resp,
-        data: resp.data.filter(
-          milestone =>
-            !(milestone.donationCounters.length <= 0 && milestone.status === Milestone.COMPLETED),
-        ),
-      }))
       .then(resp =>
         onSuccess(
           resp.data.map(m => new Milestone(m)),
