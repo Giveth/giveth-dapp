@@ -63,10 +63,10 @@ class MyDACs extends Component {
     );
   }
 
-  editDAC(slug) {
+  editDAC(id) {
     checkBalance(this.props.balance)
       .then(() => {
-        history.push(`/dacs/${slug}/edit`);
+        history.push(`/dacs/${id}/edit`);
       })
       .catch(err => {
         if (err === 'noBalance') {
@@ -120,13 +120,13 @@ class MyDACs extends Component {
                                 <button
                                   type="button"
                                   className="btn btn-link"
-                                  onClick={() => this.editDAC(d.slug)}
+                                  onClick={() => this.editDAC(d.id)}
                                 >
                                   <i className="fa fa-edit" />
                                 </button>
                               </td>
                               <td className="td-name">
-                                <Link to={`/dacs/${d.slug}`}>{getTruncatedText(d.title, 45)}</Link>
+                                <Link to={`/dac/${d.slug}`}>{getTruncatedText(d.title, 45)}</Link>
                               </td>
                               <td className="td-donations-number">
                                 {d.donationCounters.length > 0 &&

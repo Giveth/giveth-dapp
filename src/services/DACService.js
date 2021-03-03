@@ -63,39 +63,6 @@ class DACService {
   }
 
   /**
-   * Get a DAC defined by slug or by id
-   *
-   * @param slugOrId   Slug or ID of the DAC to be retrieved
-   */
-  static getBySlugOrId(slugOrId) {
-    return new Promise((resolve, reject) => {
-      dacs
-        .find({
-          query: {
-            slug: slugOrId,
-          },
-        })
-        .then(resp => {
-          if (resp.data.length) resolve(new DAC(resp.data[0]));
-          else {
-            dacs
-              .find({
-                query: {
-                  _id: slugOrId,
-                },
-              })
-              .then(_resp => {
-                if (_resp.data.length) resolve(new DAC(_resp.data[0]));
-                reject(new ErrorModel({ message: 'Not found', status: 404 }));
-              })
-              .catch(err => reject(err));
-          }
-        })
-        .catch(err => reject(err));
-    });
-  }
-
-  /**
    * Get a DAC defined by Delegate ID
    *
    *  @param delegateId Delegate Id of the DAC to be retrieved

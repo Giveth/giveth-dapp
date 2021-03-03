@@ -12,11 +12,11 @@ import GivethLogo from '../assets/logo.svg';
  */
 const CampaignCard = props => {
   const viewCampaign = () => {
-    history.push(`/campaigns/${props.campaign.slug}`);
+    history.push(`/campaign/${props.campaign.slug}`);
   };
 
   const createCampaignLink = () => {
-    return `/campaigns/${props.campaign.slug}`;
+    return `/campaign/${props.campaign.slug}`;
   };
 
   const { campaign } = props;

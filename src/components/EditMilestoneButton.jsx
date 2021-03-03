@@ -21,11 +21,13 @@ const EditMilestoneButton = forwardRef(({ milestone }, ref) => {
     checkBalance(balance)
       .then(() => {
         if (['Proposed', 'Rejected'].includes(milestone.status)) {
-          history.push(`/milestones/${milestone.slug}/edit/proposed`);
+          history.push(
+            `/campaigns/${milestone.campaignId}/milestones/${milestone._id}/edit/proposed`,
+          );
           // TODO:
           // history.push(`/milestones/${milestone._id}/edit/proposed`);
         } else {
-          history.push(`/milestones/${milestone.slug}/edit`);
+          history.push(`/campaigns/${milestone.campaignId}/milestones/${milestone._id}/edit`);
           // TODO:
           // history.push(`/milestones/${milestone._id}/edit`);
         }
