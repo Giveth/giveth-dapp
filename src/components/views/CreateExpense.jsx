@@ -3,7 +3,7 @@ import { PageHeader, Row, Col, Form, Input, Select, Button, Typography } from 'a
 import 'antd/dist/antd.css';
 import PropTypes from 'prop-types';
 import { v4 as uuidv4 } from 'uuid';
-import ExpenseCreateForm from '../ExpenseCreateForm';
+import CreateExpenseItem from '../CreateExpenseItem';
 import useCampaign from '../../hooks/useCampaign';
 import { Context as WhiteListContext } from '../../contextProviders/WhiteListProvider';
 import Web3ConnectWarning from '../Web3ConnectWarning';
@@ -114,20 +114,22 @@ function CreateExpense(props) {
                 extra="What is the purpose of these expenses?"
               />
 
-              <div className="title">Expense details</div>
-              {expenseForm.expenses.map((expense, idx) => (
-                <ExpenseCreateForm
-                  key={expense.key}
-                  expense={expense}
-                  id={idx}
-                  updateStateOfexpenses={updateStateOfexpenses}
-                  removeExpense={removeExpense}
-                  removeAble={expenseForm.expenses.length > 1}
-                />
-              ))}
-              <Button onClick={addExpense} className="add-expense-button">
-                Add new Expense
-              </Button>
+              <div className="section">
+                <div className="title">Expense details</div>
+                {expenseForm.expenses.map((expense, idx) => (
+                  <CreateExpenseItem
+                    key={expense.key}
+                    expense={expense}
+                    id={idx}
+                    updateStateOfexpenses={updateStateOfexpenses}
+                    removeExpense={removeExpense}
+                    removeAble={expenseForm.expenses.length > 1}
+                  />
+                ))}
+                <Button onClick={addExpense} className="add-expense-button">
+                  Add new Expense
+                </Button>
+              </div>
 
               <div className="section">
                 <div className="title">Reimbursement options</div>

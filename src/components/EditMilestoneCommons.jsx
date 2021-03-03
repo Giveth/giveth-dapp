@@ -1,4 +1,4 @@
-import React, { Fragment, useEffect } from 'react';
+import React, { Fragment, useCallback, useEffect } from 'react';
 import { Checkbox, Col, DatePicker, Form, Input, notification, Row, Select, Upload } from 'antd';
 import 'antd/dist/antd.css';
 import PropTypes from 'prop-types';
@@ -46,34 +46,50 @@ MilestoneTitle.defaultProps = {
   extra: '',
 };
 
-const MilestoneDescription = ({ extra, onChange, placeholder, value }) => (
-  <Form.Item
-    name="description"
-    label="Description"
-    className="custom-form-item"
-    extra={extra}
-    rules={[
-      {
-        required: true,
-        type: 'string',
-        min: 10,
-        message: 'Please provide at least 10 characters and do not edit the template keywords.',
-      },
-    ]}
-  >
-    <Editor name="description" onChange={onChange} value={value} placeholder={placeholder} />
-  </Form.Item>
-);
+const MilestoneDescription = ({ extra, onChange, placeholder, value, label }) => {
+  const onDescriptionChange = useCallback(
+    description => {
+      console.log('description:', description);
+      onChange({ target: { name: 'description', value: description } });
+    },
+    [onChange],
+  );
+  return (
+    <Form.Item
+      name="description"
+      label={label}
+      className="custom-form-item"
+      extra={extra}
+      rules={[
+        {
+          required: true,
+          type: 'string',
+          min: 10,
+          message: 'Please provide at least 10 characters and do not edit the template keywords.',
+        },
+      ]}
+    >
+      <Editor
+        name="description"
+        onChange={onDescriptionChange}
+        value={value}
+        placeholder={placeholder}
+      />
+    </Form.Item>
+  );
+};
 MilestoneDescription.propTypes = {
   value: PropTypes.string.isRequired,
   onChange: PropTypes.func.isRequired,
   extra: PropTypes.string,
   placeholder: PropTypes.string,
+  label: PropTypes.string,
 };
 
 MilestoneDescription.defaultProps = {
   extra: '',
   placeholder: '',
+  label: 'Description',
 };
 
 const MilestonePicture = ({ picture, setPicture, milestoneTitle }) => {
