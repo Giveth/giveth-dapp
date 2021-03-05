@@ -169,7 +169,7 @@ function CreateMilestone(props) {
         <Row>
           <Col span={24}>
             <PageHeader
-              className="site-page-header my-test"
+              className="site-page-header"
               onBack={goBack}
               title="Create New Milestone"
               ghost={false}

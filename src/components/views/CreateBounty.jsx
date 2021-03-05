@@ -166,7 +166,7 @@ function CreateBounty(props) {
         <Row>
           <Col span={24}>
             <PageHeader
-              className="site-page-header my-test"
+              className="site-page-header"
               onBack={goBack}
               title="Create New Bounty"
               ghost={false}
