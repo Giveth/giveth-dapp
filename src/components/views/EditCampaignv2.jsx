@@ -127,6 +127,8 @@ const EditCampaignV2 = ({
       });
   }, [userIsLoading, whitelistIsLoading]);
 
+  // TODO: Check if user Changes (in Class components checked in didUpdate)
+
   const handleInputChange = event => {
     const { name, value, type, checked } = event.target;
     if (type === 'checkbox') {
