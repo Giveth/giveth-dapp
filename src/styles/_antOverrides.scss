@@ -175,3 +175,21 @@
 .ant-notification{
 	padding-top: 60px;
 }
+
+
+#quill-ant {
+	& > div{
+		border: 2px solid #dfdae8;
+	}
+	& > .ql-toolbar{
+		border-bottom-width: 1px;
+		border-radius: 8px 8px 0 0;
+	}
+	& > .ql-container{
+		border-top-width: 1px;
+		border-radius:  0 0 8px 8px;
+		& > .ql-editor {
+			min-height: unset;
+		}
+	}
+}

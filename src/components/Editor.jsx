@@ -145,7 +145,7 @@ function Editor(props) {
           name="description"
           placeholder={placeholder}
           onChange={onChange}
-          id="quill-formsy"
+          id="quill-ant"
           theme="snow"
         />
       </div>
