@@ -1,5 +1,5 @@
 import React, { useContext, useState, Fragment } from 'react';
-import { Checkbox, PageHeader, Row, Col, Form, Input, Select, Button, DatePicker } from 'antd';
+import { PageHeader, Row, Col, Form, Input, Select, Button, DatePicker } from 'antd';
 import 'antd/dist/antd.css';
 import PropTypes from 'prop-types';
 import useCampaign from '../../hooks/useCampaign';
@@ -66,17 +66,6 @@ function CreatePayment(props) {
     props.history.goBack();
   }
 
-  function handleLimitChange() {
-    handleInputChange({
-      target: { name: 'noLimits', type: 'checkbox', checked: !payment.noLimits },
-    });
-    if (!payment.noLimits) {
-      activeTokenWhitelist.push({ name: 'Any Token' });
-    } else {
-      activeTokenWhitelist.pop();
-    }
-  }
-
   const submit = async () => {};
 
   return (
@@ -115,10 +104,6 @@ function CreatePayment(props) {
 
               <div className="section">
                 <div className="title">Payment details</div>
-
-                <Checkbox onChange={handleLimitChange} name="noLimits" checked={payment.noLimits}>
-                  No limits
-                </Checkbox>
 
                 <MilestoneTitle
                   value={payment.title}
