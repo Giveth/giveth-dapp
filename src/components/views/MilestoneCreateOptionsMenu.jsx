@@ -1,11 +1,19 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
 
 function MilestoneCreateOptionsMenu() {
+  // Fix relative path of the options menu
+  const currentUrl = window.location.href;
+  function CreateOptionsUrl(url) {
+    if (currentUrl[currentUrl.length - 1] === '/') {
+      return currentUrl + url;
+    }
+    return `${currentUrl}/${url}`;
+  }
+
   return (
     <div id="campaign-create-new-view">
       <div className="link-card-container">
-        <Link className="link-card" to="new/milestone">
+        <a className="link-card" href={CreateOptionsUrl('milestone')}>
           <img
             className="link-card-logo"
             src={`${process.env.PUBLIC_URL}/img/milestone.png`}
@@ -20,8 +28,8 @@ function MilestoneCreateOptionsMenu() {
             src={`${process.env.PUBLIC_URL}/img/right-arrow.svg`}
             alt="milestone-logo"
           />
-        </Link>
-        <Link className="link-card" to="new/bounty">
+        </a>
+        <a className="link-card" href={CreateOptionsUrl('bounty')}>
           <img
             className="link-card-logo"
             src={`${process.env.PUBLIC_URL}/img/bounty.png`}
@@ -36,8 +44,8 @@ function MilestoneCreateOptionsMenu() {
             src={`${process.env.PUBLIC_URL}/img/right-arrow.svg`}
             alt="milestone-logo"
           />
-        </Link>
-        <Link className="link-card" to="new/expense">
+        </a>
+        <a className="link-card" href={CreateOptionsUrl('expense')}>
           <img
             className="link-card-logo"
             src={`${process.env.PUBLIC_URL}/img/expense.png`}
@@ -50,8 +58,8 @@ function MilestoneCreateOptionsMenu() {
             src={`${process.env.PUBLIC_URL}/img/right-arrow.svg`}
             alt="milestone-logo"
           />
-        </Link>
-        <Link className="link-card" to="new/payment">
+        </a>
+        <a className="link-card" href={CreateOptionsUrl('payment')}>
           <img
             className="link-card-logo"
             src={`${process.env.PUBLIC_URL}/img/payment.png`}
@@ -66,7 +74,7 @@ function MilestoneCreateOptionsMenu() {
             src={`${process.env.PUBLIC_URL}/img/right-arrow.svg`}
             alt="milestone-logo"
           />
-        </Link>
+        </a>
       </div>
     </div>
   );
