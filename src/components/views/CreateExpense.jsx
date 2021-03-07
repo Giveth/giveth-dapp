@@ -6,6 +6,7 @@ import { v4 as uuidv4 } from 'uuid';
 import CreateExpenseItem from '../CreateExpenseItem';
 import useCampaign from '../../hooks/useCampaign';
 import { Context as WhiteListContext } from '../../contextProviders/WhiteListProvider';
+import { Context as ConversionRateContext } from '../../contextProviders/ConversionRateProvider';
 import Web3ConnectWarning from '../Web3ConnectWarning';
 import { MilestoneCampaignInfo, MilestoneTitle } from '../EditMilestoneCommons';
 
@@ -13,6 +14,11 @@ function CreateExpense(props) {
   const {
     state: { activeTokenWhitelist },
   } = useContext(WhiteListContext);
+
+  const {
+    actions: { getConversionRates }
+  } = useContext(ConversionRateContext);
+
   const campaign = useCampaign(props.match.params.id);
   const [expenseForm, setExpenseForm] = useState({
     expenses: [
@@ -29,6 +35,7 @@ function CreateExpense(props) {
     reimbursementCurrency: undefined,
     wallet: undefined,
   });
+  const [expenseSum, setExpenseSum] = useState(0)
 
   function updateStateOfexpenses(name, value, expKey) {
     const expenses = [...expenseForm.expenses];
@@ -37,6 +44,7 @@ function CreateExpense(props) {
 
     setExpenseForm({ ...setExpenseForm, expenses });
   }
+
   const handleInputChange = event => {
     const { name, value, type, checked } = event.target;
     if (type === 'checkbox') {
@@ -50,6 +58,20 @@ function CreateExpense(props) {
     handleInputChange({
       target: { name: 'reimbursementCurrency', value: option.value },
     });
+    let promises = [], expensesSum = 0
+    const token = activeTokenWhitelist.find(t => t.name === option.value);
+    const destCurrency = token.rateEqSymbol !== undefined ? token.rateEqSymbol : token.symbol
+    expenseForm.expenses.forEach(item => {
+      promises.push( getConversionRates(new Date(item.date), item.currency, destCurrency) )
+    })
+    
+    Promise.all(promises)
+      .then(res => {
+        res.forEach((item, i) => {
+          item && (expensesSum += item.rates[destCurrency] * expenseForm.expenses[i].amount)
+        })
+        setExpenseSum(expensesSum)
+      })
   }
 
   function addExpense() {
@@ -162,7 +184,7 @@ function CreateExpense(props) {
                     </Col>
                     <Col className="gutter-row" span={12}>
                       <Typography.Text className="ant-form-text" type="secondary">
-                        ≈ 0.006544 ETH
+                        ≈ {expenseSum}
                       </Typography.Text>
                     </Col>
                   </Row>
