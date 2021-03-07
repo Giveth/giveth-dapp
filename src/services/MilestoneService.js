@@ -933,7 +933,7 @@ class MilestoneService {
    * @param onError         Callback function if error is encountered
    */
 
-  static changeRecipient({ milestone, from, newRecipient, onTxHash, onConfirmation, onError }) {
+  static changeRecipient({ milestone, from, newRecipient, onConfirmation }) {
     let txHash;
     let etherScanUrl;
 
@@ -947,16 +947,6 @@ class MilestoneService {
           .changeRecipient(newRecipient, {
             from,
             $extraGas: extraGas(),
-          })
-          .once('transactionHash', hash => {
-            txHash = hash;
-
-            return milestones
-              .patch(milestone._id, {
-                pendingRecipientAddress: newRecipient,
-              })
-              .then(() => onTxHash(`${etherScanUrl}tx/${txHash}`))
-              .catch(e => onError('patch-error', e));
           })
           .on('receipt', () => onConfirmation(`${etherScanUrl}tx/${txHash}`));
       })
