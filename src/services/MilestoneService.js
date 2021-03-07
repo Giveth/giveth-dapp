@@ -49,6 +49,29 @@ class MilestoneService {
   }
 
   /**
+   * Get a milestone defined by slug
+   *
+   * @param slug   Slug of the milestone to be retrieved
+   */
+  static getBySlug(slug) {
+    return new Promise((resolve, reject) => {
+      milestones
+        .find({
+          query: {
+            slug,
+          },
+        })
+        .then(resp => {
+          if (resp.data.length) resolve(new Milestone(resp.data[0]));
+          else {
+            reject();
+          }
+        })
+        .catch(err => reject(err));
+    });
+  }
+
+  /**
    * Subscribe to a Milestone defined by ID
    *
    * @param id   ID of the Milestone to be retrieved

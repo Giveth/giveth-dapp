@@ -42,6 +42,7 @@ export default class Milestone extends BasicModel {
       mined = false,
       pluginAddress = ZERO_ADDRESS,
       conversionRateTimestamp,
+      slug,
     } = data;
 
     this._selectedFiatType = selectedFiatType;
@@ -74,6 +75,7 @@ export default class Milestone extends BasicModel {
     this._reviewer = reviewer;
     this._mined = mined;
     this._campaignId = campaignId;
+    this._slug = slug;
   }
 
   toIpfs() {
@@ -566,6 +568,14 @@ export default class Milestone extends BasicModel {
 
   get isArchived() {
     return this._status === Milestone.ARCHIVED;
+  }
+
+  get slug() {
+    return this._slug;
+  }
+
+  set slug(value) {
+    this._slug = value;
   }
 
   canUserAcceptRejectProposal(user) {

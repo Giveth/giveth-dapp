@@ -103,25 +103,27 @@ const ViewMilestone = props => {
   }
 
   useEffect(() => {
-    const { milestoneId } = props.match.params;
+    const { milestoneId, milestoneSlug } = props.match.params;
+    const getFunction = milestoneSlug
+      ? MilestoneService.getBySlug.bind(MilestoneService, milestoneSlug)
+      : MilestoneService.get.bind(MilestoneService, milestoneId);
 
-    MilestoneService.subscribeOne(
-      milestoneId,
-      _milestone => {
-        if (!_milestone) {
-          setNotFound(true);
-          return;
-        }
-        setMilestone(_milestone);
-        setCampaign(new Campaign(_milestone.campaign));
-        setRecipient(
-          _milestone.pendingRecipientAddress ? _milestone.pendingRecipient : _milestone.recipient,
-        );
-        getDacTitle(_milestone.dacId);
-        setLoading(false);
-      },
-      () => setNotFound(true),
-    );
+    getFunction().then(_milestone => {
+      if (!_milestone) {
+        setNotFound(true);
+        return;
+      }
+      if (milestoneId) {
+        history.push(`/milestone/${_milestone.slug}`);
+      }
+      setMilestone(_milestone);
+      setCampaign(new Campaign(_milestone.campaign));
+      setRecipient(
+        _milestone.pendingRecipientAddress ? _milestone.pendingRecipient : _milestone.recipient,
+      );
+      getDacTitle(_milestone.dacId);
+      setLoading(false);
+    });
 
     loadMoreDonations();
 
@@ -668,7 +670,8 @@ const ViewMilestone = props => {
 ViewMilestone.propTypes = {
   match: PropTypes.shape({
     params: PropTypes.shape({
-      milestoneId: PropTypes.string.isRequired,
+      milestoneId: PropTypes.string,
+      milestoneSlug: PropTypes.string,
     }),
   }).isRequired,
 };

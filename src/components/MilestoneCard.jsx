@@ -24,11 +24,11 @@ const MilestoneCard = props => {
   } = useContext(UserContext);
 
   const viewMilestone = () => {
-    history.push(`/campaigns/${props.milestone.campaign._id}/milestones/${props.milestone._id}`);
+    history.push(`/milestone/${props.milestone.slug}`);
   };
 
   const createMilestoneLink = () => {
-    return `/campaigns/${props.milestone.campaign._id}/milestones/${props.milestone._id}`;
+    return `/milestone/${props.milestone.slug}`;
   };
 
   const viewProfile = e => {

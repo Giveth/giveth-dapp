@@ -41,6 +41,7 @@ class DAC extends BasicModel {
     this.confirmations = data.confirmations || 0;
     this.requiredConfirmations = data.requiredConfirmations;
     this.commitTime = data.commitTime || 0;
+    this.slug = data.slug;
   }
 
   toIpfs() {
@@ -56,6 +57,7 @@ class DAC extends BasicModel {
   toFeathers(txHash) {
     const dac = {
       title: this.title,
+      slug: this.slug,
       description: this.description,
       communityUrl: this.communityUrl,
       delegateId: this.delegateId,
@@ -67,7 +69,7 @@ class DAC extends BasicModel {
     return dac;
   }
 
-  save(afterSave, afterMined) {
+  save(afterSave, afterMined, onError) {
     if (this.newImage) {
       return IPFSService.upload(this.image)
         .then(hash => {
@@ -75,10 +77,10 @@ class DAC extends BasicModel {
           this.image = hash;
           this.newImage = false;
         })
-        .then(() => DACService.save(this, this.owner.address, afterSave, afterMined))
+        .then(() => DACService.save(this, this.owner.address, afterSave, afterMined, onError))
         .catch(_ => toast.error('Cannot connect to IPFS server. Please try again'));
     }
-    return DACService.save(this, this.owner.address, afterSave, afterMined);
+    return DACService.save(this, this.owner.address, afterSave, afterMined, onError);
   }
 
   get communityUrl() {

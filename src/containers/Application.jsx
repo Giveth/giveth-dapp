@@ -174,6 +174,11 @@ class Application extends Component {
                                             />
                                             <Route
                                               exact
+                                              path={getViewEntityPathsList('/dac/:slug')}
+                                              render={props => <ViewDAC {...props} />}
+                                            />
+                                            <Route
+                                              exact
                                               path="/dacs/:id/edit"
                                               render={props => (
                                                 <EditDAC
@@ -205,6 +210,17 @@ class Application extends Component {
                                             <Route
                                               exact
                                               path={getViewEntityPathsList('/campaigns/:id')}
+                                              render={props => (
+                                                <ViewCampaign
+                                                  currentUser={currentUser}
+                                                  balance={balance}
+                                                  {...props}
+                                                />
+                                              )}
+                                            />
+                                            <Route
+                                              exact
+                                              path={getViewEntityPathsList('/campaign/:slug')}
                                               render={props => (
                                                 <ViewCampaign
                                                   currentUser={currentUser}
@@ -263,6 +279,19 @@ class Application extends Component {
                                               exact
                                               path={getViewEntityPathsList(
                                                 '/campaigns/:id/milestones/:milestoneId',
+                                              )}
+                                              render={props => (
+                                                <ViewMilestone
+                                                  currentUser={currentUser}
+                                                  balance={balance}
+                                                  {...props}
+                                                />
+                                              )}
+                                            />
+                                            <Route
+                                              exact
+                                              path={getViewEntityPathsList(
+                                                '/milestone/:milestoneSlug',
                                               )}
                                               render={props => (
                                                 <ViewMilestone
