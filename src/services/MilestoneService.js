@@ -925,9 +925,6 @@ class MilestoneService {
             from,
             $extraGas: extraGas(),
           })
-          .once('transactionHash', _hash => {
-            //
-          })
           .on('receipt', () => onConfirmation(`${etherScanUrl}tx/${txHash}`));
       })
       .catch(err => {
