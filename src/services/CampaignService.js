@@ -35,6 +35,29 @@ class CampaignService {
   }
 
   /**
+   * Get a campaign defined by slug
+   *
+   * @param slug   Slug of the campaign to be retrieved
+   */
+  static getBySlug(slug) {
+    return new Promise((resolve, reject) => {
+      campaigns
+        .find({
+          query: {
+            slug,
+          },
+        })
+        .then(resp => {
+          if (resp.data.length) resolve(new Campaign(resp.data[0]));
+          else {
+            reject(new ErrorModel({ message: 'Not found', status: 404 }));
+          }
+        })
+        .catch(err => reject(err));
+    });
+  }
+
+  /**
    * Get Campaigns
    *
    * @param $limit      Amount of records to be loaded

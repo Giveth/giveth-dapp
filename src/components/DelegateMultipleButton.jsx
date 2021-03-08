@@ -35,7 +35,8 @@ const modalStyles = {
   content: {
     top: '50%',
     left: '50%',
-    width: '40%',
+    minWidth: '40%',
+    maxWidth: '80%',
     right: 'auto',
     bottom: 'auto',
     marginRight: '-20%',

@@ -183,6 +183,9 @@ class EditDAC extends Component {
 
       if (created) history.push('/my-dacs');
     };
+    const onError = err => {
+      if (err) React.toast.error(err);
+    };
 
     this.setState(
       {
@@ -191,7 +194,7 @@ class EditDAC extends Component {
       },
       () => {
         // Save the DAC
-        this.state.dac.save(afterSave, afterMined).finally(() => {
+        this.state.dac.save(afterSave, afterMined, onError).finally(() => {
           this.setState({ isSaving: false });
         });
       },
