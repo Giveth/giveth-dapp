@@ -1,20 +1,11 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 
-function MilestoneCreateOptionsMenu(props) {
-  // Make absolute path of the options menu
-  const currentUrl = props.location.pathname;
-  function CreateOptionsUrl(url) {
-    if (currentUrl[currentUrl.length - 1] === '/') {
-      return currentUrl + url;
-    }
-    return `${currentUrl}/${url}`;
-  }
-
+function MilestoneCreateOptionsMenu() {
   return (
     <div id="campaign-create-new-view">
       <div className="link-card-container">
-        <Link className="link-card" to={CreateOptionsUrl("milestone")}>
+        <Link className="link-card" to="new/milestone">
           <img
             className="link-card-logo"
             src={`${process.env.PUBLIC_URL}/img/milestone.png`}
@@ -30,7 +21,7 @@ function MilestoneCreateOptionsMenu(props) {
             alt="milestone-logo"
           />
         </Link>
-        <Link className="link-card" to={CreateOptionsUrl("bounty")}>
+        <Link className="link-card" to="new/bounty">
           <img
             className="link-card-logo"
             src={`${process.env.PUBLIC_URL}/img/bounty.png`}
@@ -46,7 +37,7 @@ function MilestoneCreateOptionsMenu(props) {
             alt="milestone-logo"
           />
         </Link>
-        <Link className="link-card" to={CreateOptionsUrl("expense")}>
+        <Link className="link-card" to="new/expense">
           <img
             className="link-card-logo"
             src={`${process.env.PUBLIC_URL}/img/expense.png`}
@@ -60,7 +51,7 @@ function MilestoneCreateOptionsMenu(props) {
             alt="milestone-logo"
           />
         </Link>
-        <Link className="link-card" to={CreateOptionsUrl("payment")}>
+        <Link className="link-card" to="new/payment">
           <img
             className="link-card-logo"
             src={`${process.env.PUBLIC_URL}/img/payment.png`}
