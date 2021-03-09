@@ -268,7 +268,7 @@ MilestoneReviewer.defaultProps = {
   toggleHasReviewer: null,
 };
 
-const MilestoneDatePicker = ({ onChange }) => {
+const MilestoneDatePicker = ({ onChange, value }) => {
   const maxValue = getStartOfDayUTC().subtract(1, 'd');
 
   useEffect(() => {
@@ -287,7 +287,7 @@ const MilestoneDatePicker = ({ onChange }) => {
                 required: true,
               },
             ]}
-            defaultValue={maxValue}
+            defaultValue={value || maxValue}
             onChange={(_, dateString) => onChange(dateString)}
           />
         </Form.Item>
@@ -298,6 +298,11 @@ const MilestoneDatePicker = ({ onChange }) => {
 
 MilestoneDatePicker.propTypes = {
   onChange: PropTypes.func.isRequired,
+  value: PropTypes.instanceOf(moment),
+};
+
+MilestoneDatePicker.defaultProps = {
+  value: undefined,
 };
 
 const MilestoneCampaignInfo = ({ campaign }) => (

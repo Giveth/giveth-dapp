@@ -31,9 +31,9 @@ function CreateMilestone(props) {
     actions: { displayForeignNetRequiredWarning },
   } = useContext(Web3Context);
 
-  const campaignId = props.match.params.id;
+  const { id: campaignId, slug: campaignSlug } = props.match.params;
 
-  const campaign = useCampaign(campaignId);
+  const campaign = useCampaign(campaignId, campaignSlug);
 
   const [milestone, setMilestone] = useState({
     title: '',
@@ -98,7 +98,7 @@ function CreateMilestone(props) {
       });
 
       ms.ownerAddress = currentUser.address;
-      ms.campaignId = campaignId;
+      ms.campaignId = campaign._id;
       ms.parentProjectId = campaign.projectId;
 
       if (milestone.donateToDac) {
@@ -138,7 +138,7 @@ function CreateMilestone(props) {
             notification.info({ description: notificationDescription });
           }
           setLoading(false);
-          history.push(`/campaigns/${campaignId}/milestones/${res._id}`);
+          history.push(`/campaigns/${campaign._id}/milestones/${res._id}`);
         },
         afterMined: (created, txUrl) => {
           notification.success({
@@ -242,11 +242,13 @@ CreateMilestone.propTypes = {
   match: PropTypes.shape({
     params: PropTypes.shape({
       id: PropTypes.string,
-      milestoneId: PropTypes.string,
+      slug: PropTypes.string,
     }).isRequired,
   }).isRequired,
 };
 
-const isEqual = (prevProps, nextProps) => prevProps.match.params.id === nextProps.match.params.id;
+const isEqual = (prevProps, nextProps) =>
+  prevProps.match.params.id === nextProps.match.params.id &&
+  prevProps.match.params.slug === nextProps.match.params.slug;
 
 export default memo(CreateMilestone, isEqual);

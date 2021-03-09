@@ -19,6 +19,7 @@
 	& > .ant-form-item-control {
 		.ant-form-item-control-input-content {
 			& > input,
+      & > input-number,
 			& > textarea {
 				background: #ffffff;
 				border: 2px solid #dfdae8;

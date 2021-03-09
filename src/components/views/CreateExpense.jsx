@@ -1,48 +1,87 @@
-import React, { useContext, useState, Fragment } from 'react';
+import React, { useContext, useState, Fragment, useEffect, useRef } from 'react';
 import { PageHeader, Row, Col, Form, Input, Select, Button, Typography } from 'antd';
+import BigNumber from 'bignumber.js';
 import 'antd/dist/antd.css';
 import PropTypes from 'prop-types';
 import { v4 as uuidv4 } from 'uuid';
 import CreateExpenseItem from '../CreateExpenseItem';
 import useCampaign from '../../hooks/useCampaign';
+import { convertEthHelper, getStartOfDayUTC, history } from '../../lib/helpers';
 import { Context as WhiteListContext } from '../../contextProviders/WhiteListProvider';
-import { Context as ConversionRateContext } from '../../contextProviders/ConversionRateProvider';
 import Web3ConnectWarning from '../Web3ConnectWarning';
 import { MilestoneCampaignInfo, MilestoneTitle } from '../EditMilestoneCommons';
+import { Context as UserContext } from '../../contextProviders/UserProvider';
 
 function CreateExpense(props) {
   const {
-    state: { activeTokenWhitelist },
-  } = useContext(WhiteListContext);
-
+    state: { currentUser },
+  } = useContext(UserContext);
   const {
-    actions: { getConversionRates }
-  } = useContext(ConversionRateContext);
-
-  const campaign = useCampaign(props.match.params.id);
+    state: { isLoading: whiteListLoading, activeTokenWhitelist },
+  } = useContext(WhiteListContext);
+  const { id: campaignId, slug: campaignSlug } = props.match.params;
+  const campaign = useCampaign(campaignId, campaignSlug);
   const [expenseForm, setExpenseForm] = useState({
-    expenses: [
+    expenseItems: [
       {
-        amount: '',
+        fiatAmount: 0,
         currency: '',
-        date: '',
+        date: getStartOfDayUTC().subtract(1, 'd'),
         description: '',
         picture: '',
         key: uuidv4(),
+        amount: new BigNumber(0),
       },
     ],
     title: '',
-    reimbursementCurrency: undefined,
-    wallet: undefined,
+    token: {},
+    recipientAddress: '',
   });
-  const [expenseSum, setExpenseSum] = useState(0)
+  const [totalAmount, setTotalAmount] = useState('0');
 
-  function updateStateOfexpenses(name, value, expKey) {
-    const expenses = [...expenseForm.expenses];
-    const expense = expenses.find(exp => exp.key === expKey);
-    expense[name] = value;
+  const [form] = Form.useForm();
 
-    setExpenseForm({ ...setExpenseForm, expenses });
+  const itemAmountMap = useRef({});
+
+  useEffect(() => {
+    if (currentUser.address && !expenseForm.recipientAddress) {
+      setExpenseForm({
+        ...expenseForm,
+        recipientAddress: currentUser.address,
+      });
+      form.setFieldsValue({ recipientAddress: currentUser.address });
+    }
+  }, [currentUser]);
+
+  useEffect(() => {
+    if (!whiteListLoading && activeTokenWhitelist.length > 0) {
+      setExpenseForm({
+        ...expenseForm,
+        token: activeTokenWhitelist[0],
+      });
+    }
+  }, [whiteListLoading, activeTokenWhitelist]);
+
+  function updateTotalAmount() {
+    setTotalAmount(
+      convertEthHelper(
+        BigNumber.sum(...Object.values(itemAmountMap.current)),
+        expenseForm.token.decimals,
+      ),
+    );
+  }
+
+  function updateStateOfItem(name, value, itemKey) {
+    if (name === 'amount') {
+      itemAmountMap.current[itemKey] = value;
+      updateTotalAmount();
+    } else {
+      const expenseItems = [...expenseForm.expenseItems];
+      const item = expenseItems.find(i => i.key === itemKey);
+      item[name] = value;
+
+      setExpenseForm({ ...expenseForm, expenseItems });
+    }
   }
 
   const handleInputChange = event => {
@@ -54,53 +93,46 @@ function CreateExpense(props) {
     }
   };
 
-  function handleSelectReimbursementCurrency(_, option) {
+  function handleSelectToken(_, option) {
     handleInputChange({
-      target: { name: 'reimbursementCurrency', value: option.value },
+      target: {
+        name: 'token',
+        value: activeTokenWhitelist.find(t => t.symbol === option.value),
+      },
     });
-    let promises = [], expensesSum = 0
-    const token = activeTokenWhitelist.find(t => t.name === option.value);
-    const destCurrency = token.rateEqSymbol !== undefined ? token.rateEqSymbol : token.symbol
-    expenseForm.expenses.forEach(item => {
-      promises.push( getConversionRates(new Date(item.date), item.currency, destCurrency) )
-    })
-    
-    Promise.all(promises)
-      .then(res => {
-        res.forEach((item, i) => {
-          item && (expensesSum += item.rates[destCurrency] * expenseForm.expenses[i].amount)
-        })
-        setExpenseSum(expensesSum)
-      })
   }
 
   function addExpense() {
     setExpenseForm({
       ...expenseForm,
-      expenses: [
-        ...expenseForm.expenses,
+      expenseItems: [
+        ...expenseForm.expenseItems,
         {
-          amount: '',
+          fiatAmount: 0,
           currency: '',
-          date: '',
+          date: getStartOfDayUTC().subtract(1, 'd'),
           description: '',
           picture: '',
           key: uuidv4(),
+          amount: new BigNumber(0),
         },
       ],
     });
   }
 
   function removeExpense(key) {
-    const filteredExpenses = expenseForm.expenses.filter(expense => expense.key !== key);
+    const filteredExpenseItems = expenseForm.expenseItems.filter(item => item.key !== key);
     setExpenseForm({
       ...expenseForm,
-      expenses: filteredExpenses,
+      expenseItems: filteredExpenseItems,
     });
+
+    delete itemAmountMap.current[key];
+    updateTotalAmount();
   }
 
   function goBack() {
-    props.history.goBack();
+    history.goBack();
   }
 
   const submit = async () => {};
@@ -122,7 +154,7 @@ function CreateExpense(props) {
         </Row>
         <Row>
           <div className="card-form-container">
-            <Form className="card-form" requiredMark onFinish={submit}>
+            <Form className="card-form" form={form} requiredMark onFinish={submit}>
               <div className="card-form-header">
                 <img src={`${process.env.PUBLIC_URL}/img/expense.png`} alt="expense-logo" />
                 <div className="title">Expense</div>
@@ -138,14 +170,15 @@ function CreateExpense(props) {
 
               <div className="section">
                 <div className="title">Expense details</div>
-                {expenseForm.expenses.map((expense, idx) => (
+                {expenseForm.expenseItems.map((item, idx) => (
                   <CreateExpenseItem
-                    key={expense.key}
-                    expense={expense}
+                    key={item.key}
+                    item={item}
                     id={idx}
-                    updateStateOfexpenses={updateStateOfexpenses}
+                    updateStateOfItem={updateStateOfItem}
                     removeExpense={removeExpense}
-                    removeAble={expenseForm.expenses.length > 1}
+                    removeAble={expenseForm.expenseItems.length > 1}
+                    token={expenseForm.token}
                   />
                 ))}
                 <Button onClick={addExpense} className="add-expense-button">
@@ -156,7 +189,7 @@ function CreateExpense(props) {
               <div className="section">
                 <div className="title">Reimbursement options</div>
                 <Form.Item
-                  name="reimbursementCurrency"
+                  name="token"
                   label="Reimburse in Currency"
                   className="custom-form-item"
                   extra="Select the token you want to be reimbursed in."
@@ -167,16 +200,16 @@ function CreateExpense(props) {
                         showSearch
                         placeholder="Select a Currency"
                         optionFilterProp="children"
-                        name="reimbursementCurrency"
-                        onSelect={handleSelectReimbursementCurrency}
+                        name="token"
+                        onSelect={handleSelectToken}
                         filterOption={(input, option) =>
                           option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
                         }
-                        value={expenseForm.reimbursementCurrency}
+                        value={expenseForm.token && expenseForm.token.symbol}
                         required
                       >
                         {activeTokenWhitelist.map(token => (
-                          <Select.Option key={token.name} value={token.name}>
+                          <Select.Option key={token.name} value={token.symbol}>
                             {token.name}
                           </Select.Option>
                         ))}
@@ -184,22 +217,22 @@ function CreateExpense(props) {
                     </Col>
                     <Col className="gutter-row" span={12}>
                       <Typography.Text className="ant-form-text" type="secondary">
-                        ≈ {expenseSum}
+                        ≈ {totalAmount}
                       </Typography.Text>
                     </Col>
                   </Row>
                 </Form.Item>
 
                 <Form.Item
-                  name="wallet"
+                  name="recipientAddress"
                   label="Reimburse to wallet address"
                   className="custom-form-item"
                   extra="If you don’t change this field the address associated with your account will be
                 used."
                 >
                   <Input
-                    value={expenseForm.wallet}
-                    name="wallet"
+                    value={expenseForm.recipientAddress}
+                    name="recipientAddress"
                     placeholder="0x"
                     onChange={handleInputChange}
                     required
@@ -220,14 +253,10 @@ function CreateExpense(props) {
 }
 
 CreateExpense.propTypes = {
-  history: PropTypes.shape({
-    goBack: PropTypes.func.isRequired,
-    push: PropTypes.func.isRequired,
-  }).isRequired,
   match: PropTypes.shape({
     params: PropTypes.shape({
       id: PropTypes.string,
-      milestoneId: PropTypes.string,
+      slug: PropTypes.string,
     }).isRequired,
   }).isRequired,
 };

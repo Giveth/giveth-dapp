@@ -30,10 +30,9 @@ function CreateBounty(props) {
     state: { isForeignNetwork },
     actions: { displayForeignNetRequiredWarning },
   } = useContext(Web3Context);
+  const { id: campaignId, slug: campaignSlug } = props.match.params;
 
-  const campaignId = props.match.params.id;
-
-  const campaign = useCampaign(campaignId);
+  const campaign = useCampaign(campaignId, campaignSlug);
   const [bounty, setBounty] = useState({
     title: '',
     description: '',
@@ -96,7 +95,7 @@ function CreateBounty(props) {
       });
 
       ms.ownerAddress = currentUser.address;
-      ms.campaignId = campaignId;
+      ms.campaignId = campaign._id;
       ms.parentProjectId = campaign.projectId;
 
       if (bounty.donateToDac) {
@@ -136,7 +135,7 @@ function CreateBounty(props) {
             notification.info({ description: notificationDescription });
           }
           setLoading(false);
-          history.push(`/campaigns/${campaignId}/milestones/${res._id}`);
+          history.push(`/campaigns/${campaign._id}/milestones/${res._id}`);
         },
         afterMined: (created, txUrl) => {
           notification.success({
@@ -237,11 +236,14 @@ CreateBounty.propTypes = {
   match: PropTypes.shape({
     params: PropTypes.shape({
       id: PropTypes.string,
+      slug: PropTypes.string,
       milestoneId: PropTypes.string,
     }).isRequired,
   }).isRequired,
 };
 
-const isEqual = (prevProps, nextProps) => prevProps.match.params.id === nextProps.match.params.id;
+const isEqual = (prevProps, nextProps) =>
+  prevProps.match.params.id === nextProps.match.params.id &&
+  prevProps.match.params.slug === nextProps.match.params.slug;
 
 export default memo(CreateBounty, isEqual);

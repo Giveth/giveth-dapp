@@ -3,17 +3,17 @@ import CampaignService from '../services/CampaignService';
 import { history } from '../lib/helpers';
 import ErrorHandler from '../lib/ErrorHandler';
 
-const useCampaign = campaignId => {
+const useCampaign = (id, slug) => {
   const [campaign, setCampaign] = useState({});
   const isMounted = useRef();
 
   useEffect(async () => {
-    if (!campaignId) return () => {};
+    if (!id && !slug) return () => {};
 
     isMounted.current = true;
 
     try {
-      const camp = await CampaignService.get(campaignId);
+      const camp = id ? await CampaignService.get(id) : await CampaignService.getBySlug(slug);
       if (isMounted.current) setCampaign(camp);
     } catch (e) {
       console.log('error', e);
@@ -24,7 +24,7 @@ const useCampaign = campaignId => {
     return () => {
       isMounted.current = false;
     };
-  }, [campaignId]);
+  }, [id, slug]);
 
   return campaign;
 };

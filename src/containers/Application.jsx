@@ -251,29 +251,29 @@ class Application extends Component {
                                             />
                                             <Route
                                               exact
-                                              path="/campaigns/:id/new"
+                                              path="/campaign/:slug/new"
                                               render={props => (
                                                 <MilestoneCreateOptionsMenu {...props} />
                                               )}
                                             />
                                             <Route
                                               exact
-                                              path="/campaigns/:id/new/milestone"
+                                              path="/campaign/:slug/new/milestone"
                                               render={props => <CreateMilestone {...props} />}
                                             />
                                             <Route
                                               exact
-                                              path="/campaigns/:id/new/payment"
+                                              path="/campaign/:slug/new/payment"
                                               render={props => <CreatePayment {...props} />}
                                             />
                                             <Route
                                               exact
-                                              path="/campaigns/:id/new/bounty"
+                                              path="/campaign/:slug/new/bounty"
                                               render={props => <CreateBounty {...props} />}
                                             />
                                             <Route
                                               exact
-                                              path="/campaigns/:id/new/expense"
+                                              path="/campaign/:slug/new/expense"
                                               render={props => <CreateExpense {...props} />}
                                             />
                                             <Route

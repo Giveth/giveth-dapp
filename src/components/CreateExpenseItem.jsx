@@ -1,39 +1,98 @@
 /* eslint-disable react/prop-types */
-import React, { useContext, useState } from 'react';
-import { Button, Col, Form, Input, Row, Select } from 'antd';
+import React, { useContext, useEffect, useRef, useState, memo } from 'react';
+import { Button, Col, Form, InputNumber, Row, Select } from 'antd';
 import Modal from 'antd/lib/modal/Modal';
+import BigNumber from 'bignumber.js';
 import { Context as WhiteListContext } from '../contextProviders/WhiteListProvider';
 import {
   MilestoneDatePicker,
   MilestoneDescription,
   MilestonePicture,
 } from './EditMilestoneCommons';
+import { Context as ConversionRateContext } from '../contextProviders/ConversionRateProvider';
+import ErrorHandler from '../lib/ErrorHandler';
 
-function CreateExpenseItem({ expense, updateStateOfexpenses, removeExpense, removeAble }) {
+const WAIT_INTERVAL = 1000;
+
+function CreateExpenseItem({
+  item: initialValue,
+  updateStateOfItem,
+  removeExpense,
+  removeAble,
+  token = {},
+}) {
   const {
     state: { fiatWhitelist },
   } = useContext(WhiteListContext);
 
+  const {
+    actions: { getConversionRates },
+  } = useContext(ConversionRateContext);
+
   const [visibleRemoveModal, setVisibleRemoveModal] = useState(false);
+  const [item, setItem] = useState({ ...initialValue });
+
+  const timer = useRef();
 
   function handleInputChange(event) {
     const { target } = event;
     const value = target.type === 'checkbox' ? target.checked : target.value;
     const { name } = target;
 
-    updateStateOfexpenses(name, value, expense.key);
+    setItem({ ...item, [name]: value });
+
+    updateStateOfItem(name, value, item.key);
   }
+
+  function handleAmountChange(value) {
+    handleInputChange({ target: { name: 'amount', value } });
+  }
+
+  // Update item of this item in milestone token
+  function updateAmount() {
+    if (!token.symbol || !item.currency) return;
+    if (timer.current) {
+      clearTimeout(timer.current);
+    }
+
+    timer.current = setTimeout(async () => {
+      try {
+        const res = await getConversionRates(item.date, token.symbol, item.currency);
+        console.log('rate:', res);
+        const rate = res.rates[item.currency];
+        if (rate) {
+          handleAmountChange(new BigNumber(item.fiatAmount).div(rate));
+        } else {
+          throw new Error('Rate not found');
+        }
+      } catch (e) {
+        const message = `Sadly we were unable to get the exchange rate. Please try again after refresh.`;
+
+        ErrorHandler(e, message);
+        handleAmountChange(0);
+      }
+    }, WAIT_INTERVAL);
+  }
+
+  useEffect(() => {
+    console.log('item.date:', item.date);
+    updateAmount();
+  }, [token, item.fiatAmount, item.date, item.currency]);
 
   function setPicture(address) {
     handleInputChange({ target: { name: 'picture', value: address } });
   }
 
-  function handleSelectCurrency(_, option, expKey) {
-    updateStateOfexpenses('currency', option.value, expKey);
+  function handleFiatAmountChange(value) {
+    handleInputChange({ target: { name: 'fiatAmount', value } });
+  }
+
+  function handleSelectCurrency(_, option) {
+    handleInputChange({ target: { name: 'currency', value: option.value } });
   }
 
   function handleDatePicker(dateString) {
-    updateStateOfexpenses('date', dateString, expense.key);
+    handleInputChange({ target: { name: 'date', value: dateString } });
   }
 
   function hideRemoveModal() {
@@ -45,11 +104,11 @@ function CreateExpenseItem({ expense, updateStateOfexpenses, removeExpense, remo
   }
 
   function removeExpenseHandler() {
-    removeExpense(expense.key);
+    removeExpense(item.key);
   }
 
   return (
-    <div key={expense.key}>
+    <div key={item.key}>
       <Row gutter={16}>
         <Col className="gutter-row" span={10}>
           <Form.Item
@@ -57,12 +116,14 @@ function CreateExpenseItem({ expense, updateStateOfexpenses, removeExpense, remo
             className="custom-form-item"
             extra="The amount should be the same as on the receipt."
           >
-            <Input
-              name="amount"
-              value={expense.amount}
-              type="number"
+            <InputNumber
+              name="fiatAmount"
+              value={item.fiatAmount}
+              min={0}
+              defaultValue={0}
+              decimalSeparator=","
               placeholder="Enter Amount"
-              onChange={handleInputChange}
+              onChange={handleFiatAmountChange}
               required
             />
           </Form.Item>
@@ -78,11 +139,11 @@ function CreateExpenseItem({ expense, updateStateOfexpenses, removeExpense, remo
               placeholder="Select a Currency"
               optionFilterProp="children"
               name="currency"
-              onSelect={(_, option) => handleSelectCurrency(_, option, expense.key)}
+              onSelect={(_, option) => handleSelectCurrency(_, option)}
               filterOption={(input, option) =>
                 option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
               }
-              value={expense.currency}
+              value={item.currency}
               required
             >
               {fiatWhitelist.map(cur => (
@@ -99,14 +160,14 @@ function CreateExpenseItem({ expense, updateStateOfexpenses, removeExpense, remo
 
       <MilestoneDescription
         onChange={handleInputChange}
-        value={expense.description}
+        value={item.description}
         label="Description of the expense"
       />
 
       <MilestonePicture
         setPicture={setPicture}
-        milestoneTitle={expense.key}
-        picture={expense.picture}
+        milestoneTitle={item.key}
+        picture={item.picture}
         label="Receipt"
       />
 
@@ -129,5 +190,7 @@ function CreateExpenseItem({ expense, updateStateOfexpenses, removeExpense, remo
     </div>
   );
 }
+const isEqual = (prevProps, nextProps) =>
+  prevProps.removeAble === nextProps.removeAble && prevProps.token === nextProps.token;
 
-export default CreateExpenseItem;
+export default memo(CreateExpenseItem, isEqual);
