@@ -100,7 +100,7 @@ class ConversionRateProvider extends Component {
     // We don't have the conversion rate in cache, fetch from feathers
     return feathersClient
       .service('conversionRates')
-      .find({ query: { date: dtUTC, symbol, to } })
+      .find({ query: { date: dtUTC.valueOf(), symbol, to } })
       .then(resp => {
         const rt = this.rates.add(symbol, dtUTC.toISOString(), resp.rates);
 
