@@ -124,6 +124,7 @@ function CreateExpenseItem({
               decimalSeparator=","
               placeholder="Enter Amount"
               onChange={handleFiatAmountChange}
+              step="0.0001"
               required
             />
           </Form.Item>
