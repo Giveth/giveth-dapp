@@ -312,7 +312,7 @@ const ViewMilestone = props => {
 
               <GoBackSection
                 projectTitle={milestone.title}
-                backUrl={`/campaigns/${campaign._id}`}
+                backUrl={`/campaign/${campaign.slug}`}
                 backButtonTitle={`Campaign: ${campaign.title}`}
                 inPageLinks={goBackSectionLinks}
               />
