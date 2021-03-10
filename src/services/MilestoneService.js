@@ -412,6 +412,22 @@ class MilestoneService {
     let res = milestone;
 
     try {
+      const response = await milestones.find({
+        query: {
+          campaignId: milestone.campaignId,
+          title: {
+            $regex: `\\s*${milestone.title.replace(/^\s+|\s+$|\s+(?=\s)/g, '')}\\s*`,
+            $options: 'i',
+          },
+          $limit: 1,
+        },
+      });
+      if (response.total && response.total > 0) {
+        const message =
+          'A milestone with this title already exists. Please select a different title.';
+        ErrorHandler({ message }, message, true);
+        return onError();
+      }
       const profileHash = await this.uploadToIPFS(milestone);
       if (!profileHash) return onError();
 
