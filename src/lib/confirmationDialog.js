@@ -40,7 +40,7 @@ export default (type, title, successCallback) => {
         visible: true,
       },
       confirm: {
-        text: 'Yes, Cancel',
+        text: 'Yes, Delete',
         visible: true,
         value: true,
         className: 'confirm-cancel-button',
