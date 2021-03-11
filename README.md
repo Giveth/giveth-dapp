@@ -1,3 +1,4 @@
+[![TEST](https://github.com/Giveth/giveth-dapp/actions/workflows/TEST.yml/badge.svg)](https://github.com/Giveth/giveth-dapp/actions/workflows/TEST.yml)
 ![Giveth Dapp](./readme-header.png)
 
 
