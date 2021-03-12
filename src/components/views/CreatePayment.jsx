@@ -1,4 +1,4 @@
-import React, { useContext, useState, Fragment } from 'react';
+import React, { useContext, useState, useEffect, Fragment } from 'react';
 import { PageHeader, Row, Col, Form, Input, Select, Button, DatePicker, Checkbox } from 'antd';
 import 'antd/dist/antd.css';
 import PropTypes from 'prop-types';
@@ -13,6 +13,7 @@ import {
   MilestonePicture,
   MilestoneTitle,
 } from '../EditMilestoneCommons';
+import { Context as UserContext } from '../../contextProviders/UserProvider';
 
 function CreatePayment(props) {
   // const {
@@ -22,6 +23,12 @@ function CreatePayment(props) {
   const {
     state: { activeTokenWhitelist, fiatWhitelist },
   } = useContext(WhiteListContext);
+
+  const {
+    state: { currentUser },
+  } = useContext(UserContext);
+
+  const [form] = Form.useForm();
 
   const { id: campaignId, slug: campaignSlug } = props.match.params;
   const campaign = useCampaign(campaignId, campaignSlug);
@@ -38,6 +45,16 @@ function CreatePayment(props) {
     wallet: '',
     nolimit: false,
   });
+
+  useEffect(() => {
+    if (currentUser.address && !payment.recipientAddress) {
+      setPayment({
+        ...payment,
+        wallet: currentUser.address,
+      });
+      form.setFieldsValue({ wallet: currentUser.address });
+    }
+  }, [currentUser]);
 
   const handleInputChange = event => {
     const { name, value, type, checked } = event.target;
@@ -95,6 +112,7 @@ function CreatePayment(props) {
                 currency: fiatWhitelist[0] || 'USD',
               }}
               onFinish={submit}
+              form={form}
             >
               <div className="card-form-header">
                 <img src={`${process.env.PUBLIC_URL}/img/payment.png`} alt="payment-logo" />
