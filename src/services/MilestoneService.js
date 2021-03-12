@@ -62,7 +62,7 @@ class MilestoneService {
           },
         })
         .then(resp => {
-          if (resp.data.length) resolve(new Milestone(resp.data[0]));
+          if (resp.data.length) resolve(MilestoneFactory.create(resp.data[0]));
           else {
             reject();
           }
