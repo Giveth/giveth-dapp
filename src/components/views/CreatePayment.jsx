@@ -212,6 +212,8 @@ function CreatePayment(props) {
                   label="Payment currency"
                   className="custom-form-item"
                   extra="Select the token you want to be reimbursed in."
+                  required
+                  rules={[{ required: true, message: 'Payment currency is required' }]}
                 >
                   <Select
                     showSearch
@@ -223,7 +225,6 @@ function CreatePayment(props) {
                       option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
                     }
                     value={payment.paymentCurrency}
-                    required
                   >
                     {activeTokenWhitelist.map(cur => (
                       <Select.Option key={cur.name} value={cur.name}>
