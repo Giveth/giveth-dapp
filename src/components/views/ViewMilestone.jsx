@@ -165,7 +165,7 @@ const ViewMilestone = props => {
 
   const isActiveMilestone = () => {
     const { fullyFunded, status } = milestone;
-    return status === 'InProgress' && !fullyFunded;
+    return status === 'In Progress' && !fullyFunded;
   };
 
   const renderDescription = () => DescriptionRender(milestone.description);
@@ -297,7 +297,7 @@ const ViewMilestone = props => {
                 <h6>Milestone</h6>
                 <h1>{milestone.title}</h1>
 
-                {!milestone.status === 'InProgress' && <p>This Milestone is not active anymore</p>}
+                {!milestone.status === 'In Progress' && <p>This Milestone is not active anymore</p>}
 
                 {renderTitleHelper()}
 

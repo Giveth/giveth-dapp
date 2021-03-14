@@ -189,7 +189,7 @@ export default class Milestone extends BasicModel {
       PROPOSED: 'Proposed',
       REJECTED: 'Rejected',
       PENDING: 'Pending',
-      IN_PROGRESS: 'InProgress',
+      IN_PROGRESS: 'In Progress',
       NEEDS_REVIEW: 'NeedsReview',
       COMPLETED: 'Completed',
       CANCELED: 'Canceled',

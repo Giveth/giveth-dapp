@@ -20,7 +20,7 @@ const ViewMilestoneAlerts = ({ milestone, campaign }) => {
   } = useContext(UserContext);
 
   const { fullyFunded, status } = milestone;
-  const milestoneIsActive = status === 'InProgress' && !fullyFunded;
+  const milestoneIsActive = status === 'In Progress' && !fullyFunded;
 
   const userAddress = currentUser.address;
   const campaignOwnerAddress = campaign && campaign.ownerAddress;
