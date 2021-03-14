@@ -413,6 +413,7 @@ class MilestoneService {
       const response = await milestones.find({
         query: {
           campaignId: milestone.campaignId,
+          _id: { $ne: milestone.id },
           title: {
             $regex: `\\s*${milestone.title.replace(/^\s+|\s+$|\s+(?=\s)/g, '')}\\s*`,
             $options: 'i',
