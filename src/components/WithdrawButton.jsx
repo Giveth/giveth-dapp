@@ -9,8 +9,8 @@ import WalletService from '../services/WalletService';
 import { getGasPrice } from '../lib/helpers';
 import config from '../configuration';
 
-import ErrorPopup from './ErrorPopup';
 import { actionWithLoggedIn } from '../lib/middleware';
+import ErrorHandler from '../lib/ErrorHandler';
 
 const modalStyles = {
   content: {
@@ -107,7 +107,7 @@ class WithdrawButton extends Component {
         );
       },
       err => {
-        ErrorPopup('Something went wrong with withdrawal. Please try again after refresh.', err);
+        ErrorHandler(err, 'Something went wrong with withdrawal. Please try again after refresh.');
       },
     );
   }
