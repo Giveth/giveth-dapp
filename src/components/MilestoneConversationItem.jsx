@@ -93,6 +93,14 @@ const getReadableMessageContext = conversation => {
           </React.Fragment>
         );
       }
+      if (donorType === 'giver') {
+        return (
+          <React.Fragment>
+            <Link to={`/profile/${donorId}`}>{donorTitle || 'Anonymous'}</Link>
+            {` delegated ${paymentStr}`}
+          </React.Fragment>
+        );
+      }
     }
   }
   return 'unknown';

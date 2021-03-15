@@ -252,7 +252,7 @@ class EditMilestone extends Component {
             const milestone = MilestoneFactory.create({
               maxAmount: '0',
               fiatAmount: '0',
-              token: this.props.tokenWhitelist[0],
+              token: this.props.tokenWhitelist[0] || {},
             });
 
             const milestoneForm = sessionStorage.getItem('milestone-form');
@@ -376,7 +376,6 @@ class EditMilestone extends Component {
       const milestoneOwnerAddress = owner && owner.address;
       const campaignOwner = campaign && campaign.ownerAddress;
       if (!owner || !campaignOwner || !currentUser) {
-        history.goBack();
         return;
       }
       this.checkUser().then(() => {
@@ -409,7 +408,7 @@ class EditMilestone extends Component {
   setDate(date) {
     const { milestone } = this.state;
     milestone.date = date;
-    const { isCapped, token } = milestone;
+    const { isCapped, token = ANY_TOKEN } = milestone;
 
     if (token.symbol !== ANY_TOKEN.symbol && isCapped) {
       this.props

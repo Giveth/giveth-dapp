@@ -183,6 +183,9 @@ class EditDAC extends Component {
 
       if (created) history.push('/my-dacs');
     };
+    const onError = err => {
+      if (err) React.toast.error(err);
+    };
 
     this.setState(
       {
@@ -191,7 +194,7 @@ class EditDAC extends Component {
       },
       () => {
         // Save the DAC
-        this.state.dac.save(afterSave, afterMined).finally(() => {
+        this.state.dac.save(afterSave, afterMined, onError).finally(() => {
           this.setState({ isSaving: false });
         });
       },
@@ -233,15 +236,7 @@ class EditDAC extends Component {
                     <p>
                       <i className="fa fa-question-circle" />A DAC unites Givers and Makers in
                       building a community around their common vision to raise then delegate funds
-                      to Campaigns that deliver a positive impact to shared goals. Read more{' '}
-                      <a
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        href="https://wiki.giveth.io/documentation/glossary/"
-                      >
-                        here
-                      </a>
-                      .
+                      to Campaigns that deliver a positive impact to shared goals.
                     </p>
                   </div>
 

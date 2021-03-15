@@ -54,12 +54,15 @@ const modalStyles = {
   content: {
     top: '50%',
     left: '50%',
+    minWidth: '40%',
+    maxWidth: '80%',
     right: 'auto',
     bottom: 'auto',
     marginRight: '-20%',
     transform: 'translate(-50%, -50%)',
     boxShadow: '0 0 40px #ccc',
-    overflowY: 'scroll',
+    overflowY: 'auto',
+    maxHeight: '64%',
   },
 };
 
@@ -283,12 +286,14 @@ const DonateButton = forwardRef((props, ref) => {
     const defaultAmount = selectedToken.symbol === config.nativeTokenName ? '1' : '100';
     const balance =
       selectedToken.symbol === config.nativeTokenName ? NativeTokenBalance : selectedToken.balance;
-    const newAmount = BigNumber.min(
-      convertEthHelper(utils.fromWei(balance.toFixed()), selectedToken.decimals),
-      defaultAmount,
-    ).toFixed();
+    if (balance) {
+      const newAmount = BigNumber.min(
+        convertEthHelper(utils.fromWei(balance.toFixed()), selectedToken.decimals),
+        defaultAmount,
+      ).toFixed();
+      setAmount(newAmount);
+    }
     setModalVisible(false);
-    setAmount(newAmount);
     setFormIsValid(false);
   };
 

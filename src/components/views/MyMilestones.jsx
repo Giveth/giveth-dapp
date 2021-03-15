@@ -176,7 +176,7 @@ function MyMilestones() {
                               </td>
                               <td className="td-name">
                                 <strong>
-                                  <Link to={`/campaigns/${m.campaign._id}/milestones/${m._id}`}>
+                                  <Link to={`/milestone/${m.slug}`}>
                                     MILESTONE <em>{getTruncatedText(m.title, 35)}</em>
                                   </Link>
                                 </strong>

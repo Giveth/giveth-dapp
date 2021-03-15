@@ -49,6 +49,29 @@ class MilestoneService {
   }
 
   /**
+   * Get a milestone defined by slug
+   *
+   * @param slug   Slug of the milestone to be retrieved
+   */
+  static getBySlug(slug) {
+    return new Promise((resolve, reject) => {
+      milestones
+        .find({
+          query: {
+            slug,
+          },
+        })
+        .then(resp => {
+          if (resp.data.length) resolve(MilestoneFactory.create(resp.data[0]));
+          else {
+            reject();
+          }
+        })
+        .catch(err => reject(err));
+    });
+  }
+
+  /**
    * Subscribe to a Milestone defined by ID
    *
    * @param id   ID of the Milestone to be retrieved
@@ -387,6 +410,26 @@ class MilestoneService {
     let etherScanUrl;
 
     try {
+      const query = {
+        campaignId: milestone.campaignId,
+        title: {
+          $regex: `\\s*${milestone.title.replace(/^\s+|\s+$|\s+(?=\s)/g, '')}\\s*`,
+          $options: 'i',
+        },
+        $limit: 1,
+      };
+      if (milestone.id) {
+        query._id = { $ne: milestone.id };
+      }
+      const response = await milestones.find({
+        query,
+      });
+      if (response.total && response.total > 0) {
+        const message =
+          'A milestone with this title already exists. Please select a different title.';
+        ErrorHandler({ message }, message, true);
+        return onError();
+      }
       const profileHash = await this.uploadToIPFS(milestone);
       if (!profileHash) return onError();
 
@@ -910,7 +953,7 @@ class MilestoneService {
    * @param onError         Callback function if error is encountered
    */
 
-  static changeRecipient({ milestone, from, newRecipient, onTxHash, onConfirmation, onError }) {
+  static changeRecipient({ milestone, from, newRecipient, onConfirmation }) {
     let txHash;
     let etherScanUrl;
 
@@ -924,16 +967,6 @@ class MilestoneService {
           .changeRecipient(newRecipient, {
             from,
             $extraGas: extraGas(),
-          })
-          .once('transactionHash', hash => {
-            txHash = hash;
-
-            return milestones
-              .patch(milestone._id, {
-                pendingRecipientAddress: newRecipient,
-              })
-              .then(() => onTxHash(`${etherScanUrl}tx/${txHash}`))
-              .catch(e => onError('patch-error', e));
           })
           .on('receipt', () => onConfirmation(`${etherScanUrl}tx/${txHash}`));
       })

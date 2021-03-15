@@ -126,7 +126,7 @@ class MyDACs extends Component {
                                 </button>
                               </td>
                               <td className="td-name">
-                                <Link to={`/dacs/${d.id}`}>{getTruncatedText(d.title, 45)}</Link>
+                                <Link to={`/dac/${d.slug}`}>{getTruncatedText(d.title, 45)}</Link>
                               </td>
                               <td className="td-donations-number">
                                 {d.donationCounters.length > 0 &&
