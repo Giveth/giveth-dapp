@@ -15,6 +15,7 @@ import CommunityButton from '../CommunityButton';
 import DAC from '../../models/DAC';
 import { getUserName, getUserAvatar, history } from '../../lib/helpers';
 import DACService from '../../services/DACService';
+import CampaignService from '../../services/CampaignService';
 import CampaignCard from '../CampaignCard';
 import config from '../../configuration';
 import NotFound from './NotFound';
@@ -75,24 +76,16 @@ const ViewDAC = ({ match }) => {
       : DACService.get.bind(DACService, id);
     // Get the DAC
     getFunction()
-      .then(_dac => {
+      .then(async _dac => {
         if (id) {
           history.push(`/dac/${_dac.slug}`);
         }
         setDac(_dac);
         setLoading(false);
-        campaignObserver = DACService.subscribeCampaigns(
-          _dac.delegateId,
-          _campaigns => {
-            setCampaigns(_campaigns);
-            setLoadingCampaigns(false);
-          },
-          err => {
-            setLoadingCampaigns(false);
-            ErrorHandler(err, 'Some error on fetching dac campaigns, please try again later');
-          },
-        );
-        // subscribe to donation count
+        const relatedCampaigns = await CampaignService.getCampaignsByIdArray(_dac.campaigns || []);
+        setCampaigns(relatedCampaigns);
+        setLoadingCampaigns(false);
+
         donationsObserver = DACService.subscribeNewDonations(
           _dac.id,
           _newDonations => setNewDonations(_newDonations),
