@@ -1,5 +1,5 @@
-import React, { useContext, useState, Fragment } from 'react';
-import { PageHeader, Row, Col, Form, Input, Select, Button, DatePicker } from 'antd';
+import React, { useContext, useState, useEffect, Fragment } from 'react';
+import { PageHeader, Row, Col, Form, Input, Select, Button, DatePicker, Checkbox } from 'antd';
 import 'antd/dist/antd.css';
 import PropTypes from 'prop-types';
 import useCampaign from '../../hooks/useCampaign';
@@ -7,11 +7,13 @@ import useCampaign from '../../hooks/useCampaign';
 import { Context as WhiteListContext } from '../../contextProviders/WhiteListProvider';
 import Web3ConnectWarning from '../Web3ConnectWarning';
 import {
+  MilestoneCampaignInfo,
   MilestoneDescription,
   MilestoneDonateToDac,
   MilestonePicture,
   MilestoneTitle,
 } from '../EditMilestoneCommons';
+import { Context as UserContext } from '../../contextProviders/UserProvider';
 
 function CreatePayment(props) {
   // const {
@@ -22,7 +24,15 @@ function CreatePayment(props) {
     state: { activeTokenWhitelist, fiatWhitelist },
   } = useContext(WhiteListContext);
 
-  const campaign = useCampaign(props.match.params.id);
+  const {
+    state: { currentUser },
+  } = useContext(UserContext);
+
+  const [form] = Form.useForm();
+
+  const { id: campaignId, slug: campaignSlug } = props.match.params;
+  const campaign = useCampaign(campaignId, campaignSlug);
+
   const [payment, setPayment] = useState({
     title: '',
     amount: '',
@@ -33,7 +43,18 @@ function CreatePayment(props) {
     picture: '',
     donateToDac: true,
     wallet: '',
+    nolimit: false,
   });
+
+  useEffect(() => {
+    if (currentUser.address && !payment.recipientAddress) {
+      setPayment({
+        ...payment,
+        wallet: currentUser.address,
+      });
+      form.setFieldsValue({ wallet: currentUser.address });
+    }
+  }, [currentUser]);
 
   const handleInputChange = event => {
     const { name, value, type, checked } = event.target;
@@ -91,74 +112,83 @@ function CreatePayment(props) {
                 currency: fiatWhitelist[0] || 'USD',
               }}
               onFinish={submit}
+              form={form}
             >
               <div className="card-form-header">
                 <img src={`${process.env.PUBLIC_URL}/img/payment.png`} alt="payment-logo" />
                 <div className="title">Payment</div>
               </div>
 
-              <div className="campaign-info">
-                <div className="lable">Campaign</div>
-                <div className="content">{campaign && campaign.title}</div>
-              </div>
+              <MilestoneCampaignInfo campaign={campaign} />
+
+              <MilestoneTitle
+                value={payment.title}
+                onChange={handleInputChange}
+                extra="What are you going to accomplish in this Milestone?"
+              />
 
               <div className="section">
                 <div className="title">Payment details</div>
 
-                <MilestoneTitle
-                  value={payment.title}
-                  onChange={handleInputChange}
-                  extra="What are you going to accomplish in this Milestone?"
-                />
-
-                <Row gutter={16}>
-                  <Col className="gutter-row" span={10}>
-                    <Form.Item name="amount" label="Amount" className="custom-form-item">
-                      <Input
-                        value={payment.amount}
-                        name="amount"
-                        type="number"
-                        placeholder="Enter Amount"
-                        onChange={handleInputChange}
-                        required
-                      />
-                    </Form.Item>
-                  </Col>
-                  <Col className="gutter-row" span={10}>
-                    <Form.Item
-                      name="currency"
-                      label="Currency"
-                      className="custom-form-item"
-                      extra="Select the currency of this expense."
-                    >
-                      <Select
-                        showSearch
-                        placeholder="Select a Currency"
-                        optionFilterProp="children"
-                        name="currency"
-                        onSelect={handleSelectCurrency}
-                        filterOption={(input, option) =>
-                          option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                        }
-                        value={payment.currency}
-                        required
-                      >
-                        {fiatWhitelist.map(cur => (
-                          <Select.Option key={cur} value={cur}>
-                            {cur}
-                          </Select.Option>
-                        ))}
-                      </Select>
-                    </Form.Item>
-                  </Col>
+                <Row>
+                  <Form.Item className="custom-form-item">
+                    <Checkbox name="nolimit" checked={payment.nolimit} onChange={handleInputChange}>
+                      No limits
+                    </Checkbox>
+                  </Form.Item>
                 </Row>
-                <Row gutter={16}>
-                  <Col className="gutter-row" span={10}>
-                    <Form.Item name="date" label="Date" className="custom-form-item">
-                      <DatePicker onChange={handleDatePicker} value={payment.date} />
-                    </Form.Item>
-                  </Col>
-                </Row>
+                {!payment.nolimit && (
+                  <Fragment>
+                    <Row gutter={16}>
+                      <Col className="gutter-row" span={10}>
+                        <Form.Item name="amount" label="Amount" className="custom-form-item">
+                          <Input
+                            value={payment.amount}
+                            name="amount"
+                            type="number"
+                            placeholder="Enter Amount"
+                            onChange={handleInputChange}
+                            required
+                          />
+                        </Form.Item>
+                      </Col>
+                      <Col className="gutter-row" span={10}>
+                        <Form.Item
+                          name="currency"
+                          label="Currency"
+                          className="custom-form-item"
+                          extra="Select the currency of this expense."
+                        >
+                          <Select
+                            showSearch
+                            placeholder="Select a Currency"
+                            optionFilterProp="children"
+                            name="currency"
+                            onSelect={handleSelectCurrency}
+                            filterOption={(input, option) =>
+                              option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                            }
+                            value={payment.currency}
+                            required
+                          >
+                            {fiatWhitelist.map(cur => (
+                              <Select.Option key={cur} value={cur}>
+                                {cur}
+                              </Select.Option>
+                            ))}
+                          </Select>
+                        </Form.Item>
+                      </Col>
+                    </Row>
+                    <Row gutter={16}>
+                      <Col className="gutter-row" span={10}>
+                        <Form.Item name="date" label="Date" className="custom-form-item">
+                          <DatePicker onChange={handleDatePicker} value={payment.date} />
+                        </Form.Item>
+                      </Col>
+                    </Row>
+                  </Fragment>
+                )}
 
                 <MilestoneDescription
                   onChange={handleInputChange}
@@ -182,6 +212,8 @@ function CreatePayment(props) {
                   label="Payment currency"
                   className="custom-form-item"
                   extra="Select the token you want to be reimbursed in."
+                  required
+                  rules={[{ required: true, message: 'Payment currency is required' }]}
                 >
                   <Select
                     showSearch
@@ -193,13 +225,17 @@ function CreatePayment(props) {
                       option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
                     }
                     value={payment.paymentCurrency}
-                    required
                   >
                     {activeTokenWhitelist.map(cur => (
                       <Select.Option key={cur.name} value={cur.name}>
                         {cur.name}
                       </Select.Option>
                     ))}
+                    {payment.nolimit && (
+                      <Select.Option key="ANY_TOKEN" value="ANY_TOKEN">
+                        Any Token
+                      </Select.Option>
+                    )}
                   </Select>
                 </Form.Item>
                 <Form.Item
@@ -239,7 +275,7 @@ CreatePayment.propTypes = {
   match: PropTypes.shape({
     params: PropTypes.shape({
       id: PropTypes.string,
-      milestoneId: PropTypes.string,
+      slug: PropTypes.string,
     }).isRequired,
   }).isRequired,
 };
