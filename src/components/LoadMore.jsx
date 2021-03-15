@@ -5,7 +5,10 @@ const LoadMore = props => (
   <div className="text-center">
     <button
       type="button"
-      className="btn btn-info mt-2"
+      className={`btn btn-info mt-2
+      ${props.isSmall ? ' btn-sm' : ''}
+      ${props.isFullWidth ? ' w-100' : ''}
+      `}
       onClick={props.onClick}
       disabled={props.disabled}
     >
@@ -22,6 +25,8 @@ const LoadMore = props => (
 LoadMore.propTypes = {
   onClick: PropTypes.func.isRequired,
   disabled: PropTypes.bool.isRequired,
+  isSmall: PropTypes.bool.isRequired,
+  isFullWidth: PropTypes.bool.isRequired,
 };
 
 export default LoadMore;
