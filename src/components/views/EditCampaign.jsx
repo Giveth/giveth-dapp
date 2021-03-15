@@ -127,7 +127,7 @@ class EditCampaign extends Component {
 
     return authenticateIfPossible(this.props.currentUser, true)
       .then(() => {
-        if (!this.props.currentUser.isProjectOwner && !this.props.projectOwnersWhitelistEnabled) {
+        if (!this.props.currentUser.isProjectOwner && this.props.projectOwnersWhitelistEnabled) {
           throw new Error('not whitelisted');
         }
       })
