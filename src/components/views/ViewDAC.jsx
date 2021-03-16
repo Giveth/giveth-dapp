@@ -218,11 +218,7 @@ const ViewDAC = ({ match }) => {
                     <div id="description">
                       <div>
                         <h5 className="title">Subscribe to updates </h5>
-                        <ProjectSubscription
-                          projectTypeId={dac._id}
-                          projectType="dac"
-                          user={currentUser}
-                        />
+                        <ProjectSubscription projectTypeId={dac._id} projectType="dac" />
                       </div>
                       <div className="about-section-header">
                         <h5 className="title">About</h5>

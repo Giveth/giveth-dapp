@@ -35,6 +35,7 @@ import { Context as ConversionRateContext } from '../../contextProviders/Convers
 import { Context as Web3Context } from '../../contextProviders/Web3Provider';
 import { Context as UserContext } from '../../contextProviders/UserProvider';
 import ErrorHandler from '../../lib/ErrorHandler';
+import ProjectSubscription from '../ProjectSubscription';
 
 /**
   Loads and shows a single milestone
@@ -346,6 +347,10 @@ const ViewMilestone = props => {
                     <ViewMilestoneAlerts milestone={milestone} campaign={campaign} />
 
                     <div id="description">
+                      <div>
+                        <h5 className="title">Subscribe to updates </h5>
+                        <ProjectSubscription projectTypeId={campaign._id} projectType="campaign" />
+                      </div>
                       <div className="about-section-header">
                         <h5 className="title">About</h5>
                         <div className="text-center">
