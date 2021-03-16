@@ -647,18 +647,22 @@ const ViewMilestone = props => {
                     )}
 
                     <div id="donations" className="spacer-top-50">
-                      <div className="section-header">
-                        <h5>{donationsTitle}</h5>
-                        {isActiveMilestone() && <DonateButton {...donateButtonProps} />}
-                      </div>
-                      <DonationList
-                        donations={donations}
-                        isLoading={isLoadingDonations}
-                        total={donations.length}
-                        loadMore={loadMoreDonations}
-                        newDonations={newDonations}
-                        useAmountRemaining
-                      />
+                      {milestone.status !== 'Proposed' && (
+                        <React.Fragment>
+                          <div className="section-header">
+                            <h5>{donationsTitle}</h5>
+                            {isActiveMilestone() && <DonateButton {...donateButtonProps} />}
+                          </div>
+                          <DonationList
+                            donations={donations}
+                            isLoading={isLoadingDonations}
+                            total={donations.length}
+                            loadMore={loadMoreDonations}
+                            newDonations={newDonations}
+                            useAmountRemaining
+                          />
+                        </React.Fragment>
+                      )}
                     </div>
                   </div>
                 </div>
