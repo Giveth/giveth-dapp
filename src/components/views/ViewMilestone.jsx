@@ -265,9 +265,6 @@ const ViewMilestone = props => {
       : undefined,
   };
 
-  const detailsCardElmnt = document.getElementById('detailsCard');
-  const detailsCardHeight = detailsCardElmnt && detailsCardElmnt.offsetHeight;
-
   return (
     <HelmetProvider context={helmetContext}>
       <ErrorBoundary>
@@ -381,7 +378,7 @@ const ViewMilestone = props => {
                       <div id="details" className="col-md-6">
                         <h4>Details</h4>
 
-                        <div id="detailsCard" className="card details-card">
+                        <div className="card details-card">
                           <div className="form-group">
                             <DetailLabel
                               id="reviewer"
@@ -597,11 +594,11 @@ const ViewMilestone = props => {
 
                       <div id="status-updates" className="col-md-6">
                         <h4>Status updates</h4>
+
                         <MilestoneConversations
                           milestone={milestone}
                           currentUser={currentUser}
                           balance={balance}
-                          maxHeight={`${detailsCardHeight}px`}
                         />
                       </div>
                     </div>

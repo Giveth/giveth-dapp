@@ -83,7 +83,7 @@ const MilestoneConversationComment = ({ milestone }) => {
         <Fragment>
           <button
             type="button"
-            className="btn btn-success btn-sm w-100 mt-2"
+            className="btn btn-success btn-sm w-100"
             onClick={() => editMessage()}
           >
             Write Comment
