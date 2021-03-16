@@ -5,6 +5,7 @@ import moment from 'moment';
 import { Link } from 'react-router-dom';
 
 import config from 'configuration';
+import Milestone from 'models/Milestone';
 import Loader from './Loader';
 import { getUserName, getUserAvatar, convertEthHelper } from '../lib/helpers';
 import Donation from '../models/Donation';
@@ -174,7 +175,7 @@ DonationListItem.propTypes = {
 };
 
 const DonationList = props => {
-  const { isLoading, donations, loadMore, total, newDonations, useAmountRemaining } = props;
+  const { isLoading, donations, loadMore, total, newDonations, useAmountRemaining, status } = props;
   const hasProposedDelegation = props.donations.some(d => d.intendedProjectId);
   return (
     <div>
@@ -235,9 +236,12 @@ const DonationList = props => {
           </div>
         )}
 
-        {!isLoading && donations.length === 0 && (
-          <p>No donations have been made yet. Be the first to donate now!</p>
-        )}
+        {!isLoading &&
+          donations.length === 0 &&
+          status ===
+            Milestone.IN_PROGRESS(
+              <p>No donations have been made yet. Be the first to donate now!</p>,
+            )}
       </div>
     </div>
   );
@@ -252,9 +256,11 @@ DonationList.propTypes = {
   loadMore: PropTypes.func.isRequired,
   newDonations: PropTypes.number,
   useAmountRemaining: PropTypes.bool,
+  status: PropTypes.string,
 };
 
 DonationList.defaultProps = {
   newDonations: 0,
   useAmountRemaining: false,
+  status: '',
 };

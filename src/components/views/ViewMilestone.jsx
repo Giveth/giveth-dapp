@@ -662,6 +662,7 @@ const ViewMilestone = props => {
                             loadMore={loadMoreDonations}
                             newDonations={newDonations}
                             useAmountRemaining
+                            status={milestone.status}
                           />
                         </React.Fragment>
                       )}
