@@ -104,6 +104,18 @@ class CampaignService {
       .catch(onError);
   }
 
+  static async getCampaignsByIdArray(campaignIds) {
+    const query = {
+      _id: { $in: campaignIds }, // 0 is a pending campaign
+      status: Campaign.ACTIVE,
+      $sort: { updatedAt: -1 },
+    };
+    const result = await feathersClient.service('campaigns').find({
+      query,
+    });
+    return result.data.map(c => new Campaign(c));
+  }
+
   /**
    * Get Campaign milestones listener
    *

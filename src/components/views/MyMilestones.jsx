@@ -35,11 +35,11 @@ const reviewDue = updatedAt =>
 function MyMilestones() {
   const [isLoading, setLoading] = useState(true);
   const [milestones, setMilestones] = useState([]);
-  const [itemsPerPage, setItemPerPage] = useState(10);
   const [skipPages, setSkipPages] = useState(0);
   const [totalResults, setTotalResults] = useState(0);
   const [milestoneStatus, setMilestoneStatus] = useState('Active');
 
+  const itemsPerPage = 10;
   const visiblePages = 10;
 
   const {
@@ -69,8 +69,6 @@ function MyMilestones() {
       itemsPerPage,
       onResult: resp => {
         setMilestones(resp.data);
-        setItemPerPage(resp.limit);
-        setSkipPages(resp.skip);
         setTotalResults(resp.total);
         setLoading(false);
       },
@@ -81,6 +79,7 @@ function MyMilestones() {
       },
     });
   }
+
   useEffect(() => {
     loadMileStones();
     return cleanUp;
@@ -99,8 +98,14 @@ function MyMilestones() {
     return token.symbol;
   }
 
+  useEffect(() => {
+    loadMileStones();
+    return cleanUp();
+  }, [skipPages]);
+
   function handlePageChanged(newPage) {
-    setSkipPages(newPage - 1, () => loadMileStones());
+    setLoading(true);
+    setSkipPages(newPage - 1);
   }
 
   function changeTab(newStatus) {
@@ -228,7 +233,7 @@ function MyMilestones() {
                       {totalResults > itemsPerPage && (
                         <center>
                           <Pagination
-                            activePage={Math.floor(skipPages / itemsPerPage) + 1}
+                            activePage={skipPages + 1}
                             itemsCountPerPage={itemsPerPage}
                             totalItemsCount={totalResults}
                             pageRangeDisplayed={visiblePages}
