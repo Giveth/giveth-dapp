@@ -4,6 +4,12 @@
 
   .card {
     padding: 20px;
+    max-height: inherit;
+
+    .card-body {
+      max-height: inherit;
+      overflow: auto
+    }
   }
 
   .sb-avatar {

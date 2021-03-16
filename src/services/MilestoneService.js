@@ -64,7 +64,7 @@ class MilestoneService {
           },
         })
         .then(resp => {
-          if (resp.data.length) resolve(new Milestone(resp.data[0]));
+          if (resp.data.length) resolve(MilestoneFactory.create(resp.data[0]));
           else {
             reject();
           }
@@ -412,15 +412,19 @@ class MilestoneService {
     let res = milestone;
 
     try {
-      const response = await milestones.find({
-        query: {
-          campaignId: milestone.campaignId,
-          title: {
-            $regex: `\\s*${milestone.title.replace(/^\s+|\s+$|\s+(?=\s)/g, '')}\\s*`,
-            $options: 'i',
-          },
-          $limit: 1,
+      const query = {
+        campaignId: milestone.campaignId,
+        title: {
+          $regex: `\\s*${milestone.title.replace(/^\s+|\s+$|\s+(?=\s)/g, '')}\\s*`,
+          $options: 'i',
         },
+        $limit: 1,
+      };
+      if (milestone.id) {
+        query._id = { $ne: milestone.id };
+      }
+      const response = await milestones.find({
+        query,
       });
       if (response.total && response.total > 0) {
         const message =

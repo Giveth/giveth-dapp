@@ -77,6 +77,7 @@ const ViewMilestone = props => {
 
   const donationsPerBatch = 50;
   let donationsObserver;
+  let _milestoneId = null;
 
   const getDacTitle = async dacId => {
     if (dacId === 0) return;
@@ -88,7 +89,7 @@ const ViewMilestone = props => {
   function loadMoreDonations() {
     setLoadingDonations(true);
     MilestoneService.getDonations(
-      props.match.params.milestoneId,
+      _milestoneId,
       donationsPerBatch,
       donations.length,
       (_donations, _donationsTotal) => {
@@ -116,16 +117,16 @@ const ViewMilestone = props => {
       if (milestoneId) {
         history.push(`/milestone/${_milestone.slug}`);
       }
+      _milestoneId = _milestone.id;
       setMilestone(_milestone);
       setCampaign(new Campaign(_milestone.campaign));
       setRecipient(
         _milestone.pendingRecipientAddress ? _milestone.pendingRecipient : _milestone.recipient,
       );
       getDacTitle(_milestone.dacId);
+      loadMoreDonations();
       setLoading(false);
     });
-
-    loadMoreDonations();
 
     // subscribe to donation count
     donationsObserver = MilestoneService.subscribeNewDonations(
@@ -264,6 +265,9 @@ const ViewMilestone = props => {
       : undefined,
   };
 
+  const detailsCardElmnt = document.getElementById('detailsCard');
+  const detailsCardHeight = detailsCardElmnt && detailsCardElmnt.offsetHeight;
+
   return (
     <HelmetProvider context={helmetContext}>
       <ErrorBoundary>
@@ -377,7 +381,7 @@ const ViewMilestone = props => {
                       <div id="details" className="col-md-6">
                         <h4>Details</h4>
 
-                        <div className="card details-card">
+                        <div id="detailsCard" className="card details-card">
                           <div className="form-group">
                             <DetailLabel
                               id="reviewer"
@@ -593,11 +597,11 @@ const ViewMilestone = props => {
 
                       <div id="status-updates" className="col-md-6">
                         <h4>Status updates</h4>
-
                         <MilestoneConversations
                           milestone={milestone}
                           currentUser={currentUser}
                           balance={balance}
+                          maxHeight={`${detailsCardHeight}px`}
                         />
                       </div>
                     </div>
