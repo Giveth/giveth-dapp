@@ -263,6 +263,14 @@ const ViewCampaign = ({ match }) => {
                     <div className="row">
                       <div className="col-md-8 m-auto">
                         <div>
+                          <div>
+                            <h5 className="title">Subscribe to updates </h5>
+                            <ProjectSubscription
+                              projectTypeId={campaign._id}
+                              projectType="campaign"
+                            />
+                          </div>
+
                           {showDonateAddress && (
                             <ProjectViewActionAlert message="Send money to an address to contribute">
                               <CreateDonationAddressButton
@@ -290,13 +298,6 @@ const ViewCampaign = ({ match }) => {
                         </div>
 
                         <div id="description">
-                          <div>
-                            <h5 className="title">Subscribe to updates </h5>
-                            <ProjectSubscription
-                              projectTypeId={campaign._id}
-                              projectType="campaign"
-                            />
-                          </div>
                           <div className="about-section-header">
                             <h5 className="title">About</h5>
                             <div className="text-center">

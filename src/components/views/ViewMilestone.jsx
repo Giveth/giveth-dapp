@@ -319,6 +319,11 @@ const ViewMilestone = props => {
                 inPageLinks={goBackSectionLinks}
               />
 
+              <div className=" col-md-8 m-auto">
+                <h5 className="title">Subscribe to updates </h5>
+                <ProjectSubscription projectTypeId={campaign._id} projectType="campaign" />
+              </div>
+
               {/* This buttons should not be displayed, just are clicked by using references */}
               <span className="d-none">
                 <EditMilestoneButton
@@ -347,10 +352,6 @@ const ViewMilestone = props => {
                     <ViewMilestoneAlerts milestone={milestone} campaign={campaign} />
 
                     <div id="description">
-                      <div>
-                        <h5 className="title">Subscribe to updates </h5>
-                        <ProjectSubscription projectTypeId={campaign._id} projectType="campaign" />
-                      </div>
                       <div className="about-section-header">
                         <h5 className="title">About</h5>
                         <div className="text-center">
