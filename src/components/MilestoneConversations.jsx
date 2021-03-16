@@ -10,9 +10,10 @@ import MilestoneConversationItem from './MilestoneConversationItem';
 import LoadMore from './LoadMore';
 
 const MilestoneConversations = ({ milestone, maxHeight }) => {
+  const conversationsNumPerLoad = 5;
   const [conversations, setConversations] = useState({});
   const [isLoading, setLoading] = useState(true);
-  const [conversationsNum, setConversationsNum] = useState(5);
+  const [conversationsNum, setConversationsNum] = useState(conversationsNumPerLoad);
 
   const conversationObserver = useRef();
 
@@ -24,6 +25,7 @@ const MilestoneConversations = ({ milestone, maxHeight }) => {
         query: {
           milestoneId: milestone.id,
           $sort: { createdAt: -1 },
+          $limit: conversationsNum,
         },
       })
       .subscribe(resp => {
@@ -42,10 +44,10 @@ const MilestoneConversations = ({ milestone, maxHeight }) => {
         conversationObserver.current = null;
       }
     };
-  }, []);
+  }, [conversationsNum]);
 
   const handleLoadMore = () => {
-    setConversationsNum(conversationsNum + 5);
+    setConversationsNum(conversationsNum + conversationsNumPerLoad);
   };
 
   return (
@@ -53,9 +55,9 @@ const MilestoneConversations = ({ milestone, maxHeight }) => {
       {isLoading && <Loader className="fixed" />}
 
       {!isLoading && (
-        <div className="card" style={{ maxHeight: 'inherit' }}>
-          <div style={{ maxHeight: 'inherit', overflow: 'auto' }} className="card-body content">
-            {conversations.slice(0, conversationsNum).map(conversation => (
+        <div className="card">
+          <div className="card-body content">
+            {conversations.map(conversation => (
               <MilestoneConversationItem
                 key={conversation._id}
                 conversation={conversation}
@@ -63,8 +65,8 @@ const MilestoneConversations = ({ milestone, maxHeight }) => {
               />
             ))}
           </div>
-          {conversations.length > conversationsNum && (
-            <LoadMore onClick={handleLoadMore} disabled={isLoading} isFullWidth isSmall />
+          {conversations.length >= conversationsNum && (
+            <LoadMore onClick={handleLoadMore} disabled={isLoading} className="w-100 btn-sm" />
           )}
           <MilestoneConversationComment milestone={milestone} />
         </div>
@@ -75,7 +77,11 @@ const MilestoneConversations = ({ milestone, maxHeight }) => {
 
 MilestoneConversations.propTypes = {
   milestone: PropTypes.instanceOf(Milestone).isRequired,
-  maxHeight: PropTypes.number.isRequired,
+  maxHeight: PropTypes.string,
+};
+
+MilestoneConversations.defaultProps = {
+  maxHeight: 'unset',
 };
 
 export default React.memo(MilestoneConversations);

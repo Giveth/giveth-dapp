@@ -597,12 +597,11 @@ const ViewMilestone = props => {
 
                       <div id="status-updates" className="col-md-6">
                         <h4>Status updates</h4>
-
                         <MilestoneConversations
                           milestone={milestone}
                           currentUser={currentUser}
                           balance={balance}
-                          maxHeight={detailsCardHeight}
+                          maxHeight={`${detailsCardHeight}px`}
                         />
                       </div>
                     </div>
