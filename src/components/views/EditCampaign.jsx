@@ -81,7 +81,7 @@ class EditCampaign extends Component {
               }
             });
         } else {
-          if (!this.props.currentUser.isProjectOwner) {
+          if (!this.props.currentUser.isProjectOwner && this.props.projectOwnersWhitelistEnabled) {
             history.goBack();
           }
           this.setState({ isLoading: false });
@@ -102,7 +102,11 @@ class EditCampaign extends Component {
         if (!this.props.isNew && !isOwner(this.state.campaign.ownerAddress, this.props.currentUser))
           history.goBack();
       });
-    } else if (this.props.isNew && !this.props.currentUser.isProjectOwner) {
+    } else if (
+      this.props.isNew &&
+      !this.props.currentUser.isProjectOwner &&
+      this.props.projectOwnersWhitelistEnabled
+    ) {
       history.goBack();
     } else if (this.props.currentUser.address && !prevProps.balance.eq(this.props.balance)) {
       checkBalance(this.props.balance);
