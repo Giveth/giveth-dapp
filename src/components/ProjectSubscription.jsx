@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import { Context as UserContext } from '../contextProviders/UserProvider';
 import { updateSubscription, inquirySubscriptionStatus } from '../services/subscriptionService';
 import ErrorHandler from '../lib/ErrorHandler';
+import { authenticateUser } from '../lib/middleware';
 
 function ProjectSubscription({ projectTypeId, projectType }) {
   const {
@@ -12,11 +13,9 @@ function ProjectSubscription({ projectTypeId, projectType }) {
   const [subscribed, setSubscribed] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  const { authenticated } = currentUser;
-
   const toggleSubscription = async enabled => {
+    const authenticated = await authenticateUser(currentUser, false);
     if (!authenticated) {
-      React.signIn();
       return;
     }
     setLoading(true);
