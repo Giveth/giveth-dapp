@@ -62,21 +62,16 @@ class CampaignService {
    *
    * @param slug   Slug of the campaign to be retrieved
    */
-  static getActiveCampaignExistsBySlug(slug) {
-    return new Promise((resolve, reject) => {
-      campaigns
-        .find({
-          query: {
-            slug,
-            status: Campaign.ACTIVE,
-            $limit: 0,
-          },
-        })
-        .then(resp => {
-          resolve(resp.total > 0);
-        })
-        .catch(err => reject(err));
+  static async getActiveCampaignExistsBySlug(slug) {
+    const resp = await campaigns.find({
+      query: {
+        slug,
+        status: Campaign.ACTIVE,
+        $limit: 0,
+      },
     });
+
+    return resp.total > 0;
   }
 
   /**

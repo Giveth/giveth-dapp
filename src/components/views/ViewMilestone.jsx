@@ -110,23 +110,23 @@ const ViewMilestone = props => {
       : MilestoneService.get.bind(MilestoneService, milestoneId);
 
     getFunction()
-    .then(_milestone => {
-      if (milestoneId) {
-        history.push(`/milestone/${_milestone.slug}`);
-      }
-      _milestoneId = _milestone.id;
-      setMilestone(_milestone);
-      setCampaign(new Campaign(_milestone.campaign));
-      setRecipient(
-        _milestone.pendingRecipientAddress ? _milestone.pendingRecipient : _milestone.recipient,
-      );
-      getDacTitle(_milestone.dacId);
-      loadMoreDonations();
-      setLoading(false);
-    })
-    .catch(() => {
-      setNotFound(true);
-    })
+      .then(_milestone => {
+        if (milestoneId) {
+          history.push(`/milestone/${_milestone.slug}`);
+        }
+        _milestoneId = _milestone.id;
+        setMilestone(_milestone);
+        setCampaign(new Campaign(_milestone.campaign));
+        setRecipient(
+          _milestone.pendingRecipientAddress ? _milestone.pendingRecipient : _milestone.recipient,
+        );
+        getDacTitle(_milestone.dacId);
+        loadMoreDonations();
+        setLoading(false);
+      })
+      .catch(() => {
+        setNotFound(true);
+      });
 
     // subscribe to donation count
     donationsObserver = MilestoneService.subscribeNewDonations(

@@ -225,7 +225,7 @@ const MilestoneReviewer = ({
       {hasReviewer && (
         <Fragment>
           <Form.Item
-            name="reviewerAddress"
+            name="Reviewer Address"
             rules={[{ required: true }]}
             extra={`The reviewer verifies that the ${milestoneType} is completed successfully.`}
           >
