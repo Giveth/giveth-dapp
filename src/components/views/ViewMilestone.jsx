@@ -18,7 +18,13 @@ import MilestoneItem from 'components/MilestoneItem';
 import DonationList from 'components/DonationList';
 import MilestoneConversations from 'components/MilestoneConversations';
 import { Helmet, HelmetProvider } from 'react-helmet-async';
-import { convertEthHelper, getUserAvatar, getUserName, history } from '../../lib/helpers';
+import {
+  convertEthHelper,
+  getReadableStatus,
+  getUserAvatar,
+  getUserName,
+  history,
+} from '../../lib/helpers';
 import MilestoneService from '../../services/MilestoneService';
 import DACService from '../../services/DACService';
 import { Context as WhiteListContext } from '../../contextProviders/WhiteListProvider';
@@ -110,23 +116,23 @@ const ViewMilestone = props => {
       : MilestoneService.get.bind(MilestoneService, milestoneId);
 
     getFunction()
-    .then(_milestone => {
-      if (milestoneId) {
-        history.push(`/milestone/${_milestone.slug}`);
-      }
-      _milestoneId = _milestone.id;
-      setMilestone(_milestone);
-      setCampaign(new Campaign(_milestone.campaign));
-      setRecipient(
-        _milestone.pendingRecipientAddress ? _milestone.pendingRecipient : _milestone.recipient,
-      );
-      getDacTitle(_milestone.dacId);
-      loadMoreDonations();
-      setLoading(false);
-    })
-    .catch(() => {
-      setNotFound(true);
-    })
+      .then(_milestone => {
+        if (milestoneId) {
+          history.push(`/milestone/${_milestone.slug}`);
+        }
+        _milestoneId = _milestone.id;
+        setMilestone(_milestone);
+        setCampaign(new Campaign(_milestone.campaign));
+        setRecipient(
+          _milestone.pendingRecipientAddress ? _milestone.pendingRecipient : _milestone.recipient,
+        );
+        getDacTitle(_milestone.dacId);
+        loadMoreDonations();
+        setLoading(false);
+      })
+      .catch(() => {
+        setNotFound(true);
+      });
 
     // subscribe to donation count
     donationsObserver = MilestoneService.subscribeNewDonations(
@@ -592,7 +598,7 @@ const ViewMilestone = props => {
                           <div className="form-group">
                             <span className="label">Status</span>
                             <br />
-                            {milestone.status}
+                            {getReadableStatus(milestone.status)}
                           </div>
                         </div>
                       </div>
