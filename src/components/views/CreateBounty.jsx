@@ -7,20 +7,19 @@ import {
   MilestoneCampaignInfo,
   MilestoneDescription,
   MilestoneDonateToDac,
-  MilestonePicture,
   MilestoneReviewer,
   MilestoneTitle,
 } from '../EditMilestoneCommons';
 import { Context as UserContext } from '../../contextProviders/UserProvider';
 import { Context as Web3Context } from '../../contextProviders/Web3Provider';
 import { authenticateUser } from '../../lib/middleware';
-import LPMilestone from '../../models/LPMilestone';
-import { ANY_TOKEN, history } from '../../lib/helpers';
+import { ANY_TOKEN, history, ZERO_ADDRESS } from '../../lib/helpers';
 import config from '../../configuration';
 import { Milestone } from '../../models';
 import { MilestoneService } from '../../services';
 import ErrorHandler from '../../lib/ErrorHandler';
 import Web3ConnectWarning from '../Web3ConnectWarning';
+import BridgedMilestone from '../../models/BridgedMilestone';
 
 function CreateBounty(props) {
   const {
@@ -36,7 +35,8 @@ function CreateBounty(props) {
   const [bounty, setBounty] = useState({
     title: '',
     description: '',
-    picture: '',
+    recipientAddress: ZERO_ADDRESS,
+    picture: '/img/bountyProject.png',
     donateToDac: true,
     reviewerAddress: '',
   });
@@ -67,10 +67,6 @@ function CreateBounty(props) {
     });
   }
 
-  function setPicture(address) {
-    handleInputChange({ target: { name: 'picture', value: address } });
-  }
-
   function goBack() {
     history.goBack();
   }
@@ -84,12 +80,12 @@ function CreateBounty(props) {
         return;
       }
 
-      const { title, description, reviewerAddress, picture } = bounty;
-      const ms = new LPMilestone({
+      const { title, description, reviewerAddress, picture, recipientAddress } = bounty;
+      const ms = new BridgedMilestone({
         title,
         description,
         reviewerAddress,
-        recipientId: campaign.projectId,
+        recipientAddress,
         token: ANY_TOKEN,
         image: picture,
       });
@@ -196,12 +192,6 @@ function CreateBounty(props) {
                   onChange={handleInputChange}
                   extra="Explain the requirements and what success looks like."
                   placeholder="Describe the Bounty and define the acceptance criteria..."
-                />
-
-                <MilestonePicture
-                  setPicture={setPicture}
-                  milestoneTitle={bounty.title}
-                  picture={bounty.picture}
                 />
 
                 <MilestoneDonateToDac value={bounty.donateToDac} onChange={handleInputChange} />
