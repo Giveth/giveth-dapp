@@ -11,53 +11,47 @@ function MenuBarCreateButton() {
 
   const isMounted = React.useRef(true);
   useEffect(() => {
+    isMounted.current = true;
     return () => {
       isMounted.current = false;
     };
   }, []);
 
   const match = useRouteMatch({
-    path: '/campaigns/:id',
+    path: '/campaign/:slug',
     exact: true,
     strict: true,
     sensitive: true,
   });
 
   const [campaignIsActive, setCampaignIsActive] = useState(false);
-  const [ownerAddress, setOwnerAddress] = useState(null);
 
-  const getCampaign = async id => {
+  const getCampaign = async slug => {
     try {
-      if (id === 'new') {
-        throw new Error('new is not a valid campaignId');
-      }
-      const campaign = await CampaignService.get(id);
-      if (campaign && isMounted.current) {
-        setCampaignIsActive(campaign.isActive);
-        setOwnerAddress(campaign.ownerAddress);
+      const exists = await CampaignService.getActiveCampaignExistsBySlug(slug);
+      if (exists && isMounted.current) {
+        setCampaignIsActive(true);
+      } else if (isMounted.current) {
+        setCampaignIsActive(false);
       }
     } catch (e) {
+      console.log(e);
       if (isMounted.current) {
         setCampaignIsActive(false);
-        setOwnerAddress(null);
       }
     }
   };
   if (!match) return null;
-  const { id } = match.params;
+  const { slug } = match.params;
   useEffect(() => {
-    if (id) {
-      getCampaign(id);
+    if (slug) {
+      getCampaign(slug);
     }
-  }, [id]);
+  }, [slug]);
 
   if (campaignIsActive && currentUser.address) {
-    const userIsOwner = currentUser.address && currentUser.address === ownerAddress;
     return (
-      <Link
-        className="nav-link"
-        to={`/campaigns/${id}/milestones/${userIsOwner ? 'new' : 'propose'}`}
-      >
+      <Link className="nav-link" to={`/campaign/${slug}/new`}>
         Create New
       </Link>
     );
