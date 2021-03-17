@@ -236,12 +236,9 @@ const DonationList = props => {
           </div>
         )}
 
-        {!isLoading &&
-          donations.length === 0 &&
-          status ===
-            Milestone.IN_PROGRESS(
-              <p>No donations have been made yet. Be the first to donate now!</p>,
-            )}
+        {!isLoading && donations.length === 0 && status === Milestone.IN_PROGRESS && (
+          <p>No donations have been made yet. Be the first to donate now!</p>
+        )}
       </div>
     </div>
   );
