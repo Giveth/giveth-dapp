@@ -13,6 +13,7 @@ import AggregateDonationService from '../../services/AggregateDonationService';
 import LeaderBoard from '../LeaderBoard';
 import CommunityButton from '../CommunityButton';
 import DAC from '../../models/DAC';
+import ProjectSubscription from '../ProjectSubscription';
 import { getUserName, getUserAvatar, history } from '../../lib/helpers';
 import DACService from '../../services/DACService';
 import CampaignService from '../../services/CampaignService';
@@ -208,6 +209,10 @@ const ViewDAC = ({ match }) => {
                 <div className="row">
                   <div className="col-md-8 m-auto">
                     <div id="description">
+                      <div>
+                        <h5 className="title">Subscribe to updates </h5>
+                        <ProjectSubscription projectTypeId={dac._id} projectType="dac" />
+                      </div>
                       <div className="about-section-header">
                         <h5 className="title">About</h5>
                         <div className="text-center">

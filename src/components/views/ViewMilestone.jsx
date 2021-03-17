@@ -35,6 +35,7 @@ import { Context as ConversionRateContext } from '../../contextProviders/Convers
 import { Context as Web3Context } from '../../contextProviders/Web3Provider';
 import { Context as UserContext } from '../../contextProviders/UserProvider';
 import ErrorHandler from '../../lib/ErrorHandler';
+import ProjectSubscription from '../ProjectSubscription';
 
 /**
   Loads and shows a single milestone
@@ -322,6 +323,11 @@ const ViewMilestone = props => {
                 backButtonTitle={`Campaign: ${campaign.title}`}
                 inPageLinks={goBackSectionLinks}
               />
+
+              <div className=" col-md-8 m-auto">
+                <h5 className="title">Subscribe to updates </h5>
+                <ProjectSubscription projectTypeId={campaign._id} projectType="campaign" />
+              </div>
 
               {/* This buttons should not be displayed, just are clicked by using references */}
               <span className="d-none">

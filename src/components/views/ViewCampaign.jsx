@@ -36,6 +36,7 @@ import ProjectViewActionAlert from '../projectViewActionAlert';
 import GoBackSection from '../GoBackSection';
 import { Context as Web3Context } from '../../contextProviders/Web3Provider';
 import ErrorHandler from '../../lib/ErrorHandler';
+import ProjectSubscription from '../ProjectSubscription';
 
 /**
  * The Campaign detail view mapped to /campaing/id
@@ -262,6 +263,14 @@ const ViewCampaign = ({ match }) => {
                     <div className="row">
                       <div className="col-md-8 m-auto">
                         <div>
+                          <div>
+                            <h5 className="title">Subscribe to updates </h5>
+                            <ProjectSubscription
+                              projectTypeId={campaign._id}
+                              projectType="campaign"
+                            />
+                          </div>
+
                           {showDonateAddress && (
                             <ProjectViewActionAlert message="Send money to an address to contribute">
                               <CreateDonationAddressButton
