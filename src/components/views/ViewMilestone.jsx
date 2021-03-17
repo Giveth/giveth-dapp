@@ -109,11 +109,8 @@ const ViewMilestone = props => {
       ? MilestoneService.getBySlug.bind(MilestoneService, milestoneSlug)
       : MilestoneService.get.bind(MilestoneService, milestoneId);
 
-    getFunction().then(_milestone => {
-      if (!_milestone) {
-        setNotFound(true);
-        return;
-      }
+    getFunction()
+    .then(_milestone => {
       if (milestoneId) {
         history.push(`/milestone/${_milestone.slug}`);
       }
@@ -126,7 +123,10 @@ const ViewMilestone = props => {
       getDacTitle(_milestone.dacId);
       loadMoreDonations();
       setLoading(false);
-    });
+    })
+    .catch(() => {
+      setNotFound(true);
+    })
 
     // subscribe to donation count
     donationsObserver = MilestoneService.subscribeNewDonations(
