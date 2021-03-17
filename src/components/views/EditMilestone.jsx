@@ -753,7 +753,12 @@ class EditMilestone extends Component {
           this.setState({
             isSaving: false,
           });
-          this.props.history.goBack();
+          if (this.props.isNew) {
+            this.props.history.goBack();
+          }
+          else {
+            history.push(`/campaigns/${milestone.campaignId}/milestones/${milestone.id}`)
+          }
         },
         afterMined: (created, txUrl) => {
           React.toast.success(
