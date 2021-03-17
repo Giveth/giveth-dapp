@@ -166,7 +166,7 @@ const ViewMilestone = props => {
 
   const isActiveMilestone = () => {
     const { fullyFunded, status } = milestone;
-    return status === 'InProgress' && !fullyFunded;
+    return status === Milestone.IN_PROGRESS && !fullyFunded;
   };
 
   const renderDescription = () => DescriptionRender(milestone.description);
@@ -301,7 +301,9 @@ const ViewMilestone = props => {
                 <h6>Milestone</h6>
                 <h1>{milestone.title}</h1>
 
-                {!milestone.status === 'InProgress' && <p>This Milestone is not active anymore</p>}
+                {!milestone.status === Milestone.IN_PROGRESS && (
+                  <p>This Milestone is not active anymore</p>
+                )}
 
                 {renderTitleHelper()}
 
@@ -647,18 +649,23 @@ const ViewMilestone = props => {
                     )}
 
                     <div id="donations" className="spacer-top-50">
-                      <div className="section-header">
-                        <h5>{donationsTitle}</h5>
-                        {isActiveMilestone() && <DonateButton {...donateButtonProps} />}
-                      </div>
-                      <DonationList
-                        donations={donations}
-                        isLoading={isLoadingDonations}
-                        total={donations.length}
-                        loadMore={loadMoreDonations}
-                        newDonations={newDonations}
-                        useAmountRemaining
-                      />
+                      {milestone.status !== Milestone.PROPOSED && (
+                        <React.Fragment>
+                          <div className="section-header">
+                            <h5>{donationsTitle}</h5>
+                            {isActiveMilestone() && <DonateButton {...donateButtonProps} />}
+                          </div>
+                          <DonationList
+                            donations={donations}
+                            isLoading={isLoadingDonations}
+                            total={donations.length}
+                            loadMore={loadMoreDonations}
+                            newDonations={newDonations}
+                            useAmountRemaining
+                            status={milestone.status}
+                          />
+                        </React.Fragment>
+                      )}
                     </div>
                   </div>
                 </div>
