@@ -47,9 +47,9 @@ import ProjectSubscription from '../ProjectSubscription';
  */
 
 const helmetContext = {};
+let currentCampaign = null;
 
 const ViewCampaign = ({ match }) => {
-  let currentCampaign = null;
   const {
     state: { balance },
   } = useContext(Web3Context);
