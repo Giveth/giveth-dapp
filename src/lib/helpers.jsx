@@ -97,7 +97,7 @@ export const getReadableStatus = status => {
     case 'InProgress':
       return 'In Progress';
     case 'NeedsReview':
-      return 'Needs review';
+      return 'Needs Review';
     default:
       return status;
   }
