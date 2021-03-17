@@ -57,6 +57,28 @@ class CampaignService {
   }
 
   /**
+   * Resolves whether a campaign exists with provided slug
+   *
+   * @param slug   Slug of the campaign to be retrieved
+   */
+  static getActiveCampaignExistsBySlug(slug) {
+    return new Promise((resolve, reject) => {
+      campaigns
+        .find({
+          query: {
+            slug,
+            status: Campaign.ACTIVE,
+            $limit: 0,
+          },
+        })
+        .then(resp => {
+          resolve(resp.total > 0);
+        })
+        .catch(err => reject(err));
+    });
+  }
+
+  /**
    * Get Campaigns
    *
    * @param $limit      Amount of records to be loaded
