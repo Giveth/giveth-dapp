@@ -717,7 +717,7 @@ class EditMilestone extends Component {
         afterSave: (created, txUrl, res) => {
           if (created) {
             if (isProposed) {
-              const url = res ? `/campaigns/${res.campaign._id}/milestones/${res._id}` : undefined;
+              const url = res ? `/milestone/${res._slug}` : undefined;
               React.toast.info(
                 <Fragment>
                   <p>Your Milestone has been proposed to the Campaign Owner.</p>
