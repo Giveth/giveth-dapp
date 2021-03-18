@@ -716,7 +716,7 @@ class EditMilestone extends Component {
         from: currentUser.address,
         afterSave: (created, txUrl, res) => {
           if (created) {
-            if (isProposed) {
+            if (isNew) {
               const url = res ? `/milestone/${res._slug}` : undefined;
               React.toast.info(
                 <Fragment>
@@ -755,9 +755,8 @@ class EditMilestone extends Component {
           });
           if (this.props.isNew) {
             this.props.history.goBack();
-          }
-          else {
-            history.push(`/campaigns/${milestone.campaignId}/milestones/${milestone.id}`)
+          } else {
+            history.push(`/campaigns/${milestone.campaignId}/milestones/${milestone.id}`);
           }
         },
         afterMined: (created, txUrl) => {
