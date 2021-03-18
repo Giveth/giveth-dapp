@@ -78,12 +78,13 @@ class DonationListItem extends Component {
         typeLabel = null;
     }
 
-    if (d.status === Donation.PAID || this.state.itemType === 'delegated') {
+    if (d.status === Donation.PAID && d.bridgeStatus === Donation.PAID) {
+      etherScanLink = `${homeEtherscan}tx/${d.bridgeTxHash}`;
+    } else if (d.status === Donation.PAID || this.state.itemType === 'delegated') {
       etherScanLink = etherscan && d.txHash ? `${etherscan}tx/${d.txHash}` : '';
     } else if (this.state.itemType === 'direct') {
       etherScanLink = homeEtherscan && d.homeTxHash ? `${homeEtherscan}tx/${d.homeTxHash}` : '';
     }
-
     return (
       <Fragment>
         <tr key={d._id}>
