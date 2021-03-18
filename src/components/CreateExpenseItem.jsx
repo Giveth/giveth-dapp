@@ -1,12 +1,12 @@
 /* eslint-disable react/prop-types */
-import React, { useContext, useEffect, useRef, useState, memo } from 'react';
-import { Button, Col, Form, InputNumber, Row, Select } from 'antd';
+import React, { memo, useContext, useEffect, useRef, useState } from 'react';
+import { Button } from 'antd';
 import Modal from 'antd/lib/modal/Modal';
 import BigNumber from 'bignumber.js';
-import { Context as WhiteListContext } from '../contextProviders/WhiteListProvider';
 import {
   MilestoneDatePicker,
   MilestoneDescription,
+  MilestoneFiatAmountCurrency,
   MilestonePicture,
 } from './EditMilestoneCommons';
 import { Context as ConversionRateContext } from '../contextProviders/ConversionRateProvider';
@@ -22,16 +22,13 @@ function CreateExpenseItem({
   token = {},
 }) {
   const {
-    state: { fiatWhitelist },
-  } = useContext(WhiteListContext);
-
-  const {
     actions: { getConversionRates },
   } = useContext(ConversionRateContext);
 
   const [visibleRemoveModal, setVisibleRemoveModal] = useState(false);
   const [item, setItem] = useState({ ...initialValue });
 
+  console.log(`item.currency[${item.key}]: ${item.currency}`);
   const timer = useRef();
 
   function handleInputChange(event) {
@@ -58,10 +55,9 @@ function CreateExpenseItem({
     timer.current = setTimeout(async () => {
       try {
         const res = await getConversionRates(item.date, token.symbol, item.currency);
-        console.log('rate:', res);
         const rate = res.rates[item.currency];
         if (rate) {
-          handleAmountChange(new BigNumber(item.fiatAmount).div(rate));
+          handleAmountChange(new BigNumber(item.fiatAmount).div(rate).toFixed());
         } else {
           throw new Error('Rate not found');
         }
@@ -75,7 +71,6 @@ function CreateExpenseItem({
   }
 
   useEffect(() => {
-    console.log('item.date:', item.date);
     updateAmount();
   }, [token, item.fiatAmount, item.date, item.currency]);
 
@@ -109,52 +104,13 @@ function CreateExpenseItem({
 
   return (
     <div key={item.key}>
-      <Row gutter={16}>
-        <Col className="gutter-row" span={10}>
-          <Form.Item
-            label="Amount"
-            className="custom-form-item"
-            extra="The amount should be the same as on the receipt."
-          >
-            <InputNumber
-              name="fiatAmount"
-              value={item.fiatAmount}
-              min={0}
-              defaultValue={0}
-              decimalSeparator="."
-              placeholder="Enter Amount"
-              onChange={handleFiatAmountChange}
-              required
-            />
-          </Form.Item>
-        </Col>
-        <Col className="gutter-row" span={10}>
-          <Form.Item
-            label="Currency"
-            className="custom-form-item"
-            extra="Select the currency of this expense."
-          >
-            <Select
-              showSearch
-              placeholder="Select a Currency"
-              optionFilterProp="children"
-              name="currency"
-              onSelect={(_, option) => handleSelectCurrency(_, option)}
-              filterOption={(input, option) =>
-                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-              }
-              value={item.currency}
-              required
-            >
-              {fiatWhitelist.map(cur => (
-                <Select.Option key={cur} value={cur}>
-                  {cur}
-                </Select.Option>
-              ))}
-            </Select>
-          </Form.Item>
-        </Col>
-      </Row>
+      <MilestoneFiatAmountCurrency
+        onCurrencyChange={handleSelectCurrency}
+        onAmountChange={handleFiatAmountChange}
+        currency={item.currency}
+        amount={item.fiatAmount}
+        id={`fiat-amount-currency-${item.key}`}
+      />
 
       <MilestoneDatePicker onChange={handleDatePicker} />
 

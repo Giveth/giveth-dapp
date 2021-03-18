@@ -1,5 +1,5 @@
-import React, { useContext, useState, useEffect, Fragment } from 'react';
-import { PageHeader, Row, Col, Form, Input, Select, Button, DatePicker, Checkbox } from 'antd';
+import React, { Fragment, useContext, useEffect, useState } from 'react';
+import { Button, Checkbox, Col, Form, PageHeader, Row } from 'antd';
 import 'antd/dist/antd.css';
 import PropTypes from 'prop-types';
 import useCampaign from '../../hooks/useCampaign';
@@ -8,10 +8,14 @@ import { Context as WhiteListContext } from '../../contextProviders/WhiteListPro
 import Web3ConnectWarning from '../Web3ConnectWarning';
 import {
   MilestoneCampaignInfo,
+  MilestoneDatePicker,
   MilestoneDescription,
   MilestoneDonateToDac,
+  MilestoneFiatAmountCurrency,
   MilestonePicture,
+  MilestoneRecipientAddress,
   MilestoneTitle,
+  MilestoneToken,
 } from '../EditMilestoneCommons';
 import { Context as UserContext } from '../../contextProviders/UserProvider';
 
@@ -21,7 +25,7 @@ function CreatePayment(props) {
   //   actions: { getConversionRates, convertMultipleRates },
   // } = useContext(ConversionRateContext);
   const {
-    state: { activeTokenWhitelist, fiatWhitelist },
+    state: { fiatWhitelist },
   } = useContext(WhiteListContext);
 
   const {
@@ -37,12 +41,12 @@ function CreatePayment(props) {
     title: '',
     amount: '',
     currency: '',
-    paymentCurrency: '',
+    token: {},
     date: '',
     description: '',
     picture: '',
     donateToDac: true,
-    wallet: '',
+    recipientAddress: '',
     nolimit: false,
   });
 
@@ -50,9 +54,9 @@ function CreatePayment(props) {
     if (currentUser.address && !payment.recipientAddress) {
       setPayment({
         ...payment,
-        wallet: currentUser.address,
+        recipientAddress: currentUser.address,
       });
-      form.setFieldsValue({ wallet: currentUser.address });
+      form.setFieldsValue({ recipientAddress: currentUser.address });
     }
   }, [currentUser]);
 
@@ -69,9 +73,9 @@ function CreatePayment(props) {
     handleInputChange({ target: { name: 'currency', value: option.value } });
   }
 
-  function handleSelectPaymentCurrency(_, option) {
+  function handleSelectToken(_, option) {
     handleInputChange({
-      target: { name: 'paymentCurrency', value: option.value },
+      target: { name: 'token', value: option.value },
     });
   }
 
@@ -139,54 +143,13 @@ function CreatePayment(props) {
                 </Row>
                 {!payment.nolimit && (
                   <Fragment>
-                    <Row gutter={16}>
-                      <Col className="gutter-row" span={10}>
-                        <Form.Item name="amount" label="Amount" className="custom-form-item">
-                          <Input
-                            value={payment.amount}
-                            name="amount"
-                            type="number"
-                            placeholder="Enter Amount"
-                            onChange={handleInputChange}
-                            required
-                          />
-                        </Form.Item>
-                      </Col>
-                      <Col className="gutter-row" span={10}>
-                        <Form.Item
-                          name="currency"
-                          label="Currency"
-                          className="custom-form-item"
-                          extra="Select the currency of this expense."
-                        >
-                          <Select
-                            showSearch
-                            placeholder="Select a Currency"
-                            optionFilterProp="children"
-                            name="currency"
-                            onSelect={handleSelectCurrency}
-                            filterOption={(input, option) =>
-                              option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                            }
-                            value={payment.currency}
-                            required
-                          >
-                            {fiatWhitelist.map(cur => (
-                              <Select.Option key={cur} value={cur}>
-                                {cur}
-                              </Select.Option>
-                            ))}
-                          </Select>
-                        </Form.Item>
-                      </Col>
-                    </Row>
-                    <Row gutter={16}>
-                      <Col className="gutter-row" span={10}>
-                        <Form.Item name="date" label="Date" className="custom-form-item">
-                          <DatePicker onChange={handleDatePicker} value={payment.date} />
-                        </Form.Item>
-                      </Col>
-                    </Row>
+                    <MilestoneFiatAmountCurrency
+                      onCurrencyChange={handleSelectCurrency}
+                      onAmountChange={handleInputChange}
+                      amount={payment.amount}
+                      currency={payment.currency}
+                    />
+                    <MilestoneDatePicker onChange={handleDatePicker} value={payment.date} />
                   </Fragment>
                 )}
 
@@ -207,52 +170,18 @@ function CreatePayment(props) {
               </div>
               <div className="section">
                 <div className="title">Payment options</div>
-                <Form.Item
-                  name="paymentCurrency"
+                <MilestoneToken
                   label="Payment currency"
-                  className="custom-form-item"
-                  extra="Select the token you want to be reimbursed in."
-                  required
-                  rules={[{ required: true, message: 'Payment currency is required' }]}
-                >
-                  <Select
-                    showSearch
-                    placeholder="Select a Currency"
-                    optionFilterProp="children"
-                    name="paymentCurrency"
-                    onSelect={handleSelectPaymentCurrency}
-                    filterOption={(input, option) =>
-                      option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                    }
-                    value={payment.paymentCurrency}
-                  >
-                    {payment.nolimit && (
-                      <Select.Option key="ANY_TOKEN" value="ANY_TOKEN">
-                        Any Token
-                      </Select.Option>
-                    )}
-                    {activeTokenWhitelist.map(cur => (
-                      <Select.Option key={cur.name} value={cur.name}>
-                        {cur.name}
-                      </Select.Option>
-                    ))}
-                  </Select>
-                </Form.Item>
-                <Form.Item
-                  name="wallet"
+                  onChange={handleSelectToken}
+                  includeAnyToken={payment.nolimit}
+                  totalAmount="0"
+                />
+
+                <MilestoneRecipientAddress
                   label="Pay to wallet address"
-                  className="custom-form-item"
-                  extra="If you don’t change this field the address associated with your account will be
-                used."
-                >
-                  <Input
-                    value={payment.wallet}
-                    name="wallet"
-                    placeholder="0x"
-                    onChange={handleInputChange}
-                    required
-                  />
-                </Form.Item>
+                  onChange={handleInputChange}
+                  value={payment.recipientAddress}
+                />
               </div>
               <Form.Item>
                 <Button type="primary" htmlType="submit" className="submit-button">

@@ -1,5 +1,5 @@
-import React, { useContext, useState, Fragment, useEffect, useRef } from 'react';
-import { PageHeader, Row, Col, Form, Input, Select, Button, Typography } from 'antd';
+import React, { Fragment, useContext, useEffect, useRef, useState } from 'react';
+import { Button, Col, Form, PageHeader, Row } from 'antd';
 import BigNumber from 'bignumber.js';
 import 'antd/dist/antd.css';
 import PropTypes from 'prop-types';
@@ -9,7 +9,12 @@ import useCampaign from '../../hooks/useCampaign';
 import { convertEthHelper, getStartOfDayUTC, history } from '../../lib/helpers';
 import { Context as WhiteListContext } from '../../contextProviders/WhiteListProvider';
 import Web3ConnectWarning from '../Web3ConnectWarning';
-import { MilestoneCampaignInfo, MilestoneTitle } from '../EditMilestoneCommons';
+import {
+  MilestoneCampaignInfo,
+  MilestoneRecipientAddress,
+  MilestoneTitle,
+  MilestoneToken,
+} from '../EditMilestoneCommons';
 import { Context as UserContext } from '../../contextProviders/UserProvider';
 
 function CreateExpense(props) {
@@ -72,6 +77,7 @@ function CreateExpense(props) {
   }
 
   function updateStateOfItem(name, value, itemKey) {
+    console.log({ name, value, itemKey });
     if (name === 'amount') {
       itemAmountMap.current[itemKey] = value;
       updateTotalAmount();
@@ -80,6 +86,7 @@ function CreateExpense(props) {
       const item = expenseItems.find(i => i.key === itemKey);
       item[name] = value;
 
+      console.log(expenseItems);
       setExpenseForm({ ...expenseForm, expenseItems });
     }
   }
@@ -188,56 +195,19 @@ function CreateExpense(props) {
 
               <div className="section">
                 <div className="title">Reimbursement options</div>
-                <Form.Item
-                  name="token"
-                  label="Reimburse in Currency"
-                  className="custom-form-item"
-                  extra="Select the token you want to be reimbursed in."
-                >
-                  <Row gutter={16} align="middle">
-                    <Col className="gutter-row" span={12}>
-                      <Select
-                        showSearch
-                        placeholder="Select a Currency"
-                        optionFilterProp="children"
-                        name="token"
-                        onSelect={handleSelectToken}
-                        filterOption={(input, option) =>
-                          option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                        }
-                        value={expenseForm.token && expenseForm.token.symbol}
-                        required
-                      >
-                        {activeTokenWhitelist.map(token => (
-                          <Select.Option key={token.name} value={token.symbol}>
-                            {token.name}
-                          </Select.Option>
-                        ))}
-                      </Select>
-                    </Col>
-                    <Col className="gutter-row" span={12}>
-                      <Typography.Text className="ant-form-text" type="secondary">
-                        ≈ {totalAmount}
-                      </Typography.Text>
-                    </Col>
-                  </Row>
-                </Form.Item>
 
-                <Form.Item
-                  name="recipientAddress"
+                <MilestoneToken
+                  label="Reimburse in Currency"
+                  onChange={handleSelectToken}
+                  value={expenseForm.token}
+                  totalAmount={totalAmount}
+                />
+
+                <MilestoneRecipientAddress
                   label="Reimburse to wallet address"
-                  className="custom-form-item"
-                  extra="If you don’t change this field the address associated with your account will be
-                used."
-                >
-                  <Input
-                    value={expenseForm.recipientAddress}
-                    name="recipientAddress"
-                    placeholder="0x"
-                    onChange={handleInputChange}
-                    required
-                  />
-                </Form.Item>
+                  onChange={handleInputChange}
+                  value={expenseForm.recipientAddress}
+                />
               </div>
               <Form.Item>
                 <Button type="primary" htmlType="submit" className="submit-button">

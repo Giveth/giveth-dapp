@@ -1,5 +1,17 @@
-import React, { Fragment, useCallback, useEffect } from 'react';
-import { Checkbox, Col, DatePicker, Form, Input, notification, Row, Select, Upload } from 'antd';
+import React, { Fragment, useCallback, useContext, useEffect } from 'react';
+import {
+  Checkbox,
+  Col,
+  DatePicker,
+  Form,
+  Input,
+  InputNumber,
+  notification,
+  Row,
+  Select,
+  Typography,
+  Upload,
+} from 'antd';
 import 'antd/dist/antd.css';
 import PropTypes from 'prop-types';
 import { DeleteTwoTone } from '@ant-design/icons';
@@ -8,8 +20,9 @@ import moment from 'moment';
 import config from '../configuration';
 import { IPFSService } from '../services';
 import useReviewers from '../hooks/useReviewers';
-import { getStartOfDayUTC, getHtmlText } from '../lib/helpers';
+import { getStartOfDayUTC, getHtmlText, ANY_TOKEN } from '../lib/helpers';
 import Editor from './Editor';
+import { Context as WhiteListContext } from '../contextProviders/WhiteListProvider';
 
 const MilestoneTitle = ({ extra, onChange, value }) => (
   <Form.Item
@@ -320,6 +333,167 @@ MilestoneCampaignInfo.defaultProps = {
   campaign: {},
 };
 
+const MilestoneToken = ({ label, onChange, value, totalAmount, includeAnyToken }) => {
+  const {
+    state: { activeTokenWhitelist },
+  } = useContext(WhiteListContext);
+
+  return (
+    <Form.Item
+      name="Token"
+      label={label}
+      className="custom-form-item"
+      extra="Select the token you want to be reimbursed in."
+    >
+      <Row gutter={16} align="middle">
+        <Col className="gutter-row" span={12}>
+          <Select
+            showSearch
+            placeholder="Select a Currency"
+            optionFilterProp="children"
+            name="token"
+            onSelect={onChange}
+            filterOption={(input, option) =>
+              option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+            }
+            value={value && value.symbol}
+            required
+            rules={[{ required: true, message: 'Payment currency is required' }]}
+          >
+            {includeAnyToken && (
+              <Select.Option key={ANY_TOKEN.name} value={ANY_TOKEN.name}>
+                Any Token
+              </Select.Option>
+            )}
+            {activeTokenWhitelist.map(token => (
+              <Select.Option key={token.name} value={token.symbol}>
+                {token.name}
+              </Select.Option>
+            ))}
+          </Select>
+        </Col>
+        <Col className="gutter-row" span={12}>
+          <Typography.Text className="ant-form-text" type="secondary">
+            ≈ {totalAmount}
+          </Typography.Text>
+        </Col>
+      </Row>
+    </Form.Item>
+  );
+};
+
+MilestoneToken.propTypes = {
+  label: PropTypes.string.isRequired,
+  onChange: PropTypes.func.isRequired,
+  value: PropTypes.shape({
+    symbol: PropTypes.string,
+    name: PropTypes.string,
+  }),
+  totalAmount: PropTypes.string,
+  includeAnyToken: PropTypes.bool,
+};
+
+MilestoneToken.defaultProps = {
+  value: {},
+  totalAmount: '0',
+  includeAnyToken: false,
+};
+
+const MilestoneRecipientAddress = ({ label, onChange, value }) => (
+  <Form.Item
+    name="recipientAddress"
+    label={label}
+    className="custom-form-item"
+    extra="If you don’t change this field the address associated with your account will be
+              used."
+  >
+    <Input value={value} name="recipientAddress" placeholder="0x" onChange={onChange} required />
+  </Form.Item>
+);
+
+MilestoneRecipientAddress.propTypes = {
+  label: PropTypes.string.isRequired,
+  onChange: PropTypes.func.isRequired,
+  value: PropTypes.string,
+};
+MilestoneRecipientAddress.defaultProps = {
+  value: '',
+};
+
+const MilestoneFiatAmountCurrency = ({
+  onAmountChange,
+  onCurrencyChange,
+  amount,
+  currency,
+  key,
+}) => {
+  const {
+    state: { fiatWhitelist },
+  } = useContext(WhiteListContext);
+
+  return (
+    <Row gutter={16}>
+      <Col className="gutter-row" span={10}>
+        <Form.Item
+          label="Amount"
+          className="custom-form-item"
+          extra="The amount should be the same as on the receipt."
+        >
+          <InputNumber
+            name="fiatAmount"
+            value={amount}
+            min={0}
+            defaultValue={0}
+            decimalSeparator="."
+            placeholder="Enter Amount"
+            onChange={onAmountChange}
+            required
+          />
+        </Form.Item>
+      </Col>
+      <Col className="gutter-row" span={10}>
+        <Form.Item
+          name="currency"
+          label="Currency"
+          className="custom-form-item"
+          extra="Select the currency of this expense."
+        >
+          <Select
+            showSearch
+            placeholder="Select a Currency"
+            optionFilterProp="children"
+            name="currency"
+            onSelect={onCurrencyChange}
+            filterOption={(input, option) =>
+              option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+            }
+            value={currency}
+            required
+          >
+            {fiatWhitelist.map(cur => (
+              <Select.Option key={cur} value={cur}>
+                {cur}
+              </Select.Option>
+            ))}
+          </Select>
+        </Form.Item>
+      </Col>
+    </Row>
+  );
+};
+
+MilestoneFiatAmountCurrency.propTypes = {
+  onAmountChange: PropTypes.func.isRequired,
+  onCurrencyChange: PropTypes.func.isRequired,
+  amount: PropTypes.number,
+  currency: PropTypes.string,
+  key: PropTypes.string,
+};
+MilestoneFiatAmountCurrency.defaultProps = {
+  amount: 0,
+  currency: '',
+  key: '',
+};
 // eslint-disable-next-line import/prefer-default-export
 export {
   MilestoneTitle,
@@ -329,4 +503,7 @@ export {
   MilestoneReviewer,
   MilestoneDatePicker,
   MilestoneCampaignInfo,
+  MilestoneToken,
+  MilestoneRecipientAddress,
+  MilestoneFiatAmountCurrency,
 };
