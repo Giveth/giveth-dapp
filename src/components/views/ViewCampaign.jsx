@@ -90,11 +90,11 @@ const ViewCampaign = ({ match }) => {
       },
     );
   };
-  const loadMoreMilestones = (campaignId = match.params.id) => {
+  const loadMoreMilestones = () => {
     setLoadingMilestones(true);
 
     CampaignService.getMilestones(
-      campaignId,
+      currentCampaign.id,
       milestonesPerBatch,
       milestones.length,
       (_milestones, _milestonesTotal) => {
@@ -124,7 +124,7 @@ const ViewCampaign = ({ match }) => {
         currentCampaign = _campaign;
         setCampaign(_campaign);
         setLoading(false);
-        loadMoreMilestones(_campaign.id);
+        loadMoreMilestones();
         // subscribe to donation count
         donationsObserver = CampaignService.subscribeNewDonations(
           _campaign.id,
