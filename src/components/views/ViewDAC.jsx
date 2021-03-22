@@ -49,14 +49,16 @@ const ViewDAC = ({ match }) => {
 
   const [dac, setDac] = useState();
   const [isLoading, setLoading] = useState(true);
-  const [isLoadingDonations, setLoadingDonatinos] = useState(true);
+  const [isLoadingDonations, setLoadingDonations] = useState(true);
   const [isLoadingCampaigns, setLoadingCampaigns] = useState(true);
   const [campaigns, setCampaigns] = useState([]);
   const [aggregateDonations, setAggregateDonations] = useState([]);
+  const [donations, setDonations] = useState([]);
   const [donationsTotal, setDonationsTotal] = useState(0);
   const [newDonations, setNewDonations] = useState(0);
   const [notFound, setNotFound] = useState(false);
 
+  let lastDonation = {};
   let donationsObserver;
   let campaignObserver;
 
@@ -68,7 +70,7 @@ const ViewDAC = ({ match }) => {
   };
 
   const loadMoreAggregateDonations = () => {
-    setLoadingDonatinos(true);
+    setLoadingDonations(true);
     AggregateDonationService.get(
       currentDac.id,
       donationsPerBatch,
@@ -76,20 +78,82 @@ const ViewDAC = ({ match }) => {
       (_donations, _donationsTotal) => {
         setAggregateDonations(aggregateDonations.concat(_donations));
         setDonationsTotal(_donationsTotal);
-        setLoadingDonatinos(false);
+        setLoadingDonations(false);
       },
       err => {
-        setLoadingDonatinos(false);
+        setLoadingDonations(false);
         ErrorHandler(err, 'Some error on fetching loading donations, please try again later');
       },
     );
   };
 
+  const loadNewAggregateDonations = () => {
+    setLoadingDonations(true);
+    AggregateDonationService.get(
+      currentDac.id,
+      donationsPerBatch,
+      0,
+      (_donations, _donationsTotal) => {
+        setAggregateDonations(_donations);
+        setDonationsTotal(_donationsTotal || 0);
+        setLoadingDonations(false);
+      },
+      err => {
+        setLoadingDonations(false);
+        ErrorHandler(err, 'Some error on fetching DAC donations, please try later');
+      },
+    );
+  };
+
+  const { id, slug } = match.params;
+  const getFunction = slug
+    ? DACService.getBySlug.bind(DACService, slug)
+    : DACService.get.bind(DACService, id);
+
+  const updateLeaderboard = () => {
+    loadNewAggregateDonations();
+    getFunction()
+      .then(async _dac => {
+        setDac(_dac);
+      })
+      .catch(() => {
+        setNotFound(true);
+      });
+  };
+
+  const loadDonations = dacId => {
+    if (dacId) {
+      DACService.getDonations(
+        dacId,
+        donationsPerBatch,
+        0,
+        (_donations, _donationsTotal) => {
+          const allDonations = [..._donations, ...donations];
+          setDonations(allDonations);
+          const BreakException = {};
+          try {
+            allDonations.forEach(item => {
+              if (item._status === 'Waiting') {
+                if (lastDonation && new Date(lastDonation._createdAt) < new Date(item._createdAt)) {
+                  updateLeaderboard();
+                }
+                lastDonation = { ...item };
+                throw BreakException;
+              }
+            });
+          } catch (e) {
+            if (e !== BreakException) throw e;
+          }
+        },
+        err => {
+          ErrorHandler(err, 'Some error on fetching campaign donations, please try later');
+        },
+        donations.length ? donations[0]._createdAt : undefined,
+      );
+    }
+  };
+
   useEffect(() => {
-    const { id, slug } = match.params;
-    const getFunction = slug
-      ? DACService.getBySlug.bind(DACService, slug)
-      : DACService.get.bind(DACService, id);
     // Get the DAC
     getFunction()
       .then(async _dac => {
@@ -102,10 +166,12 @@ const ViewDAC = ({ match }) => {
         const relatedCampaigns = await CampaignService.getCampaignsByIdArray(_dac.campaigns || []);
         setCampaigns(relatedCampaigns);
         setLoadingCampaigns(false);
-
         donationsObserver = DACService.subscribeNewDonations(
           _dac.id,
-          _newDonations => setNewDonations(_newDonations),
+          _newDonations => {
+            setNewDonations(_newDonations);
+            loadDonations(_dac.id);
+          },
           err => {
             ErrorHandler(err, 'Some error on fetching dac donations, please try again later');
             setNewDonations(0);
@@ -117,14 +183,13 @@ const ViewDAC = ({ match }) => {
         setNotFound(true);
         ErrorHandler(err, 'Some error on fetching dac info, please try again later');
       });
-
     return cleanUp;
   }, []);
 
-  const editDAC = id => {
+  const editDAC = dacId => {
     checkBalance(balance)
       .then(() => {
-        history.push(`/dacs/${id}/edit`);
+        history.push(`/dacs/${dacId}/edit`);
       })
       .catch(err => {
         if (err === 'noBalance') {

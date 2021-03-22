@@ -716,7 +716,7 @@ class EditMilestone extends Component {
         from: currentUser.address,
         afterSave: (created, txUrl, res) => {
           if (created) {
-            if (isNew) {
+            if (isProposed) {
               const url = res ? `/milestone/${res._slug}` : undefined;
               React.toast.info(
                 <Fragment>

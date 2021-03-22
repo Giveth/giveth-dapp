@@ -308,28 +308,33 @@ class MilestoneService {
    * @param $skip     Number of records to be skipped
    * @param onSuccess Callback function once response is obtained successfully
    * @param onError   Callback function if error is encountered
+   * @param gtDate    Parameter for getting new donations
    */
-  static getDonations(id, $limit = 100, $skip = 0, onSuccess = () => {}, onError = () => {}) {
+  static getDonations(id, $limit = 100, $skip = 0, onSuccess = () => {}, onError = () => {}, gtDate) {
+    const query = {
+      $or: [
+        {
+          lessThanCutoff: { $ne: true },
+          status: { $ne: Donation.FAILED },
+          $or: [{ intendedProjectTypeId: id }, { ownerTypeId: id }],
+        },
+        {
+          status: Donation.PAID,
+          $or: [{ intendedProjectTypeId: id }, { ownerTypeId: id }],
+        },
+      ],
+      $sort: { createdAt: -1, usdValue: -1 },
+      $limit,
+      $skip,
+    };
+    if (gtDate) {
+      query.createdAt = { $gt: new Date(gtDate) };
+    }
     return feathersClient
       .service('donations')
       .find(
         paramsForServer({
-          query: {
-            $or: [
-              {
-                lessThanCutoff: { $ne: true },
-                status: { $ne: Donation.FAILED },
-                $or: [{ intendedProjectTypeId: id }, { ownerTypeId: id }],
-              },
-              {
-                status: Donation.PAID,
-                $or: [{ intendedProjectTypeId: id }, { ownerTypeId: id }],
-              },
-            ],
-            $sort: { usdValue: -1, createdAt: -1 },
-            $limit,
-            $skip,
-          },
+          query,
           schema: 'includeTypeAndGiverDetails',
         }),
       )

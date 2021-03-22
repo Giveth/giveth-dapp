@@ -61,6 +61,7 @@ const ViewCampaign = ({ match }) => {
   const [isLoadingMilestones, setLoadingMilestones] = useState(true);
   const [isLoadingDonations, setLoadingDonations] = useState(true);
   const [aggregateDonations, setAggregateDonations] = useState([]);
+  const [donations, setDonations] = useState([]);
   const [milestones, setMilestones] = useState([]);
   const [milestonesTotal, setMilestonesTotal] = useState(0);
   const [donationsTotal, setDonationsTotal] = useState(0);
@@ -68,6 +69,7 @@ const ViewCampaign = ({ match }) => {
   const [notFound, setNotFound] = useState(false);
   const [downloadingCsv, setDownloadingCsv] = useState(false);
   const [campaign, setCampaign] = useState();
+  const [lastCommittedDonation, setLastCommittedDonation] = useState();
 
   const donationsPerBatch = 5;
   const milestonesPerBatch = 12;
@@ -90,9 +92,27 @@ const ViewCampaign = ({ match }) => {
       },
     );
   };
+
+  const loadNewAggregateDonations = () => {
+    setLoadingDonations(true);
+    AggregateDonationService.get(
+      currentCampaign.id,
+      donationsPerBatch,
+      0,
+      (_donations, _donationsTotal) => {
+        setAggregateDonations(_donations);
+        setDonationsTotal(_donationsTotal || 0);
+        setLoadingDonations(false);
+      },
+      err => {
+        setLoadingDonations(false);
+        ErrorHandler(err, 'Some error on fetching campaign donations, please try later');
+      },
+    );
+  };
+
   const loadMoreMilestones = (campaignId = match.params.id) => {
     setLoadingMilestones(true);
-
     CampaignService.getMilestones(
       campaignId,
       milestonesPerBatch,
@@ -110,12 +130,58 @@ const ViewCampaign = ({ match }) => {
     );
   };
 
-  useEffect(() => {
-    const { id, slug } = match.params;
-    const getFunction = slug
-      ? CampaignService.getBySlug.bind(CampaignService, slug)
-      : CampaignService.get.bind(CampaignService, id);
+  const { id, slug } = match.params;
+  const getFunction = slug
+    ? CampaignService.getBySlug.bind(CampaignService, slug)
+    : CampaignService.get.bind(CampaignService, id);
 
+  const updateLeaderboard = () => {
+    loadNewAggregateDonations();
+    getFunction()
+      .then(_campaign => {
+        setCampaign(_campaign);
+      })
+      .catch(() => {
+        setNotFound(true);
+      });
+  };
+
+  const loadDonations = campaignId => {
+    if (campaignId) {
+      CampaignService.getDonations(
+        campaignId,
+        donationsPerBatch,
+        0,
+        (_donations, _donationsTotal) => {
+          const allDonations = [..._donations, ...donations];
+          setDonations(allDonations);
+          const BreakException = {};
+          try {
+            allDonations.forEach(item => {
+              if (item._status === 'Committed') {
+                if (
+                  lastCommittedDonation &&
+                  new Date(lastCommittedDonation._createdAt) < new Date(item._createdAt)
+                ) {
+                  updateLeaderboard();
+                }
+                setLastCommittedDonation(item);
+                throw BreakException;
+              }
+            });
+          } catch (e) {
+            if (e !== BreakException) throw e;
+          }
+        },
+        err => {
+          ErrorHandler(err, 'Some error on fetching campaign donations, please try later');
+        },
+        donations.length ? donations[0]._createdAt : undefined,
+      );
+    }
+  };
+
+  useEffect(() => {
     getFunction()
       .then(_campaign => {
         if (_campaign && id) {
@@ -123,6 +189,7 @@ const ViewCampaign = ({ match }) => {
         }
         currentCampaign = _campaign;
         setCampaign(_campaign);
+        loadDonations(_campaign.id);
         setLoading(false);
         loadMoreMilestones(_campaign.id);
         // subscribe to donation count
@@ -140,6 +207,12 @@ const ViewCampaign = ({ match }) => {
       if (donationsObserver) donationsObserver.unsubscribe();
     };
   }, []);
+
+  useEffect(() => {
+    if (campaign && campaign.id) {
+      loadDonations(campaign.id);
+    }
+  }, [newDonations]);
 
   const downloadCsv = campaignId => {
     const url = `${config.feathersConnection}/campaigncsv/${campaignId}`;
@@ -162,10 +235,10 @@ const ViewCampaign = ({ match }) => {
       });
   };
 
-  const editCampaign = id => {
+  const editCampaign = campaignId => {
     checkBalance(balance)
       .then(() => {
-        history.push(`/campaigns/${id}/edit`);
+        history.push(`/campaigns/${campaignId}/edit`);
       })
       .catch(err => {
         if (err === 'noBalance') {
@@ -264,7 +337,7 @@ const ViewCampaign = ({ match }) => {
                       <div className="col-md-8 m-auto">
                         <div>
                           <div>
-                            <h5 className="title">Subscribe to updates </h5>
+                            <h5 className="title">Subscribe to updates</h5>
                             <ProjectSubscription
                               projectTypeId={campaign._id}
                               projectType="campaign"

@@ -159,21 +159,33 @@ class CampaignService {
    * @param $skip     Amounds of records to be skipped
    * @param onSuccess Callback function once response is obtained successfully
    * @param onError   Callback function if error is encountered
+   * @param gtDate    Parameter for getting new donations
    */
-  static getDonations(id, $limit = 100, $skip = 0, onSuccess = () => {}, onError = () => {}) {
+  static getDonations(
+    id,
+    $limit = 100,
+    $skip = 0,
+    onSuccess = () => {},
+    onError = () => {},
+    gtDate,
+  ) {
+    const query = {
+      status: { $ne: Donation.FAILED },
+      $or: [{ intendedProjectTypeId: id }, { ownerTypeId: id }],
+      ownerTypeId: id,
+      isReturn: false,
+      $sort: { createdAt: -1, usdValue: -1 },
+      $limit,
+      $skip,
+    };
+    if (gtDate) {
+      query.createdAt = { $gt: new Date(gtDate) };
+    }
     return feathersClient
       .service('donations')
       .find(
         paramsForServer({
-          query: {
-            status: { $ne: Donation.FAILED },
-            $or: [{ intendedProjectTypeId: id }, { ownerTypeId: id }],
-            ownerTypeId: id,
-            isReturn: false,
-            $sort: { usdValue: -1, createdAt: -1 },
-            $limit,
-            $skip,
-          },
+          query,
           schema: 'includeTypeAndGiverDetails',
         }),
       )
@@ -207,7 +219,7 @@ class CampaignService {
             $or: [{ intendedProjectTypeId: id }, { ownerTypeId: id }],
             ownerTypeId: id,
             isReturn: false,
-            $sort: { usdValue: -1, createdAt: -1 },
+            $sort: { createdAt: -1, usdValue: -1 },
             $limit: 0,
           },
           schema: 'includeTypeAndGiverDetails',

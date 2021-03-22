@@ -110,6 +110,24 @@ const ViewMilestone = props => {
     );
   }
 
+  function loadNewDonations() {
+    setLoadingDonations(true);
+    MilestoneService.getDonations(
+      _milestoneId,
+      donationsPerBatch,
+      0,
+      (_donations, _donationsTotal) => {
+        setDonations([..._donations, ...donations]);
+        setLoadingDonations(false);
+      },
+      err => {
+        setLoadingDonations(false);
+        ErrorHandler(err, 'Some error on fetching milestone donations, please try later');
+      },
+      donations[0]._createdAt,
+    );
+  }
+
   useEffect(() => {
     const { milestoneId, milestoneSlug } = props.match.params;
     const getFunction = milestoneSlug
@@ -134,20 +152,30 @@ const ViewMilestone = props => {
       .catch(() => {
         setNotFound(true);
       });
+  }, []);
 
+  useEffect(() => {
+    if (donations.length) loadNewDonations();
+  }, [newDonations]);
+
+  useEffect(() => {
     // subscribe to donation count
-    donationsObserver = MilestoneService.subscribeNewDonations(
-      milestoneId,
-      _newDonations => setNewDonations(_newDonations),
-      () => setNewDonations(0),
-    );
+    if (milestone && milestone.id) {
+      donationsObserver = MilestoneService.subscribeNewDonations(
+        milestone.id,
+        _newDonations => {
+          setNewDonations(_newDonations);
+        },
+        () => setNewDonations(0),
+      );
+    }
 
     return () => {
       if (donationsObserver) {
         donationsObserver.unsubscribe();
       }
     };
-  }, []);
+  }, [milestone]);
 
   useEffect(() => {
     if (

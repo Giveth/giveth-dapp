@@ -144,7 +144,7 @@ class DACService {
             delegateTypeId: id,
             isReturn: false,
             intendedProjectId: { $exists: false },
-            $sort: { usdValue: -1, createdAt: -1 },
+            $sort: { createdAt: -1, usdValue: -1 },
             $limit,
             $skip,
           },
@@ -181,7 +181,7 @@ class DACService {
             delegateTypeId: id,
             isReturn: false,
             intendedProjectId: { $exists: false },
-            $sort: { usdValue: -1, createdAt: -1 },
+            $sort: { createdAt: -1, usdValue: -1 },
             $limit: 0,
           },
           schema: 'includeTypeAndGiverDetails',
@@ -254,6 +254,7 @@ class DACService {
    * @param from        address of the user creating the DAC
    * @param afterSave   Callback to be triggered after the DAC is saved in feathers
    * @param afterMined  Callback to be triggered after the transaction is mined
+   * @param onError       Callback function if error is encountered
    */
   static async save(dac, from, afterSave = () => {}, afterMined = () => {}, onError = () => {}) {
     if (dac.id && dac.delegateId === 0) {

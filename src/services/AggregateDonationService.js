@@ -14,14 +14,15 @@ class AggregateDonationsService {
    * @param onError   Callback function if error is encountered
    */
   static get(id, $limit = 100, $skip = 0, onSuccess = () => {}, onError = () => {}) {
+    const query = {
+      id,
+      $limit,
+      $skip,
+    };
     return aggregateDonations
       .find(
         paramsForServer({
-          query: {
-            id,
-            $limit,
-            $skip,
-          },
+          query,
         }),
       )
       .then(resp => onSuccess(resp.data, resp.total))
