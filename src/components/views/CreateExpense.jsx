@@ -67,17 +67,16 @@ function CreateExpense(props) {
     }
   }, [whiteListLoading, activeTokenWhitelist]);
 
-  function updateTotalAmount() {
+  const updateTotalAmount = () => {
     setTotalAmount(
       convertEthHelper(
         BigNumber.sum(...Object.values(itemAmountMap.current)),
         expenseForm.token.decimals,
       ),
     );
-  }
+  };
 
-  function updateStateOfItem(name, value, itemKey) {
-    console.log({ name, value, itemKey });
+  const updateStateOfItem = (name, value, itemKey) => {
     if (name === 'amount') {
       itemAmountMap.current[itemKey] = value;
       updateTotalAmount();
@@ -86,10 +85,9 @@ function CreateExpense(props) {
       const item = expenseItems.find(i => i.key === itemKey);
       item[name] = value;
 
-      console.log(expenseItems);
       setExpenseForm({ ...expenseForm, expenseItems });
     }
-  }
+  };
 
   const handleInputChange = event => {
     const { name, value, type, checked } = event.target;
@@ -100,14 +98,9 @@ function CreateExpense(props) {
     }
   };
 
-  function handleSelectToken(_, option) {
-    handleInputChange({
-      target: {
-        name: 'token',
-        value: activeTokenWhitelist.find(t => t.symbol === option.value),
-      },
-    });
-  }
+  const handleSelectToken = token => {
+    handleInputChange({ target: { name: 'token', value: token } });
+  };
 
   function addExpense() {
     setExpenseForm({

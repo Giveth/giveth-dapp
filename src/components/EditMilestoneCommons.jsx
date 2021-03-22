@@ -17,6 +17,7 @@ import PropTypes from 'prop-types';
 import { DeleteTwoTone } from '@ant-design/icons';
 import ImgCrop from 'antd-img-crop';
 import moment from 'moment';
+import Web3 from 'web3';
 import config from '../configuration';
 import { IPFSService } from '../services';
 import useReviewers from '../hooks/useReviewers';
@@ -62,14 +63,13 @@ MilestoneTitle.defaultProps = {
 const MilestoneDescription = ({ extra, onChange, placeholder, value, label }) => {
   const onDescriptionChange = useCallback(
     description => {
-      console.log('description:', description);
       onChange({ target: { name: 'description', value: description } });
     },
     [onChange],
   );
   return (
     <Form.Item
-      name="description"
+      name="Description"
       label={label}
       className="custom-form-item"
       extra={extra}
@@ -301,7 +301,7 @@ const MilestoneDatePicker = ({ onChange, value }) => {
               },
             ]}
             defaultValue={value || maxValue}
-            onChange={(_, dateString) => onChange(dateString)}
+            onChange={(_, dateString) => onChange(getStartOfDayUTC(dateString))}
           />
         </Form.Item>
       </Col>
@@ -311,7 +311,7 @@ const MilestoneDatePicker = ({ onChange, value }) => {
 
 MilestoneDatePicker.propTypes = {
   onChange: PropTypes.func.isRequired,
-  value: PropTypes.instanceOf(moment),
+  value: PropTypes.oneOfType([PropTypes.string, PropTypes.instanceOf(moment)]),
 };
 
 MilestoneDatePicker.defaultProps = {
@@ -333,10 +333,23 @@ MilestoneCampaignInfo.defaultProps = {
   campaign: {},
 };
 
-const MilestoneToken = ({ label, onChange, value, totalAmount, includeAnyToken }) => {
+const MilestoneToken = ({
+  label,
+  onChange,
+  value,
+  totalAmount,
+  includeAnyToken,
+  hideTotalAmount,
+}) => {
   const {
     state: { activeTokenWhitelist },
   } = useContext(WhiteListContext);
+
+  const handleSelectToken = (_, { value: symbol }) => {
+    onChange(
+      symbol === ANY_TOKEN.symbol ? ANY_TOKEN : activeTokenWhitelist.find(t => t.symbol === symbol),
+    );
+  };
 
   return (
     <Form.Item
@@ -352,7 +365,7 @@ const MilestoneToken = ({ label, onChange, value, totalAmount, includeAnyToken }
             placeholder="Select a Currency"
             optionFilterProp="children"
             name="token"
-            onSelect={onChange}
+            onSelect={handleSelectToken}
             filterOption={(input, option) =>
               option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
             }
@@ -372,11 +385,13 @@ const MilestoneToken = ({ label, onChange, value, totalAmount, includeAnyToken }
             ))}
           </Select>
         </Col>
-        <Col className="gutter-row" span={12}>
-          <Typography.Text className="ant-form-text" type="secondary">
-            ≈ {totalAmount}
-          </Typography.Text>
-        </Col>
+        {!hideTotalAmount && (
+          <Col className="gutter-row" span={12}>
+            <Typography.Text className="ant-form-text" type="secondary">
+              ≈ {totalAmount}
+            </Typography.Text>
+          </Col>
+        )}
       </Row>
     </Form.Item>
   );
@@ -391,12 +406,14 @@ MilestoneToken.propTypes = {
   }),
   totalAmount: PropTypes.string,
   includeAnyToken: PropTypes.bool,
+  hideTotalAmount: PropTypes.bool,
 };
 
 MilestoneToken.defaultProps = {
   value: {},
   totalAmount: '0',
   includeAnyToken: false,
+  hideTotalAmount: false,
 };
 
 const MilestoneRecipientAddress = ({ label, onChange, value }) => (
@@ -406,6 +423,15 @@ const MilestoneRecipientAddress = ({ label, onChange, value }) => (
     className="custom-form-item"
     extra="If you don’t change this field the address associated with your account will be
               used."
+    rules={[
+      {
+        validator: async (_, inputValue) => {
+          if (inputValue && !Web3.utils.isAddress(inputValue)) {
+            throw new Error('Please insert a valid Ethereum address.');
+          }
+        },
+      },
+    ]}
   >
     <Input value={value} name="recipientAddress" placeholder="0x" onChange={onChange} required />
   </Form.Item>
@@ -425,7 +451,7 @@ const MilestoneFiatAmountCurrency = ({
   onCurrencyChange,
   amount,
   currency,
-  key,
+  id,
 }) => {
   const {
     state: { fiatWhitelist },
@@ -453,7 +479,7 @@ const MilestoneFiatAmountCurrency = ({
       </Col>
       <Col className="gutter-row" span={10}>
         <Form.Item
-          name="currency"
+          name={id}
           label="Currency"
           className="custom-form-item"
           extra="Select the currency of this expense."
@@ -485,14 +511,14 @@ const MilestoneFiatAmountCurrency = ({
 MilestoneFiatAmountCurrency.propTypes = {
   onAmountChange: PropTypes.func.isRequired,
   onCurrencyChange: PropTypes.func.isRequired,
-  amount: PropTypes.number,
+  amount: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   currency: PropTypes.string,
-  key: PropTypes.string,
+  id: PropTypes.string,
 };
 MilestoneFiatAmountCurrency.defaultProps = {
   amount: 0,
   currency: '',
-  key: '',
+  id: '',
 };
 // eslint-disable-next-line import/prefer-default-export
 export {

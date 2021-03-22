@@ -28,7 +28,6 @@ function CreateExpenseItem({
   const [visibleRemoveModal, setVisibleRemoveModal] = useState(false);
   const [item, setItem] = useState({ ...initialValue });
 
-  console.log(`item.currency[${item.key}]: ${item.currency}`);
   const timer = useRef();
 
   function handleInputChange(event) {
