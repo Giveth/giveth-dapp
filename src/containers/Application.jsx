@@ -60,6 +60,8 @@ import CreatePayment from '../components/views/CreatePayment';
 import CreateBounty from '../components/views/CreateBounty';
 import CreateMilestone from '../components/views/CreateMilestone';
 import CreateExpense from '../components/views/CreateExpense';
+import EditCampaignV2 from '../components/views/EditCampaignv2';
+import EditDACV2 from '../components/views/EditDACV2';
 
 /**
  * Here we hack to make stuff globally available
@@ -175,6 +177,21 @@ class Application extends Component {
                                             />
                                             <Route
                                               exact
+                                              path="/dacs/new2"
+                                              render={props => (
+                                                <EditDACV2
+                                                  isNew
+                                                  balance={balance}
+                                                  isForeignNetwork={isForeignNetwork}
+                                                  displayForeignNetRequiredWarning={
+                                                    displayForeignNetRequiredWarning
+                                                  }
+                                                  {...props}
+                                                />
+                                              )}
+                                            />
+                                            <Route
+                                              exact
                                               path={getViewEntityPathsList('/dacs/:id')}
                                               render={props => <ViewDAC {...props} />}
                                             />
@@ -203,6 +220,21 @@ class Application extends Component {
                                               path="/campaigns/new"
                                               render={props => (
                                                 <EditCampaign
+                                                  isNew
+                                                  balance={balance}
+                                                  isForeignNetwork={isForeignNetwork}
+                                                  displayForeignNetRequiredWarning={
+                                                    displayForeignNetRequiredWarning
+                                                  }
+                                                  {...props}
+                                                />
+                                              )}
+                                            />
+                                            <Route
+                                              exact
+                                              path="/campaigns/new2"
+                                              render={props => (
+                                                <EditCampaignV2
                                                   isNew
                                                   balance={balance}
                                                   isForeignNetwork={isForeignNetwork}
