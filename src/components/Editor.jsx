@@ -6,11 +6,14 @@ import { resizeFile } from '../lib/helpers';
 import IPFSService from '../services/IPFSService';
 import config from '../configuration';
 
-import VideoPopup from './VideoPopup';
+// import VideoPopup from './VideoPopup';
+import VideoPopupV2 from './VideoPopupV2';
 import Loader from './Loader';
 
 function Editor(props) {
   const [uploading, setUploading] = useState(false);
+  const [isVideoModalVisible, setIsVideoModalVisible] = useState(false);
+
   const reactQuillRef = useRef();
   const imageUploader = useRef();
   const imageContainer = useRef();
@@ -56,17 +59,22 @@ function Editor(props) {
       });
   }
 
+  const showVideoModal = () => {
+    setIsVideoModalVisible(true);
+  };
+
+  const handleVideoModalCancel = () => {
+    setIsVideoModalVisible(false);
+  };
+
+  const videoHandler = () => {
+    showVideoModal();
+  };
+
   useEffect(() => {
     const toolbar = reactQuillRef.current.getEditor().getModule('toolbar');
     toolbar.addHandler('image', imageHandler);
-    toolbar.addHandler('video', () => {
-      const quill = reactQuillRef.current.getEditor();
-      const index = quill.getLength() - 1;
-      VideoPopup(url => {
-        quill.insertEmbed(index, 'video', url);
-        React.swal.close();
-      });
-    });
+    toolbar.addHandler('video', videoHandler);
   }, []);
 
   async function handleImageUpload() {
@@ -90,10 +98,9 @@ function Editor(props) {
         imageUploader.current.value = '';
       };
       reader.readAsDataURL(compressFile);
+    } else {
+      console.warn('You could only upload images.');
     }
-    // else {
-    //   console.warn('You could only upload images.');
-    // }
   }
 
   const { placeholder, onChange } = props;
@@ -149,10 +156,14 @@ function Editor(props) {
           theme="snow"
         />
       </div>
+      <VideoPopupV2
+        visible={isVideoModalVisible}
+        handleClose={handleVideoModalCancel}
+        reactQuillRef={reactQuillRef}
+      />
     </div>
   );
 }
-// }
 
 Editor.propTypes = {
   // value: PropTypes.string.isRequired,
