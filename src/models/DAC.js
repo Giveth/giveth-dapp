@@ -42,6 +42,7 @@ class DAC extends BasicModel {
     this.requiredConfirmations = data.requiredConfirmations;
     this.commitTime = data.commitTime || 0;
     this.slug = data.slug;
+    this.campaigns = data.campaigns;
   }
 
   toIpfs() {

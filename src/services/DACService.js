@@ -5,7 +5,6 @@ import getNetwork from '../lib/blockchain/getNetwork';
 import extraGas from '../lib/blockchain/extraGas';
 import { feathersClient } from '../lib/feathersClient';
 import DAC from '../models/DAC';
-import Campaign from '../models/Campaign';
 import Donation from '../models/Donation';
 import IPFSService from './IPFSService';
 import config from '../configuration';
@@ -125,46 +124,6 @@ class DACService {
         ),
       )
       .catch(onError);
-  }
-
-  /**
-   * Lazy-load DAC Campaigns by subscribing to campaigns listener
-   *
-   * @param delegateId Dekegate ID of the DAC which campaigns should be retrieved
-   * @param onSuccess  Callback function once response is obtained successfylly
-   * @param onError    Callback function if error is encountered
-   */
-  static subscribeCampaigns(delegateId, onSuccess, onError) {
-    return feathersClient
-      .service('donations')
-      .watch({ listStrategy: 'always' })
-      .find({
-        query: {
-          $select: ['delegateId', 'intendedProjectId', 'amount'],
-          delegateId,
-          $limit: 200,
-        },
-      })
-      .subscribe(async resp => {
-        const projectIDs = {};
-        resp.data.forEach(d => {
-          if (d.intendedProjectId && d.amount) {
-            projectIDs[d.intendedProjectId] = (
-              projectIDs[d.intendedProjectId] || new BigNumber(0)
-            ).plus(new BigNumber(d.amount));
-          }
-        });
-
-        const campaignsResp = await feathersClient.service('campaigns').find({
-          query: {
-            projectId: { $in: Object.keys(projectIDs) },
-            $limit: 200,
-          },
-        });
-
-        const campaigns = campaignsResp.data.map(d => new Campaign(d));
-        onSuccess(campaigns);
-      }, onError);
   }
 
   /**
