@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 
 import { Link } from 'react-router-dom';
@@ -58,7 +58,7 @@ const ViewDAC = ({ match }) => {
   const [newDonations, setNewDonations] = useState(0);
   const [notFound, setNotFound] = useState(false);
 
-  let lastDonation = {};
+  const lastDonation = useRef();
   let donationsObserver;
   let campaignObserver;
 
@@ -134,10 +134,13 @@ const ViewDAC = ({ match }) => {
           try {
             allDonations.forEach(item => {
               if (item._status === 'Waiting') {
-                if (lastDonation && new Date(lastDonation._createdAt) < new Date(item._createdAt)) {
+                if (
+                  lastDonation.current &&
+                  new Date(lastDonation.current._createdAt) < new Date(item._createdAt)
+                ) {
                   updateLeaderboard();
                 }
-                lastDonation = { ...item };
+                lastDonation.current = item;
                 throw BreakException;
               }
             });

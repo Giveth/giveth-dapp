@@ -170,7 +170,7 @@ class DACService {
    * @param onError   Callback function if error is encountered
    */
   static subscribeNewDonations(id, onSuccess, onError) {
-    let initalTotal;
+    let initialTotal;
     return feathersClient
       .service('donations')
       .watch()
@@ -188,11 +188,11 @@ class DACService {
         }),
       )
       .subscribe(resp => {
-        if (initalTotal === undefined) {
-          initalTotal = resp.total;
+        if (initialTotal === undefined) {
+          initialTotal = resp.total;
           onSuccess(0);
         } else {
-          onSuccess(resp.total - initalTotal);
+          onSuccess(resp.total - initialTotal);
         }
       }, onError);
   }

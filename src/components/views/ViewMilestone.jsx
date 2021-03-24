@@ -84,7 +84,6 @@ const ViewMilestone = props => {
 
   const donationsPerBatch = 50;
   let donationsObserver;
-  let _milestoneId = null;
 
   const getDacTitle = async dacId => {
     if (dacId === 0) return;
@@ -96,7 +95,7 @@ const ViewMilestone = props => {
   function loadMoreDonations() {
     setLoadingDonations(true);
     MilestoneService.getDonations(
-      _milestoneId,
+      milestone.id,
       donationsPerBatch,
       donations.length,
       (_donations, _donationsTotal) => {
@@ -110,21 +109,20 @@ const ViewMilestone = props => {
     );
   }
 
-  function loadNewDonations() {
+  function loadDonations(milestoneId) {
     setLoadingDonations(true);
     MilestoneService.getDonations(
-      _milestoneId,
+      milestoneId,
       donationsPerBatch,
       0,
       (_donations, _donationsTotal) => {
-        setDonations([..._donations, ...donations]);
+        setDonations(_donations);
         setLoadingDonations(false);
       },
       err => {
         setLoadingDonations(false);
         ErrorHandler(err, 'Some error on fetching milestone donations, please try later');
       },
-      donations[0]._createdAt,
     );
   }
 
@@ -139,43 +137,32 @@ const ViewMilestone = props => {
         if (milestoneId) {
           history.push(`/milestone/${_milestone.slug}`);
         }
-        _milestoneId = _milestone.id;
         setMilestone(_milestone);
         setCampaign(new Campaign(_milestone.campaign));
         setRecipient(
           _milestone.pendingRecipientAddress ? _milestone.pendingRecipient : _milestone.recipient,
         );
         getDacTitle(_milestone.dacId);
-        loadMoreDonations();
+        donationsObserver = MilestoneService.subscribeNewDonations(
+          _milestone.id,
+          _newDonations => {
+            setNewDonations(_newDonations);
+            loadDonations(_milestone.id);
+          },
+          () => setNewDonations(0),
+        );
         setLoading(false);
       })
       .catch(() => {
         setNotFound(true);
       });
-  }, []);
-
-  useEffect(() => {
-    if (donations.length) loadNewDonations();
-  }, [newDonations]);
-
-  useEffect(() => {
-    // subscribe to donation count
-    if (milestone && milestone.id) {
-      donationsObserver = MilestoneService.subscribeNewDonations(
-        milestone.id,
-        _newDonations => {
-          setNewDonations(_newDonations);
-        },
-        () => setNewDonations(0),
-      );
-    }
 
     return () => {
       if (donationsObserver) {
         donationsObserver.unsubscribe();
       }
     };
-  }, [milestone]);
+  }, []);
 
   useEffect(() => {
     if (
@@ -657,7 +644,7 @@ const ViewMilestone = props => {
                           <p>These receipts show how the money of this Milestone was spent.</p>
                         </div>
 
-                        {/* MilesteneItem needs to be wrapped in a form or it won't mount */}
+                        {/* MilestoneItem needs to be wrapped in a form or it won't mount */}
                         <Form>
                           <div className="table-container">
                             <table className="table table-striped table-hover">

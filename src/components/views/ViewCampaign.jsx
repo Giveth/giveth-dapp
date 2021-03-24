@@ -1,4 +1,4 @@
-import React, { Fragment, useContext, useEffect, useState } from 'react';
+import React, { Fragment, useContext, useEffect, useState, useRef } from 'react';
 import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 import Avatar from 'react-avatar';
@@ -61,19 +61,19 @@ const ViewCampaign = ({ match }) => {
   const [isLoadingMilestones, setLoadingMilestones] = useState(true);
   const [isLoadingDonations, setLoadingDonations] = useState(true);
   const [aggregateDonations, setAggregateDonations] = useState([]);
-  const [donations, setDonations] = useState([]);
   const [milestones, setMilestones] = useState([]);
   const [milestonesTotal, setMilestonesTotal] = useState(0);
   const [donationsTotal, setDonationsTotal] = useState(0);
   const [newDonations, setNewDonations] = useState(0);
+  const [donations, setDonations] = useState([]);
   const [notFound, setNotFound] = useState(false);
   const [downloadingCsv, setDownloadingCsv] = useState(false);
   const [campaign, setCampaign] = useState();
-  const [lastCommittedDonation, setLastCommittedDonation] = useState();
 
   const donationsPerBatch = 5;
   const milestonesPerBatch = 12;
   let donationsObserver;
+  const lastCommittedDonation = useRef();
 
   const loadMoreAggregateDonations = () => {
     setLoadingDonations(true);
@@ -111,10 +111,10 @@ const ViewCampaign = ({ match }) => {
     );
   };
 
-  const loadMoreMilestones = (campaignId = match.params.id) => {
+  const loadMoreMilestones = () => {
     setLoadingMilestones(true);
     CampaignService.getMilestones(
-      campaignId,
+      currentCampaign.id,
       milestonesPerBatch,
       milestones.length,
       (_milestones, _milestonesTotal) => {
@@ -160,12 +160,12 @@ const ViewCampaign = ({ match }) => {
             allDonations.forEach(item => {
               if (item._status === 'Committed') {
                 if (
-                  lastCommittedDonation &&
-                  new Date(lastCommittedDonation._createdAt) < new Date(item._createdAt)
+                  lastCommittedDonation.current &&
+                  new Date(lastCommittedDonation.current._createdAt) < new Date(item._createdAt)
                 ) {
                   updateLeaderboard();
                 }
-                setLastCommittedDonation(item);
+                lastCommittedDonation.current = item;
                 throw BreakException;
               }
             });
@@ -189,13 +189,15 @@ const ViewCampaign = ({ match }) => {
         }
         currentCampaign = _campaign;
         setCampaign(_campaign);
-        loadDonations(_campaign.id);
         setLoading(false);
-        loadMoreMilestones(_campaign.id);
+        loadMoreMilestones();
         // subscribe to donation count
         donationsObserver = CampaignService.subscribeNewDonations(
           _campaign.id,
-          _newDonations => setNewDonations(_newDonations),
+          _newDonations => {
+            setNewDonations(_newDonations);
+            loadDonations(_campaign.id);
+          },
           () => setNewDonations(0),
         );
         loadMoreAggregateDonations();
@@ -207,12 +209,6 @@ const ViewCampaign = ({ match }) => {
       if (donationsObserver) donationsObserver.unsubscribe();
     };
   }, []);
-
-  useEffect(() => {
-    if (campaign && campaign.id) {
-      loadDonations(campaign.id);
-    }
-  }, [newDonations]);
 
   const downloadCsv = campaignId => {
     const url = `${config.feathersConnection}/campaigncsv/${campaignId}`;

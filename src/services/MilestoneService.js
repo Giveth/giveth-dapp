@@ -308,9 +308,8 @@ class MilestoneService {
    * @param $skip     Number of records to be skipped
    * @param onSuccess Callback function once response is obtained successfully
    * @param onError   Callback function if error is encountered
-   * @param gtDate    Parameter for getting new donations
    */
-  static getDonations(id, $limit = 100, $skip = 0, onSuccess = () => {}, onError = () => {}, gtDate) {
+  static getDonations(id, $limit = 100, $skip = 0, onSuccess = () => {}, onError = () => {}) {
     const query = {
       $or: [
         {
@@ -327,9 +326,6 @@ class MilestoneService {
       $limit,
       $skip,
     };
-    if (gtDate) {
-      query.createdAt = { $gt: new Date(gtDate) };
-    }
     return feathersClient
       .service('donations')
       .find(
@@ -357,7 +353,7 @@ class MilestoneService {
    * @param onError   Callback function if error is encountered
    */
   static subscribeNewDonations(id, onSuccess, onError) {
-    let initalTotal;
+    let initialTotal;
     return feathersClient
       .service('donations')
       .watch()
@@ -374,11 +370,11 @@ class MilestoneService {
         }),
       )
       .subscribe(resp => {
-        if (initalTotal === undefined) {
-          initalTotal = resp.total;
+        if (initialTotal === undefined) {
+          initialTotal = resp.total;
           onSuccess(0);
         } else {
-          onSuccess(resp.total - initalTotal);
+          onSuccess(resp.total - initialTotal);
         }
       }, onError);
   }
