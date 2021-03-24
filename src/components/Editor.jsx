@@ -6,8 +6,7 @@ import { resizeFile } from '../lib/helpers';
 import IPFSService from '../services/IPFSService';
 import config from '../configuration';
 
-// import VideoPopup from './VideoPopup';
-import VideoPopupV2 from './VideoPopupV2';
+import VideoPopup from './VideoPopup';
 import Loader from './Loader';
 
 function Editor(props) {
@@ -156,7 +155,7 @@ function Editor(props) {
           theme="snow"
         />
       </div>
-      <VideoPopupV2
+      <VideoPopup
         visible={isVideoModalVisible}
         handleClose={handleVideoModalCancel}
         reactQuillRef={reactQuillRef}
