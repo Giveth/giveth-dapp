@@ -109,24 +109,24 @@ const ViewMilestone = props => {
       ? MilestoneService.getBySlug.bind(MilestoneService, milestoneSlug)
       : MilestoneService.get.bind(MilestoneService, milestoneId);
 
-    getFunction().then(_milestone => {
-      if (!_milestone) {
+    getFunction()
+      .then(_milestone => {
+        if (milestoneId) {
+          history.push(`/milestone/${_milestone.slug}`);
+        }
+        _milestoneId = _milestone.id;
+        setMilestone(_milestone);
+        setCampaign(new Campaign(_milestone.campaign));
+        setRecipient(
+          _milestone.pendingRecipientAddress ? _milestone.pendingRecipient : _milestone.recipient,
+        );
+        getDacTitle(_milestone.dacId);
+        loadMoreDonations();
+        setLoading(false);
+      })
+      .catch(() => {
         setNotFound(true);
-        return;
-      }
-      if (milestoneId) {
-        history.push(`/milestone/${_milestone.slug}`);
-      }
-      _milestoneId = _milestone.id;
-      setMilestone(_milestone);
-      setCampaign(new Campaign(_milestone.campaign));
-      setRecipient(
-        _milestone.pendingRecipientAddress ? _milestone.pendingRecipient : _milestone.recipient,
-      );
-      getDacTitle(_milestone.dacId);
-      loadMoreDonations();
-      setLoading(false);
-    });
+      });
 
     // subscribe to donation count
     donationsObserver = MilestoneService.subscribeNewDonations(
@@ -166,7 +166,7 @@ const ViewMilestone = props => {
 
   const isActiveMilestone = () => {
     const { fullyFunded, status } = milestone;
-    return status === 'InProgress' && !fullyFunded;
+    return status === Milestone.IN_PROGRESS && !fullyFunded;
   };
 
   const renderDescription = () => DescriptionRender(milestone.description);
@@ -265,6 +265,9 @@ const ViewMilestone = props => {
       : undefined,
   };
 
+  const detailsCardElmnt = document.getElementById('detailsCard');
+  const detailsCardHeight = detailsCardElmnt && detailsCardElmnt.offsetHeight;
+
   return (
     <HelmetProvider context={helmetContext}>
       <ErrorBoundary>
@@ -298,7 +301,9 @@ const ViewMilestone = props => {
                 <h6>Milestone</h6>
                 <h1>{milestone.title}</h1>
 
-                {!milestone.status === 'InProgress' && <p>This Milestone is not active anymore</p>}
+                {!milestone.status === Milestone.IN_PROGRESS && (
+                  <p>This Milestone is not active anymore</p>
+                )}
 
                 {renderTitleHelper()}
 
@@ -378,7 +383,7 @@ const ViewMilestone = props => {
                       <div id="details" className="col-md-6">
                         <h4>Details</h4>
 
-                        <div className="card details-card">
+                        <div id="detailsCard" className="card details-card">
                           <div className="form-group">
                             <DetailLabel
                               id="reviewer"
@@ -594,11 +599,11 @@ const ViewMilestone = props => {
 
                       <div id="status-updates" className="col-md-6">
                         <h4>Status updates</h4>
-
                         <MilestoneConversations
                           milestone={milestone}
                           currentUser={currentUser}
                           balance={balance}
+                          maxHeight={`${detailsCardHeight}px`}
                         />
                       </div>
                     </div>
@@ -644,18 +649,23 @@ const ViewMilestone = props => {
                     )}
 
                     <div id="donations" className="spacer-top-50">
-                      <div className="section-header">
-                        <h5>{donationsTitle}</h5>
-                        {isActiveMilestone() && <DonateButton {...donateButtonProps} />}
-                      </div>
-                      <DonationList
-                        donations={donations}
-                        isLoading={isLoadingDonations}
-                        total={donations.length}
-                        loadMore={loadMoreDonations}
-                        newDonations={newDonations}
-                        useAmountRemaining
-                      />
+                      {milestone.status !== Milestone.PROPOSED && (
+                        <React.Fragment>
+                          <div className="section-header">
+                            <h5>{donationsTitle}</h5>
+                            {isActiveMilestone() && <DonateButton {...donateButtonProps} />}
+                          </div>
+                          <DonationList
+                            donations={donations}
+                            isLoading={isLoadingDonations}
+                            total={donations.length}
+                            loadMore={loadMoreDonations}
+                            newDonations={newDonations}
+                            useAmountRemaining
+                            status={milestone.status}
+                          />
+                        </React.Fragment>
+                      )}
                     </div>
                   </div>
                 </div>

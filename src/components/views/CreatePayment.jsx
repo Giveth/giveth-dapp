@@ -226,16 +226,16 @@ function CreatePayment(props) {
                     }
                     value={payment.paymentCurrency}
                   >
-                    {activeTokenWhitelist.map(cur => (
-                      <Select.Option key={cur.name} value={cur.name}>
-                        {cur.name}
-                      </Select.Option>
-                    ))}
                     {payment.nolimit && (
                       <Select.Option key="ANY_TOKEN" value="ANY_TOKEN">
                         Any Token
                       </Select.Option>
                     )}
+                    {activeTokenWhitelist.map(cur => (
+                      <Select.Option key={cur.name} value={cur.name}>
+                        {cur.name}
+                      </Select.Option>
+                    ))}
                   </Select>
                 </Form.Item>
                 <Form.Item

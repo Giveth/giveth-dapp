@@ -58,6 +58,23 @@ class CampaignService {
   }
 
   /**
+   * Resolves whether a campaign exists with provided slug
+   *
+   * @param slug   Slug of the campaign to be retrieved
+   */
+  static async getActiveCampaignExistsBySlug(slug) {
+    const resp = await campaigns.find({
+      query: {
+        slug,
+        status: Campaign.ACTIVE,
+        $limit: 0,
+      },
+    });
+
+    return resp.total > 0;
+  }
+
+  /**
    * Get Campaigns
    *
    * @param $limit      Amount of records to be loaded
