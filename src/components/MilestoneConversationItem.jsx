@@ -50,7 +50,7 @@ const getReadableMessageContext = conversation => {
       // else
       return (
         <Fragment>
-          {userLink} disbursed ${phrase} to{' '}
+          {userLink} disbursed {phrase} to{' '}
           <Link to={`/profile/${recipient.address}`}>{getUserName(recipient)}</Link>
         </Fragment>
       );

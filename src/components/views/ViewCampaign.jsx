@@ -36,6 +36,7 @@ import ProjectViewActionAlert from '../projectViewActionAlert';
 import GoBackSection from '../GoBackSection';
 import { Context as Web3Context } from '../../contextProviders/Web3Provider';
 import ErrorHandler from '../../lib/ErrorHandler';
+import ProjectSubscription from '../ProjectSubscription';
 
 /**
  * The Campaign detail view mapped to /campaing/id
@@ -46,9 +47,9 @@ import ErrorHandler from '../../lib/ErrorHandler';
  */
 
 const helmetContext = {};
+let currentCampaign = null;
 
 const ViewCampaign = ({ match }) => {
-  let currentCampaign = null;
   const {
     state: { balance },
   } = useContext(Web3Context);
@@ -89,11 +90,11 @@ const ViewCampaign = ({ match }) => {
       },
     );
   };
-  const loadMoreMilestones = (campaignId = match.params.id) => {
+  const loadMoreMilestones = () => {
     setLoadingMilestones(true);
 
     CampaignService.getMilestones(
-      campaignId,
+      currentCampaign.id,
       milestonesPerBatch,
       milestones.length,
       (_milestones, _milestonesTotal) => {
@@ -123,7 +124,7 @@ const ViewCampaign = ({ match }) => {
         currentCampaign = _campaign;
         setCampaign(_campaign);
         setLoading(false);
-        loadMoreMilestones(_campaign.id);
+        loadMoreMilestones();
         // subscribe to donation count
         donationsObserver = CampaignService.subscribeNewDonations(
           _campaign.id,
@@ -262,6 +263,14 @@ const ViewCampaign = ({ match }) => {
                     <div className="row">
                       <div className="col-md-8 m-auto">
                         <div>
+                          <div>
+                            <h5 className="title">Subscribe to updates </h5>
+                            <ProjectSubscription
+                              projectTypeId={campaign._id}
+                              projectType="campaign"
+                            />
+                          </div>
+
                           {showDonateAddress && (
                             <ProjectViewActionAlert message="Send money to an address to contribute">
                               <CreateDonationAddressButton

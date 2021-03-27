@@ -18,7 +18,13 @@ import MilestoneItem from 'components/MilestoneItem';
 import DonationList from 'components/DonationList';
 import MilestoneConversations from 'components/MilestoneConversations';
 import { Helmet, HelmetProvider } from 'react-helmet-async';
-import { convertEthHelper, getUserAvatar, getUserName, history } from '../../lib/helpers';
+import {
+  convertEthHelper,
+  getReadableStatus,
+  getUserAvatar,
+  getUserName,
+  history,
+} from '../../lib/helpers';
 import MilestoneService from '../../services/MilestoneService';
 import DACService from '../../services/DACService';
 import { Context as WhiteListContext } from '../../contextProviders/WhiteListProvider';
@@ -35,6 +41,7 @@ import { Context as ConversionRateContext } from '../../contextProviders/Convers
 import { Context as Web3Context } from '../../contextProviders/Web3Provider';
 import { Context as UserContext } from '../../contextProviders/UserProvider';
 import ErrorHandler from '../../lib/ErrorHandler';
+import ProjectSubscription from '../ProjectSubscription';
 
 /**
   Loads and shows a single milestone
@@ -323,6 +330,11 @@ const ViewMilestone = props => {
                 inPageLinks={goBackSectionLinks}
               />
 
+              <div className=" col-md-8 m-auto">
+                <h5 className="title">Subscribe to updates </h5>
+                <ProjectSubscription projectTypeId={campaign._id} projectType="campaign" />
+              </div>
+
               {/* This buttons should not be displayed, just are clicked by using references */}
               <span className="d-none">
                 <EditMilestoneButton
@@ -592,7 +604,7 @@ const ViewMilestone = props => {
                           <div className="form-group">
                             <span className="label">Status</span>
                             <br />
-                            {milestone.status}
+                            {getReadableStatus(milestone.status)}
                           </div>
                         </div>
                       </div>

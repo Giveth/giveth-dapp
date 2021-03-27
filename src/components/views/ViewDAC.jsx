@@ -13,6 +13,7 @@ import AggregateDonationService from '../../services/AggregateDonationService';
 import LeaderBoard from '../LeaderBoard';
 import CommunityButton from '../CommunityButton';
 import DAC from '../../models/DAC';
+import ProjectSubscription from '../ProjectSubscription';
 import { getUserName, getUserAvatar, history } from '../../lib/helpers';
 import DACService from '../../services/DACService';
 import CampaignService from '../../services/CampaignService';
@@ -36,6 +37,7 @@ import { Context as UserContext } from '../../contextProviders/UserProvider';
  */
 
 const helmetContext = {};
+let currentDac = null;
 
 const ViewDAC = ({ match }) => {
   const {
@@ -67,6 +69,20 @@ const ViewDAC = ({ match }) => {
 
   const loadMoreAggregateDonations = () => {
     setLoadingDonatinos(true);
+    AggregateDonationService.get(
+      currentDac.id,
+      donationsPerBatch,
+      aggregateDonations.length,
+      (_donations, _donationsTotal) => {
+        setAggregateDonations(aggregateDonations.concat(_donations));
+        setDonationsTotal(_donationsTotal);
+        setLoadingDonatinos(false);
+      },
+      err => {
+        setLoadingDonatinos(false);
+        ErrorHandler(err, 'Some error on fetching loading donations, please try again later');
+      },
+    );
   };
 
   useEffect(() => {
@@ -81,6 +97,7 @@ const ViewDAC = ({ match }) => {
           history.push(`/dac/${_dac.slug}`);
         }
         setDac(_dac);
+        currentDac = _dac;
         setLoading(false);
         const relatedCampaigns = await CampaignService.getCampaignsByIdArray(_dac.campaigns || []);
         setCampaigns(relatedCampaigns);
@@ -94,27 +111,13 @@ const ViewDAC = ({ match }) => {
             setNewDonations(0);
           },
         );
-        AggregateDonationService.get(
-          _dac.id,
-          donationsPerBatch,
-          aggregateDonations.length,
-          (_donations, _donationsTotal) => {
-            setAggregateDonations(aggregateDonations.concat(_donations));
-            setDonationsTotal(_donationsTotal);
-            setLoadingDonatinos(false);
-          },
-          err => {
-            setLoadingDonatinos(false);
-            ErrorHandler(err, 'Some error on fetching loading donations, please try again later');
-          },
-        );
+        loadMoreAggregateDonations();
       })
       .catch(err => {
         setNotFound(true);
         ErrorHandler(err, 'Some error on fetching dac info, please try again later');
       });
 
-    loadMoreAggregateDonations();
     return cleanUp;
   }, []);
 
@@ -208,6 +211,10 @@ const ViewDAC = ({ match }) => {
                 <div className="row">
                   <div className="col-md-8 m-auto">
                     <div id="description">
+                      <div>
+                        <h5 className="title">Subscribe to updates </h5>
+                        <ProjectSubscription projectTypeId={dac._id} projectType="dac" />
+                      </div>
                       <div className="about-section-header">
                         <h5 className="title">About</h5>
                         <div className="text-center">
