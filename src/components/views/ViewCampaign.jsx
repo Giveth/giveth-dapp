@@ -413,9 +413,7 @@ const ViewCampaign = ({ match }) => {
                                 (userIsOwner || currentUser) && (
                                   <Link
                                     className="btn btn-primary"
-                                    to={`/campaigns/${campaign.id}/milestones/${
-                                      userIsOwner ? 'new' : 'propose'
-                                    }`}
+                                    to={`/campaign/${campaign.slug}/new`}
                                   >
                                     Create New
                                   </Link>
