@@ -79,7 +79,7 @@ const getReadableMessageContext = conversation => {
     return (
       <Fragment>
         {/* <Link to={`/profile/${donorId}`}>{donorTitle || 'Anonymous'}</Link> */}
-        {`${paymentStr} went to recipient's wallet`}
+        {`${paymentStr} has been sent to recipient's wallet`}
       </Fragment>
     );
   }
