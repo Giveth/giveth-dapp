@@ -12,7 +12,11 @@ import LPMilestone from '../models/LPMilestone';
 import config from '../configuration';
 import { Context as UserContext } from '../contextProviders/UserProvider';
 
-const WithdrawMilestoneFundsButton = ({ milestone }) => {
+const WithdrawMilestoneFundsButton = ({
+  milestone,
+  isAmountEnoughForCollect,
+  payoutMinimumValue,
+}) => {
   const {
     state: { currentUser },
   } = useContext(UserContext);
@@ -24,13 +28,22 @@ const WithdrawMilestoneFundsButton = ({ milestone }) => {
   async function withdraw() {
     const userAddress = currentUser.address;
     const isRecipient = milestone.recipientAddress === userAddress;
-
     actionWithLoggedIn(currentUser).then(() =>
       Promise.all([
         checkBalance(balance),
         DonationService.getMilestoneDonationsCount(milestone._id),
       ])
         .then(([, donationsCount]) => {
+          if (!isAmountEnoughForCollect) {
+            ErrorPopup(
+              `Oh No!
+                A minimum donation balance of
+                ${payoutMinimumValue.USD} USD  is required before
+                you can collect or disperse the funds. This is a
+                 temporary limitation due to Ethereum Mainnet issues.`,
+            );
+            return;
+          }
           React.swal({
             title: isRecipient ? 'Withdrawal Funds to Wallet' : 'Disburse Funds to Recipient',
             content: React.swal.msg(
@@ -156,6 +169,8 @@ const WithdrawMilestoneFundsButton = ({ milestone }) => {
 
 WithdrawMilestoneFundsButton.propTypes = {
   milestone: PropTypes.instanceOf(Milestone).isRequired,
+  isAmountEnoughForCollect: PropTypes.bool.isRequired,
+  payoutMinimumValue: PropTypes.shape().isRequired,
 };
 
 export default React.memo(WithdrawMilestoneFundsButton);

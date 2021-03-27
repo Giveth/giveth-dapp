@@ -84,7 +84,11 @@ const ViewMilestoneAlerts = ({
         <ProjectViewActionAlert
           message={`You use ${config.foreignNetworkName} to collect funds and we pay the fees to send it to you on ${config.homeNetworkName}`}
         >
-          <WithdrawMilestoneFundsButton milestone={milestone} />
+          <WithdrawMilestoneFundsButton
+            milestone={milestone}
+            isAmountEnoughForCollect={isAmountEnoughForCollect}
+            payoutMinimumValue={payoutMinimumValue}
+          />
         </ProjectViewActionAlert>
       )}
     </div>
