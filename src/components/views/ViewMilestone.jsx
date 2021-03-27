@@ -44,11 +44,11 @@ import ErrorHandler from '../../lib/ErrorHandler';
 import ProjectSubscription from '../ProjectSubscription';
 
 /**
-  Loads and shows a single milestone
+ Loads and shows a single milestone
 
-  @route params:
-    milestoneId (string): id of a milestone
-* */
+ @route params:
+ milestoneId (string): id of a milestone
+ * */
 
 const helmetContext = {};
 
@@ -63,7 +63,7 @@ const ViewMilestone = props => {
     state: { currentUser },
   } = useContext(UserContext);
   const {
-    state: { nativeCurrencyWhitelist, activeTokenWhitelist },
+    state: { nativeCurrencyWhitelist, activeTokenWhitelist, payoutMinimumValue },
   } = useContext(WhiteListContext);
 
   const [isLoading, setLoading] = useState(true);
@@ -75,6 +75,7 @@ const ViewMilestone = props => {
   const [dacTitle, setDacTitle] = useState('');
   const [newDonations, setNewDonations] = useState(0);
   const [notFound, setNotFound] = useState(false);
+  const [isAmountEnoughForCollect, setIsAmountEnoughForCollect] = useState(true);
   const [currency, setCurrency] = useState(null);
   const [currentBalanceValue, setCurrentBalanceValue] = useState(0);
 
@@ -150,6 +151,7 @@ const ViewMilestone = props => {
   }, []);
 
   useEffect(() => {
+    // setLoading(true)
     if (
       currentUser.address &&
       !currency &&
@@ -167,9 +169,28 @@ const ViewMilestone = props => {
             currency: dc.symbol,
           };
         }),
-      ).then(result => setCurrentBalanceValue(result.total));
+      ).then(result => {
+        setCurrentBalanceValue(result.total);
+      });
     }
   });
+
+  const checkIsAmountEnoughForCollect = () => {
+    const userNativeCurrency = currentUser.currency;
+    if (
+      payoutMinimumValue &&
+      payoutMinimumValue[userNativeCurrency] &&
+      currentBalanceValue < payoutMinimumValue[userNativeCurrency]
+    ) {
+      setIsAmountEnoughForCollect(false);
+    } else {
+      setIsAmountEnoughForCollect(true);
+    }
+  };
+
+  useEffect(() => {
+    checkIsAmountEnoughForCollect();
+  }, [currentBalanceValue]);
 
   const isActiveMilestone = () => {
     const { fullyFunded, status } = milestone;
@@ -360,7 +381,12 @@ const ViewMilestone = props => {
               <div className="container-fluid mt-4">
                 <div className="row">
                   <div className="col-md-8 m-auto">
-                    <ViewMilestoneAlerts milestone={milestone} campaign={campaign} />
+                    <ViewMilestoneAlerts
+                      milestone={milestone}
+                      campaign={campaign}
+                      payoutMinimumValue={payoutMinimumValue}
+                      isAmountEnoughForCollect={isAmountEnoughForCollect}
+                    />
 
                     <div id="description">
                       <div className="about-section-header">

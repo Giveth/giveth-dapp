@@ -10,7 +10,11 @@ import { checkBalance, actionWithLoggedIn } from 'lib/middleware';
 import { Context as Web3Context } from '../contextProviders/Web3Provider';
 import { Context as UserContext } from '../contextProviders/UserProvider';
 
-const RequestMarkMilestoneCompleteButton = ({ milestone }) => {
+const RequestMarkMilestoneCompleteButton = ({
+  milestone,
+  isAmountEnoughForCollect,
+  payoutMinimumValue,
+}) => {
   const {
     state: { currentUser },
   } = useContext(UserContext);
@@ -27,6 +31,16 @@ const RequestMarkMilestoneCompleteButton = ({ milestone }) => {
     actionWithLoggedIn(currentUser).then(() =>
       checkBalance(balance)
         .then(async () => {
+          if (!isAmountEnoughForCollect) {
+            ErrorPopup(
+              `Oh No!
+        A minimum donation balance of ${payoutMinimumValue.USD} USD is required
+        before you can mark this milestone complete. This is a temporary
+        limitation due to Ethereum Mainnet issues.`,
+            );
+            return;
+          }
+
           if (milestone.donationCounters.length === 0) {
             const proceed = await React.swal({
               title: 'Mark Milestone Complete?',
@@ -104,6 +118,7 @@ const RequestMarkMilestoneCompleteButton = ({ milestone }) => {
   return (
     <Fragment>
       {milestone.canUserMarkComplete(currentUser) && (
+        // {currentBalanceValue && milestone.canUserMarkComplete(currentUser) && (
         <button
           type="button"
           className="btn btn-success btn-sm"
@@ -122,6 +137,8 @@ const RequestMarkMilestoneCompleteButton = ({ milestone }) => {
 
 RequestMarkMilestoneCompleteButton.propTypes = {
   milestone: PropTypes.instanceOf(Milestone).isRequired,
+  payoutMinimumValue: PropTypes.shape().isRequired,
+  isAmountEnoughForCollect: PropTypes.bool.isRequired,
 };
 
 export default React.memo(RequestMarkMilestoneCompleteButton);

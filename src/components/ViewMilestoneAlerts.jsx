@@ -14,7 +14,12 @@ import { Context as UserContext } from '../contextProviders/UserProvider';
 import RequestMarkMilestoneCompleteButton from './RequestMarkMilestoneCompleteButton';
 import config from '../configuration';
 
-const ViewMilestoneAlerts = ({ milestone, campaign }) => {
+const ViewMilestoneAlerts = ({
+  milestone,
+  campaign,
+  isAmountEnoughForCollect,
+  payoutMinimumValue,
+}) => {
   const {
     state: { currentUser, userIsDacOwner },
   } = useContext(UserContext);
@@ -37,7 +42,11 @@ const ViewMilestoneAlerts = ({ milestone, campaign }) => {
 
       {milestone.canUserMarkComplete(currentUser) && (
         <ProjectViewActionAlert message="Request mark complete">
-          <RequestMarkMilestoneCompleteButton milestone={milestone} />
+          <RequestMarkMilestoneCompleteButton
+            milestone={milestone}
+            isAmountEnoughForCollect={isAmountEnoughForCollect}
+            payoutMinimumValue={payoutMinimumValue}
+          />
         </ProjectViewActionAlert>
       )}
 
@@ -85,6 +94,8 @@ const ViewMilestoneAlerts = ({ milestone, campaign }) => {
 ViewMilestoneAlerts.propTypes = {
   milestone: PropTypes.instanceOf(Milestone).isRequired,
   campaign: PropTypes.instanceOf(Campaign).isRequired,
+  isAmountEnoughForCollect: PropTypes.bool.isRequired,
+  payoutMinimumValue: PropTypes.shape().isRequired,
 };
 
 export default React.memo(ViewMilestoneAlerts);

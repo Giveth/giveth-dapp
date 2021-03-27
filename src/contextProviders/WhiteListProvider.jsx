@@ -49,7 +49,14 @@ class WhiteListProvider extends Component {
       reviewerWhitelistEnabled: false,
       delegateWhitelistEnabled: false,
       projectOwnersWhitelistEnabled: false,
-      minimumUsdValuePayout: {},
+
+      // TODO remove default values when this field was added to backend
+      payoutMinimumValue: {
+        USD: 300,
+        DAI: 400,
+        EUR: 400,
+        ETH: 500,
+      },
     };
   }
 
@@ -104,7 +111,7 @@ class WhiteListProvider extends Component {
       reviewerWhitelistEnabled,
       delegateWhitelistEnabled,
       projectOwnersWhitelistEnabled,
-      minimumUsdValuePayout,
+      payoutMinimumValue,
     } = this.state;
 
     return (
@@ -123,7 +130,7 @@ class WhiteListProvider extends Component {
             reviewerWhitelistEnabled,
             delegateWhitelistEnabled,
             projectOwnersWhitelistEnabled,
-            minimumUsdValuePayout,
+            payoutMinimumValue,
           },
         }}
       >
