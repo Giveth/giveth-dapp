@@ -1,12 +1,13 @@
 import React, { Fragment, useContext, useEffect, useRef, useState } from 'react';
-import { Button, Col, Form, PageHeader, Row } from 'antd';
+import { Button, Col, Form, notification, PageHeader, Row } from 'antd';
 import BigNumber from 'bignumber.js';
 import 'antd/dist/antd.css';
 import PropTypes from 'prop-types';
 import { v4 as uuidv4 } from 'uuid';
+import { utils } from 'web3';
 import CreateExpenseItem from '../CreateExpenseItem';
 import useCampaign from '../../hooks/useCampaign';
-import { convertEthHelper, getStartOfDayUTC, history } from '../../lib/helpers';
+import { convertEthHelper, getStartOfDayUTC, history, ZERO_ADDRESS } from '../../lib/helpers';
 import { Context as WhiteListContext } from '../../contextProviders/WhiteListProvider';
 import Web3ConnectWarning from '../Web3ConnectWarning';
 import {
@@ -16,6 +17,13 @@ import {
   MilestoneToken,
 } from '../EditMilestoneCommons';
 import { Context as UserContext } from '../../contextProviders/UserProvider';
+import { authenticateUser } from '../../lib/middleware';
+import BridgedMilestone from '../../models/BridgedMilestone';
+import config from '../../configuration';
+import { Milestone, MilestoneItem } from '../../models';
+import { MilestoneService } from '../../services';
+import ErrorHandler from '../../lib/ErrorHandler';
+import { Context as Web3Context } from '../../contextProviders/Web3Provider';
 
 function CreateExpense(props) {
   const {
@@ -24,25 +32,35 @@ function CreateExpense(props) {
   const {
     state: { isLoading: whiteListLoading, activeTokenWhitelist },
   } = useContext(WhiteListContext);
+
+  const {
+    state: { isForeignNetwork },
+    actions: { displayForeignNetRequiredWarning },
+  } = useContext(Web3Context);
+
   const { id: campaignId, slug: campaignSlug } = props.match.params;
   const campaign = useCampaign(campaignId, campaignSlug);
   const [expenseForm, setExpenseForm] = useState({
-    expenseItems: [
-      {
-        fiatAmount: 0,
-        currency: '',
-        date: getStartOfDayUTC().subtract(1, 'd'),
-        description: '',
-        picture: '',
-        key: uuidv4(),
-        amount: new BigNumber(0),
-      },
-    ],
     title: '',
     token: {},
     recipientAddress: '',
+    description: 'Expense items describes what has been paid or should be paid',
   });
-  const [totalAmount, setTotalAmount] = useState('0');
+  const [expenseItems, setExpenseItems] = useState([
+    {
+      fiatAmount: 0,
+      currency: '',
+      date: getStartOfDayUTC().subtract(1, 'd'),
+      conversationRate: 1,
+      conversationRateTimestamp: new Date().toISOString(),
+      description: '',
+      picture: '',
+      key: uuidv4(),
+    },
+  ]);
+  const [totalAmount, setTotalAmount] = useState(new BigNumber(0));
+  const [userIsCampaignOwner, setUserIsOwner] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const [form] = Form.useForm();
 
@@ -59,6 +77,14 @@ function CreateExpense(props) {
   }, [currentUser]);
 
   useEffect(() => {
+    setUserIsOwner(
+      campaign &&
+        currentUser.address &&
+        [campaign.ownerAddress, campaign.coownerAddress].includes(currentUser.address),
+    );
+  }, [campaign, currentUser]);
+
+  useEffect(() => {
     if (!whiteListLoading && activeTokenWhitelist.length > 0) {
       setExpenseForm({
         ...expenseForm,
@@ -68,12 +94,7 @@ function CreateExpense(props) {
   }, [whiteListLoading, activeTokenWhitelist]);
 
   const updateTotalAmount = () => {
-    setTotalAmount(
-      convertEthHelper(
-        BigNumber.sum(...Object.values(itemAmountMap.current)),
-        expenseForm.token.decimals,
-      ),
-    );
+    setTotalAmount(BigNumber.sum(...Object.values(itemAmountMap.current)));
   };
 
   const updateStateOfItem = (name, value, itemKey) => {
@@ -81,11 +102,10 @@ function CreateExpense(props) {
       itemAmountMap.current[itemKey] = value;
       updateTotalAmount();
     } else {
-      const expenseItems = [...expenseForm.expenseItems];
       const item = expenseItems.find(i => i.key === itemKey);
       item[name] = value;
 
-      setExpenseForm({ ...expenseForm, expenseItems });
+      setExpenseItems([...expenseItems]);
     }
   };
 
@@ -103,30 +123,25 @@ function CreateExpense(props) {
   };
 
   function addExpense() {
-    setExpenseForm({
-      ...expenseForm,
-      expenseItems: [
-        ...expenseForm.expenseItems,
-        {
-          fiatAmount: 0,
-          currency: '',
-          date: getStartOfDayUTC().subtract(1, 'd'),
-          description: '',
-          picture: '',
-          key: uuidv4(),
-          amount: new BigNumber(0),
-        },
-      ],
-    });
+    setExpenseItems([
+      ...expenseItems,
+      // New one
+      {
+        fiatAmount: 0,
+        currency: '',
+        date: getStartOfDayUTC().subtract(1, 'd'),
+        conversationRate: 1,
+        conversationRateTimestamp: new Date().toISOString(),
+        description: '',
+        picture: '',
+        key: uuidv4(),
+      },
+    ]);
   }
 
   function removeExpense(key) {
-    const filteredExpenseItems = expenseForm.expenseItems.filter(item => item.key !== key);
-    setExpenseForm({
-      ...expenseForm,
-      expenseItems: filteredExpenseItems,
-    });
-
+    const filteredExpenseItems = expenseItems.filter(item => item.key !== key);
+    setExpenseItems([...filteredExpenseItems]);
     delete itemAmountMap.current[key];
     updateTotalAmount();
   }
@@ -135,8 +150,102 @@ function CreateExpense(props) {
     history.goBack();
   }
 
-  const submit = async () => {};
+  const submit = async () => {
+    const authenticated = await authenticateUser(currentUser, false);
 
+    if (authenticated) {
+      if (userIsCampaignOwner && !isForeignNetwork) {
+        displayForeignNetRequiredWarning();
+        return;
+      }
+
+      const { title, description, recipientAddress, token, donateToDac } = expenseForm;
+
+      const ms = new BridgedMilestone({
+        title,
+        description,
+        recipientAddress,
+        token,
+        image: '/imp/expenseProject.png',
+        reviewerAddress: ZERO_ADDRESS,
+      });
+
+      ms.ownerAddress = currentUser.address;
+      ms.campaignId = campaign._id;
+      ms.parentProjectId = campaign.projectId;
+
+      if (donateToDac) {
+        ms.dacId = config.defaultDacId;
+      }
+
+      ms.maxAmount = totalAmount;
+
+      ms.items = expenseItems.map(expenseItem => {
+        const amount = itemAmountMap.current[expenseItem.key];
+        return new MilestoneItem({
+          ...expenseItem,
+          amount,
+          image: expenseItem.picture,
+          selectedFiatType: expenseItem.currency,
+          wei: utils.toWei(amount.toFixed()),
+        });
+      });
+
+      if (!userIsCampaignOwner) {
+        ms.status = Milestone.PROPOSED;
+      }
+
+      setLoading(true);
+
+      await MilestoneService.save({
+        milestone: ms,
+        from: currentUser.address,
+        afterSave: (created, txUrl, res) => {
+          let notificationDescription;
+          if (created) {
+            if (!userIsCampaignOwner) {
+              notificationDescription = 'Expense proposed to the Campaign Owner';
+            }
+          } else if (txUrl) {
+            notificationDescription = (
+              <p>
+                Your Expense is pending....
+                <br />
+                <a href={txUrl} target="_blank" rel="noopener noreferrer">
+                  View transaction
+                </a>
+              </p>
+            );
+          } else {
+            notificationDescription = 'Your Expense has been updated!';
+          }
+
+          if (description) {
+            notification.info({ description: notificationDescription });
+          }
+          setLoading(false);
+          history.push(`/campaigns/${campaign._id}/milestones/${res._id}`);
+        },
+        afterMined: (created, txUrl) => {
+          notification.success({
+            description: (
+              <p>
+                Your Expense has been created!
+                <br />
+                <a href={txUrl} target="_blank" rel="noopener noreferrer">
+                  View transaction
+                </a>
+              </p>
+            ),
+          });
+        },
+        onError(message, err) {
+          setLoading(false);
+          return ErrorHandler(err, message);
+        },
+      });
+    }
+  };
   return (
     <Fragment>
       <Web3ConnectWarning />
@@ -170,14 +279,14 @@ function CreateExpense(props) {
 
               <div className="section">
                 <div className="title">Expense details</div>
-                {expenseForm.expenseItems.map((item, idx) => (
+                {expenseItems.map((item, idx) => (
                   <CreateExpenseItem
                     key={item.key}
                     item={item}
                     id={idx}
                     updateStateOfItem={updateStateOfItem}
                     removeExpense={removeExpense}
-                    removeAble={expenseForm.expenseItems.length > 1}
+                    removeAble={expenseItems.length > 1}
                     token={expenseForm.token}
                   />
                 ))}
@@ -193,7 +302,7 @@ function CreateExpense(props) {
                   label="Reimburse in Currency"
                   onChange={handleSelectToken}
                   value={expenseForm.token}
-                  totalAmount={totalAmount}
+                  totalAmount={convertEthHelper(totalAmount, expenseForm.token.decimals)}
                 />
 
                 <MilestoneRecipientAddress
@@ -203,8 +312,8 @@ function CreateExpense(props) {
                 />
               </div>
               <Form.Item>
-                <Button type="primary" htmlType="submit" className="submit-button">
-                  Submit
+                <Button type="primary" htmlType="submit" loading={loading}>
+                  {userIsCampaignOwner ? 'Create' : 'Propose'}
                 </Button>
               </Form.Item>
             </Form>

@@ -40,8 +40,14 @@ function CreateExpenseItem({
     updateStateOfItem(name, value, item.key);
   }
 
-  function handleAmountChange(value) {
+  function handleAmountChange({ value, rate, timestamp }) {
     handleInputChange({ target: { name: 'amount', value } });
+    handleInputChange({
+      target: { name: 'conversionRate', value: Number(rate) },
+    });
+    handleInputChange({
+      target: { name: 'conversionRateTimestamp', value: timestamp.toString() },
+    });
   }
 
   // Update item of this item in milestone token
@@ -54,9 +60,14 @@ function CreateExpenseItem({
     timer.current = setTimeout(async () => {
       try {
         const res = await getConversionRates(item.date, token.symbol, item.currency);
-        const rate = res.rates[item.currency];
+        const { timestamp, rates } = res;
+        const rate = rates[item.currency];
         if (rate) {
-          handleAmountChange(new BigNumber(item.fiatAmount).div(rate).toFixed());
+          handleAmountChange({
+            value: new BigNumber(item.fiatAmount).div(rate),
+            rate,
+            timestamp,
+          });
         } else {
           throw new Error('Rate not found');
         }
@@ -64,7 +75,11 @@ function CreateExpenseItem({
         const message = `Sadly we were unable to get the exchange rate. Please try again after refresh.`;
 
         ErrorHandler(e, message);
-        handleAmountChange(0);
+        handleAmountChange({
+          value: 0,
+          rate: 1,
+          timestamp: new Date().getDate(),
+        });
       }
     }, WAIT_INTERVAL);
   }
