@@ -13,7 +13,7 @@ import config from '../configuration';
 import { Consumer as Web3Consumer } from '../contextProviders/Web3Provider';
 import ViewNetworkWarning from './ViewNetworkWarning';
 import ActionNetworkWarning from './ActionNetworkWarning';
-import { authenticateIfPossible, checkProfile, sleep } from '../lib/middleware';
+import { authenticateUser, checkProfile, sleep } from '../lib/middleware';
 import { history } from '../lib/helpers';
 
 const newFundForwarderEventName = 'NewFundForwarder';
@@ -87,7 +87,7 @@ class CreateDonationAddressButton extends React.Component {
       return Promise.reject();
     }
 
-    return authenticateIfPossible(this.props.currentUser, true).then(() =>
+    return authenticateUser(this.props.currentUser, true).then(() =>
       checkProfile(this.props.currentUser),
     );
   }

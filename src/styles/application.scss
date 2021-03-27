@@ -20,6 +20,8 @@
 @import 'myMilestones.scss';
 @import 'profileView.scss';
 @import 'donation.scss';
+@import 'campaignCreateNewView.scss';
+@import 'createMilestone.scss';
 // components
 @import 'loader.scss';
 @import 'mainMenu.scss';
@@ -42,7 +44,8 @@
 // overrides
 @import 'card.scss';
 @import 'formsyOverrides.scss';
-@import 'projectsubscription';
+@import 'antOverrides.scss';
+@import 'projectsubscription.scss';
 
 html,
 body {
@@ -108,10 +111,10 @@ table {
 }
 
 .loading-overlay {
-  top:0;
-  left:0;
-  background-color: hsla(0,0%,100%,.8);
-  opacity: .6;
+  top: 0;
+  left: 0;
+  background-color: hsla(0, 0%, 100%, 0.8);
+  opacity: 0.6;
   position: absolute;
   height: 100%;
   width: 100%;
@@ -318,5 +321,74 @@ span.nav-link:focus {
 @include media_tablet() {
   .page-wrapper {
     padding-top: 55px;
+  }
+}
+
+// new card design
+.card-form-container {
+  width: 100%;
+  max-width: 700px;
+  padding: 10px;
+  margin: auto;
+  & > .card-form {
+    display: block;
+    width: 100%;
+    min-height: 164px;
+    background: #ffffff;
+    box-shadow: 0px 4px 20px #d1d1d1;
+    border-radius: 8px;
+    padding: 34px;
+    color: #2c0b3f;
+
+    & > .card-form-header {
+      padding-bottom: 52px;
+      & > img {
+        display: block;
+        width: 110px;
+        height: 110px;
+        margin: auto;
+      }
+      & > .title {
+        font-family: Quicksand;
+        font-style: normal;
+        font-weight: normal;
+        font-size: 26px;
+        line-height: 32px;
+        /* identical to box height */
+
+        text-align: center;
+
+        /* Deep Purple - GG */
+      }
+    }
+    & > .campaign-info {
+      margin-bottom: 24px;
+      & > .label {
+        font-family: Quicksand;
+        font-style: normal;
+        font-weight: normal;
+        font-size: 16px;
+        line-height: 20px;
+      }
+      & > .content {
+        font-family: Lato;
+        font-style: normal;
+        font-weight: normal;
+        font-size: 22px;
+        line-height: 22px;
+        padding: 12px 0;
+      }
+    }
+    & > .section {
+      padding-top: 30px;
+      & > .title {
+        font-family: Quicksand;
+        font-style: normal;
+        font-weight: bold;
+        font-size: 22px;
+        line-height: 27px;
+        padding-bottom: 18px;
+      }
+    }
   }
 }

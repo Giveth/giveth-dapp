@@ -1,4 +1,4 @@
-import React from 'react';
+import { notification } from 'antd';
 import ErrorPopup from '../components/ErrorPopup';
 
 export default (err, message, forcePopup = false, onCancel = () => {}, onError = () => {}) => {
@@ -7,10 +7,13 @@ export default (err, message, forcePopup = false, onCancel = () => {}, onError =
   if (forcePopup) {
     ErrorPopup(message);
   } else if (err.code === 4001) {
-    React.toast.warning(<p>User denied transaction signature</p>);
+    notification.warning({
+      message: 'User Denied',
+      description: 'User denied transaction signature',
+    });
     onCancel();
   } else {
-    React.toast.warning(message);
+    notification.warning({ message: '', description: message });
     onError();
   }
 };
