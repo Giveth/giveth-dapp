@@ -54,7 +54,7 @@ class WhiteListProvider extends Component {
       payoutMinimumValue: {
         USD: 300,
         DAI: 400,
-        EUR: 400,
+        EUR: 0.002,
         ETH: 500,
       },
     };
