@@ -332,7 +332,7 @@ const ViewMilestone = props => {
 
               <div className=" col-md-8 m-auto">
                 <h5 className="title">Subscribe to updates </h5>
-                <ProjectSubscription projectTypeId={campaign._id} projectType="campaign" />
+                <ProjectSubscription projectTypeId={milestone._id} projectType="milestone" />
               </div>
 
               {/* This buttons should not be displayed, just are clicked by using references */}
