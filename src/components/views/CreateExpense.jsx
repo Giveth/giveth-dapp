@@ -166,7 +166,7 @@ function CreateExpense(props) {
         description,
         recipientAddress,
         token,
-        image: '/imp/expenseProject.png',
+        image: '/img/expenseProject.png',
         reviewerAddress: ZERO_ADDRESS,
       });
 
