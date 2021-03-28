@@ -18,7 +18,7 @@ const ViewMilestoneAlerts = ({
   milestone,
   campaign,
   isAmountEnoughForCollect,
-  payoutMinimumValue,
+  minimumPayoutValue,
 }) => {
   const {
     state: { currentUser, userIsDacOwner },
@@ -45,7 +45,7 @@ const ViewMilestoneAlerts = ({
           <RequestMarkMilestoneCompleteButton
             milestone={milestone}
             isAmountEnoughForCollect={isAmountEnoughForCollect}
-            payoutMinimumValue={payoutMinimumValue}
+            minimumPayoutValue={minimumPayoutValue}
           />
         </ProjectViewActionAlert>
       )}
@@ -87,7 +87,7 @@ const ViewMilestoneAlerts = ({
           <WithdrawMilestoneFundsButton
             milestone={milestone}
             isAmountEnoughForCollect={isAmountEnoughForCollect}
-            payoutMinimumValue={payoutMinimumValue}
+            minimumPayoutValue={minimumPayoutValue}
           />
         </ProjectViewActionAlert>
       )}
@@ -99,7 +99,7 @@ ViewMilestoneAlerts.propTypes = {
   milestone: PropTypes.instanceOf(Milestone).isRequired,
   campaign: PropTypes.instanceOf(Campaign).isRequired,
   isAmountEnoughForCollect: PropTypes.bool.isRequired,
-  payoutMinimumValue: PropTypes.shape().isRequired,
+  minimumPayoutValue: PropTypes.shape().isRequired,
 };
 
 export default React.memo(ViewMilestoneAlerts);

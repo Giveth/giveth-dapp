@@ -22,7 +22,7 @@ function MilestoneActions({ milestone }) {
     actions: { convertMultipleRates },
   } = useContext(ConversionRateContext);
   const {
-    state: { payoutMinimumValue },
+    state: { minimumPayoutValue },
   } = useContext(WhiteListContext);
   const {
     state: { currentUser },
@@ -33,9 +33,9 @@ function MilestoneActions({ milestone }) {
   const checkIsAmountEnoughForCollect = () => {
     const userNativeCurrency = currentUser.currency;
     if (
-      payoutMinimumValue &&
-      payoutMinimumValue[userNativeCurrency] &&
-      currentBalanceValue < payoutMinimumValue[userNativeCurrency]
+      minimumPayoutValue &&
+      minimumPayoutValue[userNativeCurrency] &&
+      currentBalanceValue < minimumPayoutValue[userNativeCurrency]
     ) {
       setIsAmountEnoughForCollect(false);
     } else {
@@ -90,7 +90,7 @@ function MilestoneActions({ milestone }) {
       {milestone.hasRecipient ? (
         <RequestMarkMilestoneCompleteButton
           isAmountEnoughForCollect={isAmountEnoughForCollect}
-          payoutMinimumValue={payoutMinimumValue}
+          minimumPayoutValue={minimumPayoutValue}
           milestone={milestone}
         />
       ) : null}
@@ -108,7 +108,7 @@ function MilestoneActions({ milestone }) {
       <WithdrawMilestoneFundsButton
         milestone={milestone}
         isAmountEnoughForCollect={isAmountEnoughForCollect}
-        payoutMinimumValue={payoutMinimumValue}
+        minimumPayoutValue={minimumPayoutValue}
       />
 
       <EditMilestoneButton milestone={milestone} />

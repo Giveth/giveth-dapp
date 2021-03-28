@@ -63,7 +63,7 @@ const ViewMilestone = props => {
     state: { currentUser },
   } = useContext(UserContext);
   const {
-    state: { nativeCurrencyWhitelist, activeTokenWhitelist, payoutMinimumValue },
+    state: { nativeCurrencyWhitelist, activeTokenWhitelist, minimumPayoutValue },
   } = useContext(WhiteListContext);
 
   const [isLoading, setLoading] = useState(true);
@@ -178,9 +178,9 @@ const ViewMilestone = props => {
   const checkIsAmountEnoughForCollect = () => {
     const userNativeCurrency = currentUser.currency;
     if (
-      payoutMinimumValue &&
-      payoutMinimumValue[userNativeCurrency] &&
-      currentBalanceValue < payoutMinimumValue[userNativeCurrency]
+      minimumPayoutValue &&
+      minimumPayoutValue[userNativeCurrency] &&
+      currentBalanceValue < minimumPayoutValue[userNativeCurrency]
     ) {
       setIsAmountEnoughForCollect(false);
     } else {
@@ -384,7 +384,7 @@ const ViewMilestone = props => {
                     <ViewMilestoneAlerts
                       milestone={milestone}
                       campaign={campaign}
-                      payoutMinimumValue={payoutMinimumValue}
+                      minimumPayoutValue={minimumPayoutValue}
                       isAmountEnoughForCollect={isAmountEnoughForCollect}
                     />
 

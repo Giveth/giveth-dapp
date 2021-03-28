@@ -49,14 +49,6 @@ class WhiteListProvider extends Component {
       reviewerWhitelistEnabled: false,
       delegateWhitelistEnabled: false,
       projectOwnersWhitelistEnabled: false,
-
-      // TODO remove default values when this field was added to backend
-      payoutMinimumValue: {
-        USD: 300,
-        DAI: 400,
-        EUR: 0.002,
-        ETH: 500,
-      },
     };
   }
 
@@ -111,7 +103,27 @@ class WhiteListProvider extends Component {
       reviewerWhitelistEnabled,
       delegateWhitelistEnabled,
       projectOwnersWhitelistEnabled,
-      payoutMinimumValue,
+
+      /**
+       *  minimumPayoutValue example : {
+        "USD": 1,
+        "CZK": 22.25,
+        "USDC": 1,
+        "PAN": 0.091243,
+        "MXN": 20.66,
+        "ETH": 0.00058405,
+        "BRL": 5.7524999999999995,
+        "DAI": 0.999,
+        "BTC": 0.000017795,
+        "AUD": 1.312,
+        "THB": 31.3,
+        "GBP": 0.72645,
+        "CAD": 1.2595,
+        "CHF": 0.94225,
+        "EUR": 0.8471
+    }
+       */
+      minimumPayoutValue,
     } = this.state;
 
     return (
@@ -130,7 +142,7 @@ class WhiteListProvider extends Component {
             reviewerWhitelistEnabled,
             delegateWhitelistEnabled,
             projectOwnersWhitelistEnabled,
-            payoutMinimumValue,
+            minimumPayoutValue,
           },
         }}
       >

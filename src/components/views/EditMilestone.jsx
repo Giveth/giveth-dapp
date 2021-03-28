@@ -84,11 +84,11 @@ function returnHelpText(conversionRateLoading, milestone, currentRate) {
   return ``;
 }
 
-function getMinimumValueWarning(milestone, payoutMinimumValue) {
-  if (!payoutMinimumValue || !payoutMinimumValue[milestone.token.symbol]) {
+function getMinimumValueWarning(milestone, minimumPayoutValue) {
+  if (!minimumPayoutValue || !minimumPayoutValue[milestone.token.symbol]) {
     return '';
   }
-  return `Must be greater than ${payoutMinimumValue[milestone.token.symbol]} ${
+  return `Must be greater than ${minimumPayoutValue[milestone.token.symbol]} ${
     milestone.token.symbol
   }`;
 }
@@ -910,7 +910,7 @@ class EditMilestone extends Component {
       currentRate,
       fiatTypes,
       reviewers,
-      payoutMinimumValue,
+      minimumPayoutValue,
       conversionRateLoading,
     } = this.props;
     const {
@@ -1300,7 +1300,7 @@ class EditMilestone extends Component {
                                     }}
                                     required
                                     disabled={!isNew && !isProposed}
-                                    help={getMinimumValueWarning(milestone, payoutMinimumValue)}
+                                    help={getMinimumValueWarning(milestone, minimumPayoutValue)}
                                     onChange={this.setFiatAmount}
                                   />
                                 </div>
@@ -1341,9 +1341,9 @@ class EditMilestone extends Component {
                             conversionRateLoading ||
                             isSaving ||
                             !formIsValid ||
-                            (payoutMinimumValue &&
-                              payoutMinimumValue[milestone.token.symbol] &&
-                              maxAmount < payoutMinimumValue[milestone.token.symbol])
+                            (minimumPayoutValue &&
+                              minimumPayoutValue[milestone.token.symbol] &&
+                              maxAmount < minimumPayoutValue[milestone.token.symbol])
                           }
                           isLoading={isSaving}
                           network="Foreign"
@@ -1387,7 +1387,7 @@ EditMilestone.propTypes = {
     rates: PropTypes.shape().isRequired,
     timestamp: PropTypes.string.isRequired,
   }),
-  payoutMinimumValue: PropTypes.shape(),
+  minimumPayoutValue: PropTypes.shape(),
   conversionRateLoading: PropTypes.bool.isRequired,
   fiatTypes: PropTypes.arrayOf(PropTypes.object).isRequired,
   reviewers: PropTypes.arrayOf(PropTypes.shape()).isRequired,
@@ -1399,13 +1399,13 @@ EditMilestone.defaultProps = {
   isNew: false,
   isProposed: false,
   currentRate: undefined,
-  payoutMinimumValue: undefined,
+  minimumPayoutValue: undefined,
 };
 
 export default getConversionRatesContext(props => (
   <WhiteListConsumer>
     {({
-      state: { activeTokenWhitelist, payoutMinimumValue, reviewers, isLoading: whitelistIsLoading },
+      state: { activeTokenWhitelist, minimumPayoutValue, reviewers, isLoading: whitelistIsLoading },
     }) => (
       <UserConsumer>
         {({ state: { currentUser, isLoading: userIsLoading } }) => (
@@ -1415,7 +1415,7 @@ export default getConversionRatesContext(props => (
               <EditMilestone
                 tokenWhitelist={activeTokenWhitelist}
                 reviewers={reviewers}
-                payoutMinimumValue={payoutMinimumValue}
+                minimumPayoutValue={minimumPayoutValue}
                 currentUser={currentUser}
                 {...props}
               />

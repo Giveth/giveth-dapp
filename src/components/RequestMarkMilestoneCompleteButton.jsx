@@ -13,7 +13,7 @@ import { Context as UserContext } from '../contextProviders/UserProvider';
 const RequestMarkMilestoneCompleteButton = ({
   milestone,
   isAmountEnoughForCollect,
-  payoutMinimumValue,
+  minimumPayoutValue,
 }) => {
   const {
     state: { currentUser },
@@ -34,7 +34,7 @@ const RequestMarkMilestoneCompleteButton = ({
           if (!isAmountEnoughForCollect) {
             ErrorPopup(
               `Oh No!
-        A minimum donation balance of ${payoutMinimumValue.USD} USD is required
+        A minimum donation balance of ${minimumPayoutValue.USD} USD is required
         before you can mark this milestone complete. This is a temporary
         limitation due to Ethereum Mainnet issues.`,
             );
@@ -137,7 +137,7 @@ const RequestMarkMilestoneCompleteButton = ({
 
 RequestMarkMilestoneCompleteButton.propTypes = {
   milestone: PropTypes.instanceOf(Milestone).isRequired,
-  payoutMinimumValue: PropTypes.shape().isRequired,
+  minimumPayoutValue: PropTypes.shape().isRequired,
   isAmountEnoughForCollect: PropTypes.bool.isRequired,
 };
 
