@@ -103,27 +103,7 @@ class WhiteListProvider extends Component {
       reviewerWhitelistEnabled,
       delegateWhitelistEnabled,
       projectOwnersWhitelistEnabled,
-
-      /**
-       *  minimumPayoutValue example : {
-        "USD": 1,
-        "CZK": 22.25,
-        "USDC": 1,
-        "PAN": 0.091243,
-        "MXN": 20.66,
-        "ETH": 0.00058405,
-        "BRL": 5.7524999999999995,
-        "DAI": 0.999,
-        "BTC": 0.000017795,
-        "AUD": 1.312,
-        "THB": 31.3,
-        "GBP": 0.72645,
-        "CAD": 1.2595,
-        "CHF": 0.94225,
-        "EUR": 0.8471
-    }
-       */
-      minimumPayoutValue,
+      minimumPayoutUsdValue,
     } = this.state;
 
     return (
@@ -142,7 +122,7 @@ class WhiteListProvider extends Component {
             reviewerWhitelistEnabled,
             delegateWhitelistEnabled,
             projectOwnersWhitelistEnabled,
-            minimumPayoutValue,
+            minimumPayoutUsdValue,
           },
         }}
       >

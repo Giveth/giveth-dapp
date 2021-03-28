@@ -22,32 +22,19 @@ function MilestoneActions({ milestone }) {
     actions: { convertMultipleRates },
   } = useContext(ConversionRateContext);
   const {
-    state: { minimumPayoutValue },
+    state: { minimumPayoutUsdValue },
   } = useContext(WhiteListContext);
   const {
     state: { currentUser },
   } = useContext(UserContext);
-  const [currentBalanceValue, setCurrentBalanceValue] = useState(0);
-  const [isAmountEnoughForCollect, setIsAmountEnoughForCollect] = useState(true);
+  const [currentBalanceUsdValue, setCurrentBalanceUsdValue] = useState(0);
+  const [isAmountEnoughForWithdraw, setIsAmountEnoughForWithdraw] = useState(true);
 
-  const checkIsAmountEnoughForCollect = () => {
-    const userNativeCurrency = currentUser.currency;
-    if (
-      minimumPayoutValue &&
-      minimumPayoutValue[userNativeCurrency] &&
-      currentBalanceValue < minimumPayoutValue[userNativeCurrency]
-    ) {
-      setIsAmountEnoughForCollect(false);
-    } else {
-      setIsAmountEnoughForCollect(true);
-    }
-  };
-
-  const calculateMilestoneCurrentBalance = async () => {
+  const calculateMilestoneCurrentBalanceUsdValue = async () => {
     try {
       const result = await convertMultipleRates(
         null,
-        currentUser.currency,
+        'USD',
         milestone.donationCounters.map(dc => {
           return {
             value: dc.currentBalance,
@@ -55,29 +42,27 @@ function MilestoneActions({ milestone }) {
           };
         }),
       );
-      setCurrentBalanceValue(result.total);
+      setCurrentBalanceUsdValue(result.total);
     } catch (e) {
       // TODO should I remove this console.log?
-      console.error('calculateMilestoneCurrentBalance error', e);
+      console.error('calculateMilestoneCurrentBalanceUsdValue error', e);
     }
   };
 
   useEffect(() => {
-    checkIsAmountEnoughForCollect();
-  }, [currentBalanceValue]);
+    setIsAmountEnoughForWithdraw(currentBalanceUsdValue > minimumPayoutUsdValue);
+  }, [currentBalanceUsdValue]);
 
   useEffect(() => {
     // setLoading(true)
 
     if (
-      // not calculate again if we did before
-      !currentBalanceValue &&
+      !currentBalanceUsdValue &&
       currentUser.address &&
-      currentUser.currency &&
       milestone.donationCounters &&
       milestone.donationCounters.length
     ) {
-      calculateMilestoneCurrentBalance();
+      calculateMilestoneCurrentBalanceUsdValue();
     }
   });
 
@@ -89,8 +74,8 @@ function MilestoneActions({ milestone }) {
 
       {milestone.hasRecipient ? (
         <RequestMarkMilestoneCompleteButton
-          isAmountEnoughForCollect={isAmountEnoughForCollect}
-          minimumPayoutValue={minimumPayoutValue}
+          isAmountEnoughForWithdraw={isAmountEnoughForWithdraw}
+          minimumPayoutUsdValue={minimumPayoutUsdValue}
           milestone={milestone}
         />
       ) : null}
@@ -107,8 +92,8 @@ function MilestoneActions({ milestone }) {
 
       <WithdrawMilestoneFundsButton
         milestone={milestone}
-        isAmountEnoughForCollect={isAmountEnoughForCollect}
-        minimumPayoutValue={minimumPayoutValue}
+        isAmountEnoughForWithdraw={isAmountEnoughForWithdraw}
+        minimumPayoutUsdValue={minimumPayoutUsdValue}
       />
 
       <EditMilestoneButton milestone={milestone} />

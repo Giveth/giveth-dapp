@@ -17,8 +17,8 @@ import config from '../configuration';
 const ViewMilestoneAlerts = ({
   milestone,
   campaign,
-  isAmountEnoughForCollect,
-  minimumPayoutValue,
+  isAmountEnoughForWithdraw,
+  minimumPayoutUsdValue,
 }) => {
   const {
     state: { currentUser, userIsDacOwner },
@@ -44,8 +44,8 @@ const ViewMilestoneAlerts = ({
         <ProjectViewActionAlert message="Request mark complete">
           <RequestMarkMilestoneCompleteButton
             milestone={milestone}
-            isAmountEnoughForCollect={isAmountEnoughForCollect}
-            minimumPayoutValue={minimumPayoutValue}
+            isAmountEnoughForWithdraw={isAmountEnoughForWithdraw}
+            minimumPayoutUsdValue={minimumPayoutUsdValue}
           />
         </ProjectViewActionAlert>
       )}
@@ -86,8 +86,8 @@ const ViewMilestoneAlerts = ({
         >
           <WithdrawMilestoneFundsButton
             milestone={milestone}
-            isAmountEnoughForCollect={isAmountEnoughForCollect}
-            minimumPayoutValue={minimumPayoutValue}
+            isAmountEnoughForWithdraw={isAmountEnoughForWithdraw}
+            minimumPayoutUsdValue={minimumPayoutUsdValue}
           />
         </ProjectViewActionAlert>
       )}
@@ -98,8 +98,8 @@ const ViewMilestoneAlerts = ({
 ViewMilestoneAlerts.propTypes = {
   milestone: PropTypes.instanceOf(Milestone).isRequired,
   campaign: PropTypes.instanceOf(Campaign).isRequired,
-  isAmountEnoughForCollect: PropTypes.bool.isRequired,
-  minimumPayoutValue: PropTypes.shape().isRequired,
+  isAmountEnoughForWithdraw: PropTypes.bool.isRequired,
+  minimumPayoutUsdValue: PropTypes.shape().isRequired,
 };
 
 export default React.memo(ViewMilestoneAlerts);

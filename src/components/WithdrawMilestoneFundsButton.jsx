@@ -14,8 +14,8 @@ import { Context as UserContext } from '../contextProviders/UserProvider';
 
 const WithdrawMilestoneFundsButton = ({
   milestone,
-  isAmountEnoughForCollect,
-  minimumPayoutValue,
+  isAmountEnoughForWithdraw,
+  minimumPayoutUsdValue,
 }) => {
   const {
     state: { currentUser },
@@ -34,11 +34,11 @@ const WithdrawMilestoneFundsButton = ({
         DonationService.getMilestoneDonationsCount(milestone._id),
       ])
         .then(([, donationsCount]) => {
-          if (!isAmountEnoughForCollect) {
+          if (!isAmountEnoughForWithdraw) {
             ErrorPopup(
               `Oh No!
                 A minimum donation balance of
-                ${minimumPayoutValue.USD} USD  is required before
+                ${minimumPayoutUsdValue} USD  is required before
                 you can collect or disperse the funds. This is a
                  temporary limitation due to Ethereum Mainnet issues.`,
             );
@@ -169,8 +169,8 @@ const WithdrawMilestoneFundsButton = ({
 
 WithdrawMilestoneFundsButton.propTypes = {
   milestone: PropTypes.instanceOf(Milestone).isRequired,
-  isAmountEnoughForCollect: PropTypes.bool.isRequired,
-  minimumPayoutValue: PropTypes.shape().isRequired,
+  isAmountEnoughForWithdraw: PropTypes.bool.isRequired,
+  minimumPayoutUsdValue: PropTypes.shape().isRequired,
 };
 
 export default React.memo(WithdrawMilestoneFundsButton);

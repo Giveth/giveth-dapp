@@ -63,7 +63,7 @@ const ViewMilestone = props => {
     state: { currentUser },
   } = useContext(UserContext);
   const {
-    state: { nativeCurrencyWhitelist, activeTokenWhitelist, minimumPayoutValue },
+    state: { nativeCurrencyWhitelist, activeTokenWhitelist, minimumPayoutUsdValue },
   } = useContext(WhiteListContext);
 
   const [isLoading, setLoading] = useState(true);
@@ -75,9 +75,10 @@ const ViewMilestone = props => {
   const [dacTitle, setDacTitle] = useState('');
   const [newDonations, setNewDonations] = useState(0);
   const [notFound, setNotFound] = useState(false);
-  const [isAmountEnoughForCollect, setIsAmountEnoughForCollect] = useState(true);
+  const [isAmountEnoughForWithdraw, setIsAmountEnoughForWithdraw] = useState(true);
   const [currency, setCurrency] = useState(null);
   const [currentBalanceValue, setCurrentBalanceValue] = useState(0);
+  const [currentBalanceUsdValue, setCurrentBalanceUsdValue] = useState(0);
 
   const editMilestoneButtonRef = useRef();
   const cancelMilestoneButtonRef = useRef();
@@ -150,47 +151,45 @@ const ViewMilestone = props => {
     };
   }, []);
 
-  useEffect(() => {
-    // setLoading(true)
+  const calculateMilestoneCurrentBalanceValue = async () => {
     if (
       currentUser.address &&
       !currency &&
       milestone.donationCounters &&
       milestone.donationCounters.length
     ) {
-      // eslint-disable-next-line
       setCurrency(currentUser.currency);
-      convertMultipleRates(
-        null,
-        currentUser.currency,
-        milestone.donationCounters.map(dc => {
+      try {
+        const rateArray = milestone.donationCounters.map(dc => {
           return {
             value: dc.currentBalance,
             currency: dc.symbol,
           };
-        }),
-      ).then(result => {
-        setCurrentBalanceValue(result.total);
-      });
-    }
-  });
-
-  const checkIsAmountEnoughForCollect = () => {
-    const userNativeCurrency = currentUser.currency;
-    if (
-      minimumPayoutValue &&
-      minimumPayoutValue[userNativeCurrency] &&
-      currentBalanceValue < minimumPayoutValue[userNativeCurrency]
-    ) {
-      setIsAmountEnoughForCollect(false);
-    } else {
-      setIsAmountEnoughForCollect(true);
+        });
+        const userCurrencyValueResult = await convertMultipleRates(
+          null,
+          currentUser.currency,
+          rateArray,
+        );
+        setCurrentBalanceValue(userCurrencyValueResult.total);
+        if (currentUser.currency === 'USD') {
+          setCurrentBalanceUsdValue(userCurrencyValueResult.total);
+          return;
+        }
+        const usdValueResult = await convertMultipleRates(null, 'USD', rateArray);
+        setCurrentBalanceUsdValue(usdValueResult.total);
+      } catch (e) {
+        console.log('convertMultipleRates error', e);
+      }
     }
   };
+  useEffect(() => {
+    calculateMilestoneCurrentBalanceValue();
+  });
 
   useEffect(() => {
-    checkIsAmountEnoughForCollect();
-  }, [currentBalanceValue]);
+    setIsAmountEnoughForWithdraw(currentBalanceUsdValue > minimumPayoutUsdValue);
+  }, [currentBalanceUsdValue]);
 
   const isActiveMilestone = () => {
     const { fullyFunded, status } = milestone;
@@ -384,8 +383,8 @@ const ViewMilestone = props => {
                     <ViewMilestoneAlerts
                       milestone={milestone}
                       campaign={campaign}
-                      minimumPayoutValue={minimumPayoutValue}
-                      isAmountEnoughForCollect={isAmountEnoughForCollect}
+                      minimumPayoutUsdValue={minimumPayoutUsdValue}
+                      isAmountEnoughForWithdraw={isAmountEnoughForWithdraw}
                     />
 
                     <div id="description">
