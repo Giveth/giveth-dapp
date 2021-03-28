@@ -1,6 +1,8 @@
 import getWeb3 from '../lib/blockchain/getWeb3';
 import getNetwork from '../lib/blockchain/getNetwork';
+import config from '../configuration';
 
+const etherScanUrl = config.etherscan;
 /**
  * Wallet service for operations with the giveth Wallet
  */
@@ -19,17 +21,15 @@ class WalletService {
    */
   static withdraw(data, afterCreate = () => {}, afterMined = () => {}, onError = () => {}) {
     let txHash;
-    let etherScanUrl;
 
-    Promise.all([getWeb3(), getNetwork()])
-      .then(([web3, network]) => {
+    getWeb3()
+      .then(web3 => {
         const dt = {
           ...data,
           from: data.from,
           value: web3.utils.toWei(data.value),
           gas: '21000',
         };
-        etherScanUrl = network.etherscan;
 
         return web3.eth.sendTransaction(dt).once('transactionHash', hash => {
           txHash = hash;
@@ -59,12 +59,10 @@ class WalletService {
    */
   static bridgeWithdraw(data, afterCreate = () => {}, afterMined = () => {}, onError = () => {}) {
     let txHash;
-    let etherScanUrl;
 
     Promise.all([getWeb3(), getNetwork()])
       .then(([web3, network]) => {
         const { foreignGivethBridge } = network;
-        etherScanUrl = network.etherscan;
 
         return foreignGivethBridge
           .withdraw(data.token, web3.utils.toWei(data.value), {

@@ -27,7 +27,7 @@ import {
   ZERO_ADDRESS,
 } from '../../lib/helpers';
 import {
-  authenticateIfPossible,
+  authenticateUser,
   checkBalance,
   checkForeignNetwork,
   checkProfile,
@@ -576,7 +576,7 @@ class EditMilestone extends Component {
       return Promise.reject();
     }
 
-    return authenticateIfPossible(this.props.currentUser, true)
+    return authenticateUser(this.props.currentUser, true)
       .then(async () => {
         if (!this.props.isProposed && !this.props.currentUser) {
           historyBackWFallback();

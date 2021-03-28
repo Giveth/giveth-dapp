@@ -17,6 +17,8 @@ import config from '../configuration';
 import ErrorHandler from '../lib/ErrorHandler';
 import ErrorPopup from '../components/ErrorPopup';
 
+const etherScanUrl = config.etherscan;
+
 function updateExistingDonation(donation, amount, status) {
   const mutation = {
     pendingAmountRemaining: utils.toWei(
@@ -120,7 +122,6 @@ class DonationService {
   ) {
     const { ownerType, ownerEntity, delegateEntity, delegateId } = donations[0];
     let txHash;
-    let etherScanUrl;
     const pledgedDonations = []; // Donations that have been pledged and should be updated in feathers
     const pledges = [];
 
@@ -189,8 +190,6 @@ class DonationService {
 
     Promise.all([getNetwork(), getWeb3(), getPledges()])
       .then(([network, web3, encodedPledges]) => {
-        etherScanUrl = network.etherscan;
-
         const receiverId = delegateTo.projectId;
 
         const executeTransfer = () => {
@@ -304,11 +303,8 @@ class DonationService {
     onCancel = () => {},
   ) {
     let txHash;
-    let etherScanUrl;
     Promise.all([getNetwork(), getWeb3()])
       .then(([network, web3]) => {
-        etherScanUrl = network.etherscan;
-
         const from =
           donation.delegateId > 0
             ? donation.delegateEntity.ownerAddress
@@ -410,10 +406,8 @@ class DonationService {
    */
   static reject(donation, address, onCreated = () => {}, onSuccess = () => {}, onError = () => {}) {
     let txHash;
-    let etherScanUrl;
     getNetwork()
       .then(network => {
-        etherScanUrl = network.etherscan;
         const _amountRemainingInWei = utils.toWei(donation.amountRemaining.toFixed());
 
         return network.liquidPledging
@@ -490,12 +484,9 @@ class DonationService {
    */
   static commit(donation, address, onCreated = () => {}, onSuccess = () => {}, onError = () => {}) {
     let txHash;
-    let etherScanUrl;
 
     getNetwork()
       .then(network => {
-        etherScanUrl = network.etherscan;
-
         const _amountRemainingInWei = utils.toWei(donation.amountRemaining.toFixed());
 
         return network.liquidPledging
@@ -563,11 +554,9 @@ class DonationService {
    */
   static refund(donation, address, onCreated = () => {}, onSuccess = () => {}, onError = () => {}) {
     let txHash;
-    let etherScanUrl;
 
     getNetwork()
       .then(network => {
-        etherScanUrl = network.etherscan;
         const _amountRemainingInWei = utils.toWei(donation.amountRemaining.toFixed());
 
         // this isn't the most gas efficient, but should always work. If the canceledPledge

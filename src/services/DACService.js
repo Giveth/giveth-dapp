@@ -17,6 +17,7 @@ import { ZERO_ADDRESS } from '../lib/helpers';
 BigNumber.config({ DECIMAL_PLACES: 18 });
 
 const dacs = feathersClient.service('dacs');
+const etherScanUrl = config.etherscan;
 
 class DACService {
   /**
@@ -263,7 +264,6 @@ class DACService {
     }
 
     let txHash;
-    let etherScanUrl;
 
     const sendError = err => {
       const showMessageInPopup = err.data && err.data.showMessageInPopup;
@@ -288,7 +288,6 @@ class DACService {
       }
 
       const network = await getNetwork();
-      etherScanUrl = network.etherscan;
       const { liquidPledging } = network;
 
       // nothing to update or failed ipfs upload

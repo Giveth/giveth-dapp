@@ -234,9 +234,9 @@ export const checkBalance = balance =>
         title: 'Insufficient wallet balance',
         content: React.swal.msg(
           <p>
-            Unfortunately you need at least {React.minimumWalletBalance} {config.nativeTokenName} in
-            your wallet to continue. Please transfer some ${config.nativeTokenName} to your wallet
-            first.
+            Be patient, you need at least {React.minimumWalletBalance} {config.foreignNetworkName}{' '}
+            {config.nativeTokenName} in your wallet to take actions on the Giveth DApp, we are
+            sending some to you now.
           </p>,
         ),
         icon: 'warning',

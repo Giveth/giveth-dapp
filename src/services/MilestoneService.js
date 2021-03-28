@@ -22,7 +22,9 @@ import Donation from '../models/Donation';
 import BridgedMilestone from '../models/BridgedMilestone';
 import LPPCappedMilestone from '../models/LPPCappedMilestone';
 import LPMilestone from '../models/LPMilestone';
+import config from '../configuration';
 
+const etherScanUrl = config.etherscan;
 const milestones = feathersClient.service('milestones');
 
 BigNumber.config({ DECIMAL_PLACES: 18 });
@@ -407,7 +409,7 @@ class MilestoneService {
     }
 
     let txHash;
-    let etherScanUrl;
+    let res = milestone;
 
     try {
       const query = {
@@ -435,7 +437,6 @@ class MilestoneService {
 
       // if a proposed or rejected milestone, create/update it only in feathers
       if ([Milestone.PROPOSED, Milestone.REJECTED].includes(milestone.status)) {
-        let res;
         if (milestone.id) {
           res = await milestones.patch(milestone.id, milestone.toFeathers());
         } else {
@@ -450,14 +451,13 @@ class MilestoneService {
       if (milestone.projectId && (milestone.url === profileHash || !profileHash)) {
         // ipfs upload may have failed, but we still want to update feathers
         if (!profileHash) {
-          await milestones.patch(milestone._id, milestone.toFeathers());
+          res = await milestones.patch(milestone._id, milestone.toFeathers());
         }
-        afterSave(null, false);
+        afterSave(null, false, res);
         return true;
       }
 
       const network = await getNetwork();
-      etherScanUrl = network.etherScanUrl;
 
       let tx;
       if (milestone.projectId) {
@@ -473,8 +473,8 @@ class MilestoneService {
           });
         } else if (milestone instanceof LPPCappedMilestone) {
           // LPPCappedMilestone has no update function, so just update feathers
-          await milestones.patch(milestone._id, milestone.toFeathers());
-          afterSave(null, false);
+          res = await milestones.patch(milestone._id, milestone.toFeathers());
+          afterSave(null, false, res);
           return true;
         }
       } else {
@@ -485,28 +485,26 @@ class MilestoneService {
         tx = this.deployMilestone(milestone, from, network, profileHash);
       }
 
-      let milestoneId;
       await tx.once('transactionHash', async hash => {
         txHash = hash;
 
         // update milestone in feathers
         if (milestone.id) {
-          await milestones.patch(milestone.id, milestone.toFeathers(txHash));
-          milestoneId = milestone.id;
+          res = await milestones.patch(milestone.id, milestone.toFeathers(txHash));
         } else {
           // create milestone in feathers
-          milestoneId = (await milestones.create(milestone.toFeathers(txHash)))._id;
+          res = await milestones.create(milestone.toFeathers(txHash));
         }
-        afterSave(false, !milestone.projectId, `${etherScanUrl}tx/${txHash}`);
+        afterSave(false, `${etherScanUrl}tx/${txHash}`, res);
       });
 
-      afterMined(!milestone.projectId, `${etherScanUrl}tx/${txHash}`, milestoneId);
+      afterMined(!milestone.projectId, `${etherScanUrl}tx/${txHash}`, res._id);
     } catch (err) {
       const message = `Something went wrong with the Milestone ${
         milestone.projectId > 0 ? 'update' : 'creation'
       }. Is your wallet unlocked? ${etherScanUrl}tx/${txHash} => ${JSON.stringify(err, null, 2)}`;
-      ErrorHandler(err, message);
-      onError();
+      console.error(err);
+      onError(message, err);
     }
 
     return true;
@@ -660,12 +658,9 @@ class MilestoneService {
    */
   static acceptProposedMilestone({ milestone, from, proof, onTxHash, onConfirmation, onError }) {
     let txHash;
-    let etherScanUrl;
 
     getNetwork()
       .then(async network => {
-        etherScanUrl = network.etherscan;
-
         const parentProjectId = milestone.campaign.projectId;
 
         // TODO fix this hack
@@ -731,13 +726,9 @@ class MilestoneService {
    */
   static async requestMarkComplete({ milestone, from, proof, onTxHash, onConfirmation, onError }) {
     let txHash;
-    let etherScanUrl;
 
     try {
-      const network = await getNetwork();
       const web3 = await getWeb3();
-
-      etherScanUrl = network.etherscan;
 
       const milestoneContract = milestone.contract(web3);
 
@@ -798,12 +789,9 @@ class MilestoneService {
 
   static cancelMilestone({ milestone, from, proof, onTxHash, onConfirmation, onError }) {
     let txHash;
-    let etherScanUrl;
 
-    Promise.all([getNetwork(), getWeb3()])
-      .then(([network, web3]) => {
-        etherScanUrl = network.etherscan;
-
+    getWeb3()
+      .then(web3 => {
         const milestoneContract = milestone.contract(web3);
 
         return milestoneContract
@@ -849,12 +837,9 @@ class MilestoneService {
 
   static approveMilestoneCompletion({ milestone, from, proof, onTxHash, onConfirmation, onError }) {
     let txHash;
-    let etherScanUrl;
 
-    Promise.all([getNetwork(), getWeb3()])
-      .then(([network, web3]) => {
-        etherScanUrl = network.etherscan;
-
+    getWeb3()
+      .then(web3 => {
         const milestoneContract = milestone.contract(web3);
 
         const fnName =
@@ -904,12 +889,9 @@ class MilestoneService {
 
   static rejectMilestoneCompletion({ milestone, from, proof, onTxHash, onConfirmation, onError }) {
     let txHash;
-    let etherScanUrl;
 
-    Promise.all([getNetwork(), getWeb3()])
-      .then(([network, web3]) => {
-        etherScanUrl = network.etherscan;
-
+    getWeb3()
+      .then(web3 => {
         const milestoneContract = milestone.contract(web3);
 
         const fnName =
@@ -955,12 +937,9 @@ class MilestoneService {
 
   static changeRecipient({ milestone, from, newRecipient, onConfirmation }) {
     let txHash;
-    let etherScanUrl;
 
-    Promise.all([getNetwork(), getWeb3()])
-      .then(([network, web3]) => {
-        etherScanUrl = network.etherscan;
-
+    getWeb3()
+      .then(web3 => {
         const milestoneContract = milestone.contract(web3);
 
         return milestoneContract
@@ -988,12 +967,9 @@ class MilestoneService {
 
   static withdraw({ milestone, from, onTxHash, onConfirmation, onError }) {
     let txHash;
-    let etherScanUrl;
 
-    Promise.all([getNetwork(), getWeb3(), DonationService.getMilestoneDonations(milestone._id)])
-      .then(([network, web3, data]) => {
-        etherScanUrl = network.etherscan;
-
+    Promise.all([getWeb3(), DonationService.getMilestoneDonations(milestone._id)])
+      .then(([web3, data]) => {
         const milestoneContract = milestone.contract(web3);
 
         const execute = opts => {
