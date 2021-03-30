@@ -99,7 +99,7 @@ ViewMilestoneAlerts.propTypes = {
   milestone: PropTypes.instanceOf(Milestone).isRequired,
   campaign: PropTypes.instanceOf(Campaign).isRequired,
   isAmountEnoughForWithdraw: PropTypes.bool.isRequired,
-  minimumPayoutUsdValue: PropTypes.shape().isRequired,
+  minimumPayoutUsdValue: PropTypes.number.isRequired,
 };
 
 export default React.memo(ViewMilestoneAlerts);

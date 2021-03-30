@@ -137,7 +137,7 @@ const RequestMarkMilestoneCompleteButton = ({
 
 RequestMarkMilestoneCompleteButton.propTypes = {
   milestone: PropTypes.instanceOf(Milestone).isRequired,
-  minimumPayoutUsdValue: PropTypes.shape().isRequired,
+  minimumPayoutUsdValue: PropTypes.number.isRequired,
   isAmountEnoughForWithdraw: PropTypes.bool.isRequired,
 };
 
