@@ -5,15 +5,15 @@ function MilestoneCreateOptionsMenu() {
   return (
     <div id="campaign-create-new-view">
       <div className="link-card-container">
-        <Link className="link-card" to="new/payment">
+        <Link className="link-card" to="new/milestone">
           <img
             className="link-card-logo"
-            src={`${process.env.PUBLIC_URL}/img/payment.png`}
-            alt="payment-logo"
+            src={`${process.env.PUBLIC_URL}/img/milestone.png`}
+            alt="milestone-logo"
           />
-          <h2 className="link-card-title ">Payment</h2>
+          <h2 className="link-card-title ">Milestone</h2>
           <p className="link-card-desc">
-            Create a payment request, can be used for contract work, salaries or bounties.
+            Your Campaign will get rewarded after accomplishing this task.
           </p>
           <img
             className="link-card-arrow"
@@ -21,7 +21,6 @@ function MilestoneCreateOptionsMenu() {
             alt="milestone-logo"
           />
         </Link>
-
         <Link className="link-card" to="new/bounty">
           <img
             className="link-card-logo"
@@ -38,7 +37,6 @@ function MilestoneCreateOptionsMenu() {
             alt="milestone-logo"
           />
         </Link>
-
         <Link className="link-card" to="new/expense">
           <img
             className="link-card-logo"
@@ -53,16 +51,15 @@ function MilestoneCreateOptionsMenu() {
             alt="milestone-logo"
           />
         </Link>
-
-        <Link className="link-card" to="new/milestone">
+        <Link className="link-card" to="new/payment">
           <img
             className="link-card-logo"
-            src={`${process.env.PUBLIC_URL}/img/milestone.png`}
-            alt="milestone-logo"
+            src={`${process.env.PUBLIC_URL}/img/payment.png`}
+            alt="payment-logo"
           />
-          <h2 className="link-card-title ">Milestone</h2>
+          <h2 className="link-card-title ">Payment</h2>
           <p className="link-card-desc">
-            Your Campaign will get rewarded after accomplishing this task.
+            Create a payment request, can be used for contract work, salaries or bounties.
           </p>
           <img
             className="link-card-arrow"
