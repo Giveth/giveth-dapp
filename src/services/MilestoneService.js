@@ -358,7 +358,7 @@ class MilestoneService {
     let initalTotal;
     return feathersClient
       .service('donations')
-      .watch()
+      .watch({ listStrategy: 'always' })
       .find(
         paramsForServer({
           query: {

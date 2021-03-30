@@ -228,7 +228,6 @@ class CampaignService {
             $sort: { usdValue: -1, createdAt: -1 },
             $limit: 0,
           },
-          schema: 'includeTypeAndGiverDetails',
         }),
       )
       .subscribe(resp => {
@@ -266,6 +265,7 @@ class CampaignService {
           $limit: itemsPerPage,
           $skip: skipPages * itemsPerPage,
         },
+        schema: 'includeTypeAndGiverDetails',
       })
       .subscribe(resp => {
         const newResp = { ...resp, data: resp.data.map(c => new Campaign(c)) };
