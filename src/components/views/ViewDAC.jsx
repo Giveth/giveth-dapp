@@ -47,7 +47,7 @@ const ViewDAC = ({ match }) => {
     state: { currentUser },
   } = useContext(UserContext);
 
-  const [dac, setDac] = useState();
+  const [dac, setDac] = useState({});
   const [isLoading, setLoading] = useState(true);
   const [isLoadingDonations, setLoadingDonatinos] = useState(true);
   const [isLoadingCampaigns, setLoadingCampaigns] = useState(true);

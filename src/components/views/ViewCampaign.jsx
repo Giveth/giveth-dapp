@@ -67,7 +67,7 @@ const ViewCampaign = ({ match }) => {
   const [newDonations, setNewDonations] = useState(0);
   const [notFound, setNotFound] = useState(false);
   const [downloadingCsv, setDownloadingCsv] = useState(false);
-  const [campaign, setCampaign] = useState();
+  const [campaign, setCampaign] = useState({});
 
   const donationsPerBatch = 5;
   const milestonesPerBatch = 12;
