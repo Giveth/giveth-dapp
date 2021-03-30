@@ -225,7 +225,6 @@ class DACService {
             $sort: { usdValue: -1, createdAt: -1 },
             $limit: 0,
           },
-          schema: 'includeTypeAndGiverDetails',
         }),
       )
       .subscribe(resp => {
