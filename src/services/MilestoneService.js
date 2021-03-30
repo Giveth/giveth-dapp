@@ -367,7 +367,6 @@ class MilestoneService {
             $sort: { createdAt: -1 },
             $limit: 0,
           },
-          schema: 'includeTypeAndGiverDetails',
         }),
       )
       .subscribe(resp => {

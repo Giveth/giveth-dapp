@@ -81,10 +81,9 @@ const ViewMilestone = props => {
   const editMilestoneButtonRef = useRef();
   const cancelMilestoneButtonRef = useRef();
   const deleteMilestoneButtonRef = useRef();
+  const donationsObserver = useRef();
 
   const donationsPerBatch = 50;
-  let donationsObserver;
-  let _milestoneId = null;
 
   const getDacTitle = async dacId => {
     if (dacId === 0) return;
@@ -93,14 +92,14 @@ const ViewMilestone = props => {
       .catch(() => {});
   };
 
-  function loadMoreDonations() {
+  function loadMoreDonations(loadFromScratch = false) {
     setLoadingDonations(true);
     MilestoneService.getDonations(
-      _milestoneId,
+      milestone.id,
       donationsPerBatch,
-      donations.length,
+      loadFromScratch ? 0 : donations.length,
       (_donations, _donationsTotal) => {
-        setDonations(donations.concat(_donations));
+        setDonations(loadFromScratch ? _donations : donations.concat(_donations));
         setLoadingDonations(false);
       },
       err => {
@@ -121,33 +120,38 @@ const ViewMilestone = props => {
         if (milestoneId) {
           history.push(`/milestone/${_milestone.slug}`);
         }
-        _milestoneId = _milestone.id;
         setMilestone(_milestone);
         setCampaign(new Campaign(_milestone.campaign));
         setRecipient(
           _milestone.pendingRecipientAddress ? _milestone.pendingRecipient : _milestone.recipient,
         );
         getDacTitle(_milestone.dacId);
-        loadMoreDonations();
         setLoading(false);
       })
       .catch(() => {
         setNotFound(true);
       });
+  }, []);
 
-    // subscribe to donation count
-    donationsObserver = MilestoneService.subscribeNewDonations(
-      milestoneId,
-      _newDonations => setNewDonations(_newDonations),
-      () => setNewDonations(0),
-    );
+  useEffect(() => {
+    if (milestone.id) {
+      loadMoreDonations(true);
+
+      // subscribe to donation count
+      donationsObserver.current = MilestoneService.subscribeNewDonations(
+        milestone.id,
+        _newDonations => setNewDonations(_newDonations),
+        () => setNewDonations(0),
+      );
+    }
 
     return () => {
-      if (donationsObserver) {
-        donationsObserver.unsubscribe();
+      if (donationsObserver.current) {
+        donationsObserver.current.unsubscribe();
+        donationsObserver.current = null;
       }
     };
-  }, []);
+  }, [milestone]);
 
   useEffect(() => {
     if (
@@ -169,7 +173,7 @@ const ViewMilestone = props => {
         }),
       ).then(result => setCurrentBalanceValue(result.total));
     }
-  });
+  }, [milestone.donationCounters]);
 
   const isActiveMilestone = () => {
     const { fullyFunded, status } = milestone;
