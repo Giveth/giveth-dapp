@@ -174,19 +174,16 @@ class DACService {
     let initalTotal;
     return feathersClient
       .service('donations')
-      .watch()
-      .find(
-        paramsForServer({
-          query: {
-            status: { $ne: Donation.FAILED },
-            delegateTypeId: id,
-            isReturn: false,
-            intendedProjectId: { $exists: false },
-            $sort: { usdValue: -1, createdAt: -1 },
-            $limit: 0,
-          },
-        }),
-      )
+      .watch({ listStrategy: 'always' })
+      .find({
+        query: {
+          status: { $ne: Donation.FAILED },
+          delegateTypeId: id,
+          isReturn: false,
+          intendedProjectId: { $exists: false },
+          $limit: 0,
+        },
+      })
       .subscribe(resp => {
         if (initalTotal === undefined) {
           initalTotal = resp.total;

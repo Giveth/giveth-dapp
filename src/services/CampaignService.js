@@ -217,19 +217,16 @@ class CampaignService {
     let initalTotal;
     return feathersClient
       .service('donations')
-      .watch()
-      .find(
-        paramsForServer({
-          query: {
-            status: { $ne: Donation.FAILED },
-            $or: [{ intendedProjectTypeId: id }, { ownerTypeId: id }],
-            ownerTypeId: id,
-            isReturn: false,
-            $sort: { usdValue: -1, createdAt: -1 },
-            $limit: 0,
-          },
-        }),
-      )
+      .watch({ listStrategy: 'always' })
+      .find({
+        query: {
+          status: { $ne: Donation.FAILED },
+          $or: [{ intendedProjectTypeId: id }, { ownerTypeId: id }],
+          ownerTypeId: id,
+          isReturn: false,
+          $limit: 0,
+        },
+      })
       .subscribe(resp => {
         if (initalTotal === undefined) {
           initalTotal = resp.total;
