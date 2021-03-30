@@ -13,8 +13,10 @@ import AggregateDonationService from '../../services/AggregateDonationService';
 import LeaderBoard from '../LeaderBoard';
 import CommunityButton from '../CommunityButton';
 import DAC from '../../models/DAC';
+import ProjectSubscription from '../ProjectSubscription';
 import { getUserName, getUserAvatar, history } from '../../lib/helpers';
 import DACService from '../../services/DACService';
+import CampaignService from '../../services/CampaignService';
 import CampaignCard from '../CampaignCard';
 import config from '../../configuration';
 import NotFound from './NotFound';
@@ -55,7 +57,6 @@ const ViewDAC = ({ match }) => {
   const [notFound, setNotFound] = useState(false);
 
   const donationsObserver = useRef();
-  const campaignObserver = useRef();
 
   const donationsPerBatch = 5;
 
@@ -63,10 +64,6 @@ const ViewDAC = ({ match }) => {
     if (donationsObserver.current) {
       donationsObserver.current.unsubscribe();
       donationsObserver.current = null;
-    }
-    if (campaignObserver) {
-      campaignObserver.current.unsubscribe();
-      campaignObserver.current = null;
     }
   };
 
@@ -95,7 +92,7 @@ const ViewDAC = ({ match }) => {
       : DACService.get.bind(DACService, id);
     // Get the DAC
     getFunction()
-      .then(_dac => {
+      .then(async _dac => {
         if (id) {
           history.push(`/dac/${_dac.slug}`);
         }
@@ -110,19 +107,12 @@ const ViewDAC = ({ match }) => {
     return cleanUp;
   }, []);
 
-  useEffect(() => {
+  useEffect(async () => {
     if (dac.id) {
-      campaignObserver.current = DACService.subscribeCampaigns(
-        dac.delegateId,
-        _campaigns => {
-          setCampaigns(_campaigns);
-          setLoadingCampaigns(false);
-        },
-        err => {
-          setLoadingCampaigns(false);
-          ErrorHandler(err, 'Some error on fetching dac campaigns, please try again later');
-        },
-      );
+      const relatedCampaigns = await CampaignService.getCampaignsByIdArray(dac.campaigns || []);
+      setCampaigns(relatedCampaigns);
+      setLoadingCampaigns(false);
+
       // subscribe to donation count
       donationsObserver.current = DACService.subscribeNewDonations(
         dac.id,
@@ -227,6 +217,10 @@ const ViewDAC = ({ match }) => {
                 <div className="row">
                   <div className="col-md-8 m-auto">
                     <div id="description">
+                      <div>
+                        <h5 className="title">Subscribe to updates </h5>
+                        <ProjectSubscription projectTypeId={dac._id} projectType="dac" />
+                      </div>
                       <div className="about-section-header">
                         <h5 className="title">About</h5>
                         <div className="text-center">

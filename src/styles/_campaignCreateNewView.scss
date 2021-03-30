@@ -1,0 +1,77 @@
+#campaign-create-new-view {
+	& > .link-card-container {
+		width: 100%;
+		max-width: 700px;
+		padding: 10px;
+		margin: auto;
+		& > .link-card {
+			display: block;
+			position: relative;
+			width: 100%;
+			min-height: 164px;
+			padding: 32px 20%;
+			margin: 32px 0;
+
+			color: #2c0b3f;
+			background: #ffffff;
+
+			border: 2px solid #dfdae8;
+			box-sizing: border-box;
+			border-radius: 8px;
+
+			transition: box-shadow,background-color 0.3s ease;
+
+			& > .link-card-logo {
+				position: absolute;
+				left: 2%;
+				width: 16%;
+				top: 50%;
+				transform: translateY(-50%);
+			}
+
+			& > .link-card-title {
+				font-family: Quicksand;
+				font-style: normal;
+				font-weight: normal;
+				font-size: 26px;
+				line-height: 32px;
+				color: #2C0B3F;
+				transition: color 0.3s ease;
+			}
+			& > .link-card-desc {
+				font-family: Lato;
+				font-style: normal;
+				font-weight: normal;
+				font-size: 18px;
+				line-height: 22px;
+				color: #6B7087;
+				transition: color 0.3s ease;
+			}
+
+			& > .link-card-arrow {
+				position: absolute;
+				right: 5%;
+				width: 5%;
+				top: 50%;
+				transform: translateY(-50%);
+				opacity: 0;
+				transition: opacity 0.3s ease;
+			}
+
+			&:hover {
+				background: #edf0fa;
+				border: 2px solid $new-purple;
+				box-sizing: border-box;
+				box-shadow: 0px 4px 20px #d1d1d1;
+				border-radius: 8px;
+				& > .link-card-title , & > .link-card-desc  {
+					color: $new-purple;
+				}
+				& > .link-card-arrow {
+					opacity: 1;
+				}
+
+			}
+		}
+	}
+}

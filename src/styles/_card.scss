@@ -159,6 +159,10 @@ $aspect-ratio: percentage(9/16); //16:9 ratio
   p {
     margin: 0;
   }
+
+  [class^="col"] {
+    padding: 0 5px;
+  }
 }
 
 .card-center {

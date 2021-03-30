@@ -7,7 +7,7 @@ import { resizeFile } from '../lib/helpers';
 import IPFSService from '../services/IPFSService';
 import config from '../configuration';
 
-import VideoPopup from './VideoPopup';
+import VideoPopup from './VideoPopup.old';
 import Loader from './Loader';
 
 class QuillFormsy extends Component {

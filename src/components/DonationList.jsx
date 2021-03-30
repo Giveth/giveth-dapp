@@ -5,6 +5,7 @@ import moment from 'moment';
 import { Link } from 'react-router-dom';
 
 import config from 'configuration';
+import Milestone from 'models/Milestone';
 import Loader from './Loader';
 import { getUserName, getUserAvatar, convertEthHelper } from '../lib/helpers';
 import Donation from '../models/Donation';
@@ -77,12 +78,13 @@ class DonationListItem extends Component {
         typeLabel = null;
     }
 
-    if (d.status === Donation.PAID || this.state.itemType === 'delegated') {
+    if (d.status === Donation.PAID && d.bridgeStatus === Donation.PAID) {
+      etherScanLink = `${homeEtherscan}tx/${d.bridgeTxHash}`;
+    } else if (d.status === Donation.PAID || this.state.itemType === 'delegated') {
       etherScanLink = etherscan && d.txHash ? `${etherscan}tx/${d.txHash}` : '';
     } else if (this.state.itemType === 'direct') {
       etherScanLink = homeEtherscan && d.homeTxHash ? `${homeEtherscan}tx/${d.homeTxHash}` : '';
     }
-
     return (
       <Fragment>
         <tr key={d._id}>
@@ -174,7 +176,7 @@ DonationListItem.propTypes = {
 };
 
 const DonationList = props => {
-  const { isLoading, donations, loadMore, total, newDonations, useAmountRemaining } = props;
+  const { isLoading, donations, loadMore, total, newDonations, useAmountRemaining, status } = props;
   const hasProposedDelegation = props.donations.some(d => d.intendedProjectId);
   return (
     <div>
@@ -235,7 +237,7 @@ const DonationList = props => {
           </div>
         )}
 
-        {!isLoading && donations.length === 0 && (
+        {!isLoading && donations.length === 0 && status === Milestone.IN_PROGRESS && (
           <p>No donations have been made yet. Be the first to donate now!</p>
         )}
       </div>
@@ -252,9 +254,11 @@ DonationList.propTypes = {
   loadMore: PropTypes.func.isRequired,
   newDonations: PropTypes.number,
   useAmountRemaining: PropTypes.bool,
+  status: PropTypes.string,
 };
 
 DonationList.defaultProps = {
   newDonations: 0,
   useAmountRemaining: false,
+  status: '',
 };
