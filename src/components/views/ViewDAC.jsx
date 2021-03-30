@@ -122,7 +122,7 @@ const ViewDAC = ({ match }) => {
           setNewDonations(0);
         },
       );
-      loadMoreAggregateDonations();
+      loadMoreAggregateDonations(true);
     }
     return cleanUp;
   }, [dac]);
