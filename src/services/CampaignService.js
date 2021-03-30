@@ -265,7 +265,6 @@ class CampaignService {
           $limit: itemsPerPage,
           $skip: skipPages * itemsPerPage,
         },
-        schema: 'includeTypeAndGiverDetails',
       })
       .subscribe(resp => {
         const newResp = { ...resp, data: resp.data.map(c => new Campaign(c)) };

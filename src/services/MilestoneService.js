@@ -357,7 +357,7 @@ class MilestoneService {
     let initalTotal;
     return feathersClient
       .service('donations')
-      .watch({ listStrategy: 'always' })
+      .watch()
       .find(
         paramsForServer({
           query: {
@@ -367,7 +367,6 @@ class MilestoneService {
             $sort: { createdAt: -1 },
             $limit: 0,
           },
-          schema: 'includeTypeAndGiverDetails',
         }),
       )
       .subscribe(resp => {
