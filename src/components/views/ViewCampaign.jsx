@@ -1,4 +1,4 @@
-import React, { Fragment, useContext, useEffect, useState } from 'react';
+import React, { Fragment, useContext, useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 import Avatar from 'react-avatar';
@@ -47,7 +47,6 @@ import ProjectSubscription from '../ProjectSubscription';
  */
 
 const helmetContext = {};
-let currentCampaign = null;
 
 const ViewCampaign = ({ match }) => {
   const {
@@ -69,18 +68,19 @@ const ViewCampaign = ({ match }) => {
   const [downloadingCsv, setDownloadingCsv] = useState(false);
   const [campaign, setCampaign] = useState({});
 
+  const donationsObserver = useRef();
+
   const donationsPerBatch = 5;
   const milestonesPerBatch = 12;
-  let donationsObserver;
 
-  const loadMoreAggregateDonations = () => {
+  const loadMoreAggregateDonations = (loadFromScratch = false) => {
     setLoadingDonations(true);
     AggregateDonationService.get(
-      currentCampaign.id,
+      campaign.id,
       donationsPerBatch,
-      aggregateDonations.length,
+      loadFromScratch ? 0 : aggregateDonations.length,
       (_donations, _donationsTotal) => {
-        setAggregateDonations(aggregateDonations.concat(_donations));
+        setAggregateDonations(loadFromScratch ? _donations : aggregateDonations.concat(_donations));
         setDonationsTotal(_donationsTotal || 0);
         setLoadingDonations(false);
       },
@@ -90,15 +90,15 @@ const ViewCampaign = ({ match }) => {
       },
     );
   };
-  const loadMoreMilestones = () => {
+  const loadMoreMilestones = (loadFromScratch = false) => {
     setLoadingMilestones(true);
 
     CampaignService.getMilestones(
-      currentCampaign.id,
+      campaign.id,
       milestonesPerBatch,
-      milestones.length,
+      loadFromScratch ? 0 : milestones.length,
       (_milestones, _milestonesTotal) => {
-        const newMilestones = milestones.concat(_milestones);
+        const newMilestones = loadFromScratch ? _milestones : milestones.concat(_milestones);
         setMilestones(newMilestones);
         setLoadingMilestones(false);
         setMilestonesTotal(_milestonesTotal);
@@ -121,25 +121,33 @@ const ViewCampaign = ({ match }) => {
         if (_campaign && id) {
           history.push(`/campaign/${_campaign.slug}`);
         }
-        currentCampaign = _campaign;
         setCampaign(_campaign);
         setLoading(false);
-        loadMoreMilestones();
-        // subscribe to donation count
-        donationsObserver = CampaignService.subscribeNewDonations(
-          _campaign.id,
-          _newDonations => setNewDonations(_newDonations),
-          () => setNewDonations(0),
-        );
-        loadMoreAggregateDonations();
       })
       .catch(() => {
         setNotFound(true);
       });
-    return () => {
-      if (donationsObserver) donationsObserver.unsubscribe();
-    };
   }, []);
+
+  useEffect(() => {
+    if (campaign.id) {
+      loadMoreMilestones(true);
+      // subscribe to donation count
+      donationsObserver.current = CampaignService.subscribeNewDonations(
+        campaign.id,
+        _newDonations => setNewDonations(_newDonations),
+        () => setNewDonations(0),
+      );
+      loadMoreAggregateDonations(true);
+    }
+
+    return () => {
+      if (donationsObserver.current) {
+        donationsObserver.current.unsubscribe();
+        donationsObserver.current = null;
+      }
+    };
+  }, [campaign]);
 
   const downloadCsv = campaignId => {
     const url = `${config.feathersConnection}/campaigncsv/${campaignId}`;
