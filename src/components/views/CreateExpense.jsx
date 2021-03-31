@@ -8,7 +8,6 @@ import { utils } from 'web3';
 import CreateExpenseItem from '../CreateExpenseItem';
 import useCampaign from '../../hooks/useCampaign';
 import { convertEthHelper, getStartOfDayUTC, history, ZERO_ADDRESS } from '../../lib/helpers';
-import { Context as WhiteListContext } from '../../contextProviders/WhiteListProvider';
 import Web3ConnectWarning from '../Web3ConnectWarning';
 import {
   MilestoneCampaignInfo,
@@ -30,10 +29,6 @@ function CreateExpense(props) {
     state: { currentUser },
   } = useContext(UserContext);
   const {
-    state: { isLoading: whiteListLoading, activeTokenWhitelist },
-  } = useContext(WhiteListContext);
-
-  const {
     state: { isForeignNetwork },
     actions: { displayForeignNetRequiredWarning },
   } = useContext(Web3Context);
@@ -50,17 +45,29 @@ function CreateExpense(props) {
     {
       fiatAmount: 0,
       currency: '',
+      token: {},
       date: getStartOfDayUTC().subtract(1, 'd'),
       conversationRate: 1,
       conversationRateTimestamp: new Date().toISOString(),
       description: '',
       picture: '',
       key: uuidv4(),
+      loadingAmount: false,
     },
   ]);
   const [totalAmount, setTotalAmount] = useState(new BigNumber(0));
   const [userIsCampaignOwner, setUserIsOwner] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [loadingAmount, setLoadingAmount] = useState(false);
+  const [submitButtonText, setSubmitButtonText] = useState('Propose');
+
+  useEffect(() => {
+    if (loadingAmount) {
+      setSubmitButtonText('Loading Amount');
+    } else {
+      setSubmitButtonText(userIsCampaignOwner ? 'Create' : 'Propose');
+    }
+  }, [loadingAmount, userIsCampaignOwner]);
 
   const [form] = Form.useForm();
 
@@ -84,15 +91,6 @@ function CreateExpense(props) {
     );
   }, [campaign, currentUser]);
 
-  useEffect(() => {
-    if (!whiteListLoading && activeTokenWhitelist.length > 0) {
-      setExpenseForm({
-        ...expenseForm,
-        token: activeTokenWhitelist[0],
-      });
-    }
-  }, [whiteListLoading, activeTokenWhitelist]);
-
   const updateTotalAmount = () => {
     setTotalAmount(BigNumber.sum(...Object.values(itemAmountMap.current)));
   };
@@ -106,6 +104,13 @@ function CreateExpense(props) {
       item[name] = value;
 
       setExpenseItems([...expenseItems]);
+      if (name === 'loadingAmount') {
+        if (value) {
+          setLoadingAmount(true);
+        } else {
+          setLoadingAmount(expenseItems.some(i => i.key !== itemKey && i.loadingAmount));
+        }
+      }
     }
   };
 
@@ -135,6 +140,7 @@ function CreateExpense(props) {
         description: '',
         picture: '',
         key: uuidv4(),
+        loadingAmount: false,
       },
     ]);
   }
@@ -246,6 +252,7 @@ function CreateExpense(props) {
       });
     }
   };
+
   return (
     <Fragment>
       <Web3ConnectWarning />
@@ -312,8 +319,8 @@ function CreateExpense(props) {
                 />
               </div>
               <Form.Item>
-                <Button type="primary" htmlType="submit" loading={loading}>
-                  {userIsCampaignOwner ? 'Create' : 'Propose'}
+                <Button type="primary" htmlType="submit" loading={loading || loadingAmount}>
+                  {submitButtonText}
                 </Button>
               </Form.Item>
             </Form>
