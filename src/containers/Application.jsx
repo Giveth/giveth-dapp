@@ -18,6 +18,7 @@ import { history } from '../lib/helpers';
 import config from '../configuration';
 
 // components
+import Banner from '../components/Banner';
 import MainMenu from '../components/layout/MainMenu';
 import Loader from '../components/Loader';
 import ErrorBoundary from '../components/ErrorBoundary';
@@ -106,7 +107,7 @@ const Application = () => {
                                     {!hasError && (
                                       <div className="page-wrapper">
                                         <MainMenu />
-
+                                        <Banner />
                                         <Routes />
                                       </div>
                                     )}
