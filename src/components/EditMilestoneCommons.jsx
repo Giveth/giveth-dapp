@@ -5,7 +5,6 @@ import {
   DatePicker,
   Form,
   Input,
-  InputNumber,
   notification,
   Row,
   Select,
@@ -60,7 +59,7 @@ MilestoneTitle.defaultProps = {
   extra: '',
 };
 
-const MilestoneDescription = ({ extra, onChange, placeholder, value, label }) => {
+const MilestoneDescription = ({ extra, onChange, placeholder, value, label, id }) => {
   const onDescriptionChange = useCallback(
     description => {
       onChange({ target: { name: 'description', value: description } });
@@ -69,7 +68,7 @@ const MilestoneDescription = ({ extra, onChange, placeholder, value, label }) =>
   );
   return (
     <Form.Item
-      name="Description"
+      name={id}
       label={label}
       className="custom-form-item"
       extra={extra}
@@ -77,19 +76,17 @@ const MilestoneDescription = ({ extra, onChange, placeholder, value, label }) =>
         {
           required: true,
           type: 'string',
+          message: 'Description is required',
         },
-        () => ({
-          validator(_, val) {
-            if (!val || getHtmlText(value).length > 10) {
-              return Promise.resolve();
-            }
-            return Promise.reject(
-              new Error(
+        {
+          validator: async (_, val) => {
+            if (val && getHtmlText(val).length <= 10) {
+              throw new Error(
                 'Please provide at least 10 characters and do not edit the template keywords.',
-              ),
-            );
+              );
+            }
           },
-        }),
+        },
       ]}
     >
       <Editor
@@ -107,12 +104,14 @@ MilestoneDescription.propTypes = {
   extra: PropTypes.string,
   placeholder: PropTypes.string,
   label: PropTypes.string,
+  id: PropTypes.string,
 };
 
 MilestoneDescription.defaultProps = {
   extra: '',
   placeholder: '',
   label: 'Description',
+  id: '',
 };
 
 const MilestonePicture = ({ picture, setPicture, milestoneTitle }) => {
@@ -281,7 +280,7 @@ MilestoneReviewer.defaultProps = {
   toggleHasReviewer: null,
 };
 
-const MilestoneDatePicker = ({ onChange, value }) => {
+const MilestoneDatePicker = ({ onChange, value, disabled }) => {
   const maxValue = getStartOfDayUTC().subtract(1, 'd');
 
   useEffect(() => {
@@ -302,6 +301,7 @@ const MilestoneDatePicker = ({ onChange, value }) => {
             ]}
             defaultValue={value || maxValue}
             onChange={(_, dateString) => onChange(getStartOfDayUTC(dateString))}
+            disabled={disabled}
           />
         </Form.Item>
       </Col>
@@ -312,10 +312,12 @@ const MilestoneDatePicker = ({ onChange, value }) => {
 MilestoneDatePicker.propTypes = {
   onChange: PropTypes.func.isRequired,
   value: PropTypes.oneOfType([PropTypes.string, PropTypes.instanceOf(moment)]),
+  disabled: PropTypes.bool,
 };
 
 MilestoneDatePicker.defaultProps = {
   value: undefined,
+  disabled: false,
 };
 
 const MilestoneCampaignInfo = ({ campaign }) => (
@@ -352,14 +354,15 @@ const MilestoneToken = ({
   };
 
   return (
-    <Form.Item
-      name="Token"
-      label={label}
-      className="custom-form-item"
-      extra="Select the token you want to be reimbursed in."
-    >
-      <Row gutter={16} align="middle">
-        <Col className="gutter-row" span={12}>
+    <Row gutter={16} align="middle">
+      <Col className="gutter-row" span={12}>
+        <Form.Item
+          name="Token"
+          label={label}
+          className="custom-form-item"
+          extra="Select the token you want to be reimbursed in."
+          rules={[{ required: true, message: 'Payment currency is required' }]}
+        >
           <Select
             showSearch
             placeholder="Select a Currency"
@@ -371,10 +374,9 @@ const MilestoneToken = ({
             }
             value={value && value.symbol}
             required
-            rules={[{ required: true, message: 'Payment currency is required' }]}
           >
             {includeAnyToken && (
-              <Select.Option key={ANY_TOKEN.name} value={ANY_TOKEN.name}>
+              <Select.Option key={ANY_TOKEN.name} value={ANY_TOKEN.symbol}>
                 Any Token
               </Select.Option>
             )}
@@ -384,16 +386,16 @@ const MilestoneToken = ({
               </Select.Option>
             ))}
           </Select>
+        </Form.Item>
+      </Col>
+      {!hideTotalAmount && (
+        <Col className="gutter-row" span={12}>
+          <Typography.Text className="ant-form-text" type="secondary">
+            ≈ {totalAmount}
+          </Typography.Text>
         </Col>
-        {!hideTotalAmount && (
-          <Col className="gutter-row" span={12}>
-            <Typography.Text className="ant-form-text" type="secondary">
-              ≈ {totalAmount}
-            </Typography.Text>
-          </Col>
-        )}
-      </Row>
-    </Form.Item>
+      )}
+    </Row>
   );
 };
 
@@ -452,6 +454,7 @@ const MilestoneFiatAmountCurrency = ({
   amount,
   currency,
   id,
+  disabled,
 }) => {
   const {
     state: { fiatWhitelist },
@@ -461,28 +464,42 @@ const MilestoneFiatAmountCurrency = ({
     <Row gutter={16}>
       <Col className="gutter-row" span={10}>
         <Form.Item
+          name={`amount-${id}`}
           label="Amount"
           className="custom-form-item"
           extra="The amount should be the same as on the receipt."
+          rules={[
+            { required: true, message: 'Amount is required' },
+            {
+              pattern: /^\d*\.?\d*$/,
+              message: 'Amount should contain just number',
+            },
+            {
+              validator: async (_, val) => {
+                if (val && Number.isNaN(val) === false && val <= 0) {
+                  throw new Error('Amount should be greater than zero');
+                }
+              },
+            },
+          ]}
         >
-          <InputNumber
+          <Input
             name="fiatAmount"
             value={amount}
-            min={0}
-            defaultValue={0}
-            decimalSeparator="."
             placeholder="Enter Amount"
             onChange={onAmountChange}
-            required
+            autoComplete="off"
+            disabled={disabled}
           />
         </Form.Item>
       </Col>
       <Col className="gutter-row" span={10}>
         <Form.Item
-          name={id}
+          name={`currency-${id}`}
           label="Currency"
           className="custom-form-item"
           extra="Select the currency of this expense."
+          rules={[{ required: true, message: 'Amount currency is required' }]}
         >
           <Select
             showSearch
@@ -495,6 +512,7 @@ const MilestoneFiatAmountCurrency = ({
             }
             value={currency}
             required
+            disabled={disabled}
           >
             {fiatWhitelist.map(cur => (
               <Select.Option key={cur} value={cur}>
@@ -514,11 +532,13 @@ MilestoneFiatAmountCurrency.propTypes = {
   amount: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   currency: PropTypes.string,
   id: PropTypes.string,
+  disabled: PropTypes.bool,
 };
 MilestoneFiatAmountCurrency.defaultProps = {
   amount: 0,
   currency: '',
   id: '',
+  disabled: false,
 };
 // eslint-disable-next-line import/prefer-default-export
 export {

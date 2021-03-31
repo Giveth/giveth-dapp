@@ -71,10 +71,29 @@ function CreatePayment(props) {
   const [loading, setLoading] = useState(false);
   const [userIsCampaignOwner, setUserIsOwner] = useState(false);
   const [maxAmount, setMaxAmount] = useState(new BigNumber(0));
+  const [loadingRate, setLoadingRate] = useState(false);
+  const [loadingAmount, setLoadingAmount] = useState(false);
 
   const timer = useRef();
   const isMounted = useRef(true);
   const conversionRateTimestamp = useRef();
+  const [submitButtonText, setSubmitButtonText] = useState('Propose');
+
+  useEffect(() => {
+    if (loadingAmount) {
+      setSubmitButtonText('Loading Amount');
+    } else {
+      setSubmitButtonText(userIsCampaignOwner ? 'Create' : 'Propose');
+    }
+  }, [loadingAmount, userIsCampaignOwner]);
+
+  useEffect(() => {
+    if (loadingAmount) {
+      setSubmitButtonText('Loading Amount');
+    } else {
+      setSubmitButtonText(userIsCampaignOwner ? 'Create' : 'Propose');
+    }
+  }, [loadingAmount, userIsCampaignOwner]);
 
   useEffect(() => {
     setUserIsOwner(
@@ -105,15 +124,17 @@ function CreatePayment(props) {
   const updateAmount = () => {
     const { token, currency, date, fiatAmount, notCapped } = payment;
     if (!token.symbol || !currency || notCapped) return;
+
+    setLoadingAmount(true);
     if (timer.current) {
       clearTimeout(timer.current);
     }
 
     timer.current = setTimeout(async () => {
       try {
+        setLoadingRate(true);
         const res = await getConversionRates(date, token.symbol, currency);
         const rate = res.rates[currency];
-        console.log('rate:', rate);
         if (rate && isMounted.current) {
           conversionRateTimestamp.current = res.timestamp;
           setMaxAmount(new BigNumber(fiatAmount).div(rate));
@@ -125,6 +146,9 @@ function CreatePayment(props) {
 
         ErrorHandler(e, message);
         setMaxAmount(0);
+      } finally {
+        setLoadingRate(false);
+        setLoadingAmount(false);
       }
     }, WAIT_INTERVAL);
   };
@@ -158,10 +182,6 @@ function CreatePayment(props) {
 
   const setPicture = address => {
     handleInputChange({ target: { name: 'picture', value: address } });
-  };
-
-  const handleFiatAmountChange = value => {
-    handleInputChange({ target: { name: 'fiatAmount', value } });
   };
 
   const goBack = () => {
@@ -328,11 +348,16 @@ function CreatePayment(props) {
                   <Fragment>
                     <MilestoneFiatAmountCurrency
                       onCurrencyChange={handleSelectCurrency}
-                      onAmountChange={handleFiatAmountChange}
+                      onAmountChange={handleInputChange}
                       amount={payment.fiatAmount}
                       currency={payment.currency}
+                      disabled={loadingRate}
                     />
-                    <MilestoneDatePicker onChange={handleDatePicker} value={payment.date} />
+                    <MilestoneDatePicker
+                      onChange={handleDatePicker}
+                      value={payment.date}
+                      disabled={loadingRate}
+                    />
                   </Fragment>
                 )}
 
@@ -360,6 +385,7 @@ function CreatePayment(props) {
                   includeAnyToken={payment.notCapped}
                   totalAmount={convertEthHelper(maxAmount, payment.token.decimals)}
                   hideTotalAmount={payment.notCapped}
+                  value={payment.token}
                 />
 
                 <MilestoneRecipientAddress
@@ -369,8 +395,8 @@ function CreatePayment(props) {
                 />
               </div>
               <Form.Item>
-                <Button type="primary" htmlType="submit" loading={loading}>
-                  {userIsCampaignOwner ? 'Create' : 'Propose'}
+                <Button type="primary" htmlType="submit" loading={loading || loadingAmount}>
+                  {submitButtonText}
                 </Button>
               </Form.Item>
             </Form>
