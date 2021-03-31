@@ -13,16 +13,15 @@ import DelegateMultipleButton from './DelegateMultipleButton';
 import { Context as UserContext } from '../contextProviders/UserProvider';
 import RequestMarkMilestoneCompleteButton from './RequestMarkMilestoneCompleteButton';
 import config from '../configuration';
+import { Context as WhiteListContext } from '../contextProviders/WhiteListProvider';
 
-const ViewMilestoneAlerts = ({
-  milestone,
-  campaign,
-  isAmountEnoughForWithdraw,
-  minimumPayoutUsdValue,
-}) => {
+const ViewMilestoneAlerts = ({ milestone, campaign, isAmountEnoughForWithdraw }) => {
   const {
     state: { currentUser, userIsDacOwner },
   } = useContext(UserContext);
+  const {
+    state: { minimumPayoutUsdValue },
+  } = useContext(WhiteListContext);
 
   const { fullyFunded, status } = milestone;
   const milestoneIsActive = status === 'InProgress' && !fullyFunded;
@@ -99,7 +98,6 @@ ViewMilestoneAlerts.propTypes = {
   milestone: PropTypes.instanceOf(Milestone).isRequired,
   campaign: PropTypes.instanceOf(Campaign).isRequired,
   isAmountEnoughForWithdraw: PropTypes.bool.isRequired,
-  minimumPayoutUsdValue: PropTypes.number.isRequired,
 };
 
 export default React.memo(ViewMilestoneAlerts);

@@ -64,7 +64,7 @@ function MilestoneActions({ milestone }) {
     ) {
       calculateMilestoneCurrentBalanceUsdValue();
     }
-  });
+  }, [milestone]);
 
   return (
     <Fragment>
@@ -93,7 +93,6 @@ function MilestoneActions({ milestone }) {
       <WithdrawMilestoneFundsButton
         milestone={milestone}
         isAmountEnoughForWithdraw={isAmountEnoughForWithdraw}
-        minimumPayoutUsdValue={minimumPayoutUsdValue}
       />
 
       <EditMilestoneButton milestone={milestone} />

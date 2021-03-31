@@ -1,5 +1,6 @@
 import React, { Fragment, useContext } from 'react';
 import PropTypes from 'prop-types';
+import { message } from 'antd';
 
 import MilestoneService from 'services/MilestoneService';
 import Milestone from 'models/Milestone';
@@ -11,12 +12,9 @@ import DonationService from '../services/DonationService';
 import LPMilestone from '../models/LPMilestone';
 import config from '../configuration';
 import { Context as UserContext } from '../contextProviders/UserProvider';
+import { Context as WhiteListContext } from '../contextProviders/WhiteListProvider';
 
-const WithdrawMilestoneFundsButton = ({
-  milestone,
-  isAmountEnoughForWithdraw,
-  minimumPayoutUsdValue,
-}) => {
+const WithdrawMilestoneFundsButton = ({ milestone, isAmountEnoughForWithdraw }) => {
   const {
     state: { currentUser },
   } = useContext(UserContext);
@@ -24,6 +22,9 @@ const WithdrawMilestoneFundsButton = ({
     state: { isForeignNetwork, balance },
     actions: { displayForeignNetRequiredWarning },
   } = useContext(Web3Context);
+  const {
+    state: { minimumPayoutUsdValue },
+  } = useContext(WhiteListContext);
 
   async function withdraw() {
     const userAddress = currentUser.address;
@@ -35,7 +36,7 @@ const WithdrawMilestoneFundsButton = ({
       ])
         .then(([, donationsCount]) => {
           if (!isAmountEnoughForWithdraw) {
-            ErrorPopup(
+            message.error(
               `Oh No!
                 A minimum donation balance of
                 ${minimumPayoutUsdValue} USD  is required before
@@ -170,7 +171,6 @@ const WithdrawMilestoneFundsButton = ({
 WithdrawMilestoneFundsButton.propTypes = {
   milestone: PropTypes.instanceOf(Milestone).isRequired,
   isAmountEnoughForWithdraw: PropTypes.bool.isRequired,
-  minimumPayoutUsdValue: PropTypes.number.isRequired,
 };
 
 export default React.memo(WithdrawMilestoneFundsButton);
