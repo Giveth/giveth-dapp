@@ -107,8 +107,8 @@ const Application = () => {
                                     {!hasError && (
                                       <div className="page-wrapper">
                                         <MainMenu />
-                                        <Banner />
                                         <Routes />
+                                        <Banner />
                                       </div>
                                     )}
 
