@@ -1,5 +1,6 @@
 // TO DO: move all this to UserProvider
 import React from 'react';
+import { Modal, message } from 'antd';
 import { history } from './helpers';
 import { feathersClient } from './feathersClient';
 import getWeb3 from './blockchain/getWeb3';
@@ -73,27 +74,24 @@ const authenticate = async (address, redirectOnFail) => {
     if (response.code === 401 && response.data.startsWith('Challenge =')) {
       const msg = response.data.replace('Challenge =', '').trim();
 
-      const res = await React.swal({
-        title: 'You need to sign in!',
-        text:
-          // 'By signing in we are able to provide instant updates to the app after you take an action. The signin process simply requires you to verify that you own this address by signing a randomly generated message. If you choose to skip this step, the app will not reflect any actions you make until the transactions have been mined.',
-          'In order to provide the best experience possible, we are going to ask you to sign a randomly generated message proving that you own the current account. This will enable us to provide instant updates to the app after any action.',
-        icon: 'info',
-        buttons: ['Not now', 'OK'],
-      });
+      const res = await new Promise(resolve =>
+        Modal.confirm({
+          title: 'You need to sign in!',
+          content:
+            // 'By signing in we are able to provide instant updates to the app after you take an action. The signin process simply requires you to verify that you own this address by signing a randomly generated message. If you choose to skip this step, the app will not reflect any actions you make until the transactions have been mined.',
+            'In order to provide the best experience possible, we are going to ask you to sign a randomly generated message proving that you own the current account. This will enable us to provide instant updates to the app after any action.',
+          cancelText: 'Not now',
+          onOk: () => resolve(true),
+          onCancel: () => resolve(false),
+        }),
+      );
 
       if (!res) {
         if (redirectOnFail) historyBackWFallback();
         return false;
       }
 
-      React.swal({
-        title: 'Please sign the MetaMask transaction...',
-        text:
-          "A MetaMask transaction should have popped-up. If you don't see it check the pending transaction in the MetaMask browser extension. Alternatively make sure to check that your popup blocker is disabled.",
-        icon: 'success',
-        button: false,
-      });
+      message.info('Please sign the MetaMask transaction...');
 
       // we have to wrap in a timeout b/c if you close the chrome window MetaMask opens, the promise never resolves
       const signOrTimeout = () =>
@@ -103,14 +101,12 @@ const authenticate = async (address, redirectOnFail) => {
           const timeOut = setTimeout(() => {
             resolve(false);
             historyBackWFallback();
-            React.swal.close();
           }, 30000);
 
           try {
             const signature = await web3.eth.personal.sign(msg, address);
             authData.signature = signature;
             await feathersClient.authenticate(authData);
-            React.swal.close();
             clearTimeout(timeOut);
             resolve(true);
           } catch (e) {
@@ -195,14 +191,23 @@ export const checkProfile = async currentUser => {
   // already created a profile
   if (!currentUser || currentUser.name) return;
 
-  const redirect = await React.swal({
-    title: 'Please Register!',
-    text:
-      'It appears that you have not yet created your profile. In order to gain the trust of givers, we strongly recommend creating your profile!',
-    icon: 'info',
-    buttons: ['Skip', 'Create My Profile!'],
-  });
-  if (redirect) history.push('/profile');
+  let modal;
+  await new Promise(resolve => {
+    modal = Modal.confirm({
+      title: 'Please Register!',
+      content:
+        'It appears that you have not yet created your profile. In order to gain the trust of givers, we strongly recommend creating your profile!',
+      cancelText: 'Skip',
+      centered: true,
+      onOk: () => {
+        resolve();
+        history.push('/profile');
+      },
+      onCancel: () => {
+        resolve();
+      },
+    });
+  }).then(() => modal.destroy());
 };
 
 /**

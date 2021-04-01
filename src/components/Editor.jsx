@@ -102,7 +102,7 @@ function Editor(props) {
     }
   }
 
-  const { placeholder, onChange } = props;
+  const { placeholder, onChange, value } = props;
 
   const modules = {
     toolbar: [
@@ -147,7 +147,7 @@ function Editor(props) {
           ref={reactQuillRef}
           modules={modules}
           formats={formats}
-          // value={value}
+          value={value}
           name="description"
           placeholder={placeholder}
           onChange={onChange}
@@ -165,12 +165,13 @@ function Editor(props) {
 }
 
 Editor.propTypes = {
-  // value: PropTypes.string.isRequired,
+  value: PropTypes.string,
   onChange: PropTypes.func.isRequired,
   placeholder: PropTypes.string,
 };
 
 Editor.defaultProps = {
+  value: '',
   placeholder: '',
 };
 
