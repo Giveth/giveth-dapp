@@ -86,7 +86,7 @@ const LeaderBoard = props => {
         {isLoading && total === 0 && <Loader className="relative" />}
         {aggregateDonations.length > 0 && (
           <div className="table-container">
-            <table className="table table-hover text-center" style={{ marginTop: 0 }}>
+            <table className="table table-hover" style={{ marginTop: 0 }}>
               <thead>
                 <tr>
                   {/* eslint-disable-next-line jsx-a11y/control-has-associated-label */}
