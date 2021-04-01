@@ -26,6 +26,7 @@ function CreateExpenseItem({
   } = useContext(ConversionRateContext);
 
   const [visibleRemoveModal, setVisibleRemoveModal] = useState(false);
+  const [loadingRate, setLoadingRate] = useState(false);
   const [item, setItem] = useState({ ...initialValue });
 
   const timer = useRef();
@@ -40,6 +41,10 @@ function CreateExpenseItem({
     updateStateOfItem(name, value, item.key);
   }
 
+  const setLoadingAmount = loading => {
+    handleInputChange({ target: { name: 'loadingAmount', value: loading } });
+  };
+
   function handleAmountChange({ value, rate, timestamp }) {
     handleInputChange({ target: { name: 'amount', value } });
     handleInputChange({
@@ -48,17 +53,22 @@ function CreateExpenseItem({
     handleInputChange({
       target: { name: 'conversionRateTimestamp', value: timestamp.toString() },
     });
+    setLoadingAmount(false);
   }
 
   // Update item of this item in milestone token
   function updateAmount() {
     if (!token.symbol || !item.currency) return;
+
+    setLoadingAmount(true);
+
     if (timer.current) {
       clearTimeout(timer.current);
     }
 
     timer.current = setTimeout(async () => {
       try {
+        setLoadingRate(true);
         const res = await getConversionRates(item.date, token.symbol, item.currency);
         const { timestamp, rates } = res;
         const rate = rates[item.currency];
@@ -80,6 +90,8 @@ function CreateExpenseItem({
           rate: 1,
           timestamp: new Date().getDate(),
         });
+      } finally {
+        setLoadingRate(false);
       }
     }, WAIT_INTERVAL);
   }
@@ -90,10 +102,6 @@ function CreateExpenseItem({
 
   function setPicture(address) {
     handleInputChange({ target: { name: 'picture', value: address } });
-  }
-
-  function handleFiatAmountChange(value) {
-    handleInputChange({ target: { name: 'fiatAmount', value } });
   }
 
   function handleSelectCurrency(_, option) {
@@ -120,18 +128,20 @@ function CreateExpenseItem({
     <div key={item.key}>
       <MilestoneFiatAmountCurrency
         onCurrencyChange={handleSelectCurrency}
-        onAmountChange={handleFiatAmountChange}
+        onAmountChange={handleInputChange}
         currency={item.currency}
         amount={item.fiatAmount}
         id={`fiat-amount-currency-${item.key}`}
+        disabled={loadingRate}
       />
 
-      <MilestoneDatePicker onChange={handleDatePicker} />
+      <MilestoneDatePicker onChange={handleDatePicker} disabled={loadingRate} />
 
       <MilestoneDescription
         onChange={handleInputChange}
         value={item.description}
         label="Description of the expense"
+        id={`description-${item.key}`}
       />
 
       <MilestonePicture
