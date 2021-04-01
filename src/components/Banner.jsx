@@ -36,6 +36,9 @@ const Banner = () => {
           Got it!
         </button>
       </div>
+      <div>
+        <img alt="Gas logo shadow" src={gasLogo} />
+      </div>
     </div>
   );
 };

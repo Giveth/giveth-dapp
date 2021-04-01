@@ -7,4 +7,14 @@
   div:nth-child(2) {
     font-size: 16px;
   }
+  div:last-child {
+    img {
+      width: 105px;
+      height: auto;
+      position: fixed;
+      left: -17px;
+      opacity: 0.1;
+      bottom: -60px;
+    }
+  }
 }
