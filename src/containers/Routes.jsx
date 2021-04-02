@@ -20,7 +20,6 @@ import Milestones from '../components/views/Milestones';
 import Campaigns from '../components/views/Campaigns';
 import DACs from '../components/views/DACs';
 
-import EditCampaign from '../components/views/EditCampaign';
 import ViewCampaign from '../components/views/ViewCampaign';
 import EditMilestone from '../components/views/EditMilestone';
 
@@ -31,6 +30,7 @@ import CreateMilestone from '../components/views/CreateMilestone';
 import CreateExpense from '../components/views/CreateExpense';
 import { Context as UserContext } from '../contextProviders/UserProvider';
 import { Context as Web3Context } from '../contextProviders/Web3Provider';
+import EditCampaign from '../components/views/EditCampaign';
 
 const Routes = () => {
   const {
