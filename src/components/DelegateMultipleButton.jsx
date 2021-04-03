@@ -1,5 +1,5 @@
 /* eslint-disable no-restricted-globals */
-import React, { Fragment, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import React, { Fragment, useContext, useEffect, useRef, useState } from 'react';
 import Modal from 'react-modal';
 import BigNumber from 'bignumber.js';
 import { utils } from 'web3';
@@ -74,12 +74,10 @@ const DelegateMultipleButton = props => {
     actions: { displayForeignNetRequiredWarning },
   } = useContext(Web3Context);
 
-  const tokenWhitelistOptions = useMemo(() => {
-    return tokenWhitelist.map(t => ({
-      value: t.address,
-      title: t.name,
-    }));
-  }, tokenWhitelist);
+  const tokenWhitelistOptions = tokenWhitelist.map(t => ({
+    value: t.address,
+    title: t.name,
+  }));
 
   const [isSaving, setSaving] = useState(false);
   const [formIsValid, setFormIsValid] = useState(false);
