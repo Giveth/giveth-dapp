@@ -6,6 +6,7 @@ import { Helmet, HelmetProvider } from 'react-helmet-async';
 import Balances from 'components/Balances';
 import { saveAs } from 'file-saver';
 import axios from 'axios';
+import { Button } from 'antd';
 import Loader from '../Loader';
 import MilestoneCard from '../MilestoneCard';
 import { getUserName, getUserAvatar, history } from '../../lib/helpers';
@@ -188,6 +189,10 @@ const ViewCampaign = ({ match }) => {
     return DescriptionRender(campaign.description);
   };
 
+  const gotoCreateMilestone = () => {
+    history.push(`/campaign/${campaign.slug}/new`);
+  };
+
   if (notFound) {
     return <NotFound projectType="Campaign" />;
   }
@@ -363,24 +368,12 @@ const ViewCampaign = ({ match }) => {
                           <div className="section-header">
                             <h5>Funding</h5>
                             <span>
-                              {downloadingCsv && (
-                                <button
-                                  type="button"
-                                  className="btn btn-info disabled"
-                                  onClick={() => {}}
-                                >
-                                  Please wait...
-                                </button>
-                              )}
-                              {!downloadingCsv && (
-                                <button
-                                  type="button"
-                                  className="btn btn-info"
-                                  onClick={() => downloadCsv(campaign.id)}
-                                >
-                                  Download this Campaign&apos;s Financial History
-                                </button>
-                              )}
+                              <Button
+                                onClick={() => downloadCsv(campaign.id)}
+                                loading={downloadingCsv}
+                              >
+                                Download this Campaign&apos;s Financial History
+                              </Button>
                               {campaign.isActive && (
                                 <Fragment>
                                   {userIsDacOwner && (
@@ -428,12 +421,7 @@ const ViewCampaign = ({ match }) => {
                               {campaign.projectId > 0 &&
                                 campaign.isActive &&
                                 (userIsOwner || currentUser) && (
-                                  <Link
-                                    className="btn btn-primary"
-                                    to={`/campaign/${campaign.slug}/new`}
-                                  >
-                                    Create New
-                                  </Link>
+                                  <Button onClick={gotoCreateMilestone}>Create New</Button>
                                 )}
 
                               {campaign.isActive && (
