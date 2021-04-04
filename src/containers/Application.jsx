@@ -105,10 +105,10 @@ const Application = () => {
                                     {GA.init() && <GA.RouteTracker />}
 
                                     {!hasError && (
-                                      <div className="page-wrapper">
+                                      // <div className="page-wrapper">
+                                      <div>
                                         <NewMainMenu />
-                                        <MainMenu />
-
+                                        {/*<MainMenu />*/}
                                         <Routes />
                                       </div>
                                     )}

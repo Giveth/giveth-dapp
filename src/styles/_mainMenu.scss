@@ -1,3 +1,15 @@
+#main_menu {
+  .ant-menu-horizontal:not(.ant-menu-dark) > .ant-menu-item {
+    margin: 0 15px;
+    padding: 8px 0;
+  }
+
+  .ant-menu-overflowed-submenu {
+    display: flex;
+    align-items: center;
+  }
+}
+
 .main-menu {
   background-color: $header-background;
 
