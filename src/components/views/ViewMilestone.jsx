@@ -18,7 +18,13 @@ import MilestoneItem from 'components/MilestoneItem';
 import DonationList from 'components/DonationList';
 import MilestoneConversations from 'components/MilestoneConversations';
 import { Helmet, HelmetProvider } from 'react-helmet-async';
-import { convertEthHelper, getUserAvatar, getUserName, history } from '../../lib/helpers';
+import {
+  convertEthHelper,
+  getReadableStatus,
+  getUserAvatar,
+  getUserName,
+  history,
+} from '../../lib/helpers';
 import MilestoneService from '../../services/MilestoneService';
 import DACService from '../../services/DACService';
 import { Context as WhiteListContext } from '../../contextProviders/WhiteListProvider';
@@ -35,6 +41,7 @@ import { Context as ConversionRateContext } from '../../contextProviders/Convers
 import { Context as Web3Context } from '../../contextProviders/Web3Provider';
 import { Context as UserContext } from '../../contextProviders/UserProvider';
 import ErrorHandler from '../../lib/ErrorHandler';
+import ProjectSubscription from '../ProjectSubscription';
 
 /**
   Loads and shows a single milestone
@@ -74,10 +81,9 @@ const ViewMilestone = props => {
   const editMilestoneButtonRef = useRef();
   const cancelMilestoneButtonRef = useRef();
   const deleteMilestoneButtonRef = useRef();
+  const donationsObserver = useRef();
 
   const donationsPerBatch = 50;
-  let donationsObserver;
-  let _milestoneId = null;
 
   const getDacTitle = async dacId => {
     if (dacId === 0) return;
@@ -86,14 +92,14 @@ const ViewMilestone = props => {
       .catch(() => {});
   };
 
-  function loadMoreDonations() {
+  function loadMoreDonations(loadFromScratch = false) {
     setLoadingDonations(true);
     MilestoneService.getDonations(
-      _milestoneId,
+      milestone.id,
       donationsPerBatch,
-      donations.length,
+      loadFromScratch ? 0 : donations.length,
       (_donations, _donationsTotal) => {
-        setDonations(donations.concat(_donations));
+        setDonations(loadFromScratch ? _donations : donations.concat(_donations));
         setLoadingDonations(false);
       },
       err => {
@@ -114,33 +120,38 @@ const ViewMilestone = props => {
         if (milestoneId) {
           history.push(`/milestone/${_milestone.slug}`);
         }
-        _milestoneId = _milestone.id;
         setMilestone(_milestone);
         setCampaign(new Campaign(_milestone.campaign));
         setRecipient(
           _milestone.pendingRecipientAddress ? _milestone.pendingRecipient : _milestone.recipient,
         );
         getDacTitle(_milestone.dacId);
-        loadMoreDonations();
         setLoading(false);
       })
       .catch(() => {
         setNotFound(true);
       });
+  }, []);
 
-    // subscribe to donation count
-    donationsObserver = MilestoneService.subscribeNewDonations(
-      milestoneId,
-      _newDonations => setNewDonations(_newDonations),
-      () => setNewDonations(0),
-    );
+  useEffect(() => {
+    if (milestone.id) {
+      loadMoreDonations(true);
+
+      // subscribe to donation count
+      donationsObserver.current = MilestoneService.subscribeNewDonations(
+        milestone.id,
+        _newDonations => setNewDonations(_newDonations),
+        () => setNewDonations(0),
+      );
+    }
 
     return () => {
-      if (donationsObserver) {
-        donationsObserver.unsubscribe();
+      if (donationsObserver.current) {
+        donationsObserver.current.unsubscribe();
+        donationsObserver.current = null;
       }
     };
-  }, []);
+  }, [milestone]);
 
   useEffect(() => {
     if (
@@ -162,7 +173,7 @@ const ViewMilestone = props => {
         }),
       ).then(result => setCurrentBalanceValue(result.total));
     }
-  });
+  }, [milestone.donationCounters]);
 
   const isActiveMilestone = () => {
     const { fullyFunded, status } = milestone;
@@ -322,6 +333,11 @@ const ViewMilestone = props => {
                 backButtonTitle={`Campaign: ${campaign.title}`}
                 inPageLinks={goBackSectionLinks}
               />
+
+              <div className=" col-md-8 m-auto">
+                <h5 className="title">Subscribe to updates </h5>
+                <ProjectSubscription projectTypeId={milestone._id} projectType="milestone" />
+              </div>
 
               {/* This buttons should not be displayed, just are clicked by using references */}
               <span className="d-none">
@@ -592,7 +608,7 @@ const ViewMilestone = props => {
                           <div className="form-group">
                             <span className="label">Status</span>
                             <br />
-                            {milestone.status}
+                            {getReadableStatus(milestone.status)}
                           </div>
                         </div>
                       </div>

@@ -95,9 +95,9 @@ export const getGasPrice = () =>
 export const getReadableStatus = status => {
   switch (status) {
     case 'InProgress':
-      return 'In progress';
+      return 'In Progress';
     case 'NeedsReview':
-      return 'Needs review';
+      return 'Needs Review';
     default:
       return status;
   }

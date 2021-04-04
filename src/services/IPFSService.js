@@ -17,6 +17,9 @@ class IPFSService {
 
     let body;
     if (typeof obj === 'string') {
+      if (obj.match(/^\/ipfs\/[^/]+$/) !== null) {
+        return Promise.resolve(obj);
+      }
       if (!ImageTools.isImage(obj)) {
         throw new Error('Cant upload string to ipfs');
       }

@@ -16,7 +16,7 @@ const CardStats = ({ peopleCount, maxAmount, totalDonated, type, status, token }
   return (
     <div className="row card-stats">
       {['dac', 'campaign'].includes(type) && (
-        <div className="col-6 text-left">
+        <div className="col-6 text-center card-center">
           <p>Giver(s)</p>
           <span>
             <i className="fa fa-male" />
@@ -26,7 +26,7 @@ const CardStats = ({ peopleCount, maxAmount, totalDonated, type, status, token }
       )}
 
       {type === 'milestone' && (
-        <div className="col-3 text-left">
+        <div className="col-3 text-center card-center">
           <p>Giver(s)</p>
           <span>
             <i className="fa fa-male" />
@@ -58,7 +58,7 @@ const CardStats = ({ peopleCount, maxAmount, totalDonated, type, status, token }
       )}
 
       {type === 'milestone' && (
-        <div className="col-4 text-right">
+        <div className="col-4 text-center card-center">
           <p>status</p>
           <span>
             <i className="fa fa-check-circle" />

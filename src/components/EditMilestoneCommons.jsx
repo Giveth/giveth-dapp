@@ -1,15 +1,28 @@
-import React, { Fragment, useCallback, useEffect } from 'react';
-import { Checkbox, Col, DatePicker, Form, Input, notification, Row, Select, Upload } from 'antd';
+import React, { Fragment, useCallback, useContext, useEffect } from 'react';
+import {
+  Checkbox,
+  Col,
+  DatePicker,
+  Form,
+  Input,
+  notification,
+  Row,
+  Select,
+  Typography,
+  Upload,
+} from 'antd';
 import 'antd/dist/antd.css';
 import PropTypes from 'prop-types';
 import { DeleteTwoTone } from '@ant-design/icons';
 import ImgCrop from 'antd-img-crop';
 import moment from 'moment';
+import Web3 from 'web3';
 import config from '../configuration';
 import { IPFSService } from '../services';
 import useReviewers from '../hooks/useReviewers';
-import { getStartOfDayUTC, getHtmlText } from '../lib/helpers';
+import { getStartOfDayUTC, getHtmlText, ANY_TOKEN } from '../lib/helpers';
 import Editor from './Editor';
+import { Context as WhiteListContext } from '../contextProviders/WhiteListProvider';
 
 const MilestoneTitle = ({ extra, onChange, value }) => (
   <Form.Item
@@ -46,7 +59,7 @@ MilestoneTitle.defaultProps = {
   extra: '',
 };
 
-const MilestoneDescription = ({ extra, onChange, placeholder, value, label }) => {
+const MilestoneDescription = ({ extra, onChange, placeholder, value, label, id }) => {
   const onDescriptionChange = useCallback(
     description => {
       onChange({ target: { name: 'description', value: description } });
@@ -55,7 +68,7 @@ const MilestoneDescription = ({ extra, onChange, placeholder, value, label }) =>
   );
   return (
     <Form.Item
-      name="description"
+      name={id}
       label={label}
       className="custom-form-item"
       extra={extra}
@@ -63,19 +76,17 @@ const MilestoneDescription = ({ extra, onChange, placeholder, value, label }) =>
         {
           required: true,
           type: 'string',
+          message: 'Description is required',
         },
-        () => ({
-          validator(_, val) {
-            if (!val || getHtmlText(value).length > 10) {
-              return Promise.resolve();
-            }
-            return Promise.reject(
-              new Error(
+        {
+          validator: async (_, val) => {
+            if (val && getHtmlText(val).length <= 10) {
+              throw new Error(
                 'Please provide at least 10 characters and do not edit the template keywords.',
-              ),
-            );
+              );
+            }
           },
-        }),
+        },
       ]}
     >
       <Editor
@@ -93,12 +104,14 @@ MilestoneDescription.propTypes = {
   extra: PropTypes.string,
   placeholder: PropTypes.string,
   label: PropTypes.string,
+  id: PropTypes.string,
 };
 
 MilestoneDescription.defaultProps = {
   extra: '',
   placeholder: '',
   label: 'Description',
+  id: '',
 };
 
 const MilestonePicture = ({ picture, setPicture, milestoneTitle }) => {
@@ -267,7 +280,7 @@ MilestoneReviewer.defaultProps = {
   toggleHasReviewer: null,
 };
 
-const MilestoneDatePicker = ({ onChange, value }) => {
+const MilestoneDatePicker = ({ onChange, value, disabled }) => {
   const maxValue = getStartOfDayUTC().subtract(1, 'd');
 
   useEffect(() => {
@@ -287,7 +300,8 @@ const MilestoneDatePicker = ({ onChange, value }) => {
               },
             ]}
             defaultValue={value || maxValue}
-            onChange={(_, dateString) => onChange(dateString)}
+            onChange={(_, dateString) => onChange(getStartOfDayUTC(dateString))}
+            disabled={disabled}
           />
         </Form.Item>
       </Col>
@@ -297,11 +311,13 @@ const MilestoneDatePicker = ({ onChange, value }) => {
 
 MilestoneDatePicker.propTypes = {
   onChange: PropTypes.func.isRequired,
-  value: PropTypes.instanceOf(moment),
+  value: PropTypes.oneOfType([PropTypes.string, PropTypes.instanceOf(moment)]),
+  disabled: PropTypes.bool,
 };
 
 MilestoneDatePicker.defaultProps = {
   value: undefined,
+  disabled: false,
 };
 
 const MilestoneCampaignInfo = ({ campaign }) => (
@@ -319,6 +335,211 @@ MilestoneCampaignInfo.defaultProps = {
   campaign: {},
 };
 
+const MilestoneToken = ({
+  label,
+  onChange,
+  value,
+  totalAmount,
+  includeAnyToken,
+  hideTotalAmount,
+}) => {
+  const {
+    state: { activeTokenWhitelist },
+  } = useContext(WhiteListContext);
+
+  const handleSelectToken = (_, { value: symbol }) => {
+    onChange(
+      symbol === ANY_TOKEN.symbol ? ANY_TOKEN : activeTokenWhitelist.find(t => t.symbol === symbol),
+    );
+  };
+
+  return (
+    <Row gutter={16} align="middle">
+      <Col className="gutter-row" span={12}>
+        <Form.Item
+          name="Token"
+          label={label}
+          className="custom-form-item"
+          extra="Select the token you want to be reimbursed in."
+          rules={[{ required: true, message: 'Payment currency is required' }]}
+        >
+          <Select
+            showSearch
+            placeholder="Select a Currency"
+            optionFilterProp="children"
+            name="token"
+            onSelect={handleSelectToken}
+            filterOption={(input, option) =>
+              option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+            }
+            value={value && value.symbol}
+            required
+          >
+            {includeAnyToken && (
+              <Select.Option key={ANY_TOKEN.name} value={ANY_TOKEN.symbol}>
+                Any Token
+              </Select.Option>
+            )}
+            {activeTokenWhitelist.map(token => (
+              <Select.Option key={token.name} value={token.symbol}>
+                {token.name}
+              </Select.Option>
+            ))}
+          </Select>
+        </Form.Item>
+      </Col>
+      {!hideTotalAmount && (
+        <Col className="gutter-row" span={12}>
+          <Typography.Text className="ant-form-text" type="secondary">
+            ≈ {totalAmount}
+          </Typography.Text>
+        </Col>
+      )}
+    </Row>
+  );
+};
+
+MilestoneToken.propTypes = {
+  label: PropTypes.string.isRequired,
+  onChange: PropTypes.func.isRequired,
+  value: PropTypes.shape({
+    symbol: PropTypes.string,
+    name: PropTypes.string,
+  }),
+  totalAmount: PropTypes.string,
+  includeAnyToken: PropTypes.bool,
+  hideTotalAmount: PropTypes.bool,
+};
+
+MilestoneToken.defaultProps = {
+  value: {},
+  totalAmount: '0',
+  includeAnyToken: false,
+  hideTotalAmount: false,
+};
+
+const MilestoneRecipientAddress = ({ label, onChange, value }) => (
+  <Form.Item
+    name="recipientAddress"
+    label={label}
+    className="custom-form-item"
+    extra="If you don’t change this field the address associated with your account will be
+              used."
+    rules={[
+      {
+        validator: async (_, inputValue) => {
+          if (inputValue && !Web3.utils.isAddress(inputValue)) {
+            throw new Error('Please insert a valid Ethereum address.');
+          }
+        },
+      },
+    ]}
+  >
+    <Input value={value} name="recipientAddress" placeholder="0x" onChange={onChange} required />
+  </Form.Item>
+);
+
+MilestoneRecipientAddress.propTypes = {
+  label: PropTypes.string.isRequired,
+  onChange: PropTypes.func.isRequired,
+  value: PropTypes.string,
+};
+MilestoneRecipientAddress.defaultProps = {
+  value: '',
+};
+
+const MilestoneFiatAmountCurrency = ({
+  onAmountChange,
+  onCurrencyChange,
+  amount,
+  currency,
+  id,
+  disabled,
+}) => {
+  const {
+    state: { fiatWhitelist },
+  } = useContext(WhiteListContext);
+
+  return (
+    <Row gutter={16}>
+      <Col className="gutter-row" span={10}>
+        <Form.Item
+          name={`amount-${id}`}
+          label="Amount"
+          className="custom-form-item"
+          extra="The amount should be the same as on the receipt."
+          rules={[
+            { required: true, message: 'Amount is required' },
+            {
+              pattern: /^\d*\.?\d*$/,
+              message: 'Amount should contain just number',
+            },
+            {
+              validator: async (_, val) => {
+                if (val && Number.isNaN(val) === false && val <= 0) {
+                  throw new Error('Amount should be greater than zero');
+                }
+              },
+            },
+          ]}
+        >
+          <Input
+            name="fiatAmount"
+            value={amount}
+            placeholder="Enter Amount"
+            onChange={onAmountChange}
+            autoComplete="off"
+            disabled={disabled}
+          />
+        </Form.Item>
+      </Col>
+      <Col className="gutter-row" span={10}>
+        <Form.Item
+          name={`currency-${id}`}
+          label="Currency"
+          className="custom-form-item"
+          extra="Select the currency of this expense."
+          rules={[{ required: true, message: 'Amount currency is required' }]}
+        >
+          <Select
+            showSearch
+            placeholder="Select a Currency"
+            optionFilterProp="children"
+            name="currency"
+            onSelect={onCurrencyChange}
+            filterOption={(input, option) =>
+              option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+            }
+            value={currency}
+            required
+            disabled={disabled}
+          >
+            {fiatWhitelist.map(cur => (
+              <Select.Option key={cur} value={cur}>
+                {cur}
+              </Select.Option>
+            ))}
+          </Select>
+        </Form.Item>
+      </Col>
+    </Row>
+  );
+};
+
+MilestoneFiatAmountCurrency.propTypes = {
+  onAmountChange: PropTypes.func.isRequired,
+  onCurrencyChange: PropTypes.func.isRequired,
+  amount: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  currency: PropTypes.string,
+  id: PropTypes.string,
+  disabled: PropTypes.bool,
+};
+MilestoneFiatAmountCurrency.defaultProps = {
+  amount: 0,
+  currency: '',
+  id: '',
+  disabled: false,
+};
 // eslint-disable-next-line import/prefer-default-export
 export {
   MilestoneTitle,
@@ -328,4 +549,7 @@ export {
   MilestoneReviewer,
   MilestoneDatePicker,
   MilestoneCampaignInfo,
+  MilestoneToken,
+  MilestoneRecipientAddress,
+  MilestoneFiatAmountCurrency,
 };
