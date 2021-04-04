@@ -49,7 +49,6 @@ MilestoneTitle.defaultProps = {
 const MilestoneDescription = ({ extra, onChange, placeholder, value, label }) => {
   const onDescriptionChange = useCallback(
     description => {
-      console.log('description:', description);
       onChange({ target: { name: 'description', value: description } });
     },
     [onChange],
