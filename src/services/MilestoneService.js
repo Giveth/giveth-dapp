@@ -23,7 +23,6 @@ import BridgedMilestone from '../models/BridgedMilestone';
 import LPPCappedMilestone from '../models/LPPCappedMilestone';
 import LPMilestone from '../models/LPMilestone';
 import config from '../configuration';
-import { getConversionRateBetweenTwoSymbol } from './ConversionRateService';
 
 const etherScanUrl = config.etherscan;
 const milestones = feathersClient.service('milestones');
@@ -429,20 +428,6 @@ class MilestoneService {
         ErrorHandler({ message }, message, true);
         return onError();
       }
-      if (milestone.maxAmount && milestone.isCapped) {
-        const result = await getConversionRateBetweenTwoSymbol({
-          date: new Date(),
-          symbol: milestone.token.symbol,
-          to: 'USD',
-        });
-        const { minimumPayoutUsdValue } = await feathersClient.service('/whitelist').find();
-        const rate = result.rates.USD;
-        if (rate * milestone.maxAmount < minimumPayoutUsdValue) {
-          const message = `Maximum amount Must be greater than ${minimumPayoutUsdValue} USD`;
-          ErrorHandler({ message }, message, true);
-          return onError();
-        }
-      }
       const profileHash = await this.uploadToIPFS(milestone);
       if (!profileHash) return onError();
 
@@ -514,7 +499,7 @@ class MilestoneService {
       const message = `Something went wrong with the Milestone ${
         milestone.projectId > 0 ? 'update' : 'creation'
       }. Is your wallet unlocked? ${etherScanUrl}tx/${txHash} => ${JSON.stringify(err, null, 2)}`;
-      console.error('save milestone error', err);
+      console.error(err);
       onError(message, err);
     }
 

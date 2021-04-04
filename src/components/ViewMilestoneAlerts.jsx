@@ -13,15 +13,11 @@ import DelegateMultipleButton from './DelegateMultipleButton';
 import { Context as UserContext } from '../contextProviders/UserProvider';
 import RequestMarkMilestoneCompleteButton from './RequestMarkMilestoneCompleteButton';
 import config from '../configuration';
-import { Context as WhiteListContext } from '../contextProviders/WhiteListProvider';
 
-const ViewMilestoneAlerts = ({ milestone, campaign, isAmountEnoughForWithdraw }) => {
+const ViewMilestoneAlerts = ({ milestone, campaign }) => {
   const {
     state: { currentUser, userIsDacOwner },
   } = useContext(UserContext);
-  const {
-    state: { minimumPayoutUsdValue },
-  } = useContext(WhiteListContext);
 
   const { fullyFunded, status } = milestone;
   const milestoneIsActive = status === 'InProgress' && !fullyFunded;
@@ -41,11 +37,7 @@ const ViewMilestoneAlerts = ({ milestone, campaign, isAmountEnoughForWithdraw })
 
       {milestone.canUserMarkComplete(currentUser) && (
         <ProjectViewActionAlert message="Request mark complete">
-          <RequestMarkMilestoneCompleteButton
-            milestone={milestone}
-            isAmountEnoughForWithdraw={isAmountEnoughForWithdraw}
-            minimumPayoutUsdValue={minimumPayoutUsdValue}
-          />
+          <RequestMarkMilestoneCompleteButton milestone={milestone} />
         </ProjectViewActionAlert>
       )}
 
@@ -83,11 +75,7 @@ const ViewMilestoneAlerts = ({ milestone, campaign, isAmountEnoughForWithdraw })
         <ProjectViewActionAlert
           message={`You use ${config.foreignNetworkName} to collect funds and we pay the fees to send it to you on ${config.homeNetworkName}`}
         >
-          <WithdrawMilestoneFundsButton
-            milestone={milestone}
-            isAmountEnoughForWithdraw={isAmountEnoughForWithdraw}
-            minimumPayoutUsdValue={minimumPayoutUsdValue}
-          />
+          <WithdrawMilestoneFundsButton milestone={milestone} />
         </ProjectViewActionAlert>
       )}
     </div>
@@ -97,7 +85,6 @@ const ViewMilestoneAlerts = ({ milestone, campaign, isAmountEnoughForWithdraw })
 ViewMilestoneAlerts.propTypes = {
   milestone: PropTypes.instanceOf(Milestone).isRequired,
   campaign: PropTypes.instanceOf(Campaign).isRequired,
-  isAmountEnoughForWithdraw: PropTypes.bool.isRequired,
 };
 
 export default React.memo(ViewMilestoneAlerts);

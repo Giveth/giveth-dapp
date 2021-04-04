@@ -123,7 +123,7 @@ const authenticate = async (address, redirectOnFail) => {
 };
 
 let authPromise;
-/*
+/**
  * Attempt to authenticate the feathers connection for the currentUser
  * if not already authenticated
  *
@@ -132,6 +132,28 @@ let authPromise;
  * @returns {boolean} true if authenticate, otherwise false
  */
 export const authenticateUser = async (currentUser, redirectOnFail) => {
+  if (authPromise) return !!(await authPromise);
+  if (!currentUser || !currentUser.address) return false;
+
+  if (currentUser.authenticated) return true;
+
+  // prevent asking user to sign multiple msgs if currently authenticating
+  authPromise = authenticate(currentUser.address, redirectOnFail);
+  currentUser.authenticated = await authPromise;
+  authPromise = undefined;
+
+  return currentUser.authenticated;
+};
+
+/**
+ * Attempt to authenticate the feathers connection for the currentUser
+ * if not already authenticated
+ *
+ * @param {User} currentUser Current User object
+ *
+ * @returns {boolean} true if authenticate, otherwise false
+ */
+export const authenticateIfPossible = async (currentUser, redirectOnFail) => {
   if (authPromise) return !!(await authPromise);
   if (!currentUser || !currentUser.address) return false;
 

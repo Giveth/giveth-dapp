@@ -1,6 +1,5 @@
 import React, { Fragment, useContext, useRef } from 'react';
 import PropTypes from 'prop-types';
-import { message } from 'antd';
 
 import MilestoneService from 'services/MilestoneService';
 import Milestone from 'models/Milestone';
@@ -10,9 +9,8 @@ import GA from 'lib/GoogleAnalytics';
 import { checkBalance, actionWithLoggedIn } from 'lib/middleware';
 import { Context as Web3Context } from '../contextProviders/Web3Provider';
 import { Context as UserContext } from '../contextProviders/UserProvider';
-import { Context as WhiteListContext } from '../contextProviders/WhiteListProvider';
 
-const RequestMarkMilestoneCompleteButton = ({ milestone, isAmountEnoughForWithdraw }) => {
+const RequestMarkMilestoneCompleteButton = ({ milestone }) => {
   const {
     state: { currentUser },
   } = useContext(UserContext);
@@ -20,9 +18,6 @@ const RequestMarkMilestoneCompleteButton = ({ milestone, isAmountEnoughForWithdr
     state: { isForeignNetwork, balance },
     actions: { displayForeignNetRequiredWarning },
   } = useContext(Web3Context);
-  const {
-    state: { minimumPayoutUsdValue },
-  } = useContext(WhiteListContext);
 
   const conversationModal = useRef();
 
@@ -32,16 +27,6 @@ const RequestMarkMilestoneCompleteButton = ({ milestone, isAmountEnoughForWithdr
     actionWithLoggedIn(currentUser).then(() =>
       checkBalance(balance)
         .then(async () => {
-          if (!isAmountEnoughForWithdraw) {
-            message.error(
-              `Oh No!
-        A minimum donation balance of ${minimumPayoutUsdValue} USD is required
-        before you can mark this milestone complete. This is a temporary
-        limitation due to Ethereum Mainnet issues.`,
-            );
-            return;
-          }
-
           if (milestone.donationCounters.length === 0) {
             const proceed = await React.swal({
               title: 'Mark Milestone Complete?',
@@ -119,7 +104,6 @@ const RequestMarkMilestoneCompleteButton = ({ milestone, isAmountEnoughForWithdr
   return (
     <Fragment>
       {milestone.canUserMarkComplete(currentUser) && (
-        // {currentBalanceValue && milestone.canUserMarkComplete(currentUser) && (
         <button
           type="button"
           className="btn btn-success btn-sm"
@@ -138,7 +122,6 @@ const RequestMarkMilestoneCompleteButton = ({ milestone, isAmountEnoughForWithdr
 
 RequestMarkMilestoneCompleteButton.propTypes = {
   milestone: PropTypes.instanceOf(Milestone).isRequired,
-  isAmountEnoughForWithdraw: PropTypes.bool.isRequired,
 };
 
 export default React.memo(RequestMarkMilestoneCompleteButton);
