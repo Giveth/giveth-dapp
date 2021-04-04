@@ -19,7 +19,6 @@ import config from '../configuration';
 
 // components
 import NewMainMenu from '../components/layout/MainMenu/MainMenu';
-import MainMenu from '../components/layout/MainMenu';
 import Loader from '../components/Loader';
 import ErrorBoundary from '../components/ErrorBoundary';
 
@@ -108,7 +107,6 @@ const Application = () => {
                                       // <div className="page-wrapper">
                                       <div>
                                         <NewMainMenu />
-                                        {/*<MainMenu />*/}
                                         <Routes />
                                       </div>
                                     )}

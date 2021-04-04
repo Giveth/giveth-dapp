@@ -56,13 +56,13 @@ const NewMainMenu = () => {
           </Link>
         </Menu.Item>
 
-        <Menu.Item key="mail">
+        <Menu.Item key="Communities">
           <Link to="/dacs">Communities</Link>
         </Menu.Item>
-        <Menu.Item key="app">
+        <Menu.Item key="Campaigns">
           <Link to="/campaigns">Campaigns</Link>
         </Menu.Item>
-        <Menu.Item key="alipay">
+        <Menu.Item key="Milestones">
           <Link to="/milestones">Milestones</Link>
         </Menu.Item>
 
@@ -82,22 +82,22 @@ const NewMainMenu = () => {
 
         {validProvider && currentUser.address && (
           <SubMenu key="Manage" title="Manage" className="ml-auto d-flex align-items-center">
-            <Menu.Item key="setting:1">
+            <Menu.Item key="Manage:1">
               <Link to="/my-milestones">My Milestones</Link>
             </Menu.Item>
-            <Menu.Item key="setting:2">
+            <Menu.Item key="Manage:2">
               <Link to="/donations">My Donations</Link>
             </Menu.Item>
-            <Menu.Item key="setting:3">
+            <Menu.Item key="Manage:3">
               <Link to="/delegations">My Delegations</Link>
             </Menu.Item>
             {(userIsDelegator || userIsReviewer) && (
-              <Menu.Item key="setting:4">
+              <Menu.Item key="Manage:4">
                 <Link to="/my-dacs">My Communities</Link>
               </Menu.Item>
             )}
             {(userIsCampaignManager || userIsReviewer) && (
-              <Menu.Item key="setting:5">
+              <Menu.Item key="Manage:5">
                 <Link to="/my-campaigns">My Campaigns</Link>
               </Menu.Item>
             )}
