@@ -103,6 +103,7 @@ class WhiteListProvider extends Component {
       reviewerWhitelistEnabled,
       delegateWhitelistEnabled,
       projectOwnersWhitelistEnabled,
+      minimumPayoutUsdValue,
     } = this.state;
 
     return (
@@ -121,6 +122,7 @@ class WhiteListProvider extends Component {
             reviewerWhitelistEnabled,
             delegateWhitelistEnabled,
             projectOwnersWhitelistEnabled,
+            minimumPayoutUsdValue,
           },
         }}
       >

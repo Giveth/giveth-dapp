@@ -17,7 +17,7 @@
 	}
 	& > .ant-form-item-control {
 		.ant-form-item-control-input-content {
-			& > input, 
+			& > input,
 			& > .ant-input-number,
 			& > textarea {
 				background: #ffffff;
@@ -130,7 +130,7 @@
 	box-sizing: border-box;
 	border-radius: 8px;
 	height: 52px;
-	
+
 	font-family: Lato;
 	font-style: normal;
 	font-weight: normal;
@@ -193,10 +193,9 @@
 }
 
 
-.ant-notification{
+.ant-notification, .ant-message{
 	padding-top: 60px;
 }
-
 
 #quill-ant {
 	& > div{
