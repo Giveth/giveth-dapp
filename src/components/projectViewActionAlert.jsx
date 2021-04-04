@@ -22,7 +22,4 @@ ProjectViewActionAlert.defaultProps = {
   show: true,
 };
 
-const propsAreEqual = (prevProps, nextProps) =>
-  prevProps.show === nextProps.show && prevProps.message === nextProps.message;
-
-export default React.memo(ProjectViewActionAlert, propsAreEqual);
+export default React.memo(ProjectViewActionAlert);
