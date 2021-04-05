@@ -106,6 +106,7 @@ class UserService {
           isReviewer: true,
           $select: ['address', 'name'],
           $skip: reviewers.length,
+          $sort: { address: 1 },
         },
       });
 
