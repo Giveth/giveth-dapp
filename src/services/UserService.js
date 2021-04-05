@@ -98,12 +98,22 @@ class UserService {
   }
 
   static async getReviewers() {
-    return users.find({
-      query: {
-        isReviewer: true,
-        $select: ['address', 'name'],
-      },
-    });
+    let reviewers = [];
+    while (true) {
+      // eslint-disable-next-line no-await-in-loop
+      const result = await users.find({
+        query: {
+          isReviewer: true,
+          $select: ['address', 'name'],
+          $skip: reviewers.length,
+        },
+      });
+
+      const { data = [], total = 0 } = result || {};
+      reviewers = reviewers.concat(data);
+      if (reviewers.length >= total) break;
+    }
+    return reviewers;
   }
 }
 
