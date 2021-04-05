@@ -32,6 +32,7 @@ import WhiteListProvider, {
 
 import '../lib/validators';
 import Routes from './Routes';
+import Navbar from '../components/layout/MainMenu/Navbar';
 
 /**
  * Here we hack to make stuff globally available
@@ -106,7 +107,8 @@ const Application = () => {
                                     {!hasError && (
                                       // <div className="page-wrapper">
                                       <div>
-                                        <NewMainMenu />
+                                        {/*<NewMainMenu />*/}
+                                        <Navbar />
                                         <Routes />
                                       </div>
                                     )}
