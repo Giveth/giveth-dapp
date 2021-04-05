@@ -161,7 +161,7 @@ const VideoPopup = ({ visible, handleClose, reactQuillRef }) => {
       <Radio.Group onChange={onChange} value={type}>
         <Radio value={1}>Link</Radio>
         <Radio value={2}>File</Radio>
-        <Radio value={3}>Youtube/Vimeo</Radio>
+        <Radio value={3}>Youtube</Radio>
         {/* <Radio value={3}>Camera</Radio> */}
         {/* <Radio value={4}>Screen sharing</Radio> */}
       </Radio.Group>
