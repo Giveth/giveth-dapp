@@ -1,8 +1,9 @@
 #tx-limit-banner {
   background: linear-gradient(45deg, #C2449F, #422453);
-  position: sticky;
+  position: fixed;
   bottom: 0;
   z-index: 1020;
+  width: 100%;
 
   div:nth-child(2) {
     font-size: 16px;
