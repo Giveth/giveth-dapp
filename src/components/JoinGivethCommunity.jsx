@@ -92,18 +92,9 @@ const JoinGivethCommunity = () => {
       });
       return;
     }
-    if (currentUser.address) {
-      checkBalance(balance)
-        .then(() => {
-          history.push('/campaigns/new');
-        })
-        .catch(err => {
-          if (err === 'noBalance') {
-            ErrorPopup('There is no balance left on the account.', err);
-          } else if (err !== undefined) {
-            ErrorPopup('Something went wrong.', err);
-          }
-        });
+    // Use has registered
+    if (currentUser.giverId) {
+      history.push('/campaigns/new');
     } else {
       React.swal({
         title: "You're almost there...",
