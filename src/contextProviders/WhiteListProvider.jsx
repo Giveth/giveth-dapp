@@ -10,7 +10,7 @@ export { Consumer, Context };
 /**
  * Given list of addresses return users as pair of {address, title}. If no list is provided, return all users
  *
- * @param  String   field List of addresses for which the users has true value in the field
+ * @param  field   field List of addresses for which the users has true value in the field
  * @return {array}  List of users as pairs {address, title}
  */
 async function getUsers(field) {
@@ -103,6 +103,7 @@ class WhiteListProvider extends Component {
       reviewerWhitelistEnabled,
       delegateWhitelistEnabled,
       projectOwnersWhitelistEnabled,
+      minimumPayoutUsdValue,
     } = this.state;
 
     return (
@@ -121,6 +122,7 @@ class WhiteListProvider extends Component {
             reviewerWhitelistEnabled,
             delegateWhitelistEnabled,
             projectOwnersWhitelistEnabled,
+            minimumPayoutUsdValue,
           },
         }}
       >

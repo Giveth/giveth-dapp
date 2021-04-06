@@ -1,5 +1,6 @@
 import React, { Fragment, useContext } from 'react';
 import PropTypes from 'prop-types';
+import { message } from 'antd';
 
 import MilestoneService from 'services/MilestoneService';
 import Milestone from 'models/Milestone';
@@ -11,8 +12,9 @@ import DonationService from '../services/DonationService';
 import LPMilestone from '../models/LPMilestone';
 import config from '../configuration';
 import { Context as UserContext } from '../contextProviders/UserProvider';
+import { Context as WhiteListContext } from '../contextProviders/WhiteListProvider';
 
-const WithdrawMilestoneFundsButton = ({ milestone }) => {
+const WithdrawMilestoneFundsButton = ({ milestone, isAmountEnoughForWithdraw }) => {
   const {
     state: { currentUser },
   } = useContext(UserContext);
@@ -20,17 +22,29 @@ const WithdrawMilestoneFundsButton = ({ milestone }) => {
     state: { isForeignNetwork, balance },
     actions: { displayForeignNetRequiredWarning },
   } = useContext(Web3Context);
+  const {
+    state: { minimumPayoutUsdValue },
+  } = useContext(WhiteListContext);
 
   async function withdraw() {
     const userAddress = currentUser.address;
     const isRecipient = milestone.recipientAddress === userAddress;
-
     actionWithLoggedIn(currentUser).then(() =>
       Promise.all([
         checkBalance(balance),
         DonationService.getMilestoneDonationsCount(milestone._id),
       ])
         .then(([, donationsCount]) => {
+          if (!isAmountEnoughForWithdraw) {
+            message.error(
+              `Oh No!
+                A minimum donation balance of
+                ${minimumPayoutUsdValue} USD  is required before
+                you can collect or disperse the funds. This is a
+                 temporary limitation due to Ethereum Mainnet issues.`,
+            );
+            return;
+          }
           React.swal({
             title: isRecipient ? 'Withdrawal Funds to Wallet' : 'Disburse Funds to Recipient',
             content: React.swal.msg(
@@ -156,6 +170,7 @@ const WithdrawMilestoneFundsButton = ({ milestone }) => {
 
 WithdrawMilestoneFundsButton.propTypes = {
   milestone: PropTypes.instanceOf(Milestone).isRequired,
+  isAmountEnoughForWithdraw: PropTypes.bool.isRequired,
 };
 
 export default React.memo(WithdrawMilestoneFundsButton);

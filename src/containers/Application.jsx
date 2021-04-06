@@ -18,6 +18,8 @@ import { history } from '../lib/helpers';
 import config from '../configuration';
 
 // components
+import Banner from '../components/Banner';
+// import MainMenu from '../components/layout/MainMenu';
 // import NewMainMenu from '../components/layout/MainMenu/MainMenu';
 import Loader from '../components/Loader';
 import ErrorBoundary from '../components/ErrorBoundary';
@@ -110,6 +112,7 @@ const Application = () => {
                                         {/* <NewMainMenu /> */}
                                         <Navbar />
                                         <Routes />
+                                        <Banner />
                                       </div>
                                     )}
 
