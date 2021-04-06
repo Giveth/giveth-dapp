@@ -2,11 +2,13 @@
 import React, { Component, createContext } from 'react';
 import PropTypes from 'prop-types';
 import BigNumber from 'bignumber.js';
-
-import { feathersClient } from '../lib/feathersClient';
 import { getStartOfDayUTC } from '../lib/helpers';
 import ErrorPopup from '../components/ErrorPopup';
 import ErrorHandler from '../lib/ErrorHandler';
+import {
+  convertMultipleRatesHourly,
+  getConversionRateBetweenTwoSymbol,
+} from '../services/ConversionRateService';
 
 const Context = createContext();
 const { Consumer, Provider } = Context;
@@ -98,9 +100,11 @@ class ConversionRateProvider extends Component {
     this.setState({ isLoading: true });
 
     // We don't have the conversion rate in cache, fetch from feathers
-    return feathersClient
-      .service('conversionRates')
-      .find({ query: { date: dtUTC.valueOf(), symbol, to } })
+    return getConversionRateBetweenTwoSymbol({
+      symbol,
+      to,
+      date: dtUTC.valueOf(),
+    })
       .then(resp => {
         const rt = this.rates.add(symbol, dtUTC.toISOString(), resp.rates);
 
@@ -119,16 +123,11 @@ class ConversionRateProvider extends Component {
   // rateArray: [{value: 123, currency: 'ETH'}]
   // eslint-disable-next-line
   convertMultipleRates(date, symbol, rateArray, showPopupOnError = false) {
-    return feathersClient
-      .service('conversionRates')
-      .find({
-        query: {
-          ts: date,
-          from: symbol,
-          to: rateArray.map(r => r.currency),
-          interval: 'hourly',
-        },
-      })
+    return convertMultipleRatesHourly({
+      date,
+      symbol,
+      currencyArray: rateArray.map(r => r.currency),
+    })
       .then(resp => {
         const { rates } = resp;
         const total = rateArray.reduce(

@@ -35,6 +35,7 @@ import config from '../../configuration';
 import Campaign from '../../models/Campaign';
 import { Context as Web3Context } from '../../contextProviders/Web3Provider';
 import GA from '../../lib/GoogleAnalytics';
+import useReviewers from '../../hooks/useReviewers';
 
 const { Title, Text } = Typography;
 
@@ -51,13 +52,15 @@ const EditCampaign = ({ isNew, match }) => {
   } = useContext(UserContext);
 
   const {
-    state: { reviewers, projectOwnersWhitelistEnabled, isLoading: whitelistIsLoading },
+    state: { projectOwnersWhitelistEnabled, isLoading: whitelistIsLoading },
   } = useContext(WhiteListContext);
 
   const {
     state: { isForeignNetwork },
     actions: { displayForeignNetRequiredWarning },
   } = useContext(Web3Context);
+
+  const reviewers = useReviewers();
 
   const [isLoading, setIsLoading] = useState(true);
   const [isBlocking, setIsBlocking] = useState(false);
@@ -446,9 +449,9 @@ const EditCampaign = ({ isNew, match }) => {
                     }
                     value={campaign.reviewerAddress}
                   >
-                    {reviewers.map(({ title, value }) => (
-                      <Select.Option key={value} value={value}>
-                        {title}
+                    {reviewers.map(({ name, address }) => (
+                      <Select.Option key={address} value={address}>
+                        {`${name} - ${address}`}
                       </Select.Option>
                     ))}
                   </Select>
