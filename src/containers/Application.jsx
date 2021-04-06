@@ -18,7 +18,7 @@ import { history } from '../lib/helpers';
 import config from '../configuration';
 
 // components
-import NewMainMenu from '../components/layout/MainMenu/MainMenu';
+// import NewMainMenu from '../components/layout/MainMenu/MainMenu';
 import Loader from '../components/Loader';
 import ErrorBoundary from '../components/ErrorBoundary';
 
@@ -32,7 +32,7 @@ import WhiteListProvider, {
 
 import '../lib/validators';
 import Routes from './Routes';
-import Navbar from '../components/layout/MainMenu/Navbar';
+import Navbar from '../components/layout/MainMenu/Navbar/index';
 
 /**
  * Here we hack to make stuff globally available
@@ -107,7 +107,7 @@ const Application = () => {
                                     {!hasError && (
                                       // <div className="page-wrapper">
                                       <div>
-                                        {/*<NewMainMenu />*/}
+                                        {/* <NewMainMenu /> */}
                                         <Navbar />
                                         <Routes />
                                       </div>
