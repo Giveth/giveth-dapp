@@ -1,9 +1,7 @@
 import React, { useContext } from 'react';
 
 import CommunityButton from './CommunityButton';
-import { checkBalance } from '../lib/middleware';
 import { Context as Web3Context } from '../contextProviders/Web3Provider';
-import ErrorPopup from './ErrorPopup';
 import { Context as UserContext } from '../contextProviders/UserProvider';
 import { history } from '../lib/helpers';
 import { Context as WhiteListContext } from '../contextProviders/WhiteListProvider';
@@ -44,18 +42,8 @@ const JoinGivethCommunity = () => {
       });
       return;
     }
-    if (currentUser.address) {
-      checkBalance(balance)
-        .then(() => {
-          history.push('/dacs/new');
-        })
-        .catch(err => {
-          if (err === 'noBalance') {
-            ErrorPopup('There is no balance left on the account.', err);
-          } else if (err !== undefined) {
-            ErrorPopup('Something went wrong.', err);
-          }
-        });
+    if (currentUser.giverId) {
+      history.push('/dacs/new');
     } else {
       React.swal({
         title: "You're almost there...",
