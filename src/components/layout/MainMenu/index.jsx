@@ -1,7 +1,7 @@
 import React from 'react';
 
 import MainMenu from './MainMenu';
-import Banner from '../../Banner';
+import Banner from './Banner';
 
 const Header = () => {
   return (

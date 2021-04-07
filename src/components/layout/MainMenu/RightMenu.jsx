@@ -1,6 +1,6 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import Avatar from 'react-avatar';
-import { Link } from 'react-router-dom';
+import { Link, useRouteMatch } from 'react-router-dom';
 import { withRouter } from 'react-router';
 import { Menu, Grid } from 'antd';
 
@@ -36,12 +36,28 @@ const RightMenu = () => {
   const userIsCampaignManager = currentUser.isProjectOwner || !projectOwnersWhitelistEnabled;
   const userIsReviewer = currentUser.isReviewer || !reviewerWhitelistEnabled;
 
-  const handleClick = e => {
-    setSelectedKeys(e.key);
-  };
+  const isProfile = useRouteMatch('/profile');
+  const myMilestones = useRouteMatch('/my-milestones');
+  const donations = useRouteMatch('/donations');
+  const delegations = useRouteMatch('/delegations');
+  const myDacs = useRouteMatch('/my-dacs');
+  const myCampaigns = useRouteMatch('/my-campaigns');
+
+  let selectedKey;
+  if (isProfile) selectedKey = 'profile:1';
+  else if (myMilestones) selectedKey = 'Manage:1';
+  else if (donations) selectedKey = 'Manage:2';
+  else if (delegations) selectedKey = 'Manage:3';
+  else if (myDacs) selectedKey = 'Manage4';
+  else if (myCampaigns) selectedKey = 'Manage:5';
+  else selectedKey = '';
+
+  useEffect(() => {
+    setSelectedKeys(selectedKey);
+  }, [selectedKey]);
 
   return (
-    <Menu onClick={handleClick} selectedKeys={[selectedKeys]} mode={lg ? 'horizontal' : 'inline'}>
+    <Menu selectedKeys={[selectedKeys]} mode={lg ? 'horizontal' : 'inline'}>
       <Menu.Item key="CreateButton">
         <MenuBarCreateButtonWithRouter />
       </Menu.Item>

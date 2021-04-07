@@ -1,20 +1,29 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { Link, useRouteMatch } from 'react-router-dom';
 import { Menu, Grid } from 'antd';
 
 const { useBreakpoint } = Grid;
 
 const LeftMenu = () => {
+  const { lg } = useBreakpoint();
   const [selectedKeys, setSelectedKeys] = useState();
 
-  const { lg } = useBreakpoint();
+  const isDac = useRouteMatch('/dac/:slug') || useRouteMatch('/dacs');
+  const isCamp = useRouteMatch('/campaign/:slug') || useRouteMatch('/campaigns');
+  const isMilestone = useRouteMatch('/milestone/:slug') || useRouteMatch('/milestones');
 
-  const handleClick = e => {
-    setSelectedKeys(e.key);
-  };
+  let selectedKey;
+  if (isDac) selectedKey = 'Communities';
+  else if (isCamp) selectedKey = 'Campaigns';
+  else if (isMilestone) selectedKey = 'Milestones';
+  else selectedKey = '';
+
+  useEffect(() => {
+    setSelectedKeys(selectedKey);
+  }, [selectedKey]);
 
   return (
-    <Menu mode={lg ? 'horizontal' : 'inline'} onClick={handleClick} selectedKeys={[selectedKeys]}>
+    <Menu mode={lg ? 'horizontal' : 'inline'} selectedKeys={[selectedKeys]}>
       <Menu.Item key="Communities">
         <Link to="/dacs">Communities</Link>
       </Menu.Item>
