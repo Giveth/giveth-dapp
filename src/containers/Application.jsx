@@ -18,9 +18,8 @@ import { history } from '../lib/helpers';
 import config from '../configuration';
 
 // components
-import Banner from '../components/Banner';
-// import MainMenu from '../components/layout/MainMenu';
-// import NewMainMenu from '../components/layout/MainMenu/MainMenu';
+import Routes from './Routes';
+import Navbar from '../components/layout/MainMenu';
 import Loader from '../components/Loader';
 import ErrorBoundary from '../components/ErrorBoundary';
 
@@ -33,8 +32,6 @@ import WhiteListProvider, {
 } from '../contextProviders/WhiteListProvider';
 
 import '../lib/validators';
-import Routes from './Routes';
-import Navbar from '../components/layout/MainMenu/Navbar/index';
 
 /**
  * Here we hack to make stuff globally available
@@ -107,12 +104,9 @@ const Application = () => {
                                     {GA.init() && <GA.RouteTracker />}
 
                                     {!hasError && (
-                                      // <div className="page-wrapper">
                                       <div>
-                                        {/* <NewMainMenu /> */}
                                         <Navbar />
                                         <Routes />
-                                        <Banner />
                                       </div>
                                     )}
 

@@ -1,7 +1,5 @@
 #tx-limit-banner {
   background: linear-gradient(45deg, #C2449F, #422453);
-  position: fixed;
-  bottom: 0;
   z-index: 1020;
   width: 100%;
 
@@ -12,7 +10,7 @@
     img {
       width: 105px;
       height: auto;
-      position: fixed;
+      position: absolute;
       left: -17px;
       opacity: 0.1;
       bottom: -60px;
