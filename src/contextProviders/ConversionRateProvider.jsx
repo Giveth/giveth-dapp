@@ -122,32 +122,55 @@ class ConversionRateProvider extends Component {
 
   // rateArray: [{value: 123, currency: 'ETH'}]
   // eslint-disable-next-line
-  convertMultipleRates(date, symbol, rateArray, showPopupOnError = false) {
-    return convertMultipleRatesHourly({
-      date,
-      symbol,
-      currencyArray: rateArray.map(r => r.currency),
-    })
-      .then(resp => {
-        const { rates } = resp;
-        const total = rateArray.reduce(
-          (sum, item) => sum + item.value / (+rates[item.currency] || 1),
-          0,
-        );
-        return { total, rates };
-      })
-      .catch(err => {
-        if (showPopupOnError) {
-          ErrorPopup(
-            'Sadly we were unable to get the exchange rate! Please try again after refresh.',
-            err,
-          );
-        } else {
-          React.toast.error(
-            'Sadly we were unable to get the exchange rate! Please refresh the page later.',
-          );
-        }
+  async convertMultipleRates(
+    date,
+    symbol,
+    rateArray,
+    showPopupOnError = false
+  ) {
+    try {
+      const currencyArray = rateArray.map(r => r.currency);
+
+      const { rates } = await convertMultipleRatesHourly({
+        date,
+        symbol,
+        currencyArray,
       });
+      const usdRates =
+        symbol === 'USD'
+          ? rates
+          : (
+              await convertMultipleRatesHourly({
+                date,
+                symbol: 'USD',
+                currencyArray,
+              })
+            ).rates;
+      const usdValues = rateArray.map(({ value, currency }) => {
+        return { usdValue: value / usdRates[currency], currency };
+      });
+
+      const total = rateArray.reduce(
+        (sum, item) => sum + item.value / (+rates[item.currency] || 1),
+        0,
+      );
+      return {
+        total,
+        rates,
+        usdValues,
+      };
+    } catch (e) {
+      if (showPopupOnError) {
+        ErrorPopup(
+          'Sadly we were unable to get the exchange rate! Please try again after refresh.',
+          e,
+        );
+      } else {
+        React.toast.error(
+          'Sadly we were unable to get the exchange rate! Please refresh the page later.',
+        );
+      }
+    }
   }
 
   render() {
