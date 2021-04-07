@@ -705,7 +705,7 @@ class EditMilestone extends Component {
     milestone.campaignId = this.state.campaignId;
     milestone.status =
       isProposed || milestone.status === Milestone.REJECTED ? Milestone.PROPOSED : milestone.status; // make sure not to change status!
-    if (milestone.isCapped) {
+    if (milestone.isCapped && !milestone.itemizeState) {
       milestone.conversionRate = currentRate.rates[milestone.selectedFiatType];
     }
     milestone.parentProjectId = this.state.campaignProjectId;
