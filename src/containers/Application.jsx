@@ -19,7 +19,7 @@ import config from '../configuration';
 
 // components
 import Routes from './Routes';
-import Navbar from '../components/layout/MainMenu';
+import Header from '../components/layout/MainMenu';
 import Loader from '../components/Loader';
 import ErrorBoundary from '../components/ErrorBoundary';
 
@@ -105,7 +105,7 @@ const Application = () => {
 
                                     {!hasError && (
                                       <div>
-                                        <Navbar />
+                                        <Header />
                                         <Routes />
                                       </div>
                                     )}
