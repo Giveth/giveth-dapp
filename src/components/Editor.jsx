@@ -102,7 +102,11 @@ function Editor(props) {
     }
   }
 
-  const { placeholder, onChange, value } = props;
+  const { placeholder, onChange, value, setBusy } = props;
+
+  useEffect(() => {
+    setBusy(uploading);
+  }, [uploading]);
 
   const modules = {
     toolbar: [
@@ -168,11 +172,13 @@ Editor.propTypes = {
   value: PropTypes.string,
   onChange: PropTypes.func.isRequired,
   placeholder: PropTypes.string,
+  setBusy: PropTypes.func,
 };
 
 Editor.defaultProps = {
   value: '',
   placeholder: '',
+  setBusy: () => {},
 };
 
 export default Editor;
