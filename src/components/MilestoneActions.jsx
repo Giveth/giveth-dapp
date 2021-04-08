@@ -42,7 +42,7 @@ function MilestoneActions({ milestone }) {
           };
         }),
       );
-      setCurrentBalanceUsdValue(result.total);
+      setCurrentBalanceUsdValue(result.usdValues);
     } catch (e) {
       // TODO should I remove this console.log?
       console.error('calculateMilestoneCurrentBalanceUsdValue error', e);
@@ -50,7 +50,19 @@ function MilestoneActions({ milestone }) {
   };
 
   useEffect(() => {
-    setIsAmountEnoughForWithdraw(currentBalanceUsdValue > minimumPayoutUsdValue);
+    if (!currentBalanceUsdValue) {
+      return;
+    }
+    // eslint-disable-next-line no-restricted-syntax
+    for (const currencyUsdValue of currentBalanceUsdValue) {
+      // if usdValue is zero we should not set setIsAmountEnoughForWithdraw(false) because we check
+      // minimumPayoutUsdValue comparison when usdValue for a currency is not zero
+      if (currencyUsdValue.usdValue && currencyUsdValue.usdValue < minimumPayoutUsdValue) {
+        setIsAmountEnoughForWithdraw(false);
+        return;
+      }
+    }
+    setIsAmountEnoughForWithdraw(true);
   }, [currentBalanceUsdValue]);
 
   useEffect(() => {
