@@ -7,7 +7,6 @@ import PropTypes from 'prop-types';
 import { utils } from 'web3';
 import { Link } from 'react-router-dom';
 import MilestoneProof from './MilestoneProof';
-import MilestoneConversationAction from './MilestoneConversationAction';
 import { convertEthHelper, getUserAvatar, getUserName } from '../lib/helpers';
 import Milestone from '../models/Milestone';
 import config from '../configuration';
@@ -178,11 +177,6 @@ function MilestoneConversationItem({ conversation, milestone }) {
             />
           </Form>
         )}
-
-        {/* ---- action buttons ---- */}
-        <div className="c-action-footer">
-          <MilestoneConversationAction messageContext={messageContext} milestone={milestone} />
-        </div>
 
         <div className="c-divider" />
       </div>
