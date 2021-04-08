@@ -60,24 +60,30 @@ function MyMilestones() {
   function loadMileStones() {
     const myAddress = currentUser.address;
 
-    MilestoneService.subscribeMyMilestones({
-      milestoneStatus,
-      ownerAddress: myAddress,
-      coownerAddress: myAddress,
-      recipientAddress: myAddress,
-      skipPages,
-      itemsPerPage,
-      onResult: resp => {
-        setMilestones(resp.data);
-        setTotalResults(resp.total);
-        setLoading(false);
-      },
-      onError: err => {
-        ErrorPopup('Something went wrong.', err);
-        // TO DO: handle error here in view
-        setLoading(false);
-      },
-    });
+    if (myAddress) {
+      MilestoneService.subscribeMyMilestones({
+        milestoneStatus,
+        ownerAddress: myAddress,
+        coownerAddress: myAddress,
+        recipientAddress: myAddress,
+        skipPages,
+        itemsPerPage,
+        onResult: resp => {
+          setMilestones(resp.data);
+          setTotalResults(resp.total);
+          setLoading(false);
+        },
+        onError: err => {
+          ErrorPopup('Something went wrong.', err);
+          // TO DO: handle error here in view
+          setLoading(false);
+        },
+      });
+    } else {
+      setMilestones([]);
+      setTotalResults(0);
+      setLoading(false);
+    }
   }
 
   useEffect(() => {
