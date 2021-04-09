@@ -1,6 +1,6 @@
 /* eslint-disable react/prop-types */
 import React, { useEffect, useRef, useState } from 'react';
-import { Radio, Input, Modal, Button } from 'antd';
+import { Radio, Input, Modal, Button, notification } from 'antd';
 import IPFSService from '../services/IPFSService';
 import config from '../configuration';
 
@@ -41,7 +41,7 @@ const VideoPopup = ({ visible, handleClose, reactQuillRef }) => {
         // );
       },
       () => {
-        alert('No camera devices found');
+        // alert('No camera devices found');
       },
     );
   };
@@ -91,7 +91,6 @@ const VideoPopup = ({ visible, handleClose, reactQuillRef }) => {
       tempUrl.match(/^(?:(https?):\/\/)?(?:(?:www|m)\.)?youtu\.be\/([a-zA-Z0-9_-]+)/) ||
       tempUrl.match(/^.*(youtu.be\/|v\/|e\/|u\/\w+\/|embed\/|v=)([^#&?]*).*/);
     if (match && match[2].length === 11) {
-      console.log(match[2]);
       return `https://www.youtube.com/embed/${match[2]}?showinfo=0`;
     }
     match = tempUrl.match(/^(?:(https?):\/\/)?(?:www\.)?vimeo\.com\/(\d+)/);
@@ -109,9 +108,11 @@ const VideoPopup = ({ visible, handleClose, reactQuillRef }) => {
           insertToEditor(config.ipfsGateway + hash.slice(6));
           closeModal();
         })
-        .catch(err => {
-          // ErrorPopup('Something went wrong with the upload.', err);
-          console.log(err);
+        .catch(() => {
+          notification.error({
+            message: 'IPFS Fails',
+            description: 'Something went wrong with the upload.',
+          });
         })
         .finally(() => {
           setLoading(false);
