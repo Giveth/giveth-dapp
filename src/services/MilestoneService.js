@@ -357,19 +357,15 @@ class MilestoneService {
     let initalTotal;
     return feathersClient
       .service('donations')
-      .watch()
-      .find(
-        paramsForServer({
-          query: {
-            lessThanCutoff: { $ne: true },
-            status: { $ne: Donation.FAILED },
-            $or: [{ intendedProjectTypeId: id }, { ownerTypeId: id }],
-            $sort: { createdAt: -1 },
-            $limit: 0,
-          },
-          schema: 'includeTypeAndGiverDetails',
-        }),
-      )
+      .watch({ listStrategy: 'always' })
+      .find({
+        query: {
+          lessThanCutoff: { $ne: true },
+          status: { $ne: Donation.FAILED },
+          $or: [{ intendedProjectTypeId: id }, { ownerTypeId: id }],
+          $limit: 0,
+        },
+      })
       .subscribe(resp => {
         if (initalTotal === undefined) {
           initalTotal = resp.total;

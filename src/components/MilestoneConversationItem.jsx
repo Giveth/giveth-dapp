@@ -12,6 +12,10 @@ import { convertEthHelper, getUserAvatar, getUserName } from '../lib/helpers';
 import Milestone from '../models/Milestone';
 import config from '../configuration';
 
+const getPaymentStrForConversation = ({ amount, tokenDecimals, symbol }) => {
+  const amountStr = convertEthHelper(utils.fromWei(amount), tokenDecimals);
+  return `${amountStr} ${symbol}`;
+};
 const getReadableMessageContext = conversation => {
   const { messageContext, owner } = conversation;
   const userName = getUserName(owner);
@@ -33,8 +37,7 @@ const getReadableMessageContext = conversation => {
     const { recipient, payments } = conversation;
     if (payments) {
       const paymentsStr = payments.map(p => {
-        const amountStr = convertEthHelper(utils.fromWei(p.amount), p.tokenDecimals);
-        return `${amountStr} ${p.symbol}`;
+        return getPaymentStrForConversation(p);
       });
       const phrase =
         paymentsStr.length === 1
@@ -50,7 +53,7 @@ const getReadableMessageContext = conversation => {
       // else
       return (
         <Fragment>
-          {userLink} disbursed ${phrase} to{' '}
+          {userLink} disbursed {phrase} to{' '}
           <Link to={`/profile/${recipient.address}`}>{getUserName(recipient)}</Link>
         </Fragment>
       );
@@ -60,8 +63,7 @@ const getReadableMessageContext = conversation => {
     const { donorType, donorId, donorTitle, payments } = conversation;
     if (donorType === 'giver' && payments && payments.length > 0) {
       const payment = payments[0];
-      const amountStr = convertEthHelper(utils.fromWei(payment.amount), payment.tokenDecimals);
-      const paymentStr = `${amountStr} ${payment.symbol}`;
+      const paymentStr = getPaymentStrForConversation(payment);
       return (
         <Fragment>
           <Link to={`/profile/${donorId}`}>{donorTitle || 'Anonymous'}</Link>
@@ -70,12 +72,22 @@ const getReadableMessageContext = conversation => {
       );
     }
   }
+  if (messageContext === 'payout') {
+    const { payments } = conversation;
+    const payment = payments[0];
+    const paymentStr = getPaymentStrForConversation(payment);
+    return (
+      <Fragment>
+        {/* <Link to={`/profile/${donorId}`}>{donorTitle || 'Anonymous'}</Link> */}
+        {`${paymentStr} has been sent to recipient's wallet`}
+      </Fragment>
+    );
+  }
   if (messageContext === 'delegated') {
     const { donorType, donorId, donorTitle, payments } = conversation;
     if (payments && payments.length > 0) {
       const payment = payments[0];
-      const amountStr = convertEthHelper(utils.fromWei(payment.amount), payment.tokenDecimals);
-      const paymentStr = `${amountStr} ${payment.symbol}`;
+      const paymentStr = getPaymentStrForConversation(payment);
 
       if (donorType === 'campaign') {
         return (
@@ -107,7 +119,9 @@ const getReadableMessageContext = conversation => {
 };
 
 const getEtherScanUrl = ({ messageContext }) =>
-  messageContext === 'donated' ? config.homeEtherscan : config.etherscan;
+  messageContext === 'donated' || messageContext === 'payout'
+    ? config.homeEtherscan
+    : config.etherscan;
 
 function MilestoneConversationItem({ conversation, milestone }) {
   if (!conversation) return null;

@@ -1,43 +1,73 @@
-import React, { useContext, useState, Fragment, useEffect, useRef } from 'react';
-import { PageHeader, Row, Col, Form, Input, Select, Button, Typography } from 'antd';
+import React, { Fragment, useContext, useEffect, useRef, useState } from 'react';
+import { Button, Col, Form, notification, PageHeader, Row } from 'antd';
 import BigNumber from 'bignumber.js';
 import 'antd/dist/antd.css';
 import PropTypes from 'prop-types';
 import { v4 as uuidv4 } from 'uuid';
+import { utils } from 'web3';
 import CreateExpenseItem from '../CreateExpenseItem';
 import useCampaign from '../../hooks/useCampaign';
-import { convertEthHelper, getStartOfDayUTC, history } from '../../lib/helpers';
-import { Context as WhiteListContext } from '../../contextProviders/WhiteListProvider';
+import { convertEthHelper, getStartOfDayUTC, history, ZERO_ADDRESS } from '../../lib/helpers';
 import Web3ConnectWarning from '../Web3ConnectWarning';
-import { MilestoneCampaignInfo, MilestoneTitle } from '../EditMilestoneCommons';
+import {
+  MilestoneCampaignInfo,
+  MilestoneRecipientAddress,
+  MilestoneTitle,
+  MilestoneToken,
+} from '../EditMilestoneCommons';
 import { Context as UserContext } from '../../contextProviders/UserProvider';
+import { authenticateUser } from '../../lib/middleware';
+import BridgedMilestone from '../../models/BridgedMilestone';
+import config from '../../configuration';
+import { Milestone, MilestoneItem } from '../../models';
+import { MilestoneService } from '../../services';
+import ErrorHandler from '../../lib/ErrorHandler';
+import { Context as Web3Context } from '../../contextProviders/Web3Provider';
 
 function CreateExpense(props) {
   const {
     state: { currentUser },
   } = useContext(UserContext);
   const {
-    state: { isLoading: whiteListLoading, activeTokenWhitelist },
-  } = useContext(WhiteListContext);
+    state: { isForeignNetwork },
+    actions: { displayForeignNetRequiredWarning },
+  } = useContext(Web3Context);
+
   const { id: campaignId, slug: campaignSlug } = props.match.params;
   const campaign = useCampaign(campaignId, campaignSlug);
   const [expenseForm, setExpenseForm] = useState({
-    expenseItems: [
-      {
-        fiatAmount: 0,
-        currency: '',
-        date: getStartOfDayUTC().subtract(1, 'd'),
-        description: '',
-        picture: '',
-        key: uuidv4(),
-        amount: new BigNumber(0),
-      },
-    ],
     title: '',
     token: {},
     recipientAddress: '',
+    description: 'Expense items describes what has been paid or should be paid',
   });
-  const [totalAmount, setTotalAmount] = useState('0');
+  const [expenseItems, setExpenseItems] = useState([
+    {
+      fiatAmount: 0,
+      currency: '',
+      token: {},
+      date: getStartOfDayUTC().subtract(1, 'd'),
+      conversationRate: 1,
+      conversationRateTimestamp: new Date().toISOString(),
+      description: '',
+      picture: '',
+      key: uuidv4(),
+      loadingAmount: false,
+    },
+  ]);
+  const [totalAmount, setTotalAmount] = useState(new BigNumber(0));
+  const [userIsCampaignOwner, setUserIsOwner] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [loadingAmount, setLoadingAmount] = useState(false);
+  const [submitButtonText, setSubmitButtonText] = useState('Propose');
+
+  useEffect(() => {
+    if (loadingAmount) {
+      setSubmitButtonText('Loading Amount');
+    } else {
+      setSubmitButtonText(userIsCampaignOwner ? 'Create' : 'Propose');
+    }
+  }, [loadingAmount, userIsCampaignOwner]);
 
   const [form] = Form.useForm();
 
@@ -54,35 +84,35 @@ function CreateExpense(props) {
   }, [currentUser]);
 
   useEffect(() => {
-    if (!whiteListLoading && activeTokenWhitelist.length > 0) {
-      setExpenseForm({
-        ...expenseForm,
-        token: activeTokenWhitelist[0],
-      });
-    }
-  }, [whiteListLoading, activeTokenWhitelist]);
-
-  function updateTotalAmount() {
-    setTotalAmount(
-      convertEthHelper(
-        BigNumber.sum(...Object.values(itemAmountMap.current)),
-        expenseForm.token.decimals,
-      ),
+    setUserIsOwner(
+      campaign &&
+        currentUser.address &&
+        [campaign.ownerAddress, campaign.coownerAddress].includes(currentUser.address),
     );
-  }
+  }, [campaign, currentUser]);
 
-  function updateStateOfItem(name, value, itemKey) {
+  const updateTotalAmount = () => {
+    setTotalAmount(BigNumber.sum(...Object.values(itemAmountMap.current)));
+  };
+
+  const updateStateOfItem = (name, value, itemKey) => {
     if (name === 'amount') {
       itemAmountMap.current[itemKey] = value;
       updateTotalAmount();
     } else {
-      const expenseItems = [...expenseForm.expenseItems];
       const item = expenseItems.find(i => i.key === itemKey);
       item[name] = value;
 
-      setExpenseForm({ ...expenseForm, expenseItems });
+      setExpenseItems([...expenseItems]);
+      if (name === 'loadingAmount') {
+        if (value) {
+          setLoadingAmount(true);
+        } else {
+          setLoadingAmount(expenseItems.some(i => i.key !== itemKey && i.loadingAmount));
+        }
+      }
     }
-  }
+  };
 
   const handleInputChange = event => {
     const { name, value, type, checked } = event.target;
@@ -93,40 +123,31 @@ function CreateExpense(props) {
     }
   };
 
-  function handleSelectToken(_, option) {
-    handleInputChange({
-      target: {
-        name: 'token',
-        value: activeTokenWhitelist.find(t => t.symbol === option.value),
-      },
-    });
-  }
+  const handleSelectToken = token => {
+    handleInputChange({ target: { name: 'token', value: token } });
+  };
 
   function addExpense() {
-    setExpenseForm({
-      ...expenseForm,
-      expenseItems: [
-        ...expenseForm.expenseItems,
-        {
-          fiatAmount: 0,
-          currency: '',
-          date: getStartOfDayUTC().subtract(1, 'd'),
-          description: '',
-          picture: '',
-          key: uuidv4(),
-          amount: new BigNumber(0),
-        },
-      ],
-    });
+    setExpenseItems([
+      ...expenseItems,
+      // New one
+      {
+        fiatAmount: 0,
+        currency: '',
+        date: getStartOfDayUTC().subtract(1, 'd'),
+        conversationRate: 1,
+        conversationRateTimestamp: new Date().toISOString(),
+        description: '',
+        picture: '',
+        key: uuidv4(),
+        loadingAmount: false,
+      },
+    ]);
   }
 
   function removeExpense(key) {
-    const filteredExpenseItems = expenseForm.expenseItems.filter(item => item.key !== key);
-    setExpenseForm({
-      ...expenseForm,
-      expenseItems: filteredExpenseItems,
-    });
-
+    const filteredExpenseItems = expenseItems.filter(item => item.key !== key);
+    setExpenseItems([...filteredExpenseItems]);
     delete itemAmountMap.current[key];
     updateTotalAmount();
   }
@@ -135,7 +156,102 @@ function CreateExpense(props) {
     history.goBack();
   }
 
-  const submit = async () => {};
+  const submit = async () => {
+    const authenticated = await authenticateUser(currentUser, false);
+
+    if (authenticated) {
+      if (userIsCampaignOwner && !isForeignNetwork) {
+        displayForeignNetRequiredWarning();
+        return;
+      }
+
+      const { title, description, recipientAddress, token, donateToDac } = expenseForm;
+
+      const ms = new BridgedMilestone({
+        title,
+        description,
+        recipientAddress,
+        token,
+        image: '/img/expenseProject.png',
+        reviewerAddress: ZERO_ADDRESS,
+      });
+
+      ms.ownerAddress = currentUser.address;
+      ms.campaignId = campaign._id;
+      ms.parentProjectId = campaign.projectId;
+
+      if (donateToDac) {
+        ms.dacId = config.defaultDacId;
+      }
+
+      ms.maxAmount = totalAmount;
+
+      ms.items = expenseItems.map(expenseItem => {
+        const amount = itemAmountMap.current[expenseItem.key];
+        return new MilestoneItem({
+          ...expenseItem,
+          amount,
+          image: expenseItem.picture,
+          selectedFiatType: expenseItem.currency,
+          wei: utils.toWei(amount.toFixed()),
+        });
+      });
+
+      if (!userIsCampaignOwner) {
+        ms.status = Milestone.PROPOSED;
+      }
+
+      setLoading(true);
+
+      await MilestoneService.save({
+        milestone: ms,
+        from: currentUser.address,
+        afterSave: (created, txUrl, res) => {
+          let notificationDescription;
+          if (created) {
+            if (!userIsCampaignOwner) {
+              notificationDescription = 'Expense proposed to the Campaign Owner';
+            }
+          } else if (txUrl) {
+            notificationDescription = (
+              <p>
+                Your Expense is pending....
+                <br />
+                <a href={txUrl} target="_blank" rel="noopener noreferrer">
+                  View transaction
+                </a>
+              </p>
+            );
+          } else {
+            notificationDescription = 'Your Expense has been updated!';
+          }
+
+          if (description) {
+            notification.info({ description: notificationDescription });
+          }
+          setLoading(false);
+          history.push(`/campaigns/${campaign._id}/milestones/${res._id}`);
+        },
+        afterMined: (created, txUrl) => {
+          notification.success({
+            description: (
+              <p>
+                Your Expense has been created!
+                <br />
+                <a href={txUrl} target="_blank" rel="noopener noreferrer">
+                  View transaction
+                </a>
+              </p>
+            ),
+          });
+        },
+        onError(message, err) {
+          setLoading(false);
+          return ErrorHandler(err, message);
+        },
+      });
+    }
+  };
 
   return (
     <Fragment>
@@ -170,14 +286,14 @@ function CreateExpense(props) {
 
               <div className="section">
                 <div className="title">Expense details</div>
-                {expenseForm.expenseItems.map((item, idx) => (
+                {expenseItems.map((item, idx) => (
                   <CreateExpenseItem
                     key={item.key}
                     item={item}
                     id={idx}
                     updateStateOfItem={updateStateOfItem}
                     removeExpense={removeExpense}
-                    removeAble={expenseForm.expenseItems.length > 1}
+                    removeAble={expenseItems.length > 1}
                     token={expenseForm.token}
                   />
                 ))}
@@ -188,60 +304,23 @@ function CreateExpense(props) {
 
               <div className="section">
                 <div className="title">Reimbursement options</div>
-                <Form.Item
-                  name="token"
-                  label="Reimburse in Currency"
-                  className="custom-form-item"
-                  extra="Select the token you want to be reimbursed in."
-                >
-                  <Row gutter={16} align="middle">
-                    <Col className="gutter-row" span={12}>
-                      <Select
-                        showSearch
-                        placeholder="Select a Currency"
-                        optionFilterProp="children"
-                        name="token"
-                        onSelect={handleSelectToken}
-                        filterOption={(input, option) =>
-                          option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                        }
-                        value={expenseForm.token && expenseForm.token.symbol}
-                        required
-                      >
-                        {activeTokenWhitelist.map(token => (
-                          <Select.Option key={token.name} value={token.symbol}>
-                            {token.name}
-                          </Select.Option>
-                        ))}
-                      </Select>
-                    </Col>
-                    <Col className="gutter-row" span={12}>
-                      <Typography.Text className="ant-form-text" type="secondary">
-                        ≈ {totalAmount}
-                      </Typography.Text>
-                    </Col>
-                  </Row>
-                </Form.Item>
 
-                <Form.Item
-                  name="recipientAddress"
+                <MilestoneToken
+                  label="Reimburse in Currency"
+                  onChange={handleSelectToken}
+                  value={expenseForm.token}
+                  totalAmount={convertEthHelper(totalAmount, expenseForm.token.decimals)}
+                />
+
+                <MilestoneRecipientAddress
                   label="Reimburse to wallet address"
-                  className="custom-form-item"
-                  extra="If you don’t change this field the address associated with your account will be
-                used."
-                >
-                  <Input
-                    value={expenseForm.recipientAddress}
-                    name="recipientAddress"
-                    placeholder="0x"
-                    onChange={handleInputChange}
-                    required
-                  />
-                </Form.Item>
+                  onChange={handleInputChange}
+                  value={expenseForm.recipientAddress}
+                />
               </div>
               <Form.Item>
-                <Button type="primary" htmlType="submit" className="submit-button">
-                  Submit
+                <Button type="primary" htmlType="submit" loading={loading || loadingAmount}>
+                  {submitButtonText}
                 </Button>
               </Form.Item>
             </Form>

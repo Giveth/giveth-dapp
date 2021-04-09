@@ -104,6 +104,8 @@ class Donation extends Model {
     this._usdValue = data.usdValue;
     this._parentDonations = data.parentDonations;
     this._comment = data.comment;
+    this._bridgeStatus = data.bridgeStatus;
+    this._bridgeTxHash = data.bridgeTxHash;
 
     /**
      * Get the URL, name and type of the entity to which this donation has been donated to
@@ -165,7 +167,11 @@ class Donation extends Model {
       case Donation.PAYING:
         return 'paying';
       case Donation.PAID:
-        return 'paid';
+        if (this._bridgeStatus === Donation.PAID) {
+          // I dont know what to do if bridgeStatus is something like Cancelled or Expired
+          return 'paid';
+        }
+        return 'processing';
       case Donation.CANCELED:
         return 'canceled';
       case Donation.REJECTED:
@@ -514,6 +520,22 @@ class Donation extends Model {
 
   set comment(value) {
     this._comment = value;
+  }
+
+  get bridgeStatus() {
+    return this._bridgeStatus;
+  }
+
+  set bridgeStatus(value) {
+    this._bridgeStatus = value;
+  }
+
+  get bridgeTxHash() {
+    return this._bridgeTxHash;
+  }
+
+  set bridgeTxHash(value) {
+    this._bridgeTxHash = value;
   }
 }
 

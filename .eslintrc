@@ -46,6 +46,7 @@
     "jsx-a11y/label-has-for": "off", // This rule will be dropped soon anyways
     "react/destructuring-assignment": "off", // Seems to be way too restrictive
     "import/no-cycle": 1, // Should be addressed eventually but does not break
+    "import/prefer-default-export": "off",
     "jsx-a11y/media-has-caption": "off" // Pretty hard to do for every video..
   },
   "env": {

@@ -63,22 +63,18 @@ const Balances = ({ entity }) => {
             <thead>
               <tr>
                 <th className="td-donations-amount">Current balance</th>
+                {currency && conversionRates && (
+                  <th className="td-donations-amount">Current balance value</th>
+                )}
                 <th className="td-donations-number">Number of donations</th>
                 <th className="td-donations-amount">Total donated</th>
-                {currency && conversionRates && (
-                  <th className="td-donations-amount">Current Balance value</th>
-                )}
               </tr>
             </thead>
-            <tbody>
+            <tbody className="text-center">
               {entity.donationCounters.map(dc => (
                 <tr key={dc._id}>
                   <td className="td-donations-amount">
                     {convertEthHelper(dc.currentBalance, dc.decimals)} {dc.symbol}
-                  </td>
-                  <td className="td-donations-number">{dc.donationCount || 0}</td>
-                  <td className="td-donations-amount">
-                    {convertEthHelper(dc.totalDonated, dc.decimals)} {dc.symbol}
                   </td>
                   {currency && conversionRates && (
                     <td className="td-donations-amount">
@@ -89,6 +85,10 @@ const Balances = ({ entity }) => {
                       {currency}
                     </td>
                   )}
+                  <td className="td-donations-number">{dc.donationCount || 0}</td>
+                  <td className="td-donations-amount">
+                    {convertEthHelper(dc.totalDonated, dc.decimals)} {dc.symbol}
+                  </td>
                 </tr>
               ))}
             </tbody>

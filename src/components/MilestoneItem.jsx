@@ -5,6 +5,7 @@ import React from 'react';
 import { convertEthHelper } from 'lib/helpers';
 import MilestoneItemModel from 'models/MilestoneItem';
 import { utils } from 'web3';
+import DescriptionRender from './DescriptionRender';
 
 /** *
  * NOTE: This component is created as a Formsy form component
@@ -44,7 +45,7 @@ class MilestoneItem extends React.Component {
             marginBottom: 20,
           }}
         >
-          {item.description}
+          {DescriptionRender(item.description)}
         </td>
 
         <td className="td-item-amount-fiat">

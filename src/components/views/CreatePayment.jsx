@@ -1,32 +1,53 @@
-import React, { useContext, useState, useEffect, Fragment } from 'react';
-import { PageHeader, Row, Col, Form, Input, Select, Button, DatePicker, Checkbox } from 'antd';
+import React, { Fragment, useContext, useEffect, useRef, useState } from 'react';
+import { Button, Checkbox, Col, Form, notification, PageHeader, Row } from 'antd';
 import 'antd/dist/antd.css';
 import PropTypes from 'prop-types';
+import BigNumber from 'bignumber.js';
 import useCampaign from '../../hooks/useCampaign';
 // import { Context as ConversionRateContext } from '../../contextProviders/ConversionRateProvider';
 import { Context as WhiteListContext } from '../../contextProviders/WhiteListProvider';
 import Web3ConnectWarning from '../Web3ConnectWarning';
 import {
   MilestoneCampaignInfo,
+  MilestoneDatePicker,
   MilestoneDescription,
   MilestoneDonateToDac,
+  MilestoneFiatAmountCurrency,
   MilestonePicture,
+  MilestoneRecipientAddress,
   MilestoneTitle,
+  MilestoneToken,
 } from '../EditMilestoneCommons';
 import { Context as UserContext } from '../../contextProviders/UserProvider';
+import { convertEthHelper, getStartOfDayUTC, history, ZERO_ADDRESS } from '../../lib/helpers';
+import ErrorHandler from '../../lib/ErrorHandler';
+import { Context as ConversionRateContext } from '../../contextProviders/ConversionRateProvider';
+import { authenticateUser } from '../../lib/middleware';
+import BridgedMilestone from '../../models/BridgedMilestone';
+import config from '../../configuration';
+import { Milestone } from '../../models';
+import { MilestoneService } from '../../services';
+import { Context as Web3Context } from '../../contextProviders/Web3Provider';
+
+const WAIT_INTERVAL = 1000;
 
 function CreatePayment(props) {
-  // const {
-  //   state: { fiatTypes, currentRate, isLoading },
-  //   actions: { getConversionRates, convertMultipleRates },
-  // } = useContext(ConversionRateContext);
   const {
-    state: { activeTokenWhitelist, fiatWhitelist },
+    state: { fiatWhitelist },
   } = useContext(WhiteListContext);
 
   const {
     state: { currentUser },
   } = useContext(UserContext);
+
+  const {
+    actions: { getConversionRates },
+  } = useContext(ConversionRateContext);
+
+  const {
+    state: { isForeignNetwork },
+    actions: { displayForeignNetRequiredWarning },
+  } = useContext(Web3Context);
 
   const [form] = Form.useForm();
 
@@ -35,26 +56,106 @@ function CreatePayment(props) {
 
   const [payment, setPayment] = useState({
     title: '',
-    amount: '',
+    fiatAmount: 0,
     currency: '',
-    paymentCurrency: '',
-    date: '',
+    token: {},
+    date: getStartOfDayUTC().subtract(1, 'd'),
     description: '',
     picture: '',
     donateToDac: true,
-    wallet: '',
-    nolimit: false,
+    recipientAddress: '',
+    notCapped: false,
+    conversionRateTimestamp: undefined,
   });
+
+  const [loading, setLoading] = useState(false);
+  const [userIsCampaignOwner, setUserIsOwner] = useState(false);
+  const [maxAmount, setMaxAmount] = useState(new BigNumber(0));
+  const [loadingRate, setLoadingRate] = useState(false);
+  const [loadingAmount, setLoadingAmount] = useState(false);
+
+  const timer = useRef();
+  const isMounted = useRef(true);
+  const conversionRateTimestamp = useRef();
+  const [submitButtonText, setSubmitButtonText] = useState('Propose');
+
+  useEffect(() => {
+    if (loadingAmount) {
+      setSubmitButtonText('Loading Amount');
+    } else {
+      setSubmitButtonText(userIsCampaignOwner ? 'Create' : 'Propose');
+    }
+  }, [loadingAmount, userIsCampaignOwner]);
+
+  useEffect(() => {
+    if (loadingAmount) {
+      setSubmitButtonText('Loading Amount');
+    } else {
+      setSubmitButtonText(userIsCampaignOwner ? 'Create' : 'Propose');
+    }
+  }, [loadingAmount, userIsCampaignOwner]);
+
+  useEffect(() => {
+    setUserIsOwner(
+      campaign &&
+        currentUser.address &&
+        [campaign.ownerAddress, campaign.coownerAddress].includes(currentUser.address),
+    );
+  }, [campaign, currentUser]);
+
+  useEffect(() => {
+    return () => {
+      isMounted.current = false;
+      clearTimeout(timer.current);
+    };
+  }, []);
 
   useEffect(() => {
     if (currentUser.address && !payment.recipientAddress) {
       setPayment({
         ...payment,
-        wallet: currentUser.address,
+        recipientAddress: currentUser.address,
       });
-      form.setFieldsValue({ wallet: currentUser.address });
+      form.setFieldsValue({ recipientAddress: currentUser.address });
     }
   }, [currentUser]);
+
+  // Update item of this item in milestone token
+  const updateAmount = () => {
+    const { token, currency, date, fiatAmount, notCapped } = payment;
+    if (!token.symbol || !currency || notCapped) return;
+
+    setLoadingAmount(true);
+    if (timer.current) {
+      clearTimeout(timer.current);
+    }
+
+    timer.current = setTimeout(async () => {
+      try {
+        setLoadingRate(true);
+        const res = await getConversionRates(date, token.symbol, currency);
+        const rate = res.rates[currency];
+        if (rate && isMounted.current) {
+          conversionRateTimestamp.current = res.timestamp;
+          setMaxAmount(new BigNumber(fiatAmount).div(rate));
+        } else {
+          throw new Error('Rate not found');
+        }
+      } catch (e) {
+        const message = `Sadly we were unable to get the exchange rate. Please try again after refresh.`;
+
+        ErrorHandler(e, message);
+        setMaxAmount(0);
+      } finally {
+        setLoadingRate(false);
+        setLoadingAmount(false);
+      }
+    }, WAIT_INTERVAL);
+  };
+
+  useEffect(() => {
+    updateAmount();
+  }, [payment.token, payment.fiatAmount, payment.date, payment.currency]);
 
   const handleInputChange = event => {
     const { name, value, type, checked } = event.target;
@@ -65,29 +166,130 @@ function CreatePayment(props) {
     }
   };
 
-  function handleSelectCurrency(_, option) {
+  const handleSelectCurrency = (_, option) => {
     handleInputChange({ target: { name: 'currency', value: option.value } });
-  }
+  };
 
-  function handleSelectPaymentCurrency(_, option) {
+  const handleSelectToken = token => {
     handleInputChange({
-      target: { name: 'paymentCurrency', value: option.value },
+      target: { name: 'token', value: token },
     });
-  }
+  };
 
-  function handleDatePicker(_, dateString) {
+  const handleDatePicker = dateString => {
     handleInputChange({ target: { name: 'date', value: dateString } });
-  }
+  };
 
-  function setPicture(address) {
+  const setPicture = address => {
     handleInputChange({ target: { name: 'picture', value: address } });
-  }
+  };
 
-  function goBack() {
+  const goBack = () => {
     props.history.goBack();
-  }
+  };
 
-  const submit = async () => {};
+  const submit = async () => {
+    const authenticated = await authenticateUser(currentUser, false);
+
+    if (authenticated) {
+      if (userIsCampaignOwner && !isForeignNetwork) {
+        displayForeignNetRequiredWarning();
+        return;
+      }
+
+      const {
+        title,
+        description,
+        picture,
+        recipientAddress,
+        notCapped,
+        fiatAmount,
+        currency,
+        token,
+        date,
+        donateToDac,
+      } = payment;
+
+      const ms = new BridgedMilestone({
+        title,
+        description,
+        recipientAddress,
+        token,
+        image: picture,
+        reviewerAddress: ZERO_ADDRESS,
+      });
+
+      ms.ownerAddress = currentUser.address;
+      ms.campaignId = campaign._id;
+      ms.parentProjectId = campaign.projectId;
+
+      if (donateToDac) {
+        ms.dacId = config.defaultDacId;
+      }
+
+      if (!notCapped) {
+        ms.maxAmount = maxAmount;
+        ms.date = date;
+        ms.fiatAmount = new BigNumber(fiatAmount);
+        ms.selectedFiatType = currency;
+        ms.conversionRateTimestamp = conversionRateTimestamp.current;
+      }
+
+      if (!userIsCampaignOwner) {
+        ms.status = Milestone.PROPOSED;
+      }
+
+      setLoading(true);
+
+      await MilestoneService.save({
+        milestone: ms,
+        from: currentUser.address,
+        afterSave: (created, txUrl, res) => {
+          let notificationDescription;
+          if (created) {
+            if (!userIsCampaignOwner) {
+              notificationDescription = 'Payment proposed to the Campaign Owner';
+            }
+          } else if (txUrl) {
+            notificationDescription = (
+              <p>
+                Your Payment is pending....
+                <br />
+                <a href={txUrl} target="_blank" rel="noopener noreferrer">
+                  View transaction
+                </a>
+              </p>
+            );
+          } else {
+            notificationDescription = 'Your Payment has been updated!';
+          }
+
+          if (description) {
+            notification.info({ description: notificationDescription });
+          }
+          setLoading(false);
+          history.push(`/campaigns/${campaign._id}/milestones/${res._id}`);
+        },
+        afterMined: (created, txUrl) => {
+          notification.success({
+            description: (
+              <p>
+                Your Payment has been created!
+                <br />
+                <a href={txUrl} target="_blank" rel="noopener noreferrer">
+                  View transaction
+                </a>
+              </p>
+            ),
+          });
+        },
+        onError(message, err) {
+          setLoading(false);
+          return ErrorHandler(err, message);
+        },
+      });
+    }
+  };
 
   return (
     <Fragment>
@@ -132,61 +334,30 @@ function CreatePayment(props) {
 
                 <Row>
                   <Form.Item className="custom-form-item">
-                    <Checkbox name="nolimit" checked={payment.nolimit} onChange={handleInputChange}>
+                    <Checkbox
+                      name="notCapped"
+                      checked={payment.notCapped}
+                      onChange={handleInputChange}
+                    >
                       No limits
                     </Checkbox>
                   </Form.Item>
                 </Row>
-                {!payment.nolimit && (
+
+                {!payment.notCapped && (
                   <Fragment>
-                    <Row gutter={16}>
-                      <Col className="gutter-row" span={10}>
-                        <Form.Item name="amount" label="Amount" className="custom-form-item">
-                          <Input
-                            value={payment.amount}
-                            name="amount"
-                            type="number"
-                            placeholder="Enter Amount"
-                            onChange={handleInputChange}
-                            required
-                          />
-                        </Form.Item>
-                      </Col>
-                      <Col className="gutter-row" span={10}>
-                        <Form.Item
-                          name="currency"
-                          label="Currency"
-                          className="custom-form-item"
-                          extra="Select the currency of this expense."
-                        >
-                          <Select
-                            showSearch
-                            placeholder="Select a Currency"
-                            optionFilterProp="children"
-                            name="currency"
-                            onSelect={handleSelectCurrency}
-                            filterOption={(input, option) =>
-                              option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                            }
-                            value={payment.currency}
-                            required
-                          >
-                            {fiatWhitelist.map(cur => (
-                              <Select.Option key={cur} value={cur}>
-                                {cur}
-                              </Select.Option>
-                            ))}
-                          </Select>
-                        </Form.Item>
-                      </Col>
-                    </Row>
-                    <Row gutter={16}>
-                      <Col className="gutter-row" span={10}>
-                        <Form.Item name="date" label="Date" className="custom-form-item">
-                          <DatePicker onChange={handleDatePicker} value={payment.date} />
-                        </Form.Item>
-                      </Col>
-                    </Row>
+                    <MilestoneFiatAmountCurrency
+                      onCurrencyChange={handleSelectCurrency}
+                      onAmountChange={handleInputChange}
+                      amount={payment.fiatAmount}
+                      currency={payment.currency}
+                      disabled={loadingRate}
+                    />
+                    <MilestoneDatePicker
+                      onChange={handleDatePicker}
+                      value={payment.date}
+                      disabled={loadingRate}
+                    />
                   </Fragment>
                 )}
 
@@ -205,58 +376,27 @@ function CreatePayment(props) {
 
                 <MilestoneDonateToDac value={payment.donateToDac} onChange={handleInputChange} />
               </div>
+
               <div className="section">
                 <div className="title">Payment options</div>
-                <Form.Item
-                  name="paymentCurrency"
+                <MilestoneToken
                   label="Payment currency"
-                  className="custom-form-item"
-                  extra="Select the token you want to be reimbursed in."
-                  required
-                  rules={[{ required: true, message: 'Payment currency is required' }]}
-                >
-                  <Select
-                    showSearch
-                    placeholder="Select a Currency"
-                    optionFilterProp="children"
-                    name="paymentCurrency"
-                    onSelect={handleSelectPaymentCurrency}
-                    filterOption={(input, option) =>
-                      option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                    }
-                    value={payment.paymentCurrency}
-                  >
-                    {payment.nolimit && (
-                      <Select.Option key="ANY_TOKEN" value="ANY_TOKEN">
-                        Any Token
-                      </Select.Option>
-                    )}
-                    {activeTokenWhitelist.map(cur => (
-                      <Select.Option key={cur.name} value={cur.name}>
-                        {cur.name}
-                      </Select.Option>
-                    ))}
-                  </Select>
-                </Form.Item>
-                <Form.Item
-                  name="wallet"
+                  onChange={handleSelectToken}
+                  includeAnyToken={payment.notCapped}
+                  totalAmount={convertEthHelper(maxAmount, payment.token.decimals)}
+                  hideTotalAmount={payment.notCapped}
+                  value={payment.token}
+                />
+
+                <MilestoneRecipientAddress
                   label="Pay to wallet address"
-                  className="custom-form-item"
-                  extra="If you don’t change this field the address associated with your account will be
-                used."
-                >
-                  <Input
-                    value={payment.wallet}
-                    name="wallet"
-                    placeholder="0x"
-                    onChange={handleInputChange}
-                    required
-                  />
-                </Form.Item>
+                  onChange={handleInputChange}
+                  value={payment.recipientAddress}
+                />
               </div>
               <Form.Item>
-                <Button type="primary" htmlType="submit" className="submit-button">
-                  Submit
+                <Button type="primary" htmlType="submit" loading={loading || loadingAmount}>
+                  {submitButtonText}
                 </Button>
               </Form.Item>
             </Form>

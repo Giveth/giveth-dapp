@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 
 import { Link } from 'react-router-dom';
@@ -13,6 +13,7 @@ import AggregateDonationService from '../../services/AggregateDonationService';
 import LeaderBoard from '../LeaderBoard';
 import CommunityButton from '../CommunityButton';
 import DAC from '../../models/DAC';
+import ProjectSubscription from '../ProjectSubscription';
 import { getUserName, getUserAvatar, history } from '../../lib/helpers';
 import DACService from '../../services/DACService';
 import CampaignService from '../../services/CampaignService';
@@ -45,7 +46,7 @@ const ViewDAC = ({ match }) => {
     state: { currentUser },
   } = useContext(UserContext);
 
-  const [dac, setDac] = useState();
+  const [dac, setDac] = useState({});
   const [isLoading, setLoading] = useState(true);
   const [isLoadingDonations, setLoadingDonatinos] = useState(true);
   const [isLoadingCampaigns, setLoadingCampaigns] = useState(true);
@@ -55,18 +56,33 @@ const ViewDAC = ({ match }) => {
   const [newDonations, setNewDonations] = useState(0);
   const [notFound, setNotFound] = useState(false);
 
-  let donationsObserver;
-  let campaignObserver;
+  const donationsObserver = useRef();
 
   const donationsPerBatch = 5;
 
   const cleanUp = () => {
-    if (donationsObserver) donationsObserver.unsubscribe();
-    if (campaignObserver) campaignObserver.unsubscribe();
+    if (donationsObserver.current) {
+      donationsObserver.current.unsubscribe();
+      donationsObserver.current = null;
+    }
   };
 
-  const loadMoreAggregateDonations = () => {
+  const loadMoreAggregateDonations = (loadFromScratch = false) => {
     setLoadingDonatinos(true);
+    AggregateDonationService.get(
+      dac.id,
+      donationsPerBatch,
+      loadFromScratch ? 0 : aggregateDonations.length,
+      (_donations, _donationsTotal) => {
+        setAggregateDonations(loadFromScratch ? _donations : aggregateDonations.concat(_donations));
+        setDonationsTotal(_donationsTotal);
+        setLoadingDonatinos(false);
+      },
+      err => {
+        setLoadingDonatinos(false);
+        ErrorHandler(err, 'Some error on fetching loading donations, please try again later');
+      },
+    );
   };
 
   useEffect(() => {
@@ -82,41 +98,34 @@ const ViewDAC = ({ match }) => {
         }
         setDac(_dac);
         setLoading(false);
-        const relatedCampaigns = await CampaignService.getCampaignsByIdArray(_dac.campaigns || []);
-        setCampaigns(relatedCampaigns);
-        setLoadingCampaigns(false);
-
-        donationsObserver = DACService.subscribeNewDonations(
-          _dac.id,
-          _newDonations => setNewDonations(_newDonations),
-          err => {
-            ErrorHandler(err, 'Some error on fetching dac donations, please try again later');
-            setNewDonations(0);
-          },
-        );
-        AggregateDonationService.get(
-          _dac.id,
-          donationsPerBatch,
-          aggregateDonations.length,
-          (_donations, _donationsTotal) => {
-            setAggregateDonations(aggregateDonations.concat(_donations));
-            setDonationsTotal(_donationsTotal);
-            setLoadingDonatinos(false);
-          },
-          err => {
-            setLoadingDonatinos(false);
-            ErrorHandler(err, 'Some error on fetching loading donations, please try again later');
-          },
-        );
       })
       .catch(err => {
         setNotFound(true);
         ErrorHandler(err, 'Some error on fetching dac info, please try again later');
       });
 
-    loadMoreAggregateDonations();
     return cleanUp;
   }, []);
+
+  useEffect(async () => {
+    if (dac.id) {
+      const relatedCampaigns = await CampaignService.getCampaignsByIdArray(dac.campaigns || []);
+      setCampaigns(relatedCampaigns);
+      setLoadingCampaigns(false);
+
+      // subscribe to donation count
+      donationsObserver.current = DACService.subscribeNewDonations(
+        dac.id,
+        _newDonations => setNewDonations(_newDonations),
+        err => {
+          ErrorHandler(err, 'Some error on fetching dac donations, please try again later');
+          setNewDonations(0);
+        },
+      );
+      loadMoreAggregateDonations(true);
+    }
+    return cleanUp;
+  }, [dac]);
 
   const editDAC = id => {
     checkBalance(balance)
@@ -208,6 +217,10 @@ const ViewDAC = ({ match }) => {
                 <div className="row">
                   <div className="col-md-8 m-auto">
                     <div id="description">
+                      <div>
+                        <h5 className="title">Subscribe to updates </h5>
+                        <ProjectSubscription projectTypeId={dac._id} projectType="dac" />
+                      </div>
                       <div className="about-section-header">
                         <h5 className="title">About</h5>
                         <div className="text-center">
