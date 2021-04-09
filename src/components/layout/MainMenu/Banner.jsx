@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useState } from 'react';
-import gasLogo from '../assets/gas-logo.svg';
-import { Context as WhiteListContext } from '../contextProviders/WhiteListProvider';
+import gasLogo from '../../../assets/gas-logo.svg';
+import { Context as WhiteListContext } from '../../../contextProviders/WhiteListProvider';
 
 const Banner = () => {
   const {
