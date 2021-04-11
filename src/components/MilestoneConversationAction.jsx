@@ -14,20 +14,30 @@ import WithdrawMilestoneFundsButton from 'components/WithdrawMilestoneFundsButto
 
 class MilestoneConversationAction extends Component {
   render() {
-    const { messageContext, milestone } = this.props;
+    const { messageContext, milestone, isAmountEnoughForWithdraw } = this.props;
 
     switch (messageContext) {
       case 'proposed':
         return <AcceptRejectProposedMilestoneButtons milestone={milestone} />;
 
       case 'rejected':
-        return <RequestMarkMilestoneCompleteButton milestone={milestone} />;
+        return (
+          <RequestMarkMilestoneCompleteButton
+            milestone={milestone}
+            isAmountEnoughForWithdraw={isAmountEnoughForWithdraw}
+          />
+        );
 
       case 'NeedsReview':
         return <ApproveRejectMilestoneCompletionButtons milestone={milestone} />;
 
       case 'Completed':
-        return <WithdrawMilestoneFundsButton milestone={milestone} />;
+        return (
+          <WithdrawMilestoneFundsButton
+            milestone={milestone}
+            isAmountEnoughForWithdraw={isAmountEnoughForWithdraw}
+          />
+        );
 
       case 'proposedRejected':
         return (
@@ -38,7 +48,12 @@ class MilestoneConversationAction extends Component {
         );
 
       case 'proposedAccepted':
-        return <RequestMarkMilestoneCompleteButton milestone={milestone} />;
+        return (
+          <RequestMarkMilestoneCompleteButton
+            milestone={milestone}
+            isAmountEnoughForWithdraw={isAmountEnoughForWithdraw}
+          />
+        );
       default:
         return <Fragment />;
     }
@@ -48,6 +63,7 @@ class MilestoneConversationAction extends Component {
 MilestoneConversationAction.propTypes = {
   milestone: PropTypes.instanceOf(Milestone).isRequired,
   messageContext: PropTypes.string.isRequired,
+  isAmountEnoughForWithdraw: PropTypes.bool.isRequired,
 };
 
 export default React.memo(MilestoneConversationAction);

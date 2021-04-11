@@ -651,6 +651,7 @@ const ViewMilestone = props => {
                           milestone={milestone}
                           currentUser={currentUser}
                           balance={balance}
+                          isAmountEnoughForWithdraw={isAmountEnoughForWithdraw}
                           maxHeight={`${detailsCardHeight}px`}
                         />
                       </div>
