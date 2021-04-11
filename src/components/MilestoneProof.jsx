@@ -3,6 +3,7 @@
 import React, { Component } from 'react';
 import BigNumber from 'bignumber.js';
 import PropTypes from 'prop-types';
+import { v4 as uuidv4 } from 'uuid';
 
 import MilestoneItem from './MilestoneItem';
 import AddMilestoneItem from './AddMilestoneItem';
@@ -76,6 +77,7 @@ class MilestoneProof extends Component {
                         {items.map((item, i) => (
                           <MilestoneItem
                             name={`milestoneItem-${i}`}
+                            key={`milestoneItem-${item._id || uuidv4()}`}
                             index={i}
                             item={item}
                             removeItem={() => this.removeItem(i)}

@@ -1,12 +1,13 @@
 /* eslint-disable react/prop-types */
 import React, { useEffect, useRef, useState } from 'react';
-import { Radio, Input, Modal, Button } from 'antd';
+import { Radio, Input, Modal, Button, notification } from 'antd';
 import IPFSService from '../services/IPFSService';
 import config from '../configuration';
 
 const VideoPopup = ({ visible, handleClose, reactQuillRef }) => {
   const [type, setType] = useState(1);
   const [url, setURL] = useState('');
+  const [youtubeUrl, setYoutubeURL] = useState('');
   const [currentState, setCurrentState] = useState('');
   const [loading, setLoading] = useState(false);
   const stream = useRef(null);
@@ -40,7 +41,7 @@ const VideoPopup = ({ visible, handleClose, reactQuillRef }) => {
         // );
       },
       () => {
-        alert('No camera devices found');
+        // alert('No camera devices found');
       },
     );
   };
@@ -59,9 +60,9 @@ const VideoPopup = ({ visible, handleClose, reactQuillRef }) => {
   };
 
   useEffect(() => {
-    if (type === 3) {
+    if (type === 4) {
       handleCamera();
-    } else if (type === 4) {
+    } else if (type === 5) {
       detectExtension();
     }
   }, [type]);
@@ -84,6 +85,21 @@ const VideoPopup = ({ visible, handleClose, reactQuillRef }) => {
     quill.insertEmbed(index, 'video', videURL);
   }
 
+  function getVideoUrl(tempUrl) {
+    let match =
+      tempUrl.match(/^(?:(https?):\/\/)?(?:(?:www|m)\.)?youtube\.com\/watch.*v=([a-zA-Z0-9_-]+)/) ||
+      tempUrl.match(/^(?:(https?):\/\/)?(?:(?:www|m)\.)?youtu\.be\/([a-zA-Z0-9_-]+)/) ||
+      tempUrl.match(/^.*(youtu.be\/|v\/|e\/|u\/\w+\/|embed\/|v=)([^#&?]*).*/);
+    if (match && match[2].length === 11) {
+      return `https://www.youtube.com/embed/${match[2]}?showinfo=0`;
+    }
+    match = tempUrl.match(/^(?:(https?):\/\/)?(?:www\.)?vimeo\.com\/(\d+)/);
+    if (match) {
+      return `${match[1] || 'https'}://player.vimeo.com/video/${match[2]}/`;
+    }
+    return null;
+  }
+
   function uploadVideoToIPFS() {
     const reader = new FileReader();
     reader.onload = _ => {
@@ -92,9 +108,11 @@ const VideoPopup = ({ visible, handleClose, reactQuillRef }) => {
           insertToEditor(config.ipfsGateway + hash.slice(6));
           closeModal();
         })
-        .catch(err => {
-          // ErrorPopup('Something went wrong with the upload.', err);
-          console.log(err);
+        .catch(() => {
+          notification.error({
+            message: 'IPFS Fails',
+            description: 'Something went wrong with the upload.',
+          });
         })
         .finally(() => {
           setLoading(false);
@@ -105,6 +123,7 @@ const VideoPopup = ({ visible, handleClose, reactQuillRef }) => {
   }
 
   function onOk() {
+    let tempURL;
     switch (type) {
       case 1:
         insertToEditor(url);
@@ -112,6 +131,13 @@ const VideoPopup = ({ visible, handleClose, reactQuillRef }) => {
         break;
       case 2:
         uploadVideoToIPFS();
+        break;
+      case 3:
+        tempURL = getVideoUrl(youtubeUrl);
+        if (tempURL) {
+          insertToEditor(tempURL);
+          closeModal();
+        }
         break;
       default:
         break;
@@ -136,6 +162,7 @@ const VideoPopup = ({ visible, handleClose, reactQuillRef }) => {
       <Radio.Group onChange={onChange} value={type}>
         <Radio value={1}>Link</Radio>
         <Radio value={2}>File</Radio>
+        <Radio value={3}>Youtube</Radio>
         {/* <Radio value={3}>Camera</Radio> */}
         {/* <Radio value={4}>Screen sharing</Radio> */}
       </Radio.Group>
@@ -145,6 +172,9 @@ const VideoPopup = ({ visible, handleClose, reactQuillRef }) => {
           <div style={{ display: 'flex', justifyContent: 'center' }}>
             <input type="file" accept="video/*" ref={file} />
           </div>
+        )}
+        {type === 3 && (
+          <Input placeholder="Video URL" onChange={e => setYoutubeURL(e.target.value)} />
         )}
         {currentState === 'missing extension' && (
           <div role="alert">

@@ -9,7 +9,7 @@ const useReviewers = () => {
     isMounted.current = true;
     const res = await UserService.getReviewers();
 
-    if (res && isMounted.current) setReviewers(res.data);
+    if (res && isMounted.current) setReviewers(res);
 
     return () => {
       isMounted.current = false;

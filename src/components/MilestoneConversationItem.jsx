@@ -12,10 +12,24 @@ import { convertEthHelper, getUserAvatar, getUserName } from '../lib/helpers';
 import Milestone from '../models/Milestone';
 import config from '../configuration';
 
-const getPaymentStrForConversation = ({ amount, tokenDecimals, symbol }) => {
-  const amountStr = convertEthHelper(utils.fromWei(amount), tokenDecimals);
-  return `${amountStr} ${symbol}`;
+const getPaymentsStr = payments => {
+  let phrase = '';
+
+  const getSinglePaymentStr = ({ amount, tokenDecimals, symbol }) => {
+    const amountStr = convertEthHelper(utils.fromWei(amount), tokenDecimals);
+    return `${amountStr} ${symbol}`;
+  };
+
+  if (payments) {
+    const paymentsStr = payments.map(getSinglePaymentStr);
+    phrase =
+      paymentsStr.length === 1
+        ? paymentsStr[0]
+        : `${paymentsStr.slice(0, -1).join(', ')} and ${paymentsStr[paymentsStr.length - 1]}`;
+  }
+  return phrase;
 };
+
 const getReadableMessageContext = conversation => {
   const { messageContext, owner } = conversation;
   const userName = getUserName(owner);
@@ -36,13 +50,7 @@ const getReadableMessageContext = conversation => {
   if (messageContext === 'payment') {
     const { recipient, payments } = conversation;
     if (payments) {
-      const paymentsStr = payments.map(p => {
-        return getPaymentStrForConversation(p);
-      });
-      const phrase =
-        paymentsStr.length === 1
-          ? paymentsStr[0]
-          : `${paymentsStr.slice(0, -1).join(', ')} and ${paymentsStr[paymentsStr.length - 1]}`;
+      const phrase = getPaymentsStr(payments);
       if (owner && recipient && owner.address === recipient.address) {
         return (
           <Fragment>
@@ -62,38 +70,35 @@ const getReadableMessageContext = conversation => {
   if (messageContext === 'donated') {
     const { donorType, donorId, donorTitle, payments } = conversation;
     if (donorType === 'giver' && payments && payments.length > 0) {
-      const payment = payments[0];
-      const paymentStr = getPaymentStrForConversation(payment);
+      const paymentsStr = getPaymentsStr(payments);
       return (
         <Fragment>
           <Link to={`/profile/${donorId}`}>{donorTitle || 'Anonymous'}</Link>
-          {` donated ${paymentStr}`}
+          {` donated ${paymentsStr}`}
         </Fragment>
       );
     }
   }
   if (messageContext === 'payout') {
     const { payments } = conversation;
-    const payment = payments[0];
-    const paymentStr = getPaymentStrForConversation(payment);
+    const paymentsStr = getPaymentsStr(payments);
     return (
       <Fragment>
         {/* <Link to={`/profile/${donorId}`}>{donorTitle || 'Anonymous'}</Link> */}
-        {`${paymentStr} has been sent to recipient's wallet`}
+        {`${paymentsStr} has been sent to recipient's wallet`}
       </Fragment>
     );
   }
   if (messageContext === 'delegated') {
     const { donorType, donorId, donorTitle, payments } = conversation;
     if (payments && payments.length > 0) {
-      const payment = payments[0];
-      const paymentStr = getPaymentStrForConversation(payment);
+      const paymentsStr = getPaymentsStr(payments);
 
       if (donorType === 'campaign') {
         return (
           <React.Fragment>
             <Link to={`/campaigns/${donorId}`}>{donorTitle || 'Unknown'}</Link>
-            {` Campaign delegated ${paymentStr}`}
+            {` Campaign delegated ${paymentsStr}`}
           </React.Fragment>
         );
       }
@@ -101,7 +106,7 @@ const getReadableMessageContext = conversation => {
         return (
           <React.Fragment>
             <Link to={`/dacs/${donorId}`}>{donorTitle || 'Unknown'}</Link>
-            {` DAC delegated ${paymentStr}`}
+            {` DAC delegated ${paymentsStr}`}
           </React.Fragment>
         );
       }
@@ -109,7 +114,7 @@ const getReadableMessageContext = conversation => {
         return (
           <React.Fragment>
             <Link to={`/profile/${donorId}`}>{donorTitle || 'Anonymous'}</Link>
-            {` delegated ${paymentStr}`}
+            {` delegated ${paymentsStr}`}
           </React.Fragment>
         );
       }
@@ -123,7 +128,7 @@ const getEtherScanUrl = ({ messageContext }) =>
     ? config.homeEtherscan
     : config.etherscan;
 
-function MilestoneConversationItem({ conversation, milestone }) {
+function MilestoneConversationItem({ conversation, milestone, isAmountEnoughForWithdraw }) {
   if (!conversation) return null;
   const {
     txHash,
@@ -176,7 +181,11 @@ function MilestoneConversationItem({ conversation, milestone }) {
 
         {/* ---- action buttons ---- */}
         <div className="c-action-footer">
-          <MilestoneConversationAction messageContext={messageContext} milestone={milestone} />
+          <MilestoneConversationAction
+            messageContext={messageContext}
+            milestone={milestone}
+            isAmountEnoughForWithdraw={isAmountEnoughForWithdraw}
+          />
         </div>
 
         <div className="c-divider" />
@@ -188,6 +197,7 @@ function MilestoneConversationItem({ conversation, milestone }) {
 MilestoneConversationItem.propTypes = {
   milestone: PropTypes.instanceOf(Milestone).isRequired,
   conversation: PropTypes.instanceOf(Object).isRequired,
+  isAmountEnoughForWithdraw: PropTypes.bool.isRequired,
 };
 
 export default React.memo(MilestoneConversationItem);

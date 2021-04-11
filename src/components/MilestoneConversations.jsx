@@ -9,7 +9,7 @@ import MilestoneConversationComment from './MilestoneConversationComment';
 import MilestoneConversationItem from './MilestoneConversationItem';
 import LoadMore from './LoadMore';
 
-const MilestoneConversations = ({ milestone, maxHeight }) => {
+const MilestoneConversations = ({ milestone, maxHeight, isAmountEnoughForWithdraw }) => {
   const conversationsNumPerLoad = 5;
   const [conversations, setConversations] = useState({});
   const [isLoading, setLoading] = useState(true);
@@ -62,6 +62,7 @@ const MilestoneConversations = ({ milestone, maxHeight }) => {
                 key={conversation._id}
                 conversation={conversation}
                 milestone={milestone}
+                isAmountEnoughForWithdraw={isAmountEnoughForWithdraw}
               />
             ))}
           </div>
@@ -78,6 +79,7 @@ const MilestoneConversations = ({ milestone, maxHeight }) => {
 MilestoneConversations.propTypes = {
   milestone: PropTypes.instanceOf(Milestone).isRequired,
   maxHeight: PropTypes.string,
+  isAmountEnoughForWithdraw: PropTypes.bool.isRequired,
 };
 
 MilestoneConversations.defaultProps = {
