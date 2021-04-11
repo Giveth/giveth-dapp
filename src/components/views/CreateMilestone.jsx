@@ -34,6 +34,7 @@ function CreateMilestone(props) {
   const { id: campaignId, slug: campaignSlug } = props.match.params;
 
   const campaign = useCampaign(campaignId, campaignSlug);
+  const [form] = Form.useForm();
 
   const [milestone, setMilestone] = useState({
     title: '',
@@ -182,6 +183,7 @@ function CreateMilestone(props) {
               className="card-form"
               requiredMark
               onFinish={submit}
+              form={form}
               scrollToFirstError={{
                 block: 'center',
                 behavior: 'smooth',
@@ -208,6 +210,7 @@ function CreateMilestone(props) {
                   onChange={handleInputChange}
                   extra="Explain how you are going to do this successfully."
                   placeholder="Describe how you are going to execute this milestone successfully..."
+                  id="description"
                 />
 
                 <MilestonePicture

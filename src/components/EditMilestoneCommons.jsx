@@ -72,19 +72,19 @@ const MilestoneDescription = ({ extra, onChange, placeholder, value, label, id }
       label={label}
       className="custom-form-item"
       extra={extra}
+      required
       rules={[
         {
-          required: true,
           type: 'string',
           message: 'Description is required',
         },
         {
-          validator: async (_, val) => {
-            if (val && getHtmlText(val).length <= 10) {
-              throw new Error(
-                'Please provide at least 10 characters and do not edit the template keywords.',
-              );
+          validator: (rule, val) => {
+            if (val && getHtmlText(val).length > 10) {
+              return Promise.resolve();
             }
+            // eslint-disable-next-line prefer-promise-reject-errors
+            return Promise.reject('Please provide at least 10 characters in description');
           },
         },
       ]}
@@ -94,6 +94,8 @@ const MilestoneDescription = ({ extra, onChange, placeholder, value, label, id }
         onChange={onDescriptionChange}
         value={value}
         placeholder={placeholder}
+        id={id}
+        key={id}
       />
     </Form.Item>
   );
