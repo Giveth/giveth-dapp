@@ -315,7 +315,10 @@ function CreatePayment(props) {
               }}
               onFinish={submit}
               form={form}
-              scrollToFirstError
+              scrollToFirstError={{
+                block: 'center',
+                behavior: 'smooth',
+              }}
             >
               <div className="card-form-header">
                 <img src={`${process.env.PUBLIC_URL}/img/payment.png`} alt="payment-logo" />
