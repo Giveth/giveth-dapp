@@ -275,7 +275,10 @@ function CreateExpense(props) {
               form={form}
               requiredMark
               onFinish={submit}
-              scrollToFirstError
+              scrollToFirstError={{
+                block: 'center',
+                behavior: 'smooth',
+              }}
             >
               <div className="card-form-header">
                 <img src={`${process.env.PUBLIC_URL}/img/expense.png`} alt="expense-logo" />
