@@ -128,7 +128,7 @@ const getEtherScanUrl = ({ messageContext }) =>
     ? config.homeEtherscan
     : config.etherscan;
 
-function MilestoneConversationItem({ conversation, milestone }) {
+function MilestoneConversationItem({ conversation, milestone, isAmountEnoughForWithdraw }) {
   if (!conversation) return null;
   const {
     txHash,
@@ -181,7 +181,11 @@ function MilestoneConversationItem({ conversation, milestone }) {
 
         {/* ---- action buttons ---- */}
         <div className="c-action-footer">
-          <MilestoneConversationAction messageContext={messageContext} milestone={milestone} />
+          <MilestoneConversationAction
+            messageContext={messageContext}
+            milestone={milestone}
+            isAmountEnoughForWithdraw={isAmountEnoughForWithdraw}
+          />
         </div>
 
         <div className="c-divider" />
@@ -193,6 +197,7 @@ function MilestoneConversationItem({ conversation, milestone }) {
 MilestoneConversationItem.propTypes = {
   milestone: PropTypes.instanceOf(Milestone).isRequired,
   conversation: PropTypes.instanceOf(Object).isRequired,
+  isAmountEnoughForWithdraw: PropTypes.bool.isRequired,
 };
 
 export default React.memo(MilestoneConversationItem);
