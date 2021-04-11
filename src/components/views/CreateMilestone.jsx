@@ -178,7 +178,7 @@ function CreateMilestone(props) {
         </Row>
         <Row>
           <div className="card-form-container">
-            <Form className="card-form" requiredMark onFinish={submit}>
+            <Form className="card-form" requiredMark onFinish={submit} scrollToFirstError>
               <div className="card-form-header">
                 <img src={`${process.env.PUBLIC_URL}/img/milestone.png`} alt="milestone-logo" />
                 <div className="title">Milestone</div>
