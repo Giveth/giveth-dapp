@@ -416,7 +416,7 @@ class DelegateButton extends Component {
                 min={0}
                 max={maxAmount.toNumber()}
                 onChange={newAmount => {
-                  this.setState({ amount: newAmount });
+                  this.setState({ amount: newAmount.toString() });
                 }}
                 value={amount}
                 marks={sliderMarks}

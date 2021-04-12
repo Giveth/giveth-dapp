@@ -478,7 +478,7 @@ const DelegateMultipleButton = props => {
                           <Slider
                             min={0}
                             max={maxAmount.toNumber()}
-                            onChange={setAmount}
+                            onChange={num => setAmount(num.toString())}
                             value={amount}
                             step={decimals ? 1 / 10 ** decimals : 1}
                             marks={sliderMarks}
