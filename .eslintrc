@@ -5,8 +5,7 @@
     "prettier",
     "prettier/flowtype",
     "prettier/react",
-    "prettier/standard",
-    "plugin:react-hooks/recommended"
+    "prettier/standard"
   ],
   "rules": {
     "react/jsx-props-no-spreading": "off",
