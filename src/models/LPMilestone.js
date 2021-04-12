@@ -39,11 +39,15 @@ export default class LPMilestone extends Milestone {
 
   canUserCancel(user) {
     return (
-      user &&
+      user.address &&
       [this.reviewerAddress, this.ownerAddress].includes(user.address) &&
-      ![Milestone.PROPOSED, Milestone.REJECTED, Milestone.PENDING, Milestone.ARCHIVED].includes(
-        this._status,
-      ) &&
+      ![
+        Milestone.PROPOSED,
+        Milestone.REJECTED,
+        Milestone.PENDING,
+        Milestone.ARCHIVED,
+        Milestone.CANCELED,
+      ].includes(this._status) &&
       this.mined
     );
   }
