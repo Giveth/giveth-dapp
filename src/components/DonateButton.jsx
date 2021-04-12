@@ -19,6 +19,7 @@ import { Link } from 'react-router-dom';
 import { withRouter } from 'react-router';
 import ReactTooltip from 'react-tooltip';
 import { Slider } from 'antd';
+
 import getNetwork from '../lib/blockchain/getNetwork';
 import extraGas from '../lib/blockchain/extraGas';
 import pollEvery from '../lib/pollEvery';
@@ -825,7 +826,7 @@ const DonateButton = forwardRef((props, ref) => {
                   <span className="label">How much {symbol} do you want to donate?</span>
 
                   {validProvider && maxAmount.toNumber() !== 0 && balance.gt(0) && (
-                    <div className="form-group mr-2">
+                    <div className="form-group" id="amount_slider">
                       <Slider
                         min={0}
                         max={maxAmount.toNumber()}
