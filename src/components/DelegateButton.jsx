@@ -32,6 +32,8 @@ const modalStyles = {
     transform: 'translate(-50%, -50%)',
     boxShadow: '0 0 40px #ccc',
     overflowY: 'scroll',
+    maxHeight: '80%',
+    marginTop: '10px',
   },
 };
 
