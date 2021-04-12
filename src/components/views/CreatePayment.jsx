@@ -370,6 +370,7 @@ function CreatePayment(props) {
                   value={payment.description}
                   extra="Describe how you are going to execute this milestone successfully..."
                   placeholder="e.g. Monthly salary"
+                  id="description"
                 />
 
                 <MilestonePicture

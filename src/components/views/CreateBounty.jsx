@@ -200,6 +200,7 @@ function CreateBounty(props) {
                   onChange={handleInputChange}
                   extra="Explain the requirements and what success looks like."
                   placeholder="Describe the Bounty and define the acceptance criteria..."
+                  id="description"
                 />
 
                 <MilestoneDonateToDac value={bounty.donateToDac} onChange={handleInputChange} />
