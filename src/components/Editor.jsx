@@ -155,7 +155,7 @@ function Editor(props) {
           name="description"
           placeholder={placeholder}
           onChange={onChange}
-          id="quill-ant"
+          id={props.id}
           theme="snow"
         />
       </div>
@@ -172,12 +172,14 @@ Editor.propTypes = {
   value: PropTypes.string,
   onChange: PropTypes.func.isRequired,
   placeholder: PropTypes.string,
+  id: PropTypes.string,
   setBusy: PropTypes.func,
 };
 
 Editor.defaultProps = {
   value: '',
   placeholder: '',
+  id: '',
   setBusy: () => {},
 };
 
