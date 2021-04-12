@@ -315,7 +315,10 @@ function CreatePayment(props) {
               }}
               onFinish={submit}
               form={form}
-              scrollToFirstError
+              scrollToFirstError={{
+                block: 'center',
+                behavior: 'smooth',
+              }}
             >
               <div className="card-form-header">
                 <img src={`${process.env.PUBLIC_URL}/img/payment.png`} alt="payment-logo" />
@@ -367,6 +370,7 @@ function CreatePayment(props) {
                   value={payment.description}
                   extra="Describe how you are going to execute this milestone successfully..."
                   placeholder="e.g. Monthly salary"
+                  id="description"
                 />
 
                 <MilestonePicture
