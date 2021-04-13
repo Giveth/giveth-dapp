@@ -1,9 +1,13 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Col, PageHeader, Row } from 'antd';
 import { history } from '../../lib/helpers';
 
 function MilestoneCreateOptionsMenu() {
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   function goBack() {
     history.goBack();
   }
