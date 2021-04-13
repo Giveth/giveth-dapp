@@ -8,14 +8,17 @@ const LeftMenu = () => {
   const { lg } = useBreakpoint();
   const [selectedKeys, setSelectedKeys] = useState();
 
-  const isDac = useRouteMatch('/dac/:slug') || useRouteMatch('/dacs');
-  const isCamp = useRouteMatch('/campaign/:slug') || useRouteMatch('/campaigns');
-  const isMilestone = useRouteMatch('/milestone/:slug') || useRouteMatch('/milestones');
+  const isDac1 = useRouteMatch('/dac/:slug');
+  const isDac2 = useRouteMatch('/dacs');
+  const isCamp1 = useRouteMatch('/campaign/:slug');
+  const isCamp2 = useRouteMatch('/campaigns');
+  const isMilestone1 = useRouteMatch('/milestone/:slug');
+  const isMilestone2 = useRouteMatch('/milestones');
 
   let selectedKey;
-  if (isDac) selectedKey = 'Communities';
-  else if (isCamp) selectedKey = 'Campaigns';
-  else if (isMilestone) selectedKey = 'Milestones';
+  if (isDac1 || isDac2) selectedKey = 'Communities';
+  else if (isCamp1 || isCamp2) selectedKey = 'Campaigns';
+  else if (isMilestone1 || isMilestone2) selectedKey = 'Milestones';
   else selectedKey = '';
 
   useEffect(() => {
